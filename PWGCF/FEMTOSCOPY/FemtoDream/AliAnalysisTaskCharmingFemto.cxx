@@ -39,8 +39,21 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
       fTrackCutHistMCList(nullptr),
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
+      fDChargedHistList(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fHistDplusInvMassPt(nullptr),
+      fHistDplusEta(nullptr),
+      fHistDplusPhi(nullptr),
+      fHistDplusChildPt(),
+      fHistDplusChildEta(),
+      fHistDplusChildPhi(),
+      fHistDminusInvMassPt(nullptr),
+      fHistDminusEta(nullptr),
+      fHistDminusPhi(nullptr),
+      fHistDminusChildPt(),
+      fHistDminusChildEta(),
+      fHistDminusChildPhi(),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -75,8 +88,21 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fTrackCutHistMCList(nullptr),
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
+      fDChargedHistList(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
+      fHistDplusInvMassPt(nullptr),
+      fHistDplusEta(nullptr),
+      fHistDplusPhi(nullptr),
+      fHistDplusChildPt(),
+      fHistDplusChildEta(),
+      fHistDplusChildPhi(),
+      fHistDminusInvMassPt(nullptr),
+      fHistDminusEta(nullptr),
+      fHistDminusPhi(nullptr),
+      fHistDminusChildPt(),
+      fHistDminusChildEta(),
+      fHistDminusChildPhi(),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -90,10 +116,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
   DefineOutput(4, TList::Class());
   DefineOutput(5, TList::Class());
   DefineOutput(6, TList::Class());
+  DefineOutput(7, TList::Class());
   switch(fDecChannel){ // save cut object for HF particle
     case kDplustoKpipi:
     {
-      DefineOutput(7, AliRDHFCutsDplustoKpipi::Class());
+      DefineOutput(8, AliRDHFCutsDplustoKpipi::Class());
       break;
     }
     default:
@@ -104,8 +131,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
   }
 
   if (fIsMC) {
-    DefineOutput(8, TList::Class());
     DefineOutput(9, TList::Class());
+    DefineOutput(10, TList::Class());
   }
 }
 
@@ -128,7 +155,7 @@ void AliAnalysisTaskCharmingFemto::LocalInit()
     switch(fDecChannel) {
       case kDplustoKpipi:
         AliRDHFCutsDplustoKpipi* copyCut = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
-        PostData(7, copyCut);
+        PostData(8, copyCut);
       break;
     }
   return;
@@ -276,6 +303,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       continue;
     }
 
+    const double mass = dMeson->InvMass(fDmesonNChildren, fDmesonPDGs);
+    if (dMeson->Charge() > 0) {
+      fHistDplusInvMassPt->Fill(dMeson->Pt(), mass);
+    } else {
+      fHistDminusInvMassPt->Fill(dMeson->Pt(), mass);
+    }
+
     // select D mesons mass window
     // simple parametrisation from D+ in 5.02 TeV
     double massMean = TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass() + 0.0025; // mass shift observed in all Run2 data samples for all D-meson species
@@ -285,13 +319,28 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         massWidth = 0.0057 + dMeson->Pt() * 0.00066;
         break;
     }
-    double mass = dMeson->InvMass(fDmesonNChildren, fDmesonPDGs);
     if( TMath::Abs(mass-massMean) <= 3*massWidth) {
       if (dMeson->Charge() > 0) {
         dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+        fHistDplusEta->Fill(dMeson->Eta());
+        fHistDplusPhi->Fill(dMeson->Phi());
+        for (int iChild = 0; iChild < fDmesonNChildren; iChild++) {
+          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
+          fHistDplusChildPt[iChild]->Fill(track->Pt());
+          fHistDplusChildEta[iChild]->Fill(track->Eta());
+          fHistDplusChildPhi[iChild]->Fill(track->Phi());
+        }
       }
       else {
         dminus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+	fHistDminusEta->Fill(dMeson->Eta());
+        fHistDminusPhi->Fill(dMeson->Phi());
+        for (int iChild = 0; iChild < fDmesonNChildren; iChild++) {
+          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
+          fHistDminusChildPt[iChild]->Fill(track->Pt());
+          fHistDminusChildEta[iChild]->Fill(track->Eta());
+          fHistDminusChildPhi[iChild]->Fill(track->Phi());
+        }
       }
     }
 
@@ -319,11 +368,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
   PostData(4, fAntiTrackCutHistList);
-  PostData(5, fResultList);
-  PostData(6, fResultQAList);
+  PostData(5, fDChargedHistList);
+  PostData(6, fResultList);
+  PostData(7, fResultQAList);
   if (fIsMC) {
-    PostData(8, fTrackCutHistMCList);
-    PostData(9, fAntiTrackCutHistMCList);
+    PostData(9, fTrackCutHistMCList);
+    PostData(10, fAntiTrackCutHistMCList);
   }
 }
 
@@ -425,6 +475,45 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     }
   }
 
+  // Eventually we might put this in a separate class but for the moment let's just leave it floating around here
+  fDChargedHistList  = new TList();
+  fDChargedHistList->SetName("DChargedQA");
+  fDChargedHistList->SetOwner(true);
+
+  fHistDplusInvMassPt = new TH2F("fHistDplusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fDChargedHistList->Add(fHistDplusInvMassPt);
+  fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
+  fDChargedHistList->Add(fHistDplusEta);
+  fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
+  fDChargedHistList->Add(fHistDplusPhi);
+
+  fHistDminusInvMassPt = new TH2F("fHistDminusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fDChargedHistList->Add(fHistDminusInvMassPt);
+  fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
+  fDChargedHistList->Add(fHistDminusEta);
+  fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
+  fDChargedHistList->Add(fHistDminusPhi);
+
+  std::vector<TString> nameVec;
+  if (fDecChannel == kDplustoKpipi) {
+    nameVec = {{"K", "Pi1", "Pi2"}};
+  }
+  for (int iChild = 0; iChild < fDmesonNChildren ; ++iChild) {
+    fHistDplusChildPt[iChild] = new TH1F(TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+    fHistDplusChildEta[iChild] = new TH1F(TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
+    fHistDplusChildPhi[iChild] = new TH1F(TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
+    fDChargedHistList->Add(fHistDplusChildPt[iChild]);
+    fDChargedHistList->Add(fHistDplusChildEta[iChild]);
+    fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
+    fHistDminusChildPt[iChild] = new TH1F(TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+    fHistDminusChildEta[iChild] = new TH1F(TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
+    fHistDminusChildPhi[iChild] = new TH1F(TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
+    fDChargedHistList->Add(fHistDminusChildPt[iChild]);
+    fDChargedHistList->Add(fHistDminusChildEta[iChild]);
+    fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
+  }
+  
+
   if (fPartColl && fPartColl->GetHistList()) {
     fResultList = fPartColl->GetHistList();
   }
@@ -450,11 +539,12 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
   PostData(4, fAntiTrackCutHistList);
-  PostData(5, fResultList);
-  PostData(6, fResultQAList);
+  PostData(5, fDChargedHistList);
+  PostData(6, fResultList);
+  PostData(7, fResultQAList);
   if (fIsMC) {
-    PostData(8, fTrackCutHistMCList);
-    PostData(9, fAntiTrackCutHistMCList);
+    PostData(9, fTrackCutHistMCList);
+    PostData(10, fAntiTrackCutHistMCList);
   }
 }
 
