@@ -50,12 +50,12 @@ public:
     void SetTrackCutsXion       ( AliFemtoDreamCascadeCuts *cascCuts        )  { fCascadeCutsXi         =   cascCuts;       };
     void SetTrackCutsAntiXion   ( AliFemtoDreamCascadeCuts *antiCascCuts    )  { fCascadeCutsAntiXi     =   antiCascCuts;   };
     // Cuts #2
-    void SetEventCuts2          ( AliFemtoDreamEventCuts   *evtCuts2       )  { fEventCuts2            =   evtCuts2;       };
-    void Setv0Cuts2             ( AliFemtoDreamv0Cuts      *v0Cuts2        )  { fLambdaV0Cuts2         =   v0Cuts2;        };
-    void SetAntiv0Cuts2         ( AliFemtoDreamv0Cuts      *antiV0Cuts2    )  { fAntiLambdaV0Cuts2     =   antiV0Cuts2;    };
-    void SetTrackCutsXion2      ( AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
-    void SetTrackCutsAntiXion2  ( AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
-    // config 
+    // void SetEventCuts2          ( AliFemtoDreamEventCuts   *evtCuts2       )  { fEventCuts2            =   evtCuts2;       };
+    // void Setv0Cuts2             ( AliFemtoDreamv0Cuts      *v0Cuts2        )  { fLambdaV0Cuts2         =   v0Cuts2;        };
+    // void SetAntiv0Cuts2         ( AliFemtoDreamv0Cuts      *antiV0Cuts2    )  { fAntiLambdaV0Cuts2     =   antiV0Cuts2;    };
+    // void SetTrackCutsXion2      ( AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
+    // void SetTrackCutsAntiXion2  ( AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
+    // // config 
     void SetCollectionConfig    ( AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
 
     // my analysis functions
@@ -72,6 +72,8 @@ public:
     void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
                             std::vector<AliFemtoDreamBasePart> *Decay2,
                             bool isAntiParticle);
+
+    void CleanDecayAtRandom(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering);
     
     float WeightLambda(float pT);
     
@@ -115,13 +117,13 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     std::vector<AliFemtoDreamBasePart>  vXi;                   //!
     std::vector<AliFemtoDreamBasePart>  vAntiXi;               //!
     // #2
-    AliFemtoDreamEventCuts             *fEventCuts2;           //
-    AliFemtoDreamv0                    *fv0_2;                 //!
-    AliFemtoDreamCascade               *fCascade2;             //!
-    AliFemtoDreamv0Cuts                *fLambdaV0Cuts2;        //
-    AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts2;    //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsXi2;       //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi2;   //
+    // AliFemtoDreamEventCuts             *fEventCuts2;           //
+    // AliFemtoDreamv0                    *fv0_2;                 //!
+    // AliFemtoDreamCascade               *fCascade2;             //!
+    // AliFemtoDreamv0Cuts                *fLambdaV0Cuts2;        //
+    // AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts2;    //
+    // AliFemtoDreamCascadeCuts           *fCascadeCutsXi2;       //
+    // AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi2;   //
     AliFemtoDreamPairCleaner           *fPairCleaner2;         //!
     AliFemtoDreamPartCollection        *fPartColl2;            //!
     // ## Output Container
@@ -131,11 +133,11 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     TList                              *tlCascadeCutsXi;       //!
     TList                              *tlAntiCascadeCutsXi;   //!
     // #2
-    TList                              *tlEventCuts2;                       //!
-    TList                              *tlLambdaList2;                      //!
-    TList                              *tlAntiLambdaList2;                  //!
-    TList                              *tlCascadeCutsXi2;                   //!
-    TList                              *tlAntiCascadeCutsXi2;               //!
+    // TList                              *tlEventCuts2;                       //!
+    // TList                              *tlLambdaList2;                      //!
+    // TList                              *tlAntiLambdaList2;                  //!
+    // TList                              *tlCascadeCutsXi2;                   //!
+    // TList                              *tlAntiCascadeCutsXi2;               //!
     TList                              *tlResults;                          //!      
     TList                              *tlResults2;                         //!
     TList                              *tlResultsQA;                        //!      PairCleaner - Keep Lambda
