@@ -3066,10 +3066,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 /// \param geom: EMCal geometry pointer
 /// \param cells: list of EMCal cells with signal
 /// \param cluster: EMCal cluster subject to shower shape recalculation
-/// \param cellDiff: max lateral size in cells to be considered from cell with highest energy
+/// \param cellDiff: max lateral size in cells to be considered from cell with highest energy, 1: 3x3, 2: 5x5
 /// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
 /// \param cellTimeCut: time window of cells to be considered in shower recalculation
-/// \param bc: event bunch crossing number
 /// \param l0: main shower shape eigen value
 /// \param l1: second eigenvalue of shower shape
 /// \param disp: dispersion
