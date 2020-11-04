@@ -564,10 +564,10 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Mean_pp(float pT){
 
 // These values were obtained by fitting the mean values of the deuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
   TF1 *fit = new TF1("fit","[0]+[1]*pow((1-([2]/(x))),[3])",0.6,4.0);
-  fit->FixParameter(0,3.53009e+00);
-  fit->FixParameter(1,8.86571e-14);
-  fit->FixParameter(2,-5.75244e+04);
-  fit->FixParameter(3,2.61154e+00);
+  fit->FixParameter(0,3.52849e+00);
+  fit->FixParameter(1,9.26683e-14);
+  fit->FixParameter(2,-5.95988e+04);
+  fit->FixParameter(3,2.60003e+00);
 
   return fit->Eval(pT);
 
@@ -578,12 +578,12 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Sigma_pp(float pT){
 
 // These values were obtained by fitting the sigma values of the deuteron mass2 projections calculated with the AOD dataset (2016,2017,2018)
   TF1 *fit = new TF1("fit","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x",0.6,4.0);
-  fit->FixParameter(0,6.04056e-01);
-  fit->FixParameter(1,-8.21678e-01);
-  fit->FixParameter(2,3.81513e-01);
-  fit->FixParameter(3,-7.40617e-03);
-  fit->FixParameter(4,-2.88734e-02);
-  fit->FixParameter(5,4.62621e-03);
+  fit->FixParameter(0,1.57059e+00);
+  fit->FixParameter(1,-3.67734e+00);
+  fit->FixParameter(2,3.51763e+00);
+  fit->FixParameter(3,-1.61650e+00);
+  fit->FixParameter(4,3.59056e-01);
+  fit->FixParameter(5,-3.07392e-02);
 
   return fit->Eval(pT);
 
