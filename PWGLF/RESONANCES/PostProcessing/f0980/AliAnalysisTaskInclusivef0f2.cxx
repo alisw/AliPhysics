@@ -139,6 +139,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
  binPt = AxisVar("Pt",verptbin);
+ binPtGen = AxisFix("Pt",200,0.0,20.0);
 
  binType = AxisStr("Type",{"PN","PP","NN"});
 
@@ -196,11 +197,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binCentForMC,binTrig},"s");
 
  CreateTHnSparse("hRhoGenParticle","hRhoGenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
  CreateTHnSparse("hF0GenParticle","hF0GenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
 	{binCentForMC,binSwitch},"s");
