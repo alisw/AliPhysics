@@ -54,6 +54,7 @@ set(SRCS
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
   AliAnalysisTaskNonlinearFlow.cxx
+  CorrelationCalculator.cxx
   )
 
 # Headers from sources
