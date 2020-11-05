@@ -66,6 +66,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
   fOutputTree(0x0),
   fNevt(0x0),
   fBeamEnergy(0.),
+  fMassCut(0.),
   fkAnalysisType(0x0),
   fPeriod(0x0),
   fCountTotEv(0x0),
@@ -82,7 +83,8 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
   fIsPhysSelected(0x0),
   fAODEvent(0x0),
 //  fTrigClass(0x0),
-  finpmask(0)
+  finpmask(0),
+  fNTracks(0x0)
 {
   //
   //Default ctor
@@ -100,6 +102,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut() :
     fPz[i]=999; 
     fY[i]=999.; 
     fEta[i]=999.; 
+    fPhi[i]=999.; 
     fMatchTrig[i]=999.; 
     fTrackChi2[i]=999.; 
     fMatchTrigChi2[i]=999.;
@@ -131,6 +134,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
   fOutputTree(0x0),
   fNevt(0x0),
   fBeamEnergy(0.),
+  fMassCut(0.),
   fkAnalysisType(0x0),
   fPeriod(0x0),
   fCountTotEv(0x0),
@@ -147,7 +151,8 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
   fIsPhysSelected(0x0),
   fAODEvent(0x0),
 //  fTrigClass(0x0),
-  finpmask(0)
+  finpmask(0),
+  fNTracks(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -167,6 +172,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
     fPz[i]=999; 
     fY[i]=999.; 
     fEta[i]=999.; 
+    fPhi[i]=999.; 
     fMatchTrig[i]=999.; 
     fTrackChi2[i]=999.; 
     fMatchTrigChi2[i]=999.;
@@ -212,6 +218,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const AliAnalysisTaskTree_MCu
   fOutputTree(c.fOutputTree),
   fNevt(c.fNevt),
   fBeamEnergy(c.fBeamEnergy),
+  fMassCut(c.fMassCut),
   fkAnalysisType(c.fkAnalysisType),
   fPeriod(c.fPeriod),
   fCountTotEv(c.fCountTotEv),
@@ -229,7 +236,8 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const AliAnalysisTaskTree_MCu
   fAODEvent(c.fAODEvent),
 //  fTrigClass(c.fTrigClass),
   finpmask(c.finpmask),
-  fMuonTrackCuts(c.fMuonTrackCuts) 
+  fMuonTrackCuts(c.fMuonTrackCuts) ,
+  fNTracks(c.fNTracks)
 
  {
   //
@@ -266,14 +274,17 @@ void AliAnalysisTaskTree_MCut::UserCreateOutputObjects(){
 
   fOutputTree->Branch("NMuons",&fNMuons,"NMuons/I");
   fOutputTree->Branch("Vertex",fVertex,"Vertex[3]/D");
+  fOutputTree->Branch("NTracks",&fNTracks,"NTracks/I");
 
   fOutputTree->Branch("Pt",fPt,"Pt[NMuons]/D");
   fOutputTree->Branch("E",fE,"E[NMuons]/D");
   fOutputTree->Branch("Px",fPx,"Px[NMuons]/D");
   fOutputTree->Branch("Py",fPy,"Py[NMuons]/D");
   fOutputTree->Branch("Pz",fPz,"Pz[NMuons]/D");
+  fOutputTree->Branch("Pt",fPt,"Pt[NMuons]/D");
   fOutputTree->Branch("Y",fY,"Y[NMuons]/D");
   fOutputTree->Branch("Eta",fEta,"Eta[NMuons]/D");
+  fOutputTree->Branch("Phi",fPhi,"Phi[NMuons]/D");
   fOutputTree->Branch("MatchTrig",fMatchTrig,"MatchTrig[NMuons]/I");
   fOutputTree->Branch("TrackChi2",fTrackChi2,"TrackChi2[NMuons]/D");
   fOutputTree->Branch("MatchTrigChi2",fMatchTrigChi2,"MatchTrigChi2[NMuons]/D");
@@ -307,6 +318,7 @@ void AliAnalysisTaskTree_MCut::UserCreateOutputObjects(){
 void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
 {
 
+  fNTracks=0; 
   fNMuons=0; 
   fNTracklets=-1;
   fNContributors=-1;
@@ -318,8 +330,10 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
     fPx[i]=999; 
     fPy[i]=999; 
     fPz[i]=999; 
+    fPt[i]=999.; 
     fY[i]=999.; 
     fEta[i]=999.; 
+    fPhi[i]=999.; 
     fMatchTrig[i]=999.; 
     fTrackChi2[i]=999.; 
     fMatchTrigChi2[i]=999.;
@@ -376,17 +390,19 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
   // -- matchtrigger = 2
   //------------------------------------------------------
   
-   Double_t MCut = 4;
-  
    Int_t numdimu = 0;
    Int_t nummu = 0;  
    Int_t ntracks = fAODEvent->GetNumberOfTracks(); 
    if(ntracks!=0) {
+    fNTracks = ntracks;
 
    Int_t LabelOld1[1500];
    Int_t LabelOld2[1500];   
    Bool_t GoodMuon[1500]={kFALSE};
 	      
+   //cout << "\n number of tracks = " << ntracks << endl;	   
+   if(ntracks>1500) return;    //skip events with a huge number of tracks
+   	      
    for (Int_t i=0;i<ntracks;i++){
 	
      AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
@@ -399,7 +415,7 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
 	  
        AliAODDimuon *dimu=new AliAODDimuon(mu0,mu1);
 	      
-       if(dimu->Mass()>MCut && (mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) && dimu->Y()>-4 && dimu->Y()<-2.5){ 
+       if(dimu->Mass()>fMassCut && (mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) && dimu->Y()>-4 && dimu->Y()<-2.5){ 
 
 	 fDimuMass[numdimu] = dimu->Mass();
 	 fDimuPt[numdimu] = dimu->Pt();
@@ -428,15 +444,20 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
  
  // loop on single muons to keep only muons belonging to a dimuon surviving cuts
   for(Int_t i=0;i<ntracks;i++){
+      AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
+      if (!mu0->IsMuonTrack()) continue;
+
      if(GoodMuon[i]) {
-	AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
+	//AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
 	fCharge[nummu] = mu0->Charge();
 	fPt[nummu] = mu0->Pt();
 	fPx[nummu] = mu0->Px();
 	fPy[nummu] = mu0->Py();
 	fPz[nummu] = mu0->Pz();
+	fPt[nummu] = mu0->Pt();
 	fY[nummu]  = mu0->Y();
 	fEta[nummu]= mu0->Eta();
+	fPhi[nummu]= mu0->Phi();
 	fE[nummu] = mu0->E();
 	fMatchTrig[nummu]   = mu0->GetMatchTrigger();
 	fMatchTrigChi2[nummu]= mu0->GetChi2MatchTrigger();
