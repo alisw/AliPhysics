@@ -526,7 +526,7 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedAOD(AliAODTrack* lTrack){
 Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());;
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   if( ! fEsdTrackCuts->AcceptTrack(lTrack) && ! fEsdTrackCutsGC->AcceptTrack(lTrack)){
     return kFALSE;
   }
@@ -566,7 +566,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   // apply filter bits 
   if( ! lTrack->IsHybridGlobalConstrainedGlobal()){
     return kFALSE;
@@ -582,6 +582,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 	// than the cuts already applied on AOD refiltering level
 
 	// Absolute TPC Cluster cut
+    if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 	if(lTrack->GetTPCchi2perCluster()>fChi2PerClsTPC) return kFALSE;
   // DCA cut 
