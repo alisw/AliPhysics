@@ -783,7 +783,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawCuts"))->Fill(invMassAntiLambda);
 
-      if(TMath::Abs(invMassLambda - massLambda) < 0.004) {
+      if(TMath::Abs(invMassAntiLambda - massLambda) < 0.004) {
         dynamic_cast<TH1F*>(fOutput->FindObject("hAntiLambdaPt"))->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(4);
 
