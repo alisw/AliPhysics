@@ -130,9 +130,9 @@ fhMCParticleM02NLMCen(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 
 fhLam05x5OrLam0(),            fhLam05x5NLM(0),
-fhLam05x5Lam0PerNLM(),        fhMCLam05x5OrLam0(),
+fhLam05x5Lam0PerNLM(),        fhMCLam05x5OrLam0(),          fhEn5x5FracNLM(0),
 fhLam05x5OrLam0Cen(),         fhLam05x5NLMPerCen(0),
-fhLam05x5Lam0PerNLMPerCen(0), fhMCLam05x5OrLam0Cen(),
+fhLam05x5Lam0PerNLMPerCen(0), fhMCLam05x5OrLam0Cen(),       fhEn5x5FracNLMPerCen(0),
 
 // Embedding
 fhEmbeddedSignalFractionEnergy(0),    fhEmbeddedSignalFractionEnergyCen(0),
@@ -2907,6 +2907,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 //Float_t rat1max  = GetHistogramRanges()->GetHistoRatio1Max() ;  
   TArrayD rat1BinsArray = GetHistogramRanges()->GetHistoRatio1Arr();
   
+  TArrayD ratBinsArray = GetHistogramRanges()->GetHistoRatioArr();
+
   Int_t   ndifbins = GetHistogramRanges()->GetHistoEDiffBins();
   Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
   Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
@@ -4214,10 +4216,21 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLam05x5NLM->SetYTitle("#sigma^{2}_{long}");
         fhLam05x5NLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhLam05x5NLM);
+
+        fhEn5x5FracNLM  = new TH3F
+         ("hEn5x5FracNLM","#it{E}_{std}/#it{E}_{5x5} vs #it{p}_{T} vs #it{n}_{LM}",
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ratBinsArray.GetSize() - 1, ratBinsArray.GetArray(),
+          nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+         fhEn5x5FracNLM->SetZTitle("#it{n}_{LM}");
+         fhEn5x5FracNLM->SetYTitle("#it{E}_{std}/#it{E}_{5x5}");
+         fhEn5x5FracNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+         outputContainer->Add(fhEn5x5FracNLM);
       }
       else
       {
         fhLam05x5NLMPerCen = new TH3F*[GetNCentrBin()] ;
+        fhEn5x5FracNLMPerCen = new TH3F*[GetNCentrBin()] ;
         for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
         {
           fhLam05x5NLMPerCen[icent] = new TH3F
@@ -4231,6 +4244,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLam05x5NLMPerCen[icent]->SetYTitle("#sigma^{2}_{long}");
           fhLam05x5NLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhLam05x5NLMPerCen[icent]);
+
+          fhEn5x5FracNLMPerCen[icent] = new TH3F
+          (Form("hEn5x5FracNLM_Cen%d",icent),
+           Form("#it{E}_{std}/#it{E}_{5x5} vs #it{p}_{T} vs #it{n}_{LM}, cen [%d,%d]",
+                (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+          fhEn5x5FracNLMPerCen[icent]->SetZTitle("#it{n}_{LM}");
+          fhEn5x5FracNLMPerCen[icent]->SetYTitle("#it{E}_{std}/#it{E}_{5x5}");
+          fhEn5x5FracNLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhEn5x5FracNLMPerCen[icent]);
         }
       }
 
@@ -6853,6 +6878,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
       (GetEMCALGeometry(), cells, calo, 2, 0.1, 1000000, 
        energy5x5, nMaxima5x5, l05x5, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhEn5x5FracNLM             ->Fill(pt, en/energy5x5, nMaxima5x5, GetEventWeight()*weightPt);
+      else
+        fhEn5x5FracNLMPerCen[icent]->Fill(pt, en/energy5x5, nMaxima5x5, GetEventWeight()*weightPt);
 
 //      if ( en > 5 )  printf("E %2.2f, E5x5 %2.2f, M02 %2.2f, 5x5 M02 %2.2f; NLM org %d, 5x5 %d\n",
 //                            en, energy5x5,

@@ -497,13 +497,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhLam05x5NLM;                                   //!<! Cluster long axis restricted to 5x5 vs  pT vs NLM
   TH3F * fhLam05x5Lam0PerNLM[fgk5x5cases];               //!<! Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
   TH2F * fhMCLam05x5OrLam0[fgk5x5cases][fgkNssTypes];    //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT, per particle origin
+  TH3F * fhEn5x5FracNLM;                               //!<! Cluster energy over  restricted to 5x5 eenergy vs  pT vs NLM
 
   TH3F * fhLam05x5OrLam0Cen[fgk5x5cases];                //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality
-  ///<  Cluster long axis restricted to 5x5 vs  pT vs nlm , after all cuts, per centrality
+  ///<  Cluster long axis restricted to 5x5 vs  pT vs nlm, per centrality
   TH3F **fhLam05x5NLMPerCen;                             //![GetNCentrBin()]
   ///< Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
   TH3F **fhLam05x5Lam0PerNLMPerCen;                      //![GetNCentrBin()*fgk5x5cases]
   TH3F * fhMCLam05x5OrLam0Cen[fgk5x5cases][fgkNssTypes]; //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality, per particle origin
+  ///<  Cluster energy over restricted to 5x5 energy vs  pT vs nlm, per centrality
+  TH3F **fhEn5x5FracNLMPerCen;                           //![GetNCentrBin()]
 
   // Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy
