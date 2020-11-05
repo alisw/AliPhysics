@@ -542,7 +542,7 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
     }
 
-    if(fEnableNsigmaTPCDataCorr) {
+    if(fEnableNsigmaTPCDataCorr && !isMC) {
       fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
     }
   }
