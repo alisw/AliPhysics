@@ -30,8 +30,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fTrackBufferSize(2500),
-      fDmesonPDGs(),
-      fDmesonNChildren(),
+      fDmesonPDGs{},
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -79,8 +78,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fTrackBufferSize(2500),
-      fDmesonPDGs(),
-      fDmesonNChildren(),
+      fDmesonPDGs{},
       fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
@@ -303,7 +301,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       continue;
     }
 
-    const double mass = dMeson->InvMass(fDmesonNChildren, fDmesonPDGs);
+    const double mass = dMeson->InvMass(fDmesonPDGs.size(), &fDmesonPDGs[0]);
     if (dMeson->Charge() > 0) {
       fHistDplusInvMassPt->Fill(dMeson->Pt(), mass);
     } else {
@@ -321,10 +319,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if( TMath::Abs(mass-massMean) <= 3*massWidth) {
       if (dMeson->Charge() > 0) {
-        dplus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+        dplus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
         fHistDplusEta->Fill(dMeson->Eta());
         fHistDplusPhi->Fill(dMeson->Phi());
-        for (int iChild = 0; iChild < fDmesonNChildren; iChild++) {
+        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
           AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
           fHistDplusChildPt[iChild]->Fill(track->Pt());
           fHistDplusChildEta[iChild]->Fill(track->Eta());
@@ -332,10 +330,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
       else {
-        dminus.push_back( { dMeson, fInputEvent, fDmesonNChildren, fDmesonPDGs });
+        dminus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
 	fHistDminusEta->Fill(dMeson->Eta());
         fHistDminusPhi->Fill(dMeson->Phi());
-        for (int iChild = 0; iChild < fDmesonNChildren; iChild++) {
+        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
           AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
           fHistDminusChildPt[iChild]->Fill(track->Pt());
           fHistDminusChildEta[iChild]->Fill(track->Eta());
@@ -500,7 +498,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   if (fDecChannel == kDplustoKpipi) {
     nameVec = {{"K", "Pi1", "Pi2"}};
   }
-  for (int iChild = 0; iChild < fDmesonNChildren ; ++iChild) {
+  for (unsigned int iChild = 0; iChild < fDmesonPDGs.size() ; ++iChild) {
     fHistDplusChildPt[iChild] = new TH1F(TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
     fHistDplusChildEta[iChild] = new TH1F(TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
     fHistDplusChildPhi[iChild] = new TH1F(TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
