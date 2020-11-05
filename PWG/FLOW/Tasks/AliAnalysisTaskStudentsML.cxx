@@ -929,13 +929,17 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
 
 	 fCentralityHistogram[icent] = NULL;
 
-	 for(Int_t i=0; i<4; i++)
+	 for(Int_t i=0; i<5; i++)
 	 {
 	   fPTHistogram[icent][i] = NULL;
 	   fPhiHistogram[icent][i] = NULL;
 	   fEtaHistogram[icent][i] = NULL;
-	   fMultHistogram[icent][i] = NULL;
 	 }   
+
+	 for(Int_t i=0; i<4; i++)
+	 {
+	   fMultHistogram[icent][i] = NULL;
+	 }
 
 	//Output Histograms
 	fResults[icent] = NULL;
@@ -1043,25 +1047,31 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	}
 
 	 // a) Book histogram to hold pt spectra:
-	 fPTHistogram[icent][0] = new TH1F("fPTHistBeforeTrackSeletction","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][0] = new TH1F("fPTHistBeforeTrackSelection","Pt Distribution",1000,0.,10.);
 	 fPTHistogram[icent][0]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][0]);
 
-	 fPTHistogram[icent][1] = new TH1F("fPTHistAfterTrackSeletction","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][1] = new TH1F("fPTHistAfterTrackSelection","Pt Distribution",1000,0.,10.);
 	 fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
 
-	 fPTHistogram[icent][2] = new TH1F("fPTHistBeforeTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][4] = new TH1F("fPTHistAfterTrackSelectionWeighted","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][4]->Sumw2(); 
+	 fPTHistogram[icent][4]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][4]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][4]);
+
+	 fPTHistogram[icent][2] = new TH1F("fPTHistBeforeTrackSelectionSecond","Pt Distribution",1000,0.,10.);
 	 fPTHistogram[icent][2]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][2]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]); } 
 
-	 fPTHistogram[icent][3] = new TH1F("fPTHistAfterTrackSeletctionSecond","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][3] = new TH1F("fPTHistAfterTrackSelectionSecond","Pt Distribution",1000,0.,10.);
 	 fPTHistogram[icent][3]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][3]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][3]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPTHistogram[icent][3]); } 
 
 	 
 	 // b) Book histogram to hold phi spectra
@@ -1075,15 +1085,21 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
+	 fPhiHistogram[icent][4] = new TH1F("fPhiHistAfterTrackSelectionWeighted","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][4]->Sumw2(); 
+	 fPhiHistogram[icent][4]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][4]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][4]);
+
 	 fPhiHistogram[icent][2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
 	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][2]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]); } 
 
 	 fPhiHistogram[icent][3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
 	 fPhiHistogram[icent][3]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][3]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][3]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][3]); } 
 
 	 // c) Book histogram to hold eta distribution before track selection:
 	 fEtaHistogram[icent][0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.);
@@ -1091,20 +1107,26 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	 fEtaHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][0]);
 
-	 fEtaHistogram[icent][2] = new TH1F("fEtaHistBeforeTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
-	 fEtaHistogram[icent][2]->GetXaxis()->SetTitle("Eta");
-	 fEtaHistogram[icent][2]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][2]);
-
 	 fEtaHistogram[icent][1] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution",1000,-1.,1.);
 	 fEtaHistogram[icent][1]->GetXaxis()->SetTitle("Eta");
 	 fEtaHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][1]);
 
+	 fEtaHistogram[icent][4] = new TH1F("fEtaHistAfterTrackSelectionWeighted","Eta Distribution",1000,-1.,1.); 
+	 fEtaHistogram[icent][4]->Sumw2(); 
+	 fEtaHistogram[icent][4]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][4]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][4]);
+
+	 fEtaHistogram[icent][2] = new TH1F("fEtaHistBeforeTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][2]->GetXaxis()->SetTitle("Eta");
+	 fEtaHistogram[icent][2]->SetLineColor(4);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fEtaHistogram[icent][2]); } 
+
 	 fEtaHistogram[icent][3] = new TH1F("fEtaHistAfterTrackSelectionSecond","Eta Distribution",1000,-1.,1.);
 	 fEtaHistogram[icent][3]->GetXaxis()->SetTitle("Eta");
 	 fEtaHistogram[icent][3]->SetLineColor(4);
-	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][3]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fEtaHistogram[icent][3]); } 
 
 	 // d) Book histogam to hold multiplicty distributions 
 	 fMultHistogram[icent][0] = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",30000,0.,30000.); 
@@ -1600,20 +1622,28 @@ void AliAnalysisTaskStudentsML::CalculateWeight(Int_t CentBin, Int_t RunNumber, 
     Double_t weight_eta = 1.;
     Int_t iBin = 0;
 
+    		
+		
+		
+
+
     if(bUsePhiWeights)
     { 
       iBin = fHistoPhiWeight[CentBin][RunIndex]->FindBin(angles[i]); 
       weight_phi = fHistoPhiWeight[CentBin][RunIndex]->GetBinContent(iBin); 
+      fPhiHistogram[CentBin][4]->Fill(angles[i], weight_phi); 
     }
     if(bUsePtWeights)
     {
       iBin = fHistoPtWeight[CentBin][RunIndex]->FindBin(pt[i]); 
-      weight_pt = fHistoPtWeight[CentBin][RunIndex]->GetBinContent(iBin); 
+      weight_pt = fHistoPtWeight[CentBin][RunIndex]->GetBinContent(iBin);
+      fPTHistogram[CentBin][4]->Fill(pt[i], weight_pt); 
     }
     if(bUseEtaWeights)
     { 
       iBin = fHistoEtaWeight[CentBin][RunIndex]->FindBin(eta[i]); 
-      weight_eta = fHistoEtaWeight[CentBin][RunIndex]->GetBinContent(iBin); 
+      weight_eta = fHistoEtaWeight[CentBin][RunIndex]->GetBinContent(iBin);
+      fEtaHistogram[CentBin][4]->Fill(eta[i], weight_eta); 
     }
    
     //Final overall weight
@@ -1640,6 +1670,8 @@ Int_t AliAnalysisTaskStudentsML::GetRunIndex(Int_t runNumber)
       break;
     } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
   } // End: iRun.
+
+ if(cRun == -1){Fatal(sMethod.Data(), "FATAL: Run Number not in List of Runs!");}  
 
   return cRun;
 } // End: Int_t GetRunIndex(Int_t).

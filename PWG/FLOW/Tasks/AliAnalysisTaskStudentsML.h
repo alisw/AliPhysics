@@ -189,9 +189,9 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TList *fCentralityList[16];		//! Will be one list per certain centrality bin. Up to 16 centraliy bins possible
   TList *fControlHistogramsList[16]; 	//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible
  
-  TH1F *fPTHistogram[16][4]; 		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: P_t Before Track Selection (second), 3: P_t After Track Selection (second);
-  TH1F *fPhiHistogram[16][4]; 		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: Phi Before Track Selection (second), 3: Phi After Track Selection (second);
-  TH1F *fEtaHistogram[16][4]; 		//! 0: Eta Before Track Selection, 1: Eta After Track Selection, 2: Eta Before Track Selection (second), 3: Eta After Track Selection (second);
+  TH1F *fPTHistogram[16][5]; 		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: P_t Before Track Selection (second), 3: P_t After Track Selection (second), 4: P_t After Track Selection Weighted; 
+  TH1F *fPhiHistogram[16][5]; 		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: Phi Before Track Selection (second), 3: Phi After Track Selection (second), 4: Phi After Track Selection Weighted; 
+  TH1F *fEtaHistogram[16][5]; 		//! 0: Eta Before Track Selection, 1: Eta After Track Selection, 2: Eta Before Track Selection (second), 3: Eta After Track Selection (second), 4: Eta After Track Selection Weighted; 
   TH1F *fMultHistogram[16][4]; 		//! 0: Multiplicity before HMO removel 1: Multiplicity Before Track Selection, 2: Mult. After Track Selection 3: Mult. After Track Selection (second);
   TH1F *fTPCClustersHistogram[16][2]; 	//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection
   TH1F *fITSClustersHistogram[16][2]; 	//! 0: ITS Clusters Before Track Selection, 1: ITS Clusters After Track Selection
@@ -308,7 +308,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,33);
+  ClassDef(AliAnalysisTaskStudentsML,34); 
 
 };
 
