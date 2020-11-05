@@ -132,7 +132,9 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH2("hEtaPhiLeadingNeutral", "eta-phi of neutral leading constituents", 100, -1., 1., 100, 0., TMath::TwoPi());
     fHistos->CreateTH2("hEtaPhiLeadingPhoton", "eta-phi of photon leading constituents", 100, -1., 1., 100, 0., TMath::TwoPi());
     fHistos->CreateTH1("hPtNoLeading", "Jet pt for jets without leading track", 1000, 0., 1000.);
-    fHistos->CreateTH2("hFailedSD", "Jets failing SoftDrop", 300, 0., 300., 101, -0.5, 100.5);
+    fHistos->CreateTH2("hFailedSDConstituents", "Jets failing SoftDrop due to constituents", 300, 0., 300., 101, -0.5, 100.5);
+    fHistos->CreateTH2("hFailedSDMass", "Jets failing SoftDrop due to mass", 300, 0., 300., 100, 0., 100.);
+    fHistos->CreateTH1("hFailedSDFastjet", "Jets failing SoftDrop due to fastjet", 300, 0., 300.);
     fHistos->CreateTH2("hJetMassPt", "jet mass vs. pt", 500, 0., 500, 100, 0., 100.);
     fHistos->CreateTH2("hJetMassNconst", "jet mass vs N", 101, -0.5, 100.5, 100, 0., 100.);
     fHistos->CreateTH1("hJetNoMassPt", "pt of jets with mass 0", 1000, 0., 1000.);
@@ -338,7 +340,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
 
         // SoftDrop
         if(fDoSoftDrop) {
-            if(j->GetNumberOfTracks() > 1) { // Temporary condition to prevent a crash in the declustering due to 0 jet mass
+            if(j->GetNumberOfTracks() > 1 && j->M() > 0) { // Temporary condition to prevent a crash in the declustering due to 0 jet mass
                 try {
                     auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
                     bool untagged = sdparams.fZg < sdsettings.fZcut;
@@ -352,9 +354,22 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                     fHistos->FillTH2("hSDRg", untagged ? -0.02 : sdparams.fRg, j->Pt());
                     fHistos->FillTH2("fSDNsd", untagged ? -1. : splittings.size(), j->Pt());
                     fHistos->FillTH2("fSDThetag", sdparams.fZg < sdsettings.fZcut ? -0.05 : sdparams.fRg/jets->GetJetRadius(), j->Pt());
-                } catch(...) {
-                    fHistos->FillTH2("hFailedSD", j->Pt(), j->N());
-                }
+                } catch(int errorcode) {
+                    switch (errorcode)
+                    {
+                    case 1:
+                        fHistos->FillTH2("hFailedSDConstituents", j->Pt(), j->N());
+                        break;
+                    case 2:
+                        fHistos->FillTH2("hFailedSDMass", j->Pt(), j->M());
+                        break;
+                    case 3:
+                    case 4:
+                        fHistos->FillTH1("hFailedSDFastjet", j->Pt());
+                    default:
+                        break;
+                    }
+                } 
             }
         }
     }
