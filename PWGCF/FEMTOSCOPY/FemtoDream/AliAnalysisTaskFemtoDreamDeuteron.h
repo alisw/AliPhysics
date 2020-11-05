@@ -43,6 +43,9 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetMCTruth(bool mct) {
     fIsMCTruth = mct;
   }
+  void SetEffPlots(bool plot) {
+    fIsEffPlot = plot;
+  }
   private:
   AliAnalysisTaskFemtoDreamDeuteron(
     const AliAnalysisTaskFemtoDreamDeuteron &task);
@@ -54,6 +57,7 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   bool fIsMC;                               //
   bool fIsMCTruth;                          //
   bool fUseDumpster;  //
+  bool fIsEffPlot;  //
   AliFemtoDreamEvent *fEvent;               //!  on Runtime
   AliFemtoDreamTrack *fTrack;               //!
   AliFemtoDreamEventCuts *fEventCuts;       //   Stream these bad boys

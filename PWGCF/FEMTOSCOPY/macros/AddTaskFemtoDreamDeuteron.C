@@ -1,17 +1,18 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
-                                             bool fIsMCTruth = true,//2
+                                             bool fIsMCTruth = false,//2
     TString CentEst = "kINT7",//3
-    bool DCAPlots = false,//4
-    bool CombSigma = false,//5
-    bool ContributionSplitting = false,//6,
-    bool DumpPdApAd = true,//7
-    bool fullBlastQA = true,//8
-    bool RefMult08 = true,//9
-    bool Systematic = false,//10
+    bool EffiPlot = false,//4
+    bool DCAPlots = false,//5
+    bool CombSigma = false,//6
+    bool ContributionSplitting = false,//7,
+    bool DumpPdApAd = false,//8
+    bool fullBlastQA = true,//9
+    bool RefMult08 = true,//10
+    bool Systematic = false,//11
+    bool SysFilterBit = false,//12
     const char *cutVariation = "0") {
-
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -23,35 +24,57 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     return nullptr;
   }
 
-  AliFemtoDreamEventCuts *evtCuts =
-    AliFemtoDreamEventCuts::StandardCutsRun2();
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   AliFemtoDreamTrackCuts *TrackCutsDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronDCA->SetCutCharge(1);
-  TrackCutsDeuteronDCA->SetMinimalBooking(Systematic);
+
   AliFemtoDreamTrackCuts *TrackCutsDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsDeuteronMass->SetCutCharge(1);
-  TrackCutsDeuteronMass->SetMinimalBooking(Systematic);
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
+
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronDCA->SetCutCharge(-1);
-  TrackCutsAntiDeuteronDCA->SetMinimalBooking(Systematic);
+
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronMass =  AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
-  TrackCutsAntiDeuteronMass->SetMinimalBooking(Systematic);
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
+
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsProtonDCA->SetCutCharge(1);
-  TrackCutsProtonDCA->SetMinimalBooking(Systematic);
+
   AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, CombSigma, ContributionSplitting);
   TrackCutsAntiProtonDCA->SetCutCharge(-1);
-  TrackCutsAntiProtonDCA->SetMinimalBooking(Systematic);
+
+  if (!fullBlastQA){
+    evtCuts->SetMinimalBooking(true);
+    TrackCutsProtonDCA->SetMinimalBooking(true);
+    TrackCutsAntiProtonDCA->SetMinimalBooking(true);
+    TrackCutsDeuteronDCA->SetMinimalBooking(true);
+    TrackCutsDeuteronMass->SetMinimalBooking(true);
+    TrackCutsAntiDeuteronDCA->SetMinimalBooking(true);
+    TrackCutsAntiDeuteronMass->SetMinimalBooking(true);
+  }
+  if(SysFilterBit){
+    if(suffix == 0){
+    TrackCutsDeuteronDCA->SetFilterBit(256);
+    TrackCutsDeuteronMass->SetFilterBit(256);
+    TrackCutsAntiDeuteronDCA->SetFilterBit(256);
+    TrackCutsAntiDeuteronMass->SetFilterBit(256);
+    }
+    if(suffix == 1){
+    TrackCutsDeuteronDCA->SetFilterBit(128);
+    TrackCutsDeuteronMass->SetFilterBit(128);
+    TrackCutsAntiDeuteronDCA->SetFilterBit(128);
+    TrackCutsAntiDeuteronMass->SetFilterBit(128);
+    }
+  }
 
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -758,6 +781,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   task->SetCollectionConfig(config);
   task->SetUseDumpster(DumpPdApAd);
   task->SetMCTruth(fIsMCTruth);
+  task->SetEffPlots(EffiPlot);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
