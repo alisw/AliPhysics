@@ -1145,13 +1145,13 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-        case 14:  //e 80 + refit + vertex constrain (only for AOD)
+        case 14:  //e 80 + refit, Shared cluster Fraction =0
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fMaxSharedClsTPCFrac=0.;
             break;
-        case 15:  //f 80 + refit + vertex constrain (only for AOD)
+        case 15:  //f 80 + refit, Shared cluster Fraction <=0.4
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
