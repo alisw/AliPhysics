@@ -1119,7 +1119,7 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fMinClsTPCToF= 0.35;
 			fUseCorrectedTPCClsInfo=1;
 			break;
-        case 10:
+        case 10: //a
             fMinClsTPC     = 80.;
             fChi2PerClsTPC = 4;
             fRequireTPCRefit    = kTRUE;
@@ -1128,29 +1128,34 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
             break;
-        case 11: // settings as in PHOS public omega
+        case 11: //b settings as in PHOS public omega
             fMinClsTPC     = 70.;
             fChi2PerClsTPC = 4;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             break;
-        case 12:  // 80 + refit
+        case 12:  //c 80 + refit
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-        case 13:  // 80 + refit + vertex constrain (only for AOD)
+        case 13:  //d 80 + refit + vertex constrain (only for AOD)
 				    fRequireVertexConstrain = kTRUE;
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-        case 14:  // 80 + refit + vertex constrain (only for AOD)
-            fRequireVertexConstrain = kTRUE;
+        case 14:  //e 80 + refit + vertex constrain (only for AOD)
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fMaxSharedClsTPCFrac=0.;
+            break;
+        case 15:  //f 80 + refit + vertex constrain (only for AOD)
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMaxSharedClsTPCFrac=0.4;
             break;
 				default:
 						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;

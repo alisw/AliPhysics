@@ -653,13 +653,22 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32c51070a","01036f3200000000","0453503000000000"); // EG1, new Gamma Energy cut 7.5 GeV
       cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32c51070a","01036i3200000000","0453503000000000"); // EG1, new Gamma Energy cut 12 GeV
   } else if(trainConfig == 416)  { // Standard PHOS MB, no shared TPC clusters
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32d51070a","0103603400000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32e51070a","0103603400000000","0453503000000000"); // INT7
   } else if(trainConfig == 417)  { //Standard EMCal 13TeV, no shared TPC clusters
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792106fe32220000","32d51070a","0103603200000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792106fe32220000","32e51070a","0103603200000000","0453503000000000"); // INT7
   } else if(trainConfig == 418)  { //Standard EMCal 13TeV Trigger EG2, GammaCut > 6GeV, no shared TPC clusters
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792106fe32220000","32d51070a","01036g3200000000","0453503000000000"); // EG2, new Gamma Energy cut 6 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792106fe32220000","32e51070a","01036g3200000000","0453503000000000"); // EG2, new Gamma Energy cut 6 GeV
   } else if(trainConfig == 419)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV, no shared TPC clusters
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32d51070a","01036h3200000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32e51070a","01036h3200000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
+
+  } else if(trainConfig == 420)  { // Standard PHOS MB, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32f51070a","0103603400000000","0453503000000000"); // INT7
+  } else if(trainConfig == 421)  { //Standard EMCal 13TeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792106fe32220000","32f51070a","0103603200000000","0453503000000000"); // INT7
+  } else if(trainConfig == 422)  { //Standard EMCal 13TeV Trigger EG2, GammaCut > 6GeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792106fe32220000","32f51070a","01036g3200000000","0453503000000000"); // EG2, new Gamma Energy cut 6 GeV
+  } else if(trainConfig == 423)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792106fe32220000","32f51070a","01036h3200000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
 
   // Variations on 5 TeV for 7 TeV systematics
   // PCM-EMC (without nonlin)
