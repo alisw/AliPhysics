@@ -368,6 +368,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("0008e113","0dm00009f9730000dge0404000","32c51070a","0103603500000000","0153503000000000"); // PHI1
     cuts.AddCutHeavyMesonPCM("0008d113","0dm00009f9730000dge0404000","32c51070a","0103603500000000","0153503000000000"); // PHI7
     cuts.AddCutHeavyMesonPCM("0009b113","0dm00009f9730000dge0404000","32c51070a","0103603500000000","0153503000000000"); // PHI8
+  } else if ( trainConfig == 416) { //Standard 13TeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32d51070a","0103603500000000","0153503000000000"); // V0AND
 
     // Variations on 5 TeV for 7 TeV systematics
   } else if ( trainConfig == 450) { //Standard 13TeV
