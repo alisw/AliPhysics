@@ -65,7 +65,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE),
   fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
-  fPIDUtils(),                            fAODFilterMask(0),
+  fPIDUtils(),
+  fLocMaxCutE(0),                         fLocMaxCutEDiff(0),
+  fAODFilterMask(0),
   fAODHybridTracks(0),                    fAODTPCOnlyTracks(0),
   fMatchedTrackIndex(),                   fMatchedClusterIndex(),
   fResidualEta(), fResidualPhi(),   fCutEtaPhiSum(kFALSE),                  fCutEtaPhiSeparate(kFALSE),
@@ -126,7 +128,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fRejectExoticCluster(reco.fRejectExoticCluster),           fRejectExoticCells(reco.fRejectExoticCells),
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),
   fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
-  fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
+  fPIDUtils(reco.fPIDUtils),
+  fLocMaxCutE(reco.fLocMaxCutE),                             fLocMaxCutEDiff(reco.fLocMaxCutEDiff),
+  fAODFilterMask(reco.fAODFilterMask),
   fAODHybridTracks(reco.fAODHybridTracks),                   fAODTPCOnlyTracks(reco.fAODTPCOnlyTracks),
   fMatchedTrackIndex(  reco.fMatchedTrackIndex),
   fMatchedClusterIndex(reco.fMatchedClusterIndex),
@@ -1747,6 +1751,209 @@ Float_t  AliEMCALRecoUtils::GetCellWeight(Float_t eCell, Float_t eCluster) const
     return 0. ;
 }
 
+//___________________________________________________________________________________________
+///  \return Number of local maxima in cluster
+///
+/// \param cluster: EMCal cluster
+/// \param cells: EMCal cells list
+/// \param geom: EMCal geometry pointer
+
+//___________________________________________________________________________________________
+Int_t AliEMCALRecoUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells, const AliEMCALGeometry* geom)
+{
+  const Int_t nc = cluster->GetNCells();
+  UShort_t * absIdList = cluster->GetCellsAbsId();
+
+  Float_t  maxEListLocMax[nc];
+  Int_t   absIdListLocMax[nc];
+
+  return  GetNumberOfLocalMaxima(cells, geom, nc, absIdList, absIdListLocMax, maxEListLocMax);
+}
+
+//___________________________________________________________________________________________
+///  \return Number of local maxima in array of cells
+///
+/// \param cells: EMCal cells list
+/// \param geom: EMCal geometry pointer
+/// \param nCells: number of cells in the selected cells array
+/// \param absIdList: array with selected cells absolute ID number
+//___________________________________________________________________________________________
+Int_t AliEMCALRecoUtils::GetNumberOfLocalMaxima(AliVCaloCells* cells,  const AliEMCALGeometry* geom,
+                                                const Int_t nCells, const UShort_t *absIdList)
+{
+  Float_t  maxEListLocMax[nCells];
+  Int_t   absIdListLocMax[nCells];
+
+  return  GetNumberOfLocalMaxima(cells, geom, nCells, absIdList, absIdListLocMax, maxEListLocMax);
+}
+
+//___________________________________________________________________________________________
+/// Find the number of local maxima in cluster.
+///
+///  \return Number of local maxima in a given array of cells
+///
+/// \param cells: EMCal cells list
+/// \param geom: EMCal geometry pointer
+/// \param nCells: number of cells in the selected cells array
+/// \param absIdList: array with selected cells absolute ID number
+/// \param absIdListLocMax: array with local maxima cells absolute ID number
+/// \param maxEListLocMax: array with energy of local maxima cells
+///
+//___________________________________________________________________________________________
+Int_t AliEMCALRecoUtils::GetNumberOfLocalMaxima(AliVCaloCells* cells,  const AliEMCALGeometry* geom,
+                                                const Int_t nCells, const UShort_t *absIdList,
+                                                Int_t * absIdListLocMax, Float_t *maxEListLocMax)
+{
+  Int_t iDigitN = 0 ;
+  Int_t iDigit  = 0 ;
+  Int_t absId1 = -1 ;
+  Int_t absId2 = -1 ;
+
+  //printf("cluster : ncells %d \n",nCells);
+
+  Float_t emax  = 0;
+  Int_t   idmax =-1;
+  for(iDigit = 0; iDigit < nCells ; iDigit++)
+  {
+    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+    absIdListLocMax[iDigit] = absIdList[iDigit] ;
+
+    if ( en > emax )
+    {
+      emax  = en ;
+      idmax = absIdListLocMax[iDigit] ;
+    }
+  }
+
+  for(iDigit = 0 ; iDigit < nCells; iDigit++)
+  {
+    if ( absIdListLocMax[iDigit] >= 0 )
+    {
+      absId1 = absIdList[iDigit];
+
+      Float_t en1 = cells->GetCellAmplitude(absId1);
+
+      //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
+
+      for(iDigitN = 0; iDigitN < nCells; iDigitN++)
+      {
+        absId2 = absIdList[iDigitN] ;
+
+        if(absId2==-1 || absId2==absId1) continue;
+
+        //printf("\t %d : absIDj %d\n",iDigitN, absId2);
+
+        Float_t en2 = cells->GetCellAmplitude(absId2);
+
+        //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
+
+        if ( AreNeighbours(absId1, absId2, geom) )
+        {
+          // printf("\t \t Neighbours \n");
+          if ( en1 > en2 )
+          {
+            absIdListLocMax[iDigitN] = -1 ;
+            //printf("\t \t indexN %d not local max\n",iDigitN);
+            // but may be digit too is not local max ?
+            if(en1 < en2 + fLocMaxCutEDiff) {
+              //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
+              absIdListLocMax[iDigit] = -1 ;
+            }
+          }
+          else
+          {
+            absIdListLocMax[iDigit] = -1 ;
+            //printf("\t \t index %d not local max\n",iDigitN);
+            // but may be digitN too is not local max ?
+            if(en1 > en2 - fLocMaxCutEDiff)
+            {
+              absIdListLocMax[iDigitN] = -1 ;
+              //printf("\t \t indexN %d not local max cause locMaxCutEDiff\n",iDigit);
+            }
+          }
+        } // if Are neighbours
+        //else printf("\t \t NOT Neighbours \n");
+      } // while digitN
+    } // slot not empty
+  } // while digit
+
+  iDigitN = 0 ;
+  for(iDigit = 0; iDigit < nCells; iDigit++)
+  {
+    if( absIdListLocMax[iDigit] >= 0 )
+    {
+      absIdListLocMax[iDigitN] = absIdListLocMax[iDigit] ;
+
+      Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+
+      if(en < fLocMaxCutE) continue; // Maxima only with seed energy at least
+
+      maxEListLocMax[iDigitN] = en ;
+
+      //printf("Local max %d, id %d, en %f\n", iDigit,absIdList[iDigitN],en);
+      iDigitN++ ;
+    }
+  }
+
+  if ( iDigitN == 0 )
+  {
+    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f",
+                    idmax,emax));
+    iDigitN            = 1     ;
+    maxEListLocMax [0] = emax  ;
+    absIdListLocMax[0] = idmax ;
+  }
+
+//  if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++)
+//  {
+//    printf(" \t i %d, absId %d, Ecell %f\n",imax,absIdListLocMax[imax],maxEListLocMax[imax]);
+//  }
+
+  return iDigitN ;
+}
+
+//______________________________________________________________________________________
+/// Decide if two cells are neighbours
+/// A neighbour is defined as being two cells which share a side or corner.
+/// //
+/// \param absId1: Absolute ID number of first cell
+/// \param absId2: Absolute ID number of second cell
+/// \param geom: EMCal geometry pointer
+//______________________________________________________________________________________
+Bool_t AliEMCALRecoUtils::AreNeighbours(Int_t absId1, Int_t absId2, const AliEMCALGeometry* geom) const
+{
+  Bool_t areNeighbours = kFALSE ;
+
+  Int_t nSupMod1 = -1, nSupMod2 = -1;
+  Int_t icol1    = -1, icol2    = -1;
+  Int_t irow1    = -1, irow2    = -1;
+  Int_t rowdiff  =  0, coldiff  =  0;
+  Int_t iTower   = -1, iIphi    = -1, iIeta = -1;
+
+  geom->GetCellIndex(absId1,nSupMod1,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(nSupMod1,iTower,iIphi, iIeta,irow1,icol1);
+
+  geom->GetCellIndex(absId2,nSupMod2,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(nSupMod2,iTower,iIphi, iIeta,irow2,icol2);
+
+  if ( nSupMod1 != nSupMod2 )
+  {
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
+    // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
+    if ( nSupMod1%2 ) icol1+=AliEMCALGeoParams::fgkEMCALCols;
+    else              icol2+=AliEMCALGeoParams::fgkEMCALCols;
+  }
+
+  rowdiff = TMath::Abs( irow1 - irow2 ) ;
+  coldiff = TMath::Abs( icol1 - icol2 ) ;
+
+  //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0))
+  if ( (coldiff + rowdiff) == 1 )
+    areNeighbours = kTRUE ;
+
+  return areNeighbours;
+}
+
 ///
 /// Initialize data members with default values
 ///
@@ -1756,6 +1963,9 @@ void AliEMCALRecoUtils::InitParameters()
   fParticleType = kPhoton;
   fPosAlgo      = kUnchanged;
   fW0           = 4.5;
+
+  fLocMaxCutE     = 0.1;
+  fLocMaxCutEDiff = 0.03;
 
   fNonLinearityFunction = kNoCorrection;
   fNonLinearThreshold   = 30;
@@ -3069,6 +3279,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 /// \param cellDiff: max lateral size in cells to be considered from cell with highest energy, 1: 3x3, 2: 5x5
 /// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
 /// \param cellTimeCut: time window of cells to be considered in shower recalculation
+/// \param energy: sum of energy in NxN region
+/// \param nlm: number of local maxima on NxN region
 /// \param l0: main shower shape eigen value
 /// \param l1: second eigenvalue of shower shape
 /// \param disp: dispersion
@@ -3081,7 +3293,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 (const AliEMCALGeometry * geom,
  AliVCaloCells* cells, AliVCluster * cluster,
- Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut, 
+ Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut,
+ Float_t & energy, Int_t & nlm,
  Float_t & l0,   Float_t & l1,
  Float_t & disp, Float_t & dEta, Float_t & dPhi,
  Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi)
@@ -3095,7 +3308,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   Double_t eCell   = 0.;
   Double_t tCell   = 0.;
   Bool_t   shared  = kFALSE;
-  Float_t  energy  = 0;
+
+  energy  = 0;
+  nlm     = 0;
 
   Int_t   absIdMax   = -1;
   Int_t   iSupModMax = -1;
@@ -3122,7 +3337,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 
   // Loop on cells, 5x5 around max cell, calculate the selected cells energy
   const Int_t nCellsFix = (2*cellDiff+1)*(2*cellDiff+1);
-  Int_t cellsAbsIdNxN[nCellsFix];
+  UShort_t cellsAbsIdNxN[nCellsFix];
   
   Int_t nCells = 0;
   shared = kFALSE;
@@ -3208,6 +3423,10 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 //    }
 //  }
   
+  // Get number of local maxima in selected cells array
+  //
+  nlm = GetNumberOfLocalMaxima(cells, geom, nCells, cellsAbsIdNxN);
+
   Double_t pGlobal[3];
   l0 = 0;  l1 = 0;
   disp = 0; dEta = 0; dPhi = 0;
