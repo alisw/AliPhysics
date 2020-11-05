@@ -723,7 +723,9 @@ void AliDielectronTrackRotator::SetRotatedTrackWeightMap(TString filename, TStri
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated track map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Track Correction Map loaded\n");
@@ -776,7 +778,9 @@ void AliDielectronTrackRotator::SetRotatedPairWeightMap(TString filename, TStrin
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated pair map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Pair Correction Map loaded\n");
@@ -835,7 +839,9 @@ void AliDielectronTrackRotator::SetRotatedPairWeightMap2(TString filename, TStri
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated pair map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Pair Correction Map loaded\n");
