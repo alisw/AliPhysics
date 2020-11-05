@@ -354,6 +354,18 @@ public:
   //-----------------------------------------------------
   // Recalculate other cluster parameters
   //-----------------------------------------------------
+  Bool_t   AreNeighbours(Int_t absId1, Int_t absId2, const AliEMCALGeometry* geom) const ;
+
+  Int_t    GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,  const AliEMCALGeometry* geom)  ;
+  Int_t    GetNumberOfLocalMaxima(AliVCaloCells* cells, const AliEMCALGeometry* geom, const Int_t nCells, const UShort_t *absIdList);
+  Int_t    GetNumberOfLocalMaxima(AliVCaloCells* cells, const AliEMCALGeometry* geom, const Int_t nCells, const UShort_t *absIdList,
+                                  Int_t *absIdListLocMax,     Float_t *maxEListLocMax)  ;
+  Float_t  GetLocalMaximaCutE()                 const { return fLocMaxCutE           ; }
+   void    SetLocalMaximaCutE(Float_t cut)            { fLocMaxCutE     = cut        ; }
+
+   Float_t GetLocalMaximaCutEDiff()             const { return fLocMaxCutEDiff       ; }
+   void    SetLocalMaximaCutEDiff(Float_t c)          { fLocMaxCutEDiff = c          ; }
+
   void     RecalculateClusterDistanceToBadChannel (const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
@@ -372,7 +384,8 @@ public:
   
   void     RecalculateClusterShowerShapeParametersNxNCells(const AliEMCALGeometry * geom,
                                                            AliVCaloCells* cells, AliVCluster * cluster,
-                                                           Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut, 
+                                                           Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut,
+                                                           Float_t & energy, Int_t & nlm,
                                                            Float_t & l0,   Float_t & l1,
                                                            Float_t & disp, Float_t & dEta, Float_t & dPhi,
                                                            Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
@@ -614,6 +627,10 @@ private:
   // PID
   AliEMCALPIDUtils * fPIDUtils;          ///< Recalculate PID parameters
     
+  // Local maxima
+  Float_t    fLocMaxCutE;                ///<  Local maxima cut must have more than this energy.
+  Float_t    fLocMaxCutEDiff;            ///<  Local maxima cut, when aggregating cells, next can be a bit higher.
+
   // Track matching
   UInt_t     fAODFilterMask;             ///< Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
   Bool_t     fAODHybridTracks;           ///< Match with hybrid
@@ -659,7 +676,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 35) ;
+  ClassDef(AliEMCALRecoUtils, 36) ;
   /// \endcond
 
 };
