@@ -546,16 +546,22 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
            cu->GetNumberOfSuperModulesUsed(),cu->GetFirstSuperModuleUsed(), cu->GetLastSuperModuleUsed());
   }
   
+  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  
   // Search of local maxima in cluster
   if ( col == "pp" )
   {
     cu->SetLocalMaximaCutE(0.1);
     cu->SetLocalMaximaCutEDiff(0.03);
+    recou->SetLocalMaximaCutE(0.1);
+    recou->SetLocalMaximaCutEDiff(0.03);
   }
   else
   {
     cu->SetLocalMaximaCutE(0.2);
     cu->SetLocalMaximaCutEDiff(0.03);
+    recou->SetLocalMaximaCutE(0.2);
+    recou->SetLocalMaximaCutEDiff(0.03);
   }
   
   cu->SwitchOffRecalculateClusterTrackMatching();
@@ -566,8 +572,6 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
   
   if ( !simulation )
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
   // Calibrations, do nothing by default
   Bool_t calibEner = kFALSE;
