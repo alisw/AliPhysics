@@ -171,6 +171,10 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
+  if(TMath::Abs(sdjet.m2()) < 1e-5) {
+    AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+    throw  2;
+  }
   fastjet::contrib::SoftDrop softdropAlgorithm(sdparams.fBeta, sdparams.fZcut, jetradius);
   softdropAlgorithm.set_verbose_structure(kTRUE);
   fastjet::JetAlgorithm reclusterizingAlgorithm;
@@ -248,7 +252,7 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
     break;
   default:
     AliErrorGeneralStream("IterativeDecluster") << "Non-supported reclusterizer type" << std::endl;
-    throw 2;
+    throw 3;
   };
   
 
@@ -256,8 +260,11 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
     fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
     fastjet::ClusterSequence recluster(constituents, fJetDef);
     auto outputJets = recluster.inclusive_jets(0);
-  
     fastjet::PseudoJet harder, softer, splitting = outputJets[0];
+    if(TMath::Abs(splitting.m2()) < 1e-5) {
+      AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
+      throw  2;
+    } 
     int drop_count = 0;
     while(splitting.has_parents(harder,softer)){
       if(harder.perp() < softer.perp()) std::swap(harder,softer);
@@ -282,7 +289,7 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
     }
   } catch(...) {
     AliErrorGeneralStream("IterativeDecluster") << "Fastjet error " << std::endl;
-    throw 3;
+    throw 4;
   }
 
   return result;
