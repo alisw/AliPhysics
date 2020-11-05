@@ -378,7 +378,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   
   if(!ftree){
    
-    ftree = new TTree("ftree","ftree");
+    ftree = new TTree(Form("ftree_%i",fptc),Form("ftree_%i",fptc));
  
     ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
     ftree->Branch("tType"            ,&tType            ,"tType/D"          );
