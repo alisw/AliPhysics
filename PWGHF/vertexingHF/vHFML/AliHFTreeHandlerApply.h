@@ -72,7 +72,7 @@ public:
   
   //core methods --> implemented in each derived class
   virtual TTree* BuildTree(TString name, TString title) = 0;
-  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo, AliAODPidHF* pidhf) = 0;
 
   //for MC gen --> common implementation
   TTree* BuildTreeMCGen(TString name, TString title);
@@ -163,7 +163,7 @@ protected:
   void AddSingleTrackBranches();
   void AddPidBranches(bool prongusepid[], bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
   bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
-  bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+  bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF, AliAODPidHF* pidhf);
   
   //utils methods
   double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);

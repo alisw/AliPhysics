@@ -1013,7 +1013,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::Process3Prong(TClonesArray *array3Pron
                 }
                 if(!fReadMC || (issignal || isbkg || isrefl)) {
                   fTreeHandlerDs->SetIsSelectedStd(isSelAnCutsKKpi,isSelAnTopoCutsKKpi,isSelAnPidCutsKKpi,isSelTracksAnCuts);
-                  fTreeHandlerDs->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenDs,modelPred0,ds,bfield,0,fPIDresp);
+                  fTreeHandlerDs->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenDs,modelPred0,ds,bfield,0,fPIDresp,Pid_HF);
                   if(isSelectedMLFilt0) fTreeHandlerDs->FillTree();
                 }
               }
@@ -1041,7 +1041,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::Process3Prong(TClonesArray *array3Pron
                 }
                 if(!fReadMC || (issignal || isbkg || isrefl)) {
                   fTreeHandlerDs->SetIsSelectedStd(isSelAnCutspiKK,isSelAnTopoCutspiKK,isSelAnPidCutspiKK,isSelTracksAnCuts);
-                  fTreeHandlerDs->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenDs,modelPred1,ds,bfield,1,fPIDresp);
+                  fTreeHandlerDs->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenDs,modelPred1,ds,bfield,1,fPIDresp,Pid_HF);
                   if(isSelectedMLFilt1) fTreeHandlerDs->FillTree();
                 }
               }
@@ -1233,7 +1233,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
             if(!fReadMC || (issignal || isbkg || isrefl)) {
               fTreeHandlerLc2V0bachelor->SetIsSelectedStd(isSelAnCutstopK0s,isSelAnTopolCutstopK0s,isSelAnPidCutstopK0s,isSelTracksAnCuts);
               fTreeHandlerLc2V0bachelor->SetIsLctoLpi(isSelAnCutstoLpi, isSelAnTopolCutstoLpi, isSelAnPidCutstoLpi);
-              fTreeHandlerLc2V0bachelor->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenLc2V0bachelor,modelPred,d,bfield,masshypo,fPIDresp);
+              fTreeHandlerLc2V0bachelor->SetVariables(fRunNumber,fEventID,fEventIDExt,fEventIDLong,ptGenLc2V0bachelor,modelPred,d,bfield,masshypo,fPIDresp,Pid_HF);
               fTreeHandlerLc2V0bachelor->FillTree();
             }
             if(recVtx)fFiltCutsLc2V0bachelor->CleanOwnPrimaryVtx(d,aod,origownvtx);
