@@ -144,7 +144,7 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of positive daughter of V0;p_{T} (GeV/c)",500,0,10);
   TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of negative daughter of V0;p_{T} (GeV/c)",500,0,10);
   TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of V0;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of V0",400,-2,2);
+  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of V0;#eta",400,-2,2);
   TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of Anti-V0;p_{T} (GeV/c)",500,0,10);
   TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c)",500,0,10);
   TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad)",100,0,TMath::TwoPi());
@@ -155,14 +155,14 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of positive daughter of Xi-;p_{T} (GeV/c)",500,0,10);
   TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of negative daughter of Xi-;p_{T} (GeV/c)",500,0,10);
   TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of Xi-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of Xi-",400,-2,2);
+  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of Xi-;#eta",400,-2,2);
   TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of Xi+;p_{T} (GeV/c)",500,0,10);
   TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of Omega-;p_{T} (GeV/c)",500,0,10);
   TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor of Omega-;p_{T} (GeV/c)",500,0,10);
   TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of positive daughter of Omega-;p_{T} (GeV/c)",500,0,10);
   TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of negative daughter of Omega-;p_{T} (GeV/c)",500,0,10);
   TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of Omega-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of Omega-",400,-2,2);
+  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of Omega-;#eta",400,-2,2);
   TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of Omega+;p_{T} (GeV/c)",500,0,10);
 
   TH1F *hNCrossedRows = new TH1F("hNCrossedRows","Number of Crossed Rows",160,0,160);
@@ -258,11 +258,15 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","nsigma_TPC of protons;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
   TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","nsigma_TOF of protons;p (GeV/c);n#sigma_{TOF}",1000,0,10,200,-10,10);
   TH2F *hProtonNsigmaCombined = new TH2F("hProtonNsigmaCombined","nsigma_combined of protons;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
+  TH2F *hProtonNsigmaTPCwPID = new TH2F("hProtonNsigmaTPCwPID","nsigma_TPC of protons with PID;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaCombinedwPID = new TH2F("hProtonNsigmaCombinedwPID","nsigma_combined of protons with PID;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
 
   fOutput->Add(hdEdxVsP);
   fOutput->Add(hProtonNsigmaTPC);
   fOutput->Add(hProtonNsigmaTOF);
   fOutput->Add(hProtonNsigmaCombined);
+  fOutput->Add(hProtonNsigmaTPCwPID);
+  fOutput->Add(hProtonNsigmaCombinedwPID);
 
   TH1F *hNLambdaLambdaPairs = new TH1F("hNLambdaLambdaPairs","Number of V0-V0 pairs in an event",100,0,100);
   TH1F *hNProtonXiPairs = new TH1F("hNProtonXiPairs","Number of Proton-Xi pairs in an event",100,0,100);
@@ -487,10 +491,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
     } // end of AOD treatment
 
-    if(TMath::Abs(eta) > 0.8) continue;
-    if(transvMom < 0.5)  continue;
-    if(transvMom > 4.05) continue;
-
     dynamic_cast<TH1F*>(fOutput->FindObject("hNCrossedRows"))        ->Fill(nTPCCrossedRows);
     dynamic_cast<TH1F*>(fOutput->FindObject("hNCluster"))            ->Fill(nTPCClusters);
     dynamic_cast<TH1F*>(fOutput->FindObject("hNSharedCluster"))      ->Fill(nTPCSharedCls);
@@ -510,6 +510,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // Proton PID
     if(     totMom < 0.75 && TMath::Abs(nSigmaTPCproton) > 3.) continue;
     else if(totMom > 0.75 && nSigmaTPCTOFcombined        > 3.) continue;
+
+    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))     ->Fill(totMom, nSigmaTPCproton);
+    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombinedwPID"))->Fill(totMom, nSigmaTPCTOFcombined);
+
+    if(TMath::Abs(eta) > 0.8) continue;
+    if(transvMom < 0.5)  continue;
+    if(transvMom > 4.05) continue;
 
     // proton
     if(charge > 0.) {
