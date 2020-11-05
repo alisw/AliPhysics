@@ -343,10 +343,10 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
 
+      if (axisBeforedEdx) axisBeforedEdx->Set(bins, newBins);
+      if (axisBeforedEdxSignal) axisBeforedEdxSignal->Set(bins,newBins);
       if(preCut){
         axisBeforeITS->Set(bins, newBins);
-        axisBeforedEdx->Set(bins, newBins);
-        axisBeforedEdxSignal->Set(bins,newBins);
         axisBeforeTOF->Set(bins, newBins);
 
       }
