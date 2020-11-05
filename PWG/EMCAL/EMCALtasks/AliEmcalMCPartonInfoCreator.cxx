@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <memory>
+#include <iostream>
 #include "AliAnalysisManager.h"
 #include "AliEmcalMCPartonInfo.h"
 #include "AliEmcalMCPartonInfoCreator.h"
