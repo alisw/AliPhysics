@@ -71,7 +71,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t weight,
                                           Int_t cen, Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
-                                          Int_t & largeTimeInside) ;
+                                          Int_t nlm5x5, Float_t l05x5, Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
@@ -128,6 +128,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
+  void         SwitchOnUse5x5ShowerShapeHisto()           { fUse5x5ShowerShape = kTRUE  ; }
+  void         SwitchOffUse5x5ShowerShapeHisto()          { fUse5x5ShowerShape = kFALSE ; }
+  
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   
@@ -247,6 +250,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillControlClusterContentHisto;         ///< Fill cluster ncell, nlm, long axis shower shape plots before and after some cluster selection cuts
   
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
+  
+  Bool_t   fUse5x5ShowerShape;                      ///< Calculate shower shape restricting to 5x5 and fill histograms
   
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
@@ -486,7 +491,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLambda0DispEta [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp eta
   TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp phi
 
-  //Embedding
+  // Shower shape restricted size, activate with fUse5x5ShowerShape=true
+  static const Int_t fgk5x5cases = 4;
+  TH2F * fhLam05x5OrLam0[fgk5x5cases];                   //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT
+  TH3F * fhLam05x5NLM;                                   //!<! Cluster long axis restricted to 5x5 vs  pT vs NLM
+  TH3F * fhLam05x5Lam0PerNLM[fgk5x5cases];               //!<! Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
+  TH2F * fhMCLam05x5OrLam0[fgk5x5cases][fgkNssTypes];    //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT, per particle origin
+
+  TH3F * fhLam05x5OrLam0Cen[fgk5x5cases];                //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality
+  ///<  Cluster long axis restricted to 5x5 vs  pT vs nlm , after all cuts, per centrality
+  TH3F **fhLam05x5NLMPerCen;                             //![GetNCentrBin()]
+  ///< Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
+  TH3F **fhLam05x5Lam0PerNLMPerCen;                      //![GetNCentrBin()*fgk5x5cases]
+  TH3F * fhMCLam05x5OrLam0Cen[fgk5x5cases][fgkNssTypes]; //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality, per particle origin
+
+  // Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy
   TH3F * fhEmbeddedSignalFractionEnergyCen ;        //!<! Fraction of signal energy of embedded signal vs cluster energy vs centrality
   
@@ -730,7 +749,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,54) ;
+  ClassDef(AliAnaPhoton,55) ;
   /// \endcond
 
 } ;
