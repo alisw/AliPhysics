@@ -2009,11 +2009,19 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790607l032230000","3l631031000000d0"); // Standard EDC EG1
     cuts.AddCutCalo("0008e113","411790607l032230000","3l631031000000d0"); // Standard EDC EG2
  } else if (trainConfig == 914){ //PHOS+JETS
-    cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); //
+    cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); // INT7
+    cuts.AddCutCalo("00061113","2446651044012300000","2163103100000010"); // PHI1
+    cuts.AddCutCalo("00062113","2446651044012300000","2163103100000010"); // PHI7
  } else if (trainConfig == 915){ //PHOS+JetQA
     cuts.AddCutCalo("00010113","2446651044012300000","3163103100000010"); // PHOS QA
- } else if (trainConfig == 916){ //PHOS+JETS
+    cuts.AddCutCalo("00010113","2446600044012300000","3163103100000010"); // PHOS QA + No NL
+    cuts.AddCutCalo("00010113","2446619044012300000","3163103100000010"); // PHOS QA + Std NL
+ } else if (trainConfig == 916){ //PHOS+JETS NL
     cuts.AddCutCalo("00010113","2446600044012300000","2163103100000010"); // PHOS No NL
+    cuts.AddCutCalo("00010113","2446606044012300000","2163103100000010"); // TB NL
+    cuts.AddCutCalo("00010113","2446611044012300000","2163103100000010"); // ConvCalo TB NL
+    cuts.AddCutCalo("00010113","2446612044012300000","2163103100000010"); // Calo TB NL
+    cuts.AddCutCalo("00010113","2446619044012300000","2163103100000010"); // Std NL
  } else if (trainConfig == 917){ //MB - EMCal+JETS
     cuts.AddCutCalo("00010113","411790607l032230000","0l631031000000d0"); // MB - INT7 - TB NL
  } else if (trainConfig == 950){ // EMCal+JETS clusters standard cuts triggered analysis
