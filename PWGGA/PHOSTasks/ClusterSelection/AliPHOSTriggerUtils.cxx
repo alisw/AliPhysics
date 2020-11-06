@@ -693,7 +693,7 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC16_AllPeriods_pp_NomB_Reduced
   if((fRun>=252603 && fRun<=264347))
   {
     switch(ddl){
-        case 6 : 0.955170/(TMath::Exp((3.322980-x)/0.273821)+1.)  ;
+        case 6 : return 0.955170/(TMath::Exp((3.322980-x)/0.273821)+1.)  ;
         case 7 : return 0.952943/(TMath::Exp((3.279470-x)/0.310385)+1.)  ;
         case 8 : return 0.709842/(TMath::Exp((3.737483-x)/0.315181)+1.)  ;
         case 9 : return 0.787072/(TMath::Exp((3.680035-x)/0.379812)+1.)  ;
