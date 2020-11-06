@@ -40,6 +40,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
     void SetMinEnergyToTrigger(Double_t flag)               { minEnergyToTrigger = flag                     ; }
     void SetMinCellsToTrigger(Int_t flag)                   { minCellsToTrigger = flag                      ; }
+    void SetEfficiencyChoiceOption_TriggerHelper(Int_t flag) { fEfficiencyChoiceOption_TriggerHelper = flag ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
     Bool_t HasEventFlagPassed()                             { return fEventFlagPassed                       ; }
@@ -97,6 +98,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fDoDebugOutput;                             //
     Double_t                minEnergyToTrigger;                         //
     Int_t                   minCellsToTrigger;                         //
+    Int_t                   fEfficiencyChoiceOption_TriggerHelper;      //Sets, which Turnoncurves will be used
 
     map<Int_t,Int_t>        fMapClusterIDToHaveTriggered;               //! connects a given cluster ID with the Information if Cluster has triggered
     map<Int_t,Int_t>        fMapClusterIDToIsInTriggerMap;              //! connects a given cluster ID with the information, if it is in trigger good map
