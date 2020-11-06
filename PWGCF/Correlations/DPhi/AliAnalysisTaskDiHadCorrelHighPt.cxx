@@ -190,7 +190,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistSecondaryCont(0),
     fEffList(0),
     fUseEff(kFALSE),
-    fMixCorrect(kTRUE)
+    fMixCorrect(kTRUE),
+    fminBias(kTRUE),
+    fhighMult(kFALSE),
+    fhighMultSPD(kFALSE),
+    fHistMultVZEROTracklets(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -329,7 +333,11 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fHistSecondaryCont(0),
     fEffList(0),
     fUseEff(useeff),
-    fMixCorrect(kTRUE)
+    fMixCorrect(kTRUE),
+    fminBias(kTRUE),
+    fhighMult(kFALSE),
+    fhighMultSPD(kFALSE),
+    fHistMultVZEROTracklets(0)
 {
     // constructor
 
@@ -811,6 +819,14 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistLambdaFeedDown->GetYaxis()->SetTitle("cascade p_{T}");
     fHistLambdaFeedDown->GetZaxis()->SetTitle("V0 type");
 
+    fHistMultVZEROTracklets= new TH3D("fHistMultVZEROTracklets","fHistMultVZEROTracklets",1000,0,1000,100,0,100,16,0,100);
+    fHistMultVZEROTracklets->Sumw2();
+    fOutputList->Add(fHistMultVZEROTracklets);
+    fHistMultVZEROTracklets->GetXaxis()->SetTitle("V0 Multiplicity");
+    fHistMultVZEROTracklets->GetYaxis()->SetTitle("N rracklets");
+    fHistMultVZEROTracklets->GetZaxis()->SetTitle("V0 percentile");
+    fHistMultVZEROTracklets->GetZaxis()->Set(16,binsMult);
+
     if(!fAnalysisAOD){
         if(fFilterBit==32) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kTRUE);
         if(fFilterBit==16||fFilterBit==256) fESDTrackCuts = AliESDtrackCuts:: GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -915,7 +931,12 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 	   UInt_t maskIsSelected = inEvMain->IsEventSelected();
 
 	   //  data trigger selection
-	   Bool_t isSelected = (maskIsSelected & AliVEvent::kINT7); //pp
+	   Bool_t isSelected = kFALSE;
+
+       if(fminBias) isSelected = ((maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7); //pp - minumum bias
+       if(fhighMult) isSelected = ((maskIsSelected & AliVEvent::kHighMultV0)== AliVEvent::kHighMultV0); //pp - high multiplicity V0
+       if(fhighMultSPD)isSelected = ((maskIsSelected & AliVEvent::kHighMultSPD) == AliVEvent::kHighMultSPD); //pp - high multiplicity V0
+          
 	   if (!isSelected) return;
         fHistSelection->Fill(1.5);
 
@@ -948,6 +969,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
         Int_t tpcMult = 0;
         Int_t tpcClusters = 0;
+        Float_t VZEROmultiplicity =0;
+        Int_t nTracklets=0;
     
         if(fAOD){
             tpcMult = fAOD->GetNumberOfTPCTracks();
@@ -962,6 +985,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             tpcClusters = fESD->GetNumberOfTPCClusters();
             nV0 = (fESD->GetNumberOfV0s()); 
             nCascades = fESD->GetNumberOfCascades();
+            AliESDVZERO *vZERO = fESD->GetVZEROData();
+            VZEROmultiplicity = vZERO->GetMTotV0A();
+            VZEROmultiplicity += vZERO->GetMTotV0C();
+            nTracklets=fESD->GetMultiplicity()->GetNumberOfTracklets();
         }
 
 	   fHistV0Multiplicity->Fill(nV0);
@@ -982,6 +1009,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         }
         if ((lPercentile<0.)||(lPercentile>100.)) return;
     
+        fHistMultVZEROTracklets->Fill(VZEROmultiplicity,nTracklets,lPercentile);
         fHistMultipPercentile->Fill(lPercentile);
         fHistVZeroPercentileTPCMult -> Fill(lPercentile,tpcMult);
     }
