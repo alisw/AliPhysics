@@ -507,7 +507,8 @@ Bool_t AliRDHFCuts::IsEventSelectedForCentrFlattening(Float_t centvalue){
 void AliRDHFCuts::SetupPID(AliVEvent *event) {
   // Set the PID response object in the AliAODPidHF
   // in case of old PID sets the TPC dE/dx BB parameterization
-
+  
+  Bool_t isMC=kFALSE;
   if(fPidHF){
     if(fPidHF->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -518,7 +519,6 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
     if(fPidHF->GetOldPid()) {
 
-      Bool_t isMC=kFALSE;
       TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
       if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
@@ -542,7 +542,7 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
     }
 
-    if(fEnableNsigmaTPCDataCorr) {
+    if(fEnableNsigmaTPCDataCorr && !isMC) {
       fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
     }
   }
