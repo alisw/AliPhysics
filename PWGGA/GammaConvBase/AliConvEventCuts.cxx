@@ -6611,7 +6611,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
     }
   }
 
-  if(GetIsFromPileup()){
+  if(fRemovePileUp){
     if (   (GetDoPileUpRejectV0MTPCout() && IsPileUpV0MTPCout(event))
         || (fRemovePileUpSDDSSDTPC && IsPileUpSDDSSDTPC(event))) {
       return 13;

@@ -505,7 +505,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetCutNumber();
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
-      Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
       Bool_t    GetUseSphericityTrue()                                              { return fUseSphericityTrue                                 ; }
@@ -791,7 +790,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,82)
+      ClassDef(AliConvEventCuts,83)
       /// \endcond
 };
 
