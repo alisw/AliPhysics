@@ -996,14 +996,14 @@ void AliAnalysisTaskStudentsML::BookAndNestAllLists()
 	fCentralityList[icent]->SetOwner(kTRUE);
 	fHistList->Add(fCentralityList[icent]);
 
-	if(bSaveAllQA) 
-	{
-		// a) Book and nest lists for control histograms:
-		fControlHistogramsList[icent] = new TList();
-		fControlHistogramsList[icent]->SetName("ControlHistograms");
-		fControlHistogramsList[icent]->SetOwner(kTRUE);
-		fCentralityList[icent]->Add(fControlHistogramsList[icent]);
-	}
+	 
+	
+	// a) Book and nest lists for control histograms:
+	fControlHistogramsList[icent] = new TList();
+	fControlHistogramsList[icent]->SetName("ControlHistograms");
+	fControlHistogramsList[icent]->SetOwner(kTRUE);
+	if(bSaveAllQA){	fCentralityList[icent]->Add(fControlHistogramsList[icent]); }
+	
 
 	// b) Book and nest lists for final results:
 	fFinalResultsList[icent] = new TList();
@@ -1217,11 +1217,6 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 
-  fCentralityHistogramBefore = new TH1F("fCentralityHistogramBefore","fCentralityHistogramBefore",22,0.,110.);
-  fCentralityHistogramBefore->GetXaxis()->SetTitle("Centrality");
-  fCentralityHistogramBefore->SetLineColor(4);
-  fHistList->Add(fCentralityHistogramBefore);
-
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
 
 //==========================================================================================================================================================================
@@ -1254,6 +1249,12 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.);
  fHistList->Add(fCounterHistogram);
 
+
+  //Centrality distribution before cuts
+  fCentralityHistogramBefore = new TH1F("fCentralityHistogramBefore","fCentralityHistogramBefore",22,0.,110.);
+  fCentralityHistogramBefore->GetXaxis()->SetTitle("Centrality");
+  fCentralityHistogramBefore->SetLineColor(4);
+  fHistList->Add(fCentralityHistogramBefore);
 
  //Profiles to save the current cut values 
  //Profile to save the cut values for event selection
