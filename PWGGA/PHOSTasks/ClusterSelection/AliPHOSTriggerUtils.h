@@ -52,6 +52,7 @@ public:
   Int_t GetTrX4x4(Int_t arrayindex){return fTrX4x4[arrayindex];}
   Int_t GetTrZ4x4(Int_t arrayindex){return fTrZ4x4[arrayindex];}
   Int_t GetTrK4x4(Int_t arrayindex){return fTrK4x4[arrayindex];}
+  void SetEfficiencyChoiceOption(Int_t flag) { fEfficiencyChoiceOption = flag ; }
   
 protected:
   
@@ -64,6 +65,13 @@ protected:
   Double_t TriggerProbabilityLHC16_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
   Double_t TriggerProbabilityLHC17_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
   Double_t TriggerProbabilityLHC18_AllPeriods_pp_NomB(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC16_AllPeriods_pp_NomB_ReducedEff(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC17_AllPeriods_pp_NomB_ReducedEff(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC18_AllPeriods_pp_NomB_ReducedEff(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC16_AllPeriods_pp_NomB_ReducedEff_BinomialErr(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC17_AllPeriods_pp_NomB_ReducedEff_BinomialErr(Double_t x, Int_t ddl);
+  Double_t TriggerProbabilityLHC18_AllPeriods_pp_NomB_ReducedEff_BinomialErr(Double_t x, Int_t ddl);
+
   Double_t TriggerProbability(Double_t eClu, Int_t module, Int_t triggerBit) ; //Parameterization of turn-on curves
   
   
@@ -73,6 +81,7 @@ private:
   
   Int_t fRun ;         //current run number (-1 not set yet, -2 use input file set with ReadTriggerParams)  
   Bool_t fFixedRun;    //do not read runnumber from header
+  Int_t fEfficiencyChoiceOption; //Sets, which Turnoncurves will be used
   AliVEvent * fEvent ; //! Ref to current ESD/AOD event
   
   //Trigger bad map for 5 modules
@@ -92,7 +101,7 @@ private:
   Int_t fTrK4x4[1000] ;  //! trigger Kind,bits for L0, L1low, L1med, L1high
   
   
-  ClassDef(AliPHOSTriggerUtils,2)       // PHOS trigger analysis class
+  ClassDef(AliPHOSTriggerUtils,3)       // PHOS trigger analysis class
 
 } ;
 

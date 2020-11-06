@@ -72,6 +72,7 @@ AliCaloTriggerMimicHelper::AliCaloTriggerMimicHelper(const char *name, Int_t clu
     fDoDebugOutput(0),
     minEnergyToTrigger(0),
     minCellsToTrigger(2),
+    fEfficiencyChoiceOption_TriggerHelper(0),
     fMapClusterIDToHaveTriggered(),
     fMapClusterIDToIsInTriggerMap(),
     fMapTriggeredClusterInBadDDL(),
@@ -429,6 +430,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
         nModules = fGeomPHOS->GetNModules();
         nCellsPHOS=((nModules-1)*maxCellsModule); //56*64=3584
         fPHOSTrigUtils->SetEvent(fInputEvent) ;
+        fPHOSTrigUtils->SetEfficiencyChoiceOption(fEfficiencyChoiceOption_TriggerHelper);
         Int_t nclus = 0;
         nclus = fInputEvent->GetNumberOfCaloClusters();
         // return if no Clusters in the event
