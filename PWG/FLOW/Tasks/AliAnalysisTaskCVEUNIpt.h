@@ -12,8 +12,8 @@
 
 
 
-#ifndef ALIANALYSISTASKCVEUNI_H
-#define ALIANALYSISTASKCVEUNI_H
+#ifndef ALIANALYSISTASKCVEUNIpt_H
+#define ALIANALYSISTASKCVEUNIpt_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TH1F.h"
@@ -39,14 +39,14 @@ class    AliAnalysisUtils;
 
 
 
-class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
+class AliAnalysisTaskCVEUNIpt : public AliAnalysisTaskSE {
 
  public:
 
   //-----> Mandatory Functions:
-  AliAnalysisTaskCVEUNI();
-  AliAnalysisTaskCVEUNI(const char *name);
-  virtual ~AliAnalysisTaskCVEUNI();
+  AliAnalysisTaskCVEUNIpt();
+  AliAnalysisTaskCVEUNIpt(const char *name);
+  virtual ~AliAnalysisTaskCVEUNIpt();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t * /*option*/);
   
@@ -66,11 +66,6 @@ class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
   void SetCentralityEstimator(TString sEstim)       {this->sCentrEstimator = sEstim;}
   void SetVzRangeMin(Double_t vzMin)                {this->fMinVzCut       =  vzMin;}
   void SetVzRangeMax(Double_t vzMax)                {this->fMaxVzCut       =  vzMax;}
-
-  void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
-
-
 
   /******* Track Cut Ranges ******/
   void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaTPCCut  =  nSigTPC;}
@@ -131,9 +126,6 @@ class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
-  Double_t         fPileUpSlopeParm;  //
-  Double_t         fPileUpConstParm;  //                                                                                                      
-  Bool_t             bSkipPileUpCut;  //               
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
@@ -180,31 +172,18 @@ class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
   
   //QA and Stepcount 
   TH2F            *fHistAChrgVsCent;  //!
-  TH2F            *fHistTPConlyVsCL1Before;   //!                                                                                             
-  TH2F            *fHistTPConlyVsV0MBefore;   //!                                                                                             
-  TH2F            *fHistTPConlyVsCL1After;   //!                                                                                              
-  TH2F            *fHistTPConlyVsV0MAfter;   //!                                                                                              
-  TH2F            *fHistGlobalVsV0MBefore;   //!                                                                                              
-  TH2F            *fHistGlobalVsV0MAfter;   //                                                                                                
-  TH2F            *fTPCvsGlobalTrkBefore; //!  Global vs TPC tracks for QA                                                                    
-  TH2F            *fTPCvsGlobalTrkAfter; //!  Global vs TPC tracks for QA                                                                     
-  TH2F            *fHistTPCVsESDTrkBefore;   //!                                                                                              
-  TH2F            *fHistTPCVsESDTrkAfter;   //                                 
-  TH1F            *fHistPileUpCount;   //!                                                                                                  
   TH1F            *fHistEventCount;   //!
-  TH1F            *fHCorrectEVNTWGTChrg;   //!   //eventwgt for charge                                                                         
-
 
 
   ///v2 vs Ach (Results)
-  TProfile     *fHistv2AchChrgPos[2][10];
-  TProfile     *fHistv2AchPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[2][10]; //!
-  TProfile     *fHistv2AchProtPos[2][10]; //!
-  TProfile     *fHistv2AchChrgNeg[2][10];
-  TProfile     *fHistv2AchPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[2][10]; //!
-  TProfile     *fHistv2AchProtNeg[2][10]; //!
+  TProfile     *fHistv2AchChrgPos[2][10][10];
+  TProfile     *fHistv2AchPionPos[2][10][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPos[2][10][10]; //!
+  TProfile     *fHistv2AchProtPos[2][10][10]; //!
+  TProfile     *fHistv2AchChrgNeg[2][10][10];
+  TProfile     *fHistv2AchPionNeg[2][10][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNeg[2][10][10]; //!
+  TProfile     *fHistv2AchProtNeg[2][10][10]; //!
 
 
   ///Used For NUA Corrections:
@@ -225,7 +204,7 @@ class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
   
   TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
   TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
-  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
+  TProfile      *fHistv2cumAchChrgAll[10][10];  //! Charge inclusive
 
 
   
@@ -233,21 +212,12 @@ class AliAnalysisTaskCVEUNI : public AliAnalysisTaskSE {
 
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  void  GetEVNTWGTCorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  //void  GetV0MCorrectionHist(Int_t run=0);
-  void  GetV0MCorrectionHist(Int_t run=0,Int_t kParticleID=0);  
+  void  GetV0MCorrectionHist(Int_t run=0);
   void  GetMCCorrectionHist(Int_t run=0);
-
-  Bool_t CheckEventIsPileUp(AliAODEvent* faod);
-  Bool_t PileUpMultiVertex(const AliAODEvent* faod);
-  double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
-
-
-
   
-  AliAnalysisTaskCVEUNI(const AliAnalysisTaskCVEUNI &other);
-  AliAnalysisTaskCVEUNI &operator=(const AliAnalysisTaskCVEUNI &other);    
-  ClassDef(AliAnalysisTaskCVEUNI, 1) 
+  AliAnalysisTaskCVEUNIpt(const AliAnalysisTaskCVEUNIpt &other);
+  AliAnalysisTaskCVEUNIpt &operator=(const AliAnalysisTaskCVEUNIpt &other);    
+  ClassDef(AliAnalysisTaskCVEUNIpt, 1) 
 
 };
 

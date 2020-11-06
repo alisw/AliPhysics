@@ -89,7 +89,8 @@ set(SRCS
   AliAnalysisTaskCVEUNI.cxx
   AliAnalysisTaskCMWPU.cxx
   AliAnalysisTaskCMWPU2018.cxx
-  )
+  AliAnalysisTaskCVEUNIpt.cxx	
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
