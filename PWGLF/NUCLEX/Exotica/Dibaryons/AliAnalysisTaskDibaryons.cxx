@@ -91,6 +91,9 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   hNPartStatistics->GetXaxis()->SetBinLabel(7,"#Omega^{-}");
   hNPartStatistics->GetXaxis()->SetBinLabel(8,"#Omega^{+}");
 
+  fOutput->Add(hNPartStatistics);
+
+  // Define histograms related to invariant mass for V0 and Cascade
   TH1F *hInvMassLambdawoCuts = new TH1F("hInvMassLambdawoCuts","Invariant mass of Lambda(p #pi-) without topological cuts;M_{p#pi^{-}} (GeV/c^{2})",400,1.0,1.2);
   TH1F *hInvMassLambdawCuts = new TH1F("hInvMassLambdawCuts","Invariant mass of Lambda(p #pi-) with topological cuts;M_{p#pi^{-}} (GeV/c^{2})",400,1.0,1.2);
   TH1F *hInvMassAntiLambdawoCuts = new TH1F("hInvMassAntiLambdawoCuts","Invariant mass of AntiLambda(a-p #pi+) without topological cuts;M_{#bar{p}#pi^{+}} (GeV/c^{2})",400,1.0,1.2);
@@ -104,72 +107,6 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hInvMassOmegamwCuts = new TH1F("hInvMassOmegamwCuts","Invariant mass of Omega-(p K- #pi-) with topological cuts;M_{pK^{-}#pi^{-}} (GeV/c^{2})",300,1.5,1.8);
   TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of Omega+(a-p K+ #pi+) without topological cuts;M_{#bar{p}K^{+}#pi^{+}} (GeV/c^{2})",300,1.5,1.8);
   TH1F *hInvMassOmegapwCuts = new TH1F("hInvMassOmegapwCuts","Invariant mass of Omega+(a-p K+ #pi+) with topological cuts;M_{#bar{p}K^{+}#pi^{+}} (GeV/c^{2})",300,1.5,1.8);
-
-  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",400,0,2);
-  TH1F *hLambdaDCAPrimVertex = new TH1F("hLambdaDCAPrimVertex","Distance of closest approach of V0 track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","Distance of closest approach of V0 positive daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","Distance of closest approach of V0 negative daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Distribution of DCAz vs DCAxy;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
-  TH1F *hProtonDCAxy = new TH1F("hProtonDCAxy","Distance of closest approach of primary proton to primary vertex in xy",1000,-5.,5.);
-  TH1F *hProtonDCAz = new TH1F("hProtonDCAz","Distance of closest approach of primary proton to primary vertex in z",1000,-20.,20.);
-  TH1F *hProtonDCAxyCutz = new TH1F("hProtonDCAxyCutz","Distance of closest approach of primary proton to primary vertex in xy with DCAz Cut",1000,-5.,5.);
-  TH2F *hAntiProtonDCAxyDCAz = new TH2F("hAntiProtonDCAxyDCAz","Distribution of DCAz vs DCAxy;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
-  TH1F *hAntiProtonDCAxy = new TH1F("hAntiProtonDCAxy","Distance of closest approach of primary Anti-proton to primary vertex in xy",1000,-5.,5.);
-  TH1F *hAntiProtonDCAz = new TH1F("hAntiProtonDCAz","Distance of closest approach of primary Anti-proton to primary vertex in z",1000,-20.,20.);
-  TH1F *hAntiProtonDCAxyCutz = new TH1F("hAntiProtonDCAxyCutz","Distance of closest approach of primary Anti-proton to primary vertex in xy with DCAz Cut",1000,-5.,5.);
-  TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","Distance of closest approach of V0 and #pi track;DCA (cm)",400,0,2);
-  TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",400,0,2);
-  TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","Distance of closest approach of Xi V0 track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hXiDCABachPrimVertex = new TH1F("hXiDCABachPrimVertex","Distance of closest approach of Xi bachelor track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hXiDCAPosDaughPrimVertex = new TH1F("hXiDCAPosDaughPrimVertex","Distance of closest approach of Xi positive daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","Distance of closest approach of Xi negative daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse distance between primary vertex and Xi decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","Distance of closest approach of V0 and K track;DCA (cm)",400,0,2);
-  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",400,0,2);
-  TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","Distance of closest approach of Omega V0 track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","Distance of closest approach of Omega bachelor track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","Distance of closest approach of Omega positive daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","Distance of closest approach of Omega negative daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse distance between primary vertex and Omega decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-
-  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of positive daughter of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of negative daughter of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of V0;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of V0;#eta",400,-2,2);
-  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of Anti-V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c)",500,0,10);
-  TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta",200,-1,+1);
-  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c)",1000,0,10);
-  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of positive daughter of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of negative daughter of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of Xi-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of Xi-;#eta",400,-2,2);
-  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of Xi+;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of positive daughter of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of negative daughter of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of Omega-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of Omega-;#eta",400,-2,2);
-  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of Omega+;p_{T} (GeV/c)",500,0,10);
-
-  TH1F *hNCrossedRows = new TH1F("hNCrossedRows","Number of Crossed Rows",160,0,160);
-  TH1F *hNCluster = new TH1F("hNCluster","Number of TPC Clusters",160,0,160);
-  TH1F *hNSharedCluster = new TH1F("hNSharedCluster","Number of Shared Clusters",160,0,160);
-  TH1F *hNFindableCluster = new TH1F("hNFindableCluster","Number of Findable Clusters",160,0,160);
-  TH1F *hRatioFindableCrossed = new TH1F("hRatioFindableCrossed","Ratio of Number of Crossed Rows / Number of Findable Clusters",150,0,1.5);
 
   fOutput->Add(hInvMassLambdawoCuts);
   fOutput->Add(hInvMassLambdawCuts);
@@ -185,20 +122,40 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hInvMassOmegapwoCuts);
   fOutput->Add(hInvMassOmegapwCuts);
 
+  // Define QA plots for topological observables
+  TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Distribution of DCAz vs DCAxy;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
+  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",100,0,10);
+  TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","Distance of closest approach of V0 positive daughter track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","Distance of closest approach of V0 negative daughter track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
+  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
+  TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","Distance of closest approach of V0 and #pi track;DCA (cm)",400,0,2);
+  TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",400,0,2);
+  TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","Distance of closest approach of Xi V0 track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hXiDCABachPrimVertex = new TH1F("hXiDCABachPrimVertex","Distance of closest approach of Xi bachelor track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hXiDCAPosDaughPrimVertex = new TH1F("hXiDCAPosDaughPrimVertex","Distance of closest approach of Xi positive daughter track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","Distance of closest approach of Xi negative daughter track to primary vertex;DCA (cm)",500,0,100);
+  TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse distance between primary vertex and Xi decay vertex;r_{xy} (cm);",400,0,200);
+  TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
+  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of pointing angle of Xi;cos(#Theta)",200,0.8,1);
+  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of pointing angle of V0;cos(#Theta)",200,0.8,1);
+  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","Distance of closest approach of V0 and K track;DCA (cm)",100,0,10);
+  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",100,0,10);
+  TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","Distance of closest approach of Omega V0 track to primary vertex;DCA (cm)",500,0,10);
+  TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","Distance of closest approach of Omega bachelor track to primary vertex;DCA (cm)",500,0,10);
+  TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","Distance of closest approach of Omega positive daughter track to primary vertex;DCA (cm)",500,0,10);
+  TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","Distance of closest approach of Omega negative daughter track to primary vertex;DCA (cm)",500,0,10);
+  TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse distance between primary vertex and Omega decay vertex;r_{xy} (cm);",400,0,200);
+  TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
+  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
+  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
+
+  fOutput->Add(hProtonDCAxyDCAz);
   fOutput->Add(hLambdaDCADaughterTracks);
-  fOutput->Add(hLambdaDCAPrimVertex);
   fOutput->Add(hLambdaDCAPosDaughPrimVertex);
   fOutput->Add(hLambdaDCANegDaughPrimVertex);
   fOutput->Add(hLambdaTransverseRadius);
   fOutput->Add(hLambdaCosPointingAngle);
-  fOutput->Add(hProtonDCAxyDCAz);
-  fOutput->Add(hProtonDCAxy);
-  fOutput->Add(hProtonDCAz);
-  fOutput->Add(hProtonDCAxyCutz);
-  fOutput->Add(hAntiProtonDCAxyDCAz);
-  fOutput->Add(hAntiProtonDCAxy);
-  fOutput->Add(hAntiProtonDCAz);
-  fOutput->Add(hAntiProtonDCAxyCutz);
   fOutput->Add(hXiDCADaughterTracks);
   fOutput->Add(hXiDCAV0DaughterTracks);
   fOutput->Add(hXiDCAV0PrimVertex);
@@ -220,16 +177,42 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hOmegaCosPointingAngle);
   fOutput->Add(hOmegaV0CosPointingAngle);
 
+  // Define QA plots for kinematic observables
+  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c)",500,0,10);
+  TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad)",100,0,TMath::TwoPi());
+  TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta",200,-1,+1);
+  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c)",1000,0,10);
+  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of V0;p_{T} (GeV/c)",500,0,10);
+  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of positive daughter of V0;p_{T} (GeV/c)",500,0,10);
+  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of negative daughter of V0;p_{T} (GeV/c)",500,0,10);
+  TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of V0;#varphi (rad)",100,0,TMath::TwoPi());
+  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of V0;#eta",400,-2,2);
+  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of Anti-V0;p_{T} (GeV/c)",500,0,10);
+  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of Xi-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor of Xi-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of positive daughter of Xi-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of negative daughter of Xi-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of Xi-;#varphi (rad)",100,0,TMath::TwoPi());
+  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of Xi-;#eta",400,-2,2);
+  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of Xi+;p_{T} (GeV/c)",500,0,10);
+  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of Omega-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor of Omega-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of positive daughter of Omega-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of negative daughter of Omega-;p_{T} (GeV/c)",500,0,10);
+  TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of Omega-;#varphi (rad)",100,0,TMath::TwoPi());
+  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of Omega-;#eta",400,-2,2);
+  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of Omega+;p_{T} (GeV/c)",500,0,10);
+
+  fOutput->Add(hProtonPt);
+  fOutput->Add(hProtonPhi);
+  fOutput->Add(hProtonEta);
+  fOutput->Add(hAntiProtonPt);
   fOutput->Add(hLambdaPt);
   fOutput->Add(hLambdaPosDaughPt);
   fOutput->Add(hLambdaNegDaughPt);
   fOutput->Add(hLambdaPhi);
   fOutput->Add(hLambdaEta);
   fOutput->Add(hAntiLambdaPt);
-  fOutput->Add(hProtonPt);
-  fOutput->Add(hProtonPhi);
-  fOutput->Add(hProtonEta);
-  fOutput->Add(hAntiProtonPt);
   fOutput->Add(hXimPt);
   fOutput->Add(hXimBachPt);
   fOutput->Add(hXimPosDaughPt);
@@ -245,13 +228,18 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hOmegamEta);
   fOutput->Add(hOmegapPt);
 
+  // Define histogrms related to TPC track info
+  TH1F *hNCrossedRows = new TH1F("hNCrossedRows","Number of Crossed Rows",160,0,160);
+  TH1F *hNCluster = new TH1F("hNCluster","Number of TPC Clusters",160,0,160);
+  TH1F *hNSharedCluster = new TH1F("hNSharedCluster","Number of Shared Clusters",160,0,160);
+  TH1F *hNFindableCluster = new TH1F("hNFindableCluster","Number of Findable Clusters",160,0,160);
+  TH1F *hRatioFindableCrossed = new TH1F("hRatioFindableCrossed","Ratio of Number of Crossed Rows / Number of Findable Clusters",150,0,1.5);
+
   fOutput->Add(hNCrossedRows);
   fOutput->Add(hNCluster);
   fOutput->Add(hNSharedCluster);
   fOutput->Add(hNFindableCluster);
   fOutput->Add(hRatioFindableCrossed);
-
-  fOutput->Add(hNPartStatistics);
 
   // Define PID related histograms
   TH2F *hdEdxVsP = new TH2F("hdEdxVsP","dE/dx of all particles vs momentum;p (GeV/c);#frac{dE}{dx} (a.u.)",1000,0,10,200,0,200);
@@ -268,6 +256,7 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hProtonNsigmaTPCwPID);
   fOutput->Add(hProtonNsigmaCombinedwPID);
 
+  // Define histograms related to pair analysis
   TH1F *hNLambdaLambdaPairs = new TH1F("hNLambdaLambdaPairs","Number of V0-V0 pairs in an event",100,0,100);
   TH1F *hNProtonXiPairs = new TH1F("hNProtonXiPairs","Number of Proton-Xi pairs in an event",100,0,100);
   TH1F *hNLambdaXiPairs = new TH1F("hNLambdaXiPairs","Number of V0-Xi pairs in an event",100,0,100);
@@ -278,6 +267,12 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   hNPairStatistics->GetXaxis()->SetBinLabel(4,"#Lambda-#Xi^{-}");
   hNPairStatistics->GetXaxis()->SetBinLabel(5,"#Xi^{-}-#Omega^{-}");
 
+  fOutput->Add(hNLambdaLambdaPairs);
+  fOutput->Add(hNProtonXiPairs);
+  fOutput->Add(hNLambdaXiPairs);
+  fOutput->Add(hNPairStatistics);
+
+  // Define histograms related to invariant mass for dibaryons
   TH2F *hInvMassRelPLambdaLambda = new TH2F("hInvMassRelPLambdaLambda","Invariant mass vs relative momentum of Lambda-Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
   TH2F *hInvMassRelPLambdaLambdaRsideband = new TH2F("hInvMassRelPLambdaLambdaRsideband","Invariant mass vs relative momentum of Lambda and Lambda in right sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
   TH2F *hInvMassRelPLambdaLambdaLsideband = new TH2F("hInvMassRelPLambdaLambdaLsideband","Invariant mass vs relative momentum of Lambda and Lambda in left sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
@@ -293,11 +288,6 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH2F *hInvMassRelPXiOmega = new TH2F("hInvMassRelPXiOmega","Invariant mass vs relative momentum of Xi-Omega pair;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
   TH2F *hInvMassRelPXiOmegaRsideband = new TH2F("hInvMassRelPXiOmegaRsideband","Invariant mass vs relative momentum of Xi and Omega in right sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
   TH2F *hInvMassRelPXiOmegaLsideband = new TH2F("hInvMassRelPXiOmegaLsideband","Invariant mass vs relative momentum of Xi and Omega in left sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
-
-  fOutput->Add(hNLambdaLambdaPairs);
-  fOutput->Add(hNProtonXiPairs);
-  fOutput->Add(hNLambdaXiPairs);
-  fOutput->Add(hNPairStatistics);
 
   fOutput->Add(hInvMassRelPLambdaLambda);
   fOutput->Add(hInvMassRelPLambdaLambdaRsideband);
@@ -503,9 +493,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(nTPCSharedCls > 0)   continue;
 
     dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsP"))             ->Fill(totMom, dEdx);
-    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
-    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
-    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
+
+    if(charge > 0.) {
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))     ->Fill(DCAxy,DCAz);
+    }
 
     // Proton PID
     if(     totMom < 0.75 && TMath::Abs(nSigmaTPCproton) > 3.) continue;
@@ -517,17 +511,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(TMath::Abs(eta) > 0.8) continue;
     if(transvMom < 0.5)  continue;
     if(transvMom > 4.05) continue;
+    if(TMath::Abs(DCAz)  > 0.2) continue; 
+    if(TMath::Abs(DCAxy) > 0.1) continue;
 
     // proton
     if(charge > 0.) {
-
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))->Fill(DCAxy,DCAz);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonDCAxy"))    ->Fill(DCAxy);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonDCAz"))     ->Fill(DCAz);
-
-      if(TMath::Abs(DCAz)  > 0.2) continue; 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonDCAxyCutz"))->Fill(DCAxy);
-      if(TMath::Abs(DCAxy) > 0.1) continue;
 
       dynamic_cast<TH1F*>(fOutput->FindObject("hProtonPt")) ->Fill(transvMom);
       dynamic_cast<TH1F*>(fOutput->FindObject("hProtonPhi"))->Fill(phi);
@@ -540,14 +528,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     }
     // Anti-proton
     else if(charge < 0.) {
-
-      dynamic_cast<TH2F*>(fOutput->FindObject("hAntiProtonDCAxyDCAz"))->Fill(DCAxy,DCAz);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonDCAxy"))    ->Fill(DCAxy);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonDCAz"))     ->Fill(DCAz);
-
-      if(TMath::Abs(DCAz)  > 0.2) continue; 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonDCAxyCutz"))->Fill(DCAxy);
-      if(TMath::Abs(DCAxy) > 0.1) continue;
 
       dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonPt"))->Fill(transvMom);
       dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(2);
@@ -649,7 +629,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
       // Get topological values
       dcaV0Dghters    = esdV0->GetDcaV0Daughters();
-      dcaV0ToPrimVtx  = esdV0->GetD(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       dcaPosToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       dcaNegToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       cosPointAngle   = esdV0->GetV0CosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
@@ -709,7 +688,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
       // Get topological values
       dcaV0Dghters    = aodV0->DcaV0Daughters();
-      dcaV0ToPrimVtx  = aodV0->DcaV0ToPrimVertex();
       dcaPosToPrimVtx = aodV0->DcaPosToPrimVertex();
       dcaNegToPrimVtx = aodV0->DcaNegToPrimVertex();
       cosPointAngle   = aodV0->CosPointingAngle(primaryVtxPos);
@@ -738,7 +716,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawoCuts"))        ->Fill(invMassLambda);
       dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCADaughterTracks"))    ->Fill(dcaV0Dghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCAPrimVertex"))        ->Fill(dcaV0ToPrimVtx);
       dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
       dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
       dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaCosPointingAngle"))     ->Fill(cosPointAngle);
