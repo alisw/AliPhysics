@@ -372,7 +372,7 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
+bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF, AliAODPidHF* pidhf)
 {
   if(!pidrespo) return false;
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
@@ -396,7 +396,9 @@ bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDRespons
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
           if(useTPC) {
-            float nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+            double nSigmaTPC = -999;
+            if(pidhf) pidhf->GetnSigmaTPC(prongtracks[iProng],parthypo[iPartHypo],nSigmaTPC);
+            else nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
             if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
               float sigma=1., mean=0.;
               GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
@@ -404,7 +406,12 @@ bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDRespons
             }
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
           }
-          if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+          if(useTOF){
+            double nSigmaTOF = -999;
+            if(pidhf) pidhf->GetnSigmaTOF(prongtracks[iProng],parthypo[iPartHypo],nSigmaTOF);
+            else nSigmaTOF = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+            sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
+          }
           if(((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) && useTPC && useTOF) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }

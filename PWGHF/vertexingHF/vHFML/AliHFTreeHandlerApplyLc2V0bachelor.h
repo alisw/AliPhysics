@@ -34,7 +34,7 @@ public:
   AliHFTreeHandlerApplyLc2V0bachelor& operator=(const AliHFTreeHandlerApplyLc2V0bachelor &source) = delete;
   
   virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
-  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr);
+  virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr, AliAODPidHF *pidhf=nullptr);
   
   void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
   void SetReducePbPbBranches(bool b) { fReducePbPbBranches = b; }

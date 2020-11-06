@@ -115,7 +115,7 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, float mlprob, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo, AliAODPidHF* pidhf)
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -209,8 +209,8 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   if(fPidOpt == kNoPID) return true;
   
   bool setpid;
-  if(!fReducePbPbBranches) setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
-  else                     setpid = SetPidVars(prongtracks, pidrespo, false, false, true, true, true);
+  if(!fReducePbPbBranches) setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true, pidhf);
+  else                     setpid = SetPidVars(prongtracks, pidrespo, false, false, true, true, true, pidhf);
 
   if(!setpid) return false;
   
