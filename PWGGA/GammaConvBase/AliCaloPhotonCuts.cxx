@@ -307,11 +307,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
+  fHistElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
+  fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(8),
@@ -540,11 +542,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
+  fHistElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
+  fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
@@ -1816,6 +1820,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistElectronPositronClusterMatchSub->GetYaxis()->SetTitle("E_{cl} - P_{track, EMC}");
     fHistograms->Add(fHistElectronPositronClusterMatchSub);
 
+    fHistElectronPositronClusterMatchEoverP = new TH2F(Form("MatchedElectronPositronEOverP %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC E over P",
+                                                      300,0,1.5,500,0,50.);
+    fHistElectronPositronClusterMatchEoverP->GetXaxis()->SetTitle("P_{T} (GeV)");
+    fHistElectronPositronClusterMatchEoverP->GetYaxis()->SetTitle("E_{cl} / P_{track, EMC}");
+    fHistograms->Add(fHistElectronPositronClusterMatchEoverP);
+
     if(fExtendedMatchAndQA > 1 ){
       fHistElectronClusterMatch = new TH2F(Form("MatchedElectronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron tracks with P on EMC",
                                                 nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
@@ -1845,6 +1855,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistTrueNoElectronPositronClusterMatch);
 
 
+
+      fHistTrueElectronPositronClusterMatchEoverP = new TH2F(Form("TrueMatchedElectronPositronEOverP %s",GetCutNumber().Data()), "TrueMatched Electron Positron tracks with P on EMC E over P",
+                                                        300,0,1.5,500,0,50.);
+      fHistTrueElectronPositronClusterMatchEoverP->GetXaxis()->SetTitle("P_{T} (GeV)");
+      fHistTrueElectronPositronClusterMatchEoverP->GetYaxis()->SetTitle("E_{cl} / P_{track, EMC}");
+      fHistograms->Add(fHistTrueElectronPositronClusterMatchEoverP);
+
+
       fHistElectronClusterMatchTruePID = new TH2F(Form("MatchedElectronPositronTrackPID %s",GetCutNumber().Data()),"Matched Electron Positron tracks true PID",
                                                   5,0,5, nBinsClusterE, arrClusEBinning);
       fHistElectronClusterMatchTruePID->GetXaxis()->SetTitle("true PID");
@@ -1860,9 +1878,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     if(fIsMC > 1){
       fHistElectronPositronClusterMatch->Sumw2();
       fHistElectronPositronClusterMatchSub->Sumw2();
+      fHistElectronPositronClusterMatchEoverP->Sumw2();
       fHistTrueElectronPositronClusterMatch->Sumw2();
       fHistTrueNoElectronPositronClusterMatch->Sumw2();
       fHistElectronClusterMatchTruePID->Sumw2();
+      fHistTrueElectronPositronClusterMatchEoverP->Sumw2();
       if(fExtendedMatchAndQA > 1 ){
         fHistElectronClusterMatch->Sumw2();
         fHistPositronClusterMatch->Sumw2();
@@ -4218,6 +4238,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       }
       fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
       fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
+      fHistElectronPositronClusterMatchEoverP->Fill(cluster->E() - inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
 
       if(isMC){
         if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -4233,6 +4254,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           if(TMath::Abs(trackPart->GetPdgCode()) == 11){
             fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P(), weight);
             fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            fHistTrueElectronPositronClusterMatchEoverP->Fill(cluster->E() - inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
           } else if(TMath::Abs(trackPart->GetPdgCode()) == 211){
             fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P(), weight);
             fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
@@ -6076,6 +6098,20 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    break;
+    // From TestBeam applied on gamma cluster variation 1
+  case 26: // q
+    if (!fUseNCells) fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 - 0.03);
+    break;
+    // From TestBeam applied on gamma cluster variation 2
+  case 27: // r
+    if (!fUseNCells) fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 + 0.03);
     break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
