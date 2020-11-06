@@ -398,11 +398,13 @@ bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDRespons
           if(useTPC) {
             double nSigmaTPC = -999;
             if(pidhf) pidhf->GetnSigmaTPC(prongtracks[iProng],parthypo[iPartHypo],nSigmaTPC);
-            else nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
-            if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
-              float sigma=1., mean=0.;
-              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
-              nSigmaTPC = (nSigmaTPC-mean)/sigma;
+            else {
+              nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+              if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
+                float sigma=1., mean=0.;
+                GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
+                nSigmaTPC = (nSigmaTPC-mean)/sigma;
+              }
             }
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
           }
