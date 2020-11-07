@@ -48,6 +48,7 @@ public:
     void SetDoSoftDrop(bool doSoftDrop) { fDoSoftDrop = doSoftDrop; }
     void SetSDBeta(double beta) { fBeta = beta; }
     void SetSDZCut(double zcut) { fZcut = zcut; }
+    void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
     void SetSDUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
@@ -64,6 +65,7 @@ private:
 
     // Softdrop settings
     Bool_t                                  fDoSoftDrop;                    ///< Fill SoftDrop histograms
+    Bool_t                                  fDropMass0Jets;                 ///< Drop jets with mass 0
     Double_t                                fBeta;                          ///< SoftDrop Beta
     Double_t                                fZcut;                          ///< SoftDrop Zcut
     Bool_t                                  fUseChargedConstituents;        ///< SoftDrop use charged constituents

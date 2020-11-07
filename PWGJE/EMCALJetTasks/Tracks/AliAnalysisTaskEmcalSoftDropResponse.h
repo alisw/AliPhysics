@@ -80,6 +80,7 @@ public:
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
   void SetRequirePartLevelJetInAcceptance(bool doRequest) { fRequirePartJetInAcceptance = doRequest; }
+  void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
 
   // Switches for histogram groups
   void SetFillPlotsResiduals(Bool_t doFill) { fFillPlotsResiduals = doFill; }
@@ -115,6 +116,7 @@ private:
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
   Bool_t                        fUseStandardOutlierRejection; ///< Use standard outlier rejection (from AliAnalysisTaskEmcal)
+  Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
   EJetTypeOutliers_t            fJetTypeOutliers;           ///< Jet type used for outlier detection
   TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
