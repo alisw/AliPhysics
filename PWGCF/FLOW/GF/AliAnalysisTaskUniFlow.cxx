@@ -3371,7 +3371,8 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
 void AliAnalysisTaskUniFlow::CalculateDihCorr(const AliUniFlowCorrTask* const task) const
 {
   //opening all histos
-  Int_t harm = (Int_t) task->fiNumHarm;
+  if(task->fiHarm[0] != -task->fiHarm[1]) { AliError("Harmonics are not the same! Not possible to calculate dihadron correlations."); return;}
+  Int_t harm = (Int_t) task->fiHarm[0];
   Double_t width = 2.0*fFlowEtaMax/fFlowBinNumberEtaSlices;
 
   TComplex cNom = TComplex(0.0,0.0,kFALSE);
@@ -3977,7 +3978,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower, usePowVector, maxPowVec);
   if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower, usePowVector, maxPowVec); }
 
-  if(fCorrUsingGF) { ResetFlowVectorQdih(fFlowVecQ, (Int_t) task->fiNumHarm); }
+  if(fCorrUsingGF) { ResetFlowVectorQdih(fFlowVecQ, (Int_t) task->fiHarm[0]); }
 
 
   if(!fFlowUsePIDWeights){
@@ -3992,7 +3993,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
       Double_t dWeight = 1.0;
       if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kRefs); }
 
-      if(fCorrUsingGF) { FillFlowQVectorsForDih((Double_t) dWeight, (Double_t) dPhi, (Double_t) dEta, (Int_t) task->fiNumHarm); }
+      if(fCorrUsingGF) { FillFlowQVectorsForDih((Double_t) dWeight, (Double_t) dPhi, (Double_t) dEta, (Int_t) task->fiHarm[0]); }
 
       if(!bHasGap) // no eta gap
       {
