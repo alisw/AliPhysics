@@ -73,6 +73,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fUseChargedConstituents(true),
                                                                                fUseNeutralConstituents(true),
                                                                                fUseStandardOutlierRejection(false),
+                                                                               fDropMass0Jets(false),
                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
@@ -114,6 +115,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fUseChargedConstituents(true),
                                                                                                fUseNeutralConstituents(true),
                                                                                                fUseStandardOutlierRejection(false),
+                                                                                               fDropMass0Jets(false),
                                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
@@ -705,8 +707,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     SoftdropResults softdropDet, softdropPart;
     std::vector<SoftdropResults> splittingsDet, splittingsPart;
     try {
-      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
     } catch(...) {
       // Failed SoftDrop for det. level jet.
       if(fForceBeamType != kpp) {
@@ -729,8 +731,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       // Handle failed SoftDrop for part. level jet as impurity
       // Check condition first in case the the same acceptance is not required for the analysis
       try {
-        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(),  true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(),  true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
         hasMCSoftDrop = true;
         tagStatus = kMatchedJetNoAcceptance;
 
@@ -1104,8 +1106,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       SoftdropResults softdropPart, softdropDet;
       std::vector<SoftdropResults> splittingsPart, splittingsDet;
       try{
-        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
-        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets); 
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
       } catch (...) {
         continue;
       }
@@ -1128,8 +1130,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // check if for the matched det. level jet we can determine the SoftDrop
         // check this condition first in case not the same acceptance type is required
         try {
-          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
           tag = kMatchedJetNoAcceptance;
           if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()){
             tag = kPairAccepted;
