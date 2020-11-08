@@ -88,6 +88,24 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistCovMatSecVXX;           //!<!  histo with cov mat sec vert
   
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
+  TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
+  TH1F* fHistPtDplusDau0;            //!<!  histo with D+ prong pt
+  TH1F* fHistPtDplusDau1;            //!<!  histo with D+ prong pt
+  TH1F* fHistPtDplusDau2;            //!<!  histo with D+ prong pt
+  TH1F* fHistImpParDplusDau0;        //!<!  histo with D+ prong d0
+  TH1F* fHistImpParDplusDau1;        //!<!  histo with D+ prong d0
+  TH1F* fHistImpParDplusDau2;        //!<!  histo with D+ prong d0
+  TH1F* fHistDecLenDplus;            //!<!  histo with D+ decay length
+  TH1F* fHistDecLenXYDplus;          //!<!  histo with D+ decay length XY
+  TH1F* fHistNormDecLenXYDplus;      //!<!  histo with D+ normalized decay length XY
+  TH1F* fHistImpParErrDplusDau;      //!<!  histo with D+ prong d0 err
+  TH1F* fHistDecLenErrDplus;         //!<!  histo with D+ decay length err
+  TH1F* fHistDecLenXYErrDplus;       //!<!  histo with D+ decay length XY err
+  TH1F* fHistCosPointDplus;          //!<!  histo with D+ cosine of pointing angle
+  TH1F* fHistCosPointXYDplus;        //!<!  histo with D+ cosine of pointing angle XY
+  TH1F* fHistImpParXYDplus;          //!<!  histo with D+ impact parameter XY
+  TH1F* fHistNormIPDplus;            //!<!  histo with max difference between prong observed and expeceted impact parameters
+  TH1F* fHistoSumSqImpParDplusDau;   //!<!  histo with squared sum of prong impact parameters
 
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
@@ -119,7 +137,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,4);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,5);
 };
 
 
