@@ -79,7 +79,9 @@ class AliAnalysisTaskCVEUNIpt : public AliAnalysisTaskSE {
   void SetEtaRangeMin(Double_t emn)              {this->fMinEtaCut   = emn;}
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
-  void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetPtRangeMax(Double_t ptH, Double_t maxevpt)               {
+this->fMaxPtCut    = ptH;
+ this->fMaxevpt=maxevpt;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
 
@@ -126,6 +128,7 @@ class AliAnalysisTaskCVEUNIpt : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
+  Float_t                fMaxevpt;  
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //

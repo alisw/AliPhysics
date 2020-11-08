@@ -1,5 +1,5 @@
 
-void AddTaskCVEUNIpt(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
+void AddTaskCVEUNIpt(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0, Double_t maxevpt=2.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,
 		Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
 		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
 		Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,Double_t fEtaGapNeg=-0.1,Double_t fEtaGapPos=0.1,
@@ -56,7 +56,7 @@ void AddTaskCVEUNIpt(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMa
   task_CVE->SetEtaRangeMin(fEtaMin);
   task_CVE->SetEtaRangeMax(fEtaMax);
   task_CVE->SetPtRangeMin(fPtMin);
-  task_CVE->SetPtRangeMax(fPtMax);
+  task_CVE->SetPtRangeMax(fPtMax,maxevpt);
 
   task_CVE->SetEtaNeg(fEtaGapNeg);
   task_CVE->SetEtaPos(fEtaGapPos);
