@@ -100,6 +100,7 @@ AliAnalysisTaskCVEUNIpt::AliAnalysisTaskCVEUNIpt(const char *name): AliAnalysisT
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fMaxevpt(2.0),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -201,6 +202,7 @@ AliAnalysisTaskCVEUNIpt::AliAnalysisTaskCVEUNIpt():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fMaxevpt(2.0),  
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -351,9 +353,10 @@ void AliAnalysisTaskCVEUNIpt::UserCreateOutputObjects()
   fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",10,centRange,500,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
 
-  const int NPT=13;
+  const int NPT=21;
   //Double_t PT[NPT+1]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,3.0,4.0,5.0};
-  Double_t PT[NPT+1]={0.2,0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0};
+  //Double_t PT[NPT+1]={0.2,0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0};
+  Double_t PT[NPT+1]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.2,1.4,1.6,1.8,2.0};
 
   
   // v2 vs Ach
@@ -809,7 +812,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	//}
        
 
-	if (trkPt<2.0)
+	if (trkPt<fMaxevpt)
 	  {
 
 	    if(trkEta < fEtaGapNeg){
@@ -891,7 +894,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 
 
   
-  if (TMath::Abs(fAchrgNet)>0.1) return;
+  // if (TMath::Abs(fAchrgNet)>0.1) return;
 
  Int_t Ach=0;
  
@@ -920,7 +923,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 
 
 
-  const int noofptbins=13;
+  const int noofptbins=21;
 
 
   Double_t nSigRMSTPCTOFpion;
@@ -976,8 +979,12 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
   //Double_t highpt[noofptbins]={0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,3,4,5};
   Double_t ptcenter[noofptbins]={0.0};
 
-  Double_t lowpt[noofptbins]={0.2,0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0};
-  Double_t highpt[noofptbins]={0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0};
+  // Double_t lowpt[noofptbins]={0.2,0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0};
+  // Double_t highpt[noofptbins]={0.4,0.6,0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0};
+
+  // Double_t PT[NPT+1]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.2,1.4,1.6,1.8,2.0};
+  Double_t lowpt[noofptbins]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.2,1.4,1.6,1.8};
+  Double_t highpt[noofptbins]={0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.2,1.4,1.6,1.8,2.0};
 
   
   Double_t trkWgtPion=1.0, trkWgtKaon=1.0, trkWgtProt=1.0;
@@ -1230,7 +1237,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	
 	  //fHistv2AchChrgPos[0][iCent]->Fill(fAchrgNet,  (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgt); //This Trk weigth is for uQ
 
-	  //if(fParticle==0)
+	  // if(fParticle==0)
 	  //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  
 	  if(trkEta > fEtaGapPos){
@@ -1274,7 +1281,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	      sumQ2yKaonPosEtaNeg[j] += trkWgtKaon*uqIm;
 	      NumOfKaonPosEtaNeg[j]  += trkWgtKaon;
 	    }
-	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 	  if(fParticle==3 && isItProt){
 	    //fHistv2AchProtPos[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtProt);
@@ -1289,7 +1296,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	      sumQ2yProtPosEtaNeg[j] += trkWgtProt*uqIm;
 	      NumOfProtPosEtaNeg[j]  += trkWgtProt;
 	    }
-	    //fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
+	    fHFillNUAPosPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);
 	  }
 
 	  
@@ -1341,7 +1348,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	      sumQ2yKaonNegEtaNeg[j] += trkWgtKaon*uqIm;
 	      NumOfKaonNegEtaNeg[j]  += trkWgtKaon;
 	    }	  
-	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  
 	  }
 	  if(fParticle==3 && isItProt){
 	    //fHistv2AchProtNeg[0][iCent]->Fill(fAchrgNet, (uqRe*sumQxTPCneg + uqIm*sumQyTPCneg)/sumWgtneg, trkWgtProt);
@@ -1356,7 +1363,7 @@ void AliAnalysisTaskCVEUNIpt::UserExec(Option_t*) {
 	      sumQ2yProtNegEtaNeg[j] += trkWgtProt*uqIm;
 	      NumOfProtNegEtaNeg[j]  += trkWgtProt;
 	    }
-	    //fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
+	    fHFillNUANegPID[cForNUA]->Fill(pVtxZ,trkPhi,trkEta);	  	    
 	  }
 
 	
