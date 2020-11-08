@@ -295,7 +295,7 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         AliAODVertex *origOwnVtx = nullptr;
 
         int isSelected = IsCandidateSelected(lc, &vHF, unsetVtx, recVtx, origOwnVtx);
-        if (!isSelected || (fDecChannel == kLctopK0s && isSelected % 2 == 0) || (fDecChannel == kLctopiL && isSelected % 2 > 0))
+        if (!isSelected || (fDecChannel == kLctopK0s && isSelected % 2 == 0) || (fDecChannel == kLctopiL && isSelected < 2))
         {
             if (unsetVtx)
                 lc->UnsetOwnPrimaryVtx();
