@@ -3579,9 +3579,9 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     Int_t eventHasL0Flag_TrigFiles=(fInputHandler->IsEventSelected() & AliVEvent::kPHI7);
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
         if (!TriggerFiles_Filled){
-            if (fCaloTriggerMimicHelper[fiCut]){
+            if ((((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2)){//Only PHOS
                 if ( (fIsMC == 0 ) //Only Data
-                     &&(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2) //Only PHOS
+                     && fCaloTriggerMimicHelper[fiCut]
                      &&(fDoClusterQA > 1) //If QA Flag is set
                      &&((((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0)) //Only MB
                      ){
