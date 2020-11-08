@@ -97,12 +97,15 @@ private:
   Int_t    tID;              // identification number of the track
   Int_t    tPdgCodeMc;       // pdg code of the track if MC information is available
   UChar_t  tTOFclsN;         // number of cluster candidates in TOF
+  Int_t    tTOFchannel;
   UChar_t  tnPIDclsTPC;      // number of clusters used for PID in the TPC
   UChar_t  tITSclsMap;       // ITS cluster map
   Float_t  tMCpt;            // MC pt
   Float_t  tMCabsMom;        // MC absorption momentum
   Float_t  tMCabsRadius;     // MC absorption radius
-  Float_t  tMCtofMismatch;   //
+  Float_t  tMCabsEta;
+  Float_t  tMCabsPhi;
+  Bool_t   tMCtofMismatch;   //
   Int_t    tNmissingDaughters; // 
   Int_t    tNdaughters; // 
   Bool_t   tIsReconstructed; // False for MC particles 
@@ -117,6 +120,7 @@ private:
   TH3F *fHist3TOFpid[kNabsSpecies];  //! QA TOF beta per species
   TH3F *fHist3TOFpidAll;  //! QA TOF beta no species selection
   TH3F *fHist3TOFmass[kNabsSpecies]; //! QA TOF mass per species
+  TH3F *fHist3TOFnsigma[kNabsSpecies]; //! QA TOF nsigma per species
   TH3F *fHist3TOFmassAll; //! QA TOF mass no species selection
 
   TH1F *fHist1AcceptanceAll[2][2][2]; //! Number of tracks vs p, negative (0) and positive (1), without(0) and with (1) TRD, without (0) and with (1) TOF matching
