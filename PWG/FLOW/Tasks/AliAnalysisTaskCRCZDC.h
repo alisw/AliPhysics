@@ -352,6 +352,10 @@ private:
   Int_t fStepZDCRecenter = -1;
   Bool_t fStoreCalibZDCRecenter = kFALSE;
   TList *fZDCCalibList; //
+  TArrayD fAvVtxPosX;    // Run list
+  TArrayD fAvVtxPosY;    // Run list
+  TArrayD fAvVtxPosZ;    // Run list
+  Double_t fVtxPosCor[3];
   TProfile *fAve_VtxX; //!
   TProfile *fAve_VtxY; //!
   TProfile *fAve_VtxZ; //!
