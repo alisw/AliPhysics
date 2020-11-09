@@ -76,8 +76,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistImpParErrD0Dau{nullptr},
   fHistDecLenErrD0{nullptr},
   fHistDecLenXYErrD0{nullptr},
-  fHistCovMatPrimVXX{nullptr},
-  fHistCovMatSecVXX{nullptr},
+  fHistCovMatPrimVXX2Prong{nullptr},
+  fHistCovMatSecVXX2Prong{nullptr},
   fHistInvMassDplus{nullptr},
   fHistPtDPlus{nullptr},             
   fHistPtDplusDau0{nullptr},         
@@ -97,6 +97,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistImpParXYDplus{nullptr},       
   fHistNormIPDplus{nullptr},         
   fHistoSumSqImpParDplusDau{nullptr},
+  fHistCovMatPrimVXX3Prong{nullptr},
+  fHistCovMatSecVXX3Prong{nullptr},
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
   fSelectOnCentrality(kFALSE),
@@ -165,8 +167,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistImpParErrD0Dau;
     delete fHistDecLenErrD0;
     delete fHistDecLenXYErrD0;
-    delete fHistCovMatPrimVXX;
-    delete fHistCovMatSecVXX;
+    delete fHistCovMatPrimVXX2Prong;
+    delete fHistCovMatSecVXX2Prong;
     delete fHistInvMassDplus;
     delete fHistPtDPlus;             
     delete fHistPtDplusDau0;         
@@ -186,6 +188,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistImpParXYDplus;       
     delete fHistNormIPDplus;         
     delete fHistoSumSqImpParDplusDau;
+    delete fHistCovMatPrimVXX3Prong;
+    delete fHistCovMatSecVXX3Prong;
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -382,8 +386,8 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistImpParErrD0Dau = new TH1F("hImpParErrD0Dau", " D^{0} prongs ; #sigma(d_{0}^{xy}) (cm)", 100, -1.0, 1.0);
   fHistDecLenErrD0 = new TH1F("hDecLenErrD0", " ; #sigma(Decay Length) (cm)", 100, 0., 1.0);
   fHistDecLenXYErrD0 = new TH1F("hDecLenXYErrD0", " ; #sigma(Decay Length xy) (cm)", 100, 0., 1.0);
-  fHistCovMatPrimVXX = new TH1F("hCovMatPrimVXX", " Primary Vertex ; XX element of covariant matrix", 100, 0., 1.0e-4);
-  fHistCovMatSecVXX = new TH1F("hCovMatSecVXX", " Primary Vertex ; XX element of covariant matrix", 100, 0., 0.2);
+  fHistCovMatPrimVXX2Prong = new TH1F("hCovMatPrimVXX2Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVXX2Prong = new TH1F("hCovMatSecVXX2Prong", " Secondary Vertex 2-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistPtD0);
   fOutput->Add(fHistPtD0Dau0);
   fOutput->Add(fHistPtD0Dau1);
@@ -396,8 +400,8 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParErrD0Dau);
   fOutput->Add(fHistDecLenErrD0);
   fOutput->Add(fHistDecLenXYErrD0);
-  fOutput->Add(fHistCovMatPrimVXX);
-  fOutput->Add(fHistCovMatSecVXX);
+  fOutput->Add(fHistCovMatPrimVXX2Prong);
+  fOutput->Add(fHistCovMatSecVXX2Prong);
   
   // Dplus meson candidate histos
   fHistInvMassDplus = new TH1F("hInvMassDplus", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
@@ -419,6 +423,8 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistImpParXYDplus = new TH1F("hImpParXYDplus", " ; d_{0}^{xy} (cm)", 200, -1., 1.);       
   fHistNormIPDplus = new TH1F("hNormIPDplus", " ; Norm. IP", 200, -20., 20.);         
   fHistoSumSqImpParDplusDau = new TH1F("hSumSqImpParDplusDau", " ; Squared sum of d_{0}^{i} (cm^2)", 100, 0., 1.);
+  fHistCovMatPrimVXX3Prong = new TH1F("hCovMatPrimVXX3Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
+  fHistCovMatSecVXX3Prong = new TH1F("hCovMatSecVXX3Prong", " Secondary Vertex 3-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistInvMassDplus);
   fOutput->Add(fHistPtDPlus);             
   fOutput->Add(fHistPtDplusDau0);         
@@ -438,6 +444,8 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYDplus);       
   fOutput->Add(fHistNormIPDplus);         
   fOutput->Add(fHistoSumSqImpParDplusDau);
+  fOutput->Add(fHistCovMatPrimVXX3Prong);
+  fOutput->Add(fHistCovMatSecVXX3Prong);
 
   PostData(1,fOutput);
 
@@ -605,9 +613,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
         fHistDecLenXYErrD0->Fill(the2Prong->DecayLengthXYError());
         Double_t covMatrix[6];
         the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
-        fHistCovMatPrimVXX->Fill(covMatrix[0]);
+        fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
         the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
-        fHistCovMatSecVXX->Fill(covMatrix[0]);
+        fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
       }
       delete the2Prong;
       delete vertexAOD;
@@ -668,6 +676,11 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             fHistImpParXYDplus->Fill(the3Prong->ImpParXY());
             fHistNormIPDplus->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
             fHistoSumSqImpParDplusDau->Fill(sqSumd0Prong);
+            Double_t covMatrix[6];
+            the3Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
+            fHistCovMatPrimVXX3Prong->Fill(covMatrix[0]);
+            the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
+            fHistCovMatSecVXX3Prong->Fill(covMatrix[0]);
           }
           delete trkv3;
           delete the3Prong;
@@ -727,6 +740,11 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             fHistImpParXYDplus->Fill(the3Prong->ImpParXY());
             fHistNormIPDplus->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
             fHistoSumSqImpParDplusDau->Fill(sqSumd0Prong);
+            Double_t covMatrix[6];
+            the3Prong->GetPrimaryVtx()->GetCovMatrix(covMatrix);
+            fHistCovMatPrimVXX3Prong->Fill(covMatrix[0]);
+            the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
+            fHistCovMatSecVXX3Prong->Fill(covMatrix[0]);
           }
           delete trkv3;
           delete the3Prong;

@@ -84,8 +84,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistImpParErrD0Dau;         //!<!  histo with D0 prong d0 err
   TH1F* fHistDecLenErrD0;            //!<!  histo with D0 decay length err
   TH1F* fHistDecLenXYErrD0;          //!<!  histo with D0 decay length XY err
-  TH1F* fHistCovMatPrimVXX;          //!<!  histo with cov mat prim vert
-  TH1F* fHistCovMatSecVXX;           //!<!  histo with cov mat sec vert
+  TH1F* fHistCovMatPrimVXX2Prong;    //!<!  histo with cov mat prim vert for the 2-prong candidate
+  TH1F* fHistCovMatSecVXX2Prong;     //!<!  histo with cov mat sec vert for the 2-prong candidate
   
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
   TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
@@ -106,6 +106,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistImpParXYDplus;          //!<!  histo with D+ impact parameter XY
   TH1F* fHistNormIPDplus;            //!<!  histo with max difference between prong observed and expeceted impact parameters
   TH1F* fHistoSumSqImpParDplusDau;   //!<!  histo with squared sum of prong impact parameters
+  TH1F* fHistCovMatPrimVXX3Prong;    //!<!  histo with cov mat prim vert for the 3-prong candidate
+  TH1F* fHistCovMatSecVXX3Prong;     //!<!  histo with cov mat sec vert for the 3-prong candidate
 
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
