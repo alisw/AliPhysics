@@ -30,7 +30,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
-		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy);
+		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t NcontCone);
 		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
