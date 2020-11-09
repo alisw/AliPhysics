@@ -152,7 +152,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
-
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
@@ -163,6 +162,12 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
+  }
+
+  if (trigger == "kINT7") {
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+  } else if (trigger == "kHighMultV0") {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   }
 
   task->SetLightweight(suffix != "0");
