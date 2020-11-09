@@ -226,6 +226,8 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		hMcInPos[pid]  = 0;
 		hMcOutNeg[pid] = 0;
 		hMcOutPos[pid] = 0;
+		hMcOutNegTOF[pid] = 0;
+		hMcOutPosTOF[pid] = 0;
 	}
 
 	for(Int_t pid=0;pid<2;++pid){
@@ -378,6 +380,8 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 		hMcInPos[pid]=0;
 		hMcOutNeg[pid]=0;
 		hMcOutPos[pid]=0;
+		hMcOutNegTOF[pid] = 0;
+		hMcOutPosTOF[pid] = 0;
 	}
 
 	for(Int_t pid=0;pid<2;++pid){
@@ -732,25 +736,34 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 			if(pid==0){
 				hMcInNeg[pid] = new TH1D("hInNeg_Pion","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Pion","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Pion","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Pion","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Pion","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Pion","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Pion","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Pion","",nPtBins,ptBins);
 			}
 			else if(pid==1){
 				hMcInNeg[pid] = new TH1D("hInNeg_Kaon","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Kaon","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Kaon","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Kaon","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Kaon","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Kaon","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Kaon","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Kaon","",nPtBins,ptBins);
 			}
 			else{
 				hMcInNeg[pid] = new TH1D("hInNeg_Proton","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Proton","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Proton","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Proton","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Proton","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Proton","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Proton","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Proton","",nPtBins,ptBins);
 			}
-//			fListOfObjects->Add(hMcInNeg[pid]);
-//			fListOfObjects->Add(hMcInPos[pid]);
-//			fListOfObjects->Add(hMcOutNeg[pid]);
-//			fListOfObjects->Add(hMcOutPos[pid]);
+
+			fListOfObjects->Add(hMcInNeg[pid]);
+			fListOfObjects->Add(hMcInPos[pid]);
+			fListOfObjects->Add(hMcOutNeg[pid]);
+			fListOfObjects->Add(hMcOutPos[pid]);
+			fListOfObjects->Add(hMcOutNegTOF[pid]);
+			fListOfObjects->Add(hMcOutPosTOF[pid]);
 
 		}	// pid Eff
 
@@ -1070,7 +1083,7 @@ void AliAnalysisTaskPPvsMult::AnalyzeESD(AliESDEvent* esdEvent)
 				cent = icent;
 				fcent->Fill(icent+1);
 				ProduceArrayTrksESD( esdEvent, cent );
-				ProduceArrayV0ESD( esdEvent, cent );
+				//ProduceArrayV0ESD( esdEvent, cent );
 
 				if(fAnalysisMC)
 					ProcessMCTruthESD(cent);
@@ -1135,7 +1148,7 @@ void AliAnalysisTaskPPvsMult::ProcessMCTruthESD(const Int_t Cent)
 {
 	// Fill the special MC histogram with the MC truth info
 
-	cout<<"Cent Inside ProcessMCTruth ::: "<<Cent<<endl;
+	///cout<<"Cent Inside ProcessMCTruth ::: "<<Cent<<endl;
 	const Int_t nTracksMC = fMCStack->GetNtrack();
 
 	for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
@@ -1416,110 +1429,129 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 			TParticle* mcTrack = 0;
 			mcTrack = fMCStack->Particle(label);
 
-			if (mcTrack){
+			if (!mcTrack) continue; ///{
 
-				if( esdTrack->Charge()==0 )
-					continue;
+			if( esdTrack->Charge()==0 )
+				continue;
 
-				Int_t pdgCode = mcTrack->GetPdgCode();
-				pidCode = GetPidCode(pdgCode);
+			Int_t pdgCode = mcTrack->GetPdgCode();
+			pidCode = GetPidCode(pdgCode);
 
+			if( fMCStack->IsPhysicalPrimary(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+
+						if(PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh)){
+							if(pidCode==1) hMcOutNeg[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutNeg[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutNeg[2]->Fill(esdTrack->Pt());
+						}
+					}
+
+					if(pidCode==1) hDCApTPrim[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTPrim[1][0]->Fill(pt,dcaxy,V0MPer);
+
+				}
+				else{
+
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+
+						if(PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh)){
+							if(pidCode==1) hMcOutPos[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutPos[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutPos[2]->Fill(esdTrack->Pt());
+						}
+
+					}
+
+					if(pidCode==1) hDCApTPrim[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTPrim[1][1]->Fill(pt,dcaxy,V0MPer);
+
+				}
+			}	// Primary particles MC
+
+			if( fMCStack->IsSecondaryFromWeakDecay(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+					if(pidCode==1) hDCApTWDec[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTWDec[1][0]->Fill(pt,dcaxy,V0MPer);
+				}
+				else{
+					if(pidCode==1) hDCApTWDec[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTWDec[1][1]->Fill(pt,dcaxy,V0MPer);
+				}
+			}	// Weak Decay MC
+
+			if( fMCStack->IsSecondaryFromMaterial(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+					if(pidCode==1) hDCApTMate[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTMate[1][0]->Fill(pt,dcaxy,V0MPer);
+				}
+				else{
+					if(pidCode==1) hDCApTMate[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTMate[1][1]->Fill(pt,dcaxy,V0MPer);
+				}
+			}	// Material Inte MC
+
+			bool TOF_out = kFALSE;
+			TOF_out = TOFPID(esdTrack);
+			if(TOF_out){
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
 
 						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
-							if(pidCode==1) hMcOutNeg[0]->Fill(esdTrack->Pt());
-							if(pidCode==2) hMcOutNeg[1]->Fill(esdTrack->Pt());
-							if(pidCode==3) hMcOutNeg[2]->Fill(esdTrack->Pt());
-
+							if(pidCode==1) hMcOutNegTOF[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutNegTOF[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutNegTOF[2]->Fill(esdTrack->Pt());
 						}
 
-						if(pidCode==1) hDCApTPrim[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTPrim[1][0]->Fill(pt,dcaxy,V0MPer);
-
+						if(pidCode==1) hDCApTPrim_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTPrim_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
 
-						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
-							if(pidCode==1) hMcOutPos[0]->Fill(esdTrack->Pt());
-							if(pidCode==2) hMcOutPos[1]->Fill(esdTrack->Pt());
-							if(pidCode==3) hMcOutPos[2]->Fill(esdTrack->Pt());
-
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+							if(pidCode==1) hMcOutPosTOF[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutPosTOF[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutPosTOF[2]->Fill(esdTrack->Pt());
 						}
 
-						if(pidCode==1) hDCApTPrim[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTPrim[1][1]->Fill(pt,dcaxy,V0MPer);
-
+						if(pidCode==1) hDCApTPrim_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTPrim_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Primary particles MC
 
 				if( fMCStack->IsSecondaryFromWeakDecay(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
-						if(pidCode==1) hDCApTWDec[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTWDec[1][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTWDec_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTWDec_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
-						if(pidCode==1) hDCApTWDec[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTWDec[1][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTWDec_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTWDec_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Weak Decay MC
 
 				if( fMCStack->IsSecondaryFromMaterial(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
-						if(pidCode==1) hDCApTMate[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTMate[1][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTMate_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTMate_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
-						if(pidCode==1) hDCApTMate[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTMate[1][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTMate_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTMate_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Material Inte MC
 
-				bool TOF_out = kFALSE;
-				TOF_out = TOFPID(esdTrack);
-				if(TOF_out){
-					if( fMCStack->IsPhysicalPrimary(label) ){
+			} // DCA for TOF analysis
 
-						if( esdTrack->Charge() < 0.0 ){
-							if(pidCode==1) hDCApTPrim_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTPrim_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
-						}
-						else{
-							if(pidCode==1) hDCApTPrim_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTPrim_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
-						}
-					}	// Primary particles MC
-
-					if( fMCStack->IsSecondaryFromWeakDecay(label) ){
-
-						if( esdTrack->Charge() < 0.0 ){
-							if(pidCode==1) hDCApTWDec_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTWDec_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
-						}
-						else{
-							if(pidCode==1) hDCApTWDec_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTWDec_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
-						}
-					}	// Weak Decay MC
-
-					if( fMCStack->IsSecondaryFromMaterial(label) ){
-
-						if( esdTrack->Charge() < 0.0 ){
-							if(pidCode==1) hDCApTMate_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTMate_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
-						}
-						else{
-							if(pidCode==1) hDCApTMate_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
-							if(pidCode==3) hDCApTMate_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
-						}
-					}	// Material Inte MC
-
-				} // DCA for TOF analysis
-
-			}	//mcTrack
+			///			}	//mcTrack
 		}	//fAnalysis MC
 
 		if(esdTrack->Charge() < 0.0){
