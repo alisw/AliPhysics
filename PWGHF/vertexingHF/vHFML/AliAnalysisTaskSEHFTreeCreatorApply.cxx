@@ -190,9 +190,13 @@ fITSUpgradePreSelect(0),
 fEnableNsigmaTPCDataCorr(false),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone),
 fApplyPhysicsSelOnline(false),
+fApplyEventSelOnline(false),
 fEnableEventDownsampling(false),
 fFracToKeepEventDownsampling(1.1),
 fSeedEventDownsampling(0),
+fEnableCandDownsampling(false),
+fFracToKeepCandDownsampling(1.1),
+fMaxPtCandDownsampling(999.),
 fConfigPath(""),
 fMLResponse(0x0),
 fReducePbPbBranches(false),
@@ -764,13 +768,16 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
                         TESTBIT(triggerBits, inputV0A->GetIndexCTP() - 1)) : -1;
   
   fTreeEvChar->Fill();
+  if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray,mcHeader);
   
+  //reduce output size by continuing only with selected events to reco TTrees
+  if(!isEvSel && fApplyEventSelOnline) return;
+
   //get PID response
   if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   
   if(fWriteVariableTreeDs) Process3Prong(array3Prong,aod,mcArray,aod->GetMagneticField(),mcHeader);
   if(fWriteVariableTreeLc2V0bachelor) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField(),mcHeader);
-  if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray,mcHeader);
   
   // Post the data
   PostData(1,fNentries);
@@ -871,6 +878,12 @@ void AliAnalysisTaskSEHFTreeCreatorApply::Process3Prong(TClonesArray *array3Pron
       nFilteredDs++;
       if((vHF->FillRecoCand(aod,ds))) {////Fill the data members of the candidate only if they are empty.
         
+        if(fEnableCandDownsampling){
+          Double_t ptCand = ds->Pt();
+          Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
+          if (pseudoRand > fFracToKeepCandDownsampling && ptCand < fMaxPtCandDownsampling) continue;
+        }
+
         Int_t isSelectedFilt=fFiltCutsDstoKKpi->IsSelected(ds,AliRDHFCuts::kAll,aod);
         Int_t isKKpi=isSelectedFilt&1;
         Int_t ispiKK=isSelectedFilt&2;
@@ -1135,6 +1148,12 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
         //Remember to run also CleanUpTask!
         if(d->GetIsFilled()==1 && fLc2V0bachelorCalcSecoVtx) vHF->RecoSecondaryVertexForCascades(aod, d);
         
+        if(fEnableCandDownsampling){
+          Double_t ptCand = d->Pt();
+          Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
+          if (pseudoRand > fFracToKeepCandDownsampling && ptCand < fMaxPtCandDownsampling) continue;
+        }
+
         Int_t isSelectedFilt = fFiltCutsLc2V0bachelor->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
         
         if(isSelectedFilt > 0){
