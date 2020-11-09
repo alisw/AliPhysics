@@ -1623,28 +1623,24 @@ void AliAnalysisTaskStudentsML::CalculateWeight(Int_t CentBin, Int_t RunNumber, 
     Double_t weight_eta = 1.;
     Int_t iBin = 0;
 
-    		
-		
-		
-
 
     if(bUsePhiWeights)
     { 
       iBin = fHistoPhiWeight[CentBin][RunIndex]->FindBin(angles[i]); 
       weight_phi = fHistoPhiWeight[CentBin][RunIndex]->GetBinContent(iBin); 
-      fPhiHistogram[CentBin][4]->Fill(angles[i], weight_phi); 
+      if(bSaveAllQA){ fPhiHistogram[CentBin][4]->Fill(angles[i], weight_phi); }
     }
     if(bUsePtWeights)
     {
       iBin = fHistoPtWeight[CentBin][RunIndex]->FindBin(pt[i]); 
       weight_pt = fHistoPtWeight[CentBin][RunIndex]->GetBinContent(iBin);
-      fPTHistogram[CentBin][4]->Fill(pt[i], weight_pt); 
+      if(bSaveAllQA){ fPTHistogram[CentBin][4]->Fill(pt[i], weight_pt); }
     }
     if(bUseEtaWeights)
     { 
       iBin = fHistoEtaWeight[CentBin][RunIndex]->FindBin(eta[i]); 
       weight_eta = fHistoEtaWeight[CentBin][RunIndex]->GetBinContent(iBin);
-      fEtaHistogram[CentBin][4]->Fill(eta[i], weight_eta); 
+      if(bSaveAllQA){ fEtaHistogram[CentBin][4]->Fill(eta[i], weight_eta); } 
     }
    
     //Final overall weight
