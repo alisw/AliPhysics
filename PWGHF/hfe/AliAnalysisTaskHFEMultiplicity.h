@@ -124,9 +124,9 @@ public:
         fCutEopEMax=EopEMax;
     }
     
-    void             SetShowerShapeEM20(Double_t M20Min,Double_t M20Max){
-        fCutM20Min=M20Min;
-        fCutM20Max=M20Max;
+    void             SetShowerShapeEM02(Double_t M02Min,Double_t M02Max){
+        fCutM02Min=M02Min;
+        fCutM02Max=M02Max;
     }
     
     
@@ -160,8 +160,8 @@ private:
     Double_t         fCutEopEMax;
     Double_t         fCutNsigmaEMin;
     Double_t         fCutNsigmaEMax;
-    Double_t         fCutM20Min;
-    Double_t         fCutM20Max;
+    Double_t         fCutM02Min;
+    Double_t         fCutM02Max;
     //--------------------Loose cuts for photonic electron pair------------------
     Int_t         fAssoTPCCluster;//!
     Int_t         fAssoITSCluster;//!
@@ -276,6 +276,10 @@ private:
     TH1F*                 fMissingEmbEtaEleTrkPt;//!
     TH2F*                 fHFElecPtAll;//!
     TH2F*                 fHFElecPtReco_wtrkcuts;//!
+    TH2F*                 fHFElecPtReco_wtrkmatch;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEop;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEopTPC;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEopTPCM02;//!
     TH2F*                 fHFElecPtReco_wTPCPID;//!
     TH2F*                 fHFElecPtReco_wtrkCalocuts;//!
     TH2F*                 fHFElecPtReco_wTPCCaloPID;//!

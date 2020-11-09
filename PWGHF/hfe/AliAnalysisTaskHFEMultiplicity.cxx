@@ -118,8 +118,8 @@ fCutEopEMin(0.8),
 fCutEopEMax(1.2),
 fCutNsigmaEMin(-1.),
 fCutNsigmaEMax(3.),
-fCutM20Min(0.02),
-fCutM20Max(0.35),
+fCutM02Min(0.02),
+fCutM02Max(0.35),
 //Loose cuts for photonic electron pair
 fAssoTPCCluster(80.),
 fAssoITSCluster(3.),
@@ -225,6 +225,10 @@ fInclseDCALElecPtReco(0),
 // hfe e-
 fHFElecPtAll(0),
 fHFElecPtReco_wtrkcuts(0),
+fHFElecPtReco_wtrkmatch(0),
+fHFElecPtReco_wtrkmatchEop(0),
+fHFElecPtReco_wtrkmatchEopTPC(0),
+fHFElecPtReco_wtrkmatchEopTPCM02(0),
 fHFElecPtReco_wTPCPID(0),
 fHFElecPtReco_wtrkCalocuts(0),
 fHFElecPtReco_wTPCCaloPID(0),
@@ -308,8 +312,8 @@ fCutEopEMin(0.8),
 fCutEopEMax(1.2),
 fCutNsigmaEMin(-1.),
 fCutNsigmaEMax(3.),
-fCutM20Min(0.02),
-fCutM20Max(0.35),
+fCutM02Min(0.02),
+fCutM02Max(0.35),
 //Loose cuts for photonic electron pair
 fAssoTPCCluster(80.),
 fAssoITSCluster(3.),
@@ -414,6 +418,10 @@ fInclseDCALElecPtReco(0),
 // hfe e-
 fHFElecPtAll(0),
 fHFElecPtReco_wtrkcuts(0),
+fHFElecPtReco_wtrkmatch(0),
+fHFElecPtReco_wtrkmatchEop(0),
+fHFElecPtReco_wtrkmatchEopTPC(0),
+fHFElecPtReco_wtrkmatchEopTPCM02(0),
 fHFElecPtReco_wTPCPID(0),
 fHFElecPtReco_wtrkCalocuts(0),
 fHFElecPtReco_wTPCCaloPID(0),
@@ -644,6 +652,14 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         
         fHFElecPtReco_wtrkcuts = new TH2F("fHFElecPtReco_wtrkcuts","p_{T} distribution of HF electrons with track cuts;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
         
+        fHFElecPtReco_wtrkmatch = new TH2F("fHFElecPtReco_wtrkmatch","p_{T} distribution of HF electrons with track match cuts;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEop = new TH2F("fHFElecPtReco_wtrkmatchEop","p_{T} distribution of HF electrons with track match Eop;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEopTPC = new TH2F("fHFElecPtReco_wtrkmatchEopTPC","p_{T} distribution of HF electrons with track match Eop TPC nsigma cut;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEopTPCM02 = new TH2F("fHFElecPtReco_wtrkmatchEopTPCM02","p_{T} distribution of HF electrons with track match Eop TPC nsigma cut;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
         fHFElecPtReco_wTPCPID = new TH2F("fHFElecPtReco_wTPCPID","p_{T} distribution of all HF electrons with TPC PID;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
         
         fHFElecPtReco_wtrkCalocuts = new TH2F("fHFElecPtReco_wtrkCalocuts","p_{T} distribution of all HF electrons with Track matching;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
@@ -760,6 +776,10 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     if(fReadMC){
         fHFElecPtAll->Sumw2();
         fHFElecPtReco_wtrkcuts->Sumw2();
+        fHFElecPtReco_wtrkmatch->Sumw2();
+        fHFElecPtReco_wtrkmatchEop->Sumw2();
+        fHFElecPtReco_wtrkmatchEopTPC->Sumw2();
+        fHFElecPtReco_wtrkmatchEopTPCM02->Sumw2();
         fHFElecPtReco_wTPCPID->Sumw2();
         fHFElecPtReco_wtrkCalocuts->Sumw2();
         fHFElecPtReco_wTPCCaloPID->Sumw2();
@@ -840,6 +860,10 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         fOutputList->Add(fInclseDCALElecPtReco);
         fOutputList->Add(fHFElecPtAll);
         fOutputList->Add(fHFElecPtReco_wtrkcuts);
+        fOutputList->Add(fHFElecPtReco_wtrkmatch);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEop);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEopTPC);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEopTPCM02);
         fOutputList->Add(fHFElecPtReco_wTPCPID);
         fOutputList->Add(fHFElecPtReco_wtrkCalocuts);
         fOutputList->Add(fHFElecPtReco_wTPCCaloPID);
@@ -934,7 +958,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
            fNevents->Fill(4);
        }
        
-       fNevents->Fill(5);
+        
     
     
     if(fUseTender){
@@ -1238,7 +1262,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
-            if(TMath::Abs(fPhiDiff) > 0.06 || TMath::Abs(fEtaDiff)> 0.06) continue;
+            if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
             
             Float_t EMCalpos[3];
             clustMatch -> GetPosition(EMCalpos);
@@ -1260,6 +1284,21 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             fTrkMatchTrketa->Fill(TrkEta);
             fTrkMatchTrkphi->Fill(TrkPhi);
             fTrkMatchClusetaphi->Fill(emceta,emcphi);
+            
+            
+            if(fReadMC){
+                Int_t iTrklabel = TMath::Abs(track->GetLabel());
+                if(iTrklabel == 0) continue;
+                AliAODMCParticle *MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
+                if(TMath::Abs(MCPart->Eta()) > fCutTrackEta) continue;
+                if(!MCPart->IsPhysicalPrimary()) continue;
+                if(TMath::Abs(MCPart->GetPdgCode())==11) { //only electrons
+                    Int_t IsElecHf=GetHFE(MCPart,fMCArray);
+                    if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){ //HF electrons
+                        fHFElecPtReco_wtrkmatch -> Fill(TrkPt,correctednAcc1);
+                    }
+                }
+            }
             
             Double_t Etrkmatch = -999.0, Eoptrk = -999.0 , M02trkmatch = -999.0, M20trkmatch = -999.0;
             
@@ -1292,27 +1331,25 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Int_t iMCmom=-999, MomPDG = -999;
             Double_t MomPt =-999;
             
-            if(fReadMC){Int_t iTrklabel = TMath::Abs(track->GetLabel());
+            if(fReadMC){
+                
+                Int_t iTrklabel = TMath::Abs(track->GetLabel());
                 if(iTrklabel == 0) continue;
                 AliAODMCParticle *MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
                 if(TMath::Abs(MCPart->GetPdgCode())!=11) continue;
-                fInclsElecPt->Fill(TrkPt);
-                if(fElectTrack){
-                    fInclsElecPtReco->Fill(TrkPt);
-                    if(fClsTypeEMC) fInclseEMCALElecPtReco->Fill(TrkPt);
-                    if(fClsTypeDCAL) fInclseDCALElecPtReco->Fill(TrkPt);
-                }
-                
-                
+                if(Eoptrk > fCutEopEMin && Eoptrk < fCutEopEMax) {
                 
                 Int_t IsElecHf=GetHFE(MCPart,fMCArray);
                 if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
-                    fHFElecPtReco_wtrkCalocuts -> Fill(TrkPt,correctednAcc1);
-                    if (fElectTrack){
-                        fHFElecPtReco_wTPCCaloPID -> Fill(TrkPt,correctednAcc1); }
+                    fHFElecPtReco_wtrkmatchEop -> Fill(TrkPt,correctednAcc1);
+                    if(nsigma > fCutNsigmaEMin && nsigma < fCutNsigmaEMax) {
+                    fHFElecPtReco_wtrkmatchEopTPC -> Fill(TrkPt,correctednAcc1);
+                        if(M02trkmatch > fCutM02Min && M02trkmatch < fCutM02Max) {
+                    fHFElecPtReco_wtrkmatchEopTPCM02 -> Fill(TrkPt,correctednAcc1);
+                            }
+                        }
+                    }
                 }
-                
-                
                 //----------photon tagging efficiency by invariant mass method-------------------------------
                 //   if(!fCalculateNonHFEEffi) continue;
                 
@@ -1508,10 +1545,12 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEIDCuts(AliAODTrack *track, AliAODCal
     if(track->P()>0)eop = clustE/track->P();
     
     m20 =clust->GetM20();
+    m02 =clust->GetM02();
     
     if(nsigma_ele < fCutNsigmaEMin || nsigma_ele > fCutNsigmaEMax) return kFALSE;
     
-    if(m20 < fCutM20Min || m20 > fCutM20Max) return kFALSE;
+    //if(m20 < fCutM20Min || m20 > fCutM20Max) return kFALSE;
+    if(m02 < fCutM02Min || m02 > fCutM02Max) return kFALSE;
     if(eop < fCutEopEMin || eop > fCutEopEMax) return kFALSE;
     
     return kTRUE;
@@ -1559,12 +1598,12 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
     if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
     if (TMath::Abs(TrkEta)>fCutTrackEta) return kFALSE;
     
-    Double_t nclus = atrack->GetTPCNcls();  // TPC cluster information
+    
     Double_t nclusF = atrack->GetTPCNclsF(); // TPC cluster information findable
     Double_t nclusN = atrack->GetTPCsignalN();
     
     if(nclusF>0.){
-        Double_t RatioTPCclusters= atrack->GetTPCCrossedRows()/nclusF;
+        Double_t RatioTPCclusters= (Double_t)atrack->GetTPCCrossedRows()/nclusF;
         if(RatioTPCclusters < fRatioCrossedRowOverFindable) return kFALSE;
     }
     //=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster=============
