@@ -403,7 +403,10 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
     auto partcont = task->AddMCParticleContainer(nameparticles);
     partcont->SetMinPt(0.);
     partcont->SetParticleEtaLimits(-0.7, 0.7);
+    // For purely part. level jets make acceptance radially symmetric in phi,
+    // in order ot be more efficient, but restrict to eta limits of EMCAL
     auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, R, AliJetContainer::kTPCfid, partcont, nullptr);
+    jetcont->SetJetEtaLimits(-0.7 + R, 0.7 - R);
     jetcont->SetName("partjets");
     jetcont->SetMaxTrackPt(1000);
     jetcont->SetMinPt(0);
