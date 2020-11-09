@@ -44,6 +44,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     AliAnalysisEmcalSoftdropHelperImpl(),
     fHistos(nullptr),
     fDoSoftDrop(true),
+    fDropMass0Jets(true),
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
@@ -56,6 +57,7 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     AliAnalysisEmcalSoftdropHelperImpl(),
     fHistos(nullptr),
     fDoSoftDrop(true),
+    fDropMass0Jets(true),
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
@@ -342,12 +344,12 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         if(fDoSoftDrop) {
             if(j->GetNumberOfTracks() > 1 && j->M() > 0) { // Temporary condition to prevent a crash in the declustering due to 0 jet mass
                 try {
-                    auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
+                    auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex, fDropMass0Jets);
                     bool untagged = sdparams.fZg < sdsettings.fZcut;
                     std::vector<SoftdropResults> splittings;
                     if(!untagged) {
                         // only try iterative declustering if the jet is not an untagged jet
-                        splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex);
+                        splittings = this->IterativeDecluster(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex, fDropMass0Jets);
                     }
 
                     fHistos->FillTH2("hSDZg", sdparams.fZg, j->Pt());

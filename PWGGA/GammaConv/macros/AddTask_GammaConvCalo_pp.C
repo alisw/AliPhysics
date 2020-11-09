@@ -2727,6 +2727,9 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0163103100000010"); // NCell effi on MC
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3o220000","0163103100000010"); // NCell effi on MC
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3p220000","0163103100000010"); // NCell effi on MC
+  } else if (trainConfig == 2133){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation TB variations
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3q220000","0163103100000010"); // NCell effi on MC
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r220000","0163103100000010"); // NCell effi on MC
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
@@ -2906,29 +2909,29 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00052113","00200009f9730000dge0400000","111110406f032230000","0163103100000010"); // std
     cuts.AddCutPCMCalo("00081113","00200009f9730000dge0400000","111110406f032230000","0163103100000010"); // std
 
-  } else if (trainConfig == 2450){  // 100 MeV aggregation TB NL tests
+  } else if (trainConfig == 2450){  // TB parametrization from Nico on Martin 100MeV points + FineTune
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // INT7
-  } else if (trainConfig == 2451){  // 100 MeV aggregation TB NL tests
+  } else if (trainConfig == 2451){  // TB parametrization from Nico on Martin 100MeV points + FineTune
     cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790107f032230000","0163103100000010"); // EG1
-  } else if (trainConfig == 2452){  // 50 MeV aggregation TB NL tests
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // INT7
-  } else if (trainConfig == 2453){  // 50 MeV aggregation TB NL tests
-    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // EG2
-    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790207f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2452){  // no NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2453){  // no NL
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG1
   } else if (trainConfig == 2454){  // 150 MeV aggregation TB NL tests
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // INT7
   } else if (trainConfig == 2455){  // 150 MeV aggregation TB NL tests
     cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790307f032230000","0163103100000010"); // EG1
-  } else if (trainConfig == 2456){  // 300 MeV aggregation TB NL tests
-    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // INT7
-  } else if (trainConfig == 2457){  // 300 MeV aggregation TB NL tests
-    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // EG2
-    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790407f032230000","0163103100000010"); // EG1
-  } else if (trainConfig == 2458){  // any aggregation no NL tests
+  } else if (trainConfig == 2456){  // kPi0MCv3 for MC and kTestBeamv4 for data
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790607f032230000","0163103100000010"); // INT7
+  } else if (trainConfig == 2457){  // kPi0MCv3 for MC and kTestBeamv4 for data
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790607f032230000","0163103100000010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790607f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2458){  // no NL
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // INT7
-  } else if (trainConfig == 2459){  // any aggregation no NL tests
+  } else if (trainConfig == 2459){  // no NL
     cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG1
 

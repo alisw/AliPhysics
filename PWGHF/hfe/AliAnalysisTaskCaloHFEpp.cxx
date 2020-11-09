@@ -483,10 +483,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[7]=   {100, 100, 200, 500, 100, 100, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[7]={  0,  -5,   0,   0,   0,   0,   0};
-        Double_t xmax[7]={100,   5,   2, 0.5, 100,   1,   1};
-        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;m20;m02",7,bins,xmin,xmax);
+        Int_t bins[8]=   {100, 100, 200, 500, 100, 100, 100, 20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[8]={  0,  -5,   0,   0,   0,   0,   0,  0};
+        Double_t xmax[8]={100,   5,   2, 0.5, 100,   1,   1, 20};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;m20;m02;Ncont",8,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
@@ -1279,19 +1279,21 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			Bool_t fFlagNonHFE=kFALSE; 
 			Bool_t fFlagIsolation=kFALSE; 
                         Double_t IsoEnergy = -999.9;
+                        Int_t NcontCone = -1;
 
                         Bool_t icaliso = kTRUE;
                         if(fMCarray && TMath::Abs(pdgorg)!=24 && pdgstatus!=1)icaliso = kFALSE;
-                        cout << "icaliso = " << icaliso << endl;
+                        //cout << "icaliso = " << icaliso << endl;
 
-			if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
 			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
                         //cout << "IsoEnergy = " << IsoEnergy << endl << IsoEnergy << endl;;
 
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
                         if(TrkPt>10.0 && icaliso)
                            {
-                            Double_t isoarray[7];
+                            Double_t isoarray[8];
                             isoarray[0] = TrkPt;
                             isoarray[1] = fTPCnSigma;
                             isoarray[2] = eop;
@@ -1299,6 +1301,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[4] = pTpart;
                             isoarray[5] = m20;
                             isoarray[6] = m02;
+                            isoarray[7] = (Double_t)NcontCone;
+                            //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
                            }
 
@@ -1751,7 +1755,7 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t NcontCone)
 {
 	//##################### Set cone radius  ##################### //
 	Double_t CutConeR = MaxConeR;
@@ -1838,6 +1842,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
         //cout << "NinSide = " << NinSide << endl;
 	fFlagIso = flagIso;
         IsoEnergy = riso;
+        NcontCone = NinSide;
 
 }
 

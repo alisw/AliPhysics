@@ -62,6 +62,7 @@ public:
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
+  void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
 
   void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
 
@@ -87,6 +88,7 @@ private:
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizer
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
+  Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
 

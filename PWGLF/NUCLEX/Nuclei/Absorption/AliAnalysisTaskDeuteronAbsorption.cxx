@@ -90,11 +90,14 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          tID{0},
                                                                                          tPdgCodeMc{0},
                                                                                          tTOFclsN{0},
+											 tTOFchannel{-1},
                                                                                          tnPIDclsTPC{0},
                                                                                          tITSclsMap{0u},
                                                                                          tMCpt{0.f},
                                                                                          tMCabsMom{-1.},
                                                                                          tMCabsRadius{-1.},
+											 tMCabsEta{-999.},
+											 tMCabsPhi{-999.},
                                                                                          tMCtofMismatch{false},
 											 tNmissingDaughters{-9},
 											 tNdaughters{-99},
@@ -108,6 +111,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fHist3TOFpid{nullptr},
                                                                                          fHist3TOFpidAll{nullptr},
                                                                                          fHist3TOFmass{nullptr},
+                                                                                         fHist3TOFnsigma{nullptr},
                                                                                          fHist3TOFmassAll{nullptr},
                                                                                          fHist1AcceptanceAll{nullptr},
                                                                                          fHist2Matching{nullptr},
@@ -177,9 +181,11 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fHist3TPCpid[iSpecies] = new TH3F(Form("fHist3TPCpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); d#it{E}/d#it{x} (arb. units); #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 400, 0, 1000, 18, 0, TMath::TwoPi());
     fHist3TOFpid[iSpecies] = new TH3F(Form("fHist3TOFpid%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); #beta; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 300, 0, 1.2, 18, 0, 2 * TMath::Pi());
     fHist3TOFmass[iSpecies] = new TH3F(Form("fHist3TOFmass%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 160, 0, 6.5, 18, 0, 2 * TMath::Pi());
+    fHist3TOFnsigma[iSpecies] = new TH3F(Form("fHist3TOFnsigma%s", fgkParticleNames[iSpecies].data()), Form("%s; #it{p}/#it{z} (Gev/#it{c}); TOF n_{#sigma}; #Phi (rad)", fgkParticleNames[iSpecies].data()), 400, -10, 10, 300, -15, 15, 18, 0, 2 * TMath::Pi());
     fOutputList->Add(fHist3TPCpid[iSpecies]);
     fOutputList->Add(fHist3TOFpid[iSpecies]);
     fOutputList->Add(fHist3TOFmass[iSpecies]);
+    fOutputList->Add(fHist3TOFnsigma[iSpecies]);
   }
   fHist3TPCpidAll = new TH3F("fHist3TPCpidAll", "; #it{p}/#it{z} (Gev/#it{c}); d#it{E}/d#it{x} (arb. units); #Phi (rad)", 400, -10, 10, 1000, 0, 1000, 18, 0, TMath::TwoPi());
   fHist3TOFpidAll = new TH3F("fHist3TOFpidAll", "; #it{p}/#it{z} (Gev/#it{c}); #beta; #Phi (rad)", 400, -10, 10, 300, 0, 1.2, 18, 0, 2 * TMath::Pi());
@@ -233,6 +239,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tTOFsigDz", &tTOFsigDz, "tTOFsigDz/F");
     fTreeTrack->Branch("tTOFchi2", &tTOFchi2, "tTOFchi2/F");
     fTreeTrack->Branch("tTOFclsN", &tTOFclsN, "tTOFclsN/b");
+    fTreeTrack->Branch("tTOFchannel", &tTOFchannel, "tTOFchannel/I");
     fTreeTrack->Branch("tTRDclsN", &tTRDclsN, "tTRDclsN/I");
     fTreeTrack->Branch("tTRDntracklets", &tTRDntracklets, "tTRDntracklets/b");
     fTreeTrack->Branch("tTRDNchamberdEdx", &tTRDNchamberdEdx, "tTRDNchamberdEdx/b");
@@ -250,6 +257,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tMCpt", &tMCpt, "tMCpt/F");
     fTreeTrack->Branch("tMCabsMom", &tMCabsMom, "tMCabsMom/F");
     fTreeTrack->Branch("tMCabsRadius", &tMCabsRadius, "tMCabsRadius/F");
+    fTreeTrack->Branch("tMCabsEta", &tMCabsEta, "tMCabsEta/F");
+    fTreeTrack->Branch("tMCabsPhi", &tMCabsPhi, "tMCabsPhi/F");
     fTreeTrack->Branch("tMCtofMismatch", &tMCtofMismatch, "tMCtofMismatch/O");
     fTreeTrack->Branch("tNmissingDaughters", &tNmissingDaughters, "tNmissingDaughters/I");
     fTreeTrack->Branch("tNdaughters", &tNdaughters, "tNdaughters/I");
@@ -374,7 +383,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         double absVtx[3]{0., 0., 0.};
         double absT{0.};
 	tNmissingDaughters = 0;
-	tNdaughters = mcParticle->GetNDaughters();
+	tNdaughters = 0;
         for (int c = mcParticle->GetDaughterFirst(); c <= mcParticle->GetDaughterLast(); c++)
         {
           AliVParticle *dPart = mcEvent->GetTrack(c);
@@ -387,14 +396,17 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
           {
             absT = currentT;
             dPart->XvYvZv(absVtx);
-          }
+	    tMCabsEta = dPart->Eta();
+	    tMCabsPhi = dPart->Phi();
+	  }
           else if (std::abs(currentT - absT) > 1.e-10)
-            continue;
+	    continue;
+	  tNdaughters++;
           counter++;
           totalMom[0] += dPart->Px();
           totalMom[1] += dPart->Py();
           totalMom[2] += dPart->Pz();
-        }
+	}
         tMCabsMom = std::sqrt(totalMom[0] * totalMom[0] + totalMom[1] * totalMom[1] + totalMom[2] * totalMom[2]);
         tMCabsRadius = std::hypot(absVtx[0], absVtx[1]);
       }
@@ -416,6 +428,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       tTOFsigDz = track->GetTOFsignalDz();
       tTOFchi2 = track->GetTOFchi2();
       tTOFclsN = track->GetTOFclusterN();
+      tTOFchannel = track->GetTOFCalChannel();
       tTRDclsN = track->GetTRDncls();
       tTRDntracklets = track->GetTRDntracklets();
       tTRDNchamberdEdx = track->GetTRDNchamberdEdx();
@@ -460,6 +473,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         {
           fHist3TOFpid[iSpecies]->Fill(ptot * sign, beta, track->Phi());
           fHist3TOFmass[iSpecies]->Fill(ptot * sign, mass2, track->Phi());
+	  fHist3TOFnsigma[iSpecies]->Fill(ptot * sign, fPIDResponse->NumberOfSigmasTOF(track, fgkSpecies[iSpecies]), track->Phi());
         }
       }
     }

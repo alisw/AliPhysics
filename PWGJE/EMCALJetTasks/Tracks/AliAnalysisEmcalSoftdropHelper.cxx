@@ -132,7 +132,7 @@ TBinning *AliAnalysisEmcalSoftdropHelperImpl::GetRgBinning(double R) const {
   return binning;
 }
 
-AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex) {
+AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelperImpl::MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -171,7 +171,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
   fastjet::ClusterSequence jetfinder(constituents, jetdef);
   std::vector<fastjet::PseudoJet> outputjets = jetfinder.inclusive_jets(0);
   auto sdjet = outputjets[0];
-  if(TMath::Abs(sdjet.m2()) < 1e-5) {
+  if(dropMass0Jets && (TMath::Abs(sdjet.m2()) < 1e-5)) {
     AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
     throw  2;
   }
@@ -201,7 +201,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
           softdropstruct.dropped_count()};
 }
 
-std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex) {
+std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmcalSoftdropHelperImpl::IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets) {
   const int kClusterOffset = 30000; // In order to handle tracks and clusters in the same index space the cluster index needs and offset, large enough so that there is no overlap with track indices
   std::vector<fastjet::PseudoJet> constituents;
   fastjet::PseudoJet inputjet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
@@ -261,7 +261,7 @@ std::vector<AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> AliAnalysisEmca
     fastjet::ClusterSequence recluster(constituents, fJetDef);
     auto outputJets = recluster.inclusive_jets(0);
     fastjet::PseudoJet harder, softer, splitting = outputJets[0];
-    if(TMath::Abs(splitting.m2()) < 1e-5) {
+    if(dropMass0Jets && (TMath::Abs(splitting.m2()) < 1e-5)) {
       AliErrorGeneralStream("MakeSoft") << "Detected jet with mass 0, not possible to evaluate SoftDrop" << std::endl;
       throw  2;
     } 

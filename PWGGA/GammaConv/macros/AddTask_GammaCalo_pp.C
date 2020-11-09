@@ -2539,20 +2539,20 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790106f032230000","01631031000000d0"); // EG2  test beam NL
     cuts.AddCutCalo("0008d113","411790106f032230000","01631031000000d0"); // EG1  test beam NL
   } else if (trainConfig == 2102){ // 50 MeV aggregation
-    cuts.AddCutCalo("00010113","411790206f032230000","01631031000000d0"); // INT7 test beam NL
+    cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2103){ // 50 MeV aggregation
-    cuts.AddCutCalo("0008e113","411790206f032230000","01631031000000d0"); // EG2  test beam NL
-    cuts.AddCutCalo("0008d113","411790206f032230000","01631031000000d0"); // EG1  test beam NL
+    cuts.AddCutCalo("0008e113","411790006f032230000","01631031000000d0"); // EG2  test beam NL
+    cuts.AddCutCalo("0008d113","411790006f032230000","01631031000000d0"); // EG1  test beam NL
   } else if (trainConfig == 2104){ // 150 MeV aggregation
     cuts.AddCutCalo("00010113","411790306f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2105){ // 150 MeV aggregation
     cuts.AddCutCalo("0008e113","411790306f032230000","01631031000000d0"); // EG2  test beam NL
     cuts.AddCutCalo("0008d113","411790306f032230000","01631031000000d0"); // EG1  test beam NL
   } else if (trainConfig == 2106){ // 300 MeV aggregation
-    cuts.AddCutCalo("00010113","411790406f032230000","01631031000000d0"); // INT7 test beam NL
+    cuts.AddCutCalo("00010113","411790606f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2107){ // 300 MeV aggregation
-    cuts.AddCutCalo("0008e113","411790406f032230000","01631031000000d0"); // EG2  test beam NL
-    cuts.AddCutCalo("0008d113","411790406f032230000","01631031000000d0"); // EG1  test beam NL
+    cuts.AddCutCalo("0008e113","411790606f032230000","01631031000000d0"); // EG2  test beam NL
+    cuts.AddCutCalo("0008d113","411790606f032230000","01631031000000d0"); // EG1  test beam NL
   } else if (trainConfig == 2108){ // any aggregation no NL
     cuts.AddCutCalo("00010113","411790006f032230000","01631031000000d0"); // INT7 test beam NL
   } else if (trainConfig == 2109){ // any aggregation no NL
@@ -3045,6 +3045,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fe3n220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106fe3o220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106fe3p220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2502) { // new calculation TB variations
+    cuts.AddCutCalo("00010113","411792106fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411792106fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB
 
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
