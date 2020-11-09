@@ -1399,7 +1399,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTruePi0FromOmegaEtaPhi[iCut]->SetYTitle("#eta_{#pi^{0}}");
         fTrueList[iCut]->Add(fHistoTruePi0FromOmegaEtaPhi[iCut]);
 
-        fHistoTruePi0FromOmegaOpenAnglePt[iCut] = new TH2F("True_Pi0FromOmega_OpenAngle_Pt","True_Pi0FromOmega_OpenAngle_Pt",200,0,20,100,0,1);
+        fHistoTruePi0FromOmegaOpenAnglePt[iCut] = new TH2F("True_Pi0FromOmega_OpenAngle_Pt","True_Pi0FromOmega_OpenAngle_Pt",nBinsPt, arrPtBinning,100,0,1);
         fHistoTruePi0FromOmegaOpenAnglePt[iCut]->SetXTitle("p_{T, #pi^{0}}(GeV/c)");
         fHistoTruePi0FromOmegaOpenAnglePt[iCut]->SetYTitle("#theta_{#pi^{0}}");
         fTrueList[iCut]->Add(fHistoTruePi0FromOmegaOpenAnglePt[iCut]);
@@ -1409,12 +1409,12 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fHistoTrueOmegaPtPi0Pt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
         fTrueList[iCut]->Add(fHistoTrueOmegaPtPi0Pt[iCut]);
 
-        fHistoTrueOmegaRestGammaCosAnglePt[iCut] = new TH2F("True_OmegaRestGamma_CosAngle_Pt","True_OmegaRestGamma_CosAngle_Pt",200,0,20,200,-1,1);
+        fHistoTrueOmegaRestGammaCosAnglePt[iCut] = new TH2F("True_OmegaRestGamma_CosAngle_Pt","True_OmegaRestGamma_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
         fHistoTrueOmegaRestGammaCosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
         fHistoTrueOmegaRestGammaCosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#gamma})");
         fTrueList[iCut]->Add(fHistoTrueOmegaRestGammaCosAnglePt[iCut]);
 
-        fHistoTrueOmegaRestPi0CosAnglePt[iCut] = new TH2F("True_OmegaRestPi0_CosAngle_Pt","True_OmegaRestPi0_CosAngle_Pt",200,0,20,200,-1,1);
+        fHistoTrueOmegaRestPi0CosAnglePt[iCut] = new TH2F("True_OmegaRestPi0_CosAngle_Pt","True_OmegaRestPi0_CosAngle_Pt",nBinsPt, arrPtBinning,200,-1,1);
         fHistoTrueOmegaRestPi0CosAnglePt[iCut]->SetXTitle("#it{p}_{T, #omega} (GeV/#it{c})");
         fHistoTrueOmegaRestPi0CosAnglePt[iCut]->SetYTitle("cos(#theta^{*}_{#omega#pi^{0}})");
         fTrueList[iCut]->Add(fHistoTrueOmegaRestPi0CosAnglePt[iCut]);
@@ -5154,8 +5154,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand3,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand3.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand3, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[0]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[0]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton3,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5171,8 +5174,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
            ->MesonIsSelected(&pi0cand2,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
           && pi0cand2.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand2, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[1]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[1]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton2,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5188,8 +5194,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand1,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand1.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand1, 0) ) {
-          dropOutGammas_CALOBack.insert(rotatedGammaIndex[2]);
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(rotatedGammaIndex[2]);
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(rotatedPhoton1,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackAlt->Add(pi0backcand_vec);
@@ -5207,8 +5216,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       ->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())
       && pi0cand.Pt() > fMinPi0Pt){
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
-          dropOutGammas_CALOBack.insert(firstGammaIndex);
-          dropOutGammas_CALOBack.insert(secondGammaIndex);
+          if(fPhotonSelectionMode >= 1)
+          {
+            dropOutGammas_CALOBack.insert(firstGammaIndex);
+            dropOutGammas_CALOBack.insert(secondGammaIndex);
+          }
           AliAODConversionMother *pi0backcand_vec = new AliAODConversionMother(gamma0,gamma1);
           pi0backcand_vec->SetPxPyPzE(pi0backcand_vec->Px(),pi0backcand_vec->Py(),pi0backcand_vec->Pz(),TMath::Sqrt(0.1349766*0.1349766+pi0backcand_vec->P()*pi0backcand_vec->P()));
           fPi0CandidatesBackOri->Add(pi0backcand_vec);
