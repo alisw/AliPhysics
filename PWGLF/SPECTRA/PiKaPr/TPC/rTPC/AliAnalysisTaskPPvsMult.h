@@ -210,6 +210,8 @@ public:
 		TH1D* hMcInPos[3];
 		TH1D* hMcOutNeg[3];
 		TH1D* hMcOutPos[3];
+		TH1D* hMcOutNegTOF[3];
+		TH1D* hMcOutPosTOF[3];
 
 		TH3F* hDCApTPrim[2][2];
 		TH3F* hDCApTWDec[2][2];
