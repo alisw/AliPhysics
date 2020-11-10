@@ -82,8 +82,8 @@ private:
   
   Float_t     fCutTPCSharedClustersFraction;    ///< Fraction of TPC shared clusters to be accepted.
 
-  TH1F  *     fhCTSAODTrackCutsPt[6];           //!<! control histogram on the different CTS tracks selection cuts, pT
-  TH2F  *     fhCTSAODTrackCutsPtCen[6];        //!<! control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH1F  *     fhCTSAODTrackCutsPt[8];           //!<! control histogram on the different CTS tracks selection cuts, pT
+  TH2F  *     fhCTSAODTrackCutsPtCen[8];        //!<! control histogram on the different CTS tracks selection cuts, pT vs centrality
   
   /// Copy constructor not implemented.
   AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; 

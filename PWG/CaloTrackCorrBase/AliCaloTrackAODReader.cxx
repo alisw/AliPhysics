@@ -46,6 +46,12 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   
   //fSelectFractionTPCSharedClusters = kTRUE;
   fCutTPCSharedClustersFraction    = 0.4;
+  
+  for(Int_t i = 0; i < 8; i++)
+  {
+    fhCTSAODTrackCutsPt   [i] = 0;
+    fhCTSAODTrackCutsPtCen[i] = 0;
+  }
 }
 
 //_________________________________________________________
@@ -103,15 +109,18 @@ TList * AliCaloTrackAODReader::GetCreateControlHistograms()
     
   if ( fFillCTS )
   {
-    TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS", "SharedCluster", "Primary"};
+    TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS",
+      "NclustersTPC", "Chi2TPC", "SharedCluster", "Primary"};
     
-    for(Int_t i = 0; i < 6; i++)
+    for(Int_t i = 0; i < 8; i++)
     {
       if ( names[i].Contains("Filter") && !fTrackFilterMask && 
           !fTrackFilterMaskComplementary && !fSelectHybridTracks            ) continue;
       if ( names[i] == "SPDHit"        && !fSelectSPDHitTracks              ) continue;
       if ( names[i] == "NclustersITS"  && fSelectMinITSclusters <= 0        ) continue;
       if ( names[i] == "Chi2ITS"       && fSelectMaxChi2PerITScluster > 1000) continue;
+      if ( names[i] == "NclustersTPC"  && fSelectMinTPCclusters <= 0        ) continue;
+      if ( names[i] == "Chi2TPC"       && fSelectMaxChi2PerTPCcluster > 1000) continue;
       if ( names[i] == "SharedCluster" && !fSelectFractionTPCSharedClusters ) continue;
       if ( names[i] == "Primary"       && !fSelectPrimaryTracks             ) continue;
       
@@ -327,7 +336,7 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   // Not much sense to use with TPC only or Hybrid tracks
   //
   
-//  printf("SPD %d (%d,%d) - n clus %d >= %d - chi2 %f max chi2 %f\n",
+//  printf("SPD %d (%d,%d) - n clus %d >= %d - chi2 %f max chi2/n cls %f\n",
 //         fSelectSPDHitTracks, aodtrack->HasPointOnITSLayer(0),!aodtrack->HasPointOnITSLayer(1),
 //         aodtrack->GetITSNcls(),fSelectMinITSclusters,
 //         aodtrack->GetITSchi2(),fSelectMaxChi2PerITScluster);
@@ -374,6 +383,46 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   }
   
   //
+  // TPC related cuts
+  // Not much sense to use with ITS only
+  //
+
+//  printf("TPC - n clus %d >= %d - chi2 %f max chi2/ncls %f\n",
+//         aodtrack->GetTPCNcls(),fSelectMinTPCclusters,
+//         aodtrack->GetTPCchi2(),fSelectMaxChi2PerTPCcluster);
+
+  Int_t nTPCcls = aodtrack->GetTPCNcls();
+  if ( fSelectMinTPCclusters > 0 )
+  {
+    if ( nTPCcls < fSelectMinTPCclusters  )
+    {
+      return kFALSE;
+    }
+
+    AliDebug(2,"Pass n TPC cluster cut");
+
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [4]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[4]->Fill(aodtrack->Pt(),cen);
+  }
+
+  //
+  Float_t chi2PerTPCcluster = 0.;
+  if ( nTPCcls > 0 ) chi2PerTPCcluster = aodtrack->GetTPCchi2()/nTPCcls;
+
+  if ( chi2PerTPCcluster > fSelectMaxChi2PerTPCcluster )
+  {
+    return kFALSE;
+  }
+
+  if ( fSelectMaxChi2PerTPCcluster < 1000 )
+  {
+    AliDebug(2,"Pass TPC chi2/ncls cut");
+
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [5]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[5]->Fill(aodtrack->Pt(),cen);
+  }
+
+  //
   if ( fSelectFractionTPCSharedClusters )
   {
     Double_t frac = 0;
@@ -390,8 +439,8 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     
     AliDebug(2,"Pass TPC shared cluster cut");
     
-    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [4]->Fill(aodtrack->Pt());
-    else                             fhCTSAODTrackCutsPtCen[4]->Fill(aodtrack->Pt(),cen);
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [6]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[6]->Fill(aodtrack->Pt(),cen);
   }
   
   //
@@ -405,8 +454,8 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     
     AliDebug(2,"\t accepted track!");
     
-    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [5]->Fill(aodtrack->Pt());
-    else                             fhCTSAODTrackCutsPtCen[5]->Fill(aodtrack->Pt(),cen);  
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [7]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[7]->Fill(aodtrack->Pt(),cen);
   }
   
   return kTRUE;

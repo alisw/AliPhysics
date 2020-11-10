@@ -216,9 +216,17 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ChargedParticleHistos") ;
   
-  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins(); Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
-  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
-  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
+
+  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
+
+  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
 
   Int_t   ntofbins = GetHistogramRanges()->GetHistoTimeBins();
   Int_t   maxtof   = GetHistogramRanges()->GetHistoTimeMax();
@@ -228,9 +236,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Int_t   multmax  = GetHistogramRanges()->GetHistoTrackMultiplicityMax ();
   Int_t   multmin  = GetHistogramRanges()->GetHistoTrackMultiplicityMin ();
   
-  Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
-  Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
-  Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
+//  Int_t   nsumbin  = GetHistogramRanges()->GetHistoNPtSumBins() ;
+//  Float_t summin   = GetHistogramRanges()->GetHistoPtSumMin()   ;
+//  Float_t summax   = GetHistogramRanges()->GetHistoPtSumMax()   ;
 
   Int_t   ncenbin  = GetHistogramRanges()->GetHistoCentralityBins()  ;
   Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
@@ -248,7 +256,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     ("hNTracks",
      Form("Number of tracks per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
      nmultbin,multmin,multmax, nptcuts,0,nptcuts); 
-    fhNTracks->SetXTitle("# of tracks");
+    fhNTracks->SetXTitle("#it{n}_{tracks}");
     fhNTracks->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhNTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
@@ -256,9 +264,10 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     
     fhSumPtTracks  = new TH2F 
     ("hSumPtTracks",
-     Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
-     nsumbin,summin,summax, nptcuts,0,nptcuts); 
-    fhSumPtTracks->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+     Form("#Sigma #it{p}_{T}/#it{n}_{tracks} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()),
+     //nsumbin,summin,summax, nptcuts,0,nptcuts);
+    nptbins,ptmin,ptmax, nptcuts,0,nptcuts);
+    fhSumPtTracks->SetXTitle("#Sigma #it{p}_{T}/#it{n}_{tracks} (GeV/#it{c})");
     fhSumPtTracks->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhSumPtTracks->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
@@ -268,29 +277,29 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     {
       fhNTPCClusters  = new TH2F 
       ("hNTPCClusters","Number of TPC clusters in track",
-       nptbins,ptmin,ptmax, 100, 0, 100); 
+       nptbins,ptmin,ptmax, 170, 0, 170);
       fhNTPCClusters->SetYTitle("#it{n}_{TPC}^{clusters}");
       fhNTPCClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhNTPCClusters);
       
       fhNITSClusters  = new TH2F 
       ("hNITSClusters","Number of ITS clusters in track",
-       nptbins,ptmin,ptmax, 10,0,10); 
+       nptbins,ptmin,ptmax, 8,0,8);
       fhNITSClusters->SetYTitle("#it{n}_{ITS}^{clusters}");
       fhNITSClusters->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhNITSClusters);
       
       fhTPCChi2PerCluster  = new TH2F 
-      ("hTPCChi2PerCluster","Number of TPC clusters in track",
-       nptbins,ptmin,ptmax, 100, 0, 100); 
-      fhTPCChi2PerCluster->SetYTitle("Chi2^{2}/#it{n}_{TPC}^{clusters}");
+      ("hTPCChi2PerCluster","#chi^{2}/#it{n}_{TPC}^{clusters}",
+       nptbins,ptmin,ptmax, 100, 0, 25);
+      fhTPCChi2PerCluster->SetYTitle("#chi^{2}/#it{n}_{TPC}^{clusters}");
       fhTPCChi2PerCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhTPCChi2PerCluster);
       
       fhITSChi2PerCluster  = new TH2F 
-      ("hITSChi2PerCluster","Number of ITS clusters in track",
-       nptbins,ptmin,ptmax, 100,0,100); 
-      fhITSChi2PerCluster->SetYTitle("Chi2^{2}/#it{n}_{ITS}^{clusters}");
+      ("hITSChi2PerCluster","#chi^{2}/#it{n}_{ITS}^{clusters}",
+       nptbins,ptmin,ptmax, 100,0,25);
+      fhITSChi2PerCluster->SetYTitle("#chi^{2}/#it{n}_{ITS}^{clusters}");
       fhITSChi2PerCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhITSChi2PerCluster);
     }
@@ -307,7 +316,8 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     InitHistoRangeArrays();
     TArrayD multBinsArray = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
     TArrayD  cenBinsArray = GetHistogramRanges()->GetHistoCentralityArr();
-    
+    TArrayD   ptBinsArray = GetHistogramRanges()->GetHistoPtArr();
+
     TCustomBinning ptCutBinning;
     ptCutBinning.SetMinimum(0.0);
     ptCutBinning.AddStep(nptcuts, 1);
@@ -317,20 +327,28 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     fhNTracksCent  = new TH3F 
     ("hNTracksCent",
      Form("Number of tracks per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
-     multBinsArray .GetSize() - 1,  multBinsArray .GetArray(), 
-     ptCutBinsArray.GetSize() - 1,  ptCutBinsArray.GetArray(),
-     cenBinsArray  .GetSize() - 1,  cenBinsArray  .GetArray()); 
-    fhNTracksCent->SetXTitle("# of tracks");
+      multBinsArray.GetSize() - 1,  multBinsArray.GetArray(),
+     ptCutBinsArray.GetSize() - 1, ptCutBinsArray.GetArray(),
+       cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());
+    fhNTracksCent->SetXTitle("#it{n}_{tracks}");
     fhNTracksCent->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     fhNTracksCent->SetZTitle("Centrality");
     for(Int_t icut = 0; icut<nptcuts; icut++)
       fhNTracksCent->GetYaxis()->SetBinLabel(icut+1 ,Form("%2.2f", GetReader()->GetTrackMultiplicityPtCut(icut)));
     outputContainer->Add(fhNTracksCent);
   
+    TCustomBinning ptFraBinning;
+    ptFraBinning.SetMinimum(GetMinPt());
+    ptFraBinning.AddStep(10, 0.1);
+    TArrayD ptFraBinsArray;
+    ptFraBinning.CreateBinEdges(ptFraBinsArray);
+
     fhSumPtTracksCent  = new TH3F 
     ("hSumPtTracksCent",
-     Form("#Sigma #it{p}_{T} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()), 
-     100,GetMinPt(),10, nptcuts,0,nptcuts, 10,0,100); 
+     Form("#Sigma #it{p}_{T}/#it{n}_{tracks} per event with |#eta|<%2.2f",GetReader()->GetTrackMultiplicityEtaCut()),
+     ptFraBinsArray.GetSize() - 1, ptFraBinsArray.GetArray(),
+     ptCutBinsArray.GetSize() - 1, ptCutBinsArray.GetArray(),
+       cenBinsArray.GetSize() - 1,   cenBinsArray.GetArray());
     fhSumPtTracksCent->SetXTitle("#Sigma #it{p}_{T} / #it{n}_{tracks} (GeV/#it{c})");
     fhSumPtTracksCent->SetYTitle("#it{p}_{min, T} GeV/#it{c}");
     fhSumPtTracksCent->SetZTitle("Centrality");
@@ -340,41 +358,67 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
     
     if ( fFillClusterHistograms )
     {
+      TCustomBinning nTPCBinning;
+      nTPCBinning.SetMinimum(0);
+      nTPCBinning.AddStep(170, 1);
+      TArrayD nTPCBinsArray;
+      nTPCBinning.CreateBinEdges(nTPCBinsArray);
+
       fhNTPCClustersCent  = new TH3F 
       ("hNTPCClustersCent","Number of TPC clusters in track",
-       nptbins,ptmin,ptmax, 100, 0, 100, 10,0,100); 
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+       nTPCBinsArray.GetSize() - 1, nTPCBinsArray.GetArray(),
+        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
       fhNTPCClustersCent->SetYTitle("#it{n}_{TPC}^{clusters}");
       fhNTPCClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNTPCClustersCent->SetZTitle("Centrality");
       outputContainer->Add(fhNTPCClustersCent);
       
+      TCustomBinning nITSBinning;
+      nITSBinning.SetMinimum(0);
+      nITSBinning.AddStep(7, 1);
+      TArrayD nITSBinsArray;
+      nITSBinning.CreateBinEdges(nITSBinsArray);
+
       fhNITSClustersCent  = new TH3F 
       ("hNITSClustersCent","Number of ITS clusters in track",
-       nptbins,ptmin,ptmax, 10,0,10, 10,0,100); 
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+       nITSBinsArray.GetSize() - 1, nITSBinsArray.GetArray(),
+        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
       fhNITSClustersCent->SetYTitle("#it{n}_{ITS}^{clusters}");
       fhNITSClustersCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhNITSClustersCent->SetZTitle("Centrality");
       outputContainer->Add(fhNITSClustersCent);
       
+      TCustomBinning chiBinning;
+      chiBinning.SetMinimum(0);
+      chiBinning.AddStep(25, 0.25);
+      TArrayD chiBinsArray;
+      chiBinning.CreateBinEdges(chiBinsArray);
+
       fhTPCChi2PerClusterCent  = new TH3F 
-      ("hTPCChi2PerClusterCent","Number of TPC clusters in track",
-       nptbins,ptmin,ptmax, 100, 0, 100, 10,0,100); 
-      fhTPCChi2PerClusterCent->SetYTitle("Chi2^{2}/#it{n}_{TPC}^{clusters}");
+      ("hTPCChi2PerClusterCent","#chi^{2}/#it{n}_{TPC}^{clusters}",
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       chiBinsArray.GetSize() - 1, chiBinsArray.GetArray(),
+       cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+      fhTPCChi2PerClusterCent->SetYTitle("#chi^{2}/#it{n}_{TPC}^{clusters}");
       fhTPCChi2PerClusterCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhTPCChi2PerClusterCent->SetZTitle("Centrality");
       outputContainer->Add(fhTPCChi2PerClusterCent);
       
       fhITSChi2PerClusterCent  = new TH3F 
-      ("hITSChi2PerClusterCent","Chi2/N ITS clusters in track",
-       nptbins,ptmin,ptmax, 100,0,100, 10,0,100); 
-      fhITSChi2PerClusterCent->SetYTitle("Chi2^{2}/#it{n}_{ITS}^{clusters}");
+      ("hITSChi2PerClusterCent","#chi^{2}/#it{n}_{ITS}^{clusters}",
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+       chiBinsArray.GetSize() - 1, chiBinsArray.GetArray(),
+       cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+      fhITSChi2PerClusterCent->SetYTitle("#chi^{2}/#it{n}_{ITS}^{clusters}");
       fhITSChi2PerClusterCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhITSChi2PerClusterCent->SetZTitle("Centrality");
       outputContainer->Add(fhITSChi2PerClusterCent);
     }
   }
   
-  if(fFillTrackMultHistograms)
+  if ( fFillTrackMultHistograms )
   {
     for(Int_t icut = 0; icut < nptcuts; icut++)
     {
