@@ -88,6 +88,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
   void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID
   void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
+  void SetMLTreeAddImpParProd(Bool_t flag = kTRUE) {fAddImpParProdProngs = flag;}
   void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
     if(fReadMC) fFillOnlySignal = opt;
     else {
@@ -230,10 +231,11 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TTree* fMLtree = nullptr;                                           //!<! tree with candidates for ML
   int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
+  Bool_t fAddImpParProdProngs = kFALSE;                               /// option to store d0K*d0pi1 and d0K*d0pi2 variables
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,36); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,37); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

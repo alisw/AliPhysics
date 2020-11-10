@@ -777,6 +777,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     OpenFile(4);
     fMLhandler = new AliHFMLVarHandlerDplustoKpipi(fPIDopt);
     fMLhandler->SetAddSingleTrackVars(fAddSingleTrackVar);
+    fMLhandler->SetAddImpParProdProngs(fAddImpParProdProngs);
     if(fReadMC) {
       if(fFillOnlySignal)
         fMLhandler->SetFillOnlySignal();
