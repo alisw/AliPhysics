@@ -6881,7 +6881,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 
       if ( !IsHighMultiplicityAnalysisOn() )
         fhEn5x5FracNLM             ->Fill(pt, en/energy5x5, nMaxima5x5, GetEventWeight()*weightPt);
-      else
+      else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         fhEn5x5FracNLMPerCen[icent]->Fill(pt, en/energy5x5, nMaxima5x5, GetEventWeight()*weightPt);
 
 //      if ( en > 5 )  printf("E %2.2f, E5x5 %2.2f, M02 %2.2f, 5x5 M02 %2.2f; NLM org %d, 5x5 %d\n",
