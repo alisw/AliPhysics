@@ -702,7 +702,8 @@ public:
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
   virtual Int_t    GetCentralityOpt()                const { return fCentralityOpt               ; }
-  virtual Int_t    GetEventCentrality()              const ;
+  virtual Float_t  GetEventCentralityF()             const ;
+  virtual Int_t    GetEventCentrality()              const { return TMath::Floor(GetEventCentralityF()); }
   virtual void     SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                            { fCentralityBin[0]=min; fCentralityBin[1]=max;  
                                                              if(min>=0 && max > 0) fCentralityOpt = 100 ; }

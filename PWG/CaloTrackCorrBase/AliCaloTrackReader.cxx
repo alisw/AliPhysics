@@ -636,9 +636,9 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   //
   if ( fRemoveCentralityTriggerOutliers  )
   {
-    Int_t centrality = GetEventCentrality();
-    //printf("Check outliers for cent %d, central? %d, semicentral? %d; mb %d; run %d\n",
-    //       centrality, fEventTrigCentral, fEventTrigSemiCentral,fEventTrigMinBias, fInputEvent->GetRunNumber());
+    Float_t centrality = GetEventCentralityF();
+//    printf("Check outliers for cent %2.1f, central? %d, semicentral? %d; mb %d; run %d\n",
+//           centrality, fEventTrigCentral, fEventTrigSemiCentral,fEventTrigMinBias, fInputEvent->GetRunNumber());
 
     // In case of OR of all MB triggers, do not discard events considered as pure MB
     Bool_t checkMBcent = kTRUE;
@@ -662,27 +662,27 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
         if ( centrality < centMin ) 
         {
           // Do not skip good central events when central mask
-          if (  ( (fEventTriggerMask & AliVEvent::kCentral) && fEventTrigCentral && centrality > 10) || !fEventTrigCentral )
+          if (  ( (fEventTriggerMask & AliVEvent::kCentral) && fEventTrigCentral && centrality >= 10) || !fEventTrigCentral )
           {
             //printf("%s\n",GetFiredTriggerClasses().Data());
-            AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
+            AliInfo(Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
                          centrality, centMin, centMax));
             return kFALSE;
           }
         }
-        else if  ( centrality > centMax  ) 
+        else if  ( centrality >= centMax  ) 
         {
-          AliInfo(Form("Skip semi-central event with centrality %d, out of [%d,%d]",
+          AliInfo(Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
                        centrality, centMin, centMax));
           return kFALSE;
         }
         
       }
       
-      if ( fEventTrigCentral && centrality > 10  && (fEventTriggerMask & AliVEvent::kCentral) ) 
+      if ( fEventTrigCentral && centrality >= 10  && (fEventTriggerMask & AliVEvent::kCentral) ) 
       {
-        //printf("%s\n",GetFiredTriggerClasses().Data());
-        AliInfo(Form("Skip central event with centrality %d",centrality));
+        printf("%s\n",GetFiredTriggerClasses().Data());
+        AliInfo(Form("Skip central event with centrality %2.1f",centrality));
         return kFALSE;
       }
       
@@ -696,7 +696,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
         if ( centrality < 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G2"))
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
-          AliInfo(Form("Skip L1-G2 event with centrality %d",centrality));
+          AliInfo(Form("Skip L1-G2 event with centrality %2.1f",centrality));
           return kFALSE;
         }
       } // L1-Low threshold
@@ -707,7 +707,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
         if ( centrality > 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G1") )
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
-          AliInfo(Form("Skip L1-G1 event with centrality %d",centrality));
+          AliInfo(Form("Skip L1-G1 event with centrality %2.1f",centrality));
           return kFALSE;
         }
       } // L1-High threshold
@@ -2156,7 +2156,7 @@ AliMultSelection* AliCaloTrackReader::GetMultSelCen() const
 /// \return Current event centrality bin. 
 /// Different percentile options and centrality class can be requested.
 //__________________________________________________
-Int_t AliCaloTrackReader::GetEventCentrality() const
+Float_t AliCaloTrackReader::GetEventCentralityF() const
 {  
   if(fUseAliCentrality)
   {
@@ -2168,7 +2168,7 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
                     GetCentrality()->GetCentralityPercentile("CL1"), 
                     fCentralityClass.Data()));
     
-    if     (fCentralityOpt == 100) return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
+    if     (fCentralityOpt == 100) return GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
     else if(fCentralityOpt ==  10) return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
     else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else
@@ -2187,7 +2187,7 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
                     GetMultSelCen()->GetMultiplicityPercentile("CL1",1), 
                     fCentralityClass.Data()));
     
-    return (Int_t) GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, fMultWithEventSel); // returns centrality only for events used in calibration
+    return GetMultSelCen()->GetMultiplicityPercentile(fCentralityClass, fMultWithEventSel); // returns centrality only for events used in calibration
     
     // equivalent to
     //GetMultSelCen()->GetMultiplicityPercentile("V0M", kFALSE); // returns centrality for any event
