@@ -682,7 +682,7 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
   
   if(!(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) return kFALSE;
   if(track->P() <= 0.1) return kFALSE;
-  if(track->P() <= 0.8 || track->P() > 0.1){
+  if((track->P() <= 0.8) && (track->P() > 0.1)){
     if((TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) > fLowPNSigmaTPC ) return kFALSE;
   }
   if(track->P() > 0.8){
