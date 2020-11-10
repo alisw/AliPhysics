@@ -23,6 +23,7 @@
 #include <TChain.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <TTimeStamp.h>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -307,9 +308,17 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     return;
   }
   
-  if (!fTfInitialized)
-    InitTF(fESD->GetTimeStamp());
-
+  if (!fTfInitialized) {
+    UInt_t tfId = fESD->GetTimeStamp();
+    if (tfId==0) {
+      // The time stamp of the event is not set, for example in MC
+      // Use the time period from 2020/11/01 in seconds (similar to what we did in the DAQ LDCs)
+      TTimeStamp ts0(2020,11,1,0,0,0);
+      TTimeStamp ts1;
+      tfId = ts1.GetSec() - ts0.GetSec();
+    }
+    InitTF(tfId);
+  }
   // Get multiplicity selection
   AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
   if (!multSelection)
