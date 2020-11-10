@@ -60,6 +60,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fV0Reader(nullptr),
   fV0ReaderName("V0ReaderV1"),
   fPionSelector(NULL),
+  fPionSelectorName("PionSelector"),
   fBGHandlerPiPl(NULL),
   fBGHandlerPiMi(NULL),
   fInputEvent(NULL),
@@ -305,6 +306,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fV0Reader(nullptr),
   fV0ReaderName("V0ReaderV1"),
   fPionSelector(NULL),
+  fPionSelectorName("PionSelector"),
   fBGHandlerPiPl(NULL),
   fBGHandlerPiMi(NULL),
   fInputEvent(NULL),
@@ -2093,7 +2095,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     if(temp && (!fDoLightOutput)) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
-  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
+  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask(fPionSelectorName.Data());
   if(!fPionSelector){printf("Error: No PionSelector");return;} // GetV0Reader
 
   if( fPionSelector && (!fDoLightOutput)){
@@ -2163,7 +2165,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     return;
   }
 
-  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
+  fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask(fPionSelectorName.Data());
   if(!fPionSelector){printf("Error: No PionSelector");return;} // GetV0Reader
 
   if(fIsMC) fMCEvent     =  MCEvent();
