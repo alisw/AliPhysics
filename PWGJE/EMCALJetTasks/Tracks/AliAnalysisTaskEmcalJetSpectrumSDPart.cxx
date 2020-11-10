@@ -283,7 +283,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
 
     AliEmcalJet *maxjet(nullptr);
     for(auto j : jets->accepted()) {
-        if(j->Pt() > maxjet->Pt()) maxjet = j;
+        if(!maxjet || (j->Pt() > maxjet->Pt())) maxjet = j;
         fHistos->FillTH1("hJetPt", j->Pt());
         fHistos->FillTH2("hJetEtaPhi", j->Eta(), TVector2::Phi_0_2pi(j->Phi()));
         fHistos->FillTH2("hJetNEFPt", j->Pt(), j->NEF());
