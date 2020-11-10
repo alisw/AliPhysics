@@ -60,6 +60,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(nullptr),
   fIsParRun(kFALSE),                      fCurrentParNumber(0),                   fGlobalEventID(),
   fDoUseMergedBC(kFALSE),
+  fTimeECorrection(kFALSE),               fEMCALTimeEShiftCorrection(0),
   fUseRunCorrectionFactors(kFALSE),
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(nullptr),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
@@ -121,6 +122,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCurrentParNumber(reco.fCurrentParNumber),
   fGlobalEventID(reco.fGlobalEventID),
   fDoUseMergedBC(reco.fDoUseMergedBC),
+  fTimeECorrection(reco.fTimeECorrection),               fEMCALTimeEShiftCorrection(reco.fEMCALTimeEShiftCorrection),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(NULL),                                 fUse1Dmap(reco.fUse1Dmap),
@@ -228,6 +230,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fGlobalEventID             = reco.fGlobalEventID;
 
   fDoUseMergedBC             = reco.fDoUseMergedBC;
+
+  fTimeECorrection           = reco.fTimeECorrection;
+  fEMCALTimeEShiftCorrection = reco.fEMCALTimeEShiftCorrection;
 
   fUseRunCorrectionFactors   = reco.fUseRunCorrectionFactors;
 
@@ -393,8 +398,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 {
   AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
 
-  if(!geom)
-  {
+  if(!geom){
     AliError("No instance of the geometry is available");
     return kFALSE;
   }
@@ -404,8 +408,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 
   Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1, status=0;
 
-  if (!geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta))
-  {
+  if (!geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)){
     // cell absID does not exist
     amp=0; time = 1.e9;
     return kFALSE;
@@ -414,8 +417,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
 
   // Do not include bad channels found in analysis,
-  if ( IsBadChannelsRemovalSwitchedOn() )
-  {
+  if ( IsBadChannelsRemovalSwitchedOn() ){
     Bool_t bad = kFALSE;
 
     if(fUse1Dmap)
@@ -433,10 +435,12 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
   if (!fCellsRecalibrated && IsRecalibrationOn()){
+    // take out non lin from shaper for low gain cells
     if(fUseShaperNonlin && isLowGain){
       amp = CorrectShaperNonLin(amp,1.);
     }
 
+    // correct cell energy based on pi0 calibration
     if(fUse1Drecalib)
       amp *= GetEMCALChannelRecalibrationFactor1D(absID);
     else
@@ -450,6 +454,9 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   }
   // Recalibrate time
   time = cells->GetCellTime(absID);
+
+  if (IsTimeECorrectionOn()) 
+    CorrectCellTimeVsE(amp, time, isLowGain);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
 
   //Recalibrate time with L1 phase
@@ -2305,7 +2312,8 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Int_t   absId  =-1;
   Float_t frac     = 0;
   Int_t   absIdMax = -1;
-
+  Float_t emax    = 0.;
+  
   // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
   for (Int_t icell = 0; icell < ncells; icell++){
     absId = index[icell];
@@ -2325,8 +2333,6 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
 
   Double_t time = cells->GetCellTime(absIdMax);
   cluster->SetTOF(time);
-
-  AliDebug(2,Form("AliEMCALRecoUtils::RecalibrateClusterEnergy - Time before %f, after %f \n",timeorg,cluster->GetTOF()));
 }
 
 ///
@@ -2405,6 +2411,45 @@ Float_t AliEMCALRecoUtils::CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG)
   res+=par[7]*x*x*x*x*x*x;
 
   return  EcalibHG*16.3*res*0.0162;
+}
+
+///
+/// Correct Slewing for each channel
+/// 
+/// \param energy: cell energy
+/// \param celltime: cell time to be returned calibrated
+/// \param isLowGain: low gain cell 
+void AliEMCALRecoUtils::CorrectCellTimeVsE(Double_t energy, Double_t & celltime, Bool_t isLowGain) const
+{
+  Double_t offset = 0;        // in ns
+  if (!fCellsRecalibrated && IsTimeRecalibrationOn()){
+    if (isLowGain){
+      offset = GetLowGainSlewing(energy);
+    } else {
+      offset = fEMCALTimeEShiftCorrection->Eval(energy);
+    }
+    celltime -= offset*1.e-9;
+  }
+}
+
+///
+/// energy dependent time offset for low gain 
+/// returns slewing for low gain at certain cell energy
+/// \param energy: cell energy
+///
+Double_t AliEMCALRecoUtils::GetLowGainSlewing (Double_t energy) const
+{
+  Double_t offset = 0;
+  
+  if (energy > 14 && energy <= 80){
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+  } else if (energy <= 14) {
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+  } else {
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+  }
+
+  return offset;
 }
 
 ///
@@ -4697,6 +4742,18 @@ TH2I* AliEMCALRecoUtils::GetEMCALChannelStatusMap(Int_t iSM) const{
     }
     return hist;
   }
+}
+
+
+void  AliEMCALRecoUtils::SetEMCALTimeVsEHighGainSlewingCorr(const TSpline3 *spline) {
+  if(fEMCALTimeEShiftCorrection) delete fEMCALTimeRecalibrationFactors;
+
+  fEMCALTimeEShiftCorrection = new TSpline3(*spline);
+
+  // if(!fEMCALTimeEShiftCorrection->IsOwner()) {
+  //   // Must claim ownership since the new objects are owend by this instance
+  //   fEMCALTimeEShiftCorrection->SetOwner(kTRUE);
+  // }
 }
 
 void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map) {
