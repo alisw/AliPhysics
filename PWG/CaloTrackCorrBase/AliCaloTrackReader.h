@@ -620,7 +620,13 @@ public:
   
   Float_t          GetMaximumChi2PerITScluster()      const { return fSelectMaxChi2PerITScluster ; }
   void             SetMaximumChi2PerITScluster(Float_t max) { fSelectMaxChi2PerITScluster = max  ; }
-  
+
+  Int_t            GetMinimumTPCclusters()           const { return fSelectMinTPCclusters ; }
+  void             SetMinimumTPCclusters(Int_t min)        { fSelectMinTPCclusters = min  ; }
+
+  Float_t          GetMaximumChi2PerTPCcluster()      const { return fSelectMaxChi2PerTPCcluster ; }
+  void             SetMaximumChi2PerTPCcluster(Float_t max) { fSelectMaxChi2PerTPCcluster = max  ; }
+
   Int_t            GetTrackMultiplicity(Int_t cut=0) const 
   {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
   Float_t          GetTrackSumPt(Int_t cut=0) const 
@@ -982,8 +988,10 @@ public:
   // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers, AOD
-  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of clusters, AOD 
+  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of ITS clusters, AOD
   Float_t          fSelectMaxChi2PerITScluster;    ///< Ensure track as less than this Chi2/nCls of ITS, AOD 
+  Int_t            fSelectMinTPCclusters;          ///< Ensure track as at least this number of TPC clusters, AOD
+  Float_t          fSelectMaxChi2PerTPCcluster;    ///< Ensure track as less than this Chi2/nCls of TPC, AOD
   
   Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
   Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts

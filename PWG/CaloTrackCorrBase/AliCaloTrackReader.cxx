@@ -94,6 +94,7 @@ fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),          
 fSelectMinITSclusters(0),    fSelectMaxChi2PerITScluster(10000),
+fSelectMinTPCclusters(0),    fSelectMaxChi2PerTPCcluster(10000),
 fTrackMultNPtCut(0),         fTrackMultEtaCut(0.9),
 fDeltaAODFileName(""),       fFiredTriggerClassName(""),
 
@@ -1294,8 +1295,10 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Track: status %d, SPD hit %d; ITS cluster >= %d; ITS chi2 > %2.1f ",
-           (Int_t) fTrackStatus, fSelectSPDHitTracks, fSelectMinITSclusters, fSelectMaxChi2PerITScluster) ;
+  snprintf(onePar,buffersize,"Track: status %d, SPD hit %d; ITS cluster >= %d; ITS chi2 > %2.1f; TPC cluster >= %d; TPC chi2 > %2.1f ",
+           (Int_t) fTrackStatus,  fSelectSPDHitTracks,
+           fSelectMinITSclusters, fSelectMaxChi2PerITScluster,
+           fSelectMinTPCclusters, fSelectMaxChi2PerTPCcluster) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"multip. eta cut %1.1f; npt cuts %d;",fTrackMultEtaCut, fTrackMultNPtCut) ;
   parList+=onePar ;
@@ -3930,8 +3933,10 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  printf("Track SPD hit %d; ITS cluster >= %d; ITS chi2 < %2.1f\n",
-         fSelectSPDHitTracks, fSelectMinITSclusters, fSelectMaxChi2PerITScluster) ;
+  printf("Track SPD hit %d; ITS cluster >= %d; ITS chi2 < %2.1f; TPC cluster >= %d; TPC chi2 < %2.1f\n",
+         fSelectSPDHitTracks,
+         fSelectMinITSclusters, fSelectMaxChi2PerITScluster,
+         fSelectMinTPCclusters, fSelectMaxChi2PerTPCcluster) ;
   printf("Track Mult Eta Cut =  %2.2f\n",  fTrackMultEtaCut) ;
 
   printf("Track Mult Pt Cuts:") ;
