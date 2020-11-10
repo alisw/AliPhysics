@@ -47,14 +47,6 @@ public:
     void SetEventCuts(            AliFemtoDreamEventCuts   *evtCuts         )  { fEventCuts             =   evtCuts;        };
     void Setv0Cuts              ( AliFemtoDreamv0Cuts      *v0Cuts          )  { fLambdaV0Cuts          =   v0Cuts;         };
     void SetAntiv0Cuts          ( AliFemtoDreamv0Cuts      *antiV0Cuts      )  { fAntiLambdaV0Cuts      =   antiV0Cuts;     };
-    void SetTrackCutsXion       ( AliFemtoDreamCascadeCuts *cascCuts        )  { fCascadeCutsXi         =   cascCuts;       };
-    void SetTrackCutsAntiXion   ( AliFemtoDreamCascadeCuts *antiCascCuts    )  { fCascadeCutsAntiXi     =   antiCascCuts;   };
-    // Cuts #2
-    // void SetEventCuts2          ( AliFemtoDreamEventCuts   *evtCuts2       )  { fEventCuts2            =   evtCuts2;       };
-    // void Setv0Cuts2             ( AliFemtoDreamv0Cuts      *v0Cuts2        )  { fLambdaV0Cuts2         =   v0Cuts2;        };
-    // void SetAntiv0Cuts2         ( AliFemtoDreamv0Cuts      *antiV0Cuts2    )  { fAntiLambdaV0Cuts2     =   antiV0Cuts2;    };
-    // void SetTrackCutsXion2      ( AliFemtoDreamCascadeCuts *cascCuts2      )  { fCascadeCutsXi2        =   cascCuts2;      };
-    // void SetTrackCutsAntiXion2  ( AliFemtoDreamCascadeCuts *antiCascCuts2  )  { fCascadeCutsAntiXi2    =   antiCascCuts2;  };
     // // config 
     void SetCollectionConfig    ( AliFemtoDreamCollConfig  *config          )  { fConfig                =   config;         };
 
@@ -62,6 +54,8 @@ public:
     float CalculateInvMassLambda(TVector3 momNegDaughter, int PDGnegDaughter, TVector3 momPosDaughter, int PDGposDaughter);
     
     float CalculateInvMassLambda(AliFemtoDreamBasePart *lambdaParticle, bool isAntiParticle);
+    
+    float CalculateInvMassLambda(AliFemtoDreamBasePart lambdaParticle, bool isAntiParticle);
     
     float CalculateInvMassXi(TVector3 momBach, int PGGbach, TVector3 momPosDaughter, int PDGposDaughter, TVector3 momNegDaughter, int PDGnegDaughter);
     
@@ -83,8 +77,10 @@ public:
     
     float WeightAntiXi(float pT);
 
-float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemtoDreamBasePart *part2, const int pdg2);
+    float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemtoDreamBasePart *part2, const int pdg2);
     
+    float RelativePairMomentum(AliFemtoDreamBasePart part1, const int pdg1, AliFemtoDreamBasePart part2, const int pdg2);
+
  private:
     void ResetGlobalTrackReference();
     void StoreGlobalTrackReference(AliVTrack *track);
@@ -104,58 +100,31 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     //  #1
     AliFemtoDreamEventCuts             *fEventCuts;            //
     AliFemtoDreamv0                    *fv0;                   //!
-    AliFemtoDreamCascade               *fCascade;              //!
     AliFemtoDreamv0Cuts                *fLambdaV0Cuts;         //
     AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts;     //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsXi;        //
-    AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi;    //
     AliFemtoDreamPairCleaner           *fPairCleaner;          //!
     AliFemtoDreamPartCollection        *fPartColl;             //!
     // particle vectors
     std::vector<AliFemtoDreamBasePart>  vLambda;               //!
     std::vector<AliFemtoDreamBasePart>  vAntiLambda;           //!
-    std::vector<AliFemtoDreamBasePart>  vXi;                   //!
-    std::vector<AliFemtoDreamBasePart>  vAntiXi;               //!
-    // #2
-    // AliFemtoDreamEventCuts             *fEventCuts2;           //
-    // AliFemtoDreamv0                    *fv0_2;                 //!
-    // AliFemtoDreamCascade               *fCascade2;             //!
-    // AliFemtoDreamv0Cuts                *fLambdaV0Cuts2;        //
-    // AliFemtoDreamv0Cuts                *fAntiLambdaV0Cuts2;    //
-    // AliFemtoDreamCascadeCuts           *fCascadeCutsXi2;       //
-    // AliFemtoDreamCascadeCuts           *fCascadeCutsAntiXi2;   //
     AliFemtoDreamPairCleaner           *fPairCleaner2;         //!
     AliFemtoDreamPartCollection        *fPartColl2;            //!
-    // ## Output Container
+    AliFemtoDreamPartCollection        *fPartColl3;            //!<!
+    // ## Output Container TLISTS
     TList                              *tlEventCuts;           //!
     TList                              *tlLambdaList;          //!
     TList                              *tlAntiLambdaList;      //!
-    TList                              *tlCascadeCutsXi;       //!
-    TList                              *tlAntiCascadeCutsXi;   //!
-    // #2
-    // TList                              *tlEventCuts2;                       //!
-    // TList                              *tlLambdaList2;                      //!
-    // TList                              *tlAntiLambdaList2;                  //!
-    // TList                              *tlCascadeCutsXi2;                   //!
-    // TList                              *tlAntiCascadeCutsXi2;               //!
-    TList                              *tlResults;                          //!      
-    TList                              *tlResults2;                         //!
-    TList                              *tlResultsQA;                        //!      PairCleaner - Keep Lambda
-    TList                              *tlResultsQA2;                       //!      PairCleaner - Keep Xi
+    TList                              *tlResults;                          //!<!    
+    TList                              *tlResults2;                         //!<!
+    TList                              *tlResults3;                         //!<!
+    TList                              *tlResultsQA;                        //!<!      PairCleaner - Keep Lambda
     // ## MC Container
     TList                              *tlLambdaMC;                         //!
     TList                              *tlAntiLambdaMC;                     //!
-    TList                              *tlXiMC;                             //!
-    TList                              *tlAntiXiMC;                         //!
 
     ////////////////////////////////////////////////////////////////////////////////
     // My recombination stuff ///////////////
     ///////////////////////////////////////////////////////////////////////////////
-    std::vector<AliFemtoDreamBasePart>  vLambda_recomb;                     //!
-    std::vector<AliFemtoDreamBasePart>  tmpLambda_recomb;                   //!
-    std::vector<AliFemtoDreamBasePart>  tmpXi_recomb;                       //!
-    std::vector<AliFemtoDreamBasePart>  tmpAntiLambda_recomb;               //!
-    std::vector<AliFemtoDreamBasePart>  tmpAntiXi_recomb;                   //!
     TList                              *tlRecombination_before;             //!      Recombinations Lists and histos
     TList                              *tlRecombination_after;              //!      Recombinations Lists and histos
     //////////////////////
@@ -305,10 +274,10 @@ float RelativePairMomentum(AliFemtoDreamBasePart *part1, const int pdg1, AliFemt
     //////////////////////
     // weird stuff   /////
     //////////////////////
-    TH1F                               *kStarXiLambda_unchanged;                                //!<!
-    TH1F                               *kStarXiLambda_changed;                                  //!<!
-    TH1F                               *kStarAntiXiAntiLambda_unchanged;                        //!<!
-    TH1F                               *kStarAntiXiAntiLambda_changed;                          //!<!
+    // TH1F                               *kStarXiLambda_unchanged;                                //!<!
+    // TH1F                               *kStarXiLambda_changed;                                  //!<!
+    // TH1F                               *kStarAntiXiAntiLambda_unchanged;                        //!<!
+    // TH1F                               *kStarAntiXiAntiLambda_changed;                          //!<!
     
     ClassDef(AliAnalysisTaskPOmegaPenne,33)
 };
