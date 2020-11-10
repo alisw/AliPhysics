@@ -98,8 +98,16 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	return;
 	}
 	//trigger selectors
-	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
-// 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+// 	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
+// // 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+
+if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = kFALSE
+      if( !fEvInfo->HasTriggerHM() ) return;
+  }
+  else{
+      if ( !fEvInfo->HasTriggerMB() ) return;
+  }
+
 	
 	Double_t vec_hNoEvts[5]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
