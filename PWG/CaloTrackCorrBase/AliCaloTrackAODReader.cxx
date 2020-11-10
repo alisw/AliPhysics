@@ -103,7 +103,8 @@ TList * AliCaloTrackAODReader::GetCreateControlHistograms()
     
   if ( fFillCTS )
   {
-    TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS", "SharedCluster", "Primary"};
+    TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS",
+      "NclustersTPC", "Chi2TPC", "SharedCluster", "Primary"};
     
     for(Int_t i = 0; i < 6; i++)
     {
