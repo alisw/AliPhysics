@@ -160,8 +160,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   //================================================
   //========= Add Pion Selector ====================
   TString PionCuts          = "000000200";
-  if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
-    AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector("PionSelector");
+  TString PionSelectorName  =  Form("PionSelector_%s", PionCuts.Data());
+  if( !(AliPrimaryPionSelector*)mgr->GetTask(PionSelectorName.Data()) ){
+    AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector(PionSelectorName.Data());
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
@@ -183,6 +184,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
   AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson *task=NULL;
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson(Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i",neutralPionMode, trainConfig));
+  task->SetPionSelectorName(PionSelectorName.Data());
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
