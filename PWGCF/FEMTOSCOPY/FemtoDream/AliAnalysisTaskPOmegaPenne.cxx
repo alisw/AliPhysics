@@ -1124,6 +1124,8 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             }
             vAntiLambda[i].SetUse(true);
         }
+        CleanDecayAtRandom(&vLambda,"Lambda");
+        CleanDecayAtRandom(&vAntiLambda,"AntiLambda");
 
 
         // std::cout << "dimensions of cleanParticles: " << fPairCleaner->GetCleanParticles().size() << "x" << fPairCleaner->GetCleanParticles()[0].size() << std::endl;        ### makes particleTypeXparticleNumber
@@ -1479,13 +1481,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 {
                                     itDecay1->SetUse(false);
                                     hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[2]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    // h2_CPA_pt[2]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[2]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    // h2_CPA_pt[2]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                             }
                             else if (particleSteering == "AntiLambda")
@@ -1503,13 +1505,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 {
                                     itDecay1->SetUse(false);
                                     hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[7]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    // h2_CPA_pt[7]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[7]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    // h2_CPA_pt[7]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                             }
                             else if (particleSteering == "Xi")
@@ -1526,13 +1528,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 {
                                     itDecay1->SetUse(false);
                                     hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[12]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    // h2_CPA_pt[12]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[12]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    // h2_CPA_pt[12]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                             }
                             else if (particleSteering == "AntiXi")
@@ -1548,13 +1550,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
                                 {
                                     itDecay1->SetUse(false);
                                     hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[17]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    // h2_CPA_pt[17]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hAntiXiCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[17]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    // h2_CPA_pt[17]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                             }
                             // std::cout << "######################################################" << std::endl;
@@ -1585,8 +1587,8 @@ void AliAnalysisTaskPOmegaPenne::CleanDecay(std::vector<AliFemtoDreamBasePart> *
 void AliAnalysisTaskPOmegaPenne::CleanDecayAtRandom(std::vector<AliFemtoDreamBasePart> *Decay, string particleSteering)
 {
     float fPDGMassPart = 1.0;
-    float fWeightPart1 = 1.0;
-    float fWeightPart2 = 1.0;
+    // float fWeightPart1 = 1.0;
+    // float fWeightPart2 = 1.0;
     float fMassPart1 = 0.0;
     float fMassPart2 = 0.0;
     float fMassToPDG1 = 0.0;
