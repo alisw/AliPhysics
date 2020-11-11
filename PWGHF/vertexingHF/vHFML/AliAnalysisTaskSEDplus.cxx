@@ -33,6 +33,7 @@
 #include <TString.h>
 #include <TDatabasePDG.h>
 #include <TTree.h>
+#include <TRandom3.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
@@ -787,6 +788,10 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     PostData(4, fMLtree);
   }
 
+  //Set seed of gRandom
+  if(fCreateMLtree && fEnableEvtSampling)
+    gRandom->SetSeed(fSeedSampling);
+
   return;
 }
 
@@ -795,6 +800,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 {
   /// Execute analysis for current event:
   /// heavy flavor candidates association to MC truth
+
+  if(fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
+    return;
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(InputEvent());
 
@@ -1165,8 +1173,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
           fYVsPtSig->Fill(ptCand, rapid, invMass);
       }
 
+      Bool_t keepForSampling = kTRUE;
+      if (fCreateMLtree && fEnableCandSampling) // apply sampling in pt
+      { 
+        Double_t pseudoRand = ptCand * 1000. - (long)(ptCand * 1000);
+        if (pseudoRand > fFracCandToKeep && ptCand < fMaxCandPtSampling)
+            keepForSampling = kFALSE;
+      }
+
       Bool_t isFidAcc = fRDCutsAnalysis->IsInFiducialAcceptance(ptCand, rapid);
-      if (isFidAcc)
+      if (isFidAcc && keepForSampling)
       {
 
         Double_t minPtDau = 999., ptmax = 0, maxdca = 0, sigvert = 0, sumD02 = 0;

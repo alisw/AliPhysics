@@ -96,6 +96,17 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
     }
   }
 
+  void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
+    fEnableEvtSampling = kTRUE;
+    fFracEvtToKeep = fractokeep;
+    fSeedSampling = seed;
+  }
+  void EnableMLTreeCandSampling(Float_t fractokeep, Float_t maxptsampling) {
+    fEnableCandSampling = kTRUE;
+    fFracCandToKeep = fractokeep;
+    fMaxCandPtSampling = maxptsampling;
+  }
+
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -231,6 +242,13 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
+
+  Bool_t fEnableEvtSampling = kFALSE;                                 /// flag to apply event sampling
+  Float_t fFracEvtToKeep = 1.1;                                       /// fraction of events to be kept by event sampling
+  ULong_t fSeedSampling = 0;                                          /// seed for sampling
+  Bool_t fEnableCandSampling = kFALSE;                                /// flag to apply candidate sampling
+  Float_t fFracCandToKeep = 1.1;                                      /// fraction of candidates to be kept by sampling
+  Float_t fMaxCandPtSampling = 0.;                                    /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEDplus,36); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
