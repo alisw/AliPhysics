@@ -323,6 +323,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0InvMassPt;                             //! array of histos with validated pi0, invMass, pt
     TH2F**                  fHistoTrueEtaInvMassPt;                             //! array of histos with validated eta, invMass, pt
+    TH2F**                  fHistoTruePi0InvMassPtAdditional;                             //! array of histos with validated pi0, invMass, pt
+    TH2F**                  fHistoTrueEtaInvMassPtAdditional;                             //! array of histos with validated eta, invMass, pt
     TH2F**                  fHistoTruePi0MatchedInvMassPt;                      //! array of histos with rejected pi0, invMass, pt
     TH2F**                  fHistoTrueEtaMatchedInvMassPt;                      //! array of histos with rejected eta, invMass, pt
     TH2F**                  fHistoTruePi0CaloPhotonInvMassPt;                   //! array of histos with validated pi0, photon leading, invMass, pt
@@ -598,7 +600,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 65);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 66);
 };
 
 #endif

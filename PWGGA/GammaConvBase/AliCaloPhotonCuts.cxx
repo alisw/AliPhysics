@@ -2466,7 +2466,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   } else if (fUseNCells == 2){ // special case for PHOS: only apply Ncell cut for clusters with a minimum energy of 1 GeV
-      if (cluster->GetNCells() < fMinNCells && cluster->E() > 1){
+      if (cluster->GetNCells() < fMinNCells && cluster->E() > fMinENCell){
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
         return kFALSE;
       }

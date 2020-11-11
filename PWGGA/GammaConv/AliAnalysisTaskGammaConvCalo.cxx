@@ -211,6 +211,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoMCSecPi0InAccPtGamma2vsSource(NULL),
   fHistoTruePi0InvMassPt(NULL),
   fHistoTrueEtaInvMassPt(NULL),
+  fHistoTruePi0InvMassPtAdditional(NULL),
+  fHistoTrueEtaInvMassPtAdditional(NULL),
   fHistoTruePi0MatchedInvMassPt(NULL),
   fHistoTrueEtaMatchedInvMassPt(NULL),
   fHistoTruePi0CaloPhotonInvMassPt(NULL),
@@ -620,6 +622,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoMCSecPi0InAccPtGamma2vsSource(NULL),
   fHistoTruePi0InvMassPt(NULL),
   fHistoTrueEtaInvMassPt(NULL),
+  fHistoTruePi0InvMassPtAdditional(NULL),
+  fHistoTrueEtaInvMassPtAdditional(NULL),
   fHistoTruePi0MatchedInvMassPt(NULL),
   fHistoTrueEtaMatchedInvMassPt(NULL),
   fHistoTruePi0CaloPhotonInvMassPt(NULL),
@@ -2060,6 +2064,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoTruePi0InvMassPt                        = new TH2F*[fnCuts];
       fHistoTrueEtaInvMassPt                        = new TH2F*[fnCuts];
       if (fDoLightOutput!=2){
+          fHistoTruePi0InvMassPtAdditional            = new TH2F*[fnCuts];
+          fHistoTrueEtaInvMassPtAdditional            = new TH2F*[fnCuts];
         fHistoTruePi0MatchedInvMassPt                 = new TH2F*[fnCuts];
         fHistoTrueEtaMatchedInvMassPt                 = new TH2F*[fnCuts];
         fHistoDoubleCountTruePi0InvMassPt             = new TH2F*[fnCuts];
@@ -2753,6 +2759,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoTrueEtaInvMassPt[iCut]->SetYTitle("#eta p_{T}(GeV/c)");
         fTrueList[iCut]->Add(fHistoTrueEtaInvMassPt[iCut]);
         if (fDoLightOutput!=2 ){
+            fHistoTruePi0InvMassPtAdditional[iCut]                = new TH2F("ESD_TruePi0_InvMass_Pt_Additional", "ESD_TruePi0_InvMass_Pt_Additional", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+            fHistoTruePi0InvMassPtAdditional[iCut]->SetXTitle("M_{inv,#pi^{0}}(GeV/c^{2})");
+            fHistoTruePi0InvMassPtAdditional[iCut]->SetYTitle("#pi^{0}p_{T}(GeV/c)");
+            fTrueList[iCut]->Add(fHistoTruePi0InvMassPtAdditional[iCut]);
+            fHistoTrueEtaInvMassPtAdditional[iCut]                =  new TH2F("ESD_TrueEta_InvMass_Pt_Additional", "ESD_TrueEta_InvMass_PtAdditional", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+            fHistoTrueEtaInvMassPtAdditional[iCut]->SetXTitle("M_{inv,#eta}(GeV/c^{2})");
+            fHistoTrueEtaInvMassPtAdditional[iCut]->SetYTitle("#eta p_{T}(GeV/c)");
+            fTrueList[iCut]->Add(fHistoTrueEtaInvMassPtAdditional[iCut]);
             fHistoTruePi0MatchedInvMassPt[iCut]         = new TH2F("ESD_TruePi0_Matched_InvMass_Pt", "ESD_TruePi0_Matched_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
             fHistoTruePi0MatchedInvMassPt[iCut]->SetXTitle("M_{inv,#pi^{0}}(GeV/c^{2})");
             fHistoTruePi0MatchedInvMassPt[iCut]->SetYTitle("#pi^{0}p_{T}(GeV/c)");
@@ -2954,6 +2968,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoTruePi0InvMassPt[iCut]->Sumw2();
           fHistoTrueEtaInvMassPt[iCut]->Sumw2();
           if (fDoLightOutput!=2 ){
+            fHistoTruePi0InvMassPtAdditional[iCut]->Sumw2();
+            fHistoTrueEtaInvMassPtAdditional[iCut]->Sumw2();
             fHistoTruePi0MatchedInvMassPt[iCut]->Sumw2();
             fHistoTrueEtaMatchedInvMassPt[iCut]->Sumw2();
             fHistoDoubleCountTruePi0InvMassPt[iCut]->Sumw2();
@@ -5794,6 +5810,31 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
         if (fDoMesonQA > 0 && fIsMC < 2) fHistoTrueMotherCaloEMNonLeadingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
       }
     }
+    Bool_t previouslyNotFoundTrueMesons = kFALSE;
+    Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+    while (tmpGammaMotherlabel > 0) {
+        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        } else {
+            if (tmpGammaMotherlabel != gamma0MotherLabel) {
+                previouslyNotFoundTrueMesons = kTRUE;
+            }
+            gamma0MotherLabel = tmpGammaMotherlabel;
+            break;
+        }
+    }
+    tmpGammaMotherlabel = gamma1MotherLabel;
+    while (tmpGammaMotherlabel > 0) {
+        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        } else {
+            if (tmpGammaMotherlabel != gamma1MotherLabel) {
+                previouslyNotFoundTrueMesons = kTRUE;
+            }
+            gamma1MotherLabel = tmpGammaMotherlabel;
+            break;
+        }
+    }
 
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
       if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
@@ -5818,6 +5859,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
       if (!matched){
         if (isTruePi0){
           fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+          if(previouslyNotFoundTrueMesons) fHistoTruePi0InvMassPtAdditional[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
           if(fDoJetAnalysis && !fDoLightOutput){
             if(fConvJetReader->GetTrueNJets()>0){
               fHistoTruePi0JetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC*weightMatBudgetGamma);
@@ -5853,6 +5895,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
         }
         if (isTrueEta){
             fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+            if(previouslyNotFoundTrueMesons) fHistoTrueEtaInvMassPtAdditional[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
             if(fDoJetAnalysis && !fDoLightOutput){
             if(fConvJetReader->GetTrueNJets()>0){
               fHistoTrueEtaJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
@@ -6340,6 +6383,31 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
       if (fDoMesonQA > 0 && fIsMC < 2) fHistoTrueMotherCaloEMNonLeadingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
     }
   }
+  Bool_t previouslyNotFoundTrueMesons = kFALSE;
+  Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+      } else {
+          if (tmpGammaMotherlabel != gamma0MotherLabel) {
+              previouslyNotFoundTrueMesons = kTRUE;
+          }
+          gamma0MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
+  }
+  tmpGammaMotherlabel = gamma1MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+      } else {
+          if (tmpGammaMotherlabel != gamma1MotherLabel) {
+              previouslyNotFoundTrueMesons = kTRUE;
+          }
+          gamma1MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
+  }
 
   if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
     if(((AliAODMCParticle*)fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
@@ -6363,6 +6431,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
     if (!matched){
       if (isTruePi0){
         fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+        if(previouslyNotFoundTrueMesons) fHistoTruePi0InvMassPtAdditional[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
         if(fDoJetAnalysis && !fDoLightOutput){
           if(fConvJetReader->GetTrueNJets()>0){
             fHistoTruePi0JetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
@@ -6398,6 +6467,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
       }
       if (isTrueEta){
           fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
+          if(previouslyNotFoundTrueMesons) fHistoTrueEtaInvMassPtAdditional[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
           if(fDoJetAnalysis && !fDoLightOutput){
             if(fConvJetReader->GetTrueNJets()>0){
               fHistoTrueEtaJetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC*weightMatBudgetGamma);
