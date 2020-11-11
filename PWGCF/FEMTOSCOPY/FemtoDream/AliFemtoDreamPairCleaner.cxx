@@ -205,7 +205,6 @@ void AliFemtoDreamPairCleaner::CleanDecayInvMass(std::vector<AliFemtoDreamBasePa
 void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBasePart> *Decay, int histnumber)
 {
   int counter = 0;
-
   for (std::vector<AliFemtoDreamBasePart>::iterator itDecay1 = Decay->begin();
        itDecay1 != Decay->end(); ++itDecay1) {
     for (auto itDecay2 = itDecay1 + 1; itDecay2 != Decay->end(); ++itDecay2) {
@@ -213,15 +212,18 @@ void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBaseP
         if (itDecay2->UseParticle()) {
           std::vector<int> IDDaug1 = itDecay1->GetIDTracks();
           std::vector<int> IDDaug2 = itDecay2->GetIDTracks();
-
           for (auto itID1s = IDDaug1.begin(); itID1s != IDDaug1.end(); ++itID1s) {
             for (auto itID2s = IDDaug2.begin(); itID2s != IDDaug2.end(); ++itID2s) {
-              if (gRandom->Uniform(0., 1.) > 0.5) {
-                itDecay1->SetUse(false);
-                counter++;
-              } else {
-                itDecay2->SetUse(false);
-                counter++;
+              if(*itID1s == *itID2s){
+                if (itDecay1->UseParticle() && itDecay2->UseParticle()){
+                  if (gRandom->Uniform(0., 1.) > 0.5){
+                    itDecay1->SetUse(false);
+                    counter++;
+                  } else {
+                    itDecay2->SetUse(false);
+                    counter++;
+                  }
+                }
               }
             }
           }
@@ -234,9 +236,7 @@ void AliFemtoDreamPairCleaner::CleanDecayAtRandom(std::vector<AliFemtoDreamBaseP
     } 
   }
   if (!fMinimalBooking)
-  {
     fHists->FillDaughtersSharedDaughter(histnumber, counter);
-  }
 }
 
 
