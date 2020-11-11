@@ -251,7 +251,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;                                    /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,36); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,37); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
