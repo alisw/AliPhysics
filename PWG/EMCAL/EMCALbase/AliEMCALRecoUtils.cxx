@@ -4749,11 +4749,6 @@ void  AliEMCALRecoUtils::SetEMCALTimeVsEHighGainSlewingCorr(const TSpline3 *spli
   if(fEMCALTimeEShiftCorrection) delete fEMCALTimeRecalibrationFactors;
 
   fEMCALTimeEShiftCorrection = new TSpline3(*spline);
-
-  // if(!fEMCALTimeEShiftCorrection->IsOwner()) {
-  //   // Must claim ownership since the new objects are owend by this instance
-  //   fEMCALTimeEShiftCorrection->SetOwner(kTRUE);
-  // }
 }
 
 void  AliEMCALRecoUtils::SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map) {

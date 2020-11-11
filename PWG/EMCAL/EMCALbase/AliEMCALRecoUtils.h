@@ -234,6 +234,12 @@ public:
 
   void     CorrectCellTimeVsE(Double_t energy, Double_t & celltime, Bool_t isLowGain) const;
   Double_t GetLowGainSlewing (Double_t energy) const;
+  Bool_t   InitializedTimeVsEHighGainSlewingCorr(){
+    if (fEMCALTimeEShiftCorrection)
+      return kTRUE; 
+    else 
+      return kFALSE;
+  }
   void     SetEMCALTimeVsEHighGainSlewingCorr(const TSpline3* spline);
   TSpline3*  GetEMCALTimeVsEHighGainSlewingCorr(){
     if (fEMCALTimeEShiftCorrection)
