@@ -1238,7 +1238,7 @@ TComplex CorrelationCalculator::Seven(int n1, int n2, int n3, int n4, int n5, in
 		}// k==0
 
 		else{
-			cout<<"invalid range of k"<<endl;
+			std::cout<<"invalid range of k"<<std::endl;
 			return {0,0};
 		}
 
@@ -1351,7 +1351,7 @@ TComplex CorrelationCalculator::Eight(int n1, int n2, int n3, int n4, int n5, in
 		}// k==0
 
 		else{
-			cout<<"invalid range of k"<<endl;
+			std::cout<<"invalid range of k"<<std::endl;
 			return {0,0};
 		}
 
@@ -1370,7 +1370,7 @@ TComplex CorrelationCalculator::EightGap0(int n1, int n2, int n3, int n4, int n5
 
 }
 
-void CorrelationCalculator::FillQVector(double _Qvector[MaxHarm][MaxPow], double _Qcos[MaxHarm][MaxPow], double _Qsin[MaxHarm][MaxPow]) {
+void CorrelationCalculator::FillQVector(TComplex _Qvector[MaxHarm][MaxPow], double _Qcos[MaxHarm][MaxPow], double _Qsin[MaxHarm][MaxPow]) {
 	for(int iharm=0; iharm<MaxHarm; iharm++)
 	{
 		for(int ipow=0; ipow<MaxPow; ipow++)

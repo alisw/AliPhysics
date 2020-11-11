@@ -1,14 +1,16 @@
 #ifndef CORRELATION_CALCULATOR_H
 #define CORRELATION_CALCULATOR_H
 
+#include <iostream>
 #include "TComplex.h"
 
 class CorrelationCalculator {
 
-   static const int MaxHarm = 20;
-   static const int MaxPow = 20; 
-
     public:
+    
+    static const int MaxHarm = 20;
+    static const int MaxPow = 20; 
+
     TComplex Qvector[MaxHarm][MaxPow];
     TComplex Qvector0M[MaxHarm][MaxPow];
     TComplex Qvector0P[MaxHarm][MaxPow];
