@@ -59,9 +59,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
 
-  bool doCalibTimeEdep = kFALSE;
-  GetProperty("doCalibTimeEdep", doCalibTimeEdep);
-  fCalibrateTimeVsE = doCalibTimeEdep;
+  GetProperty("doCalibTimeEdep", fCalibrateTimeVsE);
   if (fCalibrateTimeVsE) AliWarning("energy dependent time calib will be enabled");
     
   bool doL1PhaseShiftOnly = kFALSE;
@@ -166,7 +164,7 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitEDepTimeCalibration()
   AliInfo("Initialising energy dependent time calibration map");
   
   std::unique_ptr<TFile> timeCalibFileVsE;
-  TSpline3* tiltCorr = NULL;
+  TSpline3* tiltCorr = nullptr;
   // set spline for time dependent time calibration if option is enabled
   if (fCalibrateTimeVsE){
     if (fBasePath!=""){
