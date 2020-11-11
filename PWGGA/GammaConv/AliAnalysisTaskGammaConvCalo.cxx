@@ -2967,9 +2967,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         if (fIsMC > 1){
           fHistoTruePi0InvMassPt[iCut]->Sumw2();
           fHistoTrueEtaInvMassPt[iCut]->Sumw2();
-          fHistoTruePi0InvMassPtAdditional[iCut]->Sumw2();
-          fHistoTrueEtaInvMassPtAdditional[iCut]->Sumw2();
           if (fDoLightOutput!=2 ){
+            fHistoTruePi0InvMassPtAdditional[iCut]->Sumw2();
+            fHistoTrueEtaInvMassPtAdditional[iCut]->Sumw2();
             fHistoTruePi0MatchedInvMassPt[iCut]->Sumw2();
             fHistoTrueEtaMatchedInvMassPt[iCut]->Sumw2();
             fHistoDoubleCountTruePi0InvMassPt[iCut]->Sumw2();
