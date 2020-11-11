@@ -113,6 +113,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMassDplus(0.),
   fMassDs(0.),
   fMassLambdaC(0.),
+  fVertexerTracks{nullptr},
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
@@ -194,6 +195,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
   delete fOutput;
   delete fTrackCuts2pr;
   delete fTrackCuts3pr;
+  delete fVertexerTracks;
 }
 
 //___________________________________________________________________________
@@ -529,6 +531,14 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
   Double_t d0track[2],covd0track[2];
 
+
+  if(!fVertexerTracks){
+    fVertexerTracks = new AliVertexerTracks(bzkG);
+  }else{
+    Double_t oldField=fVertexerTracks->GetFieldkG();
+    if(oldField!=bzkG) fVertexerTracks->SetFieldkG(bzkG);
+  }
+
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
@@ -546,7 +556,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   AliAODRecoDecay* rd4massCalc3 = new AliAODRecoDecay(0x0, 3, 1, d03);
   TObjArray* twoTrackArray = new TObjArray(2);
   TObjArray* threeTrackArray = new TObjArray(3);
-  AliVertexerTracks* vt = new AliVertexerTracks(bzkG);
   Double_t mom0[3], mom1[3], mom2[3];
   for (Int_t iPosTrack_0 = 0; iPosTrack_0 < totTracks; iPosTrack_0++) {
     AliESDtrack* track_p0 = esd->GetTrack(iPosTrack_0);
@@ -565,7 +574,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       if (status[iNegTrack_0] == 0) continue;
       twoTrackArray->AddAt(track_p0, 0);
       twoTrackArray->AddAt(track_n0, 1);
-      AliESDVertex* trkv = ReconstructSecondaryVertex(vt, twoTrackArray, primVtxTrk);
+      AliESDVertex* trkv = ReconstructSecondaryVertex(twoTrackArray, primVtxTrk);
       if (trkv == 0x0) {
         twoTrackArray->Clear();
         continue;
@@ -638,7 +647,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             threeTrackArray->Clear();
             continue;
           }
-          AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primVtxTrk);
+          AliESDVertex* trkv3 = ReconstructSecondaryVertex(threeTrackArray, primVtxTrk);
           if (trkv3 == 0x0) {
             threeTrackArray->Clear();
             continue;
@@ -702,7 +711,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             threeTrackArray->Clear();
             continue;
           }
-          AliESDVertex* trkv3 = ReconstructSecondaryVertex(vt, threeTrackArray, primVtxTrk);
+          AliESDVertex* trkv3 = ReconstructSecondaryVertex(threeTrackArray, primVtxTrk);
           if (trkv3 == 0x0) {
             threeTrackArray->Clear();
             continue;
@@ -757,7 +766,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     //  delete vertexAODp;
   }
   delete[] status;
-  delete vt;
   delete twoTrackArray;
   delete threeTrackArray;
   delete rd4massCalc3;
@@ -811,12 +819,12 @@ Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVer
   return retCode;
 }
 //______________________________________________________________________________
-AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx)
+AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx)
 {
 
-  vt->SetVtxStart(primvtx);
+  fVertexerTracks->SetVtxStart(primvtx);
 
-  AliESDVertex* trkv = (AliESDVertex*)vt->VertexForSelectedESDTracks(trkArray);
+  AliESDVertex* trkv = (AliESDVertex*)fVertexerTracks->VertexForSelectedESDTracks(trkArray);
   if (trkv->GetNContributors() != trkArray->GetEntriesFast())
     return 0x0;
   Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();

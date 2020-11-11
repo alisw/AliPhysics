@@ -41,7 +41,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t GetPtBin(Double_t ptCand);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
-  AliESDVertex* ReconstructSecondaryVertex(AliVertexerTracks* vt, TObjArray* trkArray, AliESDVertex* primvtx);
+  AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
@@ -125,6 +125,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
 
+  AliVertexerTracks* fVertexerTracks; // Run-2 vertexer
+
   AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
   Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
@@ -139,7 +141,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,5);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,6);
 };
 
 
