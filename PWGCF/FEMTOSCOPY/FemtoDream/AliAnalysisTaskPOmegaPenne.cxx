@@ -839,6 +839,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     if (fConfig->GetUseEventMixing())
     {
         tlResults = fPartColl->GetHistList();
+        tlResults->SetName("ResultsCPACleaner");
         if (!fConfig->GetMinimalBookingME())
         {
             tlResultsQA->Add(fPartColl->GetQAList());
@@ -857,6 +858,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     if (fConfig->GetUseEventMixing())
     {
         tlResults2 = fPartColl2->GetHistList();
+        tlResults2->SetName("ResultsInvMassCleaner");
         if (!fConfig->GetMinimalBookingME())
         {
             tlResults2->Add(fPartColl2->GetQAList());
@@ -872,6 +874,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     if (fConfig->GetUseEventMixing())
     {
         tlResults3 = fPartColl3->GetHistList();
+        tlResults3->SetName("ResultsRandomCleaner");
         if (!fConfig->GetMinimalBookingME())
         {
             tlResults3->Add(fPartColl3->GetQAList());
@@ -881,7 +884,7 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     {
         tlResults3 = new TList();
         tlResults3->SetOwner();
-        tlResults3->SetName("Results2");
+        tlResults3->SetName("Results3");
     }
 
     PostData(1, tlEventCuts);           // cuts keeping Lambda

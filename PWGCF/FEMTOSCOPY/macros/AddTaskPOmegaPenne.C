@@ -42,6 +42,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     // Lambda Cuts
     //
     AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
+    v0Cuts->SetCutInvMass(0.050);
+    v0Cuts->SetAxisInvMassPlots(600, 0.95, 1.25);
 
     AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
     AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
@@ -54,6 +56,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
 
 
     AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);           // V0 cuts - keep Lambda
+    Antiv0Cuts->SetCutInvMass(0.050);
+    Antiv0Cuts->SetAxisInvMassPlots(600, 0.95, 1.25);
 
     AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
     PosAntiv0Daug->SetCutCharge(1);
@@ -287,7 +291,7 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
     coutputV0Cuts =         mgr->CreateContainer(Form("V0Cuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), Form("V0Cuts")));
     coutputAntiV0Cuts =     mgr->CreateContainer(Form("AntiV0Cuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "AntiV0Cuts"));
     coutputResults =        mgr->CreateContainer(Form("Results"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "Results"));
-    coutputResultsQA =      mgr->CreateContainer(Form("ResultsQA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA"));
+    coutputResultsQA =      mgr->CreateContainer(Form("ResultsQA_CPAClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "ResultsQA_CPAClean"));
     
     coutputRecombAfterPairclean =   mgr->CreateContainer(Form("RecombinationAfterPairClean"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", file.Data(), "RecombinationAfterPairClean"));
     
