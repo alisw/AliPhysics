@@ -12,15 +12,57 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
 // =================================================================================================
 // AliAnalysisTaskUniFlowMultiStrange - ALICE Unified Flow framework
-// Author: Ya Zhu (ya.zhu@cern.ch), CCNU, 2017-2020
-// Based on AliAnalysisTaskUniFlow developed by Vojtech Pacik (vojtech.pacik@cern.ch).
+// Author: Ya Zhu  (yz.zhu@cern.ch), CCNU&NBI, 2017-2021
 // =================================================================================================
 //
 // ALICE analysis task for universal study of flow via 2-(or multi-)particle correlations
 // using Generic Framework notation for calculations including per-particle weights.
+//
+// Implemented flow calculation for both reference & pt-differential flow
+// of both inclusive charged (done anyway) & identified particles (pi,K,p,K0s,Lambda,phi).
+//
+// Note: So far implemented only for AOD analysis and tuned on Run2 pp & pPb analyses!
+//
+// PLEASE READ THE INSTRUCTION BELLOW BEFORE RUNNING !!!
+//
 // =================================================================================================
+// Analysis can run in these modes setup via AliAnalysisTaskUniFlowMultiStrange::SetRunMode(RunMode)
+//  -- AnalysisTaskUniFlow::kFull : running mode
+//      - full scale analysis
+//
+//  -- AnalysisTaskUniFlow::kTest : development / testing / debugging mode
+//      - only limited number of events is processed (AliAnalysisTaskUniFlowMultiStrange::SetNumEventsAnalyse(Int_t))
+//
+//  -- AnalysisTaskUniFlow::kSkipFlow : usable for QA and(or) weights estimation before full scale running
+//      - events are processed whilst skipping correlation calculations, i.e. event loop ends after particles are filtered
+//
+//  NOTE: by default, all modes includes :
+//  - filling QA plots : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFillQAhistos(kFALSE)
+//    (might be heavy while running several tasks at once)
+//  - filling GF weights : can be turned-off by AliAnalysisTaskUniFlowMultiStrange::SetFlowFillWeights(kFALSE)
+//
+// =================================================================================================
+// Overview of analysis flow (see implementation of corresonding method for details)
+// 1) Event selection : EventSelection()
+//
+// 2) Particle selection & reconstruction : Filtering()
+//        - whether or not are particles processed is driven by 'fProcess?' flag setup by AliAnalysisTaskUniFlowMultiStrange::SetProcess?(kTRUE)
+//          (except for incl. charged, which are processed anyway)
+//        - filling QA plots
+//        - filling GF weights
+//
+//    !!! here the event loop ends in case of running in 'kSkipFlow' mode
+//
+// 3) Flow / correlation calculations : DoFlowPOIs(), DoFlowRefs()
+//        - to setup harmonics to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fHarmonics[]' (in .cxx) AND 'fNumHarmonics' (in .h)
+//        - to setup eta gaps (2part) to be calculated, modify 'AliAnalysisTaskUniFlowMultiStrange::fEtaGap[]' (in .cxx) AND 'fNumEtaGap' (in .h)
+//              - for NO gap case, fill in value '-1.0'
+//        - 2-particle cumulants are run by ©default (in 'kFull' mode)
+//        - 4-particle cumulants has to be setup by invoking AliAnalysisTaskUniFlowMultiStrange::SetFlowDoFourCorrelations(kTRUE)
+//
 // =================================================================================================
 #ifndef ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
 #define ALIANALYSISTASKUNIFLOWMULTISTRANGE_CXX
@@ -305,6 +347,9 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange() : AliAn
   fCutCascadesrejectKinks(kTRUE),
   fXiMasswindow(0.01),
   fXiPIDsigma(5),
+
+
+
   //--------track-------------------------------------------------  
    // fPrimaryTrackEta(0),
   fTrackEta(0.8),
@@ -654,6 +699,7 @@ AliAnalysisTaskUniFlowMultiStrange::AliAnalysisTaskUniFlowMultiStrange(const cha
   fCutCascadesrejectKinks(kTRUE),
   fXiMasswindow(0.01),
   fXiPIDsigma(5),
+
   //--------track-------------------------------------------------  
    // fPrimaryTrackEta(0),
   fTrackEta(0.8),
@@ -1216,14 +1262,11 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::InitializeTask()
     AliInfo("Processing of Phi ON but PID OFF: setting processing of Kaons ON");
   }
 
-//   fProcessSpec[kXi] = kTRUE;
-//   fProcessSpec[kOmega] = kTRUE;  
-
-
+//fProcessSpec[kXi] = kTRUE;
+//fProcessSpec[kOmega] = kTRUE;  
   if((fFlowWeightsPath.Contains("alien://"))|| (fPIDCorrectionPath.Contains("alien://"))){
     TGrid::Connect("alien://");
-  } 
-   
+  }   
   // checking for weights source file
   if(fFlowUseWeights && !fFlowWeightsPath.EqualTo(""))
   {
@@ -1301,6 +1344,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserExec(Option_t *)
   // event selection
   fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fEventAOD) { return; }
+
 
   // loading AliPIDResponse
   AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
@@ -1646,7 +1690,7 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeight(AliVTrack* track, Par
     Int_t iBin = fh3Weights[species]->FindFixBin(track->Eta(),track->Phi(),fPVz);
     dWeight = fh3Weights[species]->GetBinContent(iBin);
   } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(track->Eta(),track->Phi());
+    Int_t iBin = fh2Weights[species]->FindFixBin(track->Eta(),fPVz);
     dWeight = fh2Weights[species]->GetBinContent(iBin);
   }
 
@@ -3828,6 +3872,48 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
   // create output objects
   // this function is called ONCE at the start of your analysis (RUNTIME)
   // *************************************************************
+  Int_t nptXi = 15;
+  Int_t nptOmega = 8;
+  Int_t nptK0s = 14;
+  Int_t nptLambda = 13;
+  Int_t nptPhi = 5;
+
+  Double_t ptBinEdgeK0s[] = {0.5,0.7,0.9,1.1,1.3,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,6.0,10.0};
+  Double_t ptBinEdgeLambda[] = {0.6,1.0,1.25,1.5,1.75,2.0,2.25,2.5,3.0,3.5,4.0,5.0,6.0,10.0};
+  Double_t ptBinEdgePhi[] = {1.0,1.5,2.0,3.0,4.0,6.0};
+  Double_t ptBinEdgeXi[] = {0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,6.0,10};
+  Double_t ptBinEdgeOmega[] = {1.0,1.5,2.0,2.5,3.0,3.5,4.0,5.0,6.0};
+
+
+  Double_t CentBinEdge[fCentBinNum+1];
+  
+  Double_t MassBinEdgeK0s[fV0sNumBinsMass+1];
+  Double_t MassBinEdgeLambda[fV0sNumBinsMass+1];
+  Double_t MassBinEdgePhi[fPhiNumBinsMass+1];
+  Double_t MassBinEdgeXi[fCascadesNumBinsMass+1];
+  Double_t MassBinEdgeOmega[fCascadesNumBinsMass+1];
+
+  for(Int_t icent =0; icent<fCentBinNum+1; icent++){
+   CentBinEdge[icent] = ((fCentMax-fCentMin)/fCentBinNum)*icent + fCentMin;
+  }
+
+  for(Int_t imass =0; imass<fV0sNumBinsMass+1; imass++){
+   MassBinEdgeK0s[imass] = ((fCutV0sInvMassK0sMax-fCutV0sInvMassK0sMin)/fV0sNumBinsMass)*imass + fCutV0sInvMassK0sMin; 
+   
+   MassBinEdgeLambda[imass] = ((fCutV0sInvMassLambdaMax-fCutV0sInvMassLambdaMin)/fV0sNumBinsMass)*imass + fCutV0sInvMassLambdaMin; 
+  
+  }
+
+ for(Int_t imass =0; imass<fPhiNumBinsMass+1; imass++){
+   MassBinEdgePhi[imass] = ((fCutPhiInvMassMax-fCutPhiInvMassMin)/fPhiNumBinsMass)*imass + fCutPhiInvMassMin;
+ }
+
+ for(Int_t imass =0; imass<fCascadesNumBinsMass+1; imass++){
+
+    MassBinEdgeXi[imass] = ((fCutCascadesInvMassXiMax-fCutCascadesInvMassXiMin)/fCascadesNumBinsMass)*imass + fCutCascadesInvMassXiMin;
+
+   MassBinEdgeOmega[imass] = ((fCutCascadesInvMassOmegaMax-fCutCascadesInvMassOmegaMin)/fCascadesNumBinsMass)*imass + fCutCascadesInvMassOmegaMin;
+  }
 
   DumpTObjTable("UserCreateOutputObjects: start");
 
@@ -3916,45 +4002,48 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
             }
 
             case kK0s:
-            {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassK0sMin,fCutV0sInvMassK0sMax); }
-              break;
-            }
+             {             
+              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptK0s,ptBinEdgeK0s,fV0sNumBinsMass,MassBinEdgeK0s);
+              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptK0s,ptBinEdgeK0s,fV0sNumBinsMass,MassBinEdgeK0s); 
+              }
+             break;
+           }
 
             case kLambda:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fV0sNumBinsMass,fCutV0sInvMassLambdaMin,fCutV0sInvMassLambdaMax); }
-              break;
-            }
+              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptLambda,ptBinEdgeLambda,fV0sNumBinsMass,MassBinEdgeLambda);
+              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptLambda,ptBinEdgeLambda,fV0sNumBinsMass,MassBinEdgeLambda); 
+             }
+             break;
+           }
+
 
             case kPhi:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fPhiNumBinsMass,fCutPhiInvMassMin,fCutPhiInvMassMax); }
-              break;
-            }
-          
-           
+              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptPhi,ptBinEdgePhi,fPhiNumBinsMass,MassBinEdgePhi);
+              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptPhi,ptBinEdgePhi,fPhiNumBinsMass,MassBinEdgePhi); 
+              }
+             break;
+          }          
 
           case kXi:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassXiMin,fCutCascadesInvMassXiMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassXiMin,fCutCascadesInvMassXiMax); }
-              break;
-            }
-
+             profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptXi,ptBinEdgeXi,fCascadesNumBinsMass,MassBinEdgeXi);
+              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptXi,ptBinEdgeXi,fCascadesNumBinsMass,MassBinEdgeXi);     
+             }
+            break;
+          }
             case kOmega:
             {
-              profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassOmegaMin,fCutCascadesInvMassOmegaMax);
-              if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,fCentMin,fCentMax, fFlowPOIsPtBinNum,fFlowPOIsPtMin,fFlowPOIsPtMax, fCascadesNumBinsMass,fCutCascadesInvMassOmegaMin,fCutCascadesInvMassOmegaMax); }
-              break;
+               profile = new TProfile3D(Form("%s_Pos_sample%d",corName,iSample), Form("%s: %s (Pos); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptOmega,ptBinEdgeOmega,fCascadesNumBinsMass,MassBinEdgeOmega);
+             if(bHasGap) { profileNeg = new TProfile3D(Form("%s_Neg_sample%d",corName,iSample), Form("%s: %s (Neg); %s; #it{p}_{T} (GeV/#it{c}); #it{m}_{inv} (GeV/#it{c}^{2})",GetSpeciesLabel(PartSpecies(iSpec)),corLabel,GetCentEstimatorLabel(fCentEstimator)), fCentBinNum,CentBinEdge,nptOmega,ptBinEdgeOmega,fCascadesNumBinsMass,MassBinEdgeOmega);
+             }
+             break;
             }
 
-
-
-         }
+           case kUnknown:
+           return;
+       }
 
 
           if(!profile) { fInit = kFALSE; AliError("Profile (Pos) NOT created!"); task->Print(); return; }
@@ -4011,42 +4100,52 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
     // species dependent
     if(fProcessSpec[kK0s] || fProcessSpec[kLambda])
     {
-      iNumBinsCand[SparseCand::kInvMass] = fV0sNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutV0sInvMassK0sMin; dMaxCand[SparseCand::kInvMass] = fCutV0sInvMassK0sMax;
-      fhsCandK0s = new THnSparseD("fhsCandK0s",Form("K_{S}^{0}: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
+      iNumBinsCand[SparseCand::kPt] = nptK0s;
+      iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutV0sInvMassK0sMin; dMaxCand[SparseCand::kInvMass] = fCutV0sInvMassK0sMax;
+      fhsCandK0s = new THnSparseD("fhsCandK0s",Form("#K0s: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandK0s->Sumw2();
+      fhsCandK0s->SetBinEdges(2,ptBinEdgeK0s);
       fListFlow[kK0s]->Add(fhsCandK0s);
-
-      iNumBinsCand[SparseCand::kInvMass] = fV0sNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutV0sInvMassLambdaMin; dMaxCand[SparseCand::kInvMass] = fCutV0sInvMassLambdaMax;
+      iNumBinsCand[SparseCand::kPt] = nptLambda;
+      iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutV0sInvMassLambdaMin; dMaxCand[SparseCand::kInvMass] = fCutV0sInvMassLambdaMax;
       fhsCandLambda = new THnSparseD("fhsCandLambda",Form("#Lambda: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandLambda->Sumw2();
+      fhsCandLambda->SetBinEdges(2,ptBinEdgeLambda);
       fListFlow[kLambda]->Add(fhsCandLambda);
     }
 
     if(fProcessSpec[kPhi])
     {
-      iNumBinsCand[SparseCand::kEta] = fFlowEtaBinNum; dMinCand[SparseCand::kEta] = -fFlowEtaMax; dMaxCand[SparseCand::kEta] = fFlowEtaMax;
-      iNumBinsCand[SparseCand::kInvMass] = fPhiNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutPhiInvMassMin; dMaxCand[SparseCand::kInvMass] = fCutPhiInvMassMax;
-
-      fhsCandPhi = new THnSparseD("fhsCandPhi",Form("#phi (Sig): Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
+      iNumBinsCand[SparseCand::kPt] = nptPhi;
+      iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutPhiInvMassMin; dMaxCand[SparseCand::kInvMass] = fCutPhiInvMassMax;
+      fhsCandPhi = new THnSparseD("fhsCandPhi",Form("#Phi: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandPhi->Sumw2();
+      fhsCandPhi->SetBinEdges(2,ptBinEdgePhi);
       fListFlow[kPhi]->Add(fhsCandPhi);
-
-      fhsCandPhiBg = new THnSparseD("fhsCandPhiBg",Form("#phi (Bg): Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
+      
+      iNumBinsCand[SparseCand::kPt] = nptPhi;
+      iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutPhiInvMassMin; dMaxCand[SparseCand::kInvMass] = fCutPhiInvMassMax;
+      fhsCandPhiBg = new THnSparseD("fhsCandPhiBg",Form("#PhiBg: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandPhiBg->Sumw2();
+      fhsCandPhiBg->SetBinEdges(2,ptBinEdgePhi);
       fListFlow[kPhi]->Add(fhsCandPhiBg);
+ 
     }
   
 
    if(fProcessSpec[kXi] || fProcessSpec[kOmega])
     {
+      iNumBinsCand[SparseCand::kPt] = nptXi;
       iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutCascadesInvMassXiMin; dMaxCand[SparseCand::kInvMass] = fCutCascadesInvMassXiMax;
       fhsCandXi = new THnSparseD("fhsCandXi",Form("#Xi: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandXi->Sumw2();
+      fhsCandXi->SetBinEdges(2,ptBinEdgeXi);
       fListFlow[kXi]->Add(fhsCandXi);
-
+      iNumBinsCand[SparseCand::kPt] = nptOmega;
       iNumBinsCand[SparseCand::kInvMass] = fCascadesNumBinsMass; dMinCand[SparseCand::kInvMass] = fCutCascadesInvMassOmegaMin; dMaxCand[SparseCand::kInvMass] = fCutCascadesInvMassOmegaMax;
       fhsCandOmega = new THnSparseD("fhsCandOmega",Form("#Omega: Distribution; %s;", sAxes.Data()), SparseCand::kDim, iNumBinsCand, dMinCand, dMaxCand);
       fhsCandOmega->Sumw2();
+      fhsCandOmega->SetBinEdges(2,ptBinEdgeOmega);
       fListFlow[kOmega]->Add(fhsCandOmega);
     }
 
@@ -4069,6 +4168,7 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
         const char* weightName = Form("fh3Weights%s",GetSpeciesName(PartSpecies(iSpec)));
         const char* weightLabel = Form("Weights: %s; #varphi; #eta; PV-z (cm)", GetSpeciesName(PartSpecies(iSpec)));
         fh3Weights[iSpec] = new TH3D(weightName, weightLabel, fFlowPhiBinNum,0.0,TMath::TwoPi(), fFlowEtaBinNum,-fFlowEtaMax,fFlowEtaMax, 2*fPVtxCutZ,-fPVtxCutZ,fPVtxCutZ);
+
         fh3Weights[iSpec]->Sumw2();
         fFlowWeights->Add(fh3Weights[iSpec]);
       }
@@ -4836,7 +4936,7 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::FillFlowWeightCascade(const AliAODcas
     } else {
       fh2AfterWeights[species]->Fill(XiPhi,XiEta,weight);
     }
-  }
+ }
 
   return kTRUE;
 }
