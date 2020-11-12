@@ -50,6 +50,7 @@
 #include "AliPPVsMultUtils.h"
 #include <AliESDtrackCuts.h>
 #include "TDatabasePDG.h"
+#include "AliEventCuts.h"
 
 class AliPIDResponse;
 class AliMultSelection;
@@ -60,7 +61,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskDiHadCorrelHighPt) // classimp: necessary for root
 
 AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalysisTaskSE(),
-    fAliEventCuts(),
+    fAliEventCuts(0),
     fAOD(0),
     fESD(0),
     fmcEvent(0),
@@ -203,7 +204,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
 }
 //_____________________________________________________________________________
 AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *name, Bool_t analysisMC, Bool_t useeff): AliAnalysisTaskSE(name),
-    fAliEventCuts(),
+    fAliEventCuts(0),
     fAOD(0),
     fESD(0),
     fmcEvent(0),
@@ -874,9 +875,13 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fselectedV0Triggers = new TObjArray();
     fselectedV0Triggers->SetOwner(kTRUE);
     fselectedV0Assoc = new TObjArray();
-    fselectedV0Assoc->SetOwner(kTRUE);
+    fselectedV0Assoc->SetOwner(kTRUE);  
 
-    PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
+    fAliEventCuts = new AliEventCuts();
+    fAliEventCuts->AddQAplotsToList(fOutputList,kTRUE);
+    fAliEventCuts->SetupRun2pp();
+
+    PostData(1, fOutputList);   // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
 	// Settings for event mixing -------------------------------------
@@ -961,9 +966,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
         fHistSelection->Fill(2.5);
 
         if(!fAnalysisMC&&fRejectEventPileUp){
-            fAliEventCuts.SetupRun2pp();
-            if(fAOD) if(!fAliEventCuts.AcceptEvent(fAOD)) return;
-            if(fESD) if(!fAliEventCuts.AcceptEvent(fESD)) return;
+            if(fAOD) if(!fAliEventCuts->AcceptEvent(fAOD)) return;
+            if(fESD) if(!fAliEventCuts->AcceptEvent(fESD)) {
+                PostData(1, fOutputList); 
+                return;
+            }
         }
         fHistSelection->Fill(3.5);
 
