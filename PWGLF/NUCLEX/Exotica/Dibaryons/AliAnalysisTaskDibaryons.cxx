@@ -36,9 +36,9 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fAnalysisType("ESD"),
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
-  fPIDResponse(0x0),
-  fRunNumber(0),
-  fOutput(0x0)
+  fPIDResponse(0),
+  fPileupCut(kTRUE),
+  fOutput(0)
 {
   // default constructor
 }
@@ -49,9 +49,9 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fAnalysisType("ESD"),
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
-  fPIDResponse(0x0),
-  fRunNumber(0),
-  fOutput(0x0)
+  fPIDResponse(0),
+  fPileupCut(kTRUE),
+  fOutput(0)
 {
   // constructor
 
@@ -487,10 +487,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     dynamic_cast<TH1F*>(fOutput->FindObject("hNFindableCluster"))    ->Fill(nTPCFindableCls);
     dynamic_cast<TH1F*>(fOutput->FindObject("hRatioFindableCrossed"))->Fill(ratio);
 
-    if(nTPCClusters < 80) continue;
-    if(nTPCCrossedRows < 70) continue;
-    if(ratio < 0.83)  continue;
-    if(nTPCSharedCls > 0)   continue;
+    if(nTPCClusters    < 80)   continue;
+    if(nTPCCrossedRows < 70)   continue;
+    if(ratio           < 0.83) continue;
+    if(nTPCSharedCls   > 0)    continue;
 
     dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsP"))             ->Fill(totMom, dEdx);
 
@@ -498,15 +498,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))     ->Fill(DCAxy,DCAz);
     }
 
     // Proton PID
     if(     totMom < 0.75 && TMath::Abs(nSigmaTPCproton) > 3.) continue;
     else if(totMom > 0.75 && nSigmaTPCTOFcombined        > 3.) continue;
 
-    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))     ->Fill(totMom, nSigmaTPCproton);
-    dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombinedwPID"))->Fill(totMom, nSigmaTPCTOFcombined);
+    if(charge > 0.) {
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))     ->Fill(totMom, nSigmaTPCproton);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombinedwPID"))->Fill(totMom, nSigmaTPCTOFcombined);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))         ->Fill(DCAxy,DCAz);
+    }
 
     if(TMath::Abs(eta) > 0.8) continue;
     if(transvMom < 0.5)  continue;
@@ -675,6 +677,16 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
       if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
       if(TMath::Abs(aodV0->Pt() < 0.3)) continue;
+
+      // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
+      if(fPileupCut) {
+        if(!(pTrack->HasPointOnITSLayer(0)) && !(pTrack->HasPointOnITSLayer(1)) &&
+           !(pTrack->HasPointOnITSLayer(4)) && !(pTrack->HasPointOnITSLayer(5)) &&
+           !(pTrack->GetTOFBunchCrossing() == 0)) continue;
+        if(!(nTrack->HasPointOnITSLayer(0)) && !(nTrack->HasPointOnITSLayer(1)) &&
+           !(nTrack->HasPointOnITSLayer(4)) && !(nTrack->HasPointOnITSLayer(5)) &&
+           !(nTrack->GetTOFBunchCrossing() == 0)) continue;
+      }
 
       // Daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
@@ -974,6 +986,19 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(bachTrack->Pt()) < 0.3) continue;
       if(TMath::Abs(pTrack   ->Pt()) < 0.3) continue;
       if(TMath::Abs(nTrack   ->Pt()) < 0.3) continue;
+
+      // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
+      if(fPileupCut) {
+        if(!(bachTrack->HasPointOnITSLayer(0)) && !(bachTrack->HasPointOnITSLayer(1)) &&
+           !(bachTrack->HasPointOnITSLayer(4)) && !(bachTrack->HasPointOnITSLayer(5)) &&
+           !(bachTrack->GetTOFBunchCrossing() == 0)) continue;
+        if(!(pTrack->HasPointOnITSLayer(0)) && !(pTrack->HasPointOnITSLayer(1)) &&
+           !(pTrack->HasPointOnITSLayer(4)) && !(pTrack->HasPointOnITSLayer(5)) &&
+           !(pTrack->GetTOFBunchCrossing() == 0)) continue;
+        if(!(nTrack->HasPointOnITSLayer(0)) && !(nTrack->HasPointOnITSLayer(1)) &&
+           !(nTrack->HasPointOnITSLayer(4)) && !(nTrack->HasPointOnITSLayer(5)) &&
+           !(nTrack->GetTOFBunchCrossing() == 0)) continue;
+      }
 
       // Bachelor and daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
