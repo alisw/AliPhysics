@@ -1051,7 +1051,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 11, 0.1, 0.3);
-  SetCutVariation(kTRUE, kCasc_BacBarCosPA, 21, 0.99999, 0.999999);
+  SetCutVariation(kTRUE, kCasc_BacBarCosPA, 21, 0.9999, 0.999999);
 }
 
 //________________________________________________________________________
