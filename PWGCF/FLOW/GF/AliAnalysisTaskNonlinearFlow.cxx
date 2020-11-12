@@ -1,4 +1,5 @@
 #include "AliAnalysisTaskNonlinearFlow.h"
+#include "CorrelationCalculator.h"
 
 #include <TList.h>
 #include <TH1.h>
@@ -749,20 +750,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	//............................
 
 	//..calculate Q-vector for each harmonics n and power p
-	for(int iharm=0; iharm<20; iharm++)
-	{
-		for(int ipow=0; ipow<20; ipow++)
-		{
-			Qvector[iharm][ipow] = TComplex(Qcos[iharm][ipow], Qsin[iharm][ipow]);
-			Qvector10M[iharm][ipow] = TComplex(QcosGap10M[iharm][ipow], QsinGap10M[iharm][ipow]);
-			Qvector10P[iharm][ipow] = TComplex(QcosGap10P[iharm][ipow], QsinGap10P[iharm][ipow]);
-			Qvector14M[iharm][ipow] = TComplex(QcosGap14M[iharm][ipow], QsinGap14M[iharm][ipow]);
-			Qvector14P[iharm][ipow] = TComplex(QcosGap14P[iharm][ipow], QsinGap14P[iharm][ipow]);
-			QvectorSubLeft[iharm][ipow] = TComplex(QcosSubLeft[iharm][ipow], QsinSubLeft[iharm][ipow]);
-			QvectorSubRight[iharm][ipow] = TComplex(QcosSubRight[iharm][ipow], QsinSubRight[iharm][ipow]);
-			QvectorSubMiddle[iharm][ipow] = TComplex(QcosSubMiddle[iharm][ipow], QsinSubMiddle[iharm][ipow]);
-		}
-	}
+        correlator.FillQVector(correlator.Qvector, Qcos, Qsin); 
+        correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M); 
+        correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P); 
+        correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M); 
+        correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P); 
+        correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft); 
+        correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight); 
+        correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle); 
 
 	hMult->Fill(NtrksAfter);
 
@@ -1023,1376 +1018,6 @@ double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt
 			hPhiWeightRun->GetZaxis()->FindBin(vz));
 	return weight;
 }
-//_____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Q(int n, int p)
-{
-
-	if(n>=0) return Qvector[n][p];
-	else return TComplex::Conjugate(Qvector[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap10M(int n, int p)
-{
-
-	if(n>=0) return Qvector10M[n][p];
-	else return TComplex::Conjugate(Qvector10M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap10P(int n, int p)
-{
-
-	if(n>=0) return Qvector10P[n][p];
-	else return TComplex::Conjugate(Qvector10P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap0M(int n, int p)
-{
-
-	if(n>=0) return Qvector0M[n][p];
-	else return TComplex::Conjugate(Qvector0M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap0P(int n, int p)
-{
-
-	if(n>=0) return Qvector0P[n][p];
-	else return TComplex::Conjugate(Qvector0P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap2M(int n, int p)
-{
-
-	if(n>=0) return Qvector2M[n][p];
-	else return TComplex::Conjugate(Qvector2M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap2P(int n, int p)
-{
-
-	if(n>=0) return Qvector2P[n][p];
-	else return TComplex::Conjugate(Qvector2P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap4M(int n, int p)
-{
-
-	if(n>=0) return Qvector4M[n][p];
-	else return TComplex::Conjugate(Qvector4M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap4P(int n, int p)
-{
-
-	if(n>=0) return Qvector4P[n][p];
-	else return TComplex::Conjugate(Qvector4P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap6M(int n, int p)
-{
-
-	if(n>=0) return Qvector6M[n][p];
-	else return TComplex::Conjugate(Qvector6M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap6P(int n, int p)
-{
-
-	if(n>=0) return Qvector6P[n][p];
-	else return TComplex::Conjugate(Qvector6P[-n][p]);
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap8M(int n, int p)
-{
-
-	if(n>=0) return Qvector8M[n][p];
-	else return TComplex::Conjugate(Qvector8M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap8P(int n, int p)
-{
-
-	if(n>=0) return Qvector8P[n][p];
-	else return TComplex::Conjugate(Qvector8P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap10M(int n, int p)
-{
-
-	if(n>=0) return pvectorM[n][p];
-	else return TComplex::Conjugate(pvectorM[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap10P(int n, int p)
-{
-
-	if(n>=0) return pvectorP[n][p];
-	else return TComplex::Conjugate(pvectorP[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap14M(int n, int p)
-{
-
-	if(n>=0) return Qvector14M[n][p];
-	else return TComplex::Conjugate(Qvector14M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap14P(int n, int p)
-{
-
-	if(n>=0) return Qvector14P[n][p];
-	else return TComplex::Conjugate(Qvector14P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap16M(int n, int p)
-{
-
-	if(n>=0) return Qvector16M[n][p];
-	else return TComplex::Conjugate(Qvector16M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap16P(int n, int p)
-{
-
-	if(n>=0) return Qvector16P[n][p];
-	else return TComplex::Conjugate(Qvector16P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap18M(int n, int p)
-{
-
-	if(n>=0) return Qvector18M[n][p];
-	else return TComplex::Conjugate(Qvector18M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap18P(int n, int p)
-{
-
-	if(n>=0) return Qvector18P[n][p];
-	else return TComplex::Conjugate(Qvector18P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubLeft(int n, int p)
-{
-
-	if(n>=0) return QvectorSubLeft[n][p];
-	else return TComplex::Conjugate(QvectorSubLeft[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubRight(int n, int p)
-{
-
-	if(n>=0) return QvectorSubRight[n][p];
-	else return TComplex::Conjugate(QvectorSubRight[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubMiddle(int n, int p)
-{
-
-	if(n>=0) return QvectorSubMiddle[n][p];
-	else return TComplex::Conjugate(QvectorSubMiddle[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Left(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Left[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Left[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Right(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Right[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Right[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Middle(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Middle[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Middle[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::p(int n, int p)
-{
-
-	if(n>=0) return pvector[n][p];
-	else return TComplex::Conjugate(pvector[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::q(int n, int p)
-{
-
-	if(n>=0) return qvector[n][p];
-	else return TComplex::Conjugate(qvector[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap0M(int n, int p)
-{
-
-	if(n>=0) return pvector0M[n][p];
-	else return TComplex::Conjugate(pvector0M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap0P(int n, int p)
-{
-
-	if(n>=0) return pvector0P[n][p];
-	else return TComplex::Conjugate(pvector0P[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap4M(int n, int p)
-{
-
-	if(n>=0) return pvector4M[n][p];
-	else return TComplex::Conjugate(pvector4M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap4P(int n, int p)
-{
-
-	if(n>=0) return pvector4P[n][p];
-	else return TComplex::Conjugate(pvector4P[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap8M(int n, int p)
-{
-
-	if(n>=0) return pvector8M[n][p];
-	else return TComplex::Conjugate(pvector8M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap8P(int n, int p)
-{
-
-	if(n>=0) return pvector8P[n][p];
-	else return TComplex::Conjugate(pvector8P[n][p]);
-
-}
-//____________________________________________________________________
-void AliAnalysisTaskNonlinearFlow::ResetQ(const int nMaxHarm, const int nMaxPow)
-{
-
-	for(int i=0; i<nMaxHarm; i++)
-	{
-		for(int j=0; j<nMaxPow; j++)
-		{
-			Qvector[i][j] = TComplex(0.,0.);
-		}
-	}
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two(int n1, int n2)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1) - Q(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0(int n1, int n2)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2(int n1, int n2)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4(int n1, int n2)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6(int n1, int n2)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8(int n1, int n2)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10(int n1, int n2)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap14(int n1, int n2)
-{
-
-	TComplex formula = QGap14M(n1,1)*QGap14P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap16(int n1, int n2)
-{
-
-	TComplex formula = QGap16M(n1,1)*QGap16P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap18(int n1, int n2)
-{
-
-	TComplex formula = QGap18M(n1,1)*QGap18P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubLM(int n1, int n2)
-{
-
-	TComplex formula = QsubLeft(n1,1)*QsubMiddle(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubRM(int n1, int n2)
-{
-
-	TComplex formula = QsubMiddle(n1,1)*QsubRight(n2,1);
-	return formula;
-
-}
-//
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubLR(int n1, int n2)
-{
-
-	TComplex formula = QsubLeft(n1,1)*QsubRight(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubGap2LM(int n1, int n2)
-{
-
-	TComplex formula = QsubGap2Left(n1,1)*QsubGap2Middle(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubGap2RM(int n1, int n2)
-{
-
-	TComplex formula = QsubGap2Middle(n1,1)*QsubGap2Right(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0M(int n1, int n2)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2M(int n1, int n2)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2M(n2,1) - QGap2M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4M(int n1, int n2)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4M(n2,1) - QGap4M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6M(int n1, int n2)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6M(n2,1) - QGap6M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8M(int n1, int n2)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8M(n2,1) - QGap8M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10M(int n1, int n2)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1) - QGap10M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0P(int n1, int n2)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1) - QGap0P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2P(int n1, int n2)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1) - QGap2P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4P(int n1, int n2)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1) - QGap4P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6P(int n1, int n2)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1) - QGap6P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8P(int n1, int n2)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1) - QGap8P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10P(int n1, int n2)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1) - QGap10P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Three(int n1, int n2, int n3)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
-		- Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)-QGap0M(n1,1)*QGap0P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)-QGap0P(n1,1)*QGap0M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2P(n2,1)*QGap2P(n3,1)-QGap2M(n1,1)*QGap2P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2M(n2,1)*QGap2M(n3,1)-QGap2P(n1,1)*QGap2M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4P(n2,1)*QGap4P(n3,1)-QGap4M(n1,1)*QGap4P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4M(n2,1)*QGap4M(n3,1)-QGap4P(n1,1)*QGap4M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6P(n2,1)*QGap6P(n3,1)-QGap6M(n1,1)*QGap6P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6M(n2,1)*QGap6M(n3,1)-QGap6P(n1,1)*QGap6M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8P(n2,1)*QGap8P(n3,1)-QGap8M(n1,1)*QGap8P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8M(n2,1)*QGap8M(n3,1)-QGap8P(n1,1)*QGap8M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-QGap10M(n1,1)*QGap10P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10P(n1,1)*QGap10M(n2+n3,2);
-	return formula;
-
-}
-
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)-QGap0M(n1+n2,2)*QGap0M(n3,1)-QGap0M(n2,1)*QGap0M(n1+n3,2)
-		- QGap0M(n1,1)*QGap0M(n2+n3,2)+2.*QGap0M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)-QGap0P(n1+n2,2)*QGap0P(n3,1)-QGap0P(n2,1)*QGap0P(n1+n3,2)
-		- QGap0P(n1,1)*QGap0P(n2+n3,2)+2.*QGap0P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2M(n2,1)*QGap2M(n3,1)-QGap2M(n1+n2,2)*QGap2M(n3,1)-QGap2M(n2,1)*QGap2M(n1+n3,2)
-		- QGap2M(n1,1)*QGap2M(n2+n3,2)+2.*QGap2M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1)*QGap2P(n3,1)-QGap2P(n1+n2,2)*QGap2P(n3,1)-QGap2P(n2,1)*QGap2P(n1+n3,2)
-		- QGap2P(n1,1)*QGap2P(n2+n3,2)+2.*QGap2P(n1+n2+n3,3);
-	return formula;
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4M(n2,1)*QGap4M(n3,1)-QGap4M(n1+n2,2)*QGap4M(n3,1)-QGap4M(n2,1)*QGap4M(n1+n3,2)
-		- QGap4M(n1,1)*QGap4M(n2+n3,2)+2.*QGap4M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1)*QGap4P(n3,1)-QGap4P(n1+n2,2)*QGap4P(n3,1)-QGap4P(n2,1)*QGap4P(n1+n3,2)
-		- QGap4P(n1,1)*QGap4P(n2+n3,2)+2.*QGap4P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6M(n2,1)*QGap6M(n3,1)-QGap6M(n1+n2,2)*QGap6M(n3,1)-QGap6M(n2,1)*QGap6M(n1+n3,2)
-		- QGap6M(n1,1)*QGap6M(n2+n3,2)+2.*QGap6M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1)*QGap6P(n3,1)-QGap6P(n1+n2,2)*QGap6P(n3,1)-QGap6P(n2,1)*QGap6P(n1+n3,2)
-		- QGap6P(n1,1)*QGap6P(n2+n3,2)+2.*QGap6P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8M(n2,1)*QGap8M(n3,1)-QGap8M(n1+n2,2)*QGap8M(n3,1)-QGap8M(n2,1)*QGap8M(n1+n3,2)
-		- QGap8M(n1,1)*QGap8M(n2+n3,2)+2.*QGap8M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1)*QGap8P(n3,1)-QGap8P(n1+n2,2)*QGap8P(n3,1)-QGap8P(n2,1)*QGap8P(n1+n3,2)
-		- QGap8P(n1,1)*QGap8P(n2+n3,2)+2.*QGap8P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10M(n1+n2,2)*QGap10M(n3,1)-QGap10M(n2,1)*QGap10M(n1+n3,2)
-		- QGap10M(n1,1)*QGap10M(n2+n3,2)+2.*QGap10M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-QGap10P(n1+n2,2)*QGap10P(n3,1)-QGap10P(n2,1)*QGap10P(n1+n3,2)
-		- QGap10P(n1,1)*QGap10P(n2+n3,2)+2.*QGap10P(n1+n2+n3,3);
-	return formula;
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
-		- Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
-		+ Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
-		+ 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0P(n1+n2,2)*QGap0M(n3,1)*QGap0M(n4,1)
-		-QGap0P(n1,1)*QGap0P(n2,1)*QGap0M(n3+n4,2)+QGap0P(n1+n2,2)*QGap0M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0M(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0M(n1+n2,2)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0M(n2,1)*QGap0M(n1+n3,2)*QGap0M(n4,1)
-		- QGap0M(n1,1)*QGap0M(n2+n3,2)*QGap0M(n4,1)+2.*QGap0M(n1+n2+n3,3)*QGap0M(n4,1)-QGap0M(n2,1)*QGap0M(n3,1)*QGap0M(n1+n4,2)
-		+ QGap0M(n2+n3,2)*QGap0M(n1+n4,2)-QGap0M(n1,1)*QGap0M(n3,1)*QGap0M(n2+n4,2)+QGap0M(n1+n3,2)*QGap0M(n2+n4,2)
-		+ 2.*QGap0M(n3,1)*QGap0M(n1+n2+n4,3)-QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3+n4,2)+QGap0M(n1+n2,2)*QGap0M(n3+n4,2)
-		+ 2.*QGap0M(n2,1)*QGap0M(n1+n3+n4,3)+2.*QGap0M(n1,1)*QGap0M(n2+n3+n4,3)-6.*QGap0M(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0P(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)*QGap0P(n4,1)-QGap0P(n1+n2,2)*QGap0P(n3,1)*QGap0P(n4,1)-QGap0P(n2,1)*QGap0P(n1+n3,2)*QGap0P(n4,1)
-		- QGap0P(n1,1)*QGap0P(n2+n3,2)*QGap0P(n4,1)+2.*QGap0P(n1+n2+n3,3)*QGap0P(n4,1)-QGap0P(n2,1)*QGap0P(n3,1)*QGap0P(n1+n4,2)
-		+ QGap0P(n2+n3,2)*QGap0P(n1+n4,2)-QGap0P(n1,1)*QGap0P(n3,1)*QGap0P(n2+n4,2)+QGap0P(n1+n3,2)*QGap0P(n2+n4,2)
-		+ 2.*QGap0P(n3,1)*QGap0P(n1+n2+n4,3)-QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3+n4,2)+QGap0P(n1+n2,2)*QGap0P(n3+n4,2)
-		+ 2.*QGap0P(n2,1)*QGap0P(n1+n3+n4,3)+2.*QGap0P(n1,1)*QGap0P(n2+n3+n4,3)-6.*QGap0P(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap2(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1)*QGap2M(n3,1)*QGap2M(n4,1)-QGap2P(n1+n2,2)*QGap2M(n3,1)*QGap2M(n4,1)
-		-QGap2P(n1,1)*QGap2P(n2,1)*QGap2M(n3+n4,2)+QGap2P(n1+n2,2)*QGap2M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap4(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1)*QGap4M(n3,1)*QGap4M(n4,1)-QGap4P(n1+n2,2)*QGap4M(n3,1)*QGap4M(n4,1)
-		-QGap4P(n1,1)*QGap4P(n2,1)*QGap4M(n3+n4,2)+QGap4P(n1+n2,2)*QGap4M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap6(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1)*QGap6M(n3,1)*QGap6M(n4,1)-QGap6P(n1+n2,2)*QGap6M(n3,1)*QGap6M(n4,1)
-		-QGap6P(n1,1)*QGap6P(n2,1)*QGap6M(n3+n4,2)+QGap6P(n1+n2,2)*QGap6M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap8(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1)*QGap8M(n3,1)*QGap8M(n4,1)-QGap8P(n1+n2,2)*QGap8M(n3,1)*QGap8M(n4,1)
-		-QGap8P(n1,1)*QGap8P(n2,1)*QGap8M(n3+n4,2)+QGap8P(n1+n2,2)*QGap8M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap10(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3,1)*QGap10M(n4,1)-QGap10P(n1+n2,2)*QGap10M(n3,1)*QGap10M(n4,1)
-		-QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3+n4,2)+QGap10P(n1+n2,2)*QGap10M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubMMLR(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubMiddle(n1,1)*QsubMiddle(n2,1)*QsubLeft(n3,1)*QsubRight(n4,1)-QsubMiddle(n1+n2,2)*QsubLeft(n3,1)*QsubRight(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubLLMR(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubLeft(n1,1)*QsubLeft(n2,1)*QsubMiddle(n3,1)*QsubRight(n4,1)-QsubLeft(n1+n2,2)*QsubMiddle(n3,1)*QsubRight(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubRRML(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubRight(n1,1)*QsubRight(n2,1)*QsubMiddle(n3,1)*QsubLeft(n4,1)-QsubRight(n1+n2,2)*QsubMiddle(n3,1)*QsubLeft(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubGap2Evts(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubGap2Middle(n1,1)*QsubGap2Middle(n2,1)*QsubGap2Left(n3,1)*QsubGap2Right(n4,1)
-		-QsubGap2Middle(n1+n2,2)*QsubGap2Left(n3,1)*QsubGap2Right(n4,1);
-	return formula;
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Five(int n1, int n2, int n3, int n4, int n5)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
-		- Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
-		+ 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)
-		+ Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)
-		+ Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)
-		- Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)
-		- 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)
-		+ Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)
-		+ Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)
-		- Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)
-		+ Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)
-		- 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)
-		- 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)
-		+ 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)
-		- 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)
-		- 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)
-		- 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)
-		- 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)+24.*Q(n1+n2+n3+n4+n5,5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap0M(n1, n2) * ThreeGap0_subP(n3, n4, n5);
-	//TComplex formula = (QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2)) * (QGap0P(n3,1)*QGap0P(n4,1)*QGap0P(n5,1)-QGap0P(n3+n4,2)*QGap0P(n5,1)-QGap0P(n4,1)*QGap0P(n3+n5,2) - QGap0P(n3,1)*QGap0P(n4+n5,2)+2.*QGap0P(n3+n4+n5,3));
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0A_2(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	//TComplex formula = TwoGap0M(n1, n2) * ThreeGap0_subP(n3, n4, n5);
-	TComplex formula = (QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2)) * (QGap0P(n3,1)*QGap0P(n4,1)*QGap0P(n5,1)-QGap0P(n3+n4,2)*QGap0P(n5,1)-QGap0P(n4,1)*QGap0P(n3+n5,2) - QGap0P(n3,1)*QGap0P(n4+n5,2)+2.*QGap0P(n3+n4+n5,3));
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap0P(n1, n2) * ThreeGap0_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap2A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap2M(n1, n2) * ThreeGap2_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap2B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap2P(n1, n2) * ThreeGap2_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap4A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap4M(n1, n2) * ThreeGap4_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap4B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap4P(n1, n2) * ThreeGap4_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap6A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap6M(n1, n2) * ThreeGap6_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap6B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap6P(n1, n2) * ThreeGap6_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap8A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap8M(n1, n2) * ThreeGap8_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap8B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap8P(n1, n2) * ThreeGap8_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap10A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap10M(n1, n2) * ThreeGap10_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap10B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap10P(n1, n2) * ThreeGap10_subM(n3, n4, n5);
-	return formula;
-
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Six(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-		- Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-		+ 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)
-		+ Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)
-		+ Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)*Q(n6,1)
-		- Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)*Q(n6,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)*Q(n6,1)
-		- 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)
-		+ Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)*Q(n6,1)
-		+ Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)*Q(n6,1)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)*Q(n6,1)
-		- Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)
-		+ Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)*Q(n6,1)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)*Q(n6,1)
-		- 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)*Q(n6,1)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)*Q(n6,1)
-		- 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)*Q(n6,1)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)*Q(n6,1)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)*Q(n6,1)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)*Q(n6,1)
-		+ 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)*Q(n6,1)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)*Q(n6,1)
-		- 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)*Q(n6,1)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)*Q(n6,1)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)*Q(n6,1)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)*Q(n6,1)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)*Q(n6,1)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)*Q(n6,1)
-		- 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)*Q(n6,1)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)*Q(n6,1)
-		- 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)*Q(n6,1)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)*Q(n6,1)
-		- 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)*Q(n6,1)+24.*Q(n1+n2+n3+n4+n5,5)*Q(n6,1)
-		- Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)+Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)
-		+ Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n1+n6,2)+Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n1+n6,2)
-		- 2.*Q(n2+n3+n4,3)*Q(n5,1)*Q(n1+n6,2)+Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n1+n6,2)
-		- Q(n3+n4,2)*Q(n2+n5,2)*Q(n1+n6,2)+Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n1+n6,2)
-		- Q(n2+n4,2)*Q(n3+n5,2)*Q(n1+n6,2)-2.*Q(n4,1)*Q(n2+n3+n5,3)*Q(n1+n6,2)
-		+ Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n1+n6,2)-Q(n2+n3,2)*Q(n4+n5,2)*Q(n1+n6,2)
-		- 2.*Q(n3,1)*Q(n2+n4+n5,3)*Q(n1+n6,2)-2.*Q(n2,1)*Q(n3+n4+n5,3)*Q(n1+n6,2)
-		+ 6.*Q(n2+n3+n4+n5,4)*Q(n1+n6,2)-Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)+Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n1,1)*Q(n3+n4,2)*Q(n5,1)*Q(n2+n6,2)-2.*Q(n1+n3+n4,3)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n2+n6,2)-Q(n3+n4,2)*Q(n1+n5,2)*Q(n2+n6,2)
-		+ Q(n1,1)*Q(n4,1)*Q(n3+n5,2)*Q(n2+n6,2)-Q(n1+n4,2)*Q(n3+n5,2)*Q(n2+n6,2)
-		- 2.*Q(n4,1)*Q(n1+n3+n5,3)*Q(n2+n6,2)+Q(n1,1)*Q(n3,1)*Q(n4+n5,2)*Q(n2+n6,2)
-		- Q(n1+n3,2)*Q(n4+n5,2)*Q(n2+n6,2)-2.*Q(n3,1)*Q(n1+n4+n5,3)*Q(n2+n6,2)
-		- 2.*Q(n1,1)*Q(n3+n4+n5,3)*Q(n2+n6,2)+6.*Q(n1+n3+n4+n5,4)*Q(n2+n6,2)
-		+ 2.*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n2+n6,3)-2.*Q(n3+n4,2)*Q(n5,1)*Q(n1+n2+n6,3)
-		- 2.*Q(n4,1)*Q(n3+n5,2)*Q(n1+n2+n6,3)-2.*Q(n3,1)*Q(n4+n5,2)*Q(n1+n2+n6,3)
-		+ 4.*Q(n3+n4+n5,3)*Q(n1+n2+n6,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)+Q(n2,1)*Q(n1+n4,2)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n5,1)*Q(n3+n6,2)-2.*Q(n1+n2+n4,3)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n2,1)*Q(n4,1)*Q(n1+n5,2)*Q(n3+n6,2)-Q(n2+n4,2)*Q(n1+n5,2)*Q(n3+n6,2)
-		+ Q(n1,1)*Q(n4,1)*Q(n2+n5,2)*Q(n3+n6,2)-Q(n1+n4,2)*Q(n2+n5,2)*Q(n3+n6,2)
-		- 2.*Q(n4,1)*Q(n1+n2+n5,3)*Q(n3+n6,2)+Q(n1,1)*Q(n2,1)*Q(n4+n5,2)*Q(n3+n6,2)
-		- Q(n1+n2,2)*Q(n4+n5,2)*Q(n3+n6,2)-2.*Q(n2,1)*Q(n1+n4+n5,3)*Q(n3+n6,2)
-		- 2.*Q(n1,1)*Q(n2+n4+n5,3)*Q(n3+n6,2)+6.*Q(n1+n2+n4+n5,4)*Q(n3+n6,2)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n1+n3+n6,3)-2.*Q(n2+n4,2)*Q(n5,1)*Q(n1+n3+n6,3)
-		- 2.*Q(n4,1)*Q(n2+n5,2)*Q(n1+n3+n6,3)-2.*Q(n2,1)*Q(n4+n5,2)*Q(n1+n3+n6,3)
-		+ 4.*Q(n2+n4+n5,3)*Q(n1+n3+n6,3)+2.*Q(n1,1)*Q(n4,1)*Q(n5,1)*Q(n2+n3+n6,3)
-		- 2.*Q(n1+n4,2)*Q(n5,1)*Q(n2+n3+n6,3)-2.*Q(n4,1)*Q(n1+n5,2)*Q(n2+n3+n6,3)
-		- 2.*Q(n1,1)*Q(n4+n5,2)*Q(n2+n3+n6,3)+4.*Q(n1+n4+n5,3)*Q(n2+n3+n6,3)
-		- 6.*Q(n4,1)*Q(n5,1)*Q(n1+n2+n3+n6,4)+6.*Q(n4+n5,2)*Q(n1+n2+n3+n6,4)
-		- Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)+Q(n1+n2,2)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)
-		+ Q(n2,1)*Q(n1+n3,2)*Q(n5,1)*Q(n4+n6,2)+Q(n1,1)*Q(n2+n3,2)*Q(n5,1)*Q(n4+n6,2)
-		- 2.*Q(n1+n2+n3,3)*Q(n5,1)*Q(n4+n6,2)+Q(n2,1)*Q(n3,1)*Q(n1+n5,2)*Q(n4+n6,2)
-		- Q(n2+n3,2)*Q(n1+n5,2)*Q(n4+n6,2)+Q(n1,1)*Q(n3,1)*Q(n2+n5,2)*Q(n4+n6,2)
-		- Q(n1+n3,2)*Q(n2+n5,2)*Q(n4+n6,2)-2.*Q(n3,1)*Q(n1+n2+n5,3)*Q(n4+n6,2)
-		+ Q(n1,1)*Q(n2,1)*Q(n3+n5,2)*Q(n4+n6,2)-Q(n1+n2,2)*Q(n3+n5,2)*Q(n4+n6,2)
-		- 2.*Q(n2,1)*Q(n1+n3+n5,3)*Q(n4+n6,2)-2.*Q(n1,1)*Q(n2+n3+n5,3)*Q(n4+n6,2)
-		+ 6.*Q(n1+n2+n3+n5,4)*Q(n4+n6,2)+2.*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n1+n4+n6,3)
-		- 2.*Q(n2+n3,2)*Q(n5,1)*Q(n1+n4+n6,3)-2.*Q(n3,1)*Q(n2+n5,2)*Q(n1+n4+n6,3)
-		- 2.*Q(n2,1)*Q(n3+n5,2)*Q(n1+n4+n6,3)+4.*Q(n2+n3+n5,3)*Q(n1+n4+n6,3)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n5,1)*Q(n2+n4+n6,3)-2.*Q(n1+n3,2)*Q(n5,1)*Q(n2+n4+n6,3)
-		- 2.*Q(n3,1)*Q(n1+n5,2)*Q(n2+n4+n6,3)-2.*Q(n1,1)*Q(n3+n5,2)*Q(n2+n4+n6,3)
-		+ 4.*Q(n1+n3+n5,3)*Q(n2+n4+n6,3)-6.*Q(n3,1)*Q(n5,1)*Q(n1+n2+n4+n6,4)
-		+ 6.*Q(n3+n5,2)*Q(n1+n2+n4+n6,4)+2.*Q(n1,1)*Q(n2,1)*Q(n5,1)*Q(n3+n4+n6,3)
-		- 2.*Q(n1+n2,2)*Q(n5,1)*Q(n3+n4+n6,3)-2.*Q(n2,1)*Q(n1+n5,2)*Q(n3+n4+n6,3)
-		- 2.*Q(n1,1)*Q(n2+n5,2)*Q(n3+n4+n6,3)+4.*Q(n1+n2+n5,3)*Q(n3+n4+n6,3)
-		- 6.*Q(n2,1)*Q(n5,1)*Q(n1+n3+n4+n6,4)+6.*Q(n2+n5,2)*Q(n1+n3+n4+n6,4)
-		- 6.*Q(n1,1)*Q(n5,1)*Q(n2+n3+n4+n6,4)+6.*Q(n1+n5,2)*Q(n2+n3+n4+n6,4)
-		+ 24.*Q(n5,1)*Q(n1+n2+n3+n4+n6,5)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5+n6,2)-2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5+n6,2)-Q(n2+n3,2)*Q(n1+n4,2)*Q(n5+n6,2)
-		+ Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5+n6,2)-Q(n1+n3,2)*Q(n2+n4,2)*Q(n5+n6,2)
-		- 2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5+n6,2)+Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5+n6,2)
-		- Q(n1+n2,2)*Q(n3+n4,2)*Q(n5+n6,2)-2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5+n6,2)
-		- 2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5+n6,2)+6.*Q(n1+n2+n3+n4,4)*Q(n5+n6,2)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5+n6,3)-2.*Q(n2+n3,2)*Q(n4,1)*Q(n1+n5+n6,3)
-		- 2.*Q(n3,1)*Q(n2+n4,2)*Q(n1+n5+n6,3)-2.*Q(n2,1)*Q(n3+n4,2)*Q(n1+n5+n6,3)
-		+ 4.*Q(n2+n3+n4,3)*Q(n1+n5+n6,3)+2.*Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5+n6,3)
-		- 2.*Q(n1+n3,2)*Q(n4,1)*Q(n2+n5+n6,3)-2.*Q(n3,1)*Q(n1+n4,2)*Q(n2+n5+n6,3)
-		- 2.*Q(n1,1)*Q(n3+n4,2)*Q(n2+n5+n6,3)+4.*Q(n1+n3+n4,3)*Q(n2+n5+n6,3)
-		- 6.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5+n6,4)+6.*Q(n3+n4,2)*Q(n1+n2+n5+n6,4)
-		+ 2.*Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5+n6,3)-2.*Q(n1+n2,2)*Q(n4,1)*Q(n3+n5+n6,3)
-		- 2.*Q(n2,1)*Q(n1+n4,2)*Q(n3+n5+n6,3)-2.*Q(n1,1)*Q(n2+n4,2)*Q(n3+n5+n6,3)
-		+ 4.*Q(n1+n2+n4,3)*Q(n3+n5+n6,3)-6.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5+n6,4)
-		+ 6.*Q(n2+n4,2)*Q(n1+n3+n5+n6,4)-6.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5+n6,4)
-		+ 6.*Q(n1+n4,2)*Q(n2+n3+n5+n6,4)+24.*Q(n4,1)*Q(n1+n2+n3+n5+n6,5)
-		+ 2.*Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5+n6,3)-2.*Q(n1+n2,2)*Q(n3,1)*Q(n4+n5+n6,3)
-		- 2.*Q(n2,1)*Q(n1+n3,2)*Q(n4+n5+n6,3)-2.*Q(n1,1)*Q(n2+n3,2)*Q(n4+n5+n6,3)
-		+ 4.*Q(n1+n2+n3,3)*Q(n4+n5+n6,3)-6.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5+n6,4)
-		+ 6.*Q(n2+n3,2)*Q(n1+n4+n5+n6,4)-6.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5+n6,4)
-		+ 6.*Q(n1+n3,2)*Q(n2+n4+n5+n6,4)+24.*Q(n3,1)*Q(n1+n2+n4+n5+n6,5)
-		- 6.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5+n6,4)+6.*Q(n1+n2,2)*Q(n3+n4+n5+n6,4)
-		+ 24.*Q(n2,1)*Q(n1+n3+n4+n5+n6,5)+24.*Q(n1,1)*Q(n2+n3+n4+n5+n6,5)
-		- 120.*Q(n1+n2+n3+n4+n5+n6,6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap0(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap0_subM(n1, n2, n3)*ThreeGap0_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap2(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap2_subM(n1, n2, n3)*ThreeGap2_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap4(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap4_subM(n1, n2, n3)*ThreeGap4_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap6(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap6_subM(n1, n2, n3)*ThreeGap6_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap8(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap8_subM(n1, n2, n3)*ThreeGap8_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap10(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap10_subM(n1, n2, n3)*ThreeGap10_subP(n4, n5, n6);
-	return formula;
-
-}
-//_________________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7)
-{
-
-	TComplex Correlation = {0, 0};
-	int Narray[] = {n1, n2, n3, n4, n5, n6};
-
-	for(int k=7; k-->0; )
-	{// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-
-		int array[6] = {0,1,2,3,4,5};
-		int iPerm = 0;
-		int argument = 0;
-		int count = 0;
-
-		// k==6: there is just one combination, we can add it manually
-		if(k==6){
-			Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-				Six(n1, n2, n3, n4, n5, n6)*Q(n7, 7-k);
-		}// k==6
-
-		else if(k==5){
-			do{
-				iPerm += 1;
-				if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-					count += 1;
-					Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-						Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-								Narray[int(array[3])], Narray[int(array[4])])*
-						Q(Narray[int(array[5])]+n7, 7-k);
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==5
-
-		else if(k==4){
-			do{
-				iPerm += 1;
-				if(iPerm%2 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-									Narray[int(array[3])])*
-							Q(Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==4
-
-		else if(k==3){
-			do{
-				iPerm += 1;
-				if(iPerm%6 == 1){
-					if(array[0] < array[1] && array[1] < array[2]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-							Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==3
-
-		else if(k==2){
-			do{
-				iPerm += 1;
-				if(iPerm%24 == 1){
-					if(array[0] < array[1]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Two(Narray[int(array[0])], Narray[int(array[1])])*
-							Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-									+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==2
-
-		else if(k == 1){
-			Correlation = Correlation
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7, 7-k);
-		}// k==1
-
-		else if(k == 0){
-			Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
-		}// k==0
-
-		else{
-			cout<<"invalid range of k"<<endl;
-			return {0,0};
-		}
-
-	}// loop over k
-
-	return Correlation;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
-{
-
-	TComplex Correlation = {0, 0};
-	int Narray[] = {n1, n2, n3, n4, n5, n6, n7};
-
-	for(int k=8; k-->0; )
-	{// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-
-		int array[7] = {0,1,2,3,4,5,6};
-		int iPerm = 0;
-		int argument = 0;
-		int count = 0;
-
-		// k==7: there is just one combination, we can add it manually
-		if(k==7){
-			Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-				Seven(n1, n2, n3, n4, n5, n6, n7)*Q(n8, 8-k);
-		}// k==7
-
-		else if(k==6){
-			do{
-				iPerm += 1;
-				if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4] && array[4] < array[5]){
-					count += 1;
-					Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-						Six(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-								Narray[int(array[3])], Narray[int(array[4])], Narray[int(array[5])])*
-						Q(Narray[int(array[6])]+n8, 8-k);
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==6
-
-		else if(k==5){
-			do{
-				iPerm += 1;
-				if(iPerm%2 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-									Narray[int(array[3])], Narray[int(array[4])])*
-							Q(Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==5
-
-		else if(k==4){
-			do{
-				iPerm += 1;
-				if(iPerm%6 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])], Narray[int(array[3])])*
-							Q(Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==4
-
-		else if(k==3){
-			do{
-				iPerm += 1;
-				if(iPerm%24 == 1){
-					if(array[0] < array[1] && array[1] < array[2]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-							Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==3
-
-		else if(k==2){
-			do{
-				iPerm += 1;
-				if(iPerm%120 == 1){
-					if(array[0] < array[1]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Two(Narray[int(array[0])], Narray[int(array[1])])*
-							Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-									+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==2
-
-		else if(k == 1){
-			Correlation = Correlation
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n7, 1)*Q(n1+n2+n3+n4+n5+n6+n8, 8-k);
-		}// k==1
-
-		else if(k == 0){
-			Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
-		}// k==0
-
-		else{
-			cout<<"invalid range of k"<<endl;
-			return {0,0};
-		}
-
-	}// loop over k
-
-	return Correlation;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::EightGap0(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
-{
-
-	TComplex formula = FourGap0M(n1, n2, n3, n4)*FourGap0P(n5, n6, n7, n8);
-	return formula;
-
-}
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskNonlinearFlow::GetCentrCode(AliVEvent* ev)
 {
@@ -2598,26 +1223,26 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
 	//..calculate 2-particle correlations
 	//..................................
-	double Dn2 = Two(0, 0).Re();
-	double Dn2Gap10 = TwoGap10(0, 0).Re();
-	double Dn2Gap14 = TwoGap14(0, 0).Re();
-	double Dn2_3subLM = Two_3SubLM(0, 0).Re();
-	double Dn2_3subRM = Two_3SubRM(0, 0).Re();
-	double Dn2_3subLR = Two_3SubLR(0, 0).Re();
+	double Dn2 = correlator.Two(0, 0).Re();
+	double Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
+	double Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
+	double Dn2_3subLM = correlator.Two_3SubLM(0, 0).Re();
+	double Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
+	double Dn2_3subLR = correlator.Two_3SubLR(0, 0).Re();
 
 	if(NtrksAfter > 1 && Dn2 != 0) {
 		//..v2{2} = <cos2(phi1 - phi2)>
-		TComplex v22 = Two(2, -2);
+		TComplex v22 = correlator.Two(2, -2);
 		double v22Re = v22.Re()/Dn2;
 		profile.fChcn2[0]->Fill(Ntrks, v22Re, Dn2);
 
 		//..v3{2} = <cos3(phi1 - phi2)>
-		TComplex v32 = Two(3, -3);
+		TComplex v32 = correlator.Two(3, -3);
 		double v32Re = v32.Re()/Dn2;
 		profile.fChcn2[1]->Fill(Ntrks, v32Re, Dn2);
 
 		//..v4{2} = <cos4(phi1 - phi2)>
-		TComplex v42 = Two(4, -4);
+		TComplex v42 = correlator.Two(4, -4);
 		double v42Re = v42.Re()/Dn2;
 		profile.fChcn2[2]->Fill(Ntrks, v42Re, Dn2);
 
@@ -2626,17 +1251,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 0 && Dn2Gap10 != 0)
 	{
 		//..v2{2} with eta Gap > 1.0
-		TComplex v22Gap10 = TwoGap10(2, -2);
+		TComplex v22Gap10 = correlator.TwoGap10(2, -2);
 		double v22ReGap10 = v22Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[0]->Fill(Ntrks, v22ReGap10, Dn2Gap10);
 
 		//..v3{2} with eta Gap > 1.0
-		TComplex v32Gap10 = TwoGap10(3, -3);
+		TComplex v32Gap10 = correlator.TwoGap10(3, -3);
 		double v32ReGap10 = v32Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[1]->Fill(Ntrks, v32ReGap10, Dn2Gap10);
 
 		//..v4{2} with eta Gap > 1.0
-		TComplex v42Gap10 = TwoGap10(4, -4);
+		TComplex v42Gap10 = correlator.TwoGap10(4, -4);
 		double v42ReGap10 = v42Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[2]->Fill(Ntrks, v42ReGap10, Dn2Gap10);
 	}
@@ -2644,17 +1269,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap14M > 0 && NtrksAfterGap14P > 0 && Dn2Gap14 != 0)
 	{
 		//..v2{2} with eta Gap > 1.4
-		TComplex v22Gap14 = TwoGap14(2, -2);
+		TComplex v22Gap14 = correlator.TwoGap14(2, -2);
 		double v22ReGap14 = v22Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[0]->Fill(Ntrks, v22ReGap14, Dn2Gap14);
 
 		//..v3{2} with eta Gap > 1.4
-		TComplex v32Gap14 = TwoGap14(3, -3);
+		TComplex v32Gap14 = correlator.TwoGap14(3, -3);
 		double v32ReGap14 = v32Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[1]->Fill(Ntrks, v32ReGap14, Dn2Gap14);
 
 		//..v4{2} with eta Gap > 1.4
-		TComplex v42Gap14 = TwoGap14(4, -4);
+		TComplex v42Gap14 = correlator.TwoGap14(4, -4);
 		double v42ReGap14 = v42Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[2]->Fill(Ntrks, v42ReGap14, Dn2Gap14);
 	}
@@ -2662,64 +1287,64 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..for 3-subevent method, Gap0
 	if(NtrksAfter3subL > 0 && NtrksAfter3subM > 0 && Dn2_3subLM != 0)
 	{//..left+middle
-		TComplex v22_3subLM = Two_3SubLM(2, -2);
+		TComplex v22_3subLM = correlator.Two_3SubLM(2, -2);
 		double v22Re_3subLM = v22_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[0]->Fill(Ntrks, v22Re_3subLM, Dn2_3subLM);
 
-		TComplex v32_3subLM = Two_3SubLM(3, -3);
+		TComplex v32_3subLM = correlator.Two_3SubLM(3, -3);
 		double v32Re_3subLM = v32_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[1]->Fill(Ntrks, v32Re_3subLM, Dn2_3subLM);
 
-		TComplex v42_3subLM = Two_3SubLM(4, -4);
+		TComplex v42_3subLM = correlator.Two_3SubLM(4, -4);
 		double v42Re_3subLM = v42_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[2]->Fill(Ntrks, v42Re_3subLM, Dn2_3subLM);
 	}
 
 	if(NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn2_3subRM != 0)
 	{//..right+middle
-		TComplex v22_3subRM = Two_3SubRM(2, -2);
+		TComplex v22_3subRM = correlator.Two_3SubRM(2, -2);
 		double v22Re_3subRM = v22_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[0]->Fill(Ntrks, v22Re_3subRM, Dn2_3subRM);
 
-		TComplex v32_3subRM = Two_3SubRM(3, -3);
+		TComplex v32_3subRM = correlator.Two_3SubRM(3, -3);
 		double v32Re_3subRM = v32_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[1]->Fill(Ntrks, v32Re_3subRM, Dn2_3subRM);
 
-		TComplex v42_3subRM = Two_3SubRM(4, -4);
+		TComplex v42_3subRM = correlator.Two_3SubRM(4, -4);
 		double v42Re_3subRM = v42_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[2]->Fill(Ntrks, v42Re_3subRM, Dn2_3subRM);
 	}
 
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && Dn2_3subLR != 0)
 	{//..right+middle
-		TComplex v22_3subLR = Two_3SubLR(2, -2);
+		TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
 		double v22Re_3subLR = v22_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[0]->Fill(Ntrks, v22Re_3subLR, Dn2_3subLR);
 
-		TComplex v32_3subLR = Two_3SubLR(3, -3);
+		TComplex v32_3subLR = correlator.Two_3SubLR(3, -3);
 		double v32Re_3subLR = v32_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[1]->Fill(Ntrks, v32Re_3subLR, Dn2_3subLR);
 
-		TComplex v42_3subLR = Two_3SubLR(4, -4);
+		TComplex v42_3subLR = correlator.Two_3SubLR(4, -4);
 		double v42Re_3subLR = v42_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[2]->Fill(Ntrks, v42Re_3subLR, Dn2_3subLR);
 	}
 
 	//..calculate 3-particle correlations
 	//................................
-	double Dn3 = Three(0, 0, 0).Re();
-	double Dn3Gap10A = ThreeGap10A(0, 0, 0).Re();
-	double Dn3Gap10B = ThreeGap10B(0, 0, 0).Re();
+	double Dn3 = correlator.Three(0, 0, 0).Re();
+	double Dn3Gap10A = correlator.ThreeGap10A(0, 0, 0).Re();
+	double Dn3Gap10B = correlator.ThreeGap10B(0, 0, 0).Re();
 
 	if(NtrksAfter > 2 && Dn3 != 0)
 	{
 		//..v4{psi2}
-		TComplex v422 = Three(4, -2, -2);
+		TComplex v422 = correlator.Three(4, -2, -2);
 		double v422Re = v422.Re()/Dn3;
 		profile.fChc422->Fill(Ntrks, v422Re, Dn3);
 
 		//..v5{psi32}
-		TComplex v532 = Three(5, -3, -2);
+		TComplex v532 = correlator.Three(5, -3, -2);
 		double v532Re = v532.Re()/Dn3;
 		profile.fChc532->Fill(Ntrks, v532Re, Dn3);
 	}
@@ -2728,11 +1353,11 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 1 && Dn3Gap10A != 0)
 	{
 
-		TComplex v422Gap10A = ThreeGap10A(4, -2, -2);
+		TComplex v422Gap10A = correlator.ThreeGap10A(4, -2, -2);
 		double v422Gap10ARe = v422Gap10A.Re()/Dn3Gap10A;
 		profile.fChc422_Gap10A->Fill(Ntrks, v422Gap10ARe, Dn3Gap10A);
 
-		TComplex v532Gap10A = ThreeGap10A(5, -3, -2);
+		TComplex v532Gap10A = correlator.ThreeGap10A(5, -3, -2);
 		double v532Gap10ARe = v532Gap10A.Re()/Dn3Gap10A;
 		profile.fChc532_Gap10A->Fill(Ntrks, v532Gap10ARe, Dn3Gap10A);
 	}
@@ -2741,48 +1366,48 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10P > 0 && NtrksAfterGap10M > 1 && Dn3Gap10B != 0)
 	{
 
-		TComplex v422Gap10B = ThreeGap10B(4, -2, -2);
+		TComplex v422Gap10B = correlator.ThreeGap10B(4, -2, -2);
 		double v422Gap10BRe = v422Gap10B.Re()/Dn3Gap10B;
 		profile.fChc422_Gap10B->Fill(Ntrks, v422Gap10BRe, Dn3Gap10B);
 
-		TComplex v532Gap10B = ThreeGap10B(5, -3, -2);
+		TComplex v532Gap10B = correlator.ThreeGap10B(5, -3, -2);
 		double v532Gap10BRe = v532Gap10B.Re()/Dn3Gap10B;
 		profile.fChc532_Gap10B->Fill(Ntrks, v532Gap10BRe, Dn3Gap10B);
 	}
 
 	//..calculate 4-particle correlations
 	//................................
-	double Dn4 = Four(0, 0, 0, 0).Re();
-	double Dn4Gap10 = FourGap10(0, 0, 0, 0).Re();
-	double Dn4_3subMMLR = Four_3SubMMLR(0, 0, 0, 0).Re();
-	double Dn4_3subLLMR = Four_3SubLLMR(0, 0, 0, 0).Re();
-	double Dn4_3subRRML = Four_3SubRRML(0, 0, 0, 0).Re();
+	double Dn4 = correlator.Four(0, 0, 0, 0).Re();
+	double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
+	double Dn4_3subMMLR = correlator.Four_3SubMMLR(0, 0, 0, 0).Re();
+	double Dn4_3subLLMR = correlator.Four_3SubLLMR(0, 0, 0, 0).Re();
+	double Dn4_3subRRML = correlator.Four_3SubRRML(0, 0, 0, 0).Re();
 
 	if(NtrksAfter > 3 && Dn4 != 0)
 	{
 
-		TComplex v24 = Four(2, 2, -2, -2);
+		TComplex v24 = correlator.Four(2, 2, -2, -2);
 		double v24Re = v24.Re()/Dn4;
 		profile.fChcn4[0]->Fill(Ntrks, v24Re, Dn4);
 		// fcn4Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24Re, Dn4);
 
-		TComplex v34 = Four(3, 3, -3, -3);
+		TComplex v34 = correlator.Four(3, 3, -3, -3);
 		double v34Re = v34.Re()/Dn4;
 		profile.fChcn4[1]->Fill(Ntrks, v34Re, Dn4);
 		// fcn4Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34Re, Dn4);
 
-		TComplex v44 = Four(4, 4, -4, -4);
+		TComplex v44 = correlator.Four(4, 4, -4, -4);
 		double v44Re = v44.Re()/Dn4;
 		profile.fChcn4[2]->Fill(Ntrks, v44Re, Dn4);
 		// fcn4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Re, Dn4);
 
 		//..SC(3,2,-3,-2)
-		TComplex sc3232 = Four(3, 2, -3, -2);
+		TComplex sc3232 = correlator.Four(3, 2, -3, -2);
 		double sc3232Re = sc3232.Re()/Dn4;
 		profile.fChsc3232->Fill(Ntrks, sc3232Re, Dn4);
 
 		//..SC(4,2,-4,-2)
-		TComplex sc4242 = Four(4, 2, -4, -2);
+		TComplex sc4242 = correlator.Four(4, 2, -4, -2);
 		double sc4242Re = sc4242.Re()/Dn4;
 		profile.fChsc4242->Fill(Ntrks, sc4242Re, Dn4);
 
@@ -2790,23 +1415,23 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 
 	if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 1 && Dn4Gap10 !=0)
 	{
-		TComplex v24Gap10 = FourGap10(2, 2, -2, -2);
+		TComplex v24Gap10 = correlator.FourGap10(2, 2, -2, -2);
 		double v24Gap10Re = v24Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[0]->Fill(Ntrks, v24Gap10Re, Dn4Gap10);
 
-		TComplex v34Gap10 = FourGap10(3, 3, -3, -3);
+		TComplex v34Gap10 = correlator.FourGap10(3, 3, -3, -3);
 		double v34Gap10Re = v34Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[1]->Fill(Ntrks, v34Gap10Re, Dn4Gap10);
 
-		TComplex v44Gap10 = FourGap10(4, 4, -4, -4);
+		TComplex v44Gap10 = correlator.FourGap10(4, 4, -4, -4);
 		double v44Gap10Re = v44Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[2]->Fill(Ntrks, v44Gap10Re, Dn4Gap10);
 
-		TComplex sc3232Gap10 = FourGap10(3, 2, -3, -2);
+		TComplex sc3232Gap10 = correlator.FourGap10(3, 2, -3, -2);
 		double sc3232Gap10Re = sc3232Gap10.Re()/Dn4Gap10;
 		profile.fChsc3232_Gap10->Fill(Ntrks, sc3232Gap10Re, Dn4Gap10);
 
-		TComplex sc4242Gap10 = FourGap10(4, 2, -4, -2);
+		TComplex sc4242Gap10 = correlator.FourGap10(4, 2, -4, -2);
 		double sc4242Gap10Re = sc4242Gap10.Re()/Dn4Gap10;
 		profile.fChsc4242_Gap10->Fill(Ntrks, sc4242Gap10Re, Dn4Gap10);
 	}
@@ -2814,31 +1439,31 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && NtrksAfter3subM > 1 && Dn4_3subMMLR != 0)
 	{
-		TComplex v24_3sub = Four_3SubMMLR(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubMMLR(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subMMLR);
 
-		TComplex v34_3sub = Four_3SubMMLR(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubMMLR(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subMMLR);
 
-		TComplex v44_3sub = Four_3SubMMLR(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubMMLR(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subMMLR);
 
-		TComplex sc3232_3subA = Four_3SubMMLR(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubMMLR(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subMMLR;
 		profile.fChsc3232_3subMMLRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subMMLR);
 
-		TComplex sc3232_3subB = Four_3SubMMLR(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubMMLR(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subMMLR;
 		profile.fChsc3232_3subMMLRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subMMLR);
 
-		TComplex sc4242_3subA = Four_3SubMMLR(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubMMLR(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subMMLR;
 		profile.fChsc4242_3subMMLRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subMMLR);
 
-		TComplex sc4242_3subB = Four_3SubMMLR(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubMMLR(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subMMLR;
 		profile.fChsc4242_3subMMLRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subMMLR);
 	}
@@ -2846,31 +1471,31 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 1 && NtrksAfter3subR > 0 && NtrksAfter3subM > 0 && Dn4_3subLLMR != 0)
 	{
-		TComplex v24_3sub = Four_3SubLLMR(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubLLMR(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subLLMR);
 
-		TComplex v34_3sub = Four_3SubLLMR(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubLLMR(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subLLMR);
 
-		TComplex v44_3sub = Four_3SubLLMR(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubLLMR(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subLLMR);
 
-		TComplex sc3232_3subA = Four_3SubLLMR(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubLLMR(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subLLMR;
 		profile.fChsc3232_3subLLMRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subLLMR);
 
-		TComplex sc3232_3subB = Four_3SubLLMR(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubLLMR(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subLLMR;
 		profile.fChsc3232_3subLLMRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subLLMR);
 
-		TComplex sc4242_3subA = Four_3SubLLMR(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubLLMR(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subLLMR;
 		profile.fChsc4242_3subLLMRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subLLMR);
 
-		TComplex sc4242_3subB = Four_3SubLLMR(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubLLMR(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subLLMR;
 		profile.fChsc4242_3subLLMRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subLLMR);
 	}
@@ -2878,31 +1503,31 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 1 && NtrksAfter3subM > 0 && Dn4_3subRRML != 0)
 	{
-		TComplex v24_3sub = Four_3SubRRML(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubRRML(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[0]->Fill(Ntrks, v24_3subRe, Dn4_3subRRML);
 
-		TComplex v34_3sub = Four_3SubRRML(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubRRML(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[1]->Fill(Ntrks, v34_3subRe, Dn4_3subRRML);
 
-		TComplex v44_3sub = Four_3SubRRML(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubRRML(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[2]->Fill(Ntrks, v44_3subRe, Dn4_3subRRML);
 
-		TComplex sc3232_3subA = Four_3SubRRML(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubRRML(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subRRML;
 		profile.fChsc3232_3subRRMLA->Fill(Ntrks, sc3232_3subARe, Dn4_3subRRML);
 
-		TComplex sc3232_3subB = Four_3SubRRML(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubRRML(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subRRML;
 		profile.fChsc3232_3subRRMLB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subRRML);
 
-		TComplex sc4242_3subA = Four_3SubRRML(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubRRML(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subRRML;
 		profile.fChsc4242_3subRRMLA->Fill(Ntrks, sc4242_3subARe, Dn4_3subRRML);
 
-		TComplex sc4242_3subB = Four_3SubRRML(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubRRML(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subRRML;
 		profile.fChsc4242_3subRRMLB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subRRML);
 	}
