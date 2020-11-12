@@ -10,6 +10,8 @@
 //          
 //*************************************************************************
 
+#include "DCAFitterN.h"
+
 class TList;
 class AliESDEvent;
 
@@ -26,6 +28,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void InitFromJson(TString filename);
   void SetUseCutOnSPDVsTrackVtx(Bool_t opt){fCutOnSPDVsTrackVtx=opt;}
   void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
+  void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
+  void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
+  
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
@@ -125,7 +130,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
 
-  AliVertexerTracks* fVertexerTracks; // Run-2 vertexer
+  Int_t fSecVertexerAlgo;                  // Algorithm for secondary vertex
+  AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
+  o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
+  o2::vertexing::DCAFitter3 fO2Vertexer3Prong;    // o2 vertexer
 
   AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
@@ -141,7 +149,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,6);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,8);
 };
 
 
