@@ -1,3 +1,11 @@
+// author: Stephan Stiefelmaier (stephan.friedrich.stiefelmaier@cern.ch) please contact in case of questions, difficulties, found issues, improvement etc
+/* purpose: use this macro to compare two .root files if they contain identical objects. The following object types can be checked by the script:
+- TH1* TH2* TH3*
+- TProfile, TProfile2D
+- TTree (only certain branch types so far, you get warned if a not supported branch type is in the Tree)
+- TList
+*/
+
 /* todos:
 - clean up
 - go through comments
