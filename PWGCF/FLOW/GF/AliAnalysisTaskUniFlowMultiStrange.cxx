@@ -82,11 +82,9 @@
 #include "TProfile2D.h"
 #include "TProfile3D.h"
 #include "TList.h"
-#include "TList.h"
 #include "TClonesArray.h"
 #include "TComplex.h"
 #include "TRandom3.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
