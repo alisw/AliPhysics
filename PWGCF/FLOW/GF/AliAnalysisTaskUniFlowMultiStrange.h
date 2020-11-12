@@ -202,6 +202,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
 
+
       //--------------------------cascade----------------------------------------------------------------
       void  SetXiEtaMin(Double_t value){fXiPseMin = value;}
       void  SetXiEtaMax(Double_t value){fXiPseMax = value;}
@@ -242,7 +243,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
-      static const Int_t      fCascadesNumBinsMass = 120;
+      static const Int_t      fCascadesNumBinsMass = 60;
 
       static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
 
@@ -343,7 +344,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Double_t fTPCNcls; // number of TPC clusters   
        Double_t fTrackEta;//
        Double_t fTrackPtMin;//
-       Bool_t   fRPFromTPC;//
+       Bool_t   fRPFromTPC;//  
+
+
 
 //----------------------------------------------------------------------------------------
       TComplex                Q(Int_t n, Int_t p) const;//
@@ -578,6 +581,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
+     
+      TH2D*                   fhRefPtV0M;//! 
+
       TH1D*                   fhRefsEta; //! pt distribution of selected RFPs
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>
