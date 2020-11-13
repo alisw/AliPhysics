@@ -14,8 +14,8 @@
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
-//____________________________________________________________________________________________________
-AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
+    //____________________________________________________________________________________________________
+    AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
     : AliAnalysisTaskSE("AliAnalysisTaskCharmingFemto"),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -56,10 +56,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
+      fDoNSigmaMassSelection(true),
+      fNSigmaMass(3.),
+      fLowerMassSelection(0.),
+      fUpperMassSelection(999.),
       fApplyML(false),
       fConfigPath(""),
-      fMLResponse(nullptr) {
-}
+      fMLResponse(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
@@ -104,6 +107,10 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
+      fDoNSigmaMassSelection(true),
+      fNSigmaMass(3.),
+      fLowerMassSelection(0.),
+      fUpperMassSelection(999.),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr) {
@@ -309,15 +316,22 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
 
     // select D mesons mass window
-    // simple parametrisation from D+ in 5.02 TeV
-    double massMean = TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass() + 0.0025; // mass shift observed in all Run2 data samples for all D-meson species
-    double massWidth = 0.;
-    switch(fDecChannel) {
-      case kDplustoKpipi:
-        massWidth = 0.0057 + dMeson->Pt() * 0.00066;
-        break;
+    if (fDoNSigmaMassSelection) {
+      // simple parametrisation from D+ in 5.02 TeV
+      double massMean =
+          TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass() +
+          0.0025;  // mass shift observed in all Run2 data samples for all
+                   // D-meson species
+      double massWidth = 0.;
+      switch (fDecChannel) {
+        case kDplustoKpipi:
+          massWidth = 0.0057 + dMeson->Pt() * 0.00066;
+          break;
+      }
+      fLowerMassSelection = massMean - fNSigmaMass * massWidth;
+      fUpperMassSelection = massMean + fNSigmaMass * massWidth;
     }
-    if( TMath::Abs(mass-massMean) <= 3*massWidth) {
+    if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
         dplus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
         fHistDplusEta->Fill(dMeson->Eta());
@@ -331,7 +345,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       else {
         dminus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
-	fHistDminusEta->Fill(dMeson->Eta());
+        fHistDminusEta->Fill(dMeson->Eta());
         fHistDminusPhi->Fill(dMeson->Phi());
         for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
           AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
