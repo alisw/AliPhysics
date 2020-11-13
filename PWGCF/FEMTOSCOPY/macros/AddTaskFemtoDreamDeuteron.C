@@ -12,6 +12,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     bool RefMult08 = true,//10
     bool Systematic = false,//11
     bool SysFilterBit = false,//12
+    bool SidebandStudy = false, //13
     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -218,7 +219,86 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-
+  if (SidebandStudy) {
+    TrackCutsDeuteronDCA->SetPtRange(1.4, 4.05);
+    TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 4.05);
+    TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4);
+    TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4);
+    TrackCutsDeuteronDCA->SetPlotTOFMassSq(true);
+    TrackCutsAntiDeuteronDCA->SetPlotTOFMassSq(true);
+    TrackCutsDeuteronDCA->SetCutTOFInvMass(true);
+    TrackCutsAntiDeuteronDCA->SetCutTOFInvMass(true);
+    if (suffix == "0"){
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+    }else if (suffix == "1") {
+      TrackCutsDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsAntiDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+    }else if (suffix == "2") {
+      TrackCutsDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+    }else if (suffix == "3") {
+      TrackCutsDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+    }else if (suffix == "4") {
+      TrackCutsDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsAntiDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(1.5);
+    }else if (suffix == "5") {
+      TrackCutsDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsAntiDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+    }else if (suffix == "6") {
+      TrackCutsDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+    }else if (suffix == "7") {
+      TrackCutsDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+    }else if (suffix == "8") {
+      TrackCutsDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsAntiDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+    }else if (suffix == "9") {
+      TrackCutsDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsAntiDeuteronDCA->SetPtRange(1.5, 2.0);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+    }else if (suffix == "10") {
+      TrackCutsDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.0, 2.5);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+    }else if (suffix == "11") {
+      TrackCutsDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 3.2);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+    }else if (suffix == "12") {
+      TrackCutsDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsAntiDeuteronDCA->SetPtRange(3.2, 4.05);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+    }else if (suffix == "13") {
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+    }else if(suffix == "14") {
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+    }
+  }
  if (Systematic) {
     if (suffix == "1") {
       TrackCutsProtonDCA->SetPID(AliPID::kProton, 0.75, 2.5);

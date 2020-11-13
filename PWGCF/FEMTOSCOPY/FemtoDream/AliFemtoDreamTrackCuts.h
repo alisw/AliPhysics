@@ -227,11 +227,13 @@ class AliFemtoDreamTrackCuts {
     fCutArroundPeakTOFInvMass= true;
   }
   ;
-  void SetCutTOFMassForSB(float down, float up) {
+  void SetCutTOFMassForSB(float down, float up,bool cutLSB = false, bool cutRSB = false) {
     fCutArroundPeakTOFInvMass = false;
     fCutTOFInvMassSidebands = true;
     fTOFInvMassCutSBdown = down;
     fTOFInvMassCutSBup = up;
+    fCutLSB = cutLSB;
+    fCutRSB = cutRSB;
   }
   void SetRejLowPtPionsTOF(bool use) {
     fRejectPions = use;
@@ -294,6 +296,8 @@ class AliFemtoDreamTrackCuts {
   void BookTrackCuts();
   void FillMCContributions(AliFemtoDreamTrack *Track);
   float CalculateTOFMassSquared(AliFemtoDreamTrack *Track);
+  float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
+  float WidthTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
   AliFemtoDreamTrackMCHist *fMCHists;  //!
   AliFemtoDreamTrackHist *fHists;     //!
   bool fMinimalBooking;               //
@@ -361,6 +365,8 @@ class AliFemtoDreamTrackCuts {
   bool fCutTOFInvMassSidebands;         //
   float fTOFInvMassCutSBdown;           //
   float fTOFInvMassCutSBup;             //
+  bool fCutLSB;                         //
+  bool fCutRSB;                         //
 ClassDef(AliFemtoDreamTrackCuts,11)
   ;
 };
