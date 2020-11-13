@@ -134,7 +134,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetHighMultTriggerV0(Bool_t tr) { fhighMult = tr; }
         void                    SetHighMultTriggerSPD(Bool_t tr) { fhighMultSPD= tr; }
 
-        AliEventCuts            fAliEventCuts;
+        AliEventCuts *           fAliEventCuts; //!
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -289,7 +289,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 30);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 31);
 };
 
 class AliV0ChParticle : public AliVParticle
