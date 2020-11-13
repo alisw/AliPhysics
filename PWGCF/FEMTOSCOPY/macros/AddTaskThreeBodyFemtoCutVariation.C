@@ -157,8 +157,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
   }
 
   if(suffix=="20"){
-    v0Cuts->SetCutWindow(1.24,1.16);
-    Antiv0Cuts->SetCutWindow(1.24,1.16);
+    v0Cuts->SetCutWindow(1.16,1.24);
+    Antiv0Cuts->SetCutWindow(1.16,1.24);
   }
 
   if (!fullBlastQA) {
