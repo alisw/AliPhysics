@@ -173,6 +173,7 @@ set ( SRCS8
   TPC/AliTPCPIDEtaQA.cxx
   TPC/AliTPCcalibResidualPID.cxx
   TPC/AliTPCcalibResidualPID_Modified.cxx
+  TPC/AliAnalysisTaskNdimFitsTPCsplines.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
 set ( SRCS9
