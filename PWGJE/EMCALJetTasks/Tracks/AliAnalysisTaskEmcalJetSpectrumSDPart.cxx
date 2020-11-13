@@ -27,6 +27,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
+#include <TPDGCode.h>
 #include <TString.h>
 #include <TVector2.h>
 
@@ -34,6 +35,8 @@
 #include "AliAnalysisManager.h"
 #include "AliEmcalMCPartonInfo.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSpectrumSDPart)
 
@@ -90,6 +93,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH1("hPtParticleCharged", "pt spectrum of charged particles", 1000, 0., 1000.);
     fHistos->CreateTH1("hPtParticleNeutral", "pt spectrum of neutral particles", 1000, 0., 1000.);
     fHistos->CreateTH1("hPtPhotons", "pt spectrum of photons", 1000, 0., 1000.);
+    fHistos->CreateTH1("hPtPhotonMothers", "pt spectrum of photons which are mothers of other photons", 1000, 0., 1000.);
     fHistos->CreateTH1("hPtParticleMax", "pt of the hardest particle", 1000, 0., 1000.);
     fHistos->CreateTH1("hPtParticleMaxCharged", "pt of the hardest charged particle", 1000, 0., 1000.);
     fHistos->CreateTH1("hPtParticleMaxNeutal", "pt of the hardest neutral particle", 1000, 0., 1000.);
@@ -102,6 +106,10 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH2("hEtaPhiMaxCharged", "eta-phi of charged particles", 100, -1., 1., 100, 0, TMath::TwoPi());
     fHistos->CreateTH2("hEtaPhiMaxNeutral", "eta-phi of neutral particles", 100, -1., 1., 100, 0, TMath::TwoPi());
     fHistos->CreateTH2("hEtaPhiMaxPhoton", "eta-phi of photons", 100, -1., 1., 100, 0, TMath::TwoPi());
+    fHistos->CreateTH1("hNParticlesStack", "Number of particles on the stack / event", 2001, -0.5, 2000.5);
+    fHistos->CreateTH1("hNParticlesPrimaryStack", "Number of phys. primary particles on the stack / event", 2001, -0.5, 2000.5);
+    fHistos->CreateTH1("hNParticlesPhysPrimStack", "Number of phys. primary particles on the stack / event", 2001, -0.5, 2000.5);
+    fHistos->CreateTH1("hNParticlesSecondaryStack", "Number of secondary particles on the stack / event", 2001, -0.5, 2000.5);
     fHistos->CreateTH1("hNParticlesEvent", "Number of particles / event", 301, -0.5, 300.5);
     fHistos->CreateTH1("hNChargedEvent", "Number of charged particles / event", 301, -0.5, 300.5);
     fHistos->CreateTH1("hNNeutralEvent", "Number of neutral particles / event", 301, -0.5, 300.5);
@@ -163,6 +171,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH1("hChargedLeadingPtHard", "fraction of the leading charged particle pt / pt-hard", 100, 0., 10);
     fHistos->CreateTH1("hNeutralLeadingPtHard", "fraction of the leading neutral pt / pt-hard", 100, 0., 10);
     fHistos->CreateTH1("hPhotonLeadingPtHard", "fraction of the leading photon pt / pt-hard", 100, 0., 10);
+    
 
     // SoftDrop
     if(fDoSoftDrop) {
@@ -202,6 +211,34 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         }
     }
 
+    // check MC event directly
+    int nphysprim(0), nsecondary(0);
+    auto stack = fMCEvent->Stack();
+    for(int ipart = 0; ipart < stack->GetNtrack(); ipart++) {
+        if(stack->IsPhysicalPrimary(ipart)) nphysprim++;
+        if(stack->IsSecondaryFromWeakDecay(ipart)) nsecondary++;
+
+        // check couple of decays
+        auto particle = stack->Particle(ipart);
+        auto abspdg = TMath::Abs(particle->GetPdgCode());
+        if(abspdg == kGamma) {
+            bool isPhotonMother = false;
+            if(particle->GetFirstDaughter() > 0 && particle->GetLastDaughter() > 0) {
+                for(auto idaughter = particle->GetFirstDaughter(); idaughter <= particle->GetLastDaughter(); idaughter++) {
+                    auto daughter = stack->Particle(idaughter);
+                    if(TMath::Abs(daughter->GetPdgCode()) == kGamma) {
+                        isPhotonMother = true;
+                    }
+                }
+            }
+            if(isPhotonMother) fHistos->FillTH1("hPtPhotonMothers", particle->Pt());
+        }
+    }
+    fHistos->FillTH1("hNParticlesStack", fMCEvent->GetNumberOfTracks());
+    fHistos->FillTH1("hNParticlesPrimaryStack", stack->GetNprimary());
+    fHistos->FillTH1("hNParticlesPhysPrimStack", nphysprim);
+    fHistos->FillTH1("hNParticlesSecondaryStack", nsecondary);
+
     int nall(0), ncharged(0), nneutral(0), nphotons(0);
     AliVParticle *maxpart(nullptr), *maxcharged(nullptr), *maxneutral(nullptr), *maxphoton(nullptr);
     for(auto part : particles->accepted()) {
@@ -224,7 +261,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             else {
                 if(part->Pt() > maxneutral->Pt()) maxneutral = part;   
             }
-            if(TMath::Abs(part->PdgCode()) == 22) {
+            if(TMath::Abs(part->PdgCode()) == kGamma) {
                 nphotons++;
                 fHistos->FillTH1("hPtPhotons", partpt);
                 fHistos->FillTH2("hEtaPhiPhoton", parteta, partphi);
@@ -299,7 +336,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                 mall++;
                 if(!jconst->Charge()) {
                     mneutral++;
-                    if(TMath::Abs(jconst->PdgCode()) == 22) mphotons++;
+                    if(TMath::Abs(jconst->PdgCode()) == kGamma) mphotons++;
                 } else mcharged++;
             }
             fHistos->FillTH1("hJetNoMassNall", mall);
@@ -322,7 +359,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                 cneutral++;
                 fHistos->FillTH1("hPtJetConstituentNeutral", ptconst);
                 fHistos->FillTH2("hEtaPhiJetConstituentsNeutral", etaconst, phiconst);
-                if(TMath::Abs(jconst->PdgCode()) == 22) {
+                if(TMath::Abs(jconst->PdgCode()) == kGamma) {
                     cphoton++;
                     fHistos->FillTH1("hPtJetConstituentPhoton", ptconst);
                     fHistos->FillTH2("hEtaPhiJetConstituentsPhoton", etaconst, phiconst);
@@ -353,7 +390,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
                 fHistos->FillTH2("hPtLeadingNeutral", j->Pt(), leadingpt);
                 fHistos->FillTH2("hEtaPhiLeadingNeutral", leadingeta, leadingphi);
                 fHistos->FillTH2("hDrLeadingNeutral", j->Pt(), dR);
-                if(TMath::Abs(leading->PdgCode()) == 22) {
+                if(TMath::Abs(leading->PdgCode()) == kGamma) {
                     fHistos->FillTH2("hPtLeadingPhoton", j->Pt(), leadingpt);
                     fHistos->FillTH2("hEtaPhiLeadingPhoton", leadingeta, leadingphi);
                     fHistos->FillTH2("hDrLeadingPhoton", j->Pt(), dR);
@@ -415,7 +452,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
             nconstall++;
             if(!part->Charge()) {
                 nconstneutral++;
-                if(TMath::Abs(part->PdgCode()) == 22) nconstphoton++;
+                if(TMath::Abs(part->PdgCode()) == kGamma) nconstphoton++;
             } else {
                 nconstcharged++;
             }
