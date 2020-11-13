@@ -29,6 +29,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fIsMC(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
+      fSystem(kpp13TeV),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -80,6 +81,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsMC(isMC),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
+      fSystem(kpp13TeV),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -325,7 +327,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       double massWidth = 0.;
       switch (fDecChannel) {
         case kDplustoKpipi:
-          massWidth = 0.0057 + dMeson->Pt() * 0.00066;
+          if(fSystem == kpp5TeV) {
+            massWidth = 0.0057 + dMeson->Pt() * 0.00066;
+          }
+          else if(fSystem == kpp13TeV) {
+            massWidth = 0.006758 + dMeson->Pt() * 0.0005124;
+          }
           break;
       }
       fLowerMassSelection = massMean - fNSigmaMass * massWidth;
