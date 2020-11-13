@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Daniel Mühlheim, Ziruo Zhang                                   *
+ * Author: Daniel Mühlheim, Ziruo Zhang, Marvin Hemmer                    *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *
