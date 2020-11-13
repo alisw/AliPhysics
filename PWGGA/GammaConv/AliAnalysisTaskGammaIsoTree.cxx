@@ -227,6 +227,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloRho(NULL),
   fCaloRhoTimesArea(),
   fCaloTruePt(NULL),
+  fCaloTrueWithoutConvPt(NULL),
   fCaloTruePtPrimary(NULL),
   fCaloTruePtDecay(NULL),
   fCaloTruePtDecayFoundOtherInCluster(NULL),
@@ -235,6 +236,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloTruePtTaggedCalo(NULL),
   fCaloTruePtTaggedAsDecayCalo(NULL),
   fCaloTrueRecPt(NULL),
+  fCaloTrueWithoutConvRecPt(NULL),
   fCaloTrueRecPtPrimary(NULL),
   fCaloTrueRecPtDecay(NULL),
   fCaloTrueRecPtDecayFoundOtherInCluster(NULL),
@@ -584,6 +586,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloRho(NULL),
   fCaloRhoTimesArea(),
   fCaloTruePt(NULL),
+  fCaloTrueWithoutConvPt(NULL),
   fCaloTruePtPrimary(NULL),
   fCaloTruePtDecay(NULL),
   fCaloTruePtDecayFoundOtherInCluster(NULL),
@@ -592,6 +595,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloTruePtTaggedCalo(NULL),
   fCaloTruePtTaggedAsDecayCalo(NULL),
   fCaloTrueRecPt(NULL),
+  fCaloTrueWithoutConvRecPt(NULL),
   fCaloTrueRecPtPrimary(NULL),
   fCaloTrueRecPtDecay(NULL),
   fCaloTrueRecPtDecayFoundOtherInCluster(NULL),
@@ -1519,6 +1523,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     if(fIsMC > 0){
       fOutputList->Add(fCaloFolderTrue);
       fCaloTruePt = new TH1F("fCaloTruePt", "validated calo photons in EMC acceptance;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
+      fCaloTrueWithoutConvPt = new TH1F("fCaloTrueWithoutConvPt", "validated calo photons in EMC acceptance without conv a truth;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTruePtPrimary = new TH1F("fCaloTruePtPrimary", "calo photon that has not a pi0 etc. as mother;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTruePtDecay = new TH1F("fCaloTruePtDecay", "calo photon from decay;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTruePtDecayFoundOtherInCluster = new TH1F("fCaloTruePtDecayFoundOtherInCluster", "calo photon from decay, where the other decay particle was found in EMC;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
@@ -1531,6 +1536,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
       // True with rec pT
       fCaloTrueRecPt = new TH1F("fCaloTrueRecPt", "validated calo photons in EMC acceptance;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
+      fCaloTrueWithoutConvRecPt = new TH1F("fCaloTrueWithoutConvRecPt", "validated calo photons in EMC acceptance without conv as truth;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTrueRecPtPrimary = new TH1F("fCaloTrueRecPtPrimary", "calo photon that has not a pi0 etc. as mother;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTrueRecPtDecay = new TH1F("fCaloTrueRecPtDecay", "calo photon from decay;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTrueRecPtDecayFoundOtherInCluster = new TH1F("fCaloTrueRecPtDecayFoundOtherInCluster", "calo photon from decay, where the other decay particle was found in EMC;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
@@ -1542,6 +1548,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fCaloTrueRecPtTaggedAsDecayCalo = new TH1F("fCaloTrueRecPtTaggedAsDecayCalo", "calo photons that survived tagging;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
 
       fCaloTruePt->Sumw2();
+      fCaloTrueWithoutConvPt->Sumw2();
       fCaloTruePtPrimary->Sumw2();
       fCaloTruePtDecay->Sumw2();
       fCaloTruePtDecayFoundOtherInCluster->Sumw2();
@@ -1550,6 +1557,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fCaloTruePtTaggedCalo->Sumw2();
       fCaloTruePtTaggedAsDecayCalo->Sumw2();
       fCaloTrueRecPt->Sumw2();
+      fCaloTrueWithoutConvRecPt->Sumw2();
       fCaloTrueRecPtPrimary->Sumw2();
       fCaloTrueRecPtDecay->Sumw2();
       fCaloTrueRecPtDecayFoundOtherInCluster->Sumw2();
@@ -1560,6 +1568,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
       // add to folders
       fCaloFolderTrue->Add(fCaloTruePt);
+      fCaloFolderTrue->Add(fCaloTrueWithoutConvPt);
       fCaloFolderTrue->Add(fCaloTruePtPrimary);
       fCaloFolderTrue->Add(fCaloTruePtDecay);
       fCaloFolderTrue->Add(fCaloTruePtDecayFoundOtherInCluster);
@@ -1572,6 +1581,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
       // True with rec pT
       fCaloFolderTrue->Add(fCaloTrueRecPt);
+      fCaloFolderTrue->Add(fCaloTrueWithoutConvRecPt);
       fCaloFolderTrue->Add(fCaloTrueRecPtPrimary);
       fCaloFolderTrue->Add(fCaloTrueRecPtDecay);
       fCaloFolderTrue->Add(fCaloTrueRecPtDecayFoundOtherInCluster);
@@ -2676,6 +2686,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
   if(!clus) return;
 
   Bool_t isTruePhoton = kFALSE;
+  Bool_t isTruePhotonWithoutConv = kFALSE; // old definition as crosscheck
   Bool_t isDecay = kFALSE;
   Bool_t isPrompt = kFALSE;
   Bool_t isFrag = kFALSE;
@@ -2702,6 +2713,8 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
   if (photon->IsLargestComponentPhoton() || (photon->IsLargestComponentElectron() && photon->IsConversion())) {
       Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, MCPhoton, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
       if(isPrimary) isTruePhoton = kTRUE;
+      if(isPrimary && photon->IsLargestComponentPhoton()) isTruePhotonWithoutConv = kTRUE;
+
 
       // check for proper label, in case of conversion return photon label,otherwise do nothing
       Int_t tmplabel = GetProperLabel(MCPhoton);
@@ -2739,6 +2752,9 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
 
   fCaloTrueRecPt->Fill(photon->Pt(), weight);
   fCaloTruePt->Fill(MCPhoton->Pt(), weight);
+
+  if(isTruePhotonWithoutConv) fCaloTrueWithoutConvRecPt->Fill(photon->Pt(), weight);
+  if(isTruePhotonWithoutConv) fCaloTrueWithoutConvPt->Fill(MCPhoton->Pt(), weight);
 
   if(tmptag<2){
       fCaloTrueRecPtTaggedCalo->Fill(photon->Pt(), weight);

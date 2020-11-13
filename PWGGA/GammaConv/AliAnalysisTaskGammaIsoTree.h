@@ -486,6 +486,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloRhoTimesArea[5]; //!
     // True conv histos
     TH1F*                       fCaloTruePt; //!
+    TH1F*                       fCaloTrueWithoutConvPt; //!
     TH1F*                       fCaloTruePtPrimary; //!
     TH1F*                       fCaloTruePtDecay; //!
     TH1F*                       fCaloTruePtDecayFoundOtherInCluster; //!
@@ -494,6 +495,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTruePtTaggedCalo; //!
     TH1F*                       fCaloTruePtTaggedAsDecayCalo; //!
     TH1F*                       fCaloTrueRecPt; //!
+    TH1F*                       fCaloTrueWithoutConvRecPt; //!
     TH1F*                       fCaloTrueRecPtPrimary; //!
     TH1F*                       fCaloTrueRecPtDecay; //!
     TH1F*                       fCaloTrueRecPtDecayFoundOtherInCluster; //!
