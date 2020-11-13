@@ -252,6 +252,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherEtaConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherInvMassECalib;          //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
     TH2F**                  fHistoMotherBackInvMassECalib;      //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of cluster
+    TH2F**                  fHistoMotherInvMassECalibPCM;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of PCM photon
+    TH2F**                  fHistoMotherBackInvMassECalibPCM;   //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of PCM photon
 
     // histograms for rec photons tagged by Calo
     TH2F**                  fHistoPhotonPairPtconv;             //! array of histo for pairs vs. pt of converted photon
@@ -532,6 +534,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
+    TH2F**                  fHistoTruePi0InvMassECalibPCM;                         //! array of histogram with pure pi0 signal inv Mass, energy of PCM
 
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
@@ -600,7 +603,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 66);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 67);
 };
 
 #endif

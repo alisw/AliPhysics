@@ -2,6 +2,7 @@
  * Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: Daniel Muehlheim, Friederike Bock                              *
+ * Contributors: Adrian Mechler                                           *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *
@@ -152,6 +153,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoMotherEtaConvPhotonEtaPhi(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoMotherInvMassECalibPCM(NULL),
+  fHistoMotherBackInvMassECalibPCM(NULL),
   fHistoPhotonPairPtconv(NULL),
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
@@ -409,6 +412,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTrueClusPi0EM02(NULL),
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
+  fHistoTruePi0InvMassECalibPCM(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -563,6 +567,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoMotherEtaConvPhotonEtaPhi(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoMotherInvMassECalibPCM(NULL),
+  fHistoMotherBackInvMassECalibPCM(NULL),
   fHistoPhotonPairPtconv(NULL),
   fHistoPhotonPairMixedEventPtconv(NULL),
   fHistoClusGammaPt(NULL),
@@ -820,6 +826,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTrueClusPi0EM02(NULL),
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
+  fHistoTruePi0InvMassECalibPCM(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -1137,6 +1144,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(!fDoLightOutput || fDoECalibOutput){
         fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
         fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
+        fHistoMotherInvMassECalibPCM         = new TH2F*[fnCuts];
+        fHistoMotherBackInvMassECalibPCM     = new TH2F*[fnCuts];
     }
     if (fDoMesonQA > 0){
       fHistoMotherPi0PtY              = new TH2F*[fnCuts];
@@ -1820,9 +1829,21 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoMotherBackInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
         fESDList[iCut]->Add(fHistoMotherBackInvMassECalib[iCut]);
 
+        fHistoMotherInvMassECalibPCM[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib_PCM", "ESD_Mother_InvMass_E_Calib_PCM", 300, 0, 0.3, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+        fHistoMotherInvMassECalibPCM[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fESDList[iCut]->Add(fHistoMotherInvMassECalibPCM[iCut]);
+
+        fHistoMotherBackInvMassECalibPCM[iCut]     = new TH2F("ESD_Background_InvMass_E_Calib_PCM", "ESD_Background_InvMass_E_Calib_PCM", 300, 0, 0.3, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+        fHistoMotherBackInvMassECalibPCM[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fESDList[iCut]->Add(fHistoMotherBackInvMassECalibPCM[iCut]);
+
         if (fIsMC > 1){
           fHistoMotherInvMassECalib[iCut]->Sumw2();
           fHistoMotherBackInvMassECalib[iCut]->Sumw2();
+          fHistoMotherInvMassECalibPCM[iCut]->Sumw2();
+          fHistoMotherBackInvMassECalibPCM[iCut]->Sumw2();
         }
       }
 
@@ -2013,6 +2034,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(!fDoLightOutput){
       fHistoTruePi0InvMassECalib                      = new TH2F*[fnCuts];
       fHistoTruePi0PureGammaInvMassECalib             = new TH2F*[fnCuts];
+      fHistoTruePi0InvMassECalibPCM                   = new TH2F*[fnCuts];
     }
 
     if (fDoClusterQA > 0 && fDoLightOutput!=2){
@@ -2706,6 +2728,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoTruePi0PureGammaInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoTruePi0PureGammaInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
         fESDList[iCut]->Add(fHistoTruePi0PureGammaInvMassECalib[iCut]);
+        fHistoTruePi0InvMassECalibPCM[iCut]          = new TH2F("True_Pi0_InvMass_E_Calib_PCM", "True_Pi0_InvMass_E_Calib_PCM", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+        fHistoTruePi0InvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+        fHistoTruePi0InvMassECalibPCM[iCut]->SetYTitle("E_{#gamma_{PCM}}(GeV)");
+        fESDList[iCut]->Add(fHistoTruePi0InvMassECalibPCM[iCut]);
       }
 
       if (fDoClusterQA > 0 && fDoLightOutput!=2){
@@ -5733,6 +5759,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           if (!matched){
             if (!fDoLightOutput || fDoECalibOutput){
               fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),gamma1->E(),fWeightJetJetMC);
+              fHistoMotherInvMassECalibPCM[fiCut]->Fill(pi0cand->M(),gamma0->E(),fWeightJetJetMC);
             }
           }
           if (fDoMesonQA == 2){
@@ -5890,6 +5917,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
           }
           if(!fDoLightOutput){
             fHistoTruePi0InvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC*weightMatBudgetGamma);
+            fHistoTruePi0InvMassECalibPCM[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->E(),fWeightJetJetMC*weightMatBudgetGamma);
             if (TrueGammaCandidate1->IsLargestComponentPhoton()) fHistoTruePi0PureGammaInvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC*weightMatBudgetGamma);
           }
         }
@@ -6462,6 +6490,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
         }
         if(!fDoLightOutput){
           fHistoTruePi0InvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC*weightMatBudgetGamma);
+          fHistoTruePi0InvMassECalibPCM[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->E(),fWeightJetJetMC*weightMatBudgetGamma);
           if (TrueGammaCandidate1->IsLargestComponentPhoton()) fHistoTruePi0PureGammaInvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC*weightMatBudgetGamma);
         }
       }
@@ -6922,6 +6951,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
               fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
            if(!fDoLightOutput || fDoECalibOutput)  fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
+           if(!fDoLightOutput || fDoECalibOutput)  fHistoMotherBackInvMassECalibPCM[fiCut]->Fill(backgroundCandidate->M(),previousGoodV0.E(),fWeightJetJetMC);
           }
           delete backgroundCandidate;
           backgroundCandidate = 0x0;
