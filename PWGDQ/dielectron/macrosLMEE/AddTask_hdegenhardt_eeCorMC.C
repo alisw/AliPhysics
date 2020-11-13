@@ -43,12 +43,12 @@ AliAnalysisTask* AddTask_hdegenhardt_eeCorMC(
 		
 		printf("----------------------------------\n");
 		printf("Track cuts: %s\n",trackCutsVar[config]);
-		Double_t impactParXY = 3.;
-		if (trackCutsVar[config][0] == '0') impactParXY = 5.;
-		else if (trackCutsVar[config][0] == '2') impactParXY = 2.;
-		Double_t impactParZ = 1.;
-		if (trackCutsVar[config][1] == '0') impactParZ = 2.;
-		else if (trackCutsVar[config][1] == '2') impactParZ = 0.7;
+		Double_t impactParXY = 1.;
+		if (trackCutsVar[config][0] == '0') impactParXY = 2.;
+		else if (trackCutsVar[config][0] == '2') impactParXY = 0.7;
+		Double_t impactParZ = 3.;
+		if (trackCutsVar[config][1] == '0') impactParZ = 5.;
+		else if (trackCutsVar[config][1] == '2') impactParZ = 2.;
 		Double_t nClusITS = 3.;
 		if (trackCutsVar[config][2] == '0') nClusITS = 2.;
 		else if (trackCutsVar[config][2] == '2') nClusITS = 4.;
