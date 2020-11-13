@@ -38,9 +38,11 @@ protected:
   TH1F* fCellTimeDistAfter;             //!<! cell energy distribution, after time calibration
 
 private:
+  Int_t      InitEDepTimeCalibration();
   Int_t      InitTimeCalibration();
   Int_t      InitTimeCalibrationL1Phase();
   
+  Bool_t                 fCalibrateTimeVsE;       ///< flag cell time calibration as function of E
   Bool_t                 fCalibrateTime;          ///< flag cell time calibration
   Bool_t                 fCalibrateTimeL1Phase;   ///< flag cell time calibration with L1phase shift
   Bool_t                 fDoMergedBCs;            ///< flag to use one histogram for all BCs
@@ -57,7 +59,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTimeCalib, 4); // EMCal cell time calibration component
+  ClassDef(AliEmcalCorrectionCellTimeCalib, 5); // EMCal cell time calibration component
   /// \endcond
 };
 
