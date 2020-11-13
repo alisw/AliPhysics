@@ -45,7 +45,6 @@ endif()
 
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
-  Exotica/Dibaryons/AliAnalysisTaskDibaryons.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
@@ -56,6 +55,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
+  Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypV0s.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
@@ -65,7 +65,7 @@ set(SRCS
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
-  Hypernuclei/KFHypertriton/AliAnalysisTaskHypertritonKFTree.cxx
+  Hypernuclei/KF2Body/AliAnalysisTaskHypertritonKFTree.cxx
   Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTree.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
@@ -91,6 +91,7 @@ set(SRCS
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
@@ -106,14 +107,13 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
-  Utils/NanoAOD/AliNanoSkimmingV0s.cxx
+  Utils/NanoAOD/AliNanoSkimmingV0s.cxx  
   Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
-      Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx
