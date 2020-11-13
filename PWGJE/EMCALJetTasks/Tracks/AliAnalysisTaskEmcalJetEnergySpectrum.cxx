@@ -74,6 +74,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseStandardOutlierRejection(false),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
+  fEMCALClusterBias(0.),
+  fMinTimeClusterBias(-20e-9),
+  fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -100,6 +103,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseStandardOutlierRejection(false),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
+  fEMCALClusterBias(0.),
+  fMinTimeClusterBias(-20e-9),
+  fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -181,6 +187,11 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
+  if(fEMCALClusterBias > 1e-5 && !this->GetClusterContainer()) {
+    std::cout << "Adding cluster bias for L0 trigger studies" << std::endl;
+    this->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class()));
+  }
+
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
 }
@@ -215,6 +226,29 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(!datajets) {
     AliErrorStream() << "Jet container " << fNameJetContainer << " not found" << std::endl;
     return false;
+  }
+
+  // Trigger studies for run3
+  // Do not use "accepted" of the cluster container because the
+  // the cut will most likely select clusters after correction for
+  // the hadronic energy, which is unwanted for trigger studies
+  // (need to be non-lin. corr energy)
+  if(fEMCALClusterBias > 1e-5 && clusters) {
+    bool hasTrigger = false;
+    for(auto cluster : clusters->all()) {
+      if(cluster->GetIsExotic()) continue;
+      if(cluster->GetNonLinCorrEnergy() < fEMCALClusterBias) continue;
+      if(!fIsMC) {
+        if(cluster->GetTOF() < fMinTimeClusterBias || cluster->GetTOF() > fMaxTimeClusterBias) continue;
+      }
+      TLorentzVector ptvec;
+      cluster->GetMomentum(ptvec, fVertex);
+      if(TVector2::Phi_0_2pi(ptvec.Phi()) > 4) continue; // DCAL cluster
+      hasTrigger = true;
+    }
+    if(!hasTrigger) {
+      return false;
+    }
   }
 
   double eventCentrality = 99;   // without centrality put everything in the peripheral bin
@@ -275,7 +309,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
     fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
     TVector3 jetvec(j->Px(), j->Py(), j->Pz());
-    if(clusters){
+    if(clusters && (datajets->GetJetType() != AliJetContainer::kChargedJet)){
       auto leadcluster = j->GetLeadingCluster(clusters->GetArray());
       if(leadcluster) {
         TLorentzVector ptvec;
