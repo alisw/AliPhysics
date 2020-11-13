@@ -82,6 +82,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void SetDoHistoDalitzMassLog(Bool_t flag){fDoHistoDalitzMassLog = flag;}
     void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoLightVersion(Bool_t flag) { fDoLightVersion= flag;}
 
   private:
     void InitBack();
@@ -335,6 +336,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     Double_t                          fWeightJetJetMC;
     Bool_t                            fDoHistoDalitzMassLog;
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
+    Bool_t                            fDoLightVersion;
 
   private:
     AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
