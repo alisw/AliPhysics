@@ -5435,9 +5435,11 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             if (fCaloTriggerMimicHelper[fiCut]){
               fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
-              if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetTriggerMimicking() == 3 && !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
+              if ( !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
                 fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
-                continue;
+                if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetTriggerMimicking() != 4) {
+                    continue;
+                }
               }
               fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
               Int_t ClusterIDIsInBadDDL;
