@@ -53,6 +53,7 @@ set(SRCS
   AliAnalysisTaskPPVsMultMCRSN.cxx
   AliAnalysisTaskEffMatrix.cxx
   RESOSA/AliAnalysisTaskPhiSA.cxx
+  AliAnalysisTaskPhiCount.cxx
   )
 
 # Headers from sources
@@ -96,6 +97,7 @@ install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTaskEffMatrix.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddAnalysisTaskPhiCount.C DESTINATION PWGLF/RESONANCES/extra)
 
 # Install directories
 install(DIRECTORY RESOSA DESTINATION PWGLF/RESONANCES/extra)
