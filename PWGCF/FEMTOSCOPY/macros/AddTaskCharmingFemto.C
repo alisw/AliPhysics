@@ -113,7 +113,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   pairQA[0] = 11;   // pp
   pairQA[4] = 11;   // pbarpbar
   pairQA[2] = 13;   // pDplus
-  pairQA[6] = 10;   // barp dminus
+  pairQA[3] = 13;   // pDminus
+  pairQA[5] = 13;   // barp Dplus
+  pairQA[6] = 13;   // barp Dminus
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
@@ -136,7 +138,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetClosePairRejection(closeRejection);
 
   config->SetPhiEtaBinnign((suffix == "0" && fullBlastQA));
-  config->SetkTBinning((suffix == "0" && fullBlastQA));
   config->SetmTBinning((suffix == "0" && fullBlastQA));
 
   config->SetPtQA((suffix == "0" && fullBlastQA));
@@ -166,8 +167,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetTrigger(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
   task->SetLightweight(suffix != "0");
