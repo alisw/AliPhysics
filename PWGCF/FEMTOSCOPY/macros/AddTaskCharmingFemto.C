@@ -167,8 +167,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetTrigger(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
   task->SetLightweight(suffix != "0");
