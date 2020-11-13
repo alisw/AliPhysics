@@ -5317,7 +5317,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
       Int_t labelPion1 = fabs(trackPiFromXic0->GetLabel());
       AliAODMCParticle* mcPion1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPion1));
       AliAODMCParticle* mcXic0  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion1->GetMother()));
-      f2DHistMCRec_Xic0Pt_weight->Fill(fVar_Xic0[27], fVar_Xic0[25], fWeight->Eval(mcXic0->Pt()));
+      f2DHistMCRec_Xic0Pt_weight->Fill(fVar_Xic0[23], fVar_Xic0[22], fWeight->Eval(mcXic0->Pt()));
     }
   }
 
