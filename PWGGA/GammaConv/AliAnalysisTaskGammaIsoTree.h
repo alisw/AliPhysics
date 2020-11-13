@@ -502,6 +502,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTrueRecPtTaggedCalo; //!
     TH1F*                       fCaloTrueRecPtTaggedAsDecayCalo; //!
     TH2F*                       fCaloTrueIsoCharged[5]; //!
+    TH2F*                       fCaloTrueIsoMCCharged[5]; //!
     TH2F*                       fCaloTrueIsoNeutral[5]; //!
     TH2F*                       fCaloTrueIsoFull[5]; //!
     TH2F*                       fCaloTrueIsoCorr[5]; //!
@@ -634,6 +635,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fChargedRhoTimesArea[5]; // rho times are for up to five radii 
     
     Double_t                    fExclusionRadius;//
+
+    Int_t                       fDebug;// debug flag
     // MC cluster & headers 
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
@@ -697,9 +700,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsFragPhoton(Int_t label);
     Bool_t IsWithinRadiusEMCal(Double_t eta, Double_t phi, Double_t riso);
     Bool_t IsWithinRadiusTPC(Double_t eta, Double_t phi, Double_t riso);
+    Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 25);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 26);
 
 };
 
