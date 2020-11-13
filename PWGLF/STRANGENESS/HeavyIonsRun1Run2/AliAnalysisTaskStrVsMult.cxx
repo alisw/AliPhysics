@@ -27,6 +27,7 @@ class AliAODcascade;
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliMCEvent.h"
+#include "AliAnalysisTaskESDfilter.h"
 
 #include "AliAnalysisTaskStrVsMult.h"
 
@@ -121,7 +122,7 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_DcaBacBar(0)
+fCasc_BacBarCosPA(0)
 {
   //default constructor
 }
@@ -145,7 +146,7 @@ fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 0.5, 0.8, 70., 0.8, 5., 20., 30., -95.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.02},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 0.005, 1., 0.99, 0.1, 0.1, -95., 0.5, 0.8, 3., 3., 3., 0.2, 0.2, 0.99999},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //variables for V0 cuts
@@ -213,7 +214,7 @@ fCasc_DcaNegToPV(0),
 fCasc_NegTrackStatus(0),
 fCasc_PosTrackStatus(0),
 fCasc_BacTrackStatus(0),
-fCasc_DcaBacBar(0)
+fCasc_BacBarCosPA(0)
 {
   //setting default cuts
   SetDefCutVals(); 
@@ -445,6 +446,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   const AliVVertex *lBestPrimVtx = lVevent->GetPrimaryVertex();
   double lBestPV[3] = {-666., -666., -666.};
   lBestPrimVtx->GetXYZ(lBestPV);
+  float lfBestPV[3];
+  for (int i=0; i<3; i++) lfBestPV[i] = (float)lBestPV[i];
 
   //acquire magnetic field
   double lMagField = -666;
@@ -810,14 +813,13 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         casc->ChangeMassHypothesis(quality, -3334); //Om+
         fCasc_InvMassOmPlu = casc->M();
 
-        //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
-        double xn, xp;
-        if (casc->Charge()>0) {
-          fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
-        } else {
-          fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc, lMagField, xn, xp);
+        //calculate CosPA Bachelor-Baryon to remove "bump" structure in InvMass
+        AliAnalysisTaskESDfilter esdFilter;
+        if(casc->Charge()<0.){ 
+          fCasc_BacBarCosPA = esdFilter.GetCosPA(pTrackCasc, bTrackCasc, lMagField, lfBestPV); 
+        } else { 
+          fCasc_BacBarCosPA = esdFilter.GetCosPA(nTrackCasc, bTrackCasc, lMagField, lfBestPV); 
         }
-        fCasc_DcaBacBar = 10.;
         
         //MC association
         if(fisMC){
@@ -933,11 +935,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_InvMassOmMin = casc->MassOmega();
         fCasc_InvMassOmPlu = casc->MassOmega();
 
-        //calculate DCA Bachelor-Baryon to remove "bump"structure in InvMass
-        fCasc_DcaBacBar = 10; //safe factor. It's not possible to calculate DCA between 2 tracks? Missing cov matrix?
-        //double xn, xp;
-        //if(casc->Charge()>0) fCasc_DcaBacBar = pTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
-        //else fCasc_DcaBacBar = nTrackCasc->GetDCA(bTrackCasc,lMagField,xn,xp);
+        //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
+        fCasc_BacBarCosPA = casc->BachBaryonCosPA();
 
         //MC association
         if(fisMC){
@@ -1052,7 +1051,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
   SetCutVariation(kTRUE, kCasc_DcaBarToPV, 11, 0.1, 0.3);
-  //SetCutVariation(kTRUE, kCasc_DcaBacBar, 11, 0., 0.05);
+  SetCutVariation(kTRUE, kCasc_BacBarCosPA, 21, 0.9999, 0.999999);
 }
 
 //________________________________________________________________________
@@ -1145,7 +1144,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if((part==kxim || part==kxip) && ((1.32171*fCasc_DistOverTotP)>(4.91*cutval_Casc[kCasc_PropLifetXi]))) return kFALSE;   //4.91 is the ctau of xi in cm
     if((part==komm || part==komp) && ((1.67245*fCasc_DistOverTotP)>(2.461*cutval_Casc[kCasc_PropLifetOm]))) return kFALSE;   //2.461 is the ctau of om in cm
     // check DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
-    if(fCasc_DcaBacBar<cutval_Casc[kCasc_DcaBacBar]) return kFALSE;
+    if(fCasc_BacBarCosPA>cutval_Casc[kCasc_BacBarCosPA]) return kFALSE;
     // check PID for all daughters (particle hypothesis' dependent)
     if((part==kxip) && (TMath::Abs(fCasc_NSigPosPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigNegProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacPion)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
     if((part==kxim) && (TMath::Abs(fCasc_NSigNegPion)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigPosProton)>cutval_Casc[kCasc_NSigPID] || TMath::Abs(fCasc_NSigBacPion)>cutval_Casc[kCasc_NSigPID])) return kFALSE;
@@ -1258,7 +1257,7 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
     }
   } else {
     for(int i_cut=0; i_cut<kCasccutsnum; i_cut++) {
-      if(i_cut==kCasc_y || i_cut==kCasc_etaDaugh || i_cut==kCasc_TOFBunchCrossing || i_cut==kCasc_DcaBacBar) continue;
+      if(i_cut==kCasc_y || i_cut==kCasc_etaDaugh || i_cut==kCasc_TOFBunchCrossing) continue;
       for (int i_var=0; i_var<nvarcut_Casc[i_cut]; i_var++) {
         //Xi filling
         if (i_cut!=kCasc_PropLifetOm) {
