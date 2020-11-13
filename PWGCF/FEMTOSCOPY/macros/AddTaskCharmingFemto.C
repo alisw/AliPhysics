@@ -33,6 +33,14 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  if (suffix == "1") {
+    evtCuts->SetSphericityCuts(0., 0.3);
+  } else if (suffix == "2") {
+    evtCuts->SetSphericityCuts(0.3, 0.7);
+  } else if (suffix == "3") {
+    evtCuts->SetSphericityCuts(0.7, 1.0);
+  }
+
   // =====================================================================
   // Proton cut variations
   const float ProtonPtlow = 0.4;
@@ -171,6 +179,18 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (trigger == "kHighMultV0") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     task->SetTrigger(AliVEvent::kHighMultV0);
+  }
+
+  if (suffix == "4") {
+    task->SetNSigmaSelection(2);
+  } else if (suffix == "5") {
+    task->SetNSigmaSelection(1);
+  } else if (suffix == "6") {
+    task->SetMassWindow(1.9,
+                        2.1);  // upper sideband, 5 sigma away from the peak
+  } else if (suffix == "7") {
+    task->SetMassWindow(1.64,
+                        1.84);  // lower sideband, 5 sigma away from the peak
   }
 
   task->SetLightweight(suffix != "0");

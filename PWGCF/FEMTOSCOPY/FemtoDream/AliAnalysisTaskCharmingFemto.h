@@ -80,6 +80,15 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetMLConfigFile(TString path = "") {
     fConfigPath = path;
   }
+  void SetNSigmaSelection(double nSigma = 3) {
+    fDoNSigmaMassSelection = true;
+    fNSigmaMass = nSigma;
+  }
+  void SetMassWindow(double lower, double upper) {
+    fDoNSigmaMassSelection = false;
+    fLowerMassSelection = lower;
+    fUpperMassSelection = upper;
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -138,6 +147,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliRDHFCuts* fRDHFCuts;                 // HF cut object
   int fAODProtection;                     // flag to activate protection against AOD-dAOD mismatch.
                                           // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  bool fDoNSigmaMassSelection;			  // Select D mesons as nSigma around the nominal mass
+  double fNSigmaMass;					  // Width of the mass window
+  double fLowerMassSelection;			  // Lower boundary of the mass selection
+  double fUpperMassSelection;			  // Upper boundary of the mass selection
 
   // variables for ML application
   bool fApplyML;                          // flag to enable ML application
