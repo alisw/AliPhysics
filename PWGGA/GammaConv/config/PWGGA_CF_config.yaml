@@ -131,6 +131,7 @@ CellTimeCalib_S1000A300:
 
 Clusterizer:                                        # Clusterizer component
     enabled: true                                   # Whether to enable the task
+    createHistos: true                             # Whether the task should create output histograms
     clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     cellE: 0.1                                      # Minimum cell energy CHANGED!!
     seedE: 0.5                                      # Seed energy threshold
@@ -152,6 +153,12 @@ ClusterTrackMatcher:                                # Cluster-track matcher comp
     enabled: false                                  # Whether to enable the task
 ClusterHadronicCorrection:                          # Cluster hadronic correction component
     enabled: false                                  # Whether to enable the task
+CellTrackMatcher:                                   # Cell energy shift correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: true                             # Whether the task should create output histograms
+    mipE: 0.290                                     # Min cell E to perform scaling on
+
+
 
 #
 # ─── DEFAULT WITH TRACK MATCHING AND NONLIN ──────────────────────────────────────────────────────────
