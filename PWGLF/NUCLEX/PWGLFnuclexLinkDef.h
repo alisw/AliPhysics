@@ -78,6 +78,7 @@
 #pragma link C++ class AliAnalysisTaskDeuFlow2PC+;
 #pragma link C++ class AliAnalysisTaskHypv2PbPb18+;
 #pragma link C++ class AliAnalysisTaskNucleiv2PbPb18+;
+#pragma link C++ class AliAnalysisTaskDeuteronsRT+;
 
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
