@@ -61,6 +61,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
+  fMimicEJData(false),
   fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
@@ -90,6 +91,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
+  fMimicEJData(false),
   fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
@@ -418,9 +420,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
     // Pure data - do EMCAL trigger selection from selection string
     UInt_t triggerbits = fTriggerSelectionBits;
     if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the
+    if(fMimicEJData) triggerbits = AliVEvent::kINT7;                // for mimiced trigger require INT7
     if(!(fInputHandler->IsEventSelected() & triggerbits)) return false;
     if(fTriggerSelectionString.Length()) {
-      if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+      if(!fMimicEJData && !fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
       if(fRequireSubsetMB && !(fInputHandler->IsEventSelected() & fMinBiasTrigger)) return false;   // Require EMCAL trigger to be subset of the min. bias trigger (for efficiency studies)
       if((fTriggerSelectionString.Contains("EJ") || fTriggerSelectionString.Contains("EG") || fTriggerSelectionString.Contains("DJ") || fTriggerSelectionString.Contains("DG")) && fUseTriggerSelectionForData) {
         auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
