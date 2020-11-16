@@ -446,6 +446,10 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     tlCPA_PairClean_stats->SetName("extendedPCstats");
     tlCPA_PairClean_stats->SetOwner(kTRUE);
 
+
+    if (fmixAfterPC)
+    {
+    }
     ///////////////////////////////////////////////////
     // CPA Distributions pT binned
     /////////////////////////////////////////////////
@@ -474,20 +478,20 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     // histos
     h2_CPA_pt = new TH2F*[20];
     // 
-    h2_CPA_pt[0] = new TH2F("CPAPtBinning_lambda_before_Paircleaning","CPAPtBinning_lambda_before_Paircleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[1] = new TH2F("CPAPtBinning_anti_lambda_before_Paircleaning","CPAPtBinning_lambda_after_DecayCleaning_GOOD_paritcles", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[2] = new TH2F("CPAPtBinning_lambda_after_DecayCleaning","CPAPtBinning_lambda_after_DecayCleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[3] = new TH2F("CPAPtBinning_anti_lambda_after_DecayCleaning","CPAPtBinning_anti_lambda_after_DecayCleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[4] = new TH2F("nothing_anymore","nothing_anymore", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt[0] = new TH2F("CPAPtBinning_lambda_before_Paircleaning","CPAPtBinning_lambda_before_Paircleaning", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[1] = new TH2F("CPAPtBinning_anti_lambda_before_Paircleaning","CPAPtBinning_lambda_after_DecayCleaning_GOOD_paritcles", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[2] = new TH2F("CPAPtBinning_lambda_after_DecayCleaning","CPAPtBinning_lambda_after_DecayCleaning", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[3] = new TH2F("CPAPtBinning_anti_lambda_after_DecayCleaning","CPAPtBinning_anti_lambda_after_DecayCleaning", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[4] = new TH2F("nothing_anymore","nothing_anymore", 8, 0.3, 4.3, 800, 1.00, 1.2);
     // 
-    h2_CPA_pt[5] = new TH2F("CPAPtBinning_lambda_after_InvMassCleaning","CPAPtBinning_lambda_after_InvMassCleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[6] = new TH2F("CPAPtBinning_anti_lambda_after_InvMassCleaning","CPAPtBinning_anti_lambda_after_InvMassCleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[7] = new TH2F("CPAPtBinning_lambda_after_Cleaning_At_Random","CPAPtBinning_lambda_after_Cleaning_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[8] = new TH2F("CPAPtBinning_anti_lambda_after_Cleaning_At_Random","CPAPtBinning_anti_lambda_after_Cleaning_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[9] = new TH2F("nothing_anymore","nothing_anymore", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt[5] = new TH2F("CPAPtBinning_lambda_after_InvMassCleaning","CPAPtBinning_lambda_after_InvMassCleaning", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[6] = new TH2F("CPAPtBinning_anti_lambda_after_InvMassCleaning","CPAPtBinning_anti_lambda_after_InvMassCleaning", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[7] = new TH2F("CPAPtBinning_lambda_after_Cleaning_At_Random","CPAPtBinning_lambda_after_Cleaning_At_Random", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[8] = new TH2F("CPAPtBinning_anti_lambda_after_Cleaning_At_Random","CPAPtBinning_anti_lambda_after_Cleaning_At_Random", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[9] = new TH2F("nothing_anymore","nothing_anymore", 8, 0.3, 4.3, 800, 1.00, 1.2);
     // 
-    h2_CPA_pt[10] = new TH2F("CPAPtBinning_xi_before_Paircleaning","CPAPtBinning_xi_before_Paircleaning", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt[11] = new TH2F("CPAPtBinning_xi_after_DecayCleaning_GOOD_paritcles","CPAPtBinning_xi_after_DecayCleaning_GOOD_paritcles", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt[10] = new TH2F("CPAPtBinning_lambda_after_Cleaning_At_Random_myCleaner","CPAPtBinning_lambda_after_Cleaning_At_Random_myCleaner", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt[11] = new TH2F("CPAPtBinning_anti_lambda_after_Cleaning_At_Random_myCleaner","CPAPtBinning_anti_lambda_after_Cleaning_At_Random_myCleaner", 8, 0.3, 4.3, 800, 1.00, 1.2);
     h2_CPA_pt[12] = new TH2F("CPAPtBinning_xi_after_DecayCleaning_DROPPED_paritcles","CPAPtBinning_xi_after_DecayCleaning_DROPPED_paritcles", 8, 0.3, 4.3, 1000, 0.90, 1.);
     h2_CPA_pt[13] = new TH2F("CPAPtBinning_xi_after_DecayAndDecay_Cleaning_GOOD_paritcles","CPAPtBinning_xi_after_DecayAndDecay_Cleaning_GOOD_paritcles", 8, 0.3, 4.3, 1000, 0.90, 1.);
     h2_CPA_pt[14] = new TH2F("CPAPtBinning_xi_after_DecayAndDecay_Cleaning_DROPPED_paritcles","CPAPtBinning_xi_after_DecayAndDecay_Cleaning_DROPPED_paritcles_TOTAL", 8, 0.3, 4.3, 1000, 0.90, 1.);
@@ -690,23 +694,23 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     h2_CPA_pt_invMass[15] = new TH2F("CPAPtBinningCont_antilambda_DUMPS", "CPAPtBinningCont_antilambda_DUMPS", 8, 0.3, 4.3, 1000, 0.90, 1.);
 
     // [16-31] are free for lambda statistics since no XI selction anymore
-    h2_CPA_pt_invMass[16] = new TH2F("Lambda_Invariant_Mass_pT_before", "Lambda_Invariant_Mass_pT_before", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[17] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_CPA", "Lambda_Invariant_Mass_pT_Clean_Decay_CPA", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[18] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", "Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[19] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", "Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[20] = new TH2F("Anti_Lambda_Invariant_Mass_pT_before", "Anti_Lambda_Invariant_Mass_pT_before", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[21] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_CPA", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_CPA", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[22] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[23] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[16] = new TH2F("Lambda_Invariant_Mass_pT_before", "Lambda_Invariant_Mass_pT_before", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[17] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_CPA", "Lambda_Invariant_Mass_pT_Clean_Decay_CPA", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[18] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", "Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[19] = new TH2F("Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", "Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[20] = new TH2F("Anti_Lambda_Invariant_Mass_pT_before", "Anti_Lambda_Invariant_Mass_pT_before", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[21] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_CPA", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_CPA", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[22] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 800, 1.00, 1.2);
+    h2_CPA_pt_invMass[23] = new TH2F("Anti_Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", "Anti_Lambda_Invariant_Mass_pT_Clean_Decay_At_Random", 8, 0.3, 4.3, 800, 1.00, 1.2);
 
-    h2_CPA_pt_invMass[24] = new TH2F("Lambda_Invariant_Mass_kSTAR_before", "Lambda_Invariant_Mass_kSTAR_before", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[25] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[26] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[27] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[28] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_before", "Anti_Lambda_Invariant_Mass_kSTAR_before", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[29] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[30] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", 8, 0.3, 4.3, 1000, 0.90, 1.);
-    h2_CPA_pt_invMass[31] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", 8, 0.3, 4.3, 1000, 0.90, 1.);
+    h2_CPA_pt_invMass[24] = new TH2F("Lambda_Invariant_Mass_kSTAR_before", "Lambda_Invariant_Mass_kSTAR_before", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[25] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[26] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[27] = new TH2F("Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", "Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[28] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_before", "Anti_Lambda_Invariant_Mass_kSTAR_before", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[29] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_CPA", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[30] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_Inv_Mass", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
+    h2_CPA_pt_invMass[31] = new TH2F("Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", "Anti_Lambda_Invariant_Mass_kSTAR_Clean_Decay_At_Random", 512, 1.07568, 1.15568, 1000, 0.00, 1.00);
     for(int i = 16; i < 24; i++)
     {
         h2_CPA_pt_invMass[i]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -714,8 +718,8 @@ void AliAnalysisTaskPOmegaPenne::UserCreateOutputObjects()
     }
     for(int i = 24; i < 32; i++)
     {
-        h2_CPA_pt_invMass[i]->GetXaxis()->SetTitle("k* (GeV/c)");
-        h2_CPA_pt_invMass[i]->GetYaxis()->SetTitle("M_{p#pi} (GeV/c^{2})");
+        h2_CPA_pt_invMass[i]->GetYaxis()->SetTitle("k* (GeV/c)");
+        h2_CPA_pt_invMass[i]->GetXaxis()->SetTitle("M_{p#pi} (GeV/c^{2})");
     }
         //
         // Connect Histogramms to Lists
@@ -985,6 +989,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         // ## Lambda Selection ## keep Lambdas
         fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
+
         for (int iv0 = 0; iv0 < dynamic_cast<TClonesArray *>(aodEvent->GetV0s())->GetEntriesFast(); ++iv0)
         {
             AliAODv0 *v0 = aodEvent->GetV0(iv0);
@@ -999,10 +1004,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             {
                 vAntiLambda.push_back(*fv0);
             }
-        }
-
-        if(fmixBeforePC)    // stays coz i am too lazy to remove steering parameter
-        {
         }
 
         //  ######################################################################
@@ -1025,17 +1026,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             h2_CPA_pt_invMass[16]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
             for (size_t j = i + 1; j < vLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[24]->Fill(RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122), CalculateInvMassLambda(vLambda[i], false));
+                h2_CPA_pt_invMass[24]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
             h2_CPA_pt[1]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[20]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], false));
+            h2_CPA_pt_invMass[20]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             for (size_t j = i + 1; j < vAntiLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[28]->Fill(RelativePairMomentum(vAntiLambda[i], -3122, vAntiLambda[j], -3122), CalculateInvMassLambda(vAntiLambda[i], false));
+                h2_CPA_pt_invMass[28]->Fill(CalculateInvMassLambda(vAntiLambda[i], true), RelativePairMomentum(vAntiLambda[i], -3122, vAntiLambda[j], -3122));
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1053,17 +1054,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             h2_CPA_pt_invMass[17]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
             for (size_t j = i + 1; j < vLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[25]->Fill(RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122), CalculateInvMassLambda(vLambda[i], false));
+                h2_CPA_pt_invMass[25]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
             h2_CPA_pt[3]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[21]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], false));
+            h2_CPA_pt_invMass[21]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             for (size_t j = i + 1; j < vAntiLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[29]->Fill(RelativePairMomentum(vAntiLambda[i], -3122, vAntiLambda[j], -3122), CalculateInvMassLambda(vAntiLambda[i], false));
+                h2_CPA_pt_invMass[29]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1081,17 +1082,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             h2_CPA_pt_invMass[18]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
             for (size_t j = i + 1; j < vLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[26]->Fill(RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122), CalculateInvMassLambda(vLambda[i], false));
+                h2_CPA_pt_invMass[26]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
             h2_CPA_pt[6]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[22]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], false));
+            h2_CPA_pt_invMass[22]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             for (size_t j = i + 1; j < vAntiLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[30]->Fill(RelativePairMomentum(vAntiLambda[i], -3122, vAntiLambda[j], -3122), CalculateInvMassLambda(vAntiLambda[i], false));
+                h2_CPA_pt_invMass[30]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1110,17 +1111,17 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
             h2_CPA_pt_invMass[19]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
             for (size_t j = i + 1; j < vLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[27]->Fill(RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122), CalculateInvMassLambda(vLambda[i], false));
+                h2_CPA_pt_invMass[27]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
             h2_CPA_pt[8]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[23]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], false));
+            h2_CPA_pt_invMass[23]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             for (size_t j = i + 1; j < vAntiLambda.size(); j++)
             {
-                h2_CPA_pt_invMass[31]->Fill(RelativePairMomentum(vAntiLambda[i], -3122, vAntiLambda[j], -3122), CalculateInvMassLambda(vAntiLambda[i], false));
+                h2_CPA_pt_invMass[31]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1154,10 +1155,6 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         //  ##
         //  ##
         //  #######################################################################
-
-        if(fmixAfterPC)     // again too lazy to remove the steering param
-        {
-        }
 
 //         if(fLambdaV0Cuts->GetIsMonteCarlo())
 //         {
@@ -1651,13 +1648,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAtRandom(std::vector<AliFemtoDreamBas
                                 {
                                     itDecay1->SetUse(false);
                                     hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[2]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    h2_CPA_pt[10]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[2]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    h2_CPA_pt[10]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                             }
                             else if (particleSteering == "AntiLambda")
@@ -1673,13 +1670,13 @@ void AliAnalysisTaskPOmegaPenne::CleanDecayAtRandom(std::vector<AliFemtoDreamBas
                                 {
                                     itDecay1->SetUse(false);
                                     hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG1);
-                                    h2_CPA_pt[7]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
+                                    h2_CPA_pt[11]->Fill(itDecay1->GetPt(), itDecay1->GetCPA());
                                 }
                                 else
                                 {
                                     itDecay2->SetUse(false);
                                     hAntiLambdaCleanedPartMassDiffToPDG_Decay->Fill(fMassToPDG2);
-                                    h2_CPA_pt[7]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
+                                    h2_CPA_pt[11]->Fill(itDecay2->GetPt(), itDecay2->GetCPA());
                                 }
                             }
                             else if (particleSteering == "Xi")
