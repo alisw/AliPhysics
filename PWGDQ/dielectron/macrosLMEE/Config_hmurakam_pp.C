@@ -5,9 +5,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition);
 void SetupPairCuts (AliDielectron *die, Int_t cutDefinition);
 void SetTPCSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
 void SetTOFSigmaEleCorrection(AliDielectron *die, Int_t corrXdim, Int_t corrYdim);
-AliDielectronEventCuts *GetEventCuts(Float_t cent_min,Float_t cent_max);
-AliDielectronEventCuts *GetEventCutsMinBias();
-AliDielectronEventCuts *GetEventCutsHighMult(Float_t cent_min,Float_t cent_max);
+const AliDielectronEventCuts *GetEventCutsMinBias();
+const AliDielectronEventCuts *GetEventCutsHighMult(Float_t cent_min,Float_t cent_max);
 void SetupCuts (AliDielectron *die, Int_t cutDefinition);
 AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
 AliDielectronPID *SetPIDCuts(Int_t cutDefinition);
@@ -529,25 +528,6 @@ TVectorD *GetVector(Int_t var)
     }
 
 }
-
-//______________________________________________________________________________________
-AliDielectronEventCuts *GetEventCuts(Float_t cent_min,Float_t cent_max){
-
-    AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-    eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-    eventCuts->SetRequireVertex();
-    eventCuts->SetMinVtxContributors(1);
-    eventCuts->SetVertexZ(-10.,10.);
-    //    eventCuts->SetMaxSPDVertexResolution(0.25);
-    //    eventCuts->SetMaxSPDVertexDispersion(0.03);
-    //    eventCuts->SetMaxVertexDisplacement(0.5);
-    // 0., 1.0, kTRUE  mb
-    // 0., 0.05,kTRUE  2016
-    // 0., 0.1, kTRUE  2017,2018
-    eventCuts->SetCentralityRange(cent_min,cent_max,kTRUE); // optional centrality selection for pp run2
-    return eventCuts;
-}
-
 //______________________________________________________________________________________
 AliDielectronEventCuts *GetEventCutsMinBias(){
 
