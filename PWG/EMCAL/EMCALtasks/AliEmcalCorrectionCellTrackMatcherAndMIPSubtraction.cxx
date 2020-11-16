@@ -67,24 +67,6 @@ void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::UserCreateOutputObject
 {
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
-  // Determine all particle container array names for naming the AliEmcalParticle array
-  std::string particleContainerNames = "";
-  bool firstLoop = true;
-  AliParticleContainer * partCont = 0;
-  TIter nextPartCont(&fParticleCollArray);
-  while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
-    if (firstLoop != true) {
-      particleContainerNames += "_";
-    }
-    else {
-      firstLoop = false;
-    }
-    particleContainerNames += partCont->GetArrayName();
-  }
-
-  fEmcalTracks = new TClonesArray("AliEmcalParticle");
-  fEmcalTracks->SetName(Form("EmcalTracks_%s", particleContainerNames.c_str()));
-
   if (fCreateHisto){
     fCellTrackMatchdEtadPhi = new TH2F("hCellTrackMatchdEtadPhi","hCellTrackMatchdEtadPhi",100,-0.04,0.04,100,-0.04,0.04);
     fOutput->Add(fCellTrackMatchdEtadPhi);
@@ -104,7 +86,7 @@ void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::UserCreateOutputObject
  */
 void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::ExecOnce()
 {
-  fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
+  //fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
 }
 
 /**

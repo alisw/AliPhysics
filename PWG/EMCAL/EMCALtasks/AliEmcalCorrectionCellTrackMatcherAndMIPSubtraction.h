@@ -3,9 +3,9 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerIndexMap.h"
-#endif
+//#if !(defined(__CINT__) || defined(__MAKECINT__))
+//#include "AliEmcalContainerIndexMap.h"
+//#endif
 
 class TH1;
 class TClonesArray;
@@ -42,10 +42,10 @@ protected:
   Double_t               fEmipData;            ///< Energy of MIP used to subtract from cell, in case of data
   Double_t               fEmipMC;              ///< Energy of MIP used to subtract from cell, in case of MC
 
-  #if !(defined(__CINT__) || defined(__MAKECINT__))
+  //#if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
-  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
-  #endif
+  //AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
+  //#endif
 
   TClonesArray *fEmcalTracks;                  //!<!emcal tracks
   TH2          *fCellTrackMatchdEtadPhi;       //!<!dEtadPhi distribution
