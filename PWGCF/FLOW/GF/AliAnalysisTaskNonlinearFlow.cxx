@@ -500,7 +500,11 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	//..apply physics selection
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	Bool_t isTrigselected = false;
-	isTrigselected = fSelectMask&AliVEvent::kINT7;
+        if (fTrigger == 0) {
+	    isTrigselected = fSelectMask&AliVEvent::kINT7;
+        } else if (fTrigger == 1) {
+	    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+        }
 	if(isTrigselected == false) return;
 
 	//..check if I have AOD
@@ -509,10 +513,24 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 		Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
 		return;
 	}
-	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
-		PostData(1,fListOfObjects);
-		return;
+
+	if (fPeriod.EqualTo("LHC15o")) {
+		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+			PostData(1,fListOfObjects);
+			return;
+		}
+	} else {
+		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
+
+		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+
+		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
+
+		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+		if(nTracksPrim < 0.5) { return; }
 	}
+
 	hEventCount->Fill("after fEventCuts", 1.);
 
 	//..filling Vz distribution
