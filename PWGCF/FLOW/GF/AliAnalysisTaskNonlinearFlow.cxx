@@ -522,7 +522,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	} else {
 		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
 
-		multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
 		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
 
 		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
