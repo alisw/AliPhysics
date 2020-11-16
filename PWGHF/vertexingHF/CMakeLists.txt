@@ -96,7 +96,6 @@ set(SRCS
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskCharmDecayTracks.cxx
-  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
@@ -172,6 +171,14 @@ set(SRCS
   AliAnalysisTaskSELc2pKs0fromKFP.cxx
   AliAnalysisTaskCheckAODdAODMatching.cxx
 )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(SRCS
+	  ${SRCS}
+  AliAnalysisTaskHFSimpleVertices.cxx
+  )
+endif()
+
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
