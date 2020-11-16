@@ -52,7 +52,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     
     //=== Add event filter ============================================
 
-    task->SetEventFilter(GetEventCuts());
+    task->SetEventFilter(GetEventCutsMinBias());
     
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
