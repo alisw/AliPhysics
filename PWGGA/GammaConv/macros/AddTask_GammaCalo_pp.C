@@ -2533,6 +2533,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411793706fe30220000","01631031000000d0"); // EG2 TBNL wihout fine tuning
     cuts.AddCutCalo("0008d113","411793706fe30220000","01631031000000d0"); // EG1 TBNL wihout fine tuning
 
+  } else if (trainConfig == 2098){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("000d0113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("000d1113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("000d2113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 2099){  // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("000e0113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("000e1113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("000e2113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+
 // EDC settings with TB correction
   } else if (trainConfig == 2100){ // 100 MeV aggregation
     cuts.AddCutCalo("00010113","411790106f032230000","01631031000000d0"); // INT7 test beam NL

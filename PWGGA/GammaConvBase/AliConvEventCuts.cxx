@@ -1551,6 +1551,18 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fTriggerSelectedManually = kTRUE;
     fSpecialTriggerName="";
     break;
+  case 13: // d; software trigger applied on minimum bias data clusters
+    fSpecialTrigger=13; // software trigger on data
+    fSpecialTriggerName="";
+    break;
+  case 14: // e; software trigger applied on EMCal EG1 trigger data clusters
+    fSpecialTrigger=14; // software trigger on data
+    fOfflineTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerSelectedManually = kTRUE;
+    fTriggersEMCALSelected= 0;
+    SETBIT(fTriggersEMCALSelected, kG2);
+    fSpecialTriggerName="AliVEvent::kEMCEGA";
+    break;
   default:
     AliError(Form("Warning: Special Trigger %d Not known",selectSpecialTrigger));
     return 0;
@@ -2353,6 +2365,71 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTrigger=2;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CCUP9";
+      break;
+    default:
+      AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
+      return 0;
+    }
+  } else if (fSpecialTrigger == 13){ // software trigger on min bias data
+    switch(selectSpecialSubTriggerClass){
+    case 0: // mimick of MC7 - V0AND and EMCAL OR DCAL fired
+      fSpecialSubTrigger=0;
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CEMC7_sw";
+      fSpecialSubTriggerNameAdditional="CDMC7_sw";
+      break;
+    case 1: // mimick of L1 low - V0AND and EMCAL OR DCAL fired
+      fSpecialSubTrigger=0;
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EG2_sw";
+      fSpecialSubTriggerNameAdditional="7DG2_sw";
+      // fTriggersEMCALSelected= 0;
+      // fTriggersEMCALSelected= 0;
+      // SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 2: // mimick of L1 high - V0AND and EMCAL OR DCAL fired
+      fSpecialSubTrigger=0;
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EG1_sw";
+      fSpecialSubTriggerNameAdditional="7DG1_sw";
+      // fTriggersEMCALSelected= 0;
+      // SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    default:
+      AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
+      return 0;
+    }
+  } else if (fSpecialTrigger == 14){ // software trigger on EMCal triggered data
+    switch(selectSpecialSubTriggerClass){
+    case 0: //e0) Gamma High EMC and DMC software trigger on GammaHigh data
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG1_EGA_sw";
+      fSpecialSubTriggerNameAdditional="7DG1_EGA_sw";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      break;
+    case 1: //e1) Gamma Low EMC and DMC  on Gamma Low data
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG2_EGA_sw";
+      fSpecialSubTriggerNameAdditional="7DG2_EGA_sw";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 2: //e2) Gamma High EMC and DMC software trigger on GammaLow data
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG1_EGA_sw";
+      fSpecialSubTriggerNameAdditional="7DG1_EGA_sw";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
       break;
     default:
       AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
@@ -5185,8 +5262,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   // abort if mimicing not enabled
   if (!fMimicTrigger) return kTRUE;
-  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 10)) return kTRUE;   // not the correct trigger for mimcking
-
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 10 || fSpecialTrigger == 13  || fSpecialTrigger == 14 )) return kTRUE;   // not the correct trigger for mimcking
 
   // Trigger mimicking based on decision by the AliAnalysisTaskEmcalTriggerSelection for L1 triggers
   // To get the correct values one has to select the correct dataset
@@ -5222,11 +5298,6 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   }
 
 
-    // Trigger mimicking based on cluster energy
-    // thresholds are loaded from the OADB (OADB/PWGGA/EMCalTriggerMimicOADB.root)
-    // Case1: if a cluster has energy above threshold -> accept event
-    // Case2: same as case 1 but also look for nearby clusters (if 2 clusters are close in eta/phi (4 cells distance (same as trigger patches)) sum ap their energys and check if above threshold)
-
     //Get the clusters
     TClonesArray * arrClustersMimic = NULL;
     Int_t nclus = 0;
@@ -5241,76 +5312,80 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     // return if no Clusters in the event
     if(nclus == 0)  return kFALSE;
 
-    // Loading trigger thresholds from OADB
-    // Only load histo if is not loaded already or if the runnumber has changed!
-    Int_t runnumber = event->GetRunNumber();
-    if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
-      fRunNumberTriggerOADB = runnumber;
-      std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
+    // Trigger mimicking based on cluster energy
+    // thresholds are loaded from the OADB (OADB/PWGGA/EMCalTriggerMimicOADB.root)
+    // Case1: if a cluster has energy above threshold -> accept event
+    if(fMimicTrigger == 1){
 
-      if(!fPathTriggerMimicSpecialInput.CompareTo("")){ // load from standard OADB on EOS
-        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
-        if (!fileTriggThresh || fileTriggThresh->IsZombie())
+      // Loading trigger thresholds from OADB
+      // Only load histo if is not loaded already or if the runnumber has changed!
+      Int_t runnumber = event->GetRunNumber();
+      if(!fHistoTriggThresh || fRunNumberTriggerOADB != runnumber){
+        fRunNumberTriggerOADB = runnumber;
+        std::unique_ptr<AliOADBContainer> contfileTriggThresh(new AliOADBContainer(""));
+
+        if(!fPathTriggerMimicSpecialInput.CompareTo("")){ // load from standard OADB on EOS
+          TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"read");
+          if (!fileTriggThresh || fileTriggThresh->IsZombie())
+          {
+            AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
+          }
+          if (fileTriggThresh) delete fileTriggThresh;
+          contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
+          if(!contfileTriggThresh){
+            AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
+          } else{
+            contfileTriggThresh->SetOwner(kTRUE);
+          }
+        } else { // load from special OADB file from AliEn
+          TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"read");
+          if (!fileTriggThresh || fileTriggThresh->IsZombie())
+          {
+            AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
+          }
+          if (fileTriggThresh) delete fileTriggThresh;
+          contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"AliEMCalTriggerMimic");
+          if(!contfileTriggThresh){
+            AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
+          } else{
+            contfileTriggThresh->SetOwner(kTRUE);
+          }
+        }
+
+        TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
+        if (!arrayTriggThresh)
         {
-          AliFatal("OADB/PWGGA/EMCalTriggerMimicOADB.root was not found");
+          AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
         }
-        if (fileTriggThresh) delete fileTriggThresh;
-        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/EMCalTriggerMimicOADB.root").data(),"AliEMCalTriggerMimic");
-        if(!contfileTriggThresh){
-          AliFatal("AliOADBContainer could not be loaded from PWGGA/EMCalTriggerMimicOADB.root");
-        } else{
-          contfileTriggThresh->SetOwner(kTRUE);
-        }
-      } else { // load from special OADB file from AliEn
-        TFile *fileTriggThresh=TFile::Open(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"read");
-        if (!fileTriggThresh || fileTriggThresh->IsZombie())
-        {
-          AliFatal(Form("%s was not found",fPathTriggerMimicSpecialInput.Data()));
-        }
-        if (fileTriggThresh) delete fileTriggThresh;
-        contfileTriggThresh->InitFromFile(AliDataFile::GetFileNameOADB(((char*)Form("PWGGA/%s",fPathTriggerMimicSpecialInput.Data()))).data(),"AliEMCalTriggerMimic");
-        if(!contfileTriggThresh){
-          AliFatal(Form("AliOADBContainer could not be loaded from %s",fPathTriggerMimicSpecialInput.Data()));
-        } else{
-          contfileTriggThresh->SetOwner(kTRUE);
+        // EMCal L0 trigger
+        if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 ||
+            fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
+        // EMCal L1 G1 trigger
+        else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
+        // PHOS L0 trigger
+        else if(fSpecialTrigger == 5 || fSpecialTrigger == 10) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
+        // EMCal L1 G2 trigger
+        else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("CPHI7")==0 )) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
+        // return true if mimicking for fSpecialTrigger is not defined
+        else return kTRUE;
+
+        if(!fHistoTriggThresh){
+          AliFatal(Form("No histogram for trigger threshold found for run number: %d", runnumber));
         }
       }
 
-      TObjArray *arrayTriggThresh=(TObjArray*)contfileTriggThresh->GetObject(runnumber);
-      if (!arrayTriggThresh)
-      {
-        AliFatal(Form("No Trigger threshold found for run number: %d", runnumber));
-      }
-      // EMCal L0 trigger
-      if( (fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 ||
-          fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G1");
-      // EMCal L1 G1 trigger
-      else if((fSpecialTrigger == 8 || fSpecialTrigger == 10 ) && (fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0) ) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL1G2");
-      // PHOS L0 trigger
-      else if(fSpecialTrigger == 5 || fSpecialTrigger == 10) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("EMCalL0");
-      // EMCal L1 G2 trigger
-      else if((fSpecialTrigger == 6) && (fSpecialSubTriggerName.CompareTo("CPHI7")==0 )) fHistoTriggThresh  = (TH1S*)arrayTriggThresh->FindObject("PHOSL0");
-      // return true if mimicking for fSpecialTrigger is not defined
-      else return kTRUE;
 
-      if(!fHistoTriggThresh){
-        AliFatal(Form("No histogram for trigger threshold found for run number: %d", runnumber));
-      }
+    // Get individual threshold for every Supermodule (if no Supermodulewise was defined threshold is the same for all SMs)
+    Float_t fTriggThresh[20] = {0};
+    fRandom.SetSeed(0);
+
+    // load EMCal geometry if needed
+    if(fSpecialTrigger != 6){
+      if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
+      if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
     }
 
 
-
-  // Get individual threshold for every Supermodule (if no Supermodulewise was defined threshold is the same for all SMs)
-  Float_t fTriggThresh[20] = {0};
-  fRandom.SetSeed(0);
-
-  // load EMCal geometry if needed
-  if(fSpecialTrigger != 6){
-    if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
-    if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
-  }
-
-  if(fMimicTrigger == 1){
   // Loop over EMCal clusters
     for(Int_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
@@ -5361,41 +5436,43 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     }
   }
 
-  if(fMimicTrigger > 10) {  // Case2 starts here
+  // trigger mimicking applied on data clusters (software trigger)
+  if(fMimicTrigger == 5){
+    // find out the correct threshold for the trigger
+    Double_t minClusE = 0.;
+    if( (fSpecialTrigger == 13) && (fSpecialSubTriggerName.CompareTo("CEMC7_sw")==0 ))
+      minClusE = 2.5;
+    else if( (fSpecialTrigger == 13) && (fSpecialSubTriggerName.CompareTo("7EG2_sw")==0 ))
+      minClusE = 3.5;
+    else if( (fSpecialTrigger == 13) && (fSpecialSubTriggerName.CompareTo("7EG1_sw")==0 ))
+      minClusE = 8.8;
+    else if( (fSpecialTrigger == 14) && (fSpecialSubTriggerName.CompareTo("7EG2_EGA_sw")==0 ))
+      minClusE = 4.0;
+    else if( (fSpecialTrigger == 14) && (fSpecialSubTriggerName.CompareTo("7EG1_EGA_sw")==0 ))
+      minClusE = 9.5;
 
-    std::vector<float> vClusterEnergy;
-    std::vector<int> vClusterSupMod;
-    std::vector<float> vClusterTheta;
-    std::vector<float> vClusterPhi;
-
-    //Looping over all Clusters (check if cluster is above threshold; save info about Cluster in vector (energy, theta, phi, supermodule))
-    for(Int_t iClus = 0; iClus < nclus; iClus++){
-      Int_t iSuperModule = -1;
-
-      TVector3 clusterVector1;
-      TVector3 clusterVector2;
-
-
+  // Loop over clusters
+    for(Int_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
-      std::unique_ptr<AliVCluster> tmpcluster1;  // takes care about deleting clusters constructed with new
+      std::unique_ptr<AliVCluster> tmpcluster;  // takes care about deleting clusters constructed with new
       if(event->IsA()==AliESDEvent::Class()){
         if(arrClustersMimic){
-          tmpcluster1 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(iClus)));
-          clus = tmpcluster1.get();
+          tmpcluster = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMimic->At(i)));
+          clus = tmpcluster.get();
         } else
-          clus = event->GetCaloCluster(iClus);
+          clus = event->GetCaloCluster(i);
       } else if(event->IsA()==AliAODEvent::Class()){
         if(arrClustersMimic) {
-          tmpcluster1 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(iClus)));
-          clus = tmpcluster1.get();
+          tmpcluster = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMimic->At(i)));
+          clus = tmpcluster.get();
         }
         else
-          clus = event->GetCaloCluster(iClus);
+          clus = event->GetCaloCluster(i);
       }
       if (!clus) {
         continue;
       }
-      if ((fSpecialTrigger!=6 && !clus->IsEMCAL()) || (fSpecialTrigger==6 && !clus->IsPHOS())) {
+      if ( !clus->IsEMCAL()) {
         continue;
       }
       if (clus->GetM02()<0.1) {
@@ -5404,51 +5481,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (clus->GetNCells()<2) {
         continue;
       }
-      iSuperModule = 0;
-      // Get the supermodule from cluster position
-      if(fHistoTriggThresh->GetNbinsX() > 1){
-        if (clus->IsEMCAL()){   // just needed to get the correct supermodule number if EMCal trigger mimick is configured supermodule wise
-          if(!fGeomEMCAL) fGeomEMCAL = AliEMCALGeometry::GetInstance();
-          Float_t clusPos[3]={0,0,0};
-          clus->GetPosition(clusPos);
-          TVector3 tempclusterVector(clusPos[0],clusPos[1],clusPos[2]);
-          clusterVector1 = tempclusterVector;
-          fGeomEMCAL->SuperModuleNumberFromEtaPhi(clusterVector1.Eta(),clusterVector1.Phi(),iSuperModule);
-        }
-        // only initialize random threshod if needed
-        if(fTriggThresh[iSuperModule] < 0.1) fTriggThresh[iSuperModule] = fRandom.Gaus(fHistoTriggThresh->GetBinContent(iSuperModule + 1)*0.01, fHistoTriggThresh->GetBinError(iSuperModule + 1)*0.01);
-        if(iSuperModule >= fHistoTriggThresh->GetNbinsX() ){
-          AliFatal("Supermodule nr. does not match with input histogramm");
-        }
+      if (clus->GetIsExotic()) {
+        continue;
       }
-
-      // Check if this cluster alone could fire the Trigger
-
-      if (  clus->E() > fTriggThresh[iSuperModule]){
-        return kTRUE;
-      }
-      vClusterEnergy.push_back(clus->E());
-      vClusterSupMod.push_back(iSuperModule);
-      vClusterTheta.push_back(clusterVector1.Theta());
-      vClusterPhi.push_back(clusterVector1.Phi());
-
-    }
-    Int_t patchsize = fMimicTrigger - 10;
-    // now loop over all clusterpairs and see if a cluster pair fires the trigger
-    for(unsigned int iClus1 = 0; iClus1 < vClusterEnergy.size(); ++iClus1 ){
-      for(unsigned int iClus2 = iClus1 + 1; iClus2 < vClusterEnergy.size(); ++iClus2 ){
-        if(vClusterSupMod[iClus1] == vClusterSupMod[iClus2]){
-          // check if the two clusters are close to each other (6./450. is cell size / distance from Vertex to EMCal)
-          if( (std::abs(vClusterTheta[iClus1] - vClusterTheta[iClus2]) < TMath::Cos(vClusterTheta[iClus1])*TMath::Cos(vClusterTheta[iClus1])*patchsize*6./450.)  &&  (std::abs(vClusterPhi[iClus1] - vClusterPhi[iClus2]) < patchsize*6./450.)){
-            if ( vClusterEnergy[iClus1] + vClusterEnergy[iClus2] > fTriggThresh[vClusterSupMod[iClus1]]){
-              return kTRUE;
-            }
-          }
+      if (clus->IsEMCAL()){
+        if(clus->E() > minClusE){
+          return kTRUE;
         }
       }
     }
-
   }
+
   return kFALSE;
 }
 
@@ -5505,7 +5548,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
     }
 
-
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){
@@ -5517,7 +5559,13 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         // }
         if (fSpecialSubTrigger>0 && !isMC){
           if(fNSpecialSubTriggerOptions==2){ // in case two special triggers are available
-            if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data()) && !firedTrigClass.Contains(fSpecialSubTriggerNameAdditional.Data())) isSelected = 0;
+            if (fSpecialTrigger == 13 || fSpecialTrigger == 14) {
+              if(!firedTrigClass.Contains(((TString)fSpecialSubTriggerName(0,4)).Data()) && !firedTrigClass.Contains(((TString)fSpecialSubTriggerNameAdditional(0,4)).Data())){
+                isSelected = 0;
+              }
+            } else {
+              if(!firedTrigClass.Contains(fSpecialSubTriggerName.Data()) && !firedTrigClass.Contains(fSpecialSubTriggerNameAdditional.Data())) isSelected = 0;
+            }
           } else { // standard case for just one trigger
             if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
           }
@@ -5575,20 +5623,28 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               // EG1 is the trigger with the highest threshold
               if(fNSpecialSubTriggerOptions==2){
                 // trigger rejection for EMC and DMC triggers together
-                if (fSpecialSubTriggerName.CompareTo("7EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1") == 0){
+                if ((fSpecialSubTriggerName.CompareTo("7EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1") == 0)
+                    || (fSpecialSubTriggerName.CompareTo("7EG1_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1_EGA_sw") == 0)
+                  ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
                   if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
-                } else if (fSpecialSubTriggerName.CompareTo("8EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG1") == 0){
+                } else if ((fSpecialSubTriggerName.CompareTo("8EG1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG1") == 0)
+                    || (fSpecialSubTriggerName.CompareTo("7EG1_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG1_EGA_sw") == 0)
+                  ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                   if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
                   if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
-                } else if (fSpecialSubTriggerName.CompareTo("7EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2") == 0){
+                } else if ((fSpecialSubTriggerName.CompareTo("7EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2") == 0)
+                    || (fSpecialSubTriggerName.CompareTo("7EG2_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2_EGA_sw") == 0)
+                  ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                } else if (fSpecialSubTriggerName.CompareTo("8EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG2") == 0){
+                } else if ((fSpecialSubTriggerName.CompareTo("8EG2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("8DG2") == 0)
+                    || (fSpecialSubTriggerName.CompareTo("7EG2_EGA_sw") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DG2_EGA_sw") == 0)
+                  ){
                   if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                   if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                 }
@@ -5904,7 +5960,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
         }
       }
     }
-
     //******************************************************//
     // uncomment the following lines for trigger debugging
     //   if (!fPreSelCut){
@@ -5918,8 +5973,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
-  //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
-
+  // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
   // Fill Histogram
   if(hTriggerClass){
     if (fIsSDDFired) hTriggerClass->Fill(34);
@@ -6425,7 +6479,7 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
           // cout << "accepted:" << index << "\t header " << GeneratorName.Data() << endl;
           headername = GeneratorName;
         }
-        firstindex           = firstindex + gh->NProduced();   
+        firstindex           = firstindex + gh->NProduced();
       }
     }
     else if(InputEvent->IsA()==AliAODEvent::Class()){
@@ -6445,7 +6499,7 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
           if(index >= firstindex && index <= lastindex){
             headername = GeneratorName;
           }
-          firstindex           = firstindex + gh->NProduced();   
+          firstindex           = firstindex + gh->NProduced();
         }
       }
     }
