@@ -291,10 +291,11 @@ CellEnergyVariation:                                # Cell energy shift correcti
     energyScaleFunctionName: ""                     # Name of TF1 describing factor to scale cell energy by, as a function of cell E
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
-CellTrackMatcher:                                   # Cell energy shift correction component
+CellTrackMatcherAndMIPSubtraction:                  # Cell energy shift correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    mipE: 0.290                                     # Min cell E to perform scaling on
+    EmipData: 0.2356                                # Energy to be subtracted, in case of a match, for cells in data
+    EmipMC: 0.2824                                  # Energy to be subtracted, in case of a match, for cells in MC
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection
@@ -319,7 +320,7 @@ executionOrder:
     - CellEmulateCrosstalk
     - CellEnergy
     - CellEnergyVariation
-    - CellTrackMatcher
+    - CellTrackMatcherAndMIPSubtraction
     - CellBadChannel
     - CellTimeCalib
     - CellCombineCollections

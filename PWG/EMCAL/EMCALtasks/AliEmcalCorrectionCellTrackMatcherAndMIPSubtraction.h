@@ -1,5 +1,5 @@
-#ifndef ALIEMCALCORRECTIONCELLTRACKMATCHER_H
-#define ALIEMCALCORRECTIONCELLTRACKMATCHER_H
+#ifndef ALIEMCALCORRECTIONCELLTRACKMATCHERANDMIPSUBTRACTION_H
+#define ALIEMCALCORRECTIONCELLTRACKMATCHERANDMIPSUBTRACTION_H
 
 #include "AliEmcalCorrectionComponent.h"
 
@@ -16,16 +16,18 @@ class AliVParticle;
  * @ingroup EMCALCORRECTIONFW
  * @brief Track matching of charged tracks to cells, subtracting MIP, prior to clusterization.
  *
- * Track matching of charged tracks to cells, subtracting MIP, prior to clusterization.
- *
+ * Track matching of charged tracks to cells. Once matched it will subtract the MIP energy from the cell.
+ * In case that Ecell<EmipData(MC), then energy of the cell is set to zero.
+ * This all is done prior to clusterization.
+ * 
  * @author Mike Sas, mike.sas@cern.ch, Yale
  * @date Nov 10 2020
  */
 
-class AliEmcalCorrectionCellTrackMatcher : public AliEmcalCorrectionComponent {
+class AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction : public AliEmcalCorrectionComponent {
  public:
-  AliEmcalCorrectionCellTrackMatcher();
-  virtual ~AliEmcalCorrectionCellTrackMatcher();
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction();
+  virtual ~AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction();
 
   // Sets up and runs the task
   Bool_t Initialize();
@@ -37,7 +39,8 @@ protected:
   
   Bool_t        IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
 
-  Double_t               fMipE;                           ///< Energy of MIP used to subtract from cell
+  Double_t               fEmipData;            ///< Energy of MIP used to subtract from cell, in case of data
+  Double_t               fEmipMC;              ///< Energy of MIP used to subtract from cell, in case of MC
 
   #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -51,15 +54,15 @@ protected:
   TH1          *fCellTrackMatchEafter;         //!<!Eafter distribution
 
  private:
-  AliEmcalCorrectionCellTrackMatcher(const AliEmcalCorrectionCellTrackMatcher &);               // Not implemented
-  AliEmcalCorrectionCellTrackMatcher &operator=(const AliEmcalCorrectionCellTrackMatcher &);    // Not implemented
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction(const AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction &);               // Not implemented
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction &operator=(const AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction &);    // Not implemented
 
   // Allows the registration of the class so that it is available to be used by the correction task.
-  static RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcher> reg;
+  static RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTrackMatcher, 1); // EMCal cell energy variation component
+  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 1); // EMCal cell track matcher
   /// \endcond
 };
 
-#endif /* ALIEMCALCORRECTIONCELLTRACKMATCHER_H */
+#endif /* ALIEMCALCORRECTIONCELLTRACKMATCHERANDMIPSUBTRACTION_H */

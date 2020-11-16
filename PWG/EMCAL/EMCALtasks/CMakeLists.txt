@@ -72,7 +72,7 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
-  AliEmcalCorrectionCellTrackMatcher.cxx
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
   AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
   AliEmcalCorrectionCellEmulateCrosstalk.cxx

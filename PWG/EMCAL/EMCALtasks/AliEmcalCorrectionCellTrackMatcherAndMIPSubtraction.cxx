@@ -1,7 +1,7 @@
-// AliEmcalCorrectionCellTrackMatcher
+// AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction
 //
 
-#include "AliEmcalCorrectionCellTrackMatcher.h"
+#include "AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.h"
 
 #include <iostream>
 
@@ -18,18 +18,19 @@
 
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalCorrectionCellTrackMatcher);
+ClassImp(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction);
 /// \endcond
 
 // Actually registers the class with the base class
-RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcher> AliEmcalCorrectionCellTrackMatcher::reg("AliEmcalCorrectionCellTrackMatcher");
+RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction> AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::reg("AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction");
 
 /**
  * Default constructor
  */
-AliEmcalCorrectionCellTrackMatcher::AliEmcalCorrectionCellTrackMatcher() :
-  AliEmcalCorrectionComponent("AliEmcalCorrectionCellTrackMatcher"),
-  fMipE(290.),
+AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction() :
+  AliEmcalCorrectionComponent("AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction"),
+  fEmipData(0.2356),
+  fEmipMC(0.2824),
   fEmcalTracks(0),
   fCellTrackMatchdEtadPhi(0),
   fCellNTrackMatch(0),
@@ -41,19 +42,20 @@ AliEmcalCorrectionCellTrackMatcher::AliEmcalCorrectionCellTrackMatcher() :
 /**
  * Destructor
  */
-AliEmcalCorrectionCellTrackMatcher::~AliEmcalCorrectionCellTrackMatcher()
+AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::~AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction()
 {
 }
 
 /**
  * Initialize and configure the component.
  */
-Bool_t AliEmcalCorrectionCellTrackMatcher::Initialize()
+Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Initialize()
 {
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
 
-  GetProperty("mipE", fMipE);
+  GetProperty("EmipData", fEmipData);
+  GetProperty("EmipMC", fEmipMC);
 
   return kTRUE;
 }
@@ -61,7 +63,7 @@ Bool_t AliEmcalCorrectionCellTrackMatcher::Initialize()
 /**
  * Create run-independent objects for output. Called before running over events.
  */
-void AliEmcalCorrectionCellTrackMatcher::UserCreateOutputObjects()
+void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::UserCreateOutputObjects()
 {
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
@@ -100,7 +102,7 @@ void AliEmcalCorrectionCellTrackMatcher::UserCreateOutputObjects()
 /**
  * Called before the first event to initialize the correction.
  */
-void AliEmcalCorrectionCellTrackMatcher::ExecOnce()
+void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::ExecOnce()
 {
   fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
 }
@@ -108,7 +110,7 @@ void AliEmcalCorrectionCellTrackMatcher::ExecOnce()
 /**
  * Called for each event to process the event data.
  */
-Bool_t AliEmcalCorrectionCellTrackMatcher::Run()
+Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Run()
 {
   AliEmcalCorrectionComponent::Run();
 
@@ -143,8 +145,8 @@ Bool_t AliEmcalCorrectionCellTrackMatcher::Run()
         matchedCellID = CellID;
         matched = kTRUE;
       }
-      //this doesn't always already match the correct cell, because it returns an approximate location
-      //so here we look around the track for the real match
+      //the preceding doesn't always match, because it returns an approximate location
+      //so here we look around the track to double check the match
       Double_t shiftEta;
       Double_t shiftPhi;
       if(!matched){
@@ -208,10 +210,14 @@ Bool_t AliEmcalCorrectionCellTrackMatcher::Run()
           //std::cout << "matchedCellID = " << matchedCellID << std::endl;
           //std::cout << "cell eta = " << cellEta << "\t cell phi = " << cellPhi << std::endl;
           fCellTrackMatchEbefore->Fill(ecell);
-          if (ecell > fMipE) {
-            fCaloCells->SetCell(iCell, absId, ecell-fMipE, tcell, mclabel, efrac, cellHighGain);
+          if (!fMCEvent && ecell > fEmipData) { //event is data, subtract fEmipData
+            fCaloCells->SetCell(iCell, absId, ecell-fEmipData, tcell, mclabel, efrac, cellHighGain);
             fCellNTrackMatch->Fill(1.,ecell);
-            fCellTrackMatchEafter->Fill(ecell-fMipE);
+            fCellTrackMatchEafter->Fill(ecell-fEmipData);
+          } else if (fMCEvent && ecell > fEmipMC) { //event is MC, subtract fEmipMC
+            fCaloCells->SetCell(iCell, absId, ecell-fEmipMC, tcell, mclabel, efrac, cellHighGain);
+            fCellNTrackMatch->Fill(1.,ecell);
+            fCellTrackMatchEafter->Fill(ecell-fEmipMC);
           } else {
             fCaloCells->SetCell(iCell, absId, 0, tcell, mclabel, efrac, cellHighGain);
             fCellNTrackMatch->Fill(2.,ecell);
@@ -232,7 +238,7 @@ Bool_t AliEmcalCorrectionCellTrackMatcher::Run()
  * @param[in] edges Size of the edges in \f$\phi\f$ excluded from the EMCAL acceptance
  * @return True if a particle is inside the EMCAL acceptance, false otherwise
  */
-Bool_t AliEmcalCorrectionCellTrackMatcher::IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges) const
+Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges) const
 {
   
   if (!fGeom) {
