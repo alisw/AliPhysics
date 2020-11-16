@@ -69,8 +69,8 @@
 // #pragma link C++ class AliAnaConvCorrPhoton+;
 // #pragma link C++ class AliAnalysisTaskdPhi+;
 // #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
-// #pragma link C++ class AliPrimaryPionSelector+;
-// #pragma link C++ class AliPrimaryPionCuts+;
+#pragma link C++ class AliPrimaryPionSelector+;
+#pragma link C++ class AliPrimaryPionCuts+;
 // #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 
 #endif
