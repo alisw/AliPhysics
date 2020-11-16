@@ -198,11 +198,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
   fHistInvMass =
       new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96, 3.05, 100, 0, 10);
 
+  fHistDecVertexRes =
+      new TH1D("fHistDecVertexRes", "; Resoultion(cm); Counts", 40, -1, 1);
   fListHist->Add(fHistNSigmaDeu);
   fListHist->Add(fHistNSigmaP);
   fListHist->Add(fHistNSigmaPi);
-
   fListHist->Add(fHistInvMass);
+  fListHist->Add(fHistDecVertexRes);
 
   OpenFile(2);
   fTreeHyp3 = new TTree("Hyp3O2", "Hypetriton 3 Body with the O2 Vertexer");
@@ -563,7 +565,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
       int piIndex = isPiPositive ? deuPiV0.GetPindex() : deuPiV0.GetNindex();
       int deuIndex = isPiPositive ? deuPiV0.GetNindex() : deuPiV0.GetPindex();
 
-
       auto piTrack = deuPiTracks[isPiPositive][1][piIndex];
       auto deuTrack = deuPiTracks[1 - isPiPositive][0][deuIndex];
 
@@ -577,7 +578,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         auto secondPiTrack = isSecondPiPositive ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
         if (piTrack != secondPiTrack) // require common pion
           continue;
-        
 
         int prIndex = isPiPositive ? prPiV0.GetNindex() : prPiV0.GetPindex();
         auto prTrack = prPiTracks[1 - isPiPositive][0][prIndex];
@@ -591,7 +591,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
           continue;
 
         if (prPiTracks[1 - isPiPositive][0].size() < prIndex)
-          continue;  
+          continue;
+
+        // std::cout << prPiTracks[1 - isPiPositive][0].size() << "   " << prIndex << std::endl;
 
         if (!acceptTracks(tracks))
           continue;
@@ -601,13 +603,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         prPiV0.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
         deuPiV0.GetVertex().GetCovarianceMatrix(firstCov);
         prPiV0.GetVertex().GetCovarianceMatrix(secondCov);
-        double vert[3];
-        constexpr int covIndex[3]{0, 3, 5};
+        double vert[3], sigmaVert[3];
+        constexpr int covIndex[3]{0, 2, 5};
         for (int i{0}; i < 3; ++i)
         {
           vert[i] = (firstXYZ[i] / firstCov[covIndex[i]] + secondXYZ[i] / secondCov[covIndex[i]]) / (1. / firstCov[covIndex[i]] + 1. / secondCov[covIndex[i]]);
+          sigmaVert[i] = TMath::Sqrt(1./(1./(firstCov[covIndex[i]]*firstCov[covIndex[i]]) + 1./(secondCov[covIndex[i]]*secondCov[covIndex[i]])));
         }
-        decayVtx.SetCoordinates(vert[0], vert[1], vert[2]);
 
         std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTPC(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(tracks[2], kAliPID[2])};
         std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTOF(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(tracks[2], kAliPID[2])};
@@ -630,9 +632,25 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.candidates = 3;
 
         double deuPos[3], proPos[3], piPos[3];
+
+        // AliESDVertex 
+        for (int i = 0; i < 3; i++)
+        {
+          tracks[i]->PropagateToDCA(fEventCuts.GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
+        }
+
         tracks[0]->GetXYZ(deuPos);
         tracks[1]->GetXYZ(proPos);
         tracks[2]->GetXYZ(piPos);
+
+        if (fMC && IsTrueHyperTriton3Candidate(tracks[0], tracks[1], tracks[2], mcEvent) >= 0)
+        {
+          int lab = std::abs(tracks[0]->GetLabel());
+          if (!mcEvent->IsSecondaryFromWeakDecay(lab))
+            continue;
+          AliVParticle *part = mcEvent->GetTrack(lab);
+          fHistDecVertexRes->Fill(vert[0] - part->Xv() + vert[1] - part->Yv() + vert[2] - part->Zv());
+        }
 
         doubleV0sRecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
         if (doubleV0sRecHyp.dca_de_pr > fMaxTrack2TrackDCA[0])
@@ -640,22 +658,24 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
         if (doubleV0sRecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
           continue;
+
         doubleV0sRecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
         if (doubleV0sRecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
+          continue;
+
+        doubleV0sRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
+        if (doubleV0sRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
+          continue;
+
+        doubleV0sRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
+        if (doubleV0sRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
           continue;
 
         doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
         if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
           continue;
-        doubleV0sRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
-          continue;
-        doubleV0sRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
-          continue;
 
         doubleV0sRecHyp.chi2 = 0.;
-        fCounter++;
 
         if (!fillTreeInfo(tracks, nSigmasTPC, nSigmasTOF))
           continue;
@@ -900,8 +920,10 @@ int AliAnalysisTaskHypertriton3::CheckPionCharge(std::vector<AliESDtrack *> trac
   v0.GetPPxPyPz(pP[0], pP[1], pP[2]);
   v0.GetNPxPyPz(nP[0], nP[1], nP[2]);
   int isPiPositive = -1;
-  isPiPositive = (tracks[1][1].size() - 1 < int(v0.GetPindex())) ? 0 : -1;
-  isPiPositive = (tracks[0][1].size() - 1 < int(v0.GetNindex())) ? 1 : -1;
+  if (tracks[1][1].size() <= int(v0.GetPindex()) && tracks[0][1].size() <= int(v0.GetNindex()))
+    return isPiPositive;
+  isPiPositive = (tracks[1][1].size() <= int(v0.GetPindex())) ? 0 : -1;
+  isPiPositive = (tracks[0][1].size() <= int(v0.GetNindex())) ? 1 : -1;
 
   if (isPiPositive == -1)
   {
