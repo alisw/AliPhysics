@@ -3438,7 +3438,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           fhMCPi0PtTruePtRecCen   ->Fill(ptPrim,   pt , cent, GetEventWeight()*weightPt);
           fhMCPi0PtTruePtRecDifOverPtTrueCen->Fill(pt , ratPrim, cent, GetEventWeight()*weightPt);
           
-          if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
+          if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] ) 
           {
             fhMCPi0PtTruePtRecMassCutCen->Fill(ptPrim, pt, cent, GetEventWeight()*weightPt);
             fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->Fill(pt, ratPrim, cent, GetEventWeight()*weightPt);
