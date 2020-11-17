@@ -447,7 +447,7 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
             if(fDeuteronSideband){
 
-             if(mass2 >= mean - fDeuteronSigmaLeft*sigma && mass2 <= mean + fDeuteronSigmaRight*sigma){
+             if(mass2 >= mean + fDeuteronSigmaLeft*sigma && mass2 <= mean + fDeuteronSigmaRight*sigma){
                 DeuteronParticles.push_back(*fTrack);
                 fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
               }   
@@ -467,7 +467,7 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
             
             if(fDeuteronSideband){
               
-              if(mass2 >= mean - fAntideuteronSigmaLeft*sigma && mass2 <= mean + fAntideuteronSigmaRight*sigma){
+              if(mass2 >= mean + fAntideuteronSigmaLeft*sigma && mass2 <= mean + fAntideuteronSigmaRight*sigma){
                 AntideuteronParticles.push_back(*fTrack);
                 fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
               }
@@ -485,7 +485,7 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 
 	for(int iv0 = 0;iv0<v01->GetEntriesFast();iv0++){		    // loop over all v0 candidates
 	  AliAODv0 *v0 = Event->GetV0(iv0);
-	  fFemtov0->Setv0(Event,v0);
+	  fFemtov0->Setv0(Event,v0); 
 
 	  if(fv0CutsPart5->isSelected(fFemtov0)){			    // check if the v0 candidate passes the selection criteria for particle 3
 	    Decays.push_back(*fFemtov0);				    // if so, add it to the particle buffer
@@ -569,8 +569,9 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Mean_pp(float pT){
   fit->FixParameter(2,-7.78509e+04);
   fit->FixParameter(3,2.50751e+00);
 
-  return fit->Eval(pT);
+  Double_t value = fit->Eval(pT);
   fit->Delete();
+  return value;
 
 }
 
@@ -586,8 +587,9 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Sigma_pp(float pT){
   fit->FixParameter(4,1.58122e-01);
   fit->FixParameter(5,-1.23721e-02);
 
-  return fit->Eval(pT);
+  Double_t value = fit->Eval(pT);
   fit->Delete();
+  return value;
 
 }
 
@@ -601,8 +603,9 @@ Double_t AliAnalysisTaskLeuteronAOD::GetAntideuteronMass2Mean_pp(float pT){
   fit->FixParameter(2,-1.35810e+04);
   fit->FixParameter(3,3.15295e+00);
 
-  return fit->Eval(pT);
+  Double_t value = fit->Eval(pT);
   fit->Delete();
+  return value;
 
 }
 
@@ -618,8 +621,9 @@ Double_t AliAnalysisTaskLeuteronAOD::GetAntideuteronMass2Sigma_pp(float pT){
   fit->FixParameter(4,2.06204e-01);
   fit->FixParameter(5,-1.57982e-02);
 
-  return fit->Eval(pT);
+  Double_t value = fit->Eval(pT);
   fit->Delete();
+  return value;
 
 }
 
