@@ -129,7 +129,7 @@ ClassImp(AliAnalysisTaskGenMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
     
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),  fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
 
 {
 	for(Int_t i=0;i<3;++i){ 
@@ -141,8 +141,6 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
         hNumDen[i]=0;
         hSumPt[i]=0;
         
-		
-
 		pNumDenTrue[i]=0;
 		pSumPtTrue[i]=0;
 	}
@@ -152,7 +150,7 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
 	
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
 
 {
 	for(Int_t i=0;i<3;++i){
