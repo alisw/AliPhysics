@@ -39,17 +39,16 @@ public:
 	virtual void            UserExec(Option_t* option);
 	virtual void            Terminate(Option_t* option);
     
-	void       GetGenLeadingObject();
+    Bool_t IsMCEventSelected(TObject* obj);
+	void FillHisto(const char* objkey, Double_t x);
+    
+   void       GetMeanGenUEObservables(std::vector<Double_t> &gen);
+    
+    void       GetGenLeadingObject();
 	void       GetGenUEObservables();
     
-    void       GetMeanGenUEObservables(std::vector<Double_t> &gen);
-
   //  bool       HasRecVertex();
     virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-    
-    
-    void FillHisto(const char* objkey, Double_t x);
-    
     
 	void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
 	
@@ -60,16 +59,16 @@ protected:
 
 
 private:
-    Bool_t IsMCEventSelected(TObject* obj);
+    
 	
-	AliStack*    fMCStack;                                                 //! MC stack
-	AliMCEvent*  fMC;                                               //! MC Event
+    AliMCEvent*  fMC;                                               //! MC Event
     AliInputEventHandler*    fMcHandler;  //!<!
+	AliStack*    fMCStack;                                                 //! MC stack
+	Double_t fEtaCut;
+    Double_t fPtMin;
 	TList*                  fOutputList;                                      //! output list in the root file
 
-    TString     fGenerator;
-	Double_t fEtaCut;
-	Double_t fPtMin;
+   // TString     fGenerator;
 	
 	Double_t fGenLeadPhi; 
 	Double_t fGenLeadPt;
@@ -79,27 +78,19 @@ private:
 	
     TH1I * fHistEvt;         //!<!     QA of event properties
 	TH1D * hCounter;
-	TH2D * hNumDen[3];
-	TH2D * hSumPt[3];
-	
-
-	TH1D * hPtLeadingTrue;
-
+    TH1D * hPtLeadingGenAll;
+    TH1D * hPtLeadingTrue;
+    
 	TH2D * hPtVsPtLeadingTrue[3];
 	
-	TProfile * pNumDenTrue[3];
-	
-	TProfile * pSumPtTrue[3];
+    TProfile * pNumDenTrueAll[3];
+    TProfile * pSumPtTrueAll[3];
 
+    TH2D * hNumDen[3];
+    TH2D * hSumPt[3];
 	
-	TProfile * pNumDenTrueAll[3];
-	
-	TProfile * pSumPtTrueAll[3];
-
-	
-
-
-	TH1D * hPtLeadingGenAll;
+    TProfile * pNumDenTrue[3];
+    TProfile * pSumPtTrue[3];
 
 	AliAnalysisTaskGenMcKnoUe(const AliAnalysisTaskGenMcKnoUe&);                  // not implemented
 	AliAnalysisTaskGenMcKnoUe& operator=(const AliAnalysisTaskGenMcKnoUe&);       // not implemented
