@@ -63,8 +63,13 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
+  fHistTrackSelSteps(0x0),
   fHistSelTrackPhiPt(0x0),
   fHistSelTrackChi2ClusPt(0x0),
+  fHistSelTrackDCAxyPt(0x0),
+  fHistSelTrackDCAzPt(0x0),
+  fHistSelTrackDCAxyPtAfterProp(0x0),
+  fHistSelTrackDCAzPtAfterProp(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -209,8 +214,13 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistXsecVsPtHard(0x0),
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
+  fHistTrackSelSteps(0x0),
   fHistSelTrackPhiPt(0x0),
   fHistSelTrackChi2ClusPt(0x0),
+  fHistSelTrackDCAxyPt(0x0),
+  fHistSelTrackDCAzPt(0x0),
+  fHistSelTrackDCAxyPtAfterProp(0x0),
+  fHistSelTrackDCAzPtAfterProp(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
   fHistCheckOriginRecoVsGen(0x0),
@@ -360,8 +370,14 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistXsecVsPtHard;
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
+    delete fHistTrackSelSteps;
     delete fHistSelTrackPhiPt;
     delete fHistSelTrackChi2ClusPt;
+    delete fHistSelTrackDCAxyPt;
+    delete fHistSelTrackDCAzPt;
+    delete fHistSelTrackDCAxyPtAfterProp;
+    delete fHistSelTrackDCAzPtAfterProp;
+
     delete fHistCheckOrigin;
     delete fHistCheckOriginRecoD;
     delete fHistCheckOriginRecoVsGen;
@@ -536,10 +552,37 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   
   fHistTrackEtaMultZv = new TH3F("hTrackEtaMultZv","",40,-1.,1.,30,-15.,15.,fNumOfMultBins,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistTrackEtaMultZv);
+  fHistTrackSelSteps = new TH1D("hTrackSelSteps","",16,-0.5,15.5);
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(1,"Processed");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(2,"Charge OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(3,"GetID OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(4,"filter bit clu OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(5,"TPC PID clu OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(6,"pt cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(7,"eta cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(8,"TPC chi2 cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(9,"crossed rows OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(10,"crossed/findable OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(11,"ITS chi2 cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(12,"SPD any OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(13,"DCAxy cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(14,"DCAz cut OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(15,"Kink dau OK");
+  fHistTrackSelSteps->GetXaxis()->SetBinLabel(16,"ESDtrackCuts OK");
+  fOutput->Add(fHistTrackSelSteps);
   fHistSelTrackPhiPt = new TH2F("hSelTrackPhiPt"," ; #varphi ; p_{T} (GeV/c)",180,0.,2.*TMath::Pi(),20,0.,10.);
   fOutput->Add(fHistSelTrackPhiPt);
   fHistSelTrackChi2ClusPt = new TH2F("hSelTrackChi2ClusPt"," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",20,0.,10.,160,0.,8.);
   fOutput->Add(fHistSelTrackChi2ClusPt);
+  fHistSelTrackDCAxyPt = new TH2F("hSelTrackDCAxyPt"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,100,-1.,1.);
+  fHistSelTrackDCAzPt = new TH2F("hSelTrackDCAzPt"," ; p_{T} (GeV/c) ; d_{0}^{z} (cm)",20,0.,10.,100,-1.,1.);
+  fHistSelTrackDCAxyPtAfterProp = new TH2F("hSelTrackDCAxyPtAfterProp"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,100,-1.,1.);
+  fHistSelTrackDCAzPtAfterProp = new TH2F("hSelTrackDCAzPtAfterProp"," ; p_{T} (GeV/c) ; d_{0}^{z} (cm)",20,0.,10.,100,-1.,1.);
+  fOutput->Add(fHistSelTrackDCAxyPt);
+  fOutput->Add(fHistSelTrackDCAzPt);
+  fOutput->Add(fHistSelTrackDCAxyPtAfterProp);
+  fOutput->Add(fHistSelTrackDCAzPtAfterProp);
+  
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
   Double_t maxPt=fPtBinWidth*nPtBins;
 
@@ -880,6 +923,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   //
   
   Int_t ntracks=aod->GetNumberOfTracks();
+  const AliVVertex* vtTrc = aod->GetPrimaryVertex();
+  Double_t magField  = aod->GetMagneticField();
   fVtxZ = aod->GetPrimaryVertex()->GetZ();
   fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
   Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
@@ -1001,6 +1046,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       Bool_t isCharm=AliVertexingHFUtils::IsTrackFromHadronDecay(pdgOfD,track,arrayMC);
       if(!isCharm) continue;
     }
+    Double_t d0z0[2],covd0z0[3];
+    track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
     if(IsTrackSelected(track)) status[iTr]+=1;
     
     // PID
@@ -1057,6 +1104,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     fHistTrackEtaMultZv->Fill(track->Eta(),fVtxZ,fMultiplicity);
     if(status[iTr]>0){
       fHistSelTrackPhiPt->Fill(track->Phi(),track->Pt());
+      Float_t ip[2], ipCov[3];
+      track->GetImpactParameters(ip,ipCov);
+      fHistSelTrackDCAxyPt->Fill(track->Pt(),ip[0]);
+      fHistSelTrackDCAzPt->Fill(track->Pt(),ip[1]);
+      Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
+      if(isOK){
+	fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+	fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
+      }
       fHistSelTrackChi2ClusPt->Fill(track->Pt(),track->GetTPCchi2perCluster());
     }
   }
@@ -1571,13 +1627,61 @@ void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRec
 Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   /// track selection cuts
   
+  fHistTrackSelSteps->Fill(0.);
   if(track->Charge()==0) return kFALSE;
+  fHistTrackSelSteps->Fill(1.);
   if(track->GetID()<0&&!fKeepNegID) return kFALSE;
+  fHistTrackSelSteps->Fill(2.);
   if(fFilterMask>=0){
     if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
   }
+  fHistTrackSelSteps->Fill(3.);
   if(fCutTPCSignalN>0 && track->GetTPCsignalN()<fCutTPCSignalN) return kFALSE;
+  fHistTrackSelSteps->Fill(4.);
+  Float_t minPt,maxPt;
+  fTrackCutsAll->GetPtRange(minPt,maxPt);
+  if(track->Pt()>minPt && track->Pt()<maxPt) fHistTrackSelSteps->Fill(5.);
+  Float_t minEta,maxEta;
+  fTrackCutsAll->GetEtaRange(minEta,maxEta);
+  if(track->Eta()>minEta && track->Eta()<maxEta) fHistTrackSelSteps->Fill(6.);
+  Float_t chi2cut=fTrackCutsAll->GetMaxChi2PerClusterTPC();
+  if(track->GetTPCchi2perCluster()<chi2cut) fHistTrackSelSteps->Fill(7.);
+  Float_t minCrRow=fTrackCutsAll->GetMinNCrossedRowsTPC();
+  if(track->GetTPCCrossedRows()>=minCrRow) fHistTrackSelSteps->Fill(8.);
+  Float_t cutCRovF=fTrackCutsAll->GetMinRatioCrossedRowsOverFindableClustersTPC();
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+  if (track->GetTPCNclsF()>0) ratioCrossedRowsOverFindableClustersTPC = track->GetTPCCrossedRows()/track->GetTPCNclsF();
+  if(ratioCrossedRowsOverFindableClustersTPC>cutCRovF) fHistTrackSelSteps->Fill(9.);
+  Float_t itschi2cut=fTrackCutsAll->GetMaxChi2PerClusterITS();
+  Float_t chi2PerClusterITS=-1;
+  Int_t nClustersITS = track->GetITSNcls();
+  if (nClustersITS!=0) chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+  if(chi2PerClusterITS<itschi2cut) fHistTrackSelSteps->Fill(10.);
+  if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) fHistTrackSelSteps->Fill(11.);
+  Float_t dcaxycut=fTrackCutsAll->GetMaxDCAToVertexXY();
+  Float_t dcazcut=fTrackCutsAll->GetMaxDCAToVertexZ();
+  Float_t ip[2], ipCov[3];
+  track->GetImpactParameters(ip,ipCov);
+  Float_t dcaToVertexXY = ip[0];
+  Float_t dcaToVertexZ = ip[1];
+  if(fTrackCutsAll->GetDCAToVertex2D()){
+    Float_t dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/dcaxycut/dcaxycut + dcaToVertexZ*dcaToVertexZ/dcazcut/dcazcut);
+    if(dcaToVertex<=1){
+      fHistTrackSelSteps->Fill(12.);
+      fHistTrackSelSteps->GetXaxis()->SetBinLabel(13,"DCA 2D cut OK");
+      fHistTrackSelSteps->GetXaxis()->SetBinLabel(14,"");
+    }
+  }else{
+    if (TMath::Abs(dcaToVertexXY) <= dcaxycut) fHistTrackSelSteps->Fill(12.);
+    if (TMath::Abs(dcaToVertexZ) <= dcazcut) fHistTrackSelSteps->Fill(13.);
+  }
+  if(fTrackCutsAll->GetAcceptKinkDaughters()==kFALSE){
+    AliAODVertex* av=track->GetProdVertex();
+    if(av && !(av->GetType()==AliAODVertex::kKink)) fHistTrackSelSteps->Fill(14.);
+  }
+  //
   if(!SelectAODTrack(track,fTrackCutsAll)) return kFALSE;
+  fHistTrackSelSteps->Fill(15.);
   return kTRUE;
 }
 
