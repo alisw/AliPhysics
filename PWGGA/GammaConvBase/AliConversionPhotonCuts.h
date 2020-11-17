@@ -123,6 +123,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
         kPhotonOut
     };
 
+    // todo: use unordered_map when found out how to make it work with ROOT5
+    typedef std::map<AliAODConversionPhoton*, Bool_t> TMapPhotonBool;
 
     Bool_t SetCutIds(TString cutString);
     Int_t fCuts[kNCuts];
@@ -135,7 +137,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
     void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
     void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}
- 
+
     AliConversionPhotonCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
     AliConversionPhotonCuts(const AliConversionPhotonCuts&);
     AliConversionPhotonCuts& operator=(const AliConversionPhotonCuts&);
@@ -209,6 +211,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t CosinePAngleCut(const AliConversionPhotonBase * photon, AliVEvent * event) const;
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
+
+    void RemovePhotonsWithSharedTracks(TMapPhotonBool &thePhotons) const;
+    void RemoveTooClosePhotons(TMapPhotonBool &thePhotons) const;
 
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
     UChar_t DeterminePhotonQualityTRD(AliAODConversionPhoton*, AliVEvent*);
@@ -293,7 +298,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
-    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut 
+    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut
     Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
     Int_t             fRArraySize;                          ///< Array size for the array bins of the r-dep pt cut
     Double_t*         fRArray;                              //[fRArraySize]
@@ -364,7 +369,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
-    Double_t          fminV0Dist;                           ///<
+    Double_t          fMinV0DistSquared;                    ///<
     Bool_t            fDoSharedElecCut;                     ///<
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
     Bool_t            fDoPhotonQualityRejectionCut;         ///<
@@ -450,8 +455,21 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
+    /*helper class for on-the-fly removal of elements from a std::map like container while iterating over it */
+    struct TItRemove {
+        TItRemove(TMapPhotonBool &theMap, TMapPhotonBool::iterator theIt);
+        void Remove();
+        void IncIfNotRemoved();
+
+        TMapPhotonBool           &fMap;
+        TMapPhotonBool::iterator  fIt;
+        Bool_t                    fRemoved;
+    };
+
+    void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
+
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,39)
+    ClassDef(AliConversionPhotonCuts,40)
     /// \endcond
 };
 
