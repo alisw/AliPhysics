@@ -48,12 +48,14 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusChildPt(),
       fHistDplusChildEta(),
       fHistDplusChildPhi(),
+      fHistDplusMCPDGPt(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
+      fHistDminusMCPDGPt(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -100,12 +102,14 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusChildPt(),
       fHistDplusChildEta(),
       fHistDplusChildPhi(),
+      fHistDplusMCPDGPt(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
+      fHistDminusMCPDGPt(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -343,6 +347,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         dplus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
         fHistDplusEta->Fill(dMeson->Eta());
         fHistDplusPhi->Fill(dMeson->Phi());
+        if (fIsMC) {
+          fHistDplusMCPDGPt->Fill(dMeson->Pt(),
+                                  dplus.at(dplus.size() - 1).GetMotherPDG());
+        }
         for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
           AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
           fHistDplusChildPt[iChild]->Fill(track->Pt());
@@ -354,6 +362,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         dminus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
         fHistDminusEta->Fill(dMeson->Eta());
         fHistDminusPhi->Fill(dMeson->Phi());
+        if (fIsMC) {
+          fHistDminusMCPDGPt->Fill(dMeson->Pt(),
+                                   dminus.at(dminus.size() - 1).GetMotherPDG());
+        }
         for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
           AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
           fHistDminusChildPt[iChild]->Fill(track->Pt());
@@ -508,12 +520,26 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
   fDChargedHistList->Add(fHistDplusPhi);
 
+  if (fIsMC) {
+    fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
+                                 "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+                                 250, 0, 25, 5000, 0, 5000);
+    fDChargedHistList->Add(fHistDplusMCPDGPt);
+  }
+
   fHistDminusInvMassPt = new TH2F("fHistDminusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
   fDChargedHistList->Add(fHistDminusEta);
   fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
   fDChargedHistList->Add(fHistDminusPhi);
+
+  if (fIsMC) {
+    fHistDminusMCPDGPt = new TH2F("fHistDminusMCPDGPt",
+                                  "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+                                  250, 0, 25, 5000, 0, 5000);
+    fDChargedHistList->Add(fHistDminusMCPDGPt);
+  }
 
   std::vector<TString> nameVec;
   if (fDecChannel == kDplustoKpipi) {

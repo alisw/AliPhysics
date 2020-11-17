@@ -145,12 +145,14 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDplusChildPt[5];  //!
   TH1F *fHistDplusChildEta[5]; //!
   TH1F *fHistDplusChildPhi[5]; //!
+  TH2F *fHistDplusMCPDGPt;     //!
   TH2F *fHistDminusInvMassPt;   //!
   TH1F *fHistDminusEta;         //!
   TH1F *fHistDminusPhi;         //!
   TH1F *fHistDminusChildPt[5];  //!
   TH1F *fHistDminusChildEta[5]; //!
   TH1F *fHistDminusChildPhi[5]; //!
+  TH2F *fHistDminusMCPDGPt;     //!
   
   // HF data members
   int fDecChannel;                        // HF decay channel
@@ -167,7 +169,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TString fConfigPath;                    // path to ML config file
   AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 5)
+ClassDef(AliAnalysisTaskCharmingFemto, 6)
 };
 
 #endif
