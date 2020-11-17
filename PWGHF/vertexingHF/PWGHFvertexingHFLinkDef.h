@@ -59,7 +59,6 @@
 #pragma link C++ class AliAnalysisTaskCheckEvSel;
 #pragma link C++ class AliAnalysisTaskDmesonMCPerform+;
 #pragma link C++ class AliAnalysisTaskCharmDecayTracks+;
-#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
 #pragma link C++ class AliAnalysisTaskSELc2pK0sfromAODtracks++;
 #pragma link C++ class AliAnalysisTaskSELc2eleLambdafromAODtracks+;
 #pragma link C++ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks+;
@@ -150,5 +149,12 @@
 #pragma link C++ class AliAnalysisTaskSEXic0Semileptonic+;
 #pragma link C++ class AliAnalysisTaskSELc2pKs0fromKFP+;
 #pragma link C++ class AliAnalysisTaskCheckAODdAODMatching+;
+
+
+
+/// ROOT6 tasks
+#ifdef __CLING__
+#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
+#endif
 
 #endif

@@ -35,6 +35,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Utils/O2vertexer/
 )
 
 # Sources - alphabetical order
@@ -94,7 +96,6 @@ set(SRCS
   AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskCharmDecayTracks.cxx
-  AliAnalysisTaskHFSimpleVertices.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
@@ -171,6 +172,14 @@ set(SRCS
   AliAnalysisTaskCheckAODdAODMatching.cxx
 )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(SRCS
+	  ${SRCS}
+  AliAnalysisTaskHFSimpleVertices.cxx
+  )
+endif()
+
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} IClassifierReader.h)
@@ -185,7 +194,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW KFParticle PWGTools)
+set(LIBDEPS ANALYSISalice PWGflowBase PWGPPevcharQn PWGPPevcharQnInterface TMVA vHFBDT CORRFW KFParticle PWGTools PWGLFnuclex)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

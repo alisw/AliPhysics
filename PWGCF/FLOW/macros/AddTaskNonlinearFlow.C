@@ -14,6 +14,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		Int_t			fFilterbit 		= 96,
 		Double_t	fMinPt				= 0.2,
 		Double_t	fMaxPt				= 3.0,
+                Int_t           trigger                         = 0,
+                TString         fPeriod                         = "LHC15o",
                 TString         fNtrksName                      = "Mult",
 		TString		uniqueID 			= ""
 		)
@@ -30,11 +32,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	Double_t	fDCAxy				= 0.2;
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
-	Int_t		trigger				= 1;
 	Bool_t		fLS				= false;
 	Bool_t		fNUE 				= true;
 	Bool_t		fNUA				= true;
-	TString		fPeriod 			= "";
 
 	// Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
@@ -109,7 +109,41 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			return 0;
 		}
                 */
-                TFile *inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
+                TFile *inNUA;
+
+                if (fPeriod.EqualTo("LHC15o")) {
+ 			inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
+                } else if (fPeriod.EqualTo("LHC17")) {
+                    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_MB_periods.root");
+                    } else {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_HM_periods.root");
+                    }
+                } else if (fPeriod.EqualTo("LHC15i")) {
+		    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15i_MB.root");
+                    } else {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15i_HM.root");
+                    }
+                } else if (fPeriod.EqualTo("LHC15l")) {
+		    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15l_MB.root");
+                    } else {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15l_HM.root");
+                    }
+                } else if (fPeriod.EqualTo("LHC16")) {
+		    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_MB_periods.root");
+                    } else {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_periods.root");
+                    }
+                } else if (fPeriod.EqualTo("LHC18")) {
+		    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_MB_periods.root");
+                    } else {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_allHM.root");
+                    }
+                } 
 					
 		cin_NUA->SetData(inNUA);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
@@ -117,8 +151,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	}
 	if(fNUE) {
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
-		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"):
-																		TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
+		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
 		if(!inNUE) {
 			printf("Could not open efficiency file!\n");
 			return 0;

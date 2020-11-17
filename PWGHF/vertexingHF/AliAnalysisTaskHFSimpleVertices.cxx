@@ -12,8 +12,9 @@
 #include "AliVertexingHFUtils.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
-#include "AliAnalysisTaskHFSimpleVertices.h"
 #include "AliMultSelection.h"
+#include "DCAFitterN.h"
+#include "AliAnalysisTaskHFSimpleVertices.h"
 #include <TH1F.h>
 #include <TSystem.h>
 #include <TChain.h>
@@ -113,7 +114,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMassDplus(0.),
   fMassDs(0.),
   fMassLambdaC(0.),
+  fSecVertexerAlgo(0),
   fVertexerTracks{nullptr},
+  fO2Vertexer2Prong{},
+  fO2Vertexer3Prong{},
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
@@ -538,7 +542,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     Double_t oldField=fVertexerTracks->GetFieldkG();
     if(oldField!=bzkG) fVertexerTracks->SetFieldkG(bzkG);
   }
-
+  fO2Vertexer2Prong.setBz(bzkG);
+  fO2Vertexer3Prong.setBz(bzkG);
+    
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
@@ -821,14 +827,56 @@ Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVer
 //______________________________________________________________________________
 AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx)
 {
-
-  fVertexerTracks->SetVtxStart(primvtx);
-
-  AliESDVertex* trkv = (AliESDVertex*)fVertexerTracks->VertexForSelectedESDTracks(trkArray);
-  if (trkv->GetNContributors() != trkArray->GetEntriesFast())
-    return 0x0;
+  
+  AliESDVertex* trkv =0x0;
+  // printf("------\n");
+  // for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+  //   AliExternalTrackParam *tp=(AliExternalTrackParam *)trkArray->At(jt);
+  //   printf("%f ",tp->Pt());
+  // }
+  // printf("\n");
+  if(fSecVertexerAlgo==0){
+    fVertexerTracks->SetVtxStart(primvtx);
+    trkv = (AliESDVertex*)fVertexerTracks->VertexForSelectedESDTracks(trkArray);
+    if (trkv->GetNContributors() != trkArray->GetEntriesFast()) return 0x0;
+  }else if(fSecVertexerAlgo==1){
+    o2::track::TrackParCov* o2Track[3] = {nullptr};
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      o2Track[jt] = static_cast<o2::track::TrackParCov *>((AliExternalTrackParam *)trkArray->At(jt));
+    }
+    Int_t nVert=0;
+    Double_t vertCoord[3];
+    Double_t vertCov[6];
+    Double_t vertChi2=-999.;
+    if(trkArray->GetEntriesFast()==2){
+      nVert=fO2Vertexer2Prong.process(*o2Track[0], *o2Track[1]);
+      if(nVert){
+	fO2Vertexer2Prong.propagateTracksToVertex();
+	auto vertPos = fO2Vertexer2Prong.getPCACandidate();
+	auto vertCMat = fO2Vertexer2Prong.calcPCACovMatrix().Array();
+	for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+	for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+	vertChi2 = fO2Vertexer2Prong.getChi2AtPCACandidate();
+      }
+    }else if(trkArray->GetEntriesFast()==3){
+      nVert=fO2Vertexer3Prong.process(*o2Track[0], *o2Track[1], *o2Track[2]);
+      if(nVert){
+	fO2Vertexer3Prong.propagateTracksToVertex();
+	auto vertPos = fO2Vertexer3Prong.getPCACandidate();
+	auto vertCMat = fO2Vertexer3Prong.calcPCACovMatrix().Array();
+	for(Int_t ic=0; ic<3; ic++) vertCoord[ic]=vertPos[ic];
+	for(Int_t ic=0; ic<6; ic++) vertCov[ic]=vertCMat[ic];
+	vertChi2 = fO2Vertexer3Prong.getChi2AtPCACandidate();
+      }
+    }
+    if(nVert) trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
+    //   else printf("nVert = %d\n",nVert);
+  }
+  if(!trkv) return 0x0;
   Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
   if(vertRadius2>fMaxDecVertRadius2) return 0x0;
+  //  trkv->Print("all");
+  //  printf("=============\n");
   return trkv;
 }
 //______________________________________________________________________________

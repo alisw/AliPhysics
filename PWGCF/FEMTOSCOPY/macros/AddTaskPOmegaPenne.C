@@ -56,8 +56,8 @@ AliAnalysisTaskPOmegaPenne *AddTaskPOmegaPenne(bool isMC = true,
 
 
     AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);           // V0 cuts - keep Lambda
-    Antiv0Cuts->SetCutInvMass(0.050);
-    Antiv0Cuts->SetAxisInvMassPlots(600, 0.95, 1.25);
+    // Antiv0Cuts->SetCutInvMass(0.050);
+    // Antiv0Cuts->SetAxisInvMassPlots(600, 0.95, 1.25);
 
     AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
     PosAntiv0Daug->SetCutCharge(1);

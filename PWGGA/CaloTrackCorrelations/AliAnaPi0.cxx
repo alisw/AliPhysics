@@ -113,12 +113,12 @@ fhMCPi0MassPtRecCen(0x0),    fhMCPi0MassPtTrueCen(0x0),
 fhMCPi0PtTruePtRecCen(0x0),  fhMCPi0PtTruePtRecMassCutCen(0x0),
 fhMCEtaMassPtRecCen(0x0),    fhMCEtaMassPtTrueCen(0x0),
 fhMCEtaPtTruePtRecCen(0x0),  fhMCEtaPtTruePtRecMassCutCen(0x0),
-fhMCPi0PtTruePtRecRat(0),    fhMCPi0PtTruePtRecDif(0), fhMCPi0PtRecOpenAngle(0),
-fhMCEtaPtTruePtRecRat(0),    fhMCEtaPtTruePtRecDif(0), fhMCEtaPtRecOpenAngle(0),
-fhMCPi0PtTruePtRecRatMassCut(0), fhMCPi0PtTruePtRecDifMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
-fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
-fhMCPi0PtTruePtRecDifCen(0),        fhMCEtaPtTruePtRecDifCen(0), 
-fhMCPi0PtTruePtRecDifCenMassCut(0), fhMCEtaPtTruePtRecDifCenMassCut(0),
+fhMCPi0PtTruePtRecDifOverPtTrue(0), fhMCPi0PtRecOpenAngle(0),
+fhMCEtaPtTruePtRecDifOverPtTrue(0), fhMCEtaPtRecOpenAngle(0),
+fhMCPi0PtTruePtRecDifOverPtTrueMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
+fhMCEtaPtTruePtRecDifOverPtTrueMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
+fhMCPi0PtTruePtRecDifOverPtTrueCen(0),     fhMCEtaPtTruePtRecDifOverPtTrueCen(0), 
+fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut(0), fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut(0),
 fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
 fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
@@ -1766,74 +1766,39 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCEtaPtTruePtRecMassCut[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
         outputContainer->Add(fhMCEtaPtTruePtRecMassCut[0]) ;
         
-        fhMCPi0PtTruePtRecRat = new TH2F
-        ("hMCPi0PtTruePtRecRat",
-         "Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs",
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCPi0PtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCPi0PtTruePtRecRat) ;
-        
-        fhMCPi0PtTruePtRecRatMassCut = new TH2F
-        ("hMCPi0PtTruePtRecRatCutMassCut",
-         Form("Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
-              fPi0MassWindow[0],fPi0MassWindow[1]),
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCPi0PtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCPi0PtTruePtRecRatMassCut) ;
-        
-        fhMCEtaPtTruePtRecRat = new TH2F
-        ("hMCEtaPtTruePtRecRat",
-         "Reconstructed / generated #it{p}_{T} of true #eta cluster pairs",
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCEtaPtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCEtaPtTruePtRecRat) ;
-        
-        fhMCEtaPtTruePtRecRatMassCut = new TH2F
-        ("hMCEtaPtTruePtRecRatCutMassCut",
-         Form("Reconstructed / generated #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
-              fEtaMassWindow[0],fEtaMassWindow[1]),
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCEtaPtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCEtaPtTruePtRecRatMassCut) ;
-        
-        fhMCPi0PtTruePtRecDif = new TH2F
-        ("hMCPi0PtTruePtRecDif",
-         "Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+        fhMCPi0PtTruePtRecDifOverPtTrue = new TH2F
+        ("hMCPi0PtTruePtRecDifOverPtTrue",
+         "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs",
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCPi0PtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCPi0PtTruePtRecDif) ;
+        fhMCPi0PtTruePtRecDifOverPtTrue->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PtTruePtRecDifOverPtTrue->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrue) ;
         
-        fhMCPi0PtTruePtRecDifMassCut = new TH2F
-        ("hMCPi0PtTruePtRecDifCutMassCut",
-         
-         Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut = new TH2F
+        ("hMCPi0PtTruePtRecDifOverPtTrueMassCut",
+         Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
               fPi0MassWindow[0],fPi0MassWindow[1]),
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCPi0PtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCPi0PtTruePtRecDifMassCut) ;
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} ");
+        outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueMassCut) ;
         
-        fhMCEtaPtTruePtRecDif = new TH2F
-        ("hMCEtaPtTruePtRecDif",
-         "Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
+        fhMCEtaPtTruePtRecDifOverPtTrue = new TH2F
+        ("hMCEtaPtTruePtRecDifOverPtTrue",
+         "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}  of true #eta cluster pairs",
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCEtaPtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCEtaPtTruePtRecDif) ;
+        fhMCEtaPtTruePtRecDifOverPtTrue->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPtTruePtRecDifOverPtTrue->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrue) ;
         
-        fhMCEtaPtTruePtRecDifMassCut = new TH2F
-        ("hMCEtaPtTruePtRecDifCutMassCut",
-         Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut = new TH2F
+        ("hMCEtaPtTruePtRecDifOverPtTrueCutMassCut",
+         Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
               fEtaMassWindow[0],fEtaMassWindow[1]),
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCEtaPtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCEtaPtTruePtRecDifMassCut) ;
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueMassCut) ;
       }
       
       if ( fFillAngleHisto )
@@ -1965,51 +1930,51 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtTruePtRecMassCutCen->SetZTitle("Centrality (%)");
       outputContainer->Add(fhMCEtaPtTruePtRecMassCutCen) ;
       
-      fhMCPi0PtTruePtRecDifCen = new TH3F
-      ("hMCPi0PtTruePtRecDifCen",
-       "Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+      fhMCPi0PtTruePtRecDifOverPtTrueCen = new TH3F
+      ("hMCPi0PtTruePtRecDifOverPtTrueCen",
+       "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs",
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCPi0PtTruePtRecDifCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCPi0PtTruePtRecDifCen->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCPi0PtTruePtRecDifCen->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCPi0PtTruePtRecDifCen) ;
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueCen) ;
       
-      fhMCPi0PtTruePtRecDifCenMassCut = new TH3F
-      ("hMCPi0PtTruePtRecDifCutCenMassCut",
-       Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut = new TH3F
+      ("hMCPi0PtTruePtRecDifOverPtTrueCenMassCut",
+       Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
             fPi0MassWindow[0],fPi0MassWindow[1]),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCPi0PtTruePtRecDifCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCPi0PtTruePtRecDifCenMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCPi0PtTruePtRecDifCenMassCut->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCPi0PtTruePtRecDifCenMassCut) ;
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut) ;
       
-      fhMCEtaPtTruePtRecDifCen = new TH3F
-      ("hMCEtaPtTruePtRecDifCen",
-       "Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
+      fhMCEtaPtTruePtRecDifOverPtTrueCen = new TH3F
+      ("hMCEtaPtTruePtRecDifOverPtTrueCen",
+       "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #eta cluster pairs",
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCEtaPtTruePtRecDifCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCEtaPtTruePtRecDifCen->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCEtaPtTruePtRecDifCen->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCEtaPtTruePtRecDifCen) ;
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} ");
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueCen) ;
       
-      fhMCEtaPtTruePtRecDifCenMassCut = new TH3F
-      ("hMCEtaPtTruePtRecDifCutCenMassCut",
-       Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut = new TH3F
+      ("hMCEtaPtTruePtRecDifCutOverPtTrueCenMassCut",
+       Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
             fEtaMassWindow[0],fEtaMassWindow[1]),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCEtaPtTruePtRecDifCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCEtaPtTruePtRecDifCenMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCEtaPtTruePtRecDifCenMassCut->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCEtaPtTruePtRecDifCenMassCut) ;
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut) ;
     } // High Mult, Origin
 
   } // MC data
@@ -3419,6 +3384,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   Float_t prodRcorr = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
+  Float_t ratPrim = 0;
+  if ( ptPrim > 0.1 ) ratPrim = (pt-ptPrim)/ptPrim;
   Float_t cent   = GetEventCentrality();
   Double_t vertex[3]={0.,0.,0.};
   GetVertex(vertex);
@@ -3469,12 +3436,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           fhMCPi0MassPtTrueCen    ->Fill(ptPrim, mass , cent, GetEventWeight()*weightPt);
           fhMCPi0MassPtRecCen     ->Fill(pt    , mass , cent, GetEventWeight()*weightPt);
           fhMCPi0PtTruePtRecCen   ->Fill(ptPrim,   pt , cent, GetEventWeight()*weightPt);
-          fhMCPi0PtTruePtRecDifCen->Fill(pt, pt-ptPrim, cent, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRecDifOverPtTrueCen->Fill(pt , ratPrim, cent, GetEventWeight()*weightPt);
           
           if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
           {
-            fhMCPi0PtTruePtRecMassCutCen   ->Fill(ptPrim, pt       , cent, GetEventWeight()*weightPt);
-            fhMCPi0PtTruePtRecDifCenMassCut->Fill(pt    , pt-ptPrim, cent, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecMassCutCen->Fill(ptPrim, pt, cent, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->Fill(pt, ratPrim, cent, GetEventWeight()*weightPt);
           }
         }
         else if ( fMultiCutAnaSim )
@@ -3503,16 +3470,14 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         }// Multi cut ana sim
         else
         {
-          fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-          fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRecDifOverPtTrue->Fill(pt, ratPrim, GetEventWeight()*weightPt);
           
           if ( fFillAngleHisto )
             fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
           
           if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
           {
-            fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-            fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecDifOverPtTrueMassCut->Fill(pt, ratPrim, GetEventWeight()*weightPt);
             
             if  ( fFillAngleHisto )
               fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
@@ -3731,12 +3696,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           fhMCEtaMassPtTrueCen    ->Fill(ptPrim, mass , cent, GetEventWeight()*weightPt);
           fhMCEtaMassPtRecCen     ->Fill(pt    , mass , cent, GetEventWeight()*weightPt);
           fhMCEtaPtTruePtRecCen   ->Fill(ptPrim,   pt , cent, GetEventWeight()*weightPt);
-          fhMCEtaPtTruePtRecDifCen->Fill(pt, pt-ptPrim, cent, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRecDifOverPtTrueCen->Fill(pt , ratPrim, cent, GetEventWeight()*weightPt);
           
           if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
           {
-            fhMCEtaPtTruePtRecMassCutCen   ->Fill(ptPrim, pt       , cent, GetEventWeight()*weightPt);
-            fhMCEtaPtTruePtRecDifCenMassCut->Fill(pt    , pt-ptPrim, cent, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecMassCutCen->Fill(ptPrim, pt, cent, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->Fill(pt, ratPrim, cent, GetEventWeight()*weightPt);
           }
         }
         else if ( fMultiCutAnaSim )
@@ -3766,16 +3731,14 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         } //Multi cut ana sim
         else
         {      
-          fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-          fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRecDifOverPtTrue->Fill(pt, ratPrim, GetEventWeight()*weightPt);
           
           if ( fFillAngleHisto )
             fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
           
           if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
           {
-            fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-            fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecDifOverPtTrueMassCut->Fill(pt, ratPrim, GetEventWeight()*weightPt);
             
             if ( fFillAngleHisto )
               fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);

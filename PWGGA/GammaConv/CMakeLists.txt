@@ -98,8 +98,8 @@ set(SRCS
 #     AliAnaConvCorrPhoton.cxx
 #     AliAnaConvCorrPion.cxx
 #     AliAnaConvIsolation.cxx
-#     AliPrimaryPionCuts.cxx
-#     AliPrimaryPionSelector.cxx
+    AliPrimaryPionCuts.cxx
+    AliPrimaryPionSelector.cxx
 #     AliConversionCutHandler.cxx
 #     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
 #     AliAnalysisTaskdPhi.cxx

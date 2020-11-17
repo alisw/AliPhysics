@@ -1398,6 +1398,21 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoExoticityArr(fBinsArray);
   }
   
+  if ( GetHistogramRanges()->GetHistoMassArr().GetSize() == 0 )
+  {
+    Float_t min = GetHistogramRanges()->GetHistoMassMin();
+    Float_t max = GetHistogramRanges()->GetHistoMassMax();
+    Float_t binWidth = (max - min) / GetHistogramRanges()->GetHistoMassBins();
+    
+    TCustomBinning massBinning;
+    massBinning.SetMinimum(min);
+    massBinning.AddStep(max, binWidth);  
+    
+    TArrayD massBinsArray;
+    massBinning.CreateBinEdges(massBinsArray);
+    GetHistogramRanges()->SetHistoMassArr(massBinsArray);
+  }
+  
   if ( GetHistogramRanges()->GetHistoCentralityArr().GetSize() == 0 )
     AliAnaCaloTrackCorrBaseClass::SetEventCentralityBins();
 }

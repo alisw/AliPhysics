@@ -685,7 +685,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       double nP[3] = {v0->MomNegX(), v0->MomNegY(), v0->MomNegZ()};
       lKeyPos = std::abs(v0->GetPosID());
       lKeyNeg = std::abs(v0->GetNegID());
-
       Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
       if (!isFilled)
         continue;
@@ -783,7 +782,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  if (fRHyperTriton.size() != 0 || fStoreAllEvents)
+  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents)
     fTreeV0->Fill();
 
   PostData(1, fListHist);

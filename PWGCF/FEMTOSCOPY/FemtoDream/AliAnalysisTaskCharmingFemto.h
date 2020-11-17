@@ -27,6 +27,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     kDplustoKpipi
   };
 
+  enum CollSystem
+  {
+    kpp5TeV,
+    kpp13TeV
+  };
+
   AliAnalysisTaskCharmingFemto();
   AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
   virtual ~AliAnalysisTaskCharmingFemto();
@@ -55,6 +61,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
+  }
+  void SetSystem(int system) {
+    fSystem = system;
   }
 
   // HF related setters
@@ -114,6 +123,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsMC;              //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
+  int fSystem;             //
 
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;
@@ -157,7 +167,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TString fConfigPath;                    // path to ML config file
   AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 4)
+ClassDef(AliAnalysisTaskCharmingFemto, 5)
 };
 
 #endif
