@@ -131,9 +131,6 @@ void AliAnalysisTaskLumiStabi::UserCreateOutputObjects()
 //  tOutput ->Branch("fCentrality", &fCentrality);
 //  fOutputList->Add(tOutput);
 
-  const Int_t STARTRUN = 240000;
-  const Int_t ENDRUN = 300000;
-
   hDummyCounter = new TH1I("hDummyCounter","Number of events per run",ENDRUN-STARTRUN,STARTRUN,ENDRUN);
   fOutputList->Add(hDummyCounter);
 
@@ -198,7 +195,8 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
 
   fRunNumber = event->GetRunNumber();
   fL0inputs = event->GetHeader()->GetL0TriggerInputs();
-  Int_t inputV0M = 7; //V0M in Pb-Pb
+  Int_t inputV0M = 7; //V0M in Pb-Pb 2018
+  if (fRunNumber >  244640 && fRunNumber  < 247173) inputV0M = 4; //V0M in Pb-Pb 2015
   if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
 //   fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
   fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
