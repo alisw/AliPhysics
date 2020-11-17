@@ -25,7 +25,7 @@ class AliFemtoDreamBasePart {
                         const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
   AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson, const AliAODEvent *aod,
-                        int nChildren, unsigned int *pdg);
+                        const int pdgParent, std::vector<unsigned int> &pdg);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
@@ -33,7 +33,8 @@ class AliFemtoDreamBasePart {
     kMaterial = 2,
     kFake = 3,
     kContamination = 4,
-    kUnknown = 5
+    kUnknown = 5,
+    kBeauty = 6
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
   void SetMCParticleRePart(AliAODMCParticle *mcPart);
