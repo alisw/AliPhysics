@@ -317,11 +317,6 @@ void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
   fMainList = (TList*)GetOutputData(1);
   if (!fMainList) {Fatal(sMethod.Data(), "ERROR: fMainList not found.");}
 
-// 2. Create the output file and save inside the mother list.
-  TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
-  fMainList->Write(fMainList->GetName(), TObject::kSingleKey);
-  delete outputFile;
-
 } // End: void Terminate(Option_t *).
 
 /* ========================================================================================== /
