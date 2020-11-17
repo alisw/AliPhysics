@@ -340,7 +340,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
-        dplus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
+        dplus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
         fHistDplusEta->Fill(dMeson->Eta());
         fHistDplusPhi->Fill(dMeson->Phi());
         for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
@@ -351,7 +351,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
       else {
-        dminus.push_back( { dMeson, fInputEvent, (int)fDmesonPDGs.size(), &fDmesonPDGs[0] });
+        dminus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
         fHistDminusEta->Fill(dMeson->Eta());
         fHistDminusPhi->Fill(dMeson->Phi());
         for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
