@@ -8,6 +8,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 		const Int_t CenMax = 10,
 		const Int_t Nmix   = 10,
 		const Bool_t applyPairCut = kTRUE,
+    const Int_t pileupcut = 1,
 		const TString outname = "LMEE.root",
 		const Bool_t isMC = kFALSE,
 		const TString suffix=""
@@ -153,7 +154,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 
 		//if(rootfile && rootfile->IsOpen()) rootfile->Close();
 
-		task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
+		task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,pileupcut,"V0M"))));//kTRUE is for Run2
 
 		mgr->AddTask(task);
 

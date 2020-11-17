@@ -27,7 +27,7 @@ class LMEECutLib {
 		}
 
 		//define cut configuration
-		static AliDielectronEventCuts *SetupEventCuts(Float_t CenMin, Float_t CenMax, Bool_t isRun2, TString estimator){
+		static AliDielectronEventCuts *SetupEventCuts(Float_t CenMin, Float_t CenMax, Bool_t isRun2, Int_t pileupcut, TString estimator){
 			AliDielectronEventCuts *eventCuts = new AliDielectronEventCuts("eventCuts","Vertex Any && |vtxZ|<10 && ncontrib>0");
 			eventCuts->SetRequireVertex(kTRUE);
 			eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
@@ -38,6 +38,29 @@ class LMEECutLib {
 				eventCuts->SetCentralityEstimator(estimator);
 				eventCuts->SetCentralityRange(CenMin,CenMax,isRun2);
 			}
+
+      if(pileupcut==0){
+        //accept all event
+      }
+      else if(pileupcut==1){//analyze only clean event
+        TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+        f1min->SetNpx(1000);
+        f1min->FixParameter(0,-3000);
+        f1min->FixParameter(1,0.0099);
+        f1min->FixParameter(2,9.42e-10);
+        eventCuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+        eventCuts->Print();
+      }
+      else if(pileupcut==2){//analyze only events with pileup
+        TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+        f1min->SetNpx(1000);
+        f1min->FixParameter(0,-3000);
+        f1min->FixParameter(1,0.0099);
+        f1min->FixParameter(2,9.42e-10);
+        eventCuts->SetMaxCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+        eventCuts->Print();
+      }
+
 			return eventCuts;
 		}
 

@@ -6,6 +6,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
     const Bool_t applyPairCut = kTRUE,
+    const Int_t pileupcut = 1,
     const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
     const std::string resolutionFilename ="",
     const std::string cocktailFilename   ="",
@@ -60,7 +61,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
-  task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
+  task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,pileupcut,"V0M"))));//kTRUE is for Run2
   //task->SetCentralityEstimator("V0M");
   //task->SetCentrality(CenMin, CenMax);
 
