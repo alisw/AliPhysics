@@ -608,7 +608,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         for (int i{0}; i < 3; ++i)
         {
           vert[i] = (firstXYZ[i] / firstCov[covIndex[i]] + secondXYZ[i] / secondCov[covIndex[i]]) / (1. / firstCov[covIndex[i]] + 1. / secondCov[covIndex[i]]);
-          sigmaVert[i] = TMath::Sqrt(1./(1./(firstCov[covIndex[i]]*firstCov[covIndex[i]]) + 1./(secondCov[covIndex[i]]*secondCov[covIndex[i]])));
+          sigmaVert[i] = TMath::Sqrt(1. / (1. / (firstCov[covIndex[i]] * firstCov[covIndex[i]]) + 1. / (secondCov[covIndex[i]] * secondCov[covIndex[i]])));
+        }
+        double sumCov[6];
+        for (int i{0}; i < 6; ++i)
+        {
+          sumCov[i] = firstCov[i] + secondCov[i];
         }
 
         std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTPC(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(tracks[2], kAliPID[2])};
@@ -633,10 +638,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
 
         double deuPos[3], proPos[3], piPos[3];
 
-        // AliESDVertex 
+        // AliESDVertex
+        AliESDVertex *decESDVtx = new AliESDVertex(vert, sigmaVert, "vert");
+
         for (int i = 0; i < 3; i++)
         {
-          tracks[i]->PropagateToDCA(fEventCuts.GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
+          tracks[i]->PropagateToDCA(decESDVtx, esdEvent->GetMagneticField(), 25.);
         }
 
         tracks[0]->GetXYZ(deuPos);
@@ -674,8 +681,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
         if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
           continue;
+        
+        doubleV0sRecHyp.cosPA_Lambda = prPiV0.GetV0CosineOfPointingAngle();
+        doubleV0sRecHyp.chi2 = prPiV0.GetChi2V0() + deuPiV0.GetChi2V0();
 
-        doubleV0sRecHyp.chi2 = 0.;
+        for (int i = 0; i < 3; i++)
+        {
+          tracks[i]->PropagateToDCA(esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
+        }
 
         if (!fillTreeInfo(tracks, nSigmasTPC, nSigmasTOF))
           continue;
@@ -795,6 +808,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               o2RecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
               if (o2RecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
                 continue;
+              
+              std::cout << "DCAdepi: " << o2RecHyp.dca_de_pi << std::endl;
+
               o2RecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
               if (o2RecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
                 continue;
