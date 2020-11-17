@@ -1961,11 +1961,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
     if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
       fCaloTriggerMimicHelper[iCut] = NULL;
-      fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
-      if(fCaloTriggerMimicHelper[iCut]){
-        if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
-          fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
-          fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+      if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetTriggerMimicking() > 0){
+        fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+        if(fCaloTriggerMimicHelper[iCut]){
+          if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
+            fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
+            fOutputContainer->Add(fCaloTriggerMimicHelper[iCut]->GetTriggerMimicHelperHistograms());
+          }
         }
       }
     }
@@ -5435,7 +5437,9 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
               fHistoGoodMesonClusters[fiCut]->Fill(1); //"All Meson Candidates"
               if ( !(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) ){
                 fHistoGoodMesonClusters[fiCut]->Fill(3); //"Cluster Not Triggered"
-                continue;
+                if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetTriggerMimicking() != 4) {
+                    continue;
+                }
               }
               fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
               Int_t ClusterIDIsInBadDDL;

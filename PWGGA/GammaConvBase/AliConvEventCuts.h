@@ -537,12 +537,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
       Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
       Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
-
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       const TString& GetLabelNamePileupCutTPC() const                               { return fLabelNamePileupCutTPC                             ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
       phosTriggerType GetPHOSTrigger()                                              { return fPHOSTrigger                                       ; }
+      Int_t    GetTriggerMimicking()                                                { return fMimicTrigger                                      ; }
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
