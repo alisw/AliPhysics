@@ -470,18 +470,6 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
-	//..phi weight: it is done run-by-run, the histograms are obtained in GetWeight() function
-	//    default
-  /*
-	fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR.root");
-	//    for systematics
-	if(fFilterbit == 768) fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR_FB768.root");
-
-	//    default
-	fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root");
-	// for systematics
-	if(fFilterbit == 768) fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
-  */
 
 	// Physics profiles
 	//	NL response
@@ -1002,9 +990,6 @@ int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-
-	double weight = 1;
-  return weight;
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
 	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
@@ -1028,12 +1013,13 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
 {
-	double weight = 1;
-	return weight;
-	hPhiWeightRun = (TH3F*)fPhiWeight->Get(Form("fPhiWeight_%0.lf", runNumber));
+	TList* weights_list = dynamic_cast<TList*>(fPhiWeight->Get("weights"));
+	TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
+	TH2D* hPhiWeightRun = dynamic_cast<TList*>(averaged_list->FindObject("Charged"));
+
 	weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
-			hPhiWeightRun->GetYaxis()->FindBin(eta),
-			hPhiWeightRun->GetZaxis()->FindBin(vz));
+			hPhiWeightRun->GetYaxis()->FindBin(eta));
+			// , hPhiWeightRun->GetZaxis()->FindBin(vz));
 	return weight;
 }
 //_____________________________________________________________________________
