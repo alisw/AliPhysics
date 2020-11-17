@@ -7219,7 +7219,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 //        fhMC2Pt    [kmcPhoton] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
 //        fhMCDeltaPt[kmcPhoton] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
-        if ( fFillPrimaryMCAcceptanceHisto )
+        if ( fFillPrimaryMCAcceptanceHisto && fhMCEta[kmcPhoton] )
         {
           fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster, GetEventWeight()*weightPt);
           fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster, GetEventWeight()*weightPt);
@@ -7238,7 +7238,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 //          fhMC2Pt    [kmcConversion] ->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
 //          fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
           
-          if ( fFillPrimaryMCAcceptanceHisto )
+          if ( fFillPrimaryMCAcceptanceHisto && fhMCEta[kmcConversion] )
           {
             fhMCPhi[kmcConversion] ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
             fhMCEta[kmcConversion] ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
@@ -7391,7 +7391,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       //printf("mcParticleTag %d\n",mcParticleTag);
       //if ( mcParticleTag >= 0) printf("\t %p \n",fhMCE[mcParticleTag]);
       
-      if ( mcParticleTag >= 0 && fNOriginHistograms )//&& fhMCPt[mcParticleTag] )
+      if ( mcParticleTag >= 0 && mcParticleTag < fNOriginHistograms )//&& fhMCPt[mcParticleTag] )
       {
 //        if ( !fFillOnlyPtHisto )
 //        {
@@ -7404,7 +7404,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 //        fhMC2Pt    [mcParticleTag]->Fill(ptcluster, ptprim, GetEventWeight()*weightPt);
 //        fhMCDeltaPt[mcParticleTag]->Fill(ptcluster, ptprim-ptcluster, GetEventWeight()*weightPt);
         
-        if ( fFillPrimaryMCAcceptanceHisto )
+        if ( fFillPrimaryMCAcceptanceHisto && fhMCEta[mcParticleTag] )
         {
           fhMCPhi    [mcParticleTag]->Fill(ecluster,  phicluster, GetEventWeight()*weightPt);
           fhMCEta    [mcParticleTag]->Fill(ecluster,  etacluster, GetEventWeight()*weightPt);
