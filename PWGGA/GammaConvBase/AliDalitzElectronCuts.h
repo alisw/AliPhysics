@@ -169,10 +169,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   GetUseElectronMCSmearing(){ return fUseElectronMCPSmearing;}
 
   // Post Calibration functions
-  void SetDoElecDeDxPostCalibrationPrimaryPair(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibrationPrimaryPair=k;}
-  Int_t GetDoElecDeDxPostCalibrationPrimaryPair() {return fDoElecDeDxPostCalibrationPrimaryPair;}
-  //void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
-  //Bool_t InitializeElecDeDxPostCalibrationPrimaryPair(TString filename);
+  void SetDoElecDeDxPostCalibrationPrimaryPair(Bool_t k=kTRUE){fDoElecDeDxPostCalibrationPrimaryPair=k;}
+  Int_t GetDoElecDeDxPostCalibrationPrimaryPair(){return fDoElecDeDxPostCalibrationPrimaryPair;}
   Bool_t LoadElecDeDxPostCalibrationPrimaryPair(Int_t runNumber);
   Double_t GetCorrectedElectronTPCResponsePrimaryPair(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
   void ForceTPCRecalibrationAsFunctionOfConvRPrimaryPair(){fIsRecalibDepTPCClPrimaryPair = kFALSE;}
@@ -238,7 +236,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   fUseElectronMCPSmearing;
   Bool_t   fDoElecDeDxPostCalibrationPrimaryPair; //flg to use Post Calibration on primary Pair.
   Bool_t   fIsRecalibDepTPCClPrimaryPair;  //flg that always is kTRUE
-  Bool_t   fElecDeDxPostCalibrationInitializedPrimaryPair;  ///< flag to check that initialization worked
   Int_t    fRecalibCurrentRunPrimaryPair;                   ///< runnumber for correct loading of recalib from OADB
   Int_t    fnRBinsPrimaryPair;                              //
 
