@@ -593,8 +593,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         if (prPiTracks[1 - isPiPositive][0].size() < prIndex)
           continue;
 
-        // std::cout << prPiTracks[1 - isPiPositive][0].size() << "   " << prIndex << std::endl;
-
         if (!acceptTracks(tracks))
           continue;
 
@@ -808,8 +806,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               o2RecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
               if (o2RecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
                 continue;
-              
-              std::cout << "DCAdepi: " << o2RecHyp.dca_de_pi << std::endl;
 
               o2RecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
               if (o2RecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
