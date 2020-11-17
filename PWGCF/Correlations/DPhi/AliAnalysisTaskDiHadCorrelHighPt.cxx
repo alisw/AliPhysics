@@ -880,6 +880,8 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fAliEventCuts = new AliEventCuts();
     fAliEventCuts->AddQAplotsToList(fOutputList,kTRUE);
     fAliEventCuts->SetupRun2pp();
+    if(fhighMult) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,kTRUE);
+    if(fhighMultSPD) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,kTRUE);
 
     PostData(1, fOutputList);   // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
