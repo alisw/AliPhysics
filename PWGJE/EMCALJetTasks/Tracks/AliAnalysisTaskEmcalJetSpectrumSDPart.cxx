@@ -408,7 +408,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
         if(fDoSoftDrop) {
             if(j->GetNumberOfTracks() > 1 && j->M() > 0) { // Temporary condition to prevent a crash in the declustering due to 0 jet mass
                 try {
-                    auto sdparams = this->MakeSoftdrop(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex, fDropMass0Jets);
+                    auto sdparams = this->MakeSoftdropStandAlone(*j, jets->GetJetRadius(), true, sdsettings, AliVCluster::VCluUserDefEnergy_t::kNonLinCorr, vertex, fDropMass0Jets);
                     bool untagged = sdparams.fZg < sdsettings.fZcut;
                     std::vector<SoftdropResults> splittings;
                     if(!untagged) {
