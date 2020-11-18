@@ -2,9 +2,9 @@
 #include <AliAODInputHandler.h>
 
 TString TrackCutnames[] = {
- "ResolutionTrackCuts"
+ //"ResolutionTrackCuts"
  //,"DefaultTrackCut_Nsc0"
- ,"DefaultTrackCut_Nsc01"
+ "DefaultTrackCut_Nsc01"
 //,"LooseTrackCut"
 //,"TightTrackCut"
 //,"PIDCalibTrackCut"
@@ -13,14 +13,14 @@ const Int_t nTC = sizeof(TrackCutnames)/sizeof(TrackCutnames[0]);
 Int_t GetNTC(){return nTC;}
 
 TString PIDnames[] = {
- "noPID"
- ,"DefaultPID"
- ,"ITSTPChadrejORTOFrec"
+// ,"DefaultPID"
+// ,"ITSTPChadrejORTOFrec"
 // ,"ITSTPChadrej"
 // ,"ITSTOFrecover"
- ,"TPChadrejORTOFrec"
+ "TPChadrejORTOFrec"
 // ,"TPChadrej"
 // ,"TOFrecover"
+ ,"noPID"
 };
 const Int_t nPID = sizeof(PIDnames)/sizeof(PIDnames[0]);
 Int_t GetNPID(){return nPID;}
@@ -47,7 +47,6 @@ AliAnalysisFilter *Config_dsekihat_ElectronEfficiencyV2_PbPb(
 {
 
   TString name = Form("%s_%s_%s",TrackCutnames[cutDefinitionTC].Data(),PIDnames[cutDefinitionPID].Data(),PFnames[cutDefinitionPF].Data());
-
   Bool_t isAOD = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
   printf("isAOD = %d\n",isAOD);
 
