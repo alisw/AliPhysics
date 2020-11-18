@@ -35,6 +35,10 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
+#include "TFile.h"
+#include "AliLog.h"
+#include "AliOADBContainer.h"
+#include "AliDataFile.h"
 #include "TMath.h"
 #include "AliMCEvent.h"
 #include "TObjString.h"
@@ -131,6 +135,114 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fDoWeights(kFALSE),
   fUseVPhotonMCPSmearing(kFALSE),
   fUseElectronMCPSmearing(kFALSE),
+  fDoElecDeDxPostCalibrationPrimaryPair(kFALSE),
+  fIsRecalibDepTPCClPrimaryPair(kTRUE),
+  fRecalibCurrentRunPrimaryPair(-1),
+  fnRBinsPrimaryPair(4),
+  fHistoEleMapRecalibPrimaryPair(NULL),
+  fHistoPosMapRecalibPrimaryPair(NULL),
+  fCutString(NULL),
+  fCutStringRead(""),
+  hCutIndex(NULL),
+  hdEdxCuts(NULL),
+  hITSdEdxbefore(NULL),
+  hITSdEdxafter(NULL),
+  hTPCdEdxbefore(NULL),
+  hTPCdEdxafter(NULL),
+  hTPCdEdxSignalbefore(NULL),
+  hTPCdEdxSignalafter(NULL),
+  hTOFbefore(NULL),
+  hTOFafter(NULL),
+  hTrackDCAxyPtbefore(NULL),
+  hTrackDCAxyPtafter(NULL),
+  hTrackDCAzPtbefore(NULL),
+  hTrackDCAzPtafter(NULL),
+  hTrackNFindClsPtTPCbefore(NULL),
+  hTrackNFindClsPtTPCafter(NULL),
+  hTrackPosEtabeforeDedx(NULL),
+  hTrackNegEtabeforeDedx(NULL),
+  hTrackPosEtaafterDedx(NULL),
+  hTrackNegEtaafterDedx(NULL)
+{
+    InitPIDResponse();
+    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
+    fCutString=new TObjString((GetCutNumber()).Data());
+    // fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+    // Using standard function for setting Cuts
+
+    Bool_t selectPrimaries=kFALSE;
+    fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    fHistoEleMapRecalibPrimaryPair = new TH2S*[fnRBinsPrimaryPair];
+    fHistoPosMapRecalibPrimaryPair = new TH2S*[fnRBinsPrimaryPair];
+
+    for (Int_t i = 0; i < fnRBinsPrimaryPair; i++) {
+        fHistoEleMapRecalibPrimaryPair[i] = NULL;
+        fHistoPosMapRecalibPrimaryPair[i] = NULL;
+    }
+}
+//________________________________________________________________
+AliDalitzElectronCuts::AliDalitzElectronCuts(const AliDalitzElectronCuts &ref) :
+  AliAnalysisCuts(ref),
+  fHistograms(NULL),
+  fPIDResponse(NULL),
+  fesdTrackCuts(NULL),
+  fEtaCut(ref.fEtaCut),
+  fDoEtaCut(ref.fDoEtaCut),
+  fPtMinCut(ref.fPtMinCut),
+  fPtMaxCut(ref.fPtMinCut),
+  fRadiusCut(ref.fRadiusCut),
+  fPsiPairCut(ref.fPsiPairCut),
+  fDeltaPhiCutMin(ref.fDeltaPhiCutMin),
+  fDeltaPhiCutMax(ref.fDeltaPhiCutMax),
+  fMaxDCAVertexz(ref.fMaxDCAVertexz),
+  fMaxDCAVertexxy(ref.fMaxDCAVertexxy),
+  fDCAVertexPt(ref.fDCAVertexPt),
+  fMinClsTPC(ref.fMinClsTPC), // minimum clusters in the TPC
+  fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
+  fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
+  fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
+  fDoTOFsigmaCut(ref.fDoTOFsigmaCut), // RRnewTOF
+  fDoRejectSharedElecGamma(ref.fDoRejectSharedElecGamma),
+  fDoPsiPairCut(ref.fDoPsiPairCut),
+  fPIDnSigmaAboveElectronLineITS(ref.fPIDnSigmaAboveElectronLineITS),
+  fPIDnSigmaBelowElectronLineITS(ref.fPIDnSigmaBelowElectronLineITS),
+  fPIDnSigmaAboveElectronLineTPC(ref.fPIDnSigmaAboveElectronLineTPC),
+  fPIDnSigmaBelowElectronLineTPC(ref.fPIDnSigmaBelowElectronLineTPC),
+  fPIDnSigmaAbovePionLineTPC(ref.fPIDnSigmaAbovePionLineTPC),
+  fPIDnSigmaAbovePionLineTPCHighPt(ref.fPIDnSigmaAbovePionLineTPCHighPt),
+  fTofPIDnSigmaAboveElectronLine(ref.fTofPIDnSigmaAboveElectronLine), // RRnewTOF
+  fTofPIDnSigmaBelowElectronLine(ref.fTofPIDnSigmaBelowElectronLine), // RRnewTOF
+  fPIDMinPnSigmaAbovePionLineTPC(ref.fPIDMinPnSigmaAbovePionLineTPC),
+  fPIDMaxPnSigmaAbovePionLineTPC(ref.fPIDMaxPnSigmaAbovePionLineTPC),
+  fDoKaonRejectionLowP(ref.fDoKaonRejectionLowP),
+  fDoProtonRejectionLowP(ref.fDoProtonRejectionLowP),
+  fDoPionRejectionLowP(ref.fDoPionRejectionLowP),
+  fPIDnSigmaAtLowPAroundKaonLine(ref.fPIDnSigmaAtLowPAroundKaonLine),
+  fPIDnSigmaAtLowPAroundProtonLine(ref.fPIDnSigmaAtLowPAroundProtonLine),
+  fPIDnSigmaAtLowPAroundPionLine(ref.fPIDnSigmaAtLowPAroundPionLine),
+  fPIDMinPKaonRejectionLowP(ref.fPIDMinPKaonRejectionLowP),
+  fPIDMinPProtonRejectionLowP(ref.fPIDMinPProtonRejectionLowP),
+  fPIDMinPPionRejectionLowP(ref.fPIDMinPPionRejectionLowP),
+  fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
+  fUseCrossedRows(ref.fUseCrossedRows),
+  fITSCut(ref.fITSCut),
+  fUseTOFpid(ref.fUseTOFpid),
+  fRequireTOF(ref.fRequireTOF),
+  fDoMassCut(ref.fDoMassCut),
+  fDoMassMinCut(ref.fDoMassMinCut),
+  fMassCutLowPt(ref.fMassCutLowPt),
+  fMassCutHighPt(ref.fMassCutHighPt),
+  fMassCutPtMin(ref.fMassCutPtMin),
+  fMassMinCut(ref.fMassMinCut),
+  fDoWeights(ref.fDoWeights),
+  fUseVPhotonMCPSmearing(ref.fUseVPhotonMCPSmearing),
+  fUseElectronMCPSmearing(ref.fUseElectronMCPSmearing),
+  fDoElecDeDxPostCalibrationPrimaryPair(ref.fDoElecDeDxPostCalibrationPrimaryPair),
+  fIsRecalibDepTPCClPrimaryPair(ref.fIsRecalibDepTPCClPrimaryPair),
+  fRecalibCurrentRunPrimaryPair(ref.fRecalibCurrentRunPrimaryPair),
+  fnRBinsPrimaryPair(ref.fnRBinsPrimaryPair),
+  fHistoEleMapRecalibPrimaryPair(NULL),
+  fHistoPosMapRecalibPrimaryPair(NULL),
   fCutString(NULL),
   fCutStringRead(""),
   hCutIndex(NULL),
@@ -154,15 +266,33 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   hTrackPosEtaafterDedx(NULL),
   hTrackNegEtaafterDedx(NULL)
   {
-  InitPIDResponse();
-  for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
-  fCutString=new TObjString((GetCutNumber()).Data());
+    // Copy Constructor
+  }
+AliDalitzElectronCuts::~AliDalitzElectronCuts() {
+  // Destructor
+  //Deleting fHistograms leads to seg fault it it's added to output collection of a task
+  // if(fHistograms)
+  // 	delete fHistograms;
+  // fHistograms = NULL;
 
-  //fesdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
-  // Using standard function for setting Cuts
-  Bool_t selectPrimaries=kFALSE;
-  fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+   if(fCutString != NULL){
+      delete fCutString;
+      fCutString = NULL;
+   }
+     for (Int_t i = 0; i < fnRBinsPrimaryPair; i++) {
+    if( fHistoEleMapRecalibPrimaryPair[i]  != NULL){
+      delete fHistoEleMapRecalibPrimaryPair[i] ;
+      fHistoEleMapRecalibPrimaryPair[i]  =NULL;
+    }
+
+    if( fHistoPosMapRecalibPrimaryPair[i]  != NULL){
+      delete fHistoPosMapRecalibPrimaryPair[i] ;
+      fHistoPosMapRecalibPrimaryPair[i]  =NULL;
+    }
+
+  }
 }
+
 Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) {
      //if(!(aliaodtrack->GetDalitzAODTrack()->IsHybridGlobalConstrainedGlobal())){//GlobalConstrained
      // return kFALSE;
@@ -240,19 +370,6 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     }
     //cout<<" Paso Electron Cuts "<<endl;
     return kTRUE;
-}
-//________________________________________________________________________
-AliDalitzElectronCuts::~AliDalitzElectronCuts() {
-  // Destructor
-  //Deleting fHistograms leads to seg fault it it's added to output collection of a task
-  // if(fHistograms)
-  // 	delete fHistograms;
-  // fHistograms = NULL;
-
-   if(fCutString != NULL){
-      delete fCutString;
-      fCutString = NULL;
-   }
 }
 
 //________________________________________________________________________
@@ -434,6 +551,131 @@ Bool_t AliDalitzElectronCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::LoadElecDeDxPostCalibrationPrimaryPair(Int_t runNumber) {
+
+  if(runNumber==fRecalibCurrentRunPrimaryPair)
+    return kTRUE;
+  else
+    fRecalibCurrentRunPrimaryPair=runNumber;
+
+  // Else choose the one in the $ALICE_PHYSICS directory (or EOS)
+  AliInfo("LoadingdEdx recalibration maps from OADB/PWGGA/TPCdEdxRecalibOADB.root");
+
+  TFile *fileRecalib = TFile::Open(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
+
+  if (!fileRecalib || fileRecalib->IsZombie())
+    {
+      AliWarning("OADB/PWGGA/TPCdEdxRecalibOADB.root was not found");
+      return kFALSE;
+    }
+  if (fileRecalib) delete fileRecalib;
+  AliOADBContainer *contRecalibTPC = new AliOADBContainer("");
+  contRecalibTPC->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"AliTPCdEdxRecalib");
+
+  TObjArray *arrayTPCRecalib=(TObjArray*)contRecalibTPC->GetObject(runNumber);
+  if (!arrayTPCRecalib)
+    {
+      AliWarning(Form("No TPC dEdx recalibration found for run number: %d", runNumber));
+      delete contRecalibTPC;
+      return kFALSE;
+    }
+
+  for(Int_t i=0;i<fnRBinsPrimaryPair;i++){
+     if (fIsRecalibDepTPCClPrimaryPair){
+       fHistoEleMapRecalibPrimaryPair[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_Cl%d_recalib",i));
+       fHistoPosMapRecalibPrimaryPair[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_Cl%d_recalib",i));
+     } else {
+       fHistoEleMapRecalibPrimaryPair[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Ele_R%d_recalib",i));
+       fHistoPosMapRecalibPrimaryPair[i]  = (TH2S*)arrayTPCRecalib->FindObject(Form("Pos_R%d_recalib",i));
+     }
+  }
+  if (fHistoEleMapRecalibPrimaryPair[0] == NULL ||
+      fHistoEleMapRecalibPrimaryPair[1] == NULL ||
+      fHistoEleMapRecalibPrimaryPair[2] == NULL || fHistoEleMapRecalibPrimaryPair[3] == NULL  ){
+    AliWarning("Histograms for Primary Pair dEdx post calibration not found in %s despite being requested!");
+    return kFALSE;// code must break if histograms are not found!
+  }
+  for(Int_t i=0;i<fnRBinsPrimaryPair;i++){
+    fHistoEleMapRecalibPrimaryPair[i]  ->SetDirectory(0);
+    fHistoPosMapRecalibPrimaryPair[i]  ->SetDirectory(0);
+  }
+  delete contRecalibTPC;
+  AliInfo(Form("dEdx recalibration maps for Primary Pair successfully loaded from OADB/PWGGA/TPCdEdxRecalibOADB.root for run %d",runNumber));
+
+  return kTRUE;
+}
+
+//_________________________________________________________________________
+Double_t AliDalitzElectronCuts::GetCorrectedElectronTPCResponsePrimaryPair(Short_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t TPCCl){
+
+  Double_t Charge  = charge;
+  Double_t CornSig = nsig;
+  Double_t mean          = 1.;
+  Double_t width         = 1.;
+  //X axis 12 Y axis 18  ... common for all R slice
+  Int_t BinP    = 4;   //  default value
+  Int_t BinEta  = 9;  //  default value
+  Int_t BinCorr   = -1;
+  Double_t arrayTPCCl[5]    = {0, 60, 100, 150, 180};
+  Double_t arrayR[5]        = {0, 33.5, 72, 145, 180};
+
+  for (Int_t i = 0; i<4; i++){
+      if (fIsRecalibDepTPCClPrimaryPair) {
+        if (TPCCl > arrayTPCCl[i] && TPCCl <= arrayTPCCl[i+1]){
+            BinCorr = i;
+        }
+     } else {
+    //R for Dalitz is always lower than 33.5
+       if (10 > arrayR[i] && 10 <= arrayR[i+1]){
+         BinCorr = i;
+       }
+     }
+  }
+  if (BinCorr == -1 || BinCorr >  3){
+    if (fIsRecalibDepTPCClPrimaryPair) cout<< " no valid TPC cluster number ..., not recalibrating"<< endl;
+    else cout<< " no valid R bin number ..., not recalibrating"<< endl;
+    return CornSig;// do nothing if correction map is not avaible
+  }
+  if(Charge<0){
+    if (fHistoEleMapRecalibPrimaryPair[BinCorr] == NULL ){
+      cout<< " histograms are null..., going out"<< endl;
+      return CornSig;// do nothing if correction map is not avaible
+    }
+
+    BinP    = fHistoEleMapRecalibPrimaryPair[BinCorr]->GetXaxis()->FindBin(P);
+    BinEta  = fHistoEleMapRecalibPrimaryPair[BinCorr]->GetYaxis()->FindBin(Eta);
+
+    if(P>0. && P<10.){
+      mean  = (Double_t)fHistoEleMapRecalibPrimaryPair[BinCorr]->GetBinContent(BinP,BinEta)/1000;
+      width = (Double_t)fHistoEleMapRecalibPrimaryPair[BinCorr]->GetBinError(BinP,BinEta)/1000;
+    }else if(P>=10.){// use bin edge value
+      mean  = (Double_t)fHistoEleMapRecalibPrimaryPair[BinCorr]->GetBinContent(fHistoEleMapRecalibPrimaryPair[BinCorr]->GetNbinsX(),BinEta)/1000;
+      width = (Double_t)fHistoEleMapRecalibPrimaryPair[BinCorr]->GetBinError(fHistoEleMapRecalibPrimaryPair[BinCorr]->GetNbinsX(),BinEta)/1000;
+    }
+
+  }else{
+    if (fHistoPosMapRecalibPrimaryPair[BinCorr] == NULL ){
+      cout<< " histograms are null..., going out"<< endl;
+      return CornSig;// do nothing if correction map is not avaible
+    }
+
+    BinP    = fHistoPosMapRecalibPrimaryPair[BinCorr]->GetXaxis()->FindBin(P);
+    BinEta  = fHistoPosMapRecalibPrimaryPair[BinCorr]->GetYaxis()->FindBin(Eta);
+
+    if(P>0. && P<10.){
+      mean  = (Double_t)fHistoPosMapRecalibPrimaryPair[BinCorr]->GetBinContent(BinP,BinEta)/1000;
+      width = (Double_t)fHistoPosMapRecalibPrimaryPair[BinCorr]->GetBinError(BinP,BinEta)/1000;
+    }else if(P>=10.){// use bin edge value
+      mean  = (Double_t)fHistoPosMapRecalibPrimaryPair[BinCorr]->GetBinContent(fHistoPosMapRecalibPrimaryPair[BinCorr]->GetNbinsX(),BinEta)/1000;
+      width = (Double_t)fHistoPosMapRecalibPrimaryPair[BinCorr]->GetBinError(fHistoPosMapRecalibPrimaryPair[BinCorr]->GetNbinsX(),BinEta)/1000;
+    }
+  }
+  if (width!=0.){
+    CornSig = (nsig - mean) / width;
+  }
+  return CornSig;
+}
+///______________________________________________________________________________________________///
 Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent)
 {
 return kTRUE; //Dummy function
@@ -567,7 +809,19 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   if(!fPIDResponse){  InitPIDResponse();  }// Try to reinitialize PID Response
   if(!fPIDResponse){  AliError("No PID Response"); return kFALSE;}// if still missing fatal error
 
-  //cout<<"dEdxCuts: //////////////////////////////////////////////////////////////////////////"<<endl;
+  // Varibles for Post Calibration, look function  GetCorrectedElectronTPCResponsePrimaryPair
+  Short_t Charge    = fCurrentTrack->Charge();
+  Double_t electronNSigmaTPC = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
+  Double_t electronNSigmaTPCCor=0.;
+  Double_t P=0.;
+  Double_t Eta=0.;
+
+  if(fDoElecDeDxPostCalibrationPrimaryPair){
+    P = fCurrentTrack->P();
+    Eta = fCurrentTrack->Eta();
+    electronNSigmaTPCCor = GetCorrectedElectronTPCResponsePrimaryPair(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls());
+  }
+
   Int_t cutIndex=0;
   if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
   if(hITSdEdxbefore)hITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
@@ -587,33 +841,53 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   cutIndex++;
 
   if(fDodEdxSigmaTPCCut == kTRUE){
+
     // TPC Electron Line
-    if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLineTPC ||
+    if(fDoElecDeDxPostCalibrationPrimaryPair){
+        if(electronNSigmaTPCCor<fPIDnSigmaBelowElectronLineTPC || electronNSigmaTPCCor>fPIDnSigmaAboveElectronLineTPC){
+        if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+            return kFALSE;
+        }
+    } else {
+        if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLineTPC ||
         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLineTPC){
-      if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-      return kFALSE;
+        if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+            return kFALSE;
+        }
     }
     cutIndex++;
 
     // TPC Pion Line
+
     if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLineTPC && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLineTPC ){
-      if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC     &&
-          fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC &&
-          fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPC){
-        if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-        return kFALSE;
-      }
+        if(fDoElecDeDxPostCalibrationPrimaryPair){
+            if(electronNSigmaTPCCor>fPIDnSigmaBelowElectronLineTPC &&
+            electronNSigmaTPCCor<fPIDnSigmaAboveElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPC){
+            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+                return kFALSE;
+            }
+        } else{
+            if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPC){
+            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+                return kFALSE;
+            }
+        }
     }
     cutIndex++;
 
     // High Pt Pion rej
     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLineTPC ){
-      if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC &&
-          fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC&&
-          fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPCHighPt){
-        if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-        return kFALSE;
-      }
+        if(fDoElecDeDxPostCalibrationPrimaryPair){
+            if(electronNSigmaTPCCor>fPIDnSigmaBelowElectronLineTPC &&    electronNSigmaTPCCor<fPIDnSigmaAboveElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPCHighPt){
+            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+            return kFALSE;
+            }
+        } else{
+            if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLineTPC && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineTPCHighPt){
+            if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
+                return kFALSE;
+            }
+        }
     }
     cutIndex++;
   } else{ cutIndex+=3; }
@@ -665,17 +939,16 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     return kFALSE;
   }
   cutIndex++;
-
   if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
-  if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+    if(fDoElecDeDxPostCalibrationPrimaryPair){
+      if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),electronNSigmaTPCCor);
+    } else {
+        if(hTPCdEdxafter)hTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+    }
   if(hTPCdEdxSignalafter)hTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
-
   return kTRUE;
 }
-
 ///________________________________________________________________________
-
-
 AliVTrack *AliDalitzElectronCuts::GetTrack(AliVEvent * event, Int_t label){
     //Returns pointer to the track with given ESD label
     //(Important for AOD implementation, since Track array in AOD data is different
