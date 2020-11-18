@@ -77,7 +77,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
         }
     }
 
-    const int nCuts = 8;
+    const int nCuts = 28;
     Axis cutAxis = {"cut", "cut setting", {-1.5, nCuts - 0.5}, nCuts + 1};
     Axis centAxis = {"cent", "centrality", centBins};
     Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptBins};
@@ -312,6 +312,11 @@ AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const char* name,
         6, AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 119));
     task->SetESDtrackCuts(
         7, AlidNdPtTools::CreateESDtrackCuts("defaulteta10"));
+    for(int i=1; i<16; ++i){
+        task->SetESDtrackCuts(
+                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", i+100));
+    }
+
     task->SetNeedEventMult(kTRUE);
     task->SetNeedTrackIP(kTRUE);
 
