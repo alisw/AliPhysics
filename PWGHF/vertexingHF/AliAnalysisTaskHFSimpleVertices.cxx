@@ -65,6 +65,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistDplusVertX{nullptr},
   fHistDplusVertY{nullptr},
   fHistDplusVertZ{nullptr},
+  fHistLcpKpiVertX{nullptr},
+  fHistLcpKpiVertY{nullptr},
+  fHistLcpKpiVertZ{nullptr},
+  fHistDist12LcpKpi{nullptr},
   fHistInvMassD0{nullptr},
   fHistPtD0{nullptr},
   fHistPtD0Dau0{nullptr},
@@ -80,26 +84,33 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCovMatPrimVXX2Prong{nullptr},
   fHistCovMatSecVXX2Prong{nullptr},
   fHistInvMassDplus{nullptr},
-  fHistPtDPlus{nullptr},             
-  fHistPtDplusDau0{nullptr},         
-  fHistPtDplusDau1{nullptr},         
-  fHistPtDplusDau2{nullptr},         
-  fHistImpParDplusDau0{nullptr},     
-  fHistImpParDplusDau1{nullptr},     
-  fHistImpParDplusDau2{nullptr},     
-  fHistDecLenDplus{nullptr},         
-  fHistDecLenXYDplus{nullptr},       
-  fHistNormDecLenXYDplus{nullptr},   
-  fHistImpParErrDplusDau{nullptr},   
-  fHistDecLenErrDplus{nullptr},      
-  fHistDecLenXYErrDplus{nullptr},    
-  fHistCosPointDplus{nullptr},      
-  fHistCosPointXYDplus{nullptr},    
-  fHistImpParXYDplus{nullptr},       
-  fHistNormIPDplus{nullptr},         
+  fHistPtDPlus{nullptr},
+  fHistPtDplusDau0{nullptr},
+  fHistPtDplusDau1{nullptr},
+  fHistPtDplusDau2{nullptr},
+  fHistImpParDplusDau0{nullptr},
+  fHistImpParDplusDau1{nullptr},
+  fHistImpParDplusDau2{nullptr},
+  fHistDecLenDplus{nullptr},
+  fHistDecLenXYDplus{nullptr},
+  fHistNormDecLenXYDplus{nullptr},
+  fHistImpParErrDplusDau{nullptr},
+  fHistDecLenErrDplus{nullptr},
+  fHistDecLenXYErrDplus{nullptr},
+  fHistCosPointDplus{nullptr},
+  fHistCosPointXYDplus{nullptr},
+  fHistImpParXYDplus{nullptr},
+  fHistNormIPDplus{nullptr},
   fHistoSumSqImpParDplusDau{nullptr},
   fHistCovMatPrimVXX3Prong{nullptr},
   fHistCovMatSecVXX3Prong{nullptr},
+  fHistInvMassLc{nullptr},
+  fHistPtLc{nullptr},
+  fHistPtLcDau0{nullptr},
+  fHistPtLcDau1{nullptr},
+  fHistPtLcDau2{nullptr},
+  fHistDecLenLc{nullptr},
+  fHistCosPointLc{nullptr},
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
   fSelectOnCentrality(kFALSE),
@@ -126,7 +137,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxPtDzero(9999.),
   fSelectD0(1),
   fSelectD0bar(1),
-  fMinPt3Prong(0.)
+  fMinPt3Prong(0.),
+  fSelectLcpKpi(1)
 {
   //
   InitDefault();
@@ -160,6 +172,10 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistDplusVertX;
     delete fHistDplusVertY;
     delete fHistDplusVertZ;
+    delete fHistLcpKpiVertX;
+    delete fHistLcpKpiVertY;
+    delete fHistLcpKpiVertZ;
+    delete fHistDist12LcpKpi;
     delete fHistInvMassD0;
     delete fHistPtD0;
     delete fHistPtD0Dau0;
@@ -195,6 +211,13 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistoSumSqImpParDplusDau;
     delete fHistCovMatPrimVXX3Prong;
     delete fHistCovMatSecVXX3Prong;
+    delete fHistInvMassLc;
+    delete fHistPtLc;
+    delete fHistPtLcDau0;
+    delete fHistPtLcDau1;
+    delete fHistPtLcDau2;
+    delete fHistDecLenLc;
+    delete fHistCosPointLc;
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -266,6 +289,28 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
      fDzeroCuts[ib][jc]=defaultD0Cuts[ib][jc];
    }
   }
+
+  fNPtBinsLc = 10;
+  Double_t defaultPtBinsLc[11] = {0.,  1.0, 2.0,  3.0,  4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
+  for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
+    fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
+
+  Double_t defaultLcCuts[10][kNCutVarsLc] =
+    {{0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* pt<1*/
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 1<pt<2*/
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 2<pt<3 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 3<pt<4 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 4<pt<5 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 5<pt<6 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 6<pt<8 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 8<pt<12 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.},  /* 12<pt<24 */
+     {0.400, 0.4, 0.4, 0.4, 0.01, 0.09, 0.005, 0.}}; /* 24<pt<36 */
+  for (Int_t ib = 0; ib < fNPtBinsLc; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsLc; jc++) {
+      fLcCuts[ib][jc] = defaultLcCuts[ib][jc];
+    }
+  }
 }
 
 //___________________________________________________________________________
@@ -288,6 +333,9 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Int_t selectD0bar = GetJsonInteger(filename.Data(), "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n",selectD0bar);
     if(selectD0>=0) fSelectD0bar=selectD0bar;
+    Int_t selectLcpKpi = GetJsonInteger(filename.Data(), "d_selectionFlagLc");
+    printf("d_selectionFlagLc = %d\n", selectLcpKpi);
+    if (selectLcpKpi >= 0) fSelectLcpKpi=selectLcpKpi;
     Int_t minncluTPC = GetJsonInteger(filename.Data(), "d_tpcnclsfound");
     if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
@@ -313,7 +361,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Double_t ptMaxCand = GetJsonFloat(filename.Data(), "d_pTCandMax");
     printf("Max pt Dzero cand = %f\n", ptMaxCand);
     if(ptMaxCand>=0. && ptMaxCand>=fMinPtDzero) fMaxPtDzero=ptMaxCand;
-    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "ptmincand_3prong");
+    Double_t ptMinCand3 = GetJsonFloat(filename.Data(), "cut3ProngPtCandMin");
     printf("Min pt 3-prong cand = %f\n", ptMinCand3);
     if( ptMinCand3>=0.) fMinPt3Prong=ptMinCand3;
     printf("---------------------------------------------\n");
@@ -369,6 +417,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistDplusVertX = new TH1F("hDplusVertX"," Secondary Vertex ; x (cm)",1000, -2.0, 2.0);
   fHistDplusVertY = new TH1F("hDplusVertY"," Secondary Vertex ; y (cm)",1000, -2.0, 2.0);
   fHistDplusVertZ = new TH1F("hDplusVertZ"," Secondary Vertex ; z (cm)",1000, -20.0, 20.0);
+  fHistLcpKpiVertX = new TH1F("hLcpKpiVertX", " Secondary Vertex ; x (cm)", 1000, -2.0, 2.0);
+  fHistLcpKpiVertY = new TH1F("hLcpKpiVertY", " Secondary Vertex ; y (cm)", 1000, -2.0, 2.0);
+  fHistLcpKpiVertZ = new TH1F("hLcpKpiVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
+  fHistDist12LcpKpi = new TH1F("hDist12Lc", " ; Dist12 (cm)", 200, 0., 2.0);
   fOutput->Add(fHistPrimVertX);
   fOutput->Add(fHistPrimVertY);
   fOutput->Add(fHistPrimVertZ);
@@ -378,6 +430,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistDplusVertX);
   fOutput->Add(fHistDplusVertY);
   fOutput->Add(fHistDplusVertZ);
+  fOutput->Add(fHistLcpKpiVertX);
+  fOutput->Add(fHistLcpKpiVertY);
+  fOutput->Add(fHistLcpKpiVertZ);
+  fOutput->Add(fHistDist12LcpKpi);
 
   // D0 meson candidate histos
   fHistInvMassD0 = new TH1F("hInvMassD0", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
@@ -452,6 +508,22 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistoSumSqImpParDplusDau);
   fOutput->Add(fHistCovMatPrimVXX3Prong);
   fOutput->Add(fHistCovMatSecVXX3Prong);
+
+  // Lc pKpi candidate histos
+  fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2}, 100, 0., 1.0e-4);)", 500, 1.6, 3.1);
+  fHistPtLc = new TH1F("hPtLc", " ; Lc p_{T} (GeV/c)", 100, 0, 10.);
+  fHistPtLcDau0 = new TH1F("hPtLcDau0", " Lc prong0 ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistPtLcDau1 = new TH1F("hPtLcDau1", " Lc prong1 ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistPtLcDau2 = new TH1F("hPtLcDau2", " Lc prong2 ; p_{T} (GeV/c)", 100, 0, 10.);
+  fHistDecLenLc = new TH1F("hDecLenLc", " ; Decay Length (cm)", 200, 0., 2.0);
+  fHistCosPointLc = new TH1F("hCosPointLc", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fOutput->Add(fHistInvMassLc);
+  fOutput->Add(fHistPtLc);
+  fOutput->Add(fHistPtLcDau0);
+  fOutput->Add(fHistPtLcDau1);
+  fOutput->Add(fHistPtLcDau2);
+  fOutput->Add(fHistDecLenLc);
+  fOutput->Add(fHistCosPointLc);
 
   PostData(1,fOutput);
 
@@ -696,6 +768,31 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
             fHistCovMatPrimVXX3Prong->Fill(covMatrix[0]);
             the3Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
             fHistCovMatSecVXX3Prong->Fill(covMatrix[0]);
+          }
+          if (massSel & (1 << kbitLc)) {
+            if (decaylength <= fLcCuts[0][4]) {    //cut on dist12
+              continue;
+            }
+            fHistLcpKpiVertX->Fill(trkv3->GetX());
+            fHistLcpKpiVertY->Fill(trkv3->GetY());
+            fHistLcpKpiVertZ->Fill(trkv3->GetZ());
+            fHistDist12LcpKpi->Fill(decaylength);
+            Int_t lcSel = 3;
+            if (fSelectLcpKpi > 0) {
+              lcSel = LcSelectionCuts(the3Prong);
+            }
+            if (lcSel > 0) {
+              Double_t m0LcpKpi = the3Prong->InvMassLcpKpi();
+              Double_t m0LcpiKp = the3Prong->InvMassLcpiKp();
+              if (fSelectLcpKpi == 0 || lcSel == 1 || lcSel == 3) fHistInvMassLc->Fill(m0LcpKpi);
+              if (fSelectLcpKpi == 0 || lcSel == 2 || lcSel == 3) fHistInvMassLc->Fill(m0LcpiKp);
+              fHistPtLc->Fill(the3Prong->Pt());
+              fHistPtLcDau0->Fill(the3Prong->PtProng(0));
+              fHistPtLcDau1->Fill(the3Prong->PtProng(1));
+              fHistPtLcDau2->Fill(the3Prong->PtProng(2));
+              fHistDecLenLc->Fill(the3Prong->DecayLength());
+              fHistCosPointLc->Fill(the3Prong->CosPointingAngle());
+            }
           }
           delete trkv3;
           delete the3Prong;
@@ -960,7 +1057,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
   UInt_t pdg3[3];
   Int_t nprongs = 3;
   rd4massCalc3->SetPxPyPzProngs(nprongs, px, py, pz);
-  Double_t minv2, mrange;
+  Double_t minv2, mrange, mrangeLc;
   Double_t lolim, hilim;
   mrange = 0.1;
   lolim = fMassDplus - mrange;
@@ -982,8 +1079,9 @@ Int_t AliAnalysisTaskHFSimpleVertices::SelectInvMassAndPt3prong(TObjArray* trkAr
     if (minv2 > lolim * lolim && minv2 < hilim * hilim && (retval & (1 << kbitDs)) == 0)
       retval += (1 << kbitDs);
   }
-  lolim = fMassLambdaC - mrange;
-  hilim = fMassLambdaC + mrange;
+  mrangeLc = 0.5;
+  lolim = fMassLambdaC - mrangeLc;
+  hilim = fMassLambdaC + mrangeLc;
   pdg3[0] = 2212;
   pdg3[1] = 321;
   pdg3[2] = 211;
@@ -1082,6 +1180,49 @@ AliAODRecoDecayHF3Prong* AliAnalysisTaskHFSimpleVertices::Make3Prong(TObjArray* 
   AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
   the3Prong->SetOwnSecondaryVtx(ownsecv);
   return the3Prong;
+}
+//______________________________________________________________________________
+
+Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
+    AliAODRecoDecayHF3Prong *cand) {
+  bool isLcpKpi = true;
+  bool isLcpiKp = true;
+  Double_t ptCand = cand->Pt();
+  if (ptCand < 0. || ptCand >= 36.)
+    return 0;
+  Int_t jPtBin = GetPtBin(ptCand);
+  if (jPtBin == -1)
+    return 0;
+
+  if (cand->CosPointingAngle() <= fLcCuts[jPtBin][7])
+    return 0;
+  if (cand->DecayLength() <= fLcCuts[jPtBin][6])
+    return 0;
+
+  if (TMath::Abs(cand->InvMassLcpKpi() - fMassLambdaC) > fLcCuts[jPtBin][0])
+    isLcpKpi = false;
+  if (TMath::Abs(cand->InvMassLcpiKp() - fMassLambdaC) > fLcCuts[jPtBin][0])
+    isLcpiKp = false;
+  if (!isLcpKpi && !isLcpiKp)
+    return 0;
+
+  if (cand->Pt2Prong(0) < fLcCuts[jPtBin][1] * fLcCuts[jPtBin][1] ||
+      cand->Pt2Prong(1) < fLcCuts[jPtBin][2] * fLcCuts[jPtBin][2] ||
+      cand->Pt2Prong(2) < fLcCuts[jPtBin][3] * fLcCuts[jPtBin][3])
+    isLcpKpi = false;
+  if (cand->Pt2Prong(0) < fLcCuts[jPtBin][3] * fLcCuts[jPtBin][3] ||
+      cand->Pt2Prong(1) < fLcCuts[jPtBin][2] * fLcCuts[jPtBin][2] ||
+      cand->Pt2Prong(2) < fLcCuts[jPtBin][1] * fLcCuts[jPtBin][1])
+    isLcpiKp = false;
+  if (!isLcpKpi && !isLcpiKp)
+    return 0;
+
+  Int_t returnValue = 0;
+  if (isLcpKpi)
+    returnValue += 1;
+  if (isLcpiKp)
+    returnValue += 2;
+  return returnValue;
 }
 //______________________________________________________________________________
 char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){

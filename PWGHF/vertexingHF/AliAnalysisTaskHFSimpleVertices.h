@@ -52,10 +52,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
 
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBins = 100, kNCutVarsDzero=11};
-  
+  enum { kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
+
   TList*  fOutput;                   //!<!  list of output histos
   TH1F* fHistNEvents;                //!<!  histo with N of events
   TH1F* fHistPtAllTracks;            //!<!  histo with pt all tracks
@@ -76,6 +78,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistDplusVertX;             //!<!  histo of D+ vertex x
   TH1F* fHistDplusVertY;             //!<!  histo of D+ vertex y
   TH1F* fHistDplusVertZ;             //!<!  histo of D+ vertex z
+  TH1F *fHistLcpKpiVertX;            //!<!  histo of LcpKpi+ vertex x
+  TH1F *fHistLcpKpiVertY;            //!<!  histo of LcpKpi+ vertex y
+  TH1F *fHistLcpKpiVertZ;            //!<!  histo of LcpKpi+ vertex z
+  TH1F *fHistDist12LcpKpi;           //!<!  histo of LcpKpi+ distance between primary and secondary vertex reconstructed from the pair of tracks
 
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
   TH1F* fHistPtD0;                   //!<!  histo with D0 pt
@@ -114,6 +120,14 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistCovMatPrimVXX3Prong;    //!<!  histo with cov mat prim vert for the 3-prong candidate
   TH1F* fHistCovMatSecVXX3Prong;     //!<!  histo with cov mat sec vert for the 3-prong candidate
 
+  TH1F *fHistInvMassLc;              //!<!  histo with LcpKpi+ inv mass
+  TH1F *fHistPtLc;                   //!<!  histo with LcpKpi+ pt
+  TH1F *fHistPtLcDau0;               //!<!  histo with LcpKpi+ prong pt
+  TH1F *fHistPtLcDau1;               //!<!  histo with LcpKpi+ prong pt
+  TH1F *fHistPtLcDau2;               //!<!  histo with LcpKpi+ prong pt
+  TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
+  TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
+
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t  fSelectOnCentrality; // flag to activate cut on centrality
@@ -141,14 +155,19 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
 
   Int_t fNPtBins;                     // Number of pt bins
-  Double_t fPtBinLims[kMaxNPtBins];   //[fNPtBins+1] limits of pt bins
+  Double_t fPtBinLims[kMaxNPtBins];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
   Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
-  
+
+  Int_t fNPtBinsLc;                             // Number of pt bins
+  Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBins+1] limits of pt bins
+  Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
+  Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
+
   ClassDef(AliAnalysisTaskHFSimpleVertices,8);
 };
 
