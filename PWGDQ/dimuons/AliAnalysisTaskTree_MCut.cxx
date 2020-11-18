@@ -198,6 +198,7 @@ AliAnalysisTaskTree_MCut::AliAnalysisTaskTree_MCut(const char *name) :
   } 
   
   DefineOutput(1,TTree::Class());
+  DefineOutput(2,TH1D::Class());
 }
 
 //___________________________________________________________________________
@@ -266,7 +267,6 @@ void AliAnalysisTaskTree_MCut::UserCreateOutputObjects(){
 
   if (fOutputTree) return; 
    
-  OpenFile(1,"RECREATE");
   fOutputTree = new TTree("ppTree","Data Tree");
 
   fOutputTree->Branch("FiredTriggerClasses",fTrigClass,"FiredTriggerClasses/C");
@@ -310,7 +310,14 @@ void AliAnalysisTaskTree_MCut::UserCreateOutputObjects(){
 
   fOutputTree->ls(); 
 
- PostData(1,fOutputTree); 
+  PostData(1,fOutputTree); 
+ 
+  //trigger summary
+  fhNEv = new TH1D("fhNEv","hNEv",8,0.,8.);
+  TString namelabel1[8]={"TotEv","CINT7","CMUL7","CMLL7","CMSL7","CMSH7","CINT7_CENT","CINT7ZAC_CENT"};
+  for(int k=0;k<8;k++) fhNEv->GetXaxis()->SetBinLabel(k+1,namelabel1[k]);
+  
+  PostData(2,fhNEv); 
  
 } 
 
@@ -375,7 +382,44 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
     
   //   to apply physics selection
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    fIsPhysSelected = fSelectMask & (AliVEvent::kMuonUnlikeLowPt7 | AliVEvent::kMuonLikeLowPt7 | AliVEvent::kMuonSingleLowPt7 |   AliVEvent::kMuonSingleHighPt7  | AliVEvent::kINT7inMUON  | AliVEvent::kINT7); 	      
+    fIsPhysSelected = fSelectMask & (AliVEvent::kMuonUnlikeLowPt7 | AliVEvent::kMuonLikeLowPt7 | AliVEvent::kMuonSingleLowPt7 |   AliVEvent::kMuonSingleHighPt7  | AliVEvent::kINT7inMUON  | AliVEvent::kINT7); 	    
+    
+    
+   Bool_t TriggerSelected=kFALSE;
+   Bool_t TriggerSelected_CINT7=kFALSE;
+   Bool_t TriggerSelected_CMUL7=kFALSE;
+   Bool_t TriggerSelected_CMLL7=kFALSE;
+   Bool_t TriggerSelected_CMSL7=kFALSE;
+   Bool_t TriggerSelected_CMSH7=kFALSE;
+   Bool_t TriggerSelected_CINT7_CENT=kFALSE;
+   Bool_t TriggerSelected_CINT7ZAC_CENT=kFALSE;
+
+    if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected = kTRUE; 
+    else TriggerSelected = kFALSE; 
+    if(firedtrigger.Contains("CINT7-B-NOPF-MUFAST")) TriggerSelected_CINT7 = kTRUE;  // o devo guardare CENT??? o quello con ZN?
+										  // guardare quello con ZN anche per il calcolo di fnorm cint7_zac
+									       // check se fermarsi a 80%
+    else TriggerSelected_CINT7 = kFALSE; 
+    if(firedtrigger.Contains("CMUL7-B-NOPF-MUFAST")) TriggerSelected_CMUL7 = kTRUE; 
+    else TriggerSelected_CMUL7 = kFALSE; 
+    if(firedtrigger.Contains("CMLL7-B-NOPF-MUFAST")) TriggerSelected_CMLL7 = kTRUE; 
+    else TriggerSelected_CMLL7 = kFALSE; 
+    if(firedtrigger.Contains("CMSL7-B-NOPF-MUFAST")) TriggerSelected_CMSL7 = kTRUE; 
+    else TriggerSelected_CMSL7 = kFALSE; 
+    if(firedtrigger.Contains("CMSH7-B-NOPF-MUFAST")) TriggerSelected_CMSH7 = kTRUE; 
+    else TriggerSelected_CMSH7 = kFALSE; 
+    if(firedtrigger.Contains("CINT7-B-NOPF-CENT")) TriggerSelected_CINT7_CENT = kTRUE; 
+    if(firedtrigger.Contains("CINT7ZAC-B-NOPF-CENT")) TriggerSelected_CINT7ZAC_CENT = kTRUE; 
+ 
+     Double_t DeltaCh=0.;
+     fhNEv->Fill(0.+DeltaCh);
+     if (TriggerSelected_CINT7) fhNEv->Fill(1.+DeltaCh);
+     if (TriggerSelected_CMUL7) fhNEv->Fill(2.+DeltaCh);
+     if (TriggerSelected_CMLL7) fhNEv->Fill(3.+DeltaCh);
+     if (TriggerSelected_CMSL7) fhNEv->Fill(4.+DeltaCh);
+     if (TriggerSelected_CMSH7) fhNEv->Fill(5.+DeltaCh);
+     if (TriggerSelected_CINT7_CENT) fhNEv->Fill(16.+DeltaCh);
+     if (TriggerSelected_CINT7ZAC_CENT) fhNEv->Fill(17.+DeltaCh);        
 
   AliAODVertex *PrimVertex =  fAODEvent->GetPrimaryVertex();
   fVertex[0]=PrimVertex->GetX();
@@ -400,7 +444,6 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
    Int_t LabelOld2[1500];   
    Bool_t GoodMuon[1500]={kFALSE};
 	      
-   //cout << "\n number of tracks = " << ntracks << endl;	   
    if(ntracks>1500) return;    //skip events with a huge number of tracks
    	      
    for (Int_t i=0;i<ntracks;i++){
@@ -448,7 +491,6 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
       if (!mu0->IsMuonTrack()) continue;
 
      if(GoodMuon[i]) {
-	//AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
 	fCharge[nummu] = mu0->Charge();
 	fPt[nummu] = mu0->Pt();
 	fPx[nummu] = mu0->Px();
@@ -484,8 +526,14 @@ void AliAnalysisTaskTree_MCut::UserExec(Option_t *)
   fNMuons =nummu;
   fNDimu=numdimu;     
   } // end loop on ntracks !=0   
-  fOutputTree->Fill();
-  PostData(1,fOutputTree);
+  //
+  // keep only events where there is at least one dimuon
+  if(fNDimu>0){
+    fOutputTree->Fill();
+    PostData(1,fOutputTree);
+  } 
+
+  PostData(2,fhNEv);
   
 }
 //______________________________________________________________________________

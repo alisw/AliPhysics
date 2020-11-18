@@ -40,6 +40,7 @@ class AliAnalysisTaskTree_MCut: public AliAnalysisTaskSE {
      
   TTree         *fOutputTree	;      //! tree output
   Double_t      fNevt		;      // event counter
+  TH1D          *fhNEv          ;      //! histo
 
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)    
   Double_t fMassCut;   //  Mass Cut    
@@ -97,7 +98,6 @@ class AliAnalysisTaskTree_MCut: public AliAnalysisTaskSE {
   Int_t		fDimuMu[400][2];	// reference to single mus
   
   
-//  TList *fOutput;  //!< List of histograms for data
   
  ClassDef(AliAnalysisTaskTree_MCut,3);
 };
