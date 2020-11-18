@@ -3798,6 +3798,31 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
         }
       }
 
+      Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+      while (tmpGammaMotherlabel > 0) {
+        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111)
+        {
+          tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        }
+        else
+        {
+          gamma0MotherLabel = tmpGammaMotherlabel;
+          break;
+        }
+      }
+      tmpGammaMotherlabel = gamma1MotherLabel;
+      while (tmpGammaMotherlabel > 0) {
+        if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111)
+        {
+          tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+        }
+        else
+        {
+          gamma1MotherLabel = tmpGammaMotherlabel;
+          break;
+        }
+      }
+
       if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel &&
          ((AliAODMCParticle*)fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
 
@@ -3821,6 +3846,19 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTrueMesonCandidatesAOD(AliAODConv
               AliAODMCParticle * gammaGrandMotherMC2 =  static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMC2->GetMother()));
               gamma2MotherLabel=gammaGrandMotherMC2->GetMother();
             }else gamma2MotherLabel=gammaMC2->GetMother();
+          }
+        }
+
+        tmpGammaMotherlabel = gamma2MotherLabel;
+        while (tmpGammaMotherlabel > 0) {
+          if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 223)
+          {
+            tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+          }
+          else
+          {
+            gamma2MotherLabel = tmpGammaMotherlabel;
+            break;
           }
         }
 
