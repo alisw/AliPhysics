@@ -314,7 +314,7 @@ AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const char* name,
         7, AlidNdPtTools::CreateESDtrackCuts("defaulteta10"));
     for(int i=1; i<16; ++i){
         task->SetESDtrackCuts(
-                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta08", i+100));
+                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta09", i+100));
     }
 
     task->SetNeedEventMult(kTRUE);
