@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2020/09/22)                      //
+//                         (Last Modified 2020/11/18)                      //
 //                                                                         //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -302,9 +302,10 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
         AliError("No PID response task found !!");
     }
     
+    if(!fIsMC){
     if (fRun == "LHC15o"){
         fEventCuts = new AliEventCuts();
-    }
+    }}
     
     fThnList = new TList();
     fThnList->SetOwner(kTRUE);
@@ -647,18 +648,13 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
     }
     
     
-    //  AliVEvent *event = InputEvent();
-    //  if (!event) { LocalPost(); return; }
-    //
-    //  AliInputEventHandler* fInputEventHandler = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    //  if (!fInputEventHandler) return;
-    
     //Pile up cout for Run2
+    if(!fIsMC){
     if(fRun == "LHC15o"){
         if(!fEventCuts->AcceptEvent(fVevent)){
             LocalPost(); return;
         }
-    }
+    }}
 
     const AliVVertex *vertex = fVevent->GetPrimaryVertex();
     if(!vertex) { LocalPost(); return; }
@@ -692,7 +688,7 @@ void AliEbyEPhiDistNew::UserExec( Option_t * ){
             cout << "AliMultSelection object not found!" << endl;
             return;
         }
-        else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data());
+        else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),false);
         
     }
     
@@ -1219,7 +1215,7 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6, 1.1  };
     //TPC---------------
     Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.2, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 1.0,  1.0, 2.0  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.5,  1.5, 2.0  };
     //TOF----
     Double_t ptLowTOF[5]       = { 0., 0., 0.6,  0.6, 1.1  };
     Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0, 2.0  };
@@ -1281,7 +1277,6 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         }//kaon
         
         else{
-            
             if (TMath::Abs(pid[1]) < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
         }
         
@@ -1366,11 +1361,9 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     if (fParticleSpecies == 2) {//for Pion: TPC+TOF
         if(fPidStrategy==0){
             if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-            else isAccepted =  isAcceptedTOF;
         }
         else if(fPidStrategy == 1){
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-            else isAccepted =  isAcceptedTOF;
         }
     }
     
@@ -1381,7 +1374,6 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         else if (fPidStrategy == 1){
             if ( pt > ptLowTOF[fParticleSpecies] && pt < ptHighTOF[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-            else isAccepted =  isAcceptedTPC;
         }
     }
     
