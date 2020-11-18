@@ -998,6 +998,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 	double eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
 	double error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
+	double weight = 1;
 	if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
 	else{
 		TRandom3 r(0);
@@ -1015,9 +1016,9 @@ double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt
 {
 	TList* weights_list = dynamic_cast<TList*>(fPhiWeight->Get("weights"));
 	TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
-	TH2D* hPhiWeightRun = dynamic_cast<TList*>(averaged_list->FindObject("Charged"));
+	TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
 
-	weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
+	double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
 			hPhiWeightRun->GetYaxis()->FindBin(eta));
 			// , hPhiWeightRun->GetZaxis()->FindBin(vz));
 	return weight;
