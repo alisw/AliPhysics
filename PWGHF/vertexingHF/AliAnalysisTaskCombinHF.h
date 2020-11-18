@@ -168,8 +168,13 @@ private:
   TH1F *fHistXsecVsPtHard;              //!<! hist. of xsec vs pthard (MC)
   TH1F *fHistTrackStatus;               //!<! hist. of status of tracks
   TH3F *fHistTrackEtaMultZv;            //!<! track distribution vs. eta z vertex and mult
+  TH1D* fHistTrackSelSteps;             //!<! track cuts statistics
   TH2F *fHistSelTrackPhiPt;             //!<! track distribution vs. phi and pt
   TH2F *fHistSelTrackChi2ClusPt;        //!<! track chi2 distribution vs. pt
+  TH2F *fHistSelTrackDCAxyPt;           //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAzPt;            //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAxyPtAfterProp;  //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAzPtAfterProp;   //!<! impact patamter histos
   TH2F *fHistCheckOrigin;               //!<! hist. of origin (c/b) of D meson (gen)
   TH2F *fHistCheckOriginRecoD;          //!<! hist. of origin (c/b) of D meson (reco)
   TH2F *fHistCheckOriginRecoVsGen;      //!<! hist. of origin (c/b) of D meson
@@ -306,7 +311,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,35); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,36); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

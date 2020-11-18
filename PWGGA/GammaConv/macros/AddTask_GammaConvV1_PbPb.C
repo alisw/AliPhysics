@@ -3729,6 +3729,29 @@ void AddTask_GammaConvV1_PbPb(
   } else if (trainConfig == 2000){
     cuts.AddCutPCM("10910a13","40200009327000008250400000","0163103100000000"); // BDT test
 
+    /// ________________ Pb-Pb 5.02 TeV Stephan configs ______________________________
+    //  next two configs for testing refactoring change
+    /* varying added particles parameters, two-photon cuts disabled since these get
+     * new semantics with the refactoring change */
+  } else if (trainConfig == 2500){ // == 681
+    cuts.AddCutPCM("10930d13","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d13","0dm21109a4771c00amd1400002","0153101100000000"); //
+    cuts.AddCutPCM("10930d23","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d23","0dm21109a4771c00amd1400001","0153101100000000"); //
+    cuts.AddCutPCM("10930d33","0dm21109a4771c00amd1400001","0153101100000000"); //
+    cuts.AddCutPCM("10930d33","0dm21109a4771c00amd1400002","0153101100000000"); //
+    cuts.AddCutPCM("10930d43","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d43","0dm21109a4771c00amd1400002","0153101100000000"); //
+    // testing elecsharing and tooclose cuts
+    /* compare histograms visually with histos from before refactoring. For
+     * elecsharing cut there is a unit test in place. The TooClose cut's implementation is
+     * is almost identical to the elecsharing ones so we trust for the one unit test
+     * for both of these cuts */
+  } else if (trainConfig == 2501){ // == 681        xy x: elecsharing y: TooCloseCut
+    cuts.AddCutPCM("10910d13","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000410000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000404000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000414000","0153101100000000"); //
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

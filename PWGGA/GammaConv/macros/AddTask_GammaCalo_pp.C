@@ -1363,6 +1363,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00085113","111111106g032220000","01631031000000d0"); // fEOverPMax = 1.5
     cuts.AddCutCalo("00085113","111111106h032220000","01631031000000d0"); // fEOverPMax = 1.25
 
+  } else if (trainConfig == 470){ // EMCAL cell subtraction test
+    cuts.AddCutCalo("00010113","11111110a0032230000","01631031000000d0"); // std
+
   } else if (trainConfig == 480){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
     cuts.AddCutCalo("000a0113","11111110a0032230000","01631031000000d0"); // std INT7
     cuts.AddCutCalo("000a1113","11111110a0032230000","01631031000000d0"); // std EMC7
@@ -1920,6 +1923,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 819){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger
     cuts.AddCutCalo("00010113","24466190xa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190xa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 826){ // PHOS INT7, 300MeV mimic var
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 827){ // PHOS INT7, 300MeV mimic var2
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 828){ // PHOS PHI7, 300MeV mimic var
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 829){ // PHOS PHI7, 300MeV mimic var2
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+
   }  else if (trainConfig == 840){ // PHOS INT7, 100MeV, with Timing Efficiency
 
     cuts.AddCutCalo("00010113","24466000sa09cc00000","0163103100000010"); //Int7 no Trigger
@@ -3302,7 +3314,7 @@ void AddTask_GammaCalo_pp(
     TString ClusterCutPos = cuts.GetClusterCut(i);
     ClusterCutPos = ClusterCutPos(0,1);
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
-    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data()))&&(!ClusterCutPos.CompareTo("2")) ){
+    if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
       if (enableTriggerMimicking==3){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;

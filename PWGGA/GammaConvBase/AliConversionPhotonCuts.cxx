@@ -60,8 +60,8 @@
 #include "AliDalitzEventMC.h"
 
 class iostream;
-
-using namespace std;
+using std::cout;
+using std::endl;
 
 /// \cond CLASSIMP
 ClassImp(AliConversionPhotonCuts)
@@ -185,7 +185,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fIncludeRejectedPsiPair(kFALSE),
   fCosPAngleCut(10000),
   fDoToCloseV0sCut(kFALSE),
-  fminV0Dist(200.),
+  fMinV0DistSquared(4000.),
   fDoSharedElecCut(kFALSE),
   fDoPhotonQualitySelectionCut(kFALSE),
   fDoPhotonQualityRejectionCut(kFALSE),
@@ -373,7 +373,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fIncludeRejectedPsiPair(ref.fIncludeRejectedPsiPair),
   fCosPAngleCut(ref.fCosPAngleCut),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
-  fminV0Dist(ref.fminV0Dist),
+  fMinV0DistSquared(ref.fMinV0DistSquared),
   fDoSharedElecCut(ref.fDoSharedElecCut),
   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
   fDoPhotonQualityRejectionCut(ref.fDoPhotonQualityRejectionCut),
@@ -2682,7 +2682,6 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fPhotonQualityCutTRD || fPhotonQualityCutTOF) printf("\t TRD quality: %d, TOF quality: %d\n", fPhotonQualityCutTRD, fPhotonQualityCutTOF);
   if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > 0., DeltaR < %3.2f, OpenAngle < %3.2f  \n", fDeltaR,fOpenAngle );
-
 }
 
 ///________________________________________________________________________
@@ -4479,19 +4478,19 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
   switch(toClose){
   case 0:
     fDoToCloseV0sCut = kFALSE;
-    fminV0Dist = 250;
+    fMinV0DistSquared = TMath::Power(250., 2.);
     break;
   case 1:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 1;
+    fMinV0DistSquared = TMath::Power(1., 2.);
     break;
   case 2:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 2;
+    fMinV0DistSquared = TMath::Power(2., 2.);
     break;
   case 3:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 3;
+    fMinV0DistSquared = TMath::Power(3., 2.);
     break;
   case 4:
     fDoToCloseV0sCut = kTRUE;
@@ -4830,7 +4829,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
     if (!fDoDoubleCountingCut){
       Double_t dist = pow((posX - posCompX),2)+pow((posY - posCompY),2)+pow((posZ - posCompZ),2);
 
-      if(dist < fminV0Dist*fminV0Dist){
+      if(dist < fMinV0DistSquared){
         if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
       }
     }else{
@@ -4846,6 +4845,115 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
   return kTRUE;
 }
 
+/// --------------------- TItRemove implementation start -------------------------------------
+///________________________________________________________________________
+AliConversionPhotonCuts::TItRemove::TItRemove(TMapPhotonBool &theMap, TMapPhotonBool::iterator theIt) :
+ fMap(theMap),
+ fIt(theIt),
+ fRemoved(kFALSE)
+{
+  // todo: check if that check is actually necessary and remove if not
+  if (fIt->first->GetConversionRadius()<0){
+    cout << "Photon with conversion radius < 0. Removing from list of good photon candidates.\n";
+    fIt = fMap.erase(fIt);
+  }
+}
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::TItRemove::Remove(){
+  //cout << "removing " << fIt->first->GetTrackLabelPositive() << " " << fIt->first->GetTrackLabelNegative() << " " << fIt->first->GetChi2perNDF() << endl;
+  fIt = fMap.erase(fIt);
+  fRemoved = kTRUE;
+}
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::TItRemove::IncIfNotRemoved(){
+  if (!fRemoved) ++fIt;
+  fRemoved = kFALSE;
+}
+/// --------------------- TItRemove implementation end -------------------------------------
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const {
+  Bool_t lFstWorse = theI1.fIt->first->GetChi2perNDF() > theI2.fIt->first->GetChi2perNDF();
+  lFstWorse ? theI1.Remove() : theI2.Remove();
+}
+
+// Question: is it actually necessary to compare positive against negative tracks? (Was done so far like this but could be superflous I believe)
+/* Strategy: iterate over all pairs of photons in map: outer loop over all photons, inner loop over photons to the right.
+ * For photons ABCD this will look like:
+ * it1  it2
+ * A    B,C,D
+ * B      C,D
+ * C        D
+ * D    none
+ * For each pair P1P2 check if they share a track.
+ * If they do: If P1 has the higher chi2 kick out P1, otherwise kick out P2.
+ */
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemovePhotonsWithSharedTracks(TMapPhotonBool &thePhotons) const {
+
+  // debug
+  //auto printPhoton = [](AliAODConversionPhoton *p){
+  //  cout << p->GetTrackLabelPositive() << " " << p->GetTrackLabelNegative() << " " << p->GetChi2perNDF() << " ";};
+
+  for (TItRemove i1(thePhotons, thePhotons.begin()); i1.fIt != thePhotons.end(); i1.IncIfNotRemoved()){
+    AliAODConversionPhoton *iPhoton1 = i1.fIt->first;
+
+    for (TItRemove i2(thePhotons, std::next(i1.fIt)); !(i1.fRemoved || i2.fIt == thePhotons.end()); i2.IncIfNotRemoved()){
+      AliAODConversionPhoton *iPhoton2 = i2.fIt->first;
+
+      //cout << "phot1: "; printPhoton(iPhoton1); cout << "phot2: "; printPhoton(iPhoton2); cout << endl;
+      if ( iPhoton1->GetTrackLabelPositive() == iPhoton2->GetTrackLabelPositive() ||
+           iPhoton1->GetTrackLabelPositive() == iPhoton2->GetTrackLabelNegative() ||
+           iPhoton1->GetTrackLabelNegative() == iPhoton2->GetTrackLabelPositive() ||
+           iPhoton1->GetTrackLabelNegative() == iPhoton2->GetTrackLabelNegative() )
+      {
+        RemovePhotonWithHigherChi2(i1, i2);
+      }
+    }
+  }
+}
+
+/* Strategy: iterate over all pairs of photons in map: outer loop over all photons, inner loop over photons to the right.
+ * For photons ABCD this will look like:
+ * it1  it2
+ * A    B,C,D
+ * B      C,D
+ * C        D
+ * D    none
+ * For each pair P1P2 check if it's good (meaning both photons can stay.) If it is not good, kick out the photon
+ * with the higher chi2. fDoDoubleCountingCut defines which one of two goodness criteria is applied.
+*/
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemoveTooClosePhotons(TMapPhotonBool &thePhotons) const {
+
+  for (TItRemove i1(thePhotons, thePhotons.begin()); i1.fIt != thePhotons.end(); i1.IncIfNotRemoved()){
+    AliAODConversionPhoton *iPhoton1 = i1.fIt->first;
+
+    for (TItRemove i2(thePhotons, std::next(i1.fIt)); !(i1.fRemoved || i2.fIt == thePhotons.end()); i2.IncIfNotRemoved()){
+      AliAODConversionPhoton *iPhoton2 = i2.fIt->first;
+
+      if (fDoDoubleCountingCut){
+        TVector3 v1(iPhoton1->Px(),iPhoton1->Py(),iPhoton1->Pz());
+        TVector3 v2(iPhoton2->Px(),iPhoton2->Py(),iPhoton2->Pz());
+        if((v1.Angle(v2) < fOpenAngle) &&
+           (TMath::Abs(iPhoton2->GetConversionRadius()-iPhoton1->GetConversionRadius()) < fDeltaR))
+        {
+          RemovePhotonWithHigherChi2(i1, i2);
+        }
+      }
+      else{
+        TVector3 v1(iPhoton1->GetConversionX(), iPhoton1->GetConversionY(), iPhoton1->GetConversionZ());
+        TVector3 v2(iPhoton2->GetConversionX(), iPhoton2->GetConversionY(), iPhoton2->GetConversionZ());
+        if((v2 - v1).Mag2() < fMinV0DistSquared)
+        {
+          RemovePhotonWithHigherChi2(i1, i2);
+        }
+      }
+    }
+  }
+}
 
 ///________________________________________________________________________
 AliConversionPhotonCuts* AliConversionPhotonCuts::GetStandardCuts2010PbPb(){

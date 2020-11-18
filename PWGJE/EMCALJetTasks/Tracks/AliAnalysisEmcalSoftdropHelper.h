@@ -79,6 +79,7 @@ public:
   std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults> IterativeDecluster(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
 
   SoftdropResults MakeSoftdrop(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
+  SoftdropResults MakeSoftdropStandAlone(const AliEmcalJet &jet, double jetradius, bool isPartLevel, SoftdropParams sdparams, AliVCluster::VCluUserDefEnergy_t energydef, double *vertex, bool dropMass0Jets);
 
   ClassDef(AliAnalysisEmcalSoftdropHelperImpl, 1);
 };

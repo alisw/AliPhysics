@@ -36,6 +36,7 @@
 #include "TF1.h"
 #include "TObjString.h"
 #include "AliMCEvent.h"
+#include "AliAODConversionPhoton.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
@@ -1865,21 +1866,21 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="";
       // AliInfo("Info: Nothing to be done");
       break;
-    case 1: // CEMC1 - V0OR and EMCAL fired
+    case 1: // CEMC1 - V0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and EMCAL fired
+    case 2: // CEMC7 - V0AND and PHOS fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI7";
       break;
-    case 3: // CEMC8  - T0OR and EMCAL fired
+    case 3: // CEMC8  - T0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
       fSpecialSubTrigger=1;
@@ -6388,6 +6389,44 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 //     SetRejectExtraSignalsCut(0);
   }
 
+}
+
+/* checks for a photon candidate if its tracks come from an accepted injector.
+ * return value kFALSE: photon gets discarded completely
+ *              kTRUE:  photon will get added to fGammaCandidates
+ *
+ * (only for return value kTRUE):
+ * theIsFromSelectedHeader=kTRUE:  photon will get processed fully (gamma histos will get filled)
+ * theIsFromSelectedHeader=kFALSE: will only get added to fGammaCandidates
+ *
+ * note: IsParticleFromBGEvent()>0 : particle comes from an injector on AliConvEventCuts::fHeaderList
+ *                              ==2: injector is first on that list */
+//________________________________________________________________________
+Bool_t AliConvEventCuts::PhotonPassesAddedParticlesCriterion(AliMCEvent             *theMCEvent,
+                                                             AliVEvent              *theInputEvent,
+                                                             AliAODConversionPhoton &thePhoton,
+                                                             Bool_t                 &theIsFromSelectedHeader)
+{
+  theIsFromSelectedHeader = kTRUE;
+  if (!fRejectExtraSignals) return kTRUE;
+
+  auto bothFromFirstHeader = [](Int_t thePos, Int_t theNeg){ return (thePos+theNeg)==4; };
+  Int_t lIsPosFromMBHeader = IsParticleFromBGEvent(thePhoton.GetMCLabelPositive(), theMCEvent, theInputEvent);
+
+  if (fRejectExtraSignals==3){
+    Int_t lIsNegFromMBHeader = IsParticleFromBGEvent(thePhoton.GetMCLabelNegative(), theMCEvent, theInputEvent);
+    theIsFromSelectedHeader = bothFromFirstHeader(lIsNegFromMBHeader, lIsPosFromMBHeader);
+  }
+  else{ // 1,2,4
+    if (!lIsPosFromMBHeader) return kFALSE;
+    Int_t lIsNegFromMBHeader = IsParticleFromBGEvent(thePhoton.GetMCLabelNegative(), theMCEvent, theInputEvent);
+    if (!lIsNegFromMBHeader) return kFALSE;
+
+    if (fRejectExtraSignals!=2) {
+      theIsFromSelectedHeader = bothFromFirstHeader(lIsNegFromMBHeader, lIsPosFromMBHeader);
+    }
+  }
+  return kTRUE;
 }
 
 //_________________________________________________________________________
