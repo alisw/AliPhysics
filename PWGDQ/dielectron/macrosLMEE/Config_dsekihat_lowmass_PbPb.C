@@ -8,6 +8,8 @@ TString TrackCutnames[] = {
 //	"DefaultTrackCut_Nsc0"
 // "DefaultTrackCut_Nsc01",
  "DefaultTrackCut_Nsc01_woPU"
+ ,"DefaultTrackCut_Nsc01_onlyPU"
+ ,"DefaultTrackCut_Nsc01"
 //,"LooseTrackCut"
 //,"TightTrackCut"
 //,"PIDCalibTrackCut"
@@ -18,12 +20,12 @@ Int_t GetNTC(){return nTC;}
 
 TString PIDnames[] = {
 //  "DefaultPID"
-  "ITSTPChadrejORTOFrec"
- ,"ITSTPChadrej"
- ,"ITSTOFrecover"
- ,"TPChadrejORTOFrec"
- ,"TPChadrej"
- ,"TOFrecover"
+//  "ITSTPChadrejORTOFrec"
+// ,"ITSTPChadrej"
+// ,"ITSTOFrecover"
+ "TPChadrejORTOFrec"
+// ,"TPChadrej"
+// ,"TOFrecover"
 // ,"TightTPCTOF"
 // ,"TightTPC"
 // ,"noPID"
@@ -72,15 +74,17 @@ AliDielectron* Config_dsekihat_lowmass_PbPb(
 	//pairing with TLorentzVector
 	die->SetUseKF(kFALSE);
 
-	if(name.Contains("woPU") && !isMC){
-		TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
-		f1min->SetNpx(1000);
-		f1min->FixParameter(0,-3000);
-		f1min->FixParameter(1,0.0099);
-		f1min->FixParameter(2,9.42e-10);
-
+	if(name.Contains("woPU")){
+		TF1 *f1pu = (TF1*)lib->SetupPileupCuts();
 		AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
-		pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+		pileupcuts->SetMinCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+		pileupcuts->Print();
+		die->GetEventFilter().AddCuts(pileupcuts);
+	}
+	else if(name.Contains("onlyPU")){
+		TF1 *f1pu = (TF1*)lib->SetupPileupCuts();
+		AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+		pileupcuts->SetMaxCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
 		pileupcuts->Print();
 		die->GetEventFilter().AddCuts(pileupcuts);
 	}
@@ -418,7 +422,6 @@ void SetupMCSignals(AliDielectron *die)
   pcmSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
   pcmSig->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(pcmSig);
-
 
   AliDielectronSignalMC* diEleOpenCharm = new AliDielectronSignalMC("chadrons","di-electrons from open charm hadrons no B grandmother");  // dielectrons originating from open charm hadrons
   diEleOpenCharm->SetLegPDGs(11,-11);

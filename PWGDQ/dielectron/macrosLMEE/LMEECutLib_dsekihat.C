@@ -41,6 +41,15 @@ class LMEECutLib {
 			return eventCuts;
 		}
 
+    static TF1 *SetupPileupCuts(){
+      TF1 *f1pu = new TF1("f1pu","pol2(0)",0,1e+8);
+      f1pu->SetNpx(1000);
+      f1pu->FixParameter(0,-3000);
+      f1pu->FixParameter(1,0.0099);
+      f1pu->FixParameter(2,9.42e-10);
+      return f1pu;
+    }
+
 		AliESDtrackCuts *SetupESDtrackCuts(){//only for ESD
 			AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);//bit4
 			esdTrackCuts->SetMaxDCAToVertexXY(2.4);
