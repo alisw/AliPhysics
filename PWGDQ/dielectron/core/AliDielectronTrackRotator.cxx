@@ -169,7 +169,7 @@ Bool_t AliDielectronTrackRotator::NextCombination()
   Int_t nPos = fkArrTracksP->GetEntriesFast();
   Int_t nNeg = fkArrTracksN->GetEntriesFast();
   if (!fkArrTracksP || !fkArrTracksP ||
-      (nPos <= 1 && nNeg <= 1)) {
+      (nPos < 1 || nNeg < 1)) {
     Reset();
     return kFALSE;
   }
@@ -379,7 +379,6 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
           //const double rotation_angle = pow(-1.,loop_count) * 180. * TMath::Pi()/180.;
           const double rotation_angle = gRandom->Rndm() * TMath::TwoPi(); //TMath::Pi() / 2.;
           //const double rotation_angle = pow(-1.,loop_count) * gRandom->Rndm()  * TMath::Pi();
-
         
           double posWeightSum = 0; 
           double negWeightSum = 0;
@@ -400,8 +399,7 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
         
             loop_count++;
             rotated_count++;
-
-
+ 
             Double_t weight_rotAng = 1.;
             //Double_t weight_rotAng = GetWeightFromRotation2(rotation_angle);
             
