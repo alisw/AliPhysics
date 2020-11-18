@@ -71,6 +71,8 @@ public:
   void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
   void SetEventMixingPoolMaxReuse(int maxDepth) { fEventMixingPoolMaxReuse = maxDepth; }
 
+  int CheckPionCharge(std::vector<AliESDtrack *> tracks[2][2], AliESDv0 v0);
+
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
   int fCounter;
@@ -128,6 +130,7 @@ private:
   TH2D *fHistNSigmaP = nullptr;      //! # sigma TPC proton for the positive prong
   TH2D *fHistNSigmaPi = nullptr;     //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass = nullptr;      //! # Invariant mass histogram
+  TH1D *fHistDecVertexRes = nullptr; //! # decay vertex resolution
 
   float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree

@@ -176,6 +176,7 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3()
 
 void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
 {
+  fCounter = 0;
 
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -197,11 +198,13 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects()
   fHistInvMass =
       new TH2D("fHistInvMass", ";m_{dp#pi}(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96, 3.05, 100, 0, 10);
 
+  fHistDecVertexRes =
+      new TH1D("fHistDecVertexRes", "; Resoultion(cm); Counts", 40, -1, 1);
   fListHist->Add(fHistNSigmaDeu);
   fListHist->Add(fHistNSigmaP);
   fListHist->Add(fHistNSigmaPi);
-
   fListHist->Add(fHistInvMass);
+  fListHist->Add(fHistDecVertexRes);
 
   OpenFile(2);
   fTreeHyp3 = new TTree("Hyp3O2", "Hypetriton 3 Body with the O2 Vertexer");
@@ -555,56 +558,39 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
     for (auto &deuPiV0 : deuPiV0s)
     {
 
-      double pP[3], nP[3];
-      deuPiV0.GetPPxPyPz(pP[0], pP[1], pP[2]);
-      deuPiV0.GetNPxPyPz(nP[0], nP[1], nP[2]);
+      int isPiPositive = CheckPionCharge(deuPiTracks, deuPiV0);
+      if (isPiPositive < 0)
+        continue;
 
-      int piChargeIndex = -1;
-      piChargeIndex = (deuPiTracks[1][1].size() - 1 < int(deuPiV0.GetPindex())) ? 0 : -1;
-      piChargeIndex = (deuPiTracks[0][1].size() - 1 < int(deuPiV0.GetNindex())) ? 1 : -1;
+      int piIndex = isPiPositive ? deuPiV0.GetPindex() : deuPiV0.GetNindex();
+      int deuIndex = isPiPositive ? deuPiV0.GetNindex() : deuPiV0.GetPindex();
 
-      if (piChargeIndex == -1)
-      {
-        double posDiff = std::abs(deuPiTracks[1][1][deuPiV0.GetPindex()]->Px() - pP[0]);
-        double negDiff = std::abs(deuPiTracks[0][1][deuPiV0.GetNindex()]->Px() - nP[0]);
-        piChargeIndex = posDiff < negDiff ? 1 : 0;
-      }
-
-
-      auto firstPiTrack = piChargeIndex ? deuPiTracks[1][1][deuPiV0.GetPindex()] : deuPiTracks[0][1][deuPiV0.GetNindex()];
-
-      auto deuTrack = piChargeIndex ? deuPiTracks[0][0][deuPiV0.GetNindex()] : deuPiTracks[1][0][deuPiV0.GetPindex()];
+      auto piTrack = deuPiTracks[isPiPositive][1][piIndex];
+      auto deuTrack = deuPiTracks[1 - isPiPositive][0][deuIndex];
 
       for (auto &prPiV0 : prPiV0s)
       {
 
-        double ppP[3], nnP[3];
-        prPiV0.GetPPxPyPz(ppP[0], ppP[1], ppP[2]);
-        prPiV0.GetNPxPyPz(nnP[0], nnP[1], nnP[2]);
-
-        int piChargeIndex2 = -1;
-        piChargeIndex2 = (prPiTracks[1][1].size() - 1 < int(prPiV0.GetPindex())) ? 0 : -1;
-        piChargeIndex2 = (prPiTracks[0][1].size() - 1 < int(prPiV0.GetNindex())) ? 1 : -1;
-
-        if (piChargeIndex2 == -1)
-        {
-          double posDiff2 = std::abs(prPiTracks[1][1][prPiV0.GetPindex()]->Px() - ppP[0]);
-          double negDiff2 = std::abs(prPiTracks[0][1][prPiV0.GetNindex()]->Px() - nnP[0]);
-          piChargeIndex2 = posDiff2 < negDiff2 ? 1 : 0;
-        }
-
-        auto secPiTrack = piChargeIndex2 ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
-        if (firstPiTrack != secPiTrack) // require common pion
+        int isSecondPiPositive = CheckPionCharge(prPiTracks, prPiV0);
+        if (isSecondPiPositive < 0)
           continue;
 
-        auto prTrack = piChargeIndex ? prPiTracks[0][0][prPiV0.GetNindex()] : prPiTracks[1][0][prPiV0.GetPindex()];
+        auto secondPiTrack = isSecondPiPositive ? prPiTracks[1][1][prPiV0.GetPindex()] : prPiTracks[0][1][prPiV0.GetNindex()];
+        if (piTrack != secondPiTrack) // require common pion
+          continue;
 
-        std::array<AliESDtrack *, 3> tracks{
-            deuTrack, // deuteron
-            prTrack,  // proton
-            firstPiTrack};
+        int prIndex = isPiPositive ? prPiV0.GetNindex() : prPiV0.GetPindex();
+        auto prTrack = prPiTracks[1 - isPiPositive][0][prIndex];
+
+        std::array<AliESDtrack *, 3> tracks{deuTrack, prTrack, piTrack};
 
         if (tracks[0] == tracks[1] || tracks[1] == tracks[2] || tracks[0] == tracks[2])
+          continue;
+
+        if (deuPiTracks[1 - isPiPositive][0].size() < deuIndex)
+          continue;
+
+        if (prPiTracks[1 - isPiPositive][0].size() < prIndex)
           continue;
 
         if (!acceptTracks(tracks))
@@ -615,14 +601,18 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         prPiV0.GetXYZ(secondXYZ[0], secondXYZ[1], secondXYZ[2]);
         deuPiV0.GetVertex().GetCovarianceMatrix(firstCov);
         prPiV0.GetVertex().GetCovarianceMatrix(secondCov);
-
-        double vert[3];
-        constexpr int covIndex[3]{0, 3, 5};
+        double vert[3], sigmaVert[3];
+        constexpr int covIndex[3]{0, 2, 5};
         for (int i{0}; i < 3; ++i)
         {
           vert[i] = (firstXYZ[i] / firstCov[covIndex[i]] + secondXYZ[i] / secondCov[covIndex[i]]) / (1. / firstCov[covIndex[i]] + 1. / secondCov[covIndex[i]]);
+          sigmaVert[i] = TMath::Sqrt(1. / (1. / (firstCov[covIndex[i]] * firstCov[covIndex[i]]) + 1. / (secondCov[covIndex[i]] * secondCov[covIndex[i]])));
         }
-        decayVtx.SetCoordinates(vert[0], vert[1], vert[2]);
+        double sumCov[6];
+        for (int i{0}; i < 6; ++i)
+        {
+          sumCov[i] = firstCov[i] + secondCov[i];
+        }
 
         std::array<float, 3> nSigmasTPC{fPIDResponse->NumberOfSigmasTPC(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTPC(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTPC(tracks[2], kAliPID[2])};
         std::array<float, 3> nSigmasTOF{fPIDResponse->NumberOfSigmasTOF(tracks[0], kAliPID[0]), fPIDResponse->NumberOfSigmasTOF(tracks[1], kAliPID[1]), fPIDResponse->NumberOfSigmasTOF(tracks[2], kAliPID[2])};
@@ -645,9 +635,27 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.candidates = 3;
 
         double deuPos[3], proPos[3], piPos[3];
+
+        // AliESDVertex
+        AliESDVertex *decESDVtx = new AliESDVertex(vert, sigmaVert, "vert");
+
+        for (int i = 0; i < 3; i++)
+        {
+          tracks[i]->PropagateToDCA(decESDVtx, esdEvent->GetMagneticField(), 25.);
+        }
+
         tracks[0]->GetXYZ(deuPos);
         tracks[1]->GetXYZ(proPos);
         tracks[2]->GetXYZ(piPos);
+
+        if (fMC && IsTrueHyperTriton3Candidate(tracks[0], tracks[1], tracks[2], mcEvent) >= 0)
+        {
+          int lab = std::abs(tracks[0]->GetLabel());
+          if (!mcEvent->IsSecondaryFromWeakDecay(lab))
+            continue;
+          AliVParticle *part = mcEvent->GetTrack(lab);
+          fHistDecVertexRes->Fill(vert[0] - part->Xv() + vert[1] - part->Yv() + vert[2] - part->Zv());
+        }
 
         doubleV0sRecHyp.dca_de_pr = Hypot(deuPos[0] - proPos[0], deuPos[1] - proPos[1], deuPos[2] - proPos[2]);
         if (doubleV0sRecHyp.dca_de_pr > fMaxTrack2TrackDCA[0])
@@ -655,21 +663,30 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
         if (doubleV0sRecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
           continue;
+
         doubleV0sRecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
         if (doubleV0sRecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
+          continue;
+
+        doubleV0sRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
+        if (doubleV0sRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
+          continue;
+
+        doubleV0sRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
+        if (doubleV0sRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
           continue;
 
         doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
         if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
           continue;
-        doubleV0sRecHyp.dca_pr_sv = Hypot(proPos[0] - vert[0], proPos[1] - vert[1], proPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pr_sv > fMaxTrack2SVDCA[1])
-          continue;
-        doubleV0sRecHyp.dca_pi_sv = Hypot(piPos[0] - vert[0], piPos[1] - vert[1], piPos[2] - vert[2]);
-        if (doubleV0sRecHyp.dca_pi_sv > fMaxTrack2SVDCA[2])
-          continue;
+        
+        doubleV0sRecHyp.cosPA_Lambda = prPiV0.GetV0CosineOfPointingAngle();
+        doubleV0sRecHyp.chi2 = prPiV0.GetChi2V0() + deuPiV0.GetChi2V0();
 
-        doubleV0sRecHyp.chi2 = 0.;
+        for (int i = 0; i < 3; i++)
+        {
+          tracks[i]->PropagateToDCA(esdEvent->GetPrimaryVertex(), esdEvent->GetMagneticField(), 25.);
+        }
 
         if (!fillTreeInfo(tracks, nSigmasTPC, nSigmasTOF))
           continue;
@@ -789,6 +806,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               o2RecHyp.dca_de_pi = Hypot(deuPos[0] - piPos[0], deuPos[1] - piPos[1], deuPos[2] - piPos[2]);
               if (o2RecHyp.dca_de_pi > fMaxTrack2TrackDCA[1])
                 continue;
+
               o2RecHyp.dca_pr_pi = Hypot(proPos[0] - piPos[0], proPos[1] - piPos[1], proPos[2] - piPos[2]);
               if (o2RecHyp.dca_pr_pi > fMaxTrack2TrackDCA[2])
                 continue;
@@ -905,6 +923,27 @@ int AliAnalysisTaskHypertriton3::FindEventMixingZBin(const float zvtx)
   if (zvtx > 10. || zvtx < -10.)
     return -999.;
   return static_cast<int>((zvtx + 10.) / 2);
+}
+
+int AliAnalysisTaskHypertriton3::CheckPionCharge(std::vector<AliESDtrack *> tracks[2][2], AliESDv0 v0)
+{
+
+  double pP[3], nP[3];
+  v0.GetPPxPyPz(pP[0], pP[1], pP[2]);
+  v0.GetNPxPyPz(nP[0], nP[1], nP[2]);
+  int isPiPositive = -1;
+  if (tracks[1][1].size() <= int(v0.GetPindex()) && tracks[0][1].size() <= int(v0.GetNindex()))
+    return isPiPositive;
+  isPiPositive = (tracks[1][1].size() <= int(v0.GetPindex())) ? 0 : -1;
+  isPiPositive = (tracks[0][1].size() <= int(v0.GetNindex())) ? 1 : -1;
+
+  if (isPiPositive == -1)
+  {
+    double posDiff = std::abs(tracks[1][1][v0.GetPindex()]->Px() - pP[0]);
+    double negDiff = std::abs(tracks[0][1][v0.GetNindex()]->Px() - nP[0]);
+    isPiPositive = posDiff < negDiff ? 1 : 0;
+  }
+  return isPiPositive;
 }
 
 void AliAnalysisTaskHypertriton3::FillEventMixingPool(const float centrality, const float zvtx,
