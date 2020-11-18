@@ -86,6 +86,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
+  TrackCutsPhi->SetKaonRejection(0,0);
+
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
   //    if (suffix != "0") {
