@@ -438,41 +438,55 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	    AntiprotonParticles.push_back(*fTrack);
 	  }
 
-	  // deuterons
-         if(fTrackCutsPart3->isSelected(fTrack)){
+         if(fDeuteronSideband){
 
-            mass2 = CalculateMassSqTOF(fTrack); 
-            mean = GetDeuteronMass2Mean_pp(fTrack->GetPt());
-            sigma = GetDeuteronMass2Sigma_pp(fTrack->GetPt());
+          mass2 = CalculateMassSqTOF(fTrack); 
+          mean = GetDeuteronMass2Mean_pp(fTrack->GetPt());
+          sigma = GetDeuteronMass2Sigma_pp(fTrack->GetPt());
 
-            if(fDeuteronSideband){
+	  if((mass2 >= mean + (fDeuteronSigmaLeft*sigma)) && (mass2 <= (mean + fDeuteronSigmaRight*sigma))){
 
-             if(mass2 >= mean + fDeuteronSigmaLeft*sigma && mass2 <= mean + fDeuteronSigmaRight*sigma){
+	    // deuterons (sideband only)
+           if(fTrackCutsPart3->isSelected(fTrack)){
+
                 DeuteronParticles.push_back(*fTrack);
-                fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
-              }   
+		fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
+           }
+	  }
 
-            }else{
+         }else{
+
+	    // deuterons (all particles)
+           if(fTrackCutsPart3->isSelected(fTrack)){
+
+	      mass2 = CalculateMassSqTOF(fTrack); 
               DeuteronParticles.push_back(*fTrack);
               fDeuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
             }   
           }   
 	
-	  // antideuterons	
-          if(fTrackCutsPart4->isSelected(fTrack)){
+	  if(fDeuteronSideband){
             
             mass2 = CalculateMassSqTOF(fTrack);
             mean = GetAntideuteronMass2Mean_pp(fTrack->GetPt());
             sigma = GetAntideuteronMass2Sigma_pp(fTrack->GetPt());
-            
-            if(fDeuteronSideband){
               
-              if(mass2 >= mean + fAntideuteronSigmaLeft*sigma && mass2 <= mean + fAntideuteronSigmaRight*sigma){
+	    if((mass2 >= mean + (fAntideuteronSigmaLeft*sigma)) && (mass2 <= mean + (fAntideuteronSigmaRight*sigma))){
+
+	      // antideuterons (sideband only)	
+	      if(fTrackCutsPart4->isSelected(fTrack)){
+                          
                 AntideuteronParticles.push_back(*fTrack);
                 fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),mass2);
               }
-              
-            }else{
+	    }
+        
+	  }else{
+	      
+	    // antideuterons (all particles)
+	    if(fTrackCutsPart4->isSelected(fTrack)){
+
+	      mass2 = CalculateMassSqTOF(fTrack);
               AntideuteronParticles.push_back(*fTrack);
               fAntideuteronMassSqTOF->Fill(fTrack->GetPt(),CalculateMassSqTOF(fTrack));
             }
