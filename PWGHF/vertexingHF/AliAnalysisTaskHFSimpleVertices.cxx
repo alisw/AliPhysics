@@ -83,6 +83,11 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistDecLenXYErrD0{nullptr},
   fHistCovMatPrimVXX2Prong{nullptr},
   fHistCovMatSecVXX2Prong{nullptr},
+  fHistD0SignalVertX{nullptr},
+  fHistD0SignalVertY{nullptr},
+  fHistD0SignalVertZ{nullptr},
+  fHistInvMassD0Signal{nullptr},
+  fHistInvMassD0Refl{nullptr},
   fHistInvMassDplus{nullptr},
   fHistPtDPlus{nullptr},
   fHistPtDplusDau0{nullptr},
@@ -111,6 +116,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fReadMC(kFALSE),
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
   fSelectOnCentrality(kFALSE),
@@ -190,6 +196,11 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistDecLenXYErrD0;
     delete fHistCovMatPrimVXX2Prong;
     delete fHistCovMatSecVXX2Prong;
+    delete fHistD0SignalVertX;
+    delete fHistD0SignalVertY;
+    delete fHistD0SignalVertZ;
+    delete fHistInvMassD0Signal;
+    delete fHistInvMassD0Refl;
     delete fHistInvMassDplus;
     delete fHistPtDPlus;             
     delete fHistPtDplusDau0;         
@@ -464,6 +475,18 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistDecLenXYErrD0);
   fOutput->Add(fHistCovMatPrimVXX2Prong);
   fOutput->Add(fHistCovMatSecVXX2Prong);
+
+  // MC truth D0 histos
+  fHistD0SignalVertX = new TH1F("hD0SignalVertX"," Secondary Vertex ; x (cm)",1000, -2., 2.);
+  fHistD0SignalVertY = new TH1F("hD0SignalVertY"," Secondary Vertex ; y (cm)",1000, -2., 2.);
+  fHistD0SignalVertZ = new TH1F("hD0SignalVertZ"," Secondary Vertex ; z (cm)",1000, -20.0, 20.0);
+  fHistInvMassD0Signal = new TH1F("hInvMassD0Signal", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
+  fHistInvMassD0Refl = new TH1F("hInvMassD0Refl", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
+  fOutput->Add(fHistD0SignalVertX);
+  fOutput->Add(fHistD0SignalVertY);
+  fOutput->Add(fHistD0SignalVertZ);
+  fOutput->Add(fHistInvMassD0Signal);
+  fOutput->Add(fHistInvMassD0Refl);
   
   // Dplus meson candidate histos
   fHistInvMassDplus = new TH1F("hInvMassDplus", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
@@ -543,20 +566,20 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   // AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   // AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
 
-  // AliMCEvent* mcEvent = nullptr;
-
-  // if(fReadMC){
-  //   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  //   if (!eventHandler) {
-  //     Printf("ERROR: Could not retrieve MC event handler");
-  //     return;
-  //   }
-  //   mcEvent = eventHandler->MCEvent();
-  //   if (!mcEvent) {
-  //     Printf("ERROR: Could not retrieve MC event");
-  //     return;
-  //   }
-  // }
+  AliMCEvent* mcEvent = nullptr;
+  if(fReadMC){
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+    mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+  }
+  Int_t pdgD0dau[2]={321,211};
 
 
   fHistNEvents->Fill(0);
@@ -668,7 +691,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       double decaylengthxy = TMath::Sqrt(deltax * deltax + deltay * deltay);
 
       AliAODVertex* vertexAOD = ConvertToAODVertex(trkv);
-      delete trkv;
       AliAODRecoDecayHF2Prong* the2Prong = Make2Prong(twoTrackArray, vertexAOD, bzkG);
       the2Prong->SetOwnPrimaryVtx(vertexAODp);
       Int_t deroSel = 3;
@@ -703,7 +725,27 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
         fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
         the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
         fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
+	if(fReadMC && mcEvent){
+	  Int_t labD=MatchToMC(the2Prong,421,mcEvent,2,twoTrackArray,pdgD0dau);
+	  if(labD>=0){
+	    fHistD0SignalVertX->Fill(trkv->GetX());
+	    fHistD0SignalVertY->Fill(trkv->GetY());
+	    fHistD0SignalVertZ->Fill(trkv->GetZ());
+	    AliESDtrack* trDau0=(AliESDtrack*)twoTrackArray->UncheckedAt(0);
+	    Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+	    AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+	    Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+	    if(pdgCode==211){
+	      fHistInvMassD0Signal->Fill(m0);
+	      fHistInvMassD0Refl->Fill(m0b);
+	    }else if(pdgCode==321){
+	      fHistInvMassD0Signal->Fill(m0b);
+	      fHistInvMassD0Refl->Fill(m0);
+	    }
+	  }
+	}
       }
+      delete trkv;
       delete the2Prong;
       delete vertexAOD;
 
@@ -1126,7 +1168,7 @@ AliAODRecoDecayHF2Prong* AliAnalysisTaskHFSimpleVertices::Make2Prong(TObjArray* 
   Double_t xdummy, ydummy;
   float dcap1n1 = track_0->GetDCA(track_1, bzkG, xdummy, ydummy);
 
-  AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(0x0, px, py, pz, d0, d0err, dcap1n1);
+  AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(secVert, px, py, pz, d0, d0err, dcap1n1);
   AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
   the2Prong->SetOwnSecondaryVtx(ownsecv);
   return the2Prong;
@@ -1224,6 +1266,111 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
     returnValue += 2;
   return returnValue;
 }
+//----------------------------------------------------------------------------
+Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,
+						 Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const {
+
+  Int_t ndg=rd->GetNDaughters();
+  if(!ndg) {
+    AliError("No daughters available");
+    return -1;
+  }
+  if(ndg>10) {
+    AliError("Only decays with <10 daughters supported");
+    return -1;
+  }
+  if(ndgCk>0 && ndgCk!=ndg) {
+    AliError("Wrong number of daughter PDGs passed");
+    return -1;
+  }
+  Int_t dgLabels[10] = {0};
+
+  // loop on daughters and write the labels
+  for(Int_t i=0; i<ndg; i++) {
+    AliESDtrack* trk = (AliESDtrack*)trkArray->UncheckedAt(i);
+    dgLabels[i] = trk->GetLabel();
+  }
+
+  Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
+  Int_t i,j,lab,labMother,pdgMother,pdgPart;
+  AliMCParticle *part=0;
+  AliMCParticle *mother=0;
+  Double_t pxSumDgs=0.,pySumDgs=0.,pzSumDgs=0.;
+  Bool_t pdgUsed[10]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  // loop on daughter labels
+  for(i=0; i<ndg; i++) {
+    labMom[i]=-1;
+    lab = TMath::Abs(dgLabels[i]);
+    if(lab<0) {
+      printf("daughter with negative label %d\n",lab);
+      return -1;
+    }
+    part = (AliMCParticle*)mcEvent->GetTrack(lab);
+    if(!part) { 
+      printf("no MC particle\n");
+      return -1;
+    }
+    // check the PDG of the daughter, if requested
+    if(ndgCk>0) {
+      pdgPart=TMath::Abs(part->PdgCode());
+      for(j=0; j<ndg; j++) {
+	if(!pdgUsed[j] && pdgPart==pdgDg[j]) {
+	  pdgUsed[j]=kTRUE;
+	  break;
+	}
+      }
+    }
+
+    mother = part;
+    while(mother->GetMother()>=0) {
+      labMother=mother->GetMother();
+      mother = (AliMCParticle*)mcEvent->GetTrack(labMother);
+      if(!mother) {
+	printf("no MC mother particle\n");
+	break;
+      }
+      pdgMother = TMath::Abs(mother->PdgCode());
+      if(pdgMother==pdgabs) {
+	labMom[i]=labMother;
+	// keep sum of daughters' momenta, to check for mom conservation
+	pxSumDgs += part->Px();
+	pySumDgs += part->Py();
+	pzSumDgs += part->Pz();
+	break;
+      } else if(pdgMother>pdgabs || pdgMother<10) {
+	break;
+      }
+    }
+    if(labMom[i]==-1) return -1; // mother PDG not ok for this daughter
+  } // end loop on daughters
+  
+  // check if the candidate is signal
+  labMother=labMom[0];
+  // all labels have to be the same and !=-1
+  for(i=0; i<ndg; i++) {
+    if(labMom[i]==-1)        return -1;
+    if(labMom[i]!=labMother) return -1;
+  }
+
+  // check that all daughter PDGs are matched
+  if(ndgCk>0) {
+    for(i=0; i<ndg; i++) {
+      if(pdgUsed[i]==kFALSE) return -1;
+    }
+  }
+  mother = (AliMCParticle*)mcEvent->GetTrack(labMother);
+  Double_t pxMother = mother->Px();
+  Double_t pyMother = mother->Py();
+  Double_t pzMother = mother->Pz();
+  // within 0.1%
+  if((TMath::Abs(pxMother-pxSumDgs)/(TMath::Abs(pxMother)+1.e-13)) > 0.00001 &&
+     (TMath::Abs(pyMother-pySumDgs)/(TMath::Abs(pyMother)+1.e-13)) > 0.00001 &&
+     (TMath::Abs(pzMother-pzSumDgs)/(TMath::Abs(pzMother)+1.e-13)) > 0.00001) 
+    return -1;
+ 
+  return labMother;
+}
+
 //______________________________________________________________________________
 char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* key){
   FILE* fj=fopen(jsonFileName,"r");

@@ -30,6 +30,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
   void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
   void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
+  void SetReadMC(Bool_t read){fReadMC=read;}
   
  private:
 
@@ -53,7 +54,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
-
+  Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
+  
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBins = 100, kNCutVarsDzero=11};
   enum { kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
@@ -97,6 +99,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistDecLenXYErrD0;          //!<!  histo with D0 decay length XY err
   TH1F* fHistCovMatPrimVXX2Prong;    //!<!  histo with cov mat prim vert for the 2-prong candidate
   TH1F* fHistCovMatSecVXX2Prong;     //!<!  histo with cov mat sec vert for the 2-prong candidate
+  TH1F* fHistD0SignalVertX;          //!<!  histo of D0 (MC truth) vertex x
+  TH1F* fHistD0SignalVertY;          //!<!  histo of D0 (MC truth) vertex y
+  TH1F* fHistD0SignalVertZ;          //!<!  histo of D0 (MC truth) vertex z
+  TH1F* fHistInvMassD0Signal;        //!<!  histo with D0 (MC truth) inv mass
+  TH1F* fHistInvMassD0Refl;          //!<!  histo with D0 (reflection) inv mass
   
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
   TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
@@ -128,6 +135,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t  fSelectOnCentrality; // flag to activate cut on centrality
@@ -168,7 +176,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,8);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,9);
 };
 
 
