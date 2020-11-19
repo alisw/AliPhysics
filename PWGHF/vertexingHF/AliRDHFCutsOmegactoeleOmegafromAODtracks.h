@@ -138,7 +138,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   void SetExcludenSigmaProtonTPC(Double_t a){fExcludenSigmaProtonTPC=a;}
   void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
   void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
-  void SetSigmaElectronTOFRange(Double_t a,Double_t b{fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
+  void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
   void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
   void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
   void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
