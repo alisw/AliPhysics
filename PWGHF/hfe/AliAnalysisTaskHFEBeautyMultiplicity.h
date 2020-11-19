@@ -67,6 +67,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fCent;
         TH2F* fMult;
         TH1F* fVtxZ;                  // Zvertex position
+        TH1F* fVtxZ_2;                // Zvertex position after event cut
         TH1F* fVtxX;                  // Xvertex position
         TH1F* fVtxY;                  // Yvertex position
         TH2F* fVtxCorrelation;        // Primary Zvertex vs. SPD Zvertex
@@ -101,6 +102,16 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fHistEMCTrkMatch_Eta;   // distance of EMCal cluster to its closest track (Eta)
         TH1F* fHistEMCTrkMatch_Phi;   // distance of EMCal cluster to its closest track (Phi)
         TH2F* fEMCTrkMatch_EtaPhi;
+
+	
+    	TH1F* fTrkPt_2,		      // track pT (after track cut)
+    	TH1F* fTrkEta_2,	      // track Eta (after track cut)
+    	TH1F* fTrkPhi_2,	      // track Phi (after track cut)
+    	TH2F* fdEdx_2,		      // dE/dx (after track cut)
+    	TH2F* fTPCnsig_2,	      // TPC Nsigma (after track cut)
+    	TH2F* fTOFnsig_2,	      // TOF Nsigma (after track cut)
+    	TH2F* fITSnsig_2,	      // ITS Nsigma (after track cut)
+    	TH1F* fTPCCrossedRow_2,       // TPC CrossedRows (after track cut)
     
         TH2F* fM02_1;
         TH2F* fM20_1;
