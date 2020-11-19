@@ -2345,7 +2345,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
 //_______________________________________________________________________
 void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
 {
-  if (!IsRecalibrationOn() && !IsTimeRecalibrationOn() && !IsBadChannelsRemovalSwitchedOn() && !IsSingleChannelRecalibrationOn())
+  if (!IsRecalibrationOn() && !IsTimeRecalibrationOn() && !IsL1PhaseInTimeRecalibrationOn() && !IsBadChannelsRemovalSwitchedOn() && !IsSingleChannelRecalibrationOn())
     return;
 
   if (!cells)
