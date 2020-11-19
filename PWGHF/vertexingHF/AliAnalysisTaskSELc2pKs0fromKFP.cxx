@@ -998,7 +998,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec_QA()
 
   const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fTree_Lc_QA = new TTree(nameoutput, "QA of Lc variables tree");
-  Int_t nVar = 25;
+  Int_t nVar = 26;
   fVar_Lc_QA = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1042,6 +1042,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec_QA()
   fVarNames[22] = "Source_Ks0"; //flag for Ks0 MC truth (“>=0” signal, “<0” background)
   fVarNames[23] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
   fVarNames[24] = "mass_Lc_AODRecoCascadeHF"; //mass of Lc (from AliAODRecoCascadeHF)
+  fVarNames[25] = "pt_Lc_AODRecoCascadeHF"; //pt of Lc (from AliAODRecoCascadeHF)
 
 //  fVarNames[] = "CosThetaStar_Pr"; //cosine angle between the proton momentum in the Lc rest frame and the boost direction
 
@@ -1120,7 +1121,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     fVar_Lc[i] = -9999.;
   }
 
-  for (Int_t i=0; i<25; i++) {
+  for (Int_t i=0; i<26; i++) {
     fVar_Lc_QA[i] = -9999.;
   }
 
@@ -1326,6 +1327,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   fVar_Lc_QA[23] = lab_Lc;
 
   fVar_Lc_QA[24] = Lc2pKs0->InvMassLctoK0sP();
+  fVar_Lc_QA[25] = Lc2pKs0->Pt();
 
   /*
   //Method to get tracklet multiplicity from event
