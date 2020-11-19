@@ -186,7 +186,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=30 && mult_comb08<=69 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=50 && mult_comb08<=69 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
 //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks2) break;
@@ -194,7 +194,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=40 && mult_comb08<=59 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=50 && mult_comb08<=59 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
 //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks3) break;
