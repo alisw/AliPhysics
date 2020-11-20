@@ -880,9 +880,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
               output.Track_dPhi = ConvertToShort(tempPhiHigh,kShortScaleHigh);
 
               output.Track_E = ConvertToUShort(highTrack->E(),kShortScaleLow);
-              output.Track_Px = ConvertToUShort(highTrack->Px(),kShortScaleLow);
-              output.Track_Py = ConvertToUShort(highTrack->Py(),kShortScaleLow);
-              output.Track_Pz = ConvertToUShort(highTrack->Pz(),kShortScaleLow);
+              output.Track_Px = ConvertToShort(highTrack->Px(),kShortScaleLow);
+              output.Track_Py = ConvertToShort(highTrack->Py(),kShortScaleLow);
+              output.Track_Pz = ConvertToShort(highTrack->Pz(),kShortScaleLow);
               output.Track_NSigmaElec = ConvertToShort(fPIDResponse->NumberOfSigmasTPC(highTrack,AliPID::kElectron),kShortScaleMiddle); 
               output.Track_IsFromV0 = isV0; 
               
@@ -924,9 +924,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
                     if(TMath::Abs(trackMC->GetPdgCode()) == 11){
                       output.MC_Track_Is_Electron = kTRUE;
                       output.MC_True_Track_E = ConvertToUShort(trackMC->E(),kShortScaleLow); 
-                      output.MC_True_Track_Px = ConvertToUShort(trackMC->Px(),kShortScaleLow); 
-                      output.MC_True_Track_Py = ConvertToUShort(trackMC->Py(),kShortScaleLow);
-                      output.MC_True_Track_Pz = ConvertToUShort(trackMC->Pz(),kShortScaleLow);
+                      output.MC_True_Track_Px = ConvertToShort(trackMC->Px(),kShortScaleLow); 
+                      output.MC_True_Track_Py = ConvertToShort(trackMC->Py(),kShortScaleLow);
+                      output.MC_True_Track_Pz = ConvertToShort(trackMC->Pz(),kShortScaleLow);
                       Int_t motherLabel = trackMC->GetMother();
                       if(motherLabel>=0){
                         output.MC_True_Track_MotherPDG = ((AliAODMCParticle* )fAODMCTrackArray->At(motherLabel))->PdgCode();
