@@ -52,7 +52,6 @@ class AliAnalysisTaskPbPbTree_MCut: public AliAnalysisTaskSE {
 
   const char* fkAnalysisType;      //ESD or AOD based analysis
   TString fPeriod;                 //period
-  TString fPerName;                // period name
   Int_t fRun;                      // run number - for calibration
   Double_t  fVtxCut;               // vertex cut = 14 cm
 

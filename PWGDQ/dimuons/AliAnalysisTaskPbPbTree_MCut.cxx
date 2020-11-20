@@ -834,29 +834,30 @@ void AliAnalysisTaskPbPbJPsiTree_Dimuon_MCut::OpenInfoCalbration(Int_t run)
     // Searching the period name reading the corresponding run list
     std::string line;
     std::string strRun = std::to_string(run);
+    std::string strPerName; // String corresponding to the period name
 
     std::ifstream runListLHC15o;
     runListLHC15o.open ("run_list_LHC15o.txt");
     if (runListLHC15o.is_open()){
-      while ( getline (runListLHC15o,line) ){if(line==run){fPerName = "215o";}}
+      while ( getline (runListLHC15o,line) ){if(line==run){strPerName = "215o";}}
       runListLHC15o.close();
     }
 
     std::ifstream runListLHC18r;
     runListLHC18r.open ("run_list_LHC18r.txt");
     if (runListLHC18r.is_open()){
-      while ( getline (runListLHC18r,line) ){if(line==run){fPerName = "218r";}}
+      while ( getline (runListLHC18r,line) ){if(line==run){strPerName = "218r";}}
       runListLHC15o.close();
     }
 
     std::ifstream runListLHC18q;
     runListLHC18q.open ("run_list_LHC18q.txt");
     if (runListLHC18q.is_open()){
-      while ( getline (runListLHC18q,line) ){if(line==run){fPerName = "218q";}}
+      while ( getline (runListLHC18q,line) ){if(line==run){strPerName = "218q";}}
       runListLHC18q.close();
     }
 
-    printf("PERIOD NAME = %s\n",fPerName);
+    printf("PERIOD NAME = %s\n",strPerName.c_str());
     ////////////////////////////////////////////////////////////////////////////
     if (!gGrid) {
         TGrid::Connect("alien://");
@@ -864,7 +865,7 @@ void AliAnalysisTaskPbPbJPsiTree_Dimuon_MCut::OpenInfoCalbration(Int_t run)
     }
 
     TFile* foadb = 0;
-    foadb = TFile::Open(Form("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%sVtx14MRP2New.root",fPerName.c_str()));
+    foadb = TFile::Open(Form("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%sVtx14MRP2New.root",strPerName.c_str()));
 
     AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
     if(!cont){
