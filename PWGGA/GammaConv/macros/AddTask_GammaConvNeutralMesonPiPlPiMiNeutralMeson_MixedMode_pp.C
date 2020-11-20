@@ -655,7 +655,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // INT7
   } else if(trainConfig == 431)  { // EDC 13 TeV EG2
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // EG2
-  } else if(trainConfig == 432)  { // EDC 13 TeV EG2
+  } else if(trainConfig == 432)  { // EDC 13 TeV EG1
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411792109fe32220000","32c51070a","0103103200000000","0453503000000000"); // EG1
 
     //Gamma Energy Cuts EG2
