@@ -307,6 +307,7 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
         };
         return acceptedSplitting;
       }
+      splitting = harder;
     }
     // Untagged jet
     return SoftdropResults {
