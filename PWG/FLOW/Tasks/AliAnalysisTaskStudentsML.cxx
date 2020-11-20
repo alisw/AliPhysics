@@ -939,6 +939,7 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
 
 	//Output Histograms
 	fResults[icent] = NULL;
+	fCovResults[icent] = NULL; 
   	fMixedParticleHarmonics[icent] = NULL;
 
   }
@@ -1234,6 +1235,12 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 	 fResults[icent]->GetYaxis()->SetTitle("");
 	 fResults[icent]->Sumw2();
 	 fFinalResultsList[icent]->Add(fResults[icent]);
+
+	 fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.); //centrality dependet output
+	 fCovResults[icent]->GetXaxis()->SetTitle("");
+	 fCovResults[icent]->GetYaxis()->SetTitle("");
+	 fCovResults[icent]->Sumw2();
+	 fFinalResultsList[icent]->Add(fCovResults[icent]); 
 
 	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.); //centrality dependet output
 	 fMixedParticleHarmonics[icent]->GetXaxis()->SetTitle("");
@@ -2211,6 +2218,13 @@ void AliAnalysisTaskStudentsML::MainTask(Int_t MainTask_CentBin, Int_t MainTask_
    {
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
+
+
+     fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+0.5,CorrelationNum[i]*CorrelationDenom[i],Weight_CorrelationNum[i]*Weight_CorrelationDenom[i]); //w_D*N*w_D*D
+     fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+1.5,Weight_CorrelationNum[i]*Weight_CorrelationDenom[i],1.); //w_N*w_D
+     fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+2.5,Weight_CorrelationNum[i],1.); //w_N
+     fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+3.5,Weight_CorrelationDenom[i],1.); //w_D 
+	
    } 
 
 	delete [] Data_Correlation; 

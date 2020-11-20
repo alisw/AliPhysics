@@ -293,6 +293,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
+  TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 	// if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
   Bool_t bDifferentCharge; 	 	// used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
@@ -308,7 +309,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,36); 
+  ClassDef(AliAnalysisTaskStudentsML,37); 
 
 };
 
