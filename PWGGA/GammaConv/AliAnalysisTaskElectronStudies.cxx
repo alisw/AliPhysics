@@ -773,12 +773,22 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     
     output.ClusterE = ConvertToUShort(clus->E(),kShortScaleLow);
     output.ClusterM02 =  ConvertToUShort(clus->GetM02(),kShortScaleMiddle);
-    output.ClusterM20 = ConvertToUShort(clus->GetM20(),kShortScaleMiddle);
+   
+    // fix for rounding issue causing it to sometimes be just below 0
+    Double_t m20 = clus->GetM20();
+    if(m20<0) m20 =0;
+    output.ClusterM20 = ConvertToUShort(m20,kShortScaleMiddle);
     output.Track_E = ConvertToUShort(track->E(),kShortScaleLow);
     output.Track_Px = ConvertToShort(track->Px(),kShortScaleLow);
     output.Track_Py = ConvertToShort(track->Py(),kShortScaleLow);
     output.Track_Pz = ConvertToShort(track->Pz(),kShortScaleLow);
     output.Track_PonEMCal = ConvertToUShort(track->GetTrackPOnEMCal(),kShortScaleLow);
+
+    // if(clus->E() < 0) cout  << "ClusterE" << endl;
+    // if(clus->GetM02() < 0) cout  << "ClusterM02" << endl;
+    // if(clus->GetM20() < 0) cout  << "ClusterM20" << endl;
+    // if(track->E() < 0) cout  << "TrackE" << endl;
+    // if(track->GetTrackPOnEMCal() < 0) cout  << "TrackPOnEmcal" << endl;
     output.Track_NSigmaElec =  ConvertToShort(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron),kShortScaleMiddle); 
     output.Track_IsFromV0 = isV0; 
     output.Track_Charge = track->Charge();
@@ -797,6 +807,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     std::pair<Double_t,Double_t> isoStudy = ProcessChargedIsolation(track); // R, E
     output.minR = ConvertToUShort(isoStudy.first,kShortScaleLow);
     output.isoE = ConvertToUShort(isoStudy.second,kShortScaleLow);
+
+    // if(isoStudy.first < 0) cout  << "MinR" << endl;
+    // if(isoStudy.second < 0) cout  << "IsoE" << endl;
     
     Float_t tempEta = -9;
     Float_t tempPhi = -9;
