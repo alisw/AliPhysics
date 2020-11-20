@@ -77,7 +77,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
         }
     }
 
-    const int nCuts = 28;
+    const int nCuts = 23;
     Axis cutAxis = {"cut", "cut setting", {-1.5, nCuts - 0.5}, nCuts + 1};
     Axis centAxis = {"cent", "centrality", centBins};
     Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptBins};
@@ -190,7 +190,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaEvent() {
 
 void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag) {
     //    if (!fAcceptTrackM) return;
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 23; ++i) {
         if (fAcceptTrack[i]) {
             fHistTrackNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, i);
             fHistTrackZ.Fill(fMultPercentileV0M, fPt, fZInner, i, fEta);
@@ -215,7 +215,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag) {
         return;
     }
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 23; ++i) {
         if (fAcceptTrack[i]) {
             fHistEffContNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, i,
                                       fMCProdcutionType);
@@ -314,7 +314,7 @@ AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const char* name,
         7, AlidNdPtTools::CreateESDtrackCuts("defaulteta10"));
     for(int i=1; i<16; ++i){
         task->SetESDtrackCuts(
-                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta09", i+100));
+                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta10", i+100));
     }
 
     task->SetNeedEventMult(kTRUE);
