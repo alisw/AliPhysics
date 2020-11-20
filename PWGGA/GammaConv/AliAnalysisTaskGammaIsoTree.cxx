@@ -2185,14 +2185,21 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
     if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality);
     return;
   }
-  Int_t eventNotAccepted              = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-  if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
+  fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
+
+  Bool_t isRunningEMCALrelAna = kFALSE;
+  if (fClusterCutsEMC->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
+
+  Int_t eventNotAccepted              = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,isRunningEMCALrelAna);
+  // if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
 
   AliRhoParameter* outrho= (AliRhoParameter*) InputEvent()->FindListObject(fRhoOutName.Data());
   if(!outrho) AliInfo("could not find rho container!");
-  if (fIsMC > 1){
+  
+  
+  if (fIsMC > 0){
       fWeightJetJetMC       = 1;
       Float_t maxjetpt      = -1.;
       Float_t pthard = -1;
@@ -2265,6 +2272,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // ─── MAIN PROCESSING ────────────────────────────────────────────────────────────
   //
   if(fIsMC>0) ProcessMCParticles();
+ 
   if (triggered==kFALSE) return;
 
   // vertex
@@ -2287,9 +2295,9 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   fCaloRho->Fill(fChargedRho,fWeightJetJetMC);
 
   ProcessTracks(); // always run ProcessTracks before calo photons! (even if save tracks is false)
-  ProcessCaloPhotons(); // track matching is done here as well
-  if(fSaveConversions)
+    if(fSaveConversions)
     ProcessConversionPhotons();
+  ProcessCaloPhotons(); // track matching is done here as well
   ReduceTrackInfo(); // track matching is done, we can remove cov matrix etc now
  
   fDataEvtHeader.rho = fChargedRho;
