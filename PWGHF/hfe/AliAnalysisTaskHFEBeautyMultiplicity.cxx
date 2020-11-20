@@ -180,7 +180,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistMCorg_B(0),
     fPt_Btoe(0),
     fHistPt_HFE_MC_B(0),
-    fHistPt_HFE_MC_D(0)
+    fHistPt_HFE_MC_D(0),
+
+    fDCAxy_MC_B(0),	// DCA from B
+    fDCAxy_MC_D(0),	// DCA from D
+    fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
+    fDCAxy_MC_D0(0),	// DCA from D0,D*0
+    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
+
+
 
 
 
@@ -311,8 +319,13 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistMCorg_B(0),
     fPt_Btoe(0),
     fHistPt_HFE_MC_B(0),
-    fHistPt_HFE_MC_D(0)
+    fHistPt_HFE_MC_D(0),
 
+    fDCAxy_MC_B(0),	// DCA from B
+    fDCAxy_MC_D(0),	// DCA from D
+    fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
+    fDCAxy_MC_D0(0),	// DCA from D0,D*0
+    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
 
 
 
@@ -683,8 +696,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
 
 
+
     
-//****** MC data ******//
+//************************************ MC data ************************************//
   //Total photonic electron(MC)
     fHistPho_Reco0 = new TH1F("fHistPho_Reco0", "Total photonic electron (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco0);
@@ -710,29 +724,49 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistMCorg_Eta);
     
   //MC prg D (D->e)
-    fHistMCorg_D = new TH1F("fHistMCorg_D","MC org D", 1200, 0, 60);
+    fHistMCorg_D = new TH1F("fHistMCorg_D","MC org D;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_D);
     
   //MC prg B->D (B->D->e)
-    fHistMCorg_BD = new TH1F("fHistMCorg_BD","MC prg B->D", 1200, 0, 60);
+    fHistMCorg_BD = new TH1F("fHistMCorg_BD","MC org B->D;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_BD);
     
   //MC prg B (B->e)
-    fHistMCorg_B = new TH1F("fHistMCorg_B","MC org B", 1200, 0, 60);
+    fHistMCorg_B = new TH1F("fHistMCorg_B","MC org B;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_B);
     
   //B meson vs electron
-    fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{T} [GeV/c];B meson p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{T} [GeV/c];B-meson(Mother) p_{T} [GeV/c]",1200,0,60,1200,0,60);
     fOutputList->Add(fPt_Btoe);
     
-  //HFE from B meson (MC)
+  //HFE from B meson
     fHistPt_HFE_MC_B = new TH1F("fHistPt_HFE_MC_B","HFE from B;p_{T} [GeV/c];", 1200,0,60);
     fOutputList->Add(fHistPt_HFE_MC_B);
     
-  //HFE from D meson (MC)
+  //HFE from D meson
     fHistPt_HFE_MC_D = new TH1F("fHistPt_HFE_MC_D","HFE from D;p_{T} [GeV/c];", 1200,0,60);
     fOutputList->Add(fHistPt_HFE_MC_D);
-      
+  
+  //DCAxy from B
+    fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_B);
+  
+  //DCAxy from D
+    fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_D);
+
+  //DCAxy from Dpm
+    fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_Dpm);
+  
+  //DCAxy from D0
+    fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_D0);
+  
+  //DCAxy from Ds
+    fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_Ds);
+
     
     
 
@@ -774,11 +808,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     Double_t CutTPCdEdx = 80;
     Double_t CutDCAxy   = 2.4;
     Double_t CutDCAz    = 3.2;
-    //Int_t CutTPCNCrossedRow =; 
+    Int_t CutTPCNCrossedRow = 100; 
     
     //___________ PID Cut __________
     Double_t CutTPCNsigma[2] = {-1.0, 3.0};
-    Double_t CutM20[2] = {0.02, 0.3};
+    Double_t CutM20[2] = {0.015, 0.3};
     Double_t CutEop[2] = {0.8, 1.2};
     Double_t CutHadNsigma = -3.5;
         
@@ -1169,7 +1203,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fNtracks->Fill(8);
 
 	    //---- 9.TPC CrossedRow cut ----
-            //if(TPCCrossedRows < CutTPCNCrossedRow) continue;
+            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
             fNtracks->Fill(9);
 
 
@@ -1264,10 +1298,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     //cout << "pT = " << TrkPt << " ,  DCAxy = " << DCA[0] << " ,  charge = " << charge << endl;
                     
                     
-                    if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson (MC)
-                    if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
-                    
-                    
                     //---- Photonic electron ----
                     SelectPhotonicElectron(i, track, fFlagNonHFE, pidM, TrkPt, DCA[0], Bsign);
                     if(!fFlagNonHFE){
@@ -1289,6 +1319,24 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                             fHistPho_Reco2->Fill(TrkPt); // Non-Reconstructed by EMCal & TPC & InvMass
                         }
                     }
+
+
+		    //---- Heavy Flavour electron ----
+                    if(pid_eleB){
+			    fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson (MC)
+			    fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
+		    }
+
+                    if(pid_eleD){
+			    fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
+
+			    fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
+
+			    if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+		    }
+
                 }
             }
             

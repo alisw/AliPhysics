@@ -104,14 +104,14 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH2F* fEMCTrkMatch_EtaPhi;
 
 	
-    	TH1F* fTrkPt_2,		      // track pT (after track cut)
-    	TH1F* fTrkEta_2,	      // track Eta (after track cut)
-    	TH1F* fTrkPhi_2,	      // track Phi (after track cut)
-    	TH2F* fdEdx_2,		      // dE/dx (after track cut)
-    	TH2F* fTPCnsig_2,	      // TPC Nsigma (after track cut)
-    	TH2F* fTOFnsig_2,	      // TOF Nsigma (after track cut)
-    	TH2F* fITSnsig_2,	      // ITS Nsigma (after track cut)
-    	TH1F* fTPCCrossedRow_2,       // TPC CrossedRows (after track cut)
+    	TH1F* fTrkPt_2;		      // track pT (after track cut)
+    	TH1F* fTrkEta_2;	      // track Eta (after track cut)
+    	TH1F* fTrkPhi_2;	      // track Phi (after track cut)
+    	TH2F* fdEdx_2;		      // dE/dx (after track cut)
+    	TH2F* fTPCnsig_2;	      // TPC Nsigma (after track cut)
+    	TH2F* fTOFnsig_2;	      // TOF Nsigma (after track cut)
+    	TH2F* fITSnsig_2;	      // ITS Nsigma (after track cut)
+    	TH1F* fTPCCrossedRow_2;       // TPC CrossedRows (after track cut)
     
         TH2F* fM02_1;
         TH2F* fM20_1;
@@ -176,6 +176,12 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH2F*               fPt_Btoe;
         TH1F*               fHistPt_HFE_MC_B;
         TH1F*               fHistPt_HFE_MC_D;
+
+	TH2F*		    fDCAxy_MC_B;
+	TH2F*		    fDCAxy_MC_D;
+	TH2F*		    fDCAxy_MC_Dpm;
+	TH2F*		    fDCAxy_MC_D0;
+	TH2F*		    fDCAxy_MC_Ds;
     
     
     
