@@ -115,6 +115,7 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
   AliEmcalCorrectionComponent::Run();
+
   // loop over clusters
   AliVCluster *clus = 0;
   AliClusterContainer * clusCont = 0;
@@ -128,6 +129,7 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
       clus = static_cast<AliVCluster *>(clusIterator->second);
 
       if (!clus->IsEMCAL()) continue;
+
       if (fCreateHisto) {
         fEnergyDistBefore->Fill(clus->E());
         fEnergyTimeHistBefore->Fill(clus->E(), clus->GetTOF());
