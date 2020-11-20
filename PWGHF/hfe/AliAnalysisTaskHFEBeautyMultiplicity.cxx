@@ -13,12 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  ************************************************************************ */
 
-/* AliAnalysisTaskHFEBeautyMultiplicity
- * Auther : Shunya Chiba
- *
- * empty task which can serve as a starting point for building an analysis
- * as an example, one histogram is filled
- */
+/*===============================================*
+ *                                               *
+ * AliAnalysisTaskHFEBeautyMultiplicity          *
+ * Auther : Shunya Chiba, Unniversity of Tsukuba *
+ *                                               *
+ *===============================================*/
 
 #include "TChain.h"
 #include "TH1F.h"
@@ -77,6 +77,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fCent(0),               // Centrality
     fMult(0),               // Multiplicity
     fVtxZ(0),               // Zvertex
+    fVtxZ_2(0),             // Zvertex after exent cut
     fVtxX(0),               // Xvertex
     fVtxY(0),               // Yvertex
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
@@ -110,6 +111,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistEMCTrkMatch_Eta(0),        // Distance of EMCal cluster to its closest track (#Delta#eta)
     fHistEMCTrkMatch_Phi(0),        // Distance of EMCal cluster to its closest track (#Delta#phi)
     fEMCTrkMatch_EtaPhi(0),         // deltaEta vs deltaPhi
+
+    fTrkPt_2(0),	    // track pT (after track cut)
+    fTrkEta_2(0),	    // track Eta (after track cut)
+    fTrkPhi_2(0),	    // track Phi (after track cut)
+    fdEdx_2(0),		    // dE/dx (after track cut)
+    fTPCnsig_2(0),	    // TPC Nsigma (after track cut)
+    fTOFnsig_2(0),	    // TOF Nsigma (after track cut)
+    fITSnsig_2(0),	    // ITS Nsigma (after track cut)
+    fTPCCrossedRow_2(0),    // TPC CrossedRows (after track cut)
 
     fM02_1(0),              // long axis
     fM20_1(0),              // short axis
@@ -170,7 +180,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistMCorg_B(0),
     fPt_Btoe(0),
     fHistPt_HFE_MC_B(0),
-    fHistPt_HFE_MC_D(0)
+    fHistPt_HFE_MC_D(0),
+
+    fDCAxy_MC_B(0),	// DCA from B
+    fDCAxy_MC_D(0),	// DCA from D
+    fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
+    fDCAxy_MC_D0(0),	// DCA from D0,D*0
+    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
+
+
 
 
 
@@ -197,6 +215,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fCent(0),               // Centrality
     fMult(0),               // Multiplicity
     fVtxZ(0),               // Zvertex
+    fVtxZ_2(0),             // Zvertex after exent cut
     fVtxX(0),               // Xvertex
     fVtxY(0),               // Yvertex
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
@@ -230,6 +249,15 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistEMCTrkMatch_Eta(0),        // Distance of EMCal cluster to its closest track (#Delta#eta)
     fHistEMCTrkMatch_Phi(0),        // Distance of EMCal cluster to its closest track (#Delta#phi)
     fEMCTrkMatch_EtaPhi(0),         // deltaEta vs deltaPhi
+
+    fTrkPt_2(0),	    // track pT (after track cut)
+    fTrkEta_2(0),	    // track Eta (after track cut)
+    fTrkPhi_2(0),	    // track Phi (after track cut)
+    fdEdx_2(0),		    // dE/dx (after track cut)
+    fTPCnsig_2(0),	    // TPC Nsigma (after track cut)
+    fTOFnsig_2(0),	    // TOF Nsigma (after track cut)
+    fITSnsig_2(0),	    // ITS Nsigma (after track cut)
+    fTPCCrossedRow_2(0),    // TPC CrossedRows (after track cut)
 
     fM02_1(0),              // long axis
     fM20_1(0),              // short axis
@@ -291,8 +319,13 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistMCorg_B(0),
     fPt_Btoe(0),
     fHistPt_HFE_MC_B(0),
-    fHistPt_HFE_MC_D(0)
+    fHistPt_HFE_MC_D(0),
 
+    fDCAxy_MC_B(0),	// DCA from B
+    fDCAxy_MC_D(0),	// DCA from D
+    fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
+    fDCAxy_MC_D0(0),	// DCA from D0,D*0
+    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
 
 
 
@@ -380,6 +413,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fVtxZ = new TH1F("fVtxZ","Z vertex position; Z_{vertex} [cm]; counts", 500, -25, 25);
     fOutputList->Add(fVtxZ);
 
+  //Zvertex after event cut  
+    fVtxZ_2 = new TH1F("fVtxZ_2","Z vertex position (after event cut); Z_{vertex} [cm]; counts", 500, -25, 25);
+    fOutputList->Add(fVtxZ_2);
+
   //Xvertex  
     fVtxX = new TH1F("fVtxX","X vertex position; Vtx_{x} [cm]; counts", 500, -25, 25);
     fOutputList->Add(fVtxX);
@@ -456,11 +493,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fTPCnsig_Pi = new TH2F("fTPCnsig_Pi","All track TPC Nsigma distribution (pion);p (GeV/c);n^{TPC}_{#sigma_{pion}}",300,0,15,200,-10,10);
     fOutputList->Add(fTPCnsig_Pi);
     
-  //TOF Msigma distribution (electron)
+  //TOF Nsigma distribution (electron)
     fTOFnsig = new TH2F("fTOFnsig","All track TOF Nsigma distribution (electron);p (GeV/c);n^{TOF}_{#sigma_{electron}}",300,0,15,200,-10,10);
     fOutputList->Add(fTOFnsig);
 
-  //ITS Msigma distribution (electron)
+  //ITS Nsigma distribution (electron)
     fITSnsig = new TH2F("fITSnsig","All track ITS Nsigma distribution (electron);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
     fOutputList->Add(fITSnsig);
 
@@ -499,6 +536,38 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Distance of EMCal cluster (#Eta vs #Phi)
     fEMCTrkMatch_EtaPhi = new TH2F("fEMCTrkMatch_EtaPhi","Distance of EMCal Cluster (#Delta#eta vs #Delta#phi);#Delta#eta;#Delta#phi",60,-0.3,0.3,60,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch_EtaPhi);
+
+  //pT distribution (after track cut)
+    fTrkPt_2 = new TH1F("fTrkPt_2","p_{T} distribution (after track cut) ; p_{T} (GeV/c); counts",1000,0,50.0);
+    fOutputList->Add(fTrkPt_2);
+
+  //Eta distribution (after track cut)
+    fTrkEta_2 = new TH1F("fTrkEta_2","Track #eta distribution (after track cut); #eta; counts",80,-2.0,2.0);
+    fOutputList->Add(fTrkEta_2);
+
+  //Phi distribution (after track cut)
+    fTrkPhi_2 = new TH1F("fTrkPhi_2","Track #phi distribution (after track cut); #phi; counts",63,0,6.3);
+    fOutputList->Add(fTrkPhi_2);
+
+  //dE/dx (after track cut)
+    fdEdx_2 = new TH2F("fdEdx_2","dE/dx distribution (after track cut);p (GeV/c);dE/dx",300,0,15,1600,0,160);
+    fOutputList->Add(fdEdx_2);
+
+  //TPC Nsigma distribution (after track cut)
+    fTPCnsig_2 = new TH2F("fTPCnsig_2","TPC Nsigma distribution (after track cut);p (GeV/c);n^{TPC}_{#sigma_{electron}}",300,0,15,200,-10,10);
+    fOutputList->Add(fTPCnsig_2);
+    
+  //TOF Nsigma distribution (after track cut)
+    fTOFnsig_2 = new TH2F("fTOFnsig_2","All track TOF Nsigma distribution (after track cut);p (GeV/c);n^{TOF}_{#sigma_{electron}}",300,0,15,200,-10,10);
+    fOutputList->Add(fTOFnsig_2);
+
+  //ITS Nsigma distribution (after track cut)
+    fITSnsig_2 = new TH2F("fITSnsig_2","ITS Nsigma distribution (after track cut);p (GeV/c);n^{ITS}_{#sigma_{electron}}",300,0,15,200,-10,10);
+    fOutputList->Add(fITSnsig_2);
+
+  //TPC CrossedRows (after track cut)
+    fTPCCrossedRow_2 = new TH1F("fTPCCrossedRow_2","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",500,0.,500.); 
+    fOutputList->Add(fTPCCrossedRow_2);
     
   //M02
     fM02_1 = new TH2F("fM02_1","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse : M02 [cm]",400,0,20,800,0,4);
@@ -521,7 +590,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistEopAll);
 
   //Ntracks
-    fNtracks = new TH1F("fNtracks","Number of tracks",9, -0.5, 8.5);
+    fNtracks = new TH1F("fNtracks","Number of tracks",11, -0.5, 10.5);
     fOutputList->Add(fNtracks);
     fNtracks->GetYaxis()->SetTitle("counts");
     fNtracks->GetXaxis()->SetBinLabel(1,"matching tracks");
@@ -532,14 +601,16 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtracks->GetXaxis()->SetBinLabel(6,"dE/dx calculation");
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
     fNtracks->GetXaxis()->SetBinLabel(8,"DCA cut");
-    fNtracks->GetXaxis()->SetBinLabel(9,"Eta cut");
+    fNtracks->GetXaxis()->SetBinLabel(9,"chi2 cut");
+    fNtracks->GetXaxis()->SetBinLabel(10,"TPCCrossedRow cut");
+    fNtracks->GetXaxis()->SetBinLabel(11,"Eta cut");
     
   //pT vs E/p (electron)
-    fEopElectron1 = new TH2F("fEopElectron1","Electron;p_{T} [GeV/c];E/p",600,0,30,60,0,3.0);
+    fEopElectron1 = new TH2F("fEopElectron1","Electron;p_{T} [GeV/c];E/p",600,0,30,150,0,3.0);
     fOutputList->Add(fEopElectron1);
     
   //pT vs E/p (hadron)
-    fEopHadron1 = new TH2F("fEopHadron1","Hadron;p_{T} [GeV/c];E/p",600,0,30,60,0,3.0);
+    fEopHadron1 = new TH2F("fEopHadron1","Hadron;p_{T} [GeV/c];E/p",600,0,30,150,0,3.0);
     fOutputList->Add(fEopHadron1);
 
   //Invariant mass vs. pT (like-sign)
@@ -625,8 +696,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
 
 
+
     
-//****** MC data ******//
+//************************************ MC data ************************************//
   //Total photonic electron(MC)
     fHistPho_Reco0 = new TH1F("fHistPho_Reco0", "Total photonic electron (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco0);
@@ -652,29 +724,49 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistMCorg_Eta);
     
   //MC prg D (D->e)
-    fHistMCorg_D = new TH1F("fHistMCorg_D","MC org D", 1200, 0, 60);
+    fHistMCorg_D = new TH1F("fHistMCorg_D","MC org D;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_D);
     
   //MC prg B->D (B->D->e)
-    fHistMCorg_BD = new TH1F("fHistMCorg_BD","MC prg B->D", 1200, 0, 60);
+    fHistMCorg_BD = new TH1F("fHistMCorg_BD","MC org B->D;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_BD);
     
   //MC prg B (B->e)
-    fHistMCorg_B = new TH1F("fHistMCorg_B","MC org B", 1200, 0, 60);
+    fHistMCorg_B = new TH1F("fHistMCorg_B","MC org B;p_{T} [GeV/c];", 1200, 0, 60);
     fOutputList->Add(fHistMCorg_B);
     
   //B meson vs electron
-    fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{T} [GeV/c];B meson p_{T} [GeV/c]",1200,0,60,1200,0,60);
+    fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{T} [GeV/c];B-meson(Mother) p_{T} [GeV/c]",1200,0,60,1200,0,60);
     fOutputList->Add(fPt_Btoe);
     
-  //HFE from B meson (MC)
+  //HFE from B meson
     fHistPt_HFE_MC_B = new TH1F("fHistPt_HFE_MC_B","HFE from B;p_{T} [GeV/c];", 1200,0,60);
     fOutputList->Add(fHistPt_HFE_MC_B);
     
-  //HFE from D meson (MC)
+  //HFE from D meson
     fHistPt_HFE_MC_D = new TH1F("fHistPt_HFE_MC_D","HFE from D;p_{T} [GeV/c];", 1200,0,60);
     fOutputList->Add(fHistPt_HFE_MC_D);
-      
+  
+  //DCAxy from B
+    fDCAxy_MC_B = new TH2F("fDCAxy_MC_B","p_{T} vs DCA_{xy} (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_B);
+  
+  //DCAxy from D
+    fDCAxy_MC_D = new TH2F("fDCAxy_MC_D","p_{T} vs DCA_{xy} (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_D);
+
+  //DCAxy from Dpm
+    fDCAxy_MC_Dpm = new TH2F("fDCAxy_MC_Dpm","p_{T} vs DCA_{xy} (MC : D^{+},D^{*+});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_Dpm);
+  
+  //DCAxy from D0
+    fDCAxy_MC_D0 = new TH2F("fDCAxy_MC_D0","p_{T} vs DCA_{xy} (MC : D^{0},D^{*0});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_D0);
+  
+  //DCAxy from Ds
+    fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_Ds);
+
     
     
 
@@ -716,10 +808,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     Double_t CutTPCdEdx = 80;
     Double_t CutDCAxy   = 2.4;
     Double_t CutDCAz    = 3.2;
+    Int_t CutTPCNCrossedRow = 100; 
     
     //___________ PID Cut __________
     Double_t CutTPCNsigma[2] = {-1.0, 3.0};
-    Double_t CutM20[2] = {0.02, 0.3};
+    Double_t CutM20[2] = {0.015, 0.3};
     Double_t CutEop[2] = {0.8, 1.2};
     Double_t CutHadNsigma = -3.5;
         
@@ -822,6 +915,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     //----7.Zvertex cut
     if(TMath::Abs(Zvertex) > 10.0) return;
     fNevents->Fill(6);
+
+    fVtxZ_2->Fill(Zvertex);	//Z vertex after event cut
 
 //_________________________________________________________________________________
     
@@ -1009,7 +1104,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         Double_t TrkPt = -999, TrkEta = -999, TrkPhi = -999, TrkP = -999, charge = -999;
         Double_t dEdx = -999, TPCnSigma = -999, TPCnSigma_Pi = -999;
         Double_t TOFnSigma = -999, ITSnSigma = -999;
-        Double_t ITSchi2 = -999, TPCchi2NDF = -999;
+        Double_t ITSchi2 = -999, TPCchi2NDF = -999, TPCCrossedRows = -999;
 
 
         TrkP   = track -> P();
@@ -1020,6 +1115,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         charge = track -> Charge();
         TPCchi2NDF = track -> Chi2perNDF();
         ITSchi2 = track -> GetITSchi2();
+	TPCCrossedRows = track -> GetTPCCrossedRows();
         
         fAllTrkPt  -> Fill(TrkPt);      //All track (Pt)
         fAllTrkEta -> Fill(TrkEta);     //All track (Eta)
@@ -1101,13 +1197,24 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             if(track->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., DCA, cov))
             if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
             fNtracks->Fill(7);
-            
-            
+
+	    //---- 8.chi2 cut ----
+	    if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
+            fNtracks->Fill(8);
+
+	    //---- 9.TPC CrossedRow cut ----
+            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
+            fNtracks->Fill(9);
+
+
+            // calculate phi and eta difference between a track and a cluster // 
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fHistEMCTrkMatch_Eta -> Fill(fEtaDiff);         //delta Eta
             fHistEMCTrkMatch_Phi -> Fill(fPhiDiff);         //delta Phi
             fEMCTrkMatch_EtaPhi  -> Fill(fEtaDiff,fPhiDiff);//delta Eta vs delta Phi
+
+
 
 
         //*******************************//
@@ -1123,6 +1230,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //*******************************************//
         // Properties of tracks matched to the EMCal //
         //*******************************************//
+	
+            fTrkPt_2  -> Fill(TrkPt);      //after cut track (Pt)
+            fTrkEta_2 -> Fill(TrkEta);     //after cut track (Eta)
+            fTrkPhi_2 -> Fill(TrkPhi);     //after cut track (Phi)
+            fdEdx_2   -> Fill(TrkP,dEdx);  //after cut track (P vs dE/dx)
+            fTPCnsig_2-> Fill(TrkP,TPCnSigma);
+            fTOFnsig_2-> Fill(TrkP,TOFnSigma);
+            fITSnsig_2-> Fill(TrkP,ITSnSigma);
+	    fTPCCrossedRow_2->Fill(TPCCrossedRows);
+
+	
 	
             if(TrkPt>1.0)   //reject low-pt track
             {
@@ -1155,9 +1273,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
-            //---- 8.Eta cut ----
+            //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
-            fNtracks->Fill(8);
+            fNtracks->Fill(10);
 
             fHistEopAll -> Fill(eop);
             
@@ -1168,7 +1286,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             {
                 fEopElectron1 -> Fill(TrkPt,eop);
                 
-                if(eop >= CutEop[0] && eop <= CutEop[1])                  // E/p cut (with TPC nsigma & shower shape cut)
+                if(eop >= CutEop[0] && eop <= CutEop[1]) // E/p cut (with TPC nsigma & shower shape cut)
                 {
                     fEopElectron2 -> Fill(TrkPt); 
 
@@ -1178,10 +1296,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                     fDCAxy_Ele_2 -> Fill(TrkPt, DCA[0]*charge);
                     fDCAxy_Ele_3 -> Fill(TrkPt, DCA[0]);
                     //cout << "pT = " << TrkPt << " ,  DCAxy = " << DCA[0] << " ,  charge = " << charge << endl;
-                    
-                    
-                    if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson (MC)
-                    if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
                     
                     
                     //---- Photonic electron ----
@@ -1205,6 +1319,24 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                             fHistPho_Reco2->Fill(TrkPt); // Non-Reconstructed by EMCal & TPC & InvMass
                         }
                     }
+
+
+		    //---- Heavy Flavour electron ----
+                    if(pid_eleB){
+			    fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson (MC)
+			    fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
+		    }
+
+                    if(pid_eleD){
+			    fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
+
+			    fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
+
+			    if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413) fDCAxy_MC_Dpm -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423) fDCAxy_MC_D0  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+			    if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign);
+		    }
+
                 }
             }
             
