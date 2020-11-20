@@ -28,6 +28,8 @@ class AliAODcascade;
 #include "AliMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisTaskESDfilter.h"
+#include "AliAnalysisUtils.h"
+#include "AliAODMCHeader.h"
 
 #include "AliAnalysisTaskStrVsMult.h"
 
@@ -425,13 +427,34 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     return; 
   }
 
+  //get MC header and MC array
+  AliAODMCHeader* header = 0x0;
+  TClonesArray* MCTrackArray = 0x0;
+  if(!isESD) {
+      header = static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+      if (!header) {
+        AliWarning("No header found.");
+        DataPosting(); 
+        return;
+      } 
+      MCTrackArray = dynamic_cast<TClonesArray*>(lAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (MCTrackArray == NULL){
+        AliWarning("No MC track array found.");
+        DataPosting(); 
+        return;
+      }  
+  }
+  
   //MC truth
   if(fisMC){
     for (int i_MCtrk = 0;  i_MCtrk < lMCev->GetNumberOfTracks(); i_MCtrk++){
       AliVParticle *lPart;
       if(isESD) lPart = (AliMCParticle*) lMCev->GetTrack(i_MCtrk);
           else lPart = (AliAODMCParticle*) lMCev->GetTrack(i_MCtrk);
-      if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary()) continue;
+      bool isOOBpileup = kFALSE;
+      if(isESD) isOOBpileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i_MCtrk, lMCev);
+          else isOOBpileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i_MCtrk, header, MCTrackArray);
+      if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary() || isOOBpileup) continue;
       if(fParticleAnalysisStatus[kk0s] && lPart->PdgCode()==310   ) fHistos_K0S->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[klam] && lPart->PdgCode()==3122  ) fHistos_Lam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
       if(fParticleAnalysisStatus[kalam]&& lPart->PdgCode()==-3122 ) fHistos_ALam->FillTH2("h2_gen",lPart->Pt(),lPercentile);
