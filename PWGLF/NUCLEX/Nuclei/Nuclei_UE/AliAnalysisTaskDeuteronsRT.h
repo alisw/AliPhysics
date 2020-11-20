@@ -43,6 +43,7 @@ public:
     void SetAnalysisParametersSyst (TH2F *h2Dmatrix)                    { hAnalysisParameters = h2Dmatrix; }
     void SetInputData              (Bool_t isMC)                        { fIsMC = isMC; }
     void SetMinPtLeadingTrack      (Double_t pt)                        { fPt_min_leading = pt; }
+    void SetIsUEAnalysis           (Bool_t isUEanalysis)                { fIsUEanalysis = isUEanalysis; }
 
     //Process Real and Simulated Event
     void ProcessRealEvent ();
@@ -53,7 +54,6 @@ public:
     Bool_t   GetESDEvent ();
     Bool_t   GetMCEvent ();
     Int_t    GetLeadingTrack();
-    void     GetMultiplicitiesInAzimuthalRegions (Int_t leading_track_ID, Int_t &Nch_Transv, Int_t &Nch_Toward, Int_t &Nch_Away);
     void     FillHistograms_StandardCuts         (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track);
     void     FillHistograms_Systematics          (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track, Int_t isyst);
     void     FillHistograms_StandardCuts_Sim     (AliESDtrack *track);
@@ -67,6 +67,7 @@ public:
     Bool_t   IsTrackInTowardRegion               (AliESDtrack *track, Int_t leading_track_ID);
     Bool_t   IsTrackInAwayRegion                 (AliESDtrack *track, Int_t leading_track_ID);
     Bool_t   IsCleanDeuteron                     (AliESDtrack *track);
+    Bool_t   IsDeuteronCandidate                 (AliESDtrack *track);
     Bool_t   PassedTrackQualityCuts_Syst         (AliESDtrack *track, Int_t isyst);
     Double_t GetTransverseDCA                    (AliESDtrack *track);
     Double_t GetRapidity (AliESDtrack *track);
@@ -93,6 +94,7 @@ private:
     TH2F     *hAnalysisParameters;//
     Bool_t    fIsMC;//
     Double_t  fPt_min_leading;//
+    Bool_t    fIsUEanalysis;//
     
     //Event Counter and Multiplicity Distributions
     TH1F *hNumberOfEvents;//!
@@ -102,7 +104,7 @@ private:
     TH1I *hMultAway;//!
     TH1F *hRtDistribution;//!
     TH1F *hEventsWithLeadingTrack;//!
-    
+    TH1I *hNumberOfDeuterons;//
     
     //Correlations between Transverse and Integrated Mult
     TH2F *hNchTransv_NchTot;//!
