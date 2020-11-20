@@ -2018,23 +2018,25 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fSingleDaughterMinE  = 12.;
     break;
   case 19: //j
-      fDoGammaMinEnergyCut = kTRUE;
-      fNDaughterEnergyCut  = 1;
-      fSingleDaughterMinE  = 2.;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 2.;
     break;
   case 20: //k
-      fDoGammaMinEnergyCut = kTRUE;
-      fNDaughterEnergyCut  = 1;
-      fSingleDaughterMinE  = 4.;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 4.;
     break;
   case 21: //l
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 8.0;
     break;
   case 22: //m
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
-    break;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 9.0;
+      break;
   case 23: //n
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
