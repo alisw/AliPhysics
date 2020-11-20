@@ -32,8 +32,11 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TF1.h"
+#include <vector>
+#include <iostream>
 
 
+using namespace std;
 ClassImp(AliAnalysisTaskDeuteronsRT)
 
 
@@ -56,6 +59,7 @@ fAverage_Nch_Transv(6.81),
 hAnalysisParameters(nullptr),
 fIsMC(kFALSE),
 fPt_min_leading(3),
+fIsUEanalysis(kTRUE),
 fESDeventCuts(),
 hNumberOfEvents(nullptr),
 hMultPercentile(nullptr),
@@ -64,6 +68,7 @@ hMultToward(nullptr),
 hMultAway(nullptr),
 hRtDistribution(nullptr),
 hEventsWithLeadingTrack(nullptr),
+hNumberOfDeuterons(nullptr),
 hNchTransv_NchTot(nullptr),
 hRt_NchTot(nullptr),
 hNchTransv_MultPercentile(nullptr),
@@ -126,6 +131,7 @@ fAverage_Nch_Transv(6.81),
 hAnalysisParameters(nullptr),
 fIsMC(kFALSE),
 fPt_min_leading(3),
+fIsUEanalysis(kTRUE),
 fESDeventCuts(),
 hNumberOfEvents(nullptr),
 hMultPercentile(nullptr),
@@ -134,6 +140,7 @@ hMultToward(nullptr),
 hMultAway(nullptr),
 hRtDistribution(nullptr),
 hEventsWithLeadingTrack(nullptr),
+hNumberOfDeuterons(nullptr),
 hNchTransv_NchTot(nullptr),
 hRt_NchTot(nullptr),
 hNchTransv_MultPercentile(nullptr),
@@ -185,7 +192,7 @@ hnsigmaTOF_antideuterons_Rec_Syst(nullptr)
 AliAnalysisTaskDeuteronsRT::~AliAnalysisTaskDeuteronsRT()  {
     
     fOutputList->Clear();
-        
+    
     delete fESDevent;
     delete fMCevent;
     delete fMCEventHandler;
@@ -203,6 +210,7 @@ AliAnalysisTaskDeuteronsRT::~AliAnalysisTaskDeuteronsRT()  {
     delete hMultAway;
     delete hRtDistribution;
     delete hEventsWithLeadingTrack;
+    delete hNumberOfDeuterons;
     delete hNchTransv_NchTot;
     delete hRt_NchTot;
     delete hNchTransv_MultPercentile;
@@ -271,27 +279,30 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
 
     
     //Multiplicity in Azimuthal Regions
-    if (!fIsMC)  {
+    if ((!fIsMC) && fIsUEanalysis)  {
         hMultTransverse         = new TH1I ("hMultTransverse","",200,0,200);
         hMultToward             = new TH1I ("hMultToward","",200,0,200);
         hMultAway               = new TH1I ("hMultAway","",200,0,200);
         hRtDistribution         = new TH1F ("hRtDistribution","",200,0,20);
         hEventsWithLeadingTrack = new TH1F ("hEventsWithLeadingTrack","",10,0,10);
+        hNumberOfDeuterons      = new TH1I ("hNumberOfDeuterons","",20,0,20);
         hMultTransverse         -> Sumw2();
         hMultToward             -> Sumw2();
         hMultAway               -> Sumw2();
         hRtDistribution         -> Sumw2();
         hEventsWithLeadingTrack -> Sumw2();
+        hNumberOfDeuterons      -> Sumw2();
         fOutputList -> Add(hMultTransverse);
         fOutputList -> Add(hMultToward);
         fOutputList -> Add(hMultAway);
         fOutputList -> Add(hRtDistribution);
         fOutputList -> Add(hEventsWithLeadingTrack);
+        fOutputList -> Add(hNumberOfDeuterons);
     }
     
     
     //Correlations between Transverse and Integrated Mult
-    if (!fIsMC)  {
+    if ((!fIsMC) && fIsUEanalysis)  {
         
         hNchTransv_NchTot         = new TH2F ("hNchTransv_NchTot","",200,0,200,200,0,200);
         hRt_NchTot                = new TH2F ("hRt_NchTot","",200,0,10,200,0,200);
@@ -325,7 +336,7 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
     Int_t nBins_rapidity = sizeof(rapidity)/sizeof(Double_t)-1;
 
     
-    if (!fIsMC)  {
+    if ((!fIsMC) && fIsUEanalysis)  {
         
          //***************************  Nch_Transverse,  nsigma_{TPC},                 pt_TPC ***************************************************
          Int_t    bins_TPC[3] = {         nBins_Nch_Tr,           100,           nBins_pt_TPC };
@@ -481,8 +492,10 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
          hnsigmaTOF_antideuterons_Syst -> Sumw2();
          fOutputList -> Add (hnsigmaTOF_deuterons_Syst);
          fOutputList -> Add (hnsigmaTOF_antideuterons_Syst);
-
-        
+    }
+    
+    
+    if ((!fIsMC) && (!fIsUEanalysis))  {
         //***************************                Rapidity,  nsigma_{TPC/TOF},                     pt  ***************************************
         Int_t    bins_rap_TPC[3] = {           nBins_rapidity,               100,           nBins_pt_TPC };
         Double_t xmin_rap_TPC[3] = {              rapidity[0],              -5.0,              pt_TPC[0] };
@@ -578,8 +591,10 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
     fESDtrackCuts_Deuteron -> SetDCAToVertex2D(kFALSE);
     fESDtrackCuts_Deuteron -> SetRequireSigmaToVertex(kFALSE);
     
+    
+    
     //Track Selection Cuts: Charged Tracks
-    if (!fIsMC)  {
+    if ((!fIsMC) && fIsUEanalysis)  {
         
         fESDtrackCuts_LeadingTrack = new AliESDtrackCuts("fESDtrackCuts_LeadingTrack");
         fESDtrackCuts_LeadingTrack -> SetAcceptKinkDaughters(kFALSE);
@@ -628,8 +643,8 @@ void AliAnalysisTaskDeuteronsRT::UserExec(Option_t *)  {
     
     
     //Process Real or Simulated Event
-    if (!fIsMC) ProcessRealEvent ();
-    if (!fIsMC) ProcessRealEventRapidityDependence();
+    if ((!fIsMC) && fIsUEanalysis)    ProcessRealEvent ();
+    if ((!fIsMC) && (!fIsUEanalysis)) ProcessRealEventRapidityDependence();
     if ( fIsMC) ProcessSimEvent ();
 
     
@@ -775,7 +790,9 @@ void AliAnalysisTaskDeuteronsRT::ProcessRealEvent ()  {
     Int_t mult_Transverse(0);
     Int_t mult_Toward(0);
     Int_t mult_Away(0);
-    GetMultiplicitiesInAzimuthalRegions (leading_track_ID,mult_Transverse,mult_Toward,mult_Away);
+    
+    //Deuteron Candidates ID
+    vector<Int_t> deuteron_ID;
     
     //Loop over Reconstructed Tracks
     for (Int_t i=0 ; i<fESDevent->GetNumberOfTracks() ; i++)  {
@@ -783,9 +800,47 @@ void AliAnalysisTaskDeuteronsRT::ProcessRealEvent ()  {
         //Get Reconstructed Track
         AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(i);
         if (!track) continue;
+        
+        //Store Deuteron Candidates
+        if (IsDeuteronCandidate (track))  { deuteron_ID.push_back(i); }
+        
+        //Track Cuts & Multiplicities in Azimuthal Regions
+        if (!PassedTrackQualityCuts_TransverseMult (track)) continue;
+        if (IsTrackInTransverseRegion (track,leading_track_ID)) mult_Transverse++;
+        if (IsTrackInTowardRegion     (track,leading_track_ID)) mult_Toward++;
+        if (IsTrackInAwayRegion       (track,leading_track_ID)) mult_Away++;
+    }
+    
+    //Fill Histograms
+    hMultTransverse -> Fill (mult_Transverse);
+    hMultToward     -> Fill (mult_Toward);
+    hMultAway       -> Fill (mult_Away);
+    
+    //Fill R_{T} Distribution
+    Double_t Rt = static_cast<Double_t>(mult_Transverse)/fAverage_Nch_Transv;
+    hRtDistribution -> Fill (Rt);
+    
+    //Correlations between Transverse and Integrated Mult
+    AliMultSelection *multiplicitySelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
+    Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
 
-        //Basic Track Quality Cuts
-        if (!PassedBasicTrackQualityCuts (track)) continue;
+    hNchTransv_NchTot         -> Fill (mult_Transverse,(mult_Transverse+mult_Toward+mult_Away));
+    hRt_NchTot                -> Fill (Rt,(mult_Transverse+mult_Toward+mult_Away));
+    hNchTransv_MultPercentile -> Fill (mult_Transverse,mult_percentile);
+    hRt_MultPercentile        -> Fill (Rt,mult_percentile);
+
+    
+    //Number of Deuteron Candidates
+    Int_t nDeuterons = (Int_t)deuteron_ID.size();
+    hNumberOfDeuterons -> Fill (nDeuterons);
+    
+    
+    //Loop over Deuteron Candidates
+    for (Int_t i=0 ; i<nDeuterons ; i++)  {
+
+        //Get Reconstructed Track
+        AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(deuteron_ID[i]);
+        if (!track) continue;
     
         //Fill Histograms: Standard Cuts
         FillHistograms_StandardCuts (mult_Transverse,leading_track_ID,track);
@@ -883,51 +938,6 @@ Int_t AliAnalysisTaskDeuteronsRT::GetLeadingTrack ()  {
     return ID_leading_track;
 }
 //__________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDeuteronsRT::GetMultiplicitiesInAzimuthalRegions (Int_t leading_track_ID, Int_t &Nch_Transv, Int_t &Nch_Toward, Int_t &Nch_Away)  {
-    
-    //Initializations
-    Int_t mult_Transverse(0);
-    Int_t mult_Toward(0);
-    Int_t mult_Away(0);
-    
-    //Loop over Reconstructed Tracks
-    for (Int_t i=0 ; i<fESDevent->GetNumberOfTracks() ; i++)  {
-
-        //Get Reconstructed Track
-        AliESDtrack *track = (AliESDtrack*) fESDevent->GetTrack(i);
-        if (!track) continue;
-        if (!PassedTrackQualityCuts_TransverseMult (track)) continue;
-        if (IsTrackInTransverseRegion (track,leading_track_ID)) mult_Transverse++;
-        if (IsTrackInTowardRegion     (track,leading_track_ID)) mult_Toward++;
-        if (IsTrackInAwayRegion       (track,leading_track_ID)) mult_Away++;
-    }
-    
-    //Fill Histograms
-    hMultTransverse -> Fill (mult_Transverse);
-    hMultToward     -> Fill (mult_Toward);
-    hMultAway       -> Fill (mult_Away);
-    
-    //Fill R_{T} Distribution
-    Double_t Rt = static_cast<Double_t>(mult_Transverse)/fAverage_Nch_Transv;
-    hRtDistribution -> Fill (Rt);
-    
-    
-    //Correlations between Transverse and Integrated Mult
-    AliMultSelection *multiplicitySelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
-    Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
-
-    hNchTransv_NchTot         -> Fill (mult_Transverse,(mult_Transverse+mult_Toward+mult_Away));
-    hRt_NchTot                -> Fill (Rt,(mult_Transverse+mult_Toward+mult_Away));
-    hNchTransv_MultPercentile -> Fill (mult_Transverse,mult_percentile);
-    hRt_MultPercentile        -> Fill (Rt,mult_percentile);
-
-    
-    //Assignments
-    Nch_Transv = mult_Transverse;
-    Nch_Toward = mult_Toward;
-    Nch_Away   = mult_Away;
-}
-//__________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDeuteronsRT::IsTrackInTransverseRegion (AliESDtrack *track, Int_t leading_track_ID)  {
     
     //Initialization
@@ -1000,6 +1010,35 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsCleanDeuteron (AliESDtrack *track)  {
 
     return isCleanDeuteron;
     
+}
+//__________________________________________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskDeuteronsRT::IsDeuteronCandidate (AliESDtrack *track)  {
+    
+    //Initialization
+    Bool_t isDeuteronCandidate = kFALSE;
+
+    //Basic Track Selection
+    if (!PassedBasicTrackQualityCuts (track)) return isDeuteronCandidate;
+
+    //Variables
+    Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
+    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
+    Double_t pt        = track->Pt();
+    Bool_t   hasTOFhit = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
+    Double_t length    = track->GetIntegratedLength();
+
+    
+    //TPC Pre-selection
+    if (TMath::Abs(nsigmaTPC)>5.0) return isDeuteronCandidate;
+    
+    //Selection on TOF hit & Track Length
+    if (pt>1.5 && (!hasTOFhit)) return isDeuteronCandidate;
+    if (pt>1.5 && length<350.0) return isDeuteronCandidate;
+    if (pt>1.5 && TMath::Abs(nsigmaTOF)>10.0) return isDeuteronCandidate;
+
+    
+    isDeuteronCandidate = kTRUE;
+    return isDeuteronCandidate;
 }
 //__________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDeuteronsRT::PassedTrackQualityCuts_LeadingTrack (AliESDtrack *track)  {

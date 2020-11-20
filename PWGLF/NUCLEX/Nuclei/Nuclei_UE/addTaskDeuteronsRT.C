@@ -12,6 +12,7 @@
 //____________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
                                                 Bool_t    isMC = kFALSE,
+                                                Bool_t    isUEanalysis = kTRUE,
                                                 UInt_t    triggerType = (AliVEvent::kINT7),//(AliVEvent::kINT7|AliVEvent::kHighMultV0)
                                                 Double_t  multMin = 0.0,
                                                 Double_t  multMax = 100.0,
@@ -37,6 +38,12 @@ AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
     TString fileName = AliAnalysisManager::GetCommonFileName();
     if ( isMC) fileName += ":deuteron_RT_MC";
     if (!isMC) fileName += ":deuteron_RT_Data";
+    
+    
+    //Container Name
+    Int_t index_ptLeadingTrackMin = (Int_t)(10.0*pt_min_leading);
+    TString results_cont = Form("Results_ptLeadingTrackMin_%d",index_ptLeadingTrackMin);
+    TString qaplots_cont = Form("QAplots_ptLeadingTrackMin_%d",index_ptLeadingTrackMin);
 
     
     //Analysis Task
@@ -48,10 +55,11 @@ AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
     task -> AliAnalysisTaskDeuteronsRT::SetAnalysisParametersSyst (hAnalysisParameters);
     task -> AliAnalysisTaskDeuteronsRT::SetInputData (isMC);
     task -> AliAnalysisTaskDeuteronsRT::SetMinPtLeadingTrack (pt_min_leading);
+    task -> AliAnalysisTaskDeuteronsRT::SetIsUEAnalysis      (isUEanalysis);
     mgr  -> AddTask(task);
     mgr  -> ConnectInput (task,0,mgr->GetCommonInputContainer());
-    mgr  -> ConnectOutput(task,1,mgr->CreateContainer("Results", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr  -> ConnectOutput(task,2,mgr->CreateContainer("QAplots", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr  -> ConnectOutput(task,1,mgr->CreateContainer(results_cont, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr  -> ConnectOutput(task,2,mgr->CreateContainer(qaplots_cont, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     return task;
 }
