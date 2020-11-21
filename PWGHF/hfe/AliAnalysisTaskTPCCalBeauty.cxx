@@ -1217,7 +1217,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
         
-        Int_t binClos[3] = {60,nDCAbins,19}; //pT, DCA, Mom PID, Mom Gen, mompT
+        Int_t binClos[3] = {60,nDCAbins,19}; //pT, DCA, Mom PID
         Double_t xminClos[3] = {0.,-0.2,0.5};
         Double_t xmaxClos[3] = {30.,0.2,19.5};
         fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
