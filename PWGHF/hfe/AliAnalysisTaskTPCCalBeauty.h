@@ -329,6 +329,7 @@ private:
     THnSparse           *fSprsTemplatesWeight;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
+    THnSparse           *fSprsClosureTest;  //! Sparse for templates
     
     //TH2F                *fDTemplateWeight; //!
     //TH2F                *fDTemplateNoWeight; //!

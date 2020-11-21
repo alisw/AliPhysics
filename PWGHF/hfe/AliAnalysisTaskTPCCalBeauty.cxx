@@ -228,6 +228,7 @@ fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
 fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
+fSprsClosureTest(0),
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -480,6 +481,7 @@ fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
 fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
+fSprsClosureTest(0),
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -728,10 +730,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fInvmassULSEnhPhoton);*/
     }
     
-    fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius, counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
     fOutputList->Add(fULSdcaBelow);
     
-    fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius, counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
     fOutputList->Add(fLSdcaBelow);
     
     if (fFlagFillMCHistos) {
@@ -1214,6 +1216,13 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fSprsTemplatesWeightVar2 = new THnSparseD("fSprsTemplatesWeightVar2","Sparse for Templates, D meson WeightVar2 applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
+        
+        Int_t binClos[5] = {60,nDCAbins,19}; //pT, DCA, Mom PID, Mom Gen, mompT
+        Double_t xminClos[5] = {0.,-0.2,0.5};
+        Double_t xmaxClos[5] = {30.,0.2,19.5};
+        fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
+        fOutputList->Add(fSprsClosureTest);
+        fSprsClosureTest->Sumw2();
     
         /*fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fDTemplateWeight);
@@ -2384,8 +2393,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             if(!kEmbEta && !kEmbPi0 && kHijing) {
                                 fEtaHijingDCA->Fill(track->Pt(),DCA);
                                 fEtaHijingPt->Fill(track->Pt());
-                                ComboDenomWeight->Fill(track->Pt());
-                                ComboDenomNoWeight->Fill(track->Pt());
+                                //ComboDenomWeight->Fill(track->Pt());
+                                //ComboDenomNoWeight->Fill(track->Pt());
                             }
                             if(kEmbEta) {
                                 fWeight = fEtaWeight->Eval(momPt);
@@ -2660,6 +2669,22 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             //if(!fFlagFillMCHistos){
                 InvMassCheckData(i, track, d0z0, MagSign);
             //}
+            
+            //Fill DCA for closure test
+            if (fFlagFillMCHistos) {
+                if(ilabel>0 && fMCarray)
+                {
+                    if(TMath::Abs(pdg)==11){
+                        //Fill template sparse
+                        Double_t closValue[3] = {-999,-999,-999};
+                        closValue[0] = track->Pt();
+                        closValue[1] = DCA;
+                        closValue[2] = fpidSort;
+                    
+                        fSprsClosureTest->Fill(closValue);
+                    }
+                }
+            }
             
             //Make incl electron and photonic electron plots
             /*if(nsigma>fMinNSigCut && nsigma<3) {
