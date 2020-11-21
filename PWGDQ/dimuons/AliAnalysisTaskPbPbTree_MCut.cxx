@@ -531,7 +531,6 @@ void AliAnalysisTaskPbPbTree_MCut::UserExec(Option_t *)
   if (TriggerSelected_CINT7ZAC_CENT) fhNEv->Fill(17.+DeltaCh);
 
   // Evaluation of Event-Plane variables
-  printf("RUN %i \n",fRun);
   Int_t run = fAODEvent->GetRunNumber();
   if(run != fRun){
     // Load the calibrations run dependent
@@ -671,7 +670,7 @@ void AliAnalysisTaskPbPbTree_MCut::UserExec(Option_t *)
    Int_t LabelOld2[1500];
    Bool_t GoodMuon[1500]={kFALSE};
 
-   if(ntracks>1500) return;    //skip events with a huge number of tracks
+   //if(ntracks>1500) return;    //skip events with a huge number of tracks --> for pp collisions
 
    for (Int_t i=0;i<ntracks;i++){
 
@@ -830,41 +829,46 @@ Short_t AliAnalysisTaskPbPbJPsiTree_Dimuon_MCut::GetVertexZ(Float_t vtxZ) const
 //_____________________________________________________________________________
 void AliAnalysisTaskPbPbJPsiTree_Dimuon_MCut::OpenInfoCalbration(Int_t run)
 {
-    ////////////////////////////////////////////////////////////////////////////
-    // Searching the period name reading the corresponding run list
-    std::string line;
-    std::string strRun = std::to_string(run);
-    std::string strPerName; // String corresponding to the period name
-
-    std::ifstream runListLHC15o;
-    runListLHC15o.open ("run_list_LHC15o.txt");
-    if (runListLHC15o.is_open()){
-      while ( getline (runListLHC15o,line) ){if(line==run){strPerName = "215o";}}
-      runListLHC15o.close();
-    }
-
-    std::ifstream runListLHC18r;
-    runListLHC18r.open ("run_list_LHC18r.txt");
-    if (runListLHC18r.is_open()){
-      while ( getline (runListLHC18r,line) ){if(line==run){strPerName = "218r";}}
-      runListLHC15o.close();
-    }
-
-    std::ifstream runListLHC18q;
-    runListLHC18q.open ("run_list_LHC18q.txt");
-    if (runListLHC18q.is_open()){
-      while ( getline (runListLHC18q,line) ){if(line==run){strPerName = "218q";}}
-      runListLHC18q.close();
-    }
-
-    printf("PERIOD NAME = %s\n",strPerName.c_str());
-    ////////////////////////////////////////////////////////////////////////////
     if (!gGrid) {
         TGrid::Connect("alien://");
         printf("CONNECTING TO GRID ...\n");
     }
 
+    // Searching the period name reading the corresponding run list
+    std::string line;
+    std::string strRun = std::to_string(run);
+    std::string tmpPerName; // string for the period name
+
+    printf("Opening calibV0TrklNoEtaCutRun215oVtx14MergedRuns.root\n");
+    TFile* tmpFile215o = 0;
+    tmpFile215o = TFile::Open("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun215oVtx14MergedRuns.root");
+
+    AliOADBContainer* cont215o = (AliOADBContainer*) tmpFile215o->Get("hMultV0BefCorPfpx");
+    if((cont215o->GetObject(run))){tmpPerName = "215oVtx14MergedRuns";}
+    else{printf("run %i does not belong to LHC15o\n", run);}
+    tmpFile215o->Close();
+
+    printf("Opening calibV0TrklNoEtaCutRun218qVtx14MRP2New.root\n");
+    TFile* tmpFile218q = 0;
+    tmpFile218q = TFile::Open("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun218qVtx14MRP2New.root");
+    AliOADBContainer* cont218q = (AliOADBContainer*) tmpFile218q->Get("hMultV0BefCorPfpx");
+    if((cont218q->GetObject(run))){tmpPerName = "218qVtx14MRP2New";}
+    else{printf("run %i does not belong to LHC18qVtx14MRP2New\n", run);}
+    tmpFile218q->Close();
+
+    printf("Opening calibV0TrklNoEtaCutRun218rVtx14MRP2New.root\n");
+    TFile* tmpFile218r = 0;
+    tmpFile218r = TFile::Open("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun218rVtx14MRP2New.root");
+    AliOADBContainer* cont218r = (AliOADBContainer*) tmpFile218r->Get("hMultV0BefCorPfpx");
+    if((cont218r->GetObject(run))){tmpPerName = "218rVtx14MRP2New";}
+    else{printf("run %i does not belong to LHC18r\n", run);}
+    tmpFile218r->Close();
+
+    printf("RUN %i \n",run);
+    printf("PERIOD NAME = %s\n",tmpPerName.c_str());
+
     TFile* foadb = 0;
+    printf("Opening alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%s.root",tmpPerName.c_str());
     foadb = TFile::Open(Form("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%sVtx14MRP2New.root",strPerName.c_str()));
 
     AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
