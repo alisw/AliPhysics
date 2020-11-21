@@ -1217,9 +1217,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
         
-        Int_t binClos[5] = {60,nDCAbins,19}; //pT, DCA, Mom PID, Mom Gen, mompT
-        Double_t xminClos[5] = {0.,-0.2,0.5};
-        Double_t xmaxClos[5] = {30.,0.2,19.5};
+        Int_t binClos[3] = {60,nDCAbins,19}; //pT, DCA, Mom PID, Mom Gen, mompT
+        Double_t xminClos[3] = {0.,-0.2,0.5};
+        Double_t xmaxClos[3] = {30.,0.2,19.5};
         fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
         fOutputList->Add(fSprsClosureTest);
         fSprsClosureTest->Sumw2();
@@ -2675,7 +2675,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(ilabel>0 && fMCarray)
                 {
                     if(TMath::Abs(pdg)==11){
-                        //Fill template sparse
+                        //Fill closure test sparse
                         Double_t closValue[3] = {-999,-999,-999};
                         closValue[0] = track->Pt();
                         closValue[1] = DCA;
