@@ -1,6 +1,5 @@
 /***************************************************************************
-dmallick@cern.ch - last modified on 04/04/2020, 29/08/2020
-//
+dmallick@cern.ch - last modified on 21/11/2020
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
 // of the boolean switches defined in the first lines.
@@ -15,29 +14,33 @@ dmallick@cern.ch - last modified on 04/04/2020, 29/08/2020
 //
 ****************************************************************************/
 
-AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
+AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
 					    Bool_t      isMC                = kFALSE,
-					    Bool_t      isPP                = kFALSE,
+					    Bool_t      isPP                = kTRUE,
+					    Int_t       isMult                 = 1,
 					    Int_t       Strcut              = 2011,
 					    Int_t       customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 					    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
 					    Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
-					    Float_t     nsigmaK            = 2.0,
-					    Float_t     nsigmaTOF          = 2.0,
-					    Bool_t      enableMonitor      = kTRUE,
+					    Float_t     nsigmaPi            = 2.0,
+					    Float_t     nsigmaK             = 2.0,
+					    Bool_t      enableMonitor       = kTRUE,
 					    Int_t       nmix                = 5,
 					    Float_t     maxDiffVzMix        = 1.0,
 					    Float_t     maxDiffMultMix      = 5.0,
-					    TString     outNameSuffix       = "PbPb",						
+                     			    TString     outNameSuffix       = "pp",						
 					    UInt_t      trigger =   AliVEvent::kINT7,
-					    Int_t     Multbin       = 100,
-					    Int_t     lMultbin       = 0,
-					    Int_t     hMultbin       = 100,
-					    Int_t     Ptbin       = 100,
-					    Int_t     lPtbin       = 0,
-					    Int_t     hPtbin       = 10,
-					    Bool_t    timeRangeCut      = kTRUE
-
+					    Int_t       Multbin       = 100,
+					    Int_t       lMultbin       = 0,
+					    Int_t        hMultbin       = 100,
+					    Int_t       Ptbin       = 100,
+					    Int_t       lPtbin       = 0,
+					    Int_t       hPtbin       = 10,
+					    Int_t       InvMbin      =120,
+					    Float_t     lInvMbin     =0.98,
+					    Float_t     hInvMbin     = 1.1
+					    
+  
 						)
 {  
   Bool_t      rejectPileUp = kTRUE;
@@ -50,37 +53,47 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       ::Error("AddTaskKStarPbPbRunTwo", "No analysis manager to connect to.");
-      return NULL;   } 
-
-   // create the task and configure 
+      return NULL;
+   } 
+ // create the task and configure 
    TString taskName = Form("KStar%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    task->UseESDTriggerMask(trigger);
-   if (isPP) 
-     task->UseMultiplicity("QUALITY");
-   else
-     task->UseMultiplicity("AliMultSelection_V0M");//Only for RunII
+   if(isMult==0) task->UseMultiplicity("QUALITY");
+   else if(isMult==1) task->UseMultiplicity("AliMultSelection_V0M");
+   else if(isMult==2) task->UseMultiplicity("AliMultSelection_RefMult08");
+   else if(isMult==3) task->UseMultiplicity("AliMultSelection_RefMult05");
+   else if(isMult==4) task->UseCentrality("V0M");   
    // set event mixing options
    task->UseContinuousMix();
    //task->UseBinnedMix();
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
-   task->SetMaxDiffAngle(20.0*TMath::DegToRad());
-   task->SetUseTimeRangeCut(timeRangeCut);
+   //  task->SetMaxDiffAngle(20.0*TMath::DegToRad());
    task->UseMC(isMC);
    ::Info("AddTaskKStarPbPbRunTwo", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n", nmix, maxDiffVzMix, maxDiffMultMix));
-    mgr->AddTask(task);
+     
+     mgr->AddTask(task);
    
-   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-   //AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,kFALSE);
-   cutEventUtils->SetCheckAcceptedMultSelection();
+     AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+     //AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,kFALSE);
+     cutEventUtils->SetCheckAcceptedMultSelection();
+     AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
+     eventCuts->AddCut(cutEventUtils);
+     eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+     task->SetEventCuts(eventCuts);
+   
+   /*
+   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+   //   cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup   
+   // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutEventUtils);
-   eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+   eventCuts->AddCut(cutVertex);
+   eventCuts->SetCutScheme(cutVertex->GetName());
    task->SetEventCuts(eventCuts);
-  
-   //
+   */
+
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
    //   
    //vertex
@@ -104,15 +117,13 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());
-   
-   //
-   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
-   //gROOT->LoadMacro("ConfigPhiPbPb2018.C");
-    
-   if (!ConfigPhiPbPb2018(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,ThetaStar,nsigmaK,nsigmaTOF,enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
-   // -- CONTAINERS -------------------------------------------------------------------------------- 
-  
+     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
+   // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
+
+    gROOT->LoadMacro("ConfigPhiPPRun2.C");
+   if (!ConfigPhiPPRun2(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,ThetaStar,nsigmaPi,nsigmaK, enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin,InvMbin,lInvMbin,hInvMbin)) return 0x0;
+   // -- CONTAINERS --------------------------------------------------------------------------------/
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //outputFileName += ":Rsn";
    Printf("AddTaskKStarPbPbRunTwo - Set OutputFileName : \n %s\n", outputFileName.Data() );
