@@ -1000,7 +1000,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       AliAODPidHF *Pid_HF = nullptr;
       Double_t modelPred = -1.;
       bool isMLsel = true;
-      if(fApplyML)
+      if (fApplyML)
         Pid_HF = fAnalysisCuts->GetPidHF();
 
       if (isPhiKKpi)
@@ -1011,11 +1011,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         cosPiKPhiNoabs = cosPiKPhi * cosPiKPhi * cosPiKPhi;
         cosPiKPhi = TMath::Abs(cosPiKPhiNoabs);
 
-        if(fApplyML)
+        if (fApplyML)
         {
           isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
 
-          if(fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
+          if (fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
           {
             Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
                                                 fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
@@ -1035,31 +1035,37 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
         }
 
-        Double_t var4nSparse[knVarForSparse] = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
-                                                normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
-                                                TMath::Abs(normIP), absimpparxy * 10000, modelPred};
+        std::vector<Double_t> var4nSparse(knVarForSparse);
+        if (fApplyML && fUseMinimalVarForSparse) {
+          var4nSparse = {invMass_KKpi, ptCand, modelPred};
+        }
+        else
+        {
+          var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, modelPred};
+        }
 
-        if(!fApplyML || isMLsel)
+        if (!fApplyML || isMLsel)
         {
           if (!fReadMC)
           {
-            fnSparse->Fill(var4nSparse);
+            fnSparse->Fill(var4nSparse.data());
           }
           else
           {
             if (indexMCKKpi == GetSignalHistoIndex(iPtBin))
             {
-              if (orig == 4) fnSparseMC[2]->Fill(var4nSparse);
-              else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse);
+              if (orig == 4) fnSparseMC[2]->Fill(var4nSparse.data());
+              else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse.data());
             }
-            else if(indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+            else if (indexMCKKpi == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
             {
-                fnSparseMC[4]->Fill(var4nSparse);
+                fnSparseMC[4]->Fill(var4nSparse.data());
             }
             else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 321)
             {
-              if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse);
-              else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse);
+              if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse.data());
+              else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse.data());
             }
           }
         }
@@ -1072,10 +1078,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         cosPiKPhiNoabs = cosPiKPhi * cosPiKPhi * cosPiKPhi;
         cosPiKPhi = TMath::Abs(cosPiKPhiNoabs);
 
-        if(fApplyML)
+        if (fApplyML)
         {
           isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
-          if(fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
+          if (fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
           {
             Double_t var4nSparsePID[knVarPID] = {ptCand, modelPred,
                                                 fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
@@ -1095,31 +1101,37 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           }
         }
 
-        Double_t var4nSparse[knVarForSparse] = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000,
-                                                normdlxy, cosp * 100, cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10,
-                                                TMath::Abs(normIP), absimpparxy * 10000, modelPred};
+        std::vector<Double_t> var4nSparse(knVarForSparse);
+        if (fApplyML && fUseMinimalVarForSparse) {
+          var4nSparse = {invMass_KKpi, ptCand, modelPred};
+        }
+        else
+        {
+          var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, modelPred};
+        }
 
-        if(!fApplyML || isMLsel)
+        if (!fApplyML || isMLsel)
         {
           if (!fReadMC)
           {
-            fnSparse->Fill(var4nSparse);
+            fnSparse->Fill(var4nSparse.data());
           }
           else
           {
             if (indexMCpiKK == GetSignalHistoIndex(iPtBin))
             {
-              if (orig == 4) fnSparseMC[2]->Fill(var4nSparse);
-              else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse);
+              if (orig == 4) fnSparseMC[2]->Fill(var4nSparse.data());
+              else if (orig == 5) fnSparseMC[3]->Fill(var4nSparse.data());
             }
-            else if(indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
+            else if (indexMCpiKK == GetBackgroundHistoIndex(iPtBin) && fFillBkgSparse)
             {
-                fnSparseMC[4]->Fill(var4nSparse);
+                fnSparseMC[4]->Fill(var4nSparse.data());
             }
             else if (fFillSparseDplus && labDplus >= 0 && pdgCode0 == 211)
             {
-              if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse);
-              else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse);
+              if (orig == 4) fnSparseMCDplus[2]->Fill(var4nSparse.data());
+              else if (orig == 5) fnSparseMCDplus[3]->Fill(var4nSparse.data());
             }
           }
         }
@@ -1657,48 +1669,41 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  if(!fApplyML)
+  if (!fApplyML)
     nSparseAxes--;
+  if (fApplyML && fUseMinimalVarForSparse)
+    nSparseAxes = knVarForSparseMLMinimal;
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
-  if(fUseFinPtBinsForSparse)
+  if (fUseFinPtBinsForSparse)
     nPtBins = nPtBins*10;
+  
+  // use pp for default values
+  std::vector<Int_t> nBinsReco = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins};
+  std::vector<Double_t> xminReco = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin};
+  std::vector<Double_t> xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
+  std::vector<TString> axis = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
+                               "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output"};
 
-  Int_t nBinsReco[knVarForSparse];
-  Double_t xminReco[knVarForSparse];
-  Double_t xmaxReco[knVarForSparse];
-  TString axis[knVarForSparse] = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}",
-                                  "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "ML model output"};
-
-  if (fSystem == kpp)
-  {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
-    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
-    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
-    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
-  }
-  else if (fSystem == kPbPb)
-  {
+  if (fSystem == kPbPb) {
     nInvMassBins = (Int_t)(0.45 / fMassBinSize + 0.5);
     minMass = massDs - 0.5 * nInvMassBins * fMassBinSize;
     maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
-    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
-    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
-    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
+    nBinsReco = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins};
+    xminReco = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin};
+    xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax};
   }
-  else if (fSystem == kUpgr)
-  {
-    std::vector<Int_t> nBinsRecoVec = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins};
-    std::vector<Double_t> xminRecoVec = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin};
-    std::vector<Double_t> xmaxRecoVec = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax};
-    std::copy(nBinsRecoVec.begin(),nBinsRecoVec.end(),nBinsReco);
-    std::copy(xminRecoVec.begin(),xminRecoVec.end(),xminReco);
-    std::copy(xmaxRecoVec.begin(),xmaxRecoVec.end(),xmaxReco);
+  else if (fSystem == kUpgr) {
+    nBinsReco = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins};
+    xminReco = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin};
+    xmaxReco = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax};
+  }
+
+  if (fApplyML && fUseMinimalVarForSparse) {
+      axis = {axis[0], axis[1], axis[13]};
+      nBinsReco = {nBinsReco[0], nBinsReco[1], nBinsReco[13]};
+      xminReco = {xminReco[0], xminReco[1], xminReco[13]};
+      xmaxReco = {xmaxReco[0], xmaxReco[1], xmaxReco[13]};
   }
 
   Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
@@ -1736,7 +1741,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     }
     for (Int_t iHist = 2; iHist < nSparseReco + 2; iHist++)
     {
-      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+      fnSparseMC[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist - 2].Data()), Form("MC nSparse (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco.data(), xminReco.data(), xmaxReco.data());
       for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
       {
         fnSparseMC[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
@@ -1746,7 +1751,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       //Dplus
       if (fFillSparseDplus && iHist<4)
       {
-        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco, xminReco, xmaxReco);
+        fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseRecoDplus_%s", label[iHist - 2].Data()), Form("MC nSparse D^{+} (Reco Step)- %s", label[iHist - 2].Data()), nSparseAxes, nBinsReco.data(), xminReco.data(), xmaxReco.data());
         for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
         {
           fnSparseMCDplus[iHist]->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
@@ -1754,7 +1759,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
-    if(fFillSparseAccWoQuark)
+    if (fFillSparseAccWoQuark)
     {
       for (Int_t iHist = 5; iHist < 7; iHist++)
       {
@@ -1770,7 +1775,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   } //end MC
   else
   {
-    fnSparse = new THnSparseF("fnSparse", "nSparse", nSparseAxes, nBinsReco, xminReco, xmaxReco);
+    fnSparse = new THnSparseF("fnSparse", "nSparse", nSparseAxes, nBinsReco.data(), xminReco.data(), xmaxReco.data());
     for (Int_t iAxis = 0; iAxis < nSparseAxes; iAxis++)
     {
       fnSparse->GetAxis(iAxis)->SetTitle(Form("%s", axis[iAxis].Data()));
