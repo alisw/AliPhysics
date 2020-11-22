@@ -18,6 +18,7 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
 			 Int_t                  Strcut = 2011,
 			 Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 			 AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
+                         Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
 			 Float_t                nsigmaK  = 3.0,
 			 Float_t               nsigmaTOF = 3.0,			 
 			 Bool_t                 enableMonitor = kTRUE,
@@ -69,11 +70,11 @@ nsigmaTOF);
   /* CosThetaStar     */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
   if(isMC==1)
     {
-      /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+      /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(ThetaStar, kTRUE);
     }
   else
     {
-       /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+       /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(ThetaStar, kFALSE);
     }
   
   // -- Create all needed outputs -----------------------------------------------------------------

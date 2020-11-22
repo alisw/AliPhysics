@@ -21,13 +21,15 @@ Bool_t ConfigKStarPbPb2018(AliRsnMiniAnalysisTask *task,
 			    Float_t                nsigmaPi = 3.0,
 			    Float_t                nsigmaK  = 3.0,
 			    Float_t                nsigmaTOF= 3.0,
-                            Bool_t                 enableMonitor = kTRUE,
-			    Int_t                   Multbin=100,
-			    Int_t                   lMultbin=0,
-			    Int_t                   hMultbin=100,
-			    Int_t                   Ptbin=100,
-			    Int_t                   lPtbin=0,
-			    Int_t                   hPtbin=10
+			   Float_t                ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
+			   Bool_t                 enableMonitor = kTRUE,			   
+			   Int_t                   Multbin=100,
+			   Int_t                   lMultbin=0,
+			   Int_t                   hMultbin=100,
+			   Int_t                   Ptbin=100,
+			   Int_t                   lPtbin=0,
+			   Int_t                   hPtbin=10
+			  
 			    
 			    )
 {
@@ -67,16 +69,29 @@ nsigmaTOF);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,       kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,        kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
+
   /* CosThetaStar     */ //Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStar, kFALSE); 
+  //    if(isMC==1)
+  // {
+     /* CosThetaStar     */ //Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+  //   }
+
+// else
+      // {
+  /* CosThetaStar     */ // Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+  // }
+
     if(isMC==1)
      {
-     /* CosThetaStar     */ Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+     /* CosThetaStar     */ Int_t cosThSID = task->CreateValue(ThetaStar, kTRUE);
      }
 
     else
       {
-     /* CosThetaStar     */  Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+	/* CosThetaStar     */  Int_t cosThSID = task->CreateValue(ThetaStar, kFALSE);
      }
+
+
    
 
   // -- Create all needed outputs -----------------------------------------------------------------

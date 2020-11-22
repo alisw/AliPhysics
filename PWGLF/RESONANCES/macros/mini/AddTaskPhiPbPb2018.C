@@ -21,13 +21,14 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
 					    Int_t       Strcut              = 2011,
 					    Int_t       customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 					    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
+					    Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
 					    Float_t     nsigmaK            = 2.0,
 					    Float_t     nsigmaTOF          = 2.0,
 					    Bool_t      enableMonitor      = kTRUE,
 					    Int_t       nmix                = 5,
 					    Float_t     maxDiffVzMix        = 1.0,
 					    Float_t     maxDiffMultMix      = 5.0,
-                     			    TString     outNameSuffix       = "PbPb",						
+					    TString     outNameSuffix       = "PbPb",						
 					    UInt_t      trigger =   AliVEvent::kINT7,
 					    Int_t     Multbin       = 100,
 					    Int_t     lMultbin       = 0,
@@ -109,7 +110,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb2018(
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
    //gROOT->LoadMacro("ConfigPhiPbPb2018.C");
     
-   if (!ConfigPhiPbPb2018(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaK,nsigmaTOF,enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
+   if (!ConfigPhiPbPb2018(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,ThetaStar,nsigmaK,nsigmaTOF,enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
    // -- CONTAINERS -------------------------------------------------------------------------------- 
   
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
