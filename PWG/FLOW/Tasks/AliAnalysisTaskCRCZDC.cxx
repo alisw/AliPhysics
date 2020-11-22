@@ -172,6 +172,7 @@ fCentrEstimator(kV0M),
 fOutput(0x0),
 fOutputRecenter1(0x0),
 fOutputRecenter2(0x0),
+fOutputRecenter3(0x0),
 fhZNCvsZNA(0x0),
 fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
@@ -206,6 +207,8 @@ fUseTowerEq(kFALSE),
 fFillZNCenDisRbR(kFALSE),
 fTowerEqList(NULL),
 fZDCCalibList(NULL),
+fZDCCalibListStep3CommonPart(NULL),
+fZDCCalibListStep3RunByRun(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
@@ -378,6 +381,7 @@ fCentrEstimator(kV0M),
 fOutput(0x0),
 fOutputRecenter1(0x0),
 fOutputRecenter2(0x0),
+fOutputRecenter3(0x0),
 fhZNCvsZNA(0x0),
 fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
@@ -416,6 +420,8 @@ fUseTowerEq(kFALSE),
 fFillZNCenDisRbR(kFALSE),
 fTowerEqList(NULL),
 fZDCCalibList(NULL),
+fZDCCalibListStep3CommonPart(NULL),
+fZDCCalibListStep3RunByRun(NULL),
 fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
 fVZEROGainEqList(NULL),
@@ -505,6 +511,7 @@ fQATrackITSScls(NULL)
   if (StepZDCRecenter >= 0) {
 	DefineOutput(3, TList::Class());
 	DefineOutput(4, TList::Class());
+	DefineOutput(5, TList::Class());
   }
 
   for(Int_t j=0; j<2; j++) {
@@ -539,13 +546,16 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
     delete fOutput; fOutput=0;
   }
-  //@Shi add destructor for fOutputRecenter1 and fOutputRecenter2
+  //@Shi add destructor for fOutputRecenter1 and fOutputRecenter2 and fOutputRecenter3
   if(fStepZDCRecenter >= 0) {
     if(fOutputRecenter1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
       delete fOutputRecenter1; fOutputRecenter1=0;
     }
     if(fOutputRecenter2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
       delete fOutputRecenter2; fOutputRecenter2=0;
+    }
+    if(fOutputRecenter3 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+      delete fOutputRecenter3; fOutputRecenter3=0;
     }
   }
   delete fMyTRandom3;
@@ -561,6 +571,8 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   if (fQAList) delete fQAList;
   if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
   if (fZDCCalibList) delete fZDCCalibList; //@shi calibration file for ZDC recentering
+  if (fZDCCalibListStep3CommonPart) delete fZDCCalibListStep3CommonPart; 
+  if (fZDCCalibListStep3RunByRun) delete fZDCCalibListStep3RunByRun; 
 }
 
 //________________________________________________________________________
@@ -569,6 +581,9 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
   for(Int_t r=0;r<fCRCMaxnRun;r++) {
     fCRCQVecListRun[r] = NULL;
     //@Shi Add initializing run by run ZN centroid vs centrality
+    fRecenter1ListRunbyRun[r] = NULL; 
+    fRecenter2ListRunbyRun[r] = NULL; 
+    fRecenter3ListRunbyRun[r] = NULL; 
     for (Int_t c=0; c<2; c++) {
       fhZNCenDisRbR[r][c] = NULL;
     }
@@ -584,6 +599,12 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 		fRun_VtxXQPreCalib[r][c] = NULL;
 		fRun_VtxYQPreCalib[r][c] = NULL;
 		fRun_VtxZQPreCalib[r][c] = NULL;
+		fRun_VtxXQCalibStep1[r][c] = NULL;
+		fRun_VtxYQCalibStep1[r][c] = NULL;
+		fRun_VtxZQCalibStep1[r][c] = NULL;
+		fRun_VtxXQCalibStep2[r][c] = NULL;
+		fRun_VtxYQCalibStep2[r][c] = NULL;
+		fRun_VtxZQCalibStep2[r][c] = NULL;
 		fRun_CentQCalib[r][c] = NULL;
 		fRun_VtxXQCalib[r][c] = NULL;
 		fRun_VtxYQCalib[r][c] = NULL;
@@ -649,12 +670,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fOutput->SetOwner(kTRUE);
   //fOutput->SetName("output");
   
-  //@Shi add fOutputRecenter1 & fOutputRecenter2
+  //@Shi add fOutputRecenter1 & fOutputRecenter2 & fOutputRecenter3
   if (fStepZDCRecenter >= 0) {
     fOutputRecenter1 = new TList();
     fOutputRecenter1->SetOwner(kTRUE);
     fOutputRecenter2 = new TList();
     fOutputRecenter2->SetOwner(kTRUE);
+    fOutputRecenter3 = new TList();
+    fOutputRecenter3->SetOwner(kTRUE);
   }
   if (fQAon) {
     fQAList = new TList();
@@ -917,11 +940,11 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   //@Shi start
   Int_t dRun18r[] = {297317, 297311, 297310, 297278, 297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297129, 297128, 297124, 297123, 297119, 297118, 297117, 297085, 297035, 297031, 296966, 296941, 296938, 296935, 296934};
   
-  Double_t dVtxPosX15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0760396, 0.0761476, 0.0754612, 0.0760119, 0.0771416, 0.0758959, 0.0758307, 0.0764312, 0.0712992, 0.0740006, 0.076035, 0.0795941, 0.0758193, 0.0753836, 0.0759469, 0.0753271, 0.0748559, 0.0755779, 0.0747179, 0.0743789, 0.074226, 0.0738555, 0.0741127, 0.0755049, 0.079727, 0.0754529, 0.0747599, 0.0744282, 0.0742795, 0.0750923, 0.0765961, 0.0762358, 0.0765928, 0.0752035, 0.0767834, 0.0759724, 0.0758235, 0.0690952, 0.0693622, 0.0695388, 0.0704506, 0.070026, 0.0703322, 0.0702859, 0.0695319, 0.0684041, 0.0683909, 0.0696078, 0.0699702, 0.0689661, 0.0677066, 0.0689856, 0.0714685, 0.0690362, 0.0703379, 0.0692874, 0.0702451, 0.0693919, 0.0693631, 0.0702106, 0.0703336, 0.0696804, 0.0668393, 0.0696303, 0.0684486, 0.0693902, 0.0682269, 0.0686902, 0.0688619, 0.069442, 0.0705462, 0.0695982, 0.069336, 0.0685833, 0.0677059, 0.0690834, 0.0691257, 0.0690399, 0.0695431, 0};
+  Double_t dVtxPosX15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0760396, 0.0761476, 0.0754612, 0.0760119, 0.0771416, 0.0758959, 0.0758307, 0.0764312, 0.0712992, 0.0740006, 0.076035, 0.0795941, 0.0758193, 0.0753836, 0.0759469, 0.0753271, 0.0748559, 0.0755779, 0.0747179, 0.0743789, 0.074226, 0.0738555, 0.0741127, 0.0755049, 0.079727, 0.0754529, 0.0747599, 0.0744282, 0.0742795, 0.0750923, 0.0765961, 0.0762358, 0.0765928, 0.0752035, 0.0767834, 0.0759724, 0.0758235, 0.0690952, 0.0693622, 0.0695388, 0.0704506, 0.070026, 0.0703322, 0.0702859, 0.0695319, 0.0684041, 0.0683909, 0.0696078, 0.0699702, 0.0689661, 0.0677066, 0.0689856, 0.0714685, 0.0690362, 0.0703379, 0.0692874, 0.0702451, 0.0693919, 0.0693631, 0.0702106, 0.0703336, 0.0696804, 0.0668393, 0.0696303, 0.0684486, 0.0693902, 0.0682269, 0.0686902, 0.0688619, 0.069442, 0.0705462, 0.0695982, 0.069336, 0.0685833, 0.0677059, 0.0690834, 0.0691257, 0.0690399, 0.0695431};
   
-  Double_t dVtxPosY15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.336358, 0.336082, 0.33601, 0.336299, 0.338571, 0.336182, 0.336955, 0.33598, 0.337921, 0.334241, 0.335462, 0.337443, 0.334584, 0.336416, 0.335418, 0.336588, 0.338577, 0.335504, 0.336177, 0.336241, 0.338079, 0.338119, 0.337332, 0.336716, 0.340298, 0.337025, 0.337512, 0.337696, 0.336138, 0.338704, 0.336543, 0.337053, 0.335586, 0.335519, 0.335771, 0.334203, 0.335871, 0.32961, 0.329341, 0.328825, 0.330096, 0.328709, 0.329233, 0.329063, 0.329943, 0.330227, 0.329343, 0.330058, 0.32979, 0.330226, 0.330673, 0.330379, 0.325801, 0.329745, 0.327493, 0.329334, 0.329097, 0.331733, 0.330179, 0.329786, 0.330113, 0.327863, 0.331576, 0.329589, 0.329758, 0.32966, 0.329914, 0.329771, 0.330217, 0.327307, 0.32939, 0.329085, 0.329112, 0.331714, 0.327878, 0.331697, 0.330765, 0.331914, 0.33046, 0};
+  Double_t dVtxPosY15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.336358, 0.336082, 0.33601, 0.336299, 0.338571, 0.336182, 0.336955, 0.33598, 0.337921, 0.334241, 0.335462, 0.337443, 0.334584, 0.336416, 0.335418, 0.336588, 0.338577, 0.335504, 0.336177, 0.336241, 0.338079, 0.338119, 0.337332, 0.336716, 0.340298, 0.337025, 0.337512, 0.337696, 0.336138, 0.338704, 0.336543, 0.337053, 0.335586, 0.335519, 0.335771, 0.334203, 0.335871, 0.32961, 0.329341, 0.328825, 0.330096, 0.328709, 0.329233, 0.329063, 0.329943, 0.330227, 0.329343, 0.330058, 0.32979, 0.330226, 0.330673, 0.330379, 0.325801, 0.329745, 0.327493, 0.329334, 0.329097, 0.331733, 0.330179, 0.329786, 0.330113, 0.327863, 0.331576, 0.329589, 0.329758, 0.32966, 0.329914, 0.329771, 0.330217, 0.327307, 0.32939, 0.329085, 0.329112, 0.331714, 0.327878, 0.331697, 0.330765, 0.331914, 0.33046};
   
-  Double_t dVtxPosZ15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.575355, 0.371561, 0.513012, 0.471856, 0.406659, 0.284534, 0.257454, 0.199246, 0.325792, 0.212815, 0.26548, 0.348875, 0.368373, 0.431977, 0.528148, 0.508048, 0.478282, 0.436153, 0.330369, 0.406381, 0.40795, 0.411249, 0.445349, 0.412348, 0.391552, 0.353029, 0.338251, 0.251904, 0.293615, 0.544099, 0.352431, 0.221797, 0.232368, 0.35809, 0.234556, 0.300599, 0.375358, 0.418464, 0.476625, 0.385246, 0.333402, 0.314478, 0.326505, 0.375008, 0.289914, 0.410377, 0.33794, 0.331634, 0.347134, 0.343325, 0.367387, 0.400036, 0.307101, 0.300977, 0.357842, 0.377861, 0.401782, 0.432738, 0.446801, 0.43286, 0.416691, 0.423076, 0.398294, 0.479613, 0.422342, 0.443408, 0.455862, 0.656827, 0.704932, 0.289011, 0.392294, 0.419466, 0.396562, 0.377537, 0.347602, 0.296413, 0.405798, 0.462996, 0.440022, 0};
+  Double_t dVtxPosZ15o[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.575355, 0.371561, 0.513012, 0.471856, 0.406659, 0.284534, 0.257454, 0.199246, 0.325792, 0.212815, 0.26548, 0.348875, 0.368373, 0.431977, 0.528148, 0.508048, 0.478282, 0.436153, 0.330369, 0.406381, 0.40795, 0.411249, 0.445349, 0.412348, 0.391552, 0.353029, 0.338251, 0.251904, 0.293615, 0.544099, 0.352431, 0.221797, 0.232368, 0.35809, 0.234556, 0.300599, 0.375358, 0.418464, 0.476625, 0.385246, 0.333402, 0.314478, 0.326505, 0.375008, 0.289914, 0.410377, 0.33794, 0.331634, 0.347134, 0.343325, 0.367387, 0.400036, 0.307101, 0.300977, 0.357842, 0.377861, 0.401782, 0.432738, 0.446801, 0.43286, 0.416691, 0.423076, 0.398294, 0.479613, 0.422342, 0.443408, 0.455862, 0.656827, 0.704932, 0.289011, 0.392294, 0.419466, 0.396562, 0.377537, 0.347602, 0.296413, 0.405798, 0.462996, 0.440022};
   //@Shi end
   
   if(fDataSet==k2010) {fCRCnRun=92;}
@@ -1043,17 +1066,22 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       
       //@Shi add List Run 
       if (fStepZDCRecenter>=0) {
-        if (r<45) {
+        if (r<30) {
           fRecenter1ListRunbyRun[r] = new TList();
           fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
           fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
           fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
+	    } else if (r<60) {
+		  fRecenter2ListRunbyRun[r-30] = new TList(); // r-30 so that the index starts at 0
+          fRecenter2ListRunbyRun[r-30]->SetName(Form("Run %d",fRunList[r]));
+          fRecenter2ListRunbyRun[r-30]->SetOwner(kTRUE);
+          fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-30]); 
 	    } else {
-		  fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
-          fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
-          fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
-          fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
-	    }
+		  fRecenter3ListRunbyRun[r-60] = new TList(); // r-60 so that the index starts at 0
+          fRecenter3ListRunbyRun[r-60]->SetName(Form("Run %d",fRunList[r]));
+          fRecenter3ListRunbyRun[r-60]->SetOwner(kTRUE);
+          fOutputRecenter3->Add(fRecenter3ListRunbyRun[r-60]); 
+		}
 	  }
 
 	  //@Shi Add run by run ZN centroid vs centrality (begin)
@@ -1110,10 +1138,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQPreCalib[r][c]);
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
@@ -1121,31 +1151,76 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQPreCalib[r][c]);
 				}
 				// vertex z: range: [-10, 10], bins: 40
 				fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQPreCalib[r][c]);
 				}
 			  } 
 			  if (fStepZDCRecenter>=1) {
 				// centrality: 1% range: [0., 100.], bins: 100
 				fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-				if (r<45) {
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalibStep1[r][c] = new TProfile(Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), 50, -0.01, 0.01, "s");
+				  fRun_VtxYQCalibStep1[r][c] = new TProfile(Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), 50, -0.010, 0.010, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQCalibStep1[r][c] = new TProfile(Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				  fRun_VtxYQCalibStep1[r][c] = new TProfile(Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				fRun_VtxZQCalibStep1[r][c] = new TProfile(Form("fRun_VtxZQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalibStep1[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalibStep1[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalibStep1[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalibStep1[r][c]);
 				}
 			  } 
 				
 			  if (fStepZDCRecenter>=2) {
-				// doesn't have any calib
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalibStep2[r][c] = new TProfile(Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), 50, -0.01, 0.01, "s");
+				  fRun_VtxYQCalibStep2[r][c] = new TProfile(Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), 50, -0.010, 0.010, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQCalibStep2[r][c] = new TProfile(Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				  fRun_VtxYQCalibStep2[r][c] = new TProfile(Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				fRun_VtxZQCalibStep2[r][c] = new TProfile(Form("fRun_VtxZQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalibStep2[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+
+				if (r<30) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalibStep2[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalibStep2[r][c]);
+				} else {
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalibStep2[r][c]);
+				}
 			  } 
 				
 			  if (fStepZDCRecenter>=3) {
@@ -1155,10 +1230,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalib[r][c]);
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
@@ -1166,24 +1243,30 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalib[r][c]);
 				}
 				// vertex z: range: [-10, 10], bins: 40
 				fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalib[r][c]);
 				}
 				// centrality: 1% range: [0., 100.], bins: 100
 				fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQCalib2[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQCalib2[r][c]);
 				}
 			  }
 			}
@@ -1203,10 +1286,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			if (fStepZDCRecenter >= 0) {
 			  // centrality: 1% range: [0., 100.], bins: 100
 			  fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
-			  if (r<45) {
+			  if (r<30) {
 				fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
+			  } else if (r<60) {
+				fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQ[r][c]);
 			  } else {
-				fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+				fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQ[r][c]);
 			  }
 			}
 			  
@@ -1216,10 +1301,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  } else if (fDataSet==k2018r) {
 				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");
 			  }
-			  if (r<45) {
+			  if (r<30) {
 				fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
+			  } else if (r<60) {
+				fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXYZQ[r][c]);
 			  } else {
-				fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
+				fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXYZQ[r][c]);
 			  }
 			}
 			  
@@ -1255,16 +1342,21 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 	
 		//@Shi add List Run 
 		if (fStepZDCRecenter>=0) {
-		  if (r<45) {
-		    fRecenter1ListRunbyRun[r] = new TList();
-		    fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
-		    fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
-		    fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
-		  } else {
-		    fRecenter2ListRunbyRun[r-45] = new TList(); // r-45 so that the index starts at 0
-		    fRecenter2ListRunbyRun[r-45]->SetName(Form("Run %d",fRunList[r]));
-		    fRecenter2ListRunbyRun[r-45]->SetOwner(kTRUE);
-		    fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-45]); 
+          if (r<30) {
+            fRecenter1ListRunbyRun[r] = new TList();
+            fRecenter1ListRunbyRun[r]->SetName(Form("Run %d",fRunList[r]));
+            fRecenter1ListRunbyRun[r]->SetOwner(kTRUE);
+            fOutputRecenter1->Add(fRecenter1ListRunbyRun[r]);
+	      } else if (r<60) {
+		    fRecenter2ListRunbyRun[r-30] = new TList(); // r-30 so that the index starts at 0
+            fRecenter2ListRunbyRun[r-30]->SetName(Form("Run %d",fRunList[r]));
+            fRecenter2ListRunbyRun[r-30]->SetOwner(kTRUE);
+            fOutputRecenter2->Add(fRecenter2ListRunbyRun[r-30]); 
+	      } else {
+		    fRecenter3ListRunbyRun[r-60] = new TList(); // r-60 so that the index starts at 0
+            fRecenter3ListRunbyRun[r-60]->SetName(Form("Run %d",fRunList[r]));
+            fRecenter3ListRunbyRun[r-60]->SetOwner(kTRUE);
+            fOutputRecenter3->Add(fRecenter3ListRunbyRun[r-60]); 
 		  }
 		}
 		  
@@ -1298,10 +1390,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQPreCalib[r][c] = new TProfile(Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQPreCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQPreCalib[r][c]);
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
@@ -1309,31 +1403,76 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQPreCalib[r][c] = new TProfile(Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQPreCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQPreCalib[r][c]);
 				}
 				// vertex z: range: [-10, 10], bins: 40
 				fRun_VtxZQPreCalib[r][c] = new TProfile(Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQPreCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQPreCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQPreCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQPreCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQPreCalib[r][c]);
 				}
 			  } 
 			  if (fStepZDCRecenter>=1) {
 				// centrality: 1% range: [0., 100.], bins: 100
 				fRun_CentQCalib[r][c] = new TProfile(Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-				if (r<45) {
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalibStep1[r][c] = new TProfile(Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), 50, -0.01, 0.01, "s");
+				  fRun_VtxYQCalibStep1[r][c] = new TProfile(Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), 50, -0.010, 0.010, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQCalibStep1[r][c] = new TProfile(Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep1[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				  fRun_VtxYQCalibStep1[r][c] = new TProfile(Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep1[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				fRun_VtxZQCalibStep1[r][c] = new TProfile(Form("fRun_VtxZQCalibStep1[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalibStep1[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalibStep1[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalibStep1[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalibStep1[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalibStep1[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalibStep1[r][c]);
 				}
 			  } 
 				
 			  if (fStepZDCRecenter>=2) {
-				// doesn't have any calib
+				if (fDataSet==k2015) {
+				  fRun_VtxXQCalibStep2[r][c] = new TProfile(Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), 50, -0.01, 0.01, "s");
+				  fRun_VtxYQCalibStep2[r][c] = new TProfile(Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), 50, -0.010, 0.010, "s");
+				} else if (fDataSet==k2018r) {
+				  fRun_VtxXQCalibStep2[r][c] = new TProfile(Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalibStep2[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
+				  fRun_VtxYQCalibStep2[r][c] = new TProfile(Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalibStep2[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
+				}
+				fRun_VtxZQCalibStep2[r][c] = new TProfile(Form("fRun_VtxZQCalibStep2[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalibStep2[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
+
+				if (r<30) {
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalibStep2[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalibStep2[r][c]);
+				} else {
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalibStep2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalibStep2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalibStep2[r][c]);
+				}
 			  } 
 				
 			  if (fStepZDCRecenter>=3) {
@@ -1343,10 +1482,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxXQCalib[r][c] = new TProfile(Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxXQCalib[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxXQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXQCalib[r][c]);
 				}
 				// vertex y: range: [0.36, 0.38], bins: 40
 				if (fDataSet==k2015) {
@@ -1354,24 +1495,30 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 				} else if (fDataSet==k2018r) {
 				  fRun_VtxYQCalib[r][c] = new TProfile(Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxYQCalib[%d][%d]",fRunList[r],c), 40, 0.36, 0.38, "s");
 				}
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxYQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxYQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxYQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxYQCalib[r][c]);
 				}
 				// vertex z: range: [-10, 10], bins: 40
 				fRun_VtxZQCalib[r][c] = new TProfile(Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), Form("fRun_VtxZQCalib[%d][%d]",fRunList[r],c), 40, -10, 10, "s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_VtxZQCalib[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxZQCalib[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxZQCalib[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxZQCalib[r][c]);
 				}
 				// centrality: 1% range: [0., 100.], bins: 100
 				fRun_CentQCalib2[r][c] = new TProfile(Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), Form("fRun_CentQCalib2[%d][%d]",fRunList[r],c), 100, 0., 100.,"s");
-				if (r<45) {
+				if (r<30) {
 				  fRecenter1ListRunbyRun[r]->Add(fRun_CentQCalib2[r][c]);
+				} else if (r<60) {
+				  fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQCalib2[r][c]);
 				} else {
-				  fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQCalib2[r][c]);
+				  fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQCalib2[r][c]);
 				}
 			  }
 			}
@@ -1391,10 +1538,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			if (fStepZDCRecenter >= 0) {
 			  // centrality: 1% range: [0., 100.], bins: 100
 			  fRun_CentQ[r][c] = new TProfile(Form("fRun_CentQ[%d][%d]",fRunList[r],c), Form("fRun_CentQ[%d][%d]",fRunList[r],c), 100,0.,100.,"s");
-			  if (r<45) {
+			  if (r<30) {
 				fRecenter1ListRunbyRun[r]->Add(fRun_CentQ[r][c]);
+			  } else if (r<60) {
+				fRecenter2ListRunbyRun[r-30]->Add(fRun_CentQ[r][c]);
 			  } else {
-				fRecenter2ListRunbyRun[r-45]->Add(fRun_CentQ[r][c]);
+				fRecenter3ListRunbyRun[r-60]->Add(fRun_CentQ[r][c]);
 			  }
 			}
 			  
@@ -1404,10 +1553,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 			  } else if (fDataSet==k2018r) {
 				fRun_VtxXYZQ[r][c] = new TProfile3D(Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), Form("fRun_VtxXYZQ[%d][%d]",fRunList[r],c), 40, 0.08, 0.1, 40, 0.36, 0.38, 40, -10, 10, "s");  
 			  }
-			  if (r<45) {
+			  if (r<30) {
 				fRecenter1ListRunbyRun[r]->Add(fRun_VtxXYZQ[r][c]);
+			  } else if (r<60) {
+				fRecenter2ListRunbyRun[r-30]->Add(fRun_VtxXYZQ[r][c]);
 			  } else {
-				fRecenter2ListRunbyRun[r-45]->Add(fRun_VtxXYZQ[r][c]);
+				fRecenter3ListRunbyRun[r-60]->Add(fRun_VtxXYZQ[r][c]);
 			  }
 			}
 			  
@@ -1440,6 +1591,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if (fStepZDCRecenter>=0) {
     PostData(3, fOutputRecenter1);
     PostData(4, fOutputRecenter2);
+    PostData(5, fOutputRecenter3);
   }
 }
 
@@ -2517,7 +2669,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 	}
 
     fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
-
     // ******************************************************************************
     // @shi add the code to fill the histograms necessary for recentering
     //const Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
@@ -2530,10 +2681,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
     vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
     
-    fAve_VtxX->Fill(RunBin, vtxpos[0]);
-    fAve_VtxY->Fill(RunBin, vtxpos[1]);
-    fAve_VtxZ->Fill(RunBin, vtxpos[2]);
-    
+    if (fStepZDCRecenter >= 0){
+		fAve_VtxX->Fill(RunBin, vtxpos[0]);
+		fAve_VtxY->Fill(RunBin, vtxpos[1]);
+		fAve_VtxZ->Fill(RunBin, vtxpos[2]);
+	}
     // re-centered around zer (implemented only for run2)
 	if(fDataSet==k2015 || fDataSet==k2015v6 || fDataSet==k2015pidfix) {
 		if(fAvVtxPosX[RunBin]) fVtxPosCor[0] = vtxpos[0]-fAvVtxPosX[RunBin];
@@ -2581,11 +2733,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       //SubtractMeanFromQVectors(means, fEvInfo.fRunNum);
       
       // Load Calib hist
-      fAvr_Run_CentQ[0] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,0)));
-      fAvr_Run_CentQ[1] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,1)));
-      fAvr_Run_CentQ[2] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,2)));
-      fAvr_Run_CentQ[3] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,3)));
-      
+      if (fStepZDCRecenter < 3) {
+        fAvr_Run_CentQ[0] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,0)));
+        fAvr_Run_CentQ[1] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,1)));
+        fAvr_Run_CentQ[2] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,2)));
+        fAvr_Run_CentQ[3] = (TProfile*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,3)));
+      } else if (fStepZDCRecenter >= 3) {
+		fAvr_Run_CentQ[0] = (TProfile*)(fZDCCalibListStep3RunByRun->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,0)));
+        fAvr_Run_CentQ[1] = (TProfile*)(fZDCCalibListStep3RunByRun->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,1)));
+        fAvr_Run_CentQ[2] = (TProfile*)(fZDCCalibListStep3RunByRun->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,2)));
+        fAvr_Run_CentQ[3] = (TProfile*)(fZDCCalibListStep3RunByRun->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_CentQ[%d][%d]",RunNum,3)));
+	  }
       if (fAvr_Run_CentQ[0]) {
         Double_t AvQCRe = fAvr_Run_CentQ[0]->GetBinContent(fAvr_Run_CentQ[0]->FindBin(centrperc));
         Double_t AvQCIm = fAvr_Run_CentQ[1]->GetBinContent(fAvr_Run_CentQ[1]->FindBin(centrperc));
@@ -2609,6 +2767,21 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         fRun_CentQCalib[RunBin][1]->Fill(centrperc, xyZNC[1]); 
         fRun_CentQCalib[RunBin][2]->Fill(centrperc, -xyZNA[0]); 
         fRun_CentQCalib[RunBin][3]->Fill(centrperc, xyZNA[1]);
+        
+        fRun_VtxXQCalibStep1[RunBin][0]->Fill(fVtxPosCor[0],xyZNC[0]);
+		fRun_VtxXQCalibStep1[RunBin][1]->Fill(fVtxPosCor[0],xyZNC[1]);
+		fRun_VtxXQCalibStep1[RunBin][2]->Fill(fVtxPosCor[0],-xyZNA[0]);
+		fRun_VtxXQCalibStep1[RunBin][3]->Fill(fVtxPosCor[0],xyZNA[1]);
+		
+		fRun_VtxYQCalibStep1[RunBin][0]->Fill(fVtxPosCor[1],xyZNC[0]);
+		fRun_VtxYQCalibStep1[RunBin][1]->Fill(fVtxPosCor[1],xyZNC[1]);
+		fRun_VtxYQCalibStep1[RunBin][2]->Fill(fVtxPosCor[1],-xyZNA[0]);
+		fRun_VtxYQCalibStep1[RunBin][3]->Fill(fVtxPosCor[1],xyZNA[1]);
+		
+		fRun_VtxZQCalibStep1[RunBin][0]->Fill(fVtxPosCor[2],xyZNC[0]);
+		fRun_VtxZQCalibStep1[RunBin][1]->Fill(fVtxPosCor[2],xyZNC[1]);
+		fRun_VtxZQCalibStep1[RunBin][2]->Fill(fVtxPosCor[2],-xyZNA[0]);
+		fRun_VtxZQCalibStep1[RunBin][3]->Fill(fVtxPosCor[2],xyZNA[1]);
 		//FillProfiles(&fRun_CentQCalib, fEvInfo.fRunNum, fEvInfo.fCent);
 	  }
 	  
@@ -2627,11 +2800,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       //SubtractMeanFromQVectors(means, fEvInfo.fCentBin);
       Bool_t withinvtx = kTRUE;
       
-      //for(Int_t c=0; c<fnCentBinForRecentering; c++) {
+      if (fStepZDCRecenter < 3) { // if the step is 3, the calib file has to be splitted to run-by-run
         for(Int_t k=0; k<4; k++) {
           fAvr_Cent_VtxXYZQ[k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("fCent_VtxXYZQ[%d][%d]",CentBin,k)));
         }
-      //}
+      } else if (fStepZDCRecenter >= 3) { // at step 3, the calib file is loaded separately, pass the run independent calib using fZDCCalibListStep3CommonPart
+		for(Int_t k=0; k<4; k++) {
+          fAvr_Cent_VtxXYZQ[k] = (TProfile3D*)(fZDCCalibListStep3CommonPart->FindObject(Form("fCent_VtxXYZQ[%d][%d]",CentBin,k)));
+        }
+	  }
       
       if(fVtxPosCor[0] < fAvr_Cent_VtxXYZQ[0]->GetXaxis()->GetXmin() || fVtxPosCor[0] > fAvr_Cent_VtxXYZQ[0]->GetXaxis()->GetXmax()) withinvtx = kFALSE;
       if(fVtxPosCor[1] < fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetXmin() || fVtxPosCor[1] > fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetXmax()) withinvtx = kFALSE;
@@ -2654,12 +2831,29 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if(fVtxPosCor[1] > fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetXmax()) vy = fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetBinCenter(fAvr_Cent_VtxXYZQ[0]->GetNbinsY());
         if(fVtxPosCor[2] < fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetXmin()) vz = fAvr_Cent_VtxXYZQ[0]->GetZaxis()->GetBinCenter(1);
         if(fVtxPosCor[2] > fAvr_Cent_VtxXYZQ[0]->GetYaxis()->GetXmax()) vz = fAvr_Cent_VtxXYZQ[0]->GetZaxis()->GetBinCenter(fAvr_Cent_VtxXYZQ[0]->GetNbinsZ());
-      
+		  
         xyZNC[0] -= fAvr_Cent_VtxXYZQ[0]->GetBinContent(fAvr_Cent_VtxXYZQ[0]->FindBin(vx,vy,vz));
         xyZNC[1] -= fAvr_Cent_VtxXYZQ[1]->GetBinContent(fAvr_Cent_VtxXYZQ[1]->FindBin(vx,vy,vz));
 
         xyZNA[0] -= fAvr_Cent_VtxXYZQ[2]->GetBinContent(fAvr_Cent_VtxXYZQ[2]->FindBin(vx,vy,vz));
         xyZNA[1] -= fAvr_Cent_VtxXYZQ[3]->GetBinContent(fAvr_Cent_VtxXYZQ[3]->FindBin(vx,vy,vz));
+      }
+      
+      if(fStoreCalibZDCRecenter){
+		fRun_VtxXQCalibStep2[RunBin][0]->Fill(fVtxPosCor[0],xyZNC[0]);
+		fRun_VtxXQCalibStep2[RunBin][1]->Fill(fVtxPosCor[0],xyZNC[1]);
+		fRun_VtxXQCalibStep2[RunBin][2]->Fill(fVtxPosCor[0],-xyZNA[0]);
+		fRun_VtxXQCalibStep2[RunBin][3]->Fill(fVtxPosCor[0],xyZNA[1]);
+		
+		fRun_VtxYQCalibStep2[RunBin][0]->Fill(fVtxPosCor[1],xyZNC[0]);
+		fRun_VtxYQCalibStep2[RunBin][1]->Fill(fVtxPosCor[1],xyZNC[1]);
+		fRun_VtxYQCalibStep2[RunBin][2]->Fill(fVtxPosCor[1],-xyZNA[0]);
+		fRun_VtxYQCalibStep2[RunBin][3]->Fill(fVtxPosCor[1],xyZNA[1]);
+		
+		fRun_VtxZQCalibStep2[RunBin][0]->Fill(fVtxPosCor[2],xyZNC[0]);
+		fRun_VtxZQCalibStep2[RunBin][1]->Fill(fVtxPosCor[2],xyZNC[1]);
+		fRun_VtxZQCalibStep2[RunBin][2]->Fill(fVtxPosCor[2],-xyZNA[0]);
+		fRun_VtxZQCalibStep2[RunBin][3]->Fill(fVtxPosCor[2],xyZNA[1]);
       }
 
       fRun_VtxXYZQ[RunBin][0]->Fill(fVtxPosCor[0], fVtxPosCor[1], fVtxPosCor[2], xyZNC[0]); // a TProfile3D Tprofile
@@ -2676,7 +2870,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       //auto mean_step2 = GetMeansProfiles(fAvr_Run_VtxXYZQ, fEvInfo.fVtxX, fEvInfo.fVtxY, fEvInfo.fVtxZ);
       //SubtractMeanFromQVectors(mean_step2, fEvInfo.fRunNum);
       for(Int_t k=0; k<4; k++) {
-		fAvr_Run_VtxXYZQ[k] = (TProfile3D*)(fZDCCalibList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_VtxXYZQ[%d][%d]",RunNum,k)));
+		fAvr_Run_VtxXYZQ[k] = (TProfile3D*)(fZDCCalibListStep3RunByRun->FindObject(Form("Run %d",RunNum))->FindObject(Form("fRun_VtxXYZQ[%d][%d]",RunNum,k)));
 	  }
       
       // check if possible to interpolate
@@ -2790,6 +2984,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   if (fStepZDCRecenter >= 0) {
     PostData(3, fOutputRecenter1);
     PostData(4, fOutputRecenter2);
+    PostData(5, fOutputRecenter3);
   }
 }
 //________________________________________________________________________
@@ -3160,4 +3355,29 @@ void AliAnalysisTaskCRCZDC::Terminate(Option_t */*option*/)
   //fOutput = dynamic_cast<TList*> (GetOutputData(1));
   //if(!fOutput) printf("ERROR: fOutput not available\n");
   */
+}
+
+void AliAnalysisTaskCRCZDC::NotifyRun()
+{
+  //open file
+  if (fStepZDCRecenter >= 3) {
+    TString ZDCRecenterFileName = Form("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCRunByRunCalib/15o_ZDCcalibVar_%d.root",fCurrentRunNumber);
+    TFile* ZDCRecenterFileRunByRun = TFile::Open(ZDCRecenterFileName, "READ");
+    if(fStepZDCRecenter > 0) {
+      if(ZDCRecenterFileRunByRun) {
+        TList* ZDCRecenterListRunByRun = (TList*)(ZDCRecenterFileRunByRun->FindObjectAny("Q Vectors")); // hardcoded TList Q Vectors
+        if(ZDCRecenterListRunByRun) {
+	      SetZDCCalibListStep3RunByRun(ZDCRecenterListRunByRun);
+	    } else {
+          cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+          exit(1);
+        }
+      } else {
+	    cout << "ERROR: if fStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
+        exit(1);
+      }
+    }
+    delete ZDCRecenterFileRunByRun;
+  }
+
 }

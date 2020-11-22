@@ -785,8 +785,10 @@ public:
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
   //@Shi my ZDC recenter calib hist
-  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
-  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
+  void SetZDCCalibListFinalRunByRun(TList* const kList) {this->fZDCCalibListFinalRunByRun = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalRunByRun() const {return this->fZDCCalibListFinalRunByRun;};
   
   void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = wlist;}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = wlist;}
@@ -1808,6 +1810,10 @@ private:
   TArrayD fAvVtxPosX;    // Run list
   TArrayD fAvVtxPosY;    // Run list
   TArrayD fAvVtxPosZ;    // Run list
+  //@Shi add ave vtx IR split
+  TArrayD fAvVtxPosX15oIRSplit;    // Run list
+  TArrayD fAvVtxPosY15oIRSplit;    // Run list
+  TArrayD fAvVtxPosZ15oIRSplit;    // Run list
   TArrayI fnEvRbR; // number of events in each run
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecEtaPhiList; //!
@@ -1816,7 +1822,8 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
-  TList *fZDCCalibList; //!  Shi my ZDC calbration
+  TList *fZDCCalibListFinalCommonPart; //! Shi my ZDC calbration split to run independent part and run-by-run calib due to limited size of content that can be held by TList
+  TList *fZDCCalibListFinalRunByRun; // Shi run dependent calib part, run-by-run was set in AliAnalysisTaskCRC
   TList *fCRCZDC2DCutList; //! ZDC 2D cut
   TList *fCRCVZEROCalibList; //! ZDC calibration
   TList *fCRCZDCResList; //! ZDC rescaling list
@@ -1862,7 +1869,7 @@ private:
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
   //@Shi temp ZDC calib histograms
   TProfile *fAvr_Run_CentQ[4]; //!
-  TProfile3D *fAvr_Cent_VtxXYZQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[20][4]; //!
   TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
 
 //  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
@@ -2437,6 +2444,7 @@ private:
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   Double_t fVtxPosCor[3]; // primary vertex position (x,y,z), re-centered at 0
+  Double_t fVtxPosCor15oIRSplit[3];  //@Shi primary vertex position (x,y,z), re-centered at 0
   TF1 *fPolMin[2]; //!
   TF1 *fPolMax[2]; //!
   TF1 *fPolAv[2]; //!

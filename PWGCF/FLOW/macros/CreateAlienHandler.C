@@ -17,7 +17,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->SetROOTVersion("v5-27-06b");
   //plugin->SetAliROOTVersion("v4-21-13-AN");  
   //plugin->SetAliPhysicsVersion("vAN-20191031_ROOT6-1");
-  plugin->SetAliPhysicsVersion("vAN-20201013-1"); //vAN-20201013-1
+  plugin->SetAliPhysicsVersion("vAN-20201102-1"); //vAN-20201013-1
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -43,7 +43,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //Run List
   const int nrun = 1;
   int runs[nrun] = {
-    246994//, 246991, 246989, 246984  //, 246982, //138275// 18r 296941//
+    246991//, 246991, 246989, 246984  //, 246982, //138275// 18r 296941//
   };
 
   for (int i(0); i < nrun; ++i) plugin->AddRunNumber(runs[i]);
