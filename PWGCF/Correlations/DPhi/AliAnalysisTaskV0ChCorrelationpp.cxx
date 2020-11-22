@@ -945,8 +945,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
  //  const Int_t nPtBinsV0Xi = 14;
  //  const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
 
-  const Int_t nPtBinsV0Xi = 1;
-   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+  const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
   
    
    // pt bins of associate particles for the analysis
@@ -1145,8 +1145,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
   // const Int_t nPtBinsV0Xi = 14;
   // const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
-  const Int_t nPtBinsV0Xi = 1;
-   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+  const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
   
    
    // pt bins of associate particles for the analysis
@@ -1359,9 +1359,8 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
   // const Int_t nPtBinsV0Xi = 14;
   // const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
-    
-  const Int_t nPtBinsV0Xi = 1;
-   const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+  const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
   
    
    // pt bins of associate particles for the analysis

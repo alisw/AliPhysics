@@ -961,9 +961,9 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisK0s()
   // const Int_t nPtBinsV0Xi = 14;
  //  const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
 
- const Int_t nPtBinsV0Xi = 1;
- const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
-
+    const Int_t nPtBinsV0Xi = 3;
+    const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
+   
       
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 9;
@@ -1136,10 +1136,9 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisLambda()
   // const Int_t nPtBinsV0Xi = 14;
    //const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
    
-
- const Int_t nPtBinsV0Xi = 1;
- const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
-
+    const Int_t nPtBinsV0Xi = 3;
+    const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
+   
 
    // pt bins of associate particles for the analysis
    const Int_t nPtBins = 9;
@@ -1320,8 +1319,8 @@ void AliAnalysisTaskV0ChCorrelation::AddQAAnalysisAntiLambda()
   // const Int_t nPtBinsV0Xi = 14;
   // const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0}; 
 
-    const Int_t nPtBinsV0Xi = 1;
-    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+    const Int_t nPtBinsV0Xi = 3;
+    const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
    
 
    // pt bins of associate particles for the analysis
@@ -1897,7 +1896,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if(!(IsGoodPrimaryTrack(tr))) continue;
 
    //Bunch rejection trk by trk
-  // if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
 
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
@@ -2031,7 +2030,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
 
 
-/*
+
 // reject bunch-off pile-up
   if(!fAnalysisMC){      
  if (!((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout)))continue;
@@ -2039,7 +2038,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
 
      } 
   
-*/
+
  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
