@@ -4180,7 +4180,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   if ( GetNCentrBin() == 0 )
     ncentr = 1;
   Int_t curCentrBin = 0;
-  if ( ncentr <=1 )
+  if ( ncentr > 1 )
     curCentrBin = GetEventCentralityBin();
 
   Int_t module1         = -1;
