@@ -3394,7 +3394,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
                     ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
     
-    if ( ancPDG==22 )
+    AliVParticle * mom = GetMC()->GetTrack(ancLabel);
+
+    if ( ancPDG == 22 )
     { // gamma, from conversions?
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
@@ -3402,7 +3404,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       else
         mcIndex = 14;
     }
-    else if(TMath::Abs(ancPDG)==11)
+    else if ( TMath::Abs(ancPDG) == 11 )
     {// electron, from conversions?
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
@@ -3410,9 +3412,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       else
         mcIndex = 15;
     }
-    else if ( ancPDG==111 )
+    else if ( ancPDG==111 &&  mom )
     {//Pi0
-      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
       Bool_t ok= kTRUE;
       
       if ( mom->GetNDaughters()!=2 )
@@ -3423,7 +3424,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       {
         AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
         AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
-        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
+
+        if      ( !d1 || !d2 )
+          ok = kFALSE;
+        else if ( d1->PdgCode() != 22 || d2->PdgCode() != 22 )
+          ok = kFALSE;
       }
       
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay) &&
@@ -3497,7 +3502,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             uniqueID = ancestor->GetUniqueID();
             
             Bool_t momOK = kFALSE;
-            if(momindex >= 0) 
+            if ( momindex >= 0 )
             {
               AliVParticle* mother = GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->PdgCode());
@@ -3668,9 +3673,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       }
 
     }
-    else if ( ancPDG==221 )
+    else if ( ancPDG==221 && mom )
     {//Eta
-      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
       Bool_t ok= kTRUE;
       
       if ( mom->GetNDaughters()!=2 ) 
@@ -3681,11 +3685,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       {
         AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
         AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
-        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
+        if      ( !d1 || !d2 )
+          ok = kFALSE;
+        else if ( d1->PdgCode() != 22 || d2->PdgCode() != 22 )
+          ok = kFALSE;
       }
       
-      if ( mom->GetNDaughters()!=2 ) ok = kFALSE;
-
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCEtaDecay) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEtaDecay) && ok )
       {        
@@ -3756,7 +3761,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             
             AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
             momindex  = ancestor->GetMother();
-            if(momindex >= 0) 
+            if ( momindex >= 0 ) 
             {
               AliVParticle* mother = GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->PdgCode());
@@ -4169,24 +4174,33 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     return ;
   }
   
+  // Init variables
+
   Int_t ncentr = GetNCentrBin();
-  if(GetNCentrBin()==0) ncentr = 1;
-  
-  //Init variables
+  if ( GetNCentrBin() == 0 )
+    ncentr = 1;
+  Int_t curCentrBin = 0;
+  if ( ncentr <=1 )
+    curCentrBin = GetEventCentralityBin();
+
   Int_t module1         = -1;
   Int_t module2         = -1;
   Double_t vert[]       = {0.0, 0.0, 0.0} ; //vertex
   Int_t evtIndex1       = 0 ;
   Int_t currentEvtIndex = -1;
-  Int_t curCentrBin     = GetEventCentralityBin();
-  //Int_t curVzBin        = GetEventVzBin();
-  //Int_t curRPBin        = GetEventRPBin();
+//Int_t curVzBin        = GetEventVzBin();
+//Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
     
-  if(eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin())
+  if ( eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin() )
   {
-    AliWarning(Form("Mix Bin not expected: cen bin %d, z bin %d, rp bin %d, total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
-                    GetEventCentralityBin(),GetEventVzBin(), GetEventRPBin(),eventbin,GetEventCentrality(),vert[2],GetEventPlaneAngle()));
+    AliWarning(Form("Mix Bin not expected: cen bin %d (<%d), z bin %d (<%d), rp bin %d (<%d), "
+                    "total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
+                    GetEventCentralityBin(), ncentr,
+                    GetEventVzBin(), GetNZvertBin(),
+                    GetEventRPBin(), GetNRPBin(),
+                    eventbin,GetEventCentrality(),
+                    vert[2],GetEventPlaneAngle()));
     return;
   }
   
