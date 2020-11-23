@@ -59,6 +59,7 @@ protected:
     virtual void UserCreateOutputObjects();
     virtual bool Run();
     virtual bool IsEventSelected() { return true; }
+    virtual bool CheckMCOutliers();
 
 private:
     THistManager                            *fHistos;                       //!<! Histogram
@@ -70,6 +71,7 @@ private:
     Double_t                                fZcut;                          ///< SoftDrop Zcut
     Bool_t                                  fUseChargedConstituents;        ///< SoftDrop use charged constituents
     Bool_t                                  fUseNeutralConstituents;        ///< SoftDrop use neutral constituents
+    Bool_t                                  fUseStandardOutlierRejection;   ///< Fall back to standard outlier rejection
 
     ClassDef(AliAnalysisTaskEmcalJetSpectrumSDPart, 1);
 };

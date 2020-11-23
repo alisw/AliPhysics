@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
@@ -51,7 +52,8 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
-    fUseNeutralConstituents(true)
+    fUseNeutralConstituents(true),
+    fUseStandardOutlierRejection(false)
 {
 }
 
@@ -64,7 +66,8 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
-    fUseNeutralConstituents(true)
+    fUseNeutralConstituents(true),
+    fUseStandardOutlierRejection(false)
 {
     SetMakeGeneralHistograms(true);
 }
@@ -189,6 +192,25 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 
     for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
     PostData(1, fOutput);
+}
+
+Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
+    if(!fMCRejectFilter) return true;
+    if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+    if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
+    AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+    AliJetContainer *outlierjets = GetJetContainer("partjets");
+    if(!outlierjets) return true;
+
+    // Check whether there is at least one particle level jet with pt above n * event pt-hard
+    auto jetiter = outlierjets->accepted();
+    auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+    if(max != jetiter.end())  {
+        // At least one jet found with pt > n * pt-hard
+        AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+        if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
+    }
+    return true;
 }
 
 bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
