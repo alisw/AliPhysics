@@ -2946,7 +2946,14 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 122374 && runNumber <= 126437 ) lSystemType = "pp";
     if ( runNumber >= 127712 && runNumber <= 130840 ) lSystemType = "pp";
     if ( runNumber >= 146746 && runNumber <= 146860 ) lSystemType = "pp";
-    
+  
+    //Registered Productions : Run 1 p-Pb 13bcdef
+    if ( runNumber >= 195344 && runNumber <= 195483 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195529 && runNumber <= 195677 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195681 && runNumber <= 195873 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195935 && runNumber <= 196311 ) lSystemType = "p-Pb";
+    if ( runNumber >= 196433 && runNumber <= 197388 ) lSystemType = "p-Pb";
+  
     //Registered Productions : Run 1 Pb-Pb
     if ( runNumber >= 136851 && runNumber <= 139517 ) lSystemType = "Pb-Pb";
     
