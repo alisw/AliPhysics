@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <vector>
+#include <memory>
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
