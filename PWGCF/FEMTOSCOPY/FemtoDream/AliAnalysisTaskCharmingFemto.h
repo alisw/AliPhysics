@@ -98,6 +98,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     fLowerMassSelection = lower;
     fUpperMassSelection = upper;
   }
+  void SetIsDependentOnMLSelector(bool flag=true) {
+    fDependOnMLSelector = flag;
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -105,7 +108,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       const AliAnalysisTaskCharmingFemto &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx);
+  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
 
   // Track / event selection objects
   AliAODEvent* fInputEvent;                          //
@@ -155,21 +158,26 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDminusMCPDGPt;     //!
   
   // HF data members
-  int fDecChannel;                        // HF decay channel
-  AliRDHFCuts* fRDHFCuts;                 // HF cut object
-  int fAODProtection;                     // flag to activate protection against AOD-dAOD mismatch.
-                                          // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  bool fDoNSigmaMassSelection;			  // Select D mesons as nSigma around the nominal mass
-  double fNSigmaMass;					  // Width of the mass window
-  double fLowerMassSelection;			  // Lower boundary of the mass selection
-  double fUpperMassSelection;			  // Upper boundary of the mass selection
+  int fDecChannel;                                         // HF decay channel
+  AliRDHFCuts* fRDHFCuts;                                  // HF cut object
+  int fAODProtection;                                      // flag to activate protection against AOD-dAOD mismatch.
+                                                           // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  bool fDoNSigmaMassSelection;			                       // Select D mesons as nSigma around the nominal mass
+  double fNSigmaMass;					                             // Width of the mass window
+  double fLowerMassSelection;			                         // Lower boundary of the mass selection
+  double fUpperMassSelection;			                         // Upper boundary of the mass selection
 
   // variables for ML application
-  bool fApplyML;                          // flag to enable ML application
-  TString fConfigPath;                    // path to ML config file
-  AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
+  bool fApplyML;                                           // flag to enable ML application
+  TString fConfigPath;                                     // path to ML config file
+  AliHFMLResponse* fMLResponse;                            //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 6)
+  bool fDependOnMLSelector;                                // flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+  std::vector<float> fPtLimsML;                            // pT bins in case application of ML model is done in MLSelector task   
+  std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
+  std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
+
+ClassDef(AliAnalysisTaskCharmingFemto, 7)
 };
 
 #endif
