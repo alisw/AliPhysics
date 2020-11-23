@@ -107,9 +107,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    NBins.push_back((suffix == "0") ? 600 : 200);
+    NBins.push_back(600);
     kMin.push_back(0.);
-    kMax.push_back((suffix == "0") ? 3. : 1.);
+    kMax.push_back(3.);
   }
 
   NBins[0] = (suffix == "0") ? 3000 : 1000;  // pp
