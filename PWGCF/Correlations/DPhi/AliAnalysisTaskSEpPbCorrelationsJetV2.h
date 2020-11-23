@@ -69,6 +69,9 @@ public:
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void Setmcprim(Bool_t mode){fprim=mode;}
+  virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
+
 
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
@@ -158,7 +161,8 @@ private:
   Bool_t fIs2Dfit;
 
   TString fCentType;
-  
+  Bool_t fprim;
+  Bool_t fcentcalib;
   Int_t fNEntries;
   
   Double_t lCentrality;
@@ -230,7 +234,7 @@ private:
   TH1F*frefetac;
   TH1F*frefetaa;
   TH1F*frefvz;
-  TH2D*fhcorr[10];
+  TH1D*fhcorr[10];
 
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
@@ -244,6 +248,7 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH2D*  fh2_FMD_eta_phi_afterCut;
   TH1F* fHist_NeventRun;
   TH1F* fHist_V0AMultRun;
   TH1F* fHist_V0CMultRun;
