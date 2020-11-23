@@ -1638,7 +1638,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::FillCorrelationTracks( Double_t cent
      associateHist->Fill(binscontTPCTPC, 0);
     }
         
- //   cout << Form("f2pc_double_%d_%d",fh2_pt_trig_asso->GetXaxis()->FindBin(triggerPt)-1,fh2_pt_trig_asso->GetYaxis()->FindBin(associate_TPC->Pt())-1) << endl;
  
    if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC")
     {
