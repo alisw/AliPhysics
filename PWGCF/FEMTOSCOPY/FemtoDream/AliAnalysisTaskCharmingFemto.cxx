@@ -1,5 +1,7 @@
 #include "AliAnalysisTaskCharmingFemto.h"
 
+#include "yaml-cpp/yaml.h"
+
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
@@ -10,6 +12,8 @@
 #include "AliHFMLResponse.h"
 #include "AliAODHandler.h"
 #include "AliHFMLResponseDplustoKpipi.h"
+#include "AliAnalysisTaskSECharmHadronMLSelector.h"
+#include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
 
 ClassImp(AliAnalysisTaskCharmingFemto)
@@ -65,7 +69,11 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fUpperMassSelection(999.),
       fApplyML(false),
       fConfigPath(""),
-      fMLResponse(nullptr) {}
+      fMLResponse(nullptr),
+      fDependOnMLSelector(false),
+      fPtLimsML{},
+      fMLScoreCuts{},
+      fMLOptScoreCuts{} {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
@@ -119,7 +127,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fUpperMassSelection(999.),
       fApplyML(false),
       fConfigPath(""),
-      fMLResponse(nullptr) {
+      fMLResponse(nullptr),
+      fDependOnMLSelector(false),
+      fPtLimsML{},
+      fMLScoreCuts{},
+      fMLOptScoreCuts{} {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -200,6 +212,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // GET HF CANDIDATE ARRAY
   TClonesArray *arrayHF = nullptr;
   int absPdgMom = 0;
+  TString mesonName = "";
   if(!fInputEvent && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
     // event in memory rather than the input (ESD) event.
@@ -213,6 +226,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       switch(fDecChannel) {
         case kDplustoKpipi:
           absPdgMom = 411;
+          mesonName = "Dplus";
           arrayHF = dynamic_cast<TClonesArray*>(aodFromExt->GetList()->FindObject("Charm3Prong"));
           break;
       }
@@ -222,6 +236,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     switch(fDecChannel) {
       case kDplustoKpipi:
         absPdgMom = 411;
+        mesonName = "Dplus";
         arrayHF = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject("Charm3Prong"));
         break;
     }
@@ -286,6 +301,29 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // D MESON SELECTION
+  int nCand = arrayHF->GetEntriesFast();
+
+  // check if the train includes the common ML selector for the given charm-hadron species
+  AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
+  std::vector<int> chHadIdx{};
+  std::vector<std::vector<double> > scoresFromMLSelector{};
+  if(fDependOnMLSelector) {
+    taskMLSelect = dynamic_cast<AliAnalysisTaskSECharmHadronMLSelector*>(AliAnalysisManager::GetAnalysisManager()->GetTask(Form("MLSelector%s", mesonName.Data())));
+    if(!taskMLSelect) {
+      AliFatal("ML Selector not present in train and ML models not compiled!");
+      return;
+    }
+
+    chHadIdx = taskMLSelect->GetSelectedCandidates();
+    scoresFromMLSelector = taskMLSelect->GetMLSCores();
+  }
+  else {
+    for (int iCand = 0; iCand < nCand; iCand++) {
+      chHadIdx.push_back(iCand);
+      scoresFromMLSelector.push_back({});
+    }
+  }
+
   static std::vector<AliFemtoDreamBasePart> dplus;
   static std::vector<AliFemtoDreamBasePart> dminus;
   dplus.clear();
@@ -295,15 +333,15 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fRDHFCuts->IsEventSelected(fInputEvent);
 
   AliAODRecoDecayHF *dMeson = nullptr;
-  int nCand = arrayHF->GetEntriesFast();
-  for (int iCand = 0; iCand < nCand; iCand++) {
-    dMeson = dynamic_cast<AliAODRecoDecayHF*>(arrayHF->UncheckedAt(iCand));
+  for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++) {
+
+    dMeson = dynamic_cast<AliAODRecoDecayHF*>(arrayHF->UncheckedAt(chHadIdx[iCand]));
 
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
 
-    int isSelected = IsCandidateSelected(dMeson, absPdgMom, unsetVtx, recVtx, origOwnVtx);
+    int isSelected = IsCandidateSelected(dMeson, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
     if(!isSelected) {
       if (unsetVtx) {
         dMeson->UnsetOwnPrimaryVtx();
@@ -574,11 +612,28 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 
   //ML model
   if(fApplyML) {
-    switch(fDecChannel) {
-      case kDplustoKpipi:
-        fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
-        fMLResponse->MLResponseInit();
+    if(!fDependOnMLSelector) {
+      switch(fDecChannel) {
+        case kDplustoKpipi:
+            fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+            fMLResponse->MLResponseInit();
         break;
+      }
+    }
+    else {
+      std::string configLocalPath = AliMLModelHandler::ImportFile(fConfigPath.Data());
+      YAML::Node nodeList;
+      try {
+        nodeList = YAML::LoadFile(configLocalPath);
+      } catch (std::exception &e) {
+        AliFatal(Form("Yaml-ccp error: %s! Exit", e.what()));
+      }
+      fPtLimsML = nodeList["BINS"].as<vector<float> >();
+
+      for (const auto &model : nodeList["MODELS"]) {
+        fMLScoreCuts.push_back(model["cut"].as<std::vector<double> >());
+        fMLOptScoreCuts.push_back(model["cut_opt"].as<std::vector<std::string> >());
+      }
     }
   }
 
@@ -596,7 +651,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx) {
+int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores) {
 
   if(!dMeson) {
     return 0;
@@ -649,16 +704,32 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
 
   // ML application
   if(fApplyML) {
-    AliAODPidHF* pidHF = fRDHFCuts->GetPidHF();
-    bool isMLsel = true;
-    std::vector<double> modelPred{};
-    switch(fDecChannel) {
-      case kDplustoKpipi:
-        isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
-        if(!isMLsel) {
+    if(!fDependOnMLSelector) { //direct application
+      AliAODPidHF* pidHF = fRDHFCuts->GetPidHF();
+      bool isMLsel = true;
+      std::vector<double> modelPred{};
+      switch(fDecChannel) {
+        case kDplustoKpipi:
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
+          if(!isMLsel) {
+            isSelected = 0;
+          }
+          break;
+      }
+    }
+    else { // read result from common task
+      std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptD);
+      int bin = low - fPtLimsML.begin();
+      if(bin < 0)
+        bin = 0;
+      else if(bin > fPtLimsML.size()-1)
+        bin = fPtLimsML.size()-1;
+      for(size_t iScore = 0; iScore < scores.size(); iScore++) {
+        if((fMLOptScoreCuts[bin][iScore] == "upper" && scores[iScore] > fMLScoreCuts[bin][iScore]) || (fMLOptScoreCuts[bin][iScore] == "lower" && scores[iScore] < fMLScoreCuts[bin][iScore])){
           isSelected = 0;
+          break;
         }
-        break;
+      }
     }
   }
 
