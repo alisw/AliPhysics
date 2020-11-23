@@ -390,6 +390,35 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   } else if ( trainConfig == 452) { // background description
     cuts.AddCutHeavyMesonPCM("00010113","00200009f9730000dge0400000","32c51070a","0103603a00000000","0a53503000000000"); // likesign
     cuts.AddCutHeavyMesonPCM("00010113","00200009f9730000dge0400000","32c51070a","0103603a00000000","0d53503000000000"); // sideband
+
+  } else if ( trainConfig == 701) { //Standard 13TeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // V0AND
+  } else if ( trainConfig == 702) { //Standard 13TeV + PHI7
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00062113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI7
+  } else if ( trainConfig == 703) { //Standard 13TeV + PHOS Triggers
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00061113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("00062113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("00063113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI8
+  } else if ( trainConfig == 704) { //Standard 13TeV, and some Triggers
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00052113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // EMC7
+    cuts.AddCutHeavyMesonPCM("00083113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // EG1
+    cuts.AddCutHeavyMesonPCM("00085113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCM("00062113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI7
+  } else if ( trainConfig == 706) { //Standard 13TeV, and some more Triggers
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // V0AND
+    cuts.AddCutHeavyMesonPCM("00061113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("00062113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("00063113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI8
+    cuts.AddCutHeavyMesonPCM("0008e113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI1
+    cuts.AddCutHeavyMesonPCM("0008d113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI7
+    cuts.AddCutHeavyMesonPCM("0009b113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0a53503000000000"); // PHI8
+  } else if ( trainConfig == 716) { //Standard 13TeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32e51070a","0103103500000000","0a53503000000000"); // V0AND
+  } else if ( trainConfig == 720) { //Standard 13TeV, no shared TPC clusters
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32f51070a","0103103500000000","0a53503000000000"); // V0AND
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
