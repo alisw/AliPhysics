@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
+#include <cstring>
+#include <sstream>
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
@@ -489,7 +491,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     return true;
 }
 
-AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles) {
+AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag) {
     auto mgr = AliAnalysisManager::GetAnalysisManager();
     if(!mgr) {
         AliErrorGeneralStream("AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart") << "No analysis manager available" << std::endl;
@@ -506,7 +508,10 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
         case AliJetContainer::kUndefinedJetType: break;
     };
 
-    auto task = new AliAnalysisTaskEmcalJetSpectrumSDPart(Form("PartLevelJetTask%s%s", jtstring.Data(), rstring.Data()));
+    std::stringstream taskname;
+    taskname << "PartLevelJetTask" << jtstring.Data() << rstring.Data();
+    if(strlen(tag)) taskname << "_" << tag;
+    auto task = new AliAnalysisTaskEmcalJetSpectrumSDPart(taskname.str().data());
     mgr->AddTask(task);
 
     // Adding particle and jet container
@@ -523,8 +528,11 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
     jetcont->SetMaxPt(1000.);
     
     // Link input and output
+    std::stringstream outcontname;
+    outcontname << "PartLevelJetResults" << jtstring.Data() << rstring.Data();
+    if(strlen(tag)) outcontname << "_" << tag;
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("PartLevelJetResults%s%s", jtstring.Data(), rstring.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(outcontname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
     return task;
 }

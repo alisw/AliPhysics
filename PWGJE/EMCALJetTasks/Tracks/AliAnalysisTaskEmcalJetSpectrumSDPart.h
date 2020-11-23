@@ -52,7 +52,7 @@ public:
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
     void SetSDUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
-    static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles);
+    static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag = "");
 
 protected:
 
