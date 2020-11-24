@@ -172,7 +172,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPositiveTrackDistrib(0),
+fHistNegativeTrackDistrib(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -241,7 +243,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPositiveTrackDistrib(0),
+fHistNegativeTrackDistrib(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -371,7 +375,18 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passes all, OTF track used");
         fListHist->Add(fHistV0Statistics);
     }
+    if(! fHistNegativeTrackDistrib ) {
+        //Histogram Output: Event-by-Event
+        fHistNegativeTrackDistrib = new TH1D( "fHistNegativeTrackDistrib", "",1000,0,1000);
+        fListHist->Add(fHistNegativeTrackDistrib);
+    }
+    if(! fHistPositiveTrackDistrib ) {
+        //Histogram Output: Event-by-Event
+        fHistPositiveTrackDistrib = new TH1D( "fHistPositiveTrackDistrib", "",1000,0,1000);
+        fListHist->Add(fHistPositiveTrackDistrib);
+    }
     PostData(1, fListHist    );
+  
 }// end UserCreateOutputObjects
 
 
@@ -699,6 +714,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     
       int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
     
+      fHistNegativeTrackDistrib -> Fill( nneg ) ;
+      fHistPositiveTrackDistrib -> Fill( npos ) ;
+  
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
         AliESDtrack *ntrk=event->GetTrack(nidx);
