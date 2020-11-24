@@ -3674,14 +3674,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     // get MC label
     if(fIsMC>0){
       Int_t* mclabelsCluster = clus->GetLabels();
-      if (clus->GetNLabels()> 49)
-          PhotonCandidate->SetNCaloPhotonMCLabels(50);
-      else
-          PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
+      PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
 //       cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k<(Int_t)clus->GetNLabels(); k++){
-          if (k<50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+          PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 //           Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 //           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         }
