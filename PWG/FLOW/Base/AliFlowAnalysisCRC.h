@@ -2478,7 +2478,7 @@ private:
   Bool_t fbFlagIsBadRunForC34;
   Bool_t fStoreExtraHistoForSubSampling;
 
-  ClassDef(AliFlowAnalysisCRC,74);
+  ClassDef(AliFlowAnalysisCRC,75);
 
 };
 

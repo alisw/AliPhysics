@@ -479,7 +479,7 @@ private:
   TH2D* fEbEQIm[fKNFBs][4]; //!
   TH2D* fEbEQMu[fKNFBs][4]; //!
 
-  ClassDef(AliAnalysisTaskCRCZDC,11);
+  ClassDef(AliAnalysisTaskCRCZDC,12);
 
 };
 

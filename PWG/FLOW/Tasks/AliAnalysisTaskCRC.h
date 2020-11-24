@@ -393,7 +393,7 @@ private:
   //@Shi ZDC calib recenter TList
   TList *fZDCCalibListFinalCommonPart; //
   
-  ClassDef(AliAnalysisTaskCRC,14);
+  ClassDef(AliAnalysisTaskCRC,15);
 };
 
 //================================================================================================================

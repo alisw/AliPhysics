@@ -3369,11 +3369,11 @@ void AliAnalysisTaskCRCZDC::NotifyRun()
         if(ZDCRecenterListRunByRun) {
 	      SetZDCCalibListStep3RunByRun(ZDCRecenterListRunByRun);
 	    } else {
-          cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+          std::cout << "ERROR: ZDCRecenterList do not exist!" << std::endl;
           exit(1);
         }
       } else {
-	    cout << "ERROR: if fStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
+	    std::cout << "ERROR: if fStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << std::endl;
         exit(1);
       }
     }
