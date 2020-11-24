@@ -1050,21 +1050,27 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
 
         for(size_t i = 0; i < vLambda.size(); i++)
         {
-            h2_CPA_pt[2]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
-            h2_CPA_pt_invMass[17]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
-            for (size_t j = i + 1; j < vLambda.size(); j++)
+            if (vLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[25]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                h2_CPA_pt[2]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
+                h2_CPA_pt_invMass[17]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
+                for (size_t j = i + 1; j < vLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[25]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                }
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
-            h2_CPA_pt[3]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[21]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
-            for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+            if (vAntiLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[29]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                h2_CPA_pt[3]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
+                h2_CPA_pt_invMass[21]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[29]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                }
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1078,21 +1084,27 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         
         for(size_t i = 0; i < vLambda.size(); i++)
         {
-            h2_CPA_pt[5]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
-            h2_CPA_pt_invMass[18]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
-            for (size_t j = i + 1; j < vLambda.size(); j++)
+            if (vLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[26]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                h2_CPA_pt[5]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
+                h2_CPA_pt_invMass[18]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
+                for (size_t j = i + 1; j < vLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[26]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                }
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
-            h2_CPA_pt[6]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[22]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
-            for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+            if (vAntiLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[30]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                h2_CPA_pt[6]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
+                h2_CPA_pt_invMass[22]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[30]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                }
             }
             vAntiLambda[i].SetUse(true);
         }
@@ -1107,27 +1119,31 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
         
         for(size_t i = 0; i < vLambda.size(); i++)
         {
-            h2_CPA_pt[7]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
-            h2_CPA_pt_invMass[19]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
-            for (size_t j = i + 1; j < vLambda.size(); j++)
+            if (vLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[27]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                h2_CPA_pt[7]->Fill(vLambda[i].GetPt(), vLambda[i].GetCPA());
+                h2_CPA_pt_invMass[19]->Fill(vLambda[i].GetPt(), CalculateInvMassLambda(vLambda[i], false));
+                for (size_t j = i + 1; j < vLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[27]->Fill(CalculateInvMassLambda(vLambda[i], false), RelativePairMomentum(vLambda[i], 3122, vLambda[j], 3122));
+                }
             }
             vLambda[i].SetUse(true);
         }
         for(size_t i = 0; i < vAntiLambda.size(); i++)
         {
-            h2_CPA_pt[8]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
-            h2_CPA_pt_invMass[23]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
-            for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+            if (vAntiLambda[i].UseParticle() == true)
             {
-                h2_CPA_pt_invMass[31]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                h2_CPA_pt[8]->Fill(vAntiLambda[i].GetPt(), vAntiLambda[i].GetCPA());
+                h2_CPA_pt_invMass[23]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                for (size_t j = i + 1; j < vAntiLambda.size(); j++)
+                {
+                    h2_CPA_pt_invMass[31]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                }
             }
             vAntiLambda[i].SetUse(true);
         }
-        CleanDecayAtRandom(&vLambda,"Lambda");
-        CleanDecayAtRandom(&vAntiLambda,"AntiLambda");
-
+        
 
         // std::cout << "dimensions of cleanParticles: " << fPairCleaner->GetCleanParticles().size() << "x" << fPairCleaner->GetCleanParticles()[0].size() << std::endl;        ### makes particleTypeXparticleNumber
         // if(fPairCleaner->GetCleanParticles()[0].size() || fPairCleaner->GetCleanParticles()[1].size() || fPairCleaner->GetCleanParticles()[2].size() || fPairCleaner->GetCleanParticles()[3].size())
