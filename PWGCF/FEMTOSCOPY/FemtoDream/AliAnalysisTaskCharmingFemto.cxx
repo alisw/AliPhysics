@@ -383,32 +383,36 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
         dplus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
-        fHistDplusEta->Fill(dMeson->Eta());
-        fHistDplusPhi->Fill(dMeson->Phi());
-        if (fIsMC) {
-          fHistDplusMCPDGPt->Fill(dMeson->Pt(),
-                                  dplus.at(dplus.size() - 1).GetMotherPDG());
-        }
-        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
-          fHistDplusChildPt[iChild]->Fill(track->Pt());
-          fHistDplusChildEta[iChild]->Fill(track->Eta());
-          fHistDplusChildPhi[iChild]->Fill(track->Phi());
+        if (!fIsLightweight) {
+          fHistDplusEta->Fill(dMeson->Eta());
+          fHistDplusPhi->Fill(dMeson->Phi());
+          if (fIsMC) {
+            fHistDplusMCPDGPt->Fill(dMeson->Pt(),
+                                    dplus.at(dplus.size() - 1).GetMotherPDG());
+          }
+          for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
+            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            fHistDplusChildPt[iChild]->Fill(track->Pt());
+            fHistDplusChildEta[iChild]->Fill(track->Eta());
+            fHistDplusChildPhi[iChild]->Fill(track->Phi());
+          }
         }
       }
       else {
         dminus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
-        fHistDminusEta->Fill(dMeson->Eta());
-        fHistDminusPhi->Fill(dMeson->Phi());
-        if (fIsMC) {
-          fHistDminusMCPDGPt->Fill(dMeson->Pt(),
-                                   dminus.at(dminus.size() - 1).GetMotherPDG());
-        }
-        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
-          fHistDminusChildPt[iChild]->Fill(track->Pt());
-          fHistDminusChildEta[iChild]->Fill(track->Eta());
-          fHistDminusChildPhi[iChild]->Fill(track->Phi());
+        if (!fIsLightweight) {
+          fHistDminusEta->Fill(dMeson->Eta());
+          fHistDminusPhi->Fill(dMeson->Phi());
+          if (fIsMC) {
+            fHistDminusMCPDGPt->Fill(
+                dMeson->Pt(), dminus.at(dminus.size() - 1).GetMotherPDG());
+          }
+          for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
+            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            fHistDminusChildPt[iChild]->Fill(track->Pt());
+            fHistDminusChildEta[iChild]->Fill(track->Eta());
+            fHistDminusChildPhi[iChild]->Fill(track->Phi());
+          }
         }
       }
     }
@@ -551,51 +555,78 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fDChargedHistList->SetName("DChargedQA");
   fDChargedHistList->SetOwner(true);
 
-  fHistDplusInvMassPt = new TH2F("fHistDplusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fHistDplusInvMassPt = new TH2F(
+      "fHistDplusInvMassPt",
+      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+      10, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDplusInvMassPt);
-  fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
-  fDChargedHistList->Add(fHistDplusEta);
-  fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
-  fDChargedHistList->Add(fHistDplusPhi);
+  if (!fIsLightweight) {
+    fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
+    fDChargedHistList->Add(fHistDplusEta);
+    fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0.,
+                             2. * TMath::Pi());
+    fDChargedHistList->Add(fHistDplusPhi);
 
-  if (fIsMC) {
-    fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
-                                 "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
-                                 250, 0, 25, 5000, 0, 5000);
-    fDChargedHistList->Add(fHistDplusMCPDGPt);
+    if (fIsMC) {
+      fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
+                                   "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+                                   250, 0, 25, 5000, 0, 5000);
+      fDChargedHistList->Add(fHistDplusMCPDGPt);
+    }
   }
 
-  fHistDminusInvMassPt = new TH2F("fHistDminusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fHistDminusInvMassPt = new TH2F(
+      "fHistDminusInvMassPt",
+      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+      25, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDminusInvMassPt);
-  fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
-  fDChargedHistList->Add(fHistDminusEta);
-  fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
-  fDChargedHistList->Add(fHistDminusPhi);
+  if (!fIsLightweight) {
+    fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
+    fDChargedHistList->Add(fHistDminusEta);
+    fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0.,
+                              2. * TMath::Pi());
+    fDChargedHistList->Add(fHistDminusPhi);
 
-  if (fIsMC) {
-    fHistDminusMCPDGPt = new TH2F("fHistDminusMCPDGPt",
-                                  "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
-                                  250, 0, 25, 5000, 0, 5000);
-    fDChargedHistList->Add(fHistDminusMCPDGPt);
+    if (fIsMC) {
+      fHistDminusMCPDGPt = new TH2F(
+          "fHistDminusMCPDGPt", "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      fDChargedHistList->Add(fHistDminusMCPDGPt);
+    }
   }
 
-  std::vector<TString> nameVec;
-  if (fDecChannel == kDplustoKpipi) {
-    nameVec = {{"K", "Pi1", "Pi2"}};
-  }
-  for (unsigned int iChild = 0; iChild < fDmesonPDGs.size() ; ++iChild) {
-    fHistDplusChildPt[iChild] = new TH1F(TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
-    fHistDplusChildEta[iChild] = new TH1F(TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
-    fHistDplusChildPhi[iChild] = new TH1F(TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
-    fDChargedHistList->Add(fHistDplusChildPt[iChild]);
-    fDChargedHistList->Add(fHistDplusChildEta[iChild]);
-    fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
-    fHistDminusChildPt[iChild] = new TH1F(TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
-    fHistDminusChildEta[iChild] = new TH1F(TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
-    fHistDminusChildPhi[iChild] = new TH1F(TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
-    fDChargedHistList->Add(fHistDminusChildPt[iChild]);
-    fDChargedHistList->Add(fHistDminusChildEta[iChild]);
-    fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
+
+  if (!fIsLightweight) {
+    std::vector<TString> nameVec;
+    if (fDecChannel == kDplustoKpipi) {
+      nameVec = { {"K", "Pi1", "Pi2"}};
+    }
+    for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); ++iChild) {
+      fHistDplusChildPt[iChild] = new TH1F(
+          TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()),
+          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+      fHistDplusChildEta[iChild] = new TH1F(
+          TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()),
+          "; #eta; Entries", 100, -1, 1);
+      fHistDplusChildPhi[iChild] = new TH1F(
+          TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()),
+          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+      fDChargedHistList->Add(fHistDplusChildPt[iChild]);
+      fDChargedHistList->Add(fHistDplusChildEta[iChild]);
+      fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
+      fHistDminusChildPt[iChild] = new TH1F(
+          TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()),
+          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+      fHistDminusChildEta[iChild] = new TH1F(
+          TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()),
+          "; #eta; Entries", 100, -1, 1);
+      fHistDminusChildPhi[iChild] = new TH1F(
+          TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()),
+          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+      fDChargedHistList->Add(fHistDminusChildPt[iChild]);
+      fDChargedHistList->Add(fHistDminusChildEta[iChild]);
+      fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
+    }
   }
   
 
