@@ -44,7 +44,8 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-
+  virtual void NotifyRun();
+  
   // Common:
   void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};
@@ -265,8 +266,8 @@ public:
   Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
 
   //@Shi set histogram for recentering
-  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
-  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
   
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -390,9 +391,9 @@ private:
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
   //@Shi ZDC calib recenter TList
-  TList *fZDCCalibList; //
+  TList *fZDCCalibListFinalCommonPart; //
   
-  ClassDef(AliAnalysisTaskCRC,14);
+  ClassDef(AliAnalysisTaskCRC,15);
 };
 
 //================================================================================================================

@@ -36,7 +36,7 @@ AliAnalysisTask * AddTaskCRCZDCRecenter(Double_t ptMin=0.2,                     
                              TString ZDCESEFileName="",                   //""
                              TString CenWeightsFileName="alien:///alice/cern.ch/user/j/jmargutt/15oCentrality2.root",  //"alien:///alice/cern.ch/user/j/jmargutt/10hCentrality.root"
                              TString ZDCRecenterFileName = "", //"alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step1.root",
-                             Int_t bStepZDCRecenter = 0,
+                             Int_t bStepZDCRecenter = 3,
                              const char* suffix="") {
   // load libraries
   gSystem->Load("libGeom");
@@ -319,20 +319,38 @@ AliAnalysisTask * AddTaskCRCZDCRecenter(Double_t ptMin=0.2,                     
   if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
 
   //@Shi set ZDC recentering (begin)
-  TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
-  if(bStepZDCRecenter > 0) {
-    if(ZDCRecenterFile) {
-      TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
-      if(ZDCRecenterList) {
+  if (bStepZDCRecenter > 0 && bStepZDCRecenter <=2) {
+	TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
+	if(ZDCRecenterFile) {
+	  TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
+	  if(ZDCRecenterList) {
 		taskFE->SetZDCCalibList(ZDCRecenterList);
 	  } else {
-        cout << "ERROR: ZDCRecenterList do not exist!" << endl;
-        exit(1);
-      }
-    } else {
+		cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+		exit(1);
+	  }
+	} else {
 	  cout << "ERROR: if bStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
-      exit(1);
-    }
+	  exit(1);
+	}
+	delete ZDCRecenterFile;
+  }
+  
+  if (bStepZDCRecenter >= 3) {
+	TFile* ZDCRecenterFileStep3CommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+	if(ZDCRecenterFileStep3CommonPart) {
+	  TList* ZDCRecenterListStep3CommonPart = (TList*)(ZDCRecenterFileStep3CommonPart->FindObjectAny("Q Vectors"));
+      if(ZDCRecenterListStep3CommonPart) {
+	    taskFE->SetZDCCalibListStep3CommonPart(ZDCRecenterListStep3CommonPart);
+	  } else {
+	    cout << "ERROR: bStepZDCRecenter >= 3 ZDCRecenterListStep3CommonPart do not exist!" << endl;
+	    exit(1);
+	  }
+	} else {
+	  cout << "ERROR: if bStepZDCRecenter larger than 2, ZDCRecenterFileStep3CommonPart should exist!" << endl;
+	  exit(1);
+	}
+	delete ZDCRecenterFileStep3CommonPart;
   }
   
   taskFE->SetStepZDCRecenter(bStepZDCRecenter);
@@ -555,6 +573,16 @@ AliAnalysisTask * AddTaskCRCZDCRecenter(Double_t ptMin=0.2,                     
 																   AliAnalysisManager::kOutputContainer,
 																   taskFERecenter2name);
 	  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+	  
+	  TString taskFERecenter3name = file;
+	  taskFERecenter3name += ":RecenterList3";
+	  taskFERecenter3name += CRCsuffix;
+	  taskFERecenter3name += suffix;
+	  coutputFERecenter3 = mgr->CreateContainer(taskFERecenter3name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter3name);
+	  mgr->ConnectOutput(taskFE,5,coutputFERecenter3);
   }
   
   return taskFE;
