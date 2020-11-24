@@ -94,6 +94,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bChiSquareTPC(kTRUE),
  bDCAz(kTRUE),
  bDCAxy(kTRUE),
+ bChargeCut(kFALSE),		
+ bChargePos(kTRUE), 
  fMinEtaCut(-0.8),
  fMaxEtaCut(0.8),
  fMinPtCut(0.2),
@@ -105,6 +107,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(3.2),
  fMaxDCAxy(2.4),
+ bDoFisherYates(kFALSE),
+ fFisherYatesCutOff(1.),
  //Weights
  bUseWeights(kFALSE),
  bUsePtWeights(kFALSE),
@@ -211,6 +215,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bChiSquareTPC(kTRUE),
  bDCAz(kTRUE),
  bDCAxy(kTRUE),
+ bChargeCut(kFALSE),		
+ bChargePos(kTRUE), 
  fMinEtaCut(-0.8),
  fMaxEtaCut(0.8),
  fMinPtCut(0.2),
@@ -222,6 +228,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxChiSquareTPC(4.0),
  fMaxDCAz(3.2),
  fMaxDCAxy(2.4),
+ bDoFisherYates(kFALSE),
+ fFisherYatesCutOff(1.),
  //Weights
  bUseWeights(kFALSE),
  bUsePtWeights(kFALSE),
@@ -327,9 +335,17 @@ void AliAnalysisTaskStudentsML::UserCreateOutputObjects()
  if (bNumberITSCluster) {fProfileTrackCuts->Fill(8.5, fMinITSCluster);} 
  if (bDCAxy) {fProfileTrackCuts->Fill(9.5, fMaxDCAxy);} 
  if (bDCAz) {fProfileTrackCuts->Fill(10.5, fMaxDCAz);} 
- if (bUsePtWeights) {fProfileTrackCuts->Fill(11.5, 1);} 
- if (bUsePhiWeights) {fProfileTrackCuts->Fill(12.5, 1);} 
- if (bUseEtaWeights) {fProfileTrackCuts->Fill(13.5, 1);} 
+ if (bChargeCut)
+ {     
+    fProfileTrackCuts->Fill(11.5, 1);
+    if(bChargePos) { fProfileTrackCuts->Fill(12.5, 1); } 
+    else{ fProfileTrackCuts->Fill(12.5, -1); }
+
+ }
+ if(bDoFisherYates){ fProfileTrackCuts->Fill(13.5, 1); fProfileTrackCuts->Fill(14.5, fFisherYatesCutOff); } 
+ if (bUsePtWeights) {fProfileTrackCuts->Fill(15.5, 1);} 
+ if (bUsePhiWeights) {fProfileTrackCuts->Fill(16.5, 1);} 
+ if (bUseEtaWeights) {fProfileTrackCuts->Fill(17.5, 1);} 
 
  // *) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -397,8 +413,6 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
  //Access Data
 
-
-
  //b.0) Start analysis over AODs
  Int_t nTracks = 0;  // number of all tracks in current event 
  nTracks = aAODEvent->GetNumberOfTracks(); 
@@ -407,13 +421,12 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  Double_t* pt_A = NULL;
  Double_t* eta_A = NULL;
  Double_t* weights_A = NULL;
- Int_t Multi_Ang_A = 0.;
+ Int_t Mult_A = 0.;
 
  Bool_t *PassedTrackSelection = new Bool_t[nTracks]; //Holds information if a track passed the track selection. kTRUE if yes, kFALSE otherwise
 
  Double_t* angles_B = NULL; 
- Int_t Multi_Ang_B = 0.; 
-
+ Int_t Mult_B = 0.; 
  Int_t CounterSameCharge = 0.; //used if bDifferentCharge = kTRUE
 
 
@@ -443,19 +456,19 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      	Int_t NumberOfITSClusters = aAODTrack->GetITSNcls(); //number of ITS clusters of the track
 
 
-	// Get the DCA information (cf PWGCF/EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx)
+	//Get the DCA information (cf PWGCF/EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx)
 	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
 	Float_t ValueDCAz = 999.;    // DCA along z.
 
 	if (fMainFilter == 128)  // These methods work only for constrained TPConly tracks.
-	{ // These two quantities are the DCA from global tracks but not what we will cut on.
+	{ //These two quantities are the DCA from global tracks but not what we will cut on.
 	  ValueDCAxy = aAODTrack->DCA();
 	  ValueDCAz = aAODTrack->ZAtDCA();
 	}
-	else  // For the unconstrained tracks.
+	else  //For the unconstrained tracks.
 	{
-	  Double_t v[3];    // Coordinates of the PV?
-	  Double_t pos[3];  // Coordinates of the track closest to PV?
+	  Double_t v[3];    //Coordinates of the PV?
+	  Double_t pos[3];  //Coordinates of the track closest to PV?
 
           primaryVertex->GetXYZ(v);
 	  aAODTrack->GetXYZ(pos);
@@ -463,7 +476,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 	  ValueDCAz = pos[2] - v[2];
 	}
 
-	// Get the chi^2 per TPC cluster.
+	//Get the chi^2 per TPC cluster.
 	Float_t ChiSquareInTPC = 999.;
 	/// Personal method, should be equal to GetTPCchi2perCluster()
 	if (fChooseChiSquareMethod == 1) {ChiSquareInTPC = (aAODTrack->GetTPCchi2())/(aAODTrack->GetNcls(1));}
@@ -505,6 +518,7 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
     		fChiSquareTPCHistogram[CentralityBin][0]->Fill(ChiSquareInTPC);
      		fDCAzHistogram[CentralityBin][0]->Fill(ValueDCAz);
 		fDCAxyHistogram[CentralityBin][0]->Fill(ValueDCAxy);
+		fChargeHistogram[CentralityBin][0]->Fill(charge); 
 
         } //if(bSaveAllQA)
 
@@ -546,17 +560,19 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 	     	fChiSquareTPCHistogram[CentralityBin][1]->Fill(ChiSquareInTPC);
 	     	fDCAzHistogram[CentralityBin][1]->Fill(ValueDCAz);
 	     	fDCAxyHistogram[CentralityBin][1]->Fill(ValueDCAxy);
+		fChargeHistogram[CentralityBin][1]->Fill(charge); 
+
         } //if(bSaveAllQA)
 
 	//............................................................................................
 
-     	if(!bDoMixed) {Multi_Ang_A+=1.;}
+     	if(!bDoMixed) {Mult_A+=1.;}
     	if(bDoMixed)
      	{
 		if(bDifferentCharge)
 		{
-			if(charge>0.){Multi_Ang_A+=1.;}
-			if(charge<0.){Multi_Ang_B+=1.;}
+			if(charge>0.){Mult_A+=1.;}
+			if(charge<0.){Mult_B+=1.;}
 		}//if(bDifferentCharge)
 
 		if(!bDifferentCharge)
@@ -567,8 +583,8 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 			if(UsedCharge>0.)
 			{
-		  	   if(0 == CounterSameCharge%2) {Multi_Ang_A+=1.; CounterSameCharge++; }
-		  	   else {Multi_Ang_B+=1.; CounterSameCharge++; }
+		  	   if(0 == CounterSameCharge%2) {Mult_A+=1.; CounterSameCharge++; }
+		  	   else {Mult_B+=1.; CounterSameCharge++; }
 			}
 
 		}//if(!bDifferentCharge)
@@ -577,6 +593,23 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
  } // First Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
 
+
+
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ //Fisher Yales
+
+ Int_t Before_FisherYates_Mult = Mult_A;  //Multiplicity directly after track selection, before cut off 
+ Int_t After_FisherYates_Mult=0;
+ Int_t *RandomIndexArray = new Int_t[Before_FisherYates_Mult]; //Array to hold array positions
+
+ if(bDoFisherYates)
+ { 
+	this->FisherYatesRandomizing(Before_FisherYates_Mult, RandomIndexArray); //Random Index Generator 
+	Mult_A = (Int_t)(fFisherYatesCutOff*(Float_t)Mult_A); //Cut of the Multiplicity
+	After_FisherYates_Mult = Mult_A;
+ } 
+
+
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //Checking if required minimum particles per event is reached and filling multiplicity Distributions after Track selection
 
@@ -584,10 +617,10 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  {
    if(bSaveAllQA)
    {
-	if(Multi_Ang_A>0){fMultHistogram[CentralityBin][2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection 
+	if(Mult_A>0){fMultHistogram[CentralityBin][2]->Fill(Mult_A);} //multiplicity distribution after track selection 
    }//if(bSaveAllQA)
 
-   if(Multi_Ang_A< fMinNumberPart) { return; } 
+   if(Mult_A< fMinNumberPart) { return; } 
 
  }//if(!bDoMixed)
  
@@ -595,27 +628,29 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  {
    if(bSaveAllQA)
    {
-  	if(Multi_Ang_A>0){fMultHistogram[CentralityBin][2]->Fill(Multi_Ang_A);} //multiplicity distribution after track selection
-   	if(Multi_Ang_B>0){fMultHistogram[CentralityBin][3]->Fill(Multi_Ang_B);}
+  	if(Mult_A>0){fMultHistogram[CentralityBin][2]->Fill(Mult_A);} //multiplicity distribution after track selection
+   	if(Mult_B>0){fMultHistogram[CentralityBin][3]->Fill(Mult_B);}
    }//if(bSaveAllQA)
 
-   if(Multi_Ang_A < fMinNumberPart || Multi_Ang_B < fMinNumberPart ){ return; }
+   if(Mult_A < fMinNumberPart || Mult_B < fMinNumberPart ){ return; }
 
  }//if(bDoMixed)
 
+
+
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- //Declare arrays for Phi
+ //Declare arrays for Phi, pt, eta and weights
 
- angles_A = new Double_t[Multi_Ang_A]; 
- pt_A = new Double_t[Multi_Ang_A];
- eta_A = new Double_t[Multi_Ang_A];
- weights_A = new Double_t[Multi_Ang_A];
+ angles_A = new Double_t[Mult_A]; 
+ pt_A = new Double_t[Mult_A];
+ eta_A = new Double_t[Mult_A];
+ weights_A = new Double_t[Mult_A];
 
- Multi_Ang_A = 0.; 
+ Mult_A = 0.; 
        
- if(Multi_Ang_B>0){angles_B = new Double_t[Multi_Ang_B];}
+ if(Mult_B>0){angles_B = new Double_t[Mult_B];}
  else{angles_B = new Double_t[1]; angles_B[0]=0.;} //Dummy 
- Multi_Ang_B = 0.; //Reset for filling
+ Mult_B = 0.; //Reset for filling
 
  CounterSameCharge = 0.; //reset the same charge counter
 
@@ -646,20 +681,35 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
      
 
      if(!bDoMixed)
-     {
-	angles_A[Multi_Ang_A] = phi; 
-	pt_A[Multi_Ang_A] = pt; 
-	eta_A[Multi_Ang_A] = eta; 
-	weights_A[Multi_Ang_A] = 1.;
-        Multi_Ang_A+=1.;
+     {	
+	if(bDoFisherYates)
+	{
+		Int_t NewIndex = RandomIndexArray[Mult_A];
+		if(NewIndex>=After_FisherYates_Mult) continue; //this is outside our Array Size
+		
+		angles_A[NewIndex] = phi; 
+		pt_A[NewIndex] = pt; 
+		eta_A[NewIndex] = eta; 
+		weights_A[NewIndex] = 1.;
+	}
+	else
+	{
+		angles_A[Mult_A] = phi; 
+		pt_A[Mult_A] = pt; 
+		eta_A[Mult_A] = eta; 
+		weights_A[Mult_A] = 1.;
+	} 
+
+        Mult_A+=1.;
+
      }//if(!bDoMixed)
 
      if(bDoMixed)
      {
 	if(bDifferentCharge)
 	{	
-		if(charge>0.){angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.;}
-		if(charge<0.){angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.;}
+		if(charge>0.){angles_A[Mult_A] = phi; Mult_A+=1.;}
+		if(charge<0.){angles_B[Mult_B] = phi; Mult_B+=1.;}
 	}//if(bDifferentCharge)
 
 	if(!bDifferentCharge)
@@ -670,8 +720,8 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 		if(UsedCharge>0.)
 		{
-		   if(0 == CounterSameCharge%2) {angles_A[Multi_Ang_A] = phi; Multi_Ang_A+=1.; CounterSameCharge++; }
-		   else {angles_B[Multi_Ang_B] = phi; Multi_Ang_B+=1.; CounterSameCharge++;}
+		   if(0 == CounterSameCharge%2) {angles_A[Mult_A] = phi; Mult_A+=1.; CounterSameCharge++; }
+		   else {angles_B[Mult_B] = phi; Mult_B+=1.; CounterSameCharge++;}
 		}
 
 	}//if(!bDifferentCharge)
@@ -681,11 +731,12 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  } //Second Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut) 
 
 
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  //Add Member Function Get Weights
  if(bUseWeights)
  {
   Int_t CallRunNumber = aAODEvent->GetRunNumber();
-  CalculateWeight(CentralityBin, CallRunNumber, weights_A, Multi_Ang_A, angles_A, pt_A, eta_A);
+  CalculateWeight(CentralityBin, CallRunNumber, weights_A, Mult_A, angles_A, pt_A, eta_A);
  }
  
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -693,24 +744,27 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
  
  if(!bDoMixed)
  {
-   this->MainTask(CentralityBin, Multi_Ang_A, angles_A,weights_A); //Actual Multi-Particle Correlation
+   this->MainTask(CentralityBin, Mult_A, angles_A,weights_A); //Actual Multi-Particle Correlation
  }//if(!bDoMixed)
  
  if(bDoMixed)
  {
-   this->MixedParticle(CentralityBin, fMixedHarmonic, Multi_Ang_A, angles_A, Multi_Ang_B, angles_B);
+   this->MixedParticle(CentralityBin, fMixedHarmonic, Mult_A, angles_A, Mult_B, angles_B);
  }//if(bDoMixed)
  
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  // d) Reset event-by-event objects:
  delete [] PassedTrackSelection;
- Multi_Ang_A =0.;
+ Mult_A =0.;
+ Before_FisherYates_Mult=0.;
+ After_FisherYates_Mult=0.;
+ delete [] RandomIndexArray;
  delete [] angles_A; 
  delete [] pt_A;
  delete [] eta_A;
  delete [] weights_A;
- Multi_Ang_B =0.;
+ Mult_B =0.;
  delete [] angles_B;
  CounterSameCharge = 0.; //reset the same charge counter
 
@@ -924,6 +978,7 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
 	   fChiSquareTPCHistogram[icent][i] = NULL;
 	   fDCAzHistogram[icent][i] = NULL;
 	   fDCAxyHistogram[icent][i] = NULL;
+           fChargeHistogram[icent][i] = NULL; 
 	   
 	 }
 
@@ -1036,7 +1091,8 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // k) Book histogram for chi square TPC 
  // l) Book histogram for DCAz 
  // m) Book histogram for DCAxy 
- // n) Book histogram Centrality 
+ // n) Book histogram for Charge Cut 
+ // o) Book histogram Centrality 
 
  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
  {
@@ -1076,34 +1132,34 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 
 	 
 	 // b) Book histogram to hold phi spectra
-	 fPhiHistogram[icent][0] = new TH1F("fPhiHistBeforeTrackSelection","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHistBeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-	 fPhiHistogram[icent][1] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
-	 fPhiHistogram[icent][4] = new TH1F("fPhiHistAfterTrackSelectionWeighted","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][4] = new TH1F("fPhiHistAfterTrackSelectionWeighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][4]->Sumw2(); 
 	 fPhiHistogram[icent][4]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][4]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][4]);
 
-	 fPhiHistogram[icent][2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][2] = new TH1F("fPhiHistBeforeTrackSelectionSecond","Phi Distribution",1000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][2]->SetLineColor(4);
 	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]); } 
 
-	 fPhiHistogram[icent][3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,6.3);
+	 fPhiHistogram[icent][3] = new TH1F("fPhiHistAfterTrackSelectionSecond","Phi Distribution",1000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][3]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][3]->SetLineColor(4);
 	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][3]); } 
 
 	 // c) Book histogram to hold eta distribution before track selection:
-	 fEtaHistogram[icent][0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.);
+	 fEtaHistogram[icent][0] = new TH1F("fEtaHistBeforeTrackSelection","Eta Distribution",1000,-1.,1.); 
 	 fEtaHistogram[icent][0]->GetXaxis()->SetTitle("Eta");
 	 fEtaHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fEtaHistogram[icent][0]);
@@ -1144,7 +1200,7 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 
 	 fMultHistogram[icent][3] = new TH1F("fMultiHistoAfterTrackSelectionSecond","Multiplicity",30000,0.,30000.);
 	 fMultHistogram[icent][3]->GetXaxis()->SetTitle("Multiplicity M");
-	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][3]);
+	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fMultHistogram[icent][3]); }
 
 	 // e) Book histogam for Vertex X 
 	 fVertexXHistogram[icent][0] = new TH1F("fVertexXBefore","VertexXBefore",1000,-20.,20.); 
@@ -1208,7 +1264,14 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][0]);
 
 	 fDCAxyHistogram[icent][1] = new TH1F("fDCAxyAfterCut","DCAxyAfterCut",1000,-10.,10.); 
-	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]);
+	 fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]); 
+
+	 // n) Book histogram for Charge
+	 fChargeHistogram[icent][0] = new TH1I("ChargeBeforeCut","ChargeBeforeCut",11,-5.5,5.5); 
+	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][0]);
+
+	 fChargeHistogram[icent][1] = new TH1I("ChargeAfterCut","DCAxyAfterCut",11,-5.5,5.5); 
+	 fControlHistogramsList[icent]->Add(fChargeHistogram[icent][1]); 
 
 	 // n) Book histogram Centrality 
 	 fCentralityHistogram[icent]= new TH1F("fCentralityHistogramAfter","CentralityHistogramAfter",22,0.,110.);
@@ -1287,7 +1350,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
   fHistList->Add(fProfileEventCuts);
 
  //Profile to save the cut values for track selection
-  fProfileTrackCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileTrackCuts = new TProfile("", "", 18, 0., 18.);
   fProfileTrackCuts->SetName("fProfileTrackCuts");
   fProfileTrackCuts->SetTitle("Configuration of the track selection");
   fProfileTrackCuts->SetStats(kFALSE);
@@ -1302,9 +1365,13 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
   fProfileTrackCuts->GetXaxis()->SetBinLabel(9, "N_{ITS} min");
   fProfileTrackCuts->GetXaxis()->SetBinLabel(10, "DCA_{xy} max");
   fProfileTrackCuts->GetXaxis()->SetBinLabel(11, "DCA_{z} max");
-  fProfileTrackCuts->GetXaxis()->SetBinLabel(12, "p_{T} weights?");
-  fProfileTrackCuts->GetXaxis()->SetBinLabel(13, "#eta weights?");
-  fProfileTrackCuts->GetXaxis()->SetBinLabel(14, "#phi weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(12, "Charge Cut?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(13, "Charge"); 
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(14, "Fisher Yates?"); 
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(15, "Keeping Percentege");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(16, "p_{T} weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(17, "#eta weights?");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(18, "#phi weights?"); 
   fHistList->Add(fProfileTrackCuts);
 
  Cosmetics();
@@ -1420,12 +1487,13 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
  	Double_t py = aTrack->Py(); // y-component of momenta
  	Double_t pz = aTrack->Pz(); // z-component of momenta
  	Double_t e = aTrack->E();  // energy
-        Double_t charge = aTrack->Charge(); // charge
  	Double_t phi = aTrack->Phi(); // azimuthal angle*/
+
  	Double_t eta = aTrack->Eta(); // pseudorapidity
  	Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
 	Int_t NumberOfTPCClusters = aTrack->GetTPCNcls(); //number of TPC clusters of the track
 	Int_t NumberOfITSClusters = aTrack->GetITSNcls(); //number of ITS clusters of the track
+	Double_t charge = aTrack->Charge(); // charge
 
 	// Get the DCA information (cf PWGCF/EBYE/BalanceFunctions/AliAnalysisTaskBFPsi.cxx)
 	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
@@ -1493,6 +1561,12 @@ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
 	if(bDCAxy) 
 	{
 	  if(TMath::Abs(ValueDCAxy)>fMaxDCAxy) return kFALSE;
+	}
+
+	if(bChargeCut)
+	{
+	  if(bChargePos) { if(charge<=0.) return kFALSE; } 
+	  else { if(charge>=0.) return kFALSE; } 
 	}
 
     return kTRUE;
@@ -1616,6 +1690,34 @@ Int_t AliAnalysisTaskStudentsML::SelectCentrality(AliAODEvent *aAODevent)
 
 //==========================================================================================================================================================================
 
+void AliAnalysisTaskStudentsML::FisherYatesRandomizing(Int_t Mult, Int_t *RandomIndex)
+{
+  if(gRandom) delete gRandom;
+  gRandom = new TRandom3(0);
+        
+  if(Mult <= 0) return;
+            
+
+  for(Int_t i=0;i<Mult;i++)
+  {
+        RandomIndex[i] = i;
+  }
+    
+  for(Int_t i=Mult-1;i>=1;i--)
+  {
+         Int_t j = gRandom->Integer(i+1);
+            
+         Int_t Temp_Storage = RandomIndex[j];
+         RandomIndex[j] = RandomIndex[i];
+         RandomIndex[i] = Temp_Storage;
+        
+  } // end of for(Int_t i=nPrim-1;i>=1;i--)
+
+  return;
+}
+
+//==========================================================================================================================================================================
+
 void AliAnalysisTaskStudentsML::CalculateWeight(Int_t CentBin, Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta)
 {
   //a) Get Array-Index of the Run
@@ -1705,10 +1807,7 @@ void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
 // a.)  Open the external file.                                                                  
 // b.)  Parse the runs.                                                                          
 // b.1) Open the TDirectoryFile for the current run.                                            
-// b.2) Open the list for the current centrality range.                                         
-// b.3) Fill the pT-weight histogram if needed.                                                 
-// b.4) Fill the eta-weight histogram if needed.                                                
-// b.5) Fill the phi-weight histogram if needed.                                                
+// b.2) Open the list for the current centrality range.                                                                                         
 // c.)  Close the external file.                                                               
 
   TString sMethod = "void AliAnalysisTaskStudentsML::SetInputParticleWeights()"; 
@@ -1740,29 +1839,18 @@ void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
 	    TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1])));
 	    if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
 
-	    // b.3) Fill the pT-weight histogram if needed.
-	    if (bUsePtWeights)
-	    {
 	      fHistoPtWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("pt-weight"));
 	      if (!fHistoPtWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: pt-weight histogram not found");}
 	      else {fHistoPtWeight[icent][iRun]->SetDirectory(0);} // Kill the default ownership.
-	    } // End: if (fUsePtWeights).
 
-	    // b.4) Fill the eta-weight histogram if needed.
-	    if (bUseEtaWeights)
-	    {
 	      fHistoEtaWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("eta-weight"));
 	      if (!fHistoEtaWeight[icent][iRun]) { Fatal(sMethod.Data(), "ERROR: eta-weight histogram not found"); }
 	      else {fHistoEtaWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership.
-	    } // End: if (fUseEtaWeights).
 
-	    // b.5) Fill the phi-weight histogram if needed.
-	    if (bUsePhiWeights)
-	    {
 	      fHistoPhiWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
 	      if (!fHistoPhiWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
 	      else {fHistoPhiWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership.
-	    } // End: if (fUseEtaWeights).
+	    
 
 	     delete centralityList;
 	     delete runTDF;
