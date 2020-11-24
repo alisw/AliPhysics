@@ -356,13 +356,23 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                 ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partLc);
             }
         }
-
         // fill tree for ML
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
         if (fCreateMLtree)
         {
             if (fDecChannel == kLctopKpi) // Lc->pKpi
             {
+               if (fReadMC){
+               int labD[3] = {-1, -1, -1};
+               //check if resonant decay
+               int  decay=-9;
+               if(partLc)decay= AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
+
+                if(decay==1)SetIsLcpKpiRes(kLcNonRes);
+                if(decay==2)SetIsLcpKpiRes(kLcKStar);//KStar
+                if(decay==3)SetIsLcpKpiRes(kLcDelta);//Delta
+                if(decay==4)SetIsLcpKpiRes(kLcLambda1520);//Lambda
+               }
                 if (isSelected == 1 || isSelected == 3) // pKpi
                 {
                     bool isSignal = false;
@@ -654,13 +664,13 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
                     {
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid,(double)deca};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
                             double ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB};
+                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB,(double)deca};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                         }
                     }
@@ -701,9 +711,9 @@ void AliAnalysisTaskSENonPromptLc::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
-    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.};
-    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj]};
+    int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins,6};
+    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.,-1};
+    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj],5};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
