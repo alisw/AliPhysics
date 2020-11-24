@@ -319,24 +319,46 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(bSpecialVZERORingSelection) taskFE->SetWhichVZERORings(1,2,7,8);
 
   //@Shi set ZDC recentering (begin)
-  TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
-  if(bStepZDCRecenter > 0) {
-    if(ZDCRecenterFile) {
-      TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
-      if(ZDCRecenterList) {
+  if (bStepZDCRecenter > 0 && bStepZDCRecenter <=2) {
+	TFile* ZDCRecenterFile = TFile::Open(ZDCRecenterFileName, "READ");
+	if(ZDCRecenterFile) {
+	  TList* ZDCRecenterList = (TList*)(ZDCRecenterFile->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
+	  if(ZDCRecenterList) {
 		taskFE->SetZDCCalibList(ZDCRecenterList);
 	  } else {
-        cout << "ERROR: ZDCRecenterList do not exist!" << endl;
-        exit(1);
-      }
-    } else {
+		cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+		exit(1);
+	  }
+	} else {
 	  cout << "ERROR: if bStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << endl;
-      exit(1);
-    }
+	  exit(1);
+	}
+	delete ZDCRecenterFile;
   }
+  //delete ZDCRecenterFile;
   
   taskFE->SetStepZDCRecenter(bStepZDCRecenter);
   taskFE->SetStoreCalibZDCRecenter(bStoreCalibZDCRecenter);
+  
+  if (bStepZDCRecenter >= 3) {
+    TFile* ZDCRecenterFileStep3CommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+    if(ZDCRecenterFileStep3CommonPart) {
+		TList* ZDCRecenterListStep3CommonPart = (TList*)(ZDCRecenterFileStep3CommonPart->FindObjectAny("Q Vectors"));
+		if(ZDCRecenterListStep3CommonPart) {
+		  taskFE->SetZDCCalibListStep3CommonPart(ZDCRecenterListStep3CommonPart);
+		} else {
+		  cout << "ERROR: bStepZDCRecenter >= 2 ZDCRecenterListStep3CommonPart do not exist!" << endl;
+		  exit(1);
+		}
+	} else {
+	  cout << "ERROR: if bStepZDCRecenter larger than 2, ZDCRecenterFileStep3CommonPart should exist!" << endl;
+      exit(1);
+    }
+    delete ZDCRecenterFileStep3CommonPart;
+  }
+  
+
+  
   //@Shi set ZDC recentering (end)
   // add the task to the manager
   mgr->AddTask(taskFE);
@@ -534,6 +556,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   
   AliAnalysisDataContainer* coutputFERecenter1;
   AliAnalysisDataContainer* coutputFERecenter2;
+  AliAnalysisDataContainer* coutputFERecenter3;
   if (bStepZDCRecenter >= 0) {
 	  // OUTPUT CONTAINER TO SAVE ZDC RECENTERING
 	  TString taskFERecenter1name = file;
@@ -555,6 +578,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
 																   AliAnalysisManager::kOutputContainer,
 																   taskFERecenter2name);
 	  mgr->ConnectOutput(taskFE,4,coutputFERecenter2);
+	  
+	  TString taskFERecenter3name = file;
+	  taskFERecenter3name += ":RecenterList3";
+	  taskFERecenter3name += CRCsuffix;
+	  taskFERecenter3name += suffix;
+	  coutputFERecenter3 = mgr->CreateContainer(taskFERecenter3name.Data(),
+																   TList::Class(),
+																   AliAnalysisManager::kOutputContainer,
+																   taskFERecenter3name);
+	  mgr->ConnectOutput(taskFE,5,coutputFERecenter3);
   }
   
   //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
@@ -631,20 +664,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   //taskQC->SetStoreQAforDiffEventPlanes(bStoreQAforDiffEventPlanes);
   
   //@Shi set ZDC recentering (begin)
-  TFile* ZDCRecenterFileFinal = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3.root", "READ");
-  if(ZDCRecenterFileFinal) {
-    TList* ZDCRecenterList = (TList*)(ZDCRecenterFileFinal->FindObjectAny("Q Vectors")); // hardcoded TList AQ Vectors
-    if(ZDCRecenterList) {
-	  taskQC->SetZDCCalibList(ZDCRecenterList);
+  TFile* ZDCRecenterFileFinalCommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+  if(ZDCRecenterFileFinalCommonPart) {
+    TList* ZDCRecenterListFinalCommonPart = (TList*)(ZDCRecenterFileFinalCommonPart->FindObjectAny("Q Vectors"));
+    if(ZDCRecenterListFinalCommonPart) {
+	  taskQC->SetZDCCalibListFinalCommonPart(ZDCRecenterListFinalCommonPart);
     } else {
-      cout << "ERROR: ZDCRecenterList do not exist!" << endl;
+      cout << "ERROR: ZDCRecenterListFinalCommonPart do not exist!" << endl;
       exit(1);
     }
   } else {
-	cout << "ERROR: ZDCRecenterFileFinal should exist!" << endl;
+	cout << "ERROR: ZDCRecenterFileFinalCommonPart should exist!" << endl;
     exit(1);
   }
-  
+  delete ZDCRecenterFileFinalCommonPart;
   
   if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");

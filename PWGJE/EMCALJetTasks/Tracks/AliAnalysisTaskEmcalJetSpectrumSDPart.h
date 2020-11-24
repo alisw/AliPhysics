@@ -52,13 +52,14 @@ public:
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
     void SetSDUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
-    static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles);
+    static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag = "");
 
 protected:
 
     virtual void UserCreateOutputObjects();
     virtual bool Run();
     virtual bool IsEventSelected() { return true; }
+    virtual bool CheckMCOutliers();
 
 private:
     THistManager                            *fHistos;                       //!<! Histogram
@@ -70,6 +71,7 @@ private:
     Double_t                                fZcut;                          ///< SoftDrop Zcut
     Bool_t                                  fUseChargedConstituents;        ///< SoftDrop use charged constituents
     Bool_t                                  fUseNeutralConstituents;        ///< SoftDrop use neutral constituents
+    Bool_t                                  fUseStandardOutlierRejection;   ///< Fall back to standard outlier rejection
 
     ClassDef(AliAnalysisTaskEmcalJetSpectrumSDPart, 1);
 };

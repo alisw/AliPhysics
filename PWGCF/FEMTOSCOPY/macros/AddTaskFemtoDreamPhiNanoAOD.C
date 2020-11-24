@@ -317,127 +317,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
   task->SetOEventMixing(false);
-  // task->SetMCTruth(false);
+  task->SetMCTruth(false);
 
-  task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
-  task->SetmixREC(true);
-  task->SetMCTruth(true);
-  task->SetmixTRUTHREAL(true);
-  task->SetmixTRUTFAKE(true);
-  task->SetpTprotonMCTRUTH(0.5);
-  task->SetetaprotonMCTRUTH(0.8);
-  task->SetpTkaonMCTRUTH(0.15);
-  task->SetetakaonMCTRUTH(0.8);
-
-  if (suffix == "1") {
-    task->SetpTprotonMCTRUTH(ProtonPtlow);
-    task->SetetaprotonMCTRUTH(ProtonEtaUp);
-  } else if (suffix == "2") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "3") {
-    task->SetetaprotonMCTRUTH(ProtonEtaUp);
-  } else if (suffix == "4") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "5") {
-    task->SetetaprotonMCTRUTH(ProtonEtaLow);
-  } else if (suffix == "6") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "7") {
-    task->SetetaprotonMCTRUTH(ProtonEtaUp);
-  } else if (suffix == "8") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "9") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "11") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "12") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "13") {
-    task->SetetaprotonMCTRUTH(ProtonEtaUp);
-    task->SetpTprotonMCTRUTH(ProtonPtlow);
-  } else if (suffix == "14") {
-    task->SetetaprotonMCTRUTH(ProtonEtaLow);
-  } else if (suffix == "15") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "16") {
-    task->SetetaprotonMCTRUTH(ProtonEtaLow);
-  } else if (suffix == "17") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "18") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "19") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "20") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "21") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "22") {
-    task->SetpTprotonMCTRUTH(ProtonPtup);
-  } else if (suffix == "23") {
-    task->SetpTprotonMCTRUTH(ProtonPtlow);
-  } else if (suffix == "24") {
-    task->SetetaprotonMCTRUTH(ProtonEtaLow);
-  } else if (suffix == "25") {
-    task->SetetaprotonMCTRUTH(ProtonEtaUp);
-  }
-
-
-  if (suffix == "1") {
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-    } else if (suffix == "2") {
-      evtCuts->SetSphericityCuts(SpheriLow,1);
-    } else if (suffix == "3") {
-      evtCuts->SetSphericityCuts(SpheriUp,1);
-    } else if (suffix == "4") {
-      evtCuts->SetSphericityCuts(SpheriLow,1);
-      task->SetetakaonMCTRUTH(KaonEtaUp);
-    } else if (suffix == "5") {
-      evtCuts->SetSphericityCuts(SpheriUp,1);
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-    } else if (suffix == "6") {
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-      task->SetetakaonMCTRUTH(KaonEtaUp);
-    } else if (suffix == "7") {
-      evtCuts->SetSphericityCuts(SpheriLow,1);
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "8") {
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "9") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-    } else if (suffix == "10") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-    } else if (suffix == "11") {
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "12") {
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-    } else if (suffix == "16") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-      task->SetetakaonMCTRUTH(KaonEtaUp);
-    } else if (suffix == "17") {
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-    } else if (suffix == "18") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-    } else if (suffix == "19") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-    } else if (suffix == "20") {
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "21") {
-      task->SetetakaonMCTRUTH(KaonEtaUp);
-    } else if (suffix == "22") {
-      task->SetpTkaonMCTRUTH(KaonPtlow);
-    } else if (suffix == "23") {
-      evtCuts->SetSphericityCuts(SpheriUp,1);
-      task->SetpTkaonMCTRUTH(KaonPtup);
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "24") {
-      task->SetpTkaonMCTRUTH(KaonPtup);
-      task->SetetakaonMCTRUTH(KaonEtaLow);
-    } else if (suffix == "25") {
-      task->SetetakaonMCTRUTH(KaonEtaUp);
-    }
-
+//  task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+//  task->SetmixREC(true);
+//  task->SetMCTruth(true);
+//  task->SetmixTRUTHREAL(true);
+//  task->SetmixTRUTFAKE(true);
+//  task->SetpTprotonMCTRUTH(0.5);
+//  task->SetetaprotonMCTRUTH(0.8);
+//  task->SetpTkaonMCTRUTH(0.15);
+//  task->SetetakaonMCTRUTH(0.8);
 
 
 //  if (suffix == "0") {
@@ -465,38 +355,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //        task->SetmixTRUTHREAL(true);
 //        task->SetmixTRUTFAKE(true);
 //    }
-//    if (suffix == "3") {
-//        task->SetOEventMixing(true);
-//        task->SetMCTruth(false);
-//        task->SetmixREC(true);
-//        config->SetMixingDepth(50);
-//        if(isMC){
-//            config->SetPhiEtaBinnign(true);
-//        }
-//        config->SetPtQA(true);
-//        config->SetMassQA(true);
-//        config->SetmTBinning(true);
-//        config->SetdPhidEtaPlots(true);
-//        config->SetExtendedQAPairs(pairQA);
-//    }
-
-//    if (suffix == "4") {
-//        task->SetOEventMixing(true);
-//        task->SetmixREC(true);
-//        task->SetMCTruth(false);
-//        config->SetMixingDepth(50);
-//        TrackCutsPhi->SetMinimalBooking(true);
-
-//    }
-
-//    if (suffix == "5") {
-//        task->SetOEventMixing(true);
-//        task->SetMCTruth(false);
-//        task->SetmixREC(true);
-//        config->SetMixingDepth(50);
-//        TrackCutsPhi->SetMinimalBooking(true);
-//    }
-
 
 
 

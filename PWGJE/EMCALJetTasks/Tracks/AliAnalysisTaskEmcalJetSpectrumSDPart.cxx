@@ -24,6 +24,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
+#include <cstring>
+#include <sstream>
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
@@ -51,7 +54,8 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
-    fUseNeutralConstituents(true)
+    fUseNeutralConstituents(true),
+    fUseStandardOutlierRejection(false)
 {
 }
 
@@ -64,7 +68,8 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fBeta(0),
     fZcut(0.1),
     fUseChargedConstituents(true),
-    fUseNeutralConstituents(true)
+    fUseNeutralConstituents(true),
+    fUseStandardOutlierRejection(false)
 {
     SetMakeGeneralHistograms(true);
 }
@@ -189,6 +194,25 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 
     for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
     PostData(1, fOutput);
+}
+
+Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
+    if(!fMCRejectFilter) return true;
+    if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+    if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
+    AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+    AliJetContainer *outlierjets = GetJetContainer("partjets");
+    if(!outlierjets) return true;
+
+    // Check whether there is at least one particle level jet with pt above n * event pt-hard
+    auto jetiter = outlierjets->accepted();
+    auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+    if(max != jetiter.end())  {
+        // At least one jet found with pt > n * pt-hard
+        AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+        if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
+    }
+    return true;
 }
 
 bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
@@ -467,7 +491,7 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     return true;
 }
 
-AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles) {
+AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag) {
     auto mgr = AliAnalysisManager::GetAnalysisManager();
     if(!mgr) {
         AliErrorGeneralStream("AliAnalysisTaskEmcalJetSpectrumSDPart::AddTaskEmcalJetSpectrumSDPart") << "No analysis manager available" << std::endl;
@@ -484,7 +508,10 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
         case AliJetContainer::kUndefinedJetType: break;
     };
 
-    auto task = new AliAnalysisTaskEmcalJetSpectrumSDPart(Form("PartLevelJetTask%s%s", jtstring.Data(), rstring.Data()));
+    std::stringstream taskname;
+    taskname << "PartLevelJetTask" << jtstring.Data() << rstring.Data();
+    if(strlen(tag)) taskname << "_" << tag;
+    auto task = new AliAnalysisTaskEmcalJetSpectrumSDPart(taskname.str().data());
     mgr->AddTask(task);
 
     // Adding particle and jet container
@@ -501,8 +528,11 @@ AliAnalysisTaskEmcalJetSpectrumSDPart *AliAnalysisTaskEmcalJetSpectrumSDPart::Ad
     jetcont->SetMaxPt(1000.);
     
     // Link input and output
+    std::stringstream outcontname;
+    outcontname << "PartLevelJetResults" << jtstring.Data() << rstring.Data();
+    if(strlen(tag)) outcontname << "_" << tag;
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("PartLevelJetResults%s%s", jtstring.Data(), rstring.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(outcontname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
 
     return task;
 }

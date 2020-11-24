@@ -1632,7 +1632,7 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   fHistTrackSelSteps->Fill(1.);
   if(track->GetID()<0&&!fKeepNegID) return kFALSE;
   fHistTrackSelSteps->Fill(2.);
-  if(fFilterMask>=0){
+  if(fFilterMask>0){
     if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
   }
   fHistTrackSelSteps->Fill(3.);
