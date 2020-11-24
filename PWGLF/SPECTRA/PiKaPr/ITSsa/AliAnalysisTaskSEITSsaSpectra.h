@@ -422,7 +422,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   //unfolding
   TH2F* fUnfProb[1170]; //-> histogram with unfolded matrices (probability)
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 13);
 };
 
 #endif
