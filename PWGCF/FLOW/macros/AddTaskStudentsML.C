@@ -70,7 +70,10 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
   myTask->SetDCAxy(kTRUE, 2.4);
 // DCAz < 3.2cm.
   myTask->SetDCAz(kTRUE, 3.2);
-
+// Charge Cut. First parameter: if kTRUE: Cut on charge. Second parameter: if kTRUE: Select only positive.
+  myTask->SetChargeCut(kFALSE,kTRUE);
+//Fisher Yates Randomizing. First Parameter: Do FY or not. Second Parameter: How much of the originally passed tracks should be kept
+  myTask->SetFisherYates(kFALSE, 1.); 
 // Use (or not use) Reco-Kine-Table (1. parameter to kTRUE), keep weak secondaries (2. parameter kTRUE)
   myTask->SetKineSpecifics(kFALSE,kTRUE);
 // Use weights or not (1. parameter), use Phi (2. parameter), pt (3. parameter), eta (4. parameter)
