@@ -745,7 +745,7 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 					GetDetectorResponse();
 
 				// UE analysis
-				if(fGenLeadPt>=fPtMin){
+				if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
 					GetBinByBinCorrections();
 					GetPtLeadingMisRecCorrection();
 				}
