@@ -143,7 +143,7 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Char_t fCaloPhoton;                     //!
     Bool_t fUseForMesonPair;                //!
 
-    ClassDef(AliAODConversionPhoton,11)
+    ClassDef(AliAODConversionPhoton,12)
 };
 
 
