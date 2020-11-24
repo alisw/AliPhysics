@@ -730,11 +730,17 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fInvmassULSEnhPhoton);*/
     }
     
-    fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    fULSdcaBelow = new TH2F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fOutputList->Add(fULSdcaBelow);
+    
+    fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fOutputList->Add(fLSdcaBelow);
+    
+    /*fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
     fOutputList->Add(fULSdcaBelow);
     
     fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
-    fOutputList->Add(fLSdcaBelow);
+    fOutputList->Add(fLSdcaBelow);*/
     
     if (fFlagFillMCHistos) {
         fLSWeightEnhEta = new TH1F("fLSWeightEnhEta","Weighted Enh Eta LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); counts;", 60,0,30.);
@@ -3172,10 +3178,10 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         if(fFlagULS && mass>fMinMass && mass<fMaxMass) Nuls++;
         
         if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
-            fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,-99.);
+            fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
             
         }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
-            fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,-99.);
+            fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
         }
         
     }

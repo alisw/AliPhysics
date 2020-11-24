@@ -206,8 +206,8 @@ private:
     //TH1F                *fInvmassLSEnhPhoton;         //!
     //TH1F                *fInvmassULSEnhPhoton;        //!
     
-    TH3F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
-    TH3F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
+    TH2F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
+    TH2F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
     
     TH1F                *fLSWeightEnhEta;     //! LS for Weighted enhanced eta
     TH1F                *fULSWeightEnhEta; //! ULS for Weighted enhanced eta
