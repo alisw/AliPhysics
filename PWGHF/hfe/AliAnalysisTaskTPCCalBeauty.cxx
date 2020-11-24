@@ -3261,12 +3261,12 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
             kFlagReco = kFALSE;
         }
         
-        if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
+        /*if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
             fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,prodRadius);
             
         }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
             fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,prodRadius);
-        }
+        }*/
         
     }
     
