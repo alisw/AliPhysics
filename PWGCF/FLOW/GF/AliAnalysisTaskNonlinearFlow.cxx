@@ -463,7 +463,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 
 	Int_t inSlotCounter=1;
 	if(fNUA) {
-		fPhiWeight = (TFile*)GetInputData(inSlotCounter);
+		fPhiWeight = (TList*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 	if(fNUE) {
@@ -990,6 +990,7 @@ int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+        return 1;
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
 	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
@@ -1014,9 +1015,14 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
 {
-	TList* weights_list = dynamic_cast<TList*>(fPhiWeight->Get("weights"));
+	TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
+        // cout << "weights_list" << weights_list << endl;
+        // weights_list->ls();
+        
 	TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
+        // cout << "averaged_list" << averaged_list << endl;
 	TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
+        // cout << "hist_list" << hPhiWeightRun << endl;
 
 	double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
 			hPhiWeightRun->GetYaxis()->FindBin(eta));

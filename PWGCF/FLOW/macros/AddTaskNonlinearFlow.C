@@ -145,7 +145,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                     }
                 } 
 					
-		cin_NUA->SetData(inNUA);
+                TList* weight_list = dynamic_cast<TList*>(inNUA->Get("weights"));
+		cin_NUA->SetData(weight_list);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
 	}
