@@ -745,8 +745,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(cosPointAngle < 0.99) continue;
     if(dcaPosToPrimVtx < 0.05) continue;
     if(dcaNegToPrimVtx < 0.05) continue;
-    if(radius < 0.2 ) continue;
-    if(radius > 100 ) continue;
+    if(radius < 0.2 || 100 < radius) continue;
 
     // Lambda
     if(isPosProton && isNegPion) {
@@ -1098,16 +1097,14 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // Topological cuts
     if(dcaXiDghters > 1.6) continue;
     if(dcaV0Dghters > 1.6) continue;
-    if(dcaV0Dghters < 0.07) continue;
+    if(dcaV0ToPrimVtx < 0.07) continue;
     if(dcaBachToPrimVtx < 0.05) continue;
-    if(dcaPosToPrimVtx < 0.04) continue;
-    if(dcaNegToPrimVtx < 0.04) continue;
-    if(cosPointAngleXi < 0.97) continue;
+    if(dcaPosToPrimVtx < 0.05) continue;
+    if(dcaNegToPrimVtx < 0.05) continue;
+    if(cosPointAngleXi < 0.98) continue;
     if(cosPointAngleV0 < 0.97) continue;
-    if(radiusXi < 0.8) continue;
-    if(radiusXi > 200) continue;
-    if(radiusV0 < 1.4) continue;
-    if(radiusV0 > 200) continue;
+    if(radiusXi < 0.8 || 200 < radiusXi) continue;
+    if(radiusV0 < 1.4 || 200 < radiusV0) continue;
 
     dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaAsCascDghter"))->Fill(invMassLambdaAsCascDghter);
 
