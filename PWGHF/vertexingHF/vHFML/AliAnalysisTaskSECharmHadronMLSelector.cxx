@@ -38,7 +38,7 @@ AliAnalysisTaskSECharmHadronMLSelector::AliAnalysisTaskSECharmHadronMLSelector(c
     SetAnalysisCuts(analysisCuts);
 
     DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
+    DefineOutput(2, AliRDHFCuts::Class());
 }
 
 //________________________________________________________________________
@@ -159,7 +159,6 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         PostData(1, fOutput);
         return;
     }
-
     TClonesArray *arrayCand = nullptr;
     int absPdgMom = 0;
     if (!fAOD && AODEvent() && IsStandardAOD())
@@ -207,7 +206,11 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
     if ((fAOD->GetRunNumber() < 136851 || fAOD->GetRunNumber() > 139517))
     {
         if (!(firedTriggerClasses.Contains(fTriggerClass.Data())))
+        {
+            fHistNEvents->Fill(5);
+            PostData(1, fOutput);
             return;
+        }
     }
     if ((maskPhysSel & fTriggerMask) == 0)
     {
@@ -226,6 +229,9 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 
     fHistNEvents->Fill(4);
 
+    // needed to initialise PID response
+    fRDCuts->IsEventSelected(fAOD);
+
     // select candidates
     fChHadIdx.clear();
     fMLScores.clear();
@@ -242,7 +248,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         std::vector<double> scores{};
         int isSelected = IsCandidateSelected(chHad, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores);
 
-        if (!isSelected || (fDecChannel == kDstoKKpi && isSelected % 2 == 0))
+        if (!isSelected || (fDecChannel == kDstoKKpi && !((isSelected & 4) || (isSelected & 8))))
         {
             if (unsetVtx)
                 chHad->UnsetOwnPrimaryVtx();
@@ -275,7 +281,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 
 //________________________________________________________________________
 int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF,
-                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> modelPred)
+                                                                int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred)
 {
     if(!chHad || !vHF )
         return 0;
