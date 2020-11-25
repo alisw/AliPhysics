@@ -80,8 +80,8 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc   = 2,
-        knVarForSparseAccFD = 3,
+        knVarForSparseAcc   = 3,
+        knVarForSparseAccFD = 4,
         kMaxPtBins          = 100
     };
 
