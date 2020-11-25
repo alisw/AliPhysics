@@ -197,7 +197,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 }
 
 Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::IsEventSelected() {
-    if(fMCRejectFilter) return !CheckMCOutliers();
+    if(fMCRejectFilter) return CheckMCOutliers();
     return true;
 }
 
