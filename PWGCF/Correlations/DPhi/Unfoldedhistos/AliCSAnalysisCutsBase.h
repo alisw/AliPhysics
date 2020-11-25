@@ -132,6 +132,8 @@ public:
     kLHC14b2,         ///< anchored LHC13[b-c] pass 2
     kLHC13b4_fix,     ///< anchored LHC13[b-c] pass 2 - JJ
     kLHC13b4_plus,    ///< anchored LHC13[b-c] pass 2 - JJ
+    kLHC15g4a,        ///< p-Pb, 5.023 TeV, STARLIGHT, rho(1720)->4pi, LHC13b anchors
+    kLHC15g5b,        ///< p-A, 5.023 TeV, HIJING anchored to LHC13b with shadowing
     kLHC16c3a,        ///< anchored LHC13[d-e] pass 2 - JJ
     kLHC16c3b,        ///< anchored LHC13[d-e] pass 2 - JJ
     kLHC16c3c,        ///< anchored LHC13[d-e] pass 2 - GJ
