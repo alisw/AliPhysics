@@ -41,7 +41,8 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
                                      Double_t maxEta = 0.6,
                                      Bool_t hadEoPCut = kTRUE,
                                      Double_t zVtxCut = 10.0,
-                                     Double_t xyDCA = 2.4
+                                     Double_t xyDCA = 2.4,
+                                     Bool_t UseTauWeight = kFALSE
                                      )
 {
     // get the manager via the static access member
@@ -159,6 +160,30 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     mgr->ConnectInput(taskBFEdc,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskBFEdc,1,coutput3dc);
    
+    if (isMC) {
+        if (UseTauWeight) {
+            TString BMesonTauWeights = "alien:///alice/cern.ch/user/e/egauger/BMesonWeights/BMesonTauWeight.root";
+            TFile *file = TFile::Open(BMesonTauWeights.Data());
+            if (file) {
+                TF2 *BPlusTauWeight = (TF2*)file->Get("BPlusTauWeight");
+                TF2 *B0TauWeight = (TF2*)file->Get("B0TauWeight");
+                TF2 *BsTauWeight = (TF2*)file->Get("BsTauWeight");
+                
+                taskBFEemc->SetBmesonTauWeight(BPlusTauWeight,B0TauWeight,BsTauWeight);
+                taskBFEdc->SetBmesonTauWeight(BPlusTauWeight,B0TauWeight,BsTauWeight);
+            }
+            
+        }
+        if (!UseTauWeight) {
+            TF2 *unity1 = new TF2("unity1","1",0,100,0,100);
+            TF2 *unity2 = new TF2("unity2","1",0,100,0,100);
+            TF2 *unity3 = new TF2("unity3","1",0,100,0,100);
+            
+            taskBFEemc->SetBmesonTauWeight(unity1,unity2,unity3);
+            taskBFEdc->SetBmesonTauWeight(unity1,unity2,unity3);
+        }
+    }
+    
     /*
     //////////
     //  MB  //

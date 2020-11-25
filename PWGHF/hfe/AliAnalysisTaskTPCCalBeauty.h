@@ -13,6 +13,7 @@
 #include "AliCentrality.h"
 //#include "AliSelectNonHFE.h"
 #include "AliAODMCParticle.h"
+#include "TF2.h"
 
 class THnSparse;
 class AliMultSelection;
@@ -96,6 +97,7 @@ public:
     void            SetHadronEoPCut(Bool_t hadronEopCut) {fApplyHadEoPCut = hadronEopCut;};
     void            SetVtxZCut(Double_t zVertexCut) {fVtxZCut = zVertexCut;};
     void            SetDCAxyCut(Double_t dcaXYCut) {fDCAxyCut = dcaXYCut;};
+    void            SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs);
     
 private:
     AliAODEvent         *fAOD;           //! input event
@@ -257,6 +259,9 @@ private:
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!
     TH1F                *fBWeightVar2; //!
+    TF2                 *fBPlusTauWeight; //!
+    TF2                 *fB0TauWeight; //!
+    TF2                 *fBsTauWeight; //!
     
     
     Double_t            fWeight;        //!
