@@ -3070,6 +3070,29 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2502) { // new calculation TB variations
     cuts.AddCutCalo("00010113","411792106fe3q220000","0r631031000000d0"); // INT7 NL 12 + TB
     cuts.AddCutCalo("00010113","411792106fe3r220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2503) { // only 1 cell clusters (switch off exotics + M02 cut)
+    cuts.AddCutCalo("00010113","411792106f03s000000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411793706f03s000000","0r631031000000d0"); // INT7 NL TB only
+  } else if (trainConfig == 2504) { // only 2 cell clusters (switch off exotics + M02 cut)
+    cuts.AddCutCalo("00010113","411792106f03t000000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411793706f03t000000","0r631031000000d0"); // INT7 NL TB only
+  } else if (trainConfig == 2505) { // only 2 cell clusters (with exotics + M02 cut)
+    cuts.AddCutCalo("00010113","411792106fe3t220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411793706fe3t220000","0r631031000000d0"); // INT7 NL TB only
+  } else if (trainConfig == 2506) { // NCell >=2 (switch off exotics + M02 cut)
+    cuts.AddCutCalo("00010113","411792106f032000000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411793706f032000000","0r631031000000d0"); // INT7 NL TB only
+  } else if (trainConfig == 2507) { // NCell >=2 std. with exotics + M02
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB
+    cuts.AddCutCalo("00010113","411793706fe32220000","0r631031000000d0"); // INT7 NL TB only
+
+    // different clusterization settings
+  } else if (trainConfig == 2508) { // NCell >=2 std. with exotics + M02  // Seed 500, Agg, 85
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2509) { // NCell >=2 std. with exotics + M02  // Seed 500, Agg, 90
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2510) { // NCell >=2 std. with exotics + M02  // Seed 475, Agg 95,
+    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB
 
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics

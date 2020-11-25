@@ -179,6 +179,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fLocMaxCutEDiff(0.03),
   fUseMinEnergy(0),
   fMinNCells(0),
+  fMaxNCells(0),
   fMinENCell(1),
   fUseNCells(0),
   fMaxM02(1000),
@@ -414,6 +415,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fLocMaxCutEDiff(ref.fLocMaxCutEDiff),
   fUseMinEnergy(ref.fUseMinEnergy),
   fMinNCells(ref.fMinNCells),
+  fMaxNCells(ref.fMaxNCells),
   fMinENCell(ref.fMinENCell),
   fUseNCells(ref.fUseNCells),
   fMaxM02(ref.fMaxM02),
@@ -2409,6 +2411,9 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if (cluster->GetNCells() < fMinNCells)
             failed = kTRUE;
         }
+      } else if ( fUseNCells == 6 ){
+        if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells )
+          failed = kTRUE;
       }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
@@ -2528,6 +2533,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
         return kFALSE;
       }
+    }
+  } else if ( fUseNCells == 6 ){
+    if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells ){
+      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+      return kFALSE;
     }
   }
   cutIndex++;//4, next cut
@@ -6113,6 +6123,17 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 + 0.03);
+    break;
+    // take only 1 cell clusters
+  case 28: // s
+    if (!fUseNCells) fUseNCells=6;
+    fMinNCells=1;
+    fMaxNCells=1;
+    // take only 2 cell clusters
+  case 29: // t
+    if (!fUseNCells) fUseNCells=6;
+    fMinNCells=2;
+    fMaxNCells=2;
     break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
