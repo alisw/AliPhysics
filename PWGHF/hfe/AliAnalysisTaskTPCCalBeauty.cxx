@@ -171,6 +171,10 @@ fLcWeightVar2(0),
 fBWeightNew(0),
 fBWeightVar1(0),
 fBWeightVar2(0),
+fBPlusTauWeight(0),
+fB0TauWeight(0),
+fBsTauWeight(0),
+
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -424,6 +428,10 @@ fLcWeightVar2(0),
 fBWeightNew(0),
 fBWeightVar1(0),
 fBWeightVar2(0),
+fBPlusTauWeight(0),
+fB0TauWeight(0),
+fBsTauWeight(0),
+
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -544,6 +552,9 @@ AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
     if(fOutputList) {
         delete fOutputList;
         delete []fvalueBasic;
+        if(fBPlusTauWeight)    {delete fBPlusTauWeight; fBPlusTauWeight=0;}
+        if(fB0TauWeight)    {delete fB0TauWeight; fB0TauWeight=0;}
+        if(fBsTauWeight)    {delete fBsTauWeight; fBsTauWeight=0;}
         //delete []fvalueElectron;
     }
 }
@@ -730,11 +741,17 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fInvmassULSEnhPhoton);*/
     }
     
-    fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    fULSdcaBelow = new TH2F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fOutputList->Add(fULSdcaBelow);
+    
+    fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fOutputList->Add(fLSdcaBelow);
+    
+    /*fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
     fOutputList->Add(fULSdcaBelow);
     
     fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
-    fOutputList->Add(fLSdcaBelow);
+    fOutputList->Add(fLSdcaBelow);*/
     
     if (fFlagFillMCHistos) {
         fLSWeightEnhEta = new TH1F("fLSWeightEnhEta","Weighted Enh Eta LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); counts;", 60,0,30.);
@@ -1201,9 +1218,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fSprsPi0EtaWeightCal->GetAxis(3)->SetBinLabel(2,"noMom");
         fOutputList->Add(fSprsPi0EtaWeightCal);
     
-        Int_t binTemp[5] = {60,nDCAbins,19,3,50}; //pT, DCA, Mom PID, Mom Gen, mompT
+        Int_t binTemp[5] = {60,nDCAbins,22,3,50}; //pT, DCA, Mom PID, Mom Gen, mompT
         Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.};
-        Double_t xmaxTemp[5] = {30.,0.2,19.5,2.5,50.};
+        Double_t xmaxTemp[5] = {30.,0.2,22.5,2.5,50.};
         fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesNoWeight);
         fSprsTemplatesNoWeight->Sumw2();
@@ -1217,9 +1234,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
         
-        Int_t binClos[3] = {60,nDCAbins,19}; //pT, DCA, Mom PID
+        Int_t binClos[3] = {60,nDCAbins,22}; //pT, DCA, Mom PID
         Double_t xminClos[3] = {0.,-0.2,0.5};
-        Double_t xmaxClos[3] = {30.,0.2,19.5};
+        Double_t xmaxClos[3] = {30.,0.2,22.5};
         fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
         fOutputList->Add(fSprsClosureTest);
         fSprsClosureTest->Sumw2();
@@ -2276,7 +2293,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
                             }
                         }
-                        else if (fpidSort==1) {//if from B meson
+                        else if (fpidSort==1||fpidSort==20||fpidSort==21||fpidSort==22) {//if from B meson
                             //cout<<"TESTING5"<<endl;
                             if (momPt>0. && momPt<50.) { //in proper pt range
                                 //cout<<"TESTING6"<<endl;
@@ -2963,6 +2980,12 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             fpidSort = 17; //Lambda c
         }else if(pidM==443){
             fpidSort = 6; //Mom is J/psi
+        }else if(pidM==521){
+            fpidSort = 20; //Mom is B+
+        }else if(pidM==511){
+            fpidSort = 21; //Mom is B0
+        }else if(pidM==531){
+            fpidSort = 22; //Mom is Bs
         }
         
         //Using Jonghan's method to find beauty feeddown for the D mesons
@@ -2989,6 +3012,13 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
                 if (grandMaPDG>500 && grandMaPDG<599){
                     fpidSort = 1; //B mother feeddown
+                    if (grandMaPDG==521) {
+                        fpidSort = 20; //B+
+                    }else if(grandMaPDG==511){
+                        fpidSort = 21; //Mom is B0
+                    }else if(grandMaPDG==531){
+                        fpidSort = 22; //Mom is Bs
+                    }
                     momPt = dummyPart->Pt();
                     break;
                 }
@@ -3172,10 +3202,10 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         if(fFlagULS && mass>fMinMass && mass<fMaxMass) Nuls++;
         
         if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
-            fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,-99.);
+            fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
             
         }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
-            fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,-99.);
+            fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
         }
         
     }
@@ -3261,17 +3291,23 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
             kFlagReco = kFALSE;
         }
         
-        if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
+        /*if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
             fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,prodRadius);
             
         }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
             fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,prodRadius);
-        }
+        }*/
         
     }
     
 }
-
+//________________________________________________________________________
+void AliAnalysisTaskTPCCalBeauty::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
+{
+    fBPlusTauWeight = (TF2 *)BPlus->Clone();
+    fB0TauWeight = (TF2 *)B0->Clone();
+    fBsTauWeight = (TF2 *)Bs->Clone();
+}
 //_____________________________________________________________________
 void AliAnalysisTaskTPCCalBeauty::Terminate(Option_t *)
 {
