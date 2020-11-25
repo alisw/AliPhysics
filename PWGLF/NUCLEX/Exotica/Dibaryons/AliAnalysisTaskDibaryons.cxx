@@ -108,6 +108,9 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hInvMassOmegamwCuts = new TH1F("hInvMassOmegamwCuts","Invariant mass of p#pi^{-}K^{-} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
   TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of #bar{p}#pi^{+}K^{+} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
   TH1F *hInvMassOmegapwCuts = new TH1F("hInvMassOmegapwCuts","Invariant mass of #bar{p}#pi^{+}K^{+} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassMissIDK0S = new TH1F("hInvMassMissIDK0S","Invariant mass of #pi^{+}#pi^{-} under assumption of selected #Lambda;M_{#pi#pi} (GeV/c^{2})",400,0.4,0.6);
+  TH1F *hInvMassMissIDOmegam = new TH1F("hInvMassMissIDOmegam","Invariant mass of p#pi^{-}K^{-} under assumption of selected #Xi^{-};M_{K#Lambda} (GeV/c^{2})",300,1.5,1.8);
+  TH1F *hInvMassMissIDXim = new TH1F("hInvMassMissIDXim","Invariant mass of p#pi^{-}#pi^{-} under assumption of selected #Omega^{-};M_{#pi#Lambda} (GeV/c^{2})",300,1.2,1.5);
 
   fOutput->Add(hInvMassLambdawoCuts);
   fOutput->Add(hInvMassLambdawCuts);
@@ -122,6 +125,9 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hInvMassOmegamwCuts);
   fOutput->Add(hInvMassOmegapwoCuts);
   fOutput->Add(hInvMassOmegapwCuts);
+  fOutput->Add(hInvMassMissIDK0S);
+  fOutput->Add(hInvMassMissIDOmegam);
+  fOutput->Add(hInvMassMissIDXim);
 
   // Define QA plots for topological observables
   TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Proton DCAxy vs DCAz;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
@@ -553,6 +559,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // Initialisation of the local variables that will be needed for ESD/AOD
     Double_t invMassLambda     = 0.;
     Double_t invMassAntiLambda = 0.;
+    Double_t invMassK0S        = 0.;
 
     Double_t dcaV0Dghters    = -1.; 
     Double_t dcaV0ToPrimVtx  = -1.;
@@ -618,6 +625,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassLambda     = esdV0->GetEffMass();
       esdV0->ChangeMassHypothesis(-3122);
       invMassAntiLambda = esdV0->GetEffMass();
+      esdV0->ChangeMassHypothesis(310);
+      invMassK0S        = esdV0->GetEffMass();
 
       // Get topological values
       dcaV0Dghters    = esdV0->GetDcaV0Daughters();
@@ -687,6 +696,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Calculate the invariant mass
       invMassLambda     = aodV0->MassLambda();
       invMassAntiLambda = aodV0->MassAntiLambda();
+      invMassK0S        = aodV0->MassK0Short();
 
       // Get topological values
       dcaV0Dghters    = aodV0->DcaV0Daughters();
@@ -726,6 +736,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     else if(isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawoCuts"))->Fill(invMassAntiLambda);
     }
+    dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDK0S"))->Fill(invMassK0S);
+    if(0.48 < invMassK0S && invMassK0S < 0.515) continue; // reject K0Short
 
     // Topological cuts
     if(TMath::Abs(vtxPosV0[0]) > 100) continue;
@@ -1053,6 +1065,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
     if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwoCuts"))          ->Fill(invMassXiMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDOmegam"))       ->Fill(invMassOmegaMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))       ->Fill(dcaXiDghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))     ->Fill(dcaV0Dghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0PrimVertex"))         ->Fill(dcaV0ToPrimVtx);
@@ -1069,6 +1082,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     }
     if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwoCuts"))       ->Fill(invMassOmegaMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDXim"))          ->Fill(invMassXiMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0PrimVertex"))      ->Fill(dcaV0ToPrimVtx);
@@ -1101,7 +1115,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) < 0.006) {
 
       // Xi Minus
-      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
+      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion
+         && (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
 
@@ -1130,7 +1146,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Xi Plus
-      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion) {
+      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion
+         && (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwCuts"))->Fill(invMassXiPlus);
 
@@ -1154,7 +1171,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Omega Minus
-      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
+      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion
+         && (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
 
@@ -1183,7 +1201,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Omega Plus
-      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion) {
+      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion
+         && (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwCuts"))->Fill(invMassOmegaPlus);
 
