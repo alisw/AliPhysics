@@ -53,6 +53,9 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusChildEta(),
       fHistDplusChildPhi(),
       fHistDplusMCPDGPt(nullptr),
+      fHistDplusMCPtRes(nullptr),
+      fHistDplusMCPhiRes(nullptr),
+      fHistDplusMCThetaRes(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
@@ -60,6 +63,9 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
       fHistDminusMCPDGPt(nullptr),
+      fHistDminusMCPtRes(nullptr),
+      fHistDminusMCPhiRes(nullptr),
+      fHistDminusMCThetaRes(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -112,12 +118,18 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusChildPhi(),
       fHistDplusMCPDGPt(nullptr),
       fHistDminusInvMassPt(nullptr),
+      fHistDplusMCPtRes(nullptr),
+      fHistDplusMCPhiRes(nullptr),
+      fHistDplusMCThetaRes(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
       fHistDminusMCPDGPt(nullptr),
+      fHistDminusMCPtRes(nullptr),
+      fHistDminusMCPhiRes(nullptr),
+      fHistDminusMCThetaRes(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -382,13 +394,21 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
-        dplus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
+        AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        dplus.push_back(dplusCand);
         if (!fIsLightweight) {
           fHistDplusEta->Fill(dMeson->Eta());
           fHistDplusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
-            fHistDplusMCPDGPt->Fill(dMeson->Pt(),
-                                    dplus.at(dplus.size() - 1).GetMotherPDG());
+            fHistDplusMCPDGPt->Fill(dMeson->Pt(), dplusCand.GetMotherPDG());
+            if (dplusCand.GetMCPDGCode() != 0) {
+              fHistDplusMCPtRes->Fill(dMeson->Pt() - dplusCand.GetMCPt(),
+                                      dMeson->Pt());
+              fHistDplusMCPhiRes->Fill(
+                  dMeson->Phi() - dplusCand.GetMCPhi().at(0), dMeson->Pt());
+              fHistDplusMCThetaRes->Fill(
+                  dMeson->Theta() - dplusCand.GetMCTheta().at(0), dMeson->Pt());
+            }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
             AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
@@ -399,13 +419,22 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
       else {
-        dminus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
+        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        dminus.push_back(dminusCand);
         if (!fIsLightweight) {
           fHistDminusEta->Fill(dMeson->Eta());
           fHistDminusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
-            fHistDminusMCPDGPt->Fill(
-                dMeson->Pt(), dminus.at(dminus.size() - 1).GetMotherPDG());
+            fHistDminusMCPDGPt->Fill(dMeson->Pt(), dminusCand.GetMotherPDG());
+            if (dminusCand.GetMCPDGCode() != 0) {
+              fHistDminusMCPtRes->Fill(dMeson->Pt() - dminusCand.GetMCPt(),
+                                       dMeson->Pt());
+              fHistDminusMCPhiRes->Fill(
+                  dMeson->Phi() - dminusCand.GetMCPhi().at(0), dMeson->Pt());
+              fHistDminusMCThetaRes->Fill(
+                  dMeson->Theta() - dminusCand.GetMCTheta().at(0),
+                  dMeson->Pt());
+            }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
             AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
@@ -571,7 +600,23 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
                                    "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
                                    250, 0, 25, 5000, 0, 5000);
+      fHistDplusMCPtRes =
+          new TH2F(
+              "fHistDplusMCPtRes",
+              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+              101, -0.5, 0.5, 100, 0, 10);
+      fHistDplusMCPhiRes = new TH2F(
+          "fHistDplusMCPhiRes",
+          "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
+          100, 0, 10);
+      fHistDplusMCThetaRes = new TH2F(
+          "fHistDplusMCThetaRes",
+          "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
+          0.025, 100, 0, 10);
       fDChargedHistList->Add(fHistDplusMCPDGPt);
+      fDChargedHistList->Add(fHistDplusMCPtRes);
+      fDChargedHistList->Add(fHistDplusMCPhiRes);
+      fDChargedHistList->Add(fHistDplusMCThetaRes);
     }
   }
 
@@ -591,7 +636,23 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fHistDminusMCPDGPt = new TH2F(
           "fHistDminusMCPDGPt", "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
+      fHistDminusMCPtRes =
+          new TH2F(
+              "fHistDminusMCPtRes",
+              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+              101, -0.5, 0.5, 100, 0, 10);
+      fHistDminusMCPhiRes = new TH2F(
+          "fHistDminusMCPhiRes",
+          "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
+          100, 0, 10);
+      fHistDminusMCThetaRes = new TH2F(
+          "fHistDminusMCThetaRes",
+          "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
+          0.025, 100, 0, 10);
       fDChargedHistList->Add(fHistDminusMCPDGPt);
+      fDChargedHistList->Add(fHistDminusMCPtRes);
+      fDChargedHistList->Add(fHistDminusMCPhiRes);
+      fDChargedHistList->Add(fHistDminusMCThetaRes);
     }
   }
 

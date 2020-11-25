@@ -149,6 +149,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDplusChildEta[5]; //!
   TH1F *fHistDplusChildPhi[5]; //!
   TH2F *fHistDplusMCPDGPt;     //!
+  TH2F *fHistDplusMCPtRes;     //!
+  TH2F *fHistDplusMCPhiRes;    //!
+  TH2F *fHistDplusMCThetaRes;  //!
+
   TH2F *fHistDminusInvMassPt;   //!
   TH1F *fHistDminusEta;         //!
   TH1F *fHistDminusPhi;         //!
@@ -156,6 +160,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDminusChildEta[5]; //!
   TH1F *fHistDminusChildPhi[5]; //!
   TH2F *fHistDminusMCPDGPt;     //!
+  TH2F *fHistDminusMCPtRes;     //!
+  TH2F *fHistDminusMCPhiRes;    //!
+  TH2F *fHistDminusMCThetaRes;  //!
   
   // HF data members
   int fDecChannel;                                         // HF decay channel
@@ -177,7 +184,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 7)
+ClassDef(AliAnalysisTaskCharmingFemto, 8)
 };
 
 #endif
