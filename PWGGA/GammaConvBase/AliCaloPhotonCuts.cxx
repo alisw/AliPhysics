@@ -6129,6 +6129,7 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     if (!fUseNCells) fUseNCells=6;
     fMinNCells=1;
     fMaxNCells=1;
+    break;
     // take only 2 cell clusters
   case 29: // t
     if (!fUseNCells) fUseNCells=6;
