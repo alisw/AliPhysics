@@ -568,7 +568,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
 {
   if (!fMCRejectFilter)
     return true;
-  if (!(fIsPythia || fIsHerwig))
+  if (!(fIsPythia || fIsHerwig || fIsHepMC))
     return true; // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) 
     return AliAnalysisTaskEmcal::CheckMCOutliers();

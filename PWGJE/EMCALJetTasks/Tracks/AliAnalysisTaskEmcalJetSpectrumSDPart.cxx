@@ -198,7 +198,7 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
     if(!fMCRejectFilter) return true;
-    if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+    if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
     if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
     AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
     AliJetContainer *outlierjets = GetJetContainer("partjets");
