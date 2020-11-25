@@ -70,6 +70,7 @@ private:
   // Variables for the tree
   //Double_t tP;
   Float_t  tCentrality;       // centrality                                                                                      //!
+  Int_t    tNtracklets;      // tracklets
   Float_t  tPt;              // pt of the track (at inner wall of the TPC)
   Float_t  tEta;             // eta of the track (at inner wall of the TPC)
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)
@@ -106,7 +107,6 @@ private:
   Float_t  tMCabsEta;
   Float_t  tMCabsPhi;
   Bool_t   tMCtofMismatch;   //
-  Int_t    tNmissingDaughters; // 
   Int_t    tNdaughters; // 
   Bool_t   tIsReconstructed; // False for MC particles 
   Bool_t   thasTOF;          // 

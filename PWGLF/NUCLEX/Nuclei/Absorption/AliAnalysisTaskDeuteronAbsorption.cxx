@@ -63,6 +63,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fOutputList{nullptr},
                                                                                          fTreeTrack{nullptr},
 											 tCentrality{-1},
+											 tNtracklets{-1},	   
 											 tPt{-999.},
                                                                                          tEta{-999.},
                                                                                          tPhi{-999.},
@@ -99,7 +100,6 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
 											 tMCabsEta{-999.},
 											 tMCabsPhi{-999.},
                                                                                          tMCtofMismatch{false},
-											 tNmissingDaughters{-9},
 											 tNdaughters{-99},
 											 tIsReconstructed{false},
 											 thasTOF{false},
@@ -223,6 +223,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
     //fTreeTrack->Branch("tP", &tP, "tP/D");
     fTreeTrack->Branch("tCentrality", &tCentrality, "tCentrality/F");
+    fTreeTrack->Branch("tNtracklets", &tNtracklets, "tNtracklets/I");
     fTreeTrack->Branch("tPt", &tPt, "tPt/F");
     fTreeTrack->Branch("tEta", &tEta, "tEta/F");
     fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
@@ -260,7 +261,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack->Branch("tMCabsEta", &tMCabsEta, "tMCabsEta/F");
     fTreeTrack->Branch("tMCabsPhi", &tMCabsPhi, "tMCabsPhi/F");
     fTreeTrack->Branch("tMCtofMismatch", &tMCtofMismatch, "tMCtofMismatch/O");
-    fTreeTrack->Branch("tNmissingDaughters", &tNmissingDaughters, "tNmissingDaughters/I");
     fTreeTrack->Branch("tNdaughters", &tNdaughters, "tNdaughters/I");
     fTreeTrack->Branch("tIsReconstructed", &tIsReconstructed, "tIsReconstructed/O");
     fTreeTrack->Branch("tRunNumber", &tRunNumber, "tRunNumber/I");
@@ -327,6 +327,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
   }
 
   tCentrality = ((AliMultSelection *) esdEvent->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M");
+  tNtracklets = esdEvent->GetMultiplicity()->GetNumberOfTracklets();
   // track loop
   std::vector<int> usedMC;
   for (Int_t i = 0; i < nTracks; i++)
@@ -382,13 +383,11 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         double totalMom[3]{0.};
         double absVtx[3]{0., 0., 0.};
         double absT{0.};
-	tNmissingDaughters = 0;
 	tNdaughters = 0;
         for (int c = mcParticle->GetDaughterFirst(); c <= mcParticle->GetDaughterLast(); c++)
         {
           AliVParticle *dPart = mcEvent->GetTrack(c);
 	  if(!dPart) {
-	    tNmissingDaughters++;
 	    continue;
 	  }
 	  double currentT{dPart->Tv()};
