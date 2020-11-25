@@ -37,13 +37,13 @@ AliAnalysisTaskSECharmHadronMLSelector *AddTaskCharmHadronMLSelector(TString fil
     //Analysis cuts
     AliRDHFCuts *analysisCut = NULL;
     TString taskName = "MLSelector";
-    if (decCh == AliAnalysisTaskSECharmHadronvn::kDplustoKpipi)
+    if (decCh == AliAnalysisTaskSECharmHadronMLSelector::kDplustoKpipi)
     {
         analysisCut = (AliRDHFCutsDplustoKpipi *)filecuts->Get(cutObjName);
         taskName += "Dplus";
         suffix.Prepend("Dplus");
     }
-    else if (decCh == AliAnalysisTaskSECharmHadronvn::kDstoKKpi)
+    else if (decCh == AliAnalysisTaskSECharmHadronMLSelector::kDstoKKpi)
     {
         analysisCut = (AliRDHFCutsDstoKKpi *)filecuts->Get(cutObjName);
         taskName += "Ds";

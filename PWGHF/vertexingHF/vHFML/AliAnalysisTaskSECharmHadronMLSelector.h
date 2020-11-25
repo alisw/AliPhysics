@@ -57,7 +57,7 @@ private:
     AliAnalysisTaskSECharmHadronMLSelector(const AliAnalysisTaskSECharmHadronMLSelector &source);
     AliAnalysisTaskSECharmHadronMLSelector &operator=(const AliAnalysisTaskSECharmHadronMLSelector &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> modelPred);
+    int IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &modelPred);
 
     AliAODEvent* fAOD = nullptr;                           /// AOD event
 
