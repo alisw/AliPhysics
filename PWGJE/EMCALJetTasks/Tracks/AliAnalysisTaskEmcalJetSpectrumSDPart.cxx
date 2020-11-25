@@ -196,6 +196,11 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     PostData(1, fOutput);
 }
 
+Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::IsEventSelected() {
+    if(fMCRejectFilter) return !CheckMCOutliers();
+    return true;
+}
+
 Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
     if(!fMCRejectFilter) return true;
     if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
