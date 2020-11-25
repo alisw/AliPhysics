@@ -67,8 +67,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistSelTrackPhiPt(0x0),
   fHistSelTrackChi2ClusPt(0x0),
   fHistSelTrackDCAxyPt(0x0),
+  fHistSelTrackFineDCAxyPt(0x0),
   fHistSelTrackDCAzPt(0x0),
   fHistSelTrackDCAxyPtAfterProp(0x0),
+  fHistSelTrackFineDCAxyPtAfterProp(0x0),
   fHistSelTrackDCAzPtAfterProp(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
@@ -218,8 +220,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistSelTrackPhiPt(0x0),
   fHistSelTrackChi2ClusPt(0x0),
   fHistSelTrackDCAxyPt(0x0),
+  fHistSelTrackFineDCAxyPt(0x0),
   fHistSelTrackDCAzPt(0x0),
   fHistSelTrackDCAxyPtAfterProp(0x0),
+  fHistSelTrackFineDCAxyPtAfterProp(0x0),
   fHistSelTrackDCAzPtAfterProp(0x0),
   fHistCheckOrigin(0x0),
   fHistCheckOriginRecoD(0x0),
@@ -374,8 +378,10 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistSelTrackPhiPt;
     delete fHistSelTrackChi2ClusPt;
     delete fHistSelTrackDCAxyPt;
+    delete fHistSelTrackFineDCAxyPt;
     delete fHistSelTrackDCAzPt;
     delete fHistSelTrackDCAxyPtAfterProp;
+    delete fHistSelTrackFineDCAxyPtAfterProp;
     delete fHistSelTrackDCAzPtAfterProp;
 
     delete fHistCheckOrigin;
@@ -575,12 +581,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistSelTrackChi2ClusPt = new TH2F("hSelTrackChi2ClusPt"," ; p_{T} (GeV/c) ; #chi^{2}/nTPCclusters",20,0.,10.,160,0.,8.);
   fOutput->Add(fHistSelTrackChi2ClusPt);
   fHistSelTrackDCAxyPt = new TH2F("hSelTrackDCAxyPt"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,100,-1.,1.);
+  fHistSelTrackFineDCAxyPt = new TH2F("hSelTrackFineDCAxyPt"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,200,-0.05,0.05);
   fHistSelTrackDCAzPt = new TH2F("hSelTrackDCAzPt"," ; p_{T} (GeV/c) ; d_{0}^{z} (cm)",20,0.,10.,100,-1.,1.);
   fHistSelTrackDCAxyPtAfterProp = new TH2F("hSelTrackDCAxyPtAfterProp"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,100,-1.,1.);
+  fHistSelTrackFineDCAxyPtAfterProp = new TH2F("hSelTrackFineDCAxyPtAfterProp"," ; p_{T} (GeV/c) ; d_{0}^{xy} (cm)",20,0.,10.,200,-0.05,0.05);
   fHistSelTrackDCAzPtAfterProp = new TH2F("hSelTrackDCAzPtAfterProp"," ; p_{T} (GeV/c) ; d_{0}^{z} (cm)",20,0.,10.,100,-1.,1.);
   fOutput->Add(fHistSelTrackDCAxyPt);
+  fOutput->Add(fHistSelTrackFineDCAxyPt);
   fOutput->Add(fHistSelTrackDCAzPt);
   fOutput->Add(fHistSelTrackDCAxyPtAfterProp);
+  fOutput->Add(fHistSelTrackFineDCAxyPtAfterProp);
   fOutput->Add(fHistSelTrackDCAzPtAfterProp);
   
   Int_t nPtBins = (Int_t)(fMaxPt/fPtBinWidth+0.001);
@@ -1107,10 +1117,12 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       Float_t ip[2], ipCov[3];
       track->GetImpactParameters(ip,ipCov);
       fHistSelTrackDCAxyPt->Fill(track->Pt(),ip[0]);
+      fHistSelTrackFineDCAxyPt->Fill(track->Pt(),ip[0]);
       fHistSelTrackDCAzPt->Fill(track->Pt(),ip[1]);
       Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
       if(isOK){
 	fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+	fHistSelTrackFineDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
 	fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
       }
       fHistSelTrackChi2ClusPt->Fill(track->Pt(),track->GetTPCchi2perCluster());
