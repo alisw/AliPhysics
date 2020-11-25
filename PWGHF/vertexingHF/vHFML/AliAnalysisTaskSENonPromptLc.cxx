@@ -365,13 +365,11 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                if (fReadMC){
                int labD[3] = {-1, -1, -1};
                //check if resonant decay
-               int  decay=-9;
-               if(partLc)decay= AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
-
-                if(decay==1)SetIsLcpKpiRes(kLcNonRes);
-                if(decay==2)SetIsLcpKpiRes(kLcKStar);//KStar
-                if(decay==3)SetIsLcpKpiRes(kLcDelta);//Delta
-                if(decay==4)SetIsLcpKpiRes(kLcLambda1520);//Lambda
+               int  decay=0;
+               if(labLc && partLc){
+                 decay= AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
+               }
+               (dynamic_cast<AliHFMLVarHandlerLctopKpi *>(fMLhandler))->SetIsLcpKpiRes(decay);
                }
                 if (isSelected == 1 || isSelected == 3) // pKpi
                 {
@@ -712,8 +710,8 @@ void AliAnalysisTaskSENonPromptLc::CreateEffSparses()
         nPtBins = nPtBins * 10;
 
     int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins,6};
-    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.,-1};
-    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj],5};
+    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.,0};
+    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj],6};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)

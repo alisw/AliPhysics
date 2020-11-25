@@ -32,13 +32,6 @@ public:
         kLctopK0s = 1,
         kLctopiL  = 2
     };
-    enum
-    {
-        kLcNonRes =      BIT(9),
-        kLcLambda1520 =  BIT(10),
-        kLcKStar =       BIT(11),
-        kLcDelta=        BIT(12)
-    };
 
     AliAnalysisTaskSENonPromptLc();
     AliAnalysisTaskSENonPromptLc(const char *name, int fDecChannel, AliRDHFCuts *analysiscuts, bool createMLtree);
@@ -55,12 +48,6 @@ public:
     void SetMLTreePIDopt(int opt)                                                                 {fPIDopt = opt;} // default AliHFMLVarHandler::kNsigmaDetAndCombPID
     void SetMLTreeAddTrackVar(bool flag = true)                                                   {fAddSingleTrackVar = flag;}
     void SetKeepOnlyBkgFromHIJING(bool keeponlyhijing = true)                                     {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
-    void SetIsLcpKpiRes(bool resdec= kLcNonRes) {
-      if(resdec)
-        fDecChannel |= resdec;
-      else 
-        fDecChannel &= !resdec;
-    }
     void SetFillOnlySignalInMLtree(bool opt = true)
     {
         if (fReadMC)
@@ -140,7 +127,7 @@ private:
     bool fUseKFRecoForV0bachelor = true;                   /// flag to enable KFParticle reconstruction for Lc->V0bachelor in tree
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSENonPromptLc, 2); /// AliAnalysisTaskSE for non-prompt Lc tree
+    ClassDef(AliAnalysisTaskSENonPromptLc, 1); /// AliAnalysisTaskSE for non-prompt Lc tree
                                                /// \endcond
 };
 
