@@ -161,6 +161,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
+  task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
@@ -193,7 +194,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
                         1.84);  // lower sideband, 5 sigma away from the peak
   }
 
-  task->SetLightweight(suffix != "0");
+  if(isMC && suffix == "0") {
+    task->ScaleMCBeautyFraction(0.5, 0.1);
+  }
+
 
   mgr->AddTask(task);
 
