@@ -1629,6 +1629,74 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200089327000008250400000","4117900007032230000","01631031000000d0"); // no timing, MB trigger
     cuts.AddCutPCMCalo("00074113","00200089327000008250400000","4117900067032230000","01631031000000d0"); // -30ns, 35ns timing cut, no NL VOHM
     cuts.AddCutPCMCalo("00076113","00200089327000008250400000","4117900067032230000","01631031000000d0"); // -30ns, 35ns timing cut, no NL VOHM with SPD
+
+  // R-bin variations with MBW
+  } else if (trainConfig == 580) { // no smear - full R
+    cuts.AddCutPCMCalo("00010113","0d200009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 581) { // no smear - full R
+    cuts.AddCutPCMCalo("00010113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113","0di00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 582) { // no smear - full R
+    cuts.AddCutPCMCalo("00010113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00010113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+
+  } else if (trainConfig == 583) { // no smear - full R
+    cuts.AddCutPCMCalo("00052113","0d200009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 584) { // no smear - full R
+    cuts.AddCutPCMCalo("00052113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00052113","0di00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00052113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 585) { // no smear - full R
+    cuts.AddCutPCMCalo("00052113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00052113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00052113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+
+  } else if (trainConfig == 586) { // no smear - full R
+    cuts.AddCutPCMCalo("00081113","0d200009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 587) { // no smear - full R
+    cuts.AddCutPCMCalo("00081113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00081113","0di00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00081113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+  } else if (trainConfig == 588) { // no smear - full R
+    cuts.AddCutPCMCalo("00081113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00081113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+    cuts.AddCutPCMCalo("00081113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100000010");
+
+  // R-bin variations with MBW and smearing
+  } else if (trainConfig == 590) { // smearing - full R
+    cuts.AddCutPCMCalo("00010113","0d200009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 591) { // smearing - full R
+    cuts.AddCutPCMCalo("00010113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00010113","0di00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00010113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 592) { // smearing - full R
+    cuts.AddCutPCMCalo("00010113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00010113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00010113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+
+  } else if (trainConfig == 593) { // smearing - full R
+    cuts.AddCutPCMCalo("00052113","0d200009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 594) { // smearing - full R
+    cuts.AddCutPCMCalo("00052113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00052113","0di00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00052113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 595) { // smearing - full R
+    cuts.AddCutPCMCalo("00052113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00052113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00052113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+
+  } else if (trainConfig == 596) { // smearing - full R
+    cuts.AddCutPCMCalo("00081113","0d200009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 597) { // smearing - full R
+    cuts.AddCutPCMCalo("00081113","0dh00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00081113","0di00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00081113","0dj00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+  } else if (trainConfig == 598) { // smearing - full R
+    cuts.AddCutPCMCalo("00081113","0dk00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00081113","0dl00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
+    cuts.AddCutPCMCalo("00081113","0dg00009f9730000dge0404000","111110106fg32230000","0163103100b00010");
   //*****************************************************************************************************
   // pp 5 TeV DMC setup
   //*****************************************************************************************************
