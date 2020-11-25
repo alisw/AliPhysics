@@ -613,9 +613,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(esdV0->Pt() < 0.3)) continue;
+      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
+      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
+      if(esdV0->Pt() < 0.3) continue;
 
       // Daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
@@ -674,9 +674,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(aodV0->Pt() < 0.3)) continue;
+      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
+      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
+      if(aodV0->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
@@ -902,9 +902,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
       if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
       if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(bachTrack->Pt()) < 0.3) continue;
-      if(TMath::Abs(pTrack   ->Pt()) < 0.3) continue;
-      if(TMath::Abs(nTrack   ->Pt()) < 0.3) continue;
+      if(bachTrack->Pt() < 0.3) continue;
+      if(pTrack   ->Pt() < 0.3) continue;
+      if(nTrack   ->Pt() < 0.3) continue;
 
       // Bachelor and daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
@@ -983,9 +983,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
       if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
       if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(bachTrack->Pt()) < 0.3) continue;
-      if(TMath::Abs(pTrack   ->Pt()) < 0.3) continue;
-      if(TMath::Abs(nTrack   ->Pt()) < 0.3) continue;
+      if(bachTrack->Pt() < 0.3) continue;
+      if(pTrack   ->Pt() < 0.3) continue;
+      if(nTrack   ->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
