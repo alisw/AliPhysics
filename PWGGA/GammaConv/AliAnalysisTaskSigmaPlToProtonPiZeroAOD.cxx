@@ -152,7 +152,7 @@ ClassImp(AliAnalysisTaskSigmaPlToProtonPiZeroAOD) // classimp: necessary for roo
 	fMesonCuts(NULL),                                       // MesonCutObject
 	fConversionCuts(NULL),                                  // ConversionPhotonCutObject                                     // If a jet is near the EMCal in the current event
 	fSigmaCutArray(NULL),
-    fSigmaCuts(NULL),    
+    fSigmaCuts(NULL),
 	fHistNEvents(NULL),                                        //! array of histos with event information
 	fnCuts(0),                                               // number of cuts to be analysed in parallel
 	fIsHeavyIon(0),                                          // switch for pp = 0, PbPb = 1, pPb = 2
@@ -469,7 +469,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 
 		fFitPodolanskiUpperCut[iCut] = new TF1("fFitPodolanskiUpperCut","sqrt([0]*[0]*(1-(((x-0.61)*(x-0.61))/(0.41*0.41))))",0.2,1.02);
 		fFitPodolanskiUpperCut[iCut]->SetParameter(0, fQTCutUpper);
-		
+
 		fAODList[iCut]->Add(fFitPodolanskiUpperCut[iCut]);
 		fAODList[iCut]->Add(fFitPi0MassDataHighPt[iCut]);
 		fAODList[iCut]->Add(fFitWidthData[iCut]);
@@ -726,8 +726,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 				if((IsRealProton(track, fAODMCTrackArray)) > 0){
 					if(fHistTrackDCAXYTrue[iCut])fHistTrackDCAXYTrue[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt());
 					if(fHistTrackDCAZTrue[iCut])fHistTrackDCAZTrue[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt());
-				}	
-			}	
+				}
+			}
 			if(((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->TrackIsSelected(track, fPIDResponse)) == kTRUE)){
 				if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt());
 				if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi());
@@ -738,10 +738,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 					if((IsRealProton(track, fAODMCTrackArray)) > 0){
 						if(fHistTrackDCAXYTruewCuts[iCut])fHistTrackDCAXYTruewCuts[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt());
 						if(fHistTrackDCAZTruewCuts[iCut])fHistTrackDCAZTruewCuts[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt());
-					}	
+					}
 				}
-				proton.push_back(track);	
-			} 
+				proton.push_back(track);
+			}
 			else {
 				tracks.push_back(track);
 			}
@@ -822,7 +822,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							// cout << gamma1->GetNLabels() << endl;
 							if (gamma1->GetNLabels()>0){
 								for (Int_t k =0; k<(Int_t)gamma1->GetNLabels(); k++){
-									if (k<50)PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+									PhotonCandidate1.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 									// Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 									// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								}
@@ -851,7 +851,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									// cout << gamma2->GetNLabels() << endl;
 									if (gamma2->GetNLabels()>0){
 										for (Int_t k =0; k<(Int_t)gamma2->GetNLabels(); k++){
-											if (k<50)PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+											PhotonCandidate2.SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 											// Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
 											// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 										}
@@ -1043,8 +1043,8 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealProton(AliAODTrack* track, 
 	if (mcTrack->GetMother() < 0) return -1;
 	AliAODMCParticle *TrackMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mcTrack->GetMother())); //mother MC particle object
 	if(!TrackMother) return -1;
-	Int_t codeTrack = mcTrack->GetPdgCode(); 
-	Int_t codeMother = TrackMother->GetPdgCode(); 
+	Int_t codeTrack = mcTrack->GetPdgCode();
+	Int_t codeMother = TrackMother->GetPdgCode();
 	if( (codeTrack==2212) && (codeMother==3222) ){
 		return (TrackMother->GetLabel());
 	} else {
@@ -1140,9 +1140,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamm
 			        for(int iSwapp = 0; iSwapp < 20; ++iSwapp){
 						photonCandidate->GetMomentum(lvRotationPhoton,vpos);
 						photon1Candidate->GetMomentum(lvRotationPhoton1,vpos);
-			         
+
 			            vRotationPion = (lvRotationPhoton + lvRotationPhoton1).Vect();
-			            
+
 			            // //Rotation um festen Winkel
 			            // lvRotationPhoton.Rotate(rotationAngle, vRotationPion);
 			            // lvRotationPhoton1.Rotate(rotationAngle, vRotationPion);
@@ -1165,32 +1165,32 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamm
 		                asymAfterDecay = fabs((lvRotationPhoton.E()-lvRotationPhoton1.E())/(lvRotationPhoton.E()+lvRotationPhoton1.E()));
 		                // check if decay is nearly the same as original decay: if yes continue with next decay
 		                if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
-			             
+
 
 						if(lvRotationPhoton1.Phi() < 0.){
 		            		if((fabs(lvRotationPhoton1.Eta()) < 0.13) && ((lvRotationPhoton1.Phi()+2.*TMath::Pi()) > 250.f*(TMath::Pi()/180.f)) && ((lvRotationPhoton1.Phi()+2.*TMath::Pi()) < 320.f*(TMath::Pi()/180.f))){
 		            		bPhoton1Accepted = kTRUE;
-		            		} 
+		            		}
 		            	}
 		            	else{
 			            	if( (fabs(lvRotationPhoton1.Eta()) < 0.13) && (lvRotationPhoton1.Phi() > 250.f*(TMath::Pi()/180.f)) && (lvRotationPhoton1.Phi() < 320.f*(TMath::Pi()/180.f))){
 			            		bPhoton1Accepted = kTRUE;
-			            	} 
+			            	}
 		            	}
 
 		            	if(lvRotationPhoton.Phi() < 0.){
 		            		if( (fabs(lvRotationPhoton.Eta()) < 0.13) && ((lvRotationPhoton.Phi()+2.*TMath::Pi()) > 250.f*(TMath::Pi()/180.f)) && ((lvRotationPhoton.Phi()+2.*TMath::Pi()) < 320.f*(TMath::Pi()/180.f))){
 		            			bPhotonAccepted = kTRUE;
-		            		} 
+		            		}
 		            	}
 		            	else{
 			            	if( (fabs(lvRotationPhoton.Eta()) < 0.13) && (lvRotationPhoton.Phi() > 250.f*(TMath::Pi()/180.f)) && (lvRotationPhoton.Phi() < 320.f*(TMath::Pi()/180.f))){
 			            		bPhotonAccepted = kTRUE;
-			            	} 
+			            	}
 		            	}
 
 		            	if(bPhotonAccepted == kFALSE && bPhoton1Accepted == kFALSE) continue;
-		            	
+
 		            	cellIDRotatedPhoton = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton.Eta(), static_cast<double>((lvRotationPhoton.Phi()<0) ? lvRotationPhoton.Phi() + TMath::Pi()*2. : lvRotationPhoton.Phi()));
 	           			cellIDRotatedPhoton1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()));
 	           			std::unique_ptr<AliAODConversionPhoton> currentEventRotation (new AliAODConversionPhoton(&lvRotationPhoton));
@@ -1201,7 +1201,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamm
 			          		AliVCluster* photonBGCandidate = photon[iPionBG];
 							photonBGCandidate->GetMomentum(lvRotationBGPhoton,vpos);
 		           			std::unique_ptr<AliAODConversionPhoton> currentEventGoodBGPhoton (new AliAODConversionPhoton(&lvRotationBGPhoton));
-				          	if(bPhotonAccepted == kTRUE){	
+				          	if(bPhotonAccepted == kTRUE){
 				          		//First Swapped Gamma
 			            		lvRotationBGPion = (lvRotationPhoton + lvRotationBGPhoton);
 			            		if(lvRotationBGPion.M() < 0.118 || lvRotationBGPion.M() > 0.148 ) continue;
@@ -1219,7 +1219,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamm
 					                 	vSwappingInvMassPT.push_back({lvRotationBGSigma.M(),lvRotationBGSigma.Pt()});
 			                   		}
 		              			}
-		              		}	
+		              		}
 
 	              			if(bPhoton1Accepted == kTRUE){
 		              			//Second Swapped Gamma
@@ -1237,15 +1237,15 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWGammaGamm
 										if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, rekombinatedPi0BG1), GetQT(lvRotationBGSigma1, lvRotationBGProton))) == kFALSE) continue;
 										if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(rekombinatedPi0BG1.Angle(lvRotationBGProton.Vect())))) continue;
 					                 	vSwappingInvMassPT.push_back({lvRotationBGSigma1.M(),lvRotationBGSigma1.Pt()});
-							        	
+
 			                   		}
 		              			}
-		              		}	
-	          			}  	
+		              		}
+	          			}
 	        		}
 				}
 			}
-		}	
+		}
       // Fill the histograms
 	    // if(vSwappingInvMassPT.size() > 0){
     	//     tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPT.size());
@@ -1305,16 +1305,16 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPio
 	                asymAfterDecay = fabs((lvRotationPion.E()-lvRotationProton.E())/(lvRotationPion.E()+lvRotationProton.E()));
 	                // check if decay is nearly the same as original decay: if yes continue with next decay
 	                if((tvNormAfterDecay.Angle(tvNormBeforeDecay) < 20*TMath::Pi()/180. || tvNormAfterDecay.Angle(tvNormBeforeDecay) > 340*TMath::Pi()/180.) && ( fabs(asymBeforeDecay - asymAfterDecay) < 0.05 )   ) continue;
-		            
+
 	            	if(lvRotationPion.Phi() < 0.){
 	            		if( (fabs(lvRotationPion.Eta()) < 0.13) && ((lvRotationPion.Phi()+2.*TMath::Pi()) > 250.f*(TMath::Pi()/180.f)) && ((lvRotationPion.Phi()+2.*TMath::Pi()) < 320.f*(TMath::Pi()/180.f))){
 	            			bPionAccepted = kTRUE;
-	            		} 
+	            		}
 	            	}
 	            	else{
 		            	if( (fabs(lvRotationPion.Eta()) < 0.13) && (lvRotationPion.Phi() > 250.f*(TMath::Pi()/180.f)) && (lvRotationPion.Phi() < 320.f*(TMath::Pi()/180.f))){
 		            		bPionAccepted = kTRUE;
-		            	} 
+		            	}
 	            	}
 	            	for(unsigned int iPionBG=0;iPionBG<pions.size();iPionBG++){
 	            		if(iPionBG == iCurrent) continue;
@@ -1323,8 +1323,8 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPio
 						if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma, lvRotationProton, lvRotationBGPion), GetQT(lvRotationBGSigma, lvRotationProton))) == kFALSE) continue;
 						if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(lvRotationBGPion.Angle(lvRotationProton.Vect())))) continue;
 	                 	vSwappingInvMassPT.push_back({lvRotationBGSigma.M(),lvRotationBGSigma.Pt()});
-		                   
-	              	}	
+
+	              	}
               		if(bPionAccepted == kTRUE){
 						for(unsigned int iProtonBG=0;iProtonBG<proton.size();iProtonBG++){
 	            			if(iProtonBG == iCurrentProton) continue;
@@ -1338,11 +1338,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPio
 							if((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->ArmenterosLikeQtCut(GetPodAlpha(lvRotationBGSigma1, lvRotationBGProton, lvRotationPion), GetQT(lvRotationBGSigma1, lvRotationBGProton))) == kFALSE) continue;
 							if(!(((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->SigmaDaughtersOpeningangleCut(lvRotationPion.Angle(lvRotationBGProton.Vect())))) continue;
 		                 	vSwappingInvMassPT.push_back({lvRotationBGSigma1.M(),lvRotationBGSigma1.Pt()});
-	              		}	
-          			}  	
+	              		}
+          			}
 				}
 			}
-		}	
+		}
       // Fill the histograms
 	    // if(vSwappingInvMassPT.size() > 0){
     	//     tempMultWeightSwapping = (0.5*(fClusterCandidates->GetEntries()*fClusterCandidates->GetEntries() - fClusterCandidates->GetEntries()))/(vSwappingInvMassPT.size());
