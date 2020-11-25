@@ -15,6 +15,7 @@
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 #include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
+#include "TRandom.h"
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -56,6 +57,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusMCPtRes(nullptr),
       fHistDplusMCPhiRes(nullptr),
       fHistDplusMCThetaRes(nullptr),
+      fHistDplusMCOrigin(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
@@ -66,6 +68,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusMCPtRes(nullptr),
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
+      fHistDminusMCOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -73,6 +76,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fNSigmaMass(2.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fMCBeautyRejection(false),
+      fMCBeautyScalingFactor(1.),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -121,6 +126,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusMCPtRes(nullptr),
       fHistDplusMCPhiRes(nullptr),
       fHistDplusMCThetaRes(nullptr),
+      fHistDplusMCOrigin(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
@@ -130,6 +136,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDminusMCPtRes(nullptr),
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
+      fHistDminusMCOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -137,6 +144,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fNSigmaMass(2.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fMCBeautyRejection(false),
+      fMCBeautyScalingFactor(1.),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -395,12 +404,20 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
         AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection
+            && dplusCand.GetParticleOrigin()
+                == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor)
+            continue;
+        }
         dplus.push_back(dplusCand);
         if (!fIsLightweight) {
           fHistDplusEta->Fill(dMeson->Eta());
           fHistDplusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
             fHistDplusMCPDGPt->Fill(dMeson->Pt(), dplusCand.GetMotherPDG());
+            fHistDplusMCOrigin->Fill(dMeson->Pt(),
+                                     dplusCand.GetParticleOrigin());
             if (dplusCand.GetMCPDGCode() != 0) {
               fHistDplusMCPtRes->Fill(dMeson->Pt() - dplusCand.GetMCPt(),
                                       dMeson->Pt());
@@ -420,12 +437,20 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       else {
         AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection
+            && dminusCand.GetParticleOrigin()
+                == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor)
+            continue;
+        }
         dminus.push_back(dminusCand);
         if (!fIsLightweight) {
           fHistDminusEta->Fill(dMeson->Eta());
           fHistDminusPhi->Fill(dMeson->Phi());
           if (fIsMC) {
             fHistDminusMCPDGPt->Fill(dMeson->Pt(), dminusCand.GetMotherPDG());
+            fHistDminusMCOrigin->Fill(dMeson->Pt(),
+                                      dminusCand.GetParticleOrigin());
             if (dminusCand.GetMCPDGCode() != 0) {
               fHistDminusMCPtRes->Fill(dMeson->Pt() - dminusCand.GetMCPt(),
                                        dMeson->Pt());
@@ -613,10 +638,21 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
           "fHistDplusMCThetaRes",
           "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
           0.025, 100, 0, 10);
+      fHistDplusMCOrigin = new TH2F("fHistDplusMCOrigin",
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 7, 0, 7);
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(2, "kWeak");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(3, "kMaterial");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(4, "kFake");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(5, "kContamination");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(6, "kUnknown");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(7, "kBeauty");
       fDChargedHistList->Add(fHistDplusMCPDGPt);
       fDChargedHistList->Add(fHistDplusMCPtRes);
       fDChargedHistList->Add(fHistDplusMCPhiRes);
       fDChargedHistList->Add(fHistDplusMCThetaRes);
+      fDChargedHistList->Add(fHistDplusMCOrigin);
     }
   }
 
@@ -649,10 +685,21 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
           "fHistDminusMCThetaRes",
           "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
           0.025, 100, 0, 10);
+      fHistDminusMCOrigin = new TH2F("fHistDminusMCOrigin",
+                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100,
+                                     0, 10, 7, 0, 7);
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(2, "kWeak");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(3, "kMaterial");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(4, "kFake");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(5, "kContamination");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(6, "kUnknown");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(7, "kBeauty");
       fDChargedHistList->Add(fHistDminusMCPDGPt);
       fDChargedHistList->Add(fHistDminusMCPtRes);
       fDChargedHistList->Add(fHistDminusMCPhiRes);
       fDChargedHistList->Add(fHistDminusMCThetaRes);
+      fDChargedHistList->Add(fHistDminusMCOrigin);
     }
   }
 
