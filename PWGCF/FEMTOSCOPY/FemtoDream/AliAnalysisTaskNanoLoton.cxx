@@ -212,6 +212,14 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
     fResults->SetName("Results");
   }
 
+  fInvMassHistOne = new TH2F("invMassLambdaClean", "invMassLambdaClean", 8 , 0.3, 4.3, 400, 1.0, 1.2);
+  fInvMassHistOne->Sumw2();
+  fResultsQA->Add(fInvMassHistOne); 
+  
+  fInvMassHistTwo = new TH2F("invMassAntiLambdaClean", "invMassAntiLambdaClean", 8 , 0.3, 4.3, 400, 1.0, 1.2);
+  fInvMassHistTwo->Sumw2();
+  fResultsQA->Add(fInvMassHistTwo);
+  
   fResultsSampleQA = new TList();
   fResultsSampleQA->SetOwner();
   fResultsSampleQA->SetName("ResultsSampleQA");
@@ -339,6 +347,18 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   fPairCleaner->CleanDecayAtRandom(&Lambdas, 0);
   fPairCleaner->CleanDecayAtRandom(&AntiLambdas, 1);
 
+  for (auto it : Lambdas) {
+    if (it.UseParticle()) {
+      fInvMassHistOne->Fill(it.GetPt() , it.GetInvMass()); 
+    }
+  }
+
+  for (auto it : AntiLambdas) {
+    if (it.UseParticle()) {
+      fInvMassHistTwo->Fill(it.GetPt() , it.GetInvMass()); 
+    }
+  }
+  
   fPairCleaner->StoreParticle(Protons);
   fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(Lambdas);
