@@ -2816,6 +2816,29 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2133){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation TB variations
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3q220000","0163103100000010"); // NCell effi on MC
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r220000","0163103100000010"); // NCell effi on MC
+  } else if (trainConfig == 2134){ // 1 cell clusters only  (switch off exotics + M02 cut)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f03s000000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709f03s000000","0163103100000010"); // TBNL
+  } else if (trainConfig == 2135){ // 2 cell clusters only  (switch off exotics + M02 cut)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f03t000000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709f03t000000","0163103100000010"); // TBNL
+  } else if (trainConfig == 2136){ // 2 cell clusters only  (with exotics + M02 cut)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3t220000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe3t220000","0163103100000010"); // TBNL
+  } else if (trainConfig == 2137){ // >=2 cell clusters  (switch off exotics + M02 cut)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f032000000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709f032000000","0163103100000010"); // TBNL
+  } else if (trainConfig == 2138){ // >=2 cell clusters (with exotics + M02 cut)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe32220000","0163103100000010"); // TBNL
+
+    // different clusterization settings
+  } else if (trainConfig == 2139){ // std. cuts, Seed 500, agg 85
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
+  } else if (trainConfig == 2140){ // std. cuts, Seed 500, agg 90
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
+  } else if (trainConfig == 2141){ // std. cuts, Seed 475, Agg 95
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
 
   // PCM-EDC systematics
   } else if (trainConfig == 2200){ // PCM based systematics
