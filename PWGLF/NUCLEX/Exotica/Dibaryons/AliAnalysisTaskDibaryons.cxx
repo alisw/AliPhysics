@@ -754,6 +754,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawCuts"))->Fill(invMassLambda);
 
       if(TMath::Abs(invMassLambda - massLambda) < 0.004) {
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPt"))        ->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPosDaughPt"))->Fill(transvMomPos);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaNegDaughPt"))->Fill(transvMomNeg);
@@ -781,6 +782,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawCuts"))->Fill(invMassAntiLambda);
 
       if(TMath::Abs(invMassAntiLambda - massLambda) < 0.004) {
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hAntiLambdaPt"))->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(4);
 
@@ -1121,7 +1123,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
 
-        if(TMath::Abs(invMassXiMinus - massXi) < 0.008) {
+        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimBachPt"))    ->Fill(transvMomBach);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimPosDaughPt"))->Fill(transvMomPos);
@@ -1133,12 +1136,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           if(fAnalysisType == "ESD")      candXim.Add(esdXi);
           else if(fAnalysisType == "AOD") candXim.Add(aodXi);
 
-        } else if(invMassXiMinus - massXi > 0.008) {
+        } else if(invMassXiMinus - massXi > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideXim.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideXim.Add(aodXi);
 
-        } else if(invMassXiMinus - massXi < -0.008) {
+        } else if(invMassXiMinus - massXi < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideXim.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideXim.Add(aodXi);
@@ -1151,19 +1154,20 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwCuts"))->Fill(invMassXiPlus);
 
-        if(TMath::Abs(invMassXiPlus - massXi) < 0.008) {
+        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hXipPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(6);
 
           if(fAnalysisType == "ESD")      candXip.Add(esdXi);
           else if(fAnalysisType == "AOD") candXip.Add(aodXi);
 
-        } else if(invMassXiPlus - massXi > 0.008) {
+        } else if(invMassXiPlus - massXi > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideXip.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideXip.Add(aodXi);
 
-        } else if(invMassXiPlus - massXi < -0.008) {
+        } else if(invMassXiPlus - massXi < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideXip.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideXip.Add(aodXi);
@@ -1176,7 +1180,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
 
-        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.008) {
+        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamBachPt"))    ->Fill(transvMomBach);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPosDaughPt"))->Fill(transvMomPos);
@@ -1188,12 +1193,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           if(fAnalysisType == "ESD")      candOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") candOmegam.Add(aodXi);
 
-        } else if(invMassOmegaMinus - massOmega > 0.008) {
+        } else if(invMassOmegaMinus - massOmega > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideOmegam.Add(aodXi);
 
-        } else if(invMassOmegaMinus - massOmega < -0.008) {
+        } else if(invMassOmegaMinus - massOmega < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideOmegam.Add(aodXi);
@@ -1206,19 +1211,20 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwCuts"))->Fill(invMassOmegaPlus);
 
-        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.008) {
+        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegapPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(8);
 
           if(fAnalysisType == "ESD")      candOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") candOmegam.Add(aodXi);
 
-        } else if(invMassOmegaPlus - massOmega > 0.008) {
+        } else if(invMassOmegaPlus - massOmega > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideOmegap.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideOmegap.Add(aodXi);
 
-        } else if(invMassOmegaPlus - massOmega < -0.008) {
+        } else if(invMassOmegaPlus - massOmega < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideOmegap.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideOmegap.Add(aodXi);
