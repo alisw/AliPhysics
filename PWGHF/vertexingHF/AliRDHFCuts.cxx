@@ -510,9 +510,9 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
   
   Bool_t isMC=kFALSE;
   if(fPidHF){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
     if(fPidHF->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidHF->SetPidResponse(pidResp);
     }
@@ -543,7 +543,14 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     }
 
     if(fEnableNsigmaTPCDataCorr && !isMC) {
-      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
+
+      Bool_t isPass1 = kFALSE;
+      TTree *treeAOD = inputHandler->GetTree();
+      TString currentFile = treeAOD->GetCurrentFile()->GetName();
+      if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+        isPass1 = kTRUE;
+
+      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
     }
   }
 }
