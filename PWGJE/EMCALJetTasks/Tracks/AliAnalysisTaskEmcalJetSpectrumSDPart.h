@@ -58,7 +58,7 @@ protected:
 
     virtual void UserCreateOutputObjects();
     virtual bool Run();
-    virtual bool IsEventSelected() { return true; }
+    virtual bool IsEventSelected();
     virtual bool CheckMCOutliers();
 
 private:
