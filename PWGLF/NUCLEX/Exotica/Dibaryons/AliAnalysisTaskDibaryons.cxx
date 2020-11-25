@@ -90,23 +90,27 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   hNPartStatistics->GetXaxis()->SetBinLabel(6,"#Xi^{+}");
   hNPartStatistics->GetXaxis()->SetBinLabel(7,"#Omega^{-}");
   hNPartStatistics->GetXaxis()->SetBinLabel(8,"#Omega^{+}");
+  hNPartStatistics->GetYaxis()->SetTitle("Counts");
 
   fOutput->Add(hNPartStatistics);
 
   // Define histograms related to invariant mass for V0 and Cascade
-  TH1F *hInvMassLambdawoCuts = new TH1F("hInvMassLambdawoCuts","Invariant mass of Lambda(p #pi-) without topological cuts;M_{p#pi^{-}} (GeV/c^{2})",400,1.0,1.2);
-  TH1F *hInvMassLambdawCuts = new TH1F("hInvMassLambdawCuts","Invariant mass of Lambda(p #pi-) with topological cuts;M_{p#pi^{-}} (GeV/c^{2})",400,1.0,1.2);
-  TH1F *hInvMassAntiLambdawoCuts = new TH1F("hInvMassAntiLambdawoCuts","Invariant mass of AntiLambda(a-p #pi+) without topological cuts;M_{#bar{p}#pi^{+}} (GeV/c^{2})",400,1.0,1.2);
-  TH1F *hInvMassAntiLambdawCuts = new TH1F("hInvMassAntiLambdawCuts","Invariant mass of AntiLambda(a-p #pi+) with topological cuts;M_{#bar{p}#pi^{+}} (GeV/c^{2})",400,1.0,1.2);
-  TH1F *hInvMassLambdaAsCascDghter = new TH1F("hInvMassLambdaAsCascDghter","Invariant mass of Lambda(p #pi-) stemming from Xi;M_{p#pi^{-}} (GeV/c^{2})",400,1.0,1.2);
-  TH1F *hInvMassXimwoCuts = new TH1F("hInvMassXimwoCuts","Invariant mass of Xi-(p #pi- #pi-) without topological cuts;M_{p#pi^{-}#pi^{-}} (GeV/c^{2})",300,1.2,1.5);
-  TH1F *hInvMassXimwCuts = new TH1F("hInvMassXimwCuts","Invariant mass of Xi-(p #pi- #pi-) with topological cuts;M_{p#pi^{-}#pi^{-}} (GeV/c^{2})",300,1.2,1.5);
-  TH1F *hInvMassXipwoCuts = new TH1F("hInvMassXipwoCuts","Invariant mass of Xi+(a-p #pi+ #pi+) without topological cuts;M_{#bar{p}#pi^{+}#pi^{+}} (GeV/c^{2})",300,1.2,1.5);
-  TH1F *hInvMassXipwCuts = new TH1F("hInvMassXipwCuts","Invariant mass of Xi+(a-p #pi+ #pi+) with topological cuts;M_{#bar{p}#pi^{+}#pi^{+}} (GeV/c^{2})",300,1.2,1.5);
-  TH1F *hInvMassOmegamwoCuts = new TH1F("hInvMassOmegamwoCuts","Invariant mass of Omega-(p K- #pi-) without topological cuts;M_{pK^{-}#pi^{-}} (GeV/c^{2})",300,1.5,1.8);
-  TH1F *hInvMassOmegamwCuts = new TH1F("hInvMassOmegamwCuts","Invariant mass of Omega-(p K- #pi-) with topological cuts;M_{pK^{-}#pi^{-}} (GeV/c^{2})",300,1.5,1.8);
-  TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of Omega+(a-p K+ #pi+) without topological cuts;M_{#bar{p}K^{+}#pi^{+}} (GeV/c^{2})",300,1.5,1.8);
-  TH1F *hInvMassOmegapwCuts = new TH1F("hInvMassOmegapwCuts","Invariant mass of Omega+(a-p K+ #pi+) with topological cuts;M_{#bar{p}K^{+}#pi^{+}} (GeV/c^{2})",300,1.5,1.8);
+  TH1F *hInvMassLambdawoCuts = new TH1F("hInvMassLambdawoCuts","Invariant mass of p#pi^{-} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassLambdawCuts = new TH1F("hInvMassLambdawCuts","Invariant mass of p#pi^{-} with topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassAntiLambdawoCuts = new TH1F("hInvMassAntiLambdawoCuts","Invariant mass of #bar{p}#pi^{+} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassAntiLambdawCuts = new TH1F("hInvMassAntiLambdawCuts","Invariant mass of #bar{p}#pi^{+} with topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassLambdaAsCascDghter = new TH1F("hInvMassLambdaAsCascDghter","Invariant mass of p#pi stemming from cascade;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassXimwoCuts = new TH1F("hInvMassXimwoCuts","Invariant mass of p#pi^{-}#pi^{-} without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassXimwCuts = new TH1F("hInvMassXimwCuts","Invariant mass of p#pi^{-}#pi^{-} with topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassXipwoCuts = new TH1F("hInvMassXipwoCuts","Invariant mass of #bar{p}#pi^{+}#pi^{+} without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassXipwCuts = new TH1F("hInvMassXipwCuts","Invariant mass of #bar{p}#pi^{+}#pi^{+} with topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassOmegamwoCuts = new TH1F("hInvMassOmegamwoCuts","Invariant mass of p#pi^{-}K^{-} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassOmegamwCuts = new TH1F("hInvMassOmegamwCuts","Invariant mass of p#pi^{-}K^{-} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of #bar{p}#pi^{+}K^{+} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassOmegapwCuts = new TH1F("hInvMassOmegapwCuts","Invariant mass of #bar{p}#pi^{+}K^{+} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassMissIDK0S = new TH1F("hInvMassMissIDK0S","Invariant mass of #pi^{+}#pi^{-} under assumption of selected #Lambda;M_{#pi#pi} (GeV/c^{2})",400,0.4,0.6);
+  TH1F *hInvMassMissIDOmegam = new TH1F("hInvMassMissIDOmegam","Invariant mass of p#pi^{-}K^{-} under assumption of selected #Xi^{-};M_{K#Lambda} (GeV/c^{2})",300,1.5,1.8);
+  TH1F *hInvMassMissIDXim = new TH1F("hInvMassMissIDXim","Invariant mass of p#pi^{-}#pi^{-} under assumption of selected #Omega^{-};M_{#pi#Lambda} (GeV/c^{2})",300,1.2,1.5);
 
   fOutput->Add(hInvMassLambdawoCuts);
   fOutput->Add(hInvMassLambdawCuts);
@@ -121,34 +125,37 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hInvMassOmegamwCuts);
   fOutput->Add(hInvMassOmegapwoCuts);
   fOutput->Add(hInvMassOmegapwCuts);
+  fOutput->Add(hInvMassMissIDK0S);
+  fOutput->Add(hInvMassMissIDOmegam);
+  fOutput->Add(hInvMassMissIDXim);
 
   // Define QA plots for topological observables
-  TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Distribution of DCAz vs DCAxy;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
-  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",100,0,10);
-  TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","Distance of closest approach of V0 positive daughter track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","Distance of closest approach of V0 negative daughter track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","Distance of closest approach of V0 and #pi track;DCA (cm)",400,0,2);
-  TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",400,0,2);
-  TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","Distance of closest approach of Xi V0 track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hXiDCABachPrimVertex = new TH1F("hXiDCABachPrimVertex","Distance of closest approach of Xi bachelor track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hXiDCAPosDaughPrimVertex = new TH1F("hXiDCAPosDaughPrimVertex","Distance of closest approach of Xi positive daughter track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","Distance of closest approach of Xi negative daughter track to primary vertex;DCA (cm)",500,0,100);
-  TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse distance between primary vertex and Xi decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of pointing angle of Xi;cos(#Theta)",200,0.8,1);
-  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of pointing angle of V0;cos(#Theta)",200,0.8,1);
-  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","Distance of closest approach of V0 and K track;DCA (cm)",100,0,10);
-  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","Distance of closest approach of p and #pi track;DCA (cm)",100,0,10);
-  TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","Distance of closest approach of Omega V0 track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","Distance of closest approach of Omega bachelor track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","Distance of closest approach of Omega positive daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","Distance of closest approach of Omega negative daughter track to primary vertex;DCA (cm)",500,0,10);
-  TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse distance between primary vertex and Omega decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse distance between primary vertex and V0 decay vertex;r_{xy} (cm);",400,0,200);
-  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
-  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of pointing angle;cos(#Theta)",200,0.8,1);
+  TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Proton DCAxy vs DCAz;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
+  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","DCA between #Lambda daughters;DCA (cm);Counts",100,0,10);
+  TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","DCA of proton to PV;DCA (cm);Counts",500,0,100);
+  TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","DCA of pion to PV;DCA (cm);Counts",500,0,100);
+  TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse radius of #Lambda decay vertex;r_{xy} (cm);Counts;",400,0,200);
+  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of #Lambda pointing angle;cos(PA);Counts",100,0.9,1);
+  TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","DCA between #Xi daughters;DCA (cm);Counts",100,0,10);
+  TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Xi;DCA (cm);Counts",100,0,10);
+  TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
+  TH1F *hXiDCABachPrimVertex = new TH1F("hXiDCABachPrimVertex","DCA of bachelor pion to PV;DCA (cm);Counts",500,0,100);
+  TH1F *hXiDCAPosDaughPrimVertex = new TH1F("hXiDCAPosDaughPrimVertex","DCA of daughter proton to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
+  TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
+  TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse radius of #Xi decay vertex;r_{xy} (cm);Counts",400,0,200);
+  TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Xi;r_{xy} (cm);Counts",400,0,200);
+  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of #Xi pointing angle;cos(PA);Counts",100,0.9,1);
+  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Xi;cos(PA);Counts",100,0.9,1);
+  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","DCA between #Omega daughters;DCA (cm);Counts",100,0,10);
+  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Omega;DCA (cm);Counts",100,0,10);
+  TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
+  TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","DCA of bachelor kaon to PV;DCA (cm);Counts",500,0,100);
+  TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","DCA of daughter proton to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
+  TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
+  TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse radius of #Omega decay vertex;r_{xy} (cm);Counts",400,0,200);
+  TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Omega;r_{xy} (cm);Counts",400,0,200);
+  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of #Omega pointing angle;cos(PA);Counts",100,0.9,1);
+  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Omega;cos(PA);Counts",100,0.9,1);
 
   fOutput->Add(hProtonDCAxyDCAz);
   fOutput->Add(hLambdaDCADaughterTracks);
@@ -178,30 +185,30 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hOmegaV0CosPointingAngle);
 
   // Define QA plots for kinematic observables
-  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c)",500,0,10);
-  TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta",200,-1,+1);
-  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c)",1000,0,10);
-  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of positive daughter of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of negative daughter of V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of V0;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of V0;#eta",400,-2,2);
-  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of Anti-V0;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of positive daughter of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of negative daughter of Xi-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of Xi-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of Xi-;#eta",400,-2,2);
-  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of Xi+;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of positive daughter of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of negative daughter of Omega-;p_{T} (GeV/c)",500,0,10);
-  TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of Omega-;#varphi (rad)",100,0,TMath::TwoPi());
-  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of Omega-;#eta",400,-2,2);
-  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of Omega+;p_{T} (GeV/c)",500,0,10);
+  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad);Counts",200,0,TMath::TwoPi());
+  TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta;Counts",20,-1,+1);
+  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of #Lambda;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of daughter proton;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of daughter pion;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of #Lambda;#varphi (rad);Counts",200,0,TMath::TwoPi());
+  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of #Lambda;#eta;Counts",20,-1,1);
+  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of #bar{#Lambda};p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of #Xi^{-};p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor pion;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of daughter proton from #Xi;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of daughter pion from #Xi;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of #Xi^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
+  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of #Xi^{-};#eta;Counts",20,-1,1);
+  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of #Xi^{+};p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of #Omega^{-};p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor kaon;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of daughter proton from #Omega;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of daughter pion from #Omega;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of #Omega^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
+  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of #Omega^{-};#eta;Counts",20,-1,1);
+  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of #Omega^{+};p_{T} (GeV/c);Counts",100,0,10);
 
   fOutput->Add(hProtonPt);
   fOutput->Add(hProtonPhi);
@@ -243,51 +250,42 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
 
   // Define PID related histograms
   TH2F *hdEdxVsP = new TH2F("hdEdxVsP","dE/dx of all particles vs momentum;p (GeV/c);#frac{dE}{dx} (a.u.)",1000,0,10,200,0,200);
-  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","nsigma_TPC of protons;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","nsigma_TOF of protons;p (GeV/c);n#sigma_{TOF}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaCombined = new TH2F("hProtonNsigmaCombined","nsigma_combined of protons;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
-  TH2F *hProtonNsigmaTPCwPID = new TH2F("hProtonNsigmaTPCwPID","nsigma_TPC of protons with PID;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaCombinedwPID = new TH2F("hProtonNsigmaCombinedwPID","nsigma_combined of protons with PID;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
+  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","PID for protons using TPC;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","PID for protons using TOF;p (GeV/c);n#sigma_{TOF}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaCombined = new TH2F("hProtonNsigmaCombined","PID for proton using both TPC and TOF;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
 
   fOutput->Add(hdEdxVsP);
   fOutput->Add(hProtonNsigmaTPC);
   fOutput->Add(hProtonNsigmaTOF);
   fOutput->Add(hProtonNsigmaCombined);
-  fOutput->Add(hProtonNsigmaTPCwPID);
-  fOutput->Add(hProtonNsigmaCombinedwPID);
 
   // Define histograms related to pair analysis
-  TH1F *hNLambdaLambdaPairs = new TH1F("hNLambdaLambdaPairs","Number of V0-V0 pairs in an event",100,0,100);
-  TH1F *hNProtonXiPairs = new TH1F("hNProtonXiPairs","Number of Proton-Xi pairs in an event",100,0,100);
-  TH1F *hNLambdaXiPairs = new TH1F("hNLambdaXiPairs","Number of V0-Xi pairs in an event",100,0,100);
   TH1F *hNPairStatistics = new TH1F("hNPairStatistics","Number of pairs under certain condition",10,0.5,10.5);
   hNPairStatistics->GetXaxis()->SetBinLabel(1,"p-#Lambda");
   hNPairStatistics->GetXaxis()->SetBinLabel(2,"#Lambda-#Lambda");
   hNPairStatistics->GetXaxis()->SetBinLabel(3,"p-#Xi^{-}");
   hNPairStatistics->GetXaxis()->SetBinLabel(4,"#Lambda-#Xi^{-}");
   hNPairStatistics->GetXaxis()->SetBinLabel(5,"#Xi^{-}-#Omega^{-}");
+  hNPairStatistics->GetYaxis()->SetTitle("Counts");
 
-  fOutput->Add(hNLambdaLambdaPairs);
-  fOutput->Add(hNProtonXiPairs);
-  fOutput->Add(hNLambdaXiPairs);
   fOutput->Add(hNPairStatistics);
 
   // Define histograms related to invariant mass for dibaryons
-  TH2F *hInvMassRelPLambdaLambda = new TH2F("hInvMassRelPLambdaLambda","Invariant mass vs relative momentum of Lambda-Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPLambdaLambdaRsideband = new TH2F("hInvMassRelPLambdaLambdaRsideband","Invariant mass vs relative momentum of Lambda and Lambda in right sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPLambdaLambdaLsideband = new TH2F("hInvMassRelPLambdaLambdaLsideband","Invariant mass vs relative momentum of Lambda and Lambda in left sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonLambda = new TH2F("hInvMassRelPProtonLambda","Invariant mass vs relative momentum of proton-Lambda pair;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonLambdaRsideband = new TH2F("hInvMassRelPProtonLambdaRsideband","Invariant mass vs relative momentum of proton and Lambda in right side band;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonLambdaLsideband = new TH2F("hInvMassRelPProtonLambdaLsideband","Invariant mass vs relative momentum of proton and Lambda in left side band;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonXi = new TH2F("hInvMassRelPProtonXi","Invariant mass vs relative momentum of Proton-Xi pair;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonXiRsideband = new TH2F("hInvMassRelPProtonXiRsideband","Invariant mass vs relative momentum of proton and Xi in right sideband;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPProtonXiLsideband = new TH2F("hInvMassRelPProtonXiLsideband","Invariant mass vs relative momentum of proton and Xi in left sideband;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPLambdaXi = new TH2F("hInvMassRelPLambdaXi","Invariant mass vs relative momentum of Lambda-Xi pair;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPLambdaXiRsideband = new TH2F("hInvMassRelPLambdaXiRsideband","Invariant mass vs relative momentum of Lambda and Xi in right sideband;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPLambdaXiLsideband = new TH2F("hInvMassRelPLambdaXiLsideband","Invariant mass vs relative momentum of Lambda and Xi in left sideband;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
-  TH2F *hInvMassRelPXiOmega = new TH2F("hInvMassRelPXiOmega","Invariant mass vs relative momentum of Xi-Omega pair;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
-  TH2F *hInvMassRelPXiOmegaRsideband = new TH2F("hInvMassRelPXiOmegaRsideband","Invariant mass vs relative momentum of Xi and Omega in right sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
-  TH2F *hInvMassRelPXiOmegaLsideband = new TH2F("hInvMassRelPXiOmegaLsideband","Invariant mass vs relative momentum of Xi and Omega in left sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
+  TH2F *hInvMassRelPLambdaLambda = new TH2F("hInvMassRelPLambdaLambda","Invariant mass vs relative momentum of #Lambda-#Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPLambdaLambdaRsideband = new TH2F("hInvMassRelPLambdaLambdaRsideband","Invariant mass vs relative momentum of #Lambda-#Lambda pair in right sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPLambdaLambdaLsideband = new TH2F("hInvMassRelPLambdaLambdaLsideband","Invariant mass vs relative momentum of #Lambda-#Lambda pair in left sideband;M_{#Lambda#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonLambda = new TH2F("hInvMassRelPProtonLambda","Invariant mass vs relative momentum of p-#Lambda pair;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonLambdaRsideband = new TH2F("hInvMassRelPProtonLambdaRsideband","Invariant mass vs relative momentum of p-#Lambda pair in right side band;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonLambdaLsideband = new TH2F("hInvMassRelPProtonLambdaLsideband","Invariant mass vs relative momentum of p-#Lambda pair in left side band;M_{p#Lambda} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonXi = new TH2F("hInvMassRelPProtonXi","Invariant mass vs relative momentum of p-#Xi pair;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonXiRsideband = new TH2F("hInvMassRelPProtonXiRsideband","Invariant mass vs relative momentum of p-#Xi pair in right sideband;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPProtonXiLsideband = new TH2F("hInvMassRelPProtonXiLsideband","Invariant mass vs relative momentum of p-#Xi pair in left sideband;M_{p#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPLambdaXi = new TH2F("hInvMassRelPLambdaXi","Invariant mass vs relative momentum of #Lambda-#Xi pair;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPLambdaXiRsideband = new TH2F("hInvMassRelPLambdaXiRsideband","Invariant mass vs relative momentum of #Lambda-#Xi pair in right sideband;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPLambdaXiLsideband = new TH2F("hInvMassRelPLambdaXiLsideband","Invariant mass vs relative momentum of #Lambda-#Xi pair in left sideband;M_{#Lambda#Xi} (GeV/c^{2});p_{Rel} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassRelPXiOmega = new TH2F("hInvMassRelPXiOmega","Invariant mass vs relative momentum of #Xi-#Omega pair;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
+  TH2F *hInvMassRelPXiOmegaRsideband = new TH2F("hInvMassRelPXiOmegaRsideband","Invariant mass vs relative momentum of #Xi-#Omega pair in right sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
+  TH2F *hInvMassRelPXiOmegaLsideband = new TH2F("hInvMassRelPXiOmegaLsideband","Invariant mass vs relative momentum of #Xi-#Omega pair in left sideband;M_{#Xi#Omega} (GeV/c^{2});p_{Rel} (GeV/c)",1000,3,4,100,0,10);
 
   fOutput->Add(hInvMassRelPLambdaLambda);
   fOutput->Add(hInvMassRelPLambdaLambdaRsideband);
@@ -505,8 +503,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     else if(totMom > 0.75 && nSigmaTPCTOFcombined        > 3.) continue;
 
     if(charge > 0.) {
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))     ->Fill(totMom, nSigmaTPCproton);
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombinedwPID"))->Fill(totMom, nSigmaTPCTOFcombined);
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))         ->Fill(DCAxy,DCAz);
     }
 
@@ -563,6 +559,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // Initialisation of the local variables that will be needed for ESD/AOD
     Double_t invMassLambda     = 0.;
     Double_t invMassAntiLambda = 0.;
+    Double_t invMassK0S        = 0.;
 
     Double_t dcaV0Dghters    = -1.; 
     Double_t dcaV0ToPrimVtx  = -1.;
@@ -613,9 +610,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(esdV0->Pt() < 0.3)) continue;
+      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
+      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
+      if(esdV0->Pt() < 0.3) continue;
 
       // Daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
@@ -628,6 +625,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassLambda     = esdV0->GetEffMass();
       esdV0->ChangeMassHypothesis(-3122);
       invMassAntiLambda = esdV0->GetEffMass();
+      esdV0->ChangeMassHypothesis(310);
+      invMassK0S        = esdV0->GetEffMass();
 
       // Get topological values
       dcaV0Dghters    = esdV0->GetDcaV0Daughters();
@@ -674,9 +673,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(pTrack->Eta() > 0.8)) continue;
-      if(TMath::Abs(aodV0->Pt() < 0.3)) continue;
+      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
+      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
+      if(aodV0->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
@@ -697,6 +696,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Calculate the invariant mass
       invMassLambda     = aodV0->MassLambda();
       invMassAntiLambda = aodV0->MassAntiLambda();
+      invMassK0S        = aodV0->MassK0Short();
 
       // Get topological values
       dcaV0Dghters    = aodV0->DcaV0Daughters();
@@ -736,6 +736,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     else if(isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawoCuts"))->Fill(invMassAntiLambda);
     }
+    dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDK0S"))->Fill(invMassK0S);
+    if(0.48 < invMassK0S && invMassK0S < 0.515) continue; // reject K0Short
 
     // Topological cuts
     if(TMath::Abs(vtxPosV0[0]) > 100) continue;
@@ -745,14 +747,14 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(cosPointAngle < 0.99) continue;
     if(dcaPosToPrimVtx < 0.05) continue;
     if(dcaNegToPrimVtx < 0.05) continue;
-    if(radius < 0.2 ) continue;
-    if(radius > 100 ) continue;
+    if(radius < 0.2 || 100 < radius) continue;
 
     // Lambda
     if(isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawCuts"))->Fill(invMassLambda);
 
       if(TMath::Abs(invMassLambda - massLambda) < 0.004) {
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPt"))        ->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPosDaughPt"))->Fill(transvMomPos);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaNegDaughPt"))->Fill(transvMomNeg);
@@ -780,6 +782,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawCuts"))->Fill(invMassAntiLambda);
 
       if(TMath::Abs(invMassAntiLambda - massLambda) < 0.004) {
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hAntiLambdaPt"))->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(4);
 
@@ -902,9 +905,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
       if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
       if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(bachTrack->Pt()) < 0.3) continue;
-      if(TMath::Abs(pTrack   ->Pt()) < 0.3) continue;
-      if(TMath::Abs(nTrack   ->Pt()) < 0.3) continue;
+      if(bachTrack->Pt() < 0.3) continue;
+      if(pTrack   ->Pt() < 0.3) continue;
+      if(nTrack   ->Pt() < 0.3) continue;
 
       // Bachelor and daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
@@ -915,7 +918,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion   )) < 4.0) isNegPion   = kTRUE;
 
       // Calculate the invariant mass
-      invMassLambdaAsCascDghter     = esdXi->GetEffMass();
+      invMassLambdaAsCascDghter = esdXi->GetEffMass();
       v0quality = 0.;
       esdXi->ChangeMassHypothesis(v0quality, 3312);
       invMassXiMinus = esdXi->GetEffMassXi();
@@ -983,9 +986,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
       if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
       if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(bachTrack->Pt()) < 0.3) continue;
-      if(TMath::Abs(pTrack   ->Pt()) < 0.3) continue;
-      if(TMath::Abs(nTrack   ->Pt()) < 0.3) continue;
+      if(bachTrack->Pt() < 0.3) continue;
+      if(pTrack   ->Pt() < 0.3) continue;
+      if(nTrack   ->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
@@ -1064,6 +1067,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
     if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwoCuts"))          ->Fill(invMassXiMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDOmegam"))       ->Fill(invMassOmegaMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))       ->Fill(dcaXiDghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))     ->Fill(dcaV0Dghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0PrimVertex"))         ->Fill(dcaV0ToPrimVtx);
@@ -1080,6 +1084,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     }
     if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwoCuts"))       ->Fill(invMassOmegaMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDXim"))          ->Fill(invMassXiMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
       dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0PrimVertex"))      ->Fill(dcaV0ToPrimVtx);
@@ -1098,27 +1103,28 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // Topological cuts
     if(dcaXiDghters > 1.6) continue;
     if(dcaV0Dghters > 1.6) continue;
-    if(dcaV0Dghters < 0.07) continue;
+    if(dcaV0ToPrimVtx < 0.07) continue;
     if(dcaBachToPrimVtx < 0.05) continue;
-    if(dcaPosToPrimVtx < 0.04) continue;
-    if(dcaNegToPrimVtx < 0.04) continue;
-    if(cosPointAngleXi < 0.97) continue;
+    if(dcaPosToPrimVtx < 0.05) continue;
+    if(dcaNegToPrimVtx < 0.05) continue;
+    if(cosPointAngleXi < 0.98) continue;
     if(cosPointAngleV0 < 0.97) continue;
-    if(radiusXi < 0.8) continue;
-    if(radiusXi > 200) continue;
-    if(radiusV0 < 1.4) continue;
-    if(radiusV0 > 200) continue;
+    if(radiusXi < 0.8 || 200 < radiusXi) continue;
+    if(radiusV0 < 1.4 || 200 < radiusV0) continue;
 
     dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaAsCascDghter"))->Fill(invMassLambdaAsCascDghter);
 
     if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) < 0.006) {
 
       // Xi Minus
-      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
+      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion
+         && (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
 
-        if(TMath::Abs(invMassXiMinus - massXi) < 0.008) {
+        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimBachPt"))    ->Fill(transvMomBach);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimPosDaughPt"))->Fill(transvMomPos);
@@ -1130,12 +1136,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           if(fAnalysisType == "ESD")      candXim.Add(esdXi);
           else if(fAnalysisType == "AOD") candXim.Add(aodXi);
 
-        } else if(invMassXiMinus - massXi > 0.008) {
+        } else if(invMassXiMinus - massXi > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideXim.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideXim.Add(aodXi);
 
-        } else if(invMassXiMinus - massXi < -0.008) {
+        } else if(invMassXiMinus - massXi < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideXim.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideXim.Add(aodXi);
@@ -1143,23 +1149,25 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Xi Plus
-      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion) {
+      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion
+         && (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwCuts"))->Fill(invMassXiPlus);
 
-        if(TMath::Abs(invMassXiPlus - massXi) < 0.008) {
+        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hXipPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(6);
 
           if(fAnalysisType == "ESD")      candXip.Add(esdXi);
           else if(fAnalysisType == "AOD") candXip.Add(aodXi);
 
-        } else if(invMassXiPlus - massXi > 0.008) {
+        } else if(invMassXiPlus - massXi > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideXip.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideXip.Add(aodXi);
 
-        } else if(invMassXiPlus - massXi < -0.008) {
+        } else if(invMassXiPlus - massXi < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideXip.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideXip.Add(aodXi);
@@ -1167,11 +1175,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Omega Minus
-      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
+      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion
+         && (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
 
-        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.008) {
+        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamBachPt"))    ->Fill(transvMomBach);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPosDaughPt"))->Fill(transvMomPos);
@@ -1183,12 +1193,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           if(fAnalysisType == "ESD")      candOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") candOmegam.Add(aodXi);
 
-        } else if(invMassOmegaMinus - massOmega > 0.008) {
+        } else if(invMassOmegaMinus - massOmega > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideOmegam.Add(aodXi);
 
-        } else if(invMassOmegaMinus - massOmega < -0.008) {
+        } else if(invMassOmegaMinus - massOmega < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideOmegam.Add(aodXi);
@@ -1196,23 +1206,25 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         }
       }
       // Omega Plus
-      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion) {
+      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion
+         && (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwCuts"))->Fill(invMassOmegaPlus);
 
-        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.008) {
+        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) {
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegapPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(8);
 
           if(fAnalysisType == "ESD")      candOmegam.Add(esdXi);
           else if(fAnalysisType == "AOD") candOmegam.Add(aodXi);
 
-        } else if(invMassOmegaPlus - massOmega > 0.008) {
+        } else if(invMassOmegaPlus - massOmega > 0.005) {
 
           if(fAnalysisType == "ESD")      rsideOmegap.Add(esdXi);
           else if(fAnalysisType == "AOD") rsideOmegap.Add(aodXi);
 
-        } else if(invMassOmegaPlus - massOmega < -0.008) {
+        } else if(invMassOmegaPlus - massOmega < -0.005) {
 
           if(fAnalysisType == "ESD")      lsideOmegap.Add(esdXi);
           else if(fAnalysisType == "AOD") lsideOmegap.Add(aodXi);
