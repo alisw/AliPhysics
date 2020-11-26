@@ -727,11 +727,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
     if(isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawoCuts"))        ->Fill(invMassLambda);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCADaughterTracks"))    ->Fill(dcaV0Dghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaCosPointingAngle"))     ->Fill(cosPointAngle);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaTransverseRadius"))     ->Fill(radius);
     }
     else if(isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawoCuts"))->Fill(invMassAntiLambda);
@@ -754,6 +749,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawCuts"))->Fill(invMassLambda);
 
       if(TMath::Abs(invMassLambda - massLambda) < 0.004) {
+
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCADaughterTracks"))    ->Fill(dcaV0Dghters);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaCosPointingAngle"))     ->Fill(cosPointAngle);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaTransverseRadius"))     ->Fill(radius);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPt"))        ->Fill(transvMomV0);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPosDaughPt"))->Fill(transvMomPos);
@@ -1068,16 +1069,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwoCuts"))          ->Fill(invMassXiMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDOmegam"))       ->Fill(invMassOmegaMinus);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))       ->Fill(dcaXiDghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))     ->Fill(dcaV0Dghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0PrimVertex"))         ->Fill(dcaV0ToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCABachPrimVertex"))       ->Fill(dcaBachToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAPosDaughPrimVertex"))   ->Fill(dcaPosToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCANegDaughPrimVertex"))   ->Fill(dcaNegToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiCosPointingAngle"))        ->Fill(cosPointAngleXi);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiV0CosPointingAngle"))      ->Fill(cosPointAngleV0);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiTransverseRadius"))        ->Fill(radiusXi);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hXiV0TransverseRadius"))      ->Fill(radiusV0);
     }
     if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwoCuts"))          ->Fill(invMassXiPlus);
@@ -1085,16 +1076,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwoCuts"))       ->Fill(invMassOmegaMinus);
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDXim"))          ->Fill(invMassXiMinus);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0PrimVertex"))      ->Fill(dcaV0ToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCABachPrimVertex"))    ->Fill(dcaBachToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaCosPointingAngle"))     ->Fill(cosPointAngleXi);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaV0CosPointingAngle"))   ->Fill(cosPointAngleV0);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaTransverseRadius"))     ->Fill(radiusXi);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaV0TransverseRadius"))   ->Fill(radiusV0);
     }
     if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwoCuts"))       ->Fill(invMassOmegaPlus);
@@ -1124,6 +1105,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
 
         if(TMath::Abs(invMassXiMinus - massXi) < 0.005) {
+
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))    ->Fill(dcaXiDghters);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0PrimVertex"))      ->Fill(dcaV0ToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCABachPrimVertex"))    ->Fill(dcaBachToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiCosPointingAngle"))     ->Fill(cosPointAngleXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiV0CosPointingAngle"))   ->Fill(cosPointAngleV0);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiTransverseRadius"))     ->Fill(radiusXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXiV0TransverseRadius"))   ->Fill(radiusV0);
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXimBachPt"))    ->Fill(transvMomBach);
@@ -1181,6 +1173,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
 
         if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) {
+
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0PrimVertex"))      ->Fill(dcaV0ToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCABachPrimVertex"))    ->Fill(dcaBachToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCANegDaughPrimVertex"))->Fill(dcaNegToPrimVtx);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaCosPointingAngle"))     ->Fill(cosPointAngleXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaV0CosPointingAngle"))   ->Fill(cosPointAngleV0);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaTransverseRadius"))     ->Fill(radiusXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaV0TransverseRadius"))   ->Fill(radiusV0);
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPt"))        ->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamBachPt"))    ->Fill(transvMomBach);
