@@ -858,11 +858,11 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
     }
     else { // read result from common task
       std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptD);
-      int bin = low - fPtLimsML.begin();
+      int bin = low - fPtLimsML.begin() - 1;
       if(bin < 0)
         bin = 0;
-      else if(bin > fPtLimsML.size()-1)
-        bin = fPtLimsML.size()-1;
+      else if(bin > fPtLimsML.size()-2)
+        bin = fPtLimsML.size()-2;
       for(size_t iScore = 0; iScore < scores.size(); iScore++) {
         if((fMLOptScoreCuts[bin][iScore] == "upper" && scores[iScore] > fMLScoreCuts[bin][iScore]) || (fMLOptScoreCuts[bin][iScore] == "lower" && scores[iScore] < fMLScoreCuts[bin][iScore])){
           isSelected = 0;
