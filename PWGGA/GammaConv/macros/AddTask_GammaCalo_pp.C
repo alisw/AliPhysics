@@ -1364,7 +1364,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00085113","111111106h032220000","01631031000000d0"); // fEOverPMax = 1.25
 
   } else if (trainConfig == 470){ // EMCAL cell subtraction test
-    cuts.AddCutCalo("00010113","11111110a0032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","41179010a0032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","41179010a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","41179010ak032230000","01631031000000d0"); // std
 
   } else if (trainConfig == 480){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
     cuts.AddCutCalo("000a0113","11111110a0032230000","01631031000000d0"); // std INT7
