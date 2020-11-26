@@ -3,16 +3,11 @@
               Arvind Khuntia - last modified on 20 Nov 2020
 	      *** Configuration script for phi analysis of 2018 Pb-Pb 5.02 TeV data ***
 	      ****************************************************************************/
-
-#include "AliRsnCutSetDaughterParticle.h"
-#include "AddMonitorOutput.C"
-#include "AliRsnMiniValue.h"
-#include "AliRsnMiniOutput.h"
-#include "AliRsnMiniPair.h"
-#include "TDatabasePDG.h"
-
-
-Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
+#if !defined (__CINT__) || defined (__CLING__)   
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);     
+#include "PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C"   
+#endif
 
 Bool_t ConfigPhiPbPb5TeVRun2
 (  
@@ -67,7 +62,9 @@ Bool_t ConfigPhiPbPb5TeVRun2
 
   if(enableMonitor){
     Printf("\n======== Cut monitoring enabled================\n");
-    //gROOT->LoadMacro("AddMonitorOutput.C");
+    #ifdef __CINT__
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    #endif
     AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput()), monitorOpt.Data();
   }  
