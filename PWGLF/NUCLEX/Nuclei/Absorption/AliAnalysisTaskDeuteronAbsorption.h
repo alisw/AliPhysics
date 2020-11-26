@@ -70,7 +70,7 @@ private:
   // Variables for the tree
   //Double_t tP;
   Float_t  tCentrality;       // centrality                                                                                      //!
-  Int_t    tNtracklets;      // tracklets
+  Int_t    tNglobalTracks;   // number of good tracks per event
   Float_t  tPt;              // pt of the track (at inner wall of the TPC)
   Float_t  tEta;             // eta of the track (at inner wall of the TPC)
   Float_t  tPhi;             // phi of the track (at inner wall of the TPC)

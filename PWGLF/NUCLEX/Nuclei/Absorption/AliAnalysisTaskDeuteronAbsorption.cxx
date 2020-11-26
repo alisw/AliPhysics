@@ -63,7 +63,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fOutputList{nullptr},
                                                                                          fTreeTrack{nullptr},
 											 tCentrality{-1},
-											 tNtracklets{-1},	   
+											 tNglobalTracks{-1},	   
 											 tPt{-999.},
                                                                                          tEta{-999.},
                                                                                          tPhi{-999.},
@@ -223,7 +223,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     fTreeTrack = new TTree("fTreeTrack", "Track Parameters");
     //fTreeTrack->Branch("tP", &tP, "tP/D");
     fTreeTrack->Branch("tCentrality", &tCentrality, "tCentrality/F");
-    fTreeTrack->Branch("tNtracklets", &tNtracklets, "tNtracklets/I");
+    fTreeTrack->Branch("tNglobalTracks", &tNglobalTracks, "tNglobalTracks/I");
     fTreeTrack->Branch("tPt", &tPt, "tPt/F");
     fTreeTrack->Branch("tEta", &tEta, "tEta/F");
     fTreeTrack->Branch("tPhi", &tPhi, "tPhi/F");
@@ -327,9 +327,47 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
   }
 
   tCentrality = ((AliMultSelection *) esdEvent->FindListObject("MultSelection"))->GetMultiplicityPercentile("V0M");
-  tNtracklets = esdEvent->GetMultiplicity()->GetNumberOfTracklets();
   // track loop
   std::vector<int> usedMC;
+
+  tNglobalTracks = 0;
+  for (Int_t i = 0; i < nTracks; i++)
+  {
+    AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); 
+    if (!track)
+      continue;
+    if (!(track->GetStatus() & AliVTrack::kTPCrefit))
+      continue;
+    if (!(track->GetStatus() & AliVTrack::kITSrefit))
+      continue;
+    if (!track->GetInnerParam())
+      continue;                                   
+    if (track->GetTPCsignalN() < fMinTPCsignalN)
+      continue;
+    if(TMath::Abs(track->GetInnerParam()->Eta()) > 0.8)
+      continue;
+    if(track->GetTPCsignalN() < 50)
+      continue;
+    if((track->GetTPCchi2() / track->GetTPCncls()) > 4)
+      continue;
+
+    UChar_t ITSclsMap = track->GetITSClusterMap();
+
+    Int_t NclsITS=0;
+    for(Int_t lay=0; lay < 6; lay++)
+      if(TESTBIT(ITSclsMap, lay)) NclsITS++;
+
+    Bool_t isSPD = TESTBIT(ITSclsMap, 0) || TESTBIT(ITSclsMap, 1);
+    
+    if((track->GetITSchi2()/Float_t(NclsITS)) > 36)
+      continue;
+
+    if(!isSPD)
+      continue;
+
+    tNglobalTracks++;
+  }
+  
   for (Int_t i = 0; i < nTracks; i++)
   {                                                                     // loop ove rall these tracks
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
