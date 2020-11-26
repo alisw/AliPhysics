@@ -503,7 +503,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tEvents->Branch("fCollisionTime", &collision.fCollisionTime, "fCollisionTime/F");
     tEvents->Branch("fCollisionTimeRes", &collision.fCollisionTimeRes, "fCollisionTimeRes/F");
     tEvents->Branch("fCollisionTimeMask", &collision.fCollisionTimeMask, "fCollisionTimeMask/b");
-    tEvents->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tEvents->SetBasketSize("*", fBasketSizeEvents);
   }
   
   // Extra information for debugging for event table
@@ -513,7 +513,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     TString sentries = TString::Format("fNentries[%d]/I", kTrees);
     tEventsExtra->Branch("fStart", eventextra.fStart, sstart.Data());
     tEventsExtra->Branch("fNentries", eventextra.fNentries, sentries.Data());
-    tEventsExtra->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tEventsExtra->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associate branches for fEventTree
@@ -522,7 +522,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tBC->Branch("fRunNumber", &bc.fRunNumber, "fRunNumber/I");
     tBC->Branch("fGlobalBC", &bc.fGlobalBC, "fGlobalBC/l");
     tBC->Branch("fTriggerMask", &bc.fTriggerMask, "fTriggerMask/l");
-    tBC->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tBC->SetBasketSize("*", fBasketSizeEvents);
   }
   
   // Associate branches for fTrackTree
@@ -575,7 +575,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
     tTracks->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
     tTracks->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
-    tTracks->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tTracks->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associate branches for Calo
@@ -587,7 +587,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tCalo->Branch("fTime", &calo.fTime, "fTime/F");
     tCalo->Branch("fCellType", &calo.fCellType, "fCellType/B");
     tCalo->Branch("fCaloType", &calo.fCaloType, "fCaloType/B");
-    tCalo->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tCalo->SetBasketSize("*", fBasketSizeEvents);
   }
 
   TTree *tCaloTrigger = CreateTree(kCaloTrigger);
@@ -599,7 +599,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tCaloTrigger->Branch("fNL0Times", &calotrigger.fNL0Times, "fNL0Times/B");
     tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
     tCaloTrigger->Branch("fCaloType", &calotrigger.fCaloType, "fCaloType/B");
-    tCaloTrigger->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tCaloTrigger->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associuate branches for MUON tracks
@@ -617,7 +617,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tMuon->Branch("fCovariances", muons.fCovariances, "fCovariances[15]/F");
     tMuon->Branch("fChi2", &muons.fChi2, "fChi2/F");
     tMuon->Branch("fChi2MatchTrigger", &muons.fChi2MatchTrigger, "fChi2MatchTrigger/F");
-    tMuon->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tMuon->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associate branches for MUON tracks
@@ -631,7 +631,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tMuonCls->Branch("fErrY",&mucls.fErrY,"fErrY/F");
     tMuonCls->Branch("fCharge",&mucls.fCharge,"fCharge/F");
     tMuonCls->Branch("fChi2",&mucls.fChi2,"fChi2/F");
-    tMuonCls->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tMuonCls->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associuate branches for ZDC
@@ -654,7 +654,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tZdc->Branch("fTimeZNC",         &zdc.fTimeZNC        , "fTimeZNC/F");
     tZdc->Branch("fTimeZPA",         &zdc.fTimeZPA        , "fTimeZPA/F");
     tZdc->Branch("fTimeZPC",         &zdc.fTimeZPC        , "fTimeZPC/F");
-    tZdc->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tZdc->SetBasketSize("*", fBasketSizeEvents);
   }  
 
   // Associate branches for V0A
@@ -664,7 +664,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[48]/F");
     tFV0A->Branch("fTime", &fv0a.fTime, "fTime/F");
     tFV0A->Branch("fTriggerMask", &fv0a.fTriggerMask, "fTriggerMask/b");
-    tFV0A->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tFV0A->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associate branches for V0C
@@ -673,7 +673,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tFV0C->Branch("fBCsID", &fv0c.fBCsID, "fBCsID/I");
     tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[32]/F");
     tFV0C->Branch("fTime", &fv0c.fTime, "fTime/F");
-    tFV0C->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tFV0C->SetBasketSize("*", fBasketSizeEvents);
   }
 
   // Associate branches for FT0
@@ -685,7 +685,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tFT0->Branch("fTimeA", &ft0.fTimeA, "fTimeA/F");
     tFT0->Branch("fTimeC", &ft0.fTimeC, "fTimeC/F");
     tFT0->Branch("fTriggerMask", &ft0.fTriggerMask, "fTriggerMask/b");
-    tFT0->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tFT0->SetBasketSize("*", fBasketSizeEvents);
   }
   
   // Associate branches for FDD (AD)
@@ -697,7 +697,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     tFDD->Branch("fTimeA", &fdd.fTimeA, "fTimeA/F");
     tFDD->Branch("fTimeC", &fdd.fTimeC, "fTimeC/F");
     tFDD->Branch("fTriggerMask", &fdd.fTriggerMask, "fTriggerMask/b");
-    tFDD->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tFDD->SetBasketSize("*", fBasketSizeEvents);
   }
   
   // Associuate branches for V0s
@@ -705,7 +705,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
   if (fTreeStatus[kV0s]) {
     tV0s->Branch("fPosTrackID", &v0s.fPosTrackID, "fPosTrackID/I");
     tV0s->Branch("fNegTrackID", &v0s.fNegTrackID, "fNegTrackID/I");
-    tV0s->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tV0s->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associuate branches for cascades
@@ -713,7 +713,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
   if (fTreeStatus[kCascades]) {
     tCascades->Branch("fV0sID", &cascs.fV0sID, "fV0sID/I");
     tCascades->Branch("fTracksID", &cascs.fTracksID, "fTracksID/I");
-    tCascades->SetBasketSize("*", fNumberOfEventsPerCluster);
+    tCascades->SetBasketSize("*", fBasketSizeTracks);
   }
 
 #ifdef USE_TOF_CLUST
@@ -725,7 +725,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     TOF->Branch("fDx", &tofClusters.fDx, "fDx/F");
     TOF->Branch("fDz", &tofClusters.fDz, "fDz/F");
     TOF->Branch("fToT", &tofClusters.fToT, "fToT/F");
-    TOF->SetBasketSize("*", fNumberOfEventsPerCluster);
+    TOF->SetBasketSize("*", fBasketSizeEvents);
   }
 #else
   DisableTree(kTOF);
@@ -742,7 +742,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
       tMCvtx->Branch("fT", &mccollision.fT, "fT/F");
       tMCvtx->Branch("fWeight", &mccollision.fWeight, "fWeight/F");
       tMCvtx->Branch("fImpactParameter", &mccollision.fImpactParameter, "fImpactParameter/F");
-      tMCvtx->SetBasketSize("*", fNumberOfEventsPerCluster);
+      tMCvtx->SetBasketSize("*", fBasketSizeEvents);
     }
 
     // Associate branches for Kinematics
@@ -769,7 +769,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
       Kinematics->Branch("fVy", &mcparticle.fVy, "fVy/F");
       Kinematics->Branch("fVz", &mcparticle.fVz, "fVz/F");
       Kinematics->Branch("fVt", &mcparticle.fVt, "fVt/F");
-      Kinematics->SetBasketSize("*", fNumberOfEventsPerCluster);
+      Kinematics->SetBasketSize("*", fBasketSizeTracks);
     }
 
     // MC labels of each reconstructed track
@@ -777,7 +777,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     if (fTreeStatus[kMcTrackLabel]) {
       tLabels->Branch("fLabel", &mctracklabel.fLabel, "fLabel/i");
       tLabels->Branch("fLabelMask", &mctracklabel.fLabelMask, "fLabelMask/s");
-      tLabels->SetBasketSize("*", fNumberOfEventsPerCluster);
+      tLabels->SetBasketSize("*", fBasketSizeTracks);
     }
 
     // MC labels of each reconstructed calo cluster
@@ -785,7 +785,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     if (fTreeStatus[kMcCaloLabel]) {
       tCaloLabels->Branch("fLabel", &mccalolabel.fLabel, "fLabel/i");
       tCaloLabels->Branch("fLabelMask", &mccalolabel.fLabelMask, "fLabelMask/s");
-      tCaloLabels->SetBasketSize("*", fNumberOfEventsPerCluster);
+      tCaloLabels->SetBasketSize("*", fBasketSizeEvents);
     }
 
     // MC labels of each reconstructed calo cluster
@@ -793,7 +793,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
     if (fTreeStatus[kMcCaloLabel]) {
       tCollisionLabels->Branch("fLabel", &mccollisionlabel.fLabel, "fLabel/i");
       tCollisionLabels->Branch("fLabelMask", &mccollisionlabel.fLabelMask, "fLabelMask/s");
-      tCollisionLabels->SetBasketSize("*", fNumberOfEventsPerCluster);
+      tCollisionLabels->SetBasketSize("*", fBasketSizeEvents);
     }
   }
 

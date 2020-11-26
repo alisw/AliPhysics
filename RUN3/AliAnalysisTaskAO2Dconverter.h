@@ -38,7 +38,7 @@ public:
   virtual void FinishTaskOutput();
   virtual void Terminate(Option_t *option);
 
-  void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
+  void SetBasketSize(int events, int tracks) { fBasketSizeEvents = events; fBasketSizeTracks = tracks; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
@@ -140,7 +140,8 @@ private:
   // Task configuration variables
   TString fPruneList = "";                // Names of the branches that will not be saved to output file
   Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
-  int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
+  int fBasketSizeEvents = 1000000;   // Maximum basket size of the trees for events
+  int fBasketSizeTracks = 10000000;   // Maximum basket size of the trees for tracks
 
   TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
@@ -499,7 +500,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 11);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 12);
 };
 
 #endif
