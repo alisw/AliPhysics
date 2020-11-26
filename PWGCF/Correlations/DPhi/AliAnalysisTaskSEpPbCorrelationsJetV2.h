@@ -63,6 +63,7 @@ public:
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
   virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
+  virtual void SetLikeSign(Bool_t mode){fLikeSign=mode;}
   virtual void Set2Dfit(Bool_t mode){fIs2Dfit=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void SetPtMin(Float_t mode){fPtMin=mode;}
@@ -158,6 +159,7 @@ private:
   TString fasso;
   Bool_t fPID;
   Bool_t fSymmetricFMD;
+  Bool_t fLikeSign;
   Bool_t fIs2Dfit;
 
   TString fCentType;
