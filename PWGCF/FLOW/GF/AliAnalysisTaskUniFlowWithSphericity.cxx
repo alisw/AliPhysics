@@ -1156,8 +1156,6 @@ void AliAnalysisTaskUniFlowWithSphericity::UserExec(Option_t *)
   Bool_t bEventSelected = kFALSE;
   if(fAnalType != kMC) bEventSelected = IsEventSelected();
   else bEventSelected = IsMCEventSelected();
-
-  if(fUseSphericityCut) bEventSelected = IsEventSelectedSphericity();
   
   DumpTObjTable("UserExec: after event selection");
   if(!bEventSelected) { return; }
@@ -1398,6 +1396,7 @@ Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventSelectedSphericity()
   
   return kTRUE;
 }
+
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventSelected()
 {
@@ -1489,8 +1488,15 @@ Bool_t AliAnalysisTaskUniFlowWithSphericity::IsEventSelected()
 
   fhEventCounter->Fill("PileUp cut OK",1);
 
+  //sphericity cut
+  if(fUseSphericityCut) {
+    if(!IsEventSelectedSphericity()) 
+      return kFALSE;
+  }
+  
   return kTRUE;
 }//IsEventSelected
+
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlowWithSphericity::IsMCEventSelected()
 {
