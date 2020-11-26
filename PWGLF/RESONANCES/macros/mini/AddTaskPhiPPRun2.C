@@ -119,9 +119,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
    cutsPair->SetCutScheme(cutY->GetName());
      // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
-//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
 
-    gROOT->LoadMacro("ConfigPhiPPRun2.C");
+   //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPPRun2.C");
+
+   //    gROOT->LoadMacro("ConfigPhiPPRun2.C");
    if (!ConfigPhiPPRun2(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,ThetaStar,nsigmaPi,nsigmaK, enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin,InvMbin,lInvMbin,hInvMbin)) return 0x0;
    // -- CONTAINERS --------------------------------------------------------------------------------/
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
