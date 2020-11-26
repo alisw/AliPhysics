@@ -419,7 +419,7 @@ TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
   fOutputDir->cd();
   AliInfo(Form("Creating tree %s\n", TreeName[t].Data()));
   fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
-  fTree[t]->SetAutoFlush(fNumberOfEventsPerCluster);
+  fTree[t]->SetAutoFlush(0);
   return fTree[t];
 } // TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
 
