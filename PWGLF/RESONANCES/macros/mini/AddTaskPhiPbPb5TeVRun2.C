@@ -1,16 +1,13 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
               Arvind Khuntia - last modified on 20 Nov 2020
-	      //Lauches phi analysis with rsn mini package for pp@8 Tev
+	      //Lauches phi analysis with rsn mini package for Pb-Pb@ 5.02 Tev
 	      //Allows basic configuration of pile-up check and event cuts
 	      ****************************************************************************/
-
-#include "AliRsnMiniAnalysisTask.h"
-#include "AliRsnMiniPair.h"
-#include "AliRsnLoopPair.h"
-#include "AliRsnValuePair.h"
-#include "AliRsnMiniValue.h"
-#include "ConfigPhiPbPb5TeVRun2.C"
+#if !defined (__CINT__) || defined (__CLING__)
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb5TeVRun2.C>
+#endif
 
 enum pairYCutSet { kPairDefault=0,
   kCentral //=1
@@ -61,15 +58,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
   Double_t    vtxZcut = 10.0;//cm, default cut on vtx z
   Int_t       MultBins = aodFilterBit/100;
 
-
-
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
   if(evtCutSetID==eventCutSet::kVertexoff) vtxZcut=1.e6; //off
 
   if(!isPP || isMC || MultBins) rejectPileUp=kFALSE;
-
   //-------------------------------------------
   //                pair cuts
   //-------------------------------------------
@@ -87,8 +81,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
   if(mixingConfigID==eventMixConfig::k5Evts) nmix=5;
   if(mixingConfigID==eventMixConfig::k5Cent) maxDiffMultMix=5;
   if(mixingConfigID==eventMixConfig::k5Evts5Cent){nmix=5; maxDiffMultMix=5;}
-
-  // ----------------- INITIALIZATION --------
+  //--------------------------------------------
+  //             INITIALIZATION
+  //--------------------------------------------
   // retrieve analysis manager
   AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
@@ -155,7 +150,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
-  // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
+  //--------- PAIR CUTS (common to all resonances) --- ----------
 
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity",AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab,maxYlab);
@@ -163,14 +158,19 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
 
-  // -- CONFIG ANALYSIS --------------------------------------------------------------------------
+  //------------------ CONFIG ANALYSIS ----------------------------
+
   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP8TeV.C");
+#if !defined (__CINT__) || defined (__CLING__)
+  if(!ConfigPhiPbPb5TeVRun2(task,isMC,isPP,cutsPair,aodFilterBit,cosThetaType,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS)) return 0x0;
 
-  if(!ConfigPhiPbPb5TeVRun2(task,isMC,isPP,cutsPair,aodFilterBit,cosThetaType,customQualityCutsID,
-			    cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),
-			    useMixLS)) return 0x0;
+#else
+  // gROOT->LoadMacro("ConfigPhiPbPb5TeVRun2.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb5TeVRun2.C");
+  if(!ConfigPhiPbPb5TeVRun2(task,isMC,isPP,cutsPair,aodFilterBit,cosThetaType,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS)) return 0x0;
+#endif
 
-  // -- CONTAINERS --------------------------------------------------------------------------------
+  //------------------- CONTAINERS ------------------------
 
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   //  outputFileName += ":Rsn";
@@ -182,7 +182,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
 							outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output);
-
   return task;
 }
 
