@@ -1496,6 +1496,11 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
     return kFALSE;
   }
 
+  if (photon->GetConversionRadius()<0){
+    FillPhotonCutIndex(kConvPointFail);
+    return kFALSE;
+  }
+
   if (fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
   // Photon Cuts
   if(!PhotonCuts(photon,event)){
@@ -4851,13 +4856,7 @@ AliConversionPhotonCuts::TItRemove::TItRemove(TMapPhotonBool &theMap, TMapPhoton
  fMap(theMap),
  fIt(theIt),
  fRemoved(kFALSE)
-{
-  // todo: check if that check is actually necessary and remove if not
-  if (fIt->first->GetConversionRadius()<0){
-    cout << "Photon with conversion radius < 0. Removing from list of good photon candidates.\n";
-    fIt = fMap.erase(fIt);
-  }
-}
+{}
 
 ///________________________________________________________________________
 void AliConversionPhotonCuts::TItRemove::Remove(){
