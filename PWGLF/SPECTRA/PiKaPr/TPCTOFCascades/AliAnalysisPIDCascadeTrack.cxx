@@ -87,7 +87,8 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack() :
   nSigmaKaonTOF(0.),
   nSigmaProtonTOF(0.),
   nSigmaElectronTOF(0.),
-  fTrackCutFlag(0)
+  fTrackCutFlag(0),
+  fTPCLength(0)
 {
   /*
    * default constructor
@@ -160,7 +161,9 @@ AliAnalysisPIDCascadeTrack::AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCasca
   nSigmaKaonTOF(source.nSigmaKaonTOF),
   nSigmaProtonTOF(source.nSigmaProtonTOF),
   nSigmaElectronTOF(source.nSigmaElectronTOF),
-  fTrackCutFlag(source.fTrackCutFlag)
+  fTrackCutFlag(source.fTrackCutFlag),
+  fTPCLength(source.fTPCLength)
+
 {
   /*
    * copy constructor
@@ -294,13 +297,14 @@ AliAnalysisPIDCascadeTrack::Reset()
   nSigmaProtonTOF = 0;
   nSigmaElectronTOF = 0;
   fTrackCutFlag = 0;
-  
+  fTPCLength = 0;
+
 }
 
 //___________________________________________________________
 
 void
-AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag)
+AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag, Double_t TPCLength)
 {
   /*
    * update
@@ -334,6 +338,7 @@ AliAnalysisPIDCascadeTrack::Update(AliESDtrack *track, AliMCEvent *mcevent, AliP
   fTOFDeltaZ = track->GetTOFsignalDz();
   track->GetTOFLabel(fTOFLabel);
   fTrackCutFlag = TrackCutFlag;
+  fTPCLength = TPCLength;
   /* info from track references */
   fMCTOFTime = 0.;
   fMCTOFLength = 0.;
