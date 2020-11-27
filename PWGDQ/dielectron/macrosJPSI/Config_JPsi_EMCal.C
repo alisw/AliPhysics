@@ -1,6 +1,6 @@
 ///*******************************************************
 ///Config Description
-/// August 23, 2020 - Cristiane Jahnke
+/// November 26, 2020 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
 ///*******************************************************
 
@@ -103,14 +103,14 @@ Bool_t isMultiAnalysis
     //PID cuts
     if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
     else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
-    else if(config==17)task->SetTPCnsigmaCut(-2.25,3.0);
+    else if(config==17)task->SetTPCnsigmaCut(-1.5,3.0);
     else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
     else if(config==19)task->SetTPCnsigmaCut(0,3.0);
     else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
     
     else if(config==21)task->SetTPCnsigmaCut(-1.5,2.5);
     else if(config==22)task->SetTPCnsigmaCut(-1.5,4.0);
-    else task->SetTPCnsigmaCut(-1.5,3.0);
+    else task->SetTPCnsigmaCut(-2.25,3.0);
     
 	if(config==23)task->SetEoverPCut(0.75,1.3);
     else if(config==24)task->SetEoverPCut(0.85,1.3);

@@ -131,7 +131,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     //Mass cut
     void SetMassCut(Double_t MassCutMin,Double_t MassCutMax ) { fMassCutMin = MassCutMin; fMassCutMax = MassCutMax; };
    
-
+    //To apply weights due to J/psi enhancement
+    Double_t CalculateWeight(Double_t x);
 	//Getters
 	//AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
@@ -289,6 +290,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				**fEoverP_pt;
 	TH2F				**fTPC_p;
 	TH2F				**fTPCnsigma_p;
+    TH2F                **fTOF_p;
+    TH2F                **fTOFnsigma_p;
 	
 		
 	
@@ -356,6 +359,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	AliAODMCHeader 		*fMCheader;
 	AliAODMCParticle 	*fMCparticle;
 	AliAODMCParticle 	*fMCparticleMother;
+
 	
 	AliAODMCParticle 	*fMCparticle2;
 	AliAODMCParticle 	*fMCparticleMother2;
@@ -501,6 +505,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     
     TH1F                *fPtMCparticleAll_trueJPsi_pT;
+    TH1F                *fPtMCparticleAll_trueJPsi_pT_weight;
+    TH1F                *fPtMCparticleAll_trueJPsi_pT_weight_prompt;
+    
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
     
  
@@ -511,6 +518,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt;
 	
 
 //______________________________________________________________________
