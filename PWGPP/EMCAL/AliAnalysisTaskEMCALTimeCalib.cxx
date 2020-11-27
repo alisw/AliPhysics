@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <vector>
+#include <memory>
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -28,6 +29,7 @@
 #include <TGeoManager.h>
 #include <TRefArray.h>
 #include <TKey.h>
+#include <TSpline.h>
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
@@ -109,6 +111,9 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fBadReco(kFALSE),
   fFillHeavyHisto(kFALSE),
   fOneHistAllBCs(kFALSE),
+  fTimeECorrection(kFALSE),
+  fEMCALTimeEShiftCorrection(0),
+  fEMCALRecalibrationFactors(NULL),
   fBadChannelMapArray(0),
   fBadChannelMapSet(kFALSE),
   fSetBadChannelMapSource(0),
@@ -404,6 +409,7 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   // set bad channel map
   if(!fBadChannelMapSet && fSetBadChannelMapSource>0) LoadBadChannelMap();
 
+  if(fTimeECorrection) InitRecalib();
   return;
 }
 
@@ -466,6 +472,9 @@ void AliAnalysisTaskEMCALTimeCalib::PrepareTOFT0maker()
 void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 {
   AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()");
+
+  // Initialize E dependent time offset
+  if(fTimeECorrection) InitEDepTimeCalibration();
 
   const Int_t nChannels = 17664;
   //book histograms
@@ -1091,6 +1100,19 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	if(GetEMCALChannelStatus(absId)) continue;//printf("bad\n");
       }
 
+	if (fTimeECorrection) {
+
+    // take out non lin from shaper for low gain cells
+    // if(fUseShaperNonlin && !isHighGain){
+    //   amp = CorrectShaperNonLin(amp,1.);
+    // }
+
+    // correct cell energy based on pi0 calibration
+    amp *= GetEMCALChannelRecalibrationFactor(nSupMod,ieta,iphi);
+
+    CorrectCellTimeVsE(amp, hkdtime, isHighGain);
+  }
+
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
           
@@ -1250,7 +1272,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
 
-        //correction in 2015 for wrong L1 phase and L1 shift
+  //correction in 2015 for wrong L1 phase and L1 shift
 	hkdtime = hkdtime - offsetPerSM - L1shiftOffset;
 
  	if(!fOneHistAllBCs){
@@ -2104,6 +2126,201 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapFile()
 void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMap(){
   if(fSetBadChannelMapSource==1) LoadBadChannelMapOADB();
   else if(fSetBadChannelMapSource==2) LoadBadChannelMapFile();
+}
+
+
+//_____________________________________________________________________
+/// Initialize the energy dependent time calibration.
+Int_t AliAnalysisTaskEMCALTimeCalib::InitEDepTimeCalibration()
+{
+  
+  AliInfo("Initialising energy dependent time calibration map");
+  
+  std::unique_ptr<TFile> timeCalibFileVsE;
+  // set spline for time dependent time calibration if option is enabled
+  AliInfo("Loading E dep time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+
+  timeCalibFileVsE = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeTiltCorrection.root").data(),"read"));
+  if (!timeCalibFileVsE || timeCalibFileVsE->IsZombie()){
+    AliFatal("OADB/EMCAL/EMCALTimeTiltCorrection.root was not found");
+    return 0;
+  }
+  fEMCALTimeEShiftCorrection = (TSpline3*)timeCalibFileVsE->Get("highGainCellTimeCorr");
+
+  return 1;
+}
+
+///
+/// Correct Slewing for each channel
+/// 
+/// \param energy: cell energy
+/// \param celltime: cell time to be returned calibrated
+/// \param isLowGain: low gain cell 
+void AliAnalysisTaskEMCALTimeCalib::CorrectCellTimeVsE(Float_t energy, Float_t & celltime, Bool_t isHighGain) const
+{
+  Double_t offset = 0;        // in ns
+  if (isHighGain){
+    offset = fEMCALTimeEShiftCorrection->Eval(energy);
+  } else {
+    offset = GetLowGainSlewing(energy);
+  }
+  std::cout<<"The offset is: "<<offset<<" And the time is: "<<celltime<<" Energy: "<<energy<<std::endl;
+  celltime -= offset;
+
+}
+
+///
+/// energy dependent time offset for low gain 
+/// returns slewing for low gain at certain cell energy
+/// \param energy: cell energy
+///
+Double_t AliAnalysisTaskEMCALTimeCalib::GetLowGainSlewing(Double_t energy) const
+{
+  Double_t offset = 0;
+  
+  if (energy > 14 && energy <= 80){
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+  } else if (energy <= 14) {
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+  } else {
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+  }
+
+  return offset;
+}
+
+Int_t AliAnalysisTaskEMCALTimeCalib::InitRecalib()
+{
+  
+  AliInfo("Initialising recalibration factors");
+    
+  std::unique_ptr<AliOADBContainer> contRF;
+  std::unique_ptr<TFile> recalibFile;
+
+  AliInfo("Loading Recalib OADB from OADB/EMCAL");
+    
+  recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read"));
+  if (!recalibFile || recalibFile->IsZombie())
+  {
+    AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
+    return 0;
+  }
+    
+  contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(recalibFile->Get("AliEMCALRecalib")));
+
+  if(!contRF) {
+    AliError("No OADB container found");
+    return 0;
+  }
+  contRF->SetOwner(true);
+  
+  TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber);
+  if (!recal)
+  {
+    AliError(Form("No Objects for run: %d",fRunNumber));
+    return 2;
+  }
+
+  TString filePass = GetPass();
+  
+  TObjArray *recalpass=(TObjArray*)recal->FindObject(filePass);
+  if (!recalpass)
+  {
+    AliError(Form("No Objects for run: %d - %s",fRunNumber,filePass.Data()));
+    return 2;
+  }
+  
+  TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
+  if (!recalib)
+  {
+    AliError(Form("No Recalib histos found for  %d - %s",fRunNumber,filePass.Data()));
+    return 2;
+  } 
+
+  Int_t sms = fgeom->GetEMCGeometry()->GetNumberOfSuperModules();
+  for (Int_t i=0; i<sms; ++i)
+  {
+    TH2F *h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+    if (!h)
+    {
+      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+      continue;
+    }
+    h->SetDirectory(0);
+    SetEMCALChannelRecalibrationFactors(i,h);
+  }
+  
+  return 1;
+}
+
+/**
+ * Get pass from filename. Sets pass in filePass.
+ */
+TString AliAnalysisTaskEMCALTimeCalib::GetPass()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  TTree *inputTree = mgr->GetTree();
+  
+  if (!inputTree)
+  {
+    AliError("Pointer to tree = 0, returning");
+    return "";
+  }
+  
+  TFile *inputFile = inputTree->GetCurrentFile();
+  if (!inputFile) {
+    AliError("Null pointer input file, returning");
+    return "";
+  }
+  
+  TString filePass;
+
+  TString fname(inputFile->GetName());
+  if      (fname.Contains("pass1_pidfix"))                filePass = TString("pass1_pidfix");
+  else if (fname.Contains("pass3_lowIR_pidfix"))          filePass = TString("pass3_lowIR_pidfix");
+  else if (fname.Contains("pass4_lowIR_pidfix_cookdedx")) filePass = TString("pass4_lowIR_pidfix_cookdedx");
+  else if (fname.Contains("pass1")) filePass = TString("pass1");
+  else if (fname.Contains("pass2")) filePass = TString("pass2");
+  else if (fname.Contains("pass3")) filePass = TString("pass3");
+  else if (fname.Contains("pass4")) filePass = TString("pass4");
+  else if (fname.Contains("pass5")) filePass = TString("pass5");
+  else if (fname.Contains("LHC11c") && fname.Contains("spc_calo")) filePass = TString("spc_calo");
+  else if (fname.Contains("calo") || fname.Contains("high_lumi"))
+  {
+    Printf("%s: Path contains <calo> or <high-lumi>, set as <pass1>", GetName());
+    filePass = TString("pass1");
+  }
+  else if (fname.Contains("LHC14a1a"))
+  {
+    AliInfo("Energy calibration activated for this MC production!");
+    filePass = TString("LHC14a1a");
+  }
+  else
+  {
+    AliFatal(Form("Pass number string not found: %s. Please set the pass number in the configuration!", fname.Data()));
+    return "";
+  }
+
+  return filePass;
+}
+
+void AliAnalysisTaskEMCALTimeCalib::SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h) {
+  if(!fEMCALRecalibrationFactors){
+    fEMCALRecalibrationFactors = new TObjArray(iSM);
+    fEMCALRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALRecalibrationFactors->GetEntries() <= iSM) fEMCALRecalibrationFactors->Expand(iSM+1);
+  if(fEMCALRecalibrationFactors->At(iSM)) fEMCALRecalibrationFactors->RemoveAt(iSM);
+  TH2F *clone = new TH2F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALRecalibrationFactors->AddAt(clone,iSM);
+}
+
+Float_t AliAnalysisTaskEMCALTimeCalib::GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const 
+{
+  if(fEMCALRecalibrationFactors) 
+    return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+  else return 1; 
 }
 
 //_____________________________________________________________________
