@@ -511,7 +511,10 @@ Bool_t AliCaloSigmaCuts::SetMinPionMassCut(Int_t PionMinMassCut){
     break; 
   case 3:
     fMinPionMass = 0.11;
-    break;    
+    break;
+  case 4:
+    fMinPionMass = 0.12;
+    break;      
   default:
     cout<<"Warning: PionMinMassCut not defined"<<PionMinMassCut<<endl;
     return kFALSE;
@@ -532,8 +535,9 @@ Bool_t AliCaloSigmaCuts::SetMaxPionMassCut(Int_t PionMaxMassCut){
     fMaxPionMass = 0.145;
     break;
   case 3:
-    fMaxPionMass = 0.16;
-    break;      
+    fMaxPionMass = 0.15;
+    break;   
+       
   default:
     cout<<"Warning: PionMaxMassCut not defined"<<PionMaxMassCut<<endl;
     return kFALSE;
@@ -579,7 +583,11 @@ Bool_t AliCaloSigmaCuts::SetOpeningAngleCut(Int_t OpeningAngleCut){
   case 3:
     fMaxOpeningAngle = 0.3;
     fMinOpeningAngle = 0.05;
-    break;   
+    break;  
+  case 4:
+    fMaxOpeningAngle = 0.25;
+    fMinOpeningAngle = 0.05;
+    break;     
   default:
     cout<<"Warning: OpeningAngleCut not defined"<<OpeningAngleCut<<endl;
     return kFALSE;
