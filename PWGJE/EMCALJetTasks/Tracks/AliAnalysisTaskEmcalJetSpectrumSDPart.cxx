@@ -171,11 +171,11 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH1("hJetNoMassNphotons", "Number of constituents for jets with mass 0", 101, -0.5, 100.5);
 
     // Outlier histos
-    fHistos->CreateTH1("hJetLeadingPtHard", "fraction of the leading jet pt / pt-hard", 100, 0., 10);
-    fHistos->CreateTH1("hPartLeadingPtHard", "fraction of the leading particle pt / pt-hard", 100, 0., 10);
-    fHistos->CreateTH1("hChargedLeadingPtHard", "fraction of the leading charged particle pt / pt-hard", 100, 0., 10);
-    fHistos->CreateTH1("hNeutralLeadingPtHard", "fraction of the leading neutral pt / pt-hard", 100, 0., 10);
-    fHistos->CreateTH1("hPhotonLeadingPtHard", "fraction of the leading photon pt / pt-hard", 100, 0., 10);
+    fHistos->CreateTH1("hJetLeadingPtHard", "fraction of the leading jet pt / pt-hard", 1000, 0., 100.);
+    fHistos->CreateTH1("hPartLeadingPtHard", "fraction of the leading particle pt / pt-hard", 1000, 0., 100.);
+    fHistos->CreateTH1("hChargedLeadingPtHard", "fraction of the leading charged particle pt / pt-hard", 1000, 0., 100.);
+    fHistos->CreateTH1("hNeutralLeadingPtHard", "fraction of the leading neutral pt / pt-hard", 1000, 0., 100.);
+    fHistos->CreateTH1("hPhotonLeadingPtHard", "fraction of the leading photon pt / pt-hard", 1000, 0., 100.);
     
 
     // SoftDrop
@@ -228,15 +228,17 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
 
     if(fMCPartonInfo) {
         auto hardest = fMCPartonInfo->GetHardestParton();
-        auto hardestpt = hardest->GetMomentum().Pt();
-        fHistos->FillTH1("fHardPartonPt", hardestpt);
-        if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", hardestpt/fPtHard);
-        if(hardest->GetPdg() < 7) {
-            fHistos->FillTH1("fHardQuarkPt", hardestpt); 
-            if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", hardestpt/fPtHard);
-        } else {
-            fHistos->FillTH1("fHardGluonPt", hardestpt);
-            if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", hardestpt/fPtHard);
+        if(hardest) {
+            auto hardestpt = hardest->GetMomentum().Pt();
+            fHistos->FillTH1("fHardPartonPt", hardestpt);
+            if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", hardestpt/fPtHard);
+            if(hardest->GetPdg() < 7) {
+                fHistos->FillTH1("fHardQuarkPt", hardestpt); 
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", hardestpt/fPtHard);
+            } else {
+                fHistos->FillTH1("fHardGluonPt", hardestpt);
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", hardestpt/fPtHard);
+            }
         }
     }
 
