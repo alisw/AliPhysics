@@ -1224,7 +1224,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMot
   TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
 
   // Opening Angle Cut
-  if( ( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) ) &&
+  if( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) &&
     (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
   {
     return kFALSE;
@@ -2504,12 +2504,29 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 3;
       break;
-    case 30: // u // EMC-EMC - 2 sigma - gamma selection
+      // Varation for 13 TeV EDC
+    case 30: // u // EMC-EMC - 1 sigma - gamma selection
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fUseGammaSelection = kTRUE;
-      fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 0;
+      break;
+    case 31: // v // EMC-EMC - 3 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 0;
+      break;
+    case 32: // w // EMC-EMC - 4 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 0;
       break;
     default:
