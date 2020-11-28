@@ -747,10 +747,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
     fOutputList->Add(fLSdcaBelow);
     
-    /*fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    /*fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,250,0.,50.);
     fOutputList->Add(fULSdcaBelow);
     
-    fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,100,0,10.);
+    fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,250,0.,50.);
     fOutputList->Add(fLSdcaBelow);*/
     
     if (fFlagFillMCHistos) {
@@ -1084,16 +1084,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fEnhPhotonTagDCA->Sumw2();
         fOutputList->Add(fEnhPhotonTagDCA);
         
-        fComboNumWeight = new TH2F("fComboNumWeight","Eff Num with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,100,0,10.);
+        fComboNumWeight = new TH2F("fComboNumWeight","Eff Num with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
         fComboNumWeight->Sumw2();
         fOutputList->Add(fComboNumWeight);
-        fComboNumNoWeight = new TH2F("fComboNumNoWeight","Eff Num Without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,100,0,10.);
+        fComboNumNoWeight = new TH2F("fComboNumNoWeight","Eff Num Without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
         fComboNumNoWeight->Sumw2();
         fOutputList->Add(fComboNumNoWeight);
-        fComboDenomWeight = new TH2F("fComboDenomWeight","Eff Denom with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,100,0,10.);
+        fComboDenomWeight = new TH2F("fComboDenomWeight","Eff Denom with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
         fComboDenomWeight->Sumw2();
         fOutputList->Add(fComboDenomWeight);
-        fComboDenomNoWeight = new TH2F("fComboDenomNoWeight","Eff Denom without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,100,0,10.);
+        fComboDenomNoWeight = new TH2F("fComboDenomNoWeight","Eff Denom without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
         fComboDenomNoWeight->Sumw2();
         fOutputList->Add(fComboDenomNoWeight);
     
