@@ -2710,7 +2710,7 @@ cout << "-------------------------------------" << endl;
                                      } // end if pid_eleD
 
 
-				    }if (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599 ) {//if from B meson
+				    }if (pid_eleB && (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599) ) {//if from B meson
 					    //cout<<"TESTING5"<<endl;
 					    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
@@ -2726,7 +2726,7 @@ cout << "-------------------------------------" << endl;
 						    fDCAxy_Pt_Bmeson->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 					    }
 
-				    }if (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999 ) {//if from B baryon
+				    }if (pid_eleB && (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999)) {//if from B baryon
 					    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
 						    bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
