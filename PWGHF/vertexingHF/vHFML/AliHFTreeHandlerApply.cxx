@@ -12,12 +12,17 @@
 
 #include <cmath>
 #include <limits>
+
+#include "TMath.h"
+#include "TFile.h"
+
 #include "AliHFTreeHandlerApply.h"
 #include "AliPID.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrack.h"
-#include "TMath.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerApply);
@@ -603,11 +608,21 @@ float AliHFTreeHandlerApply::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* 
 //________________________________________________________________
 void AliHFTreeHandlerApply::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
   
-  if(fRunNumber!=fRunNumberPrevCand)
+  if(fRunNumber!=fRunNumberPrevCand) {
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    Bool_t isPass1 = kFALSE;
+    TTree *treeAOD = inputHandler->GetTree();
+    TString currentFile = treeAOD->GetCurrentFile()->GetName();
+    if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+      isPass1 = kTRUE;
+
     AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr,
                                                   fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData,
-                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
-  
+                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData, isPass1);
+  }
+
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
