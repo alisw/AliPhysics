@@ -1394,7 +1394,7 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedTrackQualityCuts_Syst (AliESDtrack *tra
     
     //Analysis Parameters
     Int_t    nCrossedRows_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (1,(isyst+1)));
-    Double_t nCrossedRows_over_Findable_Min = hAnalysisParameters -> GetBinContent (2,(isys+1));
+    Double_t nCrossedRows_over_Findable_Min = hAnalysisParameters -> GetBinContent (2,(isyst+1));
     Int_t    nClustersITS_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (3,(isyst+1)));
     Double_t chi2TPC_ndf_Max                = hAnalysisParameters -> GetBinContent (4,(isyst+1));
     Double_t chi2ITS_ndf_Max                = hAnalysisParameters -> GetBinContent (5,(isyst+1));
