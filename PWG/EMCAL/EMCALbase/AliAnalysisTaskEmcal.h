@@ -1124,6 +1124,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual void				        UserFileChanged()					{}
 
   /**
+   * @brief Virtual method for user code to retrieve event objects used in their task
+   */
+  virtual void                UserRetrieveEventObjects() {}
+
+  /**
    * @brief Function filling histograms
    *
    * This function optionally fills histograms created by the users. Can

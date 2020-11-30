@@ -51,6 +51,8 @@ public:
     void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
     void SetSDUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
+    void SetCutHardestPartonPt(double ptmin, double ptmax) { fCutHardPartonPt = true; fMinPtHardParton = ptmin; fMaxPtHardParton = ptmax; }
+    void SetUsePtHardPartonInOutlierCut(bool doUse) { fUseHardPartonPtOutliers = doUse; }
 
     static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag = "");
 
@@ -60,6 +62,7 @@ protected:
     virtual bool Run();
     virtual bool IsEventSelected();
     virtual bool CheckMCOutliers();
+    virtual void UserRetrieveEventObjects();
 
 private:
     THistManager                            *fHistos;                       //!<! Histogram
@@ -72,6 +75,12 @@ private:
     Bool_t                                  fUseChargedConstituents;        ///< SoftDrop use charged constituents
     Bool_t                                  fUseNeutralConstituents;        ///< SoftDrop use neutral constituents
     Bool_t                                  fUseStandardOutlierRejection;   ///< Fall back to standard outlier rejection
+    Bool_t                                  fCutHardPartonPt;               ///< Apply cut on the pt of the hardest parton
+    Bool_t                                  fUseHardPartonPtOutliers;       ///< Use pt of the hardest parton instead of pt-hard in outlier cut
+    Double_t                                fPtHardParton;                  ///< Pt of the hardest
+    Int_t                                   fPdgHardParton;                 ///< Pdg of the hardest parton
+    Double_t                                fMinPtHardParton;               ///< Min. pt of the hardest parton used to select events
+    Double_t                                fMaxPtHardParton;               ///< Max. pt of the hardest parton used to select events
 
     ClassDef(AliAnalysisTaskEmcalJetSpectrumSDPart, 1);
 };

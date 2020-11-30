@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
+#include <climits>
 #include <cstring>
 #include <sstream>
 #include <THistManager.h>
@@ -55,7 +56,13 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fZcut(0.1),
     fUseChargedConstituents(true),
     fUseNeutralConstituents(true),
-    fUseStandardOutlierRejection(false)
+    fUseStandardOutlierRejection(false),
+    fCutHardPartonPt(false),
+    fUseHardPartonPtOutliers(false),
+    fPtHardParton(0.),
+    fPdgHardParton(INT_MIN),
+    fMinPtHardParton(-1.),
+    fMaxPtHardParton(1e10)
 {
 }
 
@@ -69,7 +76,13 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fZcut(0.1),
     fUseChargedConstituents(true),
     fUseNeutralConstituents(true),
-    fUseStandardOutlierRejection(false)
+    fUseStandardOutlierRejection(false),
+    fCutHardPartonPt(false),
+    fUseHardPartonPtOutliers(false),
+    fPtHardParton(0.),
+    fPdgHardParton(INT_MIN),
+    fMinPtHardParton(-1.),
+    fMaxPtHardParton(1e10)
 {
     SetMakeGeneralHistograms(true);
 }
@@ -86,12 +99,20 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
 
     // Event property
     fHistos->CreateTH1("fNevents", "Number of events", 1, 0.5, 1.5);
+    fHistos->CreateTH1("fHardPartonPtAll", "Pt of the hard parton", 1000, 0., 1000.);
+    fHistos->CreateTH1("fHardGluonPtAll", "Pt of the hard parton", 1000, 0., 1000.);
+    fHistos->CreateTH1("fHardQuarkPtAll", "Pt of the hard parton", 1000, 0., 1000.);
+    fHistos->CreateTH1("fFracHardPartonPtAll", "Pt of the hard parton / pt-hard", 100, 0., 10.);
+    fHistos->CreateTH1("fFracHardGluonPtAll", "Pt of the hard parton / pt-hard", 100, 0., 10.);
+    fHistos->CreateTH1("fFracHardQuarkPtAll", "Pt of the hard parton / pt-hard", 100, 0., 10.);
     fHistos->CreateTH1("fHardPartonPt", "Pt of the hard parton", 1000, 0., 1000.);
     fHistos->CreateTH1("fHardGluonPt", "Pt of the hard parton", 1000, 0., 1000.);
     fHistos->CreateTH1("fHardQuarkPt", "Pt of the hard parton", 1000, 0., 1000.);
     fHistos->CreateTH1("fFracHardPartonPt", "Pt of the hard parton / pt-hard", 100, 0., 10.);
     fHistos->CreateTH1("fFracHardGluonPt", "Pt of the hard parton / pt-hard", 100, 0., 10.);
     fHistos->CreateTH1("fFracHardQuarkPt", "Pt of the hard parton / pt-hard", 100, 0., 10.);
+    fHistos->CreateTH1("fHistEventsHardPartonAll", "Number of events with hard parton", 2, -0.5, 1.5);
+    fHistos->CreateTH1("fHistEventsHardPartonSelected", "Number of events with hard parton", 2, -0.5, 1.5);
 
     // Part level QA
     fHistos->CreateTH1("hPtParticleAll", "pt spectrum of all particles", 1000, 0., 1000.);
@@ -176,6 +197,11 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     fHistos->CreateTH1("hChargedLeadingPtHard", "fraction of the leading charged particle pt / pt-hard", 1000, 0., 100.);
     fHistos->CreateTH1("hNeutralLeadingPtHard", "fraction of the leading neutral pt / pt-hard", 1000, 0., 100.);
     fHistos->CreateTH1("hPhotonLeadingPtHard", "fraction of the leading photon pt / pt-hard", 1000, 0., 100.);
+    fHistos->CreateTH1("hJetLeadingPtHardParton", "fraction of the leading jet pt / pt of the hardest parton", 1000, 0., 100.);
+    fHistos->CreateTH1("hPartLeadingPtHardParton", "fraction of the leading particle pt / pt of the hardest parton", 1000, 0., 100.);
+    fHistos->CreateTH1("hChargedLeadingPtHardParton", "fraction of the leading charged particle pt / pt of the hardest parton", 1000, 0., 100.);
+    fHistos->CreateTH1("hNeutralLeadingPtHardParton", "fraction of the leading neutral pt / pt of the hardest parton", 1000, 0., 100.);
+    fHistos->CreateTH1("hPhotonLeadingPtHardParton", "fraction of the leading photon pt / pt of the hardest parton", 1000, 0., 100.);
     
 
     // SoftDrop
@@ -196,6 +222,30 @@ void AliAnalysisTaskEmcalJetSpectrumSDPart::UserCreateOutputObjects()
     PostData(1, fOutput);
 }
 
+void AliAnalysisTaskEmcalJetSpectrumSDPart::UserRetrieveEventObjects(){
+    fPtHardParton = -1.;
+    fPdgHardParton = INT_MIN;
+    double statusHardest = 0.;
+    if(fMCPartonInfo) {
+        auto hardest = fMCPartonInfo->GetHardestParton();
+        if(hardest) {
+            statusHardest = 1.;
+            fPtHardParton = hardest->GetMomentum().Pt();
+            fPdgHardParton = hardest->GetPdg();
+            fHistos->FillTH1("fHardPartonPtAll", fPtHardParton);
+            if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPtAll", fPtHardParton/fPtHard);
+            if(fPdgHardParton < 7) {
+                fHistos->FillTH1("fHardQuarkPtAll", fPtHardParton); 
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPtAll", fPtHardParton/fPtHard);
+            } else {
+                fHistos->FillTH1("fHardGluonPtAll", fPtHardParton);
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPtAll", fPtHardParton/fPtHard);
+            }
+        }
+    }
+    fHistos->FillTH1("fHistEventsHardPartonAll", statusHardest);
+}
+
 Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::IsEventSelected() {
     if(fMCRejectFilter) return CheckMCOutliers();
     return true;
@@ -206,12 +256,22 @@ Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
     if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
     if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
     AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+    if(fCutHardPartonPt || fUseHardPartonPtOutliers) {
+        // in case of fCutHardPartonPt: dedicated pt-hard range was set by the user
+        // in case of fUseHardPartonPtOutliers: no dedicated pt-hard range was set by 
+        //                                      the user, but observable is used later
+        //                                      in the outlier cut, so just check whether
+        //                                      a hard parton was found (pt >= 0)
+        if(fPtHardParton < fMinPtHardParton || fPtHardParton > fMaxPtHardParton) return false;
+    }
     AliJetContainer *outlierjets = GetJetContainer("partjets");
     if(!outlierjets) return true;
 
     // Check whether there is at least one particle level jet with pt above n * event pt-hard
     auto jetiter = outlierjets->accepted();
     auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
+    auto pthard = fPtHard;
+    if(fUseHardPartonPtOutliers) pthard = fPtHardParton;
     if(max != jetiter.end())  {
         // At least one jet found with pt > n * pt-hard
         AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
@@ -226,21 +286,20 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     auto jets = GetJetContainer("partjets");
     auto particles = jets->GetParticleContainer();
 
-    if(fMCPartonInfo) {
-        auto hardest = fMCPartonInfo->GetHardestParton();
-        if(hardest) {
-            auto hardestpt = hardest->GetMomentum().Pt();
-            fHistos->FillTH1("fHardPartonPt", hardestpt);
-            if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", hardestpt/fPtHard);
-            if(hardest->GetPdg() < 7) {
-                fHistos->FillTH1("fHardQuarkPt", hardestpt); 
-                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", hardestpt/fPtHard);
-            } else {
-                fHistos->FillTH1("fHardGluonPt", hardestpt);
-                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", hardestpt/fPtHard);
-            }
+    double statusHardest = 0.;
+    if(fPtHardParton > 1e-5) {
+        statusHardest = 1.;
+        fHistos->FillTH1("fHardPartonPt", fPtHardParton);
+        if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardPartonPt", fPtHardParton/fPtHard);
+        if(fPdgHardParton < 7) {
+                fHistos->FillTH1("fHardQuarkPt", fPtHardParton); 
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardGluonPt", fPtHardParton/fPtHard);
+        } else {
+                fHistos->FillTH1("fHardGluonPt", fPtHardParton);
+                if(TMath::Abs(fPtHard) > 1e-5) fHistos->FillTH1("fFracHardQuarkPt", fPtHardParton/fPtHard);
         }
     }
+    fHistos->FillTH1("fHistEventsHardPartonSelected", statusHardest);
 
     // check MC event directly
     int nphysprim(0), nsecondary(0);
@@ -314,22 +373,25 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
     if(maxpart) {
         fHistos->FillTH1("hPtParticleMax", TMath::Abs(maxpart->Pt()));
         fHistos->FillTH2("hEtaPhiMaxParticle", maxpart->Eta(), TVector2::Phi_0_2pi(maxpart->Phi()));
-        if(fPtHard > 1e-5) fHistos->FillTH1("hPartLeadingPtHard", maxpart->Pt() / fPtHard);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPartLeadingPtHardParton", maxpart->Pt() / fPtHardParton);
     }
     if(maxcharged) {
         fHistos->FillTH1("hPtParticleMaxCharged", TMath::Abs(maxcharged->Pt()));
         fHistos->FillTH2("hEtaPhiMaxCharged", maxcharged->Eta(), TVector2::Phi_0_2pi(maxcharged->Phi()));
         if(fPtHard > 1e-5) fHistos->FillTH1("hChargedLeadingPtHard", maxcharged->Pt() / fPtHard);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hChargedLeadingPtHardParton", maxcharged->Pt() / fPtHardParton);
     }
     if(maxneutral) {
         fHistos->FillTH1("hPtParticleMaxNeutal", TMath::Abs(maxneutral->Pt()));
         fHistos->FillTH2("hEtaPhiMaxNeutral", maxneutral->Eta(), TVector2::Phi_0_2pi(maxneutral->Phi()));
         if(fPtHard > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHard", maxneutral->Pt() / fPtHard);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hNeutralLeadingPtHardParton", maxneutral->Pt() / fPtHardParton);
     }
     if(maxphoton) {
         fHistos->FillTH1("hPtParticleMaxPhoton", TMath::Abs(maxphoton->Pt()));
         fHistos->FillTH2("hEtaPhiMaxPhoton", maxphoton->Eta(), TVector2::Phi_0_2pi(maxphoton->Phi()));
         if(fPtHard > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHard", maxphoton->Pt() / fPtHard);
+        if(fPtHardParton > 1e-5) fHistos->FillTH1("hPhotonLeadingPtHardParton", maxphoton->Pt() / fPtHardParton);
     }
     fHistos->FillTH1("hNParticlesEvent", nall);
     fHistos->FillTH1("hNChargedEvent", ncharged);
@@ -473,6 +535,9 @@ bool AliAnalysisTaskEmcalJetSpectrumSDPart::Run()
 
     if(maxjet){
         if(fPtHard) fHistos->FillTH1("hJetLeadingPtHard", maxjet->Pt()/fPtHard);
+        if(fPtHardParton > 1e-5) {
+            if(fPtHard) fHistos->FillTH1("hJetLeadingPtHardParton", maxjet->Pt()/fPtHard);
+        }
         fHistos->FillTH1("hMaxJetPt", maxjet->Pt());
         fHistos->FillTH2("hMaxJetEtaPhi", maxjet->Eta(), maxjet->Phi());
         fHistos->FillTH2("hMaxJetNEFPt", maxjet->Pt(), maxjet->NEF());
