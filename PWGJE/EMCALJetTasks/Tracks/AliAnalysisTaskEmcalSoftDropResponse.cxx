@@ -1111,11 +1111,17 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       } catch (...) {
         continue;
       }
+      bool untaggedEfficinency = softdropPart.fZg < fZcut;
+      double zgpart = softdropPart.fZg,
+             rgpart = untaggedEfficinency ? -0.01 : softdropPart.fRg,
+             thetagpart = untaggedEfficinency ? -0.05 : softdropPart.fRg/Rjet,
+             nsdpart = untaggedEfficinency ? -1. : double(splittingsPart.size());
       // Fill 2D part. level distributions
-      fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
-      fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
-      fHistManager.FillTH2("hNsdPartLevelFine", splittingsPart.size(), partjet->Pt());
-      fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
+      bool untagged = softdropPart.fZg < fZcut;
+      fHistManager.FillTH2("hZgPartLevelFine", zgpart, partjet->Pt());
+      fHistManager.FillTH2("hRgPartLevelFine", rgpart , partjet->Pt());
+      fHistManager.FillTH2("hNsdPartLevelFine", nsdpart, partjet->Pt());
+      fHistManager.FillTH2("hThetagPartLevelFine", thetagpart, partjet->Pt());
 
       // Handle jet finding efficiency
       // Point efficiency
@@ -1145,11 +1151,6 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       } else {
         AliDebugStream(1) << "No det level jet found for part level jet" << std::endl;
       }
-      bool untaggedEfficinency = softdropPart.fZg < fZcut;
-      double zgpart = softdropPart.fZg,
-             rgpart = untaggedEfficinency ? -0.01 : softdropPart.fRg,
-             thetagpart = untaggedEfficinency ? -0.05 : softdropPart.fRg/Rjet,
-             nsdpart = untaggedEfficinency ? -1. : double(splittingsPart.size());
       double pointEfficiencyZg[3] = {zgpart, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyRg[3] = {rgpart, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyThetag[3] = {thetagpart, partjet->Pt(), static_cast<double>(tag)},
@@ -1184,7 +1185,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
         fHistManager.FillTH2(Form("hSDUsedChargedPtjvPtc%s", tag.data()), jet.Pt(), track->Pt());
         fHistManager.FillTH2(Form("hSDUsedChargedEtaPhi%s", tag.data()), track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
         fHistManager.FillTH2(Form("hSDUsedChargedDR%s", tag.data()), jet.Pt(), jetvec.DeltaR(trackvec));
-        if(hasMaxCharged) {
+        if(!hasMaxCharged) {
           maxcharged = trackvec;
           hasMaxCharged = true;
         } else {
@@ -1195,7 +1196,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
         fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), track->Pt());
         fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
         fHistManager.FillTH2("hSDUsedNeutralDRPart", jet.Pt(), jetvec.DeltaR(trackvec));
-        if(hasMaxNeutral) {
+        if(!hasMaxNeutral) {
             maxneutral = trackvec;
             hasMaxNeutral = true;
         } else {
@@ -1229,7 +1230,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
       }
       fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
       fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
-      if(hasMaxNeutral) {
+      if(!hasMaxNeutral) {
         maxneutral = clustervec3;
         hasMaxNeutral = true;
       } else {
