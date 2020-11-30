@@ -1734,6 +1734,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     cont->NextEvent(InputEvent());
   }
 
+  UserRetrieveEventObjects();
+
   return kTRUE;
 }
 
