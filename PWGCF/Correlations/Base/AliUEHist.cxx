@@ -1297,7 +1297,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
     
     if (normalizePerTrigger)
     {
-      Printf("Dividing %f tracks by %lld events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
+      Printf("Dividing %f tracks by %f events (%d correlation function(s)) (error %f)", totalTracks->Integral(), totalEvents, nCorrelationFunctions, errors[0]);
       if (totalEvents > 0)
 	totalTracks->Scale(1.0 / totalEvents);
     }
