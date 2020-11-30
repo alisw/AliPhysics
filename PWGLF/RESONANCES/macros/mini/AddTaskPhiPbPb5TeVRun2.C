@@ -43,7 +43,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
  Bool_t      isESD = kFALSE,
  Bool_t      enableMonitor = kTRUE,
  Bool_t      IsMcTrueOnly = kFALSE,
- TString     monitorOpt = "NoSIGN",
+ TString     monitorOpt = "PbPb",
  Bool_t      useMixLS = 0,
  Bool_t      checkReflex = 0,
  UInt_t      triggerMask = AliVEvent::kINT7,
@@ -127,7 +127,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
   eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
   //eventCuts->AddCut(cutVertex);
   eventCuts->AddCut(cutEventUtils);
-  eventCuts->SetCutScheme(Form("%s%s",cutEventUtils->GetName()));
+  eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
   task->SetEventCuts(eventCuts);
 
   // ------------ EVENT-ONLY COMPUTATIONS -----------------------
