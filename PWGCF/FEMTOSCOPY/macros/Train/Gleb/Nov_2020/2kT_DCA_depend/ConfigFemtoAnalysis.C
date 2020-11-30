@@ -286,8 +286,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	    dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	    //dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
 	    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.035, -1.1);
-	    //dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
-		dtc1etaphitpc[aniter]->SetMaxImpactZPtDep(0.0105, 0.035, -1.1);
+	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 	  }
 	  else if (runtype == 1) {
@@ -302,8 +301,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	    //      dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(6.0);
 	    //dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
 	    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.035, -1.1);
-	    //dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
-		dtc1etaphitpc[aniter]->SetMaxImpactZPtDep(0.0105, 0.035, -1.1);
+	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 	  }
 	  else if (runtype == 2) {
@@ -318,8 +316,7 @@ AliFemtoEventReaderAOD *Reader = new AliFemtoEventReaderAODMultSelection();
 	    dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	    //dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAxy);
 	    dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.035, -1.1);
-	    //dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
-		dtc1etaphitpc[aniter]->SetMaxImpactZPtDep(0.0105, 0.035, -1.1);
+	    dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAz);
 	    //      dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 	  }
 
