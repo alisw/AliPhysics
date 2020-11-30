@@ -12,6 +12,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isNanoAOD = true,
   bool BruteForceDebugging = false,
   bool DeuteronSideband = false,
+  double thresholdTOF = 1.4,
   double DeuteronSigmaLeft = 2.0,
   double DeuteronSigmaRight = 4.0,
   double AntideuteronSigmaLeft = 2.0,
@@ -27,14 +28,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   int ProtonPDG = 2212;
   int LambdaPDG = 3122;
   int DeuteronPDG = 1000010020;
-  double thresholdTOF;
-
-  if(DeuteronSideband){
-    thresholdTOF = 999.0;
-  }else{
-    thresholdTOF = 1.4;
-  }
-
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Begin of the AddTask\n");
