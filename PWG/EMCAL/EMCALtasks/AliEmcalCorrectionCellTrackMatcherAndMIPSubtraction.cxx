@@ -31,7 +31,6 @@ AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::AliEmcalCorrectionCellTrack
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction"),
   fEmipData(0.2356),
   fEmipMC(0.2824),
-  fEmcalTracks(0),
   fCellTrackMatchdEtadPhi(0),
   fCellNTrackMatch(0),
   fCellTrackMatchEbefore(0),
@@ -96,7 +95,6 @@ Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Run()
 {
   AliEmcalCorrectionComponent::Run();
 
-  fEmcalTracks->Delete();
   AliVTrack* track = 0;
 
   AliParticleContainer * partCont = 0;
