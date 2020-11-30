@@ -1293,19 +1293,19 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 	   break; //The next edge is a breaking point -> this bin does not exist anymore
 	}
 
-	 fResults[icent] = new TProfile("fResults","Result Analysis First Set Correlators",16,0.,16.); //centrality dependet output
+	 fResults[icent] = new TProfile("fResults","Result Analysis First Set Correlators",16,0.,16.,"s"); //centrality dependet output
 	 fResults[icent]->GetXaxis()->SetTitle("");
 	 fResults[icent]->GetYaxis()->SetTitle("");
 	 fResults[icent]->Sumw2();
 	 fFinalResultsList[icent]->Add(fResults[icent]);
 
-	 fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.); //centrality dependet output
+	 fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.,"s"); //centrality dependet output
 	 fCovResults[icent]->GetXaxis()->SetTitle("");
 	 fCovResults[icent]->GetYaxis()->SetTitle("");
 	 fCovResults[icent]->Sumw2();
 	 fFinalResultsList[icent]->Add(fCovResults[icent]); 
 
-	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.); //centrality dependet output
+	 fMixedParticleHarmonics[icent] = new TProfile("fMixedParticleHarmonics","fMixedParticleHarmonics",2,0.,2.,"s"); //centrality dependet output
 	 fMixedParticleHarmonics[icent]->GetXaxis()->SetTitle("");
 	 fMixedParticleHarmonics[icent]->GetYaxis()->SetTitle("");
 	 fMixedParticleHarmonics[icent]->Sumw2(); 
