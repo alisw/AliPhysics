@@ -1044,7 +1044,7 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   TH2* eventMixedAll = 0;
   TH2* eventMixedAllStep6 = 0;
   
-  Long64_t totalEvents = 0;
+  Double_t totalEvents = 0; // a counter that takes into account non-unitary weights, thus it is a double
   Int_t nCorrelationFunctions = 0;
   
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
