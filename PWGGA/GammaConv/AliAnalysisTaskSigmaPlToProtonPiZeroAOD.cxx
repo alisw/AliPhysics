@@ -406,7 +406,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fHistRotationWProtonPion[iCut] = new TH2F("fHistRotationWProtonPion", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 		fHistRotationWProtonPion[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistRotationWProtonPion[iCut]);
-		if(fIsMC > 0) {
+		if(fIsMC > 1) {
 			fHistSigmaPlus[iCut]->Sumw2();
 			fHistReconstructedMassPi0[iCut]->Sumw2();
 			fHistReconstructedMassPi0wCut[iCut]->Sumw2();
@@ -487,38 +487,42 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 
 		if(fIsMC > 0){
 			fHistPodolanskiWCutTrue[iCut] = new TH2F("fHistPodolanskiWCutTrue","", 100, 0., 1., 100, 0., 1.);
-			fHistPodolanskiWCutTrue[iCut]->Sumw2();
 			fHistTrueProtonPt[iCut] = new TH1F("fHistTrueProtonPt", "fHistTrueProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 10);
-			fHistTrueProtonPt[iCut]->Sumw2();
 			fHistSigmaMassPtWoPodCutMC[iCut] = new TH2F("fHistSigmaMassPtWoPodCutMC", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistSigmaMassPtWoPodCutMC[iCut]->Sumw2();
 			fHistTrackDCAXYTrue[iCut] = new TH2F("fHistTrackDCAXYTrue", "fHistTrackDCAXYTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAXYTrue[iCut]->Sumw2();
 			fHistTrackDCAZTrue[iCut] = new TH2F("fHistTrackDCAZTrue", "fHistTrackDCAZTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAZTrue[iCut]->Sumw2();
 			fHistTrackDCAXYTruewCuts[iCut] = new TH2F("fHistTrackDCAXYTruewCuts", "fHistTrackDCAXYTruewCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAXYTruewCuts[iCut]->Sumw2();
 			fHistTrackDCAZTruewCuts[iCut] = new TH2F("fHistTrackDCAZTruewCuts", "fHistTrackDCAZTruewCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAZTruewCuts[iCut]->Sumw2();
 			fHistDecayangleTrue[iCut] = new TH2F("fHistDecayangleTrue", ";#vartheta (rad);#it{p}_{T,Proton} (GeV/#it{c})", 100, 0, TMath::Pi(), 40, 0., 10.);
-			fHistDecayangleTrue[iCut]->Sumw2();
 			fHistDecayangleTruewCut[iCut] = new TH2F("fHistDecayangleTruewCut", ";#vartheta (rad);#it{p}_{T,Proton} (GeV/#it{c})", 100, 0, TMath::Pi(), 40, 0., 10.);
-			fHistDecayangleTruewCut[iCut]->Sumw2();
 		
 			fHistSigmaPlusMC[iCut] = new TH2F("fHistSigmaPlusMC", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistSigmaPlusMC[iCut]->Sumw2();
 			fHistSigmaPlusMCTrueProtonGamma[iCut] = new TH2F("fHistSigmaPlusMCTrueProtonGamma", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistSigmaPlusMCTrueProtonGamma[iCut]->Sumw2();
 			fHistSigmaPlusMCTrueProton[iCut] = new TH2F("fHistSigmaPlusMCTrueProton", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistSigmaPlusMCTrueProton[iCut]->Sumw2();
 			fHistSigmaPlusMCTruePion[iCut] = new TH2F("fHistSigmaPlusMCTruePion", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistSigmaPlusMCTruePion[iCut]->Sumw2();
 			fHistDoubleCountTrueSigmaInvMassPt[iCut] = new TH2F("fHistDoubleCountTrueSigmaInvMassPt", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistDoubleCountTrueSigmaInvMassPt[iCut]->Sumw2();
 			fHistReconstructedMassPi0MC[iCut] = new TH2F("fHistReconstructedMassPi0MC",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
-			fHistReconstructedMassPi0MC[iCut]->Sumw2();
 			fHistReconstructedMassPi0MCwCut[iCut] = new TH2F("fHistReconstructedMassPi0MCwCut",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
-			fHistReconstructedMassPi0MCwCut[iCut]->Sumw2();
+			
+			if(fIsMC > 1){
+				fHistPodolanskiWCutTrue[iCut]->Sumw2();
+				fHistTrueProtonPt[iCut]->Sumw2();
+				fHistSigmaMassPtWoPodCutMC[iCut]->Sumw2();
+				fHistTrackDCAXYTrue[iCut]->Sumw2();
+				fHistTrackDCAZTrue[iCut]->Sumw2();
+				fHistTrackDCAXYTruewCuts[iCut]->Sumw2();
+				fHistTrackDCAZTruewCuts[iCut]->Sumw2();
+				fHistDecayangleTrue[iCut]->Sumw2();
+				fHistDecayangleTruewCut[iCut]->Sumw2();
+				fHistReconstructedMassPi0MCwCut[iCut]->Sumw2();
+				fHistReconstructedMassPi0MC[iCut]->Sumw2();
+				fHistDoubleCountTrueSigmaInvMassPt[iCut]->Sumw2();
+				fHistSigmaPlusMCTruePion[iCut]->Sumw2();
+				fHistSigmaPlusMCTrueProton[iCut]->Sumw2();
+				fHistSigmaPlusMCTrueProtonGamma[iCut]->Sumw2();
+				fHistSigmaPlusMC[iCut]->Sumw2();
+			}
+			
 			fAODList[iCut]->Add(fHistSigmaPlusMC[iCut]);
 			fAODList[iCut]->Add(fHistSigmaPlusMCTrueProtonGamma[iCut]);
 			fAODList[iCut]->Add(fHistSigmaPlusMCTrueProton[iCut]);
