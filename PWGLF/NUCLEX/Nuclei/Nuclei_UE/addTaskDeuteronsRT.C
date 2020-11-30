@@ -17,7 +17,7 @@ AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
                                                 Double_t  multMin = 0.0,
                                                 Double_t  multMax = 100.0,
                                                 Double_t  pt_min_leading = 3.0,
-                                                Double_t  average_Nch_Transv = 6.82)  {
+                                                Double_t  average_Nch_Transv = 6.89475)  {
     
     
     //Get Analysis Parameters
