@@ -320,7 +320,7 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
 
     
     //Arrays
-    Double_t Nch_Tr[]   = { 0.0, 0.5, 1.5, 2.5, 5.0, 10.0 };
+    Double_t Nch_Tr[]   = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 5.0, 10.0 };
     Double_t pt_TPC[]   = { 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5 };
     Double_t pt_TOF[]   = { 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 5.0 };
     Double_t pt_DCA[]   = { 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0 };
@@ -1393,12 +1393,12 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedTrackQualityCuts_Syst (AliESDtrack *tra
 
     
     //Analysis Parameters
-    Int_t    nCrossedRows_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (1,isyst));
-    Double_t nCrossedRows_over_Findable_Min = hAnalysisParameters -> GetBinContent (2,isyst);
-    Int_t    nClustersITS_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (3,isyst));
-    Double_t chi2TPC_ndf_Max                = hAnalysisParameters -> GetBinContent (4,isyst);
-    Double_t chi2ITS_ndf_Max                = hAnalysisParameters -> GetBinContent (5,isyst);
-    Int_t    nClustersTPC_dEdx_Min          = TMath::Nint(hAnalysisParameters -> GetBinContent (6,isyst));
+    Int_t    nCrossedRows_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (1,(isyst+1)));
+    Double_t nCrossedRows_over_Findable_Min = hAnalysisParameters -> GetBinContent (2,(isyst+1));
+    Int_t    nClustersITS_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (3,(isyst+1)));
+    Double_t chi2TPC_ndf_Max                = hAnalysisParameters -> GetBinContent (4,(isyst+1));
+    Double_t chi2ITS_ndf_Max                = hAnalysisParameters -> GetBinContent (5,(isyst+1));
+    Int_t    nClustersTPC_dEdx_Min          = TMath::Nint(hAnalysisParameters -> GetBinContent (6,(isyst+1)));
     
     
     //Cuts
