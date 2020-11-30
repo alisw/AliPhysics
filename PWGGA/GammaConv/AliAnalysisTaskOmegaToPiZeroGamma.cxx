@@ -611,38 +611,38 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
 
   // QA histograms
   if(!fDoLightOutput){
-    if(fDoMesonQA && 0b00000001) {
+    if(fDoMesonQA & 0b00000001) {
       fHistoPhotonPairYPt                 = new TH2F*[fnCuts];
       fHistoMotherYPt                     = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b00000010) {
+    if(fDoMesonQA & 0b00000010) {
       fHistoPhotonPairAlphaPt             = new TH2F*[fnCuts];
       fHistoMotherAlphaPt                 = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b00000100) {
+    if(fDoMesonQA & 0b00000100) {
       fHistoPhotonPairOpenAnglePt         = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b00001000) {
+    if(fDoMesonQA & 0b00001000) {
       fHistoPhotonPairEtaPhi              = new TH2F*[fnCuts];
       fHistoMotherEtaPhi                  = new TH2F*[fnCuts];
       if(fReconMethod!=2 && fReconMethod!=5)
       fHistoMotherConvPhotonEtaPhi      = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b00010000) {
+    if(fDoMesonQA & 0b00010000) {
       fHistoMotherPi0AnglePt              = new TH2F*[fnCuts];
       fHistoMotherGammaAnglePt            = new TH2F*[fnCuts];
       fHistoPi0GammaAnglePt               = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b00100000) {
+    if(fDoMesonQA & 0b00100000) {
       fHistoMotherRestGammaCosAnglePt     = new TH2F*[fnCuts];
       fHistoMotherRestPi0CosAnglePt       = new TH2F*[fnCuts];
     }
 
-    if(fDoMesonQA && 0b01000000) {
+    if(fDoMesonQA & 0b01000000) {
       fHistoRecoArmenterosPodolanskiPlot      = new TH2F*[fnCuts];
       fHistoRecoArmenterosPodolanskiPlotwoCut = new TH2F*[fnCuts];
     }
-    if(fDoMesonQA && 0b10000000) {
+    if(fDoMesonQA & 0b10000000) {
       fHistoMotherDalitzPlot              = new TH2F*[fnCuts];
       fHistoMotherDalitzPlotwoCut         = new TH2F*[fnCuts];
       fHistoBackDalitzPlot                = new TH2F*[fnCuts];
