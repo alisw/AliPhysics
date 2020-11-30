@@ -263,11 +263,21 @@ private:
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
+  TH1D* fhistmcprimpt;
+  TH1D* fhistrecopt;
+  
   AliTHn* fhistmcprim;
   AliTHn* fhistmcprimfinal;
   TH2D* fNTrackCorrMC;
   TH2D*fhmcprimvzeta;
-
+  TH2D*fhrecovzeta;
+  TH2D*fhmcrapicent;
+  TH1D* fhmcprimforwardpt;
+  TH2D* fhmcpteta[10];
+  TH2D* fhrecopteta[10];
+  
+  TH2D*fhistmeanpt;
+  
   TH1F*frefvz;
   TH1D*fhcorr[10];
 
