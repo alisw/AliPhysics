@@ -47,7 +47,6 @@ protected:
   //AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
   //#endif
 
-  TClonesArray *fEmcalTracks;                  //!<!emcal tracks
   TH2          *fCellTrackMatchdEtadPhi;       //!<!dEtadPhi distribution
   TH2          *fCellNTrackMatch;              //!<!NTrackMatch distribution
   TH1          *fCellTrackMatchEbefore;        //!<!Ebefore distribution
@@ -61,7 +60,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 1); // EMCal cell track matcher
+  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 2); // EMCal cell track matcher
   /// \endcond
 };
 
