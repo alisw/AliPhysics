@@ -1,4 +1,11 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaPart1 = -1, Double_t nSigmaPart2 = -1)
+Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task,
+ Bool_t isMC = kFALSE, 
+ Bool_t isPP = kFALSE, 
+ Double_t nSigmaPart1TPC = -1, 
+ Double_t nSigmaPart2TPC = -1,
+ Double_t nSigmaPart1TOF = -1, 
+ Double_t nSigmaPart2TOF = -1
+ )
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -9,13 +16,34 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
 
     //Printf("%f", nSigmaKaon);
-    // Cuts
 
+            AliRsnCutSet           *cutsPair;
+			Int_t                  Strcut = 2011;
+			Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom;
+			AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s;
+  // set daughter cuts
+  AliRsnCutSetDaughterParticle* cutSetK;
+  AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
+  if(!trkQualityCut) return kFALSE;
+
+  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nSigmaPart1TPC),trkQualityCut,cutKaCandidate,AliPID::kKaon,nSigmaPart1TPC,nSigmaPart1TOF);
+  }
+  else{
+    printf("Doughter Track cuts has been selected =================\n");
+    return kFALSE;
+  }
+  Int_t iTrackCutK  = task->AddTrackCuts(cutSetK);
+ 
+    // Cuts
+/*
     TString scheme;
     AliRsnCutSet *cutSetKaon = new AliRsnCutSet("kaonCutSet", AliRsnTarget::kDaughter);
 
     AliRsnCutTrackQuality *trkQualityCut = new AliRsnCutTrackQuality("trackQualityCut");
     trkQualityCut->SetDefaults2011(kTRUE, kTRUE);
+AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nSigmaPart1TPC,nSigmaPart1TOF);
 
     cutSetKaon->AddCut(trkQualityCut);
     if (!scheme.IsNull())
@@ -34,7 +62,7 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool
     cutSetKaon->SetCutScheme(scheme.Data());
 
     Int_t iTrackCutK = task->AddTrackCuts(cutSetKaon);
-
+*/
     // Defining output objects
     const Int_t dims = 6;
     Int_t useIM[dims] = {1, 1, 1, 1, isMC, isMC};
