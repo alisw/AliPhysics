@@ -58,11 +58,12 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart():
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
-    fUseHardPartonPtOutliers(false),
+    fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
     fMinPtHardParton(-1.),
-    fMaxPtHardParton(1e10)
+    fMaxPtHardParton(1e10),
+    fMaxPtHardValBin(1e10)
 {
 }
 
@@ -78,11 +79,12 @@ AliAnalysisTaskEmcalJetSpectrumSDPart::AliAnalysisTaskEmcalJetSpectrumSDPart(con
     fUseNeutralConstituents(true),
     fUseStandardOutlierRejection(false),
     fCutHardPartonPt(false),
-    fUseHardPartonPtOutliers(false),
+    fOutlierMode(kOutlierPtHard),
     fPtHardParton(0.),
     fPdgHardParton(INT_MIN),
     fMinPtHardParton(-1.),
-    fMaxPtHardParton(1e10)
+    fMaxPtHardParton(1e10),
+    fMaxPtHardValBin(1e10)
 {
     SetMakeGeneralHistograms(true);
 }
@@ -256,7 +258,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
     if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
     if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
     AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
-    if(fCutHardPartonPt || fUseHardPartonPtOutliers) {
+    if(fCutHardPartonPt || fOutlierMode == kOutlierPtParton) {
         // in case of fCutHardPartonPt: dedicated pt-hard range was set by the user
         // in case of fUseHardPartonPtOutliers: no dedicated pt-hard range was set by 
         //                                      the user, but observable is used later
@@ -270,12 +272,23 @@ Bool_t AliAnalysisTaskEmcalJetSpectrumSDPart::CheckMCOutliers() {
     // Check whether there is at least one particle level jet with pt above n * event pt-hard
     auto jetiter = outlierjets->accepted();
     auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
-    auto pthard = fPtHard;
-    if(fUseHardPartonPtOutliers) pthard = fPtHardParton;
+    double pthard = 0.;
+    switch (fOutlierMode)
+    {
+    case kOutlierPtHard:
+        pthard = fPtHard;
+        break;
+    case kOutlierPtParton:
+        pthard = fPtHardParton;
+        break; 
+    case kOutlierPtMax:
+        pthard = fMaxPtHardValBin;
+        break;
+    };
     if(max != jetiter.end())  {
         // At least one jet found with pt > n * pt-hard
         AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
-        if((*max)->Pt() > fPtHardAndJetPtFactor * fPtHard) return false;
+        if((*max)->Pt() > fPtHardAndJetPtFactor * pthard) return false;
     }
     return true;
 }
