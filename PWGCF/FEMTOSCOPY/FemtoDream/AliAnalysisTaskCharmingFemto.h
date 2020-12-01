@@ -101,6 +101,20 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetIsDependentOnMLSelector(bool flag=true) {
     fDependOnMLSelector = flag;
   }
+  void ScaleMCBeautyFraction(double pythiaBeautyFraction,
+                             double desiredFraction) {
+    AliInfo("Scaling the beauty fraction in MC activated");
+    if (desiredFraction > pythiaBeautyFraction) {
+      AliFatal(
+          "The scaled fraction cannot be larger than the initial fraction");
+    }
+    fMCBeautyRejection = true;
+    fMCBeautyScalingFactor = (1. - pythiaBeautyFraction)
+        / (1. - desiredFraction) * desiredFraction / pythiaBeautyFraction;
+    AliInfo(Form("Assumed old fraction: %.3f", pythiaBeautyFraction));
+    AliInfo(Form("Desired new fraction: %.3f", desiredFraction));
+    AliInfo(Form("Scaling factor: %.3f", fMCBeautyScalingFactor));
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -149,6 +163,11 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDplusChildEta[5]; //!
   TH1F *fHistDplusChildPhi[5]; //!
   TH2F *fHistDplusMCPDGPt;     //!
+  TH2F *fHistDplusMCPtRes;     //!
+  TH2F *fHistDplusMCPhiRes;    //!
+  TH2F *fHistDplusMCThetaRes;  //!
+  TH2F *fHistDplusMCOrigin;    //!
+
   TH2F *fHistDminusInvMassPt;   //!
   TH1F *fHistDminusEta;         //!
   TH1F *fHistDminusPhi;         //!
@@ -156,6 +175,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDminusChildEta[5]; //!
   TH1F *fHistDminusChildPhi[5]; //!
   TH2F *fHistDminusMCPDGPt;     //!
+  TH2F *fHistDminusMCPtRes;     //!
+  TH2F *fHistDminusMCPhiRes;    //!
+  TH2F *fHistDminusMCThetaRes;  //!
+  TH2F *fHistDminusMCOrigin;    //!
   
   // HF data members
   int fDecChannel;                                         // HF decay channel
@@ -167,6 +190,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   double fLowerMassSelection;			                         // Lower boundary of the mass selection
   double fUpperMassSelection;			                         // Upper boundary of the mass selection
 
+  bool fMCBeautyRejection;                                 // Switch for scaling the beauty feed-down fraction in MC
+  double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
+
   // variables for ML application
   bool fApplyML;                                           // flag to enable ML application
   TString fConfigPath;                                     // path to ML config file
@@ -177,7 +203,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 7)
+ClassDef(AliAnalysisTaskCharmingFemto, 8)
 };
 
 #endif

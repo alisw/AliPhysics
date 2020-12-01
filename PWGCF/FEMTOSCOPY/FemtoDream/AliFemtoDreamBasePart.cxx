@@ -232,8 +232,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fCPA(dmeson->Eta()),
       fInvMass(dmeson->InvMass(pdgChildren.size(), &pdgChildren[0])),
       fOrigin(kUnknown),
-      fPDGCode(),
-      fMCPDGCode(),
+      fPDGCode(0),
+      fMCPDGCode(0),
       fPDGMotherWeak(0),
       fMotherID(-1),
       fID(0),
@@ -283,9 +283,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
         this->SetUse(false);
       } else {
         this->SetMCPDGCode(mcPart->GetPdgCode());
-        double mcMom[3] = { 0., 0., 0. };
-        mcPart->PxPyPz(mcMom);
-        this->SetMCMomentum(mcMom[0], mcMom[1], mcMom[2]);
+        this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
         this->SetMCPt(mcPart->Pt());
         this->SetMCPhi(mcPart->Phi());
         this->SetMCTheta(mcPart->Theta());
@@ -316,7 +314,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
                 ->GetMother();
           }
           this->SetMotherID(lastMother);
-          this->SetMCPDGCode(
+          this->SetMotherPDG(
               (static_cast<AliAODMCParticle*>(mcarray->At(lastMother)))
                   ->GetPdgCode());
         }

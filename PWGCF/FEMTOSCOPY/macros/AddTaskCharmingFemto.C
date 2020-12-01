@@ -32,13 +32,20 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetSphericityCuts(0.7, 1.0);
 
   if (suffix == "1") {
-    evtCuts->SetSphericityCuts(0., 0.3);
+    evtCuts->SetSphericityCuts(0.6, 1.);
   } else if (suffix == "2") {
-    evtCuts->SetSphericityCuts(0.3, 0.7);
+    evtCuts->SetSphericityCuts(0.65, 1.0);
   } else if (suffix == "3") {
     evtCuts->SetSphericityCuts(0.7, 1.0);
+  } else if (suffix == "4") {
+    evtCuts->SetSphericityCuts(0.75, 1.0);
+  } else if (suffix == "5") {
+    evtCuts->SetSphericityCuts(0.8, 1.0);
+  } else if (suffix == "6") {
+    evtCuts->SetSphericityCuts(0.85, 1.0);
   }
 
   // =====================================================================
@@ -161,6 +168,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
+  task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
@@ -181,19 +189,39 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
-  if (suffix == "4") {
-    task->SetNSigmaSelection(2);
-  } else if (suffix == "5") {
-    task->SetNSigmaSelection(1);
-  } else if (suffix == "6") {
-    task->SetMassWindow(1.9,
-                        2.1);  // upper sideband, 5 sigma away from the peak
-  } else if (suffix == "7") {
-    task->SetMassWindow(1.64,
-                        1.84);  // lower sideband, 5 sigma away from the peak
+  if (suffix == "7") {
+    task->SetNSigmaSelection(2.5);
+  } else if (suffix == "8") {
+    task->SetNSigmaSelection(2.25);
+  } else if (suffix == "9") {
+    task->SetNSigmaSelection(1.75);
+  } else if (suffix == "10") {
+    task->SetNSigmaSelection(1.5);
+  } else if (suffix == "11") {
+    task->SetMassWindow(1.9, 2.0);  // upper sideband, 5 sigma away from the peak
+  } else if (suffix == "12") {
+    task->SetMassWindow(2.0, 2.1);  // upper sideband
+  } else if (suffix == "13") {
+    task->SetMassWindow(2.1, 2.2);  // upper sideband
+  } else if (suffix == "14") {
+    task->SetMassWindow(1.74, 1.84);  // lower sideband, 5 sigma away from the peak
+  } else if (suffix == "15") {
+    task->SetMassWindow(1.64, 1.74);  // lower sideband
+  } else if (suffix == "16") {
+    task->SetMassWindow(1.54, 1.64);  // lower sideband
   }
 
-  task->SetLightweight(suffix != "0");
+  if (isMC) {
+    task->ScaleMCBeautyFraction(0.5, 0.1);
+    if (suffix == "7") {
+      task->SetNSigmaSelection(2);  // variations only needed for data
+      task->ScaleMCBeautyFraction(0.5, 0.);
+    } else if (suffix == "8") {
+      task->SetNSigmaSelection(2);  // variations only needed for data
+      task->ScaleMCBeautyFraction(0.5, 0.5);
+    }
+  }
+
 
   mgr->AddTask(task);
 

@@ -15,6 +15,7 @@
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 #include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
+#include "TRandom.h"
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
@@ -53,6 +54,10 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDplusChildEta(),
       fHistDplusChildPhi(),
       fHistDplusMCPDGPt(nullptr),
+      fHistDplusMCPtRes(nullptr),
+      fHistDplusMCPhiRes(nullptr),
+      fHistDplusMCThetaRes(nullptr),
+      fHistDplusMCOrigin(nullptr),
       fHistDminusInvMassPt(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
@@ -60,13 +65,19 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
       fHistDminusMCPDGPt(nullptr),
+      fHistDminusMCPtRes(nullptr),
+      fHistDminusMCPhiRes(nullptr),
+      fHistDminusMCThetaRes(nullptr),
+      fHistDminusMCOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
       fDoNSigmaMassSelection(true),
-      fNSigmaMass(3.),
+      fNSigmaMass(2.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fMCBeautyRejection(false),
+      fMCBeautyScalingFactor(1.),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -112,19 +123,29 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDplusChildPhi(),
       fHistDplusMCPDGPt(nullptr),
       fHistDminusInvMassPt(nullptr),
+      fHistDplusMCPtRes(nullptr),
+      fHistDplusMCPhiRes(nullptr),
+      fHistDplusMCThetaRes(nullptr),
+      fHistDplusMCOrigin(nullptr),
       fHistDminusEta(nullptr),
       fHistDminusPhi(nullptr),
       fHistDminusChildPt(),
       fHistDminusChildEta(),
       fHistDminusChildPhi(),
       fHistDminusMCPDGPt(nullptr),
+      fHistDminusMCPtRes(nullptr),
+      fHistDminusMCPhiRes(nullptr),
+      fHistDminusMCThetaRes(nullptr),
+      fHistDminusMCOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
       fDoNSigmaMassSelection(true),
-      fNSigmaMass(3.),
+      fNSigmaMass(2.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fMCBeautyRejection(false),
+      fMCBeautyScalingFactor(1.),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -382,33 +403,70 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
       if (dMeson->Charge() > 0) {
-        dplus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
-        fHistDplusEta->Fill(dMeson->Eta());
-        fHistDplusPhi->Fill(dMeson->Phi());
-        if (fIsMC) {
-          fHistDplusMCPDGPt->Fill(dMeson->Pt(),
-                                  dplus.at(dplus.size() - 1).GetMotherPDG());
+        AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection
+            && dplusCand.GetParticleOrigin()
+                == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor)
+            continue;
         }
-        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
-          fHistDplusChildPt[iChild]->Fill(track->Pt());
-          fHistDplusChildEta[iChild]->Fill(track->Eta());
-          fHistDplusChildPhi[iChild]->Fill(track->Phi());
+        dplus.push_back(dplusCand);
+        if (!fIsLightweight) {
+          fHistDplusEta->Fill(dMeson->Eta());
+          fHistDplusPhi->Fill(dMeson->Phi());
+          if (fIsMC) {
+            fHistDplusMCPDGPt->Fill(dMeson->Pt(), dplusCand.GetMotherPDG());
+            fHistDplusMCOrigin->Fill(dMeson->Pt(),
+                                     dplusCand.GetParticleOrigin());
+            if (dplusCand.GetMCPDGCode() != 0) {
+              fHistDplusMCPtRes->Fill(dMeson->Pt() - dplusCand.GetMCPt(),
+                                      dMeson->Pt());
+              fHistDplusMCPhiRes->Fill(
+                  dMeson->Phi() - dplusCand.GetMCPhi().at(0), dMeson->Pt());
+              fHistDplusMCThetaRes->Fill(
+                  dMeson->Theta() - dplusCand.GetMCTheta().at(0), dMeson->Pt());
+            }
+          }
+          for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
+            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            fHistDplusChildPt[iChild]->Fill(track->Pt());
+            fHistDplusChildEta[iChild]->Fill(track->Eta());
+            fHistDplusChildPhi[iChild]->Fill(track->Phi());
+          }
         }
       }
       else {
-        dminus.push_back( { dMeson, fInputEvent, absPdgMom, fDmesonPDGs });
-        fHistDminusEta->Fill(dMeson->Eta());
-        fHistDminusPhi->Fill(dMeson->Phi());
-        if (fIsMC) {
-          fHistDminusMCPDGPt->Fill(dMeson->Pt(),
-                                   dminus.at(dminus.size() - 1).GetMotherPDG());
+        AliFemtoDreamBasePart dminusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
+        if (fIsMC && fMCBeautyRejection
+            && dminusCand.GetParticleOrigin()
+                == AliFemtoDreamBasePart::kBeauty) {
+          if (gRandom->Uniform() > fMCBeautyScalingFactor)
+            continue;
         }
-        for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-          AliAODTrack *track = (AliAODTrack *)dMeson->GetDaughter(iChild);
-          fHistDminusChildPt[iChild]->Fill(track->Pt());
-          fHistDminusChildEta[iChild]->Fill(track->Eta());
-          fHistDminusChildPhi[iChild]->Fill(track->Phi());
+        dminus.push_back(dminusCand);
+        if (!fIsLightweight) {
+          fHistDminusEta->Fill(dMeson->Eta());
+          fHistDminusPhi->Fill(dMeson->Phi());
+          if (fIsMC) {
+            fHistDminusMCPDGPt->Fill(dMeson->Pt(), dminusCand.GetMotherPDG());
+            fHistDminusMCOrigin->Fill(dMeson->Pt(),
+                                      dminusCand.GetParticleOrigin());
+            if (dminusCand.GetMCPDGCode() != 0) {
+              fHistDminusMCPtRes->Fill(dMeson->Pt() - dminusCand.GetMCPt(),
+                                       dMeson->Pt());
+              fHistDminusMCPhiRes->Fill(
+                  dMeson->Phi() - dminusCand.GetMCPhi().at(0), dMeson->Pt());
+              fHistDminusMCThetaRes->Fill(
+                  dMeson->Theta() - dminusCand.GetMCTheta().at(0),
+                  dMeson->Pt());
+            }
+          }
+          for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
+            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            fHistDminusChildPt[iChild]->Fill(track->Pt());
+            fHistDminusChildEta[iChild]->Fill(track->Eta());
+            fHistDminusChildPhi[iChild]->Fill(track->Phi());
+          }
         }
       }
     }
@@ -551,51 +609,132 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fDChargedHistList->SetName("DChargedQA");
   fDChargedHistList->SetOwner(true);
 
-  fHistDplusInvMassPt = new TH2F("fHistDplusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fHistDplusInvMassPt = new TH2F(
+      "fHistDplusInvMassPt",
+      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+      10, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDplusInvMassPt);
-  fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
-  fDChargedHistList->Add(fHistDplusEta);
-  fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
-  fDChargedHistList->Add(fHistDplusPhi);
+  if (!fIsLightweight) {
+    fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
+    fDChargedHistList->Add(fHistDplusEta);
+    fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0.,
+                             2. * TMath::Pi());
+    fDChargedHistList->Add(fHistDplusPhi);
 
-  if (fIsMC) {
-    fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
-                                 "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
-                                 250, 0, 25, 5000, 0, 5000);
-    fDChargedHistList->Add(fHistDplusMCPDGPt);
+    if (fIsMC) {
+      fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
+                                   "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+                                   250, 0, 25, 5000, 0, 5000);
+      fHistDplusMCPtRes =
+          new TH2F(
+              "fHistDplusMCPtRes",
+              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+              101, -0.5, 0.5, 100, 0, 10);
+      fHistDplusMCPhiRes = new TH2F(
+          "fHistDplusMCPhiRes",
+          "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
+          100, 0, 10);
+      fHistDplusMCThetaRes = new TH2F(
+          "fHistDplusMCThetaRes",
+          "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
+          0.025, 100, 0, 10);
+      fHistDplusMCOrigin = new TH2F("fHistDplusMCOrigin",
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 7, 0, 7);
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(2, "kWeak");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(3, "kMaterial");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(4, "kFake");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(5, "kContamination");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(6, "kUnknown");
+      fHistDplusMCOrigin->GetYaxis()->SetBinLabel(7, "kBeauty");
+      fDChargedHistList->Add(fHistDplusMCPDGPt);
+      fDChargedHistList->Add(fHistDplusMCPtRes);
+      fDChargedHistList->Add(fHistDplusMCPhiRes);
+      fDChargedHistList->Add(fHistDplusMCThetaRes);
+      fDChargedHistList->Add(fHistDplusMCOrigin);
+    }
   }
 
-  fHistDminusInvMassPt = new TH2F("fHistDminusInvMassPt", "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 250, 0, 25, 1000, 1.77, 1.97);
+  fHistDminusInvMassPt = new TH2F(
+      "fHistDminusInvMassPt",
+      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
+      25, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDminusInvMassPt);
-  fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
-  fDChargedHistList->Add(fHistDminusEta);
-  fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0., 2.*TMath::Pi());
-  fDChargedHistList->Add(fHistDminusPhi);
+  if (!fIsLightweight) {
+    fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
+    fDChargedHistList->Add(fHistDminusEta);
+    fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0.,
+                              2. * TMath::Pi());
+    fDChargedHistList->Add(fHistDminusPhi);
 
-  if (fIsMC) {
-    fHistDminusMCPDGPt = new TH2F("fHistDminusMCPDGPt",
-                                  "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
-                                  250, 0, 25, 5000, 0, 5000);
-    fDChargedHistList->Add(fHistDminusMCPDGPt);
+    if (fIsMC) {
+      fHistDminusMCPDGPt = new TH2F(
+          "fHistDminusMCPDGPt", "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      fHistDminusMCPtRes =
+          new TH2F(
+              "fHistDminusMCPtRes",
+              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+              101, -0.5, 0.5, 100, 0, 10);
+      fHistDminusMCPhiRes = new TH2F(
+          "fHistDminusMCPhiRes",
+          "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
+          100, 0, 10);
+      fHistDminusMCThetaRes = new TH2F(
+          "fHistDminusMCThetaRes",
+          "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
+          0.025, 100, 0, 10);
+      fHistDminusMCOrigin = new TH2F("fHistDminusMCOrigin",
+                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100,
+                                     0, 10, 7, 0, 7);
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(2, "kWeak");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(3, "kMaterial");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(4, "kFake");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(5, "kContamination");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(6, "kUnknown");
+      fHistDminusMCOrigin->GetYaxis()->SetBinLabel(7, "kBeauty");
+      fDChargedHistList->Add(fHistDminusMCPDGPt);
+      fDChargedHistList->Add(fHistDminusMCPtRes);
+      fDChargedHistList->Add(fHistDminusMCPhiRes);
+      fDChargedHistList->Add(fHistDminusMCThetaRes);
+      fDChargedHistList->Add(fHistDminusMCOrigin);
+    }
   }
 
-  std::vector<TString> nameVec;
-  if (fDecChannel == kDplustoKpipi) {
-    nameVec = {{"K", "Pi1", "Pi2"}};
-  }
-  for (unsigned int iChild = 0; iChild < fDmesonPDGs.size() ; ++iChild) {
-    fHistDplusChildPt[iChild] = new TH1F(TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
-    fHistDplusChildEta[iChild] = new TH1F(TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
-    fHistDplusChildPhi[iChild] = new TH1F(TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
-    fDChargedHistList->Add(fHistDplusChildPt[iChild]);
-    fDChargedHistList->Add(fHistDplusChildEta[iChild]);
-    fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
-    fHistDminusChildPt[iChild] = new TH1F(TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()), "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
-    fHistDminusChildEta[iChild] = new TH1F(TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()), "; #eta; Entries", 100, -1, 1);
-    fHistDminusChildPhi[iChild] = new TH1F(TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()), "; #phi; Entries", 100, 0, 2.*TMath::Pi());
-    fDChargedHistList->Add(fHistDminusChildPt[iChild]);
-    fDChargedHistList->Add(fHistDminusChildEta[iChild]);
-    fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
+
+  if (!fIsLightweight) {
+    std::vector<TString> nameVec;
+    if (fDecChannel == kDplustoKpipi) {
+      nameVec = { {"K", "Pi1", "Pi2"}};
+    }
+    for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); ++iChild) {
+      fHistDplusChildPt[iChild] = new TH1F(
+          TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()),
+          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+      fHistDplusChildEta[iChild] = new TH1F(
+          TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()),
+          "; #eta; Entries", 100, -1, 1);
+      fHistDplusChildPhi[iChild] = new TH1F(
+          TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()),
+          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+      fDChargedHistList->Add(fHistDplusChildPt[iChild]);
+      fDChargedHistList->Add(fHistDplusChildEta[iChild]);
+      fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
+      fHistDminusChildPt[iChild] = new TH1F(
+          TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()),
+          "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
+      fHistDminusChildEta[iChild] = new TH1F(
+          TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()),
+          "; #eta; Entries", 100, -1, 1);
+      fHistDminusChildPhi[iChild] = new TH1F(
+          TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()),
+          "; #phi; Entries", 100, 0, 2. * TMath::Pi());
+      fDChargedHistList->Add(fHistDminusChildPt[iChild]);
+      fDChargedHistList->Add(fHistDminusChildEta[iChild]);
+      fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
+    }
   }
   
 
@@ -719,11 +858,11 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
     }
     else { // read result from common task
       std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptD);
-      int bin = low - fPtLimsML.begin();
+      int bin = low - fPtLimsML.begin() - 1;
       if(bin < 0)
         bin = 0;
-      else if(bin > fPtLimsML.size()-1)
-        bin = fPtLimsML.size()-1;
+      else if(bin > fPtLimsML.size()-2)
+        bin = fPtLimsML.size()-2;
       for(size_t iScore = 0; iScore < scores.size(); iScore++) {
         if((fMLOptScoreCuts[bin][iScore] == "upper" && scores[iScore] > fMLScoreCuts[bin][iScore]) || (fMLOptScoreCuts[bin][iScore] == "lower" && scores[iScore] < fMLScoreCuts[bin][iScore])){
           isSelected = 0;
