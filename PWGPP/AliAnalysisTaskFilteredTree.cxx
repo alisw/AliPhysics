@@ -3354,8 +3354,18 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
   tree->SetAlias("IsPrim4","sqrt((esdTrack.fD**2)/esdTrack.fCdd+(esdTrack.fZ**2)/esdTrack.fCzz)<4");
   tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
-  
+  //DCA aliases
+  tree->SetAlias("dcaRTPCN","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZTPCN","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaRN","esdTrack.fD/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZN","esdTrack.fZ/sqrt(1+esdTrack.fP[4]**2)");
+  //
+  tree->SetAlias("dcaRTPCPull","esdTrack.fdTPC/sqrt(esdTrack.fCddTPC)");
+  tree->SetAlias("dcaZTPCPull","esdTrack.fzTPC/sqrt(esdTrack.fCzzTPC)");
+  tree->SetAlias("dcaRPull","esdTrack.fD/sqrt(esdTrack.fCdd)");
+  tree->SetAlias("dcaZPull","esdTrack.fZ/sqrt(esdTrack.fCzz)");
 
+  //
   const char * chName[5]={"#it{r#phi}","#it{z}","sin(#phi)","tan(#it{#theta})", "q/#it{p}_{t}"};
   const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
   const char * refBranch=(tree->GetBranch("extInnerParamV."))? "extInnerParamV":"esdTrack.fTPCInner";
