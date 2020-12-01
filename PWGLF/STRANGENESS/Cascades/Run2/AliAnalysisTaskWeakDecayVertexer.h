@@ -427,8 +427,10 @@ private:
     TH1D *fHistV0OptimalTrackParamUseBachelor; //!
     
     //V0 statistics
-    TH1D *fHistV0Statistics; //! 
-
+    TH1D *fHistV0Statistics; //!
+    TH1D *fHistPosTrackCounter;
+    TH1D *fHistNegTrackCounter;
+  
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented
 
