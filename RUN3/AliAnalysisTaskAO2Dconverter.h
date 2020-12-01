@@ -127,13 +127,14 @@ private:
   
   Int_t fEventCount = 0; //! event count
   Bool_t fTfInitialized = false; //!
+  Int_t fTFCount = 0; //! count TF written
 
   // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
   void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
-  void InitTF(UInt_t tfId);           // Initialize output subdir and trees for TF tfId
+  void InitTF(ULong64_t tfId);           // Initialize output subdir and trees for TF tfId
   void FillEventInTF();
   void FinishTF();
 
@@ -500,7 +501,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 12);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 13);
 };
 
 #endif
