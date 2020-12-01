@@ -341,7 +341,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SetStoreCalibZDCRecenter(bStoreCalibZDCRecenter);
   
   if (bStepZDCRecenter >= 3) {
-    TFile* ZDCRecenterFileStep3CommonPart = TFile::Open("$ALICE_PHYSICS/PWGCF/FLOW/macros/ZDC_Calib_Files/2015o/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+    TFile* ZDCRecenterFileStep3CommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
     if(ZDCRecenterFileStep3CommonPart) {
 		TList* ZDCRecenterListStep3CommonPart = (TList*)(ZDCRecenterFileStep3CommonPart->FindObjectAny("Q Vectors"));
 		if(ZDCRecenterListStep3CommonPart) {
@@ -664,7 +664,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   //taskQC->SetStoreQAforDiffEventPlanes(bStoreQAforDiffEventPlanes);
   
   //@Shi set ZDC recentering (begin)
-  TFile* ZDCRecenterFileFinalCommonPart = TFile::Open("$ALICE_PHYSICS/PWGCF/FLOW/macros/ZDC_Calib_Files/2015o/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
+  TFile* ZDCRecenterFileFinalCommonPart = TFile::Open("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCcalibVar_Step3_commonPart.root", "READ");
   if(ZDCRecenterFileFinalCommonPart) {
     TList* ZDCRecenterListFinalCommonPart = (TList*)(ZDCRecenterFileFinalCommonPart->FindObjectAny("Q Vectors"));
     if(ZDCRecenterListFinalCommonPart) {
