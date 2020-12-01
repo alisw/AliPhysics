@@ -235,6 +235,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
+  fMinPtHard(-1e10),
   fMaxPtHard(1e10),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),

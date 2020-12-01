@@ -52,12 +52,17 @@ public:
     void SetSDUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
     void SetSDUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
     void SetCutHardestPartonPt(double ptmin, double ptmax) { fCutHardPartonPt = true; fMinPtHardParton = ptmin; fMaxPtHardParton = ptmax; }
-    void SetUsePtHardPartonInOutlierCut(bool doUse) { fUseHardPartonPtOutliers = doUse; }
+    void SetUsePtHardPartonInOutlierCut(bool doUse) { fOutlierMode = kOutlierPtParton; }
+    void SetUseOutlierPtMaxBin(double ptmaxBin) { fMaxPtHardValBin = ptmaxBin; fOutlierMode = kOutlierPtMax; }
 
     static AliAnalysisTaskEmcalJetSpectrumSDPart *AddTaskEmcalJetSpectrumSDPart(AliJetContainer::EJetType_t jettype, double R, const char *nameparticles, const char *tag = "");
 
 protected:
-
+    enum OutlierMode_t {
+        kOutlierPtHard,
+        kOutlierPtParton,
+        kOutlierPtMax
+    };
     virtual void UserCreateOutputObjects();
     virtual bool Run();
     virtual bool IsEventSelected();
@@ -76,11 +81,12 @@ private:
     Bool_t                                  fUseNeutralConstituents;        ///< SoftDrop use neutral constituents
     Bool_t                                  fUseStandardOutlierRejection;   ///< Fall back to standard outlier rejection
     Bool_t                                  fCutHardPartonPt;               ///< Apply cut on the pt of the hardest parton
-    Bool_t                                  fUseHardPartonPtOutliers;       ///< Use pt of the hardest parton instead of pt-hard in outlier cut
+    OutlierMode_t                           fOutlierMode;                   ///< Mode to determine the outlier (event pt-hard, hardest part, max of the pt-hard bin)
     Double_t                                fPtHardParton;                  ///< Pt of the hardest
     Int_t                                   fPdgHardParton;                 ///< Pdg of the hardest parton
     Double_t                                fMinPtHardParton;               ///< Min. pt of the hardest parton used to select events
     Double_t                                fMaxPtHardParton;               ///< Max. pt of the hardest parton used to select events
+    Double_t                                fMaxPtHardValBin;               ///< Max. value of the pt-hard bin used in event generation
 
     ClassDef(AliAnalysisTaskEmcalJetSpectrumSDPart, 1);
 };
