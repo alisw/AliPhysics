@@ -1069,7 +1069,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 h2_CPA_pt_invMass[21]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
                 for (size_t j = i + 1; j < vAntiLambda.size(); j++)
                 {
-                    h2_CPA_pt_invMass[29]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                    h2_CPA_pt_invMass[29]->Fill(CalculateInvMassLambda(vAntiLambda[i], true, CalculateInvMassLambda(vAntiLambda[i], true));
                 }
             }
             vAntiLambda[i].SetUse(true);
@@ -1103,7 +1103,7 @@ void AliAnalysisTaskPOmegaPenne::UserExec(Option_t *)
                 h2_CPA_pt_invMass[22]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
                 for (size_t j = i + 1; j < vAntiLambda.size(); j++)
                 {
-                    h2_CPA_pt_invMass[30]->Fill(vAntiLambda[i].GetPt(), CalculateInvMassLambda(vAntiLambda[i], true));
+                    h2_CPA_pt_invMass[30]->Fill(CalculateInvMassLambda(vAntiLambda[i], true), CalculateInvMassLambda(vAntiLambda[i], true));
                 }
             }
             vAntiLambda[i].SetUse(true);
