@@ -624,6 +624,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
 void AliAnalysisTaskCRC::NotifyRun()
 {
   //open file
+  TGrid::Connect("alien://");
   TString ZDCRecenterFileName = Form("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCRunByRunCalib/15o_ZDCcalibVar_%d.root",fCurrentRunNumber);
   TFile* ZDCRecenterFileRunByRun = TFile::Open(ZDCRecenterFileName, "READ");
   
