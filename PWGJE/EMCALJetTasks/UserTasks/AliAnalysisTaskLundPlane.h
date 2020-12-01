@@ -68,6 +68,9 @@ public:
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
   void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
   void SetDoMatching(Bool_t t) { fMatch = t; }
+  void SetMatchRadius(Float_t t) { fMatchR = t; }
+  void SetSubjetMomFrac(Float_t t) { fMomFrac = t; }
+
   
 protected:
   Bool_t RetrieveEventObjects();
@@ -114,7 +117,9 @@ protected:
   Int_t fDerivSubtrOrder; ///<
   Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   Bool_t fDoSubJet; ///< store the detector level jet quantities
-  Bool_t fMatch; ///< do the matching in the task 
+  Bool_t fMatch; ///< do the matching in the task
+  Float_t fMatchR; ///<the matching radius
+  Float_t fMomFrac; ///<the amount of shared momentum for the subjets 
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle;
  
@@ -169,6 +174,6 @@ private:
   AliAnalysisTaskLundPlane &
   operator=(const AliAnalysisTaskLundPlane &); // not implemented
 
-  ClassDef(AliAnalysisTaskLundPlane, 12)
+  ClassDef(AliAnalysisTaskLundPlane, 13)
 };
 #endif
