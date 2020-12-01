@@ -18,7 +18,7 @@
  * and calculates correlations with charged unidentified particles in phi and eta.
  * The charged unidentified particles are also taken as trigger particles to have a check.
  * The task works with AOD or ESD (with or without MC info) events only and containes also mixing for acceptance corrections.
- * Last update edited by Lucia Anna Husova, August 2020
+ * Last update edited by Lucia Anna Husova, December 2020
  */
 
 #include <TChain.h>
@@ -195,7 +195,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fminBias(kTRUE),
     fhighMult(kFALSE),
     fhighMultSPD(kFALSE),
-    fHistMultVZEROTracklets(0)
+    fHistMultVZEROTracklets(0),
+    fPercentileMin(0.),
+    fPercetileMax(100.)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -338,7 +340,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fminBias(kTRUE),
     fhighMult(kFALSE),
     fhighMultSPD(kFALSE),
-    fHistMultVZEROTracklets(0)
+    fHistMultVZEROTracklets(0),
+    fPercentileMin(0.),
+    fPercetileMax(100.)
 {
     // constructor
 
@@ -1016,7 +1020,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             else if(fMultEstimator=="RefMult05") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult05");
             else if(fMultEstimator=="RefMult08") lPercentile = MultSelection->GetMultiplicityPercentile("RefMult08");
         }
-        if ((lPercentile<0.)||(lPercentile>100.)) return;
+        if ((lPercentile<fPercentileMin)||(lPercentile>fPercetileMax)) return;
     
         fHistMultVZEROTracklets->Fill(VZEROmultiplicity,nTracklets,lPercentile);
         fHistMultipPercentile->Fill(lPercentile);
@@ -1079,7 +1083,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             if (mcTrack->Charge()>0) cha=1.;
             else if (mcTrack->Charge()<0) cha= -1.;
             else cha =0;
-            
+
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
                 if(fEfficiency) {
