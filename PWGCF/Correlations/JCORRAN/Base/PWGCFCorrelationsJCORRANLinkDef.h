@@ -25,6 +25,8 @@
 #pragma link C++ class AliJHistManager+;
 #pragma link C++ class AliJFFlucTask+;
 #pragma link C++ class AliJFFlucAnalysis+;
+#pragma link C++ class AliAnalysisAnaTwoMultiCorrelations+;
+#pragma link C++ class AliJHSCTask+;
 #pragma link C++ class AliJXtTask+;
 #pragma link C++ class AliJXtAnalysis+;
 #pragma link C++ class AliJHistogramInterface+;
