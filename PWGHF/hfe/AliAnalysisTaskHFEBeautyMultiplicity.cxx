@@ -1098,7 +1098,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                 pid_eleB = kTRUE;
                 pid_eleD = kFALSE;
 		pidM = pidGM;
-		pTmom = pTGMom;
+		pTMom = pTGMom;
             }
             
 	    if(pid_eleB) fNDB -> Fill(1);
