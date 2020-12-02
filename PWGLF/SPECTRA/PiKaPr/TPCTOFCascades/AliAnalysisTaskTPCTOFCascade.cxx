@@ -122,11 +122,36 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
   
   fTrackCutsHybrid_kNone = new AliESDtrackCuts("AliESDtrackCutsHybrid_kNone","AliESDtrackCutsHybrid_kNone");
-  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  //  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kNone->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kNone->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kNone->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetRequireITSRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kNone->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kNone->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterITS(36);
   fTrackCutsHybrid_kNone->SetEtaRange(-0.8,0.8);
   fTrackCutsHybrid_kNone->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  
   fTrackCutsHybrid_kOff = new AliESDtrackCuts("AliESDtrackCutsHybrid_kOff","AliESDtrackCutsHybrid_kOff");
-  fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  // fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kOff->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kOff->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kOff->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kOff->SetRequireITSRefit(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kOff->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kOff->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterITS(36);	
   fTrackCutsHybrid_kOff->SetEtaRange(-0.8,0.8);
   fTrackCutsHybrid_kOff->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
   
@@ -214,11 +239,36 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
 
   fTrackCutsHybrid_kNone = new AliESDtrackCuts("AliESDtrackCutsHybrid_kNone","AliESDtrackCutsHybrid_kNone");
-  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  //  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kNone->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kNone->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kNone->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetRequireITSRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kNone->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kNone->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterITS(36);
   fTrackCutsHybrid_kNone->SetEtaRange(-0.8,0.8);
   fTrackCutsHybrid_kNone->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  
   fTrackCutsHybrid_kOff = new AliESDtrackCuts("AliESDtrackCutsHybrid_kOff","AliESDtrackCutsHybrid_kOff");
-  fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  // fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kOff->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kOff->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kOff->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kOff->SetRequireITSRefit(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kOff->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kOff->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterITS(36);	
   fTrackCutsHybrid_kOff->SetEtaRange(-0.8,0.8);
   fTrackCutsHybrid_kOff->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
   
