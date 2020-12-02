@@ -1,0 +1,2 @@
+/home/alidock/gridfiles/sim/2019/LHC19i3a1/4/294925/AOD/001/AliAOD.root
+/home/alidock/gridfiles/sim/2019/LHC19i3a2/4/294925/AOD/001/AliAOD.root
