@@ -6,6 +6,7 @@
 #include "AliVEvent.h"
 #include "AliGFW.h"
 #include "AliPID.h"
+#include "AliMCEvent.h"
 
 class TList;
 class TH1D;
@@ -49,6 +50,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceFBSpectra(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void ProduceEfficiencies(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -62,6 +64,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
   void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
+  Int_t GetPIDIndex(const Int_t &pdgcode);
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
@@ -73,6 +76,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Bool_t fIsMC;
+  AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   Double_t *fPtBins; //!
@@ -105,12 +109,15 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   TList *fSpectraList;
   TH2D **fSpectra;
+  TList *fEfficiencyList;
+  TH2D **fEfficiency;
   TH1D *fV0MMulti;
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
   Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*,Double_t ptMin=0.5, Double_t ptMax=2, Int_t FilterBit=96);
+  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, const Int_t &FilterBit=96);
   Int_t fFilterBit;
   Bool_t fDisablePID;
+  Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
