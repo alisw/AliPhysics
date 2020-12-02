@@ -198,9 +198,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (suffix == "10") {
     task->SetNSigmaSelection(1.5);
   } else if (suffix == "11") {
-    task->SetMassWindow(1.9, 2.0);  // upper sideband, 5 sigma away from the peak
+    task->SetMassWindow(1.9, 1.98);  // upper sideband, 5 sigma away from the peak - far off the D*
   } else if (suffix == "12") {
-    task->SetMassWindow(2.0, 2.1);  // upper sideband
+    task->SetMassWindow(1.98, 2.1);  // upper sideband
   } else if (suffix == "13") {
     task->SetMassWindow(2.1, 2.2);  // upper sideband
   } else if (suffix == "14") {
