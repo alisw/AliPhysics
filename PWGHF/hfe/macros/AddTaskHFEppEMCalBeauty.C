@@ -1,3 +1,11 @@
+
+///////////////////////////////////////////////////////////////////
+//                                                               //            
+// AddTaskHFEppEMCalBeauty                                       //
+// Author: Vivek Singh                                           //
+//                                                               //
+///////////////////////////////////////////////////////////////////
+
 class AliAnalysisDataContainer;
 
 AliAnalysisHFEppEMCalBeauty* AddTaskHFEppEMCalBeauty(
@@ -10,9 +18,7 @@ Bool_t isEG1=kFALSE,
 //Bool_t PhysSelINT7 = kTRUE,
 Bool_t useTender = kTRUE,
 Bool_t ClsTypeEMC = kTRUE,
-Bool_t ClsTypeDCAL = kTRUE,
-
-Bool_t SwitchRecalIP = kTRUE
+Bool_t ClsTypeDCAL = kTRUE
 
 )
 
@@ -43,8 +49,6 @@ Bool_t SwitchRecalIP = kTRUE
     HFeTask->SetMCAnalysis(isMC);
     HFeTask->SetTrigger(trigger);
     HFeTask->SetTenderSwitch(useTender);
-    HFeTask->SwitchRecalImpPar(SwitchRecalIP);
-
 
 
   if(trigger==AliVEvent::kINT7){
