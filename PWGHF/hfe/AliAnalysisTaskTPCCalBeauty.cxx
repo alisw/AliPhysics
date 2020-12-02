@@ -1,5 +1,5 @@
 //
-//  AliAnalysisTaskTPCCalBeauty.cxx
+//  AliAnalysisTaskTPCCalBeautyCurrent.cxx
 //
 //
 //  Created by Erin Gauger
@@ -18,7 +18,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskTPCCalBeauty.h"
+#include "AliAnalysisTaskTPCCalBeautyCurrent.h"
 #include "AliKFParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
@@ -28,13 +28,13 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 
-class AliAnalysisTaskTPCCalBeauty;
+class AliAnalysisTaskTPCCalBeautyCurrent;
 
 using namespace std;
 
-ClassImp(AliAnalysisTaskTPCCalBeauty)
+ClassImp(AliAnalysisTaskTPCCalBeautyCurrent)
 
-AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty() :
+AliAnalysisTaskTPCCalBeautyCurrent::AliAnalysisTaskTPCCalBeautyCurrent() :
 AliAnalysisTaskSE(),
 fAOD(0),
 fMCHeader(0),
@@ -291,7 +291,7 @@ fElectronSprs(0)
     //Root IO constructor, don't allocate memory here
 }
 //_____________________________________________________________________
-AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty(const char *name) :
+AliAnalysisTaskTPCCalBeautyCurrent::AliAnalysisTaskTPCCalBeautyCurrent(const char *name) :
 AliAnalysisTaskSE(name),
 fAOD(0),
 fMCHeader(0),
@@ -546,7 +546,7 @@ fElectronSprs(0)
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
+AliAnalysisTaskTPCCalBeautyCurrent::~AliAnalysisTaskTPCCalBeautyCurrent()
 {
     // destructor
     if(fOutputList) {
@@ -559,7 +559,7 @@ AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
     }
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
+void AliAnalysisTaskTPCCalBeautyCurrent::UserCreateOutputObjects()
 {
     /////////////////
     // Output List //
@@ -746,12 +746,6 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
     fOutputList->Add(fLSdcaBelow);
-    
-    /*fULSdcaBelow = new TH3F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,250,0.,50.);
-    fOutputList->Add(fULSdcaBelow);
-    
-    fLSdcaBelow = new TH3F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; prod. radius; counts;", 60,0,30., nDCAbins,-0.2,0.2,250,0.,50.);
-    fOutputList->Add(fLSdcaBelow);*/
     
     if (fFlagFillMCHistos) {
         fLSWeightEnhEta = new TH1F("fLSWeightEnhEta","Weighted Enh Eta LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); counts;", 60,0,30.);
@@ -1218,37 +1212,21 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fSprsPi0EtaWeightCal->GetAxis(3)->SetBinLabel(2,"noMom");
         fOutputList->Add(fSprsPi0EtaWeightCal);
     
-        Int_t binTemp[6] = {60,nDCAbins,22,3,50,400}; //pT, DCA, Mom PID, Mom Gen, mompT, momTime
-        Double_t xminTemp[6] = {0.,-0.2,0.5,-0.5,0.,0.};
-        Double_t xmaxTemp[6] = {30.,0.2,22.5,2.5,50.,800.};
-        fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;Mom ct;",6,binTemp,xminTemp,xmaxTemp);
+        Int_t binTemp[5] = {60,nDCAbins,22,20,400}; //pT, DCA, Mom PID, momGamma, momTime
+        Double_t xminTemp[5] = {0.,-0.2,0.5,1.,0.};
+        Double_t xmaxTemp[5] = {30.,0.2,22.5,21.,800.};
+        fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;Mom #gamma;Mom ct;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesNoWeight);
         fSprsTemplatesNoWeight->Sumw2();
-        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;MomGen;Mom ct;",6,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;Mom #gamma;Mom ct;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesWeight);
         fSprsTemplatesWeight->Sumw2();
-        fSprsTemplatesWeightVar1 = new THnSparseD("fSprsTemplatesWeightVar1","Sparse for Templates, D meson WeightVar1 applied;p_{T};DCA;MomPID;MomGen;Mom ct;",6,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeightVar1 = new THnSparseD("fSprsTemplatesWeightVar1","Sparse for Templates, D meson WeightVar1 applied;p_{T};DCA;MomPID;Mom #gamma;Mom ct;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesWeightVar1);
         fSprsTemplatesWeightVar1->Sumw2();
-        fSprsTemplatesWeightVar2 = new THnSparseD("fSprsTemplatesWeightVar2","Sparse for Templates, D meson WeightVar2 applied;p_{T};DCA;MomPID;MomGen;Mom ct;",6,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeightVar2 = new THnSparseD("fSprsTemplatesWeightVar2","Sparse for Templates, D meson WeightVar2 applied;p_{T};DCA;MomPID;Mom #gamma;Mom ct;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
-        
-        /*Int_t binTemp[5] = {60,nDCAbins,22,3,50}; //pT, DCA, Mom PID, Mom Gen, mompT, momTime
-        Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.};
-        Double_t xmaxTemp[5] = {30.,0.2,22.5,2.5,50.};
-        fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
-        fOutputList->Add(fSprsTemplatesNoWeight);
-        fSprsTemplatesNoWeight->Sumw2();
-        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
-        fOutputList->Add(fSprsTemplatesWeight);
-        fSprsTemplatesWeight->Sumw2();
-        fSprsTemplatesWeightVar1 = new THnSparseD("fSprsTemplatesWeightVar1","Sparse for Templates, D meson WeightVar1 applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
-        fOutputList->Add(fSprsTemplatesWeightVar1);
-        fSprsTemplatesWeightVar1->Sumw2();
-        fSprsTemplatesWeightVar2 = new THnSparseD("fSprsTemplatesWeightVar2","Sparse for Templates, D meson WeightVar2 applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
-        fOutputList->Add(fSprsTemplatesWeightVar2);
-        fSprsTemplatesWeightVar2->Sumw2();*/
         
         Int_t binClos[3] = {60,nDCAbins,22}; //pT, DCA, Mom PID
         Double_t xminClos[3] = {0.,-0.2,0.5};
@@ -1423,7 +1401,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     PostData(1, fOutputList);
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
+void AliAnalysisTaskTPCCalBeautyCurrent::UserExec(Option_t*)
 {
     // Get AOD event from the analysis manager
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -2228,14 +2206,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         if (kEmbEta) fMomGen = 2;
                     
                         //Fill template sparse
-                        Double_t tempValue[6] = {-999,-999,-999,-999,-999,-999};
+                        Double_t tempValue[5] = {-999,-999,-999,-999,-999};
                         tempValue[0] = track->Pt();
                         tempValue[1] = DCA;
                         tempValue[2] = fpidSort;
-                        tempValue[3] = fMomGen;
-                        tempValue[4] = momPt;
-                        tempValue[5] = momTime;
-                    
+                        //tempValue[3] = fMomGen;
+                        //tempValue[4] = momPt;
+                        tempValue[3] = momGamma;
+                        tempValue[4] = momTime;
                         fSprsTemplatesNoWeight->Fill(tempValue);
                     
                         //Took out Lambda_c (fpidSort==17) to the weighting
@@ -2788,7 +2766,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     PostData(1,fOutputList);
 }
 //___________________________________________
-Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
+Double_t AliAnalysisTaskTPCCalBeautyCurrent::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
 {
     //check centrality, Run 2
     if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
@@ -2816,7 +2794,7 @@ Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t 
     return fCentrality;
 }
 //_________________________________________________________________
-Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
+Bool_t AliAnalysisTaskTPCCalBeautyCurrent::GetNMCPartProduced()
 {
     //Get number of MC particles produced by generators.
     
@@ -2861,7 +2839,7 @@ Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
     return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
+void AliAnalysisTaskTPCCalBeautyCurrent::GetPi0EtaWeight(THnSparse *SparseWeight)
 {
     //Get pi0 and eta information for weight calculation
     Double_t fvalue[4] = {-999,-999,-999,-999};
@@ -2899,7 +2877,7 @@ void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+void AliAnalysisTaskTPCCalBeautyCurrent::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
     // Calculate phi and eta difference between a track and a cluster. The position of the track is obtained on the EMCAL surface
     
@@ -2920,7 +2898,7 @@ void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster 
     phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma, Double_t &momTime)
+void AliAnalysisTaskTPCCalBeautyCurrent::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma,Double_t &momTime)
 {
     //gets the pid of mother track
     
@@ -2932,7 +2910,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
     Int_t ilabelGM = -1;
     Int_t ilabelGGM = -1;
     Int_t ilabelGGGM = -1;
-    Double_t decayL = 0;
+    Double_t decayL = -99;
     
     //cout<<"TESTING3"<<endl;
     
@@ -2942,12 +2920,12 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
         AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
         pidM = TMath::Abs(partM->GetPdgCode()); //ask for the Mom's pid
         momPt = partM->Pt();
-        momGamma = partM->E()/partM->M();
-        //momTime = 1e6*TMath::C()*(part->Tv()-partM->Tv());
+        if (partM->M()>0) {
+            momGamma = partM->E()/partM->M();
+        }
+        
         decayL = TMath::Sqrt(TMath::Power(partM->Xv()-part->Xv(),2)+TMath::Power(partM->Yv()-part->Yv(),2)+TMath::Power(partM->Zv()-part->Zv(),2));
-        //cout<<"Decay length = Sqrt("<<partM->Xv()-part->Xv()<<"^2 + "<<partM->Yv()-part->Yv()<<"^2 +"<<partM->Zv()-part->Zv()<<"^2) = "<<decayL<<endl;
         momTime = (10000*decayL*partM->M())/partM->P();
-        //cout<<"Mom ct (um) = "<<momTime<<endl;
         
         if(ilabelM<fNpureMC) kHijing = kTRUE; //mark whether mom is from Hijing
         
@@ -2990,24 +2968,15 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
         //looking for specific particles in the ranges
         if(pidM==411){
             fpidSort = 11; //Mom is D+
-            //cout<<"Mom ct D+ (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<10000*(decayL*partM->M())/partM->P()<<endl;
         }
         else if(pidM==421){
             fpidSort = 12; //Mom is D0
-            //cout<<"Mom ctime D0 (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<(10000*decayL*partM->M())/partM->P()<<endl;
         }
         else if(pidM==413){
             fpidSort = 14; //Mom is D*+
         }
         else if(pidM==431){
             fpidSort = 15; //Ds
-            //cout<<"Mom ctime Ds (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<(10000*decayL*partM->M())/partM->P()<<endl;
         }
         else if(pidM>430 && pidM<436){
             fpidSort = 16; //other Ds
@@ -3017,19 +2986,10 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             fpidSort = 6; //Mom is J/psi
         }else if(pidM==521){
             fpidSort = 20; //Mom is B+
-            //cout<<"Mom ctime B+ (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<(10000*decayL*partM->M())/partM->P()<<endl;
         }else if(pidM==511){
             fpidSort = 21; //Mom is B0
-            //cout<<"Mom ctime B0 (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<(10000*decayL*partM->M())/partM->P()<<endl;
         }else if(pidM==531){
             fpidSort = 22; //Mom is Bs
-            //cout<<"Mom ctime Bs (um) = "<<momTime<<endl;
-            //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<partM->M()<<", "<<partM->P()<<endl;
-            //cout<<"    =? "<<(10000*decayL*partM->M())/partM->P()<<endl;
         }
         
         //Using Jonghan's method to find beauty feeddown for the D mesons
@@ -3038,6 +2998,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             // iterate until you find B hadron as a mother or become top ancestor
             AliAODMCParticle *dummyPart; //dummy particle for iteration
             AliAODMCParticle *dummyPartDaughter; //2nd dummy particle for iteration
+            
             int grandMaPDG;
             
             for (int i=1; i<100; i++){
@@ -3054,47 +3015,40 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 if(!(dummyPart = dynamic_cast<AliAODMCParticle *>(fMCarray->At(TMath::Abs(jLabel))))) {
                     break;
                 }
+                //cout<<"Before GetDaughterFirst"<<endl;
                 dummyPartDaughter = dynamic_cast<AliAODMCParticle *>(fMCarray->At(dummyPart->GetDaughterFirst()));
+                //cout<<"After GetDaughterFirst"<<endl;
+                
                 grandMaPDG = TMath::Abs(dummyPart->GetPdgCode());
                 if (grandMaPDG>500 && grandMaPDG<599){
                     fpidSort = 1; //B mother feeddown
-                    momPt = dummyPart->Pt();
-                    momGamma = dummyPart->E()/dummyPart->M();
-                    //momTime = 1e6*TMath::C()*(dummyPartDaughter->Tv()-dummyPart->Tv());
-                    decayL = TMath::Sqrt(TMath::Power(dummyPart->Xv()-dummyPartDaughter->Xv(),2)+TMath::Power(dummyPart->Yv()-dummyPartDaughter->Yv(),2)+TMath::Power(dummyPart->Zv()-dummyPartDaughter->Zv(),2));
-                    momTime = (10000*decayL*dummyPart->M())/dummyPart->P();
                     if (grandMaPDG==521) {
                         fpidSort = 20; //B+
-                        //cout<<"FEEDDOWN1 Mom ctime B+ (um) = "<<momTime<<endl;
-                        //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<dummyPart->M()<<", "<<dummyPart->P()<<endl;
-                        //cout<<"    =? "<<(10000*decayL*dummyPart->M())/dummyPart->P()<<endl;
                     }else if(grandMaPDG==511){
                         fpidSort = 21; //Mom is B0
-                        //cout<<"FEEDDOWN1 Mom ctime B0 (um) = "<<momTime<<endl;
-                        //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<dummyPart->M()<<", "<<dummyPart->P()<<endl;
-                        //cout<<"    =? "<<(10000*decayL*dummyPart->M())/dummyPart->P()<<endl;
                     }else if(grandMaPDG==531){
                         fpidSort = 22; //Mom is Bs
-                        //cout<<"FEEDDOWN1 Mom ctime Bs (um) = "<<momTime<<endl;
-                        //cout<<"Mom decayL, mass, p = "<<decayL<<", "<<dummyPart->M()<<", "<<dummyPart->P()<<endl;
-                        //cout<<"    =? "<<(10000*decayL*dummyPart->M())/dummyPart->P()<<endl;
                     }
-
+                    momPt = dummyPart->Pt();
+                    if (partM->M()>0) {
+                        momGamma = dummyPart->E()/dummyPart->M();
+                    }
+                    decayL = TMath::Sqrt(TMath::Power(dummyPart->Xv()-dummyPartDaughter->Xv(),2)+TMath::Power(dummyPart->Yv()-dummyPartDaughter->Yv(),2)+TMath::Power(dummyPart->Zv()-dummyPartDaughter->Zv(),2));
+                    momTime = (10000*decayL*dummyPart->M())/dummyPart->P();
                     break;
                 }
                 if (grandMaPDG>5000 && grandMaPDG<5999){
                     fpidSort = 10; //b baryon mother feeddown
                     momPt = dummyPart->Pt();
-                    momGamma = dummyPart->E()/dummyPart->M();
+                    if (partM->M()>0) {
+                        momGamma = dummyPart->E()/dummyPart->M();
+                    }
                     decayL = TMath::Sqrt(TMath::Power(dummyPart->Xv()-dummyPartDaughter->Xv(),2)+TMath::Power(dummyPart->Yv()-dummyPartDaughter->Yv(),2)+TMath::Power(dummyPart->Zv()-dummyPartDaughter->Zv(),2));
-                    momTime = momTime = 1e6*TMath::C()*(dummyPartDaughter->Tv()-dummyPart->Tv());
-                    //cout<<"Test2 MOM ct (um) = "<<momTime<<endl;
+                    momTime = (10000*decayL*dummyPart->M())/dummyPart->P();
                     break;
                 }
                 partM = dummyPart;
-                //cout<<"TEST END of LOOP"<<endl;
             } // end of iteration
-            //cout<<"TEST END of LOOP2"<<endl;
         }
         
         
@@ -3111,10 +3065,11 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                         kEmbPi0 = kFALSE;
                         kEmbEta = kTRUE;
                         momPt = partGM->Pt(); //make eta pt mompt for weighting
-                        momGamma = partGM->E()/partGM->M();
+                        if (partM->M()>0) {
+                            momGamma = partGM->E()/partGM->M();
+                        }
                         decayL = TMath::Sqrt(TMath::Power(partGM->Xv()-partM->Xv(),2)+TMath::Power(partGM->Yv()-partM->Yv(),2)+TMath::Power(partGM->Zv()-partM->Zv(),2));
                         momTime = (10000*decayL*partGM->M())/partGM->P();
-                        //cout<<"Test3 MOM GAMMA, TIME, pT = "<<momGamma<<", "<<momTime<<", "<<momPt<<endl;
                     }
                 }
             }
@@ -3125,10 +3080,11 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                         kEmbPi0 = kFALSE;
                         kEmbEta = kTRUE; //GMa is enh eta
                         momPt = partGM->Pt(); //make eta pt mompt for weighting
-                        momGamma = partGM->E()/partGM->M();
+                        if (partM->M()>0) {
+                            momGamma = partGM->E()/partGM->M();
+                        }
                         decayL = TMath::Sqrt(TMath::Power(partGM->Xv()-partM->Xv(),2)+TMath::Power(partGM->Yv()-partM->Yv(),2)+TMath::Power(partGM->Zv()-partM->Zv(),2));
                         momTime = (10000*decayL*partGM->M())/partGM->P();
-                        //cout<<"Test4 MOM GAMMA, TIME, pT = "<<momGamma<<", "<<momTime<<", "<<momPt<<endl;
                     }
                 }
                 if(pidGM==111){
@@ -3136,7 +3092,9 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                         kEmbEta = kFALSE;
                         kEmbPi0 = kTRUE;
                         momPt = partGM->Pt(); //make pi0 pt mompt for weighting
-                        momGamma = partGM->E()/partGM->M();
+                        if (partM->M()>0) {
+                            momGamma = partGM->E()/partGM->M();
+                        }
                         decayL = TMath::Sqrt(TMath::Power(partGM->Xv()-partM->Xv(),2)+TMath::Power(partGM->Yv()-partM->Yv(),2)+TMath::Power(partGM->Zv()-partM->Zv(),2));
                         momTime = (10000*decayL*partGM->M())/partGM->P();
                     }//GMa is pi0
@@ -3198,7 +3156,9 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                                 kEmbEta = kTRUE; //GMa is enh eta
                                 kEmbPi0 = kFALSE;
                                 momPt = partGGM->Pt(); //make eta pt mompt for weighting
-                                momGamma = partGGM->E()/partGGM->M();
+                                if (partM->M()>0) {
+                                    momGamma = partGGM->E()/partGGM->M();
+                                }
                                 decayL = TMath::Sqrt(TMath::Power(partGGM->Xv()-partGM->Xv(),2)+TMath::Power(partGGM->Yv()-partGM->Yv(),2)+TMath::Power(partGGM->Zv()-partGM->Zv(),2));
                                 momTime = (10000*decayL*partGGM->M())/partGGM->P();
                             }
@@ -3212,7 +3172,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign)
+void AliAnalysisTaskTPCCalBeautyCurrent::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -3293,7 +3253,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
     //fPhotonicElecYield->Fill(track->Pt(),Nuls-Nls);
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius)
+void AliAnalysisTaskTPCCalBeautyCurrent::InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -3382,14 +3342,14 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
     
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
+void AliAnalysisTaskTPCCalBeautyCurrent::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
 {
     fBPlusTauWeight = (TF2 *)BPlus->Clone();
     fB0TauWeight = (TF2 *)B0->Clone();
     fBsTauWeight = (TF2 *)Bs->Clone();
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::Terminate(Option_t *)
+void AliAnalysisTaskTPCCalBeautyCurrent::Terminate(Option_t *)
 {
     // terminate
 }

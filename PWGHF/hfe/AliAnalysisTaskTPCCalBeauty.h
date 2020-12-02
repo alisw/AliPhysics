@@ -1,13 +1,13 @@
 //
-//  AliAnalysisTaskTPCCalBeauty.h
+//  AliAnalysisTaskTPCCalBeautyCurrent.h
 //
 //
 //  Created by Erin Gauger
 //
 //
 
-#ifndef AliAnalysisTaskTPCCalBeauty_cxx
-#define AliAnalysisTaskTPCCalBeauty_cxx
+#ifndef AliAnalysisTaskTPCCalBeautyCurrent_cxx
+#define AliAnalysisTaskTPCCalBeautyCurrent_cxx
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
@@ -20,14 +20,14 @@ class AliMultSelection;
 class AliAODMCParticle;
 class AliAODMCHeader;
 
-class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
+class AliAnalysisTaskTPCCalBeautyCurrent : public AliAnalysisTaskSE
 {
 public:
     //two class constructors
-    AliAnalysisTaskTPCCalBeauty();
-    AliAnalysisTaskTPCCalBeauty(const char *name);
+    AliAnalysisTaskTPCCalBeautyCurrent();
+    AliAnalysisTaskTPCCalBeautyCurrent(const char *name);
     //class destructor
-    virtual         ~AliAnalysisTaskTPCCalBeauty();
+    virtual         ~AliAnalysisTaskTPCCalBeautyCurrent();
     //called once at beginning of runtime
     virtual void    UserCreateOutputObjects();
     //called for each event
@@ -91,7 +91,6 @@ public:
     void            GetPi0EtaWeight(THnSparse *SparseWeight);
     
     void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-    //void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
     void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma, Double_t &momTime);
     void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius);
@@ -394,9 +393,9 @@ private:
     
     //Double_t            *fvalueElectron; //! Electron info
     
-    AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    AliAnalysisTaskTPCCalBeauty& operator=(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
-    ClassDef(AliAnalysisTaskTPCCalBeauty, 1);
+    AliAnalysisTaskTPCCalBeautyCurrent(const AliAnalysisTaskTPCCalBeautyCurrent&); // not implemented???
+    AliAnalysisTaskTPCCalBeautyCurrent& operator=(const AliAnalysisTaskTPCCalBeautyCurrent&); // not implemented???
+    ClassDef(AliAnalysisTaskTPCCalBeautyCurrent, 1);
 };
 
 #endif
