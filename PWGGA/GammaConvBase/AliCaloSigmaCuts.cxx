@@ -61,16 +61,17 @@ const char* AliCaloSigmaCuts::fgkCutNames[AliCaloSigmaCuts::kNCuts] = {
   "Chi2TPCCut", //4
   "NClusterITSCut", //5
   "Chi2ITSCut", //6
-  "DCAXYCut", //7
-  "DCAZCut", //8
-  "LowPNSigmaTPCCut", //9
-  "NSigmaTPCCut", //10
-  "NSigmaTOFCut", //11
-  "PionMassLowerCut", //12
-  "PionMassUpperCut", //13
-  "PodolanskiCut", //14
-  "OpeningAngleCut", //15
-  "BackgroundEstimation", //16
+  "InvertChi2ITSCut", //7
+  "DCAXYCut", //8
+  "DCAZCut", //9
+  "LowPNSigmaTPCCut", //10
+  "NSigmaTPCCut", //11
+  "NSigmaTOFCut", //12
+  "PionMassLowerCut", //13
+  "PionMassUpperCut", //14
+  "PodolanskiCut", //15
+  "OpeningAngleCut", //16
+  "BackgroundEstimation", //17
 };
 
 //________________________________________________________________________
@@ -85,6 +86,7 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
   fChi2TPC(0),
   fNClusterITS(0),
   fChi2ITS(0),
+  fInvertChi2ITS(0),
   fDCAXY(0),
   fDCAZ(0),
   fLowPNSigmaTPC(0),
@@ -115,6 +117,7 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const AliCaloSigmaCuts &ref) :
   fChi2TPC(ref. fChi2TPC),
   fNClusterITS(ref. fNClusterITS),
   fChi2ITS(ref. fChi2ITS),
+  fInvertChi2ITS(ref. fInvertChi2ITS),
   fDCAXY(ref. fDCAXY),
   fDCAZ(ref. fDCAZ),
   fLowPNSigmaTPC(ref. fLowPNSigmaTPC),
@@ -230,6 +233,12 @@ Bool_t AliCaloSigmaCuts::SetCut(cutIds cutID, const Int_t value) {
   case kChi2ITS:
     if( SetChi2ITSCut(value)) {
       fCuts[kChi2ITS] = value;
+      UpdateCutString();
+      return kTRUE;
+    } else return kFALSE;
+  case kInvertChi2ITS:
+    if( SetInvertChi2ITSCut(value)) {
+      fCuts[kInvertChi2ITS] = value;
       UpdateCutString();
       return kTRUE;
     } else return kFALSE;
@@ -397,9 +406,28 @@ Bool_t AliCaloSigmaCuts::SetChi2ITSCut(Int_t Chi2ITSCut){
     break;
   case 1:
     fChi2ITS = 3.;
-    break;  
+    break;
+  case 2:
+    fChi2ITS = 1.5;
+    break;    
   default:
     cout<<"Warning: Chi2ITSCut not defined"<<Chi2ITSCut<<endl;
+    return kFALSE;
+  }
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliCaloSigmaCuts::SetInvertChi2ITSCut(Int_t InvertChi2ITSCut){
+  // Set Cut
+  switch(InvertChi2ITSCut){
+  case 0:
+    fInvertChi2ITS = 0;
+    break;
+  case 1:
+    fInvertChi2ITS = 1;
+    break;  
+  default:
+    cout<<"Warning: InvertChi2ITSCut not defined"<<InvertChi2ITSCut<<endl;
     return kFALSE;
   }
   return kTRUE;
@@ -490,6 +518,9 @@ Bool_t AliCaloSigmaCuts::SetNSigmaTOFCut(Int_t NSigmaTOFCut){
   case 2:
     fNSigmaTOF = 2.;
     break;    
+  case 3:
+    fNSigmaTOF = 5.;
+    break;      
   default:
     cout<<"Warning: NSigmaTOFCut not defined"<<NSigmaTOFCut<<endl;
     return kFALSE;
@@ -686,8 +717,13 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
 
   if(!(track->GetITSNcls())) return kFALSE;
   if(!(track->GetITSchi2())) return kFALSE;
-  if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) > fChi2ITS) return kFALSE;
-  
+  if(fInvertChi2ITS == 0){
+    if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) > fChi2ITS) return kFALSE;
+  }
+  if(fInvertChi2ITS == 1){
+    if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) < fChi2ITS || (track->GetITSchi2()) > 10.) return kFALSE;
+  }
+
   if(!(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) return kFALSE;
   if(track->P() <= 0.1) return kFALSE;
   if(track->P() <= 0.8){

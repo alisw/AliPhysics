@@ -48,19 +48,18 @@ class AliAnalysisManager;
  * |                  3                        | chi2 TPC                 |
  * |                  4                        | N Cluster ITS            |
  * |                  5                        | chi2 ITS                 |
- * |                  6                        | Min DCA XY               |
- * |                  7                        | Min DCA Z                |
- * |                  8                        | Low p n Sigma TPC Signal |
- * |                  9                        | n Sigma TPC Signal       |
- * |                  10                       | n Sigma TOF Signal       |
- * |                  11                       | Pion Mass lower Cut      |
- * |                  12                       | Pion Mass upper Cut      |
- * |                  13                       | Podolanski Cut           |
- * |                  14                       | Opening Angle Cut        |
- * |                  15                       | Background estimation    |
+ * |                  6                        | Invert chi2 ITS          |
+ * |                  7                        | Min DCA XY               |
+ * |                  8                        | Min DCA Z                |
+ * |                  9                        | Low p n Sigma TPC Signal |
+ * |                  10                       | n Sigma TPC Signal       |
+ * |                  11                       | n Sigma TOF Signal       |
+ * |                  12                       | Pion Mass lower Cut      |
+ * |                  13                       | Pion Mass upper Cut      |
+ * |                  14                       | Podolanski Cut           |
+ * |                  15                       | Opening Angle Cut        |
+ * |                  16                       | Background estimation    |
 */
-
-
 class AliCaloSigmaCuts : public AliAnalysisCuts {
 
   public:
@@ -73,6 +72,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
       kChi2TPC,
       kNITSCluster,
       kChi2ITS,
+      kInvertChi2ITS,
       kMinDCAXY,
       kMinDCAZ,
       kLowPNSigmaTPC,
@@ -121,6 +121,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     Bool_t SetChi2TPCCut(Int_t Chi2TPCCut);
     Bool_t SetNClusterITSCut(Int_t NClusterITSCut);
     Bool_t SetChi2ITSCut(Int_t Chi2ITSCut);
+    Bool_t SetInvertChi2ITSCut(Int_t InvertChi2ITSCut);
     Bool_t SetDCAXYCut(Int_t DCAXYCut);
     Bool_t SetDCAZCut(Int_t DCAZCut);
     Bool_t SetLowPNSigmaTPCCut(Int_t LowPNSigmaTPCCut);
@@ -147,6 +148,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     Double_t    fChi2TPC;                          ///< max Chi2 TPC
     Int_t       fNClusterITS;                          ///< min N Cluster ITS
     Double_t    fChi2ITS;                          ///< max Chi2 ITS
+    Int_t       fInvertChi2ITS;                          ///< max Chi2 ITS
     Double_t    fDCAXY;                          ///< min DCA in xy-Richtung
     Double_t    fDCAZ;                          ///< min DCA in z-Richtung
     Double_t    fLowPNSigmaTPC;                          ///< max n sigma TPC
@@ -164,7 +166,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliCaloSigmaCuts,3)
+    ClassDef(AliCaloSigmaCuts,4)
     /// \endcond
 };
 
