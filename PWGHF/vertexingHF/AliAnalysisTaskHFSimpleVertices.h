@@ -31,6 +31,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
   void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
   void SetReadMC(Bool_t read){fReadMC=read;}
+  void SetUseCandidateAnalysisCuts(){fCandidateCutLevel=2;}
+  void SetUseCandidateSkimCuts(){fCandidateCutLevel=1;}
+  void SetUseNoCandidateCuts(){fCandidateCutLevel=0;}
   
  private:
 
@@ -49,10 +52,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
+  Int_t SelectInvMassAndPtDzero(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
   
@@ -92,6 +97,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistImpParD0Dau0;           //!<!  histo with D0 prong d0
   TH1F* fHistImpParD0Dau1;           //!<!  histo with D0 prong d0
   TH1F* fHistd0Timesd0;              //!<!  histo with d0xd0
+  TH1F* fHistCosPointD0;             //!<!  histo with D0 cosine of pointing angle
   TH1F* fHistDecLenD0;               //!<!  histo with D0 decay length
   TH1F* fHistDecLenXYD0;             //!<!  histo with D0 decay length XY
   TH1F* fHistImpParErrD0Dau;         //!<!  histo with D0 prong d0 err
@@ -152,6 +158,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
 
+  
   Int_t fSecVertexerAlgo;                  // Algorithm for secondary vertex
   AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
   o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
@@ -166,6 +173,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLims[kMaxNPtBins];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
+  Int_t    fCandidateCutLevel;        // Cuts: 0 = no, 1 = skim, 2 = analysis
+  Double_t fDzeroSkimCuts[5];         // D0 skimming cuts
+  Double_t fDplusSkimCuts[5];         // D0 skimming cuts
+  Double_t fDsSkimCuts[5];            // D0 skimming cuts
+  Double_t fLcSkimCuts[5];            // D0 skimming cuts
   Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
@@ -176,7 +188,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,9);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,10);
 };
 
 
