@@ -4107,13 +4107,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   {
     FillAcceptanceHistograms();
   
-    if(fFillOnlyMCAcceptanceHisto) return;
+    if ( fFillOnlyMCAcceptanceHisto ) return;
   }
   
 //if (GetReader()->GetEventNumber()%10000 == 0)
 // printf("--- Event %d ---\n",GetReader()->GetEventNumber());
   
-  if(!GetInputAODBranch())
+  if ( !GetInputAODBranch() )
   {
     AliFatal(Form("No input aod photons in AOD with name branch < %s >, STOP",GetInputAODName().Data()));
     return;
@@ -4132,7 +4132,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   Int_t last       = 1;     // last entry in first loop to be removed
   
   // Combine 2 detectors:
-  if(fPairWithOtherDetector)
+  if ( fPairWithOtherDetector )
   {
     // Input from CaloTrackCorr tasks
     secondLoopInputData = (TClonesArray *) GetReader()->GetAODBranchList()->FindObject(fOtherDetectorInputName);
@@ -4164,7 +4164,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     return ;
   }
-  else if(fPairWithOtherDetector && nPhot2 < minEntries)
+  else if ( fPairWithOtherDetector && nPhot2 < minEntries )
   {
     AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
     
@@ -4192,7 +4192,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
     
-  if ( eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin() )
+  if ( eventbin < 0 || eventbin >= GetNCentrBin()*GetNZvertBin()*GetNRPBin() )
   {
     AliWarning(Form("Mix Bin not expected: cen bin %d (<%d), z bin %d (<%d), rp bin %d (<%d), "
                     "total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
@@ -4230,18 +4230,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       continue ;
     
     // Only effective in case of mixed event frame
-    if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
+    if ( TMath::Abs(vert[2]) > GetZvertexCut() ) continue ;   //vertex cut
     
-    if (evtIndex1 != currentEvtIndex)
+    if ( evtIndex1 != currentEvtIndex )
     {
       // Fill event bin info
-      if( DoOwnMix() ) fhEventBin->Fill(eventbin, GetEventWeight()) ;
+      if ( DoOwnMix() ) fhEventBin->Fill(eventbin, GetEventWeight()) ;
       
-      if( IsHighMultiplicityAnalysisOn() )
+      if ( IsHighMultiplicityAnalysisOn() )
       {
         fhCentrality->Fill(curCentrBin, GetEventWeight());
         
-        if( GetEventPlane() )
+        if ( GetEventPlane() )
           fhEventPlaneResolution->Fill(curCentrBin, TMath::Cos(2.*GetEventPlane()->GetQsubRes()), GetEventWeight());
       }
       
@@ -4268,7 +4268,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
     Int_t   iRCU1 = -1, iRCU2 = -1;
 
-    if(fMultiCutAnaAcc || fFillAngleHisto)
+    if ( fMultiCutAnaAcc || fFillAngleHisto )
     {
       AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
       if(!cluster1) AliWarning("Cluster1 not found!");
@@ -4295,7 +4295,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // Second loop on photons/clusters
     //---------------------------------
     Int_t first = i1+1;
-    if(fPairWithOtherDetector) first = 0;
+    if ( fPairWithOtherDetector ) first = 0;
     
     for(Int_t i2 = first; i2 < nPhot2; i2++)
     {
@@ -4399,26 +4399,27 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //--------------------------------
       // Check if opening angle is too large or too small compared to what is expected
       Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
-      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
+      if ( fUseAngleEDepCut && 
+          !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05) )
       {
         AliDebug(2,Form("Real pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
         continue;
       }
       
-      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+      if ( fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut) )
       {
         AliDebug(2,Form("Real pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut), RadToDeg(angle), RadToDeg(fAngleMaxCut)));
         continue;
       }
 
-      if(fUseOneCellSeparation)
+      if ( fUseOneCellSeparation )
       {
-	Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
-	if(!separation)
-	{
-	  AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
-	  continue;
-	}
+        Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+        if ( !separation )
+        {
+          AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
+          continue;
+        }
       }
       
       //-----------------------------------
@@ -4433,7 +4434,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       {
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
                                                              GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
-        if( ancLabel >= 0 )
+        if ( ancLabel >= 0 )
         {
           TString genName;
           Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(ancLabel, genName);
@@ -4450,14 +4451,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
            module1 >=0 && module1<fNModules        && 
            module2 >=0 && module2<fNModules           )
       {
-        if(!fPairWithOtherDetector)
+        if ( !fPairWithOtherDetector )
         {
           if ( module1==module2 )
           {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
           }
-          else if (GetCalorimeter() == kEMCAL )
+          else if ( GetCalorimeter() == kEMCAL )
           {
             // Same sector
             Int_t isector1 = module1/2;
@@ -4519,11 +4520,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       // In case we want only pairs in same (super) module, check their origin.
       Bool_t ok = kTRUE;
       
-      if(fSameSM)
+      if ( fSameSM )
       {
-        if(!fPairWithOtherDetector)
+        if ( !fPairWithOtherDetector )
         {
-          if(module1!=module2) ok=kFALSE;
+          if ( module1!=module2 ) ok=kFALSE;
         } 
         else // PHOS and DCal in same sector
         {
@@ -4536,7 +4537,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
       } // Pair only in same SM
       
-      if(!ok) continue;
+      if ( !ok ) continue;
       
       //
       // Fill histograms with selected cluster pairs
@@ -4550,7 +4551,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       
       // Fill shower shape cut histograms
-      if(fFillSSCombinations)
+      if ( fFillSSCombinations )
       {
         if     ( l01 > 0.01 && l01 < 0.4  &&
                  l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt, m, GetEventWeight()*weightPt); // Tight
@@ -4565,34 +4566,37 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //
       for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
       {
-        if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
+        if ( (p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && 
+             (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))    )
         {
           for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
           {
-            if(a < fAsymCuts[iasym])
+            if ( a < fAsymCuts[iasym] )
             {
               if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
               
               Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
               //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
               
-              if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+              if ( index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts ) continue ;
               
               fhRe1     [index]->Fill(pt, m, GetEventWeight()*weightPt);
               
-              if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+              if ( fMakeInvPtPlots ) fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
               
-              if(fFillBadDistHisto)
+              if ( fFillBadDistHisto )
               {
-                if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                if ( p1->DistToBad()>0 && p2->DistToBad()>0 )
                 {
                   fhRe2     [index]->Fill(pt, m, GetEventWeight()*weightPt) ;
-                  if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+                  if ( fMakeInvPtPlots )
+                    fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
                   
-                  if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                  if ( p1->DistToBad()>1 && p2->DistToBad()>1 )
                   {
                     fhRe3     [index]->Fill(pt, m, GetEventWeight()*weightPt) ;
-                    if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+                    if ( fMakeInvPtPlots )
+                      fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
                   }// bad 3
                 }// bad2
               }// Fill bad dist histos
@@ -4603,7 +4607,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       //
       // Fill histograms with opening angle
-      if(fFillAngleHisto)
+      if ( fFillAngleHisto )
       {
         fhRealOpeningAngle   ->Fill(pt, angle, GetEventWeight()*weightPt);
         fhRealCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight()*weightPt);
@@ -4611,16 +4615,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       //
       // Fill histograms for different opening angle bins
-      if(fFillOpAngleCutHisto)
+      if ( fFillOpAngleCutHisto )
       {        
         Int_t angleBin = -1;
         for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
         {
-          if(angle >= fAngleCutBinsArray[ibin] && 
-             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          if ( angle >= fAngleCutBinsArray[ibin] && 
+               angle <  fAngleCutBinsArray[ibin+1]  ) angleBin = ibin;
         }
         
-        if( angleBin >= 0 && angleBin < fNAngleCutBins)
+        if ( angleBin >= 0 && angleBin < fNAngleCutBins )
         {
           Float_t e1   = fPhotonMom1.E();
           Float_t e2   = fPhotonMom2.E();
@@ -4642,11 +4646,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // Recover original cluster
           AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
-          if(!cluster2) AliWarning("Cluster2 not found!");
+          if ( !cluster2 ) 
+            AliWarning("Cluster2 not found!");
 
           absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
           
-          if(e2 > e1)
+          if ( e2 > e1 )
           {
             e1   = fPhotonMom2.E();
             e2   = fPhotonMom1.E();
@@ -4681,9 +4686,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           fhReOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()*weightPt) ; 
 
           fhReOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()*weightPt) ;
-          if(mod2 == mod1)  fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()*weightPt) ;
+          if ( mod2 == mod1 )  
+            fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()*weightPt) ;
                     
-          if(e1 > 0.01) fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()*weightPt) ;  
+          if ( e1 > 0.01 )
+            fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()*weightPt) ;  
           
           fhReOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()*weightPt) ;
           fhReOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()*weightPt) ;
@@ -4699,7 +4706,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 
       
       // Fill histograms with pair assymmetry
-      if(fFillAsymmetryHisto)
+      if ( fFillAsymmetryHisto )
       {
         fhRePtAsym->Fill(pt, a, GetEventWeight()*weightPt);
         if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhRePtAsymPi0->Fill(pt, a, GetEventWeight()*weightPt);
@@ -4707,7 +4714,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       
       // Check cell time content in cluster
-      if ( fFillSecondaryCellTiming)
+      if ( fFillSecondaryCellTiming )
       {
         if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
           fhReSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight()*weightPt);
@@ -4788,16 +4795,17 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //-------------------------------------------------------------
   // Mixing
   //-------------------------------------------------------------
-  if(DoOwnMix())
+  if ( DoOwnMix() )
   {
     // Recover events in with same characteristics as the current event
     
     // Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
-    if(eventbin < 0) return ;
+    if ( eventbin < 0 || eventbin >= GetNCentrBin()*GetNZvertBin()*GetNRPBin() ) 
+      return ;
     
     TList * evMixList=fEventsList[eventbin] ;
     
-    if(!evMixList)
+    if ( !evMixList )
     {
       AliWarning(Form("Mix event list not available, bin %d",eventbin));
       return;
@@ -4848,27 +4856,28 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // Check if opening angle is too large or too small compared to what is expected
           Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
-          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
+          if ( fUseAngleEDepCut && 
+              !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05) )
           {
             AliDebug(2,Form("Mix pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
             continue;
           }
           
-          if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+          if ( fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut) )
           {
             AliDebug(2,Form("Mix pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut),RadToDeg(angle),RadToDeg(fAngleMaxCut)));
             continue;
           }
 
-	  if(fUseOneCellSeparation)
-	  {
-	    Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
-	    if(!separation)
-	    {
-	      AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
-	      continue;
-	    }
-	  }
+          if ( fUseOneCellSeparation )
+          {
+            Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+            if ( !separation )
+            {
+              AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
+              continue;
+            }
+          }
           
           AliDebug(2,Form("Mixed Event: pT: fPhotonMom1 %2.2f, fPhotonMom2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %2.3f",p1->Pt(), p2->Pt(), pt,m,a));
           
@@ -4932,8 +4941,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               Float_t phi1 = GetPhi(fPhotonMom1.Phi());
               Float_t phi2 = GetPhi(fPhotonMom2.Phi());
               Bool_t etaside = 0;
-              if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
-                 || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+              if (   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+                  || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
               
               if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
               else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
@@ -4949,11 +4958,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           } //  different SM combinations
           
           Bool_t ok = kTRUE;          
-          if(fSameSM)
+          if ( fSameSM )
           {
-            if(!fPairWithOtherDetector)
+            if ( !fPairWithOtherDetector )
             {
-              if(module1!=module2) ok=kFALSE;
+              if ( module1!=module2 ) ok=kFALSE;
             } 
             else // PHOS and DCal in same sector
             {
@@ -4966,7 +4975,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }
           } // Pair only in same SM
           
-          if(!ok) continue ;
+          if ( !ok ) continue ;
           
           //
           // Do the final histograms with the selected clusters
@@ -4985,32 +4994,34 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           //
           for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
           {
-            if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
+            if ( (p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)) )
             {
               for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
               {
-                if(a < fAsymCuts[iasym])
+                if ( a < fAsymCuts[iasym] )
                 {
                   if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
 
                   Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                   
-                  if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+                  if ( index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts ) continue ;
                   
                   fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
                   if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                   
-                  if(fFillBadDistHisto)
+                  if ( fFillBadDistHisto )
                   {
-                    if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                    if ( p1->DistToBad()>0 && p2->DistToBad()>0 )
                     {
                       fhMi2[index]->Fill(pt, m, GetEventWeight()) ;
-                      if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                      if ( fMakeInvPtPlots )
+                        fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                       
-                      if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                      if ( p1->DistToBad()>1 && p2->DistToBad()>1 )
                       {
                         fhMi3[index]->Fill(pt, m, GetEventWeight()) ;
-                        if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                        if ( fMakeInvPtPlots )
+                          fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                       }
                     }
                   }// Fill bad dist histo
@@ -5026,7 +5037,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t  ncell1 = p1->GetNCells();
           Int_t  ncell2 = p1->GetNCells();
           
-          if(fMultiCutAna)
+          if ( fMultiCutAna )
           {
             // Several pt,ncell and asymmetry cuts
             for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
@@ -5047,7 +5058,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     //printf("\t %p, %p\n",fhMiPtNCellAsymCuts[index],fhMiPtNCellAsymCutsOpAngle[index]);
                     
                     fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                    if(fFillAngleHisto)  fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
+                    if ( fFillAngleHisto )
+                      fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
                     
                     //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                   }
@@ -5058,7 +5070,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           //
           // Fill histograms with opening angle
-          if(fFillAngleHisto)
+          if ( fFillAngleHisto )
           {
             fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
             fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
@@ -5066,16 +5078,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           //
           // Fill histograms for different opening angle bins
-          if(fFillOpAngleCutHisto)
+          if ( fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
             {
-              if(angle >= fAngleCutBinsArray[ibin] && 
-                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+              if ( angle >= fAngleCutBinsArray[ibin] && 
+                   angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
             }
             
-            if( angleBin >= 0 && angleBin < fNAngleCutBins)
+            if ( angleBin >= 0 && angleBin < fNAngleCutBins )
             {
               Float_t e1   = fPhotonMom1.E();
               Float_t e2   = fPhotonMom2.E();
@@ -5104,7 +5116,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               //              Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
               //              Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
               
-              if(e2 > e1)
+              if ( e2 > e1 )
               {
                 e1   = fPhotonMom2.E();
                 e2   = fPhotonMom1.E();
@@ -5139,9 +5151,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               fhMiOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
               
               fhMiOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
-              if(mod2 == mod1)  fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
+              if ( mod2 == mod1 )
+                fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
               
-              if(e1 > 0.01) fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
+              if ( e1 > 0.01 )
+                fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
               
               fhMiOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
               fhMiOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
@@ -5160,7 +5174,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           }
           
           // Fill histograms with pair assymmetry
-          if(fFillAsymmetryHisto)
+          if ( fFillAsymmetryHisto )
           {
             fhMiPtAsym->Fill(pt, a, GetEventWeight());
             if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
@@ -5189,11 +5203,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     TClonesArray *currentEvent = new TClonesArray(*secondLoopInputData);
     
     // Add current event to buffer and Remove redundant events
-    if( currentEvent->GetEntriesFast() > 0 )
+    if ( currentEvent->GetEntriesFast() > 0 )
     {
       evMixList->AddFirst(currentEvent) ;
-      currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-      if( evMixList->GetSize() >= GetNMaxEvMix() )
+      currentEvent = 0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
+      if ( evMixList->GetSize() >= GetNMaxEvMix() )
       {
         TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
         evMixList->RemoveLast() ;

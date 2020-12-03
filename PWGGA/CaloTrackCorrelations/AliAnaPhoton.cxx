@@ -3621,7 +3621,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           cenBinsArray.GetSize() - 1,    cenBinsArray.GetArray());
       //nptbins,ptmin,ptmax,7,0,7);
       fhMCPrimParticleAccCen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhMCPrimParticleAccCen->SetXTitle("Centrality (%)");
+      fhMCPrimParticleAccCen->SetZTitle("Centrality (%)");
       for(Int_t imcpart = 1; imcpart < 8; imcpart++)
         fhMCPrimParticleAccCen->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
       outputContainer->Add(fhMCPrimParticleAccCen);
