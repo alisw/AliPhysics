@@ -443,7 +443,8 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultV0Cuts(){
     fV0Cuts[MaxDecayRadius]=1000;
     fV0Cuts[MaxCosPALambda]=0.995;
     fV0Cuts[MinCosPAK0]=0.97;
-    fV0Cuts[MaxLifeTime]=5;
+    fV0Cuts[MaxLifeTimeK0]=5;
+    fV0Cuts[MaxLifeTimeLambda]=5;
     fV0Cuts[DoArmenteros]=1;
     fV0Cuts[DoMassWindow]=1;
     fV0Cuts[InvarMassWindowK0]=0.01;
@@ -1263,22 +1264,22 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
       }
     }//end fMCArray
 
-    double thnentries[5]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fMaxV0Eta, fJetPt, static_cast<double>(kTagDec[1][Double])};
+    double thnentries[6]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fMaxV0Eta, fJetPt, static_cast<double>(kTagDec[1][Double]),fMaxIP};
     if(bMaxIPIsV0==0){
       if(bDebug)printf("GetGeneratedV0:: Returning as no V0 jet\n");
       return;
     }
     if(fMaxV0ID==310) {
         fhnV0InJetK0s->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]));
+        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
     }
     if(fMaxV0ID==3122) {
         fhnV0InJetLambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]));
+        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
     }
     if(fMaxV0ID==-3122) {
         fhnV0InJetALambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]));
+        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
     }
 
       pAOD=NULL;
@@ -1961,16 +1962,16 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
       // Mean lifetime
       Double_t dCTauK0s = 2.6844; // [cm] c*tau of K0S
       Double_t dCTauLambda = 7.89; // [cm] c*tau of Lambda
-      if(fV0Cuts[MaxLifeTime] > 0.){
-        if(doPrintCuts)printf("SelectV0Candidates:: Requiring V0 max lifetime <%f\n",fV0Cuts[MaxLifeTime]);
-        if(sV0->fLifetimeK0 > fV0Cuts[MaxLifeTime] * dCTauK0s) sV0->bIsCandidateK0s = kFALSE;
-        if(sV0->fLifetimeLambda > fV0Cuts[MaxLifeTime] * dCTauLambda)
+      if(fV0Cuts[MaxLifeTimeK0] > 0.){
+        if(doPrintCuts)printf("SelectV0Candidates:: Requiring V0 max lifetime K0<%f, Lambda<%f\n",fV0Cuts[MaxLifeTimeK0],fV0Cuts[MaxLifeTimeLambda]);
+        if(sV0->fLifetimeK0 > fV0Cuts[MaxLifeTimeK0] * dCTauK0s) sV0->bIsCandidateK0s = kFALSE;
+        if(sV0->fLifetimeLambda > fV0Cuts[MaxLifeTimeLambda] * dCTauLambda)
         {
           sV0->bIsCandidateLambda = kFALSE;
           sV0->bIsCandidateALambda = kFALSE;
         }
       }
-      if(fV0Cuts[MaxLifeTime] > 0.){
+      if(fV0Cuts[MaxLifeTimeK0] > 0.){
         FillV0Candidates(sV0->bIsCandidateK0s, sV0->bIsCandidateLambda, sV0->bIsCandidateALambda, iCutIndex);
       }
       iCutIndex++;
@@ -2679,13 +2680,13 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
     //V0Cuts
       //V0s from reconstruction
-      const Int_t iNDimInJC = 5;
-      Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,2};
-      Double_t xminKInJC[iNDimInJC] = {0, 0., -10., 0.,0};
-      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 10., 200.,2};
-      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2};
-      Double_t xminLInJC[iNDimInJC] = {0, 0., -10., 0.,0};
-      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 10., 200.,2};
+      const Int_t iNDimInJC = 6;
+      Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
+      Double_t xminKInJC[iNDimInJC] = {0, 0., -10., 0.,0,-0.5};
+      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 10., 200.,2,0.5};
+      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
+      Double_t xminLInJC[iNDimInJC] = {0, 0., -10., 0.,0,-0.5};
+      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 10., 200.,2,0.5};
 
       fh2dKshortMassVsPt=(TH2D*)AddHistogramm("fh2dKshortMassVsPt","KShort Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,0.35, 0.65);
       fh2dLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dLamdaMassVsPt","Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
