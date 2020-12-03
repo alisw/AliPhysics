@@ -15,7 +15,7 @@
 
 /* AliAnalysisTaskAO2Dconverter
  *
- * Convert Run 2 ESDs to Run 3 prototype AODs (AO2D.root).
+ * Convert Run 2 ESDs to Run 3 AODs (AO2D.root).
  */
 
 #include <TFile.h>
@@ -24,6 +24,7 @@
 #include <TTree.h>
 #include <TMath.h>
 #include <TTimeStamp.h>
+#include <TSystem.h>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -309,13 +310,20 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   
   if (!fTfInitialized) {
-    UInt_t tfId = fESD->GetTimeStamp();
-    if (tfId==0) {
+    ULong64_t tfId = GetEventIdAsLong(fESD->GetHeader());
+    if (tfId == 0) {
       // The time stamp of the event is not set, for example in MC
-      // Use the time period from 2020/11/01 in seconds (similar to what we did in the DAQ LDCs)
-      TTimeStamp ts0(2020,11,1,0,0,0);
-      TTimeStamp ts1;
-      tfId = ts1.GetSec() - ts0.GetSec();
+      // Try the AliEn job ID
+      TString alienPID(gSystem->Getenv("ALIEN_PROC_ID"));
+      if (alienPID.Length() > 0) {
+        tfId = alienPID.Atoll() * 100 + fTFCount;
+      } else {
+        // Fallback:
+        // Use the time period from 2020/11/01 in seconds (similar to what we did in the DAQ LDCs)
+        TTimeStamp ts0(2020,11,1,0,0,0);
+        TTimeStamp ts1;
+        tfId = ts1.GetSec() - ts0.GetSec();
+      }
     }
     InitTF(tfId);
   }
@@ -463,9 +471,10 @@ void AliAnalysisTaskAO2Dconverter::WriteTree(TreeIndex t)
   fTree[t]->Write();
 } // void AliAnalysisTaskAO2Dconverter::WriteTree(TreeIndex t)
 
-void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
+void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 {
   // Reset the event count
+  fTFCount++;
   fEventCount = 0;
   fTfInitialized = true;
   
@@ -482,7 +491,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(UInt_t tfId)
   }
 
   // Create the output directory for the current time frame
-  fOutputDir = fOutputFile->mkdir(Form("TF_%d", tfId));
+  fOutputDir = fOutputFile->mkdir(Form("TF_%llu", tfId));
 
 
   // Associate branches for fEventTree

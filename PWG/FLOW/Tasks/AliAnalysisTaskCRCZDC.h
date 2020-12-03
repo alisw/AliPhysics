@@ -13,6 +13,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowTrackSimple.h"
+#include "TGrid.h"
 
 class AliCFManager;
 class AliFlowEventCuts;

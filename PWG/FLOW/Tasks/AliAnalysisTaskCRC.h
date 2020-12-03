@@ -25,6 +25,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowCommonConstants.h"
+#include "TGrid.h"
 
 class TString;
 class TList;

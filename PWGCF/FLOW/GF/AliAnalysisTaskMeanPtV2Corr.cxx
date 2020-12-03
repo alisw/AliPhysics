@@ -41,6 +41,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fIsMC(kFALSE),
+  fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
   fPtBins(0),
@@ -72,15 +73,19 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fGFW(0),
   fSpectraList(0),
   fSpectra(0),
+  fEfficiencyList(0),
+  fEfficiency(0),
   fV0MMulti(0),
   fFilterBit(96),
-  fDisablePID(kFALSE)
+  fDisablePID(kFALSE),
+  fRequireReloadOnRunChange(kFALSE)
 {
 };
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch):
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fIsMC(IsMC),
+  fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
   fPtBins(0),
@@ -112,9 +117,12 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fGFW(0),
   fSpectraList(0),
   fSpectra(0),
+  fEfficiencyList(0),
+  fEfficiency(0),
   fV0MMulti(0),
   fFilterBit(96),
-  fDisablePID(kFALSE)
+  fDisablePID(kFALSE),
+  fRequireReloadOnRunChange(kFALSE)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
@@ -143,6 +151,9 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   if(fStageSwitch==6) {
     DefineOutput(1,TList::Class());
   }
+  if(fStageSwitch==7) {
+    DefineOutput(1,TList::Class());
+  }
 };
 AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
 };
@@ -164,28 +175,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
   fPtBins = GetBinsFromAxis(fPtAxis);
   fNPtBins = fPtAxis->GetNbins();
-  //  Int_t nNchPtBins=61;
-  //  Double_t lNchPtBins[62] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
-  //                            0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
-  //                            1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40,
-  //                            2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.50, 5.00,
-  //                            5.50, 6.00, 6.50, 7.00, 8.00, 9.00, 10.0, 11.0, 12.0, 13.0,
-  //                            14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 30.0, 34.0,
-  //                            40.0, 50.0};
   TString spNames[] = {"ch","pi","ka","pr"};
-
   if(fStageSwitch==1) {
+    fRequireReloadOnRunChange = kFALSE;
     fWeightList = new TList();
     fWeightList->SetOwner(kTRUE);
-      // const Int_t NbinsPtForV2=31;
-      // Double_t binsPtForV2[NbinsPtForV2+1] = {
-      // 0.3, 0.4, 0.5, 0.6,
-      // 0.7, 0.8, 0.9, 1.0, 1.25,
-      // 1.5, 1.75, 2., 2.25, 2.5,
-      // 2.75, 3.0, 3.25, 3.50, 3.75,
-      // 4.0, 4.5, 5.0, 5.5, 6.0,
-      // 7.0, 8.0, 9.0, 10.0, 12.0,
-      // 14.0, 16.0, 20.0};
       TString wNames[] = {"ch","pi","ka","pr"};
       fWeights = new AliGFWWeights*[4];
       for(Int_t i=0; i<4;i++) {
@@ -199,6 +193,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       PostData(1,fWeightList);
   };
   if(fStageSwitch==2) {
+    fRequireReloadOnRunChange=kTRUE;
     fWeightList = (TList*)GetInputData(1);
     fWeights = new AliGFWWeights*[4];
     fMPTList = new TList();
@@ -213,6 +208,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(2,fMultiDist);
   };
   if(fStageSwitch==3) {
+    fRequireReloadOnRunChange = kTRUE;
     fWeightList = (TList*)GetInputData(1);
     if(!fWeightList) AliFatal("Could not fetch weight list!\n");
     fMPTList = (TList*)GetInputData(2);
@@ -284,6 +280,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(3,fCovList);
   }
   if(fStageSwitch==4) {
+    fRequireReloadOnRunChange = kFALSE;
     fMPTList = new TList();
     fMPTList->SetOwner(kTRUE);
     fmPT = new TProfile*[4];
@@ -299,6 +296,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(1,fMPTList);
   };
   if(fStageSwitch==5) {
+    fRequireReloadOnRunChange = kFALSE;
     fMPTList = (TList*)GetInputData(1);
     if(!fMPTList) AliFatal("Could not fetch input mean pT list!\n");
     fmPT = new TProfile*[4];
@@ -314,6 +312,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(1,fptVarList);
   };
   if(fStageSwitch==6) {
+    fRequireReloadOnRunChange = kFALSE;
     fSpectraList = new TList();
     fSpectraList->SetOwner(kTRUE);
     fSpectra = new TH2D*[4];
@@ -329,6 +328,27 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fSpectraList->Add(fV0MMulti);
     PostData(1,fSpectraList);
   }
+  if(fStageSwitch==7) {
+    fRequireReloadOnRunChange = kFALSE;
+    fEfficiencyList = new TList();
+    fEfficiencyList->SetOwner(kTRUE);
+    fEfficiency = new TH2D*[12];
+    TString lNames[] = {"ch","pi","ka","pr"};
+    for(Int_t i=0;i<4;i++) {
+      lNames[i].Prepend("Spectra_");
+      fEfficiency[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      lNames[i].Append("_Gen");
+      fEfficiency[4+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      lNames[i].Append("_Sec");
+      fEfficiency[8+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      fEfficiencyList->Add(fEfficiency[i]);
+      fEfficiencyList->Add(fEfficiency[i+4]);
+      fEfficiencyList->Add(fEfficiency[i+8]);
+    }
+    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNMultiBins,fMultiBins);
+    fEfficiencyList->Add(fV0MMulti);
+    PostData(1,fEfficiencyList);
+  }
   fMidSelection = new AliGFWCuts();
   fMidSelection->SetupCuts(0);
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -343,6 +363,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
 void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
+  if(fIsMC) {
+    fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+    if (!fMCEvent) return;
+  }
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
   if(!CheckTrigger(l_Cent)) return;
@@ -361,6 +385,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     ProduceALICEPublished_CovProd(fAOD,vz,l_Cent);
   if(fStageSwitch==6)
     ProduceFBSpectra(fAOD,vz,l_Cent);
+  if(fStageSwitch==7)
+    ProduceEfficiencies(fAOD,vz,l_Cent);
 };
 void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // fSpectraList->ls();
@@ -394,8 +420,8 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxX
   vtx->GetXYZ(lvtxXYZ);
   return kTRUE;
 };
-Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t ptMin, Double_t ptMax, Int_t FilterBit) {
-  if(TMath::Abs(mtr->Eta())>0.8) return kFALSE;
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, const Int_t &FilterBit) {
+  if(TMath::Abs(mtr->Eta())>fEta) return kFALSE;
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
   if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
@@ -419,6 +445,8 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("ALICEMpt")) return 4;
   if(instr.Contains("ALICECov")) return 5;
   if(instr.Contains("FBSpectra")) return 6;
+  if(instr.Contains("Efficiency")) return 7;
+
   return 0;
 }
 void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
@@ -655,6 +683,58 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, Double_t v
   fV0MMulti->Fill(l_Cent);//Do not care about nTracks here
   PostData(1,fSpectraList);
 }
+void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+  AliAODTrack *lTrack;
+  Double_t l_ptsum[]={0,0,0,0};
+  Double_t l_ptCount[]={0,0,0,0};
+  Double_t trackXYZ[3];
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
+  Float_t dcaxy, dcaz;
+  fV0MMulti->Fill(l_Cent);
+  TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Int_t nPrim = tca->GetEntries();
+  AliAODMCParticle *lPart;
+  Int_t partNotFetched=0;
+  for (Int_t ipart = 0; ipart < nPrim; ipart++) {
+    lPart = (AliAODMCParticle*)tca->At(ipart);
+    if (!lPart) { partNotFetched++; continue; };
+    /* get particlePDG */
+    Int_t pdgcode = TMath::Abs(lPart->GetPdgCode());
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    if (TMath::Abs(lPart->Eta()) > fEta) continue;
+    Double_t pt = lPart->Pt();
+    if (pt<0.15 || pt>50.) continue;
+    fEfficiency[4]->Fill(pt,l_Cent);
+    Int_t pidind = GetPIDIndex(pdgcode);
+    if(pidind) fEfficiency[4+pidind]->Fill(pt,l_Cent);
+  };
+  for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
+    lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+    if(!lTrack) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,fFilterBit)) continue;
+    Int_t fLabel = lTrack->GetLabel();
+    Int_t index = TMath::Abs(fLabel);
+    if (index < 0) continue;
+    lPart = (AliAODMCParticle*)tca->At(index);//fMCEvent->Particle(index);
+    if(!lPart) continue;
+    Int_t pdgcode = lPart->GetPdgCode();
+    Int_t pidind = GetPIDIndex(pdgcode);
+    Double_t lpt = lTrack->Pt();
+    if(lPart->IsPhysicalPrimary()) {
+        fEfficiency[0]->Fill(lPart->Pt(),l_Cent);
+        if(pidind)
+          fEfficiency[pidind]->Fill(lPart->Pt(),l_Cent);
+    }
+    if(lPart->IsSecondaryFromWeakDecay() || lPart->IsSecondaryFromMaterial()) {
+        fEfficiency[8]->Fill(lPart->Pt(),l_Cent);
+        if(pidind)
+          fEfficiency[pidind+8]->Fill(lPart->Pt(),l_Cent);
+    };
+  };
+  PostData(1,fEfficiencyList);
+}
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn) {
   Double_t dnx, val;
@@ -710,7 +790,7 @@ void AliAnalysisTaskMeanPtV2Corr::GetSingleWeightFromList(AliGFWWeights **inWeig
   (*inWeights)->CreateNUA();
 };
 void AliAnalysisTaskMeanPtV2Corr::LoadWeightAndMPT() {//AliAODEvent *inEv) {
-  if(fStageSwitch==1 || fStageSwitch==4 || fStageSwitch==6) return;
+  if(!fRequireReloadOnRunChange) return;
   if(!fWeightList) AliFatal("Weight list not set!\n");
   // Int_t l_RunNo = inEv->GetRunNumber();
   TString spNames[] = {"ch","pi","ka","pr"};
@@ -778,4 +858,10 @@ Double_t *AliAnalysisTaskMeanPtV2Corr::GetBinsFromAxis(TAxis *inax) {
     retBins[i] = inax->GetBinLowEdge(i+1);
   retBins[lBins] = inax->GetBinUpEdge(lBins);
   return retBins;
+}
+Int_t AliAnalysisTaskMeanPtV2Corr::GetPIDIndex(const Int_t &pdgcode) {
+  if(TMath::Abs(pdgcode)==211) return 1;
+  if(TMath::Abs(pdgcode)==321) return 2;
+  if(TMath::Abs(pdgcode)==2212) return 3;
+  return 0;
 }

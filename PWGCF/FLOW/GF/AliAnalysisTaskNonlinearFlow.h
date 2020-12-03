@@ -379,9 +379,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3F*				hTrackEfficiencyRun;//! histogram with tracking efficiency
 
 		// NUA
-		TFile*			fPhiWeight;					//! file with phi weights
-		TFile*			fPhiWeightPlus;			//! file with phi weights
-		TFile*			fPhiWeightMinus;		//! file with phi weights
+		TList*			fPhiWeight;					//! file with phi weights
+		TList*			fPhiWeightPlus;			//! file with phi weights
+		TList*			fPhiWeightMinus;		//! file with phi weights
 		TH3F*				hPhiWeight;					//! 3D weight for all periods except LHC15ijl
 		TH3F*				hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
 		TH1F*				hPhiWeight1D;				//! 1D weight in one MC case (maybe need to redo to 3D weight)

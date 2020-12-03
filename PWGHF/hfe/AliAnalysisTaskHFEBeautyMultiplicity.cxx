@@ -16,7 +16,7 @@
 /*===============================================*
  *                                               *
  * AliAnalysisTaskHFEBeautyMultiplicity          *
- * Auther : Shunya Chiba, Unniversity of Tsukuba *
+ * Auther : Shunya Chiba, University of Tsukuba  *
  *                                               *
  *===============================================*/
 
@@ -171,6 +171,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     NpureMCproc(0),
     NpureMC(0),
     Nch(0),
+    iBevt(kFALSE),
+    fNDB(0),
 
     fCheckEtaMC(0),
     fHistMCorg_Pi0(0),
@@ -186,7 +188,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fDCAxy_MC_D(0),	// DCA from D
     fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
     fDCAxy_MC_D0(0),	// DCA from D0,D*0
-    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
+    fDCAxy_MC_Ds(0),	// DCA from Ds+,D*+s
+    fDCAxy_MC_Lc(0)	// DCA from Lambda
 
 
 
@@ -310,6 +313,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     NpureMCproc(0),
     NpureMC(0),
     Nch(0),
+    iBevt(kFALSE),
+    fNDB(0),
 
     fCheckEtaMC(0),
     fHistMCorg_Pi0(0),
@@ -325,7 +330,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fDCAxy_MC_D(0),	// DCA from D
     fDCAxy_MC_Dpm(0),	// DCA from D+,D*+
     fDCAxy_MC_D0(0),	// DCA from D0,D*0
-    fDCAxy_MC_Ds(0)	// DCA from Ds+,D*+s
+    fDCAxy_MC_Ds(0),	// DCA from Ds+,D*+s
+    fDCAxy_MC_Lc(0)	// DCA from Lambda
 
 
 
@@ -699,6 +705,16 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
     
 //************************************ MC data ************************************//
+  //Number of D,B
+    fNDB = new TH1F("fNDB","Number of D,B event",4,-0.5,3.5);
+    fOutputList->Add(fNDB);
+    fNDB->GetYaxis()->SetTitle("counts");
+    fNDB->GetXaxis()->SetBinLabel(1,"B->e");
+    fNDB->GetXaxis()->SetBinLabel(2,"B->e & B->D->e");
+    fNDB->GetXaxis()->SetBinLabel(3,"D->e & B->D->e");
+    fNDB->GetXaxis()->SetBinLabel(4,"D->e");
+
+
   //Total photonic electron(MC)
     fHistPho_Reco0 = new TH1F("fHistPho_Reco0", "Total photonic electron (MC); p_{T} [GeV/c];",1200,0,60);
     fOutputList->Add(fHistPho_Reco0);
@@ -766,7 +782,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //DCAxy from Ds
     fDCAxy_MC_Ds = new TH2F("fDCAxy_MC_Ds","p_{T} vs DCA_{xy} (MC : D^{+}_{s},D^{*+}_{s});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_MC_Ds);
-
+  
+  //DCAxy from Lambda c 
+    fDCAxy_MC_Lc = new TH2F("fDCAxy_MC_Lc","p_{T} vs DCA_{xy} (MC : #Lambda^{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_MC_Lc);
     
     
 
@@ -918,14 +937,30 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
     fVtxZ_2->Fill(Zvertex);	//Z vertex after event cut
 
-//_________________________________________________________________________________
+//__________________________________________________________________________
     
     fCent -> Fill(centrality);  // centrality
     //cout << "centrality = " << centrality << " %" << endl;
     
-    
+    iBevt = kFALSE;	// b,bbar identificetion
     if(fMCarray) CheckMCgen(fMCheader, CutTrackEta[1]);   // True production of HFE
-    
+
+
+    //---------- SPD tracklets ----------//
+/*    Int_t nTracklets = 0;
+    Int_t nAcc = 0;
+    Double_t etaRange = 1.0;
+
+    AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
+    nTracklets = tracklets->GetNumberOfTracklets();
+    for (Int_t nn = 0; nn < nTracklets; nn++) {
+	    Double_t theta = tracklets->GetTheta(nn);
+	    Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+	    if (TMath::Abs(eta) < etaRange) nAcc++;
+	    }
+*/
+
+
     
 //*********************//
 //        EMCAL        //
@@ -1050,18 +1085,25 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             pid_eleD = IsDdecay(pidM);  // D->e, B->D->e
             pid_eleB = IsBdecay(pidM);  // B->e
             pid_eleP = IsPdecay(pidM);  // photon -> e
+
+	    if(pid_eleB) fNDB -> Fill(0);
+	    if(pid_eleD) fNDB -> Fill(2);
             
-            if(pid_eleD)    // mother is D meson
+
+            if(pid_eleD && iBevt)    // mother is D-meson, but GM is B-meson
             {
                 AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
                 FindMother(fMCTrackpartMom, ilabelGM, pidGM, pTGMom);
                 
-                if(IsBdecay(pidGM)) // grandmother is B meson
-                {
-                    pid_eleB = IsBdecay(pidGM); // B->D->e
-                    pid_eleD = kFALSE;
-                }
+                pid_eleB = kTRUE;
+                pid_eleD = kFALSE;
+		pidM = pidGM;
+		pTMom = pTGMom;
             }
+            
+	    if(pid_eleB) fNDB -> Fill(1);
+	    if(pid_eleD) fNDB -> Fill(3);
+
             
             if(pidM==111)   //pi0
             {
@@ -1337,6 +1379,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			    if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433) fDCAxy_MC_Ds  -> Fill(TrkPt, DCA[0]*charge*Bsign);
 		    }
 
+		    if(TMath::Abs(pidM)==4122){			   // HFE from Lambda c (MC)
+			    fDCAxy_MC_Lc -> Fill(TrkPt, DCA[0]*charge*Bsign);
+		    }
+
                 }
             }
             
@@ -1491,7 +1537,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(fFlagLS){    // Like-sign
             if(TrkPt >= 1.0){
                 fInvmassLS -> Fill(TrkPt,mass);
-                if(mass <= 0.1){
+                if(mass <= 0.15){
                     fDCAxy_LS_1 -> Fill(TrkPt, DCAxy*charge*Bsign);
                     fDCAxy_LS_2 -> Fill(TrkPt, DCAxy*charge);
                     fDCAxy_LS_3 -> Fill(TrkPt, DCAxy);
@@ -1502,15 +1548,15 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(fFlagULS){   // Unlike-sign
             if(TrkPt >= 1.0){
                 fInvmassULS -> Fill(TrkPt,mass);
-                if(mass <= 0.1){
+                if(mass <= 0.15){
                     fDCAxy_ULS_1 -> Fill(TrkPt, DCAxy*charge*Bsign);
                     fDCAxy_ULS_2 -> Fill(TrkPt, DCAxy*charge);
                     fDCAxy_ULS_3 -> Fill(TrkPt, DCAxy);
                 }
             }
         }
-        
-        if(mass< 0.1 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
+       
+        if(mass <= 0.15 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; // Tag Non-HFE (photonic electron by Invariant-mass method)
 
     }
     fFlagPhotonicElec = flagPhotonicElec;
@@ -1589,6 +1635,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
     TString MCgen;
     TString embpi0("pi");
     TString embeta("eta");
+    TString embbeauty("bele");
+    TString embcharm("cele");
 
 
     if(lh)
@@ -1603,6 +1651,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
                 
                 if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;  //if "pi" contains
                 if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;  //if "eta" contains
+
+		if(MCgen.Contains(embbeauty))
+		{
+			iBevt = kTRUE;		 // b,bbar
+		}
                 
                 NpureMCproc += gh->NProduced();  // generate by PYTHIA or HIJING
             }

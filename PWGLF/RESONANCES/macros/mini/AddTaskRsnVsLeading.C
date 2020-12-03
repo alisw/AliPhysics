@@ -1,4 +1,13 @@
-AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFALSE, Bool_t isPP = kTRUE, UInt_t triggerMask = AliVEvent::kAny, Double_t nSigmaPart1 = 3.0, Double_t nSigmaPart2 = -1, TString configName = "ConfigPhiLeading.C", TString path = "")
+AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi",
+ Bool_t isMC = kFALSE, 
+ Bool_t isPP = kTRUE, 
+ UInt_t triggerMask = AliVEvent::kAny,  
+ Double_t nSigmaPart1TPC = -1, 
+ Double_t nSigmaPart2TPC = -1,
+ Double_t nSigmaPart1TOF = -1, 
+ Double_t nSigmaPart2TOF = -1
+ TString configName = "ConfigPhiLeading.C", 
+ TString path = "")
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

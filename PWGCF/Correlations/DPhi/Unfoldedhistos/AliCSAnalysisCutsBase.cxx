@@ -430,6 +430,7 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   } else if (szLHCPeriod.CompareTo("LHC13e7") == 0){
     fgDataPeriod = kLHC13e7;
     fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
   } else if (szLHCPeriod.CompareTo("LHC14b2") == 0){
     fgDataPeriod = kLHC14b2;
@@ -442,6 +443,16 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   } else if (szLHCPeriod.CompareTo("LHC13b4_plus") == 0){
     fgDataPeriod = kLHC13b4_plus;
     fgIsMC = kTRUE;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.CompareTo("LHC15g4a") == 0){
+    fgDataPeriod = kLHC15g4a;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.CompareTo("LHC15g5b") == 0){
+    fgDataPeriod = kLHC15g5b;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
   } else if (szLHCPeriod.CompareTo("LHC16c3a") == 0){
     fgDataPeriod = kLHC16c3a;

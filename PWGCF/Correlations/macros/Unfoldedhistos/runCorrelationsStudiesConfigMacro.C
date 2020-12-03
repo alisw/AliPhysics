@@ -41,6 +41,7 @@ void load2018qRunNumbers();
 void load2018rRunNumbers();
 void load2018rMCRunNumbers();
 void load2018rESDRunNumbers();
+void load2015pPbHIJINGTestRunNumber();
 
 void runCorrelationsStudiesConfigMacro() {
 
@@ -91,7 +92,8 @@ void runCorrelationsStudiesConfigMacro() {
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
   // load2018qRunNumbers();
-  load2018rESDRunNumbers();
+  // load2018rESDRunNumbers();
+  load2015pPbHIJINGTestRunNumber();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -973,3 +975,33 @@ void load2018rESDRunNumbers() {
   }
 }
 
+void load2015pPbHIJINGTestRunNumber() {
+  const Int_t nruns = 1;
+  char buffer[256];
+  int runsno[nruns] = {
+    195344
+  };
+
+  bUseESD                    = kFALSE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_LHC13e7";
+
+  bMC = kTRUE;
+
+  /* reco pass */
+  szpass = "2";
+
+  /* 2013 */
+  szDataDir = "/alice/sim/2013/LHC13e7";
+  /* 2013e7 uncalibrated pass 1 */
+  szDataPattern = "*/AOD158/*/AliAOD.root";
+
+  /* the list of runs to analyze 2013e7*/
+  for (Int_t i = 0; i < 2 /*nruns*/; i++) {
+    sprintf(buffer,"%d",runsno[i]);
+    listOfActiveRuns.Add(new TObjString(buffer));
+  }
+
+}

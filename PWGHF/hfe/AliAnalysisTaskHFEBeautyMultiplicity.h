@@ -166,6 +166,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Int_t               NpureMCproc;
         Int_t               NpureMC;
         Int_t               Nch;
+	Bool_t		    iBevt;
+	TH1F*		    fNDB;
     
         TH1F*               fCheckEtaMC;
         TH2F*               fHistMCorg_Pi0;
@@ -182,6 +184,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*		    fDCAxy_MC_Dpm;
 	TH2F*		    fDCAxy_MC_D0;
 	TH2F*		    fDCAxy_MC_Ds;
+	TH2F*		    fDCAxy_MC_Lc;
     
     
     

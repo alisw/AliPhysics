@@ -5,10 +5,10 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  plugin->SetRunMode("test");
+  //plugin->SetRunMode("test");
   //plugin->SetRunMode("offline");
   //plugin->SetRunMode("submit");
-  //plugin->SetRunMode("full");
+  plugin->SetRunMode("full");
   //plugin->SetRunMode("terminate");
   plugin->SetNtestFiles(1); // Relevant only for run mode "test" 
 
@@ -17,7 +17,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->SetROOTVersion("v5-27-06b");
   //plugin->SetAliROOTVersion("v4-21-13-AN");  
   //plugin->SetAliPhysicsVersion("vAN-20191031_ROOT6-1");
-  plugin->SetAliPhysicsVersion("vAN-20201102-1"); //vAN-20201013-1
+  plugin->SetAliPhysicsVersion("vAN-20201124-1"); //vAN-20201013-1
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.

@@ -69,10 +69,18 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   enum JetShapeSub_t { kNoSub = 0, kConstSub = 1, kDerivSub = 2, kEventSub = 3 };
   enum JetSelectionType_t { kInclusive = 0, kRecoil = 1 };
   enum DerivSubtrOrder_t { kSecondOrder = 0, kFirstOrder = 1 };
+  enum GroomingMethod_t {
+    kLeadingKt = 0,         //!<! Leading kt. Set the hard cutoff separately.
+    kDynamicalZ = 1,        //!<! Dynamical z (a = 0.1).
+    kDynamicalKt = 2,       //!<! Dynamical kt (a = 1).
+    kDynamicalTime = 3,     //!<! Dynamical time (a = 2).
+    kDynamicalCore = 4      //!<! Dynamical core (a = 0.5). Our method to trim larger R.
+  };
   static const std::map<std::string, JetShapeType_t> fgkJetShapeTypeMap; //!<! Map from name to jet shape type used with the YAML config
   static const std::map<std::string, JetShapeSub_t> fgkJetShapeSubMap; //!<! Map from name to jet shape sub used with the YAML config
   static const std::map<std::string, JetSelectionType_t> fgkJetSelectionMap; //!<! Map from name to jet selection used with the YAML config
   static const std::map<std::string, DerivSubtrOrder_t> fgkDerivSubtrOrderMap; //!<! Map from name to derivative subtracter order used with the YAML config
+  static const std::map<std::string, GroomingMethod_t> fgkGroomingMethodMap; //!<! Map from name to grooming methods used with the YAML config (and for naming the output)
 
   AliAnalysisTaskJetHardestKt();
   AliAnalysisTaskJetHardestKt(const char* name);
@@ -84,6 +92,10 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   virtual ~AliAnalysisTaskJetHardestKt() {}
 
   void UserCreateOutputObjects();
+
+  // Getters
+  GroomingMethod_t GetGroomingMethod() const { return fGroomingMethod; }
+  std::string GroomingMethodName() const;
 
   // Setters
   void SetMinFractionShared(Double_t f) { fMinFractionShared = f; }
@@ -98,6 +110,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   void SetSubjetCutoff(Float_t t) { fSubjetCutoff = t; }
   void SetMinPtConst(Float_t t) { fMinPtConst = t; }
   void SetHardCutoff(Float_t t) { fHardCutoff = t; }
+  void SetGroomingMethod(GroomingMethod_t method) { fGroomingMethod = method; }
   void SetDoTwoTrack(Bool_t t) { fDoTwoTrack = t; }
   void SetCutDoubleCounts(Bool_t t) { fCutDoubleCounts = t; }
   void SetMagFieldPol(Float_t t) { fMagFieldPolarity = t; }
@@ -140,7 +153,6 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   Bool_t FillHistograms();
 
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
-  std::string GroomingMethodName() const;
   void AddSubstructureVariablesToMap(const std::string & prefix);
   void SetupTree();
 
@@ -159,17 +171,19 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
    */
   double DynamicalGrooming(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R, const double a) const;
   /// Calculate zDrop (a = 0.1) for the most symmetric momentum sharing.
-  double CalculateZDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
+  double CalculateDynamicalZ(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
   /// Calculate KtDrop (a = 1) for the hardest kt.
-  double CalculateKtDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
-  /// Calculate TimeDrop (a = 2) for the earliest splitting.
-  double CalculateTimeDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
+  double CalculateDynamicalKt(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
+  /// Calculate TimeDrop (a = 2) for the earliest time splitting.
+  double CalculateDynamicalTime(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
+  /// Calculate WideDrop (a = 0.5) for symmetric splittings in the core.
+  double CalculateDynamicalCore(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
 
   // Helpers
   int GetConstituentID(int constituentIndex, AliVParticle * part, AliEmcalJet * jet);
 
   // Subjet matching and properties
-  std::shared_ptr<SelectedSubjets> IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData);
+  std::shared_ptr<SelectedSubjets> IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData, double jetR);
   void StoreSubjetMatching(const std::shared_ptr<SelectedSubjets> & generatorLikeSubjets, const std::shared_ptr<SelectedSubjets> & measuredLikeSubjets, bool matchUsingDistance, std::string matchingPrefix);
   void SubjetsInHybridJet(const std::shared_ptr<SelectedSubjets> & generatorLikeSubjets, AliEmcalJet* hybridJet);
   bool SubjetContainedInSubjet(const fastjet::PseudoJet & generatorLikeSubjet, const std::vector<fastjet::PseudoJet> & generatorLikeSubjetConstituents,
@@ -198,6 +212,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
   Bool_t fCheckResolution;   ///<  check subjet energy resolution
   Float_t fSubjetCutoff;     ///<  angular cutoff for subjets at det/gen level
   Float_t fMinPtConst;       ///<  constituent pt cutoff
+  GroomingMethod_t fGroomingMethod; ///<  Grooming method.
   Float_t fHardCutoff;       ///<  hard cutoff in the iterative declustering
   Bool_t fDoTwoTrack;        ///<  switch to consider 2 track effects
   Bool_t fCutDoubleCounts;   ///<  turn off to avoid true-hybrid cuts to suppress double counting
@@ -219,7 +234,7 @@ class AliAnalysisTaskJetHardestKt : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetHardestKt, 1)  // Jet hardest kt
+  ClassDef(AliAnalysisTaskJetHardestKt, 2)  // Jet hardest kt
   /// \endcond
 };
 
