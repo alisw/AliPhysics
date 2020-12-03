@@ -164,6 +164,7 @@ fMaxPtCascade( 100.00 ),
 fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE), 
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -235,6 +236,7 @@ fMaxPtCascade( 100.00 ),
 fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -378,12 +380,12 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
   
     if(! fHistPosTrackCounter ) {
         //Histogram Output: Event-by-Event
-        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",1000,0,1000);
+        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",3000,0,3000);
         fListHist->Add(fHistPosTrackCounter);
     }
     if(! fHistNegTrackCounter ) {
         //Histogram Output: Event-by-Event
-        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",1000,0,1000);
+        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",3000,0,3000);
         fListHist->Add(fHistNegTrackCounter);
     }
     PostData(1, fListHist    );
@@ -717,6 +719,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
   
     fHistPosTrackCounter -> Fill(npos);
     fHistNegTrackCounter -> Fill(nneg);
+  
+    if( fOnlyCount ) return 0 ; 
   
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
