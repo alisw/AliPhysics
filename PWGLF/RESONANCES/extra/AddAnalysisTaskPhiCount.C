@@ -1,7 +1,7 @@
 // TODO LIST
 // TODO: You're all set!
 
-AliAnalysisTaskPhiCount* AddMyTask( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString name = "name" )
+AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString name = "name" )
 {
     // Analysis Manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

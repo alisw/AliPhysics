@@ -16,6 +16,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskPhiCount.h"
 #include "AliPPVsMultUtils.h"
+#include "AliESDtrackCuts.h"
 
 class AliAnalysisTaskPhiCount;
 class AliPIDResponse;
@@ -107,12 +108,12 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     PostData(1, fAnalysisOutputList);
     
     // QC utility Histograms TList initialisation
-    fQCOutputList   =   new TList();
-    fQCOutputList   ->  SetOwner(kTRUE);
-    fHistTPCPID3    =   new TH2F("fHistTPCPID3", "TPC Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
-    fHistTOFPID3    =   new TH2F("fHistTOFPID3", "TOF Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
-    fQCOutputList   ->  Add(fHistTPCPID3);
-    fQCOutputList   ->  Add(fHistTOFPID3);
+    fQCOutputList     = new TList();
+    fQCOutputList     ->SetOwner(kTRUE);
+    fHistTPCPID3    = new TH2F("fHistTPCPID3", "TPC Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
+    fHistTOFPID3    = new TH2F("fHistTOFPID3", "TOF Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
+    fQCOutputList->Add(fHistTPCPID3);
+    fQCOutputList->Add(fHistTOFPID3);
     
     PostData(2, fQCOutputList);
     
@@ -120,6 +121,7 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     fPhiCandidate = new TTree   ("PhiCandidate",    "Data Tree for Phi Candidates");
     fPhiCandidate->Branch       ("fMultiplicity",   &fMultiplicity,     "fMultiplicity/F");
     fPhiCandidate->Branch       ("fMultiplicit2",   &fMultiplicit2,     "fMultiplicit2/F");
+    fPhiCandidate->Branch       ("fMultiplicit3",   &fMultiplicit3,     "fMultiplicit3/F");
     fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/b");
     fPhiCandidate->Branch       ("Px",              &fPhiPx,            "fPhiPx[fnPhi]/F");
     fPhiCandidate->Branch       ("Py",              &fPhiPy,            "fPhiPy[fnPhi]/F");
@@ -131,16 +133,15 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     if ( kPhibool )                 PostData(3, fPhiCandidate);
     
     // KaonCandidate Tree Set-Up
-    fKaonCandidate = new TTree  ("KaonCandidate",    "Data Tree for Kaon Candidates");
-    fKaonCandidate->Branch      ("fMultiplicity",   &fMultiplicity,     "fMultiplicity/F");
-    fKaonCandidate->Branch      ("fMultiplicit2",   &fMultiplicit2,     "fMultiplicit2/F");
-    fKaonCandidate->Branch      ("fnKaon",           &fnKaon,            "fnKaon/b");
-    fKaonCandidate->Branch      ("Px",               &fKaonPx,           "fKaonPx[fnKaon]/F");
-    fKaonCandidate->Branch      ("Py",               &fKaonPy,           "fKaonPy[fnKaon]/F");
-    fKaonCandidate->Branch      ("Pz",               &fKaonPz,           "fKaonPz[fnKaon]/F");
-    fKaonCandidate->Branch      ("Charge",           &fCharge,           "fCharge[fnKaon]/B");
-    fKaonCandidate->Branch      ("TOFSigma",         &fTOFSigma,         "fTOFSigma[fnKaon]/B");
-    fKaonCandidate->Branch      ("TPCSigma",         &fTPCSigma,         "fTPCSigma[fnKaon]/B");
+    fKaonCandidate = new TTree ("KaonCandidate",    "Data Tree for Kaon Candidates");
+    fKaonCandidate->Branch     ("fMultiplicity",    &fMultiplicity,     "fMultiplicity/F");
+    fKaonCandidate->Branch     ("fnKaon",           &fnKaon,            "fnKaon/b");
+    fKaonCandidate->Branch     ("Px",               &fKaonPx,           "fKaonPx[fnKaon]/F");
+    fKaonCandidate->Branch     ("Py",               &fKaonPy,           "fKaonPy[fnKaon]/F");
+    fKaonCandidate->Branch     ("Pz",               &fKaonPz,           "fKaonPz[fnKaon]/F");
+    fKaonCandidate->Branch     ("Charge",           &fCharge,           "fCharge[fnKaon]/B");
+    fKaonCandidate->Branch     ("TOFSigma",         &fTOFSigma,         "fTOFSigma[fnKaon]/B");
+    fKaonCandidate->Branch     ("TPCSigma",         &fTPCSigma,         "fTPCSigma[fnKaon]/B");
     
     if ( kKaonbool )                PostData(4, fKaonCandidate);
 
@@ -165,6 +166,7 @@ void    AliAnalysisTaskPhiCount::fSetZero()
     //Setting all counters and global variables to zero
     fMultiplicity   =   0;
     fnPhi           =   0;
+    fnPhiTru        =   0;
     fnKaon          =   0;
     fnPhiTru        =   0;
 }
@@ -413,9 +415,6 @@ void    AliAnalysisTaskPhiCount::fFillVtxHist ( Int_t iIndex )
 
 void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
 {
-    // Setting zero all counters and global variables
-    fSetZero();
-    
     // Recovering Event Data
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fMCD = dynamic_cast<AliMCEvent*>(MCEvent());
@@ -443,9 +442,18 @@ void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
         if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
     }
     
+    // Setting zero all counters and global variables
+    fMultiplicity   =   0;
+    fnPhi           =   0;
+    fnPhiTru        =   0;
+    fnKaon          =   0;
+    fnPhiTru        =   0;
+    
+    fMultiplicity = ((AliAODHeader*)fAOD->GetHeader()) -> GetRefMultiplicityComb08();
+    
     fMultUtil = new AliPPVsMultUtils();
-    fMultiplicity = fMultUtil->GetMultiplicityPercentile(fAOD,"V0M",kFALSE);
-    fMultiplicit2 = fMultUtil->GetStandardReferenceMultiplicity(fAOD,kFALSE);
+    fMultiplicit2 = fMultUtil->GetMultiplicityPercentile(fAOD,"V0M",kFALSE);
+    fMultiplicit3 = fMultUtil->GetStandardReferenceMultiplicity(fAOD,kFALSE);
     
     // Looping over tracks
     for ( Int_t iTrack(0); iTrack < nTrack; iTrack++ )
@@ -457,7 +465,7 @@ void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
         if ( !fIsTrackCandidate(fCurrent_Track) ) continue;
         
         // Check the PID is present and within requirements
-        if ( !fSetKaonPID(fCurrent_Track) ) continue;
+        if ( !fIsKaonCandidate(fCurrent_Track) ) continue;
         
         // Filling the Kaon Tree
         fKaonPx[fnKaon] =   fCurrent_Track->Px();
