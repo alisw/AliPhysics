@@ -236,6 +236,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloTruePtTaggedCalo(NULL),
   fCaloTruePtTaggedAsDecayCalo(NULL),
   fCaloTrueRecPt(NULL),
+  fCaloRecPtvsTruePt(NULL),
   fCaloTrueWithoutConvRecPt(NULL),
   fCaloTrueRecPtPrimary(NULL),
   fCaloTrueRecPtDecay(NULL),
@@ -595,6 +596,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloTruePtTaggedCalo(NULL),
   fCaloTruePtTaggedAsDecayCalo(NULL),
   fCaloTrueRecPt(NULL),
+  fCaloRecPtvsTruePt(NULL),
   fCaloTrueWithoutConvRecPt(NULL),
   fCaloTrueRecPtPrimary(NULL),
   fCaloTrueRecPtDecay(NULL),
@@ -1536,6 +1538,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
       // True with rec pT
       fCaloTrueRecPt = new TH1F("fCaloTrueRecPt", "validated calo photons in EMC acceptance;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
+      fCaloRecPtvsTruePt = new TH2F("fCaloRecPtvsTruePt", "rec. vs true;true p_{T} (GeV/c); rec. p_{T} (GeV/c);", nPtBins,minPt,maxPt, nPtBins,minPt,maxPt);
       fCaloTrueWithoutConvRecPt = new TH1F("fCaloTrueWithoutConvRecPt", "validated calo photons in EMC acceptance without conv as truth;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTrueRecPtPrimary = new TH1F("fCaloTrueRecPtPrimary", "calo photon that has not a pi0 etc. as mother;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
       fCaloTrueRecPtDecay = new TH1F("fCaloTrueRecPtDecay", "calo photon from decay;p_{T} (GeV/c); counts", nPtBins,minPt,maxPt);
@@ -1557,6 +1560,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fCaloTruePtTaggedCalo->Sumw2();
       fCaloTruePtTaggedAsDecayCalo->Sumw2();
       fCaloTrueRecPt->Sumw2();
+      fCaloRecPtvsTruePt->Sumw2();
       fCaloTrueWithoutConvRecPt->Sumw2();
       fCaloTrueRecPtPrimary->Sumw2();
       fCaloTrueRecPtDecay->Sumw2();
@@ -1581,6 +1585,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
 
       // True with rec pT
       fCaloFolderTrue->Add(fCaloTrueRecPt);
+      fCaloFolderTrue->Add(fCaloRecPtvsTruePt);
       fCaloFolderTrue->Add(fCaloTrueWithoutConvRecPt);
       fCaloFolderTrue->Add(fCaloTrueRecPtPrimary);
       fCaloFolderTrue->Add(fCaloTrueRecPtDecay);
@@ -2756,10 +2761,10 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCCaloPhoton(AliAODCaloCluster* clus,Al
     mcIsoFull.push_back(mcIsoCharged.at(r)+ mcIsoNeutral.at(r)); // they should always have same length
   }
 
-
-
   fCaloTrueRecPt->Fill(photon->Pt(), weight);
   fCaloTruePt->Fill(MCPhoton->Pt(), weight);
+
+  fCaloRecPtvsTruePt->Fill(MCPhoton->Pt(),photon->Pt(),weight);
 
   if(isTruePhotonWithoutConv) fCaloTrueWithoutConvRecPt->Fill(photon->Pt(), weight);
   if(isTruePhotonWithoutConv) fCaloTrueWithoutConvPt->Fill(MCPhoton->Pt(), weight);
@@ -3430,6 +3435,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
       Bool_t isWithinTPC =IsWithinRadiusTPC(particle->Eta(),particle->Phi(),fExclusionRadius);
       if (fClusterCutsEMC->ClusterIsSelectedAODMC(particle,fAODMCTrackArray) && isWithinTPC)
       {
+         // if(!particle->IsPhysicalPrimary()) AliInfo("none physical primary selected!");
           fGenPhotonPtInEMCalAcc->Fill(particle->Pt(), tempParticleWeight);
 
           if(isDecay){

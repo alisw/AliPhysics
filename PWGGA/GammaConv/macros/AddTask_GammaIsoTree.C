@@ -72,6 +72,8 @@ void AddTask_GammaIsoTree(
   Double_t                    fEtaCut = 0.9;  
   Double_t                    fPtCut= 0.1;  
   Double_t                    fYMCCut = 9999;  
+
+  Double_t                    fAntiIsolation[2] = {5.,10};
   if(trainConfig == 1){ 
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "1111132060032230000";
@@ -170,9 +172,129 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
+
+   // Anti isolation variation
+
+  } else if(trainConfig == 10){  // min bias (cuts from PCMEMC 84 + loose iso)
+      TaskEventCutnumber                = "00010103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+  } else if(trainConfig == 11){  // trigger
+      TaskEventCutnumber                = "00052103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+  } else if(trainConfig == 12){  // trigger
+      TaskEventCutnumber                = "00081103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+
+  } else if(trainConfig == 13){  // min bias (cuts from PCMEMC 84 + loose iso)
+      TaskEventCutnumber                = "00010103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+  } else if(trainConfig == 14){  // trigger
+      TaskEventCutnumber                = "00052103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+  } else if(trainConfig == 15){  // trigger
+      TaskEventCutnumber                = "00081103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+
+
   // pPb 8 TeV
   // ────────────────────────────────────────────────────────────────────────────────
-  } else if(trainConfig == 10){  // pPb INT7
+  } else if(trainConfig == 50){  // pPb INT7
       TaskEventCutnumber                = "80010103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
@@ -188,7 +310,7 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
-  } else if(trainConfig == 11){  // EG2
+  } else if(trainConfig == 51){  // EG2
       TaskEventCutnumber                = "80085103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
@@ -204,7 +326,7 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
-  } else if(trainConfig == 12){  // EG1
+  } else if(trainConfig == 52){  // EG1
       TaskEventCutnumber                = "80083103";
       TaskClusterCutnumberEMC           = "111113206f532000003";
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
@@ -220,7 +342,121 @@ void AddTask_GammaIsoTree(
       doChargedIso = kTRUE;
       doTagging = kTRUE;
       doCellIso = kTRUE;
-  } else if(trainConfig == 20){  // min bias (cuts from PCMEMC 84 + loose iso)
+
+// Anti isolation variation
+  } else if(trainConfig == 60){  // pPb INT7
+      TaskEventCutnumber                = "80010103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+  } else if(trainConfig == 61){  // EG2
+      TaskEventCutnumber                = "80085103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+  } else if(trainConfig == 62){  // EG1
+      TaskEventCutnumber                = "80083103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+      fAntiIsolation[0] = 4;
+      fAntiIsolation[1] = 10;
+
+ } else if(trainConfig == 63){  // pPb INT7
+      TaskEventCutnumber                = "80010103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+  } else if(trainConfig == 64){  // EG2
+      TaskEventCutnumber                = "80085103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+  } else if(trainConfig == 65){  // EG1
+      TaskEventCutnumber                = "80083103";
+      TaskClusterCutnumberEMC           = "111113206f532000003";
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kTRUE;
+      doChargedIso = kTRUE;
+      doTagging = kTRUE;
+      doCellIso = kTRUE;
+      fAntiIsolation[0] = 5;
+      fAntiIsolation[1] = 20;
+
+  } else if(trainConfig == 70){  // min bias (cuts from PCMEMC 84 + loose iso)
     TaskEventCutnumber                = "00000000";
     TaskClusterCutnumberEMC           = "111113206f032000000";
     TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
@@ -236,7 +472,7 @@ void AddTask_GammaIsoTree(
     doChargedIso = kTRUE;
     doTagging = kTRUE;
     doCellIso = kTRUE;
-    }
+  }
   
 
   // ================== GetAnalysisManager ===============================
@@ -273,6 +509,7 @@ void AddTask_GammaIsoTree(
   fQA->SetV0ReaderName(V0ReaderName);
   fQA->SetIsMC(isMC);
   fQA->SetYCutMC(0.9);
+  fQA->SetAntiIsolationE(fAntiIsolation[0],fAntiIsolation[1]);
   
   // fQA->SetSaveClusterCells(doSaveClusterCells);
   // fQA->SetSaveEventProperties(doSaveEventProp);

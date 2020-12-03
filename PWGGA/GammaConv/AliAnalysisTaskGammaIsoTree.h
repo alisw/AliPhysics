@@ -495,6 +495,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTruePtTaggedCalo; //!
     TH1F*                       fCaloTruePtTaggedAsDecayCalo; //!
     TH1F*                       fCaloTrueRecPt; //!
+    TH2F*                       fCaloRecPtvsTruePt; //!
     TH1F*                       fCaloTrueWithoutConvRecPt; //!
     TH1F*                       fCaloTrueRecPtPrimary; //!
     TH1F*                       fCaloTrueRecPtDecay; //!
@@ -705,7 +706,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 26);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 27);
 
 };
 

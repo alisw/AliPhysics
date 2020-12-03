@@ -789,6 +789,21 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     // if(clus->GetM20() < 0) cout  << "ClusterM20" << endl;
     // if(track->E() < 0) cout  << "TrackE" << endl;
     // if(track->GetTrackPOnEMCal() < 0) cout  << "TrackPOnEmcal" << endl;
+
+    // Float_t LowTrack_E = Float_t(output.Track_E) / kShortScaleLow;
+    // Float_t LowTrack_Px = Float_t( output.Track_Px) / kShortScaleLow;
+    // Float_t LowTrack_Py = Float_t(output.Track_Py ) / kShortScaleLow;
+    // Float_t LowTrack_Pz = Float_t(output.Track_Pz) / kShortScaleLow;
+    // TLorentzVector vecLowResolution;
+    // vecLowResolution.SetPxPyPzE(LowTrack_Px,LowTrack_Py,LowTrack_Pz,LowTrack_E);
+
+    // if(track->Pt()>10.){
+    //   cout << "-------" << endl;
+    // cout << "Track pt = " << track->Pt() << " LowRes Pt = " << vecLowResolution.Pt() << "Ratio = " <<vecLowResolution.Pt()/track->Pt() << endl;
+    // cout << "Track P = " << track->P() << " LowRes P = " << vecLowResolution.P() << "Ratio =" <<vecLowResolution.P()/track->P() << endl;
+    // cout << "Track P = " << track->P() << " POnEmcal = " << track->GetTrackPOnEMCal() << "Ratio =" <<track->GetTrackPOnEMCal()/track->P() << endl;
+    // }
+
     output.Track_NSigmaElec =  ConvertToShort(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron),kShortScaleMiddle); 
     output.Track_IsFromV0 = isV0; 
     output.Track_Charge = track->Charge();
