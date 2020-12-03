@@ -48,6 +48,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
+  void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
