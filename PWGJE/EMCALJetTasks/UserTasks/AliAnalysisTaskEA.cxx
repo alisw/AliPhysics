@@ -1247,10 +1247,10 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
    //___________________________________________________
    //MULTIPLICITY SELECTIONS
 
-   if(fMode == AliAnalysisTaskEA::kNormal){
+   //if(fMode == AliAnalysisTaskEA::kNormal){
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       if(!fMultSelection || 
-         !fMultSelection->IsEventSelected() ||
+         //!fMultSelection->IsEventSelected() ||
          !fMultSelection->GetThisEventIsNotPileup() ||
          !fMultSelection->GetThisEventIsNotPileupInMultBins() ||
 	 !fMultSelection->GetThisEventHasNoInconsistentVertices() ||
@@ -1259,7 +1259,7 @@ Bool_t AliAnalysisTaskEA::IsEventInAcceptance(AliVEvent* event){
          fHistEvtSelection->Fill(7.5); //count events rejected by multiplicity selection 
          return kFALSE;
       }
-   }
+   //}
 
 
    //BEFORE VERTEX CUT
