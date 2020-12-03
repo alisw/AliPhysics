@@ -495,6 +495,9 @@ void AliAnalysisTaskCMWPUeqAch::UserCreateOutputObjects()
 
   Double_t fAchBinSelect[6] = {0.0};
   */
+
+
+  Double_t fAchBinSelect[11] = {0.0};
 		 
   // v2 vs Ach
   for(int i=0;i<2;i++){
