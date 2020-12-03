@@ -115,7 +115,8 @@ public:
         MaxDecayRadius,
         MaxCosPALambda,
         MinCosPAK0,
-        MaxLifeTime,
+        MaxLifeTimeK0,
+        MaxLifeTimeLambda,
         DoArmenteros,
         DoMassWindow,
         InvarMassWindowK0,
@@ -706,7 +707,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 71)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 72)
 };
 
 #endif
