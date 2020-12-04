@@ -4305,6 +4305,14 @@ void AddTask_GammaConvV1_PbPb(
     if(trainConfig == 182 || trainConfig == 183 || trainConfig == 184 || trainConfig == 185)
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
 
+
+    if ( trainConfig == 711  || trainConfig == 712  || trainConfig == 713  || 
+	 trainConfig == 861  || trainConfig == 862  || trainConfig == 863 ){
+      analysisCuts[i]->SetPtCutArraySize(6);
+      analysisCuts[i]->SetRArraySize(7);
+    }
+
+
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
             if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
