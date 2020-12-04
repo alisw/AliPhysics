@@ -380,12 +380,12 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
   
     if(! fHistPosTrackCounter ) {
         //Histogram Output: Event-by-Event
-        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",3000,0,3000);
+        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",5000,0,5000);
         fListHist->Add(fHistPosTrackCounter);
     }
     if(! fHistNegTrackCounter ) {
         //Histogram Output: Event-by-Event
-        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",3000,0,3000);
+        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",5000,0,5000);
         fListHist->Add(fHistNegTrackCounter);
     }
     PostData(1, fListHist    );
