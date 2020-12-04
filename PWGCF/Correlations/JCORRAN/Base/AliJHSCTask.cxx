@@ -101,7 +101,7 @@ void AliJHSCTask::UserCreateOutputObjects()
 
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 	fTwoMultiAna = new AliAnalysisAnaTwoMultiCorrelations("TwoMultiCorrelations",kFALSE);
-	fTwoMultiAna->SetJWeights(kTRUE, fJCatalystTask->GetEffFilterBit());
+	fTwoMultiAna->SetJWeights(fIsMC, fJCatalystTask->GetEffFilterBit());
 	//OpenFile(1);
 	//fOutput = gDirectory;
 	//fOutput->cd();
@@ -118,9 +118,11 @@ void AliJHSCTask::UserExec(Option_t* /*option*/)
 	if(fDebug > 5) cout << "------- AliJHSCTask Exec-------"<<endl;
 	if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
-	if( fFirstEvent && !fIsMC) {
-	    fTwoMultiAna->GetAliJEfficiency()->SetRunNumber(fJCatalystTask->GetRunNumber());
-		fTwoMultiAna->GetAliJEfficiency()->Load();
+	if( fFirstEvent ) {
+		if(!fIsMC) {
+	    	fTwoMultiAna->GetAliJEfficiency()->SetRunNumber(fJCatalystTask->GetRunNumber());
+			fTwoMultiAna->GetAliJEfficiency()->Load();
+		}
 	    fFirstEvent = kFALSE;
 	}
 	fTwoMultiAna->SetInputList( fJCatalystTask->GetInputList() );
