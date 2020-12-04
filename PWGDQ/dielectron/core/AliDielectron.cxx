@@ -796,41 +796,42 @@ void AliDielectron::FillHistogramsMC(const AliMCEvent *ev, AliVEvent *ev1)
 }
 
 
-	//________________________________________________________________
-	void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
-	{
-	  //
-	  // Fill Histogram information for tracks and pairs
-	  //
+//________________________________________________________________
+void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
+{
+  //
+  // Fill Histogram information for tracks and pairs
+  //
 
-	  TString  className,className2;
-	  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
-	  AliDielectronVarManager::SetFillMap(fUsedVars);
+  TString  className,className2;
+  Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+  AliDielectronVarManager::SetFillMap(fUsedVars);
 
-	  //Fill event information
-	  if (ev){
-	    if (fHistos->GetHistogramList()->FindObject("Event")) {
-	      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
-	    }
-	  }
+  //Fill event information
+  if (ev){
+    if (fHistos->GetHistogramList()->FindObject("Event")) {
+      fHistos->FillClass("Event", AliDielectronVarManager::kNMaxValues, AliDielectronVarManager::GetData());
+    }
+  }
 
-	  //Fill track information, separately for the track array candidates
-	  if (!pairInfoOnly){
-	    className2.Form("Track_%s",fgkPairClassNames[1]);  // unlike sign, SE only
-	    for (Int_t i=0; i<6; ++i){
-	      className.Form("Track_%s",fgkTrackClassNames[i]);
-	      Bool_t mergedtrkClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
-	      Bool_t trkClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
-	      if (!trkClass && !mergedtrkClass) continue;
+  //Fill track information, separately for the track array candidates
+  if (!pairInfoOnly){
+    className2.Form("Track_%s",fgkPairClassNames[1]);  // unlike sign, SE only
+    for (Int_t i=0; i<6; ++i){
+      className.Form("Track_%s",fgkTrackClassNames[i]);
+      Bool_t mergedtrkClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
+      Bool_t trkClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
+      if (!trkClass && !mergedtrkClass) continue;
 
-	      Int_t ntracks; 
-	      Int_t nPos = fTracks[0].GetEntriesFast();
-	      Int_t nNeg = fTracks[1].GetEntriesFast();
-	      //Int_t numberLS_PP = nPos*(nPos-1);
-	      //Int_t numberLS_MM = nNeg*(nNeg-1);
-	      if (i < 4) ntracks = fTracks[i].GetEntriesFast();
+      Double_t ntracks; 
+      Double_t nPos = fTracks[0].GetEntriesFast();
+      Double_t nNeg = fTracks[1].GetEntriesFast();
+      //Int_t numberLS_PP = nPos*(nPos-1);
+      //Int_t numberLS_MM = nNeg*(nNeg-1);
+      if (i < 4) ntracks = fTracks[i].GetEntriesFast();
       else if ( i == 4) ntracks = fTrackRotator->GetRotatedTrackPSize();
       else if ( i == 5) ntracks = fTrackRotator->GetRotatedTrackNSize();
+      
 
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
         if (i < 4) {
@@ -2411,8 +2412,15 @@ Double_t AliDielectron::GetWeightFromRotation(AliKFParticle* part){
     int bin_pt  = fRotateTrackCorrectionMap.GetXaxis()->FindBin(part->GetPt() );
     const int bin_eta = fRotateTrackCorrectionMap.GetYaxis()->FindBin(part->GetEta());
 
-    //if(bin_pt < 6) bin_pt = 6;
-    if(bin_pt > 23) bin_pt = 23;
+    if(bin_pt < fRotWeight_minPtBin){
+      if(fRotWeight_minPtBin <= 1) bin_pt = 1;
+      else bin_pt = fRotWeight_minPtBin;
+    }
+    if(bin_pt > fRotWeight_maxPtBin){
+      if(fRotWeight_maxPtBin >= fRotateTrackCorrectionMap.GetXaxis()->GetNbins()) bin_pt = fRotateTrackCorrectionMap.GetXaxis()->GetNbins();
+      else bin_pt = fRotWeight_maxPtBin;
+    }
+
 
     double phi = part->GetPhi();
     if (phi < 0) phi += TMath::TwoPi();
