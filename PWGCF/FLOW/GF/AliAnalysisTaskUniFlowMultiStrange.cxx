@@ -3487,6 +3487,10 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::FillPOIsVectors(const Double_t dEtaGap
     // check if POI overlaps with RFPs (not for reconstructed)
     Bool_t bIsWithinRefs = (!bHasMass && IsWithinRefs(static_cast<const AliAODTrack*>(*part)));
 
+    if(((PartSpecies(species) == 8) || (PartSpecies(species) == 9)) && IsWithinRefs(static_cast<const AliAODTrack*>(*part))){
+     bIsWithinRefs = kTRUE;
+    }
+
     if(!bHasGap) // no eta gap
     {
       for(Int_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++)
@@ -3503,17 +3507,19 @@ Int_t AliAnalysisTaskUniFlowMultiStrange::FillPOIsVectors(const Double_t dEtaGap
             if(bIsUseOldNUA){
              dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
              dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
-            fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
             }
             else{
              
             if(iPower > 1){
              dCos = dWeight * TMath::Power(dWeightSecond,iPower-1) * TMath::Cos(iHarm * dPhi);
              dSin = dWeight * TMath::Power(dWeightSecond,iPower-1) * TMath::Sin(iHarm * dPhi);
-           }
+             fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+            }
            else{
              dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
              dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+            fFlowVecSpos[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
            }
 
             }
