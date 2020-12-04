@@ -5,49 +5,23 @@
 // branches and histograms
 
 #include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
-#include <TF1.h>
-#include <TCanvas.h>
-#include <THnSparse.h>
-#include <TLorentzVector.h>
 #include <TTree.h>
 #include <TList.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TKey.h>
-#include <TClonesArray.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include <TProfile.h>
 #include <TChain.h>
-#include <TParticlePDG.h>
-#include "TMatrixD.h"
-#include "TMatrixDSym.h"
-#include "TMatrixDSymEigen.h"
-#include "TVector3.h"
-#include "TVector2.h"
-#include "TRandom3.h"
-#include "AliVCluster.h"
-#include "AliVTrack.h"
-#include "AliEmcalJet.h"
-#include "AliRhoParameter.h"
-#include "AliLog.h"
-#include "AliEmcalParticle.h"
-#include "AliMCEvent.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
-#include "AliJetContainer.h"
+
+// aliroot Headers
 #include "AliAODEvent.h"
-#include "FJ_includes.h"
 #include "AliParticleContainer.h"
-//#include "AliPythiaInfo.h"
-#include "AliPicoTrack.h"
-#include "AliEmcalJetFinder.h"
+#include "AliJetContainer.h"
+#include "AliMCEvent.h"
+#include "AliEmcalJet.h"
+
+//My Header
 #include "AliAnalysisTaskJetCharge.h"
-//#include <fastjet/PseudoJet.hh>
-//#include <fastjet/SharedPtr.hh>
+
 
 
 
@@ -58,17 +32,14 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetCharge", kTRUE),
   fContainer(0),
   pChain(0),
-  fJetShapeSub(kNoSub),
   fPtThreshold(-9999.),
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
   fJetRadius(0.2),
-
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
-
 
   fhJetCharge(0x0),
   fhJetChargeLow(0x0),
@@ -88,7 +59,6 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fContainer(0),
   pChain(0),
-  fJetShapeSub(kNoSub),
   fPtThreshold(-9999.),
   fCentSelectOn(kTRUE),
   fCentMin(0),
@@ -159,7 +129,7 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
 
   // Associate the branches
   for(Int_t iBranch=0; iBranch < nBranchesJetCharge; iBranch++){
-    cout<<"looping over variables"<<endl;
+    std::cout<<"looping over variables"<<std::endl;
     fTreeJets->Branch(fTreeBranchName[iBranch].Data(), &fTreeBranch[iBranch], Form("%s/D", fTreeBranchName[iBranch].Data()));
   }
 
@@ -210,8 +180,6 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
   }
 
 
-
-  // Initialise jet pointer
   AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                         // Get jet container (0 = ?)
   AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event
   Double_t JetPhi=0;
@@ -223,7 +191,6 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
     while((Jet1=JetCont->GetNextAcceptJet())) {
       if(!Jet1)
         continue;
-      // Jet is above threshold?
 
 
       // Get the jet constituents
@@ -243,15 +210,8 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
         continue;
       }
       // Check if Pt is above the Momentum
-      if(fJetShapeSub==kNoSub)
-      {
-        // This correction only makes sense for jet Pt
-        JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-      }
-      else
-      {
         JetPt_ForThreshold = Jet1->Pt();
-      }
+
       if(JetPt_ForThreshold<fPtThreshold)
       {
         continue;
@@ -259,19 +219,9 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
       else {
       	// Filling the histograms here
         Double_t JetPt = 0;
-        if(fJetShapeSub==kNoSub)
-          // This correction only makes sense for jet Pt
-          {
-            JetPt =  Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-            fTreeBranch[0]= JetPt;
-            fhJetPt->Fill(JetPt);
-          }
-        else
-          {
-            JetPt = Jet1->Pt();
-            fTreeBranch[0]= Jet1->Pt();
-            fhJetPt->Fill(JetPt);
-          };
+          JetPt = Jet1->Pt();
+          fTreeBranch[0]= Jet1->Pt();
+          fhJetPt->Fill(JetPt);
 
           if(JetPhi < -1*TMath::Pi())
             JetPhi += (2*TMath::Pi());
@@ -285,8 +235,6 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
 
           Double_t jetCharge = 0;
           Double_t k = 0.5;
-
-          //cout << "Number of Jets: " << nAcceptedJets << endl;
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )

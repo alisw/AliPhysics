@@ -6,7 +6,6 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 	const char *type,
 	const char *CentEst,
 	Int_t       pSel,
-	AliAnalysisTaskJetCharge::JetShapeSub jetShapeSub,
 	TString     trigClass      = "",
 	TString     kEmcalTriggers = "",
 	TString     tag            = ""
@@ -17,7 +16,7 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr)
 	{
-		Error("AddTaskJets","No analysis manager found.");
+		Error("AddTaskJetCharge","No analysis manager found.");
 		return 0;
 	}
 	Bool_t ismc=kFALSE;
@@ -37,7 +36,6 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 	//Configure jet tagger task
 	AliAnalysisTaskJetCharge *task = new AliAnalysisTaskJetCharge(wagonName1.Data());
 
-	task->SetJetShapeSub(jetShapeSub);
 	task->SetJetRadius(R);
 
 	AliParticleContainer *trackContData=0x0;
@@ -56,7 +54,6 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 		JetContData->SetPercAreaCut(0.6);
 		JetContData->SetJetRadius(R);
 		JetContData->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
-		if(jetShapeSub==AliAnalysisTaskJetCharge::kConstSub) JetContData->SetAreaEmcCut(-2);
 	}
 
 
