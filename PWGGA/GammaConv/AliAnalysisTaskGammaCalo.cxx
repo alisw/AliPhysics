@@ -6080,6 +6080,24 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       }
     }
   }
+  Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+      } else {
+          gamma0MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
+  }
+  tmpGammaMotherlabel = gamma1MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((TParticle*)fMCEvent->Particle(tmpGammaMotherlabel))->GetMother(0);
+      } else {
+          gamma1MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
+  }
 
   if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
     if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == 111){
@@ -6754,6 +6772,24 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
         } else gamma1MotherLabel=gammaMC1->GetMother();
       }
     }
+  }
+  Int_t tmpGammaMotherlabel = gamma0MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+      } else {
+          gamma0MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
+  }
+  tmpGammaMotherlabel = gamma1MotherLabel;
+  while (tmpGammaMotherlabel > 0) {
+      if(((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 111 && ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetPdgCode() != 221) {
+          tmpGammaMotherlabel = ((AliAODMCParticle*)fAODMCTrackArray->At(tmpGammaMotherlabel))->GetMother();
+      } else {
+          gamma1MotherLabel = tmpGammaMotherlabel;
+          break;
+      }
   }
 
   if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
