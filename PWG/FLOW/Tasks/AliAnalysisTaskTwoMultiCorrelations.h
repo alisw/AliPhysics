@@ -10,7 +10,7 @@
 / experimental Pb-Pb data.                                                    /
 /                                                                             /
 / Author: Cindy Mordasini (cindy.mordasini@cern.ch)                           /
-/ Version 20 from the 16.09.2020.                                             /
+/ Version 21 from the 04.12.2020.                                             /
 / -------------------------------------------------------------------------- */
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
@@ -402,7 +402,7 @@ private:
 
 /* ----------------------------------------------------------------------------------------- */
 /* Version number to handle the objects through the iterations of the code.                  */
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 20);
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 21);
 };  // End of the class.
 
 #endif
