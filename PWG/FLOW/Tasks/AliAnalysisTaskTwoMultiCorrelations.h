@@ -133,12 +133,13 @@ public:
     this->fNTPCMin      = minNTPC;
   } // End: void SetNTPCSelection(Bool_t, Int_t).
 
-  void SetChiSelection(Bool_t cutChi, Float_t minChi, Float_t maxChi)
+  void SetChiSelection(Int_t chooseChi, Bool_t cutChi, Float_t minChi, Float_t maxChi)
   {
+    this->fPersoChiSquare = chooseChi;
     this->fCutOnChi   = cutChi;
     this->fChiMin     = minChi;
     this->fChiMax     = maxChi;
-  } // End: void SetChiSelection(Bool_t, Float_t, Float_t).
+  } // End: void SetChiSelection(Bool_t, Bool_t, Float_t, Float_t).
 
   void SetNITSSelection(Bool_t cutNITS, Int_t minNITS)
   {
@@ -331,6 +332,7 @@ private:
   Float_t fEtaMax;        // Maximum eta.
   Bool_t fCutOnNTPC;      // kTRUE: apply the cut on the number of TPC clusters.
   Int_t fNTPCMin;         // Minimum N_TPC.
+  Int_t fPersoChiSquare;  // Choose the method for chi^2 per tpc cluster.
   Bool_t fCutOnChi;       // kTRUE: apply the cuts on chi^2 of the track momentum in TPC.
   Float_t fChiMin;        // Minimum chi^2.
   Float_t fChiMax;        // Maximum chi^2.
@@ -404,5 +406,3 @@ private:
 };  // End of the class.
 
 #endif
-
-
