@@ -206,6 +206,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fQAHistNits(0),
   fQAHistEleDCAxy(0),
   fQAHistEleDCAz(0),
+  fQAHistTrPtJet(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -413,6 +414,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fQAHistNits(0),
   fQAHistEleDCAxy(0),
   fQAHistEleDCAz(0),
+  fQAHistTrPtJet(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
@@ -944,6 +946,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fQAHistEleDCAz = new TH2F("fQAHistEleDCAz","pT ele check DCAz",40,0,20,200,-10,10);
   fOutput->Add(fQAHistEleDCAz);
+
+  fQAHistTrPtJet = new TH2F("fQAHistTrPtJet","track pt in jet vs. HFjet pT",600,-100,500,200,0,200);
+  fOutput->Add(fQAHistTrPtJet);
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutput->Add(fHistClustE);
@@ -1918,7 +1923,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        fHistEopHFjet->Fill(corrPt,eopJet);
                        fHistNsigHFjet->Fill(corrPt,fTPCnSigma);
                        fHistEtaHFjet->Fill(corrPt,Eta_eJet);
-                       if(pt>4.0 && pt<18.0)fHistHFjet_DCA->Fill(corrPt,epTarray[3]);
+
+		       for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
+		       {
+			   AliVParticle *jetcont;
+			   jetcont = static_cast<AliVParticle*>(jet->TrackAt(j, fTracks));
+			   Double_t TrptJet = jetcont->Pt();
+			   fQAHistTrPtJet->Fill(corrPt,TrptJet);
+
+		       }
+
+		       if(pt>4.0 && pt<18.0)fHistHFjet_DCA->Fill(corrPt,epTarray[3]);
                        if(Njet==0 || Njet==1)
                          {
                           Double_t dPhiHFjet_tmp = 0.0;
