@@ -29,7 +29,13 @@ ClusterNonLinearity:
     enabled: true
     setForceClusterE: true
     createHistos: true
-    nonLinFunct: kPi0MCv3
+    nonLinFunct: kTestBeamFinalMC 
+ClusterNonLinearityMCAfterburner:
+    enabled: true
+    afterburnerVersion: kPCM_EMCal
+    setForceClusterE: true
+    createHistos: true
+    setMCPeriod: "kTestBeamFinalMCRun2"
 ClusterTrackMatcher:
     enabled: true
     createHistos: true
