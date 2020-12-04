@@ -6826,8 +6826,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // kPi0MCv2 for MC and kTestBeamv2 for data
     case 5:
       if (fClusterType == 1|| fClusterType == 3 || fClusterType == 4){
-        if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
-        else energy *= FunctionNL_kPi0MCv2(energy);
+        if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
+        else energy *= FunctionNL_kPi0MCv3(energy);
       }
       break;
 
