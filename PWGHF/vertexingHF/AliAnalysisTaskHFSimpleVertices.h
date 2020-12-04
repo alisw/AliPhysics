@@ -57,8 +57,13 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
-  Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
+
+
   Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t DplusSkimCuts(AliAODRecoDecayHF3Prong* cand);
+  Int_t DsSkimCuts(AliAODRecoDecayHF3Prong* cand);
+  Int_t LcSkimCuts(AliAODRecoDecayHF3Prong* cand);
+  Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
   
