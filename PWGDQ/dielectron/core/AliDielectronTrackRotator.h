@@ -58,6 +58,9 @@ public:
   void SetRotatedPairWeightMap(TString filename, TString histoname);
   void SetRotatedPairWeightMap2(TString filename, TString histoname);
   void SetUseAcceptanceMap(Bool_t use)     {fUseAccMap = use;}
+  void SetRotWeightMinPtBin (Int_t pTbin)  {fRotWeight_minPtBin = pTbin;}
+  void SetRotWeightMaxPtBin (Int_t pTbin)  {fRotWeight_maxPtBin = pTbin;}
+
 
   //Getters
   Int_t GetIterations() const           { return fIterations;    }
@@ -91,6 +94,9 @@ public:
   Double_t GetWeightForPair(){return fWeight;};
   //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, TVector3 *axis, const AliVEvent * const ev=0x0);
   void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, AliKFParticle * kfMother, const AliVEvent * const ev=0x0);
+  Int_t fRotWeight_minPtBin;
+  Int_t fRotWeight_maxPtBin;
+
 
   class KFClass{
   public:

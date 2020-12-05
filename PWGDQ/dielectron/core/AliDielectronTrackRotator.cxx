@@ -748,8 +748,15 @@ Double_t AliDielectronTrackRotator::GetWeightFromRotation(AliKFParticle* part){
     int bin_pt  = fRotateTrackCorrectionMap.GetXaxis()->FindBin(part->GetPt() );
     const int bin_eta = fRotateTrackCorrectionMap.GetYaxis()->FindBin(part->GetEta());
    
-    if(bin_pt < 4) bin_pt = 4; 
-    if(bin_pt > 30) bin_pt = 30; 
+    if(bin_pt < fRotWeight_minPtBin){ 
+      if(fRotWeight_minPtBin <= 1) bin_pt = 1;
+      else bin_pt = fRotWeight_minPtBin;
+    }
+    if(bin_pt > fRotWeight_maxPtBin){ 
+      if(fRotWeight_maxPtBin >= fRotateTrackCorrectionMap.GetXaxis()->GetNbins()) bin_pt = fRotateTrackCorrectionMap.GetXaxis()->GetNbins();
+      else bin_pt = fRotWeight_maxPtBin;
+    }
+
     double phi = part->GetPhi();
     if (phi < 0) phi += TMath::TwoPi();
     const int bin_phi = fRotateTrackCorrectionMap.GetZaxis()->FindBin(phi);

@@ -178,6 +178,9 @@ public:
   void SetRotatedPairWeightMap(TString filename, TString histoname); 
   void SetIterations(UInt_t niter)         { fIterations=niter;  }
   void SetUseAcceptanceMap(Bool_t use)     {fUseAccMap = use;}
+  void SetRotWeightMinPtBin (Int_t pTbin)  {fRotWeight_minPtBin = pTbin;}
+  void SetRotWeightMaxPtBin (Int_t pTbin)  {fRotWeight_maxPtBin = pTbin;}
+
 
   void SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -233,6 +236,8 @@ private:
   TObject *fPairEffMap;      // pair efficiency map
   TH3F fRotateTrackCorrectionMap;
   TH2F fRotatePairCorrectionMap;
+  Int_t fRotWeight_minPtBin;
+  Int_t fRotWeight_maxPtBin;
 
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
