@@ -59,7 +59,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
-	void SetPeriod2011() {fIspp2011 = kTRUE;};
+	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	
     //trigger selection
@@ -75,6 +75,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
+    void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
     
     //to select events with high energy cluster (to mimic the trigger)
@@ -152,6 +153,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fFill_ESparse;
+    Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
     Bool_t              fSelect_trigger_events1;
     Bool_t              fSelect_trigger_events2;
@@ -458,7 +460,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     THnSparse  *fSparseMulti;//!Multiplicity info
     Double_t   *fvalueMulti;//!Multiplicity info
 	
-	Bool_t				fIspp2011;
+	
 	
 	//MC efficiencies
 	TH1F				*fPtMCparticleRecoHfe1;

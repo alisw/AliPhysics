@@ -111,6 +111,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
+,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
@@ -386,7 +387,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
-,fIspp2011(kFALSE)
+
 
 	//MC efficiencies
 ,fPtMCparticleAllHfe1(0)
@@ -476,6 +477,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
+,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
@@ -743,7 +745,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
-,fIspp2011(kFALSE)
+
 
 	//MC efficiencies
 ,fPtMCparticleAllHfe1(0)
@@ -887,7 +889,7 @@ void AliAnalysisTask_JPsi_EMCal::Init()
         }
     }
     
-    PostData(2,fListProfiles);
+   // PostData(2,fListProfiles);
     
     
     return;
@@ -1451,7 +1453,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 //______________________________________________________________________
 	
 	PostData(1, fOutputList);
-    PostData(2,fListProfiles);
+    //PostData(2,fListProfiles);
 	
 ///______________________________________________________________________
 }
@@ -1972,9 +1974,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             fPtMCparticleAll_trueJPsi_pT_weight->Fill(fMCparticle->Pt(), weight);
                                                         
                             //to check for prompt J/psi
-                            Int_t mpdg = fMCparticleMother->GetPdgCode();
-                            if(mpdg > 500 && mpdg < 600)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt());//from B wo weight
-                            else fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);
+                            if(fMCparticle->GetMother()>0){
+                                Int_t mpdg = fMCparticleMother->GetPdgCode();
+                                if(mpdg > 500 && mpdg < 600)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt());//from B wo weight
+                                else fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);//has mother but it is not B
+                            }
+                            if(fMCparticle->GetMother()<=0)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);//no mother (prompt)
                             
                             //check J/psi pT distribution of each generator
                             if(IsMB_gen)fTracksMCPt[6]->Fill(fMCparticle->Pt());
@@ -2352,12 +2357,6 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(eta > fEtaCutMax || eta < fEtaCutMin) continue;
 		
 		
-		if(fIspp2011){
-			Double_t phi=0;
-			phi = track->Phi();
-			if(phi<0 || phi>4 ) continue;
-		}
-		
 		
 		Double_t fTPCnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
@@ -2578,14 +2577,16 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         
        // printf("Track: %d, p: %f, pt: %f, TPCnsigma: %f, eta: %f, phi: %f \n", iTracks, fP,track->Pt(),fTPCnSigma, track->Eta(), track->Phi());
         
-        fvalueElectronTPC[0] = fP;
-        fvalueElectronTPC[1] = track->Pt();
-        fvalueElectronTPC[2] = fTPCnSigma;
-        fvalueElectronTPC[3] = track->Eta();
-        fvalueElectronTPC[4] = track->Phi();
-   
-       
-        if(fFill_ESparse)fSparseElectronTPC->Fill(fvalueElectronTPC);
+        if(track->Pt() >=2){
+            
+            fvalueElectronTPC[0] = fP;
+            fvalueElectronTPC[1] = track->Pt();
+            fvalueElectronTPC[2] = fTPCnSigma;
+            fvalueElectronTPC[3] = track->Eta();
+            fvalueElectronTPC[4] = track->Phi();
+            
+            if(fFill_ESparseTPC)fSparseElectronTPC->Fill(fvalueElectronTPC);
+        }
         
        // printf("SparseElectronTPC was filled \n");
 		
@@ -2687,7 +2688,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 
                 
                 //Ecluster for electrons on TPC
-                if(fTPCnSigma > fTPCnsigmaCutMin && fTPCnSigma < fTPCnsigmaCutMax){
+                if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                      fECluster[2]->Fill(fClus->E());
                     //Ecluster for electrons on TPC and on EMCal
                     if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax){
@@ -2740,10 +2741,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				fvalueElectron[4] = fClus->GetM02();
 				fvalueElectron[5] = fClus->E(); // to check rejection factor for electrons
                 fvalueElectron[6] = cphi; //to separate emcal and dcal
-                fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
-                fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
+                //fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
+               // fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
-				//if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
+				if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
 				
 			}
 		}
@@ -3004,7 +3005,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				Double_t dEdx3 =-999, fTPCnSigma2=-999;
 				dEdx3 = track2->GetTPCsignal();
 				fTPCnSigma2 = fPidResponse->NumberOfSigmasTPC(track2, AliPID::kElectron);
-				if(fTPCnSigma2 > fTPCnsigmaCutMin && fTPCnSigma2 < fTPCnsigmaCutMax){
+				if(fTPCnSigma2 >= fTPCnsigmaCutMin && fTPCnSigma2 <= fTPCnsigmaCutMax){
                     
                     //printf("Second leg: Track2 on Electron band with fPt2=%f\n", fPt2);
 					
@@ -3737,7 +3738,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	delete fListOfmotherkink;
 	PostData(1, fOutputList);
-    PostData(2,fListProfiles);
+    //PostData(2,fListProfiles);
 }      
 
 //=======================================================================
