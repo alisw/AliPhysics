@@ -18,12 +18,14 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   double AntideuteronSigmaLeft = 2.0,
   double AntideuteronSigmaRight = 4.0,
   double Deuteron_pT_low = 0.4,
-  double Deuteron_pT_up = 4.0){
+  double Deuteron_pT_up = 4.0,
+  const char *CutVariation = "0"){
 
   // isHighMultV0:
   // (false)  kINT7:	    minimum bias trigger
   // (true)   kHighMultV0:  high multiplicity trigger
 
+  TString suffix = TString::Format("%s",CutVariation);
   int PionPDG = 211;
   int ProtonPDG = 2212;
   int LambdaPDG = 3122;
@@ -477,7 +479,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
 
   TString addon = "";
-  TString suffix = "";
   TString file = AliAnalysisManager::GetCommonFileName();
 
   TString coutputEventCutsName = Form("%sLeuteronEventCuts%s", addon.Data(), suffix.Data());
