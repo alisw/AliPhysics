@@ -1,6 +1,6 @@
 //used to instantiate an object of the task,define input and output and connect it to manager
 
-AliAnalysisTaskCorrelationhCasc* AddTaskCorrelationhCasc(TString name = "name", Float_t minpt=3, Float_t maxpt=15, bool isLocal=kTRUE, bool isMC=kTRUE, bool isEff=kTRUE, Int_t EvtToMix=50, Float_t EtaTrigger=0.8, Float_t EtahAssoc=0.8,Float_t EtaV0Assoc=0.8, Int_t FilterBitValue=128, Int_t year=2010, TString AssocParticle="Xi"){
+AliAnalysisTaskCorrelationhCasc* AddTaskCorrelationhCasc(TString name = "name", Float_t minpt=3, Float_t maxpt=15, bool isLocal=kTRUE, bool isMC=kTRUE, bool isEff=kTRUE,  bool isHybridMCTr = kTRUE, Int_t EvtToMix=50, Float_t EtaTrigger=0.8, Float_t EtahAssoc=0.8,Float_t EtaV0Assoc=0.8, Int_t FilterBitValue=128, Int_t year=2010, TString AssocParticle="Xi"){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -29,6 +29,7 @@ AliAnalysisTaskCorrelationhCasc* AddTaskCorrelationhCasc(TString name = "name", 
    task->SetMaxPt(maxpt);
    task->SetMC(isMC);
    task->SetEff(isEff);
+   task->SetHybridMCTruth(isHybridMCTr);
    task->SetEvtToMix(EvtToMix);
    task->SetEtaTrigger(EtaTrigger);
    task->SetEtahAssoc(EtahAssoc);

@@ -27,6 +27,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   void SetMaxPt(Float_t ptmax) {fmaxPtj = ptmax;}
   void SetMC(Bool_t isMC){fReadMCTruth = isMC;}
   void SetEff(Bool_t isEff){isEfficiency = isEff;}
+  void SetHybridMCTruth(Bool_t isHybridMCTr){isHybridMCTruth = isHybridMCTr;}
   void SetEvtToMix(Int_t EvtToMix){fnEventsToMix = EvtToMix;}
   void SetEtaTrigger(Float_t EtaTrigger){fEtaTrigger = EtaTrigger;}
   void SetEtahAssoc(Float_t EtahAssoc){fEtahAssoc = EtahAssoc;}
@@ -48,7 +49,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   //  Double_t ThetaS( Double_t posSftR125[3] )const; 
   //Double_t EtaS( Double_t posSftR125[3] ) const ; 
 
-  void DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, Double_t lBestPrimaryVtxPos, Float_t ptTriggerMassimo);
+  void DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, Double_t lBestPrimaryVtxPos, Double_t ptTriggerMassimo);
   //void DoPairshh ( const Float_t lcentrality, int fieldsignf);
 
  private:
@@ -69,6 +70,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   AliMCEvent *            fMCEvent;         //!
   Bool_t                  fReadMCTruth;
   Bool_t                  isEfficiency;
+  Bool_t                  isHybridMCTruth;
   AliAnalysisCorrelationEventCollection ***fEventColl;  //!
   AliAnalysisCorrelationEvent *    fEvt;                //!
 
@@ -101,6 +103,8 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   TH2F*                   fHistPtMaxvsMultKeepV0;     //! 
   TH2F*                   fHistPtMaxvsMultSkipV0;     //! 
   TH2F*                   fHistPtMaxvsMultBefAll;     //! 
+  TH2F*                   fHistPtMaxvsMultBefAllReco;  //!                                               
+  TH2F*                   fHistPtMaxvsMultBefAllGen; //!  
   TH1F*                   fHistZvertex;               //!
   TH1F*                   fHistFractionSharedTPCClusters;               //!
   TH1F*                   fHistGoldenCut; //!
