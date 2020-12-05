@@ -1903,8 +1903,34 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
 //    if ( mcpart->GetNDaughters() != NDaughters ) continue;
 
 
+    // ======================================= Omegac0 =================================================
+    if ( fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==4332 && mcpart->GetNDaughters()==NDaughters ) { // 4332: Omegac0
+      Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+      Bool_t pifromOmegac0_flag = kFALSE;
+      Bool_t Omega_flag = kFALSE;
+      AliAODMCParticle *mcpipart = NULL;
+      AliAODMCParticle *mccascpart = NULL;
+      AliAODMCParticle *mcv0part = NULL;
+      for(Int_t idau=mcpart->GetDaughterFirst();idau<=mcpart->GetDaughterLast();idau++) {
+        if(idau<0) break;
+        AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+        if(TMath::Abs(mcdau->GetPdgCode())==211) { // 211: pion
+          pifromOmegac0_flag = kTRUE;
+          mcpipart = mcdau;
+        }
+        if(TMath::Abs(mcdau->GetPdgCode())==3334) { // 3334: Omega
+          Omega_flag = kTRUE;
+          mccascpart = mcdau;
+        }
+      }
+      Int_t decaytype = -9999;
+      if ( pifromOmegac0_flag && Omega_flag ) {
+        FillTreeGenXic0(mcpart, CheckOrigin);
+      }
+    }
+
     // ======================================= Xic0 ====================================================
-    if ( TMath::Abs(mcpart->GetPdgCode())==4132 && mcpart->GetNDaughters()==NDaughters ) { // 4132: Xic0
+    if ( !fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==4132 && mcpart->GetNDaughters()==NDaughters ) { // 4132: Xic0
       Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
 //      if (CheckOrigin==0) continue;
       Bool_t pifromXic_flag = kFALSE;
@@ -2088,13 +2114,14 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<3;i++){
+  for(Int_t i=0;i<4;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
   fVar_Xic0MCGen[0] = mcpart->Y();
   fVar_Xic0MCGen[1] = mcpart->Pt();
   fVar_Xic0MCGen[2] = CheckOrigin;
+  fVar_Xic0MCGen[3] = mcpart->GetPdgCode();
 
   if (fWriteXic0MCGenTree && fVar_Xic0MCGen[1]>0.9999) fTree_Xic0MCGen->Fill();
 
@@ -4709,7 +4736,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 3;
+  Int_t nVar = 4;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -4717,11 +4744,13 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
     fVarNames[0] = "rap_Xic0";
     fVarNames[1] = "pt_Xic0";
     fVarNames[2] = "Source_Xic0";
+    fVarNames[3] = "PDG_Xic0";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
     fVarNames[1] = "pt_Omegac0";
     fVarNames[2] = "Source_Omegac0";
+    fVarNames[3] = "PDG_Omegac0";
   }
 
   /*
