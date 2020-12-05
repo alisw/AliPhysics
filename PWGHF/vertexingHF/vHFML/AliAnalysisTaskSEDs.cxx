@@ -1103,11 +1103,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         std::vector<Double_t> var4nSparse(knVarForSparse);
         if (fApplyML && fUseMinimalVarForSparse) {
-          var4nSparse = {invMass_KKpi, ptCand, modelPred};
+          var4nSparse = {invMass_piKK, ptCand, modelPred};
         }
         else
         {
-          var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+          var4nSparse = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
                          cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, modelPred};
         }
 
