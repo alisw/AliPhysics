@@ -558,6 +558,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
     Bool_t    fUseMinEnergy;                            // flag for switching on minimum energy cut
     Int_t     fMinNCells;                               // minimum number of cells
+    Int_t     fMaxNCells;                               // maximum number of cells
     Int_t     fMinENCell;                               // minimum energy for number of cells cut
     Int_t     fUseNCells;                               // flag for switching on minimum N Cells cut
     Double_t  fMaxM02;                                  // maximum M02
@@ -707,11 +708,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     TH2F*     fHistElectronPositronClusterMatch;        // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchSub;     // Electron/Positron P vs E - P in case of matching with a cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverP;  // Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
     TH2F*     fHistElectronClusterMatch;                // Electron P vs cluster E in case of matching with a cluster
     TH2F*     fHistPositronClusterMatch;                // Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistTrueElectronPositronClusterMatch;    // True Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
+    TH2F*     fHistTrueElectronPositronClusterMatchEoverP;  // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -722,7 +725,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,114)
+    ClassDef(AliCaloPhotonCuts,116)
 };
 
 #endif

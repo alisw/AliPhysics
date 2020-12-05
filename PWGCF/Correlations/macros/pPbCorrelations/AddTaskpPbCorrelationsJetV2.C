@@ -9,12 +9,15 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =5,
+								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
+                                                                       Bool_t fprim            =kFALSE,
+                                                                       Bool_t fcentcalib       =kFALSE,
                                                                        Double_t fReduceDphi    =-1., // 1.5707, 0.9, -1
                                                                        Bool_t Is2Dfit          =kTRUE,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
+                                                                       Bool_t IsLikeSign       =kTRUE,
 								       Float_t fminpt          =0.5,
 								       Float_t fmaxpt          =5.0,
 								       Int_t fMinNTracksInPool =5000,
@@ -59,28 +62,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
 
-
-// Remove side band of delta phi
-
-/*
-  if (!TGrid::Connect("alien://")) {
-    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
-    return 0x0;
-  }
-  
-  TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
-*/
-
-
-//  TFile * file = TFile::Open("../../../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
-
-/*
-  if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
-
-  TList *TPCTPC_Fit = 0x0;
-  TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
-*/
-
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
 
@@ -89,15 +70,18 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetAnalysisMode(anamode);
   myTask->SetAssociatedTrack(assomode);
   myTask->SetDatatype(fDataType);
+  myTask->SetCentCalib(fcentcalib);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
   myTask->Setacceptancehole(fmakehole);
   myTask->SetReduceDphi(fReduceDphi);
   myTask->SetSymmetricFMD(fSymmetricFMD);
+  myTask->SetLikeSign(IsLikeSign);
   myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
   myTask->SetCentrality(dCenMin,dCenMax);
+//  myTask->SetTPCTPCList(TPCTPC_Fit);
   myTask->Set2Dfit(Is2Dfit);
 
   //myTask->SetMinNTracksInPool(5000);
@@ -106,6 +90,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 			    
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
+  myTask->Setmcprim(fprim);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
@@ -119,15 +104,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   }
   mgr->AddTask(myTask);
 
-  //cout<<"hogehoge"<<endl;
-  //  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/y/ysekiguc/correction.root ./");
-  //cout<<"hogehoge"<<endl;
-
-
-  // Create containers for input/output
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  ///  TString output1name="Corr";
-  //TString output2name="QA";
+    TString outputFileName = AliAnalysisManager::GetCommonFileName();
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(fListName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);

@@ -13,10 +13,12 @@ Int_t trigger_index=0,
 Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
+Bool_t is_ESparseTPC,
 Bool_t is_MSparse,
 Bool_t is_EventsEG1,
 Bool_t is_EventsEG2,
 Bool_t isMultiAnalysis
+
                                             
                                               
 )
@@ -31,12 +33,13 @@ Bool_t isMultiAnalysis
 	
 	task->SetAODanalysis(isAOD);
 
-	if(period == "11d")task->SetPeriod2011();
+	
     
     if(isTender) task->SetUseTender();
     if(isMultiAnalysis) task->SetMultiAnalysis();
     
     if(is_ESparse)task->Set_Fill_ESparse();
+    if(is_ESparseTPC)task->Set_Fill_ESparseTPC();
     if(is_MSparse)task->Set_Fill_MSparse();
     
     if(is_EventsEG1)task->Set_Select_trigger_events1();
@@ -103,14 +106,14 @@ Bool_t isMultiAnalysis
     //PID cuts
     if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
     else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
-    else if(config==17)task->SetTPCnsigmaCut(-2.25,3.0);
+    else if(config==17)task->SetTPCnsigmaCut(-1.5,3.0);
     else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
     else if(config==19)task->SetTPCnsigmaCut(0,3.0);
     else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
     
     else if(config==21)task->SetTPCnsigmaCut(-1.5,2.5);
     else if(config==22)task->SetTPCnsigmaCut(-1.5,4.0);
-    else task->SetTPCnsigmaCut(-1.5,3.0);
+    else task->SetTPCnsigmaCut(-2.25,3.0);
     
 	if(config==23)task->SetEoverPCut(0.75,1.3);
     else if(config==24)task->SetEoverPCut(0.85,1.3);

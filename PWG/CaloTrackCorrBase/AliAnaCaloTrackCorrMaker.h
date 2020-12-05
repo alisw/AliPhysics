@@ -169,6 +169,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhCentralityEMCEGA;                       //!<! Histogram with centrality bins, event with also trigger bit kEMCEGA
   TH1F *   fhCentralityEMC7;                         //!<! Histogram with centrality bins, event with also trigger bit kEMC7
   TH1F *   fhCentralityINT7;                         //!<! Histogram with centrality bins, event with also trigger bit kINT7
+  TH1F *   fhCentralityCENT;                         //!<! Histogram with centrality bins, event with also trigger bit kCentral
+  TH1F *   fhCentralitySEMI;                         //!<! Histogram with centrality bins, event with also trigger bit kSemiCentral
   TH1F *   fhCentrality0Tracks;                      //!<! Histogram with centrality bins, event with no track at all
   TH2F *   fhCentralityTrackMult;                    //!<! Histogram with centrality bins vs track multiplicity.
   TH1F *   fhEventPlaneAngle;                        //!<! Histogram with Event plane angle.

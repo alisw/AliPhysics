@@ -130,8 +130,12 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMinNCrossedRowsTPCprimtracks(Float_t min) { fMinNCrossedRowsTPCprimtracks = min; }
         void                    SetNPhiBins(Int_t nbins) { fNumberPhiBins = nbins; }
         void                    SetEffCorrMixing(Bool_t mix) { fMixCorrect = mix; }
+        void                    SetMinBiasTrigger(Bool_t tr) { fminBias = tr; }
+        void                    SetHighMultTriggerV0(Bool_t tr) { fhighMult = tr; }
+        void                    SetHighMultTriggerSPD(Bool_t tr) { fhighMultSPD= tr; }
+        void                    SetPercintileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
 
-        AliEventCuts            fAliEventCuts;
+        AliEventCuts *           fAliEventCuts; //!
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -277,11 +281,18 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TList *                 fEffList; //!
         Bool_t                  fUseEff;
         Bool_t                  fMixCorrect; // enable efficiency correction for mixing
+        Bool_t                  fminBias;// enable minimum bias trigger , deffault
+        Bool_t                  fhighMult;// enable V0 high multiplicity trigger 
+        Bool_t                  fhighMultSPD;// enable SPD high multiplicity trigger
+        TH3D *                  fHistMultVZEROTracklets; //!    
+        Double_t                fPercentileMin; // minimum muliplicity percentile to be analysed
+        Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
+
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 29);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 32);
 };
 
 class AliV0ChParticle : public AliVParticle

@@ -42,6 +42,7 @@ class TArrayF;
 #include <TH2I.h>
 class TH2F;
 #include <TRandom3.h>
+#include <TSpline.h>
 
 // AliRoot includes
 class AliVCluster;
@@ -227,6 +228,26 @@ public:
     ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
   
   // Time Recalibration
+  Bool_t   IsTimeECorrectionOn()                   const { return fTimeECorrection; }
+  void     SwitchOffTimeECorrection()                  { fTimeECorrection = kFALSE ; }                                                
+  void     SwitchOnTimeECorrection()                   { fTimeECorrection = kTRUE  ; }
+
+  void     CorrectCellTimeVsE(Double_t energy, Double_t & celltime, Bool_t isLowGain) const;
+  Double_t GetLowGainSlewing (Double_t energy) const;
+  Bool_t   InitializedTimeVsEHighGainSlewingCorr(){
+    if (fEMCALTimeEShiftCorrection)
+      return kTRUE; 
+    else 
+      return kFALSE;
+  }
+  void     SetEMCALTimeVsEHighGainSlewingCorr(const TSpline3* spline);
+  TSpline3*  GetEMCALTimeVsEHighGainSlewingCorr(){
+    if (fEMCALTimeEShiftCorrection)
+      return fEMCALTimeEShiftCorrection; 
+    else 
+      return nullptr;
+  }  
+
   void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
@@ -599,6 +620,11 @@ private:
   TArrayL64  fGlobalEventID;                   ///< Global event ID
   Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
+  // energy dependent time clalibration
+  Bool_t     fTimeECorrection;            ///< Switch on or off the energy dependent time recalibration
+  TSpline3*  fEMCALTimeEShiftCorrection;  ///< Spline to correct energy dependent time shift for high gain cells
+  
+  // R
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
     

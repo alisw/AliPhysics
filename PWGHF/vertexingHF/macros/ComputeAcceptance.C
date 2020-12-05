@@ -18,25 +18,25 @@
 #include <TPaveStats.h>
 #endif
 
-enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kDplusKKpi};
+enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kLcpiL,kDplusKKpi};
 enum EFidY{kFixedY,kPtDepY};
 enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kFONLL13TeVfeeddown,kPythia13TeVprompt,kPythia13TeVfeeddown};
 
 // Configuration
-Int_t fDDecay=kD0Kpi;
+Int_t fDDecay=kLcpiL;
 Double_t fPtMinDau=0.1;
 Double_t fEtaMaxDau=0.9;
 Int_t fOptionYFiducial=kPtDepY;
 Double_t fYMaxFidAccCut=0.8;
-Int_t fPtShape=kFONLL7TeV;
+Int_t fPtShape=kFONLL5TeV;
 TString fDecayTableFileName="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
 Int_t fDebugLevel=0;
-Int_t totTrials=1000000;
+Int_t totTrials=100000000;
 
 
 Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc);
 Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y);
-Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc, Int_t &idLcResChan);
+Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc, Int_t &idLcResChan, std::vector<Int_t> &pdgDauAll);
 
 
 // Pt-shape histograms
@@ -116,6 +116,12 @@ void ComputeAcceptance(){
     nKaonDau=0;
     nProtonDau=1;
     outFileName.Append("LcK0Sp_");
+  }else if(fDDecay==kLcpiL){
+    pdgCode=4122;
+    nPionDau=2;
+    nKaonDau=0;
+    nProtonDau=1;
+    outFileName.Append("LcpiL_");
   }else if(fDDecay==kDplusKKpi){
     pdgCode=411;
     nPionDau=1;
@@ -245,7 +251,7 @@ void ComputeAcceptance(){
 
 
   for(Int_t itry=0; itry<totTrials; itry++){
-    if(itry%10000==0) printf("Event %d\n",itry);
+    if(itry%100000==0) printf("Event %d\n",itry);
     Float_t ptD = funcPt ? funcPt->GetRandom() : histPt->GetRandom();
     Float_t phiD=gener->Rndm()*2*TMath::Pi();
     Float_t yD=gener->Rndm()*2.-1.; // flat in -1<y<1
@@ -263,7 +269,6 @@ void ComputeAcceptance(){
     TParticle* dmes=(TParticle*)array->At(0);
     Int_t nDaughters=dmes->GetNDaughters();
     if(fDDecay==kD0Kpi && nDaughters!=2) continue;
-    if(fDDecay==kLcK0Sp && nentries>6) continue;
     Int_t nPionsInAcc=0;
     Int_t nProtonsInAcc=0;
     Int_t nKaonsInAcc=0;
@@ -271,8 +276,10 @@ void ComputeAcceptance(){
     Int_t nProtons=0;
     Int_t nKaons=0;
     Int_t idLcResChan=0; // non resonant by default;
-    Bool_t isOk=CountPKpi(array,nentries,nPions,nKaons,nProtons,nPionsInAcc,nKaonsInAcc,nProtonsInAcc, idLcResChan);
-
+    std::vector<Int_t> pdgDauAll{};
+    Bool_t isOk=CountPKpi(array,nentries,nPions,nKaons,nProtons,nPionsInAcc,nKaonsInAcc,nProtonsInAcc, idLcResChan, pdgDauAll);
+    if(fDDecay==kLcK0Sp && std::find(pdgDauAll.begin(), pdgDauAll.end(), 310) == pdgDauAll.end()) continue;
+    if(fDDecay==kLcpiL && std::find(pdgDauAll.begin(), pdgDauAll.end(), 3122) == pdgDauAll.end()) continue;
     if(isOk){
       if(nPions==nPionDau && nKaons==nKaonDau && nProtons==nProtonDau){
 	hPtVsYGen->Fill(ptD,yD);
@@ -443,7 +450,7 @@ Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaon
 
 
 //___________________________________________________
-Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc, Int_t &idLcResChan){
+Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc, Int_t &idLcResChan, std::vector<Int_t> &pdgDauAll){
   // count K and pi in Acc
 
   TParticle* dmes=(TParticle*)array->At(0);
@@ -454,6 +461,7 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
   for(int j=0; j<nentries; j++){
     TParticle * o = (TParticle*)array->At(j);
     Int_t pdgdau=TMath::Abs(o->GetPdgCode());
+    pdgDauAll.push_back(pdgdau);
     if(fDebugLevel>0) printf("%d ",pdgdau);
     if(pdgdau==130) {
       if(fDebugLevel>0) printf("K0 dacaying into K0L\n");

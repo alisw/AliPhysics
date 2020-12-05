@@ -1,5 +1,6 @@
-AliAnalysisTask *AddTaskDibaryons( Int_t collidingSystem = 0,
-                                   AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7)
+AliAnalysisTask *AddTaskDibaryons( Int_t   collidingSystem                      = 0,
+                                   AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7,
+                                   Bool_t  pileupCut                            = kTRUE )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
@@ -19,10 +20,11 @@ AliAnalysisTask *AddTaskDibaryons( Int_t collidingSystem = 0,
   else if(triggerclass == (UInt_t)AliVEvent::kHighMultSPD) triggername = "kHighMultSPD";
 
   AliAnalysisTaskDibaryons *task = new AliAnalysisTaskDibaryons(Form("Dibaryons_%s",triggername.Data()));
-  task->SelectCollisionCandidates(triggerclass); 
-  task->SetAnalysisType(type);
-  task->SetCollidingSystem(collidingSystem);
-  task->SetSelectedTriggerClass(triggerclass);
+  task->SelectCollisionCandidates   (triggerclass); 
+  task->SetAnalysisType             (type);
+  task->SetCollidingSystem          (collidingSystem);
+  task->SetSelectedTriggerClass     (triggerclass);
+  task->SetPileupCut                (pileupCut);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

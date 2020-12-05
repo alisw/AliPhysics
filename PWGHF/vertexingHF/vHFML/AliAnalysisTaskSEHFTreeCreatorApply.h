@@ -121,6 +121,8 @@ public:
 
   void ApplyPhysicsSelectionOnline(bool apply=true) { fApplyPhysicsSelOnline = apply; }
   Bool_t GetApplyPhysicsSelOnline() const { return fApplyPhysicsSelOnline; }
+  void ApplyEventSelectionOnline(bool apply=true) { fApplyEventSelOnline = apply; }
+  Bool_t GetApplyEventSelOnline() const { return fApplyEventSelOnline; }
   void EnableEventDownsampling(float fractokeep, unsigned long seed) {
     fEnableEventDownsampling = true;
     fFracToKeepEventDownsampling = fractokeep;
@@ -129,6 +131,15 @@ public:
   Bool_t GetEnableEventDownsampling() const { return fEnableEventDownsampling; }
   Float_t GetFracToKeepEventDownsampling() const { return fFracToKeepEventDownsampling; }
   unsigned long GetSeedEventDownsampling() const { return fSeedEventDownsampling; }
+  void EnableCandDownsampling(float fractokeep, float maxptsampling) {
+    fEnableCandDownsampling = true;
+    fFracToKeepCandDownsampling = fractokeep;
+    fMaxPtCandDownsampling = maxptsampling;
+  }
+  Bool_t GetEnableCandDownsampling() const { return fEnableCandDownsampling; }
+  Float_t GetFracToKeepCandDownsampling() const { return fFracToKeepCandDownsampling; }
+  Float_t GetMaxPtCandDownsampling() const { return fMaxPtCandDownsampling; }
+
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   TString GetMLConfigFile() const { return fConfigPath; }
 
@@ -265,9 +276,13 @@ private:
   Int_t fSystemForNsigmaTPCDataCorr;                             /// system for data-driven NsigmaTPC correction
 
   Bool_t fApplyPhysicsSelOnline;                                 /// flag to apply physics selection in the task
+  Bool_t fApplyEventSelOnline;                                   /// flag to fill reco TTrees only with selected events
   Bool_t fEnableEventDownsampling;                               /// flag to apply event downsampling
   Float_t fFracToKeepEventDownsampling;                          /// fraction of events to be kept by event downsampling
   unsigned long fSeedEventDownsampling;                          /// seed for event downsampling
+  Bool_t fEnableCandDownsampling;                                /// flag to apply cand downsampling
+  Float_t fFracToKeepCandDownsampling;                           /// fraction of cands to be kept by cand downsampling
+  Float_t fMaxPtCandDownsampling;                                /// max pT used for cand downsampling
 
   TString fConfigPath;                                           /// path to ML config file
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
@@ -275,7 +290,7 @@ private:
   Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,5);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,6);
   /// \endcond
 };
 

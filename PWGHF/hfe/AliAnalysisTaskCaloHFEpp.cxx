@@ -47,7 +47,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliVertexingHFUtils.h"
+//#include "AliVertexingHFUtils.h"
 
 
 //using std::cout;
@@ -483,10 +483,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[7]=   {100, 100, 200, 500, 100, 100, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[7]={  0,  -5,   0,   0,   0,   0,   0};
-        Double_t xmax[7]={100,   5,   2, 0.5, 100,   1,   1};
-        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;m20;m02",7,bins,xmin,xmax);
+        Int_t bins[10]=   { 85, 100, 200, 500, 100, 100, 100, 20, 500, 20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[10]={ 15,  -5,   0,   0,   0,   0,   0,  0,   0,  0};
+        Double_t xmax[10]={100,   5,   2, 0.5, 100,   1,   1, 20, 0.5, 20};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont",10,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
@@ -928,7 +928,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
 	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
 	if(estimatorAvg){
-		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+		//correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
@@ -1279,19 +1279,25 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			Bool_t fFlagNonHFE=kFALSE; 
 			Bool_t fFlagIsolation=kFALSE; 
                         Double_t IsoEnergy = -999.9;
+                        Int_t NcontCone = 0;
+                        Double_t IsoEnergyTrack = -999.9;
+                        Int_t NtrackCone = 0;
 
                         Bool_t icaliso = kTRUE;
                         if(fMCarray && TMath::Abs(pdgorg)!=24 && pdgstatus!=1)icaliso = kFALSE;
-                        cout << "icaliso = " << icaliso << endl;
+                        //cout << "icaliso = " << icaliso << endl;
 
-			if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			if(icaliso && TrkPt>15.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
+			if(icaliso && TrkPt>15.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
 			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
-                        //cout << "IsoEnergy = " << IsoEnergy << endl << IsoEnergy << endl;;
+                        //cout << "IsoEnergy = " << IsoEnergy << endl;
+                        //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
 
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
-                        if(TrkPt>10.0 && icaliso)
+                        if(TrkPt>15.0 && icaliso)
                            {
-                            Double_t isoarray[7];
+                            Double_t isoarray[10];
                             isoarray[0] = TrkPt;
                             isoarray[1] = fTPCnSigma;
                             isoarray[2] = eop;
@@ -1299,6 +1305,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[4] = pTpart;
                             isoarray[5] = m20;
                             isoarray[6] = m02;
+                            isoarray[7] = (Double_t)NcontCone;
+                            isoarray[8] = IsoEnergyTrack;
+                            isoarray[9] = (Double_t)NtrackCone;
+                            //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
                            }
 
@@ -1751,7 +1761,7 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone)
 {
 	//##################### Set cone radius  ##################### //
 	Double_t CutConeR = MaxConeR;
@@ -1831,13 +1841,90 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 		if(fFlagB || fFlagD){fHist_eff_Iso -> Fill(TrackPt,riso);}
 	}
 
-	if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
+	//if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
 
 	if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
         //cout << "riso = " << riso << endl;
         //cout << "NinSide = " << NinSide << endl;
 	fFlagIso = flagIso;
         IsoEnergy = riso;
+        NcontCone = NinSide;
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone)
+{
+
+	//##################### Set cone radius  ##################### //
+	Double_t CutConeR = MaxConeR;
+	//################################################################# //
+
+	Int_t nWassotracks = -999;
+	nWassotracks = fTracks_tender->GetEntries();
+
+        Double_t risoTrack = 0.0; 
+
+	//////////////////////////////
+	// Track loop
+	//////////////////////////////
+	for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+		AliVParticle* VWassotrack = 0x0;
+		VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+		if (!VWassotrack) {
+			printf("ERROR: Could not receive track %d\n", jtrack);
+			continue;
+		}
+
+		AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+		AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+		if(!aWassotrack) continue;                            // if we failed, skip this 
+
+		//------reject same track
+		if(jtrack==itrack) continue;
+		if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+                //------ find tracks around candidate
+		Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+		Double_t TrackPhi = -999., TrackEta = -999.;
+
+		ptWasso         = aWassotrack->Pt();
+		phiWasso        = aWassotrack->Phi();
+		etaWasso        = aWassotrack->Eta();
+		TrackPhi        = track->Phi();
+		TrackEta        = track->Eta();
+
+		if(ptWasso <0.15) continue;
+               
+		Double_t Wphidiff = phiWasso - TrackPhi; 
+		Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+		if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+                Double_t Wetadiff = etaWasso - TrackEta;
+
+                Double_t ConeRtr = sqrt(pow(Wetadiff,2)+pow(Wphidiff,2));
+                //cout << "ConeRtr = " << ConeRtr << endl;
+
+               if(ConeRtr>CutConeR) continue;
+
+	       Int_t EMCalIndex_TrCone = aWassotrack->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+               if(EMCalIndex_TrCone<0)continue;
+	       AliVCluster *Assoclust_TrCone = 0x0;     
+	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex_TrCone)); 
+
+	       risoTrack += Assoclust_TrCone->E();
+               //cout << "risoTrack = " << risoTrack << endl;
+
+               NtrackCone++;
+
+	}  // end track loop
+
+        //cout << "<----- risoTrack = " << risoTrack << endl;
+        //cout << "<----- MatchclE = " << MatchclE << endl;
+        
+        IsoEnergyTrack = risoTrack/MatchclE;
 
 }
 

@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 #include <TDatabasePDG.h>
 #include <TChain.h>
+#include <TFile.h>
 
 #include "AliAnalysisTaskSEHFSystPID.h"
 #include "AliAODHandler.h"
@@ -534,12 +535,20 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   }
 
   //get pid response
-  if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(!fPIDresp)
+    fPIDresp = inputHandler->GetPIDResponse();
 
   //load data correction for NsigmaTPC, if enabled
   if(fEnableNsigmaTPCDataCorr) {
     if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
-      AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fAOD->GetRunNumber(), fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+      Bool_t isPass1 = kFALSE;
+      TTree *treeAOD = inputHandler->GetTree();
+      TString currentFile = treeAOD->GetCurrentFile()->GetName();
+      if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+        isPass1 = kTRUE;
+
+      AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fAOD->GetRunNumber(), fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData, isPass1);
     }
   }
 

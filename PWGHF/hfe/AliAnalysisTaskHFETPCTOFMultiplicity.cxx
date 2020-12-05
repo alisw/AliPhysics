@@ -105,13 +105,15 @@ AliAnalysisTaskHFETPCTOFMultiplicity::AliAnalysisTaskHFETPCTOFMultiplicity() : A
 //Event Cut
 fCutNcontV(2),
 //Track Cut
-fCutTPCMaxCls(100.),
+fRatioCrossedRowOverFindable(0.8),
+fCutTPCCrossRows(100.),
 fCutTPCchi2perNDF(4.),
 fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
 fCutTrackEta(0.7),
+fCutpTMin(1.),
 fCutNsigmaTOF(3.),
 //PID Cut
 
@@ -264,13 +266,15 @@ AliAnalysisTaskHFETPCTOFMultiplicity::AliAnalysisTaskHFETPCTOFMultiplicity(const
 //Event Cut
 fCutNcontV(2),
 //Track Cut
-fCutTPCMaxCls(100.),
+fRatioCrossedRowOverFindable(0.8),
+fCutTPCCrossRows(100.),
 fCutTPCchi2perNDF(4.),
 fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
 fCutTrackEta(0.7),
+fCutpTMin(1.),
 fCutNsigmaTOF(3.),
 //PID Cut
 
@@ -1129,36 +1133,34 @@ Bool_t AliAnalysisTaskHFETPCTOFMultiplicity::Passtrackcuts(AliAODTrack *atrack)
     }
     if(!kinkmotherpass) return kFALSE;
     
+    if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
     //other track cuts
     TrkPt = atrack->Pt();
     TrkEta = atrack->Eta();
-    if(TrkPt < 0.1 ) return kFALSE;
+    if(TrkPt < fCutpTMin ) return kFALSE;
+    if (TMath::Abs(TrkEta)>fCutTrackEta) return kFALSE;
+    
+    Double_t nclus = atrack->GetTPCNcls();  // TPC cluster information
     Double_t nclusF = atrack->GetTPCNclsF();
     Double_t nclusN = atrack->GetTPCsignalN();  // TPC cluster information findable
     if(nclusF > 0.){
-        Double_t RatioTPCclusters = (Double_t)nclusN/nclusF;
-        if(RatioTPCclusters<0.6) return kFALSE;
-        // cout<<"ratio of tpc cluster"<<RatioTPCclusters<<endl;
+        Double_t RatioTPCclusters = (Double_t)atrack->GetTPCCrossedRows()/nclusF;
+        if(RatioTPCclusters<fRatioCrossedRowOverFindable) return kFALSE;
     }
     
+    //=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster=============
     
-    if (TMath::Abs(TrkEta)>0.7) return kFALSE;
-    if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
-    
-    if(atrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
-    if(atrack->Chi2perNDF() >= fCutTPCchi2perNDF) return kFALSE;
-    if(atrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
+    if(atrack->GetTPCCrossedRows() < fCutTPCCrossRows) return kFALSE; //TPC N crossedRows
+    if(nclusN< fCutTPCNCls) return kFALSE ; //NclusPID
     if(atrack->GetITSNcls() < fCutITSNCls) return kFALSE;
-    if(nclusN< 80.) return kFALSE;
     
-    
+     //=========ITS TPC Refit=============
     if((!(atrack->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrack->GetStatus()&AliAODTrack::kTPCrefit)))) return kFALSE; //TPC refit
-    
+    //=====Hits on SPD layers=============
     if(fSPDBoth){ if(!(atrack->HasPointOnITSLayer(0) && atrack->HasPointOnITSLayer(1))) return kFALSE;} //Hit on first and second SPD layer
     else if(fSPDAny){ if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;} //Hit on any layer
     else if(fSPDFirst){ if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;} //Hit on first and second SPD layer
-
-    
+    //=========DCA Cut ==================
     if(atrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
     
@@ -1225,26 +1227,20 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::SelectPhotonicElectron(Int_t itrack, 
     
     for(Int_t jTracks = 0; jTracks < fAOD->GetNumberOfTracks(); jTracks++){
         if(jTracks==itrack) continue;
-        
-        
         AliAODTrack* atrackAsso = 0x0;
         atrackAsso = (AliAODTrack*)fAOD->GetTrack(jTracks);
-        
+
         if(!atrackAsso) continue;
         
         if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if(atrackAsso->GetTPCCrossedRows() < fCutTPCMaxCls) continue;
-        if(atrackAsso->Chi2perNDF() >= fCutTPCchi2perNDF) continue;
-        if(atrackAsso->GetTPCNcls() < fCutTPCNCls) continue;
-        if(atrackAsso->GetITSNcls() < fCutITSNCls) continue;
+        if(atrackAsso->GetTPCsignalN()< 60) continue ;
+        if(atrackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
+        if(atrackAsso->GetITSNcls() < fAssoITSCluster) continue;
         if((!(atrackAsso->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliAODTrack::kTPCrefit)))) continue; //refit required
-        //  if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue; //ITS //kAny
-        //if(!(atrackAsso->HasPointOnITSLayer(0) && atrackAsso->HasPointOnITSLayer(1))) continue; //ITS //kBoth
         
-        if(fSPDBoth){ if(!(atrackAsso->HasPointOnITSLayer(0) && atrackAsso->HasPointOnITSLayer(1)))  continue;} //Hit on first and second SPD layer
-        else if(fSPDAny){ if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue;} //Hit on any layer
-        else if(fSPDFirst){ if(!(atrackAsso->HasPointOnITSLayer(0))) continue;} //Hit on first and second SPD layer
-
+        
+        if(atrackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
+            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         
         nsigmaAsso = fpidResponse->NumberOfSigmasTPC(atrackAsso, AliPID::kElectron);
         ptAsso = atrackAsso->Pt();
@@ -1255,9 +1251,6 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(atrackAsso->Eta()<-fCutAssoEEta || atrackAsso->Eta()>fCutAssoEEta) continue;
         if(nsigmaAsso < -fCutAssoENsigma || nsigmaAsso > fCutAssoENsigma) continue;
         
-        
-        if(atrackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
-            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;

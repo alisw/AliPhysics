@@ -3153,6 +3153,43 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910a13","0db00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
     cuts.AddCutPCM("15910a13","0dc00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
 
+  } else if (trainConfig == 706){ // central , a,b,c bins , V0-TPC pileup rejection  // AM 20/11/20 New cuts from Meike
+    cuts.AddCutPCM("10130a13","0d200009ab770c00amd0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10130a13","0da00009ab770c00amd0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10130a13","0db00009ab770c00amd0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10130a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 707){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("13530a13","0d200009ab770c00amd0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("13530a13","0da00009ab770c00amd0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("13530a13","0db00009ab770c00amd0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("13530a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 708){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","0d200009ab770c00amd0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","0da00009ab770c00amd0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","0db00009ab770c00amd0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  50-90%  c
+
+
+  } else if (trainConfig == 711){ // central , a,b,c bins , V0-TPC pileup rejection  // AM 20/11/20 New cuts from Meike and RDep pT cut
+    cuts.AddCutPCM("10130a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10130a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10130a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10130a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 712){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("13530a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("13530a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("13530a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("13530a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 713){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  c
+
+
+
     // To be used with MBW from 5TeV Nch
 
   } else if (trainConfig == 851){ // central , a,b,c bins , V0-TPC pileup rejection
@@ -3171,6 +3208,44 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910a13","0da00009f9730200dge0404000", "0652501500000000"); //  50-90%  a
     cuts.AddCutPCM("15910a13","0db00009f9730200dge0404000", "0652501500000000"); //  50-90%  b
     cuts.AddCutPCM("15910a13","0dc00009f9730200dge0404000", "0652501500000000"); //  50-90%  c
+
+
+  } else if (trainConfig == 856){ // central , a,b,c bins , V0-TPC pileup rejection  // AM 20/11/20 New cuts from Meike
+    cuts.AddCutPCM("10130a13","0d200009ab770c00amd0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10130a13","0da00009ab770c00amd0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10130a13","0db00009ab770c00amd0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10130a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 857){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("13530a13","0d200009ab770c00amd0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("13530a13","0da00009ab770c00amd0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("13530a13","0db00009ab770c00amd0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("13530a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 858){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","0d200009ab770c00amd0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","0da00009ab770c00amd0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","0db00009ab770c00amd0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","0dc00009ab770c00amd0404000", "0652501500000000"); //  50-90%  c
+
+
+  } else if (trainConfig == 861){ // central , a,b,c bins , V0-TPC pileup rejection  // AM 20/11/20 New cuts from Meike and RDep pT cut
+    cuts.AddCutPCM("10130a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  0-10%
+    cuts.AddCutPCM("10130a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  a
+    cuts.AddCutPCM("10130a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  b
+    cuts.AddCutPCM("10130a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  0-10%  c
+  } else if (trainConfig == 862){ // semicentral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("13530a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  20-50%
+    cuts.AddCutPCM("13530a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  a
+    cuts.AddCutPCM("13530a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  b
+    cuts.AddCutPCM("13530a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  20-50%  c
+
+  } else if (trainConfig == 863){ // peripheral, a,b,c bins, V0-TPC pileup rejection
+    cuts.AddCutPCM("15910a13","0d2000t9ab770c00amd0404000", "0652501500000000"); //  50-90%
+    cuts.AddCutPCM("15910a13","0da000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  a
+    cuts.AddCutPCM("15910a13","0db000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  b
+    cuts.AddCutPCM("15910a13","0dc000t9ab770c00amd0404000", "0652501500000000"); //  50-90%  c
+
+
 
   //****************************************************************************************************
   // 5.02TeV Pb-Pb photon cuts
@@ -3729,6 +3804,29 @@ void AddTask_GammaConvV1_PbPb(
   } else if (trainConfig == 2000){
     cuts.AddCutPCM("10910a13","40200009327000008250400000","0163103100000000"); // BDT test
 
+    /// ________________ Pb-Pb 5.02 TeV Stephan configs ______________________________
+    //  next two configs for testing refactoring change
+    /* varying added particles parameters, two-photon cuts disabled since these get
+     * new semantics with the refactoring change */
+  } else if (trainConfig == 2500){ // == 681
+    cuts.AddCutPCM("10930d13","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d13","0dm21109a4771c00amd1400002","0153101100000000"); //
+    cuts.AddCutPCM("10930d23","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d23","0dm21109a4771c00amd1400001","0153101100000000"); //
+    cuts.AddCutPCM("10930d33","0dm21109a4771c00amd1400001","0153101100000000"); //
+    cuts.AddCutPCM("10930d33","0dm21109a4771c00amd1400002","0153101100000000"); //
+    cuts.AddCutPCM("10930d43","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10930d43","0dm21109a4771c00amd1400002","0153101100000000"); //
+    // testing elecsharing and tooclose cuts
+    /* compare histograms visually with histos from before refactoring. For
+     * elecsharing cut there is a unit test in place. The TooClose cut's implementation is
+     * is almost identical to the elecsharing ones so we trust for the one unit test
+     * for both of these cuts */
+  } else if (trainConfig == 2501){ // == 681        xy x: elecsharing y: TooCloseCut
+    cuts.AddCutPCM("10910d13","00000000000000000000000000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000410000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000404000","0153101100000000"); //
+    cuts.AddCutPCM("10910d13","00000000000000000000414000","0153101100000000"); //
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -4206,6 +4304,14 @@ void AddTask_GammaConvV1_PbPb(
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     if(trainConfig == 182 || trainConfig == 183 || trainConfig == 184 || trainConfig == 185)
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+
+
+    if ( trainConfig == 711  || trainConfig == 712  || trainConfig == 713  || 
+	 trainConfig == 861  || trainConfig == 862  || trainConfig == 863 ){
+      analysisCuts[i]->SetPtCutArraySize(6);
+      analysisCuts[i]->SetRArraySize(7);
+    }
+
 
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){

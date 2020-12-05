@@ -12,20 +12,24 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isNanoAOD = true,
   bool BruteForceDebugging = false,
   bool DeuteronSideband = false,
+  double thresholdTOF = 1.4,
   double DeuteronSigmaLeft = 2.0,
   double DeuteronSigmaRight = 4.0,
   double AntideuteronSigmaLeft = 2.0,
-  double AntideuteronSigmaRight = 4.0){
+  double AntideuteronSigmaRight = 4.0,
+  double Deuteron_pT_low = 0.4,
+  double Deuteron_pT_up = 4.0,
+  const char *CutVariation = "0"){
 
   // isHighMultV0:
   // (false)  kINT7:	    minimum bias trigger
   // (true)   kHighMultV0:  high multiplicity trigger
 
+  TString suffix = TString::Format("%s",CutVariation);
   int PionPDG = 211;
   int ProtonPDG = 2212;
   int LambdaPDG = 3122;
   int DeuteronPDG = 1000010020;
-
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Begin of the AddTask\n");
@@ -136,7 +140,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
   TrackCuts3->SetFilterBit(256);
-  TrackCuts3->SetPtRange(0.4,4.0);
+  TrackCuts3->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
   TrackCuts3->SetDCAReCalculation(true);
@@ -144,7 +148,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,999.0,3.0);
+  TrackCuts3->SetPID(AliPID::kDeuteron,thresholdTOF,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -168,7 +172,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
   TrackCuts4->SetFilterBit(256);
-  TrackCuts4->SetPtRange(0.4,4.0);
+  TrackCuts4->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
   TrackCuts4->SetDCAReCalculation(true);
@@ -176,7 +180,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,999.0,3.0);
+  TrackCuts4->SetPID(AliPID::kDeuteron,thresholdTOF,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -475,7 +479,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
 
   TString addon = "";
-  TString suffix = "";
   TString file = AliAnalysisManager::GetCommonFileName();
 
   TString coutputEventCutsName = Form("%sLeuteronEventCuts%s", addon.Data(), suffix.Data());

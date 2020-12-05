@@ -204,9 +204,9 @@ void AddTask_GammaCalo_pPb(
   if (trainConfig == 1){
     cuts.AddCutCalo("80010113","411790105f032230000","01631031000000d0"); // 0-100
     cuts.AddCutCalo("80010113","111110105f032230000","01631031000000d0"); // 0-100
-  } else if (trainConfig == 2){
-    cuts.AddCutCalo("80010113","411793105f032230000","01631031000000d0"); // 0-100
-    cuts.AddCutCalo("80010113","111113105f032230000","01631031000000d0"); // 0-100
+  } else if (trainConfig == 2){ // unmodified NL
+    cuts.AddCutCalo("80010113","411790105f032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80010113","111110105f032230000","01631031000000d0"); // 0-100
   } else if (trainConfig == 3){ // no time cut, TB NL
     cuts.AddCutCalo("80010113","411793100f032230000","01631031000000d0"); // 0-100
     cuts.AddCutCalo("80010113","111113100f032230000","01631031000000d0"); // 0-100

@@ -32,6 +32,21 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetSphericityCuts(0.7, 1.0);
+
+  if (suffix == "1") {
+    evtCuts->SetSphericityCuts(0.6, 1.);
+  } else if (suffix == "2") {
+    evtCuts->SetSphericityCuts(0.65, 1.0);
+  } else if (suffix == "3") {
+    evtCuts->SetSphericityCuts(0.7, 1.0);
+  } else if (suffix == "4") {
+    evtCuts->SetSphericityCuts(0.75, 1.0);
+  } else if (suffix == "5") {
+    evtCuts->SetSphericityCuts(0.8, 1.0);
+  } else if (suffix == "6") {
+    evtCuts->SetSphericityCuts(0.85, 1.0);
+  }
 
   // =====================================================================
   // Proton cut variations
@@ -99,9 +114,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
-    NBins.push_back((suffix == "0") ? 600 : 200);
+    NBins.push_back(600);
     kMin.push_back(0.);
-    kMax.push_back((suffix == "0") ? 3. : 1.);
+    kMax.push_back(3.);
   }
 
   NBins[0] = (suffix == "0") ? 3000 : 1000;  // pp
@@ -113,7 +128,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   pairQA[0] = 11;   // pp
   pairQA[4] = 11;   // pbarpbar
   pairQA[2] = 13;   // pDplus
-  pairQA[6] = 10;   // barp dminus
+  pairQA[3] = 13;   // pDminus
+  pairQA[5] = 13;   // barp Dplus
+  pairQA[6] = 13;   // barp Dminus
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
@@ -136,7 +153,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetClosePairRejection(closeRejection);
 
   config->SetPhiEtaBinnign((suffix == "0" && fullBlastQA));
-  config->SetkTBinning((suffix == "0" && fullBlastQA));
   config->SetmTBinning((suffix == "0" && fullBlastQA));
 
   config->SetPtQA((suffix == "0" && fullBlastQA));
@@ -152,7 +168,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
-
+  task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
@@ -165,7 +181,47 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     task->SetMLConfigFile(configML);
   }
 
-  task->SetLightweight(suffix != "0");
+  if (trigger == "kINT7") {
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetTrigger(AliVEvent::kINT7);
+  } else if (trigger == "kHighMultV0") {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    task->SetTrigger(AliVEvent::kHighMultV0);
+  }
+
+  if (suffix == "7") {
+    task->SetNSigmaSelection(2.5);
+  } else if (suffix == "8") {
+    task->SetNSigmaSelection(2.25);
+  } else if (suffix == "9") {
+    task->SetNSigmaSelection(1.75);
+  } else if (suffix == "10") {
+    task->SetNSigmaSelection(1.5);
+  } else if (suffix == "11") {
+    task->SetMassWindow(1.9, 1.98);  // upper sideband, 5 sigma away from the peak - far off the D*
+  } else if (suffix == "12") {
+    task->SetMassWindow(1.98, 2.1);  // upper sideband
+  } else if (suffix == "13") {
+    task->SetMassWindow(2.1, 2.2);  // upper sideband
+  } else if (suffix == "14") {
+    task->SetMassWindow(1.74, 1.84);  // lower sideband, 5 sigma away from the peak
+  } else if (suffix == "15") {
+    task->SetMassWindow(1.64, 1.74);  // lower sideband
+  } else if (suffix == "16") {
+    task->SetMassWindow(1.54, 1.64);  // lower sideband
+  }
+
+  if (isMC) {
+    task->ScaleMCBeautyFraction(0.5, 0.1);
+    if (suffix == "7") {
+      task->SetNSigmaSelection(2);  // variations only needed for data
+      task->ScaleMCBeautyFraction(0.5, 0.);
+    } else if (suffix == "8") {
+      task->SetNSigmaSelection(2);  // variations only needed for data
+      task->ScaleMCBeautyFraction(0.5, 0.5);
+    }
+  }
+
 
   mgr->AddTask(task);
 

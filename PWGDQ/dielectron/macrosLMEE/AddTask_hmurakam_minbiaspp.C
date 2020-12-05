@@ -4,8 +4,6 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
 					    ULong64_t triggerMask = AliVEvent::kINT7,
 					    Bool_t rejectPileup = kTRUE,
 					    Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins,
-					    Float_t cent_min = 0.0,
-					    Float_t cent_max = 1.0,
 					    Int_t wagonnr=0
                                             )
 {
@@ -38,7 +36,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     if(hasMC) kMixing = 0;
     
     //=== Create the main dielectron task =============================
-    AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDielectron_%d",wagonnr);
+    AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%d",wagonnr));
     if (!hasMC) task->UsePhysicsSelection();
     task->SetTriggerMask(triggerMask);
     task->SetTriggerOnV0AND(kTRUE); // only for cross-check
@@ -54,7 +52,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     
     //=== Add event filter ============================================
 
-    task->SetEventFilter(GetEventCutsMinBias(cent_min,cent_max));
+    task->SetEventFilter(GetEventCutsMinBias());
     
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file

@@ -27,6 +27,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     kDplustoKpipi
   };
 
+  enum CollSystem
+  {
+    kpp5TeV,
+    kpp13TeV
+  };
+
   AliAnalysisTaskCharmingFemto();
   AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
   virtual ~AliAnalysisTaskCharmingFemto();
@@ -56,6 +62,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
   }
+  void SetSystem(int system) {
+    fSystem = system;
+  }
 
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -80,6 +89,32 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetMLConfigFile(TString path = "") {
     fConfigPath = path;
   }
+  void SetNSigmaSelection(double nSigma = 3) {
+    fDoNSigmaMassSelection = true;
+    fNSigmaMass = nSigma;
+  }
+  void SetMassWindow(double lower, double upper) {
+    fDoNSigmaMassSelection = false;
+    fLowerMassSelection = lower;
+    fUpperMassSelection = upper;
+  }
+  void SetIsDependentOnMLSelector(bool flag=true) {
+    fDependOnMLSelector = flag;
+  }
+  void ScaleMCBeautyFraction(double pythiaBeautyFraction,
+                             double desiredFraction) {
+    AliInfo("Scaling the beauty fraction in MC activated");
+    if (desiredFraction > pythiaBeautyFraction) {
+      AliFatal(
+          "The scaled fraction cannot be larger than the initial fraction");
+    }
+    fMCBeautyRejection = true;
+    fMCBeautyScalingFactor = (1. - pythiaBeautyFraction)
+        / (1. - desiredFraction) * desiredFraction / pythiaBeautyFraction;
+    AliInfo(Form("Assumed old fraction: %.3f", pythiaBeautyFraction));
+    AliInfo(Form("Desired new fraction: %.3f", desiredFraction));
+    AliInfo(Form("Scaling factor: %.3f", fMCBeautyScalingFactor));
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -87,7 +122,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       const AliAnalysisTaskCharmingFemto &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx);
+  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
 
   // Track / event selection objects
   AliAODEvent* fInputEvent;                          //
@@ -105,6 +140,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsMC;              //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
+  int fSystem;             //
 
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;
@@ -126,25 +162,48 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistDplusChildPt[5];  //!
   TH1F *fHistDplusChildEta[5]; //!
   TH1F *fHistDplusChildPhi[5]; //!
+  TH2F *fHistDplusMCPDGPt;     //!
+  TH2F *fHistDplusMCPtRes;     //!
+  TH2F *fHistDplusMCPhiRes;    //!
+  TH2F *fHistDplusMCThetaRes;  //!
+  TH2F *fHistDplusMCOrigin;    //!
+
   TH2F *fHistDminusInvMassPt;   //!
   TH1F *fHistDminusEta;         //!
   TH1F *fHistDminusPhi;         //!
   TH1F *fHistDminusChildPt[5];  //!
   TH1F *fHistDminusChildEta[5]; //!
   TH1F *fHistDminusChildPhi[5]; //!
+  TH2F *fHistDminusMCPDGPt;     //!
+  TH2F *fHistDminusMCPtRes;     //!
+  TH2F *fHistDminusMCPhiRes;    //!
+  TH2F *fHistDminusMCThetaRes;  //!
+  TH2F *fHistDminusMCOrigin;    //!
   
   // HF data members
-  int fDecChannel;                        // HF decay channel
-  AliRDHFCuts* fRDHFCuts;                 // HF cut object
-  int fAODProtection;                     // flag to activate protection against AOD-dAOD mismatch.
-                                          // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  int fDecChannel;                                         // HF decay channel
+  AliRDHFCuts* fRDHFCuts;                                  // HF cut object
+  int fAODProtection;                                      // flag to activate protection against AOD-dAOD mismatch.
+                                                           // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  bool fDoNSigmaMassSelection;			                       // Select D mesons as nSigma around the nominal mass
+  double fNSigmaMass;					                             // Width of the mass window
+  double fLowerMassSelection;			                         // Lower boundary of the mass selection
+  double fUpperMassSelection;			                         // Upper boundary of the mass selection
+
+  bool fMCBeautyRejection;                                 // Switch for scaling the beauty feed-down fraction in MC
+  double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
 
   // variables for ML application
-  bool fApplyML;                          // flag to enable ML application
-  TString fConfigPath;                    // path to ML config file
-  AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
+  bool fApplyML;                                           // flag to enable ML application
+  TString fConfigPath;                                     // path to ML config file
+  AliHFMLResponse* fMLResponse;                            //!<! object to handle ML response
 
-ClassDef(AliAnalysisTaskCharmingFemto, 4)
+  bool fDependOnMLSelector;                                // flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+  std::vector<float> fPtLimsML;                            // pT bins in case application of ML model is done in MLSelector task   
+  std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
+  std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
+
+ClassDef(AliAnalysisTaskCharmingFemto, 8)
 };
 
 #endif

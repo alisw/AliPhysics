@@ -88,12 +88,24 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
   void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID
   void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
+  void SetMLTreeAddImpParProd(Bool_t flag = kTRUE) {fAddImpParProdProngs = flag;}
   void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
     if(fReadMC) fFillOnlySignal = opt;
     else {
       if(opt)
         AliError("fReadMC has to be kTRUE");
     }
+  }
+
+  void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
+    fEnableEvtSampling = kTRUE;
+    fFracEvtToKeep = fractokeep;
+    fSeedSampling = seed;
+  }
+  void EnableMLTreeCandSampling(Float_t fractokeep, Float_t maxptsampling) {
+    fEnableCandSampling = kTRUE;
+    fFracCandToKeep = fractokeep;
+    fMaxCandPtSampling = maxptsampling;
   }
 
   /// Implementation of interface methods
@@ -230,10 +242,18 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TTree* fMLtree = nullptr;                                           //!<! tree with candidates for ML
   int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
+  Bool_t fAddImpParProdProngs = kFALSE;                               /// option to store d0K*d0pi1 and d0K*d0pi2 variables
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
 
+  Bool_t fEnableEvtSampling = kFALSE;                                 /// flag to apply event sampling
+  Float_t fFracEvtToKeep = 1.1;                                       /// fraction of events to be kept by event sampling
+  ULong_t fSeedSampling = 0;                                          /// seed for sampling
+  Bool_t fEnableCandSampling = kFALSE;                                /// flag to apply candidate sampling
+  Float_t fFracCandToKeep = 1.1;                                      /// fraction of candidates to be kept by sampling
+  Float_t fMaxCandPtSampling = 0.;                                    /// maximun candidate pt to apply sampling
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,36); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,37); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

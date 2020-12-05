@@ -642,25 +642,25 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistEtaHFjet = new TH2F("fHistEtaHFjet","HFjet #eta;p_{T}(GeV/c);#eta",100,0.,100.,200,-1,1);
   fOutput->Add(fHistEtaHFjet);
 
-  fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
+  fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",600,-100.,500.);
   fOutput->Add(fHistJetOrg);
 
-  fHistJetOrgArea = new TH2F("fHistJetOrgArea","Inclusive jet org vs. Area;p_{T};Area",300,-100.,200.,200,0,2);
+  fHistJetOrgArea = new TH2F("fHistJetOrgArea","Inclusive jet org vs. Area;p_{T};Area",600,-100.,500.,200,0,2);
   fOutput->Add(fHistJetOrgArea);
 
-  fHistJetBG = new TH1F("fHistJetBG","BG jet;p_{T}",300,-100.,200.);
+  fHistJetBG = new TH1F("fHistJetBG","BG jet;p_{T}",600,-100.,500.);
   fOutput->Add(fHistJetBG);
 
-  fHistJetSub = new TH1F("fHistJetSub","Sub jet;p_{T}",300,-100.,200.);
+  fHistJetSub = new TH1F("fHistJetSub","Sub jet;p_{T}",600,-100.,500.);
   fOutput->Add(fHistJetSub);
 
-  fHisteJetOrg = new TH1F("fHisteJetOrg","Inclusive jet org e;p_{T}",300,-100.,200.);
+  fHisteJetOrg = new TH1F("fHisteJetOrg","Inclusive jet org e;p_{T}",600,-100.,500.);
   fOutput->Add(fHisteJetOrg);
 
-  fHisteJetBG = new TH1F("fHisteJetBG","BG jet e;p_{T}",300,-100.,200.);
+  fHisteJetBG = new TH1F("fHisteJetBG","BG jet e;p_{T}",600,-100.,500.);
   fOutput->Add(fHisteJetBG);
 
-  fHisteJetSub = new TH1F("fHisteJetSub","Sub jet e;p_{T}",300,-100.,200.);
+  fHisteJetSub = new TH1F("fHisteJetSub","Sub jet e;p_{T}",600,-100.,500.);
   fOutput->Add(fHisteJetSub);
 
   fHistIncEle = new TH1F("fHistIncEle","Inclusive electron;p_{T}",100,0.,20.);
@@ -722,34 +722,34 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(fHistMCorgEta);
 
   //fHistIncjet = new TH2F("fHistIncjet","Inc jet;p_{T}",20,0,20,150,0.,150.);
-  fHistIncjet = new TH2F("fHistIncjet","Inc jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistIncjet = new TH2F("fHistIncjet","Inc jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistIncjet);
 
   fHistIncjetFrac = new TH2F("fHistIncjetFrac","Inc jet e frac ;p_{T}",20,0,20,150,0.,1.5);
   fOutput->Add(fHistIncjetFrac);
 
-  fHistIncjetOrg = new TH2F("fHistIncjetOrg","Inc jet org;p_{T}",20,0,20,300,-100.,200.);
+  fHistIncjetOrg = new TH2F("fHistIncjetOrg","Inc jet org;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistIncjetOrg);
 
-  fHistIncjetBG = new TH2F("fHistIncjetBG","Inc BG jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistIncjetBG = new TH2F("fHistIncjetBG","Inc BG jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistIncjetBG);
 
-  fHistHFjet = new TH2F("fHistHFjet","HF jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistHFjet = new TH2F("fHistHFjet","HF jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistHFjet);
 
-  fHistHFdijet = new TH1F("fHistHFdijet","HF Dijet;p_{T}",300,-100.,200.);
+  fHistHFdijet = new TH1F("fHistHFdijet","HF Dijet;p_{T}",600,-100.,500.);
   fOutput->Add(fHistHFdijet);
 
-  fHistHFdijetCorr = new TH2F("fHistHFdijetCorr","HF Dijet Corr;p_{T}",300,-100.,200.,300,-100,200);
+  fHistHFdijetCorr = new TH2F("fHistHFdijetCorr","HF Dijet Corr;p_{T}",300,-100.,200.,600,-100,500);
   fOutput->Add(fHistHFdijetCorr);
 
-  fHistULSjet = new TH2F("fHistULSjet","ULS jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistULSjet = new TH2F("fHistULSjet","ULS jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistULSjet);
 
-  fHistHadjet = new TH2F("fHistHadjet","Hadron jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistHadjet = new TH2F("fHistHadjet","Hadron jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistHadjet);
 
-  fHistLSjet = new TH2F("fHistLSjet","LS jet;p_{T}",20,0,20,300,-100.,200.);
+  fHistLSjet = new TH2F("fHistLSjet","LS jet;p_{T}",20,0,20,600,-100.,500.);
   fOutput->Add(fHistLSjet);
 
   fHistHFjet_DCA = new TH2F("fHistHFjet_DCA","DCA of HFe jet",100,0,100,1000,-0.5,0.5); 
@@ -771,7 +771,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistHFjet_ridge = new THnSparseD("fHistHFjet_ridge","HF Corr;ele_type;p_{T}^{reco}; dphi; deta; dR", 5, nBinR, mimR, maxR);
   fOutput->Add(fHistHFjet_ridge);
 
-  fHistHFjetOrder = new TH2F("fHistHFjetOrder","HF jet;p_{T}",300,-100.,200.,30,0,30);
+  fHistHFjetOrder = new TH2F("fHistHFjetOrder","HF jet;p_{T}",600,-100.,500.,30,0,30);
   fOutput->Add(fHistHFjetOrder);
 
   fHistDiJetPhi = new TH2F("fHistDiJetPhi","HF dijet;p_{T}(GeV/c);#delta #phi",100,0,100,320,-3.2,3.2);
@@ -789,7 +789,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistDiJetMomBalance_MC = new TH2F("fHistDiJetMomBalance_MC","HF dijet (part level);p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,1);
   fOutput->Add(fHistDiJetMomBalance_MC);
 
-  fHistQjet = new TH2F("fHistQjet","Q jet;p_{T}",70,30,100,300,-100.,200.);
+  fHistQjet = new TH2F("fHistQjet","Q jet;p_{T}",70,30,100,600,-100.,500.);
   fOutput->Add(fHistQjet);
   /*
   fHistQjet_mult = new TH1F("fHistQjet_mult","Q jet mult;p_{T}",70,30,100,10,-0.5,9.5);
@@ -805,10 +805,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistGjet_mult = new TH1F("fHistGjet_mult","G jet mult;p_{T}",10,-0.5,9.5);
   fOutput->Add(fHistGjet_mult);
 
-  fHistJetWidthIncjet = new TH2F("fHistJetWidthIncjet","jet width inc;p_{T}",300,-100,200,100,0,1);
+  fHistJetWidthIncjet = new TH2F("fHistJetWidthIncjet","jet width inc;p_{T}",600,-100,600,100,0,1);
   fOutput->Add(fHistJetWidthIncjet);
 
-  fHistJetWidthQjet = new TH2F("fHistJetWidthQjet","jet width Q;p_{T}",300,-100,200,100,0,1);
+  fHistJetWidthQjet = new TH2F("fHistJetWidthQjet","jet width Q;p_{T}",600,-100,500,100,0,1);
   fOutput->Add(fHistJetWidthQjet);
  
   fHistIncjetCont = new TH2F("fHistIncjetCont","jet constituent",100,0,100,30,0,30); 

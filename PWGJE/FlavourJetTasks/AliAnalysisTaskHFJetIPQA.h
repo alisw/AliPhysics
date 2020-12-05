@@ -115,7 +115,8 @@ public:
         MaxDecayRadius,
         MaxCosPALambda,
         MinCosPAK0,
-        MaxLifeTime,
+        MaxLifeTimeK0,
+        MaxLifeTimeLambda,
         DoArmenteros,
         DoMassWindow,
         InvarMassWindowK0,
@@ -324,8 +325,9 @@ public:
     Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
     Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
-    void GetGeneratedV0();
-    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, Int_t fGenJetFlavour);
+    void IdentifyRecV0PDG(Double_t fMassK0, Double_t fMassLambda, Double_t fMassAntiLambda, Bool_t& isK0, Bool_t& IsLambda, Bool_t& IsAntiLambda);
+    //void GetGeneratedV0();
+    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, Int_t fGenJetFlavour, Bool_t **kTagDec);
     void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels,vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
     Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event, const vector<Int_t>& iTrackLabels);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
@@ -472,14 +474,15 @@ private:
     Float_t fV0MotherEtaMC[40];
     Int_t iTrackITSHits[40];
     Int_t iV0MCID[40];
+    Int_t iV0RecID[40];
     Int_t bTrackIsV0[40];
     Bool_t bPassedSD[40];
-    Bool_t bFull[30];
+    //Bool_t bFull[30];
     Bool_t bSingle1st[30];
-    Bool_t bSingle2nd[30];
-    Bool_t bSingle3rd[30];
+    //Bool_t bSingle2nd[30];
+    //Bool_t bSingle3rd[30];
     Bool_t bDouble[30];
-    Bool_t bTriple[30];
+    //Bool_t bTriple[30];
 
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
     void DoJetLoop(); //jet matching function 2/4
@@ -704,7 +707,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 70)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 72)
 };
 
 #endif

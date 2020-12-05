@@ -68,6 +68,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void SetSelectedHeavyNeutralMeson(Int_t selectMeson){fSelectedHeavyNeutralMeson=selectMeson;}
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
     void SetAllowOverlapHeaders( Bool_t allowOverlapHeader ) {fAllowOverlapHeaders = allowOverlapHeader;}
+    void SetPionSelectorName( TString flag ) {fPionSelectorName = flag;}
+    TString GetPionSelectorName() {return fPionSelectorName;}
 
 
   private:
@@ -140,6 +142,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
     TString                           fV0ReaderName;                                      ///< Name of the V0 reader
     AliPrimaryPionSelector*           fPionSelector;                                      //!<! primary charged pion selector, basic selection of pi+,pi-
+    TString                           fPionSelectorName;                                  ///< Name of the PionSelector
     AliGammaConversionAODBGHandler**  fBGHandlerPiPl;                                     //!<! BG handler Pos Pion
     AliGammaConversionAODBGHandler**  fBGHandlerPiMi;                                     //!<! BG handler Neg Pion
     AliVEvent*                        fInputEvent;                                        //!<! current event
@@ -412,7 +415,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 15);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 16);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

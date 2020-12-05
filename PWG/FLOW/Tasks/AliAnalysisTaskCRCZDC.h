@@ -13,6 +13,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowTrackSimple.h"
+#include "TGrid.h"
 
 class AliCFManager;
 class AliFlowEventCuts;
@@ -85,6 +86,7 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void NotifyRun();
 
   void    SetAnalysisType(AnalysisType type) { this->fAnalysisType = type; }
 
@@ -189,12 +191,18 @@ public:
   Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
   void SetWhichVZERORings(int minVZC, int maxVZC, int minVZA, int maxVZA) {fMinRingVZC = minVZC; fMaxRingVZC = maxVZC; fMinRingVZA = minVZA; fMaxRingVZA = maxVZA;}
 
-  // setters for the step of recentering for ZDC
+  //@shi setters for the step of recentering for ZDC
   void SetStepZDCRecenter( Int_t a ) { fStepZDCRecenter = a; }
   void SetStoreCalibZDCRecenter( Bool_t b ) { fStoreCalibZDCRecenter = b; }
   void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
   TList* GetZDCCalibList() const {return this->fZDCCalibList;};
 
+  //@shi only for last check of recentering as the whole calib file is too large
+  void SetZDCCalibListStep3CommonPart(TList* const kList) {this->fZDCCalibListStep3CommonPart = (TList*)kList->Clone();}; // run number independent calib hists
+  TList* GetZDCCalibListStep3CommonPart() const {return this->fZDCCalibListStep3CommonPart;};
+  void SetZDCCalibListStep3RunByRun(TList* const kList) {this->fZDCCalibListStep3RunByRun = (TList*)kList->Clone();}; // run number dependent
+  TList* GetZDCCalibListStep3RunByRun() const {return this->fZDCCalibListStep3RunByRun;};
+  
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
   AliAnalysisTaskCRCZDC& operator=(const AliAnalysisTaskCRCZDC& dud);
@@ -287,8 +295,10 @@ private:
   //
   TList       *fOutput;	   	//! list send on output slot 0
   //@Shi
-  TList       *fOutputRecenter1; //! list send to output slot 1 to store 45 run numbers
-  TList       *fOutputRecenter2; //! list send to output slot 2 to store the rest of run numbers (if all stored together, max limit of a tlist is exceed)
+  TList       *fOutputRecenter1; //! list send to output slot 1 to store 0-29th run numbers
+  TList       *fOutputRecenter2; //! list send to output slot 2 to store 30-59th run numbers (if all stored together, max limit of a tlist is exceed)
+  TList       *fOutputRecenter3; //! list send to output slot 3 to store the rest of run numbers (if all stored together, max limit of a tlist is exceed)
+
   //
   TH1F *fhZNCPM[5];		//! ZNC PM high res.
   TH1F *fhZNAPM[5];		//! ZNA PM high res.
@@ -352,12 +362,24 @@ private:
   Int_t fStepZDCRecenter = -1;
   Bool_t fStoreCalibZDCRecenter = kFALSE;
   TList *fZDCCalibList; //
+  TList *fZDCCalibListStep3CommonPart; //
+  TList *fZDCCalibListStep3RunByRun; //
+  TArrayD fAvVtxPosX;    // Run list
+  TArrayD fAvVtxPosY;    // Run list
+  TArrayD fAvVtxPosZ;    // Run list
+  Double_t fVtxPosCor[3];
   TProfile *fAve_VtxX; //!
   TProfile *fAve_VtxY; //!
   TProfile *fAve_VtxZ; //!
   TProfile *fRun_VtxXQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxYQPreCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxZQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalibStep2[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalibStep2[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalibStep2[fCRCMaxnRun][4];  //!
   TProfile *fRun_CentQCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxXQCalib[fCRCMaxnRun][4];  //!
   TProfile *fRun_VtxYQCalib[fCRCMaxnRun][4];  //!
@@ -388,9 +410,10 @@ private:
   Int_t fRunList[fCRCMaxnRun];                   //! Run list
 //  TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
-  //@Shi add fRecenter1ListRunbyRun and fRecenter2ListRunbyRun
+  //@Shi add fRecenter1ListRunbyRun and fRecenter2ListRunbyRun and fRecenter3ListRunbyRun
   TList *fRecenter1ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 1
   TList *fRecenter2ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 2
+  TList *fRecenter3ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 3
   TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
   TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
   //@Shi add fZPCTower and fZPATower
@@ -457,7 +480,7 @@ private:
   TH2D* fEbEQIm[fKNFBs][4]; //!
   TH2D* fEbEQMu[fKNFBs][4]; //!
 
-  ClassDef(AliAnalysisTaskCRCZDC,11);
+  ClassDef(AliAnalysisTaskCRCZDC,12);
 
 };
 

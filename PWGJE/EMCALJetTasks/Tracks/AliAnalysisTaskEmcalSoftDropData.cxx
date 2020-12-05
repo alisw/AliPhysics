@@ -61,7 +61,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fZcut(0.1),
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
-  fUseNeutralConstituents(kTRUE),
+  fUseNeutralConstituents(kTRUE), 
+  fDropMass0Jets(false),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -80,6 +81,7 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGV
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fDropMass0Jets(false),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -218,8 +220,8 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     }
     try {
       FillJetQA(*jet, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
       bool untagged = sdparams.fZg < fZcut;
       AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << sdparams.fZg << std::endl;
       Double_t pointZg[3] = {sdparams.fZg, jet->Pt(), -1},

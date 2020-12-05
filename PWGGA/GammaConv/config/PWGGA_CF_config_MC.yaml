@@ -217,6 +217,7 @@ ClusterNonLinearity_TMNL:                                # Cluster non-linearity
     nonLinFunct: kTestBeamFinalMC                    # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
 ClusterNonLinearityMCAfterburner_TMNL:
     enabled: true
+    setForceClusterE: true                          #for cluster energy to correct for non-linearity
     afterburnerVersion: kPCM_EMCal
     setMCPeriod: "kTestBeamFinalMCRun213TeV" # for Run1 choose kTestBeamFinalMCRun1
     clusterContainersNames:

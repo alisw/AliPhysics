@@ -74,7 +74,9 @@ public:
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
   void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
-
+  void SetEMCALClusterBias(double minE)            { fEMCALClusterBias = minE; }
+  void SetTimeRangeEMCALCusterBias(Double_t mintime, Double_t maxtime) { fMinTimeClusterBias = mintime; fMaxTimeClusterBias = maxtime; }
+  void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
 
   void ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMCMinBias(MCProductionType_t mcprodtype);
@@ -108,6 +110,7 @@ private:
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
+  Bool_t                        fMimicEJData;                   ///< Mimic EJ trigger in data based on Min. bias data
   ULong_t                       fMinBiasTrigger;                ///< Min bias trigger for trigger subset (for efficiency studies)
   TString                       fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
@@ -121,6 +124,9 @@ private:
   Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
   EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
+  Double_t                      fEMCALClusterBias;              ///< Requirement of a min. cluster energy in EMCAL
+  Double_t                      fMinTimeClusterBias;            ///< Min. time cut for cluster bias
+  Double_t                      fMaxTimeClusterBias;            ///< Max. time cut for cluster bias
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 

@@ -62,7 +62,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0)
+  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -86,7 +86,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0)
+    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5)
     
 {
  
@@ -659,7 +659,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet
 
       fHtrueAll->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet_part);
 
-      float dR_max = 0.1;
+      float dR_max = fMatchR;
       int ind_true = -1;
       int ind_reco = -1;
       
@@ -678,7 +678,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet
       if (ind_reco == -1) continue;
 
       int ind_true_det = -1;
-      float dR_max_det = 0.1;
+      float dR_max_det = fMatchR;
       for (int l = 0; l < fShapesVar_Splittings_kt_part.at(0).size(); l++)
 	{
 	  float deta = fShapesVar_Splittings_eta2.at(0).at(ind_reco) - fShapesVar_Splittings_eta2_part.at(0).at(l);
@@ -772,7 +772,7 @@ Bool_t AliAnalysisTaskLundPlane::CompareSubjets(float pT_det, std::vector<fastje
             sumpT+=constDet->at(i).pt();
           }
       }
-  if (sumpT/pT_det > 0.5) return true;
+  if (sumpT/pT_det > fMomFrac) return true;
   else return false;
 }
 

@@ -773,12 +773,37 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     
     output.ClusterE = ConvertToUShort(clus->E(),kShortScaleLow);
     output.ClusterM02 =  ConvertToUShort(clus->GetM02(),kShortScaleMiddle);
-    output.ClusterM20 = ConvertToUShort(clus->GetM20(),kShortScaleMiddle);
+   
+    // fix for rounding issue causing it to sometimes be just below 0
+    Double_t m20 = clus->GetM20();
+    if(m20<0) m20 =0;
+    output.ClusterM20 = ConvertToUShort(m20,kShortScaleMiddle);
     output.Track_E = ConvertToUShort(track->E(),kShortScaleLow);
     output.Track_Px = ConvertToShort(track->Px(),kShortScaleLow);
     output.Track_Py = ConvertToShort(track->Py(),kShortScaleLow);
     output.Track_Pz = ConvertToShort(track->Pz(),kShortScaleLow);
     output.Track_PonEMCal = ConvertToUShort(track->GetTrackPOnEMCal(),kShortScaleLow);
+
+    // if(clus->E() < 0) cout  << "ClusterE" << endl;
+    // if(clus->GetM02() < 0) cout  << "ClusterM02" << endl;
+    // if(clus->GetM20() < 0) cout  << "ClusterM20" << endl;
+    // if(track->E() < 0) cout  << "TrackE" << endl;
+    // if(track->GetTrackPOnEMCal() < 0) cout  << "TrackPOnEmcal" << endl;
+
+    // Float_t LowTrack_E = Float_t(output.Track_E) / kShortScaleLow;
+    // Float_t LowTrack_Px = Float_t( output.Track_Px) / kShortScaleLow;
+    // Float_t LowTrack_Py = Float_t(output.Track_Py ) / kShortScaleLow;
+    // Float_t LowTrack_Pz = Float_t(output.Track_Pz) / kShortScaleLow;
+    // TLorentzVector vecLowResolution;
+    // vecLowResolution.SetPxPyPzE(LowTrack_Px,LowTrack_Py,LowTrack_Pz,LowTrack_E);
+
+    // if(track->Pt()>10.){
+    //   cout << "-------" << endl;
+    // cout << "Track pt = " << track->Pt() << " LowRes Pt = " << vecLowResolution.Pt() << "Ratio = " <<vecLowResolution.Pt()/track->Pt() << endl;
+    // cout << "Track P = " << track->P() << " LowRes P = " << vecLowResolution.P() << "Ratio =" <<vecLowResolution.P()/track->P() << endl;
+    // cout << "Track P = " << track->P() << " POnEmcal = " << track->GetTrackPOnEMCal() << "Ratio =" <<track->GetTrackPOnEMCal()/track->P() << endl;
+    // }
+
     output.Track_NSigmaElec =  ConvertToShort(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron),kShortScaleMiddle); 
     output.Track_IsFromV0 = isV0; 
     output.Track_Charge = track->Charge();
@@ -797,6 +822,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
     std::pair<Double_t,Double_t> isoStudy = ProcessChargedIsolation(track); // R, E
     output.minR = ConvertToUShort(isoStudy.first,kShortScaleLow);
     output.isoE = ConvertToUShort(isoStudy.second,kShortScaleLow);
+
+    // if(isoStudy.first < 0) cout  << "MinR" << endl;
+    // if(isoStudy.second < 0) cout  << "IsoE" << endl;
     
     Float_t tempEta = -9;
     Float_t tempPhi = -9;
@@ -880,9 +908,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
               output.Track_dPhi = ConvertToShort(tempPhiHigh,kShortScaleHigh);
 
               output.Track_E = ConvertToUShort(highTrack->E(),kShortScaleLow);
-              output.Track_Px = ConvertToUShort(highTrack->Px(),kShortScaleLow);
-              output.Track_Py = ConvertToUShort(highTrack->Py(),kShortScaleLow);
-              output.Track_Pz = ConvertToUShort(highTrack->Pz(),kShortScaleLow);
+              output.Track_Px = ConvertToShort(highTrack->Px(),kShortScaleLow);
+              output.Track_Py = ConvertToShort(highTrack->Py(),kShortScaleLow);
+              output.Track_Pz = ConvertToShort(highTrack->Pz(),kShortScaleLow);
               output.Track_NSigmaElec = ConvertToShort(fPIDResponse->NumberOfSigmasTPC(highTrack,AliPID::kElectron),kShortScaleMiddle); 
               output.Track_IsFromV0 = isV0; 
               
@@ -924,9 +952,9 @@ void AliAnalysisTaskElectronStudies::ProcessMatchedTrack(AliAODTrack* track, Ali
                     if(TMath::Abs(trackMC->GetPdgCode()) == 11){
                       output.MC_Track_Is_Electron = kTRUE;
                       output.MC_True_Track_E = ConvertToUShort(trackMC->E(),kShortScaleLow); 
-                      output.MC_True_Track_Px = ConvertToUShort(trackMC->Px(),kShortScaleLow); 
-                      output.MC_True_Track_Py = ConvertToUShort(trackMC->Py(),kShortScaleLow);
-                      output.MC_True_Track_Pz = ConvertToUShort(trackMC->Pz(),kShortScaleLow);
+                      output.MC_True_Track_Px = ConvertToShort(trackMC->Px(),kShortScaleLow); 
+                      output.MC_True_Track_Py = ConvertToShort(trackMC->Py(),kShortScaleLow);
+                      output.MC_True_Track_Pz = ConvertToShort(trackMC->Pz(),kShortScaleLow);
                       Int_t motherLabel = trackMC->GetMother();
                       if(motherLabel>=0){
                         output.MC_True_Track_MotherPDG = ((AliAODMCParticle* )fAODMCTrackArray->At(motherLabel))->PdgCode();

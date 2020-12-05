@@ -54,7 +54,7 @@ if (!mgr->GetInputEventHandler()) {
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(8.);
+  task->SetV0PtMin(3.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);

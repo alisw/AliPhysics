@@ -180,7 +180,7 @@ TTree* AliHFTreeHandlerLbtoLcpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Lc*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Lc*/, AliPIDResponse* pidrespo, AliAODPidHF* pidhf)
 {
   fIsMCGenTree=false;
   fRunNumber=runnumber;
@@ -264,7 +264,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int even
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,true,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,true,true,true,pidhf);
   if(!setpid) return false;
 
   return true;

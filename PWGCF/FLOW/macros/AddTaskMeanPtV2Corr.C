@@ -2,7 +2,7 @@
 class AliAnalysisDataContainer;
 class TNamed;
 AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t IsMC=kFALSE, TString stage = "weights",
-                                                  TString weightPath = "", TString meanPtPath="", TString NUAPath="")
+                                                  TString weightPath = "", TString meanPtPath="", TString NUAPath="", TString subfix="")
 {
   Int_t StageSwitch = 0;
   if(stage.Contains("weights")) StageSwitch=1;
@@ -11,19 +11,20 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(stage.Contains("ALICEMpt")) StageSwitch=4;
   if(stage.Contains("ALICECov")) StageSwitch=5;
   if(stage.Contains("FBSpectra")) StageSwitch=6;
+  if(stage.Contains("Efficiency")) StageSwitch=7;
   if(StageSwitch==0) return 0;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
-  if(IsMC) {
-    if(!mgr->GetMCtruthEventHandler()) {
-      Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
-      return NULL;
-    };
-    AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-    handler->SetReadTR(kTRUE);
-  };
+  // if(IsMC) {
+  //   if(!mgr->GetMCtruthEventHandler()) {
+  //     Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
+  //     return NULL;
+  //   };
+  //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+  //   handler->SetReadTR(kTRUE);
+  // };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskMeanPtV2Corr* task = new AliAnalysisTaskMeanPtV2Corr(name.Data(), IsMC, stage);
   if(!task)
@@ -122,7 +123,13 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     AliAnalysisDataContainer *cOutputSpectra = mgr->CreateContainer("PtSpectra",TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputSpectra);
     return task;
-
   }
+  if(StageSwitch==7) { //Producing Pt spectra with filter bit
+    TString l_ContName=subfix.IsNull()?"":("_" + subfix);
+    AliAnalysisDataContainer *spectraCont = mgr->CreateContainer(Form("SpectraList%s",l_ContName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    mgr->ConnectOutput(task,1,spectraCont);
+    return task;
+  }
+
   return 0;
 }

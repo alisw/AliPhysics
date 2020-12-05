@@ -78,7 +78,9 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fCutArroundPeakTOFInvMass(false),
       fCutTOFInvMassSidebands(false),
       fTOFInvMassCutSBdown(0),
-      fTOFInvMassCutSBup(0) {
+      fTOFInvMassCutSBup(0),
+      fCutLSB(0),
+      fCutRSB(0) {
 }
 
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
@@ -149,7 +151,9 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fCutArroundPeakTOFInvMass(cuts.fCutArroundPeakTOFInvMass),
       fCutTOFInvMassSidebands(cuts.fCutTOFInvMassSidebands),
       fTOFInvMassCutSBdown(cuts.fTOFInvMassCutSBdown),
-      fTOFInvMassCutSBup(cuts.fTOFInvMassCutSBup) {
+      fTOFInvMassCutSBup(cuts.fTOFInvMassCutSBup),
+      fCutLSB(cuts.fCutLSB),
+      fCutRSB(cuts.fCutRSB) {
 }
 
 AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
@@ -224,6 +228,8 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fCutTOFInvMassSidebands = cuts.fCutTOFInvMassSidebands;
   this->fTOFInvMassCutSBdown = cuts.fTOFInvMassCutSBdown;
   this->fTOFInvMassCutSBup = cuts.fTOFInvMassCutSBup;
+  this->fCutLSB = cuts.fCutLSB;
+  this->fCutRSB = cuts.fCutRSB;
 
   return *this;
 }
@@ -568,23 +574,46 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
       // Hold on everybody is safe except for the users who switch on fCutTOFInMass == true!
       if(fTOFInvMassCut){
-          if (!(nSigTPC < fNSigValue)) {
+        if (!(nSigTPC < fNSigValue)) {
           pass = false;// Here we prior TPC selection is done!
           } else {
-          float mass2sq = CalculateTOFMassSquared(Track);
-          if (fCutArroundPeakTOFInvMass) {
-            float Nmass= TDatabasePDG::Instance()->GetParticle(fCharge*PDGcode[fParticleID])->Mass();; //It's Nominal mass
-              if ((mass2sq < Nmass*Nmass- fTOFInvMassCutWidth)
-                  || (Nmass*Nmass + fTOFInvMassCutWidth < mass2sq)) {
-                pass = false;
+            float mass2sq = CalculateTOFMassSquared(Track);
+            if (fCutArroundPeakTOFInvMass) {
+              float Nmass = TDatabasePDG::Instance()->GetParticle(fCharge*PDGcode[fParticleID])->Mass();
+              if(PDGcode[fParticleID]== 1000010020){
+                float MeanMass = MeanTOFMassSqdDeuteron(Track);
+                float WidthMass = fTOFInvMassCutWidth * WidthTOFMassSqdDeuteron(Track);
+                if ((mass2sq < MeanMass-WidthMass)
+                    || (MeanMass+WidthMass < mass2sq)) {
+                  pass = false;
+                }
+              }else{
+                if ((mass2sq < Nmass*Nmass-fTOFInvMassCutWidth)
+                    || (Nmass*Nmass + fTOFInvMassCutWidth < mass2sq)) {
+                  pass = false;
+                }
               }
-            } else if (fCutTOFInvMassSidebands) {
-              if ((mass2sq < fTOFInvMassCutSBdown)
-                  || (fTOFInvMassCutSBup < mass2sq)) {
-                pass = false;
+            }else if (fCutTOFInvMassSidebands) {
+              if(PDGcode[fParticleID] == 1000010020){
+                float MeanMass= MeanTOFMassSqdDeuteron(Track);
+                float WidthMass = 1.5 * WidthTOFMassSqdDeuteron(Track);
+                if(fCutLSB){
+                  if ((mass2sq < (MeanMass-WidthMass-fTOFInvMassCutSBdown))||((MeanMass-WidthMass -fTOFInvMassCutSBup) < mass2sq)) {
+                    pass = false;
+                  }
+                }else if(fCutRSB){
+                  if ((mass2sq < (MeanMass + WidthMass +fTOFInvMassCutSBdown))||((MeanMass + WidthMass + fTOFInvMassCutSBup) < mass2sq)) {
+                    pass = false;
+                  }
+                }
+              }else{
+                if ((mass2sq < fTOFInvMassCutSBdown)
+                    || (fTOFInvMassCutSBup < mass2sq)) {
+                  pass = false;
+                }
               }
             }
-        }
+          }
       }else {
         if (!(nSigComb < fNSigValue)) {
           pass = false;
@@ -1261,6 +1290,24 @@ float AliFemtoDreamTrackCuts::CalculateTOFMassSquared(AliFemtoDreamTrack *Track)
     mass2sq = ((1 / (beta * beta)) - 1) * (p * p);
   }
   return mass2sq;
+};
+float AliFemtoDreamTrackCuts::MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const{
+  float pTVal = Track->GetPt();
+  float par0 =  3.55375e+00;
+  float par1 = -1.25749e+00;
+  float par2 = -3.60444e-01;
+  float par3 = -1.00250e-01;
+  float par4 = -1.00782e-02;
+  return par0 + TMath::Exp(par1 * pTVal + par2 * pTVal * pTVal+ par3 * pTVal * pTVal * pTVal+ par4 * pTVal* pTVal * pTVal * pTVal);
+};
+float AliFemtoDreamTrackCuts::WidthTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const{
+  float pTVal = Track->GetPt();
+  Float_t par0 = 5.19287e-02;
+  Float_t par1 = 1.72460e-02;
+  Float_t par2 = 1.33058e-02;//par[2];
+  Float_t par3 = 3.03644e-04;
+  Float_t par4 = 1.00006e-05;
+  return 0.0899 + 0.1*(par0 * pTVal + par1 * pTVal * pTVal + par2 * pTVal * pTVal* pTVal+ par3 * pTVal * pTVal* pTVal* pTVal+ par4 * pTVal * pTVal* pTVal* pTVal* pTVal);
 };
 int AliFemtoDreamTrackCuts::GetPDGCode() {
   int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };

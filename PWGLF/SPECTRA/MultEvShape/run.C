@@ -106,7 +106,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   // *******************  MES ppCol task  ******************
   if(tpp){
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
-    AddMESppColTask(mc);
+    AddMESppColTask(mc, kFALSE));
   }
 
 

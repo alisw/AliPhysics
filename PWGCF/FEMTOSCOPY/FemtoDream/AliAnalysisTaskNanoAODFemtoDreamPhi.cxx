@@ -18,6 +18,10 @@ ClassImp(AliAnalysisTaskNanoAODFemtoDreamPhi)
       fUseOMixing(false),
       fInvMassCutSBdown(0.0),
       fInvMassCutSBup(0.0),
+      fprotonpT(0.5),
+      fprotoneta(0.8),
+      fkaonpT(0.15),
+      fkaoneta(0.8),
       fTrigger(AliVEvent::kINT7),
       fOutput(nullptr),
       fInputEvent(nullptr),
@@ -48,6 +52,10 @@ AliAnalysisTaskNanoAODFemtoDreamPhi::AliAnalysisTaskNanoAODFemtoDreamPhi(
       fUseOMixing(false),
       fInvMassCutSBdown(0.0),
       fInvMassCutSBup(0.0),
+      fprotonpT(0.5),
+      fprotoneta(0.8),
+      fkaonpT(0.15),
+      fkaoneta(0.8),
       fTrigger(AliVEvent::kINT7),
       fOutput(nullptr),
       fInputEvent(nullptr),
@@ -310,8 +318,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       if (mcpdg == 2212) {
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
-
-        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+        if ((pt < 4.05 && pt > fprotonpT) && (eta > -fprotoneta && eta < fprotoneta)) {
           part.SetMCParticleRePart(mcPart);
           ProtonTRUE.push_back(part);
         }
@@ -320,7 +327,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       if (mcpdg == -2212) {
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
-        if ((pt < 4.05 && pt > 0.5) && (eta > -0.8 && eta < 0.8)) {
+        if ((pt < 4.05 && pt > fprotonpT) && (eta > -fprotoneta && eta < fprotoneta)) {
           part.SetMCParticleRePart(mcPart);
           AProtonTRUE.push_back(part);
         }
@@ -329,7 +336,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       if (mcpdg == 321) {
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
-        if ((pt < 999 && pt > 0.15) && (eta > -0.8 && eta < 0.8)) {
+        if ((pt < 999 && pt > fkaonpT) && (eta > -fkaoneta && eta < fkaoneta)) {
           part.SetMCParticleRePart(mcPart);
           part.SetPDGCode(mcPart->GetPdgCode());
 
@@ -360,7 +367,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
       if (mcpdg == -321) {
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
-        if ((pt < 999 && pt > 0.15) && (eta > -0.8 && eta < 0.8)) {
+        if ((pt < 999 && pt > fkaonpT) && (eta > -fkaoneta && eta < fkaoneta)) {
           part.SetMCParticleRePart(mcPart);
           part.SetPDGCode(mcPart->GetPdgCode());
           int motherID = mcPart->GetMother();

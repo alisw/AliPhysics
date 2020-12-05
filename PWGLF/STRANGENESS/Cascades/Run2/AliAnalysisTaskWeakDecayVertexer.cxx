@@ -164,6 +164,7 @@ fMaxPtCascade( 100.00 ),
 fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE), 
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -172,7 +173,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPosTrackCounter(0),
+fHistNegTrackCounter(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -233,6 +236,7 @@ fMaxPtCascade( 100.00 ),
 fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -241,7 +245,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPosTrackCounter(0),
+fHistNegTrackCounter(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -370,6 +376,17 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0Statistics->GetXaxis()->SetBinLabel(8, "Within pT range");
         fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passes all, OTF track used");
         fListHist->Add(fHistV0Statistics);
+    }
+  
+    if(! fHistPosTrackCounter ) {
+        //Histogram Output: Event-by-Event
+        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",5000,0,5000);
+        fListHist->Add(fHistPosTrackCounter);
+    }
+    if(! fHistNegTrackCounter ) {
+        //Histogram Output: Event-by-Event
+        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",5000,0,5000);
+        fListHist->Add(fHistNegTrackCounter);
     }
     PostData(1, fListHist    );
 }// end UserCreateOutputObjects
@@ -699,6 +716,12 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     
       int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
     
+  
+    fHistPosTrackCounter -> Fill(npos);
+    fHistNegTrackCounter -> Fill(nneg);
+  
+    if( fOnlyCount ) return 0 ; 
+  
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
         AliESDtrack *ntrk=event->GetTrack(nidx);

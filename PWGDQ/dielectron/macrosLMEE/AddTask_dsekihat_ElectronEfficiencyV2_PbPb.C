@@ -6,7 +6,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
     const Bool_t applyPairCut = kTRUE,
-    const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
+    const TString pileupcut = "_woPU",//can be "_woPU", "_onlyPU",""
+    const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;EvtGenDecay;Pythia CC_0;Pythia BB_0;Pythia B_0;",
     const std::string resolutionFilename ="",
     const std::string cocktailFilename   ="",
     const std::string centralityFilename ="",
@@ -20,10 +21,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 	if(generators.Contains("Pythia CC") && (generators.Contains("Pythia BB") || generators.Contains("Pythia B"))) suffix = "_CC_BB";
 	else if(generators.Contains("Pythia CC")) suffix = "_CC";
 	else if(generators.Contains("Pythia BB") || generators.Contains("Pythia B")) suffix = "_BB";
+	else if(generators.Contains("pizero")) suffix = "_LF";
 	else suffix = "";
 
   // Creating an instance of the task
-  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7",suffix.Data(),CenMin,CenMax));
+  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data()));
   gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
 
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
@@ -57,12 +59,30 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 		}
 	}
 
+  //It is important to apply pileup cuts at "task" level in M.C. for efficiency. (i.e. Both denominator and nominator has to be taken into account in exactly the same events.)
+
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
   task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
-  //task->SetCentralityEstimator("V0M");
-  //task->SetCentrality(CenMin, CenMax);
+  if(pileupcut == ""){
+    printf("analyze all events in M.C.\n");
+  }
+  else if(pileupcut.Contains("woPU")){
+    printf("analyze only in clean events in M.C.\n");
+    TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
+    dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMinCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+  }
+  else if(pileupcut.Contains("onlyPU")){
+    printf("analyze only in pileup events in M.C.\n");
+    TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
+    dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMaxCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+  }
+  else{
+    printf("Nothing with pileup cut in M.C.\n");
+    printf("analyze all events in M.C.\n");
+  }
+  dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->Print();
 
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
@@ -146,7 +166,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   gROOT->ProcessLine(Form("AddSingleLegMCSignal(%s)",task->GetName()));//not task itself, task name
   gROOT->ProcessLine(Form("AddPairMCSignal(%s)"     ,task->GetName()));//not task itself, task name
 
-	TString outlistname = Form("Efficiency_dsekihat%s_Cen%d_%d_kINT7",suffix.Data(),CenMin,CenMax);
+	TString outlistname = Form("Efficiency_dsekihat%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data());
 
   //const TString fileName = AliAnalysisManager::GetCommonFileName();
   const TString fileName = outname;

@@ -34,6 +34,7 @@ class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 class AliCaloTriggerMimicHelper;
 class AliV0ReaderV1;
+class AliAODConversionPhoton;
 
 /**
  * @class AliConvEventCuts
@@ -505,7 +506,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetCutNumber();
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
-      Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
       Bool_t    GetUseSphericityTrue()                                              { return fUseSphericityTrue                                 ; }
@@ -537,12 +537,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
       Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
       Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
-
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       const TString& GetLabelNamePileupCutTPC() const                               { return fLabelNamePileupCutTPC                             ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
       phosTriggerType GetPHOSTrigger()                                              { return fPHOSTrigger                                       ; }
+      Int_t    GetTriggerMimicking()                                                { return fMimicTrigger                                      ; }
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
@@ -603,6 +603,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *event = 0x0,
                                       Int_t debug = 0
                                    );
+
+      Bool_t PhotonPassesAddedParticlesCriterion(AliMCEvent             *theMCEvent,
+                                                 AliVEvent              *theInputEvent,
+                                                 AliAODConversionPhoton &thePhoton,
+                                                 Bool_t                 &theIsFromSelectedHeader); // future todo: make this const
+
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
@@ -791,7 +797,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,82)
+      ClassDef(AliConvEventCuts,83)
       /// \endcond
 };
 

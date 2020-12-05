@@ -1846,7 +1846,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           if (mclabelsCluster[k]>0){
             // dummy             = fMCEvent->Particle(mclabelsCluster[k]);
             // if (dummy->R() < 407.0){
-              if (nValidClusters< 50)PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
+              PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
               nValidClusters++;
             // }
           }

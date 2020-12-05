@@ -169,7 +169,7 @@ Bool_t AliDielectronTrackRotator::NextCombination()
   Int_t nPos = fkArrTracksP->GetEntriesFast();
   Int_t nNeg = fkArrTracksN->GetEntriesFast();
   if (!fkArrTracksP || !fkArrTracksP ||
-      (nPos <= 1 && nNeg <= 1)) {
+      (nPos < 1 || nNeg < 1)) {
     Reset();
     return kFALSE;
   }
@@ -379,7 +379,6 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
           //const double rotation_angle = pow(-1.,loop_count) * 180. * TMath::Pi()/180.;
           const double rotation_angle = gRandom->Rndm() * TMath::TwoPi(); //TMath::Pi() / 2.;
           //const double rotation_angle = pow(-1.,loop_count) * gRandom->Rndm()  * TMath::Pi();
-
         
           double posWeightSum = 0; 
           double negWeightSum = 0;
@@ -400,8 +399,7 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
         
             loop_count++;
             rotated_count++;
-
-
+ 
             Double_t weight_rotAng = 1.;
             //Double_t weight_rotAng = GetWeightFromRotation2(rotation_angle);
             
@@ -723,7 +721,9 @@ void AliDielectronTrackRotator::SetRotatedTrackWeightMap(TString filename, TStri
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated track map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Track Correction Map loaded\n");
@@ -748,8 +748,15 @@ Double_t AliDielectronTrackRotator::GetWeightFromRotation(AliKFParticle* part){
     int bin_pt  = fRotateTrackCorrectionMap.GetXaxis()->FindBin(part->GetPt() );
     const int bin_eta = fRotateTrackCorrectionMap.GetYaxis()->FindBin(part->GetEta());
    
-    if(bin_pt < 4) bin_pt = 4; 
-    if(bin_pt > 30) bin_pt = 30; 
+    if(bin_pt < fRotWeight_minPtBin){ 
+      if(fRotWeight_minPtBin <= 1) bin_pt = 1;
+      else bin_pt = fRotWeight_minPtBin;
+    }
+    if(bin_pt > fRotWeight_maxPtBin){ 
+      if(fRotWeight_maxPtBin >= fRotateTrackCorrectionMap.GetXaxis()->GetNbins()) bin_pt = fRotateTrackCorrectionMap.GetXaxis()->GetNbins();
+      else bin_pt = fRotWeight_maxPtBin;
+    }
+
     double phi = part->GetPhi();
     if (phi < 0) phi += TMath::TwoPi();
     const int bin_phi = fRotateTrackCorrectionMap.GetZaxis()->FindBin(phi);
@@ -776,7 +783,9 @@ void AliDielectronTrackRotator::SetRotatedPairWeightMap(TString filename, TStrin
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated pair map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Pair Correction Map loaded\n");
@@ -835,7 +844,9 @@ void AliDielectronTrackRotator::SetRotatedPairWeightMap2(TString filename, TStri
   if (file == 0x0){
     gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
     printf("Copy rotated pair map from Alien\n");
-    file = TFile::Open(Form("%s", filename.Data()));
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
   }
   else {
     printf("Pair Correction Map loaded\n");

@@ -7,6 +7,7 @@
 
 #include "AliFemtoDreamBasePart.h"
 #include "AliMCParticle.h"
+#include "AliVertexingHFUtils.h"
 
 #include <iostream>
 ClassImp(AliFemtoDreamBasePart)
@@ -208,12 +209,13 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
                                              const AliAODEvent *aod,
-                                             int nChildren, unsigned int *pdg)
+                                             const int pdgParent,
+                                             std::vector<unsigned int> &pdgChildren)
     : fIsReset(false),
       fGTI(0),
       fVGTI(0),
       fTrackBufferSize(0),
-      fP(nChildren + 1),
+      fP(1 + pdgChildren.size()),
       fMCP(),
       fPt(dmeson->Pt()),
       fMCPt(0),
@@ -228,10 +230,10 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fIDTracks(),
       fCharge(),
       fCPA(dmeson->Eta()),
-      fInvMass(dmeson->InvMass(nChildren, pdg)),
+      fInvMass(dmeson->InvMass(pdgChildren.size(), &pdgChildren[0])),
       fOrigin(kUnknown),
-      fPDGCode(),
-      fMCPDGCode(),
+      fPDGCode(0),
+      fMCPDGCode(0),
       fPDGMotherWeak(0),
       fMotherID(-1),
       fID(0),
@@ -248,7 +250,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
   fCharge.push_back(dmeson->Charge());
 
   std::vector<float> phiAtRadii;
-  for (int iChild = 0; iChild < nChildren; iChild++) {
+  for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
     AliAODTrack *track = (AliAODTrack *) dmeson->GetDaughter(iChild);
     SetMomentum(iChild, { track->Px(), track->Py(), track->Pz() });
     fIDTracks.push_back(track->GetID());
@@ -259,6 +261,65 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
     PhiAtRadii(track, aod->GetMagneticField(), phiAtRadii);
     fPhiAtRadius.push_back(phiAtRadii);
     fCharge.push_back(track->Charge());
+  }
+
+  // MC Matching
+  TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aod->FindListObject(
+      AliAODMCParticle::StdBranchName()));
+  if (mcarray) {
+    // dmeson->InvMass needs unsigned int*, this one needs a const int* (and does TMath::Abs() on that). Great.
+    int PDGDaug[pdgChildren.size()];
+    for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
+      PDGDaug[iChild] = pdgChildren.at(iChild);
+    }
+    const int label = dmeson->MatchToMC(std::abs(pdgParent), mcarray,
+                                        pdgChildren.size(), PDGDaug);
+    if (label < 0) {
+      this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+    } else {
+      this->SetID(label);  // to keep track of the actual MC particle
+      AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(label);
+      if (!mcPart) {
+        this->SetUse(false);
+      } else {
+        this->SetMCPDGCode(mcPart->GetPdgCode());
+        this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
+        this->SetMCPt(mcPart->Pt());
+        this->SetMCPhi(mcPart->Phi());
+        this->SetMCTheta(mcPart->Theta());
+
+        const int origin = AliVertexingHFUtils::CheckOrigin(mcarray, mcPart);
+        if (origin == 4) {
+          // proper charm
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(mcPart->GetMother())))
+                  ->GetPdgCode());
+        } else if (origin == 5) {
+          // from beauty
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kBeauty);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(mcPart->GetMother())))
+                  ->GetPdgCode());
+        } else {
+          // this we don't want to keep
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+          this->SetUse(false);
+
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          while (motherID != -1) {
+            lastMother = motherID;
+            motherID = static_cast<AliAODMCParticle*>(mcarray->At(motherID))
+                ->GetMother();
+          }
+          this->SetMotherID(lastMother);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(lastMother)))
+                  ->GetPdgCode());
+        }
+      }
+    }
   }
 }
 

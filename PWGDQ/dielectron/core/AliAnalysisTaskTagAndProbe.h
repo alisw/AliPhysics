@@ -13,6 +13,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe();
     AliAnalysisTaskTagAndProbe(const char *name);
     virtual ~AliAnalysisTaskTagAndProbe();
+    void SetMC(Bool_t flag) {fIsMC = flag;}
     void SetCentralityMin(Float_t min) {fCentralityMin = min;}
     void SetCentralityMax(Float_t max) {fCentralityMax = max;}
     void SetDepthNMixed(Int_t Nmix)    {fNMixed        = Nmix;}
@@ -75,10 +76,13 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
+    virtual void ProcessMC(Option_t *option);
     void CutEfficiency();
     void TrackQA();
     void FillV0InfoESD();
     void FillV0InfoAOD();
+    void GetMCInfoESD();
+    void GetMCInfoAOD();
 		Double_t PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
 
     Bool_t HasConversionPointOnSPD(AliESDv0 *v0, AliESDtrack *legPos, AliESDtrack *legNeg){
@@ -139,13 +143,16 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
     AliESDv0KineCuts *fESDv0KineCuts;
     AliAODv0KineCuts *fAODv0KineCuts;
+    AliStack *fMCArrayESD;     //MC particles array in ESD
+    TClonesArray *fMCArrayAOD; //MC particles array in AOD
     Bool_t fPIDCalibMode;
+    Bool_t fIsMC;
 
   private:
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 5);
+    ClassDef(AliAnalysisTaskTagAndProbe, 6);
 };
 
 

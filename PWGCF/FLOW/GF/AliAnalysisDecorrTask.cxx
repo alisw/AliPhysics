@@ -64,9 +64,12 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
     hDCAA{nullptr}, 
-    hPtPhiEta{nullptr},  
+    hPtPhiEtaB{nullptr},  
+    hPtPhiEtaA{nullptr},  
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
+    hNumHighPtTracksA{nullptr},
+    fhEventSel{nullptr},
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -92,6 +95,9 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fCentMin{0.0},
     fCentMax{50.0},
     fPVtxCutZ{10.0},
+    fRequireHighPtTracks{kFALSE},
+    fNHighPtTracks{1},
+    fHighPtCut{7.0},
 
     fCutChargedTrackFilterBit{96},
     fCutNumTPCclsMin{70},
@@ -144,10 +150,12 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     hTPCclsA{nullptr},
     hTPCchi2A{nullptr},
     hDCAA{nullptr}, 
-    hPtPhiEta{nullptr},
+    hPtPhiEtaB{nullptr},
+    hPtPhiEtaA{nullptr},  
     hNumTracksB{nullptr},
     hNumTracksA{nullptr},
-
+    hNumHighPtTracksA{nullptr},
+    fhEventSel{nullptr},
 
     fIndexSampling{0},
     fAOD(nullptr),
@@ -173,6 +181,9 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fCentMin{0.0},
     fCentMax{50.0},
     fPVtxCutZ{10.0},
+    fRequireHighPtTracks{kFALSE},
+    fNHighPtTracks{0},
+    fHighPtCut{7.0},
 
     fCutChargedTrackFilterBit{96},
     fCutNumTPCclsMin{70},
@@ -458,9 +469,14 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
         fQA->Add(fhChargedCounter);
 
+        TString sEventSelLabel[] = {"Input","AliEventCuts","Centrality","Trigger","Pileup","V_{z}","High p_{T} tracks"};
+        const Int_t iNBinsEventSelCounter = sizeof(sEventSelLabel)/sizeof(sEventSelLabel[0]);
+        fhEventSel = new TH1D("fhEventSel","Event selection",iNBinsEventSelCounter,0,iNBinsEventSelCounter);
+        for(Int_t i(0); i < iNBinsEventSelCounter; i++) fhEventSel->GetXaxis()->SetBinLabel(i+1,sEventSelLabel[i].Data());
+        fQA->Add(fhEventSel);
+
         fhCentVsCharged = new TH2D("hCentVsCharged","Charged tracks vs Centrality",100,0,100,100,0,2000);
         fQA->Add(fhCentVsCharged);
-
         hITSclsB = new TH1I("ITS_clusters_on_trackB","ITS clusters on track",8,0,8);
         hITSclsA = (TH1I*)hITSclsB->Clone("ITS_clusters_on_trackA");
         fQA->Add(hITSclsB); fQA->Add(hITSclsA);    
@@ -474,13 +490,16 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hDCAB); 
         hDCAA = new TH3D("DCAA","DCA vs. pt after",50,0.2,5.0,50,-5.0, 5.0,50, -5.0, 5.0);
         fQA->Add(hDCAA); 
-        hPtPhiEta = new TH3D("pt_phi_eta","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
-        fQA->Add(hPtPhiEta);
+        hPtPhiEtaB = new TH3D("pt_phi_etaB","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
+        fQA->Add(hPtPhiEtaB);
+        hPtPhiEtaA = new TH3D("pt_phi_etaA","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
+        fQA->Add(hPtPhiEtaA);
         hNumTracksB = new TH1D("hNumTracksB","Number of tracks before",100,0.0,2500.0);
         fQA->Add(hNumTracksB);
         hNumTracksA = new TH1D("hNumTracksA","Number of tracks after",100,0.0,2500.0);
         fQA->Add(hNumTracksA);
-
+        hNumHighPtTracksA = new TH1D("hNumHighPtTracksA",Form("Number of track above %.1f GeV",fHighPtCut),50,0.0,50.0);
+        fQA->Add(hNumHighPtTracksA);
     }    
     if(fEventRejectAddPileUp)
     {
@@ -573,14 +592,21 @@ void AliAnalysisDecorrTask::FillWeights()
     if(!hDCAptB) { AliError("hDCAptB not found"); }
     TH3D* hDCAptA = (TH3D*)fQA->FindObject("DCAA");
     if(!hDCAptA) { AliError("hDCAptA not found"); }
-    TH3D* hPtPhiEta = (TH3D*)fQA->FindObject("pt_phi_eta");
-    if(!hPtPhiEta) { AliError("hPtPhiEta not found"); }
+    TH3D* hPtPhiEtaB = (TH3D*)fQA->FindObject("pt_phi_etaB");
+    if(!hPtPhiEtaB) { AliError("hPtPhiEtaB not found"); }
+    TH3D* hPtPhiEtaA = (TH3D*)fQA->FindObject("pt_phi_etaA");
+    if(!hPtPhiEtaA) { AliError("hPtPhiEtaA not found"); }
     TH1D* hNumTracksB = (TH1D*)fQA->FindObject("hNumTracksB");
+    if(!hNumTracksB) { AliError("hNumTracksB not found"); }
     TH1D* hNumTracksA = (TH1D*)fQA->FindObject("hNumTracksA");
-    
+    if(!hNumTracksA) { AliError("hNumTracksA not found"); }
+    TH1D* hNumHighPtTracksA = (TH1D*)fQA->FindObject("hNumHighPtTracksA");
+    if(!hNumHighPtTracksA) { AliError("hNumHighPtTracksA not found"); }
+
     if(!fFillQA && !fFillWeights) { return; }
     int NumTracksB = 0;
     int NumTracksA = 0;
+    int NumTracksHighPt = 0;
     for(int index(0); index < NParts; ++index)
     {   
         Float_t dcaxy = 0.0;
@@ -598,7 +624,7 @@ void AliAnalysisDecorrTask::FillWeights()
         pt = track->Pt(); 
         phi = track->Phi();
         eta = track->Eta(); 
-        
+
         if(fFillQA)
         {
             track->GetImpactParameters(dcaxy,dcaz);
@@ -610,11 +636,15 @@ void AliAnalysisDecorrTask::FillWeights()
             hTPCchi2B->Fill(tpcchi2percls); if(pass) hTPCchi2A->Fill(tpcchi2percls);
             hTPCclsB->Fill(ntpccls); if(pass) hTPCclsA->Fill(ntpccls);
             hITSclsB->Fill(nitscls); if(pass) hITSclsA->Fill(nitscls);
-            hPtPhiEta->Fill(pt,phi,eta);
+            hPtPhiEtaB->Fill(pt,phi,eta); if(pass) hPtPhiEtaA->Fill(pt,phi,eta);
             if(pass) NumTracksB++;
             if(fRedTracks && pass && index < fTrackprevent*NParts) 
             { 
                 NumTracksA++;
+            }
+            if(fRequireHighPtTracks) { 
+                if(pt >= fHighPtCut) ++NumTracksHighPt; 
+                if(NumTracksHighPt >= fNHighPtTracks) hNumHighPtTracksA->Fill(NumTracksHighPt);
             }
         }
         
@@ -664,7 +694,11 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     if(!fAOD) { return; }
     
     //Event selection
-    if(!IsEventSelected()) { return; }
+    if(fFillQA) {
+        TH1D* fhEventSel = (TH1D*)fQA->FindObject("fhEventSel");
+        if(!fhEventSel) cout << "fhEventSel not found" << endl;
+    } 
+    if(!IsEventSelected(fhEventSel)) { return; }
 
     
     FillWeights();
@@ -1324,7 +1358,7 @@ Int_t AliAnalysisDecorrTask::GetSamplingIndex() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisDecorrTask::IsEventSelected()
+Bool_t AliAnalysisDecorrTask::IsEventSelected(TH1D* h)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
@@ -1333,13 +1367,13 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected()
   AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
   Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);    
-
+  if(h) h->Fill(0);
   if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
-  
+  if(h) h->Fill(1);
   if(dPercentile < 0) { return kFALSE; }
   if(fCentMin > 0 && dPercentile < fCentMin) { return kFALSE; }
   if(fCentMax > 0 && dPercentile > fCentMax) { return kFALSE; }
-  
+  if(h) h->Fill(2);
   if(!bIs2018Data)
   {
       if(!(fSelectMask & fTrigger)) { return kFALSE; }
@@ -1352,12 +1386,27 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected()
     else{
       if(!(fSelectMask & fTrigger)) { return kFALSE;}
     }
-  }
-
+  } 
+  if(h) h->Fill(3);
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   if(fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp(fCentralPileupCut)) { return kFALSE; }
   else if(fEventRejectAddPileUp && dPercentile > 10 && IsEventRejectedAddPileUp(fDefaultPileupCut)) { return kFALSE; }
+  if(h) h->Fill(4);
   if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fPVtxCutZ) { return kFALSE; }
+  if(h) h->Fill(5);
+  if(fRequireHighPtTracks)
+  {
+    int NTracks = fAOD->GetNumberOfTracks();
+    int tmp = 0;
+    for(int iTrack(0); iTrack < NTracks; ++iTrack)
+    {
+        AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        if(track->Pt() > fHighPtCut) ++tmp;
+    }
+    if(tmp < fNHighPtTracks) return kFALSE;
+  }
+  if(h) h->Fill(6);
+
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1398,10 +1447,12 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp(const int fPileupCut) con
 
   Bool_t bIs17n = kFALSE;
   Bool_t bIs15o = kFALSE;
+  Bool_t bIs18qr = kFALSE;
 
   Int_t iRunNumber = fAOD->GetRunNumber();
   if(iRunNumber >= 244824 && iRunNumber <= 246994) { bIs15o = kTRUE; }
   else if(iRunNumber == 280235 || iRunNumber == 20234) { bIs17n = kTRUE; }
+  else if(iRunNumber >= 295585 && iRunNumber <= 297595 ) { bIs18qr = kTRUE; }
   else { return kFALSE; }
 
   // recounting multiplcities
@@ -1456,6 +1507,13 @@ Bool_t AliAnalysisDecorrTask::IsEventRejectedAddPileUp(const int fPileupCut) con
     TF1 fMultCentLowCut = TF1("fMultCentLowCut", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
     fMultCentLowCut.SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
+  }
+
+  if(bIs18qr)
+  {
+    multESDTPCdif = multESD - 3.38*multTPC128;
+    if(multESDTPCdif > fPileupCut) { return kTRUE; }
+      
   }
 
   // QA Plots

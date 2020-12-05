@@ -12,12 +12,17 @@
 
 #include <cmath>
 #include <limits>
+
+#include "TMath.h"
+#include "TFile.h"
+
 #include "AliHFTreeHandlerApply.h"
 #include "AliPID.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrack.h"
-#include "TMath.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerApply);
@@ -372,7 +377,7 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
+bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF, AliAODPidHF* pidhf)
 {
   if(!pidrespo) return false;
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
@@ -396,15 +401,24 @@ bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDRespons
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
           if(useTPC) {
-            float nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
-            if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
-              float sigma=1., mean=0.;
-              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
-              nSigmaTPC = (nSigmaTPC-mean)/sigma;
+            double nSigmaTPC = -999;
+            if(pidhf) pidhf->GetnSigmaTPC(prongtracks[iProng],parthypo[iPartHypo],nSigmaTPC);
+            else {
+              nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+              if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
+                float sigma=1., mean=0.;
+                GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
+                nSigmaTPC = (nSigmaTPC-mean)/sigma;
+              }
             }
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
           }
-          if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+          if(useTOF){
+            double nSigmaTOF = -999;
+            if(pidhf) pidhf->GetnSigmaTOF(prongtracks[iProng],parthypo[iPartHypo],nSigmaTOF);
+            else nSigmaTOF = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+            sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
+          }
           if(((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) && useTPC && useTOF) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }
@@ -594,11 +608,21 @@ float AliHFTreeHandlerApply::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* 
 //________________________________________________________________
 void AliHFTreeHandlerApply::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
   
-  if(fRunNumber!=fRunNumberPrevCand)
+  if(fRunNumber!=fRunNumberPrevCand) {
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    Bool_t isPass1 = kFALSE;
+    TTree *treeAOD = inputHandler->GetTree();
+    TString currentFile = treeAOD->GetCurrentFile()->GetName();
+    if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+      isPass1 = kTRUE;
+
     AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr,
                                                   fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData,
-                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
-  
+                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData, isPass1);
+  }
+
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value

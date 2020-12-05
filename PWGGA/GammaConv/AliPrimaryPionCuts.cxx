@@ -74,6 +74,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
   fChi2PerClsTPC(9999), // maximum Chi2 per cluster in the TPC
   fRequireTPCRefit(kFALSE), // require a refit in the TPC
 	fMinClsTPCToF(0), // minimum clusters to findable clusters
+    fMaxSharedClsTPCFrac(99), // maximum fraction of shared clusters to TPCnClus
 	fMinClsITS(0), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(kFALSE),
 	fDodEdxSigmaTPCCut(kTRUE),
@@ -146,6 +147,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
     fChi2PerClsTPC(ref.fChi2PerClsTPC), // maximum Chi2 per cluster in the TPC
     fRequireTPCRefit(ref.fRequireTPCRefit), // require a refit in the TPC
 	fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
+    fMaxSharedClsTPCFrac(ref.fMaxSharedClsTPCFrac), // maximum fraction of shared clusters to TPCnClus
 	fMinClsITS(ref.fMinClsITS), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
 	fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
@@ -341,10 +343,10 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
 
+      if (axisBeforedEdx) axisBeforedEdx->Set(bins, newBins);
+      if (axisBeforedEdxSignal) axisBeforedEdxSignal->Set(bins,newBins);
       if(preCut){
         axisBeforeITS->Set(bins, newBins);
-        axisBeforedEdx->Set(bins, newBins);
-        axisBeforedEdxSignal->Set(bins,newBins);
         axisBeforeTOF->Set(bins, newBins);
 
       }
@@ -524,6 +526,7 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedAOD(AliAODTrack* lTrack){
 Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   if( ! fEsdTrackCuts->AcceptTrack(lTrack) && ! fEsdTrackCutsGC->AcceptTrack(lTrack)){
     return kFALSE;
   }
@@ -532,6 +535,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 	// (should be already applied in fEsdTrackCuts, however it might
 	// not be properly applied together with pTDependent cut )
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
+
+  if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
  
   if( fDoEtaCut ) {
     if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
@@ -561,7 +566,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-
+  Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
   // apply filter bits 
   if( ! lTrack->IsHybridGlobalConstrainedGlobal()){
     return kFALSE;
@@ -577,6 +582,7 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 	// than the cuts already applied on AOD refiltering level
 
 	// Absolute TPC Cluster cut
+    if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 	if(lTrack->GetTPCchi2perCluster()>fChi2PerClsTPC) return kFALSE;
   // DCA cut 
@@ -1113,7 +1119,7 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fMinClsTPCToF= 0.35;
 			fUseCorrectedTPCClsInfo=1;
 			break;
-        case 10:
+        case 10: //a
             fMinClsTPC     = 80.;
             fChi2PerClsTPC = 4;
             fRequireTPCRefit    = kTRUE;
@@ -1122,22 +1128,34 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
             break;
-        case 11: // settings as in PHOS public omega
+        case 11: //b settings as in PHOS public omega
             fMinClsTPC     = 70.;
             fChi2PerClsTPC = 4;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
             break;
-        case 12:  // 80 + refit
+        case 12:  //c 80 + refit
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-        case 13:  // 80 + refit + vertex constrain (only for AOD)
+        case 13:  //d 80 + refit + vertex constrain (only for AOD)
 				    fRequireVertexConstrain = kTRUE;
             fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            break;
+        case 14:  //e 80 + refit, Shared cluster Fraction =0
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMaxSharedClsTPCFrac=0.;
+            break;
+        case 15:  //f 80 + refit, Shared cluster Fraction <=0.4
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMaxSharedClsTPCFrac=0.4;
             break;
 				default:
 						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;

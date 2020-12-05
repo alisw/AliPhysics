@@ -13,6 +13,7 @@
 #include "AliCentrality.h"
 //#include "AliSelectNonHFE.h"
 #include "AliAODMCParticle.h"
+#include "TF2.h"
 
 class THnSparse;
 class AliMultSelection;
@@ -90,12 +91,14 @@ public:
     void            GetPi0EtaWeight(THnSparse *SparseWeight);
     
     void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-    void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
+    //void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
+    void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma, Double_t &momTime);
     void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
-    void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort);
+    void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius);
     void            SetHadronEoPCut(Bool_t hadronEopCut) {fApplyHadEoPCut = hadronEopCut;};
     void            SetVtxZCut(Double_t zVertexCut) {fVtxZCut = zVertexCut;};
     void            SetDCAxyCut(Double_t dcaXYCut) {fDCAxyCut = dcaXYCut;};
+    void            SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs);
     
 private:
     AliAODEvent         *fAOD;           //! input event
@@ -257,6 +260,9 @@ private:
     TH1F                *fBWeightNew; //!
     TH1F                *fBWeightVar1; //!
     TH1F                *fBWeightVar2; //!
+    TF2                 *fBPlusTauWeight; //!
+    TF2                 *fB0TauWeight; //!
+    TF2                 *fBsTauWeight; //!
     
     
     Double_t            fWeight;        //!
@@ -281,10 +287,10 @@ private:
     TH2F                *fPhotonHijingTagDCA;     //!
     TH2F                *fEnhPhotonTagDCA;        //!
     
-    TH1F                *fComboNumWeight;       //!
-    TH1F                *fComboNumNoWeight;     //!
-    TH1F                *fComboDenomWeight;     //!
-    TH1F                *fComboDenomNoWeight;   //!
+    TH2F                *fComboNumWeight;       //!
+    TH2F                *fComboNumNoWeight;     //!
+    TH2F                *fComboDenomWeight;     //!
+    TH2F                *fComboDenomNoWeight;   //!
     
     //TH1F                *fDMesonPDG; //! plots abs(pdg) of D mesons in the stack
     TH1F                *fD0MesonPt;  //!
@@ -329,6 +335,7 @@ private:
     THnSparse           *fSprsTemplatesWeight;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
+    THnSparse           *fSprsClosureTest;  //! Sparse for templates
     
     //TH2F                *fDTemplateWeight; //!
     //TH2F                *fDTemplateNoWeight; //!

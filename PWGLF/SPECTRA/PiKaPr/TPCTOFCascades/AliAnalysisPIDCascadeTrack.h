@@ -74,7 +74,7 @@ public TObject
 
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
+  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag, Double_t TPCLength); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasTPCPID() const; // has TPC PID
   Bool_t HasTOFPID(TH1 *henabled = NULL) const; // has TOF PID
@@ -90,6 +90,7 @@ public TObject
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
   Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
+  Int_t GetTPCLength() {return fTPCLength; };
 
   // Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
 
@@ -157,6 +158,7 @@ public TObject
   Float_t nSigmaElectronTOF;
 
   Int_t fTrackCutFlag;
+  Double_t fTPCLength;
 
   /*** cut paramters */
   static Float_t fgMatchTrackDeltaX; // match track deltaX

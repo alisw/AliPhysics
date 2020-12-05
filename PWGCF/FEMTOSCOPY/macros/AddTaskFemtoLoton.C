@@ -1176,6 +1176,9 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    } else if (suffix == "45") {
+      v0Cuts->SetCutInvMass(0.050);
+      Antiv0Cuts->SetCutInvMass(0.050);
     }
   }
 

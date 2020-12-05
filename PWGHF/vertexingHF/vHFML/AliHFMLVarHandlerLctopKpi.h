@@ -22,6 +22,15 @@ class AliHFMLVarHandlerLctopKpi : public AliHFMLVarHandler
             kpiKp
         };
 
+        enum restype {
+            kLcNonRes     = BIT(9),
+            kLcLambda1520 = BIT(10),
+            kLcKStar      = BIT(11),
+            kLcDelta      = BIT(12)
+        };
+
+
+
         AliHFMLVarHandlerLctopKpi();
         AliHFMLVarHandlerLctopKpi(int PIDopt);
         virtual ~AliHFMLVarHandlerLctopKpi();
@@ -31,6 +40,7 @@ class AliHFMLVarHandlerLctopKpi : public AliHFMLVarHandler
 
         virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
+        void SetIsLcpKpiRes(int restype);
 
     private:
         float fImpParProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong impact parameter

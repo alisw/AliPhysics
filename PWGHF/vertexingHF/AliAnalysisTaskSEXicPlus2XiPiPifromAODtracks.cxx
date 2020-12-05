@@ -725,7 +725,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	      if(mcxic->GetNDaughters()==3){
 		for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++)
 		  {
-		  //cout<<idau<<endl;
 		  if(idau<0) break;
 		  AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(idau);
 		  Int_t pdgcode = TMath::Abs(mcpart->GetPdgCode());
@@ -775,7 +774,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		  } //end of loop over xic daughters
 	      } else if(mcxic->GetNDaughters()==2){
 		for(Int_t idau=mcxic->GetDaughterFirst();idau<mcxic->GetDaughterLast()+1;idau++){
-		  //cout<<idau<<endl;
 		  if(idau<0) break;
 		  AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(idau);
 		  Int_t pdgcode = TMath::Abs(mcpart->GetPdgCode());
@@ -2075,9 +2073,9 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
 	   Int_t pdgXiStardau=XiStardau->GetPdgCode();
 	   if(TMath::Abs(pdgXiStardau)==3312){ //check if is a Xi
 	     nXi++;
-	     Int_t nXiDau=dau->GetNDaughters();
+	     Int_t nXiDau=XiStardau->GetNDaughters();
 	     if(nXiDau!=2) return -1; //no correct Xi decay
-	     Int_t indFirstXiDau=dau->GetDaughterLabel(0);
+	     Int_t indFirstXiDau=XiStardau->GetDaughterLabel(0);
 	     for(Int_t XiDau=0; XiDau<2; XiDau++){ //loop on Xi decays
 	       Int_t indXiDau=indFirstXiDau+XiDau;
 	       if(indXiDau<0) return -1;
@@ -2127,7 +2125,7 @@ Int_t AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::CheckXic2XiPiPi(TClonesArray
      if(nLambda!=1) return -1;
      if(nPions!=4) return -1;
      if(nProtons!=1) return -1;
-     if(nXiStar && nXi==1 && nLambda==1 && nPions==4 && nProtons ==1) return 2;
+     if(nXiStar==1 && nXi==1 && nLambda==1 && nPions==4 && nProtons ==1) return 2;
    }
    else return -1;
 }

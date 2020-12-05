@@ -157,8 +157,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
   }
 
   if(suffix=="20"){
-    v0Cuts->SetCutWindow(1.24,1.16);
-    Antiv0Cuts->SetCutWindow(1.24,1.16);
+    v0Cuts->SetCutWindow(1.16,1.24);
+    Antiv0Cuts->SetCutWindow(1.16,1.24);
   }
 
   if (!fullBlastQA) {
@@ -1248,9 +1248,22 @@ if(suffixTrigger=="5"){
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
-  config->SetUseEventMixing(true);
 
+  config->SetMixingDepth(10);
+  if(suffix=="21"){
+    config->SetMixingDepth(20);
+  }  
+  if(suffix=="22"){
+    config->SetMixingDepth(50);
+  }
+  if(suffix=="23"){
+    config->SetMixingDepth(100);
+  }
+  if(suffix=="24"){
+    config->SetMixingDepth(5);
+  }  
+
+  config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   std::vector<int> MultBins;

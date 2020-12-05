@@ -143,7 +143,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   // Debugging the JES
   std::array<double, 17> ptbins = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
-  for(int iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
+  for(std::size_t iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
     int ptbminI = ptbins[iptbin],
         ptbmaxI = ptbins[iptbin+1];
     fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
@@ -227,7 +227,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
-  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);

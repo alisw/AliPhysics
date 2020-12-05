@@ -985,6 +985,8 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152e03500000000"); // excluding 55-72 cm, eta 0.8
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152f03500000000"); // excluding 55-72 cm, eta 0.8
 
+  } else if (trainConfig == 421){
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // default
   } else if (trainConfig == 422){   // AM changed from 441 to 422  // updated 190923 with better 2D cuts
     cuts.AddCutPCM("00010113", "0da00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
     cuts.AddCutPCM("00010113", "0db00009f9730000dge0404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
@@ -2289,7 +2291,52 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0454000", "0152103500000000"); // 0 - 1%
     cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0454000", "0152103500000000"); // 1 - 5%
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0454000", "0152103500000000"); // 5 - 10%
-  
+
+  // systematics
+  // default cut: ("00010113", "0dm00009f9730000dge0474000", "0152103500000000")
+  } else if (trainConfig == 2709) { // min pT
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152103500000000"); // default
+    cuts.AddCutPCM("00010113", "0dm00069f9730000dge0474000", "0152103500000000"); // 0.04 GeV, 0.01 GeV (default: 0.05 GeV, 0.02 GeV)
+    cuts.AddCutPCM("00010113", "0dm00049f9730000dge0474000", "0152103500000000"); // 0.075 GeV, 0.02 GeV
+    cuts.AddCutPCM("00010113", "0dm00019f9730000dge0474000", "0152103500000000"); // 0.1 GeV, 0.02 GeV
+  } else if (trainConfig == 2710) { // TPC clusters, dEdx electron line
+    cuts.AddCutPCM("00010113", "0dm00008f9730000dge0474000", "0152103500000000"); // 35% findable clusters (default: 60%)
+    cuts.AddCutPCM("00010113", "0dm00006f9730000dge0474000", "0152103500000000"); // 70% findable clusters
+    cuts.AddCutPCM("00010113", "0dm0000939730000dge0474000", "0152103500000000"); // -4 < n*sigma < 5 (default: -3 < n*sigma < 4)
+    cuts.AddCutPCM("00010113", "0dm0000969730000dge0474000", "0152103500000000"); // -2.5 < n*sigma < 4
+  } else if (trainConfig == 2711) { // dEdx pion line
+    cuts.AddCutPCM("00010113", "0dm00009f5730000dge0474000", "0152103500000000"); // n*sigma < 2, -10 (default: 1, 0.5 above max. mom.) 
+    cuts.AddCutPCM("00010113", "0dm00009f1730000dge0474000", "0152103500000000"); // n*sigma < 0, -10 above max. mom.
+    cuts.AddCutPCM("00010113", "0dm00009f9030000dge0474000", "0152103500000000"); // min. mom.: 0.5 GeV (default: 0.4 GeV)
+    cuts.AddCutPCM("00010113", "0dm00009f9630000dge0474000", "0152103500000000"); // min. mom.: 0.25 GeV
+  } else if (trainConfig == 2712) { // dEdx pion line cont.,  BG scheme
+    cuts.AddCutPCM("00010113", "0dm00009f9760000dge0474000", "0152103500000000"); // max. mom.: 2 GeV (default: 3.5 GeV)
+    cuts.AddCutPCM("00010113", "0dm00009f9710000dge0474000", "0152103500000000"); // max. mom.: 5 GeV
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0252103500000000"); // mixed event, track multiplicity (default: V0M multiplicity)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0r52103500000000"); // swapping method, angle = 90deg
+  } else if (trainConfig == 2713) { // qT max
+    cuts.AddCutPCM("00010113", "0dm00009f9730000age0474000", "0152103500000000"); // 2D cut with 0.11, 0.04 (default: 0.125, 0.05)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000ege0474000", "0152103500000000"); // 2D cut with 0.14, 0.06
+    cuts.AddCutPCM("00010113", "0dm00009f9730000fge0474000", "0152103500000000"); // 2D cut with 0.16, 0.07
+  } else if (trainConfig == 2714) { // chi2 gamma
+    cuts.AddCutPCM("00010113", "0dm00009f9730000d1e0474000", "0152103500000000"); // chi2/ndf < 50 (default: psi_pair < 0.18 * exp(-0.055*chi2/ndf))
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dfe0474000", "0152103500000000"); // psi_pair < 0.18 * exp(-0.065*chi2/ndf)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dhe0474000", "0152103500000000"); // psi_pair < 0.18 * exp(-0.050*chi2/ndf)
+  } else if (trainConfig == 2715) { // psi pair
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgd0474000", "0152103500000000"); // psi_pair < 0.15 * exp(-0.055*chi2/ndf) (default: psi_pair < 0.18 * exp(-0.055*chi2/ndf))
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgg0474000", "0152103500000000"); // psi_pair < 0.30 * exp(-0.055*chi2/ndf) 
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgf0474000", "0152103500000000"); // psi_pair < 0.20 * exp(-0.055*chi2/ndf) 
+  } else if (trainConfig == 2716) { // cos(PA), TRD yes/no
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0374000", "0152103500000000"); // cos(PA) > 0.75 (default: 0.85)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0674000", "0152103500000000"); // cos(PA) > 0.9
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // no trd
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0470000", "0152103500000000"); // disable reject close V0s
+  } else if (trainConfig == 2717) { // alpha meson
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0374000", "0152105500000000"); // alpha < 0.75 (default: 1)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0674000", "0152107500000000"); // alpha < 0.85
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0474000", "0152101500000000"); // alpha < 0.65 * tanh(1.8 * pT)
+    cuts.AddCutPCM("00010113", "0dm00009227300008250474000", "0152103500000000"); // old cuts (run1) 
+
   // ------------ 13 TeV in multiplicity classes for use without MBW ----
   } else if (trainConfig == 2751) { // Multiplicity selection, ITS + TRD photons
     cuts.AddCutPCM("n0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // 0 - 10%

@@ -1,12 +1,17 @@
+
+///////////////////////////////////////////////////////////////////
+//                                                               //            
+// AliAnalysisHFEppEMCalBeauty.cxx                               //
+// Author: Vivek Singh                                           //
+//                                                               //
+///////////////////////////////////////////////////////////////////
+
 #ifndef AliAnalysisHFEppEMCalBeauty_cxx
 #define AliAnalysisHFEppEMCalBeauty_cxx
 
-// example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
-
-
 class TH1F;
 class TH2F;
+class TH3F;
 class TLorentzVector;
 class THnSparse;
 class TClonesArray;
@@ -96,8 +101,6 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fDCalDG1(kFALSE),
 fDCalDG2(kFALSE),
-
-fRecalIP(kTRUE),
 
 fHistVx(0),
 fHistVxwc(0),
@@ -272,17 +275,26 @@ fRecoEtaLSeEmbWeightTrkPt(0),
 fRecoULSeEmbTrkPt(0),
 fRecoULSeEmbWeightTrkPt(0),
 fRecoPi0ULSeEmbWeightTrkPt(0),
-fRecoEtaULSeEmbWeightTrkPt(0)
+fRecoEtaULSeEmbWeightTrkPt(0),
 
-/*fTrkRadius(-999.0),
+fHadConvRadius(0),
+fIncleConvRadius(0),
+fNonHFeConvRadius(0),
+fHFeConvRadius(0),
+
+fNonHFeEmbTrkRConv(0),
+fPi0eEmbWeightTrkRConv(0),
+fNonHFeEmbWeightTrkRConv(0),
+fEtaeEmbWeightTrkRConv(0),
+
+fRecoNonHFeEmbRConv(0),
+fRecoPi0eEmbWeightTrkRConv(0),
+fRecoNonHFeEmbWeightTrkRConv(0),
+fRecoEtaeEmbWeightTrkRConv(0),
+
 fRVsULSElecPt(0),
-fRVsLSElecPt(0),
-fRVsNonHFeEmbWeightTrkPt(0),
-fRVsRecoNonHFeEmbWeightTrkPt(0)
+fRVsLSElecPt(0)
 
-fvalueRadius(0),
-fSparseRadius(0)
-*/
 {
 fPID = new AliHFEpid("hfePid");
 fvalueElectron = new Double_t[6];
@@ -338,9 +350,6 @@ fvalueElectron = new Double_t[6];
   void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
   void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
 
-  void    SwitchRecalImpPar(Bool_t fSwitch) {fRecalIP = fSwitch;};
-  void    RecalImpactParam(const AliAODTrack * const track, Double_t dz[2], Double_t covar[3]);
-  AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track);
 
 //-----------------setters----------------------------------------------------------------    
 
@@ -355,6 +364,7 @@ fvalueElectron = new Double_t[6];
   void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
   void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
 
+  void TrackConvRadius(AliAODTrack* track, Double_t &R);
 
 //Getters
     AliHFEpid *GetPID() const {return fPID;};
@@ -387,9 +397,7 @@ fvalueElectron = new Double_t[6];
   Bool_t                fEMCEG2;//EMcal Threshold SetReferenceMultiplicityEG2
   Bool_t                fDCalDG1;//DCal Threshold DG1
   Bool_t                fDCalDG2;//DCal Threshold DG2
-  
-  Bool_t               fRecalIP;//
-  
+
   Bool_t GetNMCPartProduced();
   Bool_t FindMother(Int_t mcIndex);
   Bool_t IsHFelectronsMC(AliAODTrack *track);
@@ -417,10 +425,11 @@ fvalueElectron = new Double_t[6];
   TH1F        *fHistEvent;//! 
 
   TH1F        *fHistVx;//! 
-  TH1F        *fHistVxwc;//! 
   TH1F        *fHistVy;//! 
-  TH1F        *fHistVywc;//!
   TH1F        *fHistVz;//!  
+  
+  TH1F        *fHistVxwc;//!
+  TH1F        *fHistVywc;//!
   TH1F        *fHistVzwc;//! 
 
   TH1F        *fHistMul;//! 
@@ -463,17 +472,28 @@ fvalueElectron = new Double_t[6];
   Double_t* fvalueElectron;//!
   THnSparse* fSparseElectron;//! Electron information
 
-  /*Double_t* fvalueRadius;//!
-  THnSparse* fSparseRadius;//! Radius information
-  
-  Double_t  fTrkRadius;//!
   TH2F   *fRVsULSElecPt;//!
   TH2F   *fRVsLSElecPt;//!
-  TH2F   *fRVsNonHFeEmbWeightTrkPt;//!
-  TH2F   *fRVsRecoNonHFeEmbWeightTrkPt;//!
-*/
-  Int_t               fNEle;//!
-  Double_t            fTrkDCA;//!
+
+  TH2F   *fHadConvRadius;//!
+  TH2F   *fIncleConvRadius;//!
+  TH2F   *fNonHFeConvRadius;//!
+  TH2F   *fHFeConvRadius;//!
+
+  TH2F   *fNonHFeEmbTrkRConv;//!
+  TH2F   *fPi0eEmbWeightTrkRConv;//!
+  TH2F   *fNonHFeEmbWeightTrkRConv;//!
+  TH2F   *fEtaeEmbWeightTrkRConv;//!
+
+  TH2F   *fRecoNonHFeEmbRConv;//!
+  TH2F   *fRecoPi0eEmbWeightTrkRConv;//!
+  TH2F   *fRecoNonHFeEmbWeightTrkRConv;//!
+  TH2F   *fRecoEtaeEmbWeightTrkRConv;//!
+
+
+  Int_t     fNEle;//!
+  Double_t  fTrkDCA;//!
+ 
   TH1F  *fHadPt_AftEID;//!
 
   TH2F  *fHadEovp_AftEID;//!

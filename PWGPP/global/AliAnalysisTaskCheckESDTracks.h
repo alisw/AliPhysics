@@ -87,6 +87,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetEtaBinning(Int_t nbins){
     fNEtaBins=nbins;
   }
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
 
   AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
 
@@ -145,6 +148,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+
+  TH3F* fHistEtaPhiPtTPCselITSrefMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
+  TH3F* fHistEtaPhiPtTPCselSPDanyMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
 
   TH2F* fHistPtTPCInwVsPtTPCsel;              //!<!  histo of pt inw vs. pt refit
   TH2F* fHistDeltaPtTPCInwVsPtTPCsel;         //!<!  histo of delta pt inw - pt refit
@@ -251,6 +257,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
+  Bool_t  fRejectGeneratedEventsWithPileup;  // reject events with generated pileup
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
@@ -266,7 +273,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
   Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,27);
+  ClassDef(AliAnalysisTaskCheckESDTracks,28);
 };
 
 

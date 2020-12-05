@@ -73,6 +73,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse() : A
                                                                                fUseChargedConstituents(true),
                                                                                fUseNeutralConstituents(true),
                                                                                fUseStandardOutlierRejection(false),
+                                                                               fDropMass0Jets(false),
                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                fNameMCParticles("mcparticles"),
                                                                                fSampleSplitter(nullptr),
@@ -114,6 +115,7 @@ AliAnalysisTaskEmcalSoftDropResponse::AliAnalysisTaskEmcalSoftDropResponse(const
                                                                                                fUseChargedConstituents(true),
                                                                                                fUseNeutralConstituents(true),
                                                                                                fUseStandardOutlierRejection(false),
+                                                                                               fDropMass0Jets(false),
                                                                                                fJetTypeOutliers(kOutlierPartJet),
                                                                                                fNameMCParticles("mcparticles"),
                                                                                                fSampleSplitter(nullptr),
@@ -566,7 +568,7 @@ Bool_t AliAnalysisTaskEmcalSoftDropResponse::CheckMCOutliers()
 {
   if (!fMCRejectFilter)
     return true;
-  if (!(fIsPythia || fIsHerwig))
+  if (!(fIsPythia || fIsHerwig || fIsHepMC))
     return true; // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) 
     return AliAnalysisTaskEmcal::CheckMCOutliers();
@@ -705,8 +707,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
     SoftdropResults softdropDet, softdropPart;
     std::vector<SoftdropResults> splittingsDet, splittingsPart;
     try {
-      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(), false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
     } catch(...) {
       // Failed SoftDrop for det. level jet.
       if(fForceBeamType != kpp) {
@@ -729,8 +731,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       // Handle failed SoftDrop for part. level jet as impurity
       // Check condition first in case the the same acceptance is not required for the analysis
       try {
-        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(),  true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(),  true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
         hasMCSoftDrop = true;
         tagStatus = kMatchedJetNoAcceptance;
 
@@ -1104,16 +1106,22 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       SoftdropResults softdropPart, softdropDet;
       std::vector<SoftdropResults> splittingsPart, splittingsDet;
       try{
-        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex); 
-        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+        softdropPart = MakeSoftdrop(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets); 
+        splittingsPart = IterativeDecluster(*partjet, partLevelJets->GetJetRadius(), true, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
       } catch (...) {
         continue;
       }
+      bool untaggedEfficinency = softdropPart.fZg < fZcut;
+      double zgpart = softdropPart.fZg,
+             rgpart = untaggedEfficinency ? -0.01 : softdropPart.fRg,
+             thetagpart = untaggedEfficinency ? -0.05 : softdropPart.fRg/Rjet,
+             nsdpart = untaggedEfficinency ? -1. : double(splittingsPart.size());
       // Fill 2D part. level distributions
-      fHistManager.FillTH2("hZgPartLevelFine", softdropPart.fZg, partjet->Pt());
-      fHistManager.FillTH2("hRgPartLevelFine", softdropPart.fRg, partjet->Pt());
-      fHistManager.FillTH2("hNsdPartLevelFine", splittingsPart.size(), partjet->Pt());
-      fHistManager.FillTH2("hThetagPartLevelFine", softdropPart.fRg/partLevelJets->GetJetRadius(), partjet->Pt());
+      bool untagged = softdropPart.fZg < fZcut;
+      fHistManager.FillTH2("hZgPartLevelFine", zgpart, partjet->Pt());
+      fHistManager.FillTH2("hRgPartLevelFine", rgpart , partjet->Pt());
+      fHistManager.FillTH2("hNsdPartLevelFine", nsdpart, partjet->Pt());
+      fHistManager.FillTH2("hThetagPartLevelFine", thetagpart, partjet->Pt());
 
       // Handle jet finding efficiency
       // Point efficiency
@@ -1128,8 +1136,8 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
         // check if for the matched det. level jet we can determine the SoftDrop
         // check this condition first in case not the same acceptance type is required
         try {
-          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
-          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+          softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+          splittingsDet = IterativeDecluster(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
           tag = kMatchedJetNoAcceptance;
           if(detjet->GetJetAcceptanceType() & partLevelJets->GetAcceptanceType()){
             tag = kPairAccepted;
@@ -1143,11 +1151,6 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       } else {
         AliDebugStream(1) << "No det level jet found for part level jet" << std::endl;
       }
-      bool untaggedEfficinency = softdropPart.fZg < fZcut;
-      double zgpart = softdropPart.fZg,
-             rgpart = untaggedEfficinency ? -0.01 : softdropPart.fRg,
-             thetagpart = untaggedEfficinency ? -0.05 : softdropPart.fRg/Rjet,
-             nsdpart = untaggedEfficinency ? -1. : double(splittingsPart.size());
       double pointEfficiencyZg[3] = {zgpart, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyRg[3] = {rgpart, partjet->Pt(), static_cast<double>(tag)},
                pointEfficiencyThetag[3] = {thetagpart, partjet->Pt(), static_cast<double>(tag)},
@@ -1182,7 +1185,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
         fHistManager.FillTH2(Form("hSDUsedChargedPtjvPtc%s", tag.data()), jet.Pt(), track->Pt());
         fHistManager.FillTH2(Form("hSDUsedChargedEtaPhi%s", tag.data()), track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
         fHistManager.FillTH2(Form("hSDUsedChargedDR%s", tag.data()), jet.Pt(), jetvec.DeltaR(trackvec));
-        if(hasMaxCharged) {
+        if(!hasMaxCharged) {
           maxcharged = trackvec;
           hasMaxCharged = true;
         } else {
@@ -1193,7 +1196,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
         fHistManager.FillTH2("hSDUsedNeutralPtjvPtcPart", jet.Pt(), track->Pt());
         fHistManager.FillTH2("hSDUsedNeutralEtaPhiPart", track->Eta(), TVector2::Phi_0_2pi(track->Phi()));
         fHistManager.FillTH2("hSDUsedNeutralDRPart", jet.Pt(), jetvec.DeltaR(trackvec));
-        if(hasMaxNeutral) {
+        if(!hasMaxNeutral) {
             maxneutral = trackvec;
             hasMaxNeutral = true;
         } else {
@@ -1227,7 +1230,7 @@ void AliAnalysisTaskEmcalSoftDropResponse::FillJetQA(const AliEmcalJet &jet, boo
       }
       fHistManager.FillTH2("hSDUsedClusterFracLeadingVsE", clustervec.E(), maxamplitude/cluster->E());
       fHistManager.FillTH2("hSDUsedClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
-      if(hasMaxNeutral) {
+      if(!hasMaxNeutral) {
         maxneutral = clustervec3;
         hasMaxNeutral = true;
       } else {

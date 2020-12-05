@@ -9,7 +9,8 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
     const Int_t Nmix   = 10,
 		const TString type = "PID",//what kind of efficiency do you want to measure by TAP?//PID, Tracking, etc
 		const TString cutname = "DefaultTrackCut_Nsc01_TPChadrejORTOFrec_Pair1",//same as real anslysis used in AliAnalysisTaskMultDielectron
-		const TString outname = "LMEE.root"
+		const TString outname = "LMEE.root",
+    const Bool_t isMC = kFALSE
     )
 {
   //Add a task AliAnalysisTaskTagAndProbe to the analysis train
@@ -66,6 +67,7 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
   //centrality setting
   task->SetCentralityEstimator("V0M");
 
+  task->SetMC(isMC);
 	//task->SetPhivCutRange(0.05,2.0);
 
   task->GetEventFilter()->AddCuts(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2

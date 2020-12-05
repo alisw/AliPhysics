@@ -210,9 +210,9 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
    
    // Function for obtaining the Hadron Contamination 
     
-   		//TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  // for -1 to 3 nSigma
+   		TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  // for -1 to 3 nSigma
    		
-   		TF1 *fHadCont = new TF1("fHadCont","5.23482e+00*TMath::Landau(x[0],1.34153e+01,3.32307e+00) + 4.35919e-02*TMath::Gaus(x[0], 1.00000e+00, 7.63529e-02)",1.0,10.0);  // for -0.5 to 3 nSigma
+   		//TF1 *fHadCont = new TF1("fHadCont","5.23482e+00*TMath::Landau(x[0],1.34153e+01,3.32307e+00) + 4.35919e-02*TMath::Gaus(x[0], 1.00000e+00, 7.63529e-02)",1.0,10.0);  // for -0.5 to 3 nSigma
    		 
 		task->SetHCFunction(fHadCont);
     

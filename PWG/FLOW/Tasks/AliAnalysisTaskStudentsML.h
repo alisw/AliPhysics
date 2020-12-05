@@ -68,6 +68,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t GlobalQualityAssurance(Int_t CentBin, AliMCEvent *aMCKineEvent);
   Bool_t TrackSelection(AliAODMCParticle *aMCtrack);
   Int_t SelectCentrality(AliAODEvent *aAODevent);
+  virtual void FisherYatesRandomizing(Int_t Mult, Int_t *RandomIndex); 
 
   //b) Method used to obtain particle weights
   virtual void CalculateWeight(Int_t CentBin, Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta);
@@ -137,6 +138,12 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetDCAxy(Bool_t Cut, Double_t Max)
   {this->bDCAxy=Cut;  this->fMaxDCAxy=Max;}
 
+  void SetChargeCut(Bool_t Cut, Bool_t Pos)
+  { this->bChargeCut=Cut; this->bChargePos=Pos; } 
+
+  void SetFisherYates(Bool_t DoFY, Float_t CutOff)
+  { this->bDoFisherYates=DoFY; this->fFisherYatesCutOff=CutOff; } 
+
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
 
@@ -198,6 +205,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TH1F *fChiSquareTPCHistogram[16][2]; 	//! 0: ChiSquare TPC Before Track Selection, 1: ChiSquare TPC After Track Selection
   TH1F *fDCAzHistogram[16][2]; 		//! 0: DCAz Before Track Selection, 1: DCAz After Track Selection
   TH1F *fDCAxyHistogram[16][2]; 	//! 0: DCAxy Before Track Selection, 1: DCAxy After Track Selection
+  TH1I *fChargeHistogram[16][2]; 	//! 0: Charge Before Track Selection, 1: Charge After Track Selection 
   TH1F *fCentralityHistogram[16]; 	//! Centrality After Corresponding Cut
   TH1F *fCentralityHistogramBefore;     //! Centrality Histogram before Centrality selection
 
@@ -243,6 +251,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t bChiSquareTPC;			// Bool to apply cuts on chi square TPC (default kTRUE)
   Bool_t bDCAz;				// Bool to apply cuts on DCAz (default kTRUE)
   Bool_t bDCAxy;			// Bool to apply cuts on DCAxy (default kTRUE)
+  Bool_t bChargeCut;			// Bool to apply cut on charge (default kFALSE) 
+  Bool_t bChargePos;			// Bool to select only positive charge (if kTRUE) and negative if (kFALSE). Only relevant if bChargeCut==kTRUE 
   Double_t fMinEtaCut;               	// min eta cut (default -0.8)
   Double_t fMaxEtaCut;               	// max eta cut (default 0.8)
   Double_t fMinPtCut;               	// min pt cut (default 0.2)
@@ -254,6 +264,10 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Double_t fMaxChiSquareTPC;		// Maximal Chi Square TPC (default 4.0)
   Double_t fMaxDCAz;			// Maximal DCAz (default 3.2 cm)
   Double_t fMaxDCAxy;			// Maximal DCAxy (default 2.4 cm)
+
+  //Fisher-Yales
+  Bool_t bDoFisherYates;		//if kTRUE: Do Fisher Yates Mixing of phi, pt and eta arrays after track selection (default: kFALSE)
+  Float_t fFisherYatesCutOff;		//How much percentage of the orginal particles are kept, e.g. if 0.7 only 70% of the current particles are kept for analysis
 
   //Weights
   Bool_t bUseWeights; 
@@ -293,6 +307,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
+  TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 	// if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
   Bool_t bDifferentCharge; 	 	// used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
@@ -308,7 +323,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,34); 
+  ClassDef(AliAnalysisTaskStudentsML,38); 
 
 };
 

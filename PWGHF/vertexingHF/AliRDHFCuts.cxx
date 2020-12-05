@@ -507,18 +507,18 @@ Bool_t AliRDHFCuts::IsEventSelectedForCentrFlattening(Float_t centvalue){
 void AliRDHFCuts::SetupPID(AliVEvent *event) {
   // Set the PID response object in the AliAODPidHF
   // in case of old PID sets the TPC dE/dx BB parameterization
-
+  
+  Bool_t isMC=kFALSE;
   if(fPidHF){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
     if(fPidHF->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidHF->SetPidResponse(pidResp);
     }
     if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
     if(fPidHF->GetOldPid()) {
 
-      Bool_t isMC=kFALSE;
       TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
       if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
@@ -542,8 +542,15 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
     }
 
-    if(fEnableNsigmaTPCDataCorr) {
-      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
+    if(fEnableNsigmaTPCDataCorr && !isMC) {
+
+      Bool_t isPass1 = kFALSE;
+      TTree *treeAOD = inputHandler->GetTree();
+      TString currentFile = treeAOD->GetCurrentFile()->GetName();
+      if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+        isPass1 = kTRUE;
+
+      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
     }
   }
 }

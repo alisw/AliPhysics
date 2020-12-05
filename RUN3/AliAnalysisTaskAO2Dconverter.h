@@ -38,7 +38,7 @@ public:
   virtual void FinishTaskOutput();
   virtual void Terminate(Option_t *option);
 
-  void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
+  void SetBasketSize(int events, int tracks) { fBasketSizeEvents = events; fBasketSizeTracks = tracks; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
@@ -127,20 +127,22 @@ private:
   
   Int_t fEventCount = 0; //! event count
   Bool_t fTfInitialized = false; //!
+  Int_t fTFCount = 0; //! count TF written
 
   // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
   void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
-  void InitTF(UInt_t tfId);           // Initialize output subdir and trees for TF tfId
+  void InitTF(ULong64_t tfId);           // Initialize output subdir and trees for TF tfId
   void FillEventInTF();
   void FinishTF();
 
   // Task configuration variables
   TString fPruneList = "";                // Names of the branches that will not be saved to output file
   Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
-  int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
+  int fBasketSizeEvents = 1000000;   // Maximum basket size of the trees for events
+  int fBasketSizeTracks = 10000000;   // Maximum basket size of the trees for tracks
 
   TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
@@ -499,7 +501,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 11);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 13);
 };
 
 #endif

@@ -126,27 +126,40 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   // *****************************************************************************************************
   // ******************** pp 13 TeV cuts             *****************************************************
   // *****************************************************************************************************
-  if (trainConfig == 1){   // EDC
-    cuts.AddCutHeavyMesonSigma("00010113","4117912067032230000","0163103100000050","111111111111110");
+  if (trainConfig == 1){   // PHOS Standard
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111311010");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","00110001111311010");
   } else if (trainConfig == 2){   // PHOS
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011111111111010");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011111111100000");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011111112200000");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011001111100000");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20111211111311010"); // inverted chi2 ITS cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001112311010"); // nsigma TPC = 2
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","00110001112311010"); // nsigma TPC = 2 nur TPC
   } else if (trainConfig == 3){   // PHOS
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("00010113","244661907a09cc00000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("00010113","244661904a09cc00000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra01cc00000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra07cc00000","0163103100000010","111111111111110");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20110000011311010");
+    cuts.AddCutHeavyMesonSigma("00010113","244661904a09cc00000","0163103100000010","20110000011311010");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra01cc00000","0163103100000010","20110000011311010");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra07cc00000","0163103100000010","20110000011311010");
   } else if (trainConfig == 4){   // PHOS DCA-Variation
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011110011100000");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011111111100000");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","011112211100000");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110000011311010"); // no DCA
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110002211311010"); // low DCA
+  } else if (trainConfig == 5){   // PHOS Pion mass-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111322010"); // tighter mass cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111342010"); // on left side tighter
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111333010"); // looser mass cut
+  } else if (trainConfig == 6){   // PHOS Opening angle-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111311030"); // tighter cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111311040"); // tightest cut
+  } else if (trainConfig == 7){   // Background describtion
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20110001111311011"); // changed to pion rotation  
   } else if (trainConfig == 10){    // PHI7
-    cuts.AddCutHeavyMesonSigma("00062113","24466190pa01cc00000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("0008e113","4117912067032230000","0163103100000010","111111111111110");
-    cuts.AddCutHeavyMesonSigma("0008d113","4117912067032230000","0163103100000010","111111111111110");
+    cuts.AddCutHeavyMesonSigma("00062113","24466190pa09cc00000","0163103100000010","20110001111311010");
+
+
+
+  } else if (trainConfig == 100){    // EDC
+    cuts.AddCutHeavyMesonSigma("00010113","4117912067032230000","0163103100000050","2011000011111010");
+  } else if (trainConfig == 101){    // PHI7
+    cuts.AddCutHeavyMesonSigma("0008e113","4117912067032230000","0163103100000010","2011000011111010");
+    cuts.AddCutHeavyMesonSigma("0008d113","4117912067032230000","0163103100000010","2011000011111010");
   }
 
   if(!cuts.AreValid()){
@@ -286,7 +299,6 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetSigmaCutList(numberOfCuts,SigmaCutList);
   // task->SetCorrectionTaskSetting(corrTaskSetting);
-  // task->SetQTUpperCutPodolanskiPlot(0.3);
 
 
   //connect containers

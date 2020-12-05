@@ -1119,6 +1119,18 @@ void AddTask_GammaConvV1_pPb(
     cuts.AddCutPCM("88010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 80-100
     cuts.AddCutPCM("89010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 90-100
 
+  // R bin variations only with MBWs
+  } else if (trainConfig == 1140) {
+    cuts.AddCutPCM("80010113", "0d200009f9730000dge0404000", "0152103500000000"); // default eta<0.8 5-180cm
+  } else if (trainConfig == 1141) {
+    cuts.AddCutPCM("80010113", "0dh00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 5-13cm
+    cuts.AddCutPCM("80010113", "0di00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 13-33.5cm
+    cuts.AddCutPCM("80010113", "0dj00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 33.5-55cm
+  } else if (trainConfig == 1142) {
+    cuts.AddCutPCM("80010113", "0dk00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 55-72cm
+    cuts.AddCutPCM("80010113", "0dl00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 72-95cm
+    cuts.AddCutPCM("80010113", "0dg00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 95-180cm
+
   } else if (trainConfig == 1150) {
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000", "4117901050032230000"); // new default for 8TeV+triggers
   } else if (trainConfig == 1151) {

@@ -112,6 +112,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
+  fMinPtHard(-1e10),
+  fMaxPtHard(1e10),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
@@ -233,6 +235,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
+  fMinPtHard(-1e10),
+  fMaxPtHard(1e10),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
@@ -635,6 +639,18 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     RunChanged(fRunNumber);
     if(fCountDownscaleCorrectedEvents) PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
+ 
+  // Cut on the min. and max. pt-hard:
+  // This is of relevance in particular when combining
+  // min. bias events with pt-hard events by replacing low
+  // pt-hard bins with min. bias events, where in min.
+  // bias events with large pt-hard need to be removed in
+  // order to not double count them when merging with the
+  // pt-hard production in its bias-free region.
+  // This should not be part of the normal event selection
+  // as event counting for the cross section normalization
+  // depends on it.
+  if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
 
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
@@ -653,6 +669,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     }
     */
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
+    fHistTrials->Fill(fPtHardBin);
+    fHistEvents->Fill(fPtHardBin);
   }
 
   if(fIsHepMC && fHepMCHeader) {
@@ -952,12 +970,12 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
   fUseXsecFromHeader = false;
   PythiaInfoFromFile(curfile->GetName(), xsection, trials);
 
-  fHistTrials->Fill(fPtHardBinGlobal, trials);
   if(!fUseXsecFromHeader){
     AliDebugStream(1) << "Using cross section from file pyxsec.root" << std::endl;
     fHistXsection->Fill(fPtHardBinGlobal, xsection);
+    fHistTrials->Fill(fPtHardBinGlobal, trials);
+    fHistEvents->Fill(fPtHardBinGlobal, nevents);
   }
-  fHistEvents->Fill(fPtHardBinGlobal, nevents);
 
   return kTRUE;
 }
@@ -1717,6 +1735,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     cont->NextEvent(InputEvent());
   }
 
+  UserRetrieveEventObjects();
+
   return kTRUE;
 }
 
@@ -2032,7 +2052,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
   MCProductionType_t prodtype = MCProductionType_t::kNoMC;
   std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4"};
-  std::vector<TString> datasetsPthard20HepMC = {"lhc20j3"};
+  std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
   std::vector<TString> datasetsMBPythia = {

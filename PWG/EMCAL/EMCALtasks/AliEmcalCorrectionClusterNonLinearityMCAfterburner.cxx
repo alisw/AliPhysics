@@ -96,7 +96,6 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 
   // loop over clusters
   AliVCluster *clus = 0;
-  AliTLorentzVector clusVec;
   AliClusterContainer * clusCont = 0;
   TIter nextClusCont(&fClusterCollArray);
 
@@ -112,11 +111,7 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
 
       for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
         clus    = static_cast<AliVCluster *>(clusIterator->second);
-        clusVec = static_cast<AliTLorentzVector>(clusIterator->first);
-
         if (!clus->IsEMCAL()) continue;
-        //currently only for EMCal clusters. Skip DCal clusters
-        if (clusVec.Phi_0_2pi() > 4.) {continue;}
 
         Double_t oldEnergy = clus->GetNonLinCorrEnergy();
         Double_t newEnergy = -1;
@@ -153,22 +148,22 @@ Bool_t AliEmcalCorrectionClusterNonLinearityMCAfterburner::Run()
        // like function 1 but divided by constant factor
        if (fNonLinearityAfterburnerFunction == 4) {
           newEnergy = oldEnergy;
-          newEnergy/= fNLAfterburnerPara[0] + exp( fNLAfterburnerPara[1] + (fNLAfterburnerPara[2] * newEnergy));
+
+          newEnergy/= fNLAfterburnerPara[0] + TMath::Exp( fNLAfterburnerPara[1] + (fNLAfterburnerPara[2] * newEnergy));
           newEnergy/= fNLAfterburnerPara[3];
           AliDebugStream(2) << "Using non-lin afterburner function No.4" << std::endl;
           AliDebugStream(2) << "old Energy: "<< oldEnergy<<", new Energy: "<<newEnergy<< std::endl;
-
        }
 
         //correction only works in a specific momentum range
         if (oldEnergy > 0.300) {
-          clus->SetNonLinCorrEnergy(newEnergy);
           if (fSetForceClusterE) clus->SetE(newEnergy);
+          clus->SetNonLinCorrEnergy(newEnergy);
         }
         else {
           AliWarning(Form("Cluster energy out of range for correction!, E = %f \n",oldEnergy));
-          clus->SetNonLinCorrEnergy(-100);
           if (fSetForceClusterE) clus->SetE(-100);
+          clus->SetNonLinCorrEnergy(-100);
         }
 
         // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
@@ -381,14 +376,14 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
     case kPCM_EMCal:
       // globally valid Run2 fine tuning for the testbeam+shaper corrected clusters
       if(!namePeriod.CompareTo("kTestBeamFinalMCRun2")) {
-        fNonLinearityAfterburnerFunction = 1;
+        fNonLinearityAfterburnerFunction = 4;
         //There are no extracted parameters yet
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0.987912;
         fNLAfterburnerPara[1] = -2.94105;
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
-        fNLAfterburnerPara[3] = 0;
+        fNLAfterburnerPara[3] = 1.0;
         fNLAfterburnerPara[4] = 0;
         fNLAfterburnerPara[5] = 0;
       }
@@ -405,14 +400,14 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[5] = 0;
       }
       else if( !namePeriod.CompareTo("kTestBeamFinalMCRun1")) {
-        fNonLinearityAfterburnerFunction = 1;
+        fNonLinearityAfterburnerFunction = 4;
         //There are no extracted parameters yet
         //Iteration-1 paramters
         fNLAfterburnerPara[0] = 0.987912;
         fNLAfterburnerPara[1] = -2.94105;
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
-        fNLAfterburnerPara[3] = -0.0125; // Run1 additional correction factor of 1.25%
+        fNLAfterburnerPara[3] = 1.0125; // Run1 additional correction factor of 1.25%
         fNLAfterburnerPara[4] = 0;
         fNLAfterburnerPara[5] = 0;
       }

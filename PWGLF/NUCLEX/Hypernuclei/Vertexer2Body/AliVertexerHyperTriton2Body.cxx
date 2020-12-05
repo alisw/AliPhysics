@@ -168,7 +168,6 @@ void AliVertexerHyperTriton2Body::CreateV0(const AliESDVertex *vtxT3D, int nidx,
         AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
     }
 
-
     AliESDv0 vertex(nt, nidx, pt, pidx);
 
     //Experimental: refit V0 if asked to do so
@@ -266,7 +265,8 @@ void AliVertexerHyperTriton2Body::CreateV0(const AliESDVertex *vtxT3D, int nidx,
     fV0s.push_back(vertex);
 };
 
-std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0verticesEM(AliESDEvent *event, AliPIDResponse *pid, std::vector<AliESDtrack*>& he3, std::vector<AliESDtrack*>& antihe3) {
+std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0verticesEM(AliESDEvent *event, AliPIDResponse *pid, std::vector<AliESDtrack *> &he3, std::vector<AliESDtrack *> &antihe3)
+{
     fV0s.clear();
 
     const AliESDVertex *vtxT3D = event->GetPrimaryVertex();
@@ -451,7 +451,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             for (auto &nidx : tracks[1][index]) /// We start with antihypertriton
             {
                 AliESDtrack *ntrk = event->GetTrack(nidx);
-                
+
                 if (!ntrk)
                     continue;
                 if (fRotation && index == 1)
@@ -489,24 +489,22 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
     }
     else
     {
-        for (int index{0}; index < 2; ++index)
+        for (int charge{0}; charge < 2; ++charge)
         {
-            AliPID::EParticleType pPart = index == 1 ? AliPID::kHe3 : AliPID::kPion;
-            AliPID::EParticleType nPart = index == 1 ? AliPID::kPion : AliPID::kHe3;
-            for (int charge{0}; charge < 2; ++charge)
+            AliPID::EParticleType pPart = AliPID::kPion;
+            AliPID::EParticleType nPart = AliPID::kHe3;
+
+            for (auto &nidx : tracks[charge][0])
             {
-                for (auto &nidx : tracks[charge][index])
+                AliESDtrack *ntrk = event->GetTrack(nidx);
+                if (!ntrk)
+                    continue;
+                for (auto &pidx : tracks[charge][1])
                 {
-                    AliESDtrack *ntrk = event->GetTrack(nidx);
-                    if (!ntrk)
+                    AliESDtrack *ptrk = event->GetTrack(pidx);
+                    if (!ptrk)
                         continue;
-                    for (auto &pidx : tracks[charge][index > 0 ? 0 : 1])
-                    {
-                        AliESDtrack *ptrk = event->GetTrack(pidx);
-                        if (!ptrk)
-                            continue;
-                        CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pPart, nPart);
-                    }
+                    CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pPart, nPart);
                 }
             }
         }
@@ -586,25 +584,23 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices3Body(std::v
     }
     else
     {
-        for (int index{0}; index < 2; ++index)
+        for (int charge{0}; charge < 2; ++charge)
         {
-            for (int charge{0}; charge < 2; ++charge)
+            for (int nidx = 0; nidx < tracks[charge][0].size(); nidx++)
             {
-                for (int nidx = 0; nidx < tracks[0][index].size(); nidx++)
-                {
-                    auto ntrk = tracks[0][index][nidx];
+                auto ntrk = tracks[charge][0][nidx];
+                if (!ntrk)
                     continue;
 
-                    for (int pidx = 0; pidx < tracks[1][index == 1 ? 0 : 1].size(); pidx++)
-                    {
-                        auto ptrk = tracks[1][index == 1 ? 0 : 1][pidx];
-                        if (!ptrk)
-                            continue;
-                        AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
-                        AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
+                for (int pidx = 0; pidx < tracks[charge][1].size(); pidx++)
+                {
+                    auto ptrk = tracks[charge][1][pidx];
+                    if (!ptrk)
+                        continue;
+                    AliPID::EParticleType pParticle = std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
+                    AliPID::EParticleType nParticle = std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5 ? AliPID::kHe3 : AliPID::kPion;
 
-                        CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pParticle, nParticle);
-                    }
+                    CreateV0(vtxT3D, nidx, ntrk, pidx, ptrk, pParticle, nParticle);
                 }
             }
         }

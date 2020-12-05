@@ -603,6 +603,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetMinVertexContrib(Int_t min)                        { fMinVertexContrib = min                             ; }
+  void                        SetMinPtHard(double minpthard)                        { fMinPtHard         = minpthard                      ; }
+  void                        SetMaxPtHard(double maxpthard)                        { fMaxPtHard         = maxpthard                      ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
@@ -1122,6 +1124,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual void				        UserFileChanged()					{}
 
   /**
+   * @brief Virtual method for user code to retrieve event objects used in their task
+   */
+  virtual void                UserRetrieveEventObjects() {}
+
+  /**
    * @brief Function filling histograms
    *
    * This function optionally fills histograms created by the users. Can
@@ -1279,6 +1286,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fEventPlaneVsEmcal;          ///< select events which have a certain event plane wrt the emcal
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
+  Double_t                    fMinPtHard;                  ///< minimum pt-hard value
+  Double_t                    fMaxPtHard;                  ///< maximum pt-hard value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
@@ -1366,7 +1375,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 20) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 21) // EMCAL base analysis task
   /// \endcond
 };
 
