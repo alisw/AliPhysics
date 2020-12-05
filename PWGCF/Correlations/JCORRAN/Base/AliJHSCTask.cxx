@@ -101,7 +101,7 @@ void AliJHSCTask::UserCreateOutputObjects()
 
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
 	fTwoMultiAna = new AliAnalysisAnaTwoMultiCorrelations("TwoMultiCorrelations",kFALSE);
-	fTwoMultiAna->SetJWeights(fIsMC, fJCatalystTask->GetEffFilterBit());
+	fTwoMultiAna->SetJWeights(!fIsMC, fJCatalystTask->GetEffFilterBit());
 	//OpenFile(1);
 	//fOutput = gDirectory;
 	//fOutput->cd();
