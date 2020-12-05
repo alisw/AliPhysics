@@ -2164,7 +2164,7 @@ void AliAnalysisTaskEMCALTimeCalib::CorrectCellTimeVsE(Float_t energy, Float_t &
   } else {
     offset = GetLowGainSlewing(energy);
   }
-  std::cout<<"The offset is: "<<offset<<" And the time is: "<<celltime<<" Energy: "<<energy<<std::endl;
+  //std::cout<<"The offset is: "<<offset<<" And the time is: "<<celltime<<" Energy: "<<energy<<std::endl;
   celltime -= offset;
 
 }
