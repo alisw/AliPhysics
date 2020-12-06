@@ -1041,6 +1041,8 @@ Bool_t AliAnalysisTaskFlowSquareBracket::InitializeTask()
   // called once on beginning of task (within UserCreateOutputObjects method)
   // check if task parameters are specified and valid
   // returns kTRUE if succesfull
+
+  // Change test
   // *************************************************************  
   if (fAddTwoN1.size()!=0){
   for(Size_t i(0); i < fAddTwoN1.size(); i++) {
