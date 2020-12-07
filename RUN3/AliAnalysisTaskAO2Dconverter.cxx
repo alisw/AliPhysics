@@ -343,8 +343,14 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   TString title=pvtx->GetTitle();
   
-  // bypass vertex selection for muon UPC triggers with at least one muon track
-  if (!(fESD->GetFiredTriggerClasses().Contains("CMUP") && fESD->GetNumberOfMuonTracks()>0)) {
+  // bypass vertex selection for muon triggers with at least one muon track
+  // muon triggers without muon tracks will be rejected in the vertex selection
+  Bool_t applyVertexSelection = kTRUE;
+  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("-MUON")) applyVertexSelection = kFALSE; // MUON cluster
+  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("-MUFAST")) applyVertexSelection = kFALSE; // MUFAST cluster
+  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("CMUP")) applyVertexSelection = kFALSE; // MUON UPC including semiforward
+
+  if (applyVertexSelection) {
     if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
     if(pvtx->GetNContributors()<2) return;
   }
@@ -870,8 +876,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (i >= 10)
       AliFatal("Index is too high!");
     Float_t mom = (TOFResponse.GetMinMom(i) + TOFResponse.GetMaxMom(i)) / 2.f;
-    eventTime[i] = TOFResponse.GetStartTime(mom);
-    eventTimeRes[i] = TOFResponse.GetStartTimeRes(mom);
+    eventTime[i] = TOFResponse.GetStartTime(mom)*1.e-3; // ps to ns
+    eventTimeRes[i] = TOFResponse.GetStartTimeRes(mom)*1.e-3; // ps to ns
     eventTimeWeight[i] = 1./(eventTimeRes[i]*eventTimeRes[i]);
 
     //PH The part below is just a place holder
