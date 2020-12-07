@@ -453,6 +453,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
+	  if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           if ( int(TMath::Abs(pdgdecay)/100.) == 4 || int(TMath::Abs(pdgdecay)/1000.) == 4 ) {
             if(p->PdgCode()==4) {
@@ -476,6 +477,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       
 	int num = p->GetMother();
 	AliVParticle *mom = fMcEvent->GetTrack ( num );
+	if(!mom) continue;
 	int ppid = TMath::Abs( mom->PdgCode() );
 
 	// fill the single electron histogram, if mother is charm and doughter is electron
@@ -490,15 +492,18 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	  Int_t indexx_i = mom->GetMother(); // First mother of D
 	  while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
 	    gm_i = fMcEvent->GetTrack ( indexx_i );
-	    int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	    if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	      is_beauty2charm = kTRUE;
-	    }
-	    if(pid_gm_i==4){
-	      is_cquark = kTRUE;
-	      //icquark = indexx_i;
-	    }
+	    if(gm_i) {
+	      int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	      if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+		is_beauty2charm = kTRUE;
+	      }
+	      if(pid_gm_i==4){
+		is_cquark = kTRUE;
+		//icquark = indexx_i;
+	      }
 	    indexx_i = gm_i->GetMother(); //
+	    }
+	    else indexx_i = -1;
 	  }
 	}
 	if(is_charm && !is_beauty2charm) {
@@ -602,6 +607,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
+	  if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           //printf("Mesons %d and pdg %d, index %d\n",d,pdgdecay,d);
           if ( int(TMath::Abs(pdgdecay)/100.) == 4 || int(TMath::Abs(pdgdecay)/1000.) == 4 ) {
@@ -632,6 +638,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
             for(int dd=kk1; dd <= kk2; dd++) {
               if(dd>0){
                 AliVParticle *ddecay = fMcEvent->GetTrack(dd);
+		if(!ddecay) continue;
                 int pdgddecay = ddecay->PdgCode();
                 //printf("Leptons %d and pdg %d, IsPrimary %d\n",dd,pdgddecay,ddecay->IsPrimary());
                 if ( int(TMath::Abs(pdgddecay)) == 11 ) {
@@ -664,6 +671,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 		  for(int ddd=kkk1; ddd <= kkk2; ddd++) {
 		    if(ddd>0){
 		      AliVParticle *dddecay = fMcEvent->GetTrack(ddd);
+		      if(!dddecay) continue;
 		      int pdgdddecay = dddecay->PdgCode();
 		      //printf("New Leptons %d and pdg %d, IsPrimary %d\n",ddd,pdgdddecay,dddecay->IsPrimary());
 		      if(pdgdddecay==11) {
@@ -753,20 +761,22 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       Int_t indexx_i = p->GetMother(); // First mother of D
       while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
 	gm_i = fMcEvent->GetTrack ( indexx_i );
-	int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	//printf("First mother %d with pdg %d\n",indexx_i,pid_gm_i);
-	if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	  is_DfromBmeson = kTRUE;
-	}
-	// Take the last open-charmed hadrons in the chain
-	if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	  pt_Dmeson = gm_i->Pt();
-	}
-	if((pid_gm_i==4) && (pt_cquark<0.)){
-	  //i_c_quark = indexx_i;
-	  pt_cquark = gm_i->Pt();
-	}
-	indexx_i = gm_i->GetMother(); //
+	if(gm_i) {
+	  int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	  //printf("First mother %d with pdg %d\n",indexx_i,pid_gm_i);
+	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	    is_DfromBmeson = kTRUE;
+	  }
+	  // Take the last open-charmed hadrons in the chain
+	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	    pt_Dmeson = gm_i->Pt();
+	  }
+	  if((pid_gm_i==4) && (pt_cquark<0.)){
+	    //i_c_quark = indexx_i;
+	    pt_cquark = gm_i->Pt();
+	  }
+	  indexx_i = gm_i->GetMother(); //
+	} else indexx_i = -1;
       }
     }
     
@@ -825,6 +835,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       
     int num = p->GetMother();
     AliVParticle *mom = fMcEvent->GetTrack ( num );
+    if(!mom) continue;
     int ppid = TMath::Abs( mom->PdgCode() );
 
     //double pxMom  = mom->Px();
@@ -848,18 +859,20 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       Int_t indexx_i = mom->GetMother(); // First mother of D
       while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
 	gm_i = fMcEvent->GetTrack ( indexx_i );
-	int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	  is_beauty2charm = kTRUE;
-	}
-	if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	  pt_Dmeson = gm_i->Pt();
-	}
-	if((pid_gm_i==4) && (pt_cquark < 0.)){
-	  //i_c_quark = indexx_i;
-	  pt_cquark = gm_i->Pt();
-	}
-	indexx_i = gm_i->GetMother(); //
+	if(gm_i) {
+	  int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	    is_beauty2charm = kTRUE;
+	  }
+	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	    pt_Dmeson = gm_i->Pt();
+	  }
+	  if((pid_gm_i==4) && (pt_cquark < 0.)){
+	    //i_c_quark = indexx_i;
+	    pt_cquark = gm_i->Pt();
+	  }
+	  indexx_i = gm_i->GetMother(); //
+	} else indexx_i = -1;
       }
     }
 
@@ -941,15 +954,15 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
   // 
   for(int i=1; i<nparticles;i++) {
     AliVParticle * p_i = fMcEvent->GetTrack(i);
-    int pid_i = p_i->PdgCode();
-
     if (!p_i) continue;
-    //if ( p_i->IsPrimary() ) continue;
+   
+    int pid_i = p_i->PdgCode();
     if( ! ((TMath::Abs( pid_i ) == 421) || (TMath::Abs( pid_i ) == 411) || (TMath::Abs( pid_i ) == 431)) ) continue;
 
     // Check not from beauty
     int num_i = p_i->GetMother();
     AliVParticle *mom_i = fMcEvent->GetTrack ( num_i );
+    if(!mom_i) continue;
     int ppid_i = TMath::Abs( mom_i->PdgCode());
     if ( int(TMath::Abs(ppid_i)/100.) == 5 || int(TMath::Abs(ppid_i)/1000.) == 5 ) continue;
 
@@ -972,6 +985,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
     for(int d=k1_i; d <= k2_i; d++) {
       if(d>0){
 	AliVParticle *decay = fMcEvent->GetTrack(d);
+	if(!decay) continue;
 	int pdgdecay = decay->PdgCode();
 	if(TMath::Abs(pdgdecay)==11) {
 	  decay->Momentum(ppoe_i);
@@ -982,15 +996,16 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
     for(int j=i+1; j<nparticles;j++) {
       AliVParticle * p_j = fMcEvent->GetTrack(j);
-      int pid_j = p_j->PdgCode();
+      if(!p_j) continue;
       
-      if (!p_j) continue;
+      int pid_j = p_j->PdgCode();
       //if ( p_j->IsPrimary() ) continue;
       if( ! ((TMath::Abs( pid_j ) == 421) || (TMath::Abs( pid_j ) == 411) || (TMath::Abs( pid_j ) == 431)) ) continue;
 
       // Check not from beauty
       int num_j = p_j->GetMother();
       AliVParticle *mom_j = fMcEvent->GetTrack ( num_j );
+      if(!mom_j) continue;
       int ppid_j = TMath::Abs( mom_j->PdgCode());
       if ( int(TMath::Abs(ppid_j)/100.) == 5 || int(TMath::Abs(ppid_j)/1000.) == 5 ) continue;
       
@@ -1018,6 +1033,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       for(int d=k1_j; d <= k2_j; d++) {
 	if(d>0){
 	  AliVParticle *decay = fMcEvent->GetTrack(d);
+	  if(!decay) continue;
 	  int pdgdecay = decay->PdgCode();
 	  if(TMath::Abs(pdgdecay)==11) {
 	    decay->Momentum(ppoe_j);
@@ -1056,19 +1072,19 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
   for(int i=1; i<nparticles;i++) {
     AliVParticle * p_i = fMcEvent->GetTrack(i);
-    int pid_i = p_i->PdgCode();
-
     if (!p_i) continue;
     if ( p_i->IsPrimary() ) continue;
+
+    int pid_i = p_i->PdgCode();
     if( ! (TMath::Abs( pid_i ) == 11) ) continue;
 
 
     for(int j=i+1; j<nparticles;j++) {
       AliVParticle * p_j = fMcEvent->GetTrack(j);
-      int pid_j = p_j->PdgCode();
-
       if (!p_j) continue;
       if ( p_j->IsPrimary() ) continue;
+
+      int pid_j = p_j->PdgCode();
       if( ! (TMath::Abs( pid_j ) == 11) ) continue;
 
       //-----------------------------------------
@@ -1127,6 +1143,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
       int num_i = p_i->GetMother();
       AliVParticle *mom_i = fMcEvent->GetTrack ( num_i );
+      if(!mom_i) continue;
       int ppid_i = TMath::Abs( mom_i->PdgCode() );
       double ppx_i  = mom_i->Px();
       double ppy_i  = mom_i->Py();
@@ -1135,6 +1152,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
       int num_j = p_j->GetMother();
       AliVParticle *mom_j = fMcEvent->GetTrack ( num_j );
+      if(!mom_j) continue;
       int ppid_j = TMath::Abs( mom_j->PdgCode() );
       double ppx_j  = mom_j->Px();
       double ppy_j  = mom_j->Py();
@@ -1155,17 +1173,19 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	Int_t indexx_i = mom_i->GetMother(); // First mother of D
 	while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
 	  gm_i = fMcEvent->GetTrack ( indexx_i );
-	  int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-	  if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-	    i_is_beauty2charm = kTRUE;
-	  }
-	  if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
-	    i_pt_D = gm_i->Pt();
-	  }
-	  if((pid_gm_i==4) && (i_pt_c < 0.)) {
-	    i_pt_c = gm_i->Pt();
-	  }
-	  indexx_i = gm_i->GetMother(); //
+	  if(gm_i) {
+	    int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	    if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	      i_is_beauty2charm = kTRUE;
+	    }
+	    if (((pid_gm_i>=400) && (pid_gm_i<=439)) || ((pid_gm_i>=4000) && (pid_gm_i<=4399))) {
+	      i_pt_D = gm_i->Pt();
+	    }
+	    if((pid_gm_i==4) && (i_pt_c < 0.)) {
+	      i_pt_c = gm_i->Pt();
+	    }
+	    indexx_i = gm_i->GetMother(); //
+	  } else indexx_i = -1;
 	}
 	if(i_is_beauty2charm == kTRUE) i_is_charm = kFALSE; // it is a charm that comes from beauty.
       }
@@ -1184,17 +1204,19 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	Int_t indexx_j = mom_j->GetMother(); // First mother of D
 	while (indexx_j > 0) { // recursive loop to check if it comes from beauty.
 	  gm_j = fMcEvent->GetTrack ( indexx_j );
-	  int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
-	  if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
-	    j_is_beauty2charm = kTRUE;
-	  }
-	  if (((pid_gm_j>=400) && (pid_gm_j<=439)) || ((pid_gm_j>=4000) && (pid_gm_j<=4399))) {
-	    j_pt_D = gm_j->Pt();
-	  }
-	  if((pid_gm_j==4) && (j_pt_c < 0.)){
-	    j_pt_c = gm_j->Pt();
-	  }
-	  indexx_j = gm_j->GetMother(); //
+	  if(gm_j){
+	    int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
+	    if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
+	      j_is_beauty2charm = kTRUE;
+	    }
+	    if (((pid_gm_j>=400) && (pid_gm_j<=439)) || ((pid_gm_j>=4000) && (pid_gm_j<=4399))) {
+	      j_pt_D = gm_j->Pt();
+	    }
+	    if((pid_gm_j==4) && (j_pt_c < 0.)){
+	      j_pt_c = gm_j->Pt();
+	    }
+	    indexx_j = gm_j->GetMother(); //
+	  } else indexx_j = -1;
 	}
 	if(j_is_beauty2charm == kTRUE) j_is_charm = kFALSE; // it is a charm that comes from beauty.
       }
