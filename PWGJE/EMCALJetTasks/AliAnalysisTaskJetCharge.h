@@ -1,39 +1,18 @@
-#ifndef ALIANALYSISTASKJETCharge_H
-#define ALIANALYSISTASKJETCharge_H
+#ifndef ALIANALYSISTASKJETCHARGE_H
+#define ALIANALYSISTASKJETCHARGE_H
 
-class TH1;
-class TH2;
-class TH3;
-class TH3F;
 class TTree;
-class THnSparse;
-class TClonesArray;
-class TArrayI;
 class AliAnalysisManager;
-class AliJetContainer;
-class AliEmcalJetFinder;
-class AliFJWrapper;
 
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliFJWrapper.h"
-#include "AliClusterContainer.h"
-#include <TChain.h>
-//#include <fastjet/PseudoJet.hh>
-//#include <fastjet/SharedPtr.hh>
-
 
 
 class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
  public:
-   AliEventCuts fEventCuts; // Event Cuts
 
 
 
 
-  enum JetShapeSub {
-    kNoSub = 0,
-    kConstSub = 1
-  };
 
   AliAnalysisTaskJetCharge();
   AliAnalysisTaskJetCharge(const char *name);
@@ -48,7 +27,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)  { fCentSelectOn = t; }
   void SetMinCentrality(Float_t t)         { fCentMin = t; }
   void SetMaxCentrality(Float_t t)         { fCentMax = t; }
-  void SetJetShapeSub(JetShapeSub t)       { fJetShapeSub = t; }
   void SetJetRadius(Double_t t)            { fJetRadius = t; }
 
  protected:
@@ -59,8 +37,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   // Essential variables
   // Jet container to be analysed: 0 for raw, 1 for subtracted
   Int_t                               fContainer;
-  // Jet subtraction method
-  JetShapeSub                         fJetShapeSub;
   // Jet lower Pt threshold
   Float_t                             fPtThreshold;
   // Switch on/off centrality selection
@@ -75,7 +51,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   // User histograms and output tree
   // Histograms first
 
-
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPhi;
   TH1F                                *fhJetEta;
@@ -87,7 +62,7 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
 
   // Here is the TTree
   TTree                               *fTreeJets;
-  // These are the branch variables; there are nBranches of them
+  // These are the branch variables; there are nBranchesJetCharge of them
   static const Int_t nBranchesJetCharge = 9;
   Double_t                            fTreeBranch[nBranchesJetCharge];
   TChain                              *pChain;
@@ -96,6 +71,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCharge(const AliAnalysisTaskJetCharge&);            // not implemented
   AliAnalysisTaskJetCharge &operator=(const AliAnalysisTaskJetCharge&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetCharge, 1)
+  ClassDef(AliAnalysisTaskJetCharge, 2)
 };
 #endif
