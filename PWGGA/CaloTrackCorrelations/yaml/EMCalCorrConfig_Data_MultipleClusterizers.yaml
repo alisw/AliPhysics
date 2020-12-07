@@ -1,4 +1,4 @@
-configurationName: "EMCal correction framework configuration for embedding MC"
+configurationName: "EMCal correction framework configuration for Run2 data using multiple clusterizers"
 pass: "pass1"
 
 inputObjects:
@@ -33,12 +33,16 @@ CellBadChannel_0cells:
 # Cell Energy Calib
 CellEnergy:
     createHistos: true
+    enableNewTempCalib: true
+    enableShaperCorrection: true
 CellEnergy_0cells:
     enabled: true
     
 # Cell Time Calib
 CellTimeCalib:
     createHistos: true
+    doCalibrateLowGain: true 
+    doCalibTimeEdep: false
 CellTimeCalib_0cells:
     enabled: true    
     
@@ -110,7 +114,7 @@ Clusterizer_V1ECell200:
 ClusterNonLinearity:
     setForceClusterE: true
     createHistos: true
-    nonLinFunct: kTestBeamFinalMC  
+    nonLinFunct: kTestBeamShaper  
 ClusterNonLinearity_V3ECell100:
     enabled: true
     clusterContainersNames:
