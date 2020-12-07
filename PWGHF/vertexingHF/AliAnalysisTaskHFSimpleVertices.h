@@ -139,6 +139,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistCovMatPrimVXX3Prong;    //!<!  histo with cov mat prim vert for the 3-prong candidate
   TH1F* fHistCovMatSecVXX3Prong;     //!<!  histo with cov mat sec vert for the 3-prong candidate
 
+  TH1F *fHistInvMassDs;              //!<!  histo with Ds->KKpi inv mass
+  TH1F *fHistPtDs;                   //!<!  histo with Ds pt
+  TH1F *fHistDecLenDs;               //!<!  histo with Ds decay length
+  TH1F *fHistCosPointDs;             //!<!  histo with Ds cosine of pointing angle
+
   TH1F *fHistInvMassLc;              //!<!  histo with LcpKpi+ inv mass
   TH1F *fHistPtLc;                   //!<!  histo with LcpKpi+ pt
   TH1F *fHistPtLcDau0;               //!<!  histo with LcpKpi+ prong pt
@@ -194,7 +199,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,10);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,11);
 };
 
 
