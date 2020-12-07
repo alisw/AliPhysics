@@ -49,6 +49,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMultiBins(0),
   fNMultiBins(0),
   fUseNch(kFALSE),
+  fUseWeightsOne(kFALSE),
   fEta(0.8),
   fPIDResponse(0),
   fBayesPID(0),
@@ -95,6 +96,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMultiBins(0),
   fNMultiBins(0),
   fUseNch(kFALSE),
+  fUseWeightsOne(kFALSE),
   fEta(0.8),
   fPIDResponse(0),
   fBayesPID(0),
@@ -531,7 +533,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
   Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<4;i++) {
     if(!l_ptCount[i]) continue;
-    fmPT[i]->Fill(lMulti,l_ptsum[i]/l_ptCount[i],l_ptCount[i]);
+    Double_t fillWeight = fUseWeightsOne?1:l_ptCount[i];
+    fmPT[i]->Fill(lMulti,l_ptsum[i]/l_ptCount[i],fillWeight);
   }
   fMultiDist->Fill(lMulti);
   fV0MMulti->Fill(l_Cent);

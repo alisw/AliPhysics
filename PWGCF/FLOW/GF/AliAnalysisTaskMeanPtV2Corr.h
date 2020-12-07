@@ -71,6 +71,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
+  void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -86,6 +87,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
   Bool_t fUseNch;
+  Bool_t fUseWeightsOne;
   Double_t fEta;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
