@@ -45,6 +45,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void FillWeights(AliAODEvent*, Double_t vz, Double_t l_Cent);
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
+  void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPt(AliAODEvent*, Double_t vz, Double_t l_Cent);
   void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
@@ -69,6 +70,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
+  void SetUseNch(Bool_t newval) { fUseNch = newval; };
+  void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -83,6 +86,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Bool_t fUseNch;
+  Bool_t fUseWeightsOne;
   Double_t fEta;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
@@ -110,7 +115,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fSpectraList;
   TH2D **fSpectra;
   TList *fEfficiencyList;
-  TH2D **fEfficiency;
+  TH2D **fEfficiency; //TH2Ds for efficiency calculation
+  TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1D *fV0MMulti;
   Bool_t FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn);
   Bool_t FillCovariance(TProfile* target, AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt);
