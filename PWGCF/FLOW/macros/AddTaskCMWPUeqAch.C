@@ -1,5 +1,5 @@
 
-void AddTaskCMWPUeqAch(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0,Double_t fdcaxy=2.4, Double_t fdcaz=3.2, Double_t fChi2=4.0,Double_t fSlope=3.45, Float_t fConst=100, Bool_t bSkipPileUp=kFALSE, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
+void AddTaskCMWPUeqAch(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0,Double_t fdcaxy=2.4, Double_t fdcaz=3.2, Double_t fChi2=4.0,Double_t fSlope=3.45, Float_t fConst=100, Bool_t bSkipPileUp=kFALSE, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fEtaAchMin=-0.8, Double_t fEtaAchMax=0.8, Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,
 		Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,
 		Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,Double_t fEtaGapNeg=-0.1,Double_t fEtaGapPos=0.1,
 		TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",
@@ -78,6 +78,8 @@ void AddTaskCMWPUeqAch(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPt
   task_CMW->SetChi2Range(fChi2);
   task_CMW->SetEtaNeg(fEtaGapNeg);
   task_CMW->SetEtaPos(fEtaGapPos);
+  task_CMW->SetEtaRangeAchMin(fEtaAchMin);
+  task_CMW->SetEtaRangeAchMax(fEtaAchMax);
   /// HardCoded at the moment. Can also be passed as AddTask Argument.
   task_CMW->SetNSigmaCutTPC(nSigTPC);               // For PID only; Does not apply to Inclusive Charged Tracks
   task_CMW->SetNSigmaCutTPC(nSigTOF);       

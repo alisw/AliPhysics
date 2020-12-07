@@ -88,6 +88,8 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
+  void SetEtaRangeAchMin(Double_t eAchmn)              {this->fMinEtaAchCut   = eAchmn;}
+  void SetEtaRangeAchMax(Double_t eAchmx)              {this->fMaxEtaAchCut   = eAchmx;}
 
   //------ End of user defined function -------
 
@@ -140,6 +142,8 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
   Float_t              fMaxEtaCut;  //
+  Float_t              fMinEtaAchCut;  //
+  Float_t              fMaxEtaAchCut;  //
   Float_t             fTrkChi2Min;  //
   Float_t                fdEdxMin;  // 
   //Event Variables to be used:
@@ -241,6 +245,8 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
  
   
   TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
+  TH1D          *fHistNumChrgPos[10];       //! No. of positive charges
+  TH1D          *fHistNumChrgNeg[10];       //! No. of negative charges
   TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
   TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
 
