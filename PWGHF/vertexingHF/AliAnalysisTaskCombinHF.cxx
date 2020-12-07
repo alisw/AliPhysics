@@ -1152,9 +1152,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       fHistSelTrackDCAzPt->Fill(track->Pt(),ip[1]);
       Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
       if(isOK){
-	fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
-	fHistSelTrackFineDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
-	fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
+        fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+        fHistSelTrackFineDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+        fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
       }
       fHistSelTrackChi2ClusPt->Fill(track->Pt(),track->GetTPCchi2perCluster());
     }
@@ -1227,39 +1227,39 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
         }else{
           // OS candidate
           nFiltered++;
-	  Bool_t keepCand=kTRUE;
-	  if(fUseDzeroTopologicalCuts){
-	    AliAODRecoDecayHF2Prong* the2prong = new AliAODRecoDecayHF2Prong();
-	    the2prong->SetNProngsHF(2);
-	    the2prong->SetNProngs();
-	    UShort_t trId[2]={(UShort_t)trK->GetID(),(UShort_t)trPi1->GetID()};
-	    the2prong->SetProngIDs(2,trId);
-	    the2prong->SetIsFilled(0);
-	    if(!vHF->FillRecoCand(aod,the2prong)){
-	      keepCand=kFALSE;
-	    }else{
-	      Int_t topolCuts=fAnalysisCuts->IsSelected(the2prong,AliRDHFCuts::kAll,aod);
-	      if(topolCuts==0)  keepCand=kFALSE;
-	      else{
-		fHistd0xd0->Fill(the2prong->Prodd0d0());
-		fHistCosPoint->Fill(the2prong->CosPointingAngle());
-		fHistCosPointXY->Fill(the2prong->CosPointingAngleXY());
-		fHistDecLen->Fill(the2prong->DecayLength());
-		fHistNormDecLenXY->Fill(the2prong->NormalizedDecayLengthXY());
-	      }
-	    }
-	    AliAODVertex *vtxSec = (AliAODVertex*)the2prong->GetSecondaryVtx();
-	    if(vtxSec) delete vtxSec;
-	    delete the2prong;
-	  }
-	  if(keepCand){
-	    v2->AddDaughter(trK);
-	    v2->AddDaughter(trPi1);
-	    tmpRD2->SetSecondaryVtx(v2);
-	    Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,arrayMC,mcHeader,dgLabels);
-	    v2->RemoveDaughters();
-	    if(ok) nSelected++;
-	  }
+          Bool_t keepCand=kTRUE;
+          if(fUseDzeroTopologicalCuts){
+            AliAODRecoDecayHF2Prong* the2prong = new AliAODRecoDecayHF2Prong();
+            the2prong->SetNProngsHF(2);
+            the2prong->SetNProngs();
+            UShort_t trId[2]={(UShort_t)trK->GetID(),(UShort_t)trPi1->GetID()};
+            the2prong->SetProngIDs(2,trId);
+            the2prong->SetIsFilled(0);
+            if(!vHF->FillRecoCand(aod,the2prong)){
+              keepCand=kFALSE;
+            }else{
+              Int_t topolCuts=fAnalysisCuts->IsSelected(the2prong,AliRDHFCuts::kAll,aod);
+              if(topolCuts==0)  keepCand=kFALSE;
+              else{
+                fHistd0xd0->Fill(the2prong->Prodd0d0());
+                fHistCosPoint->Fill(the2prong->CosPointingAngle());
+                fHistCosPointXY->Fill(the2prong->CosPointingAngleXY());
+                fHistDecLen->Fill(the2prong->DecayLength());
+                fHistNormDecLenXY->Fill(the2prong->NormalizedDecayLengthXY());
+              }
+            }
+            AliAODVertex *vtxSec = (AliAODVertex*)the2prong->GetSecondaryVtx();
+            if(vtxSec) delete vtxSec;
+            delete the2prong;
+          }
+          if(keepCand){
+            v2->AddDaughter(trK);
+            v2->AddDaughter(trPi1);
+            tmpRD2->SetSecondaryVtx(v2);
+            Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,arrayMC,mcHeader,dgLabels);
+            v2->RemoveDaughters();
+            if(ok) nSelected++;
+          }
         }
       }else{
         for(Int_t iTr3=iTr2+1; iTr3<ntracks; iTr3++){
