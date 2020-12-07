@@ -101,7 +101,7 @@ using std::endl;
 
 #include "AliAnalysisTaskMcKnoUe.h"
 
-TF1* f_Eff;// efficiency for charged particles (2015 AA cuts) 
+TF1* f_Eff = 0;// efficiency for charged particles (2015 AA cuts)
 const Char_t * nameReg[3]={"NS","AS","TS"};
 const Int_t nchNbins = 100;
 Double_t nchbins[nchNbins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
@@ -275,7 +275,7 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 {
     if(fUseMC){
 	// parametrization of efficiency
-	f_Eff = 0;
+	//f_Eff = 0;
 	if(fIsPythia){
         Printf("Efficiency parametrization for Pythia");
 		f_Eff = new TF1("ch_Eff",
@@ -291,14 +291,14 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
     }
     else if (fIsppData){
         Printf("Efficiency parametrization for ppdata");
-        TF1 * f_Eff = 0;
+       // TF1 * f_Eff = 0;
         f_Eff = new TF1("fpara","(x<0.22)*([0]+[1]*x)+(x>=0.22&&x<0.4)*([2]+[3]*x+[4]*x*x)+(x>=0.4&&x<1.0)*([5]+[6]*x+[7]*x*x)+(x>=1.0&&x<5.5)*([8]+[9]*x)+(x>=5.5)*([10])",0.15,50);
         f_Eff->SetParameters(-7.70334e-01,6.32178e+00,3.10721e-01,2.02610e+00,-2.25005e+00,1.21232e+00,-1.27511e+00,5.88435e-01,5.02911e-01,4.16893e-02,7.09143e-01);
 
     }
     else if (fIspPbData){
         Printf("Efficiency parametrization for pPbdata");
-        TF1 * f_Eff = 0;
+      //  TF1 * f_Eff = 0;
         f_Eff = new TF1("fpara","(x<0.22)*([0]+[1]*x)+(x>=0.22&&x<0.4)*([2]+[3]*x+[4]*x*x)+(x>=0.4&&x<1.0)*([5]+[6]*x+[7]*x*x)+(x>=1.0&&x<5.5)*([8]+[9]*x)+(x>=5.5)*([10])",0.15,50);
         f_Eff->SetParameters(-7.68538e-01,6.33204e+00,3.46746e-01,1.92593e+00,-2.18512e+00,1.21339e+00,-1.25542e+00,5.69288e-01,5.20687e-01,3.01151e-02,6.92933e-01);
     }
@@ -789,7 +789,7 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 					GetDetectorResponse();
 
 				// UE analysis
-				if(fGenLeadPt>=fPtMin){
+				if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
 					GetBinByBinCorrections();
 					GetPtLeadingMisRecCorrection();
 				}
