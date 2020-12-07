@@ -343,12 +343,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   TString title=pvtx->GetTitle();
   
-  // bypass vertex selection for muon triggers with at least one muon track
-  // muon triggers without muon tracks will be rejected in the vertex selection
+  // bypass vertex selection for muon triggers
   Bool_t applyVertexSelection = kTRUE;
-  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("-MUON")) applyVertexSelection = kFALSE; // MUON cluster
-  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("-MUFAST")) applyVertexSelection = kFALSE; // MUFAST cluster
-  if (fESD->GetNumberOfMuonTracks()>0 && fESD->GetFiredTriggerClasses().Contains("CMUP")) applyVertexSelection = kFALSE; // MUON UPC including semiforward
+  if (fESD->GetFiredTriggerClasses().Contains("-MUON")) applyVertexSelection = kFALSE; // MUON cluster
+  if (fESD->GetFiredTriggerClasses().Contains("-MUFAST")) applyVertexSelection = kFALSE; // MUFAST cluster
+  if (fESD->GetFiredTriggerClasses().Contains("CMUP")) applyVertexSelection = kFALSE; // MUON UPC including semiforward
 
   if (applyVertexSelection) {
     if(pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ()) return;
