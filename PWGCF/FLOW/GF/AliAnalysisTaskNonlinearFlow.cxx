@@ -1063,10 +1063,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights()
   if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
 
   TList* listFlowWeights = nullptr;
-  bool fFlowRunByRunWeights = true;
-  bool fFlowPeriodWeights = false;
-  bool fFlowUse3Dweights = false;
-
+  
   TString fFlowWeightsTag = "";
   if(!fFlowWeightsTag.IsNull()) {
       // using weights Tag if provided (systematics)
@@ -1115,7 +1112,6 @@ Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, 
   // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
 
   Double_t dWeight = 1.0;
-  bool fFlowUse3Dweights = false;
   if(fFlowUse3Dweights) {
     Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
     dWeight = fh3Weights[species]->GetBinContent(iBin);

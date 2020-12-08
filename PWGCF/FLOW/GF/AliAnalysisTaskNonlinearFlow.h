@@ -341,6 +341,15 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double 					GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
 		double 					GetPtWeight(double pt, double eta, float vz, double runNumber);
                 Bool_t LoadWeights();
+
+                bool fFlowRunByRunWeights;
+                bool fFlowPeriodWeights;
+                bool fFlowUse3Dweights;
+
+                void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
+                void                    SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
+                void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+
                 Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
                 const char* ReturnPPperiod(const Int_t runNumber) const;
                 const char* GetSpeciesName(const PartSpecies species) const;
