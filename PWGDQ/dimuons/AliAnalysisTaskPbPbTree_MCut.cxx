@@ -100,11 +100,11 @@ TH1D*        fQy3mTrk[18];                    // <Qyn> tracklets
 TH1D*        fQx3sTrk[18];                    // sigma Qxn tracklets
 TH1D*        fQy3sTrk[18];                    // sigma Qyn tracklets
 
-Double_t CostHE(AliAODTrack*, AliAODTrack*);
-Double_t CostCS(AliAODTrack*, AliAODTrack*);
-Double_t PhiHE(AliAODTrack*, AliAODTrack*);
-Double_t PhiCS(AliAODTrack*, AliAODTrack*);
-Double_t CostEPnB(AliAODTrack*, AliAODTrack*, Double_t);
+Double_t CostHE_PbPb(AliAODTrack*, AliAODTrack*);
+Double_t CostCS_PbPb(AliAODTrack*, AliAODTrack*);
+Double_t PhiHE_PbPb(AliAODTrack*, AliAODTrack*);
+Double_t PhiCS_PbPb(AliAODTrack*, AliAODTrack*);
+Double_t CostEPnB_PbPb(AliAODTrack*, AliAODTrack*, Double_t);
 
 ClassImp(AliAnalysisTaskPbPbTree_MCut)
 //__________________________________________________________________________
@@ -697,12 +697,12 @@ void AliAnalysisTaskPbPbTree_MCut::UserExec(Option_t *)
 	 else fDimuMatch[numdimu]=-1;
    fDimuPhi[numdimu] = dimu->Phi();
 
-	 fDimuCostHE[numdimu] = CostHE(mu0,mu1);
-	 fDimuPhiHE[numdimu] = PhiHE(mu0,mu1);
-	 fDimuCostCS[numdimu] = CostCS(mu0,mu1);
-	 fDimuPhiCS[numdimu] = PhiCS(mu0,mu1);
-   fDimuCostEPnB[numdimu] = CostEPnB(mu0,mu1,fPsi2Trkl);
-   fDimuCostRPnB[numdimu] = CostEPnB(mu0,mu1,fPsi2RP);
+	 fDimuCostHE[numdimu] = CostHE_PbPb(mu0,mu1);
+	 fDimuPhiHE[numdimu] = PhiHE_PbPb(mu0,mu1);
+	 fDimuCostCS[numdimu] = CostCS_PbPb(mu0,mu1);
+	 fDimuPhiCS[numdimu] = PhiCS_PbPb(mu0,mu1);
+   fDimuCostEPnB[numdimu] = CostEPnB_PbPb(mu0,mu1,fPsi2Trkl);
+   fDimuCostRPnB[numdimu] = CostEPnB_PbPb(mu0,mu1,fPsi2RP);
 
 	 LabelOld1[numdimu]=i;
 	 LabelOld2[numdimu]=j;
@@ -1195,7 +1195,7 @@ Double_t AliAnalysisTaskPbPbTree_MCut::CalcCorPhi(Double_t phi, Double_t dPhi) c
 
 }
 //______________________________________________________________________________
-Double_t CostHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t CostHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   Double_t EBeam = 6500;
   Double_t mp = 0.93827231;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
@@ -1249,7 +1249,7 @@ Double_t CostHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
 }
 //______________________________________________________________________________
 //______________________________________________________________________________
-Double_t PhiHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
   Double_t EBeam = 6500.;
   if(EBeam <= 0){
@@ -1314,7 +1314,7 @@ Double_t PhiHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
    return phi;
 }
 //______________________________________________________________________________
-Double_t CostCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t CostCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   Double_t EBeam = 6500.;
   Double_t mp = 0.93827231;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
@@ -1376,7 +1376,7 @@ Double_t CostCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
   return cost;
 }
 //______________________________________________________________________________
-Double_t PhiCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Cosinus of the Collins-Soper polar decay angle
   Double_t EBeam = 6500.;
   if(EBeam <= 0){
@@ -1440,7 +1440,7 @@ Double_t PhiCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
    return phi;
 }
 //________________________________________________________________________
-Double_t CostEPnB(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
+Double_t CostEPnB_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
   printf("CosTheta in the Event-Plane reference frame --> No Boost of the Event-Plane vector in the J/psi rest frame \n");
   Double_t PxMu0      = Mu0 -> Px();
   Double_t PyMu0      = Mu0 -> Py();
