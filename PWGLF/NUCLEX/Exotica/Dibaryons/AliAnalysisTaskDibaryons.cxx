@@ -191,30 +191,30 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hOmegaV0CosPointingAngle);
 
   // Define QA plots for kinematic observables
-  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad);Counts",200,0,TMath::TwoPi());
   TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta;Counts",20,-1,+1);
-  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of #Lambda;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of daughter proton;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of daughter pion;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of #Lambda;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of daughter proton;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of daughter pion;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of #Lambda;#varphi (rad);Counts",200,0,TMath::TwoPi());
   TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of #Lambda;#eta;Counts",20,-1,1);
-  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of #bar{#Lambda};p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of #Xi^{-};p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor pion;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of daughter proton from #Xi;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of daughter pion from #Xi;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of #bar{#Lambda};p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of #Xi^{-};p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor pion;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of daughter proton from #Xi;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of daughter pion from #Xi;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of #Xi^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
   TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of #Xi^{-};#eta;Counts",20,-1,1);
-  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of #Xi^{+};p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of #Omega^{-};p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor kaon;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of daughter proton from #Omega;p_{T} (GeV/c);Counts",100,0,10);
-  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of daughter pion from #Omega;p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of #Xi^{+};p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of #Omega^{-};p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor kaon;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of daughter proton from #Omega;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of daughter pion from #Omega;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of #Omega^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
   TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of #Omega^{-};#eta;Counts",20,-1,1);
-  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of #Omega^{+};p_{T} (GeV/c);Counts",100,0,10);
+  TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of #Omega^{+};p_{T} (GeV/c);Counts",200,0,10);
 
   fOutput->Add(hProtonPt);
   fOutput->Add(hProtonPhi);
@@ -442,6 +442,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     UShort_t nTPCFindableCls = -1;
     Float_t ratio = -1.;
 
+    Bool_t isthereTPC = kFALSE;
+    Bool_t isthereTOF = kFALSE;
+
     Float_t nSigmaTPCproton      = -10.;
     Float_t nSigmaTOFproton      = -10.;
     Float_t nSigmaTPCTOFcombined = -10.;
@@ -471,6 +474,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       nTPCSharedCls   = esdTrack->GetTPCnclsS();
       nTPCFindableCls = esdTrack->GetTPCNclsF();
       if(nTPCFindableCls > 0) ratio = nTPCCrossedRows / nTPCFindableCls;
+
+      AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,esdTrack);
+      AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,esdTrack);
+      if(statusTPC == AliPIDResponse::kDetPidOk) isthereTPC = kTRUE;
+      if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
 
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
@@ -513,6 +521,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       nTPCFindableCls = aodTrack->GetTPCNclsF();
       if(nTPCFindableCls > 0) ratio = nTPCCrossedRows / nTPCFindableCls;
 
+      AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,globalTrack);
+      AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,globalTrack);
+      if(statusTPC == AliPIDResponse::kDetPidOk) isthereTPC = kTRUE;
+      if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
+
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kProton);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kProton);
       nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
@@ -532,17 +545,31 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(ratio           < 0.83) continue;
     if(nTPCSharedCls   > 0)    continue;
 
+    if(!isthereTPC) continue; // TPC signal must be there
+
     dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsP"))             ->Fill(totMom, dEdx);
 
-    if(charge > 0.) {
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
-      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
-    }
 
     // Proton PID
-    if(     totMom < 0.75 && TMath::Abs(nSigmaTPCproton) > 3.) continue;
-    else if(totMom > 0.75 && nSigmaTPCTOFcombined        > 3.) continue;
+    if(totMom < 0.75) { // for p < 0.75 use TPC only
+
+      if(charge > 0.) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))->Fill(totMom, nSigmaTPCproton);
+
+      if(TMath::Abs(nSigmaTPCproton) > 3.) continue;
+
+    } else if(totMom > 0.75) { // for p > 0.75 use TPC & TOF
+
+      if(!isthereTOF) continue; // TOF signal must be there
+
+      if(charge > 0.) {
+        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
+      }
+
+      if(nSigmaTPCTOFcombined > 3.) continue;
+
+    }
 
     if(charge > 0.) {
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))         ->Fill(DCAxy,DCAz);
@@ -656,6 +683,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
       if(esdV0->Pt() < 0.3) continue;
 
+      AliPIDResponse::EDetPidStatus statusPosTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
+      AliPIDResponse::EDetPidStatus statusNegTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
+      if(statusPosTPC != AliPIDResponse::kDetPidOk) continue;
+      if(statusNegTPC != AliPIDResponse::kDetPidOk) continue;
+
       // Daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion  )) < 5.0) isPosPion   = kTRUE;
@@ -728,6 +760,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
            !(nTrack->HasPointOnITSLayer(4)) && !(nTrack->HasPointOnITSLayer(5)) &&
            !(nTrack->GetTOFBunchCrossing() == 0)) continue;
       }
+
+      AliPIDResponse::EDetPidStatus statusPosTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
+      AliPIDResponse::EDetPidStatus statusNegTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
+      if(statusPosTPC != AliPIDResponse::kDetPidOk) continue;
+      if(statusNegTPC != AliPIDResponse::kDetPidOk) continue;
 
       // Daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
@@ -952,6 +989,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(pTrack   ->Pt() < 0.3) continue;
       if(nTrack   ->Pt() < 0.3) continue;
 
+      AliPIDResponse::EDetPidStatus statusBachTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,bachTrack);
+      AliPIDResponse::EDetPidStatus statusPosTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
+      AliPIDResponse::EDetPidStatus statusNegTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
+      if(statusBachTPC != AliPIDResponse::kDetPidOk) continue;
+      if(statusPosTPC  != AliPIDResponse::kDetPidOk) continue;
+      if(statusNegTPC  != AliPIDResponse::kDetPidOk) continue;
+
       // Bachelor and daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kPion)) < 4.0) isBachelorPion = kTRUE;
@@ -1045,6 +1089,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
            !(nTrack->HasPointOnITSLayer(4)) && !(nTrack->HasPointOnITSLayer(5)) &&
            !(nTrack->GetTOFBunchCrossing() == 0)) continue;
       }
+
+      AliPIDResponse::EDetPidStatus statusBachTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,bachTrack);
+      AliPIDResponse::EDetPidStatus statusPosTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
+      AliPIDResponse::EDetPidStatus statusNegTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
+      if(statusBachTPC != AliPIDResponse::kDetPidOk) continue;
+      if(statusPosTPC  != AliPIDResponse::kDetPidOk) continue;
+      if(statusNegTPC  != AliPIDResponse::kDetPidOk) continue;
 
       // Bachelor and daughter track PID using TPC
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
