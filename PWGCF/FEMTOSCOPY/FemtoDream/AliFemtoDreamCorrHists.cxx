@@ -736,6 +736,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                      SamemTvsMultEventName.Data(), 
                                                      225, 0, 7.5, multbins, 1, 
                                                      multbins + 1);
+          fSameEventmTvsMultDist[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fSameEventmTvsMultDist[Counter]->GetYaxis()->SetTitle("Mult. bin");
           fPairs[Counter]->Add(fSameEventmTvsMultDist[Counter]);
  
           TString MixedmTvsMultEventName = TString::Format("MEmTvsMultDist_Particle%d_Particle%d", iPar1,
@@ -744,6 +746,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                       MixedmTvsMultEventName.Data(), 
                                                       225, 0, 7.5, multbins, 1, 
                                                       multbins + 1);
+          fMixedEventmTvsMultDist[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+          fMixedEventmTvsMultDist[Counter]->GetYaxis()->SetTitle("Mult. bin");
           fPairs[Counter]->Add(fMixedEventmTvsMultDist[Counter]);
       } 
 
@@ -753,6 +757,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fSameEventmTDist[Counter] = new TH2F(SamemTEventName.Data(),
                                              SamemTEventName.Data(), *itNBins,
                                              *itKMin, *itKMax, 225, 0, 7.5);
+        fSameEventmTDist[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+        fSameEventmTDist[Counter]->GetYaxis()->SetTitle("#it{m}_{T} (GeV/#it{c}^{2})");
         fPairs[Counter]->Add(fSameEventmTDist[Counter]);
 
         TString MixedmTEventName = TString::Format("MEmTDist_Particle%d_Particle%d", iPar1,
@@ -760,6 +766,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fMixedEventmTDist[Counter] = new TH2F(MixedmTEventName.Data(),
                                               MixedmTEventName.Data(), *itNBins,
                                               *itKMin, *itKMax, 225, 0, 7.5);
+        fMixedEventmTDist[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
+        fMixedEventmTDist[Counter]->GetYaxis()->SetTitle("#it{m}_{T} (GeV/#it{c}^{2})");
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
 
       }
@@ -926,8 +934,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
 
         if (fillHists && fPtQA) {
           TString PtQAName = TString::Format("PtQA_Particle%d_Particle%d", iPar1, iPar2);
-          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0,
-                                        10, 50, 0, 10);
+          fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 100, 0,
+                                        10, 100, 0, 10);
           fPtQADist[Counter]->GetXaxis()->SetTitle(
               TString::Format("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
           fPtQADist[Counter]->GetYaxis()->SetTitle(
@@ -952,7 +960,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistSEPartTwo[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar2));
           fPtQADistSEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistSEPartTwo[Counter]);
 
@@ -974,7 +982,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  0, 7.5, multbins, 1,
                                                  multbins + 1);
           fPtQADistMEPartTwo[Counter]->GetXaxis()->SetTitle(
-              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+              TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar2));
           fPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle("Multiplicity");
           fPairQA[Counter]->Add(fPtQADistMEPartTwo[Counter]);
           
@@ -998,7 +1006,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  375, 0, 7.5);
           fKstarPtQADistSEPartTwo[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
           fKstarPtQADistSEPartTwo[Counter]->GetYaxis()->SetTitle(
-                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar2));
           fPairQA[Counter]->Add(fKstarPtQADistSEPartTwo[Counter]);
 
           TString KstarPtQAMEPartOneName = TString::Format("KstarPtMEPartOne_Particle%d_Particle%d",
@@ -1020,7 +1028,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                  375, 0, 7.5);
           fKstarPtQADistMEPartTwo[Counter]->GetXaxis()->SetTitle("#it{k}* (GeV/#it{c})");
           fKstarPtQADistMEPartTwo[Counter]->GetYaxis()->SetTitle(
-                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar1));
+                TString::Format("#it{p}_{T} Particle  %d (GeV/#it{c})", iPar2));
           fPairQA[Counter]->Add(fKstarPtQADistMEPartTwo[Counter]);
         }
 
