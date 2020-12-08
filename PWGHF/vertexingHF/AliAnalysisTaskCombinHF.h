@@ -82,6 +82,9 @@ public:
   void EnableHistosVsCosThetaStar(Bool_t opt){
     fFillHistosVsCosThetaStar=opt;
   }
+  void SetUseDzeroTopologicalCuts(Bool_t opt){
+    fUseDzeroTopologicalCuts=opt;
+  }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
   }
@@ -238,6 +241,11 @@ private:
   TH2F *fHistonSigmaTOFProton;        //!<! hist. of nSigmaTOF proton
   TH3F *fHistoPtKPtPiPtD;           //!<! hist. for propagation of tracking unc
   TH3F *fHistoPtKPtPiPtDSig;        //!<! hist. for propagation of tracking unc
+  TH1F *fHistd0xd0;                 //!<! hist. to check topological cuts
+  TH1F *fHistCosPoint;              //!<! hist. to check topological cuts
+  TH1F *fHistCosPointXY;            //!<! hist. to check topological cuts
+  TH1F *fHistDecLen;                //!<! hist. to check topological cuts
+  TH1F *fHistNormDecLenXY;          //!<! hist. to check topological cuts
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -246,6 +254,7 @@ private:
   Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
   Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
   Double_t fCutCosThetaStar;    /// cos(theta*) cut
+  Bool_t fUseDzeroTopologicalCuts;  /// flag to eanble D0 topological cuts
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
   Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
   Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
@@ -313,7 +322,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,37); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,38); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

@@ -44,6 +44,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisUtils.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskCombinHF.h"
 
 /// \cond CLASSIMP
@@ -133,6 +134,11 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistonSigmaTOFProton(0x0),
   fHistoPtKPtPiPtD(0x0),
   fHistoPtKPtPiPtDSig(0x0),
+  fHistd0xd0(0x0),
+  fHistCosPoint(0x0),
+  fHistCosPointXY(0x0),
+  fHistDecLen(0x0),
+  fHistNormDecLenXY(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -141,6 +147,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
+  fUseDzeroTopologicalCuts(kFALSE),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1.1),
   fCutCosPiDsLabFrame(1.1),
@@ -286,6 +293,11 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistonSigmaTOFProton(0x0),
   fHistoPtKPtPiPtD(0x0),
   fHistoPtKPtPiPtDSig(0x0),
+  fHistd0xd0(0x0),
+  fHistCosPoint(0x0),
+  fHistCosPointXY(0x0),
+  fHistDecLen(0x0),
+  fHistNormDecLenXY(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -294,6 +306,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
+  fUseDzeroTopologicalCuts(kFALSE),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1),
   fCutCosPiDsLabFrame(1.1),
@@ -443,6 +456,11 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistonSigmaTOFProton;
     delete fHistoPtKPtPiPtD;
     delete fHistoPtKPtPiPtDSig;
+    delete fHistd0xd0;
+    delete fHistCosPoint;
+    delete fHistCosPointXY;
+    delete fHistDecLen;
+    delete fHistNormDecLenXY;
   }
 
   delete fOutput;
@@ -789,6 +807,19 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   }
   fOutput->Add(fHistoPtKPtPiPtD);
   fOutput->Add(fHistoPtKPtPiPtDSig);
+
+  fHistd0xd0 = new TH1F("hd0xd0", " d_{0,K}^{xy} x d_{0}^{xy,#pi} (cm^{2})", 500,-0.1,0.1);
+  fHistCosPoint = new TH1F("hCosPoint", " ; cos(#theta_{P})", 110,-1.1,1.1);
+  fHistCosPointXY = new TH1F("hCosPointXY", " ; cos(#theta_{P}^{xy})", 110,-1.1,1.1);
+  fHistDecLen = new TH1F("hDecLen", " ; Decay Length (cm)", 200, 0.,2.);
+  fHistNormDecLenXY = new TH1F("hNormDecLenXY", " ; Normalized Decay Length XY (cm)", 100, 0.,20.);
+  if(fUseDzeroTopologicalCuts){
+    fOutput->Add(fHistd0xd0);
+    fOutput->Add(fHistCosPoint);
+    fOutput->Add(fHistCosPointXY);
+    fOutput->Add(fHistDecLen);
+    fOutput->Add(fHistNormDecLenXY);
+  }
   
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -1121,9 +1152,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       fHistSelTrackDCAzPt->Fill(track->Pt(),ip[1]);
       Bool_t isOK=track->PropagateToDCA(vtTrc,magField,99999.,d0z0,covd0z0);
       if(isOK){
-	fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
-	fHistSelTrackFineDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
-	fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
+        fHistSelTrackDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+        fHistSelTrackFineDCAxyPtAfterProp->Fill(track->Pt(),d0z0[0]);
+        fHistSelTrackDCAzPtAfterProp->Fill(track->Pt(),d0z0[1]);
       }
       fHistSelTrackChi2ClusPt->Fill(track->Pt(),track->GetTPCchi2perCluster());
     }
@@ -1145,7 +1176,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   Int_t dgLabels[3];
   fKaonTracks->Delete();
   fPionTracks->Delete();
-
+  AliAnalysisVertexingHF* vHF=new AliAnalysisVertexingHF();
 
   for(Int_t iTr1=0; iTr1<ntracks; iTr1++){
     AliAODTrack* trK=dynamic_cast<AliAODTrack*>(aod->GetTrack(iTr1));
@@ -1196,12 +1227,39 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
         }else{
           // OS candidate
           nFiltered++;
-          v2->AddDaughter(trK);
-          v2->AddDaughter(trPi1);
-          tmpRD2->SetSecondaryVtx(v2);
-          Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,arrayMC,mcHeader,dgLabels);
-          v2->RemoveDaughters();
-          if(ok) nSelected++;
+          Bool_t keepCand=kTRUE;
+          if(fUseDzeroTopologicalCuts){
+            AliAODRecoDecayHF2Prong* the2prong = new AliAODRecoDecayHF2Prong();
+            the2prong->SetNProngsHF(2);
+            the2prong->SetNProngs();
+            UShort_t trId[2]={(UShort_t)trK->GetID(),(UShort_t)trPi1->GetID()};
+            the2prong->SetProngIDs(2,trId);
+            the2prong->SetIsFilled(0);
+            if(!vHF->FillRecoCand(aod,the2prong)){
+              keepCand=kFALSE;
+            }else{
+              Int_t topolCuts=fAnalysisCuts->IsSelected(the2prong,AliRDHFCuts::kAll,aod);
+              if(topolCuts==0)  keepCand=kFALSE;
+              else{
+                fHistd0xd0->Fill(the2prong->Prodd0d0());
+                fHistCosPoint->Fill(the2prong->CosPointingAngle());
+                fHistCosPointXY->Fill(the2prong->CosPointingAngleXY());
+                fHistDecLen->Fill(the2prong->DecayLength());
+                fHistNormDecLenXY->Fill(the2prong->NormalizedDecayLengthXY());
+              }
+            }
+            AliAODVertex *vtxSec = (AliAODVertex*)the2prong->GetSecondaryVtx();
+            if(vtxSec) delete vtxSec;
+            delete the2prong;
+          }
+          if(keepCand){
+            v2->AddDaughter(trK);
+            v2->AddDaughter(trPi1);
+            tmpRD2->SetSecondaryVtx(v2);
+            Bool_t ok=FillHistos(pdgOfD,nProngs,tmpRD2,px,py,pz,pdg2pr,arrayMC,mcHeader,dgLabels);
+            v2->RemoveDaughters();
+            if(ok) nSelected++;
+          }
         }
       }else{
         for(Int_t iTr3=iTr2+1; iTr3<ntracks; iTr3++){
@@ -1261,6 +1319,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   delete v3;
   delete tmpRD2;
   delete tmpRD3;
+  delete vHF;
   
   fNSelected->Fill(nSelected);
   
