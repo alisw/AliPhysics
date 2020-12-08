@@ -2400,7 +2400,7 @@ void  AliIsolationCut::MakeIsolationCut
       fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsEta-1)*histoWeight); // check
       fhFractionClusterOutConePhi          ->Fill(ptC ,        excessAreaClsPhi-1, histoWeight);
       fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsPhi-1)*histoWeight); // check
-      fhFractionClusterOutConeEtaPhi          ->Fill(ptC ,        excessAreaClsPhi*excessAreaClsEta-1, histoWeight);
+      fhFractionClusterOutConeEtaPhi       ->Fill(ptC ,        excessAreaClsPhi*excessAreaClsEta-1, histoWeight);
       fhFractionClusterOutConeEtaPhiTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsPhi*excessAreaClsEta-1)*histoWeight); // check
     }
   }
