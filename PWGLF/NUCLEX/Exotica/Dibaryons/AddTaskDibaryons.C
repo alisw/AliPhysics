@@ -24,6 +24,7 @@ AliAnalysisTask *AddTaskDibaryons( Int_t   collidingSystem                      
   task->SetAnalysisType             (type);
   task->SetCollidingSystem          (collidingSystem);
   task->SetSelectedTriggerClass     (triggerclass);
+  task->SetFilterBit                (128);
   task->SetPileupCut                (pileupCut);
 
   mgr->AddTask(task);
