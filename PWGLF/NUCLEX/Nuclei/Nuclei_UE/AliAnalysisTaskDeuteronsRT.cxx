@@ -1381,35 +1381,35 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedTrackQualityCuts_Syst (AliESDtrack *tra
 
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
-    
-    
-    //Track Variables
-    Int_t    nCrossedRows               = track->GetTPCCrossedRows();
-    Double_t nCrossedRows_over_Findable = (Double_t)track->GetTPCCrossedRows()/(Double_t)track->GetTPCNclsF();
-    Int_t    nClustersITS               = track->GetITSNcls();
-    Double_t chi2TPC_ndf                = track->GetTPCchi2()/(Double_t)track->GetTPCNcls();
-    Double_t chi2ITS_ndf                = track->GetITSchi2()/(Double_t)track->GetITSNcls();
-    Int_t    nClustersTPC_dEdx          = track->GetTPCsignalN();
 
-    
+
+    //Track Variables
+    Double_t nCrossedRows               = (Double_t)track->GetTPCCrossedRows();
+    Double_t nCrossedRows_over_Findable = ((Double_t)track->GetTPCCrossedRows())/((Double_t)track->GetTPCNclsF());
+    Double_t nClustersITS               = (Double_t)track->GetITSNcls();
+    Double_t chi2TPC_ndf                = ((Double_t)track->GetTPCchi2())/((Double_t)track->GetTPCNcls());
+    Double_t chi2ITS_ndf                = ((Double_t)track->GetITSchi2())/((Double_t)track->GetITSNcls());
+    Double_t nClustersTPC_dEdx          = (Double_t)track->GetTPCsignalN();
+
+
     //Analysis Parameters
-    Int_t    nCrossedRows_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (1,(isyst+1)));
+    Double_t nCrossedRows_Min               = hAnalysisParameters -> GetBinContent (1,(isyst+1));
     Double_t nCrossedRows_over_Findable_Min = hAnalysisParameters -> GetBinContent (2,(isyst+1));
-    Int_t    nClustersITS_Min               = TMath::Nint(hAnalysisParameters -> GetBinContent (3,(isyst+1)));
+    Double_t nClustersITS_Min               = hAnalysisParameters -> GetBinContent (3,(isyst+1));
     Double_t chi2TPC_ndf_Max                = hAnalysisParameters -> GetBinContent (4,(isyst+1));
     Double_t chi2ITS_ndf_Max                = hAnalysisParameters -> GetBinContent (5,(isyst+1));
-    Int_t    nClustersTPC_dEdx_Min          = TMath::Nint(hAnalysisParameters -> GetBinContent (6,(isyst+1)));
-    
-    
+    Double_t nClustersTPC_dEdx_Min          = hAnalysisParameters -> GetBinContent (6,(isyst+1));
+
+
     //Cuts
     if (nCrossedRows<nCrossedRows_Min)                             return passedTrkSelection;
     if (nCrossedRows_over_Findable<nCrossedRows_over_Findable_Min) return passedTrkSelection;
     if (nClustersITS<nClustersITS_Min)                             return passedTrkSelection;
     if (chi2TPC_ndf>chi2TPC_ndf_Max)                               return passedTrkSelection;
-    if (chi2ITS_ndf<chi2ITS_ndf_Max)                               return passedTrkSelection;
+    if (chi2ITS_ndf>chi2ITS_ndf_Max)                               return passedTrkSelection;
     if (nClustersTPC_dEdx<nClustersTPC_dEdx_Min)                   return passedTrkSelection;
 
-    
+
     passedTrkSelection = kTRUE;
     return passedTrkSelection;
 }
