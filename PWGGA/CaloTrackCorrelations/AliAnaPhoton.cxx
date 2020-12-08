@@ -385,6 +385,7 @@ fhDistance2Hijing(0)
   
   for(Int_t ism = 0; ism < 20; ism++)
   {
+    fhLam0CenPerSM                   [ism] = 0;
     fhLam0PerSM                      [ism] = 0;
     fhLam1PerSM                      [ism] = 0;
     fhLam0PerSMLargeTimeInClusterCell[ism] = 0;
@@ -1835,18 +1836,21 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     
     fhLam0Pt->Fill(pt    , lambda0, GetEventWeight()*weightPt);
     fhLam1Pt->Fill(pt    , lambda1, GetEventWeight()*weightPt);
+
+    if ( fFillSSPerSMHistograms )
+    {
+      fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+      fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight()*weightPt);
+    }
   }
   else
   {
     fhLam0CentralityPt->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
     if ( !fFillOnlyPtHisto )
       fhLam0CentralityE->Fill(energy, lambda0, cen, GetEventWeight()*weightPt);
-  }
-  
-  if ( fFillSSPerSMHistograms )
-  {
-    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight()*weightPt);
-    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight()*weightPt);
+
+    if ( fFillSSPerSMHistograms )
+       fhLam0CenPerSM[sm]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
   }
   
   if ( !fFillOnlySimpleSSHisto )
@@ -3815,6 +3819,31 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhLam1Pt);
       
+      if ( fFillSSPerSMHistograms )
+      {
+        for(Int_t ism = 0; ism < fNModules; ism++)
+        {
+          if ( ism < fFirstModule || ism > fLastModule )
+            continue;
+
+          fhLam0PerSM[ism] = new TH2F
+          (Form("hLam0_SM%d",ism),
+           Form("#it{p}_{T} vs #sigma^{2}_{long} in SM %d",ism),
+           nptbins,ptmin,ptmax,40,0,0.4);
+          fhLam0PerSM[ism]->SetYTitle("#sigma^{2}_{long}");
+          fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhLam0PerSM[ism]) ;    
+
+          fhLam1PerSM[ism] = new TH2F
+          (Form("hLam1_SM%d",ism),
+           Form("#it{p}_{T} vs #sigma^{2}_{short} in SM %d",ism),
+           nptbins,ptmin,ptmax,40,0,0.4);
+          fhLam1PerSM[ism]->SetYTitle("#sigma^{2}_{short}");
+          fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhLam1PerSM[ism]) ;
+        }
+      }
+
       if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
       {
         if ( fFillCellsEnergyHisto )
@@ -3859,7 +3888,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     else
     {
       fhLam0CentralityPt  = new TH3F 
-      ("hLam0CentralityPt","#sigma^{2}_{long} vs #it{p}_{T,cluster}", 
+      ("hLam0CentralityPt","#sigma^{2}_{long} vs #it{p}_{T,cluster} vs centrality",
         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
         ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -3871,7 +3900,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       if ( !fFillOnlyPtHisto )
       {
         fhLam0CentralityE  = new TH3F 
-        ("hLam0CentralityE","#sigma^{2}_{long} vs #it{E}_{cluster}", 
+        ("hLam0CentralityE","#sigma^{2}_{long} vs #it{E}_{cluster} vs centrality",
          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
          ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
          cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
@@ -3881,6 +3910,26 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhLam0CentralityE);
       }
       
+      if ( fFillSSPerSMHistograms )
+      {
+        for(Int_t ism = 0; ism < fNModules; ism++)
+        {
+          if ( ism < fFirstModule || ism > fLastModule )
+            continue;
+
+          fhLam0CenPerSM[ism] = new TH3F
+          (Form("hLam0Cen_SM%d",ism),
+           Form("#it{p}_{T} vs #sigma^{2}_{long} vs centrality in SM %d",ism),
+           ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+           ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+          fhLam0CenPerSM[ism]->SetYTitle("#sigma^{2}_{long}");
+          fhLam0CenPerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhLam0CenPerSM[ism]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhLam0CenPerSM[ism]) ;     
+        }
+      }
+
       if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
        {
          if ( fFillCellsEnergyHisto )
@@ -3931,29 +3980,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
            }
          }
        }
-    }
-    
-    if ( fFillSSPerSMHistograms )
-    {
-      for(Int_t ism = 0; ism < fNModules; ism++)
-      {
-        if(ism < fFirstModule || ism > fLastModule) continue;
-        fhLam0PerSM[ism] = new TH2F
-        (Form("hLam0_SM%d",ism),
-         Form("#it{p}_{T} vs #sigma^{2}_{long} in SM %d",ism),
-         nptbins,ptmin,ptmax,40,0,0.4);
-        fhLam0PerSM[ism]->SetYTitle("#sigma^{2}_{long}");
-        fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhLam0PerSM[ism]) ;             
-        
-        fhLam1PerSM[ism] = new TH2F
-        (Form("hLam1_SM%d",ism),
-         Form("#it{p}_{T} vs #sigma^{2}_{short} in SM %d",ism),
-         nptbins,ptmin,ptmax,40,0,0.4);
-        fhLam1PerSM[ism]->SetYTitle("#sigma^{2}_{short}");
-        fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhLam1PerSM[ism]) ;   
-      }
     }
     
     if ( !fFillOnlySimpleSSHisto )
