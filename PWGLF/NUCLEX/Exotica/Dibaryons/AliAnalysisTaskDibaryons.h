@@ -17,6 +17,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     void SetAnalysisType          (const char *analysisType                    ) { fAnalysisType    = analysisType;    }
     void SetCollidingSystem       (Int_t  collidingSystem                      ) { fCollidingSystem = collidingSystem; }
     void SetSelectedTriggerClass  (AliVEvent::EOfflineTriggerTypes triggerType ) { fkTriggerClass   = triggerType;     }
+    void SetFilterBit             (UInt_t filterBit                            ) { fFilterBit       = filterBit;       }
     void SetPileupCut             (Bool_t pileupCut                            ) { fPileupCut       = pileupCut;       } 
 
   private:
@@ -25,6 +26,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     AliVEvent::EOfflineTriggerTypes fkTriggerClass;   // Trigger selection: kINT7, KHighMultV0, etc
     AliPIDResponse         *fPIDResponse;             //! PID response object
 
+    UInt_t                  fFilterBit;               // filter bit for AOD track selection
     Bool_t                  fPileupCut;               // apply out-of-bunch pile-up cuts for daughters of V0s and Cascades
 
     THashList              *fOutput;                  //! User output
@@ -32,7 +34,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 2);
+    ClassDef(AliAnalysisTaskDibaryons, 3);
 };
 
 #endif

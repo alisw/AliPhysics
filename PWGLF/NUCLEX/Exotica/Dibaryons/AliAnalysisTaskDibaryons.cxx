@@ -37,6 +37,7 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
   fPIDResponse(0),
+  fFilterBit(0),
   fPileupCut(kTRUE),
   fOutput(0)
 {
@@ -50,6 +51,7 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
   fPIDResponse(0),
+  fFilterBit(0),
   fPileupCut(kTRUE),
   fOutput(0)
 {
@@ -454,6 +456,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         AliFatal("Not a standard AOD");
         continue;
       }
+
+      if(!((AliAODTrack*)aodTrack)->TestFilterBit(fFilterBit)) continue;
 
       charge    = aodTrack->Charge();
       momX      = aodTrack->Px();
