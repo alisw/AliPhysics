@@ -1,4 +1,11 @@
-Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaPart1 = -1, Double_t nSigmaPart2 = -1)
+Bool_t ConfigKstarLeading(
+    AliRsnMiniAnalysisTask *task, 
+    Bool_t isMC = kFALSE, 
+    Bool_t isPP = kFALSE, 
+    Double_t nSigmaPart1 = -1, 
+    Double_t nSigmaPart2 = -1,
+    Float_t  nsigmaTOF = 3.0
+    )
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -22,6 +29,10 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
   cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
   cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
   
+//cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi, nsigmaTOF);
+//cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK, nsigmaTOF);
+  
+
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
 
