@@ -287,6 +287,9 @@ class PhysicsProfile {
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 	public:
+
+      enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
+
 		AliAnalysisTaskNonlinearFlow();
 		AliAnalysisTaskNonlinearFlow(const char *name);
 
@@ -337,6 +340,19 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		int 						GetRunPart(int run);
 		double 					GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
 		double 					GetPtWeight(double pt, double eta, float vz, double runNumber);
+                Bool_t LoadWeights();
+
+                bool fFlowRunByRunWeights;
+                bool fFlowPeriodWeights;
+                bool fFlowUse3Dweights;
+
+                void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
+                void                    SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
+                void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+
+                Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+                const char* ReturnPPperiod(const Int_t runNumber) const;
+                const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliAODEvent* fAOD;                //! AOD object
@@ -379,9 +395,17 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3F*				hTrackEfficiencyRun;//! histogram with tracking efficiency
 
 		// NUA
+		//
+		TList*                  fFlowWeightsList;
 		TList*			fPhiWeight;					//! file with phi weights
 		TList*			fPhiWeightPlus;			//! file with phi weights
 		TList*			fPhiWeightMinus;		//! file with phi weights
+                TH2D*                   fh2Weights[kUnknown]; //! container for GF weights (phi,eta,pt) (2D)
+                TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
+                TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
+                TH3D*                   fh3AfterWeights[kUnknown]; //! distribution after applying GF weights - full QA (phi,eta,pt)
+
+
 		TH3F*				hPhiWeight;					//! 3D weight for all periods except LHC15ijl
 		TH3F*				hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
 		TH1F*				hPhiWeight1D;				//! 1D weight in one MC case (maybe need to redo to 3D weight)

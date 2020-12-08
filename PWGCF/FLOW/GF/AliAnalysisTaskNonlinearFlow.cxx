@@ -463,7 +463,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 
 	Int_t inSlotCounter=1;
 	if(fNUA) {
-		fPhiWeight = (TList*)GetInputData(inSlotCounter);
+                fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 	if(fNUE) {
@@ -544,6 +544,12 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
 	fCentralityDis->Fill(centrV0);
 	fV0CentralityDis->Fill(cent);
+
+
+        // checking the run number for aplying weights & loading TList with weights
+        if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+
+
 
 	//..all charged particles
 	if(fLS == true){
@@ -642,7 +648,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
-			weight = GetWeight(aodTrk->Phi(), aodTrk->Eta(), aodTrk->Pt(), run, fPlus, fVtxZ, runNumber);
+			weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
 		}
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
@@ -1029,59 +1035,93 @@ double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt
 			// , hPhiWeightRun->GetZaxis()->FindBin(vz));
 	return weight;
 }
-//_____________________________________________________________________________
-Short_t AliAnalysisTaskNonlinearFlow::GetCentrCode(AliVEvent* ev)
+
+const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies species) const
 {
-	Short_t centrCode = -1;
-	Float_t lPercentile = 0;
-	Float_t V0M_Cent = 0, SPD_Cent = 0;
+  const char* name;
 
-	//if (fAnalysisType == "AOD"){
-	//AliAODEvent* aod = (AliAODEvent*)ev;
-	AliMultSelection *MultSelection = 0;
-	MultSelection = (AliMultSelection * ) ev->FindListObject("MultSelection");
-	if(!MultSelection){
-		lPercentile = -100;
-	}
-	else{
-		if (fCentFlag == 0)
-			lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  switch(species) {
+    case kRefs: name = "Refs"; break;
+    case kCharged: name = "Charged"; break;
+    case kPion: name = "Pion"; break;
+    case kKaon: name = "Kaon"; break;
+    case kProton: name = "Proton"; break;
+    case kCharUnidentified: name = "UnidentifiedCharged"; break;
+    case kK0s: name = "K0s"; break;
+    case kLambda: name = "Lambda"; break;
+    case kPhi: name = "Phi"; break;
+    default: name = "Unknown";
+  }
 
-		if (fCentFlag == 1)
-			lPercentile = MultSelection->GetMultiplicityPercentile("CL0");
+  return name;
+}
 
-		if (fCentFlag == 2)
-			lPercentile = MultSelection->GetMultiplicityPercentile("CL1");
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights()
+{
+  // (Re-) Loading of flow vector weights
+  // ***************************************************************************
+  if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
 
-		V0M_Cent = MultSelection->GetMultiplicityPercentile("V0M");
-		SPD_Cent = MultSelection->GetMultiplicityPercentile("CL1");
+  TList* listFlowWeights = nullptr;
+  
+  TString fFlowWeightsTag = "";
+  if(!fFlowWeightsTag.IsNull()) {
+      // using weights Tag if provided (systematics)
+      listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
+      if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
+  } else {
+      if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
+          // loading run-averaged weights
+          listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
+          if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
+      } else if(fFlowPeriodWeights){
+        // loading period-specific weights
+        listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fAOD->GetRunNumber()));
+        if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+      }
+      else {
+          // loading run-specific weights
+          listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fAOD->GetRunNumber()));
 
-	}
-
-	if ((lPercentile > 0) && (lPercentile <= 5.0))
-		centrCode = 0;
-	else if ((lPercentile > 5.0) && (lPercentile <= 10.0))
-		centrCode = 1;
-	else if ((lPercentile > 10.0) && (lPercentile <= 20.0))
-		centrCode = 2;
-	else if ((lPercentile > 20.0) && (lPercentile <= 30.0))
-		centrCode = 3;
-	else if ((lPercentile > 30.0) && (lPercentile <= 40.0))
-		centrCode = 4;
-	else if ((lPercentile > 40.0) && (lPercentile <= 50.0))
-		centrCode = 5;
-	else if ((lPercentile > 50.0) && (lPercentile <= 60.0))
-		centrCode = 6;
-	else if ((lPercentile > 60.0) && (lPercentile <= 70.0))
-		centrCode = 7;
-	else if ((lPercentile > 70.0) && (lPercentile <= 80.0))
-		centrCode = 8;
-	else if ((lPercentile > 80.0) && (lPercentile <= 90.0))
-		centrCode = 9;
+          if(!listFlowWeights) {
+              // run-specific weights not found for this run; loading run-averaged instead
+              AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
+              listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
+              if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+          }
+      }
+  }
 
 
-	return centrCode;
+  for(Int_t iSpec(0); iSpec <= kRefs; ++iSpec) {
+    if(fFlowUse3Dweights) {
+      fh3Weights[iSpec] = (TH3D*) listFlowWeights->FindObject(Form("%s3D",GetSpeciesName(PartSpecies(iSpec))));
+      if(!fh3Weights[iSpec]) { AliError(Form("Weight 3D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
+    } else {
+      fh2Weights[iSpec] = (TH2D*) listFlowWeights->FindObject(GetSpeciesName(PartSpecies(iSpec)));
+      if(!fh2Weights[iSpec]) { AliError(Form("Weight 2D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
+    }
+  }
 
+  return kTRUE;
+}
+
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species)
+{
+  // if not applying for reconstructed
+  // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
+
+  Double_t dWeight = 1.0;
+  if(fFlowUse3Dweights) {
+    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
+    dWeight = fh3Weights[species]->GetBinContent(iBin);
+  } else {
+    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
+    dWeight = fh2Weights[species]->GetBinContent(iBin);
+  }
+
+  if(dWeight <= 0.0) { dWeight = 1.0; }
+  return dWeight;
 }
 
 void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label) {
@@ -1544,6 +1584,84 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	}
 
 }
+
+const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const
+{
+  Bool_t isHM = kFALSE;
+  if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
+
+  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
+    if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d
+    if(!isHM && runNumber >= 253437 && runNumber <= 253591) return "LHC16de"; //e
+    if(runNumber >= 254128 && runNumber <= 254332) return "LHC16ghi"; //g
+    if(runNumber >= 254604 && runNumber <= 255467) return "LHC16ghi"; //h
+    if(runNumber >= 255539 && runNumber <= 255618) return "LHC16ghi"; //i
+    if(runNumber >= 256219 && runNumber <= 256418) return "LHC16j";
+    if(runNumber >= 256941 && runNumber <= 258537) return "LHC16k";
+    if(runNumber >= 258962 && runNumber <= 259888) return "LHC16l";
+    if(runNumber >= 262424 && runNumber <= 264035) return "LHC16o";
+    if(runNumber >= 264076 && runNumber <= 264347) return "LHC16p";
+  }
+
+  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
+    if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
+    if(runNumber >= 270822 && runNumber <= 270830){
+      if(isHM) return "averaged";
+      else return "LHC17ce";
+    }
+    if(runNumber >= 270854 && runNumber <= 270865){
+      if(isHM) return "averaged";
+      else return "LHC17f";
+    }
+    if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
+    if(runNumber >= 273591 && runNumber <= 274442) return "LHC17i";
+    if(!isHM && runNumber >= 274593 && runNumber <= 274671) return "LHC17j";
+    if(runNumber >= 274690 && runNumber <= 276508) return "LHC17k";
+    if(runNumber >= 276551 && runNumber <= 278216) return "LHC17l";
+    if(runNumber >= 278914 && runNumber <= 280140) return "LHC17m";
+    if(runNumber >= 280282 && runNumber <= 281961) return "LHC17o";
+    if(runNumber >= 282528 && runNumber <= 282704) return "LHC17r";
+  }
+
+  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
+    if(runNumber >= 285009 && runNumber <= 285396){
+      if(isHM) return "LHC18bd";
+      else return "LHC18b";
+    }
+    if(runNumber >= 285978 && runNumber <= 286350){
+      if(isHM) return "LHC18bd";
+      else return "LHC18d";
+    }
+    if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
+    if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
+    if(runNumber >= 288804 && runNumber <= 288806){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber == 288943){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber >= 289165 && runNumber <= 289201){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(!isHM && runNumber >= 288619 && runNumber <= 288750) return "LHC18ghijk"; //g, no HM event, only MB
+    if(!isHM && runNumber >= 288861 && runNumber <= 288909) return "LHC18ghijk"; //i, no HM event, only MB
+    if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
+    if(runNumber >= 290323 && runNumber <= 292839){
+      if(isHM) return "LHC18m";
+      else return "LHC18mn";
+    }
+    if(!isHM && runNumber >= 293357 && runNumber <= 293359) return "LHC18mn"; //n, no HM event, only MB
+    if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
+    if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
+  }
+
+  AliWarning("Unknown period! Returning averaged weights");
+  return "averaged";
+}
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::Terminate(Option_t *)
