@@ -252,7 +252,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
   std::vector<float> phiAtRadii;
   for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
     AliAODTrack *track = (AliAODTrack *) dmeson->GetDaughter(iChild);
-    SetMomentum(iChild, { track->Px(), track->Py(), track->Pz() });
+    SetMomentum(iChild + 1, { track->Px(), track->Py(), track->Pz() });
     fIDTracks.push_back(track->GetID());
     fEta.push_back(track->Eta());
     fTheta.push_back(track->Theta());
