@@ -3041,7 +3041,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     //cluster quality cuts
     if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster.get())){continue;}
     if (fUseMinEnergy && (cluster->E() < fMinEnergy)){continue;}
-    if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
+    if (fUseNCells == 2)
+        if(cluster->GetNCells() < fMinNCells && cluster->E() > fMinENCell){continue;}
+    else
+        if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
     if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){continue;}
     if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
       // no cut to be applied in this case on M20
@@ -3130,7 +3133,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       //cluster quality cuts
       if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched.get())){continue;}
       if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){continue;}
-      if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
+      if (fUseNCells == 2)
+        if(clusterMatched->GetNCells() < fMinNCells && clusterMatched->E() > fMinENCell){continue;}
+      else
+        if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
       if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){continue;}
       if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
         // no cut to be applied in this case on M20
@@ -4746,7 +4752,10 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUseExoticCluster == 2)printf("\t exotic cluster above: %3.2f in same T-Card\n", fExoticMinEnergyTCard );
   if (fUseExoticCluster == 3)printf("\t exotic cluster rejection from correction framework\n" );
   if (fUseMinEnergy)printf("\t E_{cluster} > %3.2f\n", fMinEnergy );
-  if (fUseNCells) printf("\t number of cells per cluster >= %d\n", fMinNCells );
+  if (fUseNCells == 2)
+    printf("\t number of cells per cluster >= %d while E_{cluster} > %3.2f\n", fMinNCells, fMinENCell );
+  else
+    if (fUseNCells) printf("\t number of cells per cluster >= %d\n", fMinNCells );
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
   if (fUseM02 == 2) printf("\t energy dependent M02 cut used with cutnumber min: %d  max: %d \n", fMinM02CutNr, fMaxM02CutNr );
   if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
