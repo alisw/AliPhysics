@@ -30,6 +30,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     Bool_t                  fPileupCut;               // apply out-of-bunch pile-up cuts for daughters of V0s and Cascades
 
     THashList              *fOutput;                  //! User output
+    AliAODTrack           **fTrackArray;              //! global track info
 
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented

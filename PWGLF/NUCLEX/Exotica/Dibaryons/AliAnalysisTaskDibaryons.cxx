@@ -39,7 +39,8 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fPIDResponse(0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fOutput(0)
+  fOutput(0),
+  fTrackArray(0)
 {
   // default constructor
 }
@@ -53,7 +54,8 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fPIDResponse(0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fOutput(0)
+  fOutput(0),
+  fTrackArray(0)
 {
   // constructor
 
@@ -82,6 +84,8 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
     fAliEventCuts.OverrideAutomaticTriggerSelection(fkTriggerClass,true);
   }
   fAliEventCuts.AddQAplotsToList(fOutput);
+
+  fTrackArray = new AliAODTrack*[2000];
 
   TH1F *hNPartStatistics = new TH1F("hNPartStatistics","Number of candidates under certain condition",10,0.5,10.5);
   hNPartStatistics->GetXaxis()->SetBinLabel(1,"p");
@@ -389,10 +393,37 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   TObjArray candProton(nTrack);
   TObjArray candAntiProton(nTrack);
 
+  if(fAnalysisType == "AOD") {
+
+    // Reset global track reference
+    for(Int_t i=0; i < 2000; i++) {
+
+      fTrackArray[i] = 0;
+
+    }
+
+    // Store global track reference
+    for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {
+
+      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+      if(!track) {
+        AliFatal("Not a standard AOD");
+        continue;
+      }
+
+      const Int_t trackID = track->GetID();
+      if(trackID < 0) continue;
+
+      fTrackArray[trackID] = track; // store the pointer to the global track
+
+    }
+  }
+
   for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {// This is the beginning of the track loop
 
     AliESDtrack *esdTrack = 0x0;
     AliAODTrack *aodTrack = 0x0;
+    AliAODTrack *globalTrack = 0x0;
 
     // Initialisation of the local variables that will be needed for ESD/AOD
     Double_t charge    = 0.;
@@ -430,10 +461,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       momY      = esdTrack->Py();
       momZ      = esdTrack->Pz();
       transvMom = esdTrack->Pt();
-      totMom    = esdTrack->P();
       eta       = esdTrack->Eta();
       phi       = esdTrack->Phi();
       dEdx      = esdTrack->GetTPCsignal();
+      totMom    = esdTrack->GetTPCmomentum();
 
       nTPCCrossedRows = esdTrack->GetTPCCrossedRows();
       nTPCClusters    = esdTrack->GetTPCNcls();
@@ -452,22 +483,29 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     else if(fAnalysisType == "AOD") {
 
       aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
-      if(!aodTrack) {
-        AliFatal("Not a standard AOD");
-        continue;
-      }
 
       if(!((AliAODTrack*)aodTrack)->TestFilterBit(fFilterBit)) continue;
+
+      if(aodTrack->GetID() < 0) {
+
+        if(!fTrackArray[-aodTrack->GetID()-1]) continue; // check if a global track exists for the TPC-only track
+        globalTrack = fTrackArray[-aodTrack->GetID()-1];
+
+      } else {
+
+        globalTrack = aodTrack;
+
+      }
 
       charge    = aodTrack->Charge();
       momX      = aodTrack->Px();
       momY      = aodTrack->Py();
       momZ      = aodTrack->Pz();
       transvMom = aodTrack->Pt();
-      totMom    = aodTrack->P();
       eta       = aodTrack->Eta();
       phi       = aodTrack->Phi();
-      dEdx      = aodTrack->GetTPCsignal();
+      totMom    = globalTrack->GetTPCmomentum();
+      dEdx      = globalTrack->GetTPCsignal();
 
       nTPCCrossedRows = aodTrack->GetTPCCrossedRows();
       nTPCClusters    = aodTrack->GetTPCNcls();
@@ -475,8 +513,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       nTPCFindableCls = aodTrack->GetTPCNclsF();
       if(nTPCFindableCls > 0) ratio = nTPCCrossedRows / nTPCFindableCls;
 
-      nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
-      nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton);
+      nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kProton);
+      nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kProton);
       nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
 
       aodTrack->GetImpactParameters(DCAxy,DCAz);
