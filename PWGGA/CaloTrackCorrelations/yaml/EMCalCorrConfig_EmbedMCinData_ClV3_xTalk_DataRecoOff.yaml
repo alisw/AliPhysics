@@ -79,6 +79,8 @@ CellEnergy:
 # _data is equivalent to the base correction, but I am making it explicit for clarity
 CellEnergy_data:
     enabled: true
+    enableNewTempCalib: true
+    enableShaperCorrection: true
     cellsNames:
         - cells
 # No cell energy calibration should be applied to the embedded MC
@@ -88,8 +90,6 @@ CellBadChannel:
     createHistos: false
 CellBadChannel_data:
     enabled: true
-    enableNewTempCalib: true
-    enableShaperCorrection: true
     cellsNames:
         - cells
 CellBadChannel_embed:
