@@ -134,8 +134,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
-  std::vector<int> MultBins;
   if (trigger == "kHighMultV0") {
+    std::vector<int> MultBins = AliFemtoDreamCollConfig::GetHMMultBins();
+    config->SetMultBins(MultBins);
+  } else if (isMC) {  // Min bias trigger in MC, but we of course want the HM binning for the CF
     std::vector<int> MultBins = AliFemtoDreamCollConfig::GetHMMultBins();
     config->SetMultBins(MultBins);
   } else {
