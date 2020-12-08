@@ -1187,7 +1187,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsInVector(const vector<Int_t>& vec, Int_t iLab
  * - stores id, pt and eta of V0 mother if one of their daughter has the maximum IP within the jet
  * - fills thnsparse object if largest IP track within jet is V0 daughter and if jetflavour is not b
  */
-void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, Int_t fGenJetFlavour, Bool_t **kTagDec){
+void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP){
     Bool_t bDebug=kFALSE;
     if(fGenJetFlavour==B){
       if(bDebug)printf("GetGenV0Jets:: Returning as B jet jetflavour=%i\n",fGenJetFlavour);
@@ -1264,22 +1264,22 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
       }
     }//end fMCArray
 
-    double thnentries[6]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fMaxV0Eta, fJetPt, static_cast<double>(kTagDec[1][Double]),fMaxIP};
+    double thnentries[6]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fLNJP, fJetPt, static_cast<double>(kTagDec[1][Double]),fMaxIP};
     if(bMaxIPIsV0==0){
       if(bDebug)printf("GetGeneratedV0:: Returning as no V0 jet\n");
       return;
     }
     if(fMaxV0ID==310) {
         fhnV0InJetK0s->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
+        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
     }
     if(fMaxV0ID==3122) {
         fhnV0InJetLambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
+        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
     }
     if(fMaxV0ID==-3122) {
         fhnV0InJetALambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP);
+        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
     }
 
       pAOD=NULL;
@@ -2431,11 +2431,15 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
            else{DoTCTagging(fJetRecPt, nGoodIPTracks,ipval, kTagDec);}
        }
 
-       if(fIsPythia)GetGenV0Jets(jetrec, ev, iTrackLabels,fJetFlavour, kTagDec);
-
        //**************
        //Probability Dists
        fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig);
+
+       Double_t fLNJP=-999;
+       if(fJetProb>0)fLNJP=-TMath::Log(fJetProb);
+       if(fIsPythia)GetGenV0Jets(jetrec, ev, iTrackLabels,fJetFlavour, kTagDec, fLNJP);
+
+
        //PrintAllTreeVars();
        tJetTree->Fill();
        for(int iThresh=0;iThresh<fNThresholds;iThresh++){
@@ -2682,19 +2686,19 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       //V0s from reconstruction
       const Int_t iNDimInJC = 6;
       Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
-      Double_t xminKInJC[iNDimInJC] = {0, 0., -10., 0.,0,-0.5};
-      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 10., 200.,2,0.5};
+      Double_t xminKInJC[iNDimInJC] = {0, 0., 0., 0.,0,-0.5};
+      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 40., 200.,2,0.5};
       Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
-      Double_t xminLInJC[iNDimInJC] = {0, 0., -10., 0.,0,-0.5};
-      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 10., 200.,2,0.5};
+      Double_t xminLInJC[iNDimInJC] = {0, 0., 0, 0.,0,-0.5};
+      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 40., 200.,2,0.5};
 
       fh2dKshortMassVsPt=(TH2D*)AddHistogramm("fh2dKshortMassVsPt","KShort Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,0.35, 0.65);
       fh2dLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dLamdaMassVsPt","Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
       fh2dAnLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dAnLamdaMassVsPt","Anti Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
 
-      fhnV0InJetK0s = new THnSparseD("fhnV0InJetK0s", ";K0s[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag", iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
-      fhnV0InJetLambda = new THnSparseD("fhnV0InJetLambda", ";Lambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
-      fhnV0InJetALambda = new THnSparseD("fhnV0InJetALambda", ";ALambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+      fhnV0InJetK0s = new THnSparseD("fhnV0InJetK0s", ";K0s[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag; d_{0} (cm)", iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
+      fhnV0InJetLambda = new THnSparseD("fhnV0InJetLambda", ";Lambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag; d_{0} (cm)", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+      fhnV0InJetALambda = new THnSparseD("fhnV0InJetALambda", ";ALambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})];DoubleTag; d_{0} (cm)", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
       fhnV0InJetK0s->Sumw2();
       fhnV0InJetLambda->Sumw2();
       fhnV0InJetALambda->Sumw2();
