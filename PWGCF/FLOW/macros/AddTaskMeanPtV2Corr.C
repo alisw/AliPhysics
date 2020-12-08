@@ -42,18 +42,18 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(StageSwitch==2) {
     TObjArray *AllContainers = mgr->GetContainers();
     if(!AllContainers->FindObject("Efficiency")) {
-      if(efficiencyPath.IsNull()) AliFatal("Weight path not provided!\n");
+      if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
       if(efficiencyPath.Contains("alien:")) TGrid::Connect("alien:");
       TFile *tfWeights = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
-      if(!tfWeights) AliFatal("Could not open weights file\n");
-      if(tfWeights->IsZombie()) AliFatal("Weight file is a zombie\n");
+      if(!tfWeights) { printf("Could not open efficiency file\n"); return 0; };
+      if(tfWeights->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
       TList *fList = (TList*)tfWeights->Get("EffAndFD");
-      if(!fList) { AliFatal("Could not fetch the weight list!\n"); return; };
+      if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
       AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
       cEff->SetData(fList);
       mgr->ConnectInput(task,1,cEff);
     } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
-    
+
     TString l_ContName=subfix.IsNull()?"":("_" + subfix);
     AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputMPT);
@@ -63,7 +63,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   if(StageSwitch==3) {
     TObjArray *AllContainers = mgr->GetContainers();
     if(!AllContainers->FindObject("Weights")) {
-      if(efficiencyPath.IsNull()) AliFatal("Weight path not provided!\n");
+      if(efficiencyPath.IsNull()) { printf("Weight path not provided!\n"); return 0; };
       if(efficiencyPath.Contains("alien:")) TGrid::Connect("alien:");
       TFile *tfWeights = TFile::Open(efficiencyPath.Data());
       TList *fList = (TList*)tfWeights->Get("WeightList");
@@ -72,17 +72,17 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       mgr->ConnectInput(task,1,cWeights);
     };
     if(!AllContainers->FindObject("InputMeanPt")) {
-      if(meanPtPath.IsNull()) AliFatal("Mean pT path not provided!\n");
+      if(meanPtPath.IsNull()) { printf("Mean pT path not provided!\n"); return 0; };
       if((!efficiencyPath.Contains("alien:")) && meanPtPath.Contains("alien:")) TGrid::Connect("alien:"); //Only connect if not connected yet
       TFile *tfMPT = TFile::Open(meanPtPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
       TList *fMPTList = (TList*)tfMPT->Get("MPTProfileList");
-      if(!fMPTList) AliFatal("fMPT list from file not fetcehd!");
+      if(!fMPTList) { printf("fMPT list from file not fetcehd!"); return 0; };
       AliAnalysisDataContainer *cInMPT = mgr->CreateContainer("InputMeanPt",TList::Class(), AliAnalysisManager::kInputContainer);
       cInMPT->SetData(fMPTList);
       mgr->ConnectInput(task,2,cInMPT);
     };
     if(!AllContainers->FindObject("NUACorr")) {
-      if(NUAPath.IsNull()) AliFatal("AdHoc NUA path not provided!\n");
+      if(NUAPath.IsNull()) { printf("NUA path not provided!\n"); return 0; };
       if((!efficiencyPath.Contains("alien:")) && !meanPtPath.Contains("alien:") && NUAPath.Contains("alien:") ) TGrid::Connect("alien:"); //Only connect if not connected yet
       TFile *tfNUA = TFile::Open(NUAPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
       TList *fNUAList = (TList*)tfNUA->Get("PIDWeights");
@@ -106,12 +106,12 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   }
   if(StageSwitch==5) {
     TObjArray *AllContainers = mgr->GetContainers();
-    if(meanPtPath.IsNull()) AliFatal("Input weights not set\n");
+    if(meanPtPath.IsNull()) { printf("Input weights not set\n"); return 0; };
     if(!AllContainers->FindObject("InputMeanPt")) {
       if(meanPtPath.Contains("alien:")) TGrid::Connect("alien:"); //Only connect if not connected yet
       TFile *tfMPT = TFile::Open(meanPtPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
       TList *fMPTList = (TList*)tfMPT->Get("MPTProfileList");
-      if(!fMPTList) AliFatal("fMPT list from file not fetcehd!");
+      if(!fMPTList) { printf("fMPT list from file not fetcehd!"); return 0; };
       AliAnalysisDataContainer *cInMPT = mgr->CreateContainer("InputMeanPt",TList::Class(), AliAnalysisManager::kInputContainer);
       cInMPT->SetData(fMPTList);
       mgr->ConnectInput(task,1,cInMPT);
