@@ -53,6 +53,8 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+find_package(Boost REQUIRED)
+
 if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
