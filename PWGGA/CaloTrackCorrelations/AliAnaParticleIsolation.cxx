@@ -305,8 +305,19 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   // Acceptance
   for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
   {
-    fhConeSumPtPrimMC[i] = 0;
-    fhConeSumPtChargedPrimMC[i] = 0;
+    fhConeSumPtPrimMC          [i] = 0;
+    fhConeSumPtChargedPrimMC   [i] = 0;
+    fhConeSumPtCenPrimMC       [i] = 0;
+    fhConeSumPtCenChargedPrimMC[i] = 0;
+
+    fhConeSumPtUESubPrimMC          [i] = 0;
+    fhConeSumPtUESubChargedPrimMC   [i] = 0;
+    fhConeSumPtUESubCenPrimMC       [i] = 0;
+    fhConeSumPtUESubCenChargedPrimMC[i] = 0;
+
+    fhConeSumPtNeutralChargedRatioPrimMC        [i] = 0;
+    fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i] = 0;
+    
     fhPtPrimMCiso[i] = 0;
     fhPtPrimMC   [i] = 0;
     fhEtaPrimMC  [i] = 0;
@@ -972,6 +983,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD mulBinsArray    = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
   TArrayD sum0BinsArray   = GetHistogramRanges()->GetHistoPtSumArr();
   TArrayD sueBinsArray    = GetHistogramRanges()->GetHistoPtSumSubArr();
+  TArrayD ratBinsArray    = GetHistogramRanges()->GetHistoRatioArr();
   TArrayD sumBinsArray;
   if ( method >= AliIsolationCut::kSumBkgSubIC ) 
     sumBinsArray = GetHistogramRanges()->GetHistoPtSumSubArr();
@@ -3539,29 +3551,132 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPhiPrimMC[i]) ;
       }
       
-      fhConeSumPtPrimMC[i] = new TH2F
-      (Form("hConeSumPtPrim_MC%s",ppname[i].Data()),
-       Form("primary photon %s: %s",pptype[i].Data(),parTitleR.Data()),
-       //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
-        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       sum0BinsArray.GetSize() - 1,sum0BinsArray.GetArray()); 
-       
-      fhConeSumPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhConeSumPtPrimMC[i]) ;
-      
-      if ( particle == AliIsolationCut::kNeutralAndCharged )
+      if ( !IsHighMultiplicityAnalysisOn() )
       {
-        fhConeSumPtChargedPrimMC[i] = new TH2F
-        (Form("hConeSumPtChargedPrim_MC%s",ppname[i].Data()),
-         Form("primary photon %s: %s",pptype[i].Data(),parTitleRCh.Data()),
+        fhConeSumPtPrimMC[i] = new TH2F
+        (Form("hConeSumPtPrim_MC%s",ppname[i].Data()),
+         Form("primary #gamma %s: %s",pptype[i].Data(),parTitleR.Data()),
          //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sum0BinsArray.GetSize() - 1,sum0BinsArray.GetArray());
+        fhConeSumPtPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtPrimMC[i]) ;
+
+        if ( particle == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtChargedPrimMC[i] = new TH2F
+          (Form("hConeSumPtChargedPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma %s: %s",pptype[i].Data(),parTitleRCh.Data()),
+           //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+             ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+           sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray());
+          fhConeSumPtChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtChargedPrimMC[i]) ;
+        }
+
+        if (  method >= AliIsolationCut::kSumBkgSubIC )
+        {
+          fhConeSumPtUESubPrimMC[i] = new TH2F
+          (Form("hConeSumPtUESubPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleR.Data()),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhConeSumPtUESubPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtUESubPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}-UE (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtUESubPrimMC[i]) ;
+
+          if ( particle == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhConeSumPtUESubChargedPrimMC[i] = new TH2F
+            (Form("hConeSumPtUESubChargedPrim_MC%s",ppname[i].Data()),
+             Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleRCh.Data()),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhConeSumPtUESubChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtUESubChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch}-UE (GeV/#it{c})");
+            outputContainer->Add(fhConeSumPtUESubChargedPrimMC[i]) ;
+          }
+        }
+
+        fhConeSumPtNeutralChargedRatioPrimMC[i] = new TH2F
+        (Form("hConeSumPtNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
+         Form("primary #gamma %s: %s",pptype[i].Data(),parTitleR.Data()),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray()); 
-        fhConeSumPtChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhConeSumPtChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
-        outputContainer->Add(fhConeSumPtChargedPrimMC[i]) ;
-      }
+         ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
+        fhConeSumPtNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral} / #Sigma #it{p}_{T}^{charged}");
+        outputContainer->Add(fhConeSumPtNeutralChargedRatioPrimMC[i]) ;
+
+        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i] = new TH2F
+        (Form("hConeSumPtPerpConeNeutralChargedRatioPrim_MC%s",ppname[i].Data()),
+         Form("primary #gamma %s: %s, #perp cone",pptype[i].Data(),parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ratBinsArray.GetSize() - 1, ratBinsArray.GetArray());
+        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral, #perp cone} / #Sigma #it{p}_{T}^{charged, #perp cone}");
+        outputContainer->Add(fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]) ;
+      } // low mult
+      else
+      {
+        fhConeSumPtCenPrimMC[i] = new TH3F
+        (Form("hConeSumPtCenPrim_MC%s",ppname[i].Data()),
+         Form("primary #gamma  %s: %s",pptype[i].Data(),parTitleR.Data()),
+         //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+           ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray(),
+          cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+        fhConeSumPtCenPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtCenPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtCenPrimMC[i]->SetZTitle("Centrality (%)");
+        outputContainer->Add(fhConeSumPtCenPrimMC[i]) ;
+
+        if ( particle == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtCenChargedPrimMC[i] = new TH3F
+          (Form("hConeSumPtCenChargedPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma  %s: %s",pptype[i].Data(),parTitleRCh.Data()),
+           //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+             ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+           sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray(),
+            cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+          fhConeSumPtCenChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtCenChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+          fhConeSumPtCenChargedPrimMC[i]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtCenChargedPrimMC[i]) ;
+        }
+
+        if (  method >= AliIsolationCut::kSumBkgSubIC )
+        {
+          fhConeSumPtUESubCenPrimMC[i] = new TH3F
+          (Form("hConeSumPtUESubCenPrim_MC%s",ppname[i].Data()),
+           Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleR.Data()),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+           cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+          fhConeSumPtUESubCenPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtUESubCenPrimMC[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtUESubCenPrimMC[i]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtUESubCenPrimMC[i]) ;
+
+          if ( particle == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhConeSumPtUESubCenChargedPrimMC[i] = new TH3F
+            (Form("hConeSumPtUESubCenChargedPrim_MC%s",ppname[i].Data()),
+             Form("primary #gamma  %s: %s, UE subtracted",pptype[i].Data(),parTitleRCh.Data()),
+             //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+             cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+            fhConeSumPtUESubCenChargedPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtUESubCenChargedPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+            fhConeSumPtUESubCenChargedPrimMC[i]->SetZTitle("Centrality (%)");
+            outputContainer->Add(fhConeSumPtUESubCenChargedPrimMC[i]) ;
+          }
+        }
+
+      } // high mult
     }
     
     if ( fMakePrimaryPi0DecayStudy )
@@ -4692,6 +4807,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
   
   Int_t partInConeType = GetIsolationCut()->GetParticleTypeInCone() ;
+  Int_t isoMethod      = GetIsolationCut()->GetICMethod();
+  Float_t coneSize     = GetIsolationCut()->GetConeSize();
+  Float_t coneSizeGap  = GetIsolationCut()->GetConeSizeBandGap();
+
+  Float_t centrality   = GetEventCentrality();
   
   for(Int_t i = firstParticle ; i < nprim; i++)
   {
@@ -4856,8 +4976,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     //printf("mcIndex %d\n",mcIndex);
     
     // ////////////////////ISO MC/////////////////////////
-    Double_t sumPtInCone = 0; Double_t dR=0. ;
-    Double_t sumPtInConeCh = 0;
+    Float_t dR              = 0. ;
+    Float_t sumPtInCone     = 0. ;
+    Float_t sumPtInConeCh   = 0. ;
+    Float_t sumPtInConeNe   = 0. ;
+
+    Float_t etaBandPtSumCh  = 0. ;
+    Float_t phiBandPtSumCh  = 0. ;
+    Float_t perpConePtSumCh = 0. ;
+    Float_t perpConePtSumNe = 0. ;
+
+    Float_t etaBandPtSumNe  = 0. ;
+    Float_t phiBandPtSumNe  = 0. ;
     
     AliVParticle * mcisop = 0;
     
@@ -4868,7 +4998,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     for(Int_t ip = firstParticle; ip < nprim ; ip++)
     {
-      if(ip==i) continue;
+      if ( ip==i ) continue;
       
       if( (pdg==111 || pdg==221) && ( ip == pi0d1Label || ip == pi0d2Label ) )
       {
@@ -4890,14 +5020,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // Protection against floating point exception
       if ( mcisop->E() == TMath::Abs(mcisop->Pz())    ||
           (mcisop->E() - mcisop->Pz()) < 1e-3         ||
-          mcisop->Pt() < 0.01  || mcisop->Eta() > 10  || 
+           mcisop->Pt() < 0.01  || mcisop->Eta() > 10 ||
           (mcisop->E() + mcisop->Pz()) < 0               )  continue ; 
       
       partInConeMother = mcisop->GetMother();
       partInConePt     = mcisop->Pt();
       partInConeE      = mcisop->E();
       partInConeEta    = mcisop->Eta();
-      partInConePhi    = mcisop->Phi();
+      partInConePhi    = GetPhi(mcisop->Phi());
       partInConePDG    = mcisop->PdgCode();
       //partInConeCharge = TMath::Abs((Int_t) TDatabasePDG::Instance()->GetParticle(partInConePDG)->Charge());
       partInConeCharge = TMath::Abs(mcisop->Charge());
@@ -4905,31 +5035,83 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       mcisop->Momentum(fMomIso);
       
       if( partInConeMother == i ) continue;
-      
+
+      // Distance to photon candidate
+      //
+      dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+
       //
       // Apply acceptance and energy/pt cut for particles in cone
       // select only charged final particles and photons
-      if(fSelectPrimariesInCone)
+      if ( fSelectPrimariesInCone )
       {
-        if( partInConeCharge > 0 ) // charged pT cut and acceptance
+        if ( partInConeCharge > 0 ) // charged pT cut and acceptance
         {
-          if( partInConeType == AliIsolationCut::kOnlyNeutral ) continue;
+          if ( partInConeType == AliIsolationCut::kOnlyNeutral ) continue;
+
+          if ( partInConePt < GetReader()->GetCTSPtMin () ) continue;
           
-          if( partInConePt < GetReader()->GetCTSPtMin () ) continue;
+          if ( !GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),kCTS) ) continue ;
           
-          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),kCTS)) continue ;
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          // Fill the histograms at +-45 degrees in phi
+          // from trigger particle, perpedicular to trigger axis in phi
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          if ( dR > coneSize && physPrimary &&
+               isoMethod == AliIsolationCut::kSumBkgSubIC  )
+          {
+            Double_t dEta    = photonEta - partInConeEta;
+
+            Double_t dPhiPlu = photonPhi - partInConePhi + TMath::PiOver2();
+            Double_t dPhiMin = photonPhi - partInConePhi - TMath::PiOver2();
+
+            Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
+            Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
+
+            Bool_t fillPerp = kFALSE;
+            if ( TMath::Sqrt(argPlu) < coneSize ) fillPerp = kTRUE ;
+            if ( TMath::Sqrt(argMin) < coneSize ) fillPerp = kTRUE ;
+
+            if ( fillPerp )
+              perpConePtSumCh += partInConePt;
+          }
         }
         else  // photons E cut and acceptance, discard hadrons (neutron, k0L, ...)
         {
-          if( partInConeType == AliIsolationCut::kOnlyCharged ) continue;
+          if ( partInConeType == AliIsolationCut::kOnlyCharged ) continue;
+
+          if ( partInConePDG != 22 ) continue; // just photons
           
-          if( partInConePDG != 22 ) continue; // just photons
+          if ( partInConeE  <= minECalo ) continue;
           
-          if( partInConeE  <= minECalo ) continue;
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          // Fill the histograms at +-45 degrees in phi
+          // from trigger particle, perpedicular to trigger axis in phi
+          // Apply only TPC acceptance cut for comparison with perpendicular charged
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          if ( dR > coneSize && physPrimary &&
+               isoMethod == AliIsolationCut::kSumBkgSubIC &&
+               GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),kCTS) )
+          {
+            Double_t dEta    = photonEta - partInConeEta;
+
+            Double_t dPhiPlu = photonPhi - partInConePhi + TMath::PiOver2();
+            Double_t dPhiMin = photonPhi - partInConePhi - TMath::PiOver2();
+
+            Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
+            Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
+
+            Bool_t fillPerp = kFALSE;
+            if ( TMath::Sqrt(argPlu) < coneSize ) fillPerp = kTRUE ;
+            if ( TMath::Sqrt(argMin) < coneSize ) fillPerp = kTRUE ;
+
+            if ( fillPerp )
+              perpConePtSumNe += partInConePt;
+          }
           
-          if(!GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),GetCalorimeter())) continue ;
+          if ( !GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),GetCalorimeter()) ) continue ;
           
-          if(IsRealCaloAcceptanceOn()) // defined on base class
+          if ( IsRealCaloAcceptanceOn() ) // defined on base class
           {
             if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), mcisop) ) continue ;
           }
@@ -4940,12 +5122,63 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 //             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
 //             photonEta, photonPhi, partInConeEta, partInConePhi);
       
-      dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
-      
-      if(dR < GetIsolationCut()->GetMinDistToTrigger())
+      // UE estimation
+      //
+      if ( physPrimary && dR > coneSize )
+      {
+        if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+        {
+          // Phi band
+          //
+          Bool_t takeIt = kTRUE;
+          // Exclude tracks in rectangle containing isolation cone
+          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
+               partInConePhi < (photonPhi+coneSize+coneSizeGap) &&
+               partInConePhi > (photonPhi-coneSize-coneSizeGap)    )
+            takeIt = kFALSE;
+
+          // Look only half TPC with respect candidate, avoid opposite side jet
+          if ( TMath::Abs(photonPhi-partInConePhi) > TMath::PiOver2() )  takeIt = kFALSE;
+
+          // Within eta cone size
+          if ( partInConeEta > (photonEta-coneSize) &&
+               partInConeEta < (photonEta+coneSize) &&  takeIt )
+          {
+            if ( partInConeCharge > 0 )
+              phiBandPtSumCh += partInConePt;
+            else
+              phiBandPtSumNe += partInConePt;
+          } // phi band
+
+          // Eta band
+          //
+          takeIt = kTRUE;
+          // Exclude tracks in rectangle containing isolation cone
+          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
+               partInConeEta < (photonEta+coneSize+coneSizeGap) &&
+               partInConeEta > (photonEta-coneSize-coneSizeGap)    )
+            takeIt = kFALSE;
+
+          // Within phi cone size
+          if ( partInConePhi > (photonPhi-coneSize) &&
+               partInConePhi < (photonPhi+coneSize) && takeIt )
+          {
+            if ( partInConeCharge > 0 )
+              etaBandPtSumCh += partInConePt;
+            else
+              etaBandPtSumNe += partInConePt;
+          } // eta band
+
+        } // out of cone
+
+      } // Physical primary, out of cone
+
+      // In cone
+      //
+      if ( dR < GetIsolationCut()->GetMinDistToTrigger() )
         continue;
       
-      if(dR > GetIsolationCut()->GetConeSize())
+      if ( dR > GetIsolationCut()->GetConeSize() )
         continue;
       
       if ( fFillTrackOriginHistograms && 
@@ -4966,11 +5199,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if ( !physPrimary ) continue ; 
       
-      sumPtInCone += partInConePt;
-      if ( partInConeCharge > 0 ) sumPtInConeCh += partInConePt;
+      if ( partInConeCharge > 0 )
+        sumPtInConeCh += partInConePt;
+      else
+        sumPtInConeNe += partInConePt;
       
-      if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
-         partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
+      if ( partInConePt > GetIsolationCut()->GetPtThreshold() &&
+           partInConePt < GetIsolationCut()->GetPtThresholdMax() ) npart++;
       
 //      printf("Selected: status %d, E %f, pt %f, pz %f, pdg %d, eta %f, phi %f, par in cone eta %f phi %f\n",
 //             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
@@ -4979,19 +5214,253 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     ///////END ISO MC/////////////////////////
     
-    // Fill the histograms, only those in the defined calorimeter acceptance
+    // Get detectors acceptance
+    // Do it once, needed for Band UE estimation and excess area determination
+    //if ( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )  // comment not needed in all cases, but it does not take much, in case UE study done in AliAnaParticleIsolation
+    GetIsolationCut()->GetDetectorAngleLimits(GetReader(),GetCalorimeter());
+
+    // Calculate how much of the cone got out the detectors acceptance
+    //
+    Float_t excessAreaChEta = 1;
+    Float_t excessAreaNeEta = 1;
+    Float_t excessAreaNePhi = 1;
+    Float_t excessChEta     = 0;
+    Float_t excessNeEta     = 0;
+    Float_t excessNePhi     = 0;
+    if ( GetIsolationCut()->IsConeExcessCorrected() )
+    {
+      GetIsolationCut()->CalculateExcessAreaFractionForChargedAndNeutral(photonEta  , photonPhi,
+                                                                         excessChEta, excessAreaChEta,
+                                                                         excessNeEta, excessAreaNeEta,
+                                                                         excessNePhi, excessAreaNePhi);
+      sumPtInConeCh *= excessAreaChEta ;
+      sumPtInConeNe *= (excessAreaNeEta*excessAreaNePhi) ;
+    }
+
+    // Total energy in cone
+    //
+    sumPtInCone = sumPtInConeNe + sumPtInConeCh  ;
+
+    // Normalize estimated UE to cone size
+    //
+    Double_t coneptsumUESub   = sumPtInCone;
+    Double_t coneptsumUESubNe = sumPtInConeNe;
+    Double_t coneptsumUESubCh = sumPtInConeCh;
+
+    Double_t coneptsumBkgCh    = 0.;
+    Double_t coneptsumBkgNe    = 0.;
+
+    Double_t coneptsumBkgChRaw = 0.;
+    Double_t coneptsumBkgNeRaw = 0.;
+
+    if ( isoMethod == AliIsolationCut::kSumBkgSubIC )
+    {
+      coneptsumBkgCh = perpConePtSumCh/2.;
+      coneptsumBkgNe = perpConePtSumNe/2.;
+      //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
+    }
+    else if ( isoMethod >= AliIsolationCut::kSumBkgSubEtaBandIC ) // eta or phi band
+    {
+      //printf("UE band\n");
+      Float_t  etaBandPtSumChNorm = 0;
+      Float_t  phiBandPtSumChNorm = 0;
+      Float_t  etaBandPtSumNeNorm = 0;
+      Float_t  phiBandPtSumNeNorm = 0;
+
+      Float_t  coneptsumChSub     = 0 ;
+      Float_t  coneptsumNeSub     = 0 ;
+
+      // Normalize background to cone area
+
+      // Check clusters band
+      //
+      // If DCal or PHOS trigger clusters, it does not make sense,
+      // just use track based estimation later
+      Bool_t checkClustersBand = kTRUE;
+
+      if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+      {
+        if      ( GetCalorimeterString() != "EMCAL" )
+          checkClustersBand = kFALSE;
+        // if declared as emcal because analyze all calo together
+        // but within phos/dcal phi acceptance
+        else if ( photonPhi > 4.35 && photonPhi < 5.71 )
+          checkClustersBand = kFALSE;
+
+        //        if ( !checkClustersBand ) printf("Cluster band not checked! det %d phi %f\n",
+        //                                         pCandidate->GetDetectorTag(),photonPhi);
+      }
+
+      if ( partInConeType !=  AliIsolationCut::kOnlyCharged && checkClustersBand )
+      {
+        GetIsolationCut()->CalculateUEBandClusterNormalization
+        (photonEta         , photonPhi         ,
+         excessNeEta       , excessNePhi       ,
+         excessAreaNeEta   , excessAreaNePhi   ,
+         etaBandPtSumNe    , phiBandPtSumCh    ,
+         etaBandPtSumNeNorm, phiBandPtSumChNorm);
+
+        if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
+        {
+          coneptsumBkgNeRaw  = etaBandPtSumNe;
+          coneptsumBkgNe     = etaBandPtSumNeNorm;
+        }
+        else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
+        {
+          coneptsumBkgNeRaw  = phiBandPtSumNe;
+          coneptsumBkgNe     = phiBandPtSumNeNorm;
+        }
+
+        coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
+
+        //        printf("Neutral: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
+        //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
+        //               "\t subtracted:  %2.2f\n",
+        //               coneptsumNe,
+        //               phiBandPtSumNe, phiBandPtSumNeNorm,
+        //               etaBandPtSumNe, etaBandPtSumNeNorm,
+        //               coneptsumNeSub);
+      } // Neutrals in cone
+
+      //printf("Pass cluster\n");
+
+      if ( partInConeType != AliIsolationCut::kOnlyNeutral )
+      {
+        GetIsolationCut()->CalculateUEBandTrackNormalization
+        (photonEta         ,
+         excessChEta       , excessAreaChEta,
+         etaBandPtSumCh    , phiBandPtSumCh,
+         etaBandPtSumChNorm, phiBandPtSumChNorm);
+
+        if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
+        {
+          coneptsumBkgChRaw = etaBandPtSumCh;
+          coneptsumBkgCh    = etaBandPtSumChNorm;
+        }
+        else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
+        {
+          coneptsumBkgChRaw = phiBandPtSumCh;
+          coneptsumBkgCh    = phiBandPtSumChNorm;
+        }
+
+        coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
+
+        //        printf("Charged: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
+        //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
+        //               "\t subtracted: %2.2f\n",
+        //               coneptsumCh,
+        //               phiBandPtSumCh, phiBandPtSumChNorm,
+        //               etaBandPtSumCh, etaBandPtSumChNorm,
+        //               coneptsumChSub);
+
+      } // Charged in cone
+
+      // In case of DCal and PHOS, estimate the bkg in clusters from tracks
+      //
+      if ( partInConeType == AliIsolationCut::kNeutralAndCharged && !checkClustersBand )
+      {
+        coneptsumBkgNe = coneptsumBkgCh*GetIsolationCut()->GetNeutralOverChargedRatio(centrality);
+        coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
+      }
+
+      //     // Uncomment if perp cone is hacked to be calculated
+      //      printf("UE BKG per method:\n \t Perp Cone %2.2f (cl %2.2f, tr %2.2f)\n \t Phi Band %2.2f (cl %2.2f, tr %2.2f)\n \t Eta Band %2.2f (cl %2.2f, tr %2.2f)\n",
+      //             perpPtSumCh+perpPtSumCh*fNeutralOverChargedRatio, perpPtSumCh*fNeutralOverChargedRatio,perpPtSumCh,
+      //             phiBandPtSumChNorm+phiBandPtSumClusterNorm,phiBandPtSumClusterNorm,phiBandPtSumChNorm,
+      //             etaBandPtSumChNorm+etaBandPtSumClusterNorm,etaBandPtSumClusterNorm,etaBandPtSumChNorm);
+    } // UE subtraction by Eta band
+
+    coneptsumUESubNe -= coneptsumBkgNe;
+    coneptsumUESubCh -= coneptsumBkgCh;
+
+    // Calculated in case of fICMethod == kSumBkgSubEtaBandIC,
+    // reset excess areas to 1 if not used in final result.
+    if ( !GetIsolationCut()->IsConeExcessCorrected() )
+    {
+      excessAreaChEta = 1;
+      excessAreaNeEta = 1;
+      excessAreaNePhi = 1;
+    }
+
+    if      ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+      coneptsumUESub  = coneptsumUESubNe * excessAreaNePhi * excessAreaNeEta + coneptsumUESubCh * excessAreaChEta;
+    else if ( partInConeType ==AliIsolationCut::kOnlyCharged        )
+      coneptsumUESub  = coneptsumUESubCh * excessAreaChEta;
+    else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
+      coneptsumUESub  = coneptsumUESubNe * excessAreaNePhi*excessAreaNeEta;
+
+    // Fill the histograms
+
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhConeSumPtPrimMC[mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+      fhConeSumPtPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+
+      if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+      {
+        fhConeSumPtChargedPrimMC[mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+        fhConeSumPtChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+      }
+
+      if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+      {
+        fhConeSumPtUESubPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
+        fhConeSumPtUESubPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
+
+        if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtUESubChargedPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
+          fhConeSumPtUESubChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
+        }
+      }
+
+      if ( perpConePtSumCh > 0 && perpConePtSumNe > 0 )
+      {
+        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
+        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
+      }
+
+      if ( sumPtInConeCh > 0 && sumPtInConeNe > 0 )
+      {
+        fhConeSumPtNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
+        fhConeSumPtNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
+      }
+    }
+    else
+    {
+      fhConeSumPtCenPrimMC [mcIndex]      ->Fill(photonPt, sumPtInCone, centrality, GetEventWeight()*weightPt) ;
+      fhConeSumPtCenPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, centrality, GetEventWeight()*weightPt) ;
+
+      if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+      {
+        fhConeSumPtCenChargedPrimMC [mcIndex]      ->Fill(photonPt, sumPtInConeCh, centrality, GetEventWeight()*weightPt) ;
+        fhConeSumPtCenChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, centrality, GetEventWeight()*weightPt) ;
+      }
+
+      if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+      {
+        fhConeSumPtUESubCenPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESub, centrality, GetEventWeight()*weightPt) ;
+        fhConeSumPtUESubCenPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, centrality, GetEventWeight()*weightPt) ;
+
+        if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtUESubCenChargedPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
+          fhConeSumPtUESubCenChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
+        }
+      }
+    }
     
     if ( !fFillOnlyTH3Histo )
     {
       fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
       fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
       fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
-      
+
       fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()*weightPt) ;
       fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
       fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
     }
-    
+
     // In case the photon is a decay from pi0 or eta,
     // study how the decay kinematics affects the isolation
     Int_t  ndaugh   = -1;
@@ -5132,14 +5601,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       }
     }
     
-    // Check if candiate is isolated.
+    // Check if candidate is isolated.
     //
     // Only for isolation based on sum pT. 
     // In case of UE subtraction it needs revision!!!, 
     // implementing same approach as in reconstructed clusters.
     
     Bool_t isolated  = kFALSE;
-    Int_t  isoMethod = GetIsolationCut()->GetICMethod();
     if ( ( isoMethod == AliIsolationCut::kSumPtIC || 
            isoMethod >= AliIsolationCut::kSumBkgSubIC ) &&
          ( sumPtInCone < GetIsolationCut()->GetSumPtThreshold() || 
@@ -5148,20 +5616,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     //printf("Primary in cone n Part %d sum pT in cone %2.2f\n",npart, sumPtInCone);
     
-    if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
-       npart == 0)
+    if ( GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC && npart == 0 )
       isolated = kTRUE;
     
-    fhConeSumPtPrimMC [mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
-    fhConeSumPtPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
-  
-    if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
-    {
-      fhConeSumPtChargedPrimMC [mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
-      fhConeSumPtChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
-    }
-    
-    if(isolated)
+    if ( isolated )
     {
       if ( !fFillOnlyTH3Histo )
       {
@@ -5171,7 +5629,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if ( fMakePrimaryPi0DecayStudy )
       {
-        if( mcIndex == kmcPrimPi0Decay )
+        if ( mcIndex == kmcPrimPi0Decay )
         {
           // Not Overlapped decay
           if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
