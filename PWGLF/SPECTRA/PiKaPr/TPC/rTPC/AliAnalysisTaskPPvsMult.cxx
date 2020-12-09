@@ -1083,7 +1083,7 @@ void AliAnalysisTaskPPvsMult::AnalyzeESD(AliESDEvent* esdEvent)
 				cent = icent;
 				fcent->Fill(icent+1);
 				ProduceArrayTrksESD( esdEvent, cent );
-				//ProduceArrayV0ESD( esdEvent, cent );
+				ProduceArrayV0ESD( esdEvent, cent );
 
 				if(fAnalysisMC)
 					ProcessMCTruthESD(cent);
