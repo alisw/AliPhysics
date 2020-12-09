@@ -41,7 +41,7 @@ class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
   TH1D *hCentralityV0M;
   TH1D *hCentralityV0MandPS;
   TH1D *hCentralityV0MandSat;
-  Bool_t fTrgClassCINTZAC, fTrgInputV0M, fSelectPhysics, fIsSatellite;
+  Bool_t fTrgClassCINTZAC, fTrgClassV0L, fTrgInputV0M, fSelectPhysics, fIsSatellite;
   Int_t fRunNumber;
   UInt_t fL0inputs;
   Float_t fV0McentPercentile = 300;
