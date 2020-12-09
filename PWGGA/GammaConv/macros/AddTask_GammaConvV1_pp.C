@@ -984,6 +984,12 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152b03500000000"); // excluding 55-72 cm, eta 0.8
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152e03500000000"); // excluding 55-72 cm, eta 0.8
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152f03500000000"); // excluding 55-72 cm, eta 0.8
+  } else if (trainConfig == 416){
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+  } else if (trainConfig == 417){
+    cuts.AddCutPCM("00010113", "00m00009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
 
   } else if (trainConfig == 421){
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0404000", "0152103500000000"); // default

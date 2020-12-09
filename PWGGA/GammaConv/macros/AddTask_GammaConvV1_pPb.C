@@ -1089,15 +1089,10 @@ void AddTask_GammaConvV1_pPb(
 
   } else if (trainConfig == 1120) {
     cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
-  } else if (trainConfig == 1121) { // TOF single leg cut
-    cuts.AddCutPCM("80010113", "0dm00009f9730600dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
-  } else if (trainConfig == 1122) { // TOF both leg cut
-    cuts.AddCutPCM("80010113", "0dm00009f9730700dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
-  } else if (trainConfig == 1123) { // TOF single leg cut
-    cuts.AddCutPCM("80010113", "0dm00009f9730800dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
-  } else if (trainConfig == 1124) { // TOF both leg cut
-    cuts.AddCutPCM("80010113", "0dm00009f9730900dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
-
+  } else if (trainConfig == 1121) {
+    cuts.AddCutPCM("80010113", "00m00009f9730000dge0404000", "0152103500000000"); // eta < 0.9
+    cuts.AddCutPCM("80010113", "0d200009f9730000dge0404000", "0152103500000000"); // no R region rejection
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0404000", "0152103500000000"); // old cuts
   } else if (trainConfig == 1125) { // T0-based cuts
     cuts.AddCutPCM("80011103", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
 
