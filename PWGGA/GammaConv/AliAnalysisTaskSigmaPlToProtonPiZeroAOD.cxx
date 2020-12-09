@@ -784,7 +784,25 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			Int_t nClusWCuts                = 0;
 			nclus = fAOD->GetNumberOfCaloClusters();
 			if(fHistNClusWoCuts[iCut]) fHistNClusWoCuts[iCut]->Fill(nclus,fWeightJetJetMC);
-			if(nclus == 0)  continue;
+			if(nclus == 0){
+				for(unsigned int i = 0; i < photon.size(); ++i) {
+					if(photon[i]) delete photon[i];
+				}
+				photon.clear();
+				for(unsigned int i = 0; i < proton.size(); ++i) {
+					if(proton[i]) delete proton[i];
+				}
+				proton.clear();
+				for(unsigned int i = 0; i < tracks.size(); ++i) {
+					if(tracks[i]) delete tracks[i];
+				}
+				tracks.clear();
+				// for(unsigned int i = 0; i < pions.size(); ++i) {
+				// 	if(pions[i]) delete pions[i];
+				// }
+				pions.clear();
+				continue;
+			}  
 			AliVCluster* clus = NULL;
 			for(Int_t i=0; i < nclus; ++i){
 				clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fEvent->GetCaloCluster(i));
@@ -830,7 +848,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
 							continue;
 						}
-						vector < Double_t > vDoubleCountingCandidates;
 						truePhotonMotherID1 = -1;
 						AliVCluster* gamma1 = photon[iPhoton1];
 						TLorentzVector clusterVector1;
@@ -936,6 +953,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						}
 					}
 					fVectorDoubleCountTrueSigmas.clear();				
+					fVectorDoubleCountTrueSigmas.resize(0);				
 				}
 			}
 		}
