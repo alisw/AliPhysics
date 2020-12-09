@@ -1,3 +1,4 @@
+//Class for <pt>-v2 correlations
 #include "AliAnalysisTaskMeanPtV2Corr.h"
 #include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
