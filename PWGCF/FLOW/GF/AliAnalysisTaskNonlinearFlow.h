@@ -318,6 +318,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void	SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void	SetNUA(Bool_t NUA){fNUA = NUA;}
 		virtual void        SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
+                void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
+                void                    SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
+                void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
 
 		//....
 		virtual void	SetPeriod(TString period){fPeriod = period;}
@@ -345,10 +348,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 bool fFlowRunByRunWeights;
                 bool fFlowPeriodWeights;
                 bool fFlowUse3Dweights;
-
-                void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
-                void                    SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
-                void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
 
                 Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
                 const char* ReturnPPperiod(const Int_t runNumber) const;
