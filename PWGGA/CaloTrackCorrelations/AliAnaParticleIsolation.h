@@ -374,9 +374,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiPrimMC  [fgkNmcPrimTypes];             //!<! Pt vs Phi of generated photon.
   TH1F *   fhPtPrimMC   [fgkNmcPrimTypes];             //!<! Number of generated photon vs pT.
   TH1F *   fhPtPrimMCiso[fgkNmcPrimTypes];             //!<! Number of generated isolated photon vs pT.
-  TH2F *   fhConeSumPtPrimMC[fgkNmcPrimTypes];         //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone.
-  TH2F *   fhConeSumPtChargedPrimMC[fgkNmcPrimTypes];  //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone.
 
+  TH2F *   fhConeSumPtPrimMC          [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone.
+  TH2F *   fhConeSumPtChargedPrimMC   [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone.
+  TH3F *   fhConeSumPtCenPrimMC       [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone vs centrality.
+  TH3F *   fhConeSumPtCenChargedPrimMC[fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone vs centrality.
+
+  TH2F *   fhConeSumPtUESubPrimMC          [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone UE subtracted.
+  TH2F *   fhConeSumPtUESubChargedPrimMC   [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone  UE subtracted.
+  TH3F *   fhConeSumPtUESubCenPrimMC       [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries pT in cone  UE subtracted vs centrality.
+  TH3F *   fhConeSumPtUESubCenChargedPrimMC[fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries pT in cone  UE subtracted vs centrality.
+
+  TH2F *   fhConeSumPtNeutralChargedRatioPrimMC        [fgkNmcPrimTypes]; //!<!  photon pT vs ratio of sum of primaries pT in cone neutral over charged.
+  TH2F *   fhConeSumPtPerpConeNeutralChargedRatioPrimMC[fgkNmcPrimTypes]; //!<!  photon pT vs ratio of sum of primaries pT in perpendicular cone neutral over charged.
   
   TH1F *   fhPtPrimMCPi0DecayPairOutOfCone;            //!<! Pi0 decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance;      //!<! Pi0 decay photons, with decay pair out of detector acceptance.
@@ -671,7 +681,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,48) ;
+  ClassDef(AliAnaParticleIsolation,49) ;
   /// \endcond
 
 } ;
