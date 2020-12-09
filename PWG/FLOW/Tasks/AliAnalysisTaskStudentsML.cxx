@@ -323,7 +323,7 @@ void AliAnalysisTaskStudentsML::UserCreateOutputObjects()
    fProfileEventCuts->Fill(13.5, fSlopeUpperLine); 
    fProfileEventCuts->Fill(14.5, fAxisUpperLine); 
  }
-
+ if(bUseRecoKineTable){ fProfileEventCuts->Fill(15.5, 1); } 
 
 
 
@@ -774,17 +774,42 @@ void AliAnalysisTaskStudentsML::PhysicsAnalysis(AliAODEvent *aAODEvent)
 
 void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aMCEve)
 { 
+
+ TString sMethod = "void AliAnalysisTaskStudentsML::GetKineDist(AliAODEvent *aAODEve, AliMCEvent *aMCEve)";
+
  //Used for gaining weights
  //a) Global QA for Reco and Kine
  //b) Run over Reco + Generate Table 
  //c) Run over Kine + Get Distributions
 
- //a) Global QA for Reco and Kine
- if(!GlobalQualityAssurance(aAODEve)){return;}
+ //a) Global QA for Reco and Kine (for Reco only if we use the RecoKineTable)
+ if(bUseRecoKineTable){ if(!GlobalQualityAssurance(aAODEve)){return;} }
 
  //Get Centrality from AOD event
+ if(!aAODEve){return;} //In case we did not apply the global QA on the AOD, protect against NULL pointer
+ 
  Int_t CentralityBin = SelectCentrality(aAODEve);
+
+ if(!bUseRecoKineTable) //In case we did not apply the global QA on the AOD, do the centrality selection 
+ { 
+   AliMultSelection *ams = (AliMultSelection*)aAODEve->FindListObject("MultSelection");
+   if(!ams){return;}
+
+   Float_t CentralityValue = 0.;
+
+   if(fCentralityEstimator == "V0M" ) { CentralityValue = ams->GetMultiplicityPercentile("V0M"); }
+   else if(fCentralityEstimator == "CL1") { CentralityValue = ams->GetMultiplicityPercentile("CL1"); }
+   else {Fatal(sMethod.Data(), "FATAL: no valid centrality estimator!");} 
+
+   fCentralityHistogramBefore->Fill(CentralityValue);
+
+   if(CentralityBin<0){return;} //No valid centrality bin
+
+   if(bSaveAllQA){fCentralityHistogram[CentralityBin]->Fill(CentralityValue);}
+ }
+
  AliAODVertex *primaryVertex = (AliAODVertex*)aAODEve->GetPrimaryVertex(); 
+
 
  if(!GlobalQualityAssurance(CentralityBin, aMCEve)){return;} 
 
@@ -1324,7 +1349,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 
  //Profiles to save the current cut values 
  //Profile to save the cut values for event selection
-  fProfileEventCuts = new TProfile("", "", 15, 0., 15.);
+  fProfileEventCuts = new TProfile("", "", 16, 0., 16.);
   fProfileEventCuts->SetName("fProfileEventCuts");
   fProfileEventCuts->SetTitle("Configuration of the event selection");
   fProfileEventCuts->SetStats(kFALSE);
@@ -1343,6 +1368,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
   fProfileEventCuts->GetXaxis()->SetBinLabel(13, "HMO slope upper line");
   fProfileEventCuts->GetXaxis()->SetBinLabel(14, "HMO axis lower line");
   fProfileEventCuts->GetXaxis()->SetBinLabel(15, "HMO axis upper line");
+  fProfileEventCuts->GetXaxis()->SetBinLabel(16, "Use Reco-Kine-Table");
   fHistList->Add(fProfileEventCuts);
 
  //Profile to save the cut values for track selection
