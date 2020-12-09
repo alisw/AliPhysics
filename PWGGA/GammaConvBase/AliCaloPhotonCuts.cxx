@@ -6049,12 +6049,12 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
   case 12: // c
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=2;
-    fMinENCell=1;
+    fMinENCell=1.;
     break;
   case 13: // d
     if (!fUseNCells) fUseNCells=2;
     fMinNCells=3;
-    fMinENCell=1;
+    fMinENCell=1.;
     break;
 
   // special cases for EMCal: this will randomly evaluate the NCell cut efficiency for MC
