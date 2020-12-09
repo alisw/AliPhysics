@@ -54,6 +54,9 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 find_package(Boost REQUIRED)
+if(Boost_FOUND)
+  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+endif()
 
 if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
