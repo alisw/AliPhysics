@@ -637,8 +637,8 @@ void AliAnalysisTaskTwoMultiCorrelations::GetRatioDistributions()
   if (!PassCentralitySelection()) {return;}
   fHistoNumberEvents[fCentralityBin]->Fill(0.5);
 
-// 3.1 Apply the event selection at reco level.
-  if(!ApplyEventSelection(kTRUE)) {return;}
+// 3.1 Apply the event selection at reco level if the table is used.
+  if (fUseKineRecoTable) { if(!ApplyEventSelection(kTRUE)) {return;} }
 
 // 3.2 Apply the event selection at kine level.
 //    Save the number of events after the event selection.
