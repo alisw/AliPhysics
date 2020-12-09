@@ -70,9 +70,11 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
+  void SetEtaNch(Double_t newval) { fEtaNch = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void SetSystSwitch(Int_t newval) { fSystSwitch = newval; };
+  void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -80,6 +82,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Int_t fSystSwitch;
+  Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
@@ -91,6 +94,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fUseNch;
   Bool_t fUseWeightsOne;
   Double_t fEta;
+  Double_t fEtaNch;
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
