@@ -71,7 +71,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t weight,
                                           Int_t cen, Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
-                                          Int_t nlm5x5, Float_t l05x5, Int_t & largeTimeInside) ;
+                                          Int_t nlmNxN, Float_t l0NxN, Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
@@ -128,8 +128,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
-  void         SwitchOnUse5x5ShowerShapeHisto()           { fUse5x5ShowerShape = kTRUE  ; }
-  void         SwitchOffUse5x5ShowerShapeHisto()          { fUse5x5ShowerShape = kFALSE ; }
+  void         SwitchOnUse5x5ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = 2 ; }
+  void         SwitchOnUse7x7ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = 3 ; }
+  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = n ; }
+  void         SwitchOffUseNxNShowerShapeHisto()          { fUseNxNShowerShape = kFALSE ; }
   
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
@@ -251,7 +253,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
-  Bool_t   fUse5x5ShowerShape;                      ///< Calculate shower shape restricting to 5x5 and fill histograms
+  Bool_t   fUseNxNShowerShape;                      ///< Calculate shower shape restricting to NxN and fill histograms
+  Int_t    fNxNColRowNumber;                        ///< Number of columns and rows from leading cell in shower shape calculation
   
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
@@ -491,22 +494,22 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLambda0DispEta [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp eta
   TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp phi
 
-  // Shower shape restricted size, activate with fUse5x5ShowerShape=true
-  static const Int_t fgk5x5cases = 4;
-  TH2F * fhLam05x5OrLam0[fgk5x5cases];                   //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT
-  TH3F * fhLam05x5NLM;                                   //!<! Cluster long axis restricted to 5x5 vs  pT vs NLM
-  TH3F * fhLam05x5Lam0PerNLM[fgk5x5cases];               //!<! Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
-  TH2F * fhMCLam05x5OrLam0[fgk5x5cases][fgkNssTypes];    //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT, per particle origin
-  TH3F * fhEn5x5FracNLM;                               //!<! Cluster energy over  restricted to 5x5 eenergy vs  pT vs NLM
+  // Shower shape restricted size, activate with fUseNxNShowerShape=true
+  static const Int_t fgkNxNcases = 4;
+  TH2F * fhLam0NxNOrLam0[fgkNxNcases];                   //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT
+  TH3F * fhLam0NxNNLM;                                   //!<! Cluster long axis restricted to NxN vs  pT vs NLM
+  TH3F * fhLam0NxNLam0PerNLM[fgkNxNcases];               //!<! Cluster long axis restricted to NxN vs std long axis vs  pT, per NLM
+  TH2F * fhMCLam0NxNOrLam0[fgkNxNcases][fgkNssTypes];    //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT, per particle origin
+  TH3F * fhEnNxNFracNLM;                                 //!<! Cluster energy over  restricted to NxN eenergy vs  pT vs NLM
 
-  TH3F * fhLam05x5OrLam0Cen[fgk5x5cases];                //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality
-  ///<  Cluster long axis restricted to 5x5 vs  pT vs nlm, per centrality
-  TH3F **fhLam05x5NLMPerCen;                             //![GetNCentrBin()]
-  ///< Cluster long axis restricted to 5x5 vs std long axis vs  pT, per NLM
-  TH3F **fhLam05x5Lam0PerNLMPerCen;                      //![GetNCentrBin()*fgk5x5cases]
-  TH3F * fhMCLam05x5OrLam0Cen[fgk5x5cases][fgkNssTypes]; //!<! Cluster long axis restricted to 5x5 or std long axis depending NLM vs  pT vs centrality, per particle origin
-  ///<  Cluster energy over restricted to 5x5 energy vs  pT vs nlm, per centrality
-  TH3F **fhEn5x5FracNLMPerCen;                           //![GetNCentrBin()]
+  TH3F * fhLam0NxNOrLam0Cen[fgkNxNcases];                //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT vs centrality
+  ///<  Cluster long axis restricted to NxN vs  pT vs nlm, per centrality
+  TH3F **fhLam0NxNNLMPerCen;                             //![GetNCentrBin()]
+  ///< Cluster long axis restricted to NxN vs std long axis vs  pT, per NLM
+  TH3F **fhLam0NxNLam0PerNLMPerCen;                      //![GetNCentrBin()*fgkNxNcases]
+  TH3F * fhMCLam0NxNOrLam0Cen[fgkNxNcases][fgkNssTypes]; //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT vs centrality, per particle origin
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs nlm, per centrality
+  TH3F **fhEnNxNFracNLMPerCen;                           //![GetNCentrBin()]
 
   // Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy

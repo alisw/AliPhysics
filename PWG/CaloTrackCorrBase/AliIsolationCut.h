@@ -133,6 +133,7 @@ class AliIsolationCut : public TObject {
   // Parameter setters and getters
 
   Bool_t     IsBandExclusionRectangular() const { return fUEBandRectangularExclusion ; }
+  Bool_t     IsConeExcessCorrected()  const { return fMakeConeExcessCorr ; }
   Float_t    GetConeSize()            const { return fConeSize       ; }
   Float_t    GetConeSizeBandGap()     const { return fConeSizeBandGap; }
   Float_t    GetPtThreshold()         const { return fPtThreshold    ; }
