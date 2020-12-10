@@ -675,7 +675,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAODSB(bool isMC = false,
   }
   if (suffix == "23") {
     TrackCutsPhi->SetCutWindow(0.995, 1.011);
-
+  }
   if (suffix == "24") {
     TrackCutsPhi->SetCutWindow(0.995, 1.011);
   }
