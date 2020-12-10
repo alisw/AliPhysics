@@ -2992,6 +2992,11 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2459){  // no NL
     cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG2
     cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790007f032230000","0163103100000010"); // EG1
+  } else if (trainConfig == 2460){  // no E-Scale NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411790407fg32230000","0163103100b00010"); // INT7
+  } else if (trainConfig == 2461){  // no E-Scale NL
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411790407fg32230000","0163103100b00010"); // EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411790407fg32230000","0163103100b00010"); // EG1
 
 
   //************************************************ PCM- EDC analysis 5 TeV pp INT7 sys *********************************

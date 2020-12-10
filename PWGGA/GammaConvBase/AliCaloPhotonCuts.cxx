@@ -6826,11 +6826,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
     case 4:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 300MeV points
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
-          energy /= FunctionNL_OfficialTB_300MeV_MC(energy);
+            energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
-          energy /= FunctionNL_OfficialTB_300MeV_Data(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
       }
       break;
@@ -8461,6 +8461,10 @@ Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data(Float_t e){
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_V2(Float_t e){
   Double_t funcParams[5] = {1.91897, 0.0264988, 0.965663, -187.501, 2762.51};
   return ( 1.0505 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
+}
+Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(Float_t e){
+  Double_t funcParams[5] = {1.91897, 0.0264988, 0.965663, -187.501, 2762.51};
+  return ( 1.0 * (funcParams[0] + funcParams[1] * TMath::Log(e) ) / ( 1 + ( funcParams[2] * TMath::Exp( ( e - funcParams[3] ) / funcParams[4] ) ) ) );
 }
 Float_t AliCaloPhotonCuts::FunctionNL_OfficialTB_100MeV_Data_Sys0(Float_t e){ // refit on systematic 1sigma shift upwards of all TB points
   Double_t funcParams[5] = {2.864, 0.031267, 1.89089, -425.59, 8525.01};
