@@ -179,8 +179,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   const float KaonNsigmaUp = 5.75;
   const float KaonNClsLow = 70;
   const float KaonNClsUp = 90;
-  const float SpheriLow = 0.675;
-  const float SpheriUp = 0.725;
+  const float SpheriLow = 0.665;
+  const float SpheriUp = 0.735;
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
