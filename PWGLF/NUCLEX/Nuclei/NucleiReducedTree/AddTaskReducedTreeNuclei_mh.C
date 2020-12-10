@@ -1,16 +1,15 @@
-AliAnalysisTask *AddTaskReducedTreeNuclei_mh(bool doTri=false, bool doHypTri=false)  {
+AliAnalysisTask *AddTaskReducedTreeNuclei_mh(bool doTri=true, bool doHypTri=false)  {
    //Get the current analysis manager
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      Error("No analysis manager found.");
       return 0;
    }
    
    AliAnalysisTaskReducedTreeNuclei *task = new AliAnalysisTaskReducedTreeNuclei("TaskNuclei");
-//    task->SelectCollisionCandidates(AliVEvent::kINT7/* + AliVEvent::kHighMultV0*/);
-// //    task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0);
+
+   // //    task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0);
    
-      task->SelectCollisionCandidates(AliVEvent::kAny);
+      task->SelectCollisionCandidates((AliVEvent::kHighMultV0 | AliVEvent::kINT7));
    
    
    task->FillTritonTree(doTri);
