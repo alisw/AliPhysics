@@ -327,6 +327,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys2(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_Data_Sys3(Float_t e);
     Float_t     FunctionNL_OfficialTB_100MeV_Data_V2(Float_t e);
+    Float_t     FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(Float_t e);
     Float_t     FunctionNL_OfficialTB_150MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_300MeV_Data(Float_t e);
     Float_t     FunctionNL_OfficialTB_50MeV_MC(Float_t e);
