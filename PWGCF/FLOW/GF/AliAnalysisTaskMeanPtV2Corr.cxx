@@ -660,6 +660,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
     if(outVals[i][2]!=0)
       fptvar[i]->Fill(l_Multi,outVals[i][1]/outVals[i][2],ptvarw);
   };
+  fV0MMulti->Fill(l_Cent);
+  fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
