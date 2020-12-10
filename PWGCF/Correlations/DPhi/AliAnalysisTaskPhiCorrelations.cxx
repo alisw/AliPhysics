@@ -629,7 +629,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
-  settingsTree->Branch("fFillCorrelationsRapidity", &fFillYieldRapidity,"fFillCorrelationsRapidity/O");
+  settingsTree->Branch("fFillCorrelationsRapidity", &fFillCorrelationsRapidity,"fFillCorrelationsRapidity/O");
   settingsTree->Branch("fUseNewCentralityFramework", &fUseNewCentralityFramework,"fUseNewCentralityFramework/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
