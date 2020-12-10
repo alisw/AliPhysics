@@ -288,57 +288,57 @@ sprintf(runlabel,"%i",runNumber);
 //----------------------------------------------------------------------
 
 hZNCpmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNCpmcUncalib"));
-if(hZNCpmcUncalib->GetEntries()>0. ){
-hZNCpmcUncalib->Scale(1./hZNCpmcUncalib->GetEntries());
-hZNCpmcUncalib->SetLineColor(kRed);
-hZNCpmcUncalib->SetLineWidth(2);
-hZNCpmcUncalib->SetTitle("ZNC spectrum");
-hZNCpmcUncalib->SetXTitle("ZNC signal ");
+if(hZNCpmcUncalib && hZNCpmcUncalib->GetEntries()>0. ){
+  hZNCpmcUncalib->Scale(1./hZNCpmcUncalib->GetEntries());
+  hZNCpmcUncalib->SetLineColor(kRed);
+  hZNCpmcUncalib->SetLineWidth(2);
+  hZNCpmcUncalib->SetTitle("ZNC spectrum");
+  hZNCpmcUncalib->SetXTitle("ZNC signal ");
 }
 
 hZNApmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZNApmcUncalib"));
-if(hZNApmcUncalib->GetEntries()>0. ){
-hZNApmcUncalib->Scale(1./hZNApmcUncalib->GetEntries());
-hZNApmcUncalib->SetLineColor(kRed);
-hZNApmcUncalib->SetLineWidth(2);
-hZNApmcUncalib->SetTitle("ZNA spectrum");
-hZNApmcUncalib->SetXTitle("ZNA signal ");
+if(hZNApmcUncalib && hZNApmcUncalib->GetEntries()>0. ){
+  hZNApmcUncalib->Scale(1./hZNApmcUncalib->GetEntries());
+  hZNApmcUncalib->SetLineColor(kRed);
+  hZNApmcUncalib->SetLineWidth(2);
+  hZNApmcUncalib->SetTitle("ZNA spectrum");
+  hZNApmcUncalib->SetXTitle("ZNA signal ");
 }
 
 hZPCpmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZPCpmcUncalib"));
-if(hZPCpmcUncalib->GetEntries()>0. ){
-hZPCpmcUncalib->Scale(1./hZPCpmcUncalib->GetEntries());
-hZPCpmcUncalib->SetLineColor(kRed);
-hZPCpmcUncalib->SetLineWidth(2);
-hZPCpmcUncalib->SetTitle("ZPC spectrum");
-hZPCpmcUncalib->SetXTitle("ZPC signal ");
+if(hZPCpmcUncalib && hZPCpmcUncalib->GetEntries()>0. ){
+  hZPCpmcUncalib->Scale(1./hZPCpmcUncalib->GetEntries());
+  hZPCpmcUncalib->SetLineColor(kRed);
+  hZPCpmcUncalib->SetLineWidth(2);
+  hZPCpmcUncalib->SetTitle("ZPC spectrum");
+  hZPCpmcUncalib->SetXTitle("ZPC signal ");
 }
 
 hZPApmcUncalib = dynamic_cast<TH1F*> (fin->Get("fhZPApmcUncalib"));
-if(hZPApmcUncalib->GetEntries()>0. ){
-hZPApmcUncalib->Scale(1./hZPApmcUncalib->GetEntries());
-hZPApmcUncalib->SetLineColor(kRed);
-hZPApmcUncalib->SetLineWidth(2);
-hZPApmcUncalib->SetTitle("ZPA spectrum");
-hZPApmcUncalib->SetXTitle("ZPA signal ");
+if(hZPApmcUncalib && hZPApmcUncalib->GetEntries()>0. ){
+  hZPApmcUncalib->Scale(1./hZPApmcUncalib->GetEntries());
+  hZPApmcUncalib->SetLineColor(kRed);
+  hZPApmcUncalib->SetLineWidth(2);
+  hZPApmcUncalib->SetTitle("ZPA spectrum");
+  hZPApmcUncalib->SetXTitle("ZPA signal ");
 }
 
 hZEM1 = dynamic_cast<TH1F*> (fin->Get("fhZEM1Spectrum"));
-if(hZEM1->GetEntries()>0. ){
-hZEM1->Scale(1./hZEM1->GetEntries());
-hZEM1->SetLineColor(kRed);
-hZEM1->SetLineWidth(2);
-hZEM1->SetTitle("ZEM1 spectrum");
-hZEM1->SetXTitle("ZEM1 signal (ADC ch.)");
+if(hZEM1 && hZEM1->GetEntries()>0. ){
+  hZEM1->Scale(1./hZEM1->GetEntries());
+  hZEM1->SetLineColor(kRed);
+  hZEM1->SetLineWidth(2);
+  hZEM1->SetTitle("ZEM1 spectrum");
+  hZEM1->SetXTitle("ZEM1 signal (ADC ch.)");
 }
 
 hZEM2 = dynamic_cast<TH1F*> (fin->Get("fhZEM2Spectrum"));
-if(hZEM2->GetEntries()>0. ){
-hZEM2->Scale(1./hZEM2->GetEntries());
-hZEM2->SetLineColor(kRed);
-hZEM2->SetLineWidth(2);
-hZEM2->SetTitle("ZEM2 spectrum");
-hZEM2->SetXTitle("ZEM2 signal (ADC ch.)");
+if(hZEM2 && hZEM2->GetEntries()>0. ){
+  hZEM2->Scale(1./hZEM2->GetEntries());
+  hZEM2->SetLineColor(kRed);
+  hZEM2->SetLineWidth(2);
+  hZEM2->SetTitle("ZEM2 spectrum");
+  hZEM2->SetXTitle("ZEM2 signal (ADC ch.)");
 }
 
 //----------------------------------------------------------------------
@@ -437,42 +437,42 @@ hzna_TDC->GetYaxis()->SetTitle("(ns)");
 //----------------------------------------------------------------------
 
 TCanvas* cZNC_Spectra_Uncal = new TCanvas("cZNC_Spectra_Uncal","cZNC_Spectra_Uncal",0,0,1200,900);
-if(hZNCpmcUncalib->GetEntries()>0){
+if(hZNCpmcUncalib && hZNCpmcUncalib->GetEntries()>0){
   gPad->SetLogy();
   hZNCpmcUncalib->Draw();
   cZNC_Spectra_Uncal->Print(Form("%s/cZNC_Spectra_Uncal.png",plotDir.Data()));
 }
 
 TCanvas* cZNA_Spectra_Uncal = new TCanvas("cZNA_Spectra_Uncal","cZNA_Spectra_Uncal",0,0,1200,900);
-if(hZNApmcUncalib->GetEntries()>0){
+if(hZNApmcUncalib && hZNApmcUncalib->GetEntries()>0){
   gPad->SetLogy();
   hZNApmcUncalib->Draw();
   cZNA_Spectra_Uncal->Print(Form("%s/cZNA_Spectra_Uncal.png",plotDir.Data()));
 }
 
 TCanvas* cZPC_Spectra_Uncal = new TCanvas("cZPC_Spectra_Uncal","cZPC_Spectra_Uncal",0,0,1200,900);
-if(hZPCpmcUncalib->GetEntries()>0){
+if(hZPCpmcUncalib && hZPCpmcUncalib->GetEntries()>0){
   gPad->SetLogy();
   hZPCpmcUncalib->Draw();
   cZPC_Spectra_Uncal->Print(Form("%s/cZPC_Spectra_Uncal.png",plotDir.Data()));
 }
 
 TCanvas* cZPA_Spectra_Uncal = new TCanvas("cZPA_Spectra_Uncal","cZPA_Spectra_Uncal",0,0,1200,900);
-if(hZPApmcUncalib->GetEntries()>0){
+if(hZPApmcUncalib && hZPApmcUncalib->GetEntries()>0){
   gPad->SetLogy();
   hZPApmcUncalib->Draw();
   cZPA_Spectra_Uncal->Print(Form("%s/cZPA_Spectra_Uncal.png",plotDir.Data()));
 }
 
 TCanvas* cZEM1_Spectra = new TCanvas("cZEM1_Spectra","cZEM1_Spectra",0,0,1200,900);
-if(hZEM1->GetEntries()>0){
+if(hZEM1 && hZEM1->GetEntries()>0){
   gPad->SetLogy();
   hZEM1->Draw();
   cZEM1_Spectra->Print(Form("%s/cZEM1_Spectra.png",plotDir.Data()));
 }
 
 TCanvas* cZEM2_Spectra = new TCanvas("cZEM2_Spectra","cZEM2_Spectra",0,0,1200,900);
-if(hZEM2->GetEntries()>0){
+if(hZEM2 && hZEM2->GetEntries()>0){
   gPad->SetLogy();
   hZEM2->Draw();
   cZEM2_Spectra->Print(Form("%s/cZEM2_Spectra.png",plotDir.Data()));
@@ -483,43 +483,43 @@ if(hZEM2->GetEntries()>0){
 //---------------------------------------------------------------------------------------------------
 TCanvas* cZNC_Mean_Values = new TCanvas("cZNC_Mean_Values","cZNC_Mean_Values", 0,0,750,900);
 hznc->Draw("ep");
-if(hZNCpmcUncalib->GetEntries()>0) cZNC_Mean_Values->Print(Form("%s/cZNC_Mean_Values.png",plotDir.Data()));
+if(hZNCpmcUncalib && hZNCpmcUncalib->GetEntries()>0) cZNC_Mean_Values->Print(Form("%s/cZNC_Mean_Values.png",plotDir.Data()));
 
 TCanvas* cZNA_Mean_Values = new TCanvas("cZNA_Mean_Values","cZNA_Mean_Values", 0,0,750,900);
 hzna->Draw("ep");
-if(hZNApmcUncalib->GetEntries()>0) cZNA_Mean_Values->Print(Form("%s/cZNA_Mean_Values.png",plotDir.Data()));
+if(hZNApmcUncalib && hZNApmcUncalib->GetEntries()>0) cZNA_Mean_Values->Print(Form("%s/cZNA_Mean_Values.png",plotDir.Data()));
 
 TCanvas* cZPC_Mean_Values = new TCanvas("cZPC_Mean_Values","cZPC_Mean_Values", 0,0,750,900);
 hzpc->Draw("ep");
-if(hZPCpmcUncalib->GetEntries()>0) cZPC_Mean_Values->Print(Form("%s/cZPC_Mean_Values.png",plotDir.Data()));
+if(hZPCpmcUncalib && hZPCpmcUncalib->GetEntries()>0) cZPC_Mean_Values->Print(Form("%s/cZPC_Mean_Values.png",plotDir.Data()));
 
 TCanvas* cZPA_Mean_Values = new TCanvas("cZPA_Mean_Values","cZPA_Mean_Values", 0,0,750,900);
 hzpa->Draw("ep");
-if(hZPApmcUncalib->GetEntries()>0) cZPA_Mean_Values->Print(Form("%s/cZPA_Mean_Values.png",plotDir.Data()));
+if(hZPApmcUncalib && hZPApmcUncalib->GetEntries()>0) cZPA_Mean_Values->Print(Form("%s/cZPA_Mean_Values.png",plotDir.Data()));
 
 TCanvas* cZNC_Mean_Uncalib = new TCanvas("cZNC_Mean_Uncalib","cZNC_Mean_Uncalib", 0,0,750,900);
 hzncUncalib->Draw("ep");
-if(hZNCpmcUncalib->GetEntries()>0) cZNC_Mean_Uncalib->Print(Form("%s/cZNC_Mean_Uncalib.png",plotDir.Data()));
+if(hZNCpmcUncalib && hZNCpmcUncalib->GetEntries()>0) cZNC_Mean_Uncalib->Print(Form("%s/cZNC_Mean_Uncalib.png",plotDir.Data()));
 
 TCanvas* cZNA_Mean_Uncalib = new TCanvas("cZNA_Mean_Uncalib","cZNA_Mean_Uncalib", 0,0,750,900);
 hznaUncalib->Draw("ep");
-if(hZNApmcUncalib->GetEntries()>0) cZNA_Mean_Uncalib->Print(Form("%s/cZNA_Mean_Uncalib.png",plotDir.Data()));
+if(hZNApmcUncalib && hZNApmcUncalib->GetEntries()>0) cZNA_Mean_Uncalib->Print(Form("%s/cZNA_Mean_Uncalib.png",plotDir.Data()));
 
 TCanvas* cZPC_Mean_Uncalib = new TCanvas("cZPC_Mean_Uncalib","cZPC_Mean_Uncalib", 0,0,750,900);
 hzpcUncalib->Draw("ep");
-if(hZPCpmcUncalib->GetEntries()>0) cZPC_Mean_Uncalib->Print(Form("%s/cZPC_Mean_Uncalib.png",plotDir.Data()));
+if(hZPCpmcUncalib && hZPCpmcUncalib->GetEntries()>0) cZPC_Mean_Uncalib->Print(Form("%s/cZPC_Mean_Uncalib.png",plotDir.Data()));
 
 TCanvas* cZPA_Mean_Uncalib = new TCanvas("cZPA_Mean_Uncalib","cZPA_Mean_Uncalib", 0,0,750,900);
 hzpaUncalib->Draw("ep");
-if(hZPApmcUncalib->GetEntries()>0) cZPA_Mean_Uncalib->Print(Form("%s/cZPA_Mean_Uncalib.png",plotDir.Data()));
+if(hZPApmcUncalib && hZPApmcUncalib->GetEntries()>0) cZPA_Mean_Uncalib->Print(Form("%s/cZPA_Mean_Uncalib.png",plotDir.Data()));
 
 TCanvas* cZEM1_Mean_Values = new TCanvas("cZEM1_Mean_Values","cZEM1_Mean_Values", 0,0,750,900);
 hzem1->Draw("ep");
-if(hZEM1->GetEntries()>0) cZEM1_Mean_Values->Print(Form("%s/cZEM1_Mean_Values.png",plotDir.Data()));
+if(hZEM1 && hZEM1->GetEntries()>0) cZEM1_Mean_Values->Print(Form("%s/cZEM1_Mean_Values.png",plotDir.Data()));
 
 TCanvas* cZEM2_Mean_Values = new TCanvas("cZEM2_Mean_Values","cZEM2_Mean_Values", 0,0,750,900);
 hzem2->Draw("ep");
-if(hZEM2->GetEntries()>0) cZEM2_Mean_Values->Print(Form("%s/cZEM2_Mean_Values.png",plotDir.Data()));
+if(hZEM2 && hZEM2->GetEntries()>0) cZEM2_Mean_Values->Print(Form("%s/cZEM2_Mean_Values.png",plotDir.Data()));
 
 //---------------------------------------------------------------------------------------------------
 //centroids
@@ -586,12 +586,12 @@ tree->Fill();
 
 fout->cd();
 
-if(hZNCpmcUncalib->GetEntries()>0) list.Add(cZNC_Spectra_Uncal);
-if(hZNApmcUncalib->GetEntries()>0) list.Add(cZNA_Spectra_Uncal);
-if(hZPCpmcUncalib->GetEntries()>0) list.Add(cZPC_Spectra_Uncal);
-if(hZPApmcUncalib->GetEntries()>0) list.Add(cZPA_Spectra_Uncal);
-if(hZEM1->GetEntries()>0) list.Add(cZEM1_Spectra);
-if(hZEM2->GetEntries()>0) list.Add(cZEM2_Spectra);
+if(hZNCpmcUncalib && hZNCpmcUncalib->GetEntries()>0) list.Add(cZNC_Spectra_Uncal);
+if(hZNApmcUncalib && hZNApmcUncalib->GetEntries()>0) list.Add(cZNA_Spectra_Uncal);
+if(hZPCpmcUncalib && hZPCpmcUncalib->GetEntries()>0) list.Add(cZPC_Spectra_Uncal);
+if(hZPApmcUncalib && hZPApmcUncalib->GetEntries()>0) list.Add(cZPA_Spectra_Uncal);
+if(hZEM1 && hZEM1->GetEntries()>0) list.Add(cZEM1_Spectra);
+if(hZEM2 && hZEM2->GetEntries()>0) list.Add(cZEM2_Spectra);
 if(hznc_TDC->GetEntries()>0 && hzna_TDC->GetEntries()>0) list.Add(cTimingSum);
 if(hznc_TDC->GetEntries()>0 && hzna_TDC->GetEntries()>0) list.Add(cTimingDiff);
 if(hzna_Xcentroid->GetEntries()>0) list.Add(cZNA_X_centroid);
