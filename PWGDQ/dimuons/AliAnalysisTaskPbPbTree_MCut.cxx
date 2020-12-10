@@ -1196,8 +1196,8 @@ Double_t AliAnalysisTaskPbPbTree_MCut::CalcCorPhi(Double_t phi, Double_t dPhi) c
 }
 //______________________________________________________________________________
 Double_t CostHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
-  Double_t EBeam = 6500;
-  Double_t mp = 0.93827231;
+  Double_t EBeam = 2510*208;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1251,7 +1251,7 @@ Double_t CostHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 //______________________________________________________________________________
 Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
-  Double_t EBeam = 6500.;
+  Double_t EBeam = 2510*208;
   if(EBeam <= 0){
     printf("Can not compute phiHE with EBeam=%f\n",EBeam);
     return -999999999;
@@ -1315,8 +1315,8 @@ Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 }
 //______________________________________________________________________________
 Double_t CostCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
-  Double_t EBeam = 6500.;
-  Double_t mp = 0.93827231;
+  Double_t EBeam = 2510*208;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1378,7 +1378,7 @@ Double_t CostCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 //______________________________________________________________________________
 Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Cosinus of the Collins-Soper polar decay angle
-  Double_t EBeam = 6500.;
+  Double_t EBeam = 2510*208;
   if(EBeam <= 0){
     printf("Can not compute phiCS with EBeam=%f\n",EBeam);
     return -999999999;
