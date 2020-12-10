@@ -396,7 +396,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistTrackDCAZwCuts[iCut]);
 		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 100,0.01,10.,100,1.,200.);
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
-		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p}_{T};#sigma_{TPC}", 100, 0., 10., 20, -3., 3.);
+		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 100, 0.01, 10., 20, -3., 3.);
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
 		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 		fAODList[iCut]->Add(fHistSigmaMassPtWoPodCut[iCut]);
@@ -756,7 +756,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			if(((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->TrackIsSelected(track, fPIDResponse)) == kTRUE)){
 				if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt(),fWeightJetJetMC);
 				if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi(),fWeightJetJetMC);
-				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->Pt(), fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton),fWeightJetJetMC);
+				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->P(), fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton),fWeightJetJetMC);
 				if(fHistTrackDCAXYwCuts[iCut])fHistTrackDCAXYwCuts[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt(),fWeightJetJetMC);
 				if(fHistTrackDCAZwCuts[iCut])fHistTrackDCAZwCuts[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt(),fWeightJetJetMC);
 				if(fIsMC > 0){
@@ -784,7 +784,25 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			Int_t nClusWCuts                = 0;
 			nclus = fAOD->GetNumberOfCaloClusters();
 			if(fHistNClusWoCuts[iCut]) fHistNClusWoCuts[iCut]->Fill(nclus,fWeightJetJetMC);
-			if(nclus == 0)  continue;
+			if(nclus == 0){
+				for(unsigned int i = 0; i < photon.size(); ++i) {
+					if(photon[i]) delete photon[i];
+				}
+				photon.clear();
+				for(unsigned int i = 0; i < proton.size(); ++i) {
+					if(proton[i]) delete proton[i];
+				}
+				proton.clear();
+				for(unsigned int i = 0; i < tracks.size(); ++i) {
+					if(tracks[i]) delete tracks[i];
+				}
+				tracks.clear();
+				// for(unsigned int i = 0; i < pions.size(); ++i) {
+				// 	if(pions[i]) delete pions[i];
+				// }
+				pions.clear();
+				continue;
+			}  
 			AliVCluster* clus = NULL;
 			for(Int_t i=0; i < nclus; ++i){
 				clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fEvent->GetCaloCluster(i));
@@ -830,7 +848,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
 							continue;
 						}
-						vector < Double_t > vDoubleCountingCandidates;
 						truePhotonMotherID1 = -1;
 						AliVCluster* gamma1 = photon[iPhoton1];
 						TLorentzVector clusterVector1;
@@ -936,6 +953,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						}
 					}
 					fVectorDoubleCountTrueSigmas.clear();				
+					fVectorDoubleCountTrueSigmas.resize(0);				
 				}
 			}
 		}
