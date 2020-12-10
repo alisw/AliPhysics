@@ -20,6 +20,8 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     void SetFilterBit             (UInt_t filterBit                            ) { fFilterBit       = filterBit;       }
     void SetPileupCut             (Bool_t pileupCut                            ) { fPileupCut       = pileupCut;       } 
 
+    Double_t relKcalc(TLorentzVector track1, TLorentzVector track2);
+
   private:
     TString                 fAnalysisType;            // "ESD" or "AOD" analysis type
     Int_t                   fCollidingSystem;         // "pp" or "pPb" colliding system
@@ -39,7 +41,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 3);
+    ClassDef(AliAnalysisTaskDibaryons, 4);
 };
 
 #endif
