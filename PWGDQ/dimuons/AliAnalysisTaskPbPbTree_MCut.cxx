@@ -19,7 +19,7 @@
 // Analysis task to compute muon/dimuon kinematic distributions
 // The output is a list of histograms.
 // The macro class can run on AOD or in the train with the ESD filter.
-// R. Arnaldi
+// R. Arnaldi, Luca Micheletti
 //
 //-----------------------------------------------------------------------------
 
@@ -59,8 +59,8 @@
 
 #include "AliAnalysisTaskPbPbTree_MCut.h"
 #include "AliAODZDC.h"
-
-#include "AliAnalysisTaskPbPbTree_MCut.h"
+#include "AliTriggerAnalysis.h"
+#include "AliVMultiplicity.h"
 
 // STL includes
 #include <iostream>
@@ -853,7 +853,7 @@ void AliAnalysisTaskPbPbTree_MCut::OpenInfoCalbration(Int_t run)
     tmpFile218q = TFile::Open("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun218qVtx14MRP2New.root");
     AliOADBContainer* cont218q = (AliOADBContainer*) tmpFile218q->Get("hMultV0BefCorPfpx");
     if((cont218q->GetObject(run))){tmpPerName = "218qVtx14MRP2New";}
-    else{printf("run %i does not belong to LHC18qVtx14MRP2New\n", run);}
+    else{printf("run %i does not belong to LHC18q\n", run);}
     tmpFile218q->Close();
 
     printf("Opening calibV0TrklNoEtaCutRun218rVtx14MRP2New.root\n");
@@ -870,6 +870,7 @@ void AliAnalysisTaskPbPbTree_MCut::OpenInfoCalbration(Int_t run)
     TFile* foadb = 0;
     printf("Opening alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%s.root",tmpPerName.c_str());
     foadb = TFile::Open(Form("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%s.root",tmpPerName.c_str()));
+    printf("Reading calibration files...\n");
 
     AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
     if(!cont){
@@ -1196,8 +1197,8 @@ Double_t AliAnalysisTaskPbPbTree_MCut::CalcCorPhi(Double_t phi, Double_t dPhi) c
 }
 //______________________________________________________________________________
 Double_t CostHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
-  Double_t EBeam = 6500;
-  Double_t mp = 0.93827231;
+  Double_t EBeam = 2510*208;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1251,7 +1252,7 @@ Double_t CostHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 //______________________________________________________________________________
 Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
-  Double_t EBeam = 6500.;
+  Double_t EBeam = 2510*208;
   if(EBeam <= 0){
     printf("Can not compute phiHE with EBeam=%f\n",EBeam);
     return -999999999;
@@ -1315,8 +1316,8 @@ Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 }
 //______________________________________________________________________________
 Double_t CostCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
-  Double_t EBeam = 6500.;
-  Double_t mp = 0.93827231;
+  Double_t EBeam = 2510*208;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1378,7 +1379,7 @@ Double_t CostCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 //______________________________________________________________________________
 Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Cosinus of the Collins-Soper polar decay angle
-  Double_t EBeam = 6500.;
+  Double_t EBeam = 2510*208;
   if(EBeam <= 0){
     printf("Can not compute phiCS with EBeam=%f\n",EBeam);
     return -999999999;
