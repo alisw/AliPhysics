@@ -3882,12 +3882,12 @@ Bool_t Config_Xik0(
             name.Form("XimK0");
             cut1=icutXi;
             charge1='-';
-            ipdg=13334;
+            ipdg=3335;
         }else{
             name.Form("XipK0");
             cut1=icutXibar;
             charge1='+';
-            ipdg=-13334;
+            ipdg=-3335;
         }
         
         if(!isMC && j>=3) continue;
