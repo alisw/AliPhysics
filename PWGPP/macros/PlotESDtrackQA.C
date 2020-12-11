@@ -271,6 +271,7 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH2F* hdEdxVsPTPCsel[9];
   TH2F* hdEdxVsPTPCselITSref[9];
   TH2F* hdEdxVsPTPCselAll=0x0;
+  TH2F* hdEdxVsPTPCselITSrefAll=0x0;
   TCanvas* cdedxa=new TCanvas("cdedxall","dEdx Vs. hypo",1500,700);
   cdedxa->Divide(2,1);
   TLegend * legtrhyp=new TLegend(0.6,0.5,0.89,0.89);
@@ -288,9 +289,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     hdEdxVsPTPCselITSref[jsp]->SetStats(0);
     if(jsp==0){
       hdEdxVsPTPCselAll=(TH2F*)hdEdxVsPTPCsel[0]->Clone("hdEdxVsPTPCselAll");
-      hdEdxVsPTPCselAll->SetTitle("All mass hypotheses");
+      hdEdxVsPTPCselAll->SetTitle("All mass hypotheses, TPC-only cuts");
+      hdEdxVsPTPCselITSrefAll=(TH2F*)hdEdxVsPTPCselITSref[0]->Clone("hdEdxVsPTPCselITSrefAll");
+      hdEdxVsPTPCselITSrefAll->SetTitle("All mass hypotheses, TPC cuts + ITS refit");
     }else{
       if(hdEdxVsPTPCselAll) hdEdxVsPTPCselAll->Add(hdEdxVsPTPCsel[jsp]);
+      if(hdEdxVsPTPCselITSrefAll) hdEdxVsPTPCselITSrefAll->Add(hdEdxVsPTPCselITSref[jsp]);
     }
 
     TCanvas* cdedx=new TCanvas(Form("cdedx%s",partNames[jsp].Data()),Form("dEdx Hypo %s",partNames[jsp].Data()),1500,700);
@@ -332,7 +336,27 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   plotFileName=Form("dEdxVsTrackRecoHypo.%s",outputForm.Data());
   cdedxa->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
-
+  
+  TCanvas* cdedxAll=new TCanvas("cdedxAll","dEdx All",1500,700);
+  cdedxAll->Divide(2,1);
+  cdedxAll->cd(1);
+  gPad->SetLogx();
+  gPad->SetLogz();
+  gPad->SetRightMargin(0.12);
+  hdEdxVsPTPCselAll->GetYaxis()->SetTitleOffset(1.3);
+  hdEdxVsPTPCselAll->GetXaxis()->SetTitleOffset(1.1);
+  hdEdxVsPTPCselAll->Draw("colz");
+  cdedxAll->cd(2);
+  gPad->SetLogx();
+  gPad->SetLogz();
+  gPad->SetRightMargin(0.12);
+  hdEdxVsPTPCselITSrefAll->GetYaxis()->SetTitleOffset(1.3);
+  hdEdxVsPTPCselITSrefAll->GetXaxis()->SetTitleOffset(1.1);
+  hdEdxVsPTPCselITSrefAll->Draw("colz");
+  plotFileName=Form("dEdxVsP.%s",outputForm.Data());
+  cdedxAll->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+ 
 
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
