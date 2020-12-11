@@ -342,10 +342,10 @@ public:
         if (enableLb)
             fEnableBeauty4Prongs |= BIT(2);
     }
-    void EnableTracks(bool enable = true,
-                      bool keepPions = false,
+    void EnableTracks(bool keepPions = false,
                       bool keepKaons = false,
                       bool keepProtons = false,
+                      bool keepElectrons = false,
                       double keepTracksWithMinPt = -1.)
     {
         fEnableTracks = 0;
@@ -355,7 +355,7 @@ public:
             fEnableTracks |= BIT(1);
         if (keepProtons)
             fEnableTracks |= BIT(2);
-        if (keepProtons)
+        if (keepElectrons)
             fEnableTracks |= BIT(3);
         fKeepTracksWithMinPt = keepTracksWithMinPt;
     }
