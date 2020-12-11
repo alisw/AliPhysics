@@ -57,6 +57,7 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fEventCuts{},
                                                                                                            fSystem(kpp),
                                                                                                            fAOD(nullptr),
+                                                                                                           fPIDresp(nullptr),
                                                                                                            fAODProtection(0),
                                                                                                            fMCArray(nullptr),
                                                                                                            fRecoZvtx(-999.),
@@ -272,9 +273,15 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
     }
 
     for(auto &histo: fHistGenPromptVsPtVsY)
-        fOutput->Add(histo.second);
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
     for(auto &histo: fHistGenFDVsPtVsY)
-        fOutput->Add(histo.second);
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
 
     PostData(1, fOutput);
     PostData(2, fRecoTree);
@@ -974,8 +981,8 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         std::vector<double> py = {d->Py(), track->Py()};
                         std::vector<double> pz = {d->Pz(), track->Pz()};
                         std::vector<double> MDplus  = {massDplusPDG, massPiPDG};
-                        std::vector<double> MDs  = {massDplusPDG, massPiPDG};
-                        std::vector<double> MLc  = {massDplusPDG, massPiPDG};
+                        std::vector<double> MDs  = {massDsPDG, massPiPDG};
+                        std::vector<double> MLc  = {massLcPDG, massPiPDG};
                         double invMassNoPropBzero = ComputeInvMass(px, py, pz, MDplus);
                         double invMassNoPropBs = ComputeInvMass(px, py, pz, MDs);
                         double invMassNoPropLb = ComputeInvMass(px, py, pz, MLc);
@@ -1181,7 +1188,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     int nTracks = fAOD->GetNumberOfTracks();
     for(int iTrack = 0; iTrack < nTracks; iTrack++) {
         AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
-        if(!trackAOD->TestFilterBit(BIT(4)))
+        if(!trackAOD || !trackAOD->TestFilterBit(BIT(4)))
             continue;
         Track track;
         track.fPt = trackAOD->Pt();
