@@ -76,7 +76,7 @@ const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEve
 namespace
 {
   // Helper function
-  ULong64_t GetEventIdAsLong(AliVHeader *header)
+  ULong64_t GetGlobalBC(AliVHeader *header)
   {
     return ((ULong64_t)header->GetBunchCrossNumber() +
 	    (ULong64_t)header->GetOrbitNumber() * 3564 +
@@ -310,21 +310,29 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   
   if (!fTfInitialized) {
-    ULong64_t tfId = GetEventIdAsLong(fESD->GetHeader());
+    ULong64_t tfId = GetGlobalBC(fESD->GetHeader());
     if (tfId == 0) {
       // The time stamp of the event is not set, for example in MC
       // Try the AliEn job ID
       TString alienPID(gSystem->Getenv("ALIEN_PROC_ID"));
       if (alienPID.Length() > 0) {
-        tfId = alienPID.Atoll() * 100 + fTFCount;
+        tfId = alienPID.Atoll() * 1000 + fTFCount;
       } else {
         // Fallback:
         // Use the time period from 2020/11/01 in seconds (similar to what we did in the DAQ LDCs)
         TTimeStamp ts0(2020,11,1,0,0,0);
         TTimeStamp ts1;
         tfId = ts1.GetSec() - ts0.GetSec();
+        tfId *= 1000 + fTFCount;
       }
     }
+    // Make globally unique TF id (across all data-taking)
+    // The longest fill in Run 2 was 38 hours, which needs 43 bits. We reserve the values up to 1e13 which corresponds to 69 hours.
+    // Run numbers in Run 2 were < 300k, which needs 19 bits
+    // To make the number human-readable, we avoid a bit shift, but use a multiplication
+    if (fESD->GetRunNumber() > 0)
+      tfId += (ULong64_t) fESD->GetRunNumber() * 10000000000000L;
+    
     InitTF(tfId);
   }
   // Get multiplicity selection
@@ -905,7 +913,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   
   bc.fRunNumber = fESD->GetRunNumber();
   
-  ULong64_t evtid = GetEventIdAsLong(fESD->GetHeader());
+  ULong64_t evtid = GetGlobalBC(fESD->GetHeader());
   if(!evtid){
     evtid = (ULong64_t(fESD->GetTimeStamp())<<32) + ULong64_t((fESD->GetNumberOfTPCClusters()<<5)|(fESD->GetNumberOfTPCTracks()));
   }
