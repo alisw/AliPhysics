@@ -19,7 +19,7 @@
 // Analysis task to compute muon/dimuon kinematic distributions
 // The output is a list of histograms.
 // The macro class can run on AOD or in the train with the ESD filter.
-// R. Arnaldi
+// R. Arnaldi, Luca Micheletti
 //
 //-----------------------------------------------------------------------------
 
@@ -59,8 +59,8 @@
 
 #include "AliAnalysisTaskPbPbTree_MCut.h"
 #include "AliAODZDC.h"
-
-#include "AliAnalysisTaskPbPbTree_MCut.h"
+#include "AliTriggerAnalysis.h"
+#include "AliVMultiplicity.h"
 
 // STL includes
 #include <iostream>
@@ -853,7 +853,7 @@ void AliAnalysisTaskPbPbTree_MCut::OpenInfoCalbration(Int_t run)
     tmpFile218q = TFile::Open("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun218qVtx14MRP2New.root");
     AliOADBContainer* cont218q = (AliOADBContainer*) tmpFile218q->Get("hMultV0BefCorPfpx");
     if((cont218q->GetObject(run))){tmpPerName = "218qVtx14MRP2New";}
-    else{printf("run %i does not belong to LHC18qVtx14MRP2New\n", run);}
+    else{printf("run %i does not belong to LHC18q\n", run);}
     tmpFile218q->Close();
 
     printf("Opening calibV0TrklNoEtaCutRun218rVtx14MRP2New.root\n");
@@ -870,6 +870,7 @@ void AliAnalysisTaskPbPbTree_MCut::OpenInfoCalbration(Int_t run)
     TFile* foadb = 0;
     printf("Opening alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%s.root",tmpPerName.c_str());
     foadb = TFile::Open(Form("alien:///alice/cern.ch/user/l/lmichele/Event_Plane_calibration_files/calibV0TrklNoEtaCutRun%s.root",tmpPerName.c_str()));
+    printf("Reading calibration files...\n");
 
     AliOADBContainer* cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
     if(!cont){
