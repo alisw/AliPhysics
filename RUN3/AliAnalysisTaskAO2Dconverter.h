@@ -252,11 +252,12 @@ private:
     Float_t fTOFChi2 = -999.f;    /// chi2 TOF match (?)
 
     // PID
-    Float_t fTPCSignal = -999.f; /// dE/dX TPC
-    Float_t fTRDSignal = -999.f; /// dE/dX TRD
-    Float_t fTOFSignal = -999.f; /// TOFsignal
-    Float_t fLength = -999.f;    /// Int.Lenght @ TOF
-    Float_t fTOFExpMom = -999.f; /// TOF Expected momentum based on the expected time of pions
+    Float_t fTPCSignal = -999.f;   /// dE/dX TPC
+    Float_t fTRDSignal = -999.f;   /// dE/dX TRD
+    Float_t fTOFSignal = -999.f;   /// TOFsignal
+    Float_t fLength = -999.f;      /// Int.Lenght @ TOF
+    Float_t fTOFExpMom = -999.f;   /// TOF Expected momentum based on the expected time of pions
+    Float_t fHMPIDSignal = -999.f; /// HMPID signal
 
     // Track extrapolation to EMCAL surface
     Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface

@@ -593,6 +593,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracks->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
     tTracks->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
     tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
+    tTracks->Branch("fHMPIDSignal", &tracks.fHMPIDSignal, "fHMPIDSignal/F");
     tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
     tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
     tTracks->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
@@ -1023,6 +1024,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
     tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
     tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
+    tracks.fHMPIDSignal = AliMathBase::TruncateFloatFraction(track->GetHMPIDsignal(), mTrackSignal);
     tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
     // Speed of ligth in TOF units
@@ -1176,6 +1178,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTRDChi2 = NAN; 
       tracks.fTOFChi2 = NAN;
       tracks.fTPCSignal = NAN; 
+      tracks.fHMPIDSignal = NAN;
       tracks.fTRDSignal = NAN;
       tracks.fTOFSignal = NAN;
       tracks.fLength = NAN;
