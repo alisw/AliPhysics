@@ -303,6 +303,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrack() {
       }
       lastEntry=entry;
     }
+    if (branch==NULL){
+      ::Error("AliPIDtools::GetCurrentTrack","Branch does not exist, entry %d",entry);
+      return 0;
+    }
     pptrack = (AliESDtrack **) (branch->GetAddress());
   }
   return *pptrack;
@@ -319,6 +323,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
       branch0 = fFilteredTreeV0->GetTree()->GetBranch("track0.");
       branch1 = fFilteredTreeV0->GetTree()->GetBranch("track1.");
       treeNumber = fFilteredTreeV0->GetTreeNumber();
+    }
+    if (branch0==NULL || branch1==NULL){
+      ::Error("AliPIDtools::GetCurrentTrackV0","Branch does not exist, entry %d",entry);
+      return 0;
     }
     pptrack = (index == 0) ? (AliESDtrack **) (branch0->GetAddress()) : (AliESDtrack **) (branch1->GetAddress());
     return *pptrack;
