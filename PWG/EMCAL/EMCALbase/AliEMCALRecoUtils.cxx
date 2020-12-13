@@ -3171,6 +3171,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 /// \param geom: EMCal geometry pointer
 /// \param cells: list of EMCal cells with signal
 /// \param cluster: EMCal cluster subject to shower shape recalculation
+/// \param selectNeighbours: Make sure all cells are adjacent to another cell in the cluster centred in absIdMax
 /// \param cellDiff: max lateral size in cells to be considered from cell with highest energy, 1: 3x3, 2: 5x5
 /// \param cellEcut: minimum cell energy to be considered in the shower shape recalculation
 /// \param cellTimeCut: time window of cells to be considered in shower recalculation
@@ -3188,7 +3189,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
 void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 (const AliEMCALGeometry * geom,
  AliVCaloCells* cells, AliVCluster * cluster,
- Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut,
+ Bool_t selectNeighbours, Int_t cellDiff,
+ Float_t cellEcut, Float_t cellTimeCut,
  Float_t & energy, Int_t & nlm,
  Float_t & l0,   Float_t & l1,
  Float_t & disp, Float_t & dEta, Float_t & dPhi,
@@ -3233,6 +3235,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   // Loop on cells, 5x5 around max cell, calculate the selected cells energy
   const Int_t nCellsFix = (2*cellDiff+1)*(2*cellDiff+1);
   UShort_t cellsAbsIdNxN[nCellsFix];
+  Bool_t   cellsNeighNxN[nCellsFix];
+  Float_t  cellsEnerNxN [nCellsFix];
   
   Int_t nCells = 0;
   shared = kFALSE;
@@ -3242,16 +3246,16 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     {
       Int_t absId = -1;
       Int_t iSM   = iSupModMax;
-      
+
       iphi = iphiMax+iphidiff;
       ieta = ietaMax+ietadiff; 
-      if      ( ieta >= 48 && !(iSupModMax%2) ) 
+      if      ( ieta >= 48 && (iSupModMax%2) )
       {
         iSM    = iSupModMax+1; 
         ieta  -= AliEMCALGeoParams::fgkEMCALCols;
         shared = kTRUE; 
       }
-      else if ( ieta <   0 &&  (iSupModMax%2) ) 
+      else if ( ieta <   0 && !(iSupModMax%2) )
       { 
         iSM    = iSupModMax-1; 
         ieta  += AliEMCALGeoParams::fgkEMCALCols;
@@ -3290,7 +3294,13 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
           TMath::Abs(tCell) < cellTimeCut  )
       {
         energy += eCell;
-        cellsAbsIdNxN[nCells++] = absId;
+        cellsAbsIdNxN[nCells] = absId;
+        cellsNeighNxN[nCells] = kFALSE; // check neighbours later
+        if ( absId == absIdMax )
+          cellsNeighNxN[nCells] = kTRUE; // when checking neighbours accept highest energy absID cell in any case
+        cellsEnerNxN [nCells] = eCell;
+        nCells++;
+        //printf("Add %d, absId (%d,%d), cell (%f,%f)\n",nCells-1,absId,cellsAbsIdNxN[nCells-1],cellsEnerNxN [nCells-1], eCell);
       }
       
     } // iphidiff
@@ -3300,8 +3310,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 
 //  if ( cluster->E() > 10 )
 //  {
-//    printf("Cluster E (%2.2f,%2.2f), ncells (%d,%d), shared (%d,%d)\n",
-//           cluster->E(), energy, cluster->GetNCells(),nCells, shared, shared2);
+//    printf("Cluster E (%2.2f,%2.2f), ncells (%d,%d), shared %d\n",
+//           cluster->E(), energy, cluster->GetNCells(),nCells, shared);
 //    
 //    for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
 //    {
@@ -3318,9 +3328,127 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 //    }
 //  }
   
-  // Get number of local maxima in selected cells array
+  // Tag the cells neighbour to absIdMax cell
+  // and neighobours to those, from inner cells to outer cells
   //
-  nlm = GetNumberOfLocalMaxima(cells, geom, nCells, cellsAbsIdNxN);
+  if ( selectNeighbours )
+  {
+    Int_t nCellsNew = 0;
+    UShort_t cellsAbsIdNxNnew[nCells];
+
+    // Loop on cells to check neigbours
+    // Start first with neighbours to max ID cell
+    // Then check neighbours to those
+    // Do it as many times as number of col/row of new cluster
+    //
+    // Not very nice, quite rough, but it works
+    //
+    for (Int_t icolrow = 0; icolrow <= cellDiff+1; icolrow++)
+    {
+      for(Int_t icell = 0; icell < nCells; icell++)
+      {
+        if ( icolrow == 0 && AreNeighbours(cellsAbsIdNxN[icell],absIdMax, geom) )
+        {
+          cellsNeighNxN[icell] = kTRUE;
+        } // first row/columns
+        else if ( icolrow > 0 && cellsNeighNxN[icell] ) // subsequent cells/columns
+        {
+          for(Int_t jcell = 0; jcell < nCells; jcell++)
+          {
+            if ( !cellsNeighNxN[jcell] && AreNeighbours(cellsAbsIdNxN[jcell],cellsAbsIdNxN[icell], geom) )
+            {
+              cellsNeighNxN[jcell] = kTRUE;
+            }
+          }
+        }
+      }
+    } // colrow number loop
+
+    // If not neighbour, reject cell.
+    // Needed for NLM re-calculation.
+    //
+    for(Int_t icell = 0; icell < nCells; icell++)
+    {
+      if ( !cellsNeighNxN[icell] )
+      {
+        //printf("Not neigh icell %d, ecell %f\n ",icell,cellsEnerNxN [icell]);
+        energy -= cellsEnerNxN [icell];
+        cellsEnerNxN [icell] = 0;
+      }
+      else
+      {
+        cellsAbsIdNxNnew[nCellsNew++] = cellsAbsIdNxN[icell];
+      }
+    } // cell loop
+
+    if ( energy < cellEcut ) return;
+
+    // Get number of local maxima in selected cells array
+    //
+    nlm = GetNumberOfLocalMaxima(cells, geom, nCellsNew, cellsAbsIdNxNnew);
+
+//    // Checks prints
+//    if ( nCells != nCellsNew && selectNeighbours )
+//    {
+//      Int_t icol = -1;
+//      Int_t irow = -1;
+//      Int_t imod = -1;
+//      Int_t iTower = -1, iIphi = -1, iIeta = -1;
+//      Int_t nlmPre = GetNumberOfLocalMaxima(cells, geom, nCells, cellsAbsIdNxN);
+//      TLorentzVector momentum;
+//      Double_t v[] = {0,0,0};
+//      cluster->GetMomentum(momentum,v);
+//      Float_t etaCluster = momentum.Eta();
+//      printf("Cluster E (org %2.2f, NxN %2.2f), Eta %f, ncells (org %d, NxN %d,NxN neigh %d), nlm (NxN %d, NxN neigh %d), shared %d\n",
+//             cluster->E(), energy, etaCluster, cluster->GetNCells(),nCells, nCellsNew, nlmPre, nlm, shared);
+//
+//      printf("Original cells: \n");
+//      for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
+//      {
+//        Int_t   id = cluster->GetCellAbsId(icell);
+//        Float_t ec = cells->GetCellAmplitude(id);
+//        geom->GetCellIndex(id,imod,iTower,iIphi,iIeta);
+//        geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+//
+//        printf("\t cell %d, en %f, absId %d, sm %d, row %d, col %d\n",icell, ec, id, imod, irow, icol);
+//      }
+//
+//      printf("NxN cells: \n");
+//      for(Int_t icell = 0; icell < nCells; icell++)
+//      {
+//        Int_t   id = cellsAbsIdNxN[icell];
+//        Float_t ec = cells->GetCellAmplitude(id);
+//        geom->GetCellIndex(id,imod,iTower,iIphi,iIeta);
+//        geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+//
+//        printf("\t NxN cell %d,  en %f, absId %d, sm %d, row %d, col %d",icell, ec, id, imod, irow, icol);
+//
+//        if ( !cellsNeighNxN[icell] )
+//        {
+//          printf(" - NOT NEIGHBOUR!");
+//          //continue;
+//        }
+//        printf("\n");
+//      }
+//
+//      printf("Accepted cells: \n");
+//      for(Int_t icell = 0; icell < nCellsNew; icell++)
+//      {
+//        Int_t   id = cellsAbsIdNxNnew[icell];
+//        Float_t ec = cells->GetCellAmplitude(id);
+//        geom->GetCellIndex(id,imod,iTower,iIphi,iIeta);
+//        geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+//
+//        printf("\t cell %d,  en %f, absId %d, sm %d, row %d, col %d\n",icell, ec, id, imod, irow, icol);
+//      }
+//    }
+  } // check neighbours
+  else
+  {
+    // Get number of local maxima in NxN cluster
+    //
+    nlm = GetNumberOfLocalMaxima(cells, geom, nCells, cellsAbsIdNxN);
+  }
 
   Double_t pGlobal[3];
   l0 = 0;  l1 = 0;
@@ -3328,8 +3456,11 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   sEta = 0; sPhi = 0; sEtaPhi = 0;
   
   // Loop on cells to calculate weights and shower shape terms parameters
+  //
   for (Int_t iDigit=0; iDigit < nCells; iDigit++)
   {
+    if ( selectNeighbours && !cellsNeighNxN[iDigit] ) continue;
+
     // Get from the absid the supermodule, tower and eta/phi numbers
     Int_t absId = cellsAbsIdNxN[iDigit];
     
@@ -3412,6 +3543,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   // Loop on cells to calculate dispersion
   for (Int_t iDigit=0; iDigit < nCells; iDigit++)
   {
+    if ( selectNeighbours && !cellsNeighNxN[iDigit] ) continue;
+
     // Get from the absid the supermodule, tower and eta/phi numbers
     Int_t absId = cellsAbsIdNxN[iDigit];
 
@@ -3470,7 +3603,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   }// cell loop
 
   // Normalize to the weigth and set shower shape parameters
- 
+  //
   disp    /= wtot ;
   dEta    /= wtot ;
   dPhi    /= wtot ;

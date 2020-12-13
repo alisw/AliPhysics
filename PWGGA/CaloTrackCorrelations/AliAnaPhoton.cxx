@@ -63,7 +63,8 @@ fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),  fFillCellsEnergyHisto(0),
 fFillControlClusterContentHisto(0),
 fSeparateConvertedDistributions(0),
-fUseNxNShowerShape(0),        fNxNColRowNumber(2),
+fUseNxNShowerShape(0),        fNxNShowerShapeColRowDiffNumber(2), 
+fNxNShowerShapeOnlyNeigbours(1), fNxNShowerShapeMinEnCell(0.1),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
@@ -4231,7 +4232,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     if ( fUseNxNShowerShape )
     {
-      TString nxnString = Form("%dx%d",2*fNxNColRowNumber+1,2*fNxNColRowNumber+1);
+      TString nxnString = Form("%dx%d",2*fNxNShowerShapeColRowDiffNumber+1,2*fNxNShowerShapeColRowDiffNumber+1);
       if ( !IsHighMultiplicityAnalysisOn() )
       {
         fhLam0NxNNLM  = new TH3F
@@ -6905,18 +6906,26 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       Float_t energyNxN = 0, l1 = 0;
 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
-      (GetEMCALGeometry(), cells, calo, fNxNColRowNumber, 0.1, 1000000,
+      (GetEMCALGeometry(), cells, calo,
+       fNxNShowerShapeOnlyNeigbours, fNxNShowerShapeColRowDiffNumber, fNxNShowerShapeMinEnCell, 1000000,
        energyNxN, nMaximaNxN, l0NxN, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
 
-      if ( !IsHighMultiplicityAnalysisOn() )
-        fhEnNxNFracNLM             ->Fill(pt, en/energyNxN, nMaximaNxN, GetEventWeight()*weightPt);
-      else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
-        fhEnNxNFracNLMPerCen[icent]->Fill(pt, en/energyNxN, nMaximaNxN, GetEventWeight()*weightPt);
+      if ( fFillSSHistograms && energyNxN > 0 )
+      {
+        if ( !IsHighMultiplicityAnalysisOn() )
+        {
+          fhEnNxNFracNLM             ->Fill(pt, en/energyNxN, nMaximaNxN, GetEventWeight()*weightPt);
+        }
+        else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        {
+          fhEnNxNFracNLMPerCen[icent]->Fill(pt, en/energyNxN, nMaximaNxN, GetEventWeight()*weightPt);
+        }
+      }
 
-//      if ( en > 5 )  printf("E %2.2f, ENxN %2.2f, M02 %2.2f, NxN M02 %2.2f; NLM org %d, NxN %d\n",
-//                            en, energyNxN,
-//                            calo->GetM02(), l0NxN,
-//                            nMaxima, nMaximaNxN);
+      //if ( en > 10 ) 
+//      if ( nMaxima != nMaximaNxN || TMath::Abs(calo->GetM02()-l0NxN) > 0.01 )
+//      printf("Photon E %2.2f, ENxN %2.2f, M02 %2.2f, NxN M02 %2.2f; NLM org %d, NxN %d\n",
+//             en, energyNxN, calo->GetM02(), l0NxN, nMaxima, nMaximaNxN);
     }
 
     //--------------------------------------------------------
@@ -7465,10 +7474,11 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Time shift: shift = %3.1f\n", fConstantTimeShift);
   printf("Number of cells in cluster is  > %d \n", fNCellsCut);
   printf("Number of local maxima in cluster is  %d < NLM < %d \n", fNLMCutMin,fNLMCutMax);
-  printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d, conversion separation %d, use NxN %d, col-row number %d\n",
+  printf("Fill shower shape histograms %d, per SM %d, per EMCal region %d, only simple %d, per NLM %d, conversion separation %d\n",
          fFillSSHistograms, fFillSSPerSMHistograms, fFillEMCALRegionSSHistograms, 
-         fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions,
-         fUseNxNShowerShape, fNxNColRowNumber);
+         fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions);
+  printf("Shower shape use NxN %d, col-row number %d, only neighbours %d, e cell > %2.2f\n",
+         fUseNxNShowerShape, fNxNShowerShapeColRowDiffNumber,fNxNShowerShapeOnlyNeigbours,fNxNShowerShapeMinEnCell);
   printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d, cells energy %d \n",
          fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto,fFillCellsEnergyHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  

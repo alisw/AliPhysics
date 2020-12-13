@@ -405,7 +405,8 @@ public:
   
   void     RecalculateClusterShowerShapeParametersNxNCells(const AliEMCALGeometry * geom,
                                                            AliVCaloCells* cells, AliVCluster * cluster,
-                                                           Int_t cellDiff, Float_t cellEcut, Float_t cellTimeCut,
+                                                           Bool_t selectNeighbours, Int_t cellDiff,
+                                                           Float_t cellEcut, Float_t cellTimeCut,
                                                            Float_t & energy, Int_t & nlm,
                                                            Float_t & l0,   Float_t & l1,
                                                            Float_t & disp, Float_t & dEta, Float_t & dPhi,
