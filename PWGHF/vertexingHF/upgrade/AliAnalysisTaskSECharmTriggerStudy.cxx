@@ -77,7 +77,7 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fEnableCascades(false),
                                                                                                            fEnableBeauty3Prongs(false),
                                                                                                            fEnableBeauty4Prongs(false),
-                                                                                                           fEnableTracks(false),
+                                                                                                           fEnableTracks(0),
                                                                                                            fKeepTracksWithMinPt(-1.),
                                                                                                            fNsigmaTPCThreshold(3.),
                                                                                                            fNsigmaTOFThreshold(3.),
@@ -1215,20 +1215,26 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             NsigmaTOFPr = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kProton);
             NsigmaTOFEl = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kElectron);
         }
-        if(NsigmaTPCPi < fNsigmaTPCThreshold || NsigmaTOFPi < fNsigmaTOFThreshold)
+        if(TMath::Abs(NsigmaTPCPi) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFPi) < fNsigmaTOFThreshold || NsigmaTOFPi == -999.))
             track.fSpecies |= kPion;
-        if(NsigmaTPCK < fNsigmaTPCThreshold || NsigmaTOFK < fNsigmaTOFThreshold)
+        if(TMath::Abs(NsigmaTPCK) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFK) < fNsigmaTOFThreshold || NsigmaTOFK == -999.))
             track.fSpecies |= kKaon;
-        if(NsigmaTPCPr < fNsigmaTPCThreshold || NsigmaTOFPr < fNsigmaTOFThreshold)
+        if(TMath::Abs(NsigmaTPCPr) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFPr) < fNsigmaTOFThreshold || NsigmaTOFPr == -999.))
             track.fSpecies |= kProton;
-        if(NsigmaTPCEl < fNsigmaTPCThreshold || NsigmaTOFEl < fNsigmaTOFThreshold)
+        if(TMath::Abs(NsigmaTPCEl) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFEl) < fNsigmaTOFThreshold || NsigmaTOFEl == -999.))
             track.fSpecies |= kElectron;
 
+        bool isSpeciesSelected = false;
         if(((fEnableTracks >> 0 & 1) && (track.fSpecies >> 0 & 1)) || 
            ((fEnableTracks >> 1 & 1) && (track.fSpecies >> 1 & 1)) ||
            ((fEnableTracks >> 2 & 1) && (track.fSpecies >> 2 & 1)) ||
-           ((fEnableTracks >> 3 & 1) && (track.fSpecies >> 3 & 1)) || 
-           (fKeepTracksWithMinPt < 0 || track.fPt > fKeepTracksWithMinPt))
+           ((fEnableTracks >> 3 & 1) && (track.fSpecies >> 3 & 1)))
+        {
+            isSpeciesSelected = true;
+            fTracks.push_back(track);
+        }
+
+        if(!isSpeciesSelected && fKeepTracksWithMinPt > 0 && track.fPt > fKeepTracksWithMinPt)
             fTracks.push_back(track);
     }
 

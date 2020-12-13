@@ -135,6 +135,7 @@
 #pragma link C++ class Beauty3Prong+;
 #pragma link C++ class Beauty4Prong+;
 #pragma link C++ class GenHadron+;
+#pragma link C++ class Track+;
 #pragma link C++ class std::vector<Charm2Prong>+;
 #pragma link C++ class std::vector<Charm3Prong>+;
 #pragma link C++ class std::vector<Dstar>+;
@@ -142,6 +143,7 @@
 #pragma link C++ class std::vector<Beauty3Prong>+;
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
+#pragma link C++ class std::vector<Track>+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
 #pragma link C++ class AliRDHFCutsKFP+;
 #pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromKFP+;
