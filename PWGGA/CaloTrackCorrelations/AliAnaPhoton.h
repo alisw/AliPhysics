@@ -128,11 +128,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
-  void         SwitchOnUse5x5ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = 2 ; }
-  void         SwitchOnUse7x7ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = 3 ; }
-  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { fUseNxNShowerShape = kTRUE  ; fNxNColRowNumber = n ; }
+  void         SwitchOnUse5x5ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 2 ; }
+  void         SwitchOnUse7x7ShowerShapeHisto()           { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 3 ; }
+  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = n ; }
   void         SwitchOffUseNxNShowerShapeHisto()          { fUseNxNShowerShape = kFALSE ; }
-  
+  void         SwitchOnNxNShowerShapeOnlyNeighbours()     { fNxNShowerShapeOnlyNeigbours  = kTRUE  ; }
+  void         SwitchOffNxNShowerShapeOnlyNeighbours()    { fNxNShowerShapeOnlyNeigbours  = kFALSE ; }
+  void         SetNxNShowerShapeColRowDiffNumber(Int_t n) { fNxNShowerShapeColRowDiffNumber = n    ; }
+  void         SetNxNShowerShapeMinEnCell(Float_t min)    { fNxNShowerShapeMinEnCell      = min  ; }
+ 
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   
@@ -254,8 +258,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
   Bool_t   fUseNxNShowerShape;                      ///< Calculate shower shape restricting to NxN and fill histograms
-  Int_t    fNxNColRowNumber;                        ///< Number of columns and rows from leading cell in shower shape calculation
-  
+  Int_t    fNxNShowerShapeColRowDiffNumber;         ///< Number of columns and rows from leading cell in shower shape calculation
+  Bool_t   fNxNShowerShapeOnlyNeigbours;            ///< Make sure when adding the NxN cells, that all cells are contiguous to max energy cell
+  Float_t  fNxNShowerShapeMinEnCell;                ///< Minimum energy of cells in NxN cluster shower shape
+
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -756,7 +762,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,55) ;
+  ClassDef(AliAnaPhoton,56) ;
   /// \endcond
 
 } ;
