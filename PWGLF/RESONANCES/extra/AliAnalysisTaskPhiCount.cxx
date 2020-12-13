@@ -94,7 +94,7 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     fHistTOFPID0    = new TH2F("fHistTOFPID0", "TOF Response (ALL)"     , 100, 0, 4, 100, 0, 1.2);
     fHistTOFPID1    = new TH2F("fHistTOFPID1", "TOF Response (Sel1)"    , 100, 0, 4, 100, 0, 1.2);
     fHistTOFPID2    = new TH2F("fHistTOFPID2", "TOF Response (Sel2)"    , 100, 0, 4, 100, 0, 1.2);
-    fHistEvntEff    = new TH1F("fHistEvntEff", "fHistEvntEff"           , 4,   0.5, 4.5);
+    fHistEvntEff    = new TH1F("fHistEvntEff", "fHistEvntEff"           , 5,   0.5, 5.5);
     fAnalysisOutputList->Add(fHistEvntEff);
     fAnalysisOutputList->Add(fHistVertex0);
     fAnalysisOutputList->Add(fHistTPCPID0);
@@ -196,7 +196,7 @@ void    AliAnalysisTaskPhiCount::fPostData()
 
 //_____________________________________________________________________________
 
-bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* event )
+bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* fCurrent_Event )
 {
     // Recovering Primary Vertex from General methods and SPD
     auto    PrimaryVertexSPD    = fAOD->GetPrimaryVertexSPD();
@@ -243,6 +243,15 @@ bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* event 
     // Fill the Vertex Z position histogram
     fHistVertex1->Fill(fPrimaryVertex->GetZ());
     
+    // Check the event is Pile-up from the SPD
+    if ( fCurrent_Event->IsPileupFromSPD() )
+    {
+        fFillVtxHist(4);
+        fPostData();
+        return false;
+    }
+    
+    fFillVtxHist(5);
     return  true;
 }
 
@@ -267,6 +276,9 @@ bool    AliAnalysisTaskPhiCount::fIsKaonCandidate ( AliAODTrack* track )
     auto ffSigTOF    = std::fabs(fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon));
     auto ffSigTPC    = std::fabs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
     
+    fFillPIDHist(track,0);
+    fFillPIDHist(track,3);
+    
     //  CUSTOM
     if ( !fbTPC || (fbTOF && ffSigTOF > 3) )      return false;
     if ( track->Pt() >= 0.28 &&  fbTOF && ffSigTPC > 5. )   return false;
@@ -283,9 +295,6 @@ bool    AliAnalysisTaskPhiCount::fIsKaonCandidate ( AliAODTrack* track )
 
 bool    AliAnalysisTaskPhiCount::fSetKaonPID ( AliAODTrack* track )
 {
-    fFillPIDHist(track,0);
-    fFillPIDHist(track,3);
-    
     // Check the PID is present
     if ( !fPIDResponse ) return false;
     auto fbTPC       = (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
@@ -465,7 +474,7 @@ void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
         if ( !fIsTrackCandidate(fCurrent_Track) ) continue;
         
         // Check the PID is present and within requirements
-        if ( !fIsKaonCandidate(fCurrent_Track) ) continue;
+        if ( !fSetKaonPID(fCurrent_Track) ) continue;
         
         // Filling the Kaon Tree
         fKaonPx[fnKaon] =   fCurrent_Track->Px();
@@ -528,7 +537,6 @@ void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
     }
     
     // Saving output
-    fFillVtxHist(4);
     fPostData();
     
 }
