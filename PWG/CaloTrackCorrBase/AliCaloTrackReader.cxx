@@ -1727,6 +1727,7 @@ void AliCaloTrackReader::InitParameters()
   
   fPtHardAndJetPtFactor     = 4. ;
   fPtHardAndClusterPtFactor = 1.5;
+  fPtHardAndPromptPhotonPtFactor = 2.;
   
   //Centrality
   fUseAliCentrality = kFALSE;
