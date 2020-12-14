@@ -4105,10 +4105,13 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
   if ( fComparePtHardAndJetPt )
-    printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
+    printf("Compare jet pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndJetPtFactor);
   
   if ( fComparePtHardAndClusterPt )
-    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
+    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndClusterPtFactor);
+  
+  if ( fComparePtHardAndPromptPhotonPt )
+    printf("Compare prompt photon pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndPromptPhotonPtFactor);
   
   if ( fRemoveLEDEvents > 0 )
   {

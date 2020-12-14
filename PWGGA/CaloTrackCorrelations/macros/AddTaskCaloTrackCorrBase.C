@@ -108,7 +108,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     // Event rejection cuts for jet-jet simulations, do not use in other
     if (  cutsString.Contains("JetJet")  )
     {
-      printf("Reject outliers checking jet pT\n");
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking jet pT\n");
       reader->SetPtHardAndJetPtComparison(kTRUE);
       reader->SetPtHardAndJetPtFactor(2);
     }
@@ -116,13 +116,13 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     // Event rejection more suitable for gamma-jet simulations, do not use in other
     if (  cutsString.Contains("GamJetGen")  )
     {    
-      printf("Reject outliers checking prompt photon pT\n");
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking prompt photon pT\n");
       reader->SetPtHardAndPromptPhotonPtComparison(kTRUE);
       reader->SetPtHardAndPromptPhotonPtFactor(2);
     }
     else if (  cutsString.Contains("GamJet")  )
     {    
-      printf("Reject outliers checking cluster energy\n");
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking cluster energy\n");
       reader->SetPtHardAndClusterPtComparison(kTRUE);
       reader->SetPtHardAndClusterPtFactor(1.5);
     }
