@@ -118,7 +118,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     {    
       printf("Reject outliers checking prompt photon pT\n");
       reader->SetPtHardAndPromptPhotonPtComparison(kTRUE);
-      reader->SetPtHardAndPromptPhotonPtFactor(1.5);
+      reader->SetPtHardAndPromptPhotonPtFactor(2);
     }
     else if (  cutsString.Contains("GamJet")  )
     {    
