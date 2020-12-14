@@ -87,7 +87,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fEMCTrkEta;             // eta distribution (EMCal matched)
         TH1F* fAllTrkPhi;             // phi distribution (All)
         TH1F* fEMCTrkPhi;             // phi distribution (EMCal matched)
-    
+    	TH2F* fPhiEta;		      // Trk Phi vs. Eta
+    	TH1F* fTPCCrossedRow;         // TPC CrossedRows
+
         TH2F* fdEdx;                  // dE/dx distribution (electron)
         TH2F* fTPCnsig;               // TPC Nsigma distribution (electron)
         TH2F* fTPCnsig_Pi;            // TPC Nsigma distribution (pion)
@@ -175,9 +177,11 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F*               fHistMCorg_D;
         TH1F*               fHistMCorg_BD;
         TH1F*               fHistMCorg_B;
+        TH1F*               fHistMCorg_Lc;
         TH2F*               fPt_Btoe;
         TH1F*               fHistPt_HFE_MC_B;
         TH1F*               fHistPt_HFE_MC_D;
+        TH1F*               fHistPt_HFE_MC_Lc;
 
 	TH2F*		    fDCAxy_MC_B;
 	TH2F*		    fDCAxy_MC_D;
