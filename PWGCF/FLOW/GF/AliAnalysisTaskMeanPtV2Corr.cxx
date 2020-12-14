@@ -604,7 +604,6 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   Double_t trackXYZ[3];
   fGFW->Clear();
   Double_t nTotNoTracks=0;
-  Double_t nTotNoTracks2=0; //Temporary solution to work with earlier weights
   Double_t ptmins[] = {0.2,0.2,0.3,0.5};
   Double_t ptmaxs[] = {10.,10.,6.0,6.0};
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
@@ -634,7 +633,6 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
     weff = 1./weff;
     if(TMath::Abs(lTrack->Eta())<fEta)  { //for mean pt, only consider -0.4-0.4 region
       FillWPCounter(wp[0],weff,p1);
-      nTotNoTracks2+=1;
       // if(fDisablePID) continue;
       // if(PIDIndex) FillWPCounter(wp[PIDIndex],w,p1); //should be different weight here
     } else { //Otherwise, we consider it for vn calculations
@@ -651,10 +649,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT varianve
   Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
-  Double_t l_Multi2 = fUseNch?nTotNoTracks2:l_Cent; //Temporary solution
   for(Int_t i=0;i<1;i++) {
     if(!wp[i][0]) continue;
-    outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi2));
+    outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi));
     CalculateMptValues(outVals[i],wp[i]);
     Double_t ptvarw = fUseWeightsOne?1:outVals[i][2];
     if(outVals[i][2]!=0)
