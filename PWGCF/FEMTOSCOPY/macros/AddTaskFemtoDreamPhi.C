@@ -160,6 +160,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
+
 
   // Number of bins
   std::vector<int> NBins;
