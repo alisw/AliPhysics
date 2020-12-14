@@ -891,7 +891,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     isselLc = fCutsLctopKpi->IsSelected(d, AliRDHFCuts::kAll, fAOD);
             }
 
-            if (!d || (!isselDplus && !isselDs && !isselLc))
+            if (!d || (!isselDplus && isselDs<=0 && isselLc<=0))
                 continue;
 
             if (!(fEnable3Prongs >> 0 & 1) && !(fEnableBeauty4Prongs >> 0 & 1) && (!isselDs && !isselLc))
