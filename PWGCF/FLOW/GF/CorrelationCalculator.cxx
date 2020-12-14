@@ -1,5 +1,6 @@
 #include "CorrelationCalculator.h"
 
+ClassImp(CorrelationCalculator);
 //_____________________________________________________________________
 TComplex CorrelationCalculator::Q(int n, int p)
 {

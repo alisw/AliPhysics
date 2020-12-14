@@ -24,4 +24,6 @@
 #pragma link C++ class AliAnalysisTaskESEFlow+;
 #pragma link C++ class AliAnalysisTaskFlowSquareBracket+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
+#pragma link C++ class CorrelationCalculator+;
+#pragma link C++ class PhysicsProfile+;
 #endif

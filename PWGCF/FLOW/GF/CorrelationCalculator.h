@@ -3,11 +3,12 @@
 
 #include <iostream>
 #include "TComplex.h"
+#include "TObject.h"
 
-class CorrelationCalculator {
-
+class CorrelationCalculator : public TObject 
+{
     public:
-    
+    CorrelationCalculator(){}
     static const int MaxHarm = 20;
     static const int MaxPow = 20; 
 
@@ -180,5 +181,8 @@ class CorrelationCalculator {
     void ResetQ(const int nMaxHarm, const int nMaxPow);
     void FillQVector(TComplex _Qvector[MaxHarm][MaxPow], double _Qcos[MaxHarm][MaxPow], double _Qsin[MaxHarm][MaxPow]);
 
+    protected:
+    private:
+    ClassDef(CorrelationCalculator, 1);   //
 };
 #endif
