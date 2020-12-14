@@ -98,6 +98,11 @@ fTrackEfficiency(0),
 hTrackEfficiency(0),
 hTrackEfficiencyRun(0),
 
+fFlowRunByRunWeights(false),
+fFlowPeriodWeights(false),
+fFlowUse3Dweights(false),
+fFlowWeightsList(nullptr),
+
 fPhiWeight(0),
 fPhiWeightPlus(0),
 fPhiWeightMinus(0),
@@ -253,6 +258,11 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fTrackEfficiency(0),
 	hTrackEfficiency(0),
 	hTrackEfficiencyRun(0),
+
+        fFlowRunByRunWeights(false),
+        fFlowPeriodWeights(false),
+        fFlowUse3Dweights(false),
+        fFlowWeightsList(nullptr),
 
 	fPhiWeight(0),
 	fPhiWeightPlus(0),
@@ -1668,4 +1678,97 @@ void AliAnalysisTaskNonlinearFlow::Terminate(Option_t *)
 {
 	// Terminate loop
 	Printf("Terminate()");
+}
+
+ClassImp(PhysicsProfile);
+PhysicsProfile::PhysicsProfile() :
+		fChsc4242(nullptr),
+		fChsc4242_Gap0(nullptr),
+		fChsc4242_Gap2(nullptr),
+		fChsc4242_Gap4(nullptr),
+		fChsc4242_Gap6(nullptr),
+		fChsc4242_Gap8(nullptr),      
+		fChsc4242_Gap10(nullptr),    
+		fChsc4242_3sub(nullptr),	
+		fChsc4242_3subMMLRA(nullptr),
+		fChsc4242_3subMMLRB(nullptr),							
+		fChsc4242_3subLLMRA(nullptr),							
+		fChsc4242_3subLLMRB(nullptr),							
+		fChsc4242_3subRRMLA(nullptr),							
+		fChsc4242_3subRRMLB(nullptr),							
+		fChsc4224_3sub(nullptr),							
+		fChsc4242_3subGap2(nullptr),					
+		fChsc4224_3subGap2(nullptr),					
+		fChsc3232(nullptr),									
+		fChsc3232_Gap0(nullptr),							
+		fChsc3232_Gap2(nullptr),							
+		fChsc3232_Gap4(nullptr),                            
+		fChsc3232_Gap6(nullptr),                            
+		fChsc3232_Gap8(nullptr),                            
+		fChsc3232_Gap10(nullptr),                            
+		fChsc3232_3sub(nullptr),							
+		fChsc3232_3subMMLRA(nullptr),							
+		fChsc3232_3subMMLRB(nullptr),							
+		fChsc3232_3subLLMRA(nullptr),							
+		fChsc3232_3subLLMRB(nullptr),							
+		fChsc3232_3subRRMLA(nullptr),							
+		fChsc3232_3subRRMLB(nullptr),							
+		fChsc3223_3sub(nullptr),							
+		fChsc3232_3subGap2(nullptr),					
+		fChsc3223_3subGap2(nullptr),					
+		fChc422(nullptr), 
+		fChc532(nullptr),
+		fChc422_Gap0A(nullptr),   
+		fChc422_Gap0B(nullptr),   
+		fChc532_Gap0A(nullptr),   
+		fChc532_Gap0B(nullptr),   
+		fChc422_Gap2A(nullptr),   
+		fChc422_Gap2B(nullptr),   
+		fChc532_Gap2A(nullptr),   
+		fChc532_Gap2B(nullptr),   
+		fChc422_Gap4A(nullptr),   
+		fChc422_Gap4B(nullptr),   
+		fChc532_Gap4A(nullptr),   
+		fChc532_Gap4B(nullptr),   
+		fChc422_Gap6A(nullptr),   
+		fChc422_Gap6B(nullptr),   
+		fChc532_Gap6A(nullptr),   
+		fChc532_Gap6B(nullptr),   
+		fChc422_Gap8A(nullptr),   
+		fChc422_Gap8B(nullptr),   
+		fChc532_Gap8A(nullptr),   
+		fChc532_Gap8B(nullptr),   
+		fChc422_Gap10A(nullptr), 
+		fChc422_Gap10B(nullptr), 
+		fChc532_Gap10A(nullptr), 
+		fChc532_Gap10B(nullptr)
+{
+		memset(fChcn2, 0, sizeof(fChcn2));
+		memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
+		memset(fChcn2_Gap2, 0, sizeof(fChcn2_Gap2));
+		memset(fChcn2_Gap4, 0, sizeof(fChcn2_Gap4));
+		memset(fChcn2_Gap6, 0, sizeof(fChcn2_Gap6));
+		memset(fChcn2_Gap8, 0, sizeof(fChcn2_Gap8));
+		memset(fChcn2_Gap10, 0, sizeof(fChcn2_Gap10));
+		memset(fChcn2_Gap14, 0, sizeof(fChcn2_Gap14));
+		memset(fChcn2_Gap16, 0, sizeof(fChcn2_Gap16));
+		memset(fChcn2_Gap18, 0, sizeof(fChcn2_Gap18));
+
+		memset(fChcn2_3subLM, 0, sizeof(fChcn2_3subLM));
+		memset(fChcn2_3subRM, 0, sizeof(fChcn2_3subRM));
+		memset(fChcn2_3subLR, 0, sizeof(fChcn2_3subLR));
+		memset(fChcn2_3subGap2LM, 0, sizeof(fChcn2_3subGap2LM));
+		memset(fChcn2_3subGap2RM, 0, sizeof(fChcn2_3subGap2RM));
+
+		memset(fChcn4, 0, sizeof(fChcn4));
+		memset(fChcn4_Gap0, 0, sizeof(fChcn4_Gap0));
+		memset(fChcn4_Gap2, 0, sizeof(fChcn4_Gap2));
+		memset(fChcn4_Gap4, 0, sizeof(fChcn4_Gap4));
+		memset(fChcn4_Gap6, 0, sizeof(fChcn4_Gap6));
+		memset(fChcn4_Gap8, 0, sizeof(fChcn4_Gap8));
+		memset(fChcn4_Gap10, 0, sizeof(fChcn4_Gap10));
+		memset(fChcn4_3subMMLR, 0, sizeof(fChcn4_3subMMLR));
+		memset(fChcn4_3subLLMR, 0, sizeof(fChcn4_3subLLMR));
+		memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
+		memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
 }

@@ -3,49 +3,50 @@
 
 #include <iostream>
 #include "TComplex.h"
+#include "TObject.h"
 
-class CorrelationCalculator {
-
+class CorrelationCalculator : public TObject 
+{
     public:
-    
-    static const int MaxHarm = 20;
-    static const int MaxPow = 20; 
+    CorrelationCalculator(){}
+    // static const int 20 = 20;
+    // static const int 20 = 20; 
 
-    TComplex Qvector[MaxHarm][MaxPow];
-    TComplex Qvector0M[MaxHarm][MaxPow];
-    TComplex Qvector0P[MaxHarm][MaxPow];
-    TComplex Qvector2M[MaxHarm][MaxPow];
-    TComplex Qvector2P[MaxHarm][MaxPow];
-    TComplex Qvector4M[MaxHarm][MaxPow];
-    TComplex Qvector4P[MaxHarm][MaxPow];
-    TComplex Qvector6M[MaxHarm][MaxPow];
-    TComplex Qvector6P[MaxHarm][MaxPow];
-    TComplex Qvector8M[MaxHarm][MaxPow];
-    TComplex Qvector8P[MaxHarm][MaxPow];
-    TComplex Qvector10M[MaxHarm][MaxPow];
-    TComplex Qvector10P[MaxHarm][MaxPow];
-    TComplex Qvector14M[MaxHarm][MaxPow];
-    TComplex Qvector14P[MaxHarm][MaxPow];
-    TComplex Qvector16M[MaxHarm][MaxPow];
-    TComplex Qvector16P[MaxHarm][MaxPow];
-    TComplex Qvector18M[MaxHarm][MaxPow];
-    TComplex Qvector18P[MaxHarm][MaxPow];
-    TComplex QvectorSubLeft[MaxHarm][MaxPow];
-    TComplex QvectorSubMiddle[MaxHarm][MaxPow];
-    TComplex QvectorSubRight[MaxHarm][MaxPow];
-    TComplex QvectorSubGap2Left[MaxHarm][MaxPow];
-    TComplex QvectorSubGap2Middle[MaxHarm][MaxPow];
-    TComplex QvectorSubGap2Right[MaxHarm][MaxPow];
-    TComplex pvector[MaxHarm][MaxPow];
-    TComplex pvectorM[MaxHarm][MaxPow];
-    TComplex pvectorP[MaxHarm][MaxPow];
-    TComplex qvector[MaxHarm][MaxPow];
-    TComplex pvector0M[MaxHarm][MaxPow];
-    TComplex pvector0P[MaxHarm][MaxPow];
-    TComplex pvector4M[MaxHarm][MaxPow];
-    TComplex pvector4P[MaxHarm][MaxPow];
-    TComplex pvector8M[MaxHarm][MaxPow];
-    TComplex pvector8P[MaxHarm][MaxPow];
+    TComplex Qvector[20][20];
+    TComplex Qvector0M[20][20];
+    TComplex Qvector0P[20][20];
+    TComplex Qvector2M[20][20];
+    TComplex Qvector2P[20][20];
+    TComplex Qvector4M[20][20];
+    TComplex Qvector4P[20][20];
+    TComplex Qvector6M[20][20];
+    TComplex Qvector6P[20][20];
+    TComplex Qvector8M[20][20];
+    TComplex Qvector8P[20][20];
+    TComplex Qvector10M[20][20];
+    TComplex Qvector10P[20][20];
+    TComplex Qvector14M[20][20];
+    TComplex Qvector14P[20][20];
+    TComplex Qvector16M[20][20];
+    TComplex Qvector16P[20][20];
+    TComplex Qvector18M[20][20];
+    TComplex Qvector18P[20][20];
+    TComplex QvectorSubLeft[20][20];
+    TComplex QvectorSubMiddle[20][20];
+    TComplex QvectorSubRight[20][20];
+    TComplex QvectorSubGap2Left[20][20];
+    TComplex QvectorSubGap2Middle[20][20];
+    TComplex QvectorSubGap2Right[20][20];
+    TComplex pvector[20][20];
+    TComplex pvectorM[20][20];
+    TComplex pvectorP[20][20];
+    TComplex qvector[20][20];
+    TComplex pvector0M[20][20];
+    TComplex pvector0P[20][20];
+    TComplex pvector4M[20][20];
+    TComplex pvector4P[20][20];
+    TComplex pvector8M[20][20];
+    TComplex pvector8P[20][20];
 
     TComplex Two(int n1, int n2);
     TComplex TwoGap0(int n1, int n2);
@@ -139,7 +140,7 @@ class CorrelationCalculator {
     TComplex Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
     TComplex EightGap0(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
 
-   TComplex Q(int n, int p);
+    TComplex Q(int n, int p);
     TComplex QGap0M(int n, int p);
     TComplex QGap0P(int n, int p);
     TComplex QGap2M(int n, int p);
@@ -178,7 +179,10 @@ class CorrelationCalculator {
     TComplex pGap8P(int n, int p);
 
     void ResetQ(const int nMaxHarm, const int nMaxPow);
-    void FillQVector(TComplex _Qvector[MaxHarm][MaxPow], double _Qcos[MaxHarm][MaxPow], double _Qsin[MaxHarm][MaxPow]);
+    void FillQVector(TComplex _Qvector[20][20], double _Qcos[20][20], double _Qsin[20][20]);
 
+    protected:
+    private:
+    ClassDef(CorrelationCalculator, 1);   //
 };
 #endif

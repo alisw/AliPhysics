@@ -1,5 +1,6 @@
 #include "CorrelationCalculator.h"
 
+ClassImp(CorrelationCalculator);
 //_____________________________________________________________________
 TComplex CorrelationCalculator::Q(int n, int p)
 {
@@ -1370,10 +1371,10 @@ TComplex CorrelationCalculator::EightGap0(int n1, int n2, int n3, int n4, int n5
 
 }
 
-void CorrelationCalculator::FillQVector(TComplex _Qvector[MaxHarm][MaxPow], double _Qcos[MaxHarm][MaxPow], double _Qsin[MaxHarm][MaxPow]) {
-	for(int iharm=0; iharm<MaxHarm; iharm++)
+void CorrelationCalculator::FillQVector(TComplex _Qvector[20][20], double _Qcos[20][20], double _Qsin[20][20]) {
+	for(int iharm=0; iharm<20; iharm++)
 	{
-		for(int ipow=0; ipow<MaxPow; ipow++)
+		for(int ipow=0; ipow<20; ipow++)
 		{
 			_Qvector[iharm][ipow] = TComplex(_Qcos[iharm][ipow], _Qsin[iharm][ipow]);
 		}

@@ -5,6 +5,7 @@
 #include "AliEventCuts.h"
 #include <TComplex.h>
 
+#include <TObject.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -64,8 +65,9 @@ class AliInputEventHandler;
 
 #include <THnSparse.h>
 
-class PhysicsProfile {
+class PhysicsProfile : public TObject {
 	public:
+                PhysicsProfile();
 		// Physics profiles
 		TProfile*		fChsc4242;									//! SC(4,2)
 		TProfile*		fChsc4242_Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
@@ -182,107 +184,8 @@ class PhysicsProfile {
 		TProfile*     fChcn4_3subLLMR[6];         //! <<4>> 3subevent method
 		TProfile*     fChcn4_3subRRML[6];         //! <<4>> 3subevent method
 		TProfile*     fChcn4_3subGap2[6];//! <<4>> 3subevent method |#Delta#eta| > 0.2
-		TProfile*        fChcn5Ntrks1bin[6];                  //! <<6>> in unit bins of Ntrks
-		TProfile*        fChcn5Gap0ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn5Gap2ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.2
-		TProfile*        fChcn5Gap4ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.4
-		TProfile*        fChcn5Gap6ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.6
-		TProfile*        fChcn5Gap8ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.8
-		TProfile*        fChcn5Gap10ANtrks1bin[6];          //! <<6>> |#Delta#eta| > 1.0
-		TProfile*        fChcn5Gap0BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn5Gap2BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.2
-		TProfile*        fChcn5Gap4BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.4
-		TProfile*        fChcn5Gap6BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.6
-		TProfile*        fChcn5Gap8BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 0.8
-		TProfile*        fChcn5Gap10BNtrks1bin[6];          //! <<6>> |#Delta#eta| > 1.0
-		TProfile*		 fChcn6Ntrks1bin[6];  				//! <<6>> in unit bins of Ntrks
-		TProfile*		 fChcn6Gap0Ntrks1bin[6];  		//! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn6Gap2Ntrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn6Gap4Ntrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn6Gap6Ntrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn6Gap8Ntrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*        fChcn6Gap10Ntrks1bin[6];          //! <<6>> |#Delta#eta| > 0.0
-		TProfile*		fChcn8Ntrks1bin[6];  				//! <<8>> in unit bins of Ntrks
-		TProfile*		fChcn8Gap0Ntrks1bin[6];  		//! <<8>> |#Delta#eta| > 0.0
-
-		// the same profiles but for different fBin (sampling)
-		TProfile*		fc422Ntrks1bin[12];					//!
-		TProfile*       fc532Ntrks1bin[12];                    //!
-		TProfile*        fc422Gap0ANtrks1bin[12];//!
-		TProfile*        fc422Gap0BNtrks1bin[12];//!
-		TProfile*        fc532Gap0ANtrks1bin[12];//!
-		TProfile*        fc532Gap0BNtrks1bin[12];//!
-		TProfile*		fc422Gap2ANtrks1bin[12];//!
-		TProfile*		fc422Gap2BNtrks1bin[12];//!
-		TProfile*		fc532Gap2ANtrks1bin[12];//!
-		TProfile*		fc532Gap2BNtrks1bin[12];//!
-		TProfile*        fc422Gap4ANtrks1bin[12];//!
-		TProfile*        fc422Gap4BNtrks1bin[12];//!
-		TProfile*        fc532Gap4ANtrks1bin[12];//!
-		TProfile*        fc532Gap4BNtrks1bin[12];//!
-		TProfile*        fc422Gap6ANtrks1bin[12];//!
-		TProfile*        fc422Gap6BNtrks1bin[12];//!
-		TProfile*        fc532Gap6ANtrks1bin[12];//!
-		TProfile*        fc532Gap6BNtrks1bin[12];//!
-		TProfile*        fc422Gap8ANtrks1bin[12];//!
-		TProfile*        fc422Gap8BNtrks1bin[12];//!
-		TProfile*        fc532Gap8ANtrks1bin[12];//!
-		TProfile*        fc532Gap8BNtrks1bin[12];//!
-		TProfile*        fc422Gap10ANtrks1bin[12];//!
-		TProfile*        fc422Gap10BNtrks1bin[12];//!
-		TProfile*        fc532Gap10ANtrks1bin[12];//!
-		TProfile*        fc532Gap10BNtrks1bin[12];//!
-
-
-		TProfile*		fcn2Ntrks1bin[6][12];  			//!
-		TProfile*		fcn2Gap0Ntrks1bin[6][12];		//!
-		TProfile*		fcn2Gap2Ntrks1bin[6][12];		//!
-		TProfile*		fcn2Gap4Ntrks1bin[6][12];		//!
-		TProfile*     fcn2Gap6Ntrks1bin[6][12];        //!
-		TProfile*		fcn2Gap8Ntrks1bin[6][12];		//!
-		TProfile*		fcn2Gap10Ntrks1bin[6][12];		//!
-		TProfile*		fcn2Gap14Ntrks1bin[6][12];	//!
-		TProfile*		fcn2Gap16Ntrks1bin[6][12];	//!
-		TProfile*		fcn2Gap18Ntrks1bin[6][12];	//!
-
-		TProfile*		fcn2_3subLMNtrks1bin[6][12];  		//!
-		TProfile*		fcn2_3subRMNtrks1bin[6][12];  		//!
-		TProfile*		fcn2_3subGap2LMNtrks1bin[6][12];  //!
-		TProfile*		fcn2_3subGap2RMNtrks1bin[6][12];  //!
-
-		TProfile*		fcn4Ntrks1bin[6][12];				//!
-		TProfile*		fcn4Gap0Ntrks1bin[6][12];		//!
-		TProfile*		fcn4Gap2Ntrks1bin[6][12];		//!
-		TProfile*        fcn4Gap4Ntrks1bin[6][12];        //!
-		TProfile*        fcn4Gap6Ntrks1bin[6][12];        //!
-		TProfile*        fcn4Gap8Ntrks1bin[6][12];        //!
-		TProfile*        fcn4Gap10Ntrks1bin[6][12];        //!
-		TProfile*		fcn4_3subNtrks1bin[6][12];	//!
-		TProfile*		fcn4_3subGap2Ntrks1bin[6][12];//!
-		TProfile*        fcn5Ntrks1bin[6][12];                //!
-		TProfile*        fcn5Gap0ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap2ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap4ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap6ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap8ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap10ANtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap0BNtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap2BNtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap4BNtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap6BNtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap8BNtrks1bin[6][12];        //!
-		TProfile*        fcn5Gap10BNtrks1bin[6][12];        //!
-		TProfile*		fcn6Ntrks1bin[6][12];				//!
-		TProfile*		fcn6Gap0Ntrks1bin[6][12];		//!
-		TProfile*        fcn6Gap2Ntrks1bin[6][12];        //!
-		TProfile*        fcn6Gap4Ntrks1bin[6][12];        //!
-		TProfile*        fcn6Gap6Ntrks1bin[6][12];        //!
-		TProfile*        fcn6Gap8Ntrks1bin[6][12];        //!
-		TProfile*        fcn6Gap10Ntrks1bin[6][12];        //!
-
-		TProfile*		fcn8Ntrks1bin[6][12];				//!
-		TProfile*		fcn8Gap0Ntrks1bin[6][12];		//!
-
+		private:
+		ClassDef(PhysicsProfile, 1);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -299,57 +202,50 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   UserExec(Option_t* option);
 		virtual void   Terminate(Option_t* );
 
-		virtual void  SetFilterbit(Int_t bit){fFilterbit = bit;}
-		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
-		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
-		virtual void  SetMinPt(Double_t minPt){fMinPt = minPt;}
-		virtual void  SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
-		virtual void	SetTPCclusters(Int_t tpcClus){fTPCclusters = tpcClus;}
-		virtual void	SetMinITSClusters(Int_t minClus){fMinITSClus = minClus;}
-		virtual void	SetMaxChi2(Double_t maxChi){fMaxChi2 = maxChi;}
-		virtual void	SetUseDCAzCut(Bool_t usedcaz){fUseDCAzCut = usedcaz;}
-		virtual void	SetDCAzCut(Double_t dcaz){fDCAz = dcaz;}
-		virtual void	SetUseDCAxyCut(Bool_t usedcaxy){fUseDCAxyCut = usedcaxy;}
-		virtual void	SetDCAxyCut(Double_t dcaxy){fDCAxy = dcaxy;}
-		virtual void  SetIsSample(Int_t IsSample){fSample = IsSample;}
-		virtual void  SetCentFlag(Short_t nCent){fCentFlag = nCent;}
-		virtual void	SetTrigger(Int_t trig){fTrigger = trig;}
-		virtual void	SetLSFlag(Bool_t LS){fLS = LS;}
-		virtual void	SetNUEFlag(Bool_t NUE){fNUE = NUE;}
-		virtual void	SetNUA(Bool_t NUA){fNUA = NUA;}
-		virtual void        SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
-                void                    SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
-                void                    SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
-                void                    SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
-
-		//....
-		virtual void	SetPeriod(TString period){fPeriod = period;}
+		virtual void   SetFilterbit(Int_t bit){fFilterbit = bit;}
+		virtual void   SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
+		virtual void   SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void   SetMinPt(Double_t minPt){fMinPt = minPt;}
+		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
+		virtual void   SetTPCclusters(Int_t tpcClus){fTPCclusters = tpcClus;}
+		virtual void   SetMinITSClusters(Int_t minClus){fMinITSClus = minClus;}
+		virtual void   SetMaxChi2(Double_t maxChi){fMaxChi2 = maxChi;}
+		virtual void   SetUseDCAzCut(Bool_t usedcaz){fUseDCAzCut = usedcaz;}
+		virtual void   SetDCAzCut(Double_t dcaz){fDCAz = dcaz;}
+		virtual void   SetUseDCAxyCut(Bool_t usedcaxy){fUseDCAxyCut = usedcaxy;}
+		virtual void   SetDCAxyCut(Double_t dcaxy){fDCAxy = dcaxy;}
+		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
+		virtual void   SetCentFlag(Short_t nCent){fCentFlag = nCent;}
+		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
+		virtual void   SetLSFlag(Bool_t LS){fLS = LS;}
+		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
+		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
+		virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
+		void           SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
+		void           SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
+		void           SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
+		virtual void   SetPeriod(TString period){fPeriod = period;}
 
 	private:
 		AliAnalysisTaskNonlinearFlow(const AliAnalysisTaskNonlinearFlow&);
 		AliAnalysisTaskNonlinearFlow& operator=(const AliAnalysisTaskNonlinearFlow&);
 
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
-		Short_t					GetCentrCode(AliVEvent* ev);
-		bool 						CheckPrimary(AliVEvent *aod, double label);
-		bool						IsGoodPSEvent(AliVEvent *aod);
-		bool						IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
-		bool						IsV0C012vsTklBG         (const AliVEvent* event, bool fillHist);
-		bool						IsV0Casym               (const AliVEvent* event, bool fillHist);
-		bool						IsV0MOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool						IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool						IsV0PFPileup            (const AliVEvent* event);
+		Short_t			GetCentrCode(AliVEvent* ev);
+		bool 			CheckPrimary(AliVEvent *aod, double label);
+		bool			IsGoodPSEvent(AliVEvent *aod);
+		bool			IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
+		bool			IsV0C012vsTklBG         (const AliVEvent* event, bool fillHist);
+		bool			IsV0Casym               (const AliVEvent* event, bool fillHist);
+		bool			IsV0MOnVsOfPileup       (const AliVEvent* event, bool fillHist);
+		bool			IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
+		bool			IsV0PFPileup            (const AliVEvent* event);
+		int 			GetRunPart(int run);
+		double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
+		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
+		Bool_t                  LoadWeights();
 
-		int 						GetRunPart(int run);
-		double 					GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
-		double 					GetPtWeight(double pt, double eta, float vz, double runNumber);
-                Bool_t LoadWeights();
-
-                bool fFlowRunByRunWeights;
-                bool fFlowPeriodWeights;
-                bool fFlowUse3Dweights;
-
-                Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
                 const char* ReturnPPperiod(const Int_t runNumber) const;
                 const char* GetSpeciesName(const PartSpecies species) const;
 
@@ -394,11 +290,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3F*				hTrackEfficiencyRun;//! histogram with tracking efficiency
 
 		// NUA
+		bool fFlowRunByRunWeights;            // flag of whether get the Run by run weight 
+		bool fFlowPeriodWeights;              // flag of whether to use period weight
+		bool fFlowUse3Dweights;               // flag of whether to use 3d weight
 		//
-		TList*                  fFlowWeightsList;
-		TList*			fPhiWeight;					//! file with phi weights
-		TList*			fPhiWeightPlus;			//! file with phi weights
-		TList*			fPhiWeightMinus;		//! file with phi weights
+		TList*                  fFlowWeightsList;     //! flowWightsList
+		TList*			fPhiWeight;	      //! file with phi weights
+		TList*			fPhiWeightPlus;	      //! file with phi weights
+		TList*			fPhiWeightMinus;      //! file with phi weights
                 TH2D*                   fh2Weights[kUnknown]; //! container for GF weights (phi,eta,pt) (2D)
                 TH3D*                   fh3Weights[kUnknown]; //! container for GF weights (phi,eta,pt)
                 TH2D*                   fh2AfterWeights[kUnknown]; //! distribution after applying GF weights - lightweight QA (phi)
@@ -501,8 +400,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		int NtrksAfter3subM = 0;
 		int NtrksAfter3subR = 0;
 
-		// PhysicsProfile centProfile;
-		// PhysicsProfile centProfile_bin[10];
 		PhysicsProfile multProfile;
 		PhysicsProfile multProfile_bin[10];
 
