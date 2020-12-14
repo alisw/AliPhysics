@@ -108,13 +108,21 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     // Event rejection cuts for jet-jet simulations, do not use in other
     if (  cutsString.Contains("JetJet")  )
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking jet pT\n");
       reader->SetPtHardAndJetPtComparison(kTRUE);
       reader->SetPtHardAndJetPtFactor(2);
     }
     
     // Event rejection more suitable for gamma-jet simulations, do not use in other
-    if (  cutsString.Contains("GamJet")  )
+    if (  cutsString.Contains("GamJetGen")  )
     {    
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking prompt photon pT\n");
+      reader->SetPtHardAndPromptPhotonPtComparison(kTRUE);
+      reader->SetPtHardAndPromptPhotonPtFactor(2);
+    }
+    else if (  cutsString.Contains("GamJet")  )
+    {    
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking cluster energy\n");
       reader->SetPtHardAndClusterPtComparison(kTRUE);
       reader->SetPtHardAndClusterPtFactor(1.5);
     }
@@ -650,6 +658,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
+///       * GamJetGen: Compare prompt photon pt and generated parton pt, careful, test before using
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
 ///       * Strip: Consider also removing LED flashing single strips

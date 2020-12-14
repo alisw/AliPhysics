@@ -66,6 +66,7 @@ fDataType(0),                fDebug(0),
 fFiducialCut(0x0),           fCheckFidCut(kFALSE),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fComparePtHardAndClusterPt(0),fPtHardAndClusterPtFactor(0),
+fComparePtHardAndPromptPhotonPt(0),fPtHardAndPromptPhotonPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0),
 fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0),
 fEMCALBadChMinDist(0),       fPHOSBadChMinDist (0),           
@@ -174,6 +175,8 @@ fhEMCALClusterDisToBadE(0),  fhEMCALClusterTimeE(0),
 fhEMCALClusterBadTrigger(0), fhCentralityBadTrigger(0),       fhEMCALClusterCentralityBadTrigger(0),
 fhEMCALNSumEnCellsPerSM(0),    fhEMCALNSumEnCellsPerSMAfter(0), fhEMCALNSumEnCellsPerSMAfterStripCut(0),
 fhEMCALNSumEnCellsPerStrip(0), fhEMCALNSumEnCellsPerStripAfter(0),
+fhPtHardPtJetPtRatio(0),     fhPtHardPromptPhotonPtRatio(0),
+fhPtHardEnClusterRatio(0),   fhPtHardEnClusterCenRatio(0),
 fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1)
@@ -910,6 +913,9 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processN
       
       AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet->Pt()));
 
+      if ( ptHard > 0 )
+        fhPtHardPtJetPtRatio->Fill(jet->Pt()/ptHard);
+
       // Compare jet pT and pt Hard
       if ( jet->Pt() > fPtHardAndJetPtFactor * ptHard )
       {
@@ -958,6 +964,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
       {
         AliVCluster * clus = fInputEvent->GetCaloCluster(iclus) ;
         Float_t ecluster = clus->E();
+
+        if ( ptHard > 0 )
+        {
+          fhPtHardEnClusterRatio->Fill(ecluster/ptHard);
+          if ( fHistoCentDependent )
+            fhPtHardEnClusterCenRatio->Fill(ecluster/ptHard, GetEventCentrality());
+        }
+
         if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
         {
           AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
@@ -992,6 +1006,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
         AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
         
         Float_t ecluster = clus->E();
+
+        if ( ptHard > 0 )
+        {
+          fhPtHardEnClusterRatio->Fill(ecluster/ptHard);
+          if ( fHistoCentDependent )
+            fhPtHardEnClusterCenRatio->Fill(ecluster/ptHard, GetEventCentrality());
+        }
+
         if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
         {
           AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
@@ -1005,6 +1027,81 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
   
   return kTRUE ;
 }
+
+//____________________________________________________
+/// Check the MC PYTHIA event, if the requested
+/// pT-hard is smaller than the generated prompt photon
+/// there can be a problem in the tails of the
+/// distributions and the event should be rejected.
+/// Do this only for pythia gamma-jet events
+///
+/// \param process pythia process from AliMCAnalysisUtils::GetPythiaEventHeader()
+/// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
+//____________________________________________________
+Bool_t AliCaloTrackReader::ComparePtHardAndPromptPhotonPt(Int_t process, TString processName)
+{
+  if ( !fGenEventHeader )
+  {
+    AliError("Skip event, event header is not available!");
+    return kFALSE;
+  }
+
+  if ( !fGenPythiaEventHeader ) return kTRUE;
+
+  // Do this check only for gamma-jet productions
+  if ( processName != "Gamma-Jet" ) return kTRUE;
+
+  Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
+
+  // Loop on pythia generated particles
+  Int_t   firstParticle = 0 ;
+
+  // Loop only over likely final particles not partons
+  if ( GetGenPythiaEventHeader() )
+    firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
+
+  AliVParticle * primary = 0;
+
+  Int_t    nprim     = GetMC()->GetNumberOfTracks();
+  for(Int_t i = firstParticle ; i < nprim; i++)
+  {
+    if ( !AcceptParticleMCLabel( i ) ) continue ;
+
+    primary = GetMC()->GetTrack(i) ;
+    if ( !primary )
+    {
+      AliWarning("primaries pointer not available!!");
+      continue;
+    }
+
+    // Select prompt photon
+    if ( primary->PdgCode()      != 22 ) continue;
+    if ( primary->MCStatusCode() != 1  ) continue;
+
+    // Get tag of this particle photon from fragmentation, decay, prompt ...
+    Int_t tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
+                                                  GetNameOfMCEventHederGeneratorToAccept(),
+                                                  primary->E()); // Not used, should be cluster
+    if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) )
+    {
+      continue;
+    }
+
+    if ( ptHard > 0 )
+      fhPtHardPromptPhotonPtRatio->Fill(primary->Pt()/ptHard);
+
+    if ( primary->Pt() > fPtHardAndPromptPhotonPtFactor * ptHard )
+    {
+      AliInfo(Form("Reject : process %d <%s>, prompt photon %2.2f, factor %2.2f, ptHard %f",
+                   process, processName.Data(), primary->Pt(), fPtHardAndPromptPhotonPtFactor,ptHard));
+
+      return kFALSE;
+    }
+  } // cluster loop
+
+  return kTRUE ;
+}
+
 
 //___________________________________________________
 /// Fill the output list of initialized control histograms.
@@ -1254,6 +1351,42 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
   }
   
+  if ( fComparePtHardAndJetPt )
+  {
+    fhPtHardPtJetPtRatio = new TH1F
+    ("hPtHardPtJetPtRatio","Generated jet #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
+    fhPtHardPtJetPtRatio->SetYTitle("# events");
+    fhPtHardPtJetPtRatio->SetXTitle("#it{p}_{T}^{jet} / #it{p}_{T}^{hard}");
+    fOutputContainer->Add(fhPtHardPtJetPtRatio);
+  }
+
+  if ( fComparePtHardAndPromptPhotonPt )
+   {
+     fhPtHardPromptPhotonPtRatio = new TH1F
+     ("hPtHardPtPromptPhotonPtRatio","Generated prompt #gamma #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
+     fhPtHardPromptPhotonPtRatio->SetYTitle("# events");
+     fhPtHardPromptPhotonPtRatio->SetXTitle("#it{p}_{T}^{prompt #gamma} / #it{p}_{T}^{hard}");
+     fOutputContainer->Add(fhPtHardPromptPhotonPtRatio);
+   }
+
+  if ( fComparePtHardAndClusterPt )
+  {
+    fhPtHardEnClusterRatio = new TH1F
+    ("hPtHardEnClusterRatio","Cluster energy / #it{p}_{T}^{hard}",100,0,10);
+    fhPtHardEnClusterRatio->SetYTitle("# events");
+    fhPtHardEnClusterRatio->SetXTitle("#it{E}_{cluster} / #it{p}_{T}^{hard}");
+    fOutputContainer->Add(fhPtHardEnClusterRatio);
+
+    if ( fHistoCentDependent )
+    {
+      fhPtHardEnClusterCenRatio = new TH2F
+      ("hPtHardEnClusterCenRatio","Cluster energy / #it{p}_{T}^{hard}",100,0,10,20,0,100);
+      fhPtHardEnClusterCenRatio->SetYTitle("Centrality (%)");
+      fhPtHardEnClusterCenRatio->SetXTitle("#it{E}_{cluster} / #it{p}_{T}^{hard}");
+      fOutputContainer->Add(fhPtHardEnClusterCenRatio);
+    }
+  }
+
   if ( fUseEventCutsClass )
     fEventCuts.AddQAplotsToList(fOutputContainer); 
   
@@ -1361,13 +1494,19 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
     parList+=onePar ;
   }
   
-  if(fComparePtHardAndJetPt)
+  if ( fComparePtHardAndJetPt )
   {
     snprintf(onePar,buffersize,"jet pt / pt hard < %2.1f; ",fPtHardAndJetPtFactor);
     parList+=onePar ;
   }
   
-  if(fComparePtHardAndClusterPt)
+  if ( fComparePtHardAndPromptPhotonPt )
+  {
+    snprintf(onePar,buffersize,"prompt photon pt / pt hard < %2.1f; ",fPtHardAndPromptPhotonPtFactor);
+    parList+=onePar ;
+  }
+
+  if ( fComparePtHardAndClusterPt )
   {
     snprintf(onePar,buffersize,"cluster pt / pt hard < %2.2f",fPtHardAndClusterPtFactor);
     parList+=onePar ;
@@ -1588,6 +1727,7 @@ void AliCaloTrackReader::InitParameters()
   
   fPtHardAndJetPtFactor     = 4. ;
   fPtHardAndClusterPtFactor = 1.5;
+  fPtHardAndPromptPhotonPtFactor = 2.;
   
   //Centrality
   fUseAliCentrality = kFALSE;
@@ -2013,14 +2153,25 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
         fhNEventsAfterCut->Fill(17.5);
       }
       
-      if(fComparePtHardAndClusterPt)
+      if ( fComparePtHardAndClusterPt )
       {
         if ( !ComparePtHardAndClusterPt(pyProcess, pyProcessName) ) return kFALSE ;
         
         AliDebug(1,"Pass Pt Hard - Cluster rejection");
         
+        if ( !fComparePtHardAndPromptPhotonPt ) // avoid double counting in next filling
+          fhNEventsAfterCut->Fill(18.5);
+      }
+
+      if ( fComparePtHardAndPromptPhotonPt )
+      {
+        if ( !ComparePtHardAndPromptPhotonPt(pyProcess, pyProcessName) ) return kFALSE ;
+
+        AliDebug(1,"Pass Pt Hard - Prompt photon rejection");
+
         fhNEventsAfterCut->Fill(18.5);
       }
+
     } // pythia header
   } // MC
   
@@ -3954,10 +4105,13 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
   if ( fComparePtHardAndJetPt )
-    printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
+    printf("Compare jet pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndJetPtFactor);
   
   if ( fComparePtHardAndClusterPt )
-    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f",fPtHardAndClusterPtFactor);
+    printf("Compare cluster pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndClusterPtFactor);
+  
+  if ( fComparePtHardAndPromptPhotonPt )
+    printf("Compare prompt photon pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndPromptPhotonPtFactor);
   
   if ( fRemoveLEDEvents > 0 )
   {

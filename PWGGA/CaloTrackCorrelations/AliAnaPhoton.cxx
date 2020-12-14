@@ -125,8 +125,8 @@ fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
 fhMCParticleNLM(0),           fhMCParticleM02(0),
 fhMCPrimParticle(0),          fhMCPrimParticleAcc(0),
 fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
-fhMCParticleVsErecEgenDiffOverEgenCen(0),
-fhMCParticleErecEgenDiffOverEgenNLMCen(0),
+fhMCParticleVsErecEgenDiffOverEgenCen(0), fhMCParticleVsErecEgenCen(0),
+fhMCParticleErecEgenDiffOverEgenNLMCen(0), fhMCParticleErecEgenNLMCen(0),
 fhMCParticleM02NLMCen(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 
@@ -255,6 +255,7 @@ fhDistance2Hijing(0)
     fhMCESphericity    [i]               = 0;
     fhMCParticleM02NLM [i]               = 0;
     fhMCParticleErecEgenDiffOverEgenNLM[i] = 0;
+    fhMCParticleErecEgenNLM[i]           = 0;
   }
   
   for(Int_t i = 0; i < fgkNClusterCuts; i++)
@@ -287,7 +288,9 @@ fhDistance2Hijing(0)
     fhTrackMatchedMCParticleBeforeTM[i] = 0;  fhTrackMatchedMCParticleTrackPtBeforeTM[i] = 0;          
     fhTrackMatchedMCParticle[i] = 0;          fhTrackMatchedMCParticleTrackPt[i] = 0;          
     fhTrackMatchedMCParticleConverted[i] = 0;
-    fhTrackMatchedMCParticleVsEOverP[i] = 0;  fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[i] = 0;
+    fhTrackMatchedMCParticleVsEOverP[i] = 0;
+    fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[i] = 0;
+    fhTrackMatchedMCParticleVsErecEgen[i] = 0;
     fhTrackMatchedMCParticleVsNOverlaps[i] = 0;          
     fhdEdx[i] = 0;                            fhEOverP[i] = 0;
     fhdEdxTrackPt[i] = 0;                     fhEOverPTrackPt[i] = 0;
@@ -299,6 +302,7 @@ fhDistance2Hijing(0)
     fhMCParticle              [i] = 0;          
     fhMCParticleConverted     [i] = 0;
     fhMCParticleVsErecEgenDiffOverEgen[i] = 0;
+    fhMCParticleVsErecEgen    [i] = 0;
     fhMCParticleVsNOverlaps   [i] = 0;  
     
     fhMCParticleCen           [i] = 0;          
@@ -890,12 +894,14 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 /// \param mctag   : tag containing MC origin of cluster.
 /// \param mcbin   : particle tag for MC histogram
 /// \param egen    : main MC particle generated energy
+/// \param ptgen  : main MC particle generated pT
 /// \param noverlaps: number of extra MC particles contributing 
 /// \param weightPt: histogram weight depending on particle generated
 //_____________________________________________________________________
 Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima, 
                                       Bool_t matched, Bool_t bEoP, Bool_t bRes,
-                                      Int_t mctag, Float_t mcbin, Float_t egen, 
+                                      Int_t mctag, Float_t mcbin,
+                                      Float_t egen, Float_t ptgen,
                                       Int_t noverlaps, Float_t weightPt, Int_t cen)
 {
   Float_t ptcluster  = fMomentum.Pt();
@@ -1179,7 +1185,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
       
       if ( egen > 0.1 )
         fhMCParticleVsErecEgenDiffOverEgen[1]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
-       
+       fhMCParticleVsErecEgen[1]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
+
       if ( fCheckOverlaps )
         fhMCParticleVsNOverlaps[1]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
     }
@@ -1236,6 +1243,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
       
       if ( egen > 0.1 )
         fhMCParticleVsErecEgenDiffOverEgen[2]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+      fhMCParticleVsErecEgen[2]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
       
       if ( fCheckOverlaps )
         fhMCParticleVsNOverlaps[2]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
@@ -1793,18 +1801,21 @@ void AliAnaPhoton::FillPileUpHistograms(AliVCluster* cluster, AliVCaloCells *cel
 /// Fill cluster Shower Shape histograms.
 ///
 /// \param cluster : cluster pointer.
-/// \param sm      : cluster super module number.
-/// \param mctag   : tag containing MC origin of cluster.
-/// \param egen: energy of generated particle
-/// \param weightPt: histogram weight depending on particle generated
-/// \param cen: centrality percentile
-/// \param nlm     : number of local maxima.
-/// \param matched : is cluster matched to a track
-/// \param maxCellFraction: max cell energy fraction in cluster
-/// \param largeTime: number of cell with large time
+/// \param sm : cluster super module number.
+/// \param mctag : tag containing MC origin of cluster.
+/// \param egen : energy of generated particle
+/// \param ptgen : energy of generated particle
+/// \param weightPt : histogram weight depending on particle generated
+/// \param cen : centrality percentile
+/// \param nlm : number of local maxima.
+/// \param matched  : is cluster matched to a track
+/// \param maxCellFraction : max cell energy fraction in cluster
+/// \param nlmNxN : recalculated number of local maximum for NxN clusters 
+/// \param l0NxN : recalculated M02 for NxN clusters
+/// \param largeTime : number of cell with large time
 //_________________________________________________________________________________
 void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, 
-                                              Int_t mcTag, Float_t egen, Float_t weightPt, 
+                                              Int_t mcTag, Float_t egen, Float_t ptgen, Float_t weightPt,
                                               Int_t cen, Int_t nlm, Bool_t matched,
                                               Float_t maxCellFraction, Int_t nlmNxN, Float_t l0NxN,
                                               Int_t & largeTime)
@@ -2367,6 +2378,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       {
         if ( egen > 0.1 )
           fhMCParticleErecEgenDiffOverEgenNLM[mcIndex]->Fill(pt, nlm, (energy-egen)/egen, GetEventWeight()*weightPt);
+        fhMCParticleErecEgenNLM[mcIndex]->Fill(pt, nlm, ptgen, GetEventWeight()*weightPt);
 
         fhMCParticleM02NLM[mcIndex]->Fill(pt, lambda0, nlm, GetEventWeight()*weightPt);
       } // NLM fill
@@ -2383,6 +2395,7 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
           Int_t index = icent*nssTypes+mcIndex;
           if ( egen > 0.1 )
             fhMCParticleErecEgenDiffOverEgenNLMCen[index]->Fill(pt, nlm, (energy-egen)/egen, GetEventWeight()*weightPt);
+          fhMCParticleErecEgenNLMCen[index]->Fill(pt, nlm, ptgen, GetEventWeight()*weightPt);
 
           fhMCParticleM02NLMCen[index]->Fill(pt, lambda0, nlm, GetEventWeight()*weightPt);
         }
@@ -2703,6 +2716,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
         
         if ( egen > 0.1 )
           fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[cut]->Fill(ener, mcbin, (ener-egen)/egen, GetEventWeight()*weightPt);
+        fhTrackMatchedMCParticleVsErecEgen[cut]->Fill(ener, mcbin, egen, GetEventWeight()*weightPt);
         
         Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
         if  ( conversion  && fSeparateConvertedDistributions )
@@ -3488,6 +3502,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCParticleVsErecEgenDiffOverEgen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         outputContainer->Add(fhMCParticleVsErecEgenDiffOverEgen[i]);
         
+        fhMCParticleVsErecEgen[i]  = new TH3F
+        (Form("hMCParticle%s_PtRecPtGen",cutCase[i].Data()),
+         Form("Particle type #it{p}_{T, rec}(#it{p}_{T, gen}), %s",cutCase[i].Data()),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+         mcBinsArray.GetSize() - 1, mcBinsArray.GetArray(),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray());
+        fhMCParticleVsErecEgen[i]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+        fhMCParticleVsErecEgen[i]->SetZTitle("#it{p}_{T, gen} (GeV/#it{c})");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticleVsErecEgen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        outputContainer->Add(fhMCParticleVsErecEgen[i]);
+
         if ( fCheckOverlaps )
         {
           fhMCParticleVsNOverlaps[i]  = new TH3F
@@ -3592,6 +3618,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCParticleErecEgenDiffOverEgenNLM[imc]->SetYTitle("#it{n}_{LM}");
           outputContainer->Add(fhMCParticleErecEgenDiffOverEgenNLM[imc]);
 
+          fhMCParticleErecEgenNLM[imc]  = new TH3F
+          (Form("hMC%s_PtRecPtGen_NLM",pnamess[imc].Data()),
+           Form("%s #it{p}_{T, rec}(#it{p}_{T, gen})",ptypess[imc].Data()),
+           ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1,   nlmBinsArray.GetArray(),
+           ptBinsArray.GetSize() - 1,    ptBinsArray.GetArray());
+          fhMCParticleErecEgenNLM[imc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+          fhMCParticleErecEgenNLM[imc]->SetZTitle("#it{p}_{T, gen} (GeV/#it{c})");
+          fhMCParticleErecEgenNLM[imc]->SetYTitle("#it{n}_{LM}");
+          outputContainer->Add(fhMCParticleErecEgenNLM[imc]);
+
           fhMCParticleM02NLM[imc]  = new TH3F
           (Form("hMC%s_M02_NLM",pnamess[imc].Data()),
            Form("%s, shower shape and local maxima" ,ptypess[imc].Data()),
@@ -3647,10 +3684,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
         
         fhMCParticleErecEgenDiffOverEgenNLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
+        fhMCParticleErecEgenNLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
         fhMCParticleM02NLMCen = new TH3F*[GetNCentrBin()*nssTypes] ;
       }
       
       fhMCParticleVsErecEgenDiffOverEgenCen = new TH3F*[GetNCentrBin()] ;
+      fhMCParticleVsErecEgenCen = new TH3F*[GetNCentrBin()] ;
       
       for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
       {
@@ -3666,6 +3705,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhMCParticleVsErecEgenDiffOverEgenCen[icent]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         outputContainer->Add(fhMCParticleVsErecEgenDiffOverEgenCen[icent]);
         
+        fhMCParticleVsErecEgenCen[icent]  = new TH3F
+        (Form("hMCParticle_PtRecPtGen_Cen%d",icent),
+         Form("Particle type #it{p}_{T, rec}(#it{p}_{T, gen}), cent. %d",icent),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+         mcBinsArray.GetSize() - 1, mcBinsArray.GetArray(),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray());
+        fhMCParticleVsErecEgenCen[icent]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+        fhMCParticleVsErecEgenCen[icent]->SetZTitle("#it{p}_{T, gen} (GeV/#it{c})");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhMCParticleVsErecEgenCen[icent]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        outputContainer->Add(fhMCParticleVsErecEgenCen[icent]);
+
         if ( fFillSSNLocMaxHisto )
         { 
           for(Int_t imc = 0; imc < nssTypes; imc++)
@@ -3681,6 +3732,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]->SetZTitle("(#it{E}_{rec}-#it{E}_{gen})/#it{E}_{gen}");
             fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]->SetYTitle("#it{n}_{LM}");
             outputContainer->Add(fhMCParticleErecEgenDiffOverEgenNLMCen[icentmc]);
+
+            fhMCParticleErecEgenNLMCen[icentmc]  = new TH3F
+            (Form("hMC%s_PtRecPtGen_NLM_Cen%d",pnamess[imc].Data(),icent),
+             Form("%s #it{p}_{T, rec}(#it{p}_{T, gen}), cent. %d",ptypess[imc].Data(), icent),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray(),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray());
+            fhMCParticleErecEgenNLMCen[icentmc]->SetXTitle("#it{p}_{T, rec} (GeV/#it{c})");
+            fhMCParticleErecEgenNLMCen[icentmc]->SetZTitle("#it{p}_{T, gen} (GeV/#it{c})");
+            fhMCParticleErecEgenNLMCen[icentmc]->SetYTitle("#it{n}_{LM}");
+            outputContainer->Add(fhMCParticleErecEgenNLMCen[icentmc]);
 
             fhMCParticleM02NLMCen[icentmc]  = new TH3F
             (Form("hMC%s_M02_NLM_Cen%d",pnamess[imc].Data(),icent),
@@ -4876,6 +4938,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
         outputContainer->Add(fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[i]);
         
+        fhTrackMatchedMCParticleVsErecEgen[i]  = new TH3F
+        (Form("hTrackMatchedMCParticle%s_ErecEgen",cutTM[i].Data()),
+         Form("Particle type #it{E}_{rec}(#it{E}_{gen}), %s",cutTM[i].Data()),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+         mcBinsArray.GetSize() - 1, mcBinsArray.GetArray(),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray());
+        fhTrackMatchedMCParticleVsErecEgen[i]->SetXTitle("#it{E}_{rec} (GeV)");
+        fhTrackMatchedMCParticleVsErecEgen[i]->SetZTitle("#it{E}_{gen} (GeV)");
+        for(Int_t imcpart = 1; imcpart < 19; imcpart++)
+          fhTrackMatchedMCParticleVsErecEgen[i]->GetYaxis()->SetBinLabel(imcpart,mcPartLabels[imcpart-1]);
+        outputContainer->Add(fhTrackMatchedMCParticleVsErecEgen[i]);
+
         if ( i == 0)
         {
           fhEOverPMCPhoton  = new TH2F 
@@ -6707,6 +6781,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Float_t mcbin     = -1;
     Int_t   noverlaps = -1;
     Float_t egen      =  0;
+    Float_t ptgen     =  0;
     Float_t eRecoRes  = -10000;
     Bool_t conversion = kFALSE; 
     Int_t   index     = 0;
@@ -6736,18 +6811,21 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 //        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());
 
       fPrimaryMom = GetMCAnalysisUtils()->GetMother(mcLabel, GetMC(), pdg, status, ok, momLabel);   
-      egen = fPrimaryMom.E();      
+      egen  = fPrimaryMom.E();
+      ptgen = fPrimaryMom.Pt();
 
       // In some histograms, each particle is a different bin
       if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)       ) {
         mcbin = 7.5; pdg = 111;
         fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);
-        egen = fPrimaryMom.E();
+        egen  = fPrimaryMom.E();
+        ptgen = fPrimaryMom.Pt();
       }
       else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) {
         mcbin = 8.5; pdg = 221;
         fPrimaryMom = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);
-        egen = fPrimaryMom.E();
+        egen  = fPrimaryMom.E();
+        ptgen = fPrimaryMom.Pt();
       }
       else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)     ) 
       {
@@ -6758,7 +6836,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           fPrimaryMom = GetMCAnalysisUtils()->GetFirstMotherWithPDGAndPrimary(mcLabel, 22, GetMC(), ok, momLabel, gparentLabel);
           //printf("MC label %d, mom %d, parent %d; egen org %f, egen new %f\n",
           //       mcLabel,momLabel,gparentLabel,egen,fPrimaryMom.E());
-          egen    = fPrimaryMom.E();
+          egen  = fPrimaryMom.E();
+          ptgen = fPrimaryMom.Pt();
         }
         
         if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
@@ -6820,6 +6899,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         
         if ( egen > 0.1 )
           fhMCParticleVsErecEgenDiffOverEgen[0]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+        fhMCParticleVsErecEgen[0]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
         
         if ( fCheckOverlaps )
           fhMCParticleVsNOverlaps[0]->Fill(fMomentum.Pt(), mcbin, noverlaps, GetEventWeight()*weightPt);
@@ -6868,7 +6948,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent(),bEoP,bRes);
 
     if ( !ClusterSelected(calo, nSM, nMaxima, matched, bEoP, bRes,
-                          tag, mcbin, egen, noverlaps, weightPt, cen) ) continue;
+                          tag, mcbin, egen, ptgen, noverlaps, weightPt, cen) ) continue;
     
     //----------------------------
     // Create AOD for analysis
@@ -6932,7 +7012,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------
     Int_t largeTimeInCellCluster = kFALSE;
-    FillShowerShapeHistograms(calo, nSM, tag, egen, weightPt, cen, nMaxima, matched, 
+    FillShowerShapeHistograms(calo, nSM, tag, egen, ptgen, weightPt, cen, nMaxima, matched,
                               maxCellFraction, nMaximaNxN, l0NxN, largeTimeInCellCluster);
     
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
@@ -7012,6 +7092,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         
         if ( egen > 0.1 )
           fhMCParticleVsErecEgenDiffOverEgen[3]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+        fhMCParticleVsErecEgen[3]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
         
 //        if (ener-egen > 4 && mcbin == 0.5)
 //        {
@@ -7035,9 +7116,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         if  ( conversion && fSeparateConvertedDistributions )
           fhMCParticleConvertedCen[3]->Fill(fMomentum.Pt(), mcbin, cen,GetEventWeight()*weightPt);
         
-        if ( egen > 0.1 && icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         {
-          fhMCParticleVsErecEgenDiffOverEgenCen[icent]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+          if ( egen > 0.1 )
+            fhMCParticleVsErecEgenDiffOverEgenCen[icent]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
+          fhMCParticleVsErecEgenCen[icent]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
         }
       } // Is High Mult      
     }  // Is MC

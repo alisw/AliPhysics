@@ -824,7 +824,13 @@ public:
   virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
-  
+
+  virtual Bool_t   ComparePtHardAndPromptPhotonPt(Int_t process, TString processName) ;
+  virtual Bool_t   IsPtHardAndPromptPhotonPtComparisonSet()       const { return  fComparePtHardAndPromptPhotonPt   ; }
+  virtual void     SetPtHardAndPromptPhotonPtComparison(Bool_t compare) { fComparePtHardAndPromptPhotonPt = compare ; }
+  virtual Float_t  GetPtHardAndPromptPhotonFactor()               const { return  fPtHardAndPromptPhotonPtFactor    ; }
+  virtual void     SetPtHardAndPromptPhotonPtFactor(Float_t factor)     { fPtHardAndPromptPhotonPtFactor = factor   ; }
+
   // Select particles or clusters depending on generator
   virtual void     SetNumberOfMCGeneratorsToAccept(Int_t nGen) 
   { fNMCGenerToAccept = nGen ; 
@@ -908,6 +914,9 @@ public:
   Bool_t           fComparePtHardAndClusterPt;     ///<  In MonteCarlo, jet events, reject events with too large cluster energy.
   Float_t          fPtHardAndClusterPtFactor;      ///<  Factor between ptHard and cluster pT to reject/accept event.
   
+  Bool_t           fComparePtHardAndPromptPhotonPt;///<  In MonteCarlo, prompt photon events, reject fake events with wrong jet energy.
+  Float_t          fPtHardAndPromptPhotonPtFactor; ///<  Factor between ptHard and prompt photon pT to reject/accept event.
+
   Float_t          fCTSPtMin;                      ///<  pT Threshold on charged particles. 
   Float_t          fEMCALPtMin;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMin;                     ///<  pT Threshold on phos clusters.
@@ -1199,7 +1208,12 @@ public:
   TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
   TH2F  *          fhEMCALNSumEnCellsPerStrip;     //!<! Control histogram of LED events on strips rejection, after LED SM rejection
   TH2F  *          fhEMCALNSumEnCellsPerStripAfter;//!<! Control histogram of LED events on strips rejection, after strip LED and SM rejection
-  
+
+  TH1F  *          fhPtHardPtJetPtRatio;           //!<! Control histogram fraction of generated jet pT over pT hard
+  TH1F  *          fhPtHardPromptPhotonPtRatio;    //!<! Control histogram fraction of generated prompt photon Pt over pT hard
+  TH1F  *          fhPtHardEnClusterRatio;         //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard
+  TH2F  *          fhPtHardEnClusterCenRatio;      //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard  vs centrality
+
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
@@ -1226,7 +1240,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,93) ;
+  ClassDef(AliCaloTrackReader,94) ;
   /// \endcond
 
 } ;

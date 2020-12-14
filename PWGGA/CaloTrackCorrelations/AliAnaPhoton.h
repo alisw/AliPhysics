@@ -61,15 +61,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, Bool_t bEoP, Bool_t bRes,
-                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight, Int_t cen) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm,
+                               Bool_t matched, Bool_t bEoP, Bool_t bRes,
+                               Int_t mctag, Float_t mcbin,
+                               Float_t egen, Float_t ptgen,
+                               Int_t noverlaps, Float_t weight, Int_t cen) ;
   
   void         FillAcceptanceHistograms(Int_t cen);
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t weight,
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t ptgen, Float_t weight,
                                           Int_t cen, Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
                                           Int_t nlmNxN, Float_t l0NxN, Int_t & largeTimeInside) ;
   
@@ -420,6 +423,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
   TH2F * fhMCParticleConverted[4];                  //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final
   TH3F * fhMCParticleVsErecEgenDiffOverEgen[4];     //!<! Trace origin of matched particle vs reconstructed and generated Erec-Egen/Egen:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsErecEgen[4];                 //!<! Trace origin of matched particle vs reconstructed and generated energy:raw, selected before TM, after TM, final
   TH3F * fhMCParticleVsNOverlaps[4];                //!<! Trace origin of matched particle vs number of overlaps:raw, selected before TM, after TM, final
   TH3F * fhMCParticleNLM;                           //!<! Trace origin of matched particle after all cuts,  NLM. 
   TH3F * fhMCParticleM02;                           //!<! Trace origin of matched particle after all cuts, shower shape long axis
@@ -434,10 +438,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   ///< Trace origin of matched particle vs reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
   TH3F ** fhMCParticleVsErecEgenDiffOverEgenCen;    //![GetNCentrBin()] 
-  
+
+  ///< Trace origin of matched particle vs reconstructed and generated energy , after all cuts, per centrality bin.
+  TH3F **fhMCParticleVsErecEgenCen;                 //![GetNCentrBin()]
+
+  TH3F * fhMCParticleErecEgenDiffOverEgenNLM[fgkNssTypes]; //!<! MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts.
+  TH3F * fhMCParticleErecEgenNLM[fgkNssTypes];     //!<! Trace origin of matched particle vs reconstructed and generated energy vs n local max, after all cuts.
+
   ///< MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts, per centrality bin.
   TH3F **fhMCParticleErecEgenDiffOverEgenNLMCen;    //![GetNCentrBin()*fgkNssTypes]
-  TH3F * fhMCParticleErecEgenDiffOverEgenNLM[fgkNssTypes]; //!<! MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts.
+
+  ///< Trace origin of matched particle vs reconstructed and generated energy vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleErecEgenNLMCen;               //![GetNCentrBin()*fgkNssTypes]
 
   TH3F * fhMCParticleNLMCen[fgkNssTypes];           //!<!  MC clusters from different origins pt vs NLM vs Centrality 
   
@@ -564,6 +576,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH3F * fhTrackMatchedMCParticleVsEOverP[2];       //!<! Trace origin of matched particle vs compare to E over P
   TH3F * fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[2]; //!<! Trace origin of matched particle vs reconstructed and generated E
+  TH3F * fhTrackMatchedMCParticleVsErecEgen[2];     //!<! Trace origin of matched particle vs reconstructed and generated E
   TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
   
   TH2F * fhdEdx[2];                                 //!<! Matched track dEdx vs cluster E, after and before photon cuts
@@ -762,7 +775,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,56) ;
+  ClassDef(AliAnaPhoton,57) ;
   /// \endcond
 
 } ;

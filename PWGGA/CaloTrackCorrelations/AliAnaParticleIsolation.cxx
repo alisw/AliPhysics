@@ -5250,8 +5250,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Double_t coneptsumBkgCh    = 0.;
     Double_t coneptsumBkgNe    = 0.;
 
-    Double_t coneptsumBkgChRaw = 0.;
-    Double_t coneptsumBkgNeRaw = 0.;
+    //Double_t coneptsumBkgChRaw = 0.;
+    //Double_t coneptsumBkgNeRaw = 0.;
 
     if ( isoMethod == AliIsolationCut::kSumBkgSubIC )
     {
@@ -5267,8 +5267,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       Float_t  etaBandPtSumNeNorm = 0;
       Float_t  phiBandPtSumNeNorm = 0;
 
-      Float_t  coneptsumChSub     = 0 ;
-      Float_t  coneptsumNeSub     = 0 ;
+      //Float_t  coneptsumChSub     = 0 ;
+      //Float_t  coneptsumNeSub     = 0 ;
 
       // Normalize background to cone area
 
@@ -5302,16 +5302,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
         {
-          coneptsumBkgNeRaw  = etaBandPtSumNe;
+          //coneptsumBkgNeRaw  = etaBandPtSumNe;
           coneptsumBkgNe     = etaBandPtSumNeNorm;
         }
         else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
         {
-          coneptsumBkgNeRaw  = phiBandPtSumNe;
+          //coneptsumBkgNeRaw  = phiBandPtSumNe;
           coneptsumBkgNe     = phiBandPtSumNeNorm;
         }
 
-        coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
+        //coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
 
         //        printf("Neutral: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
         //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
@@ -5334,16 +5334,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
         {
-          coneptsumBkgChRaw = etaBandPtSumCh;
+          //coneptsumBkgChRaw = etaBandPtSumCh;
           coneptsumBkgCh    = etaBandPtSumChNorm;
         }
         else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
         {
-          coneptsumBkgChRaw = phiBandPtSumCh;
+          //coneptsumBkgChRaw = phiBandPtSumCh;
           coneptsumBkgCh    = phiBandPtSumChNorm;
         }
 
-        coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
+        //coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
 
         //        printf("Charged: sumpT %2.2f, \n \t phi: sum pT %2.2f, sumpT norm %2.2f;\n"
         //               "\t eta: sum pT %2.2f, sumpT norm %2.2f;\n"
@@ -5360,7 +5360,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged && !checkClustersBand )
       {
         coneptsumBkgNe = coneptsumBkgCh*GetIsolationCut()->GetNeutralOverChargedRatio(centrality);
-        coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
+        //coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
       }
 
       //     // Uncomment if perp cone is hacked to be calculated
