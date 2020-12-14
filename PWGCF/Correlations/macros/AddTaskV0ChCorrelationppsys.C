@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskCascadeChCorrelations task
 
-void* AddTaskV0ChCorrelationppsys(
+AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(
                               float cenMin, float cenMax,
                               bool effCorr = 0, bool isMC=0,TString fileName_extension = "",TString EffFileNameWithPath = ""){
    AddTaskV0ChCorrelationppsys( 
