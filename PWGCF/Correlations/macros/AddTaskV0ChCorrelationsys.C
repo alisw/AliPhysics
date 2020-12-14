@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskV0ChCorrelationsys task
 
-void* AddTaskV0ChCorrelationsys(float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString fileName_extension = "",TString EffFileNameWithPath = ""){
    AddTaskV0ChCorrelationsys( 
                             cenMin,  cenMax,
                             Form("Cent%d_%d", Int_t(cenMin), Int_t(cenMax)),
