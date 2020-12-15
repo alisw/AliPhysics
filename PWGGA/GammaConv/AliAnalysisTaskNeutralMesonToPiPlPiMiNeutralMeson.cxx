@@ -248,6 +248,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(nullptr),
   fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt(nullptr),
   fHistoTruePiPlPiMiNDMContaminationInvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt(nullptr),
   fHistoDoubleCountTruePi0InvMassPt(nullptr),
   fHistoDoubleCountTrueHNMInvMassPt(nullptr),
   fHistoDoubleCountTrueConvGammaRPt(nullptr),
@@ -494,6 +499,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt(nullptr),
   fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt(nullptr),
   fHistoTruePiPlPiMiNDMContaminationInvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt(nullptr),
+  fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt(nullptr),
   fHistoDoubleCountTruePi0InvMassPt(nullptr),
   fHistoDoubleCountTrueHNMInvMassPt(nullptr),
   fHistoDoubleCountTrueConvGammaRPt(nullptr),
@@ -2006,12 +2016,36 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]);
-          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
-          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->Sumw2();
-          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]);
-
+          fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiNDMPureCombinatorical_Pi0_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[iCut]);
+          fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiNDMPureCombinatorical_PiPl_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[iCut]);
+          fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiNDMPureCombinatorical_PiMi_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[iCut]);
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_Crosscheck_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[iCut]);
+          fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_multipel_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]);
+          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
+          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->Sumw2();
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
@@ -5620,6 +5654,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){
       if((fDoMesonQA>0 ) && (!fDoLightOutput)){
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       }
       return;
   }
@@ -5813,18 +5848,27 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Bool_t isNoSameMother            = kFALSE;   // none of the pions have the same mother
   Bool_t isNoPiPiPi                = kFALSE;   // the decay is not a 3 pion decay
 
+  Bool_t isPiPlWronglyIdentified  = kFALSE;   // Pi+ Identification not correct
+  Bool_t isPiMiWronglyIdentified  = kFALSE;   // Pi- Identification not correct
+  Bool_t isPiZeroWronglyIdentified = kFALSE;  // Pi0 Identification not correct
+  Bool_t isMultipleWronglyIdentified = kFALSE; // Pi0 Identification not correct
+
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   Int_t virtualParticleMCLabel = -1;
   Int_t virtualParticleMotherLabel = -1;
+  //Is set when:
+  //if(isTrueNDM){// True Pion
+    //Pi0Candidate->SetTrueMesonValue(1);
   Int_t trueMesonFlag  = TrueNeutralDecayMesonCandidate->GetTrueMesonValue();
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
 
   Float_t weighted= fWeightJetJetMC;
 
-  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){
+  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
       if((fDoMesonQA>0 ) && (!fDoLightOutput)){
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+          fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       }
       return;
   }
@@ -5869,6 +5913,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   } else{
     // not a three pion decay
     isNoPiPiPi = kTRUE;
+    if (!(TMath::Abs(negativeMC->GetPdgCode())==211)){
+        isPiMiWronglyIdentified     = kTRUE;
+    }
+    if (!(TMath::Abs(positiveMC->GetPdgCode())==211)){
+        isPiPlWronglyIdentified     = kTRUE;
+        if (isPiMiWronglyIdentified){
+            isMultipleWronglyIdentified = kTRUE;
+        }
+    }
+    if (!(NDMMC->GetPdgCode()==fPDGCodeNDM)){
+        isPiZeroWronglyIdentified     = kTRUE;
+        if ((isPiMiWronglyIdentified)||(isPiPlWronglyIdentified)){
+            isMultipleWronglyIdentified = kTRUE;
+        }
+    }
   }
 
   // Do things for each case
@@ -6034,7 +6093,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     // no pi pi pi decay contamination
     fHistoTruePiPlPiMiNDMContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     // investigate here what was missmatched (?)
-
+    if (isPiPlWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isPiMiWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isPiZeroWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isMultipleWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
   }
 }
 
