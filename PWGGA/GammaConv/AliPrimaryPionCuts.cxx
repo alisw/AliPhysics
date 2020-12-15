@@ -995,6 +995,21 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			fPIDnSigmaBelowPionLineTPC=-2;
 			fPIDnSigmaAbovePionLineTPC=3.;
 			break;
+        case 9: // -2.5, 2.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
+        case 10: //a -3.5, 3.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
+        case 11: //b -2., 2.
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2;
+            fPIDnSigmaAbovePionLineTPC=3.;
+            break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;
 			return kFALSE;

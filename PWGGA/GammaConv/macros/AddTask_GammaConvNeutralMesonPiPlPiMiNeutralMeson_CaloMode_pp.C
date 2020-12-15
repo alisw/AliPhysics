@@ -680,6 +680,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 445)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV, Shared cluster Fraction <=0.4
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32f51070a","01031h3100000000","0453503000000000"); // EG1, new Gamma Energy cut 10 GeV
 
+  } else if(trainConfig == 446)  { // EDC 13 TeV, nSigma Variation: -2.5,2.5
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51090a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 447)  { // EDC 13 TeV, nSigma Variation: -3.5,3.5
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510a0a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 448)  { // EDC 13 TeV, nSigma Variation: -2.0,2.0
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103100000000","0453503000000000"); // INT7
+
     // Variations on 13 TeV for 7 TeV systematics
     // EMC (without nonlin)
   } else if(trainConfig == 450)  { // std
@@ -850,10 +857,23 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32f51070a","01031g3100000000","0a53503000000000"); // EG2, new Gamma Energy cut 6 GeV
   } else if(trainConfig == 745)  { //Standard EMCal 13TeV Trigger EG1, GammaCut > 10GeV, Shared cluster Fraction <=0.4
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32f51070a","01031h3100000000","0a53503000000000"); // EG1, new Gamma Energy cut 10 GeV
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // EMC pp 13 TeV Sideband Mixing
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //Standard Cuts
+  } else if(trainConfig == 830)  { // EDC 13 TeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","0d53503000000000"); // INT7, Sideband, both sides
+  } else if(trainConfig == 831)  { // EDC 13 TeV EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411792109fe32220000","32c51070a","0103103100000000","0d53503000000000"); // EG2, Sideband, both sides
+  } else if(trainConfig == 832)  { // EDC 13 TeV EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103100000000","0d53503000000000"); // EG1, Sideband, both sides
+
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
 
   if(!cuts.AreValid()){
     std::cout << "\n\n****************************************************" << std::endl;
