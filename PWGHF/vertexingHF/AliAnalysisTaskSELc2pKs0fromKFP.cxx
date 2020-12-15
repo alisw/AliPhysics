@@ -1340,7 +1340,8 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   fVar_Lc[43] = countTreta1corr; // NtrkCorr
   */
 
-  if (fIsMC && lab_Lc>=0) fTree_Lc->Fill();
+//  if (fIsMC && lab_Lc>=0) fTree_Lc->Fill();
+  if (fIsMC)  fTree_Lc->Fill();
   if (!fIsMC) fTree_Lc->Fill();
 
   if (fWriteLcQATree) {fTree_Lc_QA->Fill();}
