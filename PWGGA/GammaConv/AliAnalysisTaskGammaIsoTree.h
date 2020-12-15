@@ -482,8 +482,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH2F*                       fCaloIsoFull[5]; //!
     TH2F*                       fCaloIsoCell[5]; //!
     TH2F*                       fCaloIsoCorr[5]; //!
-    TH1F*                       fCaloRho; //!
-    TH1F*                       fCaloRhoTimesArea[5]; //!
+    TH2F*                       fCaloRho; //!
+    TH2F*                       fCaloRhoTimesArea[5]; //!
     // True conv histos
     TH1F*                       fCaloTruePt; //!
     TH1F*                       fCaloTrueWithoutConvPt; //!
@@ -592,6 +592,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
 
     THnSparseF*                       fCaloM02; //! inv mass EMC-EMC
     THnSparseF*                       fCaloM02ChargedIsolated[5][5]; //!
+    THnSparseF*                       fCaloM02ChargedIsolated_FromDirect[5][5]; //!
+    THnSparseF*                       fCaloM02ChargedIsolated_FromDirectConvOnly[5][5]; //!
+    THnSparseF*                       fCaloM02ChargedIsolated_FromDirectNormOnly[5][5]; //!
     THnSparseF*                       fCaloM02AntiChargedIsolated[5];//!
     THnSparseF*                       fCaloM02NeutralIsolated[5][5]; //!
     THnSparseF*                       fCaloM02AntiNeutralIsolated[5];//!
@@ -614,6 +617,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fGenPhotonPtInEMCalAcc;//!
     TH1F*                       fGenPhotonPtInEMCalAcc_FromDecay;//!
     TH1F*                       fGenPhotonPtInEMCalAcc_FromDirect;//!
+    TH1F*                       fGenPhotonPtInEMCalAccChargedMCIso_FromDirect[5][5];//!
+    TH2F*                       fGenPhotonChargedMCIsoInEMCalAcc_FromDirect[5];//!
     TH1F*                       fGenPhotonPtFoundNormCluster;//!
     TH1F*                       fGenPhotonPtFoundTaggingCluster;//!
     TH1F*                       fGenPhotonPtFoundIsoCluster;//!
@@ -706,7 +711,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 27);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 28);
 
 };
 
