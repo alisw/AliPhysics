@@ -96,7 +96,6 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       cWeights->SetData(fList);
       mgr->ConnectInput(task,3,cWeights);
     } else mgr->ConnectInput(task,3,(AliAnalysisDataContainer*)AllContainers->FindObject("Weights"));
-
     // if(!AllContainers->FindObject("NUACorr")) {
     //   if(NUAPath.IsNull()) { printf("NUA path not provided!\n"); return 0; };
     //   if((!efficiencyPath.Contains("alien:")) && !meanPtPath.Contains("alien:") && NUAPath.Contains("alien:") ) TGrid::Connect("alien:"); //Only connect if not connected yet
@@ -113,6 +112,8 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
     mgr->ConnectOutput(task,2,cOutputFC);
     AliAnalysisDataContainer *cOutputCov  = mgr->CreateContainer(Form("Covariance%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,3,cOutputCov);
+    AliAnalysisDataContainer *cOutputV2dPt  = mgr->CreateContainer(Form("V2vsdPt%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,4,cOutputV2dPt);
     return task;
   };
   if(StageSwitch==4) {
