@@ -723,15 +723,19 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510a0a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 512)  { // EDC 13 TeV, nSigma Variation: -2.0,2.0
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 513)  { // EDC 13 TeV, nSigma Variation: -4.0,4.0
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51050a","0103103100000000","0453503000000000"); // INT7
+  } else if(trainConfig == 514)  { // EDC 13 TeV, nSigma Variation: -5.0,5.0
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51030a","0103103100000000","0453503000000000"); // INT7
 
-  } else if(trainConfig == 513)  { // EDC 13 TeV, min opening angle 5mrad
+  } else if(trainConfig == 520)  { // EDC 13 TeV, min opening angle 5mrad
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103100000010","0453503000000000"); // INT7
 
-  } else if(trainConfig == 514)  { // EDC 13 TeV, change of mass cut u // EMC-EMC - 1 sigma - gamma selection
+  } else if(trainConfig == 525)  { // EDC 13 TeV, change of mass cut u // EMC-EMC - 1 sigma - gamma selection
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103u00000000","0453503000000000"); // INT7
-  } else if(trainConfig == 515)  { // EDC 13 TeV, change of mass cut v // EMC-EMC - 3 sigma - gamma selection
+  } else if(trainConfig == 526)  { // EDC 13 TeV, change of mass cut v // EMC-EMC - 3 sigma - gamma selection
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103v00000000","0453503000000000"); // INT7
-  } else if(trainConfig == 516)  { // EDC 13 TeV, change of mass cut w // EMC-EMC - 4 sigma - gamma selection
+  } else if(trainConfig == 527)  { // EDC 13 TeV, change of mass cut w // EMC-EMC - 4 sigma - gamma selection
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103w00000000","0453503000000000"); // INT7
 
 
