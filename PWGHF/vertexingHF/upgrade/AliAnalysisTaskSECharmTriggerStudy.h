@@ -398,6 +398,8 @@ private:
     TTree *fGenTree;                                    //!<! Output tree with generated particles
     std::map<std::string, TH2F*> fHistGenPromptVsPtVsY; //!<! Output histos with generated particles
     std::map<std::string, TH2F*> fHistGenFDVsPtVsY;     //!<! Output histos with generated particles
+    std::map<std::string, TH2F*> fHistTrakNsigmaTPCVsP; //!<! Output histos with TPC Nsigma for pion, kaon, proton, and electron vs p
+    std::map<std::string, TH2F*> fHistTrakNsigmaTOFVsP; //!<! Output histos with TOF Nsigma for pion, kaon, proton, and electron vs p
 
     AliEventCuts fEventCuts;                            /// object for event selection
     int fSystem;                                        /// system (pp or PbPb)
@@ -443,7 +445,7 @@ private:
     bool fApplyCuts;  /// flag to enable cuts application
     TList *fListCuts; /// list of cut objects
 
-    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 2);
+    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 3);
 };
 
 #endif
