@@ -258,7 +258,13 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(1,fptVarList);
     //Setting up the FlowContainer
     TObjArray *oba = new TObjArray();
-    oba->Add(new TNamed("ChPos22","ChPos22"));
+    oba->Add(new TNamed("ChGap22","ChGap22")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("ChGap24","ChGap24")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("ChFull22","ChFull22")); //no-gap case
+    oba->Add(new TNamed("ChFull24","ChFull24")); //no-gap case
+
+    //Following is for PID. Let's remove it for now to save some memory
+/*    oba->Add(new TNamed("ChPos22","ChPos22"));
     oba->Add(new TNamed("ChPos24","ChPos24"));
     oba->Add(new TNamed("PiPos22","PiPos22"));
     oba->Add(new TNamed("PiPos24","PiPos24"));
@@ -273,7 +279,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("KaNeg22","KaNeg22"));
     oba->Add(new TNamed("KaNeg24","KaNeg24"));
     oba->Add(new TNamed("PrNeg22","PrNeg22"));
-    oba->Add(new TNamed("PrNeg24","PrNeg24"));
+    oba->Add(new TNamed("PrNeg24","PrNeg24"));*/
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(fSystSwitch) fcname.Append(Form("_%i",fSystSwitch));
@@ -283,8 +289,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(2,fFC);
     //Initializing GFW
     Int_t pows[] = {3,0,2,0,3};
+    Int_t powsFull[] = {5,0,4,0,3};
     Int_t powsPOI[] = {3,0,2,0,3};
     fGFW = new AliGFW();
+    fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
+    fGFW->AddRegion("refP",5,pows,0.4,0.8,1,1);
+    fGFW->AddRegion("mid",5,powsFull,-0.8,0.8,1,2);
+    //No need to do full-blown PID, limit only with charged flow
+    /*
     fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
     fGFW->AddRegion("refP",5,pows,0.4,0.8,1,1);
     fGFW->AddRegion("chN",3,powsPOI,-0.8,-0.4,1,2);
@@ -302,7 +314,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fGFW->AddRegion("OLkaN",5,pows,-0.8,-0.4,1,128);
     fGFW->AddRegion("OLkaP",5,pows,0.4,0.8,1,128);
     fGFW->AddRegion("OLprN",5,pows,-0.8,-0.4,1,256);
-    fGFW->AddRegion("OLprP",5,pows,0.4,0.8,1,256);
+    fGFW->AddRegion("OLprP",5,pows,0.4,0.8,1,256);*/
     CreateCorrConfigs();
     //Covariance
     fCovList = new TList();
@@ -635,8 +647,10 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
       FillWPCounter(wp[0],weff,p1);
       // if(fDisablePID) continue;
       // if(PIDIndex) FillWPCounter(wp[PIDIndex],w,p1); //should be different weight here
-    } else { //Otherwise, we consider it for vn calculations
-      fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,1+2+32);
+    }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
+    fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mas 2)
+    // else { //Otherwise, we consider it for vn calculations
+      //fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,1+2+32);
       // if(!WithinPOI && !WithinRef) continue;
       // if(WithinPOI && WithinRef) waccRef = wacc; //If overlapping, override ref weight
       // if(WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),waccRef,1); //Filling ref flow
@@ -644,7 +658,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
       // if(WithinNch) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,2); //always filling for Nch
       // if(WithinPOI && PIDIndex && WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,1<<(PIDIndex+5));
       // if(WithinNch && WithinRef) fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc,32); //Filling POI flow for ID'ed
-    };
+    // };
   };
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT varianve
@@ -667,7 +681,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
     FillCovariance(fCovariance[i],corrconfigs.at(i*4),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
-    FillCovariance(fCovariance[i],corrconfigs.at(i*4+1),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+    //following is not necessary since we don't have any POIs
+    // FillCovariance(fCovariance[i],corrconfigs.at(i*4+1),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
   };
   PostData(3,fCovList);
   //Assuming outArr[0] is preset to meanPt; outArr[1] = variance; outArr[2] = norm; outArr[3] = mpt in this event
@@ -829,6 +844,14 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(TProfile *target, const AliGF
   return kTRUE;
 };
 void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
+
+  corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap24","refP {2 2} refN {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull22","mid {2 2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));
+  return;
+
+  //ditch the last code for now, since we don't need PID
   corrconfigs.push_back(GetConf("ChPos22","chP {2} refN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("ChNeg22","chN {2} refP {-2}", kFALSE));
   corrconfigs.push_back(GetConf("ChPos24","chP refP | OLchP {2 2} refN {-2 -2}", kFALSE));
