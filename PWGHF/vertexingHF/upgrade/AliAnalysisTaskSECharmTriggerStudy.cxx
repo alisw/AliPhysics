@@ -54,6 +54,8 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fGenTree(nullptr),
                                                                                                            fHistGenPromptVsPtVsY{},
                                                                                                            fHistGenFDVsPtVsY{},
+                                                                                                           fHistTrakNsigmaTPCVsP{},
+                                                                                                           fHistTrakNsigmaTOFVsP{},
                                                                                                            fEventCuts{},
                                                                                                            fSystem(kpp),
                                                                                                            fAOD(nullptr),
@@ -278,6 +280,38 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
            fOutput->Add(histo.second);
     }
     for(auto &histo: fHistGenFDVsPtVsY)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
+
+    if(fEnableTracks >> 0 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["pi"] = new TH2F("fHistTrakNsigmaTPCVsP_pi", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(#pi)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["pi"] = new TH2F("fHistTrakNsigmaTOFVsP_pi", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(#pi)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 1 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["K"] = new TH2F("fHistTrakNsigmaTPCVsP_K", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(K)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["K"] = new TH2F("fHistTrakNsigmaTOFVsP_K", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(K)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 2 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["p"] = new TH2F("fHistTrakNsigmaTPCVsP_p", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(p)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["p"] = new TH2F("fHistTrakNsigmaTOFVsP_p", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(p)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 3 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["e"] = new TH2F("fHistTrakNsigmaTPCVsP_e", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(e)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["e"] = new TH2F("fHistTrakNsigmaTOFVsP_e", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(e)", 200, 0., 10., 200., -10., 10.);
+    }
+
+    for(auto &histo: fHistTrakNsigmaTPCVsP)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
+    for(auto &histo: fHistTrakNsigmaTOFVsP)
     {
         if(histo.second)
            fOutput->Add(histo.second);
@@ -1236,6 +1270,27 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
 
         if(!isSpeciesSelected && fKeepTracksWithMinPt > 0 && track.fPt > fKeepTracksWithMinPt)
             fTracks.push_back(track);
+    
+        if(((fEnableTracks >> 0 & 1) && (track.fSpecies >> 0 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["pi"]->Fill(trackAOD->P(), NsigmaTPCPi);
+            fHistTrakNsigmaTOFVsP["pi"]->Fill(trackAOD->P(), NsigmaTOFPi);
+        }
+        if(((fEnableTracks >> 1 & 1) && (track.fSpecies >> 1 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["K"]->Fill(trackAOD->P(), NsigmaTPCK);
+            fHistTrakNsigmaTOFVsP["K"]->Fill(trackAOD->P(), NsigmaTOFK);
+        }
+        if(((fEnableTracks >> 2 & 1) && (track.fSpecies >> 2 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["p"]->Fill(trackAOD->P(), NsigmaTPCPr);
+            fHistTrakNsigmaTOFVsP["p"]->Fill(trackAOD->P(), NsigmaTOFPr);
+        }
+        if(((fEnableTracks >> 3 & 1) && (track.fSpecies >> 3 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["e"]->Fill(trackAOD->P(), NsigmaTPCEl);
+            fHistTrakNsigmaTOFVsP["e"]->Fill(trackAOD->P(), NsigmaTOFEl);
+        }
     }
 
     fRecoTree->Fill();
