@@ -7,6 +7,8 @@
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 
+#include <TDatabasePDG.h>
+
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 
 #include "AliAnalysisManager.h"
@@ -97,21 +99,29 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserCreateOutputObjects()
 
     for(int iHist = 0; iHist < 3; iHist++)
     {
-        fHistBDTOutput[iHist] = new TH1F(Form("fHistBDTOutput%d", iHist), Form(";BDT output score %d; entries", iHist), 1000, 0., 1.); //assuming always probability
-        fOutput->Add(fHistBDTOutput[iHist]);
+        fHistBDTOutputVsPt[iHist] = new TH2F(Form("fHistBDTOutput%dVsPt", iHist),
+                                             Form(";#it{p}_{T} (GeV/#it{c});BDT output score %d", iHist),
+                                             500, 0., 50., 1000, 0., 1.); //assuming always probability
+        fOutput->Add(fHistBDTOutputVsPt[iHist]);
     }
 
     //ML model
+    double massD = -1.;
     switch(fDecChannel) {
         case kDplustoKpipi:
             fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
             fMLResponse->MLResponseInit();
+            massD = TDatabasePDG::Instance()->GetParticle(411)->Mass();
             break;
         case kDstoKKpi:
             fMLResponse = new AliHFMLResponseDstoKKpi("DstoKKpiMLResponse", "DstoKKpiMLResponse", fConfigPath.Data());
             fMLResponse->MLResponseInit();
+            massD = TDatabasePDG::Instance()->GetParticle(431)->Mass();
             break;
     }
+
+    fHistMassVsPt = new TH2F("fHistMassVsPt", ";#it{p}_{T} (GeV/#it{c});inv mass (GeV/#it{c}^{2})", 500, 0., 50., 200, massD-0.2, massD+0.2);
+    fOutput->Add(fHistMassVsPt);
 
     PostData(1, fOutput);
 
@@ -264,8 +274,20 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         {
             if(iScore > 2)
                 break;
-            fHistBDTOutput[iScore]->Fill(scores[iScore]);
+            fHistBDTOutputVsPt[iScore]->Fill(chHad->Pt(), scores[iScore]);
         }
+        switch(fDecChannel)
+        {
+            case kDplustoKpipi:
+                fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF3Prong*>(chHad)->InvMassDplus());
+                break;
+            case kDstoKKpi:
+                if(isSelected & 4)
+                    fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF3Prong*>(chHad)->InvMassDsKKpi());
+                if(isSelected & 8)
+                    fHistMassVsPt->Fill(chHad->Pt(), dynamic_cast<AliAODRecoDecayHF3Prong*>(chHad)->InvMassDspiKK());
+                break;
+        }        
 
         if (unsetVtx)
             chHad->UnsetOwnPrimaryVtx();
