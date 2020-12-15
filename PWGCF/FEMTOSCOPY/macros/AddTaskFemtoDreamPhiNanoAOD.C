@@ -99,12 +99,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackCutsPhi->SetMinimalBooking(true);
   }
   if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(1.028+0.005, 1.044+0.005);
+    TrackCutsPhi->SetCutWindow(0.995, 1.011);
   }
   if (suffix == "2") {
-      TrackCutsPhi->SetCutWindow(1.028+0.01, 1.044+0.01);
+      TrackCutsPhi->SetCutWindow(1.028, 1.044);
   }
   if (suffix == "3") {
+    TrackCutsPhi->SetCutWindow(1.028+0.005, 1.044+0.005);
+  }
+  if (suffix == "4") {
+      TrackCutsPhi->SetCutWindow(1.028+0.01, 1.044+0.01);
+  }
+  if (suffix == "5") {
       TrackCutsPhi->SetCutWindow(1.028+0.02, 1.044+0.02);
   }
 
@@ -247,6 +253,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMixingDepth(10);
 //  config->SetPhiEtaBinnign(true);
   //config->SetMomentumResolution(true);
+
+  if (suffix == "0") {
+      config->SetMassQA(true);
+  }
+  if (suffix == "1") {
+      config->SetMassQA(true);
+  }
+  if (suffix == "2") {
+      config->SetMassQA(true);
+  }
+
 
   //-------MIXED EVENTS---------------------------
   // config->SetUseEventMixing(true);
