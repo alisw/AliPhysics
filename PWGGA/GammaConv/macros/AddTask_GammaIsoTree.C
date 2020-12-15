@@ -36,9 +36,9 @@ void AddTask_GammaIsoTree(
   TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
 
 
-  vector<Float_t> trackIsoR = {0.2,0.4};
+  vector<Float_t> trackIsoR = {0.3,0.4};
   vector<Double_t> trackIsoE = {0.5,1.5,2.5};
-  vector<Float_t> neutralIsoR = {0.2,0.4};
+  vector<Float_t> neutralIsoR = {0.3,0.4};
   vector<Double_t> neutralIsoE = {0.5,1.5,2.5};
   Double_t minSignalM02 = 0.1;
   Double_t maxSignalM02 = 0.5;
