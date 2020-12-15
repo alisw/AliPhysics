@@ -375,6 +375,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+    tgr |= kHighMultV0;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   
