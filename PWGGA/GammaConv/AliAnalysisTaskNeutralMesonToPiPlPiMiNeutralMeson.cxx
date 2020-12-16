@@ -5718,7 +5718,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
             isMultipleWronglyIdentified = kTRUE;
         }
     }
-    if (!(NDMMC->GetPdgCode()==fPDGCodeNDM)){
+    if (!(fMCEvent->Particle(NDMMCLabel)->GetPdgCode()==fPDGCodeNDM)){
         isPiZeroWronglyIdentified     = kTRUE;
         if ((isPiMiWronglyIdentified)||(isPiPlWronglyIdentified)){
             isMultipleWronglyIdentified = kTRUE;
