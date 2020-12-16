@@ -41,6 +41,7 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fPileupCut(kTRUE),
   fOutput(0),
   fTrackArray(0),
+  fTrackBuffSize(2500),
   fProtonCandIdx(),
   fLambdaCandIdx(),
   fXiCnadIdx(),
@@ -60,6 +61,7 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fPileupCut(kTRUE),
   fOutput(0),
   fTrackArray(0),
+  fTrackBuffSize(2500),
   fProtonCandIdx(),
   fLambdaCandIdx(),
   fXiCnadIdx(),
@@ -93,7 +95,7 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   }
   fAliEventCuts.AddQAplotsToList(fOutput);
 
-  fTrackArray = new AliAODTrack*[2000];
+  fTrackArray = new AliAODTrack*[fTrackBuffSize];
 
   TH1F *hNPartStatistics = new TH1F("hNPartStatistics","Number of candidates under certain condition",10,0.5,10.5);
   hNPartStatistics->GetXaxis()->SetBinLabel(1,"p");
@@ -389,7 +391,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   if(fAnalysisType == "AOD") {
 
     // Reset global track reference
-    for(Int_t i=0; i < 2000; i++) fTrackArray[i] = 0;
+    for(Int_t i=0; i < fTrackBuffSize; i++) fTrackArray[i] = 0;
 
     // Store global track reference
     for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {
@@ -402,6 +404,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
       const Int_t trackID = track->GetID();
       if(trackID < 0) continue;
+      if(trackID >= fTrackBuffSize) {
+        AliWarning(Form("Track ID too big for buffer: ID: %d, buffer %d",trackID,fTrackBuffSize));
+        continue;
+      }
 
       if (fTrackArray[trackID]) {
         if ((!track->GetFilterMap()) && (!track->GetTPCNcls())) continue;
@@ -1309,11 +1315,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         TLorentzVector trackProton, trackOmega, trackSum;
 
         trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massOmega);
         trackSum = trackProton + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackOmega); 
+        Double_t relK = 1000*relKcalc(trackProton, trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(4);
         dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass, relK);
@@ -1503,11 +1509,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         TLorentzVector trackProton, trackOmega, trackSum;
 
         trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massOmega);
         trackSum = trackProton + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackOmega); 
+        Double_t relK = 1000*relKcalc(trackProton, trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(4);
         dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass, relK);

@@ -33,6 +33,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
 
     THashList              *fOutput;                  //! User output
     AliAODTrack           **fTrackArray;              //! global track info
+    const UShort_t          fTrackBuffSize;           //! size fo the above array
     std::vector<UInt_t>     fProtonCandIdx;           //! track index of proton candidate
     std::vector<UInt_t>     fLambdaCandIdx;           //! V0 index of Lambda candidate
     std::vector<UInt_t>     fXiCnadIdx;               //! cascade index of Xi candidate
@@ -41,7 +42,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 4);
+    ClassDef(AliAnalysisTaskDibaryons, 5);
 };
 
 #endif
