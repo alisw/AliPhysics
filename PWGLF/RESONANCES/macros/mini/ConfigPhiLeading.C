@@ -8,7 +8,6 @@ Bool_t ConfigPhiLeading(
  Double_t nSigmaPart2TOF = -1
  )
 {
-
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
     /* transv. momentum */ Int_t ptID = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
