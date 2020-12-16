@@ -21,7 +21,6 @@
 #include "AliMCVertex.h"
 #include "AliMCParticle.h"
 #include "TPDGCode.h"
-#include "AliEventCuts.h"
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -38,7 +37,7 @@ AliAnalysisTaskHe3EffTree::AliAnalysisTaskHe3EffTree()
 : AliAnalysisTaskSE(), 
 fESDevent(0),
 mcEvent(0),
-fStack(),
+fStack(0),
 fInputHandler(0),
 fPIDResponse(0),
 fEventCuts(),
@@ -56,6 +55,8 @@ tTrigHMV0(-999),
 tTrigHMSPD(-999),
 tTrigHNU(0),
 tTrigHQU(0),
+tnTPCcluster(0),
+tTPCchi2(0),
 tSPDFiredChips0(-999),	
 tSPDFiredChips1(-999),
 tSPDTracklets(-999),
@@ -77,7 +78,9 @@ tP(-999),
 tPx(-999),
 tPy(-999),
 tPz(-999),
-tE(-999),				
+tE(-999),		
+tKink(-1),
+tTPCrefit(-1),			
 tHeDEdx(-999),
 tHeSigma(-999),
 tTOFSignalHe(-999),
@@ -103,7 +106,7 @@ AliAnalysisTaskHe3EffTree::AliAnalysisTaskHe3EffTree(const char* name)
 : AliAnalysisTaskSE(name),
 fESDevent(0),
 mcEvent(0),
-fStack(),
+fStack(0),
 fInputHandler(0),
 fPIDResponse(0),
 fEventCuts(),
@@ -121,6 +124,8 @@ tTrigHMV0(-999),
 tTrigHMSPD(-999),
 tTrigHNU(0),
 tTrigHQU(0),
+tnTPCcluster(0),
+tTPCchi2(0),
 tSPDFiredChips0(-999),	
 tSPDFiredChips1(-999),
 tSPDTracklets(-999),
@@ -142,7 +147,9 @@ tP(-999),
 tPx(-999),
 tPy(-999),
 tPz(-999),
-tE(-999),				
+tE(-999),		
+tKink(-1),
+tTPCrefit(-1),		
 tHeDEdx(-999),
 tHeSigma(-999),
 tTOFSignalHe(-999),
@@ -209,7 +216,9 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTree->Branch("tTrigHMV0"       , &tTrigHMV0       , "tTrigHMV0/I");
 	fTree->Branch("tTrigHMSPD"      , &tTrigHMSPD      , "tTrigHMSPD/I");
 	fTree->Branch("tTrigHNU"        , &tTrigHNU        , "tTrigHNU/I");
-	fTree->Branch("tTrigHQU"        , &tTrigHQU        , "tTrigHQU/I");
+	fTree->Branch("tTrigHQU"        , &tTrigHQU        , "tTrigHQU/I");	
+	fTree->Branch("tnTPCcluster"    , &tnTPCcluster    , "tnTPCcluster/F");
+	fTree->Branch("tTPCchi2"        , &tTPCchi2        , "tTPCchi2/F");	
 	fTree->Branch("tSPDFiredChips0" , &tSPDFiredChips0 , "tSPDFiredChips0/F");
 	fTree->Branch("tSPDFiredChips1" , &tSPDFiredChips1 , "tSPDFiredChips1/F");
 	fTree->Branch("tSPDTracklets"   , &tSPDTracklets   , "tSPDTracklets/F");
@@ -232,6 +241,8 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTree->Branch("tPy"             , &tPy             , "tPy/F");
 	fTree->Branch("tPz"             , &tPz             , "tPz/F");
 	fTree->Branch("tE"              , &tE              , "tE/F");
+	fTree->Branch("tKink"           , &tKink           , "tKink/I");
+	fTree->Branch("tTPCrefit"       , &tTPCrefit       , "tTPCrefit/I");
 	fTree->Branch("tHeDEdx"         , &tHeDEdx         , "tHeDEdx/F");
 	fTree->Branch("tHeSigma"        , &tHeSigma        , "tHeSigma/F");
 	fTree->Branch("tTOFSignalHe"    , &tTOFSignalHe    , "tTOFSignalHe/F");
@@ -285,9 +296,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	
 	AliESDtrackCuts trackCutsV0("AlitrackCutsV0", "AlitrackCutsV0");
 	trackCutsV0.SetEtaRange(-0.9,0.9);
-	trackCutsV0.SetAcceptKinkDaughters(kFALSE);
-	trackCutsV0.SetRequireTPCRefit(kTRUE);
-	trackCutsV0.SetMaxChi2PerClusterTPC(5);
+	trackCutsV0.SetAcceptKinkDaughters(kTRUE);
+	trackCutsV0.SetRequireTPCRefit(kFALSE);
+	trackCutsV0.SetMaxChi2PerClusterTPC(6);
 	trackCutsV0.SetMinNClustersTPC(60);
 
 	//******************************
@@ -302,43 +313,48 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) MB = kTRUE;
 	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0) HMV0 = kTRUE;
 	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) HMSPD = kTRUE;
-
+	
+	Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
 	if (!fMCtrue){
 		// Data: get TRD trigger information from trigger classes 
 		TString classes = fESDevent->GetFiredTriggerClasses();   
 		if (classes.Contains("HNU")) HNU = 1;
 		if (classes.Contains("HQU")) HQU = 1; 
-	} else { 
+		
+	} else {
 		// MC: simulate TRD trigger
-		Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+		Bool_t primaryHeHNU = kFALSE, primaryHeHQU = kFALSE;
+
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
 				AliESDTrdTrack* trdTrack = fESDevent->GetTrdTrack(iTrack);
 				if (!trdTrack) continue;
+				
+				Int_t label = trdTrack->GetLabel();
+				AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
+			
 				// simulate HNU
 				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) || 
-					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {
+					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {	
 					HNU = 1;
-					Int_t label = trdTrack->GetLabel();
-					if (fStack->IsPhysicalPrimary(TMath::Abs(label))) HNU = 2;
-					if (fStack->IsSecondaryFromWeakDecay(TMath::Abs(label))) HNU = 3; 
-					if (fStack->IsSecondaryFromMaterial(TMath::Abs(label))) HNU = 4;
+					if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+						if (mcEvent->IsPhysicalPrimary(TMath::Abs(label))) primaryHeHNU = kTRUE;
+					}
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && 
-					trdTrack->GetNTracklets() >= 5 && 
-					(trdTrack->GetLayerMask() & 1) ){	
-						Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
-						if (sag < 0.2 && sag > -0.2) {
-							HQU = 1;
-							Int_t label = trdTrack->GetLabel();
-							if (fStack->IsPhysicalPrimary(TMath::Abs(label))) HQU = 2;
-							if (fStack->IsSecondaryFromWeakDecay(TMath::Abs(label))) HQU = 3; 
-							if (fStack->IsSecondaryFromMaterial(TMath::Abs(label))) HQU = 4;	
+					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){	
+					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						HQU = 1;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsPhysicalPrimary(TMath::Abs(label))) primaryHeHQU = kTRUE;
 						}
+					}
 				}
 			}
+		if (primaryHeHNU) HNU = 2;
+		if (primaryHeHQU) HQU = 2;
 		}
 	}
 	// additional multiplicity information
@@ -401,6 +417,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 		tTrigHNU = HNU;
 		tTrigHQU = HQU;
 
+		tnTPCcluster = track->GetTPCNcls();
+		tTPCchi2 = track->GetTPCchi2() / (Float_t) track->GetTPCclusters(0);
+	
 		Double_t momvect[3];
 		track->PxPyPz(momvect);
 		TLorentzVector He3Vector(momvect[0],momvect[1],momvect[2],0);
@@ -415,6 +434,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 		tY = He3Vector.Rapidity();
 		tEta = track->Eta();
 		tPhi = track->Phi();
+		
+		tKink = track->GetKinkIndex(0) > 0;
+		tTPCrefit = (track->GetStatus() & AliESDtrack::kTPCrefit) != 0;
 
 		tP = track->GetInnerParam()->GetP();
 		tHeDEdx =  track->GetTPCsignal();
@@ -435,9 +457,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 			Int_t labelMother = mcEvent->GetLabelOfParticleMother(TMath::Abs(label));
 			AliMCParticle *particleMother = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(labelMother))->Particle()); 
 			tMCtrue = TMath::Abs(particle->PdgCode()) == 1000020030;	
-			tPrimary = fStack->IsPhysicalPrimary(TMath::Abs(label));
-			tWeak = fStack->IsSecondaryFromWeakDecay(TMath::Abs(label)); 
-			tMaterial = fStack->IsSecondaryFromMaterial(TMath::Abs(label));
+			tPrimary = mcEvent->IsPhysicalPrimary(TMath::Abs(label));
+			tWeak = mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label)); 
+			tMaterial = mcEvent->IsSecondaryFromMaterial(TMath::Abs(label));
 			tHypertriton = TMath::Abs(particleMother->PdgCode()) == 1010010030;		
 		}
 		fTree->Fill();
@@ -449,20 +471,24 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 //_____________________________________________________________________________
 void AliAnalysisTaskHe3EffTree::ProcessMCParticles() {
 	// fills tree with generated He3
-	for (Int_t istack = 0; istack < fStack->GetNtrack(); istack++) {
-    	const TParticle *particle = fStack->Particle(istack);
-    	TParticle *particleMother = fStack->Particle(TMath::Abs(particle->GetFirstMother()));
-    	Long_t pdgCode = particle->GetPdgCode();
-    	if (TMath::Abs(pdgCode) == 1000020030) {
-        tGenPt = particle->Pt();
-		tGenY = particle->Y();
-		tGenCharge = -2;
-		if (pdgCode == 1000020030) 
+	Int_t nMCprimaries = mcEvent->GetNumberOfPrimaries();
+
+	for (Int_t istack = 0; istack < mcEvent->GetNumberOfTracks(); istack++) {
+		AliMCParticle* particle =  (AliMCParticle*)(mcEvent->GetTrack(istack));
+		if(!particle){ continue; }
+		Long_t pdgCode = particle->PdgCode();
+		if (TMath::Abs(pdgCode) == 1000020030) {
+			tGenPt = particle->Pt();
+			tGenY = particle->Y();
+			tGenCharge = -2;
+			if (pdgCode == 1000020030) 
 			tGenCharge = 2;
-		tGenPrimary = fStack->IsPhysicalPrimary(TMath::Abs(istack));
-		tGenHypertriton = TMath::Abs(particleMother->GetPdgCode()) == 1010010030;		
+
+			Int_t label = particle->Label();
+			tGenPrimary = ((label >= 0  && label <= nMCprimaries) && (particle->IsPhysicalPrimary()));
+			tGenHypertriton = mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(istack));	
 		fTreeGen->Fill();
-      	}
+		}
 	}
 }
 //_____________________________________________________________________________

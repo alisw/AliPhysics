@@ -2,7 +2,7 @@
 #define AliAnalysisTaskHe3EffTree_H
 
 #include "AliAnalysisTaskSE.h"
-
+#include "AliEventCuts.h"
 class AliPIDResponse;
 class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE  
 {
@@ -16,25 +16,28 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
   		void SetParamsHe(Double_t params[6]) { for(Int_t i=0; i < 6; i++) fBetheParamsHe[i] = params[i];};
 
     private:
-		AliESDInputHandler     *fInputHandler;		//!<! Input handler
-		AliMCEvent* 			mcEvent;			//! MC event
-		AliPIDResponse* 		fPIDResponse; 		//! pid response object
-  		AliStack               *fStack;             //!<! MC stack
-  		Bool_t                  fMCtrue;        	//< flag for MC events
-        AliESDEvent*            fESDevent;           	//! input event
-		AliEventCuts            fEventCuts;         //< event cuts as advised by PDG (AliEventCuts)
-        TList*                  fOutputList;    	//! output list
+		AliESDInputHandler     			*fInputHandler;		//!<! Input handler
+		AliMCEvent* 				mcEvent;			//! MC event
+		AliPIDResponse* 			fPIDResponse; 		//! pid response object
+  		AliStack               			*fStack;             //!<! MC stack
+  		Bool_t                  		fMCtrue;        	//< flag for MC events
+        	AliESDEvent*            		fESDevent;           	//! input event
+		AliEventCuts           		fEventCuts;         //< event cuts as advised by PDG (AliEventCuts)
+        	TList*                  		fOutputList;    	//! output list
 		TH1F*					fHistEvents;		//! number of events and trigger info
 		TH2F*					fHistdEdx;			//! TPC dEdx histogram
-		Double_t                fBetheParamsHe[6];	//< Bethe Aleph He3 Parameter + TPC sigma
-		Double_t                fBetheParamsT[6];	
-  		TTree                  *fTree;              //< tree containing He3 information
+		Double_t                		fBetheParamsHe[6];	//< Bethe Aleph He3 Parameter + TPC sigma
+		Double_t                		fBetheParamsT[6];	
+  		TTree                  			*fTree;              //< tree containing He3 information
 		Int_t					tRunNumber;
 		Int_t					tTrigMB;			// trigger info
 		Int_t					tTrigHMV0;
 		Int_t					tTrigHMSPD;
 		Int_t					tTrigHNU;
 		Int_t					tTrigHQU;
+		
+		Float_t					tnTPCcluster;
+		Float_t					tTPCchi2;
 
 		Float_t					tSPDFiredChips0;	// multiplicity triggers
 		Float_t					tSPDFiredChips1;
@@ -60,6 +63,8 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Float_t					tPy;
 		Float_t					tPz;
 		Float_t					tE;
+		Int_t		 				tKink;
+		Int_t						tTPCrefit;
 		
 
 		Float_t					tP;					// PID parameter 
@@ -79,7 +84,7 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Int_t					tMaterial;
 		Int_t					tHypertriton;
   		
-		TTree                  *fTreeGen;           //< tree containing generated He3 information
+		TTree                  			*fTreeGen;           //< tree containing generated He3 information
 		Float_t 				tGenCharge;
 		Float_t					tGenPt;				// He3 track parameter
 		Float_t					tGenY;
@@ -94,7 +99,7 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
         AliAnalysisTaskHe3EffTree(const AliAnalysisTaskHe3EffTree&); // not implemented
         AliAnalysisTaskHe3EffTree& operator=(const AliAnalysisTaskHe3EffTree&); // not implemented
 
-        ClassDef(AliAnalysisTaskHe3EffTree, 1);
+        ClassDef(AliAnalysisTaskHe3EffTree, 2);
 };
 
 #endif
