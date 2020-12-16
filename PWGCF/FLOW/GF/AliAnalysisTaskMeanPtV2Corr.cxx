@@ -146,7 +146,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   if(fStageSwitch==1)
     DefineOutput(1,TList::Class());
   if(fStageSwitch==2) {
-    DefineInput(1,TList::Class());
+    if(!fIsMC) DefineInput(1,TList::Class());
     DefineOutput(1,TList::Class());
     DefineOutput(2,TH1D::Class());
   };
@@ -216,12 +216,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   };
   if(fStageSwitch==2) {
     fRequireReloadOnRunChange=kFALSE;
-    fEfficiencyList = (TList*)GetInputData(1);
-    fEfficiencies = new TH1D*[l_NV0MBinsDefault];
-    for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
-      fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
-      if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
-    }
+    if(!fIsMC) {
+      fEfficiencyList = (TList*)GetInputData(1);
+      fEfficiencies = new TH1D*[l_NV0MBinsDefault];
+      for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
+        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
+        if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
+      }
+    };
     fMPTList = new TList();
     fMPTList->SetOwner(kTRUE);
     fmPT = new TProfile*[4];
@@ -455,7 +457,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   if(fStageSwitch==1)
     FillWeights(fAOD, vz,l_Cent);
   if(fStageSwitch==2)
-    FillMeanPt(fAOD, vz, l_Cent);
+    fIsMC?FillMeanPtMC(fAOD,vz,l_Cent):FillMeanPt(fAOD, vz, l_Cent);
   if(fStageSwitch==3)
     FillCK(fAOD,vz,l_Cent);
   if(fStageSwitch==4)
@@ -525,7 +527,6 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("ALICECov")) return 5;
   if(instr.Contains("FBSpectra")) return 6;
   if(instr.Contains("Efficiency")) return 7;
-
   return 0;
 }
 void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
@@ -609,6 +610,42 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
   fV0MMulti->Fill(l_Cent);
   PostData(1,fMPTList);
 };
+void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+  Double_t l_ptsum[]={0,0,0,0};
+  Double_t l_ptCount[]={0,0,0,0};
+  Double_t trackXYZ[3];
+  Double_t nTotNoTracks=0;
+  Int_t iCent = fV0MMulti->FindBin(l_Cent);
+  if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
+  TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Int_t nPrim = tca->GetEntries();
+  AliAODMCParticle *lPart;
+  for(Int_t ipart = 0; ipart < nPrim; ipart++) {
+    lPart = (AliAODMCParticle*)tca->At(ipart);
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    //Hardcoded cuts to inhereted from AcceptAODTrack
+    Double_t leta = lPart->Eta();
+    if (TMath::Abs(leta) > 0.8) continue;
+    Double_t pt = lPart->Pt();
+    if (pt<0.2 || pt>3.) continue;
+    if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+    if(TMath::Abs(leta)>fEta) continue; //<pt> calculated in fEta region
+    Double_t lpt = lPart->Pt();
+    FillMeanPtCounterWW(lpt,l_ptsum[0],l_ptCount[0],1); //MC truth, so weight = 1
+  };
+  if(l_ptCount[0]==0) return;
+  Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
+  for(Int_t i=0;i<1;i++) { //No PID = index is only 1
+    if(!l_ptCount[i]) continue;
+    Double_t fillWeight = fUseWeightsOne?1:l_ptCount[i];
+    fmPT[i]->Fill(lMulti,l_ptsum[i]/l_ptCount[i],fillWeight);
+  }
+  fMultiDist->Fill(lMulti);
+  fV0MMulti->Fill(l_Cent);
+  PostData(1,fMPTList);
+};
+
 void AliAnalysisTaskMeanPtV2Corr::FillWPCounter(Double_t inArr[5], Double_t w, Double_t p) {
   inArr[0] += w;       // = w1p0
   inArr[1] += w*p;     // = w1p1
@@ -892,7 +929,7 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
 
   corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("ChGap24","refP {2 2} refN {-2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("ChFull22","mid {2 2}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));
   return;
 
