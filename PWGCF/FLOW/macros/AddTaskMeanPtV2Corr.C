@@ -17,14 +17,14 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
-  // if(IsMC) {
-  //   if(!mgr->GetMCtruthEventHandler()) {
-  //     Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
-  //     return NULL;
-  //   };
-  //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-  //   handler->SetReadTR(kTRUE);
-  // };
+  if(IsMC) {
+    if(!mgr->GetMCtruthEventHandler()) {
+      Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
+      return NULL;
+    };
+    AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+    handler->SetReadTR(kTRUE);
+  };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskMeanPtV2Corr* task = new AliAnalysisTaskMeanPtV2Corr(name.Data(), IsMC, stage);
   if(!task)
@@ -40,20 +40,21 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   }
   //Load input mean pt
   if(StageSwitch==2) {
-    TObjArray *AllContainers = mgr->GetContainers();
-    if(!AllContainers->FindObject("Efficiency")) {
-      if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
-      if(efficiencyPath.Contains("alien:")) TGrid::Connect("alien:");
-      TFile *tfWeights = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
-      if(!tfWeights) { printf("Could not open efficiency file\n"); return 0; };
-      if(tfWeights->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
-      TList *fList = (TList*)tfWeights->Get("EffAndFD");
-      if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
-      AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
-      cEff->SetData(fList);
-      mgr->ConnectInput(task,1,cEff);
-    } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
-
+    if(!IsMC) {
+      TObjArray *AllContainers = mgr->GetContainers();
+      if(!AllContainers->FindObject("Efficiency")) {
+        if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
+        if(efficiencyPath.Contains("alien:")) TGrid::Connect("alien:");
+        TFile *tfWeights = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
+        if(!tfWeights) { printf("Could not open efficiency file\n"); return 0; };
+        if(tfWeights->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
+        TList *fList = (TList*)tfWeights->Get("EffAndFD");
+        if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
+        AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
+        cEff->SetData(fList);
+        mgr->ConnectInput(task,1,cEff);
+      } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
+    };
     TString l_ContName=subfix.IsNull()?"":("_" + subfix);
     AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,1,cOutputMPT);
