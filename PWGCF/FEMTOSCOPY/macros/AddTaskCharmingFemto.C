@@ -35,17 +35,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   evtCuts->SetSphericityCuts(0.7, 1.0);
 
   if (suffix == "1") {
-    evtCuts->SetSphericityCuts(0.6, 1.);
-  } else if (suffix == "2") {
-    evtCuts->SetSphericityCuts(0.65, 1.0);
-  } else if (suffix == "3") {
-    evtCuts->SetSphericityCuts(0.7, 1.0);
-  } else if (suffix == "4") {
-    evtCuts->SetSphericityCuts(0.75, 1.0);
-  } else if (suffix == "5") {
-    evtCuts->SetSphericityCuts(0.8, 1.0);
-  } else if (suffix == "6") {
-    evtCuts->SetSphericityCuts(0.85, 1.0);
+    evtCuts->SetSphericityCuts(0., 1.);
   }
 
   // =====================================================================
@@ -119,9 +109,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     kMax.push_back(3.);
   }
 
-  NBins[0] = (suffix == "0") ? 3000 : 1000;  // pp
-  NBins[4] = (suffix == "0") ? 3000 : 1000;  // barp barp
-
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
 
@@ -168,6 +155,11 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(false);
 
+  if (suffix == "2") {
+    config->SetPtQA(true);
+    config->SetMassQA(true);
+  }
+
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC);
   task->SetLightweight(suffix != "0");
@@ -191,39 +183,36 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
-  if (suffix == "7") {
-    task->SetNSigmaSelection(2.5);
+  if (suffix == "2") {
+    task->SetNSigmaSelection(3);
+  } else if (suffix == "3") {
+    task->SetMassWindow(1.9, 1.95);  // upper sideband, 5 sigma away from the peak - far off the D*
+  } else if (suffix == "4") {
+    task->SetMassWindow(1.95, 1.98);  // upper sideband
+  } else if (suffix == "5") {
+    task->SetMassWindow(1.98, 2.05);  // around D*
+  } else if (suffix == "6") {
+    task->SetMassWindow(2.05, 2.1);  // upper sideband
+  } else if (suffix == "7") {
+    task->SetMassWindow(1.79, 1.84);  // lower sideband, 5 sigma away from the peak
   } else if (suffix == "8") {
-    task->SetNSigmaSelection(2.25);
+    task->SetMassWindow(1.74, 1.79);  // lower sideband
   } else if (suffix == "9") {
-    task->SetNSigmaSelection(1.75);
+    task->SetMassWindow(1.69, 1.74);  // lower sideband
   } else if (suffix == "10") {
-    task->SetNSigmaSelection(1.5);
-  } else if (suffix == "11") {
-    task->SetMassWindow(1.9, 1.98);  // upper sideband, 5 sigma away from the peak - far off the D*
-  } else if (suffix == "12") {
-    task->SetMassWindow(1.98, 2.1);  // upper sideband
-  } else if (suffix == "13") {
-    task->SetMassWindow(2.1, 2.2);  // upper sideband
-  } else if (suffix == "14") {
-    task->SetMassWindow(1.74, 1.84);  // lower sideband, 5 sigma away from the peak
-  } else if (suffix == "15") {
-    task->SetMassWindow(1.64, 1.74);  // lower sideband
-  } else if (suffix == "16") {
-    task->SetMassWindow(1.54, 1.64);  // lower sideband
+    task->SetMassWindow(1.64, 1.79);  // lower sideband
   }
 
   if (isMC) {
-    task->ScaleMCBeautyFraction(0.5, 0.1);
-    if (suffix == "7") {
-      task->SetNSigmaSelection(2);  // variations only needed for data
+    task->ScaleMCBeautyFraction(0.5, 0.05);
+    if (suffix == "11") {
       task->ScaleMCBeautyFraction(0.5, 0.);
-    } else if (suffix == "8") {
-      task->SetNSigmaSelection(2);  // variations only needed for data
+    } else if (suffix == "12") {
       task->ScaleMCBeautyFraction(0.5, 0.5);
+    } else if (suffix == "13") {
+      task->UseTrueDOnly();
     }
   }
-
 
   mgr->AddTask(task);
 
