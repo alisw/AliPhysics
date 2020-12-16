@@ -138,7 +138,8 @@ public:
     kINT7 = BIT(0),
     kCentral = BIT(1),
     kSemiCentral = BIT(2),
-    kPositiveB = BIT(3)
+    kPositiveB = BIT(3),
+    kHighMultV0 = BIT(4)
   };
 
   AliAnalysisTaskHyperTriton2He3piML(bool mc = false, std::string name = "HyperTriton2He3piML");
