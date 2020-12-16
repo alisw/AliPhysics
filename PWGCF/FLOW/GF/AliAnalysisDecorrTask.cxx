@@ -113,6 +113,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
     fUseOwnWeights(kFALSE),
+    fCurrSystFlag(0),
     fFillWeights(kFALSE),
     fNumSamples{1},
 
@@ -199,6 +200,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name) : AliAnalysisTask
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
     fUseOwnWeights(kFALSE),
+    fCurrSystFlag(0),
     fFillWeights(kFALSE),
     fNumSamples{1},
 
@@ -490,9 +492,9 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
         fQA->Add(hDCAB); 
         hDCAA = new TH3D("DCAA","DCA vs. pt after",50,0.2,5.0,50,-5.0, 5.0,50, -5.0, 5.0);
         fQA->Add(hDCAA); 
-        hPtPhiEtaB = new TH3D("pt_phi_etaB","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
+        hPtPhiEtaB = new TH3D("pt_phi_etaB","Pt, phi, eta distribution",50,0.2,20.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
         fQA->Add(hPtPhiEtaB);
-        hPtPhiEtaA = new TH3D("pt_phi_etaA","Pt, phi, eta distribution",50,0.2,5.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
+        hPtPhiEtaA = new TH3D("pt_phi_etaA","Pt, phi, eta distribution",50,0.2,20.0,60,0.0,TMath::TwoPi(),50,-1.0,1.0);
         fQA->Add(hPtPhiEtaA);
         hNumTracksB = new TH1D("hNumTracksB","Number of tracks before",100,0.0,2500.0);
         fQA->Add(hNumTracksB);
@@ -562,7 +564,8 @@ Bool_t AliAnalysisDecorrTask::LoadWeights()
     }
     else 
     {
-        fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+        if(fCurrSystFlag == 0) fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+        else fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i_SystFlag%i",fAOD->GetRunNumber(),fCurrSystFlag));
         if(!fWeights)
         {
             printf("Weights could not be found in list!\n");
@@ -642,7 +645,7 @@ void AliAnalysisDecorrTask::FillWeights()
             { 
                 NumTracksA++;
             }
-            if(fRequireHighPtTracks) { 
+            if(fRequireHighPtTracks && pass) { 
                 if(pt >= fHighPtCut) ++NumTracksHighPt; 
                 if(NumTracksHighPt >= fNHighPtTracks) hNumHighPtTracksA->Fill(NumTracksHighPt);
             }
@@ -1401,6 +1404,7 @@ Bool_t AliAnalysisDecorrTask::IsEventSelected(TH1D* h)
     for(int iTrack(0); iTrack < NTracks; ++iTrack)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        if(!track || !IsTrackSelected(track)) { continue; }
         if(track->Pt() > fHighPtCut) ++tmp;
     }
     if(tmp < fNHighPtTracks) return kFALSE;
