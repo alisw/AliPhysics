@@ -115,6 +115,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     AliInfo(Form("Desired new fraction: %.3f", desiredFraction));
     AliInfo(Form("Scaling factor: %.3f", fMCBeautyScalingFactor));
   }
+  void UseTrueDOnly() {
+    fUseTrueDOnly = true;
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -192,6 +195,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   bool fMCBeautyRejection;                                 // Switch for scaling the beauty feed-down fraction in MC
   double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
+  bool fUseTrueDOnly;
 
   // variables for ML application
   bool fApplyML;                                           // flag to enable ML application
@@ -203,7 +207,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 8)
+ClassDef(AliAnalysisTaskCharmingFemto, 9)
 };
 
 #endif
