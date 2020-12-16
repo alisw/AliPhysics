@@ -63,6 +63,18 @@ void AddTask_GammaConvCalo_pp(
 
   AliCutHandlerPCM cuts;
 
+
+  Int_t TriggerMimickingDDLEffiFlag = 0;
+  if (enableTriggerMimicking >= 10) {
+      if (enableTriggerMimicking >= 20) {
+          TriggerMimickingDDLEffiFlag = 2;
+          enableTriggerMimicking -= 20;
+      } else {
+          TriggerMimickingDDLEffiFlag = 1;
+          enableTriggerMimicking -= 10;
+      }
+  }
+
   TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
   TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
@@ -3962,12 +3974,12 @@ void AddTask_GammaConvCalo_pp(
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
-      if (enableTriggerMimicking==3){
+      if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSL0) ;
       }
-      fMimickHelper->SetEfficiencyChoiceOption_TriggerHelper(2);
+      fMimickHelper->SetEfficiencyChoiceOption_TriggerHelper(TriggerMimickingDDLEffiFlag);
       mgr->AddTask(fMimickHelper);
       mgr->ConnectInput(fMimickHelper,0,cinput);
       if (enableLightOutput>=1){
