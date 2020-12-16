@@ -14,6 +14,7 @@ class TLorentzVector;
 class AliMuonTrackCuts;
 class AliTriggerAnalysis;
 class AliVMultiplicity;
+class AliAODTracklets;
 
 //class TList;
 
