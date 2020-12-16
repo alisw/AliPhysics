@@ -2658,6 +2658,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790607fg32230000","01631031000000d0"); // EG2  test beam NL
     cuts.AddCutCalo("0008d113","411790607fg32230000","01631031000000d0"); // EG1  test beam NL
 
+  } else if (trainConfig == 2121){ // v1 Evi (used in E-calib)
+    cuts.AddCutCalo("00010113","411790907fg32230000","01631031000000d0"); // INT7 test beam NL
+  } else if (trainConfig == 2122){ // v1 Evi (used in E-calib)
+    cuts.AddCutCalo("0008e113","411790907fg32230000","01631031000000d0"); // EG2  test beam NL
+    cuts.AddCutCalo("0008d113","411790907fg32230000","01631031000000d0"); // EG1  test beam NL
+
   } else if (trainConfig == 2150){ // EMCAL clusters pp 8 TeV 100MeV aggregation
     cuts.AddCutCalo("00010113","111110106f032230000","01631031000000d0"); // std
   } else if (trainConfig == 2151){ // EMCAL clusters pp 8 TeV 100MeV aggregation

@@ -6857,12 +6857,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         else energy *= FunctionNL_kPi0MCv6(energy);
       }
       break;
-    // case 11 of the 8 TeV (LHC15h1 PYTHIA8) nonlinearity as a general case
+    // ancient TB NL by Evi (used for energy calibration by Julien)
     case 9:
-      if(isMC>0){
-        if (fClusterType == 1){
-          energy /= FunctionNL_kSDM(energy, 0.96874*0.991*0.9958*0.999, -3.76064, -0.193181);
-        }
+      if (fClusterType == 1|| fClusterType == 3 || fClusterType == 4){
+        if(isMC == 0) energy *= FunctionNL_kTestBeamCorrected(energy);
+        else energy *= FunctionNL_kPi0MCv1(energy);
       }
       break;
 
@@ -8549,6 +8548,10 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDMv6(Float_t e){
   return ( 0.987054 / ( 1.0 * ( 1. / ( 1. + 0.237767 * exp( -e / 0.651203 ) ) * 1. / ( 1. + 0.183741 * exp( ( e - 155.427 ) / 17.0335 ) ) ) ) );
 }
 
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamCorrected(Float_t e){
+  return ( 0.978 / ( 0.99078 *( 1. / ( 1. + 0.161499 * exp( -e / 0.655166 ) ) * 1. / ( 1. + 0.134101 * exp( ( e - 163.282 ) / 23.6904 ) ) ) ) );
+}
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
   return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
