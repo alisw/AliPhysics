@@ -5651,15 +5651,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Bool_t isNoSameMother            = kFALSE;   // none of the pions have the same mother
   Bool_t isNoPiPiPi                = kFALSE;   // the decay is not a 3 pion decay
 
+  Bool_t isPiPlWronglyIdentified  = kFALSE;   // Pi+ Identification not correct
+  Bool_t isPiMiWronglyIdentified  = kFALSE;   // Pi- Identification not correct
+  Bool_t isPiZeroWronglyIdentified = kFALSE;  // Pi0 Identification not correct
+  Bool_t isMultipleWronglyIdentified = kFALSE; // Pi0 Identification not correct
+
   Int_t virtualParticleMCLabel = -1;
   virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
   Int_t virtualParticleMotherLabel = -1;
+  //Is set when:
+  //if(isTrueNDM){// True Pion
+    //Pi0Candidate->SetTrueMesonValue(1);
   Int_t trueMesonFlag  = TrueNeutralDecayMesonCandidate->GetTrueMesonValue();
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
 
   Float_t weighted= fWeightJetJetMC;
 
-  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){
+  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
       if((fDoMesonQA>0 ) && (!fDoLightOutput)){
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
           fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
@@ -5701,6 +5709,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   } else{
     // not a three pion decay
     isNoPiPiPi = kTRUE;
+    if (!(TMath::Abs(negativeMC->GetPdgCode())==211)){
+        isPiMiWronglyIdentified     = kTRUE;
+    }
+    if (!(TMath::Abs(positiveMC->GetPdgCode())==211)){
+        isPiPlWronglyIdentified     = kTRUE;
+        if (isPiMiWronglyIdentified){
+            isMultipleWronglyIdentified = kTRUE;
+        }
+    }
+    if (!(NDMMC->GetPdgCode()==fPDGCodeNDM)){
+        isPiZeroWronglyIdentified     = kTRUE;
+        if ((isPiMiWronglyIdentified)||(isPiPlWronglyIdentified)){
+            isMultipleWronglyIdentified = kTRUE;
+        }
+    }
   }
 
   // Do things for each case
@@ -5839,7 +5862,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     // no pi pi pi decay contamination
     fHistoTruePiPlPiMiNDMContaminationInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     // investigate here what was missmatched (?)
-
+    if (isPiPlWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isPiMiWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_PiMi_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isPiZeroWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
+    if (isMultipleWronglyIdentified){
+        fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+    }
   }
 }
 
