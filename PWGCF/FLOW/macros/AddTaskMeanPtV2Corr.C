@@ -17,14 +17,14 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
-  if(IsMC) {
-    if(!mgr->GetMCtruthEventHandler()) {
-      Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
-      return NULL;
-    };
-    AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-    handler->SetReadTR(kTRUE);
-  };
+  // if(IsMC) {
+  //   if(!mgr->GetMCtruthEventHandler()) {
+  //     Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
+  //     return NULL;
+  //   };
+  //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+  //   handler->SetReadTR(kTRUE);
+  // };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskMeanPtV2Corr* task = new AliAnalysisTaskMeanPtV2Corr(name.Data(), IsMC, stage);
   if(!task)
