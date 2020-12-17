@@ -139,7 +139,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
-  TrackCuts3->SetFilterBit(256);
+  TrackCuts3->SetFilterBit(128);
   TrackCuts3->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
@@ -171,7 +171,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
-  TrackCuts4->SetFilterBit(256);
+  TrackCuts4->SetFilterBit(128);
   TrackCuts4->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
