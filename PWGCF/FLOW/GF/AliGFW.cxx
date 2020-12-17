@@ -276,6 +276,11 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
   AliGFWCumulant *qref = &fCumulants.at(ref);
   AliGFWCumulant *qpoi = &fCumulants.at(poi);
   AliGFWCumulant *qovl=0;
+  //Check if in the ref. region we have enough particles (no. of particles in the region >= no of harmonics for subevent)
+  Int_t sz1 = corconf.Hars.size();
+  if(poi!=ref) sz1--;
+  if(qref->GetN() < sz1) return TComplex(0,0);
+  //Then, figure the overlap
   if(corconf.Overlap1 > -1)
     qovl = DisableOverlap?0:(&fCumulants.at(corconf.Overlap1));//;DisableOverlap?0:qpoi;
   else if(ref==poi) qovl = qref; //If ref and poi are the same, then the same is for overlap. Only, when OL not explicitly defined
@@ -288,6 +293,11 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
   ref = (corconf.Regs2.size()>1)?corconf.Regs2.at(1):corconf.Regs2.at(0);
   qref = &fCumulants.at(ref);
   qpoi = &fCumulants.at(poi);
+  //Again, check if in the second event we have enough particles
+  sz1 = corconf.Hars2.size();
+  if(poi!=ref) sz1--;
+  if(qref->GetN() < sz1) return TComplex(0,0);
+  //and then proceed as usual
   if(corconf.Overlap2 > -1)
     qovl = DisableOverlap?0:(&fCumulants.at(corconf.Overlap2));//;DisableOverlap?0:qpoi;
   else if(ref==poi) qovl = qref; //Only when OL is not explicitly defined, then set it to ref/POI if they are the same
