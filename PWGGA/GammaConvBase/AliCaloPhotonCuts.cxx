@@ -2392,19 +2392,23 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
       } else if (fUseNCells == 5){
         if(isMC){
-          fRandom.SetSeed(0);
-          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-          if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-          Int_t tmpLabel = cluster->GetLabelAt(0);
-          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-          if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
-            // evaluate effi function and compare to random number between 1 and 2
-            // if function value greater than random number, reject cluster. otherwise let it pass
-            // function is 1 for E>4 GeV -> will apply standard NCell cut then
-            if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
-              failed = kTRUE;
+          if(  (cluster->GetNCells() < fMinNCells)){
+            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+            Int_t tmpLabel = cluster->GetLabelAt(0);
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
+              // evaluate effi function and compare to random number between 1 and 2
+              // if function value greater than random number, reject cluster. otherwise let it pass
+              // function is 1 for E>4 GeV -> will apply standard NCell cut then
+              fRandom.SetSeed(0);
+              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
+                failed = kTRUE;
+              } else {
+                passedNCellSpecial = kTRUE;
+              }
             } else {
-              passedNCellSpecial = kTRUE;
+              failed = kTRUE;
             }
           }
         } else {
@@ -2414,6 +2418,38 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       } else if ( fUseNCells == 6 ){
         if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells )
           failed = kTRUE;
+      } else if (fUseNCells == 7){
+        if(isMC){
+          fRandom.SetSeed(0);
+          if(  (cluster->GetNCells() < fMinNCells)){
+            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+            Int_t tmpLabel = cluster->GetLabelAt(0);
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+
+            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
+              Bool_t isCellIso = kTRUE;
+              AliVCaloCells* cells    = NULL;
+              if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+                cells                 = event->GetEMCALCells();
+                isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, cells);
+              }
+              // evaluate effi function and compare to random number between 1 and 2
+              // if function value greater than random number, reject cluster. otherwise let it pass
+              // function is 1 for E>4 GeV -> will apply standard NCell cut then
+              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) && !isCellIso ){
+                failed = kTRUE;
+              } else {
+                passedNCellSpecial = kTRUE;
+              }
+            } else {
+              failed = kTRUE;
+            }
+          }
+        } else {
+          if (cluster->GetNCells() < fMinNCells)
+            failed = kTRUE;
+        }
       }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
@@ -2513,12 +2549,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
   } else if (fUseNCells == 5){
     if(isMC>0){
-      fRandom.SetSeed(0);
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-      Int_t tmpLabel = cluster->GetLabelAt(0);
-      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-      if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+      if( cluster->GetNCells() < fMinNCells ){
+        // check if cluster is gamma cluster
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+        Int_t tmpLabel = cluster->GetLabelAt(0);
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+        fRandom.SetSeed(0);
         // evaluate effi function and compare to random number between 1 and 2
         // if function value greater than random number, reject cluster. otherwise let it pass
         if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) ){
@@ -2538,6 +2579,42 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if (cluster->GetNCells() < fMinNCells || cluster->GetNCells() > fMaxNCells ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
       return kFALSE;
+    }
+  // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
+  } else if (fUseNCells == 7){
+    if(isMC>0){
+      if( cluster->GetNCells() < fMinNCells ){
+        // check if cluster is gamma cluster
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+        Int_t tmpLabel = cluster->GetLabelAt(0);
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+        // evaluate if cluster is isolated
+        Bool_t isCellIso = kTRUE;
+        AliVCaloCells* cells    = NULL;
+        if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+          cells                 = event->GetEMCALCells();
+          isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, cells);
+        }
+        fRandom.SetSeed(0);
+        // evaluate effi function and compare to random number between 1 and 2
+        // if function value greater than random number, reject cluster. otherwise let it pass
+        if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) && isCellIso ){
+          passedSpecialNCell = kTRUE;
+        } else {
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+      }
+    } else {
+      if (cluster->GetNCells() < fMinNCells){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      }
     }
   }
   cutIndex++;//4, next cut
@@ -5793,6 +5870,41 @@ Bool_t AliCaloPhotonCuts::SetExoticClusterCut(Int_t exoticCell)
       fUseExoticCluster       = 3;
     fExoticEnergyFracCluster  = 0;
     break;
+  case 17: //h variation of minimum energy for exotic cut
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    fExoticMinEnergyCell      = 2;
+    break;
+  case 18: //i variation of minimum energy for exotic cut
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    fExoticMinEnergyCell      = 3;
+    break;
+  case 19: //j variation of minimum energy for exotic cut
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    fExoticMinEnergyCell      = 4;
+    break;
+  case 20: //k variation of minimum energy for exotic cut
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    fExoticMinEnergyCell      = 5;
+    break;
+  case 21: //l variation of minimum energy for exotic cut
+    if (fUseExoticCluster != 2)
+      fUseExoticCluster       = 2;
+    fExoticEnergyFracCluster  = 0.97;
+    fExoticMinEnergyTCard     = 50;
+    fExoticMinEnergyCell      = 6;
+    break;
   default:
     AliError(Form("Exotic cell Cut not defined %d",exoticCell));
     return kFALSE;
@@ -6144,6 +6256,20 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     if (!fUseNCells) fUseNCells=6;
     fMinNCells=2;
     fMaxNCells=2;
+    break;
+    // From TestBeam applied on "isolated" gamma cluster
+  case 30: // u
+    if (fUseNCells!=7) fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118);
+    break;
+    // From ALICE applied on "isolated" gamma cluster
+  case 31: // v
+    if (fUseNCells!=7) fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
     break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
@@ -6771,6 +6897,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
           if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
             energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+            energy /= 0.995;
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
@@ -6968,6 +7095,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
             if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
               energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+              energy /= 0.995;
             }
           }
 
@@ -6982,6 +7110,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
               energy /= FunctionNL_kSDM(energy, 0.986634, -4.12191, -0.321714);
               if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
                 energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+                energy /= 0.995;
               }
           }
         } else fPeriodNameAvailable = kFALSE;
@@ -7077,6 +7206,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
               energy /= FunctionNL_kSDM(energy, 0.978507, -3.71687, -0.0796175);
               if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
                 energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+                energy /= 0.995;
               }
           }
         } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger){
@@ -7091,6 +7221,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 1.007;
             if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
               energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+              energy /= 0.995;
             }
           }
 
@@ -7313,6 +7444,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 1.00349;
             if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
               energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+              energy /= 0.995;
             }
           }
 
@@ -7325,6 +7457,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
               energy /= FunctionNL_DPOW(energy, 1.0108477805, -0.0458091673, -0.4999999999, 1.1674873897, -0.1999999997, -0.1094442490);
               if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
                 energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+                energy /= 0.995;
               }
           }
         } else fPeriodNameAvailable = kFALSE;
@@ -7405,6 +7538,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= 1.002;
             if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
               energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+              energy /= 0.995;
             }
           }
 
@@ -7416,6 +7550,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_DExp(energy, 0.9671163390, 1.1263515545, -2.1208302530, 0.9784342471, 0.7207198365, -2.2726375529);
             if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
               energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+              energy /= 0.995;
             }
           }
 
@@ -9150,6 +9285,53 @@ Float_t AliCaloPhotonCuts::GetECross( Int_t absID, AliVCaloCells* cells ){
   if (AcceptCellByBadChannelMap(absID4)) ecell4 = cells->GetCellAmplitude(absID4); ;
 
   return ecell1+ecell2+ecell3+ecell4;
+}
+
+// Check if cell is next to other cell above certain threshold
+//___________________________________________________________________________
+Bool_t AliCaloPhotonCuts::IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells ){
+
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+  fGeomEMCAL->GetCellIndex(absID,imod,iTower,iIphi,iIeta);
+  fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+  // Get close cells index, energy and time, not in corners
+  Int_t absID1 = -1;
+  Int_t absID2 = -1;
+
+  if ( iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = fGeomEMCAL->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if ( iphi > 0 )                                absID2 = fGeomEMCAL->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+
+  Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+  // Do not include bad channels found in analysis,
+  if (AcceptCellByBadChannelMap(absID1)) ecell1 = cells->GetCellAmplitude(absID1);
+  if(ecell1 > Ethresh) return kTRUE;
+  if (AcceptCellByBadChannelMap(absID2)) ecell2 = cells->GetCellAmplitude(absID2);
+  if(ecell2 > Ethresh) return kTRUE;
+
+
+  // In case of cell in eta = 0 border, depending on SM shift the cross cell index
+  Int_t absID3 = -1;
+  Int_t absID4 = -1;
+  if ( fClusterType == 1 && ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2) ){
+    absID3 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
+    absID4 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1);
+  } else if ( fClusterType == 1 && ieta == 0 && imod%2 ) {
+    absID3 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
+    absID4 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1);
+  } else {
+    if ( ieta < AliEMCALGeoParams::fgkEMCALCols-1 )
+      absID3 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    if ( ieta > 0 )
+      absID4 = fGeomEMCAL-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
+  }
+
+  if (AcceptCellByBadChannelMap(absID3)) ecell3 = cells->GetCellAmplitude(absID3); ;
+  if(ecell3 > Ethresh) return kTRUE;
+  if (AcceptCellByBadChannelMap(absID4)) ecell4 = cells->GetCellAmplitude(absID4); ;
+  if(ecell4 > Ethresh) return kTRUE;
+
+  return kFALSE;
 }
 
 //_______________________________________________________________________________

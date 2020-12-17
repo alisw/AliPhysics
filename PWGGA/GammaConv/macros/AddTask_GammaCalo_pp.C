@@ -3166,6 +3166,16 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2510) { // NCell >=2 std. with exotics + M02  // Seed 475, Agg 95,
     cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB
 
+  } else if (trainConfig == 2511) { // NCell Efficiency only on isolated gamma clusters
+    cuts.AddCutCalo("00010113","411792106fe3u220000","0r631031000000d0"); // TB correction
+    cuts.AddCutCalo("00010113","411792106fe3v220000","0r631031000000d0"); // P2 correction
+  } else if (trainConfig == 2512) { // TB Efficiency on gamma cluster, exotic cluster variation
+    cuts.AddCutCalo("00010113","411792106fh3o220000","0r631031000000d0"); // Exotics > 2 GeV
+    cuts.AddCutCalo("00010113","411792106fi3o220000","0r631031000000d0"); // Exotics > 3 GeV
+    cuts.AddCutCalo("00010113","411792106fj3o220000","0r631031000000d0"); // Exotics > 4 GeV
+    cuts.AddCutCalo("00010113","411792106fk3o220000","0r631031000000d0"); // Exotics > 5 GeV
+    cuts.AddCutCalo("00010113","411792106fl3o220000","0r631031000000d0"); // Exotics > 6 GeV
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
