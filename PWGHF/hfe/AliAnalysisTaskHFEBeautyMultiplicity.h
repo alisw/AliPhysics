@@ -148,6 +148,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fEopElectron2;        // electron pT (tight)
         TH1F* fEopElectron3;        // Except photonic (invariant mass)
         TH1F* fEopHadron2;          // hadron pT (tight)
+
+	TH2F* fHistConv_R;
         
     
     
@@ -189,6 +191,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*		    fDCAxy_MC_D0;
 	TH2F*		    fDCAxy_MC_Ds;
 	TH2F*		    fDCAxy_MC_Lc;
+
+	TH2F*		    fDCAxy_MC_ele;
+	TH2F*		    fDCAxy_MC_Phot;
     
     
     
