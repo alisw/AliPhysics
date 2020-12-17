@@ -197,7 +197,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fhighMultSPD(kFALSE),
     fHistMultVZEROTracklets(0),
     fPercentileMin(0.),
-    fPercetileMax(100.)
+    fPercetileMax(100.),
+    fEventCutsQAPlots(kFALSE),
+    fpp(kTRUE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -342,7 +344,9 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fhighMultSPD(kFALSE),
     fHistMultVZEROTracklets(0),
     fPercentileMin(0.),
-    fPercetileMax(100.)
+    fPercetileMax(100.),
+    fEventCutsQAPlots(kFALSE),
+    fpp(kTRUE)
 {
     // constructor
 
@@ -882,8 +886,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fselectedV0Assoc->SetOwner(kTRUE);  
 
     fAliEventCuts = new AliEventCuts();
-    fAliEventCuts->AddQAplotsToList(fOutputList,kTRUE);
-    fAliEventCuts->SetupRun2pp();
+    if(fEventCutsQAPlots)fAliEventCuts->AddQAplotsToList(fOutputList,kTRUE);
+    if(fpp)fAliEventCuts->SetupRun2pp();
+    else fAliEventCuts->SetupRun2PbPb();
     if(fhighMult) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,kTRUE);
     if(fhighMultSPD) fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,kTRUE);
 
@@ -1530,7 +1535,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 }
             }
         }
-
+        if(fV0hCorr||fhV0Corr){
 	    for (Int_t i=0; i<nV0; i++){
         
             if(fAOD) {
@@ -2001,6 +2006,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     }
                 }
             }
+        }
         }
 
         fHistV0MultiplicityK0->Fill(nK0);

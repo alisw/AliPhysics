@@ -133,8 +133,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMinBiasTrigger(Bool_t tr) { fminBias = tr; }
         void                    SetHighMultTriggerV0(Bool_t tr) { fhighMult = tr; }
         void                    SetHighMultTriggerSPD(Bool_t tr) { fhighMultSPD= tr; }
-        void                    SetPercintileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
-
+        void                    SetPercentileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
+        void                    SetEventQAPlots(Bool_t pl) { fEventCutsQAPlots = pl; }
+        void                    SetppAnalysis(Bool_t pp) { fpp = pp; }
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -287,12 +288,14 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH3D *                  fHistMultVZEROTracklets; //!    
         Double_t                fPercentileMin; // minimum muliplicity percentile to be analysed
         Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
+        Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
+        Bool_t                  fpp; // flag pp / PbPb
 
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 32);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 33);
 };
 
 class AliV0ChParticle : public AliVParticle
