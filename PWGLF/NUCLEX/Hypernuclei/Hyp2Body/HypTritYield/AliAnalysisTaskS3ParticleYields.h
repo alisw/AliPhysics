@@ -16,7 +16,6 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
-  void SetTriggerMask(UInt_t triggerMask = AliVEvent::kINT7) {fTriggerMask = triggerMask;};
   enum PdgCodeType_t {
     kPDGPionPlus,
     kPDGPionMinus,
@@ -77,48 +76,33 @@ class AliAnalysisTaskS3ParticleYields : public AliAnalysisTaskSE {
   TH2F                  *fHistdEdx; 
   TH2F                  *fHistdEdxV0;  
   TH1F                  *fHistNumEvents; 
-  TH1F			*fHistTrigger;	
-  TH1F			*fHistV0;
-  TH1F                  *fHistEvents;
+  TH1F			*fHistTrigger;	  
   TTree                 *fTree;   
   TTree                 *hTree; 
   TTree                 *fTreeGen; 
   TList                 *fHistogramList; 
-  TVector3              fPrimaryVertex;
-  Double_t              fMagneticField;
-  Int_t                 fNV0Cand;
+  TVector3              fPrimaryVertex;  
   Bool_t                fPIDCheckOnly; 
   Bool_t                fMCtrue;
-  AliEventCuts          fEventCuts; 
-  UInt_t		fTriggerMask;	
-  Int_t		        fPeriod;   
-  Bool_t                fBetheSplines;   
+  AliEventCuts          fEventCuts; 	   
   Double_t              fBetheParamsHe[6];   
   Double_t              fBetheParamsT[6]; 
+  Int_t                MB, HMV0, HMSPD, HNU, HQU;
+  //saved in Tree
+  Int_t                 fNumberV0s; 
+  Int_t                 fNTracks; 
   Int_t                 fonTheFly;
   Int_t                 frunnumber;
-Int_t ftrig, fz, fmc;
-  Float_t fmLambda, fpLambda, fptLambda, fctLambda, fdcaLambda, fcosLambda, fyLambda;
-  Float_t fpy, fhe3y, fpLy, fpiP, fhe3P, fhe3Pt, fpP, fpPt, fpLP, fpiy, fpchi2, fhe3chi2;
-  Float_t fpDcaSec, fpiDcaSec, fpiDca, fpDca, fpLDca, fpLDcaSec, fpDcaz, fhe3Dcaz, fhe3Dca;
-  Float_t fpiNcls, fhe3Ncls, fpNcls, fpLNcls, fpiNclsITS, fhe3NclsITS, fpNclsITS, fpLNclsITS;
-  Float_t fpiDedxSigma, fhe3DedxSigma, fpDedxSigma, fpLDedxSigma, fpiDedx, fhe3Dedx, fpDedx, fpLDedx;
-  Float_t farmalpha, farmpt;
-  Float_t fthetaP, fthetaN, fEtaHe3, fEtaP, fEtaPL, fEtaPi, fPhiHe3, fPhiP, fPhiPL, fPhiPi;
-  Float_t fGeoLengthHe3, fGeoLengthP, fGeoLengthPi, fGeoLengthPL, fTOFSignalHe3, fTOFSignalP, fTOFSignalPi, fTOFSignalPL;  
-  Float_t fpHe3Gen, fyHe3Gen, fpPGen, fyPGen, fpLambdaGen, fyLambdaGen, fmLambdaGen;
-Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton, fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL, fisWeakL, fisMaterialL, fisPrimaryL;
-  Int_t fisPrimaryGenHe3, fisSecondaryGenHe3, fisPrimaryGenP, fisMaterialGenP, fisSecondaryGenP, fisMaterialGenHe3, fisWeakGenL, fisMaterialGenL, fisPrimaryGenL;
-  Int_t fHe3Charge, fPCharge, fLambdaCharge;
-
-  TVector3              fVertexPosition; 
-  Int_t              fNumberV0s;
-  Int_t                 fCentrality;
-  Int_t              fTrigger; 
-  TString               fTriggerClasses;
-
-  Int_t fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, tSPDCluster, tSPDTracklets, tSPDFiredChips0, tSPDFiredChips1, tV0Multiplicity;
-
+  Int_t                 fCharge;
+  Int_t			fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU;
+  Int_t                 fMultV0M, fMultOfV0M, fMultSPDTracklet, fMultSPDCluster, fMultRef05, fMultRef08, fSPDCluster, fSPDTracklets, fSPDFiredChips0, fSPDFiredChips1, fV0Multiplicity;
+  Int_t                 fisPrimaryP, fisWeakP, fisMaterialP, fMCtrueP, fMCtrueL, fisWeakL, fisMaterialL, fisPrimaryL;
+  Int_t                 fKinkP, fTPCrefitP, fKinkPi, fTPCrefitPi, fpiNcls, fpiNclsITS, fpNcls, fpNclsITS;
+  Float_t               fLambdaM, fLambdaE, fLambdaP, fLambdaPx, fLambdaPy, fLambdaPz, fLambdaPt, fLambdaCt, fLambdaDca, fLambdaCos, fLambdaY;
+  Float_t               fpiP, fpiPt, fpiPx, fpiPy, fpiPz, fpiE, fpiy, fpichi2, fpiDcaSec, fpiDca, fpiDcaz, fpiDedxSigma, fpiDedx, fEtaPi, fPhiPi, fGeoLengthPi, fTOFSignalPi, fpiSigmaYX, fpiSigmaXYZ, fpiSigmaZ;
+  Float_t               fpy, fpP, fpPx, fpPy, fpPz, fpPt, fpE, fpDcaSec, fpDca, fpDcaz, fpchi2, fpDedxSigma, fpDedx, fEtaP, fGeoLengthP, fPhiP, fTOFSignalP, fpSigmaYX, fpSigmaXYZ, fpSigmaZ;
+  Float_t               farmalpha, farmpt, fthetaP, fthetaN; 
+  //Functions
   Bool_t TriggerSelection();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
   Double_t GeoLength(const AliESDtrack& track);
@@ -132,6 +116,7 @@ Int_t fMCtrueHe3, fisPrimaryHe3, fisWeakHe3, fisMaterialHe3, fisfromHypertriton,
   void ResetVals(TString mode);
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode);
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
+  //
   AliAnalysisTaskS3ParticleYields(const AliAnalysisTaskS3ParticleYields&);
   AliAnalysisTaskS3ParticleYields &operator=(const AliAnalysisTaskS3ParticleYields&);
 
