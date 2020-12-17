@@ -84,7 +84,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   void MCStackLoop(AliStack *stack);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos);
-  Bool_t TriggerSelection();
+  Bool_t TriggerSelection(AliMCEvent* mcEvent);
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c);
   void SetMultiplicity();
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);

@@ -148,7 +148,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistNumEvents->GetXaxis()->SetBinLabel(1,"before PhysSel");
   fHistNumEvents->GetXaxis()->SetBinLabel(2,"after PhysSel");
 
-  fHistTrigger = new TH1F("fHistTrigger","Trigger",7,0,7);
+  fHistTrigger = new TH1F("fHistTrigger","Trigger",8,0,8);
   fHistTrigger->GetXaxis()->SetBinLabel(1,"other");
   fHistTrigger->GetXaxis()->SetBinLabel(2,"kINT7");
   fHistTrigger->GetXaxis()->SetBinLabel(3,"kHighMultV0");
@@ -156,7 +156,8 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistTrigger->GetXaxis()->SetBinLabel(5,"HNU");
   fHistTrigger->GetXaxis()->SetBinLabel(6,"HQU");
   fHistTrigger->GetXaxis()->SetBinLabel(7,"HJT");
-  fHistV0 = new TH1F("fHistV0","Trigger V0s",7,0,7);
+  fHistTrigger->GetXaxis()->SetBinLabel(8,"HSE");
+  fHistV0 = new TH1F("fHistV0","Trigger V0s",8,0,8);
   fHistV0->GetXaxis()->SetBinLabel(1,"other");
   fHistV0->GetXaxis()->SetBinLabel(2,"kINT7");
   fHistV0->GetXaxis()->SetBinLabel(3,"kHighMultV0");
@@ -164,6 +165,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistV0->GetXaxis()->SetBinLabel(5,"HNU");
   fHistV0->GetXaxis()->SetBinLabel(6,"HQU");
   fHistV0->GetXaxis()->SetBinLabel(7,"HJT");
+  fHistV0->GetXaxis()->SetBinLabel(8,"HSE");
 
   fHistMcGen = new TH1F("fHistMcGen","mc generated; ct (cm);counts",40,0,40);
   fHistMcRec = new TH1F("fHistMcRec","mc reconstructed; ct (cm);counts",40,0,40);
@@ -267,7 +269,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 
   Int_t runNumber = fESDevent->GetRunNumber();
   SetBetheBlochParams(runNumber);
-  TriggerSelection();
+  TriggerSelection(mcEvent);
   SetMultiplicity();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
@@ -285,7 +287,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     trackCutsV0.SetEtaRange(-0.9,0.9);
     trackCutsV0.SetAcceptKinkDaughters(kFALSE);
     trackCutsV0.SetRequireTPCRefit(kTRUE);
-    trackCutsV0.SetMaxChi2PerClusterTPC(5);
+    trackCutsV0.SetMaxChi2PerClusterTPC(6);
     trackCutsV0.SetMinNClustersTPC(60);
   } else {
       trackCutsV0.SetAcceptKinkDaughters(kFALSE);
@@ -489,6 +491,12 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackP.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackN.GetTPCNcls();
     reducedPi->fTpcNClusters = trackP.GetTPCNcls();
+    reducedHe->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
+    reducedHe->fKink = trackN.GetKinkIndex(0) > 0;
+    reducedPi->fKink = trackP.GetKinkIndex(0) > 0; 
+    reducedHe->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedPi->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;  
   }
   if (charge > 0) {
     reducedHe->fP = fMomPos;
@@ -519,7 +527,14 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackN.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackP.GetTPCNcls();
     reducedPi->fTpcNClusters = trackN.GetTPCNcls();
+    reducedHe->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
+    reducedHe->fKink = trackP.GetKinkIndex(0) > 0;
+    reducedPi->fKink = trackN.GetKinkIndex(0) > 0;
+    reducedHe->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedPi->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;  
   }
+  
   if (fMCtrue && ((typePos == AliPID::kHe3 && typeNeg == AliPID::kPion) || (typePos == AliPID::kPion && typeNeg == AliPID::kHe3))) {
     Int_t labelP = trackP.GetLabel();
     Int_t labelN = trackN.GetLabel();
@@ -595,44 +610,78 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
 	fMCGenRecArray->Clear();
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
+Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
   fReducedEvent->fTrigger = 0;
-  if (!fMCtrue){
-  TString classes = fESDevent->GetFiredTriggerClasses();
-  fReducedEvent->fTriggerClasses = classes;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fReducedEvent->fTrigger = 1;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)) fReducedEvent->fTrigger = 2;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD)) fReducedEvent->fTrigger = 3;
-  if (classes.Contains("HNU")) fReducedEvent->fTrigger = 4;
-  if (classes.Contains("HQU")) fReducedEvent->fTrigger = 5;
-  if (classes.Contains("HJT")) fReducedEvent->fTrigger = 6;
-  fHistTrigger->Fill(fReducedEvent->fTrigger);
-  } else {
-  	// MC: simulate TRD trigger
-		Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+  fReducedEvent->fTrigMB = 0; 
+  fReducedEvent->fTrigV0 = 0; 
+  fReducedEvent->fTrigSPD = 0; 
+  fReducedEvent->fTrigHNU = 0; 
+  fReducedEvent->fTrigHQU = 0; 
+  fReducedEvent->fTrigHJT = 0; 
+  fReducedEvent->fTrigHSE = 0; 
+  
+	if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) {
+		fReducedEvent->fTrigMB = 1; 
+		fReducedEvent->fTrigger = 1;
+	}
+	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0) {
+		fReducedEvent->fTrigV0 = 1; 
+		fReducedEvent->fTrigger = 2;
+	}
+	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) {
+		fReducedEvent->fTrigSPD = 1; 
+		fReducedEvent->fTrigger = 3;
+		}
+	
+	Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+	if (!fMCtrue){
+		// Data: get TRD trigger information from trigger classes 
+		TString classes = fESDevent->GetFiredTriggerClasses();   
+		if (classes.Contains("HNU")) {fReducedEvent->fTrigHNU = 1; fReducedEvent->fTrigger = 4;}
+		if (classes.Contains("HQU")) {fReducedEvent->fTrigHQU = 1; fReducedEvent->fTrigger = 5;}
+		if (classes.Contains("HJT")) {fReducedEvent->fTrigHJT = 1; fReducedEvent->fTrigger = 6;}
+		if (classes.Contains("HSE")) {fReducedEvent->fTrigHSE = 1; fReducedEvent->fTrigger = 7;}
+		
+	} else {
+		// MC: simulate TRD trigger
+		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE;
+
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
 				AliESDTrdTrack* trdTrack = fESDevent->GetTrdTrack(iTrack);
 				if (!trdTrack) continue;
+				
+				Int_t label = trdTrack->GetLabel();
+				AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
+			
 				// simulate HNU
 				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) || 
-					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {
-					fReducedEvent->fTrigger = 4;
+					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {	
+						fReducedEvent->fTrigHNU = 1; 
+						fReducedEvent->fTrigger = 4;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHNU = kTRUE;
+						}
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && 
-					trdTrack->GetNTracklets() >= 5 && 
-					(trdTrack->GetLayerMask() & 1) ){	
-						Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
-						if (sag < 0.2 && sag > -0.2) {
-							fReducedEvent->fTrigger = 5;
+					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){	
+					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHQU = 1; 
+						fReducedEvent->fTrigger = 5;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHQU = kTRUE;
 						}
+					}
 				}
 			}
+		if (secHeHNU) fReducedEvent->fTrigHNU = 2;
+		if (secHeHQU) fReducedEvent->fTrigHQU = 2;
 		}
+	}
 	fHistTrigger->Fill(fReducedEvent->fTrigger);
-	}	
+	
 	// additional information for high multiplicity trigger 
 	AliESDVZERO *vzero = fESDevent->GetVZEROData();
 	fReducedEvent->fV0Multiplicity = 0;
@@ -704,17 +753,17 @@ Double_t AliAnalysisTaskHypTritEventTree::GeoLength(const AliESDtrack& track) {
 //_____________________________________________________________________________
 void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 264347 ) { // 2016 pp
+	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
 		if(!fMCtrue) { // Data
 			// LHC16 + LHC18
-			// He3
+			// Triton
 			fBetheParamsT[0] = 0.427978;
 			fBetheParamsT[1] = 105.46;
 			fBetheParamsT[2] =-7.08642e-07;
 			fBetheParamsT[3] = 2.23332;
 			fBetheParamsT[4] = 18.8231;
 			fBetheParamsT[5] = 0.06;
-			// Triton
+			// He3
 			fBetheParamsHe[0] = 1.81085;
 			fBetheParamsHe[1] = 29.4656;
 			fBetheParamsHe[2] = 0.0458225;
