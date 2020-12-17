@@ -2392,19 +2392,23 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
       } else if (fUseNCells == 5){
         if(isMC){
-          fRandom.SetSeed(0);
-          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-          if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-          Int_t tmpLabel = cluster->GetLabelAt(0);
-          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-          if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
-            // evaluate effi function and compare to random number between 1 and 2
-            // if function value greater than random number, reject cluster. otherwise let it pass
-            // function is 1 for E>4 GeV -> will apply standard NCell cut then
-            if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
-              failed = kTRUE;
+          if(  (cluster->GetNCells() < fMinNCells)){
+            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+            Int_t tmpLabel = cluster->GetLabelAt(0);
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
+              // evaluate effi function and compare to random number between 1 and 2
+              // if function value greater than random number, reject cluster. otherwise let it pass
+              // function is 1 for E>4 GeV -> will apply standard NCell cut then
+              fRandom.SetSeed(0);
+              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) ){
+                failed = kTRUE;
+              } else {
+                passedNCellSpecial = kTRUE;
+              }
             } else {
-              passedNCellSpecial = kTRUE;
+              failed = kTRUE;
             }
           }
         } else {
@@ -2417,26 +2421,29 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       } else if (fUseNCells == 7){
         if(isMC){
           fRandom.SetSeed(0);
-          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-          if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-          Int_t tmpLabel = cluster->GetLabelAt(0);
-          AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-          if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+          if(  (cluster->GetNCells() < fMinNCells)){
+            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+            Int_t tmpLabel = cluster->GetLabelAt(0);
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
 
-            Bool_t isCellIso = kTRUE;
-
-            AliVCaloCells* cells    = NULL;
-            if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-              cells                 = event->GetEMCALCells();
-              isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, cells);
-            }
-            // evaluate effi function and compare to random number between 1 and 2
-            // if function value greater than random number, reject cluster. otherwise let it pass
-            // function is 1 for E>4 GeV -> will apply standard NCell cut then
-            if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) && !isCellIso ){
-              failed = kTRUE;
+            if(particle->GetPdgCode() == 22){ // only evalute ncell effi for gamma clusters
+              Bool_t isCellIso = kTRUE;
+              AliVCaloCells* cells    = NULL;
+              if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+                cells                 = event->GetEMCALCells();
+                isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, cells);
+              }
+              // evaluate effi function and compare to random number between 1 and 2
+              // if function value greater than random number, reject cluster. otherwise let it pass
+              // function is 1 for E>4 GeV -> will apply standard NCell cut then
+              if( (fRandom.Uniform(0,1) > fFuncNCellCutEfficiencyEMCal->Eval(cluster->E() )) && !isCellIso ){
+                failed = kTRUE;
+              } else {
+                passedNCellSpecial = kTRUE;
+              }
             } else {
-              passedNCellSpecial = kTRUE;
+              failed = kTRUE;
             }
           }
         } else {
@@ -2542,12 +2549,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
   } else if (fUseNCells == 5){
     if(isMC>0){
-      fRandom.SetSeed(0);
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-      Int_t tmpLabel = cluster->GetLabelAt(0);
-      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-      if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+      if( cluster->GetNCells() < fMinNCells ){
+        // check if cluster is gamma cluster
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+        Int_t tmpLabel = cluster->GetLabelAt(0);
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+        fRandom.SetSeed(0);
         // evaluate effi function and compare to random number between 1 and 2
         // if function value greater than random number, reject cluster. otherwise let it pass
         if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) ){
@@ -2571,19 +2583,24 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // special case for EMCal MC (allow passing of NCell<2 clusters depending on cut efficiency) only reject photon clusters
   } else if (fUseNCells == 7){
     if(isMC>0){
-      fRandom.SetSeed(0);
-      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
-      Int_t tmpLabel = cluster->GetLabelAt(0);
-      AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-      if(  (cluster->GetNCells() < fMinNCells) && particle->GetPdgCode() == 22){
+      if( cluster->GetNCells() < fMinNCells ){
+        // check if cluster is gamma cluster
+        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (fAODMCTrackArray == NULL) AliFatal("AOD track array not found in ClusterQualityCuts");
+        Int_t tmpLabel = cluster->GetLabelAt(0);
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+        if(particle->GetPdgCode() != 22){ // if no gamma cluster return
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+        // evaluate if cluster is isolated
         Bool_t isCellIso = kTRUE;
-
         AliVCaloCells* cells    = NULL;
         if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
           cells                 = event->GetEMCALCells();
           isCellIso = !IsCellNextToCluster(cluster->GetCellAbsId(0), 0.1, cells);
         }
+        fRandom.SetSeed(0);
         // evaluate effi function and compare to random number between 1 and 2
         // if function value greater than random number, reject cluster. otherwise let it pass
         if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) && isCellIso ){
