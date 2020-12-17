@@ -86,16 +86,14 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     // Various utility Histograms TList initialisation
     fAnalysisOutputList     = new TList();
     fAnalysisOutputList     ->SetOwner(kTRUE);
-    fHistVertex0    = new TH1F("fHistVertex0", "Collision Vertex (FULL)", 1000, -15, 15);
-    fHistVertex1    = new TH1F("fHistVertex1", "Collision Vertex (CUTS)", 1000, -15, 15);
-    fHistTPCPID0    = new TH2F("fHistTPCPID0", "TPC Response (ALL)"     , 100, 0, 4, 200, 0, 400);
-    fHistTPCPID1    = new TH2F("fHistTPCPID1", "TPC Response (Sel1)"    , 100, 0, 4, 200, 0, 400);
-    fHistTPCPID2    = new TH2F("fHistTPCPID2", "TPC Response (Sel2)"    , 100, 0, 4, 200, 0, 400);
-    fHistTOFPID0    = new TH2F("fHistTOFPID0", "TOF Response (ALL)"     , 100, 0, 4, 100, 0, 1.2);
-    fHistTOFPID1    = new TH2F("fHistTOFPID1", "TOF Response (Sel1)"    , 100, 0, 4, 100, 0, 1.2);
-    fHistTOFPID2    = new TH2F("fHistTOFPID2", "TOF Response (Sel2)"    , 100, 0, 4, 100, 0, 1.2);
-    fHistEvntEff    = new TH1F("fHistEvntEff", "fHistEvntEff"           , 5,   0.5, 5.5);
-    fAnalysisOutputList->Add(fHistEvntEff);
+    fHistVertex0    = new TH1F("fHistVertex0", "Collision Vertex (FULL)", 300, -15, 15);
+    fHistVertex1    = new TH1F("fHistVertex1", "Collision Vertex (CUTS)", 300, -15, 15);
+    fHistTPCPID0    = new TH2F("fHistTPCPID0", "TPC Response (ALL)"     , 50, 0, 4, 100, 0, 400);
+    fHistTPCPID1    = new TH2F("fHistTPCPID1", "TPC Response (Sel1)"    , 50, 0, 4, 100, 0, 400);
+    fHistTPCPID2    = new TH2F("fHistTPCPID2", "TPC Response (Sel2)"    , 50, 0, 4, 100, 0, 400);
+    fHistTOFPID0    = new TH2F("fHistTOFPID0", "TOF Response (ALL)"     , 50, 0, 4, 120, 0, 1.2);
+    fHistTOFPID1    = new TH2F("fHistTOFPID1", "TOF Response (Sel1)"    , 50, 0, 4, 120, 0, 1.2);
+    fHistTOFPID2    = new TH2F("fHistTOFPID2", "TOF Response (Sel2)"    , 50, 0, 4, 120, 0, 1.2);
     fAnalysisOutputList->Add(fHistVertex0);
     fAnalysisOutputList->Add(fHistTPCPID0);
     fAnalysisOutputList->Add(fHistTOFPID0);
@@ -108,12 +106,14 @@ void    AliAnalysisTaskPhiCount::UserCreateOutputObjects()
     PostData(1, fAnalysisOutputList);
     
     // QC utility Histograms TList initialisation
-    fQCOutputList     = new TList();
-    fQCOutputList     ->SetOwner(kTRUE);
-    fHistTPCPID3    = new TH2F("fHistTPCPID3", "TPC Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
-    fHistTOFPID3    = new TH2F("fHistTOFPID3", "TOF Response (Sel3)"    , 100, 0, 4, 200, -10, 10);
+    fQCOutputList   = new TList();
+    fQCOutputList   ->SetOwner(kTRUE);
+    fHistTPCPID3    = new TH2F("fHistTPCPID3", "TPC Response (Sel3)"    , 50, 0.15, 4.15, 100, -10, 10);
+    fHistTOFPID3    = new TH2F("fHistTOFPID3", "TOF Response (Sel3)"    , 50, 0.15, 4.15, 100, -10, 10);
+    fHistEvntEff    = new TH1F("fHistEvntEff", "fHistEvntEff"           , 13,   0.5, 13.5);
     fQCOutputList->Add(fHistTPCPID3);
     fQCOutputList->Add(fHistTOFPID3);
+    fQCOutputList->Add(fHistEvntEff);
     
     PostData(2, fQCOutputList);
     
@@ -173,20 +173,31 @@ void    AliAnalysisTaskPhiCount::fSetZero()
 
 //_____________________________________________________________________________
 
-void    AliAnalysisTaskPhiCount::fPostData()
+void    AliAnalysisTaskPhiCount::fPostData( Bool_t fEventEfficiency, Int_t nPhi, Int_t nPhiTru,Int_t nKaon, Int_t nKaonTru)
 {
     // Setting postdata options
-    
+    if ( nPhi ==0 )         fHistEvntEff->Fill(6);
+    if ( nPhiTru ==0 )      fHistEvntEff->Fill(8);
+    if ( nKaon ==0 )        fHistEvntEff->Fill(10);
+    if ( nKaonTru ==0 )     fHistEvntEff->Fill(12);
+    if ( nPhi >= 153 )      fHistEvntEff->Fill(7);
+    if ( nPhiTru >= 153 )   fHistEvntEff->Fill(9);
+    if ( nKaon >= 153 )     fHistEvntEff->Fill(11);
+    if ( nKaonTru >= 153 )  fHistEvntEff->Fill(13);
+
     // Post-data for TLists
     PostData(1, fAnalysisOutputList);
     PostData(2, fQCOutputList);
     
-    // Filling data for TTrees
-    fPhiCandidate   ->  Fill();
-    fKaonCandidate  ->  Fill();
-    fPhiEfficiency  ->  Fill();
-    fKaonEfficiency ->  Fill();
-    
+    if ( !fEventEfficiency )
+    {
+        // Filling data for TTrees
+        if ( nPhi !=0       && nPhi < 153)      fPhiCandidate   ->  Fill();
+        if ( nPhiTru !=0    && nPhiTru < 153)   fKaonCandidate  ->  Fill();
+        if ( nKaon !=0      && nKaon < 153)     fPhiEfficiency  ->  Fill();
+        if ( nKaonTru !=0   && nKaonTru < 153)  fKaonEfficiency ->  Fill();
+    }
+
     // Post-data for TTrees
     if ( kPhibool )                 PostData(3, fPhiCandidate);
     if ( kKaonbool )                PostData(4, fKaonCandidate);
@@ -207,7 +218,7 @@ bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* fCurre
     if ( !PrimaryVertexSPD  ||  PrimaryVertexSPD->GetNContributors() < 1 )
     {
         fFillVtxHist(1);
-        fPostData();
+        fPostData(kTRUE,0,0,0,0);
         return false;
     }
 
@@ -225,7 +236,7 @@ bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* fCurre
         if ( std::fabs(VertexZSPD-VertexZTRK) > 0.5 )
         {
             fFillVtxHist(2);
-            fPostData();
+            fPostData(kTRUE,0,0,0,0);
             return false;
         }
     }
@@ -236,7 +247,7 @@ bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* fCurre
     if ( std::fabs(fPrimaryVertex->GetZ()) > 10. )
     {
         fFillVtxHist(3);
-        fPostData();
+        fPostData(kTRUE,0,0,0,0);
         return false;
     }
     
@@ -247,7 +258,7 @@ bool    AliAnalysisTaskPhiCount::fIsPrimaryVertexCandidate ( AliAODEvent* fCurre
     if ( fCurrent_Event->IsPileupFromSPD() )
     {
         fFillVtxHist(4);
-        fPostData();
+        fPostData(kTRUE,0,0,0,0);
         return false;
     }
     
@@ -535,10 +546,9 @@ void    AliAnalysisTaskPhiCount::UserExec(Option_t *)
             fnPhiTru++;
         }
     }
-    
+
     // Saving output
-    fPostData();
-    
+    fPostData(kFALSE,fnPhi,fnPhiTru,fnKaon,0);
 }
 
 //_____________________________________________________________________________
