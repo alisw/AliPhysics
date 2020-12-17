@@ -5876,31 +5876,35 @@ Bool_t AliCaloPhotonCuts::SetExoticClusterCut(Int_t exoticCell)
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 50;
     fExoticMinEnergyCell      = 2;
+    break;
   case 18: //i variation of minimum energy for exotic cut
     if (fUseExoticCluster != 2)
       fUseExoticCluster       = 2;
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 50;
     fExoticMinEnergyCell      = 3;
+    break;
   case 19: //j variation of minimum energy for exotic cut
     if (fUseExoticCluster != 2)
       fUseExoticCluster       = 2;
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 50;
     fExoticMinEnergyCell      = 4;
+    break;
   case 20: //k variation of minimum energy for exotic cut
     if (fUseExoticCluster != 2)
       fUseExoticCluster       = 2;
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 50;
     fExoticMinEnergyCell      = 5;
+    break;
   case 21: //l variation of minimum energy for exotic cut
     if (fUseExoticCluster != 2)
       fUseExoticCluster       = 2;
     fExoticEnergyFracCluster  = 0.97;
     fExoticMinEnergyTCard     = 50;
     fExoticMinEnergyCell      = 6;
-      break;
+    break;
   default:
     AliError(Form("Exotic cell Cut not defined %d",exoticCell));
     return kFALSE;
