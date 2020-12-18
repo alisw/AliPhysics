@@ -54,24 +54,24 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
   std::array<std::string, numDaughters - 1> partTag = {"D0", "Dplus", "Ds", "Lc", "Dstar"};
   std::array<std::string, numDaughters - 1> partTitle = {"D^{0}", "D^{+}", "D_{s}^{+}", "#Lambda_{c}^{+}", "D^{*+}"};
   std::array<std::string, numDaughters - 1> partBTitle = {"B^{0}", "B^{+}", "B_{s}^{0}", "#Lambda_{b}^{0}"};
-  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromB = {{{0.555, 0.876, 0.008, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2018)
+  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromB = {{{0.555, 0.876, 0.002, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2020)
                                                                           {0.392, 0.124, 0., 0.},      // D+
                                                                           {0.117, 0.09, 0.93, 0.011},  // Ds
-                                                                          {0.066, 0.049, 0., 0.333},   // Lc
-                                                                          {0.23, 0.061, 0.003, 0.},    // D*+
-                                                                          {0.066, 0.049, 0., 0.333}    // Lc
+                                                                          {0.066, 0.049, 0., 0.352},   // Lc
+                                                                          {0.233, 0.055, 0.003, 0.},    // D*+
+                                                                          {0.066, 0.049, 0., 0.352}    // Lc
                                                                           }};
   // B0 and B+ BR from B0/B+- admixture
-  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromBmix = {{{0.624, 0.624, 0.008, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2018) and B0/B+- admixture
+  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromBmix = {{{0.624, 0.624, 0.002, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2020) and B0/B+- admixture (2020)
                                                                              {0.241, 0.241, 0., 0.},      // D+
                                                                              {0.083, 0.083, 0.93, 0.011}, // Ds
-                                                                             {0.036, 0.036, 0., 0.333},   // Lc
+                                                                             {0.036, 0.036, 0., 0.352},   // Lc
                                                                              {0.225, 0.225, 0.003, 0.},   // D*+
-                                                                             {0.036, 0.036, 0., 0.333}    // Lc
+                                                                             {0.036, 0.036, 0., 0.352}    // Lc
                                                                              }};
-  std::array<double, numMothers> ppbarBFF = {0.34, 0.34, 0.101, 0.219}; // (B0, B+, Bs, Lb) from PDG (2018)
-  std::array<double, numMothers> eeBFF = {0.412, 0.412, 0.088, 0.089}; // (B0, B+, Bs, Lb) from PDG (2018)
-  std::array<double, numDaughters> decayBR = {0.0389, 0.0898, 0.0227, 0.0623, 0.0263, 0.0158}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2018)
+  std::array<double, numMothers> ppbarBFF = {0.344, 0.344, 0.115, 0.198}; // (B0, B+, Bs, Lb) from PDG (2020)
+  std::array<double, numMothers> eeBFF = {0.408, 0.408, 0.100, 0.084}; // (B0, B+, Bs, Lb) from PDG (2020)
+  std::array<double, numDaughters> decayBR = {0.03950, 0.0938, 0.0224, 0.0628, 0.03950*0.677, 0.0159}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2020)
   std::array<std::array<double, numMothers>, numDaughters> origBR = {};
   std::array<double, numMothers> origBFF = {};
 
