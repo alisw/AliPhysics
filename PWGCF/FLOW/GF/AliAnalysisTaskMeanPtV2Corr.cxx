@@ -47,7 +47,6 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
-  fV2dPtMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -56,6 +55,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fUseWeightsOne(kFALSE),
   fEta(0.8),
   fEtaNch(0.8),
+  fEtaV2Sep(0.4),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -85,6 +85,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fEfficiency(0),
   fEfficiencies(0),
   fV0MMulti(0),
+  fV2dPtMulti(0),
   fFilterBit(96),
   fDisablePID(kFALSE),
   fRequireReloadOnRunChange(kFALSE)
@@ -99,7 +100,6 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
-  fV2dPtMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -108,6 +108,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fUseWeightsOne(kFALSE),
   fEta(0.8),
   fEtaNch(0.8),
+  fEtaV2Sep(0.4),
   fPIDResponse(0),
   fBayesPID(0),
   fMPTList(0),
@@ -137,6 +138,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fEfficiency(0),
   fEfficiencies(0),
   fV0MMulti(0),
+  fV2dPtMulti(0),
   fFilterBit(96),
   fDisablePID(kFALSE),
   fRequireReloadOnRunChange(kFALSE)
@@ -188,7 +190,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
   fMultiBins = GetBinsFromAxis(fMultiAxis);
   fNMultiBins = fMultiAxis->GetNbins();
-  if(!fV2dPtMultiAxis) {
+  if(!fV2dPtMulti) {
     Double_t temp_bn[] = {0,1e6};
     SetV2dPtMultiBins(1,temp_bn);
   };
@@ -307,8 +309,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     Int_t powsFull[] = {5,0,4,0,3};
     Int_t powsPOI[] = {3,0,2,0,3};
     fGFW = new AliGFW();
-    fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
-    fGFW->AddRegion("refP",5,pows,0.4,0.8,1,1);
+    fGFW->AddRegion("refN",5,pows,-0.8,-fEtaV2Sep,1,1);
+    fGFW->AddRegion("refP",5,pows,fEtaV2Sep,0.8,1,1);
     fGFW->AddRegion("mid",5,powsFull,-0.8,0.8,1,2);
     //No need to do full-blown PID, limit only with charged flow
     /*
@@ -343,11 +345,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fV2dPtList = new TList();
     // fV2dPtList->SetName(Form("MPtV2_%i",fSystFlag));
     fV2dPtList->SetOwner(kTRUE);
-    fV2dPtList->Add(fV2dPtMultiAxis);
+    fV2dPtList->Add(fV2dPtMulti);
     // delete oba;
     oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22"));
-    for(Int_t j=0;j<fV2dPtMultiAxis->GetNbins();j++) {
+    for(Int_t j=0;j<fV2dPtMulti->GetNbinsX();j++) {
       AliGFWFlowContainer *fPV = new AliGFWFlowContainer();
       fPV->SetName(Form("v2dpt_%i",j));
       Double_t mptbins[21];
@@ -754,7 +756,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   };
   PostData(3,fCovList);
   if(outVals[0][0]==0) return;
-  Int_t indx =   fV2dPtMultiAxis->FindBin(l_Multi);
+  Int_t indx =   fV2dPtMulti->FindBin(l_Multi);
+  fV2dPtMulti->Fill(l_Multi);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }
@@ -1027,9 +1030,8 @@ void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multi
   fMultiAxis = new TAxis(nMultiBins, multibins);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetV2dPtMultiBins(Int_t nMultiBins, Double_t *multibins) {
-  if(fV2dPtMultiAxis) delete fV2dPtMultiAxis;
-  fV2dPtMultiAxis = new TAxis(nMultiBins, multibins);
-  fV2dPtMultiAxis->SetName("v2_vs_mpt_mbins");
+  if(fV2dPtMulti) delete fV2dPtMulti;
+  fV2dPtMulti = new TH1D("v2_vs_mpt_mbins","v2_vs_mpt_mbins",nMultiBins, multibins);
 }
 Double_t *AliAnalysisTaskMeanPtV2Corr::GetBinsFromAxis(TAxis *inax) {
   Int_t lBins = inax->GetNbins();

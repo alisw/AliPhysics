@@ -73,6 +73,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
+  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void SetSystSwitch(Int_t newval) { fSystSwitch = newval; };
@@ -89,7 +90,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
-  TAxis *fV2dPtMultiAxis;
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
@@ -98,6 +98,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fUseWeightsOne;
   Double_t fEta;
   Double_t fEtaNch;
+  Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
@@ -128,6 +129,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1D *fV0MMulti;
+  TH1D *fV2dPtMulti;
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
