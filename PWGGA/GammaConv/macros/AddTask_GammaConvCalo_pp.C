@@ -64,10 +64,10 @@ void AddTask_GammaConvCalo_pp(
   AliCutHandlerPCM cuts;
 
 
-  Int_t TriggerMimickingDDLEffiFlag = 0;
+  Int_t TriggerMimickingDDLEffiFlag = 2;
   if (enableTriggerMimicking >= 10) {
       if (enableTriggerMimicking >= 20) {
-          TriggerMimickingDDLEffiFlag = 2;
+          TriggerMimickingDDLEffiFlag = 0;
           enableTriggerMimicking -= 20;
       } else {
           TriggerMimickingDDLEffiFlag = 1;
