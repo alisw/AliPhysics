@@ -23,7 +23,7 @@ Bool_t ConfigPhiPP5TeVRun2
  Float_t     centMax = 101.0,
  Bool_t                 isMC=kFALSE,
  Bool_t                 isPP=kFALSE,
- AliRsnCutSet           *cutsPair= nullptr,
+ AliRsnCutSet           *cutsPair= NULL,
  Int_t                  aodFilterBit=5,
  AliRsnMiniValue::EType cosThetaType = AliRsnMiniValue::kCosThetaHeAbs,
  Int_t                  customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
@@ -31,7 +31,7 @@ Bool_t ConfigPhiPP5TeVRun2
  Float_t                nsigmaKa=2.,
  Bool_t                 enableMonitor=kTRUE,
  Bool_t                 IsMcTrueOnly=kFALSE,
- TString                monitorOpt="NoSign",
+ TString                monitorOpt="NoSIGN",
  Bool_t                 useMixLS=0
  )
 {
@@ -247,7 +247,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
 
   if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-    Printf("%s",("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+    Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
     if(!customFilterBit){//ESD
       if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
@@ -285,7 +285,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     return kTRUE;
   }else if(customQualityCutsID==2 || (customQualityCutsID>=100 && customQualityCutsID<200)){
     trkQualityCut->SetDefaultsTPCOnly(kTRUE);
-    Printf("%s",("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
+    Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
 
     if(customQualityCutsID==103){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(3.);}
     else if(customQualityCutsID==104){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(1.);}
