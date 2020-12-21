@@ -3727,7 +3727,7 @@ Bool_t Config_Xik0(
     Int_t iCutK0s=task->AddTrackCuts(cutSetK0s);
     
     // selections for Xi
-    Float_t XiPIDcut=3.;
+    Float_t XiPIDcut=5.;
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.6;
     Float_t XiMinDCA=0.07;
