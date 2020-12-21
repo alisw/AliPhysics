@@ -463,7 +463,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		CorrelationCalculator correlator;
 
-		double xbins[255];
+		double xbins[3000+10];
 		int nn;
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString);
