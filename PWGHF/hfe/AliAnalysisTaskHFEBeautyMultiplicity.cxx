@@ -623,20 +623,21 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistEopAll);
 
   //Ntracks
-    fNtracks = new TH1F("fNtracks","Number of tracks",11, -0.5, 10.5);
+    fNtracks = new TH1F("fNtracks","Number of tracks",10, -0.5, 9.5);
     fOutputList->Add(fNtracks);
     fNtracks->GetYaxis()->SetTitle("counts");
     fNtracks->GetXaxis()->SetBinLabel(1,"matching tracks");
     fNtracks->GetXaxis()->SetBinLabel(2,"AOD standard");
-    fNtracks->GetXaxis()->SetBinLabel(3,"TPC and ITS refit");
+    //fNtracks->GetXaxis()->SetBinLabel(3,"TPC and ITS refit");
+    fNtracks->GetXaxis()->SetBinLabel(3,"TPCCrossedRow cut");
     fNtracks->GetXaxis()->SetBinLabel(4,"TPC cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(5,"ITS cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(6,"dE/dx calculation");
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
     fNtracks->GetXaxis()->SetBinLabel(8,"DCA cut");
     fNtracks->GetXaxis()->SetBinLabel(9,"chi2 cut");
-    fNtracks->GetXaxis()->SetBinLabel(10,"TPCCrossedRow cut");
-    fNtracks->GetXaxis()->SetBinLabel(11,"Eta cut");
+    //fNtracks->GetXaxis()->SetBinLabel(10,"TPCCrossedRow cut");
+    fNtracks->GetXaxis()->SetBinLabel(10,"Eta cut");
     
   //pT vs E/p (electron)
     fEopElectron1 = new TH2F("fEopElectron1","Electron;p_{T} [GeV/c];E/p",600,0,30,150,0,3.0);
@@ -1270,8 +1271,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fNtracks->Fill(2);
             
             //---- 3.TPC cluster cut ----
-            if(track->GetTPCNcls() < CutTPCNCls) continue;
+            //if(track->GetTPCNcls() < CutTPCNCls) continue;
+            //fNtracks->Fill(3);
+
+	    //---- 3.TPC CrossedRow cut ----
+            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
             fNtracks->Fill(3);
+
             
             //---- 4.ITS cluster cut ----
             if(track->GetITSNcls() < CutITSNCls) continue;
@@ -1295,9 +1301,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 	    if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
             fNtracks->Fill(8);
 
-	    //---- 9.TPC CrossedRow cut ----
-            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
-            fNtracks->Fill(9);
 
 
             // calculate phi and eta difference between a track and a cluster // 
@@ -1574,10 +1577,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         }
         
         //-----loose cut on partner electron
-        if(ptAsso < 0.2) continue;
+        if(ptAsso < 0.1) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(AssoTrackNsigma < -3 || AssoTrackNsigma > 3) continue;
-        if(AssoTPCchi2perNDF >= 4) continue;
+        //if(AssoTPCchi2perNDF >= 4) continue;
         
         
         //----define KFParticle to get mass
