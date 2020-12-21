@@ -1258,7 +1258,7 @@ Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
     printf("Can not compute phiHE with EBeam=%f\n",EBeam);
     return -999999999;
   }
-  Double_t mp = 0.93827231;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1385,7 +1385,7 @@ Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
     printf("Can not compute phiCS with EBeam=%f\n",EBeam);
     return -999999999;
   }
-  Double_t mp = 0.93827231;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0->Py();
