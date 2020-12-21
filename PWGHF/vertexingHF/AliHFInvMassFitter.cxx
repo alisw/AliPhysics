@@ -1003,8 +1003,7 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
     fback->SetParError(j,funcPrev->GetParError(j));
   }
   printf("   ---> Final background fit with pol degree %d ---\n",fPolDegreeBkg);
-  fHistoInvMass->Fit(fback,"REMN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
-
+  fHistoInvMass->Fit(fback,Form("R,%s,+,0",fFitOption.Data()));// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
 
   // The following lines might be useful for debugging
   //   TCanvas *cDebug=new TCanvas();
