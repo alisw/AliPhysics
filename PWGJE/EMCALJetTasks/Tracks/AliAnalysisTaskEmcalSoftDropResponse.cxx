@@ -298,15 +298,59 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
       }
 
       // Jet finding efficiency
-      fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Zg and pt_%d", cent), 3, sparsebinningJEffPureZg);
-      fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Rg and pt_%d", cent), 3, sparsebinningJEffPureRg);
-      fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Thetag and pt_%d", cent), 3, sparsebinningJEffPureThetag);
-      fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Nsd and pt_%d", cent), 3, sparsebinningJEffPureNsd);
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Zg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Rg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Thetag and pt, %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiency_%d", cent), Form("Jet finding efficiency as function of Nsd and pt, %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+      // split in response and no response sample for closure test
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiencyClosureResp_%d", cent), Form("Jet finding efficiency as function of Zg and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiencyClosureResp_%d", cent), Form("Jet finding efficiency as function of Rg and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiencyClosureResp_%d", cent), Form("Jet finding efficiency as function of Thetag and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiencyClosureResp_%d", cent), Form("Jet finding efficiency as function of Nsd and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingEfficiencyClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Zg and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingEfficiencyClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Rg and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingEfficiencyClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Thetag and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingEfficiencyClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Nsd and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
       // Jet finding purity
       fHistManager.CreateTHnSparse(Form("hZgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Zg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureZg);
       fHistManager.CreateTHnSparse(Form("hRgJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Rg and pt, %d centrality bin", cent), 3, sparsebinningJEffPureRg);
       fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Thetag and pt, %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
       fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurity_%d", cent), Form("Jet finding efficiency as function of Nsd and pt, %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+      // split in response and no response sample for closure test
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingPurityClosureResp_%d", cent), Form("Jet finding efficiency as function of Zg and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingPurityClosureResp_%d", cent), Form("Jet finding efficiency as function of Rg and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurityClosureResp_%d", cent), Form("Jet finding efficiency as function of Thetag and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurityClosureResp_%d", cent), Form("Jet finding efficiency as function of Nsd and pt (for closure test, response sample), %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+      fHistManager.CreateTHnSparse(Form("hZgJetFindingPurityClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Zg and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureZg);
+      fHistManager.CreateTHnSparse(Form("hRgJetFindingPurityClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Rg and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureRg);
+      fHistManager.CreateTHnSparse(Form("hThetagJetFindingPurityClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Thetag and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureThetag);
+      fHistManager.CreateTHnSparse(Form("hNsdJetFindingPurityClosureNoResp_%d", cent), Form("Jet finding efficiency as function of Nsd and pt (for closure test, no-response sample), %d centrality bin", cent), 3, sparsebinningJEffPureNsd);
+      
+      // Closure test (before part/det matching requirement)
+      fHistManager.CreateTH2(Form("hZgClosureNoRespDetAllFine_%d", cent), Form("Zg at det. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hZgClosureNoRespPartAllFine_%d", cent), Form("Zg at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hZgClosureRespDetAllFine_%d", cent), Form("Zg at det. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hZgClosureRespPartAllFine_%d", cent), Form("Zg at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureNoRespDetAllFine_%d", cent), Form("Rg at det. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureNoRespPartAllFine_%d", cent), Form("Rg at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureRespDetAllFine_%d", cent), Form("Rg at det. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureRespPartAllFine_%d", cent), Form("Rg at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureNoRespDetAllFine_%d", cent), Form("Thetag at det. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureNoRespPartAllFine_%d", cent), Form("Thetag at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureRespDetAllFine_%d", cent), Form("Thetag at det. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureRespPartAllFine_%d", cent), Form("Thetag at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureNoRespDetAllFine_%d", cent), Form("Nsd at det. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureNoRespPartAllFine_%d", cent), Form("Nsd at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureRespDetAllFine_%d", cent), Form("Nsd at det. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureRespPartAllFine_%d", cent), Form("Nsd at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hZgClosureTruthNoRespPartAllFine_%d", cent), Form("Zg truth at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hZgClosureTruthRespPartAllFine_%d", cent), Form("Zg truth at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureTruthNoRespPartAllFine_%d", cent), Form("Rg truth at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hRgClosureTruthRespPartAllFine_%d", cent), Form("Rg truth at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureTruthNoRespPartAllFine_%d", cent), Form("Thetag truth at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hThetagClosureTruthRespPartAllFine_%d", cent), Form("Thetag truth at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureTruthNoRespPartAllFine_%d", cent), Form("Nsd truth at part. level of all jets for closure test (no-response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+      fHistManager.CreateTH2(Form("hNsdClosureTruthRespPartAllFine", cent), Form("Nsd truth at part. level of all jets for closure test (response sample), %d centrality bin", cent), binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
 
       if(fFillPlotsResiduals) {
         // Residuals vs. pt,part
@@ -449,11 +493,55 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
     fHistManager.CreateTHnSparse("hRgJetFindingEfficiency", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
     fHistManager.CreateTHnSparse("hThetagJetFindingEfficiency", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
     fHistManager.CreateTHnSparse("hNsdJetFindingEfficiency", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
+    // split in response and no response sample for closure test
+    fHistManager.CreateTHnSparse("hZgJetFindingEfficiencyClosureResp", "Jet finding efficiency as function of Zg and pt (response sample, for closure test)", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingEfficiencyClosureResp", "Jet finding efficiency as function of Rg and pt (response sample, for closure test)", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingEfficiencyClosureResp", "Jet finding efficiency as function of Thetag and pt (response sample, for closure test)", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingEfficiencyClosureResp", "Jet finding efficiency as function of Nsd and pt (response sample, for closure test)", 3, sparsebinningJEffPureNsd);
+    fHistManager.CreateTHnSparse("hZgJetFindingEfficiencyClosureNoResp", "Jet finding efficiency as function of Zg and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingEfficiencyClosureNoResp", "Jet finding efficiency as function of Rg and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingEfficiencyClosureNoResp", "Jet finding efficiency as function of Thetag and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingEfficiencyClosureNoResp", "Jet finding efficiency as function of Nsd and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureNsd);
     // Jet finding purity
     fHistManager.CreateTHnSparse("hZgJetFindingPurity", "Jet finding efficiency as function of Zg and pt", 3, sparsebinningJEffPureZg);
     fHistManager.CreateTHnSparse("hRgJetFindingPurity", "Jet finding efficiency as function of Rg and pt", 3, sparsebinningJEffPureRg);
     fHistManager.CreateTHnSparse("hThetagJetFindingPurity", "Jet finding efficiency as function of Thetag and pt", 3, sparsebinningJEffPureThetag);
     fHistManager.CreateTHnSparse("hNsdJetFindingPurity", "Jet finding efficiency as function of Nsd and pt", 3, sparsebinningJEffPureNsd);
+    // split in response and no response sample for closure test
+    fHistManager.CreateTHnSparse("hZgJetFindingPurityClosureResp", "Jet finding efficiency as function of Zg and pt (response sample, for closure test)", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingPurityClosureResp", "Jet finding efficiency as function of Rg and pt (response sample, for closure test)", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingPurityClosureResp", "Jet finding efficiency as function of Thetag and pt (response sample, for closure test)", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingPurityClosureResp", "Jet finding efficiency as function of Nsd and pt (response sample, for closure test)", 3, sparsebinningJEffPureNsd);
+    fHistManager.CreateTHnSparse("hZgJetFindingPurityClosureNoResp", "Jet finding efficiency as function of Zg and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureZg);
+    fHistManager.CreateTHnSparse("hRgJetFindingPurityClosureNoResp", "Jet finding efficiency as function of Rg and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureRg);
+    fHistManager.CreateTHnSparse("hThetagJetFindingPurityClosureNoResp", "Jet finding efficiency as function of Thetag and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureThetag);
+    fHistManager.CreateTHnSparse("hNsdJetFindingPurityClosureNoResp", "Jet finding efficiency as function of Nsd and pt (no-response sample, for closure test)", 3, sparsebinningJEffPureNsd);
+
+    // Closure test (before part/det matching requirement)
+    fHistManager.CreateTH2("hZgClosureNoRespDetAllFine", "Zg at det. level of all jets for closure test (no-response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hZgClosureNoRespPartAllFine", "Zg at part. level of all jets for closure test (no-response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hZgClosureRespDetAllFine", "Zg at det. level of all jets for closure test (response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hZgClosureRespPartAllFine", "Zg at part. level of all jets for closure test (response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureNoRespDetAllFine", "Rg at det. level of all jets for closure test (no-response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureNoRespPartAllFine", "Rg at part. level of all jets for closure test (no-response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureRespDetAllFine", "Rg at det. level of all jets for closure test (response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureRespPartAllFine", "Rg at part. level of all jets for closure test (response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureNoRespDetAllFine", "Thetag at det. level of all jets for closure test (no-response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureNoRespPartAllFine", "Thetag at part. level of all jets for closure test (no-response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureRespDetAllFine", "Thetag at det. level of all jets for closure test (response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureRespPartAllFine", "Thetag at part. level of all jets for closure test (response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureNoRespDetAllFine", "Nsd at det. level of all jets for closure test (no-response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureNoRespPartAllFine", "Nsd at part. level of all jets for closure test (no-response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureRespDetAllFine", "Nsd at det. level of all jets for closure test (response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureRespPartAllFine", "Nsd at part. level of all jets for closure test (response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hZgClosureTruthNoRespPartAllFine", "Zg truth at part. level of all jets for closure test (no-response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hZgClosureTruthRespPartAllFine", "Zg truth at part. level of all jets for closure test (response sample)", binEdgesZg.GetSize() - 1, binEdgesZg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureTruthNoRespPartAllFine", "Rg truth at part. level of all jets for closure test (no-response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hRgClosureTruthRespPartAllFine", "Rg truth at part. level of all jets for closure test (response sample)", binEdgesRg.GetSize() - 1, binEdgesRg.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureTruthNoRespPartAllFine", "Thetag truth at part. level of all jets for closure test (no-response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hThetagClosureTruthRespPartAllFine", "Thetag truth at part. level of all jets for closure test (response sample)", binEdgesThetag.GetSize() - 1, binEdgesThetag.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureTruthNoRespPartAllFine", "Nsd truth at part. level of all jets for closure test (no-response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
+    fHistManager.CreateTH2("hNsdClosureTruthRespPartAllFine", "Nsd truth at part. level of all jets for closure test (response sample)", binEdgesNsd.GetSize() - 1, binEdgesNsd.GetArray(), binEdgesPtFine.GetSize() -1 , binEdgesPtFine.GetArray());
 
     if(fFillPlotsResiduals){
       // Residuals vs. pt,part
@@ -634,6 +722,11 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       return false;
   }
 
+  // sample splitting (for closure test)
+  // must be done at event level in order to have statistically independent
+  // samples for both effciency and purity, which are different loops
+  bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
+
   // get truncations at detector level
   TString histname;
   if (fForceBeamType != kpp)
@@ -782,16 +875,107 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       fHistManager.FillTHnSparse(Form("hRgJetFindingPurity_%d", fCentBin), pointPurityRg);
       fHistManager.FillTHnSparse(Form("hThetagJetFindingPurity_%d", fCentBin), pointPurityThetag);
       fHistManager.FillTHnSparse(Form("hNsdJetFindingPurity_%d", fCentBin), pointPurityNsd);
+      // Split into response and no-response sample for closure test
+      if(closureUseResponse) {
+        fHistManager.FillTHnSparse(Form("hZgJetFindingPurityClosureResp_%d", fCentBin), pointPurityZg);
+        fHistManager.FillTHnSparse(Form("hRgJetFindingPurityClosureResp_%d", fCentBin), pointPurityRg);
+        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurityClosureResp_%d", fCentBin), pointPurityThetag);
+        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurityClosureResp_%d", fCentBin), pointPurityNsd);
+      } else {
+        fHistManager.FillTHnSparse(Form("hZgJetFindingPurityClosureNoResp_%d", fCentBin), pointPurityZg);
+        fHistManager.FillTHnSparse(Form("hRgJetFindingPurityClosureNoResp_%d", fCentBin), pointPurityRg);
+        fHistManager.FillTHnSparse(Form("hThetagJetFindingPurityClosureNoResp_%d", fCentBin), pointPurityThetag);
+        fHistManager.FillTHnSparse(Form("hNsdJetFindingPurityClosureNoResp_%d", fCentBin), pointPurityNsd);
+      }
     } else {
       fHistManager.FillTHnSparse("hZgJetFindingPurity", pointPurityZg);
       fHistManager.FillTHnSparse("hRgJetFindingPurity", pointPurityRg);
       fHistManager.FillTHnSparse("hThetagJetFindingPurity", pointPurityThetag);
       fHistManager.FillTHnSparse("hNsdJetFindingPurity", pointPurityNsd);
+      // Split into response and no-response sample for closure test
+      if(closureUseResponse) {
+        fHistManager.FillTHnSparse("hZgJetFindingPurityClosureResp", pointPurityZg);
+        fHistManager.FillTHnSparse("hRgJetFindingPurityClosureResp", pointPurityRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingPurityClosureResp", pointPurityThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingPurityClosureResp", pointPurityNsd);
+      } else {
+        fHistManager.FillTHnSparse("hZgJetFindingPurityClosureNoResp", pointPurityZg);
+        fHistManager.FillTHnSparse("hRgJetFindingPurityClosureNoResp", pointPurityRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingPurityClosureNoResp", pointPurityThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingPurityClosureNoResp", pointPurityNsd);
+      }
     }
       
+    // Fill det level histogram (for full closure test)
+    // Distribtions before purity subtraction needed in order to test
+    // the full correction chain (including purity correction and efficiency)
+    // correction
+    if(fForceBeamType != kpp) {
+      if(closureUseResponse){
+        fHistManager.FillTH2(Form("hZgClosureRespDetAllFine_%d", fCentBin), zgdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hRgClosureRespDetAllFine_%d", fCentBin), rgdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hThetagClosureRespDetAllFine_%d", fCentBin), thetagdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hNsdClosureRespDetAllFine_%d", fCentBin), nsddet, detjet->Pt());
+      } else {
+        fHistManager.FillTH2(Form("hZgClosureNoRespDetAllFine_%d", fCentBin), zgdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hRgClosureNoRespDetAllFine_%d", fCentBin), rgdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hThetagClosureNoRespDetAllFine_%d", fCentBin), thetagdet, detjet->Pt());
+        fHistManager.FillTH2(Form("hNsdClosureNoRespDetAllFine_%d", fCentBin), nsddet, detjet->Pt());
+      }
+    } else {
+      if(closureUseResponse){
+        fHistManager.FillTH2("hZgClosureRespDetAllFine", zgdet, detjet->Pt());
+        fHistManager.FillTH2("hRgClosureRespDetAllFine", rgdet, detjet->Pt());
+        fHistManager.FillTH2("hThetagClosureRespDetAllFine", thetagdet, detjet->Pt());
+        fHistManager.FillTH2("hNsdClosureRespDetAllFine", nsddet, detjet->Pt());
+      } else {
+        fHistManager.FillTH2("hZgClosureNoRespDetAllFine", zgdet, detjet->Pt());
+        fHistManager.FillTH2("hRgClosureNoRespDetAllFine", rgdet, detjet->Pt());
+        fHistManager.FillTH2("hThetagClosureNoRespDetAllFine", thetagdet, detjet->Pt());
+        fHistManager.FillTH2("hNsdClosureNoRespDetAllFine", nsddet, detjet->Pt());
+      }
+    }
 
     if(!hasMCSoftDrop)
       continue;
+
+    // point needed at that stage for part level closure all
+    // Distribtions before purity subtraction needed in order to test
+    // the full correction chain (including purity correction and efficiency)
+    // correction
+    bool untaggedDet = softdropDet.fZg < fZcut,
+         untaggedPart = softdropPart.fZg < fZcut;
+    Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
+             pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
+             pointNsd[4] = {untaggedDet ? -1. : double(splittingsDet.size()), detjet->Pt(), untaggedPart ? -1. : double(splittingsPart.size()), partjet->Pt()},
+             pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
+
+    // Fill truth level histogram (for full closure test)
+    if(fForceBeamType != kpp) {
+      if(closureUseResponse) {
+        fHistManager.FillTH2(Form("hZgClosureRespPartAllFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH2(Form("hRgClosureRespPartAllFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH2(Form("hThetagClosureRespPartAllFine_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        fHistManager.FillTH2(Form("hNsdClosureRespPartAllFine_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+      } else {
+        fHistManager.FillTH2(Form("hZgClosureNoRespPartAllFine_%d", fCentBin), pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH2(Form("hRgClosureNoRespPartAllFine_%d", fCentBin), pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH2(Form("hThetagClosureNoRespPartAllFine_%d", fCentBin), pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        fHistManager.FillTH2(Form("hNsdClosureNoRespPartAllFine_%d", fCentBin), pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+      }
+    } else {
+      if(closureUseResponse) {
+        fHistManager.FillTH2("hZgClosureRespPartAllFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH2("hRgClosureRespPartAllFine", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH2("hThetagClosureRespPartAllFine", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        fHistManager.FillTH2("hNsdClosureRespPartAllFine", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+      } else {
+        fHistManager.FillTH2("hZgClosureNoRespPartAllFine", pointZg[kIndSDPart], pointZg[kIndPtPart]);
+        fHistManager.FillTH2("hRgClosureNoRespPartAllFine", pointRg[kIndSDPart], pointRg[kIndPtPart]);
+        fHistManager.FillTH2("hThetagClosureNoRespPartAllFine", pointThetag[kIndSDPart], pointThetag[kIndPtPart]);
+        fHistManager.FillTH2("hNsdClosureNoRespPartAllFine", pointNsd[kIndSDPart], pointNsd[kIndPtPart]);
+      }
+    }
 
     if(fRequirePartJetInAcceptance && ! partJetInAcceptance)
       continue;
@@ -819,16 +1003,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       FillJetQA(*detjet, false, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
     }
 
-    // sample splitting (for closure test)
-    bool closureUseResponse = (fSampleSplitter->Uniform() < fFractionResponseClosure);
-
     auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
-    bool untaggedDet = softdropDet.fZg < fZcut,
-         untaggedPart = softdropPart.fZg < fZcut;
-    Double_t pointZg[4] = {softdropDet.fZg, detjet->Pt(), softdropPart.fZg, partjet->Pt()},
-             pointRg[4] = {untaggedDet ? -0.01 : softdropDet.fRg, detjet->Pt(), untaggedPart ? -0.01 : softdropPart.fRg, partjet->Pt()},
-             pointNsd[4] = {untaggedDet ? -1. : double(splittingsDet.size()), detjet->Pt(), untaggedPart ? -1. : double(splittingsPart.size()), partjet->Pt()},
-             pointThetag[4] = {untaggedDet ? -0.05 : softdropDet.fRg/Rjet, detjet->Pt(), untaggedPart ? -0.05 : softdropPart.fRg/Rjet, partjet->Pt()};
     Double_t resZg = pointZg[kIndSDDet] - pointZg[kIndSDPart],
              resRg = pointRg[kIndSDDet] - pointRg[kIndSDPart],
              resThetag = pointThetag[kIndSDDet] - pointThetag[kIndSDPart],
@@ -1098,6 +1273,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       }
     }
   }
+  
 
   // second loop: Loop over all part. level jet and check whether it has a corresponding detctor level jet
   // this is of relevance for the jet finding efficiency
@@ -1122,6 +1298,19 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       fHistManager.FillTH2("hRgPartLevelFine", rgpart , partjet->Pt());
       fHistManager.FillTH2("hNsdPartLevelFine", nsdpart, partjet->Pt());
       fHistManager.FillTH2("hThetagPartLevelFine", thetagpart, partjet->Pt());
+
+      // Fill histograms with fully efficient truth before matching (for closure test)
+      if(closureUseResponse) {
+        fHistManager.FillTH2("hZgClosureTruthRespPartAllFine", zgpart, partjet->Pt());
+        fHistManager.FillTH2("hRgClosureTruthRespPartAllFine", rgpart, partjet->Pt());
+        fHistManager.FillTH2("hThetagClosureTruthRespPartAllFine", thetagpart, partjet->Pt());
+        fHistManager.FillTH2("hNsdClosureTruthRespPartAllFine", nsdpart, partjet->Pt());
+      } else {
+        fHistManager.FillTH2("hZgClosureTruthNoRespPartAllFine", zgpart, partjet->Pt());
+        fHistManager.FillTH2("hRgClosureTruthNoRespPartAllFine", rgpart, partjet->Pt());
+        fHistManager.FillTH2("hThetagClosureTruthNoRespPartAllFine", thetagpart, partjet->Pt());
+        fHistManager.FillTH2("hNsdClosureTruthNoRespPartAllFine", nsdpart, partjet->Pt());
+      }
 
       // Handle jet finding efficiency
       // Point efficiency
@@ -1159,6 +1348,18 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       fHistManager.FillTHnSparse("hRgJetFindingEfficiency", pointEfficiencyRg);
       fHistManager.FillTHnSparse("hThetagJetFindingEfficiency", pointEfficiencyThetag);
       fHistManager.FillTHnSparse("hNsdJetFindingEfficiency", pointEfficiencyNsd);
+      // Split jet finding efficiency in response and no-response sample for closure test
+      if(closureUseResponse) {
+        fHistManager.FillTHnSparse("hZgJetFindingEfficiencyClosureResp", pointEfficiencyZg);
+        fHistManager.FillTHnSparse("hRgJetFindingEfficiencyClosureResp", pointEfficiencyRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingEfficiencyClosureResp", pointEfficiencyThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingEfficiencyClosureResp", pointEfficiencyNsd);
+      } else {
+        fHistManager.FillTHnSparse("hZgJetFindingEfficiencyClosureNoResp", pointEfficiencyZg);
+        fHistManager.FillTHnSparse("hRgJetFindingEfficiencyClosureNoResp", pointEfficiencyRg);
+        fHistManager.FillTHnSparse("hThetagJetFindingEfficiencyClosureNoResp", pointEfficiencyThetag);
+        fHistManager.FillTHnSparse("hNsdJetFindingEfficiencyClosureNoResp", pointEfficiencyNsd);
+      }
     }
   }
   // efficiency loop for PbPb to be implemented when of relevance
