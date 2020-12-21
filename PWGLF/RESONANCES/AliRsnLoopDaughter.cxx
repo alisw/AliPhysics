@@ -199,14 +199,15 @@ Int_t AliRsnLoopDaughter::LoopTrueMC(AliRsnEvent *rsn)
    Int_t ipart, count = 0;
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
-   Int_t pdg = AliRsnDaughter::SpeciesPDG(fDef->GetPID());
+   Long_t pdg = AliRsnDaughter::SpeciesPDG(fDef->GetPID());
 
 
    // loop over particles
    for (ipart = 0; ipart < npart; ipart++) {
       // check i-th particle
       if (rsn->IsESD()) {
-         if (!rsn->GetRefMCESD()->Stack()->IsPhysicalPrimary(ipart)) continue;
+         // if (!rsn->GetRefMCESD()->Stack()->IsPhysicalPrimary(ipart)) continue; // old way to read MC
+         if (!rsn->GetRefMCESD()->IsPhysicalPrimary(ipart)) continue;
          AliMCParticle *part = (AliMCParticle *)rsn->GetRefMCESD()->GetTrack(ipart);
          if (TMath::Abs(part->Particle()->GetPdgCode()) != pdg) continue;
          fDaughter.SetRef  (rsn->GetRefMCESD()->GetTrack(ipart));

@@ -569,7 +569,7 @@ void AliHadCorrTask::DoMatchedTracksLoop(Int_t icluster,
   if (!cluster) return;
   
   // loop over matched tracks
-  Int_t Ntrks = Ntrks = cluster->GetNTracksMatched();
+  Int_t Ntrks = cluster->GetNTracksMatched();
   for (Int_t i = 0; i < Ntrks; ++i) {
     AliVTrack* track = 0;
 

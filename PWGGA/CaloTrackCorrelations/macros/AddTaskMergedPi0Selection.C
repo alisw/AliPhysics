@@ -220,27 +220,13 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // MC settings
   //
   // Check if kine stack is available, independent of request of simulation
-  Bool_t useKinematics = kFALSE;
-  useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
-  
-  if(simulation)
-  {
-    if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
-  }
-
-  if(useKinematics)
-  {
-    if(inputDataType == "ESD")
-    {
-      reader->SwitchOnStack();          
-      reader->SwitchOffAODMCParticles(); 
-    }
-    else if(inputDataType == "AOD")
-    {
-      reader->SwitchOffStack();          
-      reader->SwitchOnAODMCParticles(); 
-    }
-  }  
+//  Bool_t useKinematics = kFALSE;
+//  useKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+//  
+//  if(simulation)
+//  {
+//    if (!useKinematics && inputDataType=="AOD") useKinematics = kTRUE; //AOD primary should be available ...
+//  }
   
   // In case of Pythia pt Hard bin simulations (jet-jet, gamma-jet)
   // reject some special events that bother the cross section
@@ -549,7 +535,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(Bool_t useSS,     Bool_t useAsy,
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("Pi0SS_TM%d_SS%d_Asy%d_Mass%d_%s",tm,useSS,useAsy,useMass,kAnaMergedPi0.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
    
   // Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPi0SSEbE_TM%d_SS%d_Asy%d_Mass%d_",tm,useSS,useAsy,useMass));
@@ -725,7 +711,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,2.,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -771,9 +757,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

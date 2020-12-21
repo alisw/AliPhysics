@@ -68,6 +68,10 @@ Information about the cell and cluster corrections is available at \subpage READ
 
 Information about embedding in the EMCal framework is available at \subpage READMEemcEmbedding.
 
+# Accesing the EMCAL OADB from EOS
+
+Instructions how to access the EMCAL OADB from EOS are available at \subpage READMEoadb
+
 # How to transition from old to new framework
 
 Here you find detailed information which compares old and new framework and tells you the things you have to keep in mind when using the new EMCal framework. Please read \subpage READMEchangefw.  

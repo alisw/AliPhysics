@@ -57,6 +57,12 @@ namespace AliAnalysisCODEX {
     return sqrt((sigma * sigma) + (mParams[3] * mParams[3] / (p * p)) + (mTOFres * mTOFres) + (t0res * t0res));
   }
 
+  void TOFpidLite::SetParams(const float params[4]) {
+    for (int i = 0; i < 4; i++) {
+      mParams[i] = params[i];
+    }
+  }
+
   float TOFpidLite::GetNumberOfSigmas(const Track &t, float mass)  const {
     const float sigma = GetExpectedSigma(t, mass);
     const float mu = GetExpectedSignal(t, mass);

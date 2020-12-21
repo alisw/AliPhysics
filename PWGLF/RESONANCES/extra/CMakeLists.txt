@@ -23,9 +23,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
+		    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD 
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
+		    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                    )
 
 # Sources - alphabetical order
@@ -36,10 +41,19 @@ set(SRCS
   AliRsnAnalysisPhi7TeV.cxx 
   AliAnalysisTaskSigma1385.cxx
   AliXiStar.cxx
+  AliXiStarpp13TeV.cxx
+  AliXiStarPbPb.cxx
+  AliXiStarPbPb_RUN2.cxx
   AliXiStarEventCollection.cxx
+  AliXiStarpp13TeVEventCollection.cxx
+  AliXiStarPbPbEventCollection.cxx
   AliAnalysisTaskLambdaStar.cxx
   AliAnalysisTaskSEF01710fromAODtracks.cxx
   AliRsnf0f2Task.cxx
+  AliAnalysisTaskPPVsMultMCRSN.cxx
+  AliAnalysisTaskEffMatrix.cxx
+  RESOSA/AliAnalysisTaskPhiSA.cxx
+  AliAnalysisTaskPhiCount.cxx
   )
 
 # Headers from sources
@@ -55,7 +69,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CDB CORRFW TOFbase TOFrec)
+set(LIBDEPS ANALYSISalice CDB CORRFW OADB PWGPPevcharQnInterface TOFbase TOFrec PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -78,4 +92,14 @@ install(FILES AddTaskXiStar.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskLambda.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskRsnf0f2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskF01710fromAODtracks.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskXiStarpp13TeV.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddAnalysisTaskEffMatrix.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddAnalysisTaskPhiCount.C DESTINATION PWGLF/RESONANCES/extra)
+
+# Install directories
+install(DIRECTORY RESOSA DESTINATION PWGLF/RESONANCES/extra)
+
 

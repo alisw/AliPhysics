@@ -29,6 +29,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALClusterizerFixedWindow.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
@@ -51,16 +52,11 @@ ClassImp(AliEmcalCorrectionClusterizer);
 // Actually registers the class with the base class
 RegisterCorrectionComponent<AliEmcalCorrectionClusterizer> AliEmcalCorrectionClusterizer::reg("AliEmcalCorrectionClusterizer");
 
-const std::map <std::string, AliEmcalCorrectionClusterizer::EmbeddedCellEnergyType> AliEmcalCorrectionClusterizer::fgkEmbeddedCellEnergyTypeMap = {
-  {"kNonEmbedded", EmbeddedCellEnergyType::kNonEmbedded },
-  {"kEmbeddedDataMCOnly", EmbeddedCellEnergyType::kEmbeddedDataMCOnly },
-  {"kEmbeddedDataExcludeMC", EmbeddedCellEnergyType::kEmbeddedDataExcludeMC }
-};
-
 const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcalCorrectionClusterizer::fgkClusterizerTypeMap = {
   {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
   {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
   {"kClusterizerv2", AliEMCALRecParam::kClusterizerv2 },
+  {"kClusterizerv3", AliEMCALRecParam::kClusterizerv3 },
   {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
 };
 
@@ -69,12 +65,19 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
  */
 AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionClusterizer"),
+  fHistCPUTime(nullptr),
+  fHistRealTime(nullptr),
+  fTimer(nullptr),
   fDigitsArr(0),
   fClusterArr(0),
   fRecParam(new AliEMCALRecParam),
   fClusterizer(0),
   fUnfolder(0),
   fJustUnfold(kFALSE),
+  fUnfoldCellMinE(0),
+  fUnfoldCellMinEFrac(0),
+  fNxMRowDiff(1),
+  fNxMColDiff(1),
   fGeomName(),
   fGeomMatrixSet(kFALSE),
   fLoadGeomMatrices(kFALSE),
@@ -89,16 +92,15 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fShiftPhi(2),
   fShiftEta(2),
   fTRUShift(0),
-  fEmbeddedCellEnergyType(kNonEmbedded),
   fTestPatternInput(kFALSE),
   fSetCellMCLabelFromCluster(0),
   fSetCellMCLabelFromEdepFrac(0),
   fRemapMCLabelForAODs(0),
+  fRecalDistToBadChannels(kFALSE),
+  fRecalShowerShape(kFALSE),
   fCaloClusters(0),
   fEsd(0),
-  fAod(0),
-  fRecalDistToBadChannels(kFALSE),
-  fRecalShowerShape(kFALSE)
+  fAod(0)
 {
   for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fGeomMatrix[i] = 0 ;
   for(Int_t j = 0; j < fgkTotalCellNumber;                 j++)
@@ -126,6 +128,14 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   std::string clusterizerTypeStr = "";
   GetProperty("clusterizer", clusterizerTypeStr);
   UInt_t clusterizerType = fgkClusterizerTypeMap.at(clusterizerTypeStr);
+  
+  Bool_t unfold  = kFALSE;
+  GetProperty("unfold", unfold);
+  Bool_t unfoldRejectBelowThreshold  = kFALSE;
+  GetProperty("unfoldRejectBelowThreshold", unfoldRejectBelowThreshold);
+  GetProperty("unfoldMinCellE"    , fUnfoldCellMinE);
+  GetProperty("unfoldMinCellEFrac", fUnfoldCellMinEFrac);
+
   Double_t cellE  = 0.05;
   GetProperty("cellE", cellE);
   Double_t seedE  = 0.1;
@@ -160,6 +170,8 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   TString removeMCGen2 = removeMcGen2.c_str();
 
   fRecParam->SetClusterizerFlag(clusterizerType);
+  fRecParam->SetUnfold(unfold); 
+  fRecParam->SetRejectBelowThreshold(unfoldRejectBelowThreshold); 
   fRecParam->SetMinECut(cellE);
   fRecParam->SetClusteringThreshold(seedE);
   fRecParam->SetW0(w0);
@@ -169,7 +181,11 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   fRecParam->SetLocMaxCut(diffEAggregation);      // Set minimum energy difference to start new cluster
   
   if (clusterizerType == AliEMCALRecParam::kClusterizerNxN)
-    fRecParam->SetNxM(1,1); // -> (1,1) means 3x3!
+  {
+    GetProperty("nxmRowDiff", fNxMRowDiff);
+    GetProperty("nxmColDiff", fNxMColDiff);
+    fRecParam->SetNxM(fNxMRowDiff,fNxMColDiff); // -> (1,1) means 3x3!
+  }
   
   // init reco utils
   if (!fRecoUtils)
@@ -191,15 +207,14 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
     }
   }
   
-  std::string embeddedCellEnergyTypeStr = "";
-  GetProperty("embeddedCellEnergyType", embeddedCellEnergyTypeStr);
-  fEmbeddedCellEnergyType = fgkEmbeddedCellEnergyTypeMap.at(embeddedCellEnergyTypeStr);
-  //Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
-
   // Only support one cluster container for the clusterizer!
   if (fClusterCollArray.GetEntries() > 1) {
     AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
   }
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
+  fRecoUtils->SetUse1DBadChannelMap(fLoad1DBadChMap);
   
   return kTRUE;
 }
@@ -234,8 +249,8 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
 
   AliEmcalCorrectionComponent::Run();
   
-  fEsd = dynamic_cast<AliESDEvent*>(fEvent);
-  fAod = dynamic_cast<AliAODEvent*>(fEvent);
+  fEsd = dynamic_cast<AliESDEvent*>(fEventManager.InputEvent());
+  fAod = dynamic_cast<AliAODEvent*>(fEventManager.InputEvent());
 
   // Only support one cluster container in the clusterizer!
   AliClusterContainer * clusCont = GetClusterContainer(0);
@@ -357,10 +372,10 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
         fOrgClusterCellId[i] =-1 ;
       }
       
-      Int_t nClusters = fEvent->GetNumberOfCaloClusters();
+      Int_t nClusters = fEventManager.InputEvent()->GetNumberOfCaloClusters();
       for (Int_t i = 0; i < nClusters; i++)
       {
-        AliVCluster *clus =  fEvent->GetCaloCluster(i);
+        AliVCluster *clus =  fEventManager.InputEvent()->GetCaloCluster(i);
         
         if (!clus) continue;
         
@@ -405,23 +420,6 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
       if (cellAmplitude < 1e-6 || cellNumber < 0)
         continue;
 
-      if (fEmbeddedCellEnergyType == kEmbeddedDataMCOnly) {
-        if (cellMCLabel <= 0)
-          continue;
-        else {
-          cellAmplitude *= cellEFrac;
-          cellEFrac = 1;
-        }
-      }
-      else if (fEmbeddedCellEnergyType == kEmbeddedDataExcludeMC) {
-        if (cellMCLabel > 0)
-          continue;
-        else {
-          cellAmplitude *= 1 - cellEFrac;
-          cellEFrac = 0;
-        }
-      }
-
       // New way to set the cell MC labels,
       // valid only for MC productions with aliroot > v5-07-21
       //
@@ -443,7 +441,7 @@ void AliEmcalCorrectionClusterizer::FillDigitsArray()
           continue;
         }
 
-        AliVCluster* clus = fEvent->GetCaloCluster(iclus);
+        AliVCluster* clus = fEventManager.InputEvent()->GetCaloCluster(iclus);
 
         for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
         {
@@ -513,17 +511,38 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *elist = recpoint->GetEnergiesList();
     Double_t mcEnergy = 0;
     
+    Float_t clusterE = 0; 
     for (Int_t c = 0; c < ncells; ++c)
     {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
+    
+      if ( !fRecParam->GetUnfold() && (ratios[ncellsTrue] > 1 || ratios[ncellsTrue] < 1)  ) 
+        AliWarning(Form("recpoint cell E %2.3f but digit E %2.3f and no unfolding", 
+                        recpoint->GetEnergiesList()[c], digit->GetAmplitude()));
+      
+      // In case of unfolding, remove digits with unfolded energy too low      
+      if ( fRecParam->GetUnfold() )
+      {
+        if ( recpoint->GetEnergiesList()[c] < fUnfoldCellMinE || 
+             ratios[ncellsTrue]             < fUnfoldCellMinEFrac )  
+        {
+          
+          AliDebug(2,Form("Too small energy in cell of cluster: cluster cell %f, digit %f",
+                          recpoint->GetEnergiesList()[c],digit->GetAmplitude()));
+          continue;
+        } // if cuts
+      }// Select cells
+      
+      // Recalculate cluster energy and number of cluster cells in case any of the cells was rejected
+      clusterE += recpoint->GetEnergiesList()[c];
       
       if (digit->GetIparent(1) > 0)
         mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
       
       ++ncellsTrue;
-    }
+    } // cluster cell loop
     
     if (ncellsTrue < 1)
     {
@@ -541,7 +560,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     
     AliVCluster *c = static_cast<AliVCluster*>(clus->New(nout++));
     c->SetType(AliVCluster::kEMCALClusterv1);
-    c->SetE(recpoint->GetEnergy());
+    c->SetE(clusterE);
     c->SetPosition(g);
     c->SetNCells(ncellsTrue);
     c->SetCellsAbsId(absIds);
@@ -552,11 +571,25 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     c->SetChi2(-1);
     c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
-    Float_t elipAxis[2];
-    recpoint->GetElipsAxis(elipAxis);
-    c->SetM02(elipAxis[0]*elipAxis[0]);
-    c->SetM20(elipAxis[1]*elipAxis[1]);
     c->SetMCEnergyFraction(mcEnergy);
+
+    if ( ncells == ncellsTrue )
+    {
+      Float_t elipAxis[2];
+      recpoint->GetElipsAxis(elipAxis);
+      c->SetM02(elipAxis[0]*elipAxis[0]);
+      c->SetM20(elipAxis[1]*elipAxis[1]);
+    }
+    else
+    {
+      // In case some cells rejected, in unfolding case, recalculate
+      // shower shape parameters and position
+      AliDebug(2,Form("Cells removed from cluster (ncells %d, ncellsTrue %d), recalculate Shower Shape",ncells,ncellsTrue));
+      
+      fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom,fCaloCells,c);
+      //fRecoUtils->RecalculateClusterPID(c);
+      fRecoUtils->RecalculateClusterPosition(fGeom,fCaloCells,c); 
+    } 
     
     //
     // MC labels
@@ -566,9 +599,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    if(fSetCellMCLabelFromEdepFrac) {
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
-    }
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:
@@ -583,6 +614,8 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
       for(Int_t icell = 0; icell < ncellsTrue ; icell++)
       {
         Int_t   idigit  = fCellLabels[absIds[icell]];
+        
+        if ( idigit < 0 ) continue;
         
         const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
         
@@ -654,8 +687,12 @@ void AliEmcalCorrectionClusterizer::CalibrateClusters()
   Int_t nclusters = fCaloClusters->GetEntriesFast();
   for (Int_t icluster=0; icluster < nclusters; ++icluster) {
     AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
-    if (!clust)
+    if (!clust) {
       continue;
+    }
+    if (!clust->IsEMCAL()) {
+      continue;
+    }
     
     // SHOWER SHAPE -----------------------------------------------
     if (fRecalShowerShape)
@@ -747,10 +784,10 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
         if (set && idCluster >= 0)
         {
           clArray.SetAt(idCluster,nClu++);
-          nLabTotOrg+=(fEvent->GetCaloCluster(idCluster))->GetNLabels();
+          nLabTotOrg+=(fEventManager.InputEvent()->GetCaloCluster(idCluster))->GetNLabels();
           
           //Search highest E cluster
-          AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+          AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
           if (emax < clOrg->E())
           {
             emax  = clOrg->E();
@@ -785,7 +822,7 @@ void AliEmcalCorrectionClusterizer::SetClustersMCLabelFromOriginalClusters()
     for (Int_t iLoopCluster = 0 ; iLoopCluster < nClu ; iLoopCluster++)
     {
       Int_t idCluster = (Int_t) clArray.GetAt(iLoopCluster);
-      AliVCluster * clOrg = fEvent->GetCaloCluster(idCluster);
+      AliVCluster * clOrg = fEventManager.InputEvent()->GetCaloCluster(idCluster);
       Int_t nLab = clOrg->GetNLabels();
       
       for (Int_t iLab = 0 ; iLab < nLab ; iLab++)
@@ -887,6 +924,8 @@ void AliEmcalCorrectionClusterizer::Init()
   }
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2)
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3)
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW) {
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(fGeom);
     clusterizer->SetNphi(fNPhi);
@@ -932,6 +971,7 @@ void AliEmcalCorrectionClusterizer::Init()
   fClusterizer->SetOutput(0);
   fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
   
+  //fClusterizer->Print("");
 }
 
 /**
@@ -952,7 +992,7 @@ Bool_t AliEmcalCorrectionClusterizer::CheckIfRunChanged()
       AliWarning("InitBadChannels OK");
     }
     if (fInitBC>1) {
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      AliWarning(Form("No external hot channel set: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
     }
   }
   return runChanged;

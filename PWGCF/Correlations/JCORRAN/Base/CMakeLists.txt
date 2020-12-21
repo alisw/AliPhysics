@@ -62,10 +62,13 @@ set(SRCS
   AliJCard.cxx
   AliJFFlucTask.cxx
   AliJFFlucAnalysis.cxx
+  AliAnalysisAnaTwoMultiCorrelations.cxx
+  AliJHSCTask.cxx
   AliJXtTask.cxx
   AliJXtAnalysis.cxx
   AliJHistogramInterface.cxx
   AliJCorrelationInterface.cxx
+  AliJESE.cxx
   jtAnalysis/AliJDiHadronJtTask.cxx
   jtAnalysis/AliJJtAnalysis.cxx
   jtAnalysis/AliJJtHistograms.cxx
@@ -75,10 +78,16 @@ set(SRCS
   iaaAnalysis/AliJIaaCorrelations.cxx
   iaaAnalysis/AliJIaaHistograms.cxx
   AliJPartLifetime.cxx
+  AliJCatalystTask.cxx
+  jtAnalysis/AliJJtTask.cxx
+  jtAnalysis/AliJJtAna.cxx
+  iaaAnalysis/AliJCIaaTask.cxx
+  iaaAnalysis/AliJIaaAna.cxx
   )
 
 # Headers from sources
   string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+  set(HDRS ${HDRS} AliJConst.h) #add the remaining headers
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

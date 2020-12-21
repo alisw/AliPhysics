@@ -10,11 +10,22 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto)
 include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/OADB
   ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+  ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
   )
+
+
+set(ROOT_DEPENDENCIES)
+set(ALIROOT_DEPENDENCIES PWGDevNanoAOD)
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskFemto.cxx
+  AliAnalysisTaskFemtoMJ.cxx
+  AliAnalysisTaskFemtoNu.cxx
   AliFemtoSimpleAnalysis.cxx
+  AliFemtoEventAnalysis.cxx
+  AliFemtoSpatialSeparationFunction.cxx
+  AliFemtoAngularSpatialSeparationFunction.cxx
   AliFemtoLikeSignAnalysis.cxx
   AliFemtoVertexAnalysis.cxx
   AliFemtoVertexMultAnalysis.cxx
@@ -22,6 +33,7 @@ set(SRCS
   AliFemtoAnalysisReactionPlane.cxx
   AliFemtoBPLCMS3DCorrFctn.cxx
   AliFemtoBPLCMS3DCorrFctnKK.cxx
+  AliFemtoConfigObject.cxx
   AliFemtoCorrFctn3DLCMSSym.cxx
   AliFemtoQinvCorrFctn.cxx
   AliFemtoBasicEventCut.cxx
@@ -49,6 +61,7 @@ set(SRCS
   AliFemtoEventReaderESDChain.cxx
   AliFemtoEventReaderESDChainKine.cxx
   AliFemtoEventReaderESDChainKineKK.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoModelHiddenInfo.cxx
   AliFemtoModelGlobalHiddenInfo.cxx
   AliFemtoModelGausLCMSFreezeOutGenerator.cxx
@@ -61,6 +74,8 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt.cxx
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
+  AliFemtoCutMonitorParticlePIDBeta.cxx
+  AliFemtoCutMonitorParticlePIDInnerMomentum.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
@@ -72,8 +87,6 @@ set(SRCS
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
-  AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -84,8 +97,10 @@ set(SRCS
   AliFemtoV0TrackPairCut.cxx
   AliFemtoCutMonitorCollections.cxx
   AliFemtoV0SharedDaughterCut.cxx
+  AliFemtoXiSharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
+  AliFemtoResultStorage.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
@@ -99,6 +114,18 @@ set(SRCS
   AliFemtoCutMonitorPairBetaT.cxx
   AliFemtoCutMonitorXi.cxx
   AliFemtoEventReaderAODKinematicsChain.cxx
+  AliFemtoMultCorrAnalysis.cxx
+  AliFemtoTrioAnalysis.cxx
+  AliFemtoTrio.cxx
+  AliFemtoTrioCut.cxx
+  AliFemtoTrioFctn.cxx
+  AliFemtoTrioMinvFctn.cxx
+  AliFemtoTrioDEtaDPhiFctn.cxx
+  AliFemtoEventReaderNanoAOD.cxx
+  AliFemtoEventReaderNanoAODChain.cxx
+  AliFemtoCutMonitorParticleYPt_pion.cxx  
+  AliFemtoCutMonitorParticleYPt_proton.cxx
+  AliFemtoEventReaderAODKinematicsMultSelection.cxx
   )
 
 # Headers from sources
@@ -133,6 +160,7 @@ set(HDRS ${HDRS}
   PhysicalConstants.h
   SystemOfUnits.h
   AliFemtoPairCut.h
+  AliFemtoPairCutRejectAll.h
   AliFemtoEventCut.h
   AliFemtoParticleCut.h
   AliFemtoTrackCollection.h
@@ -152,7 +180,15 @@ set(HDRS ${HDRS}
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
-  AliFemtoAvgSepCalculator.h
+  AliFemtoTrioAnalysis.h
+  AliFemtoTrioCut.h
+  AliFemtoTrio.h
+  AliFemtoTrioFctn.h
+  AliFemtoTrioMinvFctn.h
+  AliFemtoTrioDEtaDPhiFctn.h
+  AliFemtoTrioFctnCollection.h
+  AliFemtoEventReaderNanoAOD.h
+  AliFemtoEventReaderNanoAODChain.h
   )
 
 set ( FSRCS
@@ -170,7 +206,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx ${FSRCS})
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB)
+set(LIBDEPS ANALYSISalice OADB PWGDevNanoAOD)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -142,7 +142,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
     histoname="hEventControlHFExDCorr";
   else
     histoname="hEventControlDxHFECorr";
-  std::auto_ptr<TH1D> hEventControl(new TH1D(histoname.Data(), histoname.Data(), 10, 0, 10));
+  std::unique_ptr<TH1D> hEventControl(new TH1D(histoname.Data(), histoname.Data(), 10, 0, 10));
   if (!hEventControl.get()) {
     return -ENOMEM;
   }
@@ -268,7 +268,7 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
 {
   // parse arguments and set internal flags
   TString strArguments(arguments);
-  auto_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
+  unique_ptr<TObjArray> tokens(strArguments.Tokenize(" "));
   if (!tokens.get()) return -ENOMEM;
 
   TIter next(tokens.get());
@@ -442,7 +442,7 @@ THnSparse* AliDxHFECorrelation::CreateControlTHnSparse(const char* name,
 
   AliInfo("Setting up THnSparse");
 
-  std::auto_ptr<THnSparseD> th(new THnSparseD(name, name, thnSize, thnBins, thnMin, thnMax));
+  std::unique_ptr<THnSparseD> th(new THnSparseD(name, name, thnSize, thnBins, thnMin, thnMax));
   if (th.get()==NULL) {
     return NULL;
   }
@@ -739,7 +739,7 @@ TObject* AliDxHFECorrelation::FindObject(const TObject *obj) const
 void AliDxHFECorrelation::SaveAs(const char *filename, Option_t */*option*/) const
 {
   /// overloaded from TObject: save to file
-  std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
+  std::unique_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
   if (!output.get() || output->IsZombie()) {
     AliError(Form("can not open file %s from writing", filename));
     return;

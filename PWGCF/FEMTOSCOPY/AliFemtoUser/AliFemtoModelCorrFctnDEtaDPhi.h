@@ -20,7 +20,7 @@
 
 class AliFemtoModelCorrFctnDEtaDPhi : public AliFemtoModelCorrFctn {
 public:
-  AliFemtoModelCorrFctnDEtaDPhi(char* title, const int& aPhiBins, const int& aEtaBins);
+  AliFemtoModelCorrFctnDEtaDPhi(const char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoModelCorrFctnDEtaDPhi(const AliFemtoModelCorrFctnDEtaDPhi& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnDEtaDPhi();
 
@@ -34,13 +34,15 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctnDEtaDPhi(*this); }
+
 private:
-  
+
   TH2D *fDPhiDEtaNumeratorTrue;      // Numerator of dEta dPhi true function
   TH2D *fDPhiDEtaNumeratorFake;      // Numerator of dEta dPhi fake function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
-  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function 
+  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function
   TH2D *fDPhiDEtaColDenominator;     // Denominator of colinear dEta dPhi function
 
   TH1D *fDPhiNumeratorTrue;          // Numerator of dPhi true correlation
@@ -56,6 +58,9 @@ private:
 
   TH2D *fDCosPtNumerator;            // Numerator of colinearity correlation vs. Pt min
   TH2D *fDCosPtDenominator;          // Denominator of colinearity correlation vs. Pt min
+
+  double fphiL;
+  double fphiT;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoModelCorrFctnDEtaDPhi, 1)

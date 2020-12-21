@@ -1,9 +1,10 @@
 AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere, 
-                                   Bool_t isAOD,
+                                   Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kTRUE,
 				   Bool_t kNPEkAny = kFALSE,
+                                   Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used 
 				   Bool_t kNPERefTPConly = kFALSE,
-				   Bool_t kNPETOFITS = kFALSE,
+				   Bool_t kNPETOFITS = kTRUE,
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE)		   
@@ -18,11 +19,13 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
   const double	kDefDCAr	=   1.;
   const double	kDefDCAz	=   2.;
   const double	kDefTOFs	=   3.;
+  const double	kDefITSs	=   2.;
   const double  kDefEtaIncMin = -0.8;
   const double  kDefEtaIncMax = 0.8;
   const Bool_t   etacorrection   = kFALSE;
   const Bool_t   multicorrection = kFALSE;
 
+  // --- TPC nsigma max and min cut ---
   Double_t dEdxhm[12] = {3.11,3.11,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  
   Double_t tpcl1[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  
 
@@ -36,6 +39,9 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
   const double	kassDCAz	=   2.0;
   const double	kassTPCSminus	=  -3.0;
   const double	kassTPCSplus	=   3.0;
+  // --- Centrality selection ---
+  const int     centrMin        = 0;
+  const int     centrMax        = 10;
 
   Int_t kWei = -1;
   /*
@@ -78,7 +84,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // Reference task
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
   }
 
@@ -88,7 +94,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // Apply TOF after TPC for mismatch background studies
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kTRUE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kTRUE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
   }
 
@@ -98,7 +104,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // task for kAny instead of kBoth
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
   }
 
@@ -108,7 +114,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // Reference task
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE, 0,kWei);
   }
 
@@ -118,7 +124,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // Reference task
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, 0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, 0.,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
   }
 
@@ -129,7 +135,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
    // Reference task
    //
    // **************************************************************
-   RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm,  kDefTOFs,  kDefITSs, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+   RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm,  kDefTOFs,  kDefITSs, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
  }
 
@@ -140,7 +146,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
     // Use KF particle
     //
     // **************************************************************
-    RegisterTaskNPEPbPb( MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, isBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0., AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1,2,kFALSE,kFALSE,kFALSE,kTRUE);
   }
 
@@ -152,7 +158,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb(Bool_t MCthere,
 //===============================================================================
 
 //===============================================================================
-AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
+AliAnalysisTask *RegisterTaskNPEPbPb(
+                                     Int_t centrMin = 0, Int_t centrMax = 100,
+                                     Bool_t newCentralitySelection = kTRUE, // kTRUE: new framework used; kFALSE: old framework used 
+                                     Bool_t useMC, Bool_t isAOD, Bool_t beauty,
 				     Int_t tpcCls=120, Int_t tpcClsPID=80, 
 				     Int_t itsCls=4, Double_t dcaxy=1.0, Double_t dcaz=2.0, 
 				     Double_t *tpcdEdxcutlow=NULL, Double_t *tpcdEdxcuthigh=NULL, 
@@ -241,7 +250,15 @@ AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   else		task->SetHasMCData(kFALSE);
 
   if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+
+  // ----- centrality selection -----
+  task->SetCentralityCheck(newCentralitySelection,"V0M");
+  task->SetCentralityInterval(centrMin,centrMax);               // all events outside the desired centrality interval are rejected
+  // --------------------------------
+  // ----- trigger selecton ---------
+  if(!newCentralitySelection)   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); // old framework
+  if(newCentralitySelection)    task->SelectCollisionCandidates(AliVEvent::kINT7);                                               // new framework
+  // --------------------------------
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";

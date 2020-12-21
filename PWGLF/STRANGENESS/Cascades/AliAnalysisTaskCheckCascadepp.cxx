@@ -119,8 +119,11 @@ ClassImp(AliAnalysisTaskCheckCascadepp)
 AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp() 
   : AliAnalysisTaskSE(), 
     fAnalysisType                   ("ESD"),
+    fESDtrackCuts                   (0),
+    fUtils                          (0),
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
+    fPIDResponse                    (0),
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelDAQincomplete        (kTRUE), 
     fApplyEvSelSPDclustervstracklet (kTRUE),
@@ -130,9 +133,6 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fApplyEvSelSPDvtxres            (kTRUE),
     fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
-    fESDtrackCuts                   (0), 
-    fUtils                          (0),
-    fPIDResponse                    (0),
     fRerunV0CascVertexers           (kFALSE),
     fwithSDD                        (kFALSE),
     fExtraSelections                (kFALSE),
@@ -222,8 +222,11 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
 AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name) 
   : AliAnalysisTaskSE(name), 
     fAnalysisType                   ("ESD"),
+    fESDtrackCuts                   (0),
+    fUtils                          (0),
     fCollidingSystem                (0),
     fkTriggerClass                  (AliVEvent::kINT7),
+    fPIDResponse                    (0),
     fApplyEvSelSDDstatus            (kFALSE),
     fApplyEvSelDAQincomplete        (kTRUE),
     fApplyEvSelSPDclustervstracklet (kTRUE),
@@ -233,9 +236,6 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fApplyEvSelSPDvtxres            (kTRUE),
     fApplyEvSelVtxProximity         (kTRUE),
     fApplyEvSelZprimVtxPos          (kTRUE),
-    fESDtrackCuts                   (0),
-    fUtils                          (0),
-    fPIDResponse                    (0),
     fRerunV0CascVertexers           (kFALSE),
     fwithSDD                        (kFALSE),
     fExtraSelections                (kFALSE),
@@ -1998,7 +1998,6 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                        << " / pt(Casc) = " << lXiTransvMom
                        << " / Decay 2d R(Xi) = " << lXiRadius
                        << endl;
-
              }
          }*/
           

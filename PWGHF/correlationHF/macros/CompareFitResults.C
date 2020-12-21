@@ -4,6 +4,7 @@ TString strSystem[2]={"pp","pPb"};
 Color_t colSystem[2]={kBlack,kRed};
 Int_t markerStyle[2]={20,21};
 Bool_t useLegendForData=kTRUE;
+Bool_t plotv2unc=kTRUE;
 TString strFitResultPP=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 TString strFitResultPPb=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 Double_t canvasheight=801;
@@ -35,11 +36,13 @@ Bool_t skip3to5=kTRUE;
 Double_t markersize=1.5;
 Double_t markersizeMC=1.2;
 Bool_t drawSystMC=kTRUE;
+Bool_t runonpPb2016=kFALSE;
 
 void SetMinPtDisplayData(Double_t ptmin){minptMC=ptmin;}
 void SetMaxPtDisplayData(Double_t ptmax){maxptMC=ptmax;}
 void SetMinPtDisplayMC(Double_t ptmin){minptData=ptmin;}
 void SetMaxPtDisplayMC(Double_t ptmax){maxptData=ptmax;}
+void SetRunOn2016(Bool_t run){runonpPb2016=run;}
 
 void AdaptRangeHist(TH1D *h,Double_t minpt,Double_t maxpt){
   for(Int_t i=1;i<=h->GetNbinsX();i++){
@@ -197,6 +200,24 @@ TCanvas *CreateCanvasWithDefaultStyle(TString name){
 
 void ConvertTH1ToTGraphAsymmError(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift) {
   const Int_t nbinsxx=2;
+  Double_t x[nbinsxx], y[nbinsxx], ex1[nbinsxx], ex2[nbinsxx], ey1[nbinsxx], ey2[nbinsxx];
+
+  for(int i=0; i<nbinsxx; i++) {
+    x[i] = h->GetBinCenter(i+2)+shift;
+    y[i] = h->GetBinContent(i+2);
+    ex1[i] = h->GetBinCenter(i+2)-h->GetBinLowEdge(i+2)+shift;
+    ex2[i] = ex1[i]-2*shift;
+    ey1[i] = h->GetBinError(i+2);
+    ey2[i] = h->GetBinError(i+2);
+  }
+
+  gr = new TGraphAsymmErrors(nbinsxx,x,y,ex1,ex2,ey1,ey2);
+  return;
+
+}
+
+void ConvertTH1ToTGraphAsymmError2016(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift) {
+  const Int_t nbinsxx=3;
   Double_t x[nbinsxx], y[nbinsxx], ex1[nbinsxx], ex2[nbinsxx], ey1[nbinsxx], ey2[nbinsxx];
 
   for(int i=0; i<nbinsxx; i++) {
@@ -921,7 +942,7 @@ TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
 }
 
 
-TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
+TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr, TGraphAsymmErrors *&grV2=0){
 
 
   TFile *f=TFile::Open(Form("%s/Trends_pPb/CanvasFinalTrend%s_pthad%s.root",strFitResultPPb.Data(),strquantityFile[quantity].Data(),strPtAss[binass].Data()),"READ");
@@ -929,6 +950,11 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
   gr=(TGraphAsymmErrors*)c->FindObject(Form("fFullSystematics%s",strquantityFile[quantity].Data()));
   gr->SetName(Form("%sPPb",gr->GetName()));
   for(Int_t iPoint=0;iPoint<2;iPoint++) gr->SetPointError(iPoint,0.7*gr->GetErrorXlow(iPoint),0.7*gr->GetErrorXhigh(iPoint),gr->GetErrorYlow(iPoint),gr->GetErrorYhigh(iPoint));
+  if(plotv2unc==kTRUE) {
+      grV2=(TGraphAsymmErrors*)c->FindObject(Form("fv2Systematics%s",strquantityFile[quantity].Data()));
+      grV2->SetName(Form("%sPPb",grV2->GetName()));
+  }
+
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
 
@@ -942,6 +968,11 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(markerStyle[1]);
   gr->SetMarkerSize(markersize);
+  if(plotv2unc==kTRUE) {
+    grV2->SetMarkerColor(kGreen-2);
+    grV2->SetLineColor(kGreen-2);
+    grV2->SetFillStyle(3001);
+  }
 
   hPPb->SetXTitle("D meson #it{p}_{T} (GeV/#it{c})");
   hPPb->SetYTitle(yaxisTitle[quantity].Data());
@@ -975,6 +1006,7 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
 
   AdaptRangeHist(hPPb,minptData,maxptData);
   AdaptRangeTGraph(gr,minptData,maxptData);
+  if(plotv2unc==kTRUE) AdaptRangeTGraph(grV2,minptData,maxptData);
 
   return hPPb;
 }
@@ -997,8 +1029,8 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
 //   grPPb->SetName(Form("%sPPb",grPPb->GetName()));
 //   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
 //   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
-  TGraphAsymmErrors *grPPb;
-  TH1D *hPPb=GetAndPreparePPb(binass,quantity,grPPb);
+  TGraphAsymmErrors *grPPb, *grPPbV2;
+  TH1D *hPPb=GetAndPreparePPb(binass,quantity,grPPb,grPPbV2);
 
 
   TCanvas *cout=0x0;
@@ -1101,13 +1133,20 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
   Double_t binsx=grPPb->GetN();
   for(int i=0;i<binsx;i++) {
     Double_t x,y,ex1,ex2,ey1,ey2;
+    
     grPPb->GetPoint(i,x,y);
     ex1=grPPb->GetErrorXlow(i); ex2=grPPb->GetErrorXhigh(i); ey1=grPPb->GetErrorYlow(i); ey2=grPPb->GetErrorYhigh(i);
     grPPb->SetPoint(i,x+shift,y);
     grPPb->SetPointError(i,ex1,ex2,ey1,ey2);
+
+    grPPbV2->GetPoint(i,x,y);
+    ex1=grPPbV2->GetErrorXlow(i); ex2=grPPbV2->GetErrorXhigh(i); ey1=grPPbV2->GetErrorYlow(i); ey2=grPPbV2->GetErrorYhigh(i);
+    grPPbV2->SetPoint(i,x+shift,y);
+    grPPbV2->SetPointError(i,ex1,ex2,ey1,ey2);
   }
 
   grPPb->Draw("E2");
+  grPPbV2->Draw("E2");
 
   TH1D* hPPbSuperimp = hPPb->Clone();
   hPPbSuperimp->SetMarkerStyle(25);
@@ -1116,8 +1155,13 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
 
 //Conversion of pPb TH1F to TGraph to displace the points along x axis (Fabio)
   TGraphAsymmErrors *gr_points_PPb, *gr_pointCount_PPb;
-  ConvertTH1ToTGraphAsymmError(hPPb,gr_points_PPb,shift);
-  ConvertTH1ToTGraphAsymmError(hPPb,gr_pointCount_PPb,shift);
+  if(!runonpPb2016) {
+    ConvertTH1ToTGraphAsymmError(hPPb,gr_points_PPb,shift);
+    ConvertTH1ToTGraphAsymmError(hPPb,gr_pointCount_PPb,shift);
+  } else {
+    ConvertTH1ToTGraphAsymmError2016(hPPb,gr_points_PPb,shift);
+    ConvertTH1ToTGraphAsymmError2016(hPPb,gr_pointCount_PPb,shift);    
+  }
   gr_points_PPb->SetLineColor(colSystem[1]);
   gr_points_PPb->SetLineWidth(2);
   gr_points_PPb->SetMarkerColor(colSystem[1]);

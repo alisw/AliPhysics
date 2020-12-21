@@ -25,6 +25,7 @@
 
 #include <AliAnalysisUtils.h>
 #include <AliAnalysisCuts.h>
+#include <AliEventCuts.h>
 
 class AliTriggerAnalysis;
 class AliESDVertex;
@@ -44,17 +45,24 @@ public:
   void SetVertexType(EVtxType type)             { fVtxType=type;                }
   void SetVertexZ(Double_t zmin, Double_t zmax) { fVtxZmin=zmin; fVtxZmax=zmax; }
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
-  void SetMaxVertexDifference(Float_t diff = 0.2)    { fVtxDiff = diff;              }
+  void SetMaxVertexDifference(Float_t diff = 0.2)     {fVtxDiff = diff;         }
+  void SetMaxSPDVertexResolution(Float_t res = 0.25)  {fVtxResolution = res;    }
+  void SetMaxSPDVertexDispersion(Float_t disp = 0.03) {fVtxDispersion = disp;   }
+  void SetMaxVertexDisplacement (Float_t displacement = 0.5) {fVtxDisplacement = displacement;}
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
   void SetRequireCompleteDAQ(Bool_t req =kTRUE) { f2015IsIncompleteDAQ=req;     }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   void SetCentralityRange(Double_t min, Double_t max, Bool_t userun2=kFALSE) { fCentMin=min; fCentMax=max;fRun2=userun2;}
+  void SetCentralityEstimator(TString estimator) {fEstimator = estimator;}
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   void SetRequire2013vertexandevent(Bool_t req13 = kTRUE) {fRequire13sel = req13; }
+  void SetRequireAliEventCuts(Bool_t reqAliEventCuts = kTRUE, Bool_t reqAliEventCutsCorrelated = kFALSE, Bool_t reqTimingRangeCut = kFALSE) 
+                              {fRequireAliEventCuts = reqAliEventCuts; fAODeventCuts.fUseVariablesCorrelationCuts = reqAliEventCutsCorrelated; fRequireTimeRangeCut = reqTimingRangeCut;}
   void SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
   void SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
+	void SetTimeRangeCut(Bool_t reqTimingRangeCut=kFALSE) {fRequireTimeRangeCut = reqTimingRangeCut;}
 
   //
   //Analysis cuts interface
@@ -67,6 +75,8 @@ public:
 
   enum ETRDTriggerClass{ kSE, kQU, kSEorQU, kSEandQU};
   static Bool_t IsTRDTriggerFired( const AliVEvent* event, const ETRDTriggerClass triggerClass, Bool_t &trackMatched, Int_t &bin );
+
+  enum EPileUpTool{kSPD, kSPDInMultBins, kMultiVertexer};
 
   void Print(const Option_t* option = "") const;
 
@@ -83,13 +93,16 @@ private:
   Double_t fCentMin;                // minimum multiplicity percentile
   Double_t fCentMax;                // maximum multiplicity percentile
   Bool_t fRun2;                     //using run2 centrality
+  TString fEstimator;               //centrality estimator
   EVtxType fVtxType;                // vertex type
   Bool_t fRequire13sel;             //bit to select event and vertex selection proposed for 2013 in
                                     //https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
   Bool_t f2015IsIncompleteDAQ;	    // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
   Float_t fVtxDiff;                 // cut values for a cut on the difference between the position of the vtx from SPD and tracks. Used in LHC15o std. 0.2 plus additional cut on both vtx resolutions
+  Float_t fVtxResolution;           // cut on SPD vertex resolution if only z coordinate is reconstructed and it is determined with poor resolution
+  Float_t fVtxDispersion;           // cut on SPD vertex dispersion (size of the window opened to define the tracklets used int he determination of the vertex)
+  Float_t fVtxDisplacement;         // cut on vertex displacement (absolute value, no additional cuts on both vtx resolutions)
   AliAnalysisUtils fUtils;          //data member to use utility class for event and vertex selection in 2013
-
 
   UChar_t fRequireV0and;             // use V0and triggered events only
 
@@ -97,8 +110,13 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
-  TH1* fCorrCutMin[5];       //parametrization of lower limit correlation cut
-  TH1* fCorrCutMax[5];       //parametrization of upper limit correlation cut
+  Bool_t  fRequireAliEventCuts;     // use AliEventCuts to reject events
+  Bool_t  fRequireTimeRangeCut; // use time range cut//especially for LHC18r to recover 7 runs
+  AliEventCuts fAODeventCuts;       // use AliEventCuts to reject events
+	AliTimeRangeCut fTimeRangeCut;    //time range cut for bad time in TPC
+ 
+  TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
+  TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
 
   TF1*     fparMean;                // parametrization of the mean values
   TF1*     fparSigma;               // parametrization of the sigmas
@@ -109,7 +127,7 @@ private:
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
 
-  ClassDef(AliDielectronEventCuts,4)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,7)         // Dielectron EventCuts
 };
 
 

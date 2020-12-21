@@ -24,4 +24,4 @@ else
 	NEVENTS="${4}"
 fi
 
-root -b -q -x $ALICE_PHYSICS/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C\(\""${DATATYPE}"\",\""${PERIOD}"\",\""${FILELIST}"\","${NEVENTS}"\)
+root -b -q -x $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/runEMCalJetSampleTask.C\(\""${DATATYPE}"\",\""${PERIOD}"\",\""${FILELIST}"\","${NEVENTS}"\)

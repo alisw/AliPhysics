@@ -1,3 +1,5 @@
+AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE);
+
 AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
 {
   gSystem->Load("libANALYSIS");
@@ -8,8 +10,8 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   gSystem->Load("libTPCcalib");
   gSystem->Load("libPWGPP");
   gSystem->Load("libPWGLFspectra");
-
-
+  ::Info("AddTaskFilteredTree","BEGIN");
+  printf("AddTaskFilteredTree::BEGIN\n");
   gRandom->SetSeed(0);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -20,9 +22,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   }
 
   // Switch off all AliInfo (too much output!!!)
-  AliLog::SetGlobalLogLevel(AliLog::kError);
-  mgr->SetDebugLevel(0);
-
+  AliLog::SetClassDebugLevel("AliAnalysisTaskFilteredTree", AliLog::kError);
   
 
   //
@@ -61,11 +61,10 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   AliESDtrackCuts* esdTrackCuts = CreateCuts();
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
-    return;
+    return 0;
   } else {
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
-
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
   //
@@ -73,12 +72,28 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   //
   AliAnalysisTaskFilteredTree *task = new AliAnalysisTaskFilteredTree("AliAnalysisTaskFilteredTree");
   //task->SetUseMCInfo(hasMC);
-  //task->SetLowPtTrackDownscaligF(1.e4);
-  //task->SetLowPtV0DownscaligF(1.e2);
-  task->SetLowPtTrackDownscaligF(1.e5);
+  task->SetLowPtTrackDownscaligF(2.e4);
   task->SetLowPtV0DownscaligF(2.e3);
+  //task->SetLowPtTrackDownscaligF(1.e5);
+  //task->SetLowPtV0DownscaligF(2.e3);
   task->SetProcessAll(kTRUE);
   task->SetProcessCosmics(kTRUE);
+  if (gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF")) {
+    Float_t downscale=TString(gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF")).Atof();
+    task->SetLowPtTrackDownscaligF(downscale);
+    printf("AliAnalysisTaskFilteredTree_SetLowPtTrackDownscalingF: From env. variable\t%f\n", downscale);
+  }else {
+    ::Info("AliAnalysisTaskFilteredTree__SetLowPtTrackDownscalingF", "Use default");
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t\n");
+  }
+  if (gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")) {
+    Float_t downscale=TString(gSystem->Getenv("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF")).Atof();
+    task->SetLowPtV0DownscaligF(downscale);
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF:From enc. variable\t%f\n",downscale);
+  }else {
+    printf("AliAnalysisTaskFilteredTree_SetLowPtV0DownscalingF::Use DEFAULT\t\n");
+  }
+  //task->Dump();
   //task->SetProcessAll(kFALSE);
   //task->SetFillTrees(kFALSE); // only histograms are filled
 
@@ -128,11 +143,12 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("histo7", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileHisto.Data());
   mgr->ConnectOutput(task, 7, coutput7);
 
-
+   ::Info("AddTaskFilteredTree","END");
+  printf("AddTaskFilteredTree::END\n");
   return task;
 }
 
-AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreateCuts(Bool_t fieldOn, Bool_t hists)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
   if(!esdTrackCuts) return 0;

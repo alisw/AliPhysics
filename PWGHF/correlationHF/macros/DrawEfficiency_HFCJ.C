@@ -60,7 +60,7 @@ lastVal_y = cutoff value for the y-axis (to remove low-stat fluctuating bins). A
 */
 
 void DrawEfficiency_2D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_2D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0, Int_t yVar=7, Double_t lastVal_y=-1);
-void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_2D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
+void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_1D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
 void PlotEfficiency_2D(TString fileName="EfficiencyMap_2D_Dzero_c.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24, Double_t yMin=0, Double_t yMax=90);
 void PlotEfficiency_1D(TString fileName="EfficiencyMap_1D_Dzero_c.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24);
 void Apply_GenAccLimAcc_Factor_2D(TString inputEffFile="EfficiencyMap_2D_Dzero_c.root", TString MCtoyfile="Acceptance_Toy_D0Kpi_yfidPtDep_etaDau08_ptDau300_FONLL7ptshape.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_wLimAcc.root");
@@ -95,6 +95,25 @@ void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, 
     hNum->RebinY(4);
     hDen->RebinY(4);
   }
+
+  if(lastVal_y>0) {
+    Int_t binLim = hNum->GetYaxis()->FindBin(lastVal_y);
+    printf("Flattening the efficiency on y axis from %f (bin %d) onwards\n",lastVal_y,binLim);
+    for(Int_t i = 1; i <= hNum->GetNbinsX(); i++) {
+      Double_t numSum = 0;
+      Double_t denSum = 0;
+      for(Int_t j = binLim+1; j <= hNum->GetNbinsY(); j++) { //from the bin following the one containing 'lastVal_y', onwards: sum entries in num and den
+        numSum += hNum->GetBinContent(i,j,hNum->GetBinContent(i,j));
+        denSum += hDen->GetBinContent(i,j,hDen->GetBinContent(i,j));
+      }
+      for(Int_t j = binLim+1; j <= hNum->GetNbinsY(); j++) { //from the bin following the one containing 'lastVal_y', onwards: set to each bin num_sum and den_sum (so in the division in each bin you get the average eff of those bins)
+        hNum->SetBinContent(i,j,numSum);
+        hNum->SetBinError(i,j,TMath::Sqrt(numSum));
+        hDen->SetBinContent(i,j,denSum);
+        hDen->SetBinError(i,j,TMath::Sqrt(denSum));
+      }
+    }
+  } //end if
   
   //Evaluate the efficiency
   TH2D* hEff = (TH2D*)hNum->Clone("h_Eff");  
@@ -106,21 +125,10 @@ void DrawEfficiency_2D(TString fileName, TString dirFileName, TString contName, 
         if (hNum->GetBinContent(i,j) != 0) printf("Warning! Den. set at 1 with non-0 num, in (%d,%d) bin! Values: num = %1.3f, den = %1.3f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
         hDen->SetBinContent(i,j,1);  //if you have some Inf/NaN propagated...
       }
-      printf("Num, den %d,%d = %1.2f, %1.2f\n",i,j,hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
-      printf("hEff %d,%d = %1.2f +- %1.2f\n",i,j,hEff->GetBinContent(i,j),hEff->GetBinError(i,j));
+      printf("Num, den bin %d,%d (vals x: %.1f-%.1f, y: %.1f-%.1f) = %1.3f, %1.3f\n",i,j,hNum->GetXaxis()->GetBinLowEdge(i),hNum->GetXaxis()->GetBinUpEdge(i),hNum->GetYaxis()->GetBinLowEdge(j),hNum->GetYaxis()->GetBinUpEdge(j),hNum->GetBinContent(i,j),hDen->GetBinContent(i,j));
+      printf("hEff bin %d,%d  (vals x: %.1f-%.1f, y: %.1f-%.1f) = %1.3f +- %1.3f\n",i,j,hNum->GetXaxis()->GetBinLowEdge(i),hNum->GetXaxis()->GetBinUpEdge(i),hNum->GetYaxis()->GetBinLowEdge(j),hNum->GetYaxis()->GetBinUpEdge(j),hEff->GetBinContent(i,j),hEff->GetBinError(i,j));
     }
   }
-
-  if(lastVal_y>0) {
-    Int_t binLim = hEff->GetYaxis()->FindBin(lastVal_y);
-    printf("Flattening the efficiency on y axis from %f (bin %d) onwards\n",lastVal_y,binLim);
-    for(Int_t i = 1; i <= hEff->GetNbinsX(); i++) {
-      for(Int_t j = binLim+1; j <= hEff->GetNbinsY(); j++) { //from the bin following the one containing 'lastVal_y', onwards: flatten the eff values
-        hEff->SetBinContent(i,j,hEff->GetBinContent(i,binLim));
-        hEff->SetBinError(i,j,hEff->GetBinError(i,binLim));
-      }
-    }
-  } //end if
 
   // Save the map
   TFile* effMapFile = new TFile(Form("%s",outFileName.Data()),"RECREATE");

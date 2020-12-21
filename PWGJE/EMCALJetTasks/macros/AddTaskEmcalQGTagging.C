@@ -15,10 +15,10 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
-						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
-						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = 0 ) {
+						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType = AliAnalysisTaskEmcalQGTagging::kMCTrue,
+						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub = AliAnalysisTaskEmcalQGTagging::kNoSub,
+						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection = AliAnalysisTaskEmcalQGTagging::kInclusive,
+						     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Float_t acut =0.6, AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalQGTagging::kSecondOrder ) {
  
 
   
@@ -93,7 +93,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackContPartLevel);
       jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPercAreaCut(acut);
     }
   }
   
@@ -103,7 +103,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPercAreaCut(acut);
       if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub) jetContBase->SetAreaEmcCut(-2);
     }    
   }
@@ -115,7 +115,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContBase->SetRhoName(nrhoBase);
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPercAreaCut(acut);
      
       if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub) jetContBase->SetAreaEmcCut(-2);
     }
@@ -124,7 +124,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     if(jetContTrue) {
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
-      jetContTrue->SetPercAreaCut(0.6); 
+      jetContTrue->SetPercAreaCut(acut); 
     
     }
     
@@ -133,7 +133,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
         jetContUS->ConnectParticleContainer(trackContUS);
-        jetContUS->SetPercAreaCut(0.6);
+        jetContUS->SetPercAreaCut(acut);
        
       }
     }
@@ -142,7 +142,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       if(jetContPart) {
         jetContPart->SetRhoName(nrhoBase);
         jetContPart->ConnectParticleContainer(trackContPartLevel);
-        jetContPart->SetPercAreaCut(0.6);
+        jetContPart->SetPercAreaCut(acut);
         
       }
   }
@@ -153,14 +153,14 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     if(jetContBase) {
       jetContBase->ConnectParticleContainer(trackCont);
       jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
+      jetContBase->SetPercAreaCut(acut);
     }
     
     jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(jetContTrue) {
       jetContTrue->SetRhoName(nrhoBase);
       jetContTrue->ConnectParticleContainer(trackContTrue);
-      jetContTrue->SetPercAreaCut(0.6);
+      jetContTrue->SetPercAreaCut(acut);
       
     }
     
@@ -169,7 +169,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       if(jetContUS) {
         jetContUS->SetRhoName(nrhoBase);
         jetContUS->ConnectParticleContainer(trackContUS);
-        jetContUS->SetPercAreaCut(0.6);
+        jetContUS->SetPercAreaCut(acut);
         
       }
     }
@@ -178,7 +178,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     if(jetContPart) {
       jetContPart->SetRhoName(nrhoBase);
       jetContPart->ConnectParticleContainer(trackContPartLevel);
-      jetContPart->SetPercAreaCut(0.6);
+      jetContPart->SetPercAreaCut(acut);
     }
     
   }

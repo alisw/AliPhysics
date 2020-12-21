@@ -14,7 +14,7 @@
  *
  */
 
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliMultiplicity.h"
 #include "AliAODTracklets.h"
 #include "AliAnalysisMuonUtility.h"
@@ -2445,7 +2445,7 @@ void AliAnalysisMuMuNch::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuNch::SetRun(const AliInputEventHandler* eventHandler)
+void AliAnalysisMuMuNch::SetRun(const AliVEventHandler* eventHandler)
 {
   /// For each new run this method sets the corresponding SPD correction from SPDCorrection list using the SPDCorrection map
   /// It also sets the correspoinding weight for the run in MC analysis, if a weight is given with the SPD correction

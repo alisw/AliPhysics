@@ -1,6 +1,6 @@
 ///
 /// \file ConfigEMCALClusterize.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration analysis task for EMCAL clusterization.
 ///
 /// Basic example of configuration, using alternative configuration way.

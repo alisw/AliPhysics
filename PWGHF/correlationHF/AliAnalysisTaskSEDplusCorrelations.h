@@ -23,7 +23,7 @@
 #include "AliHFCorrelator.h"
 #include "AliCentrality.h"
 #include "AliHFOfflineCorrelator.h"
-
+#include "AliDPlushCutOptim.h"
 class TParticle ;
 class TClonesArray ;
 class AliAODMCParticle;
@@ -60,14 +60,15 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetTCConfig(Bool_t TCcong=kFALSE){fTCconfig=TCcong;}
     void SetTrackEffActive(Bool_t effTrack=kFALSE){fEffTrack=effTrack;}
     void SetDplusEffActive(Bool_t effDplus=kFALSE){fEffDplus=effDplus;}
-    void SetUseCentrality(Bool_t flag, Int_t estimator){fEvalCentrality=flag; fCentralityEstimator=estimator;}
+    void SetUseCentrality(Bool_t flag, Int_t estimator, Bool_t flag2){fEvalCentrality=flag; fCentralityEstimator=estimator; fPoolbyCent=flag2;}
     void SetBinWidth(Float_t BinW){fBinWidth=BinW;}
     void SetMCGevEventType(Bool_t sel1=kFALSE){fMCGenEvType=sel1;}
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
     void SetCheckCutDistandChoice(Bool_t sel3=kFALSE, Bool_t sel4=kFALSE){fCheckCutDist=sel3;fRawCutQA=sel4;}
-    void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
+    void SetAODMismatchProtection(Int_t sel5=0) {fAODProtection=sel5;}
     void SetLeadPartCorrelation(Bool_t Sel){fLeadPartCorr = Sel;}
-    
+    void SetAutoSignalSBRange(Bool_t autosignalSBrange){fAutoSignalSBRange = autosignalSBrange;}
+    void SetCutOptimizationFlag(Bool_t cutOptFlag){fCutoptDplus=cutOptFlag;}
     //void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
     
     void SetMinDPt(Double_t minDPt){fMinDPt=minDPt;}
@@ -116,6 +117,9 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void OfflineAssoTrackTree(AliAODEvent* aod);
     Bool_t AcceptTrackForMEOffline(Double_t TrackPt);
     
+    // Cut Optimization 
+    void FillTreeDPlusForCutOptim(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);
+    void ResetBranchDPlusForCutOptim();
     
     //variables..
     Bool_t fSystem; // pp or PbPb
@@ -137,6 +141,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Double_t fCentrOrMult; // Multiplicity of Event for D eff
     Bool_t fTCconfig; //  TC Cuts option
     Bool_t fUseBit; //  filterbit option
+    Bool_t fAutoSignalSBRange; // mainly for offline correlation
     AliHFCorrelator  *fCorrelator; //object for correlations
     Int_t fNPtBins; // number of event at different Stages
     TH1F *fHistNEvents; //!hist. for No. of events
@@ -148,6 +153,8 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Float_t fBinWidth;//width of one bin in output histos
     Bool_t  fPoolByPool;
     Int_t  fWhichPool;
+    Bool_t fPoolbyCent;
+    Int_t fEvtMult;
     Bool_t fCheckCutDist;
     Int_t fAODProtection; //New by Fabio
     TString fCutSuffix; //suffix for cut
@@ -160,9 +167,10 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     AliHFCorrelationBranchTr  *fBranchTr; //!
     TTree *fTreeD;    //tree for D+ mesons
     TTree *fTreeTr;   //tree for Assoc tracks
+    AliDPlushCutOptim *fBranchDPlusCutVars; //for D+ cut optimization!
     Bool_t    fFillTrees;  //Flag to fill ME offline trees
     Double_t  fFractAccME; //Fraction of tracks to be accepted in the ME offline
-    
+    Bool_t fCutoptDplus; // Flag for D+ Cut Optimization
     Int_t fNtrigDplusInR; // # of D+ filled (for association with decay tracks in TTrees)
     Int_t fNtrigDplusOutR; // # of D+ filled (for association with decay tracks in TTrees)
     Bool_t    fAlreadyFilled;            // D+ in an event already analyzed (for track distribution plots)
@@ -180,7 +188,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     std::vector<Double_t>  fRSBLowLim;      // Right SB upper lim
     std::vector<Double_t>  fRSBUppLim;      // Right SB upper lim
     
-    ClassDef(AliAnalysisTaskSEDplusCorrelations,8); // class for D+ meson correlations
+    ClassDef(AliAnalysisTaskSEDplusCorrelations,10); // class for D+ meson correlations
     
 };
 

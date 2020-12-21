@@ -26,7 +26,7 @@ class AliFlowCommonHist: public TNamed {
  public:
 
   AliFlowCommonHist();
-  AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist",Bool_t bookOnlyBasic = kFALSE);
+  AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist",Bool_t bookOnlyBasic = kFALSE, Int_t harmonic = 2);
   virtual ~AliFlowCommonHist();
   AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
 
@@ -114,7 +114,13 @@ class AliFlowCommonHist: public TNamed {
   
   TList*    fHistList;            // list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,4)   // macro for rootcint
+  // Flow harmonic for 'internal' use (it's also an int, what a coincidence). 
+  // This cannot be set in the cc object as that's a singleton
+  // we can also not rely on the 'GetHarmonic' member of this class itself, because
+  // there is a-priori no reason to assume that it's set, and it has no default value  
+  Int_t     fHarmonicInt;         // flow harmonic (2 by default)
+  
+  ClassDef(AliFlowCommonHist,5)   // macro for rootcint
 };
 #endif
 

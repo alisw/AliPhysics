@@ -25,6 +25,8 @@ public:
 
    void           SetESDtrackCuts(AliESDtrackCuts *cuts)   {fESDtrackCuts = cuts;}
    void           SetHypothesis(Int_t code);
+   void           SetMassTolSigma(Double_t value)          {fMassTolSigma = value;}     
+   void           SetpT_Tolerance(Int_t value)          	  {fpT_Tolerance = value;} 
    void           SetTolerance(Double_t value)             {fTolerance = value;}
    void           SetToleranceVeto(Double_t value)         {fToleranceVeto = value;}
    void           SetSwitch(Bool_t value)                  {fSwitch = value;}
@@ -34,12 +36,19 @@ public:
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
+   //void           SetMaxArmentousCut(Double_t value)       {fMaxArm          = value;}
+   //Double_t       GetMaxArmentousCut()                     {return fMaxArm;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+   void           SetMaxPseudorapidity(Double_t value)           {fMaxPseudorapidity = value;}
    
    void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
    void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
-  
+   
+   void           SetDifferentDCACutPosNegTrack(Bool_t doDifferentTrackDCACuts){fCustomTrackDCACuts = doDifferentTrackDCACuts;}
+   void           SetMinDCAToVtxXYPositiveTrack(Double_t value) {fMinDCAPositiveTrack = value;}
+   void           SetMinDCAToVtxXYNegativeTrack(Double_t value) {fMinDCANegativeTrack = value;}
+   void           SetCheckOOBPileup(Bool_t value = true)   {fCheckOOBPileup = value;}
 
    AliRsnCutTrackQuality *CutQuality()                     {return &fCutQuality;}
    void           SetAODTestFilterBit(Int_t value)         {fAODTestFilterBit = value;}
@@ -52,9 +61,11 @@ protected:
 
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
-
+   Bool_t      TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
    
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
+   Int_t            fpT_Tolerance=0;     // Switch to set pT dependent Mass Tolerance
+   Double_t         fMassTolSigma;      //Sigma cut for pt Dependent Mass Tol Cut    
    Double_t         fMass;             // mass corresponding to hypothesis
    Double_t         fTolerance;        // tolerance in the difference between computed and expected mass
    Double_t         fToleranceVeto;    // Competing V0 Rejection. Read the note in AliRsnCutV0.cxx for more info.
@@ -65,8 +76,14 @@ protected:
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
+   //Double_t         fMaxArm;           // max armentous cut value
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
+   Double_t         fMaxPseudorapidity; // max allowed V0 pseudorapidity
+   Bool_t           fCustomTrackDCACuts; // Use different DCA cuts for positive and negative V0 tracks
+   Double_t         fMinDCAPositiveTrack; // DCA of positive V0 track to vertex
+   Double_t         fMinDCANegativeTrack; // DCA of negative V0 track to vertex
+   Bool_t           fCheckOOBPileup;   // Check out-of-bunch pileup
    
    AliPID::EParticleType fPID;         // PID for track
    AliPID::EParticleType fPID2;        // PID for track
@@ -80,7 +97,7 @@ protected:
    
    Int_t            fAODTestFilterBit; // test filter bit for AODs
    
-   ClassDef(AliRsnCutV0, 1)
+   ClassDef(AliRsnCutV0, 2)
 };
 
 //__________________________________________________________________________________________________

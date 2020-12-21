@@ -145,11 +145,14 @@ private:
 protected:
   		
     
-    AliV0ReaderV1 *fV0Reader;
+    //  AliV0ReaderV1 *fV0Reader;
     
     AliESDEvent* fESDEvent;    //!pointer to the ESDEvent
     AliESDpid * fESDpid ;      //class for Track PID calculation
-     AliPIDResponse  *   fPIDResponse;
+  
+    TTree *fTreeV0;
+    AliPIDResponse  *   fPIDResponse;
+
 
     AliESDtrackCuts * fESDtrackCuts; //class for charged multiplicity estimation
     AliStack * fStack;         //! pointer to the MC particle stack
@@ -157,7 +160,7 @@ protected:
     TClonesArray *fReaderGammas;
     
     TList * fTreeList;
-    TTree *fTreeV0;
+    //    TTree *fTreeV0;
 
     //    TTree *tSigma0;
     TTree *tTreeEvent;
@@ -227,6 +230,7 @@ protected:
     Double_t  fSPDmultClust;
     Double_t  fSPDmultTracl;
     Double_t fInputEvent;
+    Float_t  fCentralityV0M;
     //  Double_t fMCEvent;
     Double_t fMCStack;
     Bool_t fIsMC;  
@@ -274,7 +278,8 @@ protected:
      Float_t fGammaPz;
     Float_t fGammaCosPointingAngle;
     Float_t fGammaDCADaughters;
-    Float_t fGammaDCAtoPVNeg;
+  Float_t fGammaRadius;   
+ Float_t fGammaDCAtoPVNeg;
     Float_t fGammaDCAtoPVPos;
     Float_t fGammaDCAzToPrimVtx;
      Float_t fGammaEta;
@@ -282,13 +287,13 @@ protected:
      Float_t fGammaArmAlpha;
      Float_t fGammaZConv;
      Float_t fGammaChi2;
-     Float_t fGammaRadius;
+   
     
      Float_t fSigmaMass;
      Float_t fSigmaPt;
      Float_t fSigmaArmPt;
      Float_t fSigmaArmAlpha;
-    Float_t  fCentralityV0M;
+     //    Float_t  fCentralityV0M;
 
     Float_t   fLambdaTPx;
     Float_t   fLambdaTPy;
@@ -328,6 +333,7 @@ protected:
      Float_t      fTreeVariableLeastNbrCrossedRows;
      Float_t     fTreeVariableLeastRatioCrossedRowsOverFindable;
 
+ AliV0ReaderV1 *fV0Reader;
 
   
 private:

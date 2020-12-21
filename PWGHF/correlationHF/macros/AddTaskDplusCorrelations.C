@@ -1,8 +1,7 @@
-
-
 /* $Id: AddTaskDplusCorrelations.C 58712 2012-09-20 08:38:36Z prino $ */
 //AddTask for the Dplus - Hadron (or Kaon/K0) Corelation with same/mixed event
 //Jitendra Kumar(Last updated on 02.10.2016) //AOD production setting:
+// Shyam Kumar Cut Optimization flag added: 11.11.2017
 AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t useCutFileSBRanges=kFALSE,
                                                              TString fileSignalSBRange="",
@@ -23,13 +22,17 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
                                                              Bool_t PoolbyPool=kFALSE,
                                                              Bool_t useCentrality = kFALSE,
                                                              Int_t centralityEstimator=AliRDHFCuts::kCentZNA,
-                                                             Int_t AODproduction=1,
+                                                             Int_t AODproduction=0,
                                                              Bool_t IncDCutQA=kTRUE,
                                                              Bool_t IncDCutQABefore=kFALSE,
                                                              Bool_t IsfillTrees=kTRUE,
                                                              Double_t fractAccME=100.,
                                                              Double_t DPtThrs=3,
-                                                             Bool_t LeadPartCorr=kFALSE)
+                                                             Bool_t LeadPartCorr=kFALSE,
+                                                             Double_t massWidth=0.004,
+                                                             Bool_t PoolCent = kFALSE,
+                                                             Bool_t autosignalSBrange = kTRUE,
+                                                             Bool_t cutOptFlag = kFALSE)
 {
     
     Double_t etacorr  =  0.9;
@@ -42,8 +45,8 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     } else {
         fDplusCuts=TFile::Open(fileDplusCuts.Data());
         if(!fDplusCuts ||(fDplusCuts && !fDplusCuts->IsOpen())){
-            AliFatal("Input Dplus cuts file(object) is not found: EXIT");
-            return;
+            printf("Input Dplus cuts file(object) is not found: EXIT\n");
+            return NULL;
         }
     }
     AliRDHFCutsDplustoKpipi* DplusCorrCuts=new AliRDHFCutsDplustoKpipi();
@@ -51,7 +54,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     else DplusCorrCuts = (AliRDHFCutsDplustoKpipi*)fDplusCuts->Get(DplusCutsObjName.Data());
     if(!DplusCorrCuts){
         Printf("Dplus cut objects not found");
-        return;
+        return NULL;
     }
     //DplusCorrCuts->PrintAll();
     
@@ -60,20 +63,20 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     //2.Track cuts AliHFAssociated from cut file
     TFile* fAssoTrackCuts;
     if(fileTrackCuts.EqualTo("") ) {
-        AliFatal("Input associated track cuts file not loaded");
-        return;
+        printf("Input associated track cuts file not loaded\n");
+        return NULL;
     } else {
         fAssoTrackCuts=TFile::Open(fileTrackCuts.Data());
         if(!fAssoTrackCuts ||(fAssoTrackCuts&& !fAssoTrackCuts->IsOpen())){
-            AliFatal("Input associated cuts file object are not found");
-            return;
+            printf("Input associated cuts file object are not found\n");
+            return NULL;
         }
     }
     AliHFAssociatedTrackCuts* HFAssoTrackCuts=new AliHFAssociatedTrackCuts();
     HFAssoTrackCuts = (AliHFAssociatedTrackCuts*)fAssoTrackCuts->Get(TrackCutsObjName.Data());
     if(!HFAssoTrackCuts){
-        AliFatal("Specific AliHFAssociatedTrackCuts not found");
-        return;
+        printf("Specific AliHFAssociatedTrackCuts not found\n");
+        return NULL;
     }
     HFAssoTrackCuts->SetTrackCutsNames();
     HFAssoTrackCuts->SetvZeroCutsNames();
@@ -84,13 +87,13 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     TFile* fAssoTracksEffMap;
     if(isTrackEff){
         if(fileTrackeff.EqualTo("") ) {
-            AliFatal("Input Associated Track Efficeincy Map not loaded ");
-            return;
+            printf("Input Associated Track Efficeincy Map not loaded\n");
+            return NULL;
         } else {
             fAssoTracksEffMap=TFile::Open(fileTrackeff.Data());
             if(!fAssoTracksEffMap ||(fAssoTracksEffMap&& !fAssoTracksEffMap->IsOpen())){
-                AliFatal("Input Associated Track Efficeincy Map object not found");
-                return;
+                printf("Input Associated Track Efficeincy Map object not found\n");
+                return NULL;
             }
         }
         TCanvas *cTrackEffMap = (TCanvas*)fAssoTracksEffMap->Get("c");
@@ -104,13 +107,13 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     TFile* fDplusEffMap;
     if(isDplusEff){
         if(fileDplusEff.EqualTo("") ){
-            AliFatal("Input Dplus Efficeincy Map not loaded");
-            return;
+            printf("Input Dplus Efficeincy Map not loaded\n");
+            return NULL;
         }else{
             fDplusEffMap=TFile::Open(fileDplusEff.Data());
             if(!fDplusEffMap ||(fDplusEffMap&& !fDplusEffMap->IsOpen())){
-                AliFatal("Input Dplus Track Efficeincy Map object not found");
-                return;
+                printf("Input Dplus Track Efficeincy Map object not found\n");
+                return NULL;
             }
         }
         TCanvas *cDplusEffMap = (TCanvas*)fDplusEffMap->Get("c1");
@@ -128,10 +131,11 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     AliAnalysisTaskSEDplusCorrelations *dpluscorrTask = new AliAnalysisTaskSEDplusCorrelations("DplusCorrelation",DplusCorrCuts,HFAssoTrackCuts);
     dpluscorrTask->SetEventMixing(fMixing);
     dpluscorrTask->SetCorrelator(fOption);
-    dpluscorrTask->SetBinWidth(0.004);
+    dpluscorrTask->SetBinWidth(massWidth);
     dpluscorrTask->SetDebugLevel(0);
     //dpluscorrTask->SetEtaRagne(etacorr);
     dpluscorrTask->SetCorrFormPart(genMC);
+    dpluscorrTask->SetAutoSignalSBRange(autosignalSBrange);
     dpluscorrTask->SetCorrFormTrack(tracks);
     dpluscorrTask->SetLeadPartCorrelation(LeadPartCorr);
     dpluscorrTask->SetDataOrMC(readMC);
@@ -141,21 +145,22 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     dpluscorrTask->SetDplusEffActive(isDplusEff);
     dpluscorrTask->SetSystem(useCentrality); //TRUE means pbpb Or pA
     dpluscorrTask->SetPoolByPoolCorr(PoolbyPool); //TRUE means pbpb Or pA
-    if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator);
+    if(useCentrality)dpluscorrTask->SetUseCentrality(useCentrality, centralityEstimator, PoolCent);
     dpluscorrTask->SetCheckCutDistandChoice(IncDCutQA, IncDCutQABefore);
     dpluscorrTask->SetAODMismatchProtection(AODproduction);
     dpluscorrTask->SetMinDPt(DPtThrs);
     dpluscorrTask->SetFillTrees(IsfillTrees,fractAccME);
+    dpluscorrTask->SetCutOptimizationFlag(cutOptFlag);
     
     //7. Create container for input/output
     TString finDirname = "";
     
     if(useCutFileSBRanges) { //use SB ranges from cut file
         
-        filerange=TFile::Open(fileSignalSBRange.Data());
+        TFile *filerange=TFile::Open(fileSignalSBRange.Data());
         if(!filerange && !filerange->IsOpen()){
-            AliFatal("Signal and Side Band Ranges are  not found: EXIT");
-            return;
+            printf("Signal and Side Band Ranges are  not found: EXIT\n");
+            return NULL;
         }
         
         TVectorD *LSBLow = (TVectorD*)filerange->Get("vLSBLow");
@@ -165,7 +170,7 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
         TVectorD *SandBLow = (TVectorD*)filerange->Get("vSandBLow");
         TVectorD *SandBUpp = (TVectorD*)filerange->Get("vSandBUpp");
         
-        if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp ||!SandBLow ||!SandBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return;}
+        if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp ||!SandBLow ||!SandBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return NULL;}
         
         dpluscorrTask->SetLSBLowerUpperLim(LSBLow->GetMatrixArray(), LSBUpp->GetMatrixArray());
         dpluscorrTask->SetSandBLowerUpperLim(SandBLow->GetMatrixArray(), SandBUpp->GetMatrixArray());
@@ -176,12 +181,15 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
         if(fSys=="pp" || fSys=="PP"|| fSys=="p-p"){
             
             //Setting up the mass ranges for LSB,S+B and RSB region (Check values from fits)
-            Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7850,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
+            Double_t LSBLowLim[15] = {0.,0.,0.,1.7930,1.7770,1.7930,1.7530,1.7690,1.7690,1.7690,1.7690,1.7690,1.7690,0.,0.};
             Double_t LSBUppLim[15] = {0.,0.,0.,1.8410,1.8330,1.8330,1.8170,1.8250,1.8250,1.8250,1.8250,1.8250,1.8250,0.,0.};
             Double_t RSBLowLim[15] = {0.,0.,0.,1.8970,1.9050,1.9050,1.9210,1.9130,1.9130,1.9130,1.9130,1.9130,1.9130,0.,0.};
             Double_t RSBUppLim[15] = {0.,0.,0.,1.9450,1.9610,1.9450,1.9770,1.9690,1.9690,1.9690,1.9690,1.9690,1.9690,0.,0.};
-            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8330,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
+            Double_t SandBLowLim[15] = {0.,0.,0.,1.8490,1.8410,1.8490,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,1.8410,0.,0.};
             Double_t SandBUppLim[15] = {0.,0.,0.,1.8890,1.8970,1.8890,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,0.,0.};
+            dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
+            dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
+            dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
             
             
         }else if(fSys=="pPb" || fSys=="p-Pb" || fSys=="PPb"){
@@ -193,6 +201,9 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
             Double_t SandBUppLim[15] = {0.,0.,0.,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.8970,1.9050,1.8970,0.,0.};
             Double_t RSBLowLim[15]   = {0.,0.,0.,1.9050,1.9050,1.9050,1.9050,1.9130,1.9130,1.9130,1.9130,1.9210,1.9130,0.,0.};
             Double_t RSBUppLim[15]   = {0.,0.,0.,1.9530,1.9530,1.9610,1.9530,1.9610,1.9610,1.9690,1.9770,1.9850,1.9770,0.,0.};
+            dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
+            dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
+            dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
             
             
         }else if(fSys=="PbPb" || fSys=="Pb-Pb" || fSys=="PbPb"){
@@ -204,15 +215,15 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
             Double_t SandBUppLim[15] = {0.,0.,0.,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885,1.885};
             Double_t RSBLowLim[15]   = {0.,0.,0.,1.901,1.907,1.901,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917,1.917};
             Double_t RSBUppLim[15]   = {0.,0.,0.,1.939,1.963,1.947,1.979,1.971,1.971,1.971,1.971,1.971,1.971,1.971,1.971};
+            dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
+            dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
+            dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
             
             
         }else{
-            cout << "EROOR in AddTask: Please check system name" << endl;
-            return;
+            cout << "ERROR in AddTask: Please check system name" << endl;
+            return NULL;
         }
-        dpluscorrTask->SetLSBLowerUpperLim(LSBLowLim, LSBUppLim);
-        dpluscorrTask->SetSandBLowerUpperLim(SandBLowLim, SandBUppLim);
-        dpluscorrTask->SetRSBLowerUpperLim(RSBLowLim, RSBUppLim);
     }
     
     if(fSys=="pp" || fSys=="PP"|| fSys=="p-p") finDirname+="PP";
@@ -261,8 +272,8 @@ AliAnalysisTaskSEDplusCorrelations *AddTaskDplusCorrelations(TString suffix="",
     //8. Get the pointer to the existing analysis manager via the static access method.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        AliFatal("AddTaskDplusCorrelations: No analysis manager to connect to");
-        return;
+        printf("AddTaskDplusCorrelations: No analysis manager to connect to\n");
+        return NULL;
     }
     mgr->AddTask(dpluscorrTask);
     

@@ -54,8 +54,8 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNumberOfRandomParticles(Int_t n) { fNRandom   = n   ; }
   
-  void         SetTriggerDetector(TString & det) ;
-  void         SetTriggerDetector(Int_t     det) ;
+  void         SetTriggerDetector(TString det) ;
+  void         SetTriggerDetector(Int_t   det) ;
   
  private:
 

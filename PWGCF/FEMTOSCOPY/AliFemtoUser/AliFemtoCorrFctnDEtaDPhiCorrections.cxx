@@ -15,10 +15,10 @@
 #include <TMath.h>
 #include "THn.h"
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDEtaDPhiCorrections)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
@@ -26,7 +26,7 @@ ClassImp(AliFemtoCorrFctnDEtaDPhiCorrections)
 
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const char* title, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
@@ -101,7 +101,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   // to enable error bar calculation...
 
 
-  
+
 
 }
 
@@ -198,24 +198,24 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
     fYtYtDenominator = 0;
 
 
  if (aCorrFctn.fPairPurity)
    fPairPurity = new TH2F(*aCorrFctn.fPairPurity);
- else 
+ else
     fPairPurity = 0;
- 
+
 
  if (aCorrFctn.fDPhiDEtaNumeratorNoCorr)
    fDPhiDEtaNumeratorNoCorr = new TH2F(*aCorrFctn.fDPhiDEtaNumeratorNoCorr);
- else 
+ else
    fDPhiDEtaNumeratorNoCorr = 0;
 
   fphiL = aCorrFctn.fphiL;
@@ -225,12 +225,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
 
 //  if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//    else 
+//    else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -247,7 +247,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
       delete fPairPurity;
       delete fDPhiDEtaNumeratorNoCorr;
   }
- 
+
   if (fDoFullAnalysis) {
     delete fDPhiNumerator;
     delete fDPhiDenominator;
@@ -332,24 +332,24 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtDenominator = 0;
- 
+
 
  if (aCorrFctn.fPairPurity)
    fPairPurity = new TH2F(*aCorrFctn.fPairPurity);
- else 
+ else
     fPairPurity = 0;
 
 
  if (aCorrFctn.fDPhiDEtaNumeratorNoCorr)
    fDPhiDEtaNumeratorNoCorr = new TH2F(*aCorrFctn.fDPhiDEtaNumeratorNoCorr);
- else 
+ else
    fDPhiDEtaNumeratorNoCorr = 0;
 
   fphiL = aCorrFctn.fphiL;
@@ -359,12 +359,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
 
 // if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//  else 
+//  else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -399,8 +399,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiCorrections::Report(){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -434,9 +435,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
   double vert2[3];
   pair->Track2()->Track()->GetPrimaryVertex(vert2);
 
-  double corrweight=0; //double corrweightpT1=1;  double corrweightpT2=1; 
+  double corrweight=0; //double corrweightpT1=1;  double corrweightpT2=1;
   //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
-  if (fIfCorrection) 
+  if (fIfCorrection)
     {
       corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
     }
@@ -488,8 +489,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -529,7 +531,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
 
   double corrweight=-999;
   //if (fIfCorrection) corrweight = CalculateCorrectionWeight(pt1, pt2);
-  if (fIfCorrection) 
+  if (fIfCorrection)
     {
       corrweight = CalculateCorrectionWeight(pt1, pt2, eta1, eta2, phi1, phi2, vert1[2], vert2[2]);
     }
@@ -537,8 +539,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddMixedPair( AliFemtoPair* pair){
     {
       corrweight = CalculateCorrectionWeight(pt1, pt2);
     }
-  
-  
+
+
   if(fIfCorrection || fCorr1D)
     fDPhiDEtaDenominator->Fill(dphi, deta, corrweight);
   else
@@ -580,7 +582,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
     }*/
   // fPhi->Write();
   // fEta->Write();
-  
+
 }
 
 TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
@@ -736,7 +738,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoFullAnalysis(Bool_t do2d)
 void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr)
 {
   fIfCorrection = kTRUE;
- 
+
   ifileCorrTab = TFile::Open(file);
   fdoPtCorr = doPtCorr;
   fdoEtaCorr = doEtaCorr;
@@ -804,7 +806,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
 	  fh1Reco2 = (TH1F*)(fhntReco2->Projection(0))->Clone();
 	  fh1Reco1->Scale(1./fhntReco1_nbins*fh1Reco1->GetNbinsX());
 	  fh1Reco2->Scale(1./fhntReco2_nbins*fh1Reco2->GetNbinsX());
-	    
+
 	}
 
       else if(fdoEtaCorr == 1)
@@ -838,7 +840,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
       if(fdoPtCorr == 1 && fdoEtaCorr == 1)
 	{
 	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(1,0))->Clone();
-	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,0))->Clone();	  
+	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(1,0))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
 	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
@@ -848,7 +850,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
 	  fh2Reco1 = (TH2F*)(fhntReco1->Projection(2,0))->Clone();
 	  fh2Reco2 = (TH2F*)(fhntReco2->Projection(2,0))->Clone();
 	  fh2Reco1->Scale(1./fhntReco1_nbins*fh2Reco1->GetNbinsX()*fh2Reco1->GetNbinsY());
-	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());	 
+	  fh2Reco2->Scale(1./fhntReco2_nbins*fh2Reco2->GetNbinsX()*fh2Reco2->GetNbinsY());
 	}
 
       else if(fdoPtCorr == 1 && fdoZVertCorr == 1)
@@ -887,7 +889,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
       if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoPhiCorr == 1)
 	{
 	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,1,2))->Clone();
-	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,2))->Clone(); 
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,2))->Clone();
 	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
 	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
 
@@ -896,7 +898,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
       else if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoZVertCorr == 1)
 	{
 	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,1,3))->Clone();
-	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,3))->Clone(); 
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,1,3))->Clone();
 	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
 	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
 	}
@@ -904,7 +906,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
       else if(fdoPtCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
 	{
 	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(0,2,3))->Clone();
-	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,2,3))->Clone(); 
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(0,2,3))->Clone();
 	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
 	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
 	}
@@ -912,7 +914,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
       else if(fdoEtaCorr == 1 && fdoPhiCorr == 1 && fdoZVertCorr == 1)
 	{
 	  fh3Reco1 = (TH3F*)(fhntReco1->Projection(1,2,3))->Clone();
-	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(1,2,3))->Clone(); 
+	  fh3Reco2 = (TH3F*)(fhntReco2->Projection(1,2,3))->Clone();
 	  fh3Reco1->Scale(1./fhntReco1_nbins*fh3Reco1->GetNbinsX()*fh3Reco1->GetNbinsY()*fh3Reco1->GetNbinsZ());
 	  fh3Reco2->Scale(1./fhntReco2_nbins*fh3Reco2->GetNbinsX()*fh3Reco2->GetNbinsY()*fh3Reco2->GetNbinsZ());
 	}
@@ -936,7 +938,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const 
   fpartType2 = partType2;
 
 
-  char type1[12]; 
+  char type1[12];
   char type2[12];
 
 
@@ -960,7 +962,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const 
 
   fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)));//->Clone();
   fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type2)));//->Clone();
-   
+
 
   if(fCalculatePairPurity){
     fSinglePurity1 = (TH1F*)(ifileCorrTab->Get(Form("hPurity%s",type1)));
@@ -978,7 +980,7 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetCorrectionTab(ParticleType partType
 
   double pioncorrtab[] = {0, 0, 0, 0, 0, 0, 0, 1.40089, 1.40089, 1.29482, 1.29482, 1.25595, 1.22529, 1.22529, 1.23099, 1.32027, 1.32027, 1.44774, 1.44774, 1.74645, 1.8619, 1.8619, 1.82089, 1.78506, 1.78506, 1.75918, 1.75918, 1.74951, 1.74614, 1.74614, 1.74006, 1.73229, 1.73229, 1.72844, 1.72844, 1.72306, 1.71906, 1.71906, 1.71375, 1.71301, 1.71301, 1.70381, 1.70381, 1.69975, 1.69242, 1.69242, 1.69013, 1.67698, 1.67698, 1.6772, 1.6772, 1.67118, 1.66607, 1.66607, 1.66131, 1.67228, 1.67228, 1.66834, 1.66834, 1.66031, 1.6588, 1.6588, 1.6555, 1.64923, 1.64923, 1.6467, 1.6467, 1.63894, 1.63682, 1.63682, 1.6297, 1.62904, 1.62904, 1.63007, 1.63007, 1.62832, 1.62557, 1.62557, 1.62687, 1.62928, 1.62928, 1.62767, 1.62767, 1.62767, 1.62767, 1.62767, 1.62767, 1.63415, 1.63415, 1.63415, 1.63415, 1.63415, 1.63415, 1.63415, 1.64141, 1.64141, 1.64141, 1.64141, 1.64141, 1.64141, 1.65191, 1.65191, 1.65191, 1.65191, 1.65191, 1.65191, 1.65191, 1.66838, 1.66838, 1.66838, 1.66838, 1.66838, 1.66838, 1.6839, 1.6839, 1.6839, 1.6839, 1.6839, 1.6839, 1.69601, 1.69601, 1.69601, 1.69601, 1.69601, 1.69601, 1.69601, 1.70062, 1.70062, 1.70062, 1.70062, 1.70062, 1.70062, 1.68668, 1.68668, 1.68668, 1.68668, 1.68668, 1.68668, 1.68668, 1.68182, 1.68182, 1.68182, 1.68182, 1.68182, 1.68182, 1.681, 1.681, 1.681, 1.681, 1.681, 1.681, 1.67749, 1.67749, 1.67749, 1.67749, 1.67749, 1.67749, 1.67749, 1.66558, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.67223, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.66872, 1.64419};
 
-  double protoncorrtab[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 357.585, 357.585, 8.66944, 2.10995, 2.10995, 1.50443, 1.73168, 1.73168, 2.3605, 2.3605, 4.7726, 4.40359, 4.40359, 3.0307, 2.49649, 2.49649, 2.2231, 2.2231, 2.11247, 2.05862, 2.05862, 2.00703, 1.9623, 1.9623, 1.93393, 1.93393, 1.9101, 1.89334, 1.89334, 1.87734, 1.86342, 1.86342, 1.85075, 1.85075, 1.83985, 1.83684, 1.83684, 1.82915, 1.81832, 1.81832, 1.81215, 1.81215, 1.7998, 1.79524, 1.79524, 1.78568, 1.79989, 1.79989, 1.7973, 1.7973, 1.79591, 1.78468, 1.78468, 1.78037, 1.77394, 1.77394, 1.77198, 1.77198, 1.76736, 1.76875, 1.76875, 1.76221, 1.75729, 1.75729, 1.75397, 1.75397, 1.75229, 1.74918, 1.74918, 1.75064, 1.75643, 1.75643, 1.75765, 1.75765, 1.75765, 1.75765, 1.75765, 1.75765, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76901, 1.76901, 1.76901, 1.76901, 1.76901, 1.76901, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.80009, 1.80009, 1.80009, 1.80009, 1.80009, 1.80009, 1.81064, 1.81064, 1.81064, 1.81064, 1.81064, 1.81064, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.79549, 1.79549, 1.79549, 1.79549, 1.79549, 1.79549, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.78912, 1.78912, 1.78912, 1.78912, 1.78912, 1.78912, 1.78501, 1.78501, 1.78501, 1.78501, 1.78501, 1.78501, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.77138, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152};
+  double protoncorrtab[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 357.585, 357.585, 8.66944, 2.10995, 2.10995, 1.50443, 1.73168, 1.73168, 2.3605, 2.3605, 4.7726, 4.40359, 4.40359, 3.0307, 2.49649, 2.49649, 2.2231, 2.2231, 2.11247, 2.05862, 2.05862, 2.00703, 1.9623, 1.9623, 1.93393, 1.93393, 1.9101, 1.89334, 1.89334, 1.87734, 1.86342, 1.86342, 1.85075, 1.85075, 1.83985, 1.83684, 1.83684, 1.82915, 1.81832, 1.81832, 1.81215, 1.81215, 1.7998, 1.79524, 1.79524, 1.78568, 1.79989, 1.79989, 1.7973, 1.7973, 1.79591, 1.78468, 1.78468, 1.78037, 1.77394, 1.77394, 1.77198, 1.77198, 1.76736, 1.76875, 1.76875, 1.76221, 1.75729, 1.75729, 1.75397, 1.75397, 1.75229, 1.74918, 1.74918, 1.75064, 1.75643, 1.75643, 1.75765, 1.75765, 1.75765, 1.75765, 1.75765, 1.75765, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76345, 1.76901, 1.76901, 1.76901, 1.76901, 1.76901, 1.76901, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.78291, 1.80009, 1.80009, 1.80009, 1.80009, 1.80009, 1.80009, 1.81064, 1.81064, 1.81064, 1.81064, 1.81064, 1.81064, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.81765, 1.79549, 1.79549, 1.79549, 1.79549, 1.79549, 1.79549, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.80455, 1.78912, 1.78912, 1.78912, 1.78912, 1.78912, 1.78912, 1.78501, 1.78501, 1.78501, 1.78501, 1.78501, 1.78501, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.79512, 1.77138, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.784, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152, 1.75152};
 
   double kaoncorrtab[] = {0, 0, 0, 0, 0, 0, 0, 8.43268, 8.43268, 3.30657, 3.30657, 2.5102, 2.16256, 2.16256, 2.03757, 2.27166, 2.27166, 2.70432, 2.70432, 4.06234, 4.69199, 4.69199, 4.13074, 3.75139, 3.75139, 3.48381, 3.48381, 3.29762, 3.15261, 3.15261, 3.03022, 2.91874, 2.91874, 2.82421, 2.82421, 2.7388, 2.65961, 2.65961, 2.58426, 2.5174, 2.5174, 2.45378, 2.45378, 2.39687, 2.34699, 2.34699, 2.30247, 2.25299, 2.25299, 2.22443, 2.22443, 2.18303, 2.16012, 2.16012, 2.13083, 2.12806, 2.12806, 2.11376, 2.11376, 2.09566, 2.07526, 2.07526, 2.05378, 2.03252, 2.03252, 2.02466, 2.02466, 2.00531, 1.98945, 1.98945, 1.97877, 1.97226, 1.97226, 1.95475, 1.95475, 1.94838, 1.9314, 1.9314, 1.92571, 1.96346, 1.96346, 1.92849, 1.92849, 1.92849, 1.92849, 1.92849, 1.92849, 1.90949, 1.90949, 1.90949, 1.90949, 1.90949, 1.90949, 1.90949, 1.88743, 1.88743, 1.88743, 1.88743, 1.88743, 1.88743, 1.87486, 1.87486, 1.87486, 1.87486, 1.87486, 1.87486, 1.87486, 1.87785, 1.87785, 1.87785, 1.87785, 1.87785, 1.87785, 1.8757, 1.8757, 1.8757, 1.8757, 1.8757, 1.8757, 1.87948, 1.87948, 1.87948, 1.87948, 1.87948, 1.87948, 1.87948, 1.86148, 1.86148, 1.86148, 1.86148, 1.86148, 1.86148, 1.84329, 1.84329, 1.84329, 1.84329, 1.84329, 1.84329, 1.84329, 1.83105, 1.83105, 1.83105, 1.83105, 1.83105, 1.83105, 1.81955, 1.81955, 1.81955, 1.81955, 1.81955, 1.81955, 1.79944, 1.79944, 1.79944, 1.79944, 1.79944, 1.79944, 1.79944, 1.79345, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.80077, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.78333, 1.74958};
 
@@ -1021,9 +1023,9 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
      {
        w1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
        w2 = fhCont2->GetBinContent(fhCont2->FindFixBin(pT2));
-       
+
        return w1*w2;
-     } 
+     }
    else
      return 0;
 }
@@ -1036,14 +1038,14 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
      {
        w1 = fhCont1->GetBinContent(fhCont1->FindFixBin(pT1));
        return w1;
-     } 
+     }
    else
      return 0;
 }
 
 double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2)
 {
-  
+
     double w1=0., w2=0.;
     double eps1=0., eps2=0;
     double cont1=0., cont2=0; //w=(1-cont)/eps
@@ -1072,13 +1074,13 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(pT1));
 		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(pT2));
-		
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 		return w1*w2;
 	      }
 	    else
-	      return 0;	    
+	      return 0;
 	  }
 
 	else if(fdoEtaCorr == 1)
@@ -1087,7 +1089,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(eta1));
 		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(eta2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1106,7 +1108,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-	  
+
 		return w1*w2;
 	      }
 	    else
@@ -1120,7 +1122,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh1Reco1->GetBinContent(fh1Reco1->FindFixBin(zvert1));
 		eps2 = fh1Reco2->GetBinContent(fh1Reco2->FindFixBin(zvert2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1141,7 +1143,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(eta1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(eta2));
 
-		w1 = (1-cont1)/eps1; 
+		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
 		return w1*w2;
@@ -1153,12 +1155,12 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 	if(fdoPtCorr == 1 && fdoPhiCorr == 1)
 	  {
-	 
+
 	    if(pT1 > fh2Reco1->GetXaxis()->GetXmin() && pT1 < fh2Reco1->GetXaxis()->GetXmax() && pT2 > fh2Reco2->GetXaxis()->GetXmin() && pT2 < fh2Reco2->GetXaxis()->GetXmax() && phi1 > fh2Reco1->GetYaxis()->GetXmin() && phi1 < fh2Reco1->GetYaxis()->GetXmax() && phi2 > fh2Reco2->GetYaxis()->GetXmin() && phi2 < fh2Reco2->GetYaxis()->GetXmax())
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(pT1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(pT2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1179,7 +1181,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-	  
+
 		return w1*w2;
 	      }
 	    else
@@ -1192,7 +1194,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh2Reco1->GetBinContent(fh2Reco1->GetXaxis()->FindFixBin(eta1),fh2Reco1->GetYaxis()->FindFixBin(phi1));
 		eps2 = fh2Reco2->GetBinContent(fh2Reco2->GetXaxis()->FindFixBin(eta2),fh2Reco2->GetYaxis()->FindFixBin(phi2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1214,7 +1216,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-	  
+
 		return w1*w2;
 	      }
 	    else
@@ -1231,7 +1233,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
-	  
+
 		return w1*w2;
 	      }
 	    else
@@ -1245,16 +1247,16 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
       {
 	if(fdoPtCorr == 1 && fdoEtaCorr == 1 && fdoPhiCorr == 1)
 	  {
-	    if(pT1 >fh3Reco1->GetXaxis()->GetXmin() && pT1 <fh3Reco1->GetXaxis()->GetXmax() && 
-               pT2 > fh3Reco2->GetXaxis()->GetXmin() && pT2 <fh3Reco2->GetXaxis()->GetXmax() && 
-               eta1 > fh3Reco1->GetYaxis()->GetXmin() && eta1 <fh3Reco1->GetYaxis()->GetXmax() &&  
-               eta2 > fh3Reco2->GetYaxis()->GetXmin() && eta2 <fh3Reco2->GetYaxis()->GetXmax() &&  
-               phi1 > fh3Reco1->GetZaxis()->GetXmin() && phi1 < fh3Reco1->GetZaxis()->GetXmax() && 
+	    if(pT1 >fh3Reco1->GetXaxis()->GetXmin() && pT1 <fh3Reco1->GetXaxis()->GetXmax() &&
+               pT2 > fh3Reco2->GetXaxis()->GetXmin() && pT2 <fh3Reco2->GetXaxis()->GetXmax() &&
+               eta1 > fh3Reco1->GetYaxis()->GetXmin() && eta1 <fh3Reco1->GetYaxis()->GetXmax() &&
+               eta2 > fh3Reco2->GetYaxis()->GetXmin() && eta2 <fh3Reco2->GetYaxis()->GetXmax() &&
+               phi1 > fh3Reco1->GetZaxis()->GetXmin() && phi1 < fh3Reco1->GetZaxis()->GetXmax() &&
                phi2 > fh3Reco2->GetZaxis()->GetXmin() && phi2 < fh3Reco2->GetZaxis()->GetXmax())
 	      {
 		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(eta1),fh3Reco1->GetZaxis()->FindFixBin(phi1));
 		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(eta2),fh3Reco2->GetZaxis()->FindFixBin(phi2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1273,7 +1275,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(eta1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
 		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(eta2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1290,7 +1292,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(pT1),fh3Reco1->GetYaxis()->FindFixBin(phi1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
 		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(pT2),fh3Reco2->GetYaxis()->FindFixBin(phi2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1308,7 +1310,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 	      {
 		eps1 = fh3Reco1->GetBinContent(fh3Reco1->GetXaxis()->FindFixBin(eta1),fh3Reco1->GetYaxis()->FindFixBin(phi1),fh3Reco1->GetZaxis()->FindFixBin(zvert1));
 		eps2 = fh3Reco2->GetBinContent(fh3Reco2->GetXaxis()->FindFixBin(eta2),fh3Reco2->GetYaxis()->FindFixBin(phi2),fh3Reco2->GetZaxis()->FindFixBin(zvert2));
-	  
+
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 
@@ -1322,28 +1324,28 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
 
     else if(boolSum == 4)
       {
-							  
+
 	if(pT1 > fhntReco1->GetAxis(0)->GetXmin() && pT1 < fhntReco1->GetAxis(0)->GetXmax() && pT2 > fhntReco2->GetAxis(0)->GetXmin() && pT2 < fhntReco2->GetAxis(0)->GetXmax() && eta1 > fhntReco1->GetAxis(1)->GetXmin() && eta1 <fhntReco1->GetAxis(1)->GetXmax() && eta2 > fhntReco2->GetAxis(1)->GetXmin() && eta2 < fhntReco2->GetAxis(1)->GetXmax() && phi1 > fhntReco1->GetAxis(2)->GetXmin() && phi2 < fhntReco2->GetAxis(2)->GetXmax() && phi2 > fhntReco2->GetAxis(2)->GetXmin() && phi2 < fhntReco2->GetAxis(2)->GetXmax() && zvert1 > fhntReco1->GetAxis(3)->GetXmin() && zvert1 < fhntReco1->GetAxis(3)->GetXmax() && zvert2 > fhntReco2->GetAxis(3)->GetXmin() && zvert2 < fhntReco2->GetAxis(3)->GetXmax())
 	      {
 
 		int tab1[] = {fhntReco1->GetAxis(0)->FindFixBin(pT1),fhntReco1->GetAxis(1)->FindFixBin(eta1),fhntReco1->GetAxis(2)->FindFixBin(phi1),fhntReco1->GetAxis(3)->FindFixBin(zvert1)};
 		int tab2[] = {fhntReco2->GetAxis(0)->FindFixBin(pT2),fhntReco2->GetAxis(1)->FindFixBin(eta2),fhntReco2->GetAxis(2)->FindFixBin(phi2),fhntReco2->GetAxis(3)->FindFixBin(zvert2)};
-       
+
 		eps1 = fhntReco1->GetBinContent(tab1);
 		eps2 = fhntReco2->GetBinContent(tab2);
 
 		w1 = (1-cont1)/eps1;
 		w2 = (1-cont2)/eps2;
 		return w1*w2;
-		  
+
 	      }
 	    else
 	      return 0;
 
       }
-    
+
     return 0;
-      
+
 }
 
 
@@ -1356,7 +1358,7 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::GetPurity(double pT1, int n)
       {
 	w1 = fSinglePurity1->GetBinContent(fSinglePurity1->FindFixBin(pT1));
 	return w1;
-      } 
+      }
     else
       return 0;
   }
@@ -1365,9 +1367,9 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::GetPurity(double pT1, int n)
       {
 	w1 = fSinglePurity2->GetBinContent(fSinglePurity2->FindFixBin(pT1));
 	return w1;
-      } 
+      }
     else
       return 0;
   }
-  
+  return 0;
 }

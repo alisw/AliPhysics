@@ -27,6 +27,7 @@ class AliESDfriend;
 class AliESDfriendTrack;
 class AlidNdPtHelper;
 class AliTriggerAnalysis;
+class AliAnalysisUtils;
 
 #include "AlidNdPt.h"
 

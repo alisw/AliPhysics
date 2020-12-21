@@ -13,9 +13,10 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************/
 
-#Module
-set(MODULE PWGMM)
-add_definitions(-D_MODULE_="${MODULE}")
+
+#Module for PWGMMMult
+#include ( CMakeListsPWGMMMult.cfg )
+
 
 add_subdirectory(Lumi)
 add_subdirectory(Mult)

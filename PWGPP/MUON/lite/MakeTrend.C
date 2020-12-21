@@ -376,11 +376,11 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
   UInt_t info = GetQAInfo(qaFile);
   if ( info == 0 ) return;
 
+  TString baseFilename = "QAresults.root";
   TString inFilename = GetBaseName(qaFile);
 
   UInt_t forceTerminate = 0;
   if ( inFilename.Contains("barrel") ) {
-    TString baseFilename = "QAresults.root";
     TString outerInFilename(qaFile);
     outerInFilename.ReplaceAll("barrel","outer");
     UInt_t outerInfo = GetQAInfo(outerInFilename);
@@ -396,21 +396,22 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
         forceTerminate = info; // Re-do terminate when merging barrel and outer
       }
     }
-    else gSystem->Exec(Form("mv %s %s",inFilename.Data(),baseFilename.Data()));
+  }
 
-    inFilename = baseFilename;
+  if ( inFilename != baseFilename && gSystem->AccessPathName(baseFilename) ) {
+    gSystem->Exec(Form("mv -v %s %s",inFilename.Data(),baseFilename.Data()));
   }
 
   UInt_t checkedMask = mask&info;
 
-  terminateQA(inFilename,isMC,usePhysicsSelection,checkedMask,forceTerminate);
+  terminateQA(baseFilename,isMC,usePhysicsSelection,checkedMask,forceTerminate);
 
   TList parList;
   parList.SetOwner();
   AddTreeVariable(parList, "run", 'I', runNumber);
 
   // function for trigger
-  if ( checkedMask & trigQA ) AddTrigVars(inFilename.Data(),parList);
+  if ( checkedMask & trigQA ) AddTrigVars(baseFilename.Data(),parList);
 
   TFile* outFile = TFile::Open("trending.root","RECREATE");
   TTree* tree = new TTree("trending","trending");

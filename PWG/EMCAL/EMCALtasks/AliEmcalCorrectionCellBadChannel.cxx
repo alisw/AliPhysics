@@ -43,14 +43,33 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   
   AliWarning("Init EMCAL cell bad channel removal");
   
-  GetProperty("createHistos", fCreateHisto);
-
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
+  TString customBCmapPath = "";
+  GetProperty("customBadChannelFilePath", customBCmapPath);
+  if (customBCmapPath!="")
+    AliEmcalCorrectionComponent::SetCustomBadChannels(customBCmapPath);
+
+  Bool_t dead = kFALSE;
+  GetProperty("acceptDead", dead);
+  if ( dead ) fRecoUtils->SetDeadChannelAsGood();
+
+  Bool_t hot = kFALSE;
+  GetProperty("acceptHot", hot);
+  if ( hot ) fRecoUtils->SetHotChannelAsGood();  
+  
+  Bool_t warm = kFALSE;
+  GetProperty("acceptWarm", warm);
+  if ( warm ) fRecoUtils->SetWarmChannelAsGood();
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
+  fRecoUtils->SetUse1DBadChannelMap(fLoad1DBadChMap);
+  
   return kTRUE;
 }
 
@@ -62,9 +81,9 @@ void AliEmcalCorrectionCellBadChannel::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_cell",1000,0,10);
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistAfter);
   }
 }
@@ -76,7 +95,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::Run()
 {
   AliEmcalCorrectionComponent::Run();
   
-  if (!fEvent) {
+  if (!fEventManager.InputEvent()) {
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
@@ -129,7 +148,7 @@ Bool_t AliEmcalCorrectionCellBadChannel::CheckIfRunChanged()
       AliWarning("InitBadChannels OK");
     }
     if (fInitBC>1) {
-      AliWarning(Form("No external hot channel set: %d - %s", fEvent->GetRunNumber(), fFilepass.Data()));
+      AliWarning(Form("No external hot channel set: %d - %s", fEventManager.InputEvent()->GetRunNumber(), fFilepass.Data()));
     }
   }
   return runChanged;

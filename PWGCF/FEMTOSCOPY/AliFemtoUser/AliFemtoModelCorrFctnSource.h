@@ -32,8 +32,7 @@ public:
 
   virtual void Write();
   virtual TList* GetOutputList();
-
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctnSource(*this); }
 
   void SetUseRPSelection(unsigned short aRPSel);
 protected:

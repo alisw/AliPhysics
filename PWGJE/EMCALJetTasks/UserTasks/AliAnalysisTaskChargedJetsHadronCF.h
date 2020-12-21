@@ -134,6 +134,12 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
   void                        SetTrackExtractionPercentagePower(Double_t val)   { fTrackExtractionPercentagePower = val; }
 
+  void                        SetNumRandomConesPerEvent(Int_t val)   { fNumRandomConesPerEvent = val; }
+
+  void                        SetUseConstituents(Bool_t data, Bool_t mc)   { fUseDataConstituents = data; fUseMCConstituents = mc;}
+
+  void                        SetRemoveEventOutliers(Bool_t val)   { fRemoveEventOutliers = val; }
+
 
  protected:
   void                        ExecOnce();
@@ -182,7 +188,11 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAODPid*                  fTreeBufferPID;                           //!<! Tree of extracted jets (buffer)
   Int_t                       fTreeBufferPDG;                           //!<! Tree of extracted jets (buffer)
   Double_t                    fTrackExtractionPercentagePower;          ///< Extraction percentage for tracks
+  Int_t                       fNumRandomConesPerEvent;                  ///< Number of random cones thrown in one event
 
+  Bool_t                      fUseDataConstituents;                     ///< If true, tracks with labels <  10000 will be processed
+  Bool_t                      fUseMCConstituents;                       ///< If true, tracks with labels >= 10000 will be processed
+  Bool_t                      fRemoveEventOutliers;                     ///< Remove outliers
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
@@ -226,7 +236,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 11) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 12) // Charged jet+h analysis support task
   /// \endcond
 };
 

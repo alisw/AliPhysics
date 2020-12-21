@@ -1,17 +1,30 @@
-/**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2015, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
+
 #include <array>
 #include <iostream>
 #include <map>
@@ -46,23 +59,31 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
     fCentralityRange(-999., 999.),
+    fCellTimeRange(-1., 1.),
+    fOfflineTriggerData(),
+    fMinNumberFastors(0),
     fEnableSumw2(false),
     fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name):
     AliAnalysisTaskEmcalTriggerBase(name),
     fCentralityRange(-999., 999.),
+    fCellTimeRange(-1., 1.),
+    fOfflineTriggerData(),
+    fMinNumberFastors(0),
     fEnableSumw2(false),
     fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetNeedEmcalGeom(true);
 }
 
 void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
@@ -89,6 +110,10 @@ void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
       }
     }
   }
+
+  // creating trigger data grid
+  fOfflineTriggerData.Allocate(48, 104);
+
   AliDebugStream(1) << "Histograms done" << std::endl;
 }
 
@@ -117,6 +142,7 @@ bool AliAnalysisTaskEmcalPatchesRef::IsUserEventSelected(){
 
 bool AliAnalysisTaskEmcalPatchesRef::Run(){
   AliDebugStream(1) << GetName() << ": Start function" << std::endl;
+  FillDataGrid();
 
   AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
 
@@ -125,6 +151,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
   for(auto patchIter : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
+    if(GetNumberOfFastORs(patch) < fMinNumberFastors) continue;
 
     bool isDCAL         = patch->IsDCalPHOS(),
         isSingleShower  = SelectSingleShowerPatch(patch),
@@ -176,7 +203,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
 }
 
 void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row){
-  Double_t weight = GetTriggerWeight(triggerclass);
+  Double_t weight = GetTriggerWeight(triggerclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in patch histograms." << std::endl;
   fHistos->FillTH1(patchname + "PatchEnergy" + triggerclass, energy, weight);
   fHistos->FillTH1(patchname + "PatchET" + triggerclass, transverseenergy, weight);
@@ -195,7 +222,7 @@ void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, T
 void AliAnalysisTaskEmcalPatchesRef::UserFillHistosAfterEventSelection(){
   // Fill Event counter and reference vertex distributions for the different trigger classes
   for(const auto &trg : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(trg);
+    Double_t weight = GetTriggerWeight(trg.Data());
     AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << trg << " in event histograms." << std::endl;
     fHistos->FillTH1("EventCount" + trg, 1, weight);
     fHistos->FillTH1("EventCentrality" + trg, fEventCentrality, weight);
@@ -231,6 +258,31 @@ bool AliAnalysisTaskEmcalPatchesRef::SelectJetPatch(const AliEMCALTriggerPatchIn
   }
 }
 
+void AliAnalysisTaskEmcalPatchesRef::FillDataGrid(){
+  fOfflineTriggerData.Reset();
+  Short_t cellID;
+  Double_t cellamplitude, celltime, efrac;
+  Int_t mclabel, fastorID, row, col;
+  for(int icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++) {
+    fCaloCells->GetCell(icell, cellID, cellamplitude, celltime, mclabel, efrac);
+    if(!fCellTimeRange.IsInRange(celltime)) continue;
+    if(cellamplitude > 0.) {
+      fGeom->GetFastORIndexFromCellIndex(cellID, fastorID);
+      fGeom->GetPositionInEMCALFromAbsFastORIndex(fastorID, col, row);
+      fOfflineTriggerData(col, row) += cellamplitude;
+    } 
+  }
+}
+
+Int_t AliAnalysisTaskEmcalPatchesRef::GetNumberOfFastORs(const AliEMCALTriggerPatchInfo *patch) const {
+  Int_t nfastor = 0;
+  for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
+    for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
+      if(fOfflineTriggerData(icol, irow) > 0) nfastor++;
+    }
+  }
+  return nfastor;
+}
 AliAnalysisTaskEmcalPatchesRef::EnergyBinning::EnergyBinning():
     TCustomBinning()
 {

@@ -126,6 +126,20 @@ channel map on fastor level should be used, not the one on cell level. As tender
 cells, the offline bad cell map will be applied. Therefor the trigger maker should run before the tender / correction
 task in case of simulations.
 
+# Simulation of noise
+
+The trigger maker supports generating noise when calculating FastOR signals from 
+smeared FEE signals. Noise is simulated for each FastOR (run2 - except PHOS hole)
+and every event, either as constant value or via a gaussian model. In order to switch
+on noise simulation one needs to call
+
+~~~.{cxx}
+// for constant noise
+triggermaker->SetConstNoiseFEESmear(0.005);   // Add 5 MeV noise to each FastOR
+// for gaussian noise
+triggermaker->SetGaussianNoiseFEESmear(0.005, 0.001); // Add noise simulated as gaussian noise with mean 5 MeV and sigma 1 MeV
+~~~
+
 # Selection of trigger patches by the user
 
 Trigger patches are attached to the input event as new list object of type TClonesArray. The list object
@@ -152,6 +166,56 @@ for(auto p : *triggerpatches){
   }
 }
 ~~~
+
+## Selection of triggered events using trigger patches
+
+In some case, i. e. in simulation or in order to select noise, EMCAL-triggered events need to be selected
+using trigger patches. The wagon *PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection* performs the selection
+of EMCAL-triggered events based on period-dependent configurations and adds a container with all the trigger
+decisions for the various supported Level1-triggers to the event. Users can access the trigger decision
+container in their task and use it for their event selection.
+
+### 1. Add task to the analysis
+
+In a simple user analysis do
+
+~~~{.cxx}
+gROOT->LoadMacro(Form("%s/PWG/EMCAL/AddEmcalTriggerSelectionTask.C", gSystem->Getenv("ALICE_PHYSICS)));
+PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection *trgseltask = AddEmcalTriggerSelectionTask();
+trgseltask->SetGlobalDecisionContainerName("EmcalTriggerDecision");
+trgseltask->AutoConfigure(kDataset);
+~~~
+
+Within the train wagon, call the macro *PWG/EMCAL/AddEmcalTriggerSelectionTask.C* with the arguments (no arguments).
+In the wagon configuration add
+
+~~~{.cxx}
+__R_ADDTASK__->SetGlobalDecisionContainerName("EmcalTriggerDecision");
+__R_ADDTASK__->AutoConfigure(kDataset);
+~~~
+
+kDataset should be the name of a supported dataset. Please refer to the description of class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection
+for supported datasets.
+
+### 2. Use the trigger selection in your analysis
+
+In case the trigger selection task is added to the analysis, users can access it and use it for event selection. The
+trigger seletion results are store in a trigger decision container (PWG::EMCAL::AliEmcalTriggerDecisionContainer). The
+trigger decision container hold the trigger decision objects, consisting of the final trigger decision (fired yes/no),
+the maximum trigger patch firing the trigger and all trigger patches firing the trigger. If one is just interested in
+the event selection result it is sufficient to query the IsEventSelected method of the trigger decision container with
+the valid name of the Level1 trigger to be selected.
+
+The following code demonstrates how to select EG1 events using the EMCAL trigger decision container
+
+~~~{.cxx}
+auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+if(!triggercont){
+  AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;    }
+  return false;
+if(!triggercont->IsEventSelected(fTriggerSelectionString)) return false;
+~~~
+
 
 ## Trigger bit setup
 

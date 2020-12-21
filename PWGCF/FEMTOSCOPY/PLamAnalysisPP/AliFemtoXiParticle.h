@@ -29,16 +29,14 @@ class AliFemtoXiParticle // Reconstructed Lambdas parameters needed for correlat
   AliFemtoXiParticle &operator=(const AliFemtoXiParticle &obj);
   
   TVector3 fMomentum;  //Xi momentum
-  double fPt;           //Xi transverse momentum
-  double fMass;         //Xi reconstructed mass
+  float fPt;           //Xi transverse momentum
+  float fMass;         //Xi reconstructed mass
   short fDaughterID1;   //Daughter (proton) AODtrack ID
   short fDaughterID2;   //Daughter (pion) AODtrack ID
   short fBachID; //Bachelor ID of Xi candidate
   bool fXitag;
-  double fPointing;
-  
-#ifdef __ROOT__
-  ClassDef(AliFemtoXiParticle, 1);
-#endif
+  float fPointing;
+
+  ClassDef(AliFemtoXiParticle, 3)
 };
 #endif

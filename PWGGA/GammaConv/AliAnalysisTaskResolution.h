@@ -12,7 +12,6 @@
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "TList.h"
-#include "AliStack.h"
 #include "TClonesArray.h"
 
 

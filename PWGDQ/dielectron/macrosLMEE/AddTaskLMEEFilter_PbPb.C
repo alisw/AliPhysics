@@ -1,14 +1,15 @@
-AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
-				      Bool_t gridconf=kFALSE,
-				      ULong64_t triggers=AliVEvent::kINT7,
-				      TString period="",
-				      Bool_t useTrackCuts = kTRUE,
-				      Bool_t storeLS = kTRUE,
-				      Bool_t hasMC_aod = kFALSE){
+// Important do not use this FilterTask for final Filtered AOD productions!
+// Due to the variability of the used config file, it is to easy to loose track of the used settings!
 
-  // This AddTask macro is a copy of the JPsi Nano Filteringtask:
-  // (PWGDQ/dielectron/macrosJPSI/AddTaskJPSIFilter_pp.C
-  // and adapted to LMEE analyses
+AliAnalysisTask *AddTaskLMEEFilter_PbPb(
+  TString cfg="ConfigLMEE_nano_PbPb.C",
+  Bool_t gridconf=kFALSE,
+  TString period="",
+  Bool_t storeLS = kFALSE,
+  Bool_t hasMC_aod = kFALSE,
+  // ULong64_t triggers=AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral+AliVEvent::kEMCEGA+AliVEvent::kEMCEJE
+  ULong64_t triggers=AliVEvent::kINT7
+  ){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -16,7 +17,7 @@ AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
     Error("AddTaskLMEEFilter", "No analysis manager found.");
     return 0;
   }
-  
+
   //check for output aod handler
   if (!mgr->GetOutputEventHandler()||mgr->GetOutputEventHandler()->IsA()!=AliAODHandler::Class()) {
     Warning("AddTaskLMEEFilter","No AOD output handler available. Not adding the task!");
@@ -25,7 +26,7 @@ AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
 
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)||hasMC_aod;
-  
+
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
@@ -35,19 +36,17 @@ AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
     //mgr->GetGridHandler()->SetMergeAOD(kTRUE);
   }
 
-  //set config file name
+
   TString configFile("");
-  printf("%s \n",gSystem->pwd());
-  TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  printf("pwd:        %s \n",gSystem->pwd());
   if(cfg.IsNull()) cfg="ConfigLMEE_nano_PbPb.C";
 
-  // the different paths
-  TString alienPath("alien:///alice/cern.ch/user/m/miweber/PWGDQ/dielectron/macrosLMEE");
+  TString alienPath("alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/");
   TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
 
   ////////// >>>>>>>>>> alien config
-  if(gridconf){
-    if(!gSystem->Exec(Form("alien_cp %s/%s .",alienPath.Data(),cfg.Data()))){
+  if(gridconf) {
+    if(!gSystem->Exec(Form("alien_cp %s/%s .",alienPath.Data(),cfg.Data()))) {
       gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
       configFile=gSystem->pwd();
     }
@@ -56,70 +55,83 @@ AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
       return;
     }
   }
-  else{
-    configFile=alirootPath.Data();
-  }
   ///////// >>>>>>>>> aliroot config
-
+  else if(!gridconf) configFile=alirootPath.Data();
   ///////// add config to path
   configFile+="/";
   configFile+=cfg.Data();
 
   //load dielectron configuration file (only once)
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(cfg.Data()))
+  TString checkconfig="ConfigLMEE_nano_PbPb";
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(checkconfig.Data()))
     gROOT->LoadMacro(configFile.Data());
 
-  AliDielectron *lmee=ConfigLMEE_nano_PbPb(0,hasMC,period,useTrackCuts);
-  
+  AliDielectron *diEle=ConfigLMEE_nano_PbPb(0,hasMC,period);
+
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
     aodHandler->SetCreateNonStandardAOD();
     aodHandler->SetNeedsHeaderReplication();
-    if(!period.Contains("LHC10h")) aodHandler->SetNeedsTOFHeaderReplication();
-    aodHandler->SetNeedsVZEROReplication();
-    if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
-    lmee->SetHasMC(hasMC);
-  }
-  
-  //Create task and add it to the analysis manager
-  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("lmee_DielectronFilter");
-  task->SetTriggerMask(triggers);
-   if (!hasMC) task->UsePhysicsSelection();
 
-  task->SetDielectron(lmee);
+   if(!period.Contains("LHC10h")) aodHandler->SetNeedsTOFHeaderReplication();
+    aodHandler->SetNeedsVZEROReplication();
+    /*aodHandler->SetNeedsTracksBranchReplication();
+    aodHandler->SetNeedsCaloClustersBranchReplication();
+    aodHandler->SetNeedsVerticesBranchReplication();
+    aodHandler->SetNeedsCascadesBranchReplication();
+    aodHandler->SetNeedsTrackletsBranchReplication();
+    aodHandler->SetNeedsPMDClustersBranchReplication();
+    aodHandler->SetNeedsJetsBranchReplication();
+    aodHandler->SetNeedsFMDClustersBranchReplication();
+    //aodHandler->SetNeedsMCParticlesBranchReplication();
+    aodHandler->SetNeedsDimuonsBranchReplication();*/ // deactivates several branches
+    //    if(hasMC) aodHandler->SetNeedsV0sBranchReplication();
+    if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
+    diEle->SetHasMC(hasMC);
+  }
+
+  //Create task and add it to the analysis manager
+  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("LMEE_DielectronFilter");
+  task->SetTriggerMask(triggers);
+  if (!hasMC) task->UsePhysicsSelection();
+
+
+  task->SetDielectron(diEle);
   if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
   task->SetCreateNanoAODs(kTRUE);
-  task->SetStoreEventsWithSingleTracks(kTRUE);
+  task->SetStoreEventplanes(kTRUE);
+  task->SetStoreEventsWithSingleTracks(kTRUE); 
+  // task->SetStoreHeader(kTRUE);
   mgr->AddTask(task);
-
 
   //----------------------
   //create data containers
   //----------------------
-    
+
+
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGDQ_dielectronFilter";
- 
+
   //create output container
-  
+
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("lmee_FilterQA",
+    mgr->CreateContainer("LMEE_FilterQA",
                          THashList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          containerName.Data());
-  
+
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("lmee_FilterEventStat",
+    mgr->CreateContainer("LMEE_FilterEventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          containerName.Data());
-  
-  
+
+
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
-  
+
   return task;
 }

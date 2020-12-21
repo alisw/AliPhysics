@@ -30,6 +30,7 @@ set(SRCS
   AliAnalysisV0Lam.cxx
   AliAnalysisV0LamCutProcessing.cxx
   AliAnalysisV0LamEventCollection.cxx
+  AliAnalysisV0Efficiency.cxx
   )
 
 # Headers from sources

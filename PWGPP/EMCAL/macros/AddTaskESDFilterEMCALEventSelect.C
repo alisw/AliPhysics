@@ -1,6 +1,6 @@
 
 /// \file AddTaskESDFilterEMCALEventSelect.C
-/// \ingroup EMCALPerformanceMacros
+/// \ingroup EMCALPerfAddTaskMacros
 /// \brief Configuration of EMCal filtering task.
 ///
 /// This task reclusterizes on the fly EMCal clusters, creates a new
@@ -70,9 +70,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterEMCALEventSelect(Float_t energyCut = 1
   reco->SwitchOnRejectExoticCluster();
   
   // Pass the bad channels, need to access run number
-  TString fileName="$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root";
   AliOADBContainer *contBC=new AliOADBContainer("");
-  contBC->InitFromFile((char*)fileName.Data(),"AliEMCALBadChannels"); 
+  contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels"); 
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runNumber); 
   if(arrayBC){
     TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject("pass1");

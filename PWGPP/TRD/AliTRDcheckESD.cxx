@@ -853,11 +853,11 @@ TH1D* AliTRDcheckESD::Proj2D(TH2* hist, TH1* mpvErr, TH1* widthErr, TH1* chi2) {
     //hD->Rebin(4);
     if(hD->Integral()>10) {
       fitLandau->SetParameter(1, hD->GetBinCenter(hD->GetMaximumBin()));
-      fitLandau->SetParLimits(1, 0.2*hD->GetBinCenter(hD->GetMaximumBin()), 3.0*hD->GetBinCenter(hD->GetMaximumBin()));
+      //fitLandau->SetParLimits(1, 0.2*hD->GetBinCenter(hD->GetMaximumBin()), 3.0*hD->GetBinCenter(hD->GetMaximumBin()));
       fitLandau->SetParameter(0, 1000.);
-      fitLandau->SetParLimits(0, 1., 10000000.);
+      //fitLandau->SetParLimits(0, 1., 10000000.);
       fitLandau->SetParameter(2, 0.5*hD->GetBinCenter(hD->GetMaximumBin()));
-      fitLandau->SetParLimits(2, 0.01*hD->GetBinCenter(hD->GetMaximumBin()), 1.0*hD->GetRMS());
+      //fitLandau->SetParLimits(2, 0.01*hD->GetBinCenter(hD->GetMaximumBin()), 1.0*hD->GetRMS());
       hD->Fit(fitLandau, "Q0", "", hD->GetXaxis()->GetXmin(), hD->GetXaxis()->GetXmax());
       hD->Fit(fitLandau, "Q0", "", hD->GetXaxis()->GetXmin(), hD->GetXaxis()->GetXmax());
       hProjection->SetBinContent(iBin, fitLandau->GetParameter(1));

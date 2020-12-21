@@ -20,6 +20,7 @@
 #define ALIHFEREDUCEDEVENT_H
 
 #include <TObject.h>
+#include <iostream>
 
 class TObjArray;
 class AliHFEreducedTrack;
@@ -141,7 +142,18 @@ class AliHFEreducedEvent : public TObject{
   Float_t GetV0APlanePhi() const {return fV0APlanePhi;}
   Float_t GetV0CPlanePhi() const {return fV0CPlanePhi;}
   Float_t GetTPCPlanePhi() const {return fTPCPlanePhi;}
+  
+  void SetV0PlanePhiCorrected(Float_t phi){fV0PlanePhiCorrected=phi;}
+  void SetV0APlanePhiCorrected(Float_t phi){fV0APlanePhiCorrected=phi;}
+  void SetV0CPlanePhiCorrected(Float_t phi){fV0CPlanePhiCorrected=phi;}
+  
+  Float_t GetV0PlanePhiCorrected() const {return fV0PlanePhiCorrected;}
+  Float_t GetV0APlanePhiCorrected() const {return fV0APlanePhiCorrected;}
+  Float_t GetV0CPlanePhiCorrected() const {return fV0CPlanePhiCorrected;}
 
+  void SetMagneticField(Float_t field){fMagneticField=field;}
+  Float_t GetMagneticField() const {return fMagneticField;}
+  
   void SetV0Multiplicity(Float_t v0A, Float_t v0C) {
     fV0Multiplicity[0] = v0A;
     fV0Multiplicity[1] = v0C;
@@ -187,9 +199,13 @@ class AliHFEreducedEvent : public TObject{
   Float_t fV0APlanePhi;         // V0 Event Plane
   Float_t fV0CPlanePhi;         // V0 Event Plane
   Float_t fTPCPlanePhi;         // TPC Event Plane
+  Float_t fMagneticField;         // The Magnetic Field
+  Float_t fV0PlanePhiCorrected;          // V0 Event Plane corrected Values
+  Float_t fV0APlanePhiCorrected;         // V0 Event Plane corrected Values
+  Float_t fV0CPlanePhiCorrected;         // V0 Event Plane corrected Values
   
   
-  ClassDef(AliHFEreducedEvent, 6)
+  ClassDef(AliHFEreducedEvent, 7)
 };
 
 //____________________________________________________________

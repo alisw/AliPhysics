@@ -324,7 +324,7 @@ void AnalysisTrainCAF(Int_t nEvents = 10000, Int_t nOffset = 0, char *ds = "/PWG
 TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esdTree",Int_t nFiles = 0)
 {
 // Create a chain from an alien collection.                                                                          
-   TAlienCollection * myCollection  = TAlienCollection::Open(xmlfile);
+   TGridCollection * myCollection  = gGrid->OpenCollection(xmlfile);
 
    if (!myCollection) {
       ::Error("CreateChainSingle", "Cannot create an AliEn collection from %s", xmlfile) ;

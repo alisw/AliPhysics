@@ -1,0 +1,43 @@
+# This is the startup script
+Executable = "/alice/cern.ch/user/b/blim/Xi1530Extractor/extract.sh";
+
+# List of requested packages
+Packages = {
+   "VO_ALICE@AliPhysics::vAN-20190212_ROOT6-1",
+   "VO_ALICE@APISCONFIG::V1.1x"
+};
+
+Jobtag = {
+   "comment:Xi1530 Extraction Macro on Alien Grid"
+};
+
+TTL = "40000";
+Price = "1";
+split="production:1-1";
+#Validationcommand = "/alice/cern.ch/user/b/blim/Xi1530Extractor/extract_validation.sh";
+User = "blim";
+
+JDLVariables = { "Packages","OutputDir" };
+
+# Arguments 
+# $1: sys (eg. 1=default, 2,3,4...)
+# $2: Multiplicity start (eg. 0)
+# $3: Multiplicity end (eg. 100)
+# $4: options (eg. HM_LikeSignBkg_BinCount)
+Arguments = "$1 $2 $3 $4 $5";
+Workdirectorysize = {"5000MB"};
+
+InputFile = {
+   "LF:/alice/cern.ch/user/b/blim/Xi1530Extractor/DrawXi1530.C",
+   "LF:/alice/cern.ch/user/b/blim/Xi1530Extractor/AnalysisResults_LHC15fi_16deghijklop_17cefgijklmor_SYS_light_fixed.root",
+   "LF:/alice/cern.ch/user/b/blim/Xi1530Extractor/AnalysisResults_Xi1530LHC18c6b_RsnMC_SYS_fixed.root",
+   "LF:/alice/cern.ch/user/b/blim/Xi1530Extractor/AnalysisResults_Xi1530LHC16_GenMC_final.root"
+};
+
+OutputDir="/alice/cern.ch/user/b/blim/Xi1530Extractor/out/$1$2$3$4$5";
+OutputArchive = {
+	"log_archive.zip:std*@disk=1",
+   "root_archive.zip:AnalysisResults_Extracted*@disk=1"
+};
+
+#Email="bonghwilim@gmail.com"

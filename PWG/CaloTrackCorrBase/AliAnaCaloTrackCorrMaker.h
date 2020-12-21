@@ -61,6 +61,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Int_t   GetAnaDebug()              const { return fAnaDebug      ; }
   void    SetAnaDebug(Int_t d)             { fAnaDebug = d         ; }
 	
+  Bool_t  IsEventProcessed()         const { return fProcessEvent  ; }
+  void    SwitchOnProcessEvent()           { fProcessEvent = kTRUE ; }
+  void    SwitchOffProcessEvent()          { fProcessEvent = kFALSE; }
+  
   Bool_t  AreHistogramsMade()        const { return fMakeHisto     ; }
   void    SwitchOnHistogramsMaker()        { fMakeHisto = kTRUE    ; }
   void    SwitchOffHistogramsMaker()       { fMakeHisto = kFALSE   ; }
@@ -72,6 +76,9 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   void    SwitchOnDataControlHistograms(Int_t lev = 1) { fFillDataControlHisto = lev ; }
   void    SwitchOffDataControlHistograms()             { fFillDataControlHisto = 0   ; }
 
+  void    SwitchOnFillCentralityHistograms()  { fFillCentralityChecks = kTRUE ; }
+  void    SwitchOffFillCentralityHistograms() { fFillCentralityChecks = kFALSE; }
+  
   void    SwitchOnSumw2Histograms()        { fSumw2 = kTRUE        ; }
   void    SwitchOffSumw2Histograms()       { fSumw2 = kFALSE       ; }
 
@@ -82,15 +89,13 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   void    SetCaloUtils(AliCalorimeterUtils * cu) { fCaloUtils = cu ; }
   void    SetReader(AliCaloTrackReader * re)     { fReader = re    ; }
-
   
   AliCaloTrackReader  * GetReader()        { if (!fReader)    fReader    = new AliCaloTrackReader () ;
                                              return fReader        ; }
   	
   AliCalorimeterUtils * GetCaloUtils()     { if (!fCaloUtils) fCaloUtils = new AliCalorimeterUtils() ; 
                                              return fCaloUtils     ; }
-	
-
+	  
   // Main general methods
   
   void    Init();
@@ -115,6 +120,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   TList *  fAnalysisContainer ;                      ///<  List with analysis pointers.
     
+  Bool_t   fProcessEvent ;                           ///< In case of automatic wagon configuration, do not process analysis, but init stuff expected by manager
+  
   Bool_t   fMakeHisto ;                              ///<  If true makes final analysis with histograms as output.
     
   Bool_t   fMakeAOD ;                                ///<  If true makes analysis generating AODs.
@@ -126,15 +133,18 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Double_t fScaleFactor ;                            ///<  Scaling factor needed for normalization.
     
   Int_t    fFillDataControlHisto;                    ///<  Fill histograms only interesting with data. 0 not filled; 1 basic control; 2+ trigger related
-    
+   
+  Bool_t   fFillCentralityChecks;                    ///< Fill centrality checks
+  
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     
   Bool_t   fCheckPtHard ;                            ///< For MC done in pT-Hard bins, plot specific histogram
-  
+    
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
   TH1F *   fhNEvents;                                //!<! Number of acepted events counter histogram.
+  TH1F *   fhNEvents0Tracks;                         //!<! Number of acepted events counter histogram, for events with no unfiltered track
   TH1F *   fhNExoticEvents;                          //!<! Number of events triggered by exotic, counter histogram.
   TH1F *   fhNEventsNoTriggerFound;                  //!<! Number of events where whatever was done, no trigger is found.
   TH1F *   fhNPileUpEvents;                          //!<! N events pasing pile up cut.
@@ -153,8 +163,16 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhPileUpClusterMult;                      //!<! N clusters with high time.
   TH1F *   fhPileUpClusterMultAndSPDPileUp;          //!<! N clusters with high time in events tagged as pile-up by SPD.
     
-  TH1F *   fhTrackMult;                              //!<! Number of tracks per event histogram.
+  TH1F *   fhTrackMult;                              //!<! Number of filtered tracks per event histogram.
   TH1F *   fhCentrality;                             //!<! Histogram with centrality bins.
+  TH1F *   fhCentralityCaloOnly;                     //!<! Histogram with centrality bins, event with also trigger bit CaloOnly
+  TH1F *   fhCentralityEMCEGA;                       //!<! Histogram with centrality bins, event with also trigger bit kEMCEGA
+  TH1F *   fhCentralityEMC7;                         //!<! Histogram with centrality bins, event with also trigger bit kEMC7
+  TH1F *   fhCentralityINT7;                         //!<! Histogram with centrality bins, event with also trigger bit kINT7
+  TH1F *   fhCentralityCENT;                         //!<! Histogram with centrality bins, event with also trigger bit kCentral
+  TH1F *   fhCentralitySEMI;                         //!<! Histogram with centrality bins, event with also trigger bit kSemiCentral
+  TH1F *   fhCentrality0Tracks;                      //!<! Histogram with centrality bins, event with no track at all
+  TH2F *   fhCentralityTrackMult;                    //!<! Histogram with centrality bins vs track multiplicity.
   TH1F *   fhEventPlaneAngle;                        //!<! Histogram with Event plane angle.
 
   TH1F *   fhNEventsWeighted;                        //!<! Number of acepted events counter histogram. After centrality weight.
@@ -197,11 +215,13 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH2F *   fhClusterTriggerBCExoticEventBC;          //!<! Correlate the found BC in the exotic trigger and the event BC.
   TH2F *   fhClusterTriggerBCExoticEventBCUnMatch;   //!<! Correlate the found BC in the exotic trigger and the event BC, when there was no match with the trigger BC.
   
+  TH1I *   fhRunNumberEmbeddedDiff;                  //!<! In case of embedding correlate signal and background runs, difference of run number
+  
   /// Assignment operator not implemented.
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,26) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,27) ;
   /// \endcond
 
 } ;

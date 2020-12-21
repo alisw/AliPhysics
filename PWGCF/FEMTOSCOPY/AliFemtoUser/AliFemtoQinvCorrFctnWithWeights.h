@@ -58,7 +58,7 @@
 
 class AliFemtoQinvCorrFctnWithWeights : public AliFemtoCorrFctn {
 public:
-  AliFemtoQinvCorrFctnWithWeights(char* title, const int& nbins, const float& QinvLo, const float& QinvHi, TH2D *filter1, TH2D *filter2);
+  AliFemtoQinvCorrFctnWithWeights(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi, TH2D *filter1, TH2D *filter2);
   AliFemtoQinvCorrFctnWithWeights(const AliFemtoQinvCorrFctnWithWeights& aCorrFctn);
   virtual ~AliFemtoQinvCorrFctnWithWeights();
 
@@ -77,15 +77,17 @@ public:
   TH1D* Denominator();
   TH1D* Ratio();
 
-  virtual TList* GetOutputList();
   void Write();
+  virtual TList* GetOutputList();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoQinvCorrFctnWithWeights(*this); }
 
 private:
   TH1D* fNumerator;          // numerator - real pairs
   TH1D* fDenominator;        // denominator - mixed pairs
   TH1D* fRatio;              // ratio - correlation function
   TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
-  
+
   TH2D *fYPtWeightsParticle1;
   TH2D *fYPtWeightsParticle2;
 

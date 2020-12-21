@@ -9,6 +9,7 @@
 #include <TDirectory.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TProfile.h>
 #include <TPRegexp.h>
 #include <TVector.h>
@@ -371,6 +372,7 @@ class AliJTH1DerivedPlayer {
 
 typedef AliJTH1Derived<TH1D> AliJTH1D;
 typedef AliJTH1Derived<TH2D> AliJTH2D;
+typedef AliJTH1Derived<TH3D> AliJTH3D;
 typedef AliJTH1Derived<TProfile> AliJTProfile;
 
 
@@ -418,6 +420,7 @@ class AliJHistManager: public AliJNamed{
         AliJTProfile& GetTProfile( TString name){ return dynamic_cast<AliJTProfile&>(*GetTH1(name)); }
         AliJTH1D& GetTH1D( TString name){ return dynamic_cast<AliJTH1D&>(*GetTH1(name)); }
         AliJTH2D& GetTH2D( TString name){ return dynamic_cast<AliJTH2D&>(*GetTH1(name)); }
+        AliJTH3D& GetTH3D( TString name){ return dynamic_cast<AliJTH3D&>(*GetTH1(name)); }
         bool fIsLoadMode;
 
         TString GetHistName(int i){ return fHistNames[i]; }

@@ -91,6 +91,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   // Setters for detector level effects
   void SetRequireT0vtx(Bool_t b = true)                {fkRequireTZEROvtx = b;} 			   // Set to require T0 vtx 
   void SetRequireV0AC(Bool_t b = true)                 {fkRequireVZEROAC = b;} 			           // Set to require V0 AC 
+  void SetRejectPileup(Bool_t b = true)                {fkRejectPileup = b;}                               // Set to reject pileup    
   void SetRejectFastCluster(Bool_t b = false)          {fkRejectFastOnly = b;}                             // Reject fast cluster
   void SetPtHardCuts(Double_t jetpt = 0, Double_t trackpt = 0) {fPtHardAndPythiaJetPtFactor = jetpt; fPtHardAndTrackPtFactor = trackpt;}
 
@@ -127,6 +128,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   void SetJetEtaWindow(Float_t fmin, Float_t fmax)     {fJetEtaMin = fmin; fJetEtaMax = fmax;}             // Set jet eta window
   void SetJetDeltaPhiCut(Float_t dphi)                 {fJetDeltaPhiCut = dphi;}                           // Set delta phi limit for dijet selection. NB: pi+/-fJetDeltaPhiCut
   void SetJetDoMatching(Bool_t b, Bool_t hm = kFALSE)  {fkDoJetMatching=b; fkFillMismatchHisto=hm;}        // Enable jet matching and mismatched histograms
+  void SetJetUseClosestJetMatching(Bool_t b)           {fkUseClosestJetsforMatching = b;}                  // Enable use of Closest jet for matching (fkDoJetMatching hast to be on)
   void SetJetMatchingFractionMin(Float_t x)            {fJetMatchingFractionMin = x;}                      // Set the minimum energy fraction for matching
   void SetJetMatchedDistMax(Double_t f)                {fJetMatchedDistMax = f;}                           // Set maximum distance between matched jets
   void SetJetMatchingParams(Float_t x, Double_t f, Bool_t hm = kFALSE)  
@@ -257,6 +259,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   void       GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius,Double_t& sumPt);
   Int_t      GetListOfTracks(TList *list, Int_t type); 
   Int_t      GetListOfMatchedJets(TList** listJets, Int_t* nUsedJets, TList* listMatchedJets1, TList* listMatchedJets2, Int_t ifirstBr);
+  Int_t      GetListOfClosestJets(TList** listJets, Int_t* nUsedJets, TList* listMatchedJets1, TList* listMatchedJets2, Int_t ifirstBr);
   Bool_t     TrackQAFilter(TList* list, Int_t type);
   Int_t      GetListOfJets(TList *list, Int_t js);     
   void       CreateHistos();                           
@@ -298,6 +301,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Bool_t             fkRejectFastOnly;              // Switch to reject FastCluster
   Bool_t 	     fkRequireVZEROAC;		    // Switch to require V0 AC
   Bool_t 	     fkRequireTZEROvtx;		    // Switch to require T0 vtx
+  Bool_t             fkRejectPileup;                // Switch to reject pileup
   Float_t 	     fCentCutUp;		    // Upper limit on centrality
   Float_t 	     fCentCutLo;		    // Lower limit on centrality
   Int_t              fCentClass[4];                 // Centrality classes
@@ -342,6 +346,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   Float_t 	     fJetEtaMax;		    // Eta jet max
   Float_t            fJetDeltaPhiCut;               // Delta phi limit for dijet selection (pi+/-fJetDeltaPhiCut)
   Bool_t             fkDoJetMatching;               // Switch on jet matching (kTRUE)
+  Bool_t             fkUseClosestJetsforMatching;   // Switch on CLosest jet matching (kTRUE);
   Bool_t             fkFillMismatchHisto;           // Fill matched histos (kFALSE)
   Float_t 	     fJetMatchingFractionMin;       // Minimum energy fraction for matching
   Double_t           fJetMatchedDistMax;     	    // Maximum distance in eta-phi space for matching
@@ -441,6 +446,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   TH1D*             fh1JetPr_Mismatched[fgkFFMNJetBranches][5]; //! Mismatched (0: generated, 1: reconstructed) jet property distributions: 0: pt, 1: eta, 2: phi, 3: area, 4: constituents
   TH2D*         fh2MismatchedJetsAreaVSPt[fgkFFMNJetBranches];           //! Histos of area vs Pt
   TH2D*         fh2MatchedJetsRDPtVSPt[fgkFFMNJetBranches];              //! Histos of DeltaPt vs Pt
+  TH2D*         fh2MatchedJetsUE[fgkFFMNJetBranches];            //! Histos of UEptSum vs Pt
   TH2D*         fh2MatchedJetsAreaVSPt[fgkFFMNJetBranches];              //! Histos of area vs Pt
   TH2D*	            fh2MatchedJets[5];		               //! Histos in 0: pt, 1: eta, 2: phi, 3: area, 4: constituents of jets after matching
 

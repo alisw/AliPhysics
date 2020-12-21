@@ -13,12 +13,12 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnGammaMonitorAlpha)
 #endif
 
 //____________________________
-AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(char* title, const int& aMinvBins=20, const int& aDAlphaBins=20):
+AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(const char* title, const int& aMinvBins=20, const int& aDAlphaBins=20):
   AliFemtoCorrFctn(),
   fNumPMinvDAlpha(0),
   fDenPMinvDAlpha(0),
@@ -53,30 +53,16 @@ AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(char* title
 //____________________________
 AliFemtoCorrFctnGammaMonitorAlpha::AliFemtoCorrFctnGammaMonitorAlpha(const AliFemtoCorrFctnGammaMonitorAlpha& aCorrFctn) :
   AliFemtoCorrFctn(),
-  fNumPMinvDAlpha(0),
-  fDenPMinvDAlpha(0),
-  fNumNMinvDAlpha(0),
-  fDenNMinvDAlpha(0)
+  fNumPMinvDAlpha(nullptr),
+  fDenPMinvDAlpha(nullptr),
+  fNumNMinvDAlpha(nullptr),
+  fDenNMinvDAlpha(nullptr)
 {
   // copy constructor
-  if (aCorrFctn.fNumPMinvDAlpha)
-    fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
-  else
-    fNumPMinvDAlpha = 0;
-  if (aCorrFctn.fDenPMinvDAlpha)
-    fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
-  else
-    fDenPMinvDAlpha = 0;
-
-  if (aCorrFctn.fNumNMinvDAlpha)
-    fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
-  else
-    fNumNMinvDAlpha = 0;
-  if (aCorrFctn.fDenNMinvDAlpha)
-    fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
-  else
-    fDenNMinvDAlpha = 0;
-
+  fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
+  fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
+  fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
+  fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
 }
 //____________________________
 AliFemtoCorrFctnGammaMonitorAlpha::~AliFemtoCorrFctnGammaMonitorAlpha(){
@@ -93,28 +79,16 @@ AliFemtoCorrFctnGammaMonitorAlpha& AliFemtoCorrFctnGammaMonitorAlpha::operator=(
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fNumPMinvDAlpha)
-    fNumPMinvDAlpha = new TH2D(*aCorrFctn.fNumPMinvDAlpha);
-  else
-    fNumPMinvDAlpha = 0;
-  if (aCorrFctn.fDenPMinvDAlpha)
-    fDenPMinvDAlpha = new TH2D(*aCorrFctn.fDenPMinvDAlpha);
-  else
-    fDenPMinvDAlpha = 0;
-
-  if (aCorrFctn.fNumNMinvDAlpha)
-    fNumNMinvDAlpha = new TH2D(*aCorrFctn.fNumNMinvDAlpha);
-  else
-    fNumNMinvDAlpha = 0;
-  if (aCorrFctn.fDenNMinvDAlpha)
-    fDenNMinvDAlpha = new TH2D(*aCorrFctn.fDenNMinvDAlpha);
-  else
-    fDenNMinvDAlpha = 0;
+  *fNumPMinvDAlpha = *aCorrFctn.fNumPMinvDAlpha;
+  *fDenPMinvDAlpha = *aCorrFctn.fDenPMinvDAlpha;
+  *fNumNMinvDAlpha = *aCorrFctn.fNumNMinvDAlpha;
+  *fDenNMinvDAlpha = *aCorrFctn.fDenNMinvDAlpha;
 
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnGammaMonitorAlpha::Finish(){
+void AliFemtoCorrFctnGammaMonitorAlpha::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -122,21 +96,18 @@ void AliFemtoCorrFctnGammaMonitorAlpha::Finish(){
   //  mShareNumerator->Draw();
   //mShareDenominator->Draw();
   //mRatio->Draw();
-
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnGammaMonitorAlpha::Report(){
+AliFemtoString AliFemtoCorrFctnGammaMonitorAlpha::Report()
+{
   // create report
-  string stemp = "Gamma MonitorAlpha Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumPMinvDAlpha->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenPMinvDAlpha->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "Gamma MonitorAlpha Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fNumPMinvDAlpha->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDenPMinvDAlpha->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 //____________________________
 void AliFemtoCorrFctnGammaMonitorAlpha::AddRealPair( AliFemtoPair* pair){
@@ -151,7 +122,7 @@ void AliFemtoCorrFctnGammaMonitorAlpha::AddRealPair( AliFemtoPair* pair){
   double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
   double e2 = TMath::Sqrt(me*me + pair->Track2()->Track()->P().Mag2());
 
-  double minv = (2*me*me + 2*(e1*e2 - 
+  double minv = (2*me*me + 2*(e1*e2 -
 			     pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x() -
 			     pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y() -
 					 pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()));
@@ -178,7 +149,7 @@ void AliFemtoCorrFctnGammaMonitorAlpha::AddMixedPair( AliFemtoPair* pair){
   double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
   double e2 = TMath::Sqrt(me*me + pair->Track2()->Track()->P().Mag2());
 
-  double minv = (2*me*me + 2*(e1*e2 - 
+  double minv = (2*me*me + 2*(e1*e2 -
 			     pair->Track1()->Track()->P().x()*pair->Track2()->Track()->P().x() -
 			     pair->Track1()->Track()->P().y()*pair->Track2()->Track()->P().y() -
 					 pair->Track1()->Track()->P().z()*pair->Track2()->Track()->P().z()));

@@ -1,3 +1,28 @@
+
+
+//----------------------------------------------------
+
+AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "./LctoV0bachelorCuts.root",
+							 Bool_t rejectIfNotFromQuark=kTRUE,
+							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kFALSE, // all in
+							 Bool_t isKeepDfromB = kFALSE, Bool_t isKeepDfromBOnly = kFALSE, // prompt
+							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kTRUE, // no-prompt
+							 Int_t configuration = AliCFTaskVertexingHF::kCheetah,
+							 Int_t pdgCode = 4122, Char_t isSign = 2, Char_t lcToV0bachelorDecayMode = 0,
+							 TString usercomment = "username",
+							 Bool_t useWeight=kFALSE, 
+							 Bool_t useFlatPtWeight = kFALSE, 
+							 Bool_t useZWeight = kFALSE, 
+							 Bool_t useNchWeight = kFALSE, 
+							 Bool_t useNtrkWeight = kFALSE, 
+							 TString estimatorFilename="", 
+							 Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, 
+							 Bool_t isPPData = kTRUE, 
+							 Bool_t isPPbData = kFALSE, 
+							 Double_t refMult = 9.26, 
+							 Bool_t isFineNtrkBin = kFALSE)
+{
+
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ptmin =    0.0; // GeV/c
 const Double_t ptmax = 9999.0; // GeV/c
@@ -45,33 +70,12 @@ const Float_t cosPAmin    =-1.05;
 const Float_t cosPAmax    = 1.05;
 
 
-//----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "./LctoV0bachelorCuts.root",
-							 Bool_t rejectIfNotFromQuark=kTRUE,
-							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kFALSE, // all in
-							 Bool_t isKeepDfromB = kFALSE, Bool_t isKeepDfromBOnly = kFALSE, // prompt
-							 //Bool_t isKeepDfromB = kTRUE, Bool_t isKeepDfromBOnly = kTRUE, // no-prompt
-							 Int_t configuration = AliCFTaskVertexingHF::kCheetah,
-							 Int_t pdgCode = 4122, Char_t isSign = 2, Char_t lcToV0bachelorDecayMode = 0,
-							 TString usercomment = "username",
-							 Bool_t useWeight=kFALSE, 
-							 Bool_t useFlatPtWeight = kFALSE, 
-							 Bool_t useZWeight = kFALSE, 
-							 Bool_t useNchWeight = kFALSE, 
-							 Bool_t useNtrkWeight = kFALSE, 
-							 TString estimatorFilename="", 
-							 Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, 
-							 Bool_t isPPData = kTRUE, 
-							 Bool_t isPPbData = kFALSE, 
-							 Double_t refMult = 9.26, 
-							 Bool_t isFineNtrkBin = kFALSE)
-{
 
   if ( (isPPData && isPPbData) ||
        (!isPPData && !isPPbData) ) {
     printf("You have to choose the data kind; bad choise isPPData=%d isPPbData=%d\n",isPPData,isPPbData);
-    return;
+    return NULL;
   }
 
   printf("Adding CF task using cuts from file %s\n",cutFile);
@@ -81,9 +85,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   else if (configuration == AliCFTaskVertexingHF::kCheetah){
     printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
   }
+  else if (configuration == AliCFTaskVertexingHF::kFalcon){
+    printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+  }
   else{
     printf("The configuration is not defined! returning\n");
-    return;
+    return NULL;
   }
 	       
   gSystem->Sleep(2000);
@@ -94,15 +101,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 
   TString expected;
   if (isSign == 0 && pdgCode < 0){
-    AliError(Form("Error setting PDG code (%d) and sign (0 --> Lc+ only): they are not compatible, returning",pdgCode));
+    Printf("ERROR:Error setting PDG code (%d) and sign (0 --> Lc+ only): they are not compatible, returning",pdgCode);
     return 0x0;
   }
   else if (isSign == 1 && pdgCode > 0){
-    AliError(Form("Error setting PDG code (%d) and sign (1 --> Lc- only): they are not compatible, returning",pdgCode));
+    Printf("ERROR:Error setting PDG code (%d) and sign (1 --> Lc- only): they are not compatible, returning",pdgCode);
     return 0x0;
   }
   else if (isSign > 2 || isSign < 0){
-    AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning",isSign));
+    Printf("ERROR:Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
     return 0x0;
   }
 
@@ -129,10 +136,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phiV0max = 2.*TMath::Pi();
 
   const Int_t nbinZvtx       =  30; //bins in centrality (total number)
-  const Int_t nbincent       =18+1; //bins in centrality (total number)
+  const Int_t nbincent       =19+1; //bins in centrality (total number)
   const Int_t nbinfake       =   3; //bins in fake
   //const Int_t nbinmult       =  48; //bins in multiplicity (total number)
-  const Int_t nbinmult         = 49; //bins in multiplicity (total number)
+  Int_t nbinmult         = 49; //bins in multiplicity (total number)
   const Int_t nbinmult_0_20    = 20; //bins in multiplicity between 0 and 20
   const Int_t nbinmult_20_50   = 15; //bins in multiplicity between 20 and 50
   const Int_t nbinmult_50_80   = 10; //bins in multiplicity between 50 and 80
@@ -351,32 +358,26 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   AliCFContainer* container;
   if (configuration == AliCFTaskVertexingHF::kSnail) {
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
-  }
-  else if (configuration == AliCFTaskVertexingHF::kCheetah) {
-    container = new AliCFContainer(nameContainer,"container for tracks",nstep,8,iBin);
-  }
+    //setting the bin limits
+    container -> SetBinLimits(ipT,binLimpT);
+    container -> SetBinLimits(iy,binLimy);
+    container -> SetBinLimits(iphi,binLimphi);
+    container -> SetBinLimits(ionFly,binLimonFlyV0);
+    container -> SetBinLimits(iZvtx,binLimzvtx);
+    container -> SetBinLimits(icent,binLimcent);
+    container -> SetBinLimits(ifake,binLimfake);
+    if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
+    else               container->SetBinLimits(imult, binLimmult);
 
-  //setting the bin limits
-  container -> SetBinLimits(ipT,binLimpT);
-  container -> SetBinLimits(iy,binLimy);
-  container -> SetBinLimits(iphi,binLimphi);
-  container -> SetBinLimits(ionFly,binLimonFlyV0);
-  container -> SetBinLimits(iZvtx,binLimzvtx);
-  container -> SetBinLimits(icent,binLimcent);
-  container -> SetBinLimits(ifake,binLimfake);
-  if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
-  else               container->SetBinLimits(imult, binLimmult);
+    container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iy,"y(#Lambda_{c})");
+    container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
+    container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
+    container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
+    container -> SetVarTitle(icent,"centrality");
+    container -> SetVarTitle(ifake,"fake");
+    container -> SetVarTitle(imult,"multiplicity");
 
-  container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
-  container -> SetVarTitle(iy,"y(#Lambda_{c})");
-  container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
-  container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
-  container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
-  container -> SetVarTitle(icent,"centrality");
-  container -> SetVarTitle(ifake,"fake");
-  container -> SetVarTitle(imult,"multiplicity");
-
-  if (configuration == AliCFTaskVertexingHF::kSnail) {
     container -> SetBinLimits(ipbach,binLimpbach);
     container -> SetBinLimits(ipTV0,binLimpTV0);
     container -> SetBinLimits(iyV0,binLimyV0);
@@ -398,6 +399,51 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
     container -> SetVarTitle(icosPA,"cosine pointing angle (#Lambda_{c})");
     //container -> SetVarTitle(,"c#tau -V0-");
     //container -> SetVarTitle(,"c#tau");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kCheetah) {
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,8,iBin);
+    //setting the bin limits
+    container -> SetBinLimits(ipT,binLimpT);
+    container -> SetBinLimits(iy,binLimy);
+    container -> SetBinLimits(iphi,binLimphi);
+    container -> SetBinLimits(ionFly,binLimonFlyV0);
+    container -> SetBinLimits(iZvtx,binLimzvtx);
+    container -> SetBinLimits(icent,binLimcent);
+    container -> SetBinLimits(ifake,binLimfake);
+    if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
+    else               container->SetBinLimits(imult, binLimmult);
+
+    container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iy,"y(#Lambda_{c})");
+    container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
+    container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
+    container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
+    container -> SetVarTitle(icent,"centrality");
+    container -> SetVarTitle(ifake,"fake");
+    container -> SetVarTitle(imult,"multiplicity");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kFalcon) {
+    Int_t iBinSuperFast[4];
+		const UInt_t ipTSuperFast = 0;
+		const UInt_t iySuperFast = 1;
+		const UInt_t icentSuperFast = 2;
+		const UInt_t imultSuperFast = 3;
+    iBinSuperFast[ipTSuperFast]=iBin[ipT];
+    iBinSuperFast[iySuperFast]=iBin[iy];
+    iBinSuperFast[icentSuperFast]=iBin[icent];
+    iBinSuperFast[imultSuperFast]=iBin[imult];
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,4,iBinSuperFast);
+    //setting the bin limits
+    container -> SetBinLimits(ipTSuperFast,binLimpT);
+    container -> SetBinLimits(iySuperFast,binLimy);
+    container -> SetBinLimits(icentSuperFast,binLimcent);
+    if (isFineNtrkBin) container->SetBinLimits(imultSuperFast, binLimmultFine);
+    else               container->SetBinLimits(imultSuperFast, binLimmult);
+
+    container -> SetVarTitle(ipTSuperFast,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iySuperFast,"y(#Lambda_{c})");
+    container -> SetVarTitle(icentSuperFast,"centrality");
+    container -> SetVarTitle(imultSuperFast,"multiplicity");
   }
 
   container -> SetStepTitle(0, "MCLimAcc");
@@ -533,7 +579,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
       task->SetMCNchHisto(hNchPrimaries);
       if(isPPbData) task->SetUseNchTrackletsWeight();
     } else {
-      AliFatal("Histogram for multiplicity weights not found");
+      Printf("FATAL: Histogram for multiplicity weights not found");
       return 0x0;
     }
     if(hNchMeasured) task->SetMeasuredNchHisto(hNchMeasured);
@@ -547,8 +593,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   } else {
     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found"); 
-      return;
+      Printf("FATAL: File with multiplicity estimator not found"); 
+      return NULL;
     }
     task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
     task->SetReferenceMultiplcity(refMult);
@@ -563,8 +609,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
       for (Int_t ip=0; ip < 2; ip++) {
 	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));    
 	if (!multEstimatorAvg[ip]) {
-	  AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	  return;               
+	  Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	  return NULL;               
 	}
       }
       task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -577,8 +623,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
       for(Int_t ip=0; ip<4; ip++) {
 	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
 	if (!multEstimatorAvg[ip]) {
-	  AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	  return;               
+	  Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+	  return NULL;               
 	}  
       }
       task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -633,7 +679,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   }
 
   THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-  Double_t** binEdges = new Double_t[2];
+  Double_t** binEdges = new Double_t*[2];
 
   // set bin limits
 

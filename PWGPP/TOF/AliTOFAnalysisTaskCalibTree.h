@@ -24,7 +24,7 @@ class AliGRPObject;
 
 class TH2F;
 
-#define MAXHITS 100000
+#define MAXHITS ((Int_t)100000)
 
 class AliTOFAnalysisTaskCalibTree :
 public AliAnalysisTaskSE
@@ -60,7 +60,10 @@ public AliAnalysisTaskSE
   void SetUseLHCClockPhase(Bool_t value = kTRUE) {fUseLHCClockPhase = value;}; // setter
   void SetSpecificStorageParOffline(Char_t *value) {fSpecificStorageParOffline = value;}; // set specific storage ParOffline
   void SetSpecificStorageRunParams(Char_t *value) {fSpecificStorageRunParams = value;}; // set specific storage RunParams
+  void SetSpecificStorageFineSlewing(Char_t *value) {fSpecificStorageFineSlewing = value;}; // set specific storage FineSlewing
+  void SetSaveCoordinates(Bool_t value = kTRUE) {fSaveCoordinates = value;}; // set flag to save hit coordinates in tree
 
+  void SetClusterFlags(AliESDtrack *track, Int_t itrack); // set clusterisation flags in output tree
  protected:
 
   AliTOFAnalysisTaskCalibTree(const AliTOFAnalysisTaskCalibTree &); // copy constructor
@@ -89,44 +92,54 @@ public AliAnalysisTaskSE
 
   // ESD related stuff
   Int_t fRunNumber;                   // run number
-  AliESDEvent *fESDEvent;             // ESD event
-  AliPhysicsSelection *fEventCuts;    // event cuts
-  AliESDtrackCuts *fTrackCuts;        // track cuts
-  AliESDpid *fESDpid;                 // ESD PID
+  AliESDEvent *fESDEvent;             //!<! ESD event
+  AliPhysicsSelection *fEventCuts;    //!<! event cuts
+  AliESDtrackCuts *fTrackCuts;        //!<! track cuts
+  AliESDtrackCuts *fAuxTrackCuts;     //!<! standard track cuts for primary candidates
+  AliESDpid *fESDpid;                 //!<! ESD PID
   UInt_t fStartTime;                  // start time
   UInt_t fEndTime;                    // end time
   UInt_t fElapsedTime;                // event time since start
   Bool_t fIsCollisionCandidate;       // is collision candidate
   Bool_t fHasVertex;                  // has vertex
-  const AliESDVertex *fVertex;        // vertex
+  const AliESDVertex *fVertex;        //!<! vertex
 
   // GRP related stuff
-  AliGRPManager *fGRPManager;         // GRP manager
-  const AliGRPObject *fGRPObject;     // GRP object
+  AliGRPManager *fGRPManager;         //!<! GRP manager
+  const AliGRPObject *fGRPObject;     //!<! GRP object
 
   // TOF related stuff
   TString fSpecificStorageParOffline; // specific storage ParOffline
   TString fSpecificStorageRunParams;  // specific storage RunParams
+  TString fSpecificStorageFineSlewing; // specific storage FineSlewing
   Float_t fTimeResolution;            // time resolution
-  AliTOFcalib *fTOFcalib;             // TOF calib
-  AliTOFT0maker *fTOFT0maker;         // TOF-T0 maker
-  AliTOFT0v1 *fTOFT0v1;               // TOF-T0 v1
+  AliTOFcalib *fTOFcalib;             //!<! TOF calib
+  AliTOFT0maker *fTOFT0maker;         //!<! TOF-T0 maker
+  AliTOFT0v1 *fTOFT0v1;               //!<! TOF-T0 v1
 
   // task related stuff
+  Int_t fMaxHits;       //array parameter
   UInt_t ftimestamp;
   Float_t fVertexZ;
   Float_t ftimezero;
   Int_t fnhits;
-  Float_t fmomentum[MAXHITS];
-  Float_t flength[MAXHITS];
-  Int_t findex[MAXHITS];
-  Float_t ftime[MAXHITS];
-  Float_t ftot[MAXHITS];
-  Float_t ftexp[MAXHITS];
+  Float_t* fmomentum;       //[fMaxHits] momentum
+  Float_t* flength;         //[fMaxHits] length
+  Int_t* findex;            //[fMaxHits] index
+  Float_t* ftime;           //[fMaxHits] time
+  Float_t* ftot;            //[fMaxHits] time over threshold
+  Float_t* ftexp;           //[fMaxHits] texp
+  Float_t* fDeltax;         //[fMaxHits] delta-x
+  Float_t* fDeltaz;         //[fMaxHits] delta-z
+  Float_t* fDeltat;         //[fMaxHits] delta-t
+  Float_t* fDeltaraw;       //[fMaxHits] delta-raw
+  UChar_t* fHitFlag;        //[fMaxHits] hit flag. 1 = multiple hit; 2 = adj. cluster in x; 4 = adj. cluster in z; 8 = track primary candidate; 16 = good track Nclusters in TPC; 32 = track good TPC chi2; 64 = good T0
+  Bool_t fSaveCoordinates;
+  TClonesArray* fTOFClusters; //!<! array of TOF clusters
 
-  TTree* fOutputTree;                 // output tree
+  TTree* fOutputTree;                 //!<! output tree
 
-  ClassDef(AliTOFAnalysisTaskCalibTree, 2);
+  ClassDef(AliTOFAnalysisTaskCalibTree, 5);
 };
 
 #endif /* ALIANALYSISTASKTOFCOMPACTCALIB_H */

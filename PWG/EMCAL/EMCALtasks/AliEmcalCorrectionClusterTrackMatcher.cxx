@@ -35,6 +35,7 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fMaxDistance(0.1),
   fUsePIDmass(kTRUE),
   fUseDCA(kTRUE),
+  fUseOuterParamInESDs(kFALSE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
   fClusterContainerIndexMap(),
@@ -45,8 +46,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fNEmcalClusters(0),
   fHistMatchEtaAll(0),
   fHistMatchPhiAll(0),
-  fMCGenerToAcceptForTrack(1),
-  fNMCGenerToAccept(0)
+  fNMCGenerToAccept(0),
+  fMCGenerToAcceptForTrack(1)
 {
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -75,13 +76,21 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
   GetProperty("usePIDmass", fUsePIDmass);
   GetProperty("useDCA", fUseDCA);
+  GetProperty("useOuterParamInESDs", fUseOuterParamInESDs);
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
-  fDoPropagation = fEsdMode;
+  
+  // Track extrapolation to EMCal surface
+  //
+  // Calculate extrapolation for all tracks on ESDs
+  fDoPropagation = fEsdMode; 
+  // Attempt extrapolation of non extrapolated AOD tracks
+  GetProperty("extrapolateNotMatchedAOD", fAttemptProp);
+  // Attempt extrapolation of non extrapolated AOD tracks in EMCal acceptance
+  GetProperty("extrapolateNotMatchedAODInEMCal", fAttemptPropMatch); 
   
   Bool_t enableFracEMCRecalc = kFALSE;
   GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
@@ -104,7 +113,7 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
       SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
     }
   }
-
+  
   return kTRUE;
 }
 
@@ -290,6 +299,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     // use pion mass, and fUseDCA to determine starting point of propagation
     mass = 0.1396;
   }
+
   AliParticleContainer * partCont = 0;
   TIter nextPartCont(&fParticleCollArray);
   while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
@@ -333,16 +343,27 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
         }
         
         // Propagate the track
-        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA, fUseOuterParamInESDs);
       }
-      
+
+      // Reset properties of the track to fix TRefArray errors which occur when AddTrackMatched(obj) is called.
+      // This particular combination is from AODTrackFilterTask
+      // Resetting just the TProcessID of the track is not sufficient!
+      // It is included here because multiple track collections can come from different files with different
+      // Process IDs (for example, when embedding). As long as the updated tracks are not stored in a file,
+      // (normally they are not) then resetting these values won't adversely change the behavior of the code
+      // (except for fixing the TRefArray errors).
+      track->SetUniqueID(0);
+      track->ResetBit(TObject::kHasUUID);
+      track->ResetBit(TObject::kIsReferenced);
+
       // Create AliEmcalParticle objects to handle the matching
       AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, partIterator.current_index()));
       emcalTrack->SetMatchedPtr(fEmcalClusters);
       
-      AliDebug(2, Form("Now adding track (pT = %.3f, eta = %.3f, phi = %.3f)"
+      AliDebug(2, Form("Now adding track %i (pT = %.3f, eta = %.3f, phi = %.3f)"
                        "Phi, Eta on EMCal = %.3f, %.3f",
-                       emcalTrack->Pt(), emcalTrack->Eta(), emcalTrack->Phi(),
+                       emcalTrack->IdInCollection(), emcalTrack->Pt(), emcalTrack->Eta(), emcalTrack->Phi(),
                        track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal()));
       
       fNEmcalTracks++;

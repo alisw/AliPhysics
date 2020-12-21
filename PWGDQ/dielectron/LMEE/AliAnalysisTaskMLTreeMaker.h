@@ -1,15 +1,21 @@
-
-
 #ifndef ALIANALYSISTASKMLTREEMAKER_H
 #define ALIANALYSISTASKMLTREEMAKER_H
 class TH1F;
 class TList;
 class TH2D;
 class TH3D;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 
 
 #include "AliAnalysisTaskSE.h"
+#include "AliDielectronVarCuts.h"
+#include "AliDielectronTrackCuts.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronPID.h"
+#include "AliAnalysisFilter.h"
+#include "AliDielectronEventCuts.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
@@ -18,16 +24,46 @@ class AliESDtrackCuts;
 
 class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskMLTreeMaker(const char *name);
+  AliAnalysisTaskMLTreeMaker(const char *name, TString TMVAWeightFileName);
   AliAnalysisTaskMLTreeMaker();
-  virtual ~AliAnalysisTaskMLTreeMaker(){} 
-   
+  ~AliAnalysisTaskMLTreeMaker(); 
+  
+
+  AliDielectronEventCuts* eventCuts;
+  AliDielectronVarCuts *eventplaneCuts;
+  AliAnalysisFilter* evfilter;
+  
+  AliDielectronVarCuts* trcuts;
+  AliDielectronTrackCuts *trfilter;
+  AliDielectronPID *pidcuts;
+  AliDielectronCutGroup* cuts;
+  AliAnalysisFilter* filter; 
+  
+
+  // need this to use PID in dielectron framework
+  AliDielectronVarManager* varManager;
+     
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-//~ 
+  int CheckGenerator(int Index);
+  
+  void SetCorrWidthMean(Int_t det, TH3D* width, TH3D* mean){
+    if(det==1){  fmeanITS=mean; fwidthITS=width;}
+    if(det==2){  fmeanTPC=mean; fwidthTPC=width;}
+    if(det==3){  fmeanTOF=mean; fwidthTOF=width;}   
+  };
 
+  void SetupTrackCuts(AliDielectronCutGroup* f);
+  void SetupEventCuts(AliDielectronEventCuts* f);
+  void SetupTMVAReader(TString TMVAweight);
+  
+  Bool_t Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter);
+  Bool_t IsTriggered(AliESDEvent *esd);
+  
+  void isMC(Bool_t isMC){hasMC=isMC;}
+  
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;
@@ -109,8 +145,18 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
     fKaonSigmas = answer;
     Printf("Kaon nSigma values for ITS, TPC and TOF will be written to tree");
   }
+  
+  void SetUseCorr( Bool_t b){
+      fuseCorr=b;
+  }
+  
+  void SetUseTMVA(Bool_t b){
+      useTMVA=b;
+  }
  private:
- 
+     
+  TMVA::Reader* TMVAReader;     //-> 
+  Bool_t useTMVA;
   AliPIDResponse *fPIDResponse;     //! PID response object
 
   //AliPIDCombined *fPIDCombined;    
@@ -119,7 +165,6 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> phi;
   std::vector<Double_t> pt;
   std::vector<Int_t> charge;
-  std::vector<Int_t> enh;  
 
 //  std::vector<Int_t> NClustersITS;
   std::vector<Float_t> NCrossedRowsTPC;
@@ -127,7 +172,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Bool_t> HasSPDfirstHit; 
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal; 
-  
+  std::vector<unsigned int> fGeneratorHashs; // will be filled with the TString hashes of the generators you want to be analyzed
   Bool_t loCuts;        //loose cuts?
   
 //  std::vector<Int_t> IsBG;
@@ -135,13 +180,33 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t runn;
   Int_t n;
   Double_t cent;
+  Double_t ZDCepA;
+  Double_t ZDCepC;
+  Double_t TPCep;
+  Double_t TPCepA;
+  Double_t TPCepC;
+  Double_t NTPCclsEv;
   
-  Double_t IsEventAccepted(AliESDEvent *event);
+  TList* fQnList;
+  AliAnalysisManager *man;
+
+  // SPD effi
+  Bool_t isUsingEffi;
+  TString fEfficiencyFileName;
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;  
+  TString fTriggerName;  
+  
+//  Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
-  
+  Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
+  Bool_t FillZDCEventPlane(Double_t* ZDCevArr);
+  void FillQnEventplanes(TList* qnlist);
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
+
 
   TList *fList;//output list for QA histograms
 
@@ -171,13 +236,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Bool_t fPionSigmas; 
   Bool_t fKaonSigmas;
 
-  Int_t fFilterBit;// track cut bit from track selection (default = 96)
+  Int_t fFilterBit;// track cut bit from track selection (default = kTPCqualSPDany)
 
-  AliESDtrackCuts* fESDTrackCuts;
+//  AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
-  AliMCEvent* fMcArray; 
+  AliMCEvent* fMcArray;
+  AliMCEvent* mcEvent; 
 
   std::vector<Double_t> EsigTPC;
   std::vector<Double_t> EsigTOF;
@@ -198,6 +264,18 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> MCeta;
   std::vector<Double_t> MCphi;
   
+  std::vector<Double_t> MCvertx;
+  std::vector<Double_t> MCverty;
+  std::vector<Double_t> MCvertz;
+  
+  
+  std::vector<Int_t> glabel ;
+  std::vector<Int_t> gLabelFirstMother ;
+  std::vector<Int_t> gLabelMinFirstMother ;
+  std::vector<Int_t> gLabelMaxFirstMother ;
+  std::vector<Int_t> iGenIndex ;
+  std::vector<Int_t> iPdgFirstMother ;
+  
   std::vector<Float_t> dcar;    //DCA
   std::vector<Float_t> dcaz;
   
@@ -207,17 +285,59 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
+  
+  std::vector<Int_t> ITS1S;
+  std::vector<Int_t> ITS2S;
+  std::vector<Int_t> ITS3S;
+  std::vector<Int_t> ITS4S;
+  std::vector<Int_t> ITS5S;
+  std::vector<Int_t> ITS6S;
+  
   std::vector<Double_t> chi2ITS;
-  std::vector<Double_t> chi2TPC;
-  std::vector<Double_t> chi2Global;
+//  std::vector<Double_t> chi2TPC;
+  std::vector<Double_t> chi2GlobalPerNDF;
   std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   
   std::vector<Int_t> pdg;
   std::vector<Int_t> pdgmother;
   std::vector<Int_t> hasmother;
+  std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
+  Float_t nITSTMVA;
+  Float_t ITS1SharedTMVA;
+  Float_t ITS2SharedTMVA;
+  Float_t ITS3SharedTMVA;
+  Float_t ITS4SharedTMVA;
+  Float_t ITS5SharedTMVA;
+  Float_t ITS6SharedTMVA;
+  Float_t nITSshared_fracTMVA;
+  Float_t NCrossedRowsTPCTMVA;
+  Float_t NClustersTPCTMVA;
+  Float_t NTPCSignalTMVA;
+  Float_t logDCAxyTMVA ;
+  Float_t logDCAzTMVA ;   
+  Float_t chi2GlobalPerNDFTMVA;
+  Float_t chi2ITSTMVA;
+  Float_t etaTMVA;
+  Float_t phiTMVA;
+  Float_t ptTMVA;   
+  Float_t centTMVA;
+  
+  std::vector<Float_t> MVAout;
+  
+  TString TMVAWeightFileName;
+  
+  TH3D* fwidthTPC;
+  TH3D* fmeanTPC;
+  TH3D* fwidthITS;
+  TH3D* fmeanITS;
+  TH3D* fwidthTOF;
+  TH3D* fmeanTOF;
+  
+  Bool_t fuseCorr;
+  Bool_t fIsTMVAInit;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];
@@ -230,11 +350,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker, 1); //
+  ClassDef(AliAnalysisTaskMLTreeMaker, 1); 
 
 };
 
 
 
 #endif
-

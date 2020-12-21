@@ -1,3 +1,4 @@
+#include <TObjString.h>
 #include <TChain.h>
 #include <TParticle.h>
 
@@ -15,6 +16,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliTOFPIDResponse.h"
+#include "AliMultSelectionTask.h"
 #include "TH2I.h"
 
 #include <climits>
@@ -23,27 +25,37 @@ ClassImp(AliAnalysisCODEXtask);
 
 using namespace AliAnalysisCODEX;
 
-AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
-  :AliAnalysisTaskSE(name)
-  ,mMCtrue(false)
-  ,mCentralityMode(0)
-  ,Cuts()
-  ,mOutput(0x0)
-  ,mTree(0x0)
-  ,mPIDresponse(0x0)
-  ,mHeader()
-  ,mTracks()
-  ,mTimeChan(0x0)
-  ,mEventCuts(false)
+AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
+AliAnalysisTaskSE(name),
+mMCtrue{false},
+mCentralityMode{0},
+Cuts{},
+mEventCuts{},
+mPtCut{0.1},
+mITSsaPtCut{0.4},
+mPOI{255},
+mEventPOI{},
+mNsigmaTPCselectionPOI{5.},
+mNsigmaTOFselectionPOI{10.},
+mStartingPtTOFselection{1.e4},
+mSkipEmptyEvents{false},
+mITSstandalone{true},
+mOutput{nullptr},
+mTree{nullptr},
+mPIDresponse{nullptr},
+mHeader{},
+mTracks{},
+mTimeChan{nullptr},
+mToDiscard{}
 {
-  Cuts.SetMinNClustersTPC(60);
-  Cuts.SetMaxChi2PerClusterTPC(6);
+  // Cuts.SetMinNClustersTPC(60);
+  // Cuts.SetMaxChi2PerClusterTPC(6);
   Cuts.SetAcceptKinkDaughters(false);
-  Cuts.SetRequireTPCRefit(true);
-  Cuts.SetRequireITSRefit(false);
-  Cuts.SetMaxDCAToVertexZ(3);
-  Cuts.SetMaxDCAToVertexXY(3);
-  Cuts.SetMaxChi2PerClusterITS(100000000.);
+  Cuts.SetRequireITSRefit(true);
+  if (!mITSstandalone) Cuts.SetRequireTPCRefit(true);
+  Cuts.SetMaxDCAToVertexZ(2);
+  Cuts.SetMaxDCAToVertexXY(1.5);
+  Cuts.SetMaxChi2PerClusterITS(36);
   Cuts.SetMaxChi2TPCConstrainedGlobal(100000000.);
   Cuts.SetEtaRange(-0.8,0.8);
   DefineInput(0, TChain::Class());
@@ -53,21 +65,9 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name)
 
 
 AliAnalysisCODEXtask::~AliAnalysisCODEXtask() {
-  if (mPIDresponse) {
-    delete mPIDresponse;
-    mPIDresponse = 0x0;
-  }
-
-  if (mTree) {
-    delete mTree;
-    mTree = 0x0;
-  }
-
-  if (mOutput){
-    delete mOutput;
-    mOutput = 0x0;
-  }
-
+  delete mPIDresponse;
+  delete mTree;
+  delete mOutput;
 }
 
 void AliAnalysisCODEXtask::UserCreateOutputObjects() {
@@ -77,6 +77,7 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   mTree = new TTree("AliCODEX","Alice COmpressed Dataset for EXotica");
   mTree->Branch("Header",&mHeader);
   mTree->Branch("Tracks",&mTracks);
+  Discard();
   //
   mTree->SetAutoSave(100000000);
   PostData(1,mTree);
@@ -89,13 +90,13 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   // Get PID response object
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(!man)
-    AliFatal("Could not find manager");
+  AliFatal("Could not find manager");
   AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (man->GetInputEventHandler());
   if(!handler)
-    AliFatal("No input event handler");
+  AliFatal("No input event handler");
   mPIDresponse = dynamic_cast<AliPIDResponse*>(handler->GetPIDResponse());
   if (!mPIDresponse)
-    AliFatal("PIDResponse object was not created"); // Escalated to fatal. Task is unusable without PID response.
+  AliFatal("PIDResponse object was not created"); // Escalated to fatal. Task is unusable without PID response.
 
   //
   //Define output histograms
@@ -110,6 +111,7 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
 
 void AliAnalysisCODEXtask::UserExec(Option_t *){
   mHeader.mEventMask = 0;
+  const AliPID::EParticleType particle_species[8] = {AliPID::kElectron,AliPID::kPion,AliPID::kKaon,AliPID::kProton,AliPID::kDeuteron,AliPID::kTriton,AliPID::kHe3,AliPID::kAlpha};
 
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!event) return;
@@ -128,8 +130,6 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   const AliESDVertex *vertex = static_cast<const AliESDVertex*>(mEventCuts.GetPrimaryVertex());
   mHeader.SetVertexZposition(vertex->GetZ());
 
-  const unsigned short standard_mask = (Cuts.GetRequireTPCRefit()) ? kTPCrefit : 0;
-
   float cent = mEventCuts.GetCentrality(0);
   mHeader.SetCentrality(cent);
 
@@ -139,36 +139,65 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
     if (mMCtrue)
-      AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
+    AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
   }
   //
   AliMCEvent* mcEvent = nullptr;
   if (eventHandler) mcEvent = eventHandler->MCEvent();
   if (!mcEvent && mMCtrue)
-    AliFatal("Missing MC event");
+  AliFatal("Missing MC event");
   if (mMCtrue) {
     mHeader.mEventMask |= kMCevent;
   }
 
-  bool first = true;
+  if (AliMultSelectionTask::IsINELgtZERO(event)) {
+    mHeader.mEventMask |= kInelGt0;
+  }
+
+  if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+    mHeader.mEventMask |= kTriggerClasses;
+
+  bool EventWithPOI = !bool(mEventPOI);
+
   mTracks.clear();
   Track t;
   for (int iEv = 0;iEv < event->GetNumberOfTracks(); ++iEv) {
     AliESDtrack *track = event->GetTrack(iEv);
 
+    t.ITSmap = track->GetITSClusterMap();
+    if ((track->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) t.ITSmap |= AliAnalysisCODEX::kITSrefit;
+    const unsigned short standard_mask = ((track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit) ? kTPCrefit : 0;
+
     /// Tracking quality cuts
-    if (!track->GetInnerParam()) continue;
     if (!Cuts.AcceptTrack(track)) continue;
+    if (track->Pt() < mPtCut) continue;
 
     /// PID cuts
-    float sigEl = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kElectron);
-    float sigPi = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kPion);
-    float sigKa = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kKaon);
-    float sigPr = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kProton);
-    float sigDe = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kDeuteron);
-    float sigH3  = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kTriton);
-    float sigHe3 = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kHe3);
-    float sigHe4 = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,AliPID::kAlpha);
+    float sig[8] = {999.f,999.f,999.f,999.f,999.f,999.f,999.f,999.f};
+    bool reject = !mMCtrue; /// In the MC the cut on the TPC pid is replaced by a cut on the true MC particle
+    bool tpcRefit = (track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit;
+    for (int iS = 0; iS < 8; ++iS) {
+      if (tpcRefit && track->GetInnerParam() && track->GetTPCNcls() > 60) {
+        sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
+      } else if (mITSstandalone && !tpcRefit && track->Pt() < mITSsaPtCut) {
+        sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kITS,track,particle_species[iS]);
+      }
+      if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI) {
+        reject = !bool(mPOI & BIT(iS));
+        EventWithPOI = bool(mEventPOI & BIT(iS)) || EventWithPOI;
+      }
+    }
+    if (reject) continue;
+
+    reject = track->Pt() >= mStartingPtTOFselection;
+    for (int iS = 0; iS < 8; ++iS) {
+      double sigTOF = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTOF,track,particle_species[iS]);
+      if (std::abs(sigTOF) < mNsigmaTOFselectionPOI) {
+        reject = !bool(mPOI & BIT(iS));
+        EventWithPOI = bool(mEventPOI & BIT(iS)) || EventWithPOI;
+      }
+    }
+    if (reject) continue;
 
     /// Cut tracks without TOF matching at moderate high pT
     float time = 0.;
@@ -189,7 +218,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
         // Momentum at the TOF
         const double t_d = tofPID.GetExpectedSignal(track, AliPID::kDeuteron);
         const double beta_d = len / (t_d * kCtof);
-        t.SetTOFmomentum((fabs(beta_d - 1.f) < 1.e-24) ? track->GetTPCmomentum() : kDeuteronMass * beta_d / sqrt(1. - (beta_d * beta_d)));
+        t.SetTOFmomentum((fabs(beta_d - 1.f) < 1.e-12) ? track->GetTPCmomentum() : kDeuteronMass * beta_d / sqrt(1. - (beta_d * beta_d)));
 
         channel = track->GetTOFCalChannel();
         // Get mismatch signal
@@ -214,9 +243,6 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.SetTOFsignal(time);
     t.SetIntegratedLength(track->GetIntegratedLength());
 
-    if (track->GetNumberOfTRDClusters() > 0)
-      t.mask |= AliAnalysisCODEX::kTRDout;
-
     /// Put the right information in the right place
     t.eta = track->Eta();
     t.phi = track->Phi();
@@ -225,47 +251,49 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     if (track->Charge() < 0) t.pT = -t.pT;
 
     /// PID information
-    //for (int i = 0; i < 8; ++i) t.TPCsigmas[i] = SCHAR_MAX;
-    t.SetTPCsigma(kEl,sigEl);
-    t.SetTPCsigma(kPi,sigPi);
-    t.SetTPCsigma(kKa,sigKa);
-    t.SetTPCsigma(kPr,sigPr);
-    t.SetTPCsigma(kDe,sigDe);
-    t.SetTPCsigma(kH3,sigH3);
-    t.SetTPCsigma(kHe3,sigHe3);
-    t.SetTPCsigma(kHe4,sigHe4);
+    for (int iS = 0; iS < 8; ++iS) {
+      t.SetTPCsigma(static_cast<AliAnalysisCODEX::BitMask>(BIT(iS)),sig[iS]);
+    }
     t.TPCsignal = track->GetTPCsignal();
 
-    /// Number of clusters
-    t.TPCnClusters = track->GetTPCNcls();
-    /// Number of findable clusters
-    t.TPCnClustersF = track->GetTPCNclsF();
-    /// Number of crossed rows
-    t.TPCnXedRows = track->GetTPCCrossedRows();
-    t.TPCnSignal = track->GetTPCsignalN();
-    t.ITSmap = track->GetITSClusterMap();
-    if ((track->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) t.ITSmap |= AliAnalysisCODEX::kITSrefit;
+    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit) {
+      /// Number of clusters
+      t.TPCnClusters = track->GetTPCNcls();
+      /// Number of findable clusters
+      t.TPCnClustersF = track->GetTPCNclsF();
+      /// Number of crossed rows
+      t.TPCnXedRows = track->GetTPCCrossedRows();
+      t.TPCnSignal = track->GetTPCsignalN();
+    }
+
     /// Track length in active region
     t.ActiveLength = track->GetLengthInActiveZone(0, 3, 220., event->GetMagneticField());
 
     /// Mask
     t.mask = standard_mask | kIsReconstructed;
 
+    if (track->GetStatus() & AliVTrack::kTRDrefit) t.mask |= AliAnalysisCODEX::kTRDrefit;
+    
     /// Binned information
     float cov[3],dca[2];
+    double ITSsamp[4];
     track->GetImpactParameters(dca,cov);
+    track->GetITSdEdxSamples(ITSsamp);
+    for(int iL = 0; iL < 4; iL++) t.ITSSignal[iL] = ITSsamp[iL];
     t.SetDCAxy(dca[0]);
     t.SetDCAz(dca[1]);
     t.SetTPCChi2NDF(track->GetTPCchi2() / track->GetTPCNcls());
     t.SetITSChi2NDF((track->GetITSNcls()) ? track->GetITSchi2() / track->GetITSNcls() : 1.e9);
     t.SetGoldenChi2NDF(track->GetChi2TPCConstrainedVsGlobal(vertex));
+    t.SetTRDnTracklets(track->GetTRDntracklets());
 
     if (mMCtrue) {
       int label = track->GetLabel();
       TParticle* part = mcEvent->Particle(abs(label));
       if (!part) continue;
+      if (part->Pt() < mPtCut) continue;
       int particle_mask = GetParticleMask(part);
-      if (!particle_mask) continue;
+      if (!particle_mask || !(particle_mask & mPOI)) continue; /// Reject all the particles absent in the mPOI mask
       t.mask |= particle_mask;
 
       if (label < 0) t.mask |= kIsFake;
@@ -275,8 +303,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
         track->GetTOFLabel(TOFlabel);
         bool TOFmismatch = true;
         for (int i = 0; i < 3; ++i)
-          if (TOFlabel[i] > 0 && TOFlabel[i] == abs(label))
-            TOFmismatch = false;
+        if (TOFlabel[i] > 0 && TOFlabel[i] == abs(label))
+        TOFmismatch = false;
         if (TOFmismatch) t.mask |= kTOFmismatch;
       }
 
@@ -301,15 +329,16 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     for (int iP = 0; iP < mcEvent->GetNumberOfTracks(); ++iP) {
       TParticle* particle = mcEvent->Particle(iP);
       if (!particle)
-        continue;
+      continue;
+      if (particle->Pt() < mPtCut) continue;
 
       if (particle->Energy() <= fabs(particle->Pz())) continue; // fix improper TParticle->Y() behaviour
       if (fabs(particle->Y()) > 1.)
-        continue;
+      continue;
 
       int particle_mask = GetParticleMask(particle);
-      if (!particle_mask)
-        continue;
+      if (!particle_mask || !(particle_mask & mPOI))
+      continue;
       t.mask = particle_mask;
       if (mcEvent->IsPhysicalPrimary(iP)) t.mask |= kIsPrimary;
       else if (mcEvent->IsSecondaryFromMaterial(iP)) t.mask |= kIsSecondaryFromMaterial;
@@ -323,7 +352,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
       mTracks.push_back(t);
     }
   }
-  mTree->Fill();
+  if (!(mSkipEmptyEvents && mTracks.empty()) && EventWithPOI) {
+    mTree->Fill();
+  }
   PostData(1,mTree);
 
   PostData(2,mOutput);
@@ -331,7 +362,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
 long AliAnalysisCODEXtask::GetParticleMask(TParticle *part) {
   int pdg = part->GetPdgCode();
-  switch (abs(pdg)) {
+  switch (std::abs(pdg)) {
     case 11: return kEl;
     case 211: return kPi;
     case 321: return kKa;
@@ -342,4 +373,11 @@ long AliAnalysisCODEXtask::GetParticleMask(TParticle *part) {
     case 1000020040: return kHe4;
   }
   return 0;
+}
+
+void AliAnalysisCODEXtask::Discard(){
+  if(mToDiscard.IsNull() || mToDiscard.IsWhitespace()) return;
+  TObjArray *arr = mToDiscard.Tokenize(" ");
+  for(Int_t i = 0; i < arr->GetEntries(); i++) mTree->SetBranchStatus(static_cast<TObjString*>(arr->At(i))->GetName(), 0);
+  mToDiscard = "";
 }

@@ -6,6 +6,7 @@
 // 
 // Author: J.Otwinowski 03/11/2008 
 // last change: 2011-04-04 by M.Knichel
+// Modifications - usage of DCA cuts  marian.ivanov@cern.ch
 //------------------------------------------------------------------------------
 
 class TParticle;
@@ -29,8 +30,8 @@ public:
   void SetExcludeEtaPhiRange2(Float_t etaMin, Float_t etaMax, Float_t phiMin, Float_t phiMax)
   	{ fExcludeMinEta2 = etaMin; fExcludeMaxEta2 = etaMax; fExcludeMinPhi2 = phiMin; fExcludeMaxPhi2 = phiMax; fCheckRange=kTRUE; }  	
 
-  void SetMaxDCAr(Float_t max=1e99) { fMaxDCAr=max;}
-  void SetMaxDCAz(Float_t max=1e99) { fMaxDCAz=max;}
+  void SetMaxDCAr(Float_t max=100) { fMaxDCAr=max;}
+  void SetMaxDCAz(Float_t max=100) { fMaxDCAz=max;}
 
   // getters 
   Float_t GetMinEta() const {return fMinEta;}

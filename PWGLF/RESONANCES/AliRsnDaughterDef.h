@@ -50,7 +50,7 @@ public:
    Bool_t MatchesPID(AliRsnDaughter *daughter);
    Bool_t MatchesCharge(AliRsnDaughter *daughter)  const;
    Bool_t MatchesRefType(AliRsnDaughter *daughter) const;
-   Bool_t MatchesPDG(Int_t pdgCode)                  {return (AliRsnDaughter::SpeciesPDG(fPID) == pdgCode);}
+   Bool_t MatchesPDG(Long_t pdgCode)                  {return AliRsnDaughter::IsEquivalentPDGCode(AliRsnDaughter::SpeciesPDG(fPID) , pdgCode);}
    Bool_t MatchesChargeS(Short_t charge) const       {return (GetChargeS() == charge);}
    Bool_t MatchesChargeC(Char_t charge)  const       {return (GetChargeC() == charge);}
 

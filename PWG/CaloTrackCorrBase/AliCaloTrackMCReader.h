@@ -9,13 +9,9 @@
 /// \brief Class for filtering generated MC particles and prepare them as input for the analysis.
 ///
 /// Class for filtering generated MC particles and prepare them as input for the analysis.
-/// here only very specific methods of the AOD format are implemented.
 ///
 /// Separates generated particles into charged (CTS) 
 /// and neutral (PHOS or EMCAL acceptance)
-///
-/// Now, it only works with data stored in Kinematics.root and 
-/// not in filtered Kinematics branch in AODs
 ///
 /// More information can be found in this [twiki](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PhotonHadronCorrelations).
 ///
@@ -24,14 +20,13 @@
 
 // --- ROOT system ---
 class TArrayI   ;
-class TParticle ;
 
 // --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
 class AliVCluster ;
 class AliAODTrack ;
 class AliAODEvent ;
-class AliMCEvent  ;
+#include "AliMCEvent.h"
 class AliVEvent   ;
 
 class AliCaloTrackMCReader : public AliCaloTrackReader {
@@ -45,7 +40,7 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   
   void   CheckOverlap(Float_t anglethres, Int_t imom, Int_t & iPrimary, Int_t & index, Int_t & pdg);
 
-  void   FillCalorimeters(Int_t & iParticle, TParticle* particle) ;
+  void   FillCalorimeters(Int_t & iParticle, Int_t motherIndex, Int_t pdg) ;
 
   Bool_t FillInputEvent(Int_t iEntry, const char * currentFileName) ;
   
@@ -64,7 +59,12 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   // Data members setters and getters
   
   AliVEvent*  GetInputEvent()               const { return (AliVEvent *) GetMC()   ; }
-  
+  AliGenEventHeader* GetGenEventHeader()    const 
+  {
+    if ( GetMC() ) return GetMC()->GenEventHeader();
+    else           return 0x0;
+  }
+
   void      GetVertex(Double_t v[3]) const ;
   Double_t* GetVertex(Int_t evtIndex) const {return fVertex[evtIndex];}
   void      GetVertex(Double_t vertex[3], Int_t evtIndex) const 

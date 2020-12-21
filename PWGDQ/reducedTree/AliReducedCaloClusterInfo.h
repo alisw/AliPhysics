@@ -19,7 +19,10 @@ class AliReducedCaloClusterInfo : public TObject {
    
   AliReducedCaloClusterInfo();
   virtual ~AliReducedCaloClusterInfo();
-  
+
+  Bool_t  TestFlag(UShort_t iflag)  const {return ((iflag<(8*sizeof(ULong_t))) ? fFlags&(ULong_t(1)<<iflag) : kFALSE);}
+  ULong_t GetFlags()                const {return fFlags;}
+  Int_t   ClusterID()  const {return fClusterID;}
   Bool_t  IsEMCAL()    const {return (fType==kEMCAL ? kTRUE : kFALSE);}
   Bool_t  IsPHOS()     const {return (fType==kPHOS ? kTRUE : kFALSE);}
   Float_t Energy()     const {return fEnergy;}
@@ -33,8 +36,17 @@ class AliReducedCaloClusterInfo : public TObject {
   Float_t Z()          const {return fPosition[2];}
   Float_t TOF()        const {return fTOF;}
   Short_t NCells()     const {return fNCells;}
-  
+  Short_t NMatchedTracks() const {return fNMatchedTracks;}
+
+  // setters
+  void   ResetFlags() {fFlags=0;}
+  void   SetFlags(ULong_t flags) {fFlags=flags;}
+  Bool_t SetFlag(UShort_t iflag)  {if(iflag>=8*sizeof(ULong_t)) return kFALSE; fFlags|=(ULong_t(1)<<iflag); return kTRUE;}
+  Bool_t UnsetFlag(UShort_t iflag) {if(iflag>=8*sizeof(ULong_t)) return kFALSE; if(TestFlag(iflag)) fFlags^=(ULong_t(1)<<iflag); return kTRUE;}
+
  protected:
+  ULong_t fFlags;        // flags reserved for various operations
+  Int_t   fClusterID;    // calo cluster ID
   Char_t  fType;         // cluster type (EMCAL/PHOS)
   Float_t fEnergy;       // cluster energy
   Float_t fTrackDx;      // distance to closest track in phi
@@ -45,12 +57,13 @@ class AliReducedCaloClusterInfo : public TObject {
   Float_t fPosition[3];  // cluster position
   Float_t fTOF;          // time of flight
   Short_t fNCells;       // number of cells
+  Short_t fNMatchedTracks;  // number of matched tracks
   //---------------------------------------------------
   
   AliReducedCaloClusterInfo(const AliReducedCaloClusterInfo &c);
   AliReducedCaloClusterInfo& operator= (const AliReducedCaloClusterInfo &c);
 
-  ClassDef(AliReducedCaloClusterInfo, 1);
+  ClassDef(AliReducedCaloClusterInfo, 3);
 };
 
 #endif

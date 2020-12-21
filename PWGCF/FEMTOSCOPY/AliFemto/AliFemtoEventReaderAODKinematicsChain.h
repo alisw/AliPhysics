@@ -1,10 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-// AliFemtoEventReaderAODKinematicsChain - the reader class for the Alice AOD and     //
+// AliFemtoEventReaderAODKinematicsChain - the reader class for the Alice AOD and  //
 // the model Kinematics information tailored for the Task framework and the        //
 // Authors: Malgorzata Janik, Warsaw University of Technology, majanik@cern.ch     //
 //          Lukasz Graczykowski, Warsaw University of Technology, lgraczyk@cern.ch //
-//  	       				                                           //
+//                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -12,24 +12,27 @@
 #define ALIFEMTOEVENTREADERAODKINEMATICSCHAIN_H
 
 #include "AliFemtoEventReader.h"
-#include "AliFemtoEnumeration.h"
 #include "AliFemtoV0.h"
 
+#include <AliAODEvent.h>
+#include <AliGenEventHeader.h>
+
+#include <list>
 #include <string>
 #include <vector>
-#include <TTree.h>
-#include <AliStack.h>
-#include <AliAODEvent.h>
-#include <list>
-#include <AliGenEventHeader.h>
-#include <AliAODMCParticle.h>
 
 class AliFemtoEvent;
 
-class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader 
+class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 {
  public:
-  enum EventMult {kGlobalCount=0, kVZERO=1};
+  enum EventMult {kCentrality = 0, kGlobalCount = 1, kReference = 2,
+                  kTPCOnlyRef = 3, kVZERO = 4, kCentralityTRK = 5,
+                  kCentralityZNA = 6, kCentralityCL1 = 7, kCentralityCND = 9,
+                  kCentralityV0A = 10, kCentralityV0C = 11, kCentralityZNC = 12,
+                  kCentralityCL0 = 13, kCentralityFMD = 14, kCentralityTKL = 15,
+                  kCentralityNPA = 16
+                 };
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderAODKinematicsChain();
@@ -52,10 +55,10 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 
   void ReadOnlyPrimaries(bool primaries);
   void ReadPrimariesSecWeakMaterial(bool primaries);
- 
+
  protected:
   AliAODHeader *fAODheader;
- private:
+ protected:
   string         fFileName;      // name of input file with AOD filenames
   bool           fConstrained;   // flag to set which momentum from ESD file will be use
   int            fNumberofEvent; // number of Events in ESD file
@@ -77,8 +80,6 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   /// \endcond
 #endif
 
-    };
-  
+};
+
 #endif
-
-

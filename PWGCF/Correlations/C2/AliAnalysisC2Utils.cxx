@@ -26,10 +26,14 @@ Double_t AliAnalysisC2Utils::Mod(Double_t x, Double_t y) {
   return x - y * floor(x/y);
 }
 
-/// Wrap angle around the lower and upper ends of a TAxis
-Double_t AliAnalysisC2Utils::WrapAngle(Double_t angle, TAxis* ax) {
-  Double_t lower_edge = ax->GetBinLowEdge(ax->GetFirst());
-  Double_t interval = ax->GetBinUpEdge(ax->GetLast()) - lower_edge;
+/// Wrap angle around 0 and 2pi
+Double_t AliAnalysisC2Utils::Wrap02pi(Double_t angle) {
+  const Double_t two_pi = 6.283185307179586;
+  Double_t lower_edge = 0;
+  Double_t interval = two_pi;
+  if (lower_edge <= angle && angle < two_pi) {
+    return angle;
+  }
   return Mod(angle - lower_edge, interval) + lower_edge;
 }
 

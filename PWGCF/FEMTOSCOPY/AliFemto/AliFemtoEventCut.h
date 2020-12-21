@@ -64,7 +64,7 @@ public:
   virtual TList* AppendSettings(TList*, const TString& prefix="") const;
 
   virtual AliFemtoString Report() = 0; ///< A user-written method to return a string describing cuts
-  virtual AliFemtoEventCut* Clone();   ///< Returns NULL - users should overload.
+  virtual AliFemtoEventCut* Clone() const;   ///< Returns NULL - users should overload.
 
   /// Returns the analysis this cut belongs to
   AliFemtoAnalysis* HbtAnalysis();
@@ -119,7 +119,7 @@ inline void AliFemtoEventCut::SetAnalysis(AliFemtoAnalysis* analysis)
   fyAnalysis = analysis;
 }
 
-inline AliFemtoEventCut* AliFemtoEventCut::Clone()
+inline AliFemtoEventCut* AliFemtoEventCut::Clone() const
 {
   return NULL;
 }

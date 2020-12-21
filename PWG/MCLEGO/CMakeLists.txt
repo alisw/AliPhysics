@@ -20,8 +20,9 @@ add_definitions(-D_MODULE_="${MODULE}")
 # install all executable scripts
 install(DIRECTORY .
   DESTINATION PWG/MCLEGO
-  FILES_MATCHING PATTERN "*.sh"
-  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+  FILES_MATCHING
+  PATTERN "*.C"
+  PATTERN "*.sh" PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
   )
 
 # install ThePEG configurations
@@ -48,8 +49,34 @@ install(DIRECTORY EPOS
   FILES_MATCHING PATTERN "*.optns"
   )
 
+# install Pythia configurations
+install(DIRECTORY Pythia
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.C"
+  )
+
 # install TunedOnPbPb configurations
 install(DIRECTORY TunedOnPbPb
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.C"
+  )
+
+# install Herwig configurations
+install(DIRECTORY Herwig
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.in"
+  )
+
+# install AMPT configurations
+install(DIRECTORY AMPT
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.ampt"
+  )
+
+# install THERMINATOR2 configurations
+install(DIRECTORY Therminator2
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING
+  PATTERN "*.ini"
+  PATTERN "*.py"
   )

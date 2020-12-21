@@ -55,12 +55,23 @@ public:
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     
-    void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; } 
+    void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; }
     void SetCheckVtxZMC   ( Bool_t lSet = kTRUE ) { fCheckVtxZMC = lSet;    }
     void SetAlternateMCSelection ( Bool_t lSet = kTRUE ) { fAlternateMCSelection = lSet; }
-    void SetSkipPS ( Bool_t lSet = kTRUE ) { fSkipPS = lSet; } 
+    void SetSkipPS ( Bool_t lSet = kTRUE ) { fSkipPS = lSet; }
     void SetUseRecoVtxZ ( Bool_t lSet = kTRUE ) { fUseRecoVtxZ = lSet; }
-    
+    //Task Configuration: trigger selection
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    void SetSelectedTriggerClass(TString trigName) { fkSelectTriggerByName = kTRUE; fTrigName = trigName;}
+
+    void SetUseMultSelection ( Bool_t lUseMultSelection = kTRUE) {
+        fkMultSelection = lUseMultSelection;
+    }
+
+    void SetInel10MCSelection ( Bool_t lInel10MCSelection = kTRUE) {
+        fkInel10MCSelection = lInel10MCSelection;
+    }
+ 
     Double_t GetV0MAmplitude ( AliESDEvent *lInputEvent ) const;
     
 //---------------------------------------------------------------------------------------
@@ -76,16 +87,22 @@ private:
     AliPPVsMultUtils *fPPVsMultUtils; //
     AliAnalysisUtils *fUtils; //
 
-    //Histograms (Desired objects in this cross-checking task) 
+    //Histograms (Desired objects in this cross-checking task)
     TH1F *fHistEventCounter; //! histogram for event counting
     
-    //Will attempt to read ESD or not... 
+    //Will attempt to read ESD or not...
     Bool_t lPureMonteCarlo;
     Bool_t fCheckVtxZMC;
     Bool_t fAlternateMCSelection;
     Bool_t fSkipPS;
     Bool_t fUseRecoVtxZ;
-    
+    Bool_t fkMultSelection;
+    Bool_t fkSelectTriggerByName;  // to select trigger by name (if it's not availble in AliVEvent)
+    Bool_t fkInel10MCSelection; // MC selection is 10 cm vertex z cut only (A. Knospe)
+  
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+    TString   fTrigName; // trigger name (if it's not available in AliVEvent)
+ 
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!
     TH1F *fHistV0M_MCSelection;   //!
@@ -93,15 +110,46 @@ private:
     TH1F *fHistV0MAmplitude_MCSelection;   //!
     TH1F *fHistV0MTrue_DataSelection; //!
     TH1F *fHistV0MTrue_MCSelection;   //!
-    
+    //// same for Ntrackl08
+    TH1F *fHistTracklets08Cent_DataSelection; //!
+    TH1F *fHistTracklets08Cent_MCSelection;   //!
+    TH1F *fHistTracklets08_DataSelection; //!
+    TH1F *fHistTracklets08_MCSelection;   //!
+    TH1F *fHistTracklets08True_DataSelection; //!
+    TH1F *fHistTracklets08True_MCSelection;   //!
+    //// same for Ntrackl0815
+    TH1F *fHistTracklets0815Cent_DataSelection; //!
+    TH1F *fHistTracklets0815Cent_MCSelection;   //!
+    TH1F *fHistTracklets0815_DataSelection; //!
+    TH1F *fHistTracklets0815_MCSelection;   //!
+    TH1F *fHistTracklets0815True_DataSelection; //!
+    TH1F *fHistTracklets0815True_MCSelection;   //!
+ 
     TH2F *fHistV0MVsMidRapidityTrue_DataSelection; //!
     TH2F* fHistV0MAmplitudeVsMidRapidityTrue_DataSelection; //!
     TH2F *fHistV0MTrueVsMidRapidityTrue_DataSelection; //!
+    ////
+    TH2F *fHistTracklets08CentVsMidRapidityTrue_DataSelection; //!
+    TH2F* fHistTracklets08VsMidRapidityTrue_DataSelection; //!
+    TH2F *fHistTracklets08TrueVsMidRapidityTrue_DataSelection; //!
+    ////
+    TH2F *fHistTracklets0815CentVsMidRapidityTrue_DataSelection; //!
+    TH2F* fHistTracklets0815VsMidRapidityTrue_DataSelection; //!
+    TH2F *fHistTracklets0815TrueVsMidRapidityTrue_DataSelection; //!
     
     TH2F *fHistV0MVsMidRapidityTrue_MCSelection; //!
     TH2F* fHistV0MAmplitudeVsMidRapidityTrue_MCSelection; //!
     TH2F *fHistV0MTrueVsMidRapidityTrue_MCSelection; //!
-    
+    ////
+    TH2F *fHistTracklets08CentVsMidRapidityTrue_MCSelection; //!
+    TH2F* fHistTracklets08VsMidRapidityTrue_MCSelection; //!
+    TH2F *fHistTracklets08TrueVsMidRapidityTrue_MCSelection; //!
+    ////
+    TH2F *fHistTracklets0815CentVsMidRapidityTrue_MCSelection; //!
+    TH2F* fHistTracklets0815VsMidRapidityTrue_MCSelection; //!
+    TH2F *fHistTracklets0815TrueVsMidRapidityTrue_MCSelection; //!
+   
+ 
     //Desired Spectra: pi/K/p/K0/Lambda/Xi/Omega/Phi/K*
     //Data Selection Spectra
     //1-dimensional with transverse momentum (integrated in multiplicity)
@@ -124,7 +172,37 @@ private:
     TH2F *fHistPtVsV0MTrue_DataSelection[9]; //! 9 spectra
     TH2F *fHistPtVsV0MTrue_MCSelection[9];   //! 9 spectra
     
- 
+    ////
+    //2-dimensional with unchecked Tracklets08 percentile...
+    TH2F *fHistPtVsTracklets08Cent_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08Cent_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08Cent_MCSelection[9];   //! 9 spectra
+
+    //2-dimensional with Tracklets08 Amplitudes
+    TH2F *fHistPtVsTracklets08_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08_MCSelection[9];   //! 9 spectra
+
+    //2-dimensional with true generated counts in Tracklets08 acceptance
+    TH2F *fHistPtVsTracklets08True_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08True_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets08True_MCSelection[9];   //! 9 spectra
+    ///
+     //2-dimensional with unchecked Tracklets08 percentile...
+    TH2F *fHistPtVsTracklets0815Cent_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815Cent_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815Cent_MCSelection[9];   //! 9 spectra
+
+    //2-dimensional with Tracklets0815 Amplitudes
+    TH2F *fHistPtVsTracklets0815_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815_MCSelection[9];   //! 9 spectra
+
+    //2-dimensional with true generated counts in Tracklets0815 acceptance
+    TH2F *fHistPtVsTracklets0815True_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815True_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsTracklets0815True_MCSelection[9];   //! 9 spectra
+
     
     AliAnalysisTaskPPVsMultCrossCheckMC(const AliAnalysisTaskPPVsMultCrossCheckMC&);            // not implemented
     AliAnalysisTaskPPVsMultCrossCheckMC& operator=(const AliAnalysisTaskPPVsMultCrossCheckMC&); // not implemented

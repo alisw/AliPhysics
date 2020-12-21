@@ -1,3 +1,9 @@
+
+//----------------------------------------------------
+
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2, Bool_t useNtrkWeight=kFALSE, Bool_t isFineNtrkBin=kFALSE, Bool_t isFinePtBin=kFALSE)
+//AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
+{
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
@@ -27,7 +33,7 @@ const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
-const Float_t fakemax = 2.5.;
+const Float_t fakemax = 2.5;
 const Float_t cosminXY = 0.90;
 const Float_t cosmaxXY = 1.0;
 const Float_t normDecLXYmin = 0;
@@ -40,11 +46,6 @@ const Float_t multmin_50_102 = 50;
 const Float_t multmax_50_102 = 102;
 
 
-//----------------------------------------------------
-
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
-//AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
-{
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -52,9 +53,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	else if (configuration == AliCFTaskVertexingHF::kCheetah){
 		printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
 	}
+	else if (configuration == AliCFTaskVertexingHF::kFalcon){
+		printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+	}
 	else{
 		printf("The configuration is not defined! returning\n");
-		return;
+		return NULL;
 	}
 	       
 	gSystem->Sleep(2000);
@@ -65,21 +69,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
-		AliError(Form("Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR: Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign == 1 && pdgCode > 0){
-		AliError(Form("Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR: Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign > 2 || isSign < 0){
-		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		Printf("ERROR: Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
 		return 0x0;
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
 	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-	  AliError("Wrong cut file");
+	  Printf("ERROR: Wrong cut file");
 	  return 0x0;
 	}
 	AliRDHFCutsDstoKKpi *cutsDstoKKpi = (AliRDHFCutsDstoKKpi*)fileCuts->Get("AnalysisCuts");
@@ -138,7 +142,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	  nbinpt_8_10  = 1 ; //bins in pt from 5 to 10 GeV
 	}
 */
-	const Int_t nbinpt = cutsDstoKKpi->GetNPtBins(); // bins in pT
+    Int_t nbinptTmp = cutsDstoKKpi->GetNPtBins();
+    if(isFinePtBin)
+        nbinptTmp = 500;
+	const Int_t nbinpt = nbinptTmp; // bins in pT
+    const Int_t nbinptDau = cutsDstoKKpi->GetNPtBins(); // bins in pT of the daughters
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
 	const Int_t nbiny  = 24 ; //bins in y
 	const Int_t nbinphi  = 18 ; //bins in phi
@@ -166,6 +174,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
 	
+    Int_t nbinmultTmp=nbinmult;
+    Int_t nbinLimmultFine;
+    Double_t* binLimmultFine;
+    if(isFineNtrkBin){
+        nbinLimmultFine=250;
+        const UInt_t nbinMultFine = nbinLimmultFine;
+        binLimmultFine = new Double_t[nbinMultFine+1];
+        for (Int_t ibin0 = 0 ; ibin0<=nbinMultFine; ibin0++){
+            binLimmultFine[ibin0] = ibin0;
+        }
+        nbinmultTmp=nbinLimmultFine;
+    }
+    const Int_t nbinmultTot=nbinmultTmp;
+
+    
 	//the sensitive variables, their indices
 	const UInt_t ipT = 0;
 	const UInt_t iy  = 1;
@@ -194,15 +217,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
  	//iBin[4]=nbinpointing_0_4+nbinpointing_4_8+nbinpointing_8_10;
  	iBin[icT]=nbincT;
  	iBin[ipointing]=nbinpointing;
-	iBin[ipT1]=nbinpt;
-	iBin[ipT2]=nbinpt;
-	iBin[ipT3]=nbinpt;
+	iBin[ipT1]=nbinptDau;
+	iBin[ipT2]=nbinptDau;
+	iBin[ipT3]=nbinptDau;
 	iBin[izvtx]=nbinzvtx;
 	iBin[icent]=nbincent;
 	iBin[ifake]=nbinfake;
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
-	iBin[imult]=nbinmult;
+	iBin[imult]=nbinmultTot;
 	
 	//arrays for lower bounds :
 	Double_t *binLimpT=new Double_t[iBin[ipT]+1];
@@ -232,14 +255,23 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	// values for bin lower bounds
 	// pt
 	Float_t* floatbinLimpT = cutsDstoKKpi->GetPtBinLimits();
-	for (Int_t ibinpT = 0 ; ibinpT<iBin[ipT]+1; ibinpT++){
-		binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT1[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT2[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT3[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-	}
-	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
-	
+    for (Int_t ibinpT = 0 ; ibinpT<cutsDstoKKpi->GetNPtBins()+1; ibinpT++){
+        binLimpT1[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+        binLimpT2[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+        binLimpT3[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+    }
+    if(isFinePtBin) {
+        for(Int_t ibinpT=0; ibinpT<=nbinpt; ibinpT++) {
+            binLimpT[ibinpT] = ibinpT * 0.1;
+            printf("binLimpT[%d]=%f\n",ibinpT,binLimpT[ibinpT]);  
+        }
+    }
+    else {
+        for(Int_t ibinpT=0; ibinpT<=nbinpt; ibinpT++) {
+            binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+            printf("binLimpT[%d]=%f\n",ibinpT,binLimpT[ibinpT]);  
+        }
+    }
 	/*
 	  for(Int_t i=0; i<=nbinpt_0_4; i++) binLimpT[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbinpt_0_4*(Double_t)i ; 
 	  if (binLimpT[nbinpt_0_4] != ptmin_4_8)  {
@@ -378,8 +410,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		printf("normDecayLXY\n");
 		container -> SetBinLimits(inormDecayLXY,binLimnormDecayLXY);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imult,binLimmult);
-		
+        if(isFineNtrkBin) container -> SetBinLimits(imult,binLimmultFine);
+        else container -> SetBinLimits(imult,binLimmult);
+
 		container -> SetVarTitle(ipT,"pt");
 		container -> SetVarTitle(iy,"y");
 		container -> SetVarTitle(iphi, "phi");
@@ -434,7 +467,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		printf("fake\n");
 		container -> SetBinLimits(ifakeFast,binLimfake);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imultFast,binLimmult);
+        if(isFineNtrkBin) container -> SetBinLimits(imultFast,binLimmultFine);
+        else container -> SetBinLimits(imultFast,binLimmult);
 
 		container -> SetVarTitle(ipTFast,"pt");
 		container -> SetVarTitle(iyFast,"y");
@@ -444,6 +478,37 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		container -> SetVarTitle(icentFast, "centrality");
 		container -> SetVarTitle(ifakeFast, "fake");
 		container -> SetVarTitle(imultFast, "multiplicity");
+	}
+	else if (configuration == AliCFTaskVertexingHF::kFalcon){
+		//arrays for the number of bins in each dimension
+		const Int_t nvar = 4;
+
+		const UInt_t ipTSuperFast = 0;
+		const UInt_t iySuperFast = 1;
+		const UInt_t icentSuperFast = 2;
+		const UInt_t imultSuperFast = 3;
+
+		Int_t iBinSuperFast[nvar];
+		iBinSuperFast[ipTSuperFast] = iBin[ipT];
+		iBinSuperFast[iySuperFast] = iBin[iy];
+		iBinSuperFast[icentSuperFast] = iBin[icent];
+		iBinSuperFast[imultSuperFast] = iBin[imult];
+
+		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinSuperFast);
+		printf("pt\n");
+		container -> SetBinLimits(ipTSuperFast,binLimpT);
+		printf("y\n");
+		container -> SetBinLimits(iySuperFast,binLimy);
+		printf("centrality\n");
+		container -> SetBinLimits(icentSuperFast,binLimcent);
+		printf("multiplicity\n");
+        if(isFineNtrkBin) container -> SetBinLimits(imultSuperFast,binLimmultFine);
+        else container -> SetBinLimits(imultSuperFast,binLimmult);
+
+		container -> SetVarTitle(ipTSuperFast,"pt");
+		container -> SetVarTitle(iySuperFast,"y");
+		container -> SetVarTitle(icentSuperFast, "centrality");
+		container -> SetVarTitle(imultSuperFast, "multiplicity");
 	}
 
 	//return container;
@@ -561,7 +626,25 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 			task->GetWeightFunction()->Print();
 		}
 	}
-
+    
+    if(useNtrkWeight){
+        TH1F *hNtrkMC;
+        TH1F *hNtrkMeasured;
+        hNtrkMC = (TH1F*)fileCuts->Get("hNtrkMC");
+        hNtrkMeasured = (TH1F*)fileCuts->Get("hNtrkMeasured");
+        if(hNtrkMC) task->SetMCNchHisto(hNtrkMC);
+        else {
+            Printf("FATAL: Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        if(hNtrkMeasured) task->SetMeasuredNchHisto(hNtrkMeasured);
+        else {
+            Printf("FATAL: Histogram for multiplicity weights not found");
+            return 0x0;
+        }
+        task->SetUseNchTrackletsWeight(kTRUE);
+    }
+    
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
@@ -615,7 +698,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	nameCorr+=suffixName.Data();
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 

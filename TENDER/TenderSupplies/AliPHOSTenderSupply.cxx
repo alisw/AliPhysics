@@ -54,9 +54,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -67,7 +68,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
-  ,fMCProduction("")  
+  ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// default ctor
@@ -84,9 +86,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
+  ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
@@ -97,7 +100,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
-  ,fMCProduction("")  
+  ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// named ctor
@@ -152,6 +156,11 @@ void AliPHOSTenderSupply::InitTender()
         return ;
       }
     }   
+  }
+
+  if(fIsMC && fDRN > 0){
+    fRunNumber = fDRN;//only for single particle simulation
+    AliInfo(Form("A dummy run number is set. fRunNumber is %d",fRunNumber));
   }
 
   //In MC always reco pass 1
@@ -227,23 +236,30 @@ void AliPHOSTenderSupply::InitTender()
   
   //Init Bad channels map
   if(!fUsePrivateBadMap){
-   AliOADBContainer badmapContainer(Form("phosBadMap"));
-    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    AliOADBContainer badmapContainer(Form("phosBadMap"));
+    if(fPrivateOADBBadMap.Length()!=0){
+      //Load standard bad maps file if no OADB file is force loaded
+      AliInfo(Form("using custom bad channel map from %s\n",fPrivateOADBBadMap.Data()));
+       badmapContainer.InitFromFile(fPrivateOADBBadMap.Data(),"phosBadMap");
+    } else {
+      //Load force loaded OADB file
+      AliInfo("using standard bad channel map from $ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root\n");
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    }
     TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
     if(!maps){
-      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;    
+      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;
     }
     else{
       AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
       for(Int_t mod=0; mod<6;mod++){
         if(fPHOSBadMap[mod]) 
           delete fPHOSBadMap[mod] ;
-        TH2I * h = (TH2I*)maps->At(mod) ;      
-	if(h)
-          fPHOSBadMap[mod]=new TH2I(*h) ;
+        TH2I * h = (TH2I*)maps->At(mod) ;
+        if(h) fPHOSBadMap[mod]=new TH2I(*h) ;
       }
-    }    
-  } 
+    }
+  }
 
   
   
@@ -489,11 +505,10 @@ void AliPHOSTenderSupply::ProcessEvent()
             clu->AddTracksMatched(arrayTrackMatched);
 	}
       }  
-      
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data      
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -612,7 +627,7 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
       Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
       clu->SetTrackDistance(dx,dz); 
       Double_t r = 999. ; //Big distance
-      int nTracksMatched = clu->GetNTracksMatched();
+//      int nTracksMatched = clu->GetNTracksMatched();
       if(itr > 0) {
          r=TestCPV(dx, dz, pttrack,charge) ;    
       }
@@ -632,11 +647,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
         }
       }  
 
-
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -803,8 +817,139 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
   if(fNonlinearityVersion=="Run2"){
-     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; 
   }
+  if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
+    return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
+  }
+  
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune for Emin extended down to 100 MeV
+    if(en<=0.) return 0.;
+    const Double_t xMin=0.36; //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17; //Upper part of the param (optimized from pi0 peak)
+    
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-0.4805    ;
+    const Double_t e= 0.1275    ;
+
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t beta = 2.*a*sqrt(xMin)+b-d/(xMin)-2.*e/(xMin*sqrt(xMin));
+       const Double_t alpha = a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*sqrt(xMin) ;
+       ecorr= 1.0312526*(alpha+beta*sqrt(en)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0312526*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0312526*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr>0){
+      return ecorr;
+    }
+    else{
+      return 0.;
+    }
+  }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+
+    const Double_t p0 = 1.031;
+    const Double_t p1 = 0.51786058;
+    const Double_t p2 = 0.13504396;
+    const Double_t p3 = -0.14737537;
+    const Double_t p4 = -0.455062;
+
+    const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
+
+    return en * Nonlin;
+  }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcell"){ //Improved Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=5.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcellHighPtFix"){ 
+    //Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    //improved agreement at hight pT>6-10 GeV/c using pPb8 TeV sample (LHC16rs)
+    // modification of parameters xMax and beta wrt. Run2TuneMCNoNcell parameterization
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=4.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= 1.4*(b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax)) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  
+  
 
   return en ;
 }
@@ -1167,7 +1312,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
-  Float_t tMaxHG=0.; //HighGain only
+//  Float_t tMaxHG=0.; //HighGain only
   Float_t eMaxHG=0.; //High Gain only
   Bool_t isHGMax=kTRUE;
   Int_t absIdMax=-1,absIdMaxHG=-1 ;

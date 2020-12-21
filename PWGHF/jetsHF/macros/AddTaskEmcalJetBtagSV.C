@@ -1,3 +1,10 @@
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg, Bool_t);
+
+Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
+                      Float_t minPt, Float_t maxPt,
+                      Float_t minC, Float_t maxC,
+                      Bool_t corrMode, UInt_t fTrigger);
+
 AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   = "tracks",
                                                      const char* jetcontname   = "Jets",
                                                      const char* mctrkcontname = "mcparticles",
@@ -7,6 +14,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
                                                      TString fileout   = "standard",
                                                      Bool_t corrMode   =  kFALSE,
                                                      Bool_t doBkgRej   =  kTRUE,
+                                                     Bool_t doRndmCone =  kFALSE,
                                                      Bool_t doQAvtx    =  kFALSE,
                                                      Bool_t doFillV0   =  kFALSE,
                                                      Bool_t doDetRespMtx = kFALSE,
@@ -15,14 +23,15 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
                                                      Bool_t useWeight  =  kFALSE,
                                                      const char* ptHname  =  "",
                                                      const char* ptHpatt  =  "",
-                                                     Int_t gbLogLevel  = 1,
-                                                     Int_t lcDebLevel  = 2,
+                                                     Int_t gbLogLevel  = AliLog::kInfo,  //=2
+                                                     Int_t lcDebLevel  = AliLog::kFatal, //=0
                                                      Double_t tagRadius = 0.4,
                                                      TString cutflname = "",
                                                      Float_t minPt = 0., Float_t maxPt = 100.,
                                                      Float_t minC  = 0., Float_t maxC  = 100.,
                                                      UInt_t  fTrigger = AliVEvent::kAny,
-                                                     const char* taskname = "HFjetsContainer")
+                                                     const char* taskname = "HFjetsContainer", 
+						     Bool_t fNewTaggerCuts = kFALSE)
 { // Mailto: ycorrale@cern.ch
   // Get the AnalysisManager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -50,6 +59,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
 
   hfTask->SetCorrectionMode(corrMode); // kFALSE for real data
   hfTask->SetDoBkgRejection(doBkgRej);
+  hfTask->SetDoRandomCone(doRndmCone);
   hfTask->SetDoFillSecVtxQA(doQAvtx);
   hfTask->SetDoFillV0Trks(doFillV0);
   hfTask->SetDoDetRespMtx(doDetRespMtx);
@@ -59,11 +69,11 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   hfTask->SetJetContName(jetcontname);
   hfTask->SetTrkContName(trkcontname);
 
-  hfTask->SetCheckMCCrossSection(checkXsec);  
+  hfTask->SetCheckMCCrossSection(checkXsec);
   if (useWeight) hfTask->SetUseWeightOn();
 
-  hfTask->SetGlLogLevel(AliLog::kInfo);
-  hfTask->SetLcDebLevel(0);
+  hfTask->SetGlLogLevel(gbLogLevel);
+  hfTask->SetLcDebLevel(lcDebLevel);
 
   // choose the method to select on the flavor of the jet and, if needed, select the pt-hard bin via the minimum pt-hard
   // also set mc jet and particle container
@@ -80,10 +90,10 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   TString strCutFlName(cutflname);
   if (!strCutFlName.IsNull() && !gSystem->AccessPathName(strCutFlName.Data(), kFileExists)) {
     // read cuts from file
-    ::Info(Form("Reading cuts from file: %s", strCutFlName.Data()));
+    ::Info("AddTaskEmcalJetBtagSV","Reading cuts from file: %s", strCutFlName.Data());
 
     TFile* f = TFile::Open(strCutFlName.Data());
-    AliRDHFJetsCuts* cuts = (AliRDHFCutsD0toKpi*)f->Get("HFJetsCutsVertex");
+    AliRDHFJetsCuts* cuts = (AliRDHFJetsCuts *)f->Get("HFJetsCutsVertex");
 
     cuts->SetMinPtJet(minPt);
     cuts->SetMaxPtJet(maxPt);
@@ -97,7 +107,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
   } else {
     // define your cuts here
     DefineCutsTask(hfTask, minPt, maxPt, minC, maxC, corrMode, fTrigger);
-    DefineCutsTagger(tagger);
+    DefineCutsTagger(tagger,fNewTaggerCuts); //AID_new_taggerCut
   }
 
   // // Add task to manager
@@ -119,7 +129,7 @@ AliAnalysisTaskEmcalJetBtagSV* AddTaskEmcalJetBtagSV(const char* trkcontname   =
 //------------------------------------------------------
 Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
                       Float_t minPt, Float_t maxPt,
-                      Float_t minC, Float_t maxC, 
+                      Float_t minC, Float_t maxC,
                       Bool_t corrMode, UInt_t fTrigger)
 {
 
@@ -139,21 +149,24 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV* task,
     cuts->ConfigurePileupCuts(5, 0.8);
     cuts->SetTriggerClass("CINT7");
    } // pPb minbias only
- 
+
   task->SetCuts(cuts);
   delete cuts;
-  
+
   return kTRUE;
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
-{
-  AliRDHFJetsCutsVertex* cuts2 = new AliRDHFJetsCutsVertex("jetCuts");
+Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg, Bool_t fNewTaggerCuts)  { //AID_new_taggerCut
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  esdTrackCuts->SetMinNClustersTPC(90);
+  if(fNewTaggerCuts){  //AID_new_taggerCut
+     esdTrackCuts->SetMinNCrossedRowsTPC(70);
+     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }else{ 
+     esdTrackCuts->SetMinNClustersTPC(90); 
+  }	
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
@@ -162,6 +175,8 @@ Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
   esdTrackCuts->SetEtaRange(-0.8, 0.8);
   esdTrackCuts->SetPtRange(1.0, 1.e10);
 
+
+  AliRDHFJetsCutsVertex *cuts2 = new AliRDHFJetsCutsVertex("jetCuts"); 
   cuts2->AddTrackCuts(esdTrackCuts);
 
   // vertexing
@@ -181,4 +196,3 @@ Bool_t DefineCutsTagger(AliHFJetsTaggingVertex* tg)
 
   return kTRUE;
 }
-

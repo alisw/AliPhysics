@@ -28,9 +28,9 @@ namespace Detail {
   Double_t sigma_xa1; //[mm] sigma in x of gaussian a in beam 1
   Double_t sigma_xb1; //[mm] sigma in x of gaussian b in beam 1
   Double_t sigma_ya1; //[mm] sigma in y of gaussian a in beam 1
-  Double_t sigma_yb1; //[mm] sigma in y of gaussian b in beam 1  
+  Double_t sigma_yb1; //[mm] sigma in y of gaussian b in beam 1
   Double_t sigma_za1; //[mm] sigma in z of gaussian a in beam 1
-  Double_t sigma_zb1; //[mm] sigma in z of gaussian b in beam 1  
+  Double_t sigma_zb1; //[mm] sigma in z of gaussian b in beam 1
   Double_t kappa_a1; // x,y correlation of gaussian a in beam 1
   Double_t kappa_b1; // x,y correlation of gaussian b in beam 1
   Double_t w1; // weight of gaussian a in beam 1
@@ -38,9 +38,9 @@ namespace Detail {
   Double_t sigma_xa2; //[mm] sigma in x of gaussian a in beam 2
   Double_t sigma_xb2; //[mm] sigma in x of gaussian b in beam 2
   Double_t sigma_ya2; //[mm] sigma in y of gaussian a in beam 2
-  Double_t sigma_yb2; //[mm] sigma in y of gaussian b in beam 2  
+  Double_t sigma_yb2; //[mm] sigma in y of gaussian b in beam 2
   Double_t sigma_za2; //[mm] sigma in z of gaussian a in beam 2
-  Double_t sigma_zb2; //[mm] sigma in z of gaussian b in beam 2  
+  Double_t sigma_zb2; //[mm] sigma in z of gaussian b in beam 2
   Double_t kappa_a2; // x,y correlation of gaussian a in beam 2
   Double_t kappa_b2; // x,y correlation of gaussian b in beam 2
   Double_t w2; // weight of gaussian a in beam 2
@@ -120,9 +120,9 @@ namespace Detail {
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // --> transposed matrices
     const TMatrixD m1_T(TMatrixD::kTransposed,m1);
-    const TMatrixD m2_T(TMatrixD::kTransposed,m2);  
+    const TMatrixD m2_T(TMatrixD::kTransposed,m2);
     const TMatrixD a1_T(TMatrixD::kTransposed,a1);
-    const TMatrixD a2_T(TMatrixD::kTransposed,a2);  
+    const TMatrixD a2_T(TMatrixD::kTransposed,a2);
     // --> inverse matrices
     const TMatrixD C1_Inv(TMatrixD::kInverted,C1);
     const TMatrixD C2_Inv(TMatrixD::kInverted,C2);
@@ -134,26 +134,26 @@ namespace Detail {
     // products used in different equations
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const TMatrixD C1Ia1(C1_Inv,TMatrixD::kMult,a1);
-    const TMatrixD C2Ia2(C2_Inv,TMatrixD::kMult,a2);  
+    const TMatrixD C2Ia2(C2_Inv,TMatrixD::kMult,a2);
     const TMatrixD a1TC1I(a1_T,TMatrixD::kMult,C1_Inv);
-    const TMatrixD a2TC2I(a2_T,TMatrixD::kMult,C2_Inv);  
+    const TMatrixD a2TC2I(a2_T,TMatrixD::kMult,C2_Inv);
     const TMatrixD C1Ia1a1TC1I(C1Ia1,TMatrixD::kMult,a1TC1I);
-    const TMatrixD C2Ia2a2TC2I(C2Ia2,TMatrixD::kMult,a2TC2I);  
+    const TMatrixD C2Ia2a2TC2I(C2Ia2,TMatrixD::kMult,a2TC2I);
     const TMatrixD C1Ia1a2TC2I(C1Ia1,TMatrixD::kMult,a2TC2I);
     const TMatrixD C2Ia2a1TC1I(C2Ia2,TMatrixD::kMult,a1TC1I);
     const TMatrixD C1Ia1a1TC1Im1(C1Ia1a1TC1I,TMatrixD::kMult,m1);
-    const TMatrixD C2Ia2a2TC2Im2(C2Ia2a2TC2I,TMatrixD::kMult,m2);  
+    const TMatrixD C2Ia2a2TC2Im2(C2Ia2a2TC2I,TMatrixD::kMult,m2);
     const TMatrixD C1Ia1a2TC2Im2(C1Ia1a2TC2I,TMatrixD::kMult,m2);
-    const TMatrixD C2Ia2a1TC1Im1(C2Ia2a1TC1I,TMatrixD::kMult,m1);  
+    const TMatrixD C2Ia2a1TC1Im1(C2Ia2a1TC1I,TMatrixD::kMult,m1);
     const TMatrixD a1TC1Ia1(a1_T,TMatrixD::kMult,C1Ia1);
     const TMatrixD a2TC2Ia2(a2_T,TMatrixD::kMult,C2Ia2);
     const TMatrixD C1Im1(C1_Inv,TMatrixD::kMult,m1);
     const TMatrixD C2Im2(C2_Inv,TMatrixD::kMult,m2);
     const TMatrixD m1TC1Im1(m1_T,TMatrixD::kMult,C1Im1);
-    const TMatrixD m2TC2Im2(m2_T,TMatrixD::kMult,C2Im2);  
+    const TMatrixD m2TC2Im2(m2_T,TMatrixD::kMult,C2Im2);
     const Double_t sigma_t_2_Inv = a1TC1Ia1(0,0)+a2TC2Ia2(0,0);
     const Double_t sigma_t_2 = 1.0/sigma_t_2_Inv;
- 
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute covariance matrix
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -167,14 +167,14 @@ namespace Detail {
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     TMatrixD m_Sum(C1Im1,TMatrixD::kPlus,C2Im2);
     alpha = K*m_Sum;
-    TMatrixD alpha_T(TMatrixD::kTransposed,alpha);  
-  
+    TMatrixD alpha_T(TMatrixD::kTransposed,alpha);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute amplitude
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const TMatrixD beta_Sum1(m1TC1Im1,TMatrixD::kPlus,m2TC2Im2);
     const TMatrixD beta_Sum2(1,1);
-    TMatrixD beta_Sum3(1,1);  
+    TMatrixD beta_Sum3(1,1);
     beta_Sum3 = alpha_T*(K_Inv*alpha); // alpha_0?
     const Double_t beta = beta_Sum2(0,0)+beta_Sum3(0,0)-beta_Sum1(0,0);
     const Double_t A = TMath::Exp(0.5*beta)*TMath::Sqrt(sigma_t_2*K_Det/(C1_Det*C2_Det))/TMath::TwoPi();
@@ -196,9 +196,9 @@ namespace Detail {
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // --> transposed matrices
     const TMatrixD m1_T(TMatrixD::kTransposed,m1);
-    const TMatrixD m2_T(TMatrixD::kTransposed,m2);  
+    const TMatrixD m2_T(TMatrixD::kTransposed,m2);
     const TMatrixD a1_T(TMatrixD::kTransposed,a1);
-    const TMatrixD a2_T(TMatrixD::kTransposed,a2);  
+    const TMatrixD a2_T(TMatrixD::kTransposed,a2);
     // --> inverse matrices
     const TMatrixD C1_Inv(TMatrixD::kInverted,C1);
     const TMatrixD C2_Inv(TMatrixD::kInverted,C2);
@@ -210,26 +210,26 @@ namespace Detail {
     // products used in different equations
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const TMatrixD C1Ia1(C1_Inv,TMatrixD::kMult,a1);
-    const TMatrixD C2Ia2(C2_Inv,TMatrixD::kMult,a2);  
+    const TMatrixD C2Ia2(C2_Inv,TMatrixD::kMult,a2);
     const TMatrixD a1TC1I(a1_T,TMatrixD::kMult,C1_Inv);
-    const TMatrixD a2TC2I(a2_T,TMatrixD::kMult,C2_Inv);  
+    const TMatrixD a2TC2I(a2_T,TMatrixD::kMult,C2_Inv);
     const TMatrixD C1Ia1a1TC1I(C1Ia1,TMatrixD::kMult,a1TC1I);
-    const TMatrixD C2Ia2a2TC2I(C2Ia2,TMatrixD::kMult,a2TC2I);  
+    const TMatrixD C2Ia2a2TC2I(C2Ia2,TMatrixD::kMult,a2TC2I);
     const TMatrixD C1Ia1a2TC2I(C1Ia1,TMatrixD::kMult,a2TC2I);
     const TMatrixD C2Ia2a1TC1I(C2Ia2,TMatrixD::kMult,a1TC1I);
     const TMatrixD C1Ia1a1TC1Im1(C1Ia1a1TC1I,TMatrixD::kMult,m1);
-    const TMatrixD C2Ia2a2TC2Im2(C2Ia2a2TC2I,TMatrixD::kMult,m2);  
+    const TMatrixD C2Ia2a2TC2Im2(C2Ia2a2TC2I,TMatrixD::kMult,m2);
     const TMatrixD C1Ia1a2TC2Im2(C1Ia1a2TC2I,TMatrixD::kMult,m2);
-    const TMatrixD C2Ia2a1TC1Im1(C2Ia2a1TC1I,TMatrixD::kMult,m1);  
+    const TMatrixD C2Ia2a1TC1Im1(C2Ia2a1TC1I,TMatrixD::kMult,m1);
     const TMatrixD a1TC1Ia1(a1_T,TMatrixD::kMult,C1Ia1);
     const TMatrixD a2TC2Ia2(a2_T,TMatrixD::kMult,C2Ia2);
     const TMatrixD C1Im1(C1_Inv,TMatrixD::kMult,m1);
     const TMatrixD C2Im2(C2_Inv,TMatrixD::kMult,m2);
     const TMatrixD m1TC1Im1(m1_T,TMatrixD::kMult,C1Im1);
-    const TMatrixD m2TC2Im2(m2_T,TMatrixD::kMult,C2Im2);  
+    const TMatrixD m2TC2Im2(m2_T,TMatrixD::kMult,C2Im2);
     const Double_t sigma_t_2_Inv = a1TC1Ia1(0,0)+a2TC2Ia2(0,0);
     const Double_t sigma_t_2 = 1.0/sigma_t_2_Inv;
- 
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute covariance matrix
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -241,8 +241,7 @@ namespace Detail {
     Double_t K_Det = 0;
     K = K_Inv;
     K.InvertFast(&K_Det);
-    if (doDebug)
-      Printf("det(K)=%e", K_Det);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute mean matrix
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -252,20 +251,20 @@ namespace Detail {
     m_Sum2 = sigma_t_2*m_Sum2;
     const TMatrixD m_minus(m_Sum1,TMatrixD::kMinus,m_Sum2);
     alpha = K*m_minus;
-    const TMatrixD alpha_T(TMatrixD::kTransposed,alpha);  
-  
+    const TMatrixD alpha_T(TMatrixD::kTransposed,alpha);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute amplitude
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const TMatrixD beta_Sum1(m1TC1Im1,TMatrixD::kPlus,m2TC2Im2);
     const TMatrixD m1TC1Ia1a1TC1Im1(m1_T,TMatrixD::kMult,C1Ia1a1TC1Im1);
-    const TMatrixD m2TC2Ia2a2TC2Im2(m2_T,TMatrixD::kMult,C2Ia2a2TC2Im2);  
+    const TMatrixD m2TC2Ia2a2TC2Im2(m2_T,TMatrixD::kMult,C2Ia2a2TC2Im2);
     const TMatrixD m1TC1Ia1a2TC2Im2(m1_T,TMatrixD::kMult,C1Ia1a2TC2Im2);
-    const TMatrixD m2TC2Ia2a1TC1Im1(m2_T,TMatrixD::kMult,C2Ia2a1TC1Im1);  
+    const TMatrixD m2TC2Ia2a1TC1Im1(m2_T,TMatrixD::kMult,C2Ia2a1TC1Im1);
     TMatrixD beta_Sum2(1,1);
     beta_Sum2 = m1TC1Ia1a1TC1Im1+m2TC2Ia2a2TC2Im2+m1TC1Ia1a2TC2Im2+m2TC2Ia2a1TC1Im1; // eq A.16 corrected
     beta_Sum2 = sigma_t_2*beta_Sum2;
-    TMatrixD beta_Sum3(1,1);  
+    TMatrixD beta_Sum3(1,1);
     beta_Sum3 = alpha_T*(K_Inv*alpha); // alpha_0?
     const Double_t beta = beta_Sum2(0,0)+beta_Sum3(0,0)-beta_Sum1(0,0);
     const Double_t A = TMath::Exp(0.5*beta)*TMath::Sqrt(sigma_t_2*K_Det/(C1_Det*C2_Det))/TMath::TwoPi();
@@ -284,7 +283,7 @@ namespace Detail {
   void GetBeamSpotProfile(Double_t delta_x, Double_t delta_y, Double_t *profile)
   // for a given separation between beams get the beamspot profile
   // answer is stored in vector 'profile'
-  {  
+  {
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // prepare rotations
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -326,7 +325,7 @@ namespace Detail {
 		 scaleZ*TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a1);
 #else
     DefineVector(-TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
-		 -TMath::Sin(theta_xz),	       
+		 -TMath::Sin(theta_xz),
 		 TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a1);
 #endif
     // --> beam 2: covariances for the two gaussians
@@ -349,9 +348,9 @@ namespace Detail {
 		 -scaleZ*TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a2);
 #else
     DefineVector(-TMath::Cos(-theta_xz)*TMath::Sin(-theta_yz),
-		 -TMath::Sin(-theta_xz),	       
+		 -TMath::Sin(-theta_xz),
 		 TMath::Cos(-theta_xz)*TMath::Cos(-theta_yz),a2);
-#endif  
+#endif
 
     ScaleCov(Cov_a1, scaleZ);
     ScaleCov(Cov_b1, scaleZ);
@@ -367,31 +366,31 @@ namespace Detail {
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // first product: gaussian a1 * gaussian a2
     TMatrixD K_a1a2(3,3);
-    TMatrixD alpha_a1a2(3,1);  
+    TMatrixD alpha_a1a2(3,1);
 
     Double_t A_a1a2 = w1*w2*GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_a2, alpha_a1a2, K_a1a2);
     // second product: gaussian a1 * gaussian b2
     TMatrixD K_a1b2(3,3);
-    TMatrixD alpha_a1b2(3,1);  
+    TMatrixD alpha_a1b2(3,1);
     Double_t A_a1b2 = w1*(1-w2)*GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_b2, alpha_a1b2, K_a1b2);
     // third product: gaussian b1 * gaussian a2
     TMatrixD K_b1a2(3,3);
-    TMatrixD alpha_b1a2(3,1);  
+    TMatrixD alpha_b1a2(3,1);
     Double_t A_b1a2 = (1-w1)*w2*GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_a2, alpha_b1a2, K_b1a2);
     // fourth product: gaussian b1 * gaussian b2
     TMatrixD K_b1b2(3,3);
-    TMatrixD alpha_b1b2(3,1);  
+    TMatrixD alpha_b1b2(3,1);
     Double_t A_b1b2 = (1-w1)*(1-w2)*GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_b2, alpha_b1b2, K_b1b2);
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
-    // Compute the luminosity 
+    // Compute the luminosity
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const Double_t KF   = 2.0;
     const Double_t SumA = A_a1a2+A_a1b2+A_b1a2+A_b1b2;
     const Double_t Lumi = KF*SumA;
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
-    // Compute the vector of mean positions 
+    // Compute the vector of mean positions
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     TMatrixD mean_pos(3,1);
     mean_pos = (A_a1a2*alpha_a1a2)+(A_a1b2*alpha_a1b2)
@@ -399,18 +398,26 @@ namespace Detail {
 
     TMatrixD mean_pos_norm(3,1);
     mean_pos_norm = (1.0/SumA)*mean_pos;
-  
+    if (doDebug)
+      Printf("A_mean_pos: %e | %e %e %e %e (%f %f)",
+	     mean_pos_norm(0,0),
+	     (A_a1a2*alpha_a1a2)(0,0),
+	     (A_a1b2*alpha_a1b2)(0,0),
+	     (A_b1a2*alpha_b1a2)(0,0),
+	     (A_b1b2*alpha_b1b2)(0,0),
+	     delta_x, delta_y);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // Compute matrix of widths
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     const TMatrixD p1(alpha_a1a2,TMatrixD::kMultTranspose,alpha_a1a2);
     const TMatrixD p2(alpha_a1b2,TMatrixD::kMultTranspose,alpha_a1b2);
     const TMatrixD p3(alpha_b1a2,TMatrixD::kMultTranspose,alpha_b1a2);
-    const TMatrixD p4(alpha_b1b2,TMatrixD::kMultTranspose,alpha_b1b2);    
+    const TMatrixD p4(alpha_b1b2,TMatrixD::kMultTranspose,alpha_b1b2);
     TMatrixD Cov1(K_a1a2,TMatrixD::kPlus,p1);
     TMatrixD Cov2(K_a1b2,TMatrixD::kPlus,p2);
     TMatrixD Cov3(K_b1a2,TMatrixD::kPlus,p3);
-    TMatrixD Cov4(K_b1b2,TMatrixD::kPlus,p4);  
+    TMatrixD Cov4(K_b1b2,TMatrixD::kPlus,p4);
     if (doDebug) {
       Printf("p1:"); p1.Print();
       Printf("p2:"); p2.Print();
@@ -429,7 +436,7 @@ namespace Detail {
     TMatrixD Cov_Sum1(3,3);
     Cov_Sum1 = Cov1+Cov2+Cov3+Cov4;
     Cov_Sum1 = (1.0/SumA)*Cov_Sum1;
-    
+
     if (doDebug) {
       Printf("Cov1:"); Cov1.Print();
       Printf("Cov2:"); Cov2.Print();
@@ -444,7 +451,7 @@ namespace Detail {
     const Double_t Sy = TMath::Sqrt(Cov(1,1));
     const Double_t Sz = TMath::Sqrt(Cov(2,2));
     const Double_t Sxy = Cov(0,1)/(Sx*Sy);
-  
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // Fill values in output array
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -498,7 +505,7 @@ Bool_t AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TV
 
   Detail::theta_xz  = Detail::alpha_xz; // eq. A.5
   Detail::theta_yz  = TMath::ATan(-TMath::Cos(Detail::theta_xz)*TMath::Tan(Detail::alpha_yz));
-  
+
   Detail::GetBeamSpotProfile(sepX, sepY, profile.GetMatrixArray());
 
   // conversion to the ALICE coordinate system
@@ -550,4 +557,3 @@ const char* AliDoubleGaussianBeamProfile::GetParName(Int_t i)
   if (i >= n) AliFatalClassF("%d > %d", i, n);
   return parNames[i];
 }
-

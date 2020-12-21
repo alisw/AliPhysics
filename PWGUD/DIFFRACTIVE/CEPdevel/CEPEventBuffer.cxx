@@ -24,13 +24,20 @@ CEPEventBuffer::CEPEventBuffer()
   , fCollissionType(AliCEPBase::kBinEventUnknown)
   , fMagnField(AliCEPBase::kdumval)
   , fFiredTriggerClasses(TString(""))
+  , fPFBBFlagV0()
+  , fPFBGFlagV0()
+  , fPFBBFlagAD()
+  , fPFBGFlagAD()
   , fEventCutsel(kFALSE)
   , fPhysel(kFALSE)
   , fisPileup(kFALSE)
   , fisClusterCut(kFALSE)
   , fisDGTrigger(kFALSE)
-  , fEventCondition(AliCEPBase::kBitBaseLine)
+  , fnTOFmaxipads(0)
+  , fTOFTriggerMask(new AliTOFTriggerMask())
+  , fEventCondition(AliCEPBase::kETBaseLine)
   , fnTracklets(0)
+  , fTrl2Tr(new TObjArray())
   , fnTracks(0)
   , fnTracksCombined(0)
   , fnTracksITSpure(0)
@@ -39,11 +46,15 @@ CEPEventBuffer::CEPEventBuffer()
   , fnV0(0)
   , fVtxType(-1)
   , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
-  , fMCProcessType(AliCEPBase::kdumval)
+  , fdPhiEtaMinMax(999.)
   , fMCGenerator("")
+  , fMCProcessType(AliCEPBase::kdumval)
   , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
   , fCEPTracks(new TObjArray())
 {
+
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
 }
 
@@ -57,6 +68,14 @@ CEPEventBuffer::~CEPEventBuffer()
 		fCEPTracks->Clear();
 		delete fCEPTracks;
 		fCEPTracks = 0x0;
+	}
+
+	// delete fTrl2Tr and all the associations it contains
+  if (fTrl2Tr) {
+		fTrl2Tr->SetOwner(kTRUE);
+		fTrl2Tr->Clear();
+		delete fTrl2Tr;
+		fTrl2Tr = 0x0;
 	}
 
 }
@@ -75,6 +94,8 @@ void CEPEventBuffer::Reset()
   fCollissionType  = AliCEPBase::kBinEventUnknown;
   fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
+  for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
   // general event features
   fEventCutsel     = kFALSE;
@@ -84,6 +105,8 @@ void CEPEventBuffer::Reset()
   fisDGTrigger     = kFALSE;
 
   fnTracklets     = 0;
+  fTrl2Tr->SetOwner(kTRUE);
+  fTrl2Tr->Clear();
   fnTracks        = 0;
   fnTracksCombined= 0;
   fnTracksITSpure = 0;
@@ -92,6 +115,7 @@ void CEPEventBuffer::Reset()
   fnV0            = 0;
   fVtxType        = -1;
   fVtxPos         = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+  fdPhiEtaMinMax  = 999.;
 
   // Monte Carlo information
   fMCProcessType = AliCEPBase::kdumval;
@@ -156,6 +180,9 @@ Bool_t CEPEventBuffer::RemoveTrack(Int_t ind)
     } else {
       fnTracksCombined--;
     }
+    
+    // free memory
+    delete trk;
     
     done = kTRUE;
   }
@@ -288,3 +315,40 @@ Int_t CEPEventBuffer::GetnTracks(TArrayI *masks, TArrayI *patterns,
 }
 
 // ------------------------------------------------------------------------------
+void CEPEventBuffer::SetPFFlags(AliVEvent *Event)
+{
+
+  // V0
+  // there are 64 channels - 32 channels per side (A, C) - and 21 bc values
+  AliVVZERO* esdV0 = Event->GetVZEROData();
+  if (esdV0) {
+    // side A (32-63) and C (0-31)
+    for (Int_t bc=0; bc<21; bc++) {
+      fPFBBFlagV0[bc] = kFALSE;
+      fPFBGFlagV0[bc] = kFALSE;
+      for (Int_t ch=0; ch<64; ch++) {
+        fPFBBFlagV0[bc] |= (esdV0->GetPFBBFlag(ch,bc)>0);
+        fPFBGFlagV0[bc] |= (esdV0->GetPFBGFlag(ch,bc)>0);
+      }
+    }
+  }
+  
+  // AD
+  // there are 16 channels - 8 channels per side (A, C) - and 21 bc values
+  AliESDAD* esdAD = (AliESDAD*)Event->GetADData();
+  if (esdAD) {
+    // side A (8-15) and C (0-7)
+    for (Int_t bc=0; bc<21; bc++) {
+      fPFBBFlagAD[bc] = kFALSE;
+      fPFBGFlagAD[bc] = kFALSE;
+      for (Int_t ch=0; ch<8; ch++) {
+        fPFBBFlagAD[bc] |= (esdAD->GetPFBBFlag(ch,bc)>0);
+        fPFBGFlagAD[bc] |= (esdAD->GetPFBGFlag(ch,bc)>0);
+      }
+    }
+  }
+
+}
+
+// ------------------------------------------------------------------------------
+

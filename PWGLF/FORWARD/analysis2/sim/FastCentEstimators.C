@@ -209,10 +209,14 @@ struct Fast1DCentEstimator : public FastCentEstimator
    * @param l Output list
    * @param tree Tree to add branch to 
    */
-  void Setup(TCollection* l, TTree* tree, UShort_t,
-	     Bool_t, Bool_t)
+  virtual void Setup(TCollection* l, TTree* tree, UShort_t,
+		     Bool_t, Bool_t)
   {
-    if (fHistogram && l) l->Add(fHistogram);
+    if (fHistogram && l) {
+      Info("Setup", "Adding histogram %s to output",
+	   fHistogram->GetName());
+      l->Add(fHistogram);
+    }
     TString leaves; leaves.Form("value/%s", MultSpec());
     if (tree) tree->Branch(GetName(), &fCache, leaves.Data());
   }
@@ -311,33 +315,6 @@ struct BCentEstimator : public Fast1DCentEstimator
 		     Bool_t tgtA, Bool_t projA)
   {
     fHistogram = MakeHistogram(sNN, tgtA, projA);
-#if 0
-    if (fHistogram &&
-	fHistogram->GetXaxis()) {
-      if (fHistogram->GetXaxis()->GetXbins() &&
-	  fHistogram->GetXaxis()->GetXbins()->GetArray()) {
-	fBvsC = new TH2D("bVsC", "Impact parameter vs Centrality",
-			 fHistogram->GetXaxis()->GetNbins(),
-			 fHistogram->GetXaxis()->GetXbins()->GetArray(),
-			 20, 0, 100);
-      }
-      else {
-	fBvsC = new TH2D("bVsC", "Impact parameter vs Centrality",
-			 fHistogram->GetXaxis()->GetNbins(),
-			 fHistogram->GetXaxis()->GetXmin(),
-			 fHistogram->GetXaxis()->GetXmax(),
-			 20, 0, 100);
-      }
-    }
-    if (fBvsC) {
-      fBvsC->SetDirectory(0);
-      fBvsC->SetXTitle("b [fm]");
-      fBvsC->SetYTitle("Centrality [%]");
-      out->Add(fBvsC);
-    }
-    else
-      Warning("BCentEstimator", "Couldn't make bVsC histogram");
-#endif
     Fast1DCentEstimator::Setup(out, tree, sNN, tgtA, projA);
     // if (tree) tree->Branch(GetName(), &fB, "value/D");    
   }
@@ -391,6 +368,21 @@ struct BCentEstimator : public Fast1DCentEstimator
 	cents.Set(28,cs);
 	bins.Set(29,bs);
       }
+      else if (sNN == 5440) {
+	// Xe-Xe @ 5.44TeV
+	// https://twiki.cern.ch/twiki/bin/viewauth/ALICE/XeXeCentStudies
+	Double_t bs[] = {
+	  0.00, 2.12, 3.00, 3.66, 4.23, 5.18, 5.98, 6.68, 7.32, 7.91, 8.46,
+	  8.97, 9.45, 9.91, 10.4, 10.8, 11.2, 11.6, 12.0, 12.4, 12.9, 18.3
+	};
+	Double_t cs[] = {
+	  1.25, 3.75, 6.25, 8.75, 12.50, 17.50, 22.50, 27.50, 32.50, 37.50,
+	  42.50, 47.50, 52.50, 57.50, 62.50, 67.50, 72.50, 77.50, 82.50,
+	  87.50, 95.50
+	};
+	cents.Set(21, cs);
+	bins.Set(22, bs);
+      }
     }
     else if (tgtA || projA) { // p-Pb or Pb-p
       if (sNN == 5023) {
@@ -402,8 +394,12 @@ struct BCentEstimator : public Fast1DCentEstimator
 	bins.Set(8, bs);
       }
     }
-    if (bins.GetSize() <= 0 || cents.GetSize() <= 0 )  // Nothing defined
+    if (bins.GetSize() <= 0 || cents.GetSize() <= 0 ) {
+      // Nothing defined
+      Warning("MakeHistogram", "No bins defined for sNN=%d (%c-%c)",
+	      sNN, tgtA ? 'A' : 'p', projA ? 'A' : 'p');
       return 0;
+    }
     printf("b bins: ");
     for (Int_t i = 0; i < bins.GetSize(); i++) {
       bins[i] *= fkFactor; // Scale to 1/1000 fm
@@ -437,7 +433,7 @@ struct BCentEstimator : public Fast1DCentEstimator
     // be detected on the C side (p is the projectile, A is the target)
     // if (!fSpectators) return;
     fCache = h.fB * fkFactor;
-    Info("", "Cache=%ld", fCache);
+    // Info("", "Cache=%ld", fCache);
     // if (fBvsC) fBvsC->Fill(fCache, h.fC);
   }
   /** 
@@ -457,7 +453,11 @@ struct BCentEstimator : public Fast1DCentEstimator
   virtual void Terminate(TCollection* out)
   {
     TH1* h    = GetHistogram(out);
-    if (!h) return;
+    if (!h) {
+      Warning("Terminate", "No histogram on input");
+      out->ls();
+      return;
+    }
     TH1* cent = static_cast<TH1*>(h->Clone(GetName()));
     cent->SetDirectory(0);
     cent->SetYTitle("Centrality [%]");

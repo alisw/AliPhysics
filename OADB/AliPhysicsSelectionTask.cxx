@@ -1,9 +1,12 @@
+#include "TObject.h"
+#include "TFile.h"
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "TFile.h"
 #include "AliLog.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliAnalysisDataContainer.h"
 
 ClassImp(AliPhysicsSelectionTask)
 
@@ -124,3 +127,60 @@ void AliPhysicsSelectionTask::Terminate(Option_t *){
   
   Printf("Writing result to event_stat.root");
 }
+
+AliPhysicsSelectionTask* AliPhysicsSelectionTask::AddTaskPhysicsSelection( const Bool_t mCAnalysisFlag, const Bool_t applyPileupCuts, const UInt_t deprecatedFlag2, const Bool_t useSpecialOutput) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskPhysicsSelection", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskPhysicsSelection", "This task requires an input event handler");
+    return NULL;
+  }
+
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+
+  TString inputDataType = inputHandler->GetDataType(); // can be "ESD" or "AOD"
+
+  // Configure analysis
+  //===========================================================================
+  AliPhysicsSelectionTask *task = new AliPhysicsSelectionTask("");
+  task->SetUseSpecialOutput(useSpecialOutput); // RS: optionally use special output
+  // this makes physics selection to work using AliMultiInputEventHandler
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    AliInputEventHandler *ih = multiInputHandler->GetFirstInputEventHandler();
+    if (!ih) {
+      ::Error("AddTaskPhysicsSelection","ESD or AOD input handler is missing");
+      return NULL;
+    }
+    ih->SetEventSelection(multiInputHandler->GetEventSelection());
+    inputDataType = ih->GetDataType(); // can be "ESD" or "AOD"
+  }
+
+  mgr->AddTask(task);
+
+  AliPhysicsSelection* physSel = task->GetPhysicsSelection();
+  if (mCAnalysisFlag)  { physSel->SetAnalyzeMC(); }
+  if (deprecatedFlag2) { ::Error("AddTaskPhysicsSelection", "ComputeBG functionality is deprecated"); }
+
+  physSel->ApplyPileupCuts(applyPileupCuts);
+
+  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cstatsout",
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+                "EventStat_temp.root");
+  //
+  if (useSpecialOutput) { coutput1->SetSpecialOutput(); } // RS: optionally use special output
+  //
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task,1,coutput1);
+
+  return task;
+}
+

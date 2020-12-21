@@ -1,7 +1,7 @@
 /***************************************************************************
               adash@cern.ch - last modified on 03/04/2013
-
-// *** Configuration script for Phi-Meson analysis with 2015 PP runs ***
+//  modified by rsingh@cern.ch -- 31-10-2020
+// *** Configuration script for KStar-Meson analysis with 2015 PP runs ***
 // 
 // A configuration script for RSN package needs to define the followings:
 //
@@ -20,8 +20,9 @@ Bool_t ConfigKStarPP5TeV(
 			Int_t                  Strcut = 2011,
 			Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 			AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
-			Float_t                nsigmaPi = 2.0,
-			Float_t                nsigmaK  = 2.0,
+			Float_t                nsigmaPi  = 2.0,
+			Float_t                nsigmaK   = 2.0,
+			Float_t                nsigmaTOF = 3.0,
 			Bool_t                 enableMonitor = kTRUE
 			  )
 {
@@ -42,8 +43,8 @@ Bool_t ConfigKStarPP5TeV(
   if(!trkQualityCut) return kFALSE;
 
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
-    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK);
+    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi, nsigmaTOF);
+    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK, nsigmaTOF);
   }
   else{
     printf("Doughter Track cuts has been selected =================\n");
@@ -81,8 +82,9 @@ Bool_t ConfigKStarPP5TeV(
   Char_t  charge2 [12] = {'-'       ,'+'       ,'-'       ,'+'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'     };
   Int_t   cutIDPi [12] = {iCutPi    ,iCutPi    ,iCutPi    ,iCutPi    ,iCutPi  ,iCutPi  ,iCutPi   ,iCutPi   ,iCutPi   ,iCutPi   ,iCutPi  ,iCutPi  };
   Int_t   cutIDK  [12] = {iCutK     ,iCutK     ,iCutK     ,iCutK     ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK   };
-  Int_t   PDGCode [12] = {313       ,313       ,313       ,313       ,313     ,313     ,313      ,-313     ,313      ,313      ,313     ,-313    };
+  Int_t   PDGCode [12] = {313       ,313       ,313       ,313       ,313     ,313     ,313      ,-313     ,313      ,-313      ,313     ,-313    };
 
+  
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("KSTAR_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());

@@ -26,6 +26,7 @@
 #include "AliStack.h"
 #include "TParticle.h"
 #include "AliAODMCParticle.h"
+#include "AliDataFile.h"
 
 
 #include "AliESDtrackCuts.h"
@@ -250,7 +251,7 @@ void AliAnalysisTaskEMCALPhoton::UserCreateOutputObjects()
   //if(fIsGrid)fOutputList->Add(fTree);
   fGeom = AliEMCALGeometry::GetInstance(fGeoName);
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
-  fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
+  fOADBContainer->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
   
   
   fNV0sBefAndAftRerun = new TH2F("hNV0sBefAndAftRerun","check if the number of v0s change with rerun;old v0 n;new v0 n",50,0.5,50.5,50,0.5,50.5);
@@ -994,8 +995,8 @@ void  AliAnalysisTaskEMCALPhoton::FillMcPart(  Int_t itrack, Int_t label)
     mcp->fEta = amcP->Eta() ;
     mcp->fPhi = amcP->Phi() ;
     mcp->fMother = amcP->GetMother() ;
-    mcp->fFirstD = amcP->GetDaughter(0) ;
-    mcp->fLastD = amcP->GetDaughter(amcP->GetNDaughters()-1) ;
+    mcp->fFirstD = amcP->GetDaughterLabel(0) ;
+    mcp->fLastD = amcP->GetDaughterLabel(amcP->GetNDaughters()-1) ;
     mcp->fStatus = amcP->GetStatus();
   }
   mcp->fVR = vmcv.Perp();

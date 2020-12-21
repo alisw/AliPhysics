@@ -2,13 +2,13 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
                           TString   V0ReaderPhotonCutNumber = "060000084001001500000000",
                           TString   TaskEventCutnumber      = "80000113",
                           TString   TaskPhotonCutnumber     = "092000092170008260400000",
-                          Bool_t    isMC                    = kTRUE, 
-                          Int_t     IsHeavyIon              = 0, 
+                          Bool_t    isMC                    = kTRUE,
+                          Int_t     IsHeavyIon              = 0,
                           TString   cutnumberAODBranch      = "0000000060084001001500000",
                           Bool_t    doEtaShiftV0Reader      = kFALSE,
                           Bool_t    enableV0findingEffi     = kFALSE                        // enables V0finding efficiency histograms
                       ){
-  
+
   //get the current analysis manager
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,7 +19,7 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -30,15 +30,11 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    
+
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return;
-    }
 
     AliConvEventCuts *fEventCuts=NULL;
     if(V0ReaderEventCutNumber!=""){
@@ -61,17 +57,17 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
       fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(IsHeavyIon);
-            fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
-    
+
+
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -83,7 +79,7 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
 
   } else {
     Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
-  }   
+  }
 
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
   analysisEventCuts->SetV0ReaderName(V0ReaderName);
@@ -96,12 +92,12 @@ void AddTask_Resolution(  TString   V0ReaderEventCutNumber  = "80000003",
   analysisCuts->SetFillCutHistograms("",kFALSE);
 
   AliAnalysisTaskResolution *fResolution= new AliAnalysisTaskResolution(Form("%s_%s_Resolution",(analysisEventCuts->GetCutNumber()).Data(), (analysisCuts->GetCutNumber()).Data()));
-  fResolution->SetEventCuts(analysisEventCuts,IsHeavyIon);	
+  fResolution->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fResolution->SetConversionCuts(analysisCuts,IsHeavyIon);
   fResolution->SetIsMC(isMC);
-  fResolution->SetV0ReaderName(V0ReaderName);  
+  fResolution->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fResolution);
-  
+
   AliAnalysisDataContainer *coutput1 =
   mgr->CreateContainer(Form("GammaConvResolution_%s_%s", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()), TList::Class(),
             AliAnalysisManager::kOutputContainer, Form("GammaConv_Resolution_%s_%s.root", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()));

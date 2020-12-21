@@ -5,7 +5,7 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#if !defined(__CINT__) || defined(__MAKECINT_)
+#if !defined(__CINT__) && !defined(__CLING__)
 
 #include "AliFemtoAnalysisPionPion.h"
 
@@ -30,6 +30,14 @@ bool DEFAULT_DO_KT = kFALSE;
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
+  std::vector<float> kt_ranges;
+
+  int eventreader_filter_bit;
+  bool eventreader_epvzero;
+  bool eventreader_dca_globaltrack;
+  bool eventreader_centrality_flattening;
+  int eventreader_use_multiplicity;
+
   float qinv_bin_size_MeV;
   float qinv_max_GeV;
 
@@ -44,16 +52,33 @@ struct MacroParams {
   UInt_t q3d_bin_count;
   Float_t q3d_maxq;
 
-  bool do_qinv_cf;
-  bool do_q3d_cf;
+  UInt_t ylm_max_l;
+  UInt_t ylm_ibin;
+  Float_t ylm_vmin;
+  Float_t ylm_vmax;
+  Bool_t ylm_useLCMS;
+
   bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
-  bool do_trueq_cf;
-  bool do_trueq3d_cf;
 
-  bool do_kt_q3d;
-  bool do_kt_qinv;
+  bool do_qinv_cf;
+  bool do_kt_qinv_cf;
+  bool do_q3d_cf;
+  bool do_kt_q3d_cf;
+  bool do_pqq3d_cf;
+  bool do_kt_pqq3d_cf;
+
+  bool do_moco6_cf;
+
   bool do_ylm_cf; // not implemented yet
+  bool do_kt_ylm_cf;
+
+  // monte-carlo correlation functions
+  bool do_trueq_cf;
+  bool do_kt_trueq_cf;
+  bool do_trueq3d_cf;
+  bool do_kt_trueq3d_cf;
+
 };
 
 void
@@ -78,14 +103,22 @@ ConfigFemtoAnalysis(const TString& param_str="")
   MacroParams macro_config;
 
   // default
-  macro_config.do_qinv_cf = true;
-  macro_config.do_q3d_cf = true;
+  macro_config.do_qinv_cf = false;
+  macro_config.do_kt_qinv_cf = false;
+  macro_config.do_q3d_cf = false;
+  macro_config.do_kt_q3d_cf = false;
+  macro_config.do_pqq3d_cf = false;
+  macro_config.do_kt_pqq3d_cf = false;
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
-  macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
   macro_config.do_ylm_cf = false;
-  macro_config.do_trueq_cf = true;
-  macro_config.do_trueq3d_cf = true;
+  macro_config.do_kt_ylm_cf = false;
+  macro_config.do_moco6_cf = false;
+
+  macro_config.do_trueq_cf = false;
+  macro_config.do_kt_trueq_cf = false;
+  macro_config.do_trueq3d_cf = false;
+  macro_config.do_kt_trueq3d_cf = false;
 
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
@@ -98,23 +131,39 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.delta_eta_min = -0.1;
   macro_config.delta_eta_max =  0.1;
 
-  macro_config.q3d_bin_count = 120;
-  macro_config.q3d_maxq = 0.30;
+  macro_config.q3d_bin_count = 59;
+  macro_config.q3d_maxq = 0.295;
+
+  macro_config.ylm_max_l = 3;
+  macro_config.ylm_ibin = 30;
+  macro_config.ylm_vmin = 0.0;
+  macro_config.ylm_vmax = 0.3;
+  macro_config.ylm_useLCMS = false;
+
+  macro_config.eventreader_filter_bit = 7;
+  macro_config.eventreader_epvzero = true;
+  macro_config.eventreader_dca_globaltrack = true;
+  macro_config.eventreader_centrality_flattening = false;
+  macro_config.eventreader_use_multiplicity = AliFemtoEventReaderAOD::kCentrality;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
 
+  // Update Configurations
+  macro_config.do_kt_trueq3d_cf &= analysis_config.is_mc_analysis;
+
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
+  AliFemtoEventReaderAOD::EstEventMult multest = macro_config.eventreader_use_multiplicity;
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
-    rdr->SetFilterBit(7);
-    rdr->SetEPVZERO(kTRUE);
-    rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-    rdr->SetCentralityFlattening(kFALSE);
+    rdr->SetFilterBit(macro_config.eventreader_filter_bit);
+    rdr->SetEPVZERO(macro_config.eventreader_epvzero);
+    rdr->SetUseMultiplicity(multest);
+    rdr->SetCentralityFlattening(macro_config.eventreader_centrality_flattening);
     rdr->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-    rdr->SetDCAglobalTrack(kTRUE);
+    rdr->SetDCAglobalTrack(macro_config.eventreader_dca_globaltrack);
     rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
@@ -139,11 +188,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // loop over centrality ranges
   for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
-    const int mult_low = macro_config.centrality_ranges[cent_it],
-             mult_high = macro_config.centrality_ranges[cent_it + 1];
+    const int cent_low = macro_config.centrality_ranges[cent_it],
+             cent_high = macro_config.centrality_ranges[cent_it + 1];
 
-    const TString mult_low_str = TString::Format("%0.2i", mult_low),
-                 mult_high_str = TString::Format("%0.2i", mult_high);
+    const TString cent_low_str = TString::Format("%0.2i", cent_low),
+                 cent_high_str = TString::Format("%0.2i", cent_high);
 
     // loop over pair types
     for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
@@ -163,7 +212,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
+        std::cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
         continue;
       }
 
@@ -173,14 +222,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       // build unique analysis name from centrality and pair types
       const TString analysis_name = TString::Format(
-        "PiPiAnalysis_%0.2i_%0.2i_%s", mult_low, mult_high, pair_type_str.Data()
+        "PiPiAnalysis_%0.2i_%0.2i_%s", cent_low, cent_high, pair_type_str.Data()
       );
 
       analysis_config.pion_type_1 = type_1;
       analysis_config.pion_type_2 = type_2;
 
-      cut_config.event_CentralityMin = mult_low;
-      cut_config.event_CentralityMax = mult_high;
+      cut_config.event_CentralityMin = cent_low;
+      cut_config.event_CentralityMax = cent_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
 
@@ -208,15 +257,17 @@ ConfigFemtoAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        TString cf_title = TString("_qinv_") + pair_type_str;
-        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        TString cf_title("_qinv");
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         analysis->AddCorrFctn(cf);
       }
 
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
-          model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
+          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          weight_gen->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
+          model_manager->AcceptWeightGenerator(weight_gen);
       }
 
       if (analysis_config.is_mc_analysis && macro_config.do_deltaeta_deltaphi_cf) {
@@ -235,60 +286,119 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_trueq_cf) {
         AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         model_cf->ConnectToManager(model_manager);
-        analysis->AddCorrFctn(
-          model_cf
-        );
+        analysis->AddCorrFctn(model_cf);
       }
 
       if (macro_config.do_q3d_cf) {
-        cf_title = TString("_q3D_") + pair_type_str;
+        TString cf_title("_q3D");
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
-        cf_title = TString("Trueq3D_") + pair_type_str;
+        TString cf_title("Trueq3D_");
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
         analysis->AddCorrFctn(m_cf);
       }
 
-      if (macro_config.do_kt_qinv) {
-        AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
-        binned->AddKtRange(0.2, 0.3);
-        binned->AddKtRange(0.3, 0.4);
-        binned->AddKtRange(0.4, 0.5);
-        binned->AddKtRange(0.5, 0.6);
-        binned->AddKtRange(0.6, 0.8);
-        binned->AddKtRange(0.8, 1.0);
-        analysis->AddCorrFctn(binned);
+      if (macro_config.do_moco6_cf) {
+        TString cf_title("MRC6D");
+        AliFemtoModelCorrFctnTrueQ6D *m_cf = new AliFemtoModelCorrFctnTrueQ6D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
       }
 
-      if (macro_config.do_kt_q3d) {
-        TString q3d_cf_name = TString("_q3D_") + pair_type_str;
-        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
+      if (macro_config.do_kt_qinv_cf) {
+        TString cf_title("_qinv");
+        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
+        // loop over (low,high) pairs in the kt_ranges vector
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_kt_q3d_cf && !macro_config.do_kt_trueq3d_cf) {
+        // TString q3d_cf_name = TString("_q3D_") + pair_type_str;
+        TString q3d_cf_name("_q3d");
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
           new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
-        kt_q3d->AddKtRange(0.2, 0.3);
-        kt_q3d->AddKtRange(0.3, 0.4);
-        kt_q3d->AddKtRange(0.4, 0.5);
-        kt_q3d->AddKtRange(0.5, 0.6);
-        kt_q3d->AddKtRange(0.6, 0.8);
-        kt_q3d->AddKtRange(0.8, 1.0);
-        analysis->AddCorrFctn(kt_q3d);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_pqq3d_cf) {
+        AliFemtoCorrFctn3DLCMSPosQuad *cf = AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        analysis->AddCorrFctn(cf);
+      }
+
+      if (macro_config.do_kt_pqq3d_cf) {
+        TString q3d_cf_name("_q3d");
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
+          new AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_kt_trueq3d_cf) {
+        TString q3d_cf_name("Trueq3D");
+
+        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       if (macro_config.do_ylm_cf) {
-        /*
-        analysis->AddCorrFctn(
-          new AliFemtoCorrFctnDirectYlm(
-            TString::Format("cylm%stpcM%i", chrgs[ichg], imult),
-            3,
-            nbinssh,
-            0.0,
-            shqmax,
-            runshlcms
-          )
-        );
-        */
+        AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
+            "AliFemtoCorrFctnDirectYlm",
+            macro_config.ylm_max_l,
+            macro_config.ylm_ibin, // nbinssh,
+            macro_config.ylm_vmin,
+            macro_config.ylm_vmax,
+            macro_config.ylm_useLCMS
+          );
+        analysis->AddCorrFctn(ylm_cf);
+      }
+
+      if (macro_config.do_kt_ylm_cf) {
+        AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
+            "AliFemtoCorrFctnDirectYlm",
+            macro_config.ylm_max_l,
+            macro_config.ylm_ibin, // nbinssh,
+            macro_config.ylm_vmin,
+            macro_config.ylm_vmax,
+            macro_config.ylm_useLCMS
+          );
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DirectYlm", ylm_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       manager->AddAnalysis(analysis);
@@ -306,20 +416,18 @@ BuildConfiguration(const TString &text,
                    MacroParams &mac
                    )
 {
-  std::cout << "I-BuildConfiguration:" << TBase64::Encode(text) << " \n";
-  //   std::cout << "   '" << text << "'\n";
+  std::cout << "I-BuildConfiguration (BASE64-Encoded): " << TBase64::Encode(text) << " \n";
 
   const TString analysis_varname = "a",
                      cut_varname = "cut",
                    macro_varname = "mac";
-
 
   TObjArray* lines = text.Tokenize("\n;");
 
   TIter next_line(lines);
   TObject *line_obj = NULL;
 
-  while (line_obj = next_line()) {
+  while ((line_obj = next_line())) {
 
     const TString line = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
 
@@ -350,18 +458,53 @@ BuildConfiguration(const TString &text,
       TIter next_range_group(range_groups);
       TObjString *range_group = NULL;
 
-      while (range_group = (TObjString*)next_range_group()) {
+      while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
         TString prev = TString::Format("%0.2d", subrange_it->String().Atoi());
-        while (subrange_it = (TObjString *)next_subrange()) {
+        while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
 
           cmd = macro_varname + ".centrality_ranges.push_back(" + prev + ");";
           gROOT->ProcessLineFast(cmd);
 
           cmd = macro_varname + ".centrality_ranges.push_back(" + next + ");";
+          gROOT->ProcessLineFast(cmd);
+          prev = next;
+        }
+      }
+    }
+    continue;
+
+    case '(':
+    {
+      UInt_t rangeend = text.Index(")");
+      if (rangeend == -1) {
+        std::cerr << "W-ConfigFemtoAnalysis: " << "Expected closing parens ')' in configuration string. Using rest of line as kT-bins\n";
+        rangeend = line.Length();
+      }
+      TString kt_ranges = line(1, rangeend - 2);
+      std::cout << "Loaded kt-ranges: '" << kt_ranges << "'\n";
+      TObjArray *range_groups = kt_ranges.Tokenize(",");
+
+      TIter next_range_group(range_groups);
+      TObjString *range_group = NULL;
+
+      while ((range_group = (TObjString*)next_range_group())) {
+        TObjArray *subrange = range_group->String().Tokenize(":");
+        TIter next_subrange(subrange);
+        TObjString *subrange_it = (TObjString *)next_subrange();
+        TString prev = TString::Format("%0.6e", subrange_it->String().Atof());
+        while ((subrange_it = (TObjString *)next_subrange())) {
+          TString next = TString::Format("%0.6e", subrange_it->String().Atof());
+
+          cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";
+          // std::cout << "`" << cmd << "`\n";
+          gROOT->ProcessLineFast(cmd);
+
+          cmd = macro_varname + ".kt_ranges.push_back(" + next + ");";
+          // std::cout << "`" << cmd << "`\n";
           gROOT->ProcessLineFast(cmd);
           prev = next;
         }
@@ -399,7 +542,7 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
 }

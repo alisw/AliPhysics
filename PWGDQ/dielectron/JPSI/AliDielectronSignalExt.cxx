@@ -360,7 +360,7 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
     fHistBackground->Rebin(fRebin);
   }
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, 1.);
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, fgkErrorZero);
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
@@ -416,7 +416,7 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
     fHistBackground->Rebin(fRebin);
   }
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, 1.);
+    if(fHistDataPM->GetBinError(ibin)<1e-30 ) fHistDataPM->SetBinError(ibin, fgkErrorZero);
   } 
 
   //scale histograms to match integral between fScaleMin and fScaleMax

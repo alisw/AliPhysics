@@ -26,8 +26,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
-		    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		                ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
@@ -53,18 +54,25 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
+  Lifetimes/AliAnalysisTaskStrangenessLifetimes.cxx
   Cascades/AliAnalysisTaskExtractCascade.cxx
   Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityEERun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2pPb.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb.cxx
   Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
+  Correlations/AliAnalysisTaskhStrCorr.cxx
   Cascades/AliAnalysisTaskCheckCascadepp.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
@@ -76,10 +84,27 @@ set(SRCS
   Cascades/Run2/AliCascadeResult.cxx
   Cascades/Run2/AliStrangenessModule.cxx
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
+  Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
+  Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
+  Correlationpp/AliAnalysisCorrelationEventCollection.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
+  Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Add header only files
+set(HDRS
+  ${HDRS}
+  Lifetimes/MiniEvent.h
+  Lifetimes/HyperTriton2Body.h
+  Lifetimes/MCparticle.h
+  Lifetimes/MiniV0.h
+  Lifetimes/Utils.h
+)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -139,8 +164,11 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
 install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Run2)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
+install(DIRECTORY Lifetimes/macros DESTINATION PWGLF/STRANGENESS/Lifetimes)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
+install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
+install(DIRECTORY HeavyIonsRun1Run2/macros DESTINATION PWGLF/STRANGENESS/HeavyIonsRun1Run2)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
   install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
 endif()

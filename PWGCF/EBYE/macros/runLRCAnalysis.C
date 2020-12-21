@@ -188,21 +188,20 @@ void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFAL
   gROOT->LoadMacro("AddTaskLRC.C");
   AddTaskLRC(runKine);
 
-     TAlienCollection * myCollection = 
-	new TAlienCollection("wn.xml",100000) ; 
-    if (!myCollection) { 
-	cout << "XML collection file: " << xmlFileName << " not found" << endl;
-	return;
-    }
+  TGridCollection * myCollection = gGrid->OpenCollection("wn.xml", 100000);
+  if (!myCollection) {
+    cout << "XML collection file: " << xmlFileName << " not found" << endl;
+    return;
+  }
 
-    TChain* chain = new TChain("esdTree");
+  TChain* chain = new TChain("esdTree");
     
-    cout << "Preparing the file list" << endl; 
-    myCollection->Reset() ; 
-    while ( myCollection->Next() ) {
-	cout << "Adding ESD file: " << myCollection->GetTURL("") << endl; 
-	chain->Add(myCollection->GetTURL("")) ; 
-    }
+  cout << "Preparing the file list" << endl;
+  myCollection->Reset();
+  while ( myCollection->Next() ) {
+    cout << "Adding ESD file: " << myCollection->GetTURL("") << endl;
+    chain->Add(myCollection->GetTURL(""));
+  }
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr->InitAnalysis()) return;

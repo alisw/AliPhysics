@@ -37,7 +37,9 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const char*
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
-  fRhomParam(0)
+  fRhomParam(0),
+  fAlpha(0),
+  fMaxDelR(-1)
 {
   // Default constructor.
 }
@@ -55,7 +57,9 @@ AliEmcalJetUtilityConstSubtractor::AliEmcalJetUtilityConstSubtractor(const AliEm
   fJetsSub(other.fJetsSub),
   fParticlesSub(other.fParticlesSub),
   fRhoParam(other.fRhoParam),
-  fRhomParam(other.fRhomParam)
+  fRhomParam(other.fRhomParam),
+  fAlpha(0),
+  fMaxDelR(-1)
 {
   // Copy constructor.
 }
@@ -162,6 +166,8 @@ void AliEmcalJetUtilityConstSubtractor::Prepare(AliFJWrapper& fjw)
   if (fJetsSub) fJetsSub->Delete();
 
   fjw.SetUseExternalBkg(fUseExternalBkg, fRho, fRhom);
+  fjw.SetAlpha(fAlpha);
+  fjw.SetMaxDelR(fMaxDelR);
   fjw.DoConstituentSubtraction();
 }
 

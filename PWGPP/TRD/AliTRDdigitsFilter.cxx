@@ -29,14 +29,19 @@
 #include "AliInputEventHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliESDv0KineCuts.h"
+#include "AliMultSelection.h"
 #include "AliESDv0.h"
 #include "AliCentrality.h"
+#include "AliLog.h"
 
 #include "AliTRDdigitsManager.h"
 #include "AliTRDarrayADC.h"
 
 #include "TChain.h"
 #include "TFile.h"
+#include "TRandom.h"
+#include "THnSparse.h"
+
 
 class TCanvas;
 class TAxis;
@@ -61,30 +66,14 @@ ClassImp(AliTRDdigitsFilter)
 
 //________________________________________________________________________
 AliTRDdigitsFilter::AliTRDdigitsFilter(const char *name)
-    : AliAnalysisTaskSE(name), fV0tags(0x0), fV0cuts(0x0), fV0electrons(0x0), fV0pions(0x0), 
-    fESDEvent(0), fOutputContainer(0), fESDtrackCuts(0),
-    fESDtrackCutsV0(0), fListQA(0x0),
-    fNumTagsStored(0), fCollisionSystem(3),
-    fDigitsInputFile(0), fDigitsOutputFile(0),
-    fEventNoInFile(-1), fDigMan(0)
+    : AliTRDdigitsTask(name)
 {
-  //fhtrackCuts(0), fhNumberEle(0),fhNumberEleCut(0),fhNumberEleCutp(0), fhNumberPion(0),fhNumberPionCut(0),fhNumberPionCutp(0), fhCent(0), fhEv(0), fhArmenteros(0)
-  //
-  // Constructor
-  //
 
-  fDigMan = new AliTRDdigitsManager;
-  fDigMan->CreateArrays();
+  // V0 Kine cuts
+  fV0cuts = new AliESDv0KineCuts();
 
-  fSpeciesDesc[0] = "ElecAll";
-  fSpeciesDesc[1] = "ElecAcc";
-  fSpeciesDesc[2] = "PionAll";
-  fSpeciesDesc[3] = "PionAcc";
-
-  fSpeciesDescLong[0] = "All Electrons";
-  fSpeciesDescLong[1] = "Accepted Electrons";
-  fSpeciesDescLong[2] = "All Pions";
-  fSpeciesDescLong[3] = "Accepted Pions";
+  SetDigitsInputFilename("TRD.Digits.root");
+  SetDigitsOutputFilename("TRD.FltDigits.root");
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -95,24 +84,61 @@ AliTRDdigitsFilter::AliTRDdigitsFilter(const char *name)
 //_________________________________________________
 AliTRDdigitsFilter::~AliTRDdigitsFilter()
 {
-
   //
   // Destructor
   //
 
-    delete fDigitsInputFile;
-    delete fDigitsOutputFile;
-
-    delete fDigMan;
-    
-    delete fV0cuts;
-    delete fV0electrons;
-    delete fV0pions;
-    delete fV0tags;
-    fV0tags = 0;
-    fNumTagsStored = 0;
+  delete fV0cuts;
 }
 
+//________________________________________________________________________
+void AliTRDdigitsFilter::AcceptTracks(TString label, EPID_t pid,
+    Float_t minPt, Float_t maxPt, Float_t fraction)
+{
+
+  TrackCrit crit;
+
+  crit.fLabel     = label;
+  crit.fPid       = pid;
+  crit.fMinPt     = minPt;
+  crit.fMaxPt     = maxPt;
+  crit.fFraction  = fraction;
+
+  fTrackCriteria.push_back(crit);
+  AliInfoF("nTrackCrit: %lu", fTrackCriteria.size());
+}
+
+//________________________________________________________________________
+void AliTRDdigitsFilter::AcceptEvents(TString label,
+    Float_t minCent, Float_t maxCent, Float_t fraction)
+{
+
+  EventCrit crit;
+
+  crit.fLabel     = label;
+  crit.fMinCent     = minCent;
+  crit.fMaxCent     = maxCent;
+  crit.fFraction  = fraction;
+
+  fEventCriteria.push_back(crit);
+  AliInfoF("nEventCrit: %lu", fEventCriteria.size());
+}
+
+//________________________________________________________________________
+void AliTRDdigitsFilter::PrintSettings()
+{
+
+  AliInfo("Accept these particle classes:");
+  for (std::vector<TrackCrit>::iterator iCrit = fTrackCriteria.begin();
+       iCrit != fTrackCriteria.end(); iCrit++) {
+
+         AliInfoF("%10s: pidclass=%d, %f < pT(GeV/c) < %f",
+         iCrit->fLabel.Data(), iCrit->fPid, iCrit->fMinPt, iCrit->fMaxPt
+       );
+   }
+
+
+}
 
 //________________________________________________________________________
 void AliTRDdigitsFilter::UserCreateOutputObjects()
@@ -120,418 +146,317 @@ void AliTRDdigitsFilter::UserCreateOutputObjects()
   //
   // Definition of user output ntuple and histogram file
   //
-  
 
   AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>
     (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!inputHandler)
     printf("Inputhandler not available \n");
-  
-  // V0 Kine cuts 
-  fV0cuts = new AliESDv0KineCuts();
-  
-  // V0 PID Obj arrays
-  fV0electrons = new TObjArray;
-  fV0pions     = new TObjArray;
-  
 
 
   OpenFile(1);
-  fListQA=new TList;
-  fListQA->SetOwner();
+  fOutputList=new TList;
+  fOutputList->SetOwner();
 
-  //
-  // V0 QA histograms
-  //
-  fhArmenteros  = new TH2F("Armenteros","Armenteros plot",
-			   200,-1.,1.,200,0.,0.4);
-  fListQA->Add(fhArmenteros);
+  CreateV0Plots();
 
   // statistics of accepted events
-  fhEventCuts = new TH1F("EventCuts","statistics of event cuts",10,0.,10.);
-  fListQA->Add(fhEventCuts);
+  int nClasses = fEventCriteria.size() + fTrackCriteria.size();
+  fhEventCuts = new TH1F("EventCuts","statistics of event cuts",
+    nClasses+4, 0., nClasses+4.0);
 
-  for (int i=0; i<fgkNSpecies; i++) {
-  
-    // pT histograms
-    fhPt[i] = new TH1F("fhPt"+fSpeciesDesc[i],
-		       "pT spectrum of "+fSpeciesDescLong[i],
-		       200, 0., 20.);
-    fListQA->Add(fhPt[i]);
+  fhEventCuts->GetXaxis()->SetBinLabel(1,"event_in");
+  fhEventCuts->GetXaxis()->SetBinLabel(2,"event_esd");
+  fhEventCuts->GetXaxis()->SetBinLabel(3,"event_vtx");
+  fhEventCuts->GetXaxis()->SetBinLabel(4,"event_acc");
+
+  for (Int_t i = 0; i<fEventCriteria.size(); i++) {
+    fhEventCuts->GetXaxis()->SetBinLabel(i+5, "event_acc_"+fEventCriteria[i].fLabel);
   }
 
-  
-//  
-//  fhCent = new TH1F("cent","cent",10,0,100);
-//  fListQATRD->Add(fhCent);
-//  fhEv = new TH1F("Ev","Ev",10,0,10);
-//  fListQATRD->Add(fhEv);
-//  fhTPCsignalvsp = new TH2F("TPC","TPC",100,0,10,200,0,200);
-//  fListQATRD->Add(fhTPCsignalvsp);
-//  
-//  fhNumberEle = new TH2F("numberele","numberele",10,0,100,200,0,200);
-//  fListQATRD->Add(fhNumberEle);
-//  fhNumberEleCutp = new TH2F("numberelecutp","numberelecutp",10,0,100,200,0,200);
-//  fListQATRD->Add(fhNumberEleCutp);
-//
-//  fhNumberEleEvent = new TH1F("numbereleevent","numbereleevent",10,0,100);
-//  fListQATRD->Add(fhNumberEleEvent);
-//  fhNumberEleEventCutp = new TH1F("numbereleeventcutp","numbereleeventcutp",10,0,100);
-//  fListQATRD->Add(fhNumberEleEventCutp);
-//
-//  for(Int_t i=0;i<6;i++){
-//    fhNumberEleCut[i] = new TH2F(Form("numberelecut%i",i),Form("numberelecut%i",i),10,0,100,200,0,200);
-//    fListQATRD->Add(fhNumberEleCut[i]);
-//    fhNumberEleEventCut[i] = new TH1F(Form("numbereleeventcut%i",i),Form("numbereleeventcut%i",i),10,0,100);
-//    fListQATRD->Add(fhNumberEleEventCut[i]);
-//    
-//    fhNumberPionCut[i] = new TH2F(Form("numberpioncut%i",i),Form("numberpioncut%i",i),10,0,100,200,0,200);
-//    fListQATRD->Add(fhNumberPionCut[i]);
-//    fhNumberPionEventCut[i] = new TH1F(Form("numberpioneventcut%i",i),Form("numberpioneventcut%i",i),10,0,100);
-//    fListQATRD->Add(fhNumberPionEventCut[i]);    
-//  }
-//
-//  fhNumberPion = new TH2F("numberpion","numberpion",10,0,100,200,0,200);
-//  fListQATRD->Add(fhNumberPion);
-//  fhNumberPionCutp = new TH2F("numberpioncutp","numberpioncutp",10,0,100,200,0,200);
-//  fListQATRD->Add(fhNumberPionCutp);
-//
-//  fhNumberPionEvent = new TH1F("numberpionevent","numberpionevent",10,0,100);
-//  fListQATRD->Add(fhNumberPionEvent);
-//  fhNumberPionEventCutp = new TH1F("numberpioneventcutp","numberpioneventcutp",10,0,100);
-//  fListQATRD->Add(fhNumberPionEventCutp);
-//
-
-  
-  PostData(1,fListQA);
+  for (Int_t i = 0; i<fTrackCriteria.size(); i++) {
+    fhEventCuts->GetXaxis()->SetBinLabel( i+5+fEventCriteria.size(),
+    "event_acc_"+fTrackCriteria[i].fLabel);
+  }
 
 
-}
+  // THnSparse for accepted tracks
+  const Int_t ntc = 2<<fTrackCriteria.size();
+  Int_t nbins[]   = { ntc,    64,   10,  10 };
+  Double_t xmin[] = { 0.0,   0.0, -1.0, 0.0 };
+  Double_t xmax[] = { float(ntc),  64.0,  1.0, 2*TMath::Pi() };
 
-//_____________________________________________________________________________
-Bool_t AliTRDdigitsFilter::UserNotify()
-{
-  delete fDigitsInputFile;
-  delete fDigitsOutputFile;
-  
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  
-  TString ofname = esdH->GetInputFileName();
-  TString ifname = ofname;
+  Double_t pTedges[] = {
+    1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
+    2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9,
+    3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8,
+    5.0, 5.2, 5.4, 5.6, 5.8, 6.0, 6.2, 6.4, 6.6, 6.8,
+    7.0, 7.5, 8.0, 8.5, 9.0, 9.5,
+    10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
+    20., 25., 30., 35., 40., 45., 50., 55., 60.
+  };
 
-  ifname.ReplaceAll("AliESDs.root", "TRD.Digits.root");
-  ofname.ReplaceAll("AliESDs.root", "TRD.FltDigits.root");
+  fhAcc = new THnSparseF("fhAcc", "accepted tracks", 4, nbins, xmin, xmax);
+  fhAcc->SetBinEdges(1,pTedges);
 
-  fDigitsInputFile  = new TFile(ifname);
-  fDigitsOutputFile = new TFile(ofname,"RECREATE");
-  
-  fEventNoInFile = 0;
+  //fhAcc->GetAxis(0)->SetBinLabel(1,"foo");
+  fhAcc->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
+  fhAcc->GetAxis(2)->SetTitle("#eta");
+  fhAcc->GetAxis(3)->SetTitle("#phi (rad)");
 
-  return kTRUE;
+  // pT histograms
+  fhPtTag  = new TH1F("fhPtTag",  "pT of PID-tagged tracks", 100,0.,20.);
+  fhPtGood = new TH1F("fhPtGood", "pT after quality cuts",   100,0.,20.);
+  fhPtAcc  = new TH1F("fhPtAcc",  "pT of accepted tracks",   100,0.,20.);
+
+  // multiplicity histograms
+  fhCent = new TH1F("fhCentralityAll", "Centrality of Events", 105, 0., 105.);
+  fhCentAcc = new TH1F("fhCentralityAccepted", "Centrality of Accepted Events",
+                       105, 0., 105.);
+
+  // add everything to the list
+  fOutputList->Add(fhAcc);
+  fOutputList->Add(fhEventCuts);
+  fOutputList->Add(fhPtTag);
+  fOutputList->Add(fhPtGood);
+  fOutputList->Add(fhPtAcc);
+  fOutputList->Add(fhCent);
+  fOutputList->Add(fhCentAcc);
+
+  CreateTriggerHistos();
+
+  PostData(1,fOutputList);
+
+
 }
 
 //_____________________________________________________________________________
 void AliTRDdigitsFilter::UserExec(Option_t *)
 {
-    //
-    //calls the Process function
-    //
+  // -----------------------------------------------------------------
+  // -----------------------------------------------------------------
+  // IMPORTANT: call NextEvent() for book-keeping
+  // -----------------------------------------------------------------
+  NextEvent();
+  // -----------------------------------------------------------------
+  // -----------------------------------------------------------------
 
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-    if (!esdH) {
-      printf("ERROR: Could not get ESDInputHandler \n");
-    }
-    else fESDEvent = (AliESDEvent *) esdH->GetEvent();
-    
-    FillV0PIDlist();
-    //
-    Process(fESDEvent);
+  //
+  //calls the Process function
+  //
 
-    PostData(1,fListQA);
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
-    // Clear the V0 PID arrays
-    ClearV0PIDlist();
+  if (!esdH) {
+    printf("ERROR: Could not get ESDInputHandler \n");
+    fESDevent = NULL;
+  } else {
+    fESDevent = (AliESDEvent *) esdH->GetEvent();
+  }
 
-    // increment the event counter for this file
-    fEventNoInFile++;
-    
+  // allocate space for the PID tags
+  fPidTags.resize(fESDevent->GetNumberOfTracks());
+
+  FillV0PIDlist();
+  Process();
+
+  PostData(1,fOutputList);
+
 }
 
 
 
 //________________________________________________________________________
-void AliTRDdigitsFilter::Process(AliESDEvent *const esdEvent)
+void AliTRDdigitsFilter::Process()
 {
   //
   //called for each event
   //
 
-  fhEventCuts->Fill(0);
-  
-  if (!esdEvent) {
-    Printf("ERROR: esdEvent not available"); 
+  fhEventCuts->Fill("event_in",1);
+  FillTriggerHisto(fhTrgAll);
+
+  if (!fESDevent) {
+    Printf("ERROR: fESDevent not available");
     return;
   }
 
-  fhEventCuts->Fill(1);
+  fhEventCuts->Fill("event_esd",1);
 
-  //
   // check for a valid event vertex
-  //
-  const AliESDVertex* fESDEventvertex = esdEvent->GetPrimaryVertexTracks(); 
-  if (!fESDEventvertex)
-    return;
- 
+  const AliESDVertex* fESDEventvertex = fESDevent->GetPrimaryVertexTracks();
+  if (!fESDEventvertex) return;
+
   Int_t ncontr = fESDEventvertex->GetNContributors();
   if (ncontr <= 0) return;
 
-  fhEventCuts->Fill(2);
- 				    
-  //
-  // set up flags to keep/reject event
-  //
-  Bool_t hasElectron  = kFALSE; // event has any electron  
-  Bool_t keepElectron = kFALSE; // electrons passed cuts and will be kept
+  fhEventCuts->Fill("event_vtx",1);
 
-  Bool_t hasPion      = kFALSE; // event has any pion
-  Bool_t keepPion     = kFALSE; // pion will be kept
 
-  Bool_t keepDet[540];
+  //-------------------------------------------------------------------
+  Int_t keepEvent = 0;
+  Int_t keepNTracks = 0;
 
-  // flags for individual detectors
-  for (Int_t i=0; i<540; i++) {
-    keepDet[i] = kTRUE; // always keep all detectors
-    //keepDet[i] = kFALSE; // keep only flagged detectors -> not implemented
+  Int_t nEventCrit = fEventCriteria.size();
+  Int_t nTrackCrit = fTrackCriteria.size();
+
+  //-------------------------------------------------------------------
+
+  AliMultSelection *multSelection =
+  static_cast<AliMultSelection*>(fESDevent->FindListObject("MultSelection"));
+
+  if(multSelection) {
+
+    Float_t centrality = multSelection->GetMultiplicityPercentile("V0M");
+
+    fhCent->Fill(centrality);
+
+    for (Int_t i = 0; i<nEventCrit; i++) {
+
+      // check event criteria
+      if ( fEventCriteria[i].fMinCent > centrality) continue;
+      if ( fEventCriteria[i].fMaxCent <= centrality) continue;
+
+      // accept given fraction of events
+      if ( gRandom->Uniform() > fEventCriteria[i].fFraction ) continue;
+
+      keepEvent |= 1<<i;
+
+   }
+
+   if (keepEvent) {
+     fhCentAcc->Fill(centrality);
+   }
+
+ }
+
+ //-------------------------------------------------------------------
+
+ for (int iTrack=0; iTrack<fPidTags.size(); iTrack++) {
+
+    Int_t keepTrack = 0;
+
+    if (fPidTags[iTrack] == kPidUndef) continue;
+    if (fPidTags[iTrack] == kPidError) continue;
+
+    AliESDtrack* track = fESDevent->GetTrack(iTrack);
+
+    fhPtTag->Fill(track->Pt());
+
+    // general track cuts
+    if ( ! PassTrackCuts(track,3) ) continue;
+
+    fhPtGood->Fill(track->Pt());
+
+    for (Int_t i = 0; i<nTrackCrit; i++) {
+
+      // check track criteria
+      if ( fTrackCriteria[i].fPid != fPidTags[iTrack] ) continue;
+      if ( fTrackCriteria[i].fMinPt > track->Pt()) continue;
+      if ( fTrackCriteria[i].fMaxPt < track->Pt()) continue;
+
+      // accept given fraction of tracks
+      if ( gRandom->Uniform() > fTrackCriteria[i].fFraction ) continue;
+
+      keepEvent |= 1<<(nEventCrit + i);
+      keepTrack |= 1<<i;
+      keepNTracks++;
+    }
+
+    if (keepTrack) {
+      Double_t data[4];
+      data[0] = keepTrack;
+      data[1] = track->Pt();
+      data[2] = track->Eta();
+      data[3] = track->Phi();
+
+      fhAcc->Fill(data);
+      fhPtAcc->Fill(track->Pt());
+    }
+
   }
 
-  // - Begin: track loop for electrons from V0 -
-  for(Int_t itrack = 0; itrack < fV0electrons->GetEntries(); itrack++){
+  if (keepEvent) {
 
-    hasElectron = kTRUE;
-    
-    AliESDtrack *track=(AliESDtrack*)fV0electrons->At(itrack);
+    fhEventCuts->Fill("event_acc",1);
+    FillTriggerHisto(fhTrgAcc);
 
-    fhPt[kElecAll]->Fill(track->GetP());
-
-    // TODO: TCP dE/dx plot 
-    //fhTPCsignalvsp->Fill(track->GetP(),track->GetTPCsignal());
-     
-    if ( ! PassTrackCuts(track,3) ) continue;
-    //if ( ! PassTrackPIDCuts(track) ) continue;
-    if ( track->GetP() < 1.2 ) continue;
-
-    keepElectron = kTRUE;
-    fhPt[kElecAcc]->Fill(track->GetP());
-  } // - End: track loop for electrons from V0 -
-    
-  
-  // - Begin: track loop for pions from V0 -
-  for(Int_t itrack = 0; itrack < fV0pions->GetEntries(); itrack++){
-
-    hasElectron = kTRUE;
-    
-    AliESDtrack *track=(AliESDtrack*)fV0pions->At(itrack);
-
-    // QA histos
-    fhPt[kPionAll]->Fill(track->GetP());
-
-    if ( ! PassTrackCuts(track,3) ) continue;
-    //if ( ! PassTrackPIDCuts(track) ) continue;
-    if ( track->GetP() < 1.9 ) continue;
-
-    keepPion = kTRUE;
-    fhPt[kPionAcc]->Fill(track->GetP());
-
-  }
-
-
-  if (keepElectron) fhEventCuts->Fill(4);
-  if (keepPion) fhEventCuts->Fill(5);
-
-  
-  if (keepElectron || keepPion) {
-
-    fhEventCuts->Fill(6);
-    
-    // load the digits from TRD.Digits.root
-    ReadDigits();
-    
-    // get rid of data from chambers that are not used
-    for (Int_t det=0; det<540; det++) {
-      if ( ! keepDet[det] ) {
-	fDigMan->ClearArrays(det);
-	fDigMan->ClearIndexes(det);
-	fDigMan->GetDigits(det)->Expand();
-	fDigMan->GetDigits(det)->Reset();
-	fDigMan->GetDigits(det)->Compress();
-	
+    for (Int_t i = 0; i<nEventCrit; i++) {
+      if (keepEvent & ( 1 << i ) ) {
+        fhEventCuts->Fill("event_acc_"+fEventCriteria[i].fLabel,1);
       }
-    }      
-    
-    // store the digits in TRD.FltDigits.root
-    WriteDigits();
-  }
-  
-  PostData(1,fListQA);
-}
-
-
-//________________________________________________________________________
-void AliTRDdigitsFilter::ReadDigits()
-{
-  TTree* tr = (TTree*)fDigitsInputFile->Get(Form("Event%d/TreeD",
-						 fEventNoInFile));
-  for (Int_t det=0; det<540; det++) {
-    fDigMan->ClearArrays(det);
-    fDigMan->ClearIndexes(det);
-  }
-
-  fDigMan->ReadDigits(tr);
-  delete tr;
-}
-
-//________________________________________________________________________
-void AliTRDdigitsFilter::WriteDigits()
-{
-  TDirectory* evdir =
-    fDigitsOutputFile->mkdir(Form("Event%d", fEventNoInFile),
-			     Form("Event%d", fEventNoInFile));
-
-  evdir->Write();
-  evdir->cd();
-
-  TTree* tr = new TTree("TreeD", "TreeD");
-  fDigMan->MakeBranch(tr);
-  fDigMan->WriteDigits();
-  delete tr;
-}
-
-
-//________________________________________________________________________
-void AliTRDdigitsFilter::Terminate(const Option_t *)
-{
-    //
-    // Terminate function
-    //
-
-
-}
-
-
-//______________________________________________________________________________
-void AliTRDdigitsFilter::FillV0PIDlist(){
-
-  //
-  // Fill the PID object arrays holding the pointers to identified particle tracks
-  //
-
-  // Dynamic cast to ESD events (DO NOTHING for AOD events)
-  AliESDEvent *event = dynamic_cast<AliESDEvent *>(InputEvent());
-  if ( !event )  return;
-
-  if(IsPbPb()) {
-      fV0cuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPbPb);
-  }
-  else {
-      fV0cuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPP);
-  }
-  //SetGammaCutInvMass
-
-  // V0 selection
-  // set event
-  fV0cuts->SetEvent(event);
-
-  const Int_t numTracks = event->GetNumberOfTracks();
-  fV0tags = new Int_t[numTracks];
-  for (Int_t i = 0; i < numTracks; i++)
-    fV0tags[i] = 0;
-
-  fNumTagsStored = numTracks;
-
-  // loop over V0 particles
-  for(Int_t iv0=0; iv0<event->GetNumberOfV0s();iv0++){
-
-
-    AliESDv0 *v0 = (AliESDv0 *) event->GetV0(iv0);
- 
-    if(!v0) continue;
-    if(v0->GetOnFlyStatus()) continue;
-
-    // Get the particle selection 
-    Bool_t foundV0 = kFALSE;
-    Int_t pdgV0, pdgP, pdgN;
-    foundV0 = fV0cuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
-    if(!foundV0) continue;
-    Int_t iTrackP = v0->GetPindex();  // positive track
-    Int_t iTrackN = v0->GetNindex();  // negative track
-
-    // v0 Armenteros plot (QA)
-    Float_t armVar[2] = {0.0,0.0};
-    fV0cuts->Armenteros(v0, armVar);
-    // if ( !(TMath::Power(armVar[0]/0.95,2)+TMath::Power(armVar[1]/0.05,2) < 1) ) continue;
-
-
-    if(fListQA&&fhArmenteros) fhArmenteros->Fill(armVar[0],armVar[1]);
-
-    // fill the Object arrays
-    // positive particles
-    if( pdgP == -11){
-	fV0electrons->Add((AliVTrack*)event->GetTrack(iTrackP));
-        fV0tags[iTrackP] = 11;
-	//	printf("effmass here %f\n",effmass);
     }
-    else if( pdgP == 211){
-	fV0pions->Add((AliVTrack*)event->GetTrack(iTrackP));
-        fV0tags[iTrackP] = 211;
-    }
-    
 
-    // negative particles
-    if( pdgN == 11){
-	fV0electrons->Add((AliVTrack*)event->GetTrack(iTrackN));
-        fV0tags[iTrackN] = -11;
+    for (Int_t i = 0; i<nTrackCrit; i++) {
+      if (keepEvent & ( 1 << (nEventCrit+i) ) ) {
+        fhEventCuts->Fill("event_acc_"+fTrackCriteria[i].fLabel,1);
+      }
     }
-    else if( pdgN == -211){
-	fV0pions->Add((AliVTrack*)event->GetTrack(iTrackN));
-        fV0tags[iTrackN] = -211;
-    }
-   
 
+    if (ReadDigits()) {
+      WriteDigits();
+    }
 
   }
+
+  PostData(1,fOutputList);
 }
 
-//______________________________________________________________________________
-Int_t AliTRDdigitsFilter::GetV0tag(Int_t trackIndex) const
-{
-  //
-  // Get the tag for the corresponding trackIndex. Returns -99 in case of invalid index/tag list.
-  //
+// //________________________________________________________________________
+// Bool_t AliTRDdigitsFilter::ReadDigits()
+// {
+//   if (!fDigitsInputFile) {
+//     AliError("Digits file not open");
+//     return kFALSE;
+//   }
+//
+//   TTree* tr = (TTree*)fDigitsInputFile->Get(Form("Event%d/TreeD",
+// 						 fEventNoInFile));
+//
+//   if (!tr) {
+//     AliErrorF("Digits tree for event %d not found", fEventNoInFile);
+//     return kFALSE;
+//   }
+//
+//   for (Int_t det=0; det<540; det++) {
+//     fDigMan->ClearArrays(det);
+//     fDigMan->ClearIndexes(det);
+//   }
+//
+//   fDigMan->ReadDigits(tr);
+//   delete tr;
+//   return kTRUE;
+// }
+//
+// //________________________________________________________________________
+// void AliTRDdigitsFilter::WriteDigits()
+// {
+//   if (!fDigitsOutputFile) {
+//     AliError("Filtered digits file not open");
+//     return;
+//   }
+//
+//   TDirectory* evdir =
+//     fDigitsOutputFile->mkdir(Form("Event%d", fEventNoInFile),
+// 			     Form("Event%d", fEventNoInFile));
+//
+//   evdir->Write();
+//   evdir->cd();
+//
+//   TTree* tr = new TTree("TreeD", "TreeD");
+//   fDigMan->MakeBranch(tr);
+//   fDigMan->WriteDigits();
+//   delete tr;
+// }
 
-  if (trackIndex < 0 || trackIndex >= fNumTagsStored || !fV0tags) return -99;
-  else
-  {
-      return fV0tags[trackIndex];
-  }
-}
 
-//______________________________________________________________________________
-void AliTRDdigitsFilter::ClearV0PIDlist(){
-
-  //
-  // Clear the PID object arrays
-  //
-
-  fV0electrons->Clear();
-  fV0pions->Clear();
- 
-
-  delete fV0tags;
-  fV0tags = 0;
-
-  fNumTagsStored = 0;
-}
+// //________________________________________________________________________
+// void AliTRDdigitsFilter::Terminate(const Option_t *)
+// {
+//     //
+//     // Terminate function
+//     //
+// }
 
 
 //________________________________________________________________________
@@ -552,14 +477,14 @@ Bool_t AliTRDdigitsFilter::PassTrackCuts(AliESDtrack *fESDTrack, Int_t threshold
     //
     // check if tracks pass minimum quality critieria
     //
-  
+
     if(!fESDTrack) return kFALSE;
 
     // DCA to PV
     Float_t dca[2];
     fESDTrack->GetImpactParameters(dca[0],dca[1]);
     if(dca[0]>5||dca[1]>10) return kFALSE;
-    
+
     // eta cut
     if((TMath::Abs(fESDTrack->Eta()))>0.9) return kFALSE;
 
@@ -577,28 +502,25 @@ Bool_t AliTRDdigitsFilter::PassTrackCuts(AliESDtrack *fESDTrack, Int_t threshold
     else tpcchi2=1000;
     if(tpcchi2 > 4) return kFALSE;
 
-    
+
     Int_t ntrackletstracking=fESDTrack->GetTRDntracklets();
     if(ntrackletstracking<threshold) return kFALSE;
- 
-     // QA #TRD PID tracklets 
+
+     // QA #TRD PID tracklets
     if(fESDTrack->GetTRDntrackletsPID()<threshold) return kFALSE;
-    
+
     Int_t ntrl=0;
     for(Int_t jPl=0;jPl<6;jPl++){
-	Double_t signal=0;
-	for(int isl= 0; isl<= 8;isl++){
-	    Double_t sigsl=fESDTrack->GetTRDslice(jPl,isl);
-	    if(sigsl>0)signal+=sigsl;
-	}
-        // if signal is missing, stop counting
-	if(signal<=0||fESDTrack->GetTRDmomentum(jPl)<=0)break;
-	ntrl++;
+      Double_t signal=0;
+      for(int isl= 0; isl<= 8;isl++){
+        Double_t sigsl=fESDTrack->GetTRDslice(jPl,isl);
+        if(sigsl>0)signal+=sigsl;
+      }
+      // if signal is missing, stop counting
+      if(signal<=0||fESDTrack->GetTRDmomentum(jPl)<=0)break;
+      ntrl++;
     }
     if(ntrl<threshold) return kFALSE;
 
-   
-
     return kTRUE;
 }
-

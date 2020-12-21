@@ -18,14 +18,15 @@ class AliAnalysisUtils;
 class AliAODTrack;
 class AliEMCALGeometry;
 class AliESDtrack;
-class AliEmcalTrackSelection;
 class AliGenPythiaEventHeader;
 class AliVParticle;
 class AliMCEvent;
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerWeightHandler;
+class AliEmcalTriggerOfflineSelection;
 
 /**
  * @class AliAnalysisTaskChargedParticlesRefMC
@@ -149,6 +150,17 @@ public:
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
 
   /**
+   * @brief Require bunch crossing information of track obtained from TOF (if available)
+   * matches the bunch crossing ID of the event
+   *
+   * Pileup is not simulated in ALICE. This means on simulation level only the TOF matching is required
+   * in order to check the efficiency of the TOF matching
+   *
+   * @param[in] doRequire If true the track is only selected if it has a TOF match
+   */
+  void SetRequireTOFBunchCrossing(Bool_t doRequire) { fRequireTOFBunchCrossing = doRequire; }
+
+  /**
    * @brief Get the trigger offline selection.
    *
    * Providing access to the trigger offline selection. Note that
@@ -196,6 +208,16 @@ public:
    * @param[in] doStudy If true histograms are added
    */
   void SetStudyEMCALgeo(Bool_t doStudy) { fStudyEMCALgeo = doStudy; }
+
+  /**
+   * @brief Switch for whether the analysis runs only in min. bias mode
+   * 
+   * In min. bias mode EMCAL triggers are not evaluated. Also the connection
+   * to the EMCAL trigger patch container is disabled.
+   * 
+   * @param[in] exclusiveMinBias Switch for whether the analysis runs in min. bias or full mode
+   */
+  void SetExclusiveMinBias(Bool_t exclusiveMinBias) { fExclusiveMinBias = exclusiveMinBias; this->SetCaloTriggerPatchInfoName(fExclusiveMinBias ? "" : "EmcalTriggers"); }
 
   /**
    * Preconfigure task. Intended for subwagon configuration inside the train.
@@ -330,7 +352,7 @@ private:
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
 
-  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection    *fTrackCuts;                ///< Standard track selection
   AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
   THistManager                          *fHistos;                   ///< Histogram manager
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
@@ -348,6 +370,8 @@ private:
   Bool_t                                fEnableSumw2;               ///< Enable sumw2 when filling histograms (by default off)
   Bool_t                                fStudyPID;                  ///< Fill kinematics histograms with information of true particle species (default: off)
   Bool_t                                fStudyEMCALgeo;             ///< Add histograms for tracks pointing to the EMCAL acceptance
+  Bool_t                                fExclusiveMinBias;          ///< Study only min. bias;
+  Bool_t                                fRequireTOFBunchCrossing;   ///< Require TOF bunch crossing information (reducing to simple TOF matching in simulation)
 
   TString                               fNameAcceptanceOADB;        ///< Name of the OADB container with trigger acceptance maps
 

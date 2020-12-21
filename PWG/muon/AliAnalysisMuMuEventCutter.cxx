@@ -21,6 +21,7 @@
 #include "AliLog.h"
 #include "AliMuonEventCuts.h"
 #include "AliAnalysisMuonUtility.h"
+#include "AliAnalysisUtils.h"
 #include "TList.h"
 #include "TTree.h"
 #include "Riostream.h"
@@ -47,14 +48,14 @@ ClassImp(AliAnalysisMuMuEventCutter)
 
 //______________________________________________________________________________
 AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TRootIOCtor* /*ioCtor*/)
-: TObject(), fMuonEventCuts(0x0)
+: TObject(), fMuonEventCuts(0x0), fAnalysisUtils(0x0)
 {
   /// default io ctor
 }
 
 //______________________________________________________________________________
 AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(const char* triggerClasses, const char* triggerInputsMap)
-: TObject(), fMuonEventCuts(0x0)
+: TObject(), fMuonEventCuts(0x0), fAnalysisUtils(0x0)
 {
   /// ctor
   TString tclasses(triggerClasses);
@@ -76,7 +77,7 @@ AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(const char* triggerClasse
 
 //______________________________________________________________________________
 AliAnalysisMuMuEventCutter::AliAnalysisMuMuEventCutter(TList* triggerClasses, TList* triggerInputsMap)
-: TObject(), fMuonEventCuts(0x0)
+: TObject(), fMuonEventCuts(0x0), fAnalysisUtils(0x0)
 {
   /// ctor
   TString tclasses;
@@ -133,6 +134,7 @@ AliAnalysisMuMuEventCutter::~AliAnalysisMuMuEventCutter()
 {
   /// dtor
   delete fMuonEventCuts;
+  delete fAnalysisUtils;
 }
 
 //_____________________________________________________________________________
@@ -472,6 +474,19 @@ AliAnalysisMuMuEventCutter::MuonEventCuts() const
   return fMuonEventCuts;
 }
 
+//_____________________________________________________________________________
+AliAnalysisUtils*
+AliAnalysisMuMuEventCutter::AnalysisUtils() const
+{
+  /// Return the single instance of AliAnalysisUtils object we're using
+
+  if (!fAnalysisUtils)
+  {
+    fAnalysisUtils = new AliAnalysisUtils();
+  }
+  return fAnalysisUtils;
+}
+
 
 //_____________________________________________________________________________
 void AliAnalysisMuMuEventCutter::NameOfIsSPDzVertexInRange(TString& name, const Double_t& zMin, const Double_t& zMax) const
@@ -526,4 +541,10 @@ Bool_t AliAnalysisMuMuEventCutter::IsTZEROPileUp(const AliVEvent& event) const
     }
   }
   return pileupFlag;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuEventCutter::IsSPDPileUp(AliVEvent& event) const
+{
+  return AnalysisUtils()->IsPileUpSPD(&event);
 }

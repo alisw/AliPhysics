@@ -330,7 +330,7 @@ void AliAnalysisTaskCountLcEta::UserExec(Option_t *) {
       Int_t pdgcode=TMath::Abs(ch);
       
       if(pdgcode==4122) { //signal
-      	 FillHistosL(particle,mcEvent);
+      	 FillHistosL(ipart,mcEvent);
       	 nLc++;
       	 continue; 
       }
@@ -578,7 +578,7 @@ void AliAnalysisTaskCountLcEta::Terminate(Option_t *) {
   
 }
 
-void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent){
+void AliAnalysisTaskCountLcEta::FillHistosL(Int_t iPart, AliMCEvent* mcEvent){
 
   //Histograms
   TH1F* hPtLc3Prongs=(TH1F*)fOutList->FindObject("hLc3Prongs");
@@ -607,7 +607,7 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
   TH1F* hLcpKpiInEta=(TH1F*)fOutList->FindObject("hLcpKpiInEta");
   
  
-	
+  TParticle *part = (TParticle*)mcEvent->Particle(iPart);
   Double_t pt_part=part->Pt();
   Double_t p_part=part->P();
   Double_t eta_part=part->Eta();
@@ -617,10 +617,12 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
   if(nDaugh<2) return;
   if(nDaugh>3) return;
   //Printf("Lc in 3 prongs");
-  TParticle* pdaugh1 = mcEvent->Particle(part->GetFirstDaughter());
+  Int_t iDau1= mcEvent->GetLabelOfParticleFirstDaughter(iPart);
+  Int_t iDau2= mcEvent->GetLabelOfParticleLastDaughter(iPart);
+  TParticle* pdaugh1 = mcEvent->Particle(iDau1);
   if(!pdaugh1) return;
   Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
-  TParticle* pdaugh2 = mcEvent->Particle(part->GetLastDaughter());
+  TParticle* pdaugh2 = mcEvent->Particle(iDau2);
   if(!pdaugh2) return;
   Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
 
@@ -638,7 +640,7 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
   Double_t mom_t[3];
   if(nDaugh==3){
     //Printf("Pt part %f",pt_part);
-    Int_t thirdDaugh=part->GetLastDaughter()-1;
+    Int_t thirdDaugh=iDau2-1;
     TParticle* pdaugh3 = mcEvent->Particle(thirdDaugh);
     //printf("Fillhistos L 3 daugh\n");
     if(!pdaugh3) return;
@@ -669,8 +671,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==2212 && number2==313){
       nfiglieK=pdaugh2->GetNDaughters();
       if(nfiglieK!=2) return;
-      TParticle* pdaughK1 = mcEvent->Particle(pdaugh2->GetFirstDaughter());
-      TParticle* pdaughK2 = mcEvent->Particle(pdaugh2->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau2);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau2);
+      TParticle* pdaughK1 = mcEvent->Particle(jDau1);
+      TParticle* pdaughK2 = mcEvent->Particle(jDau2);
       if(!pdaughK1) return;
       if(!pdaughK2) return;
       Int_t number2K=TMath::Abs(pdaughK1->GetPdgCode());
@@ -697,8 +701,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==313 && number2==2212){
       nfiglieK=pdaugh1->GetNDaughters();
       if(nfiglieK!=2) return;
-      TParticle* pdaughK1 = mcEvent->Particle(pdaugh1->GetFirstDaughter());
-      TParticle* pdaughK2 = mcEvent->Particle(pdaugh1->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau1);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau1);
+      TParticle* pdaughK1 = mcEvent->Particle(jDau1);
+      TParticle* pdaughK2 = mcEvent->Particle(jDau2);
       if(!pdaughK1) return;
       if(!pdaughK2) return;
       Int_t number2K=TMath::Abs(pdaughK1->GetPdgCode());
@@ -726,8 +732,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==321 && number2==2224){
       nfiglieDelta=pdaugh2->GetNDaughters();
       if(nfiglieDelta!=2) return;
-      TParticle *pdaughD1=mcEvent->Particle(pdaugh2->GetFirstDaughter());
-      TParticle *pdaughD2=mcEvent->Particle(pdaugh2->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau2);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau2);
+      TParticle *pdaughD1=mcEvent->Particle(jDau1);
+      TParticle *pdaughD2=mcEvent->Particle(jDau2);
       if(!pdaughD1) return;
       if(!pdaughD2) return;
       Int_t number2D=TMath::Abs(pdaughD1->GetPdgCode());
@@ -753,8 +761,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==2224 && number2==321){
       nfiglieDelta=pdaugh1->GetNDaughters();
       if(nfiglieDelta!=2) return;
-      TParticle* pdaughD1 = mcEvent->Particle(pdaugh1->GetFirstDaughter());
-      TParticle* pdaughD2 = mcEvent->Particle(pdaugh1->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau1);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau1);
+      TParticle* pdaughD1 = mcEvent->Particle(jDau1);
+      TParticle* pdaughD2 = mcEvent->Particle(jDau2);
       if(!pdaughD1) return;
       if(!pdaughD2) return;
       Int_t number2D=TMath::Abs(pdaughD1->GetPdgCode());
@@ -783,8 +793,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==3124 && number2==211){
       nfiglieLa=pdaugh1->GetNDaughters();
       if(nfiglieLa!=2) return;
-      TParticle *pdaughL1=mcEvent->Particle(pdaugh1->GetFirstDaughter());
-      TParticle *pdaughL2=mcEvent->Particle(pdaugh1->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau1);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau1);
+      TParticle *pdaughL1=mcEvent->Particle(jDau1);
+      TParticle *pdaughL2=mcEvent->Particle(jDau2);
       if(!pdaughL1) return;
       if(!pdaughL2) return;
       Int_t number2L=TMath::Abs(pdaughL1->GetPdgCode());
@@ -810,8 +822,10 @@ void AliAnalysisTaskCountLcEta::FillHistosL(TParticle *part, AliMCEvent* mcEvent
     if(number1==211 && number2==3124){
       nfiglieLa=pdaugh2->GetNDaughters();
       if(nfiglieLa!=2) return;
-      TParticle *pdaughL1=mcEvent->Particle(pdaugh2->GetFirstDaughter());
-      TParticle *pdaughL2=mcEvent->Particle(pdaugh2->GetLastDaughter());
+      Int_t jDau1= mcEvent->GetLabelOfParticleFirstDaughter(iDau2);
+      Int_t jDau2= mcEvent->GetLabelOfParticleLastDaughter(iDau2);
+      TParticle *pdaughL1=mcEvent->Particle(jDau1);
+      TParticle *pdaughL2=mcEvent->Particle(jDau2);
       if(!pdaughL1) return;
       if(!pdaughL2) return;
       Int_t number2L=TMath::Abs(pdaughL1->GetPdgCode());

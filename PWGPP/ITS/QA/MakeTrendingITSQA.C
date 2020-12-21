@@ -60,6 +60,8 @@ Float_t meanVtxSPDxErr,meanVtxSPDyErr,meanVtxSPDzErr;
 Float_t sigmaVtxTRKxErr,sigmaVtxTRKyErr,sigmaVtxTRKzErr;
 Float_t sigmaVtxSPDxErr,sigmaVtxSPDyErr,sigmaVtxSPDzErr;
 Float_t pileupSPD,errpileupSPD;
+Float_t diamondX,diamondY,diamondZ;
+Float_t diamondSigX,diamondSigY,diamondSigZ;
 
 ///// SSD Variables (25 variables)
 Float_t MPVL5,MPVErrL5;
@@ -153,7 +155,7 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     }
 
 //    char defaultQAoutput[30]="QAresults.root";
-    char * treePostFileName="trending.root";
+    const char *treePostFileName = "trending.root";
 
     if (IsOnGrid) TGrid::Connect("alien://");
     TFile * fin = TFile::Open(qafilename,"r");
@@ -192,7 +194,8 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     sigmaVtxSPDxErr=-999.;sigmaVtxSPDyErr=-999.;sigmaVtxSPDzErr=-999.;
     //
     pileupSPD=-999.;errpileupSPD=-999.;
-    
+    diamondX=-999.;diamondY=-999.;diamondZ=-999.;
+    diamondSigX=-999.;diamondSigY=-999.;diamondSigZ=-999.;
     
     ///// SSD Variables (25 variables)
     MPVL5=-999.;MPVErrL5=-999.;
@@ -369,6 +372,12 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     ttree->Branch("sigmaVtxSPDzErr",&sigmaVtxSPDzErr,"sigmaVtxSPDzErr/F"); // error sigma of tracks vertex position - z
     ttree->Branch("pileupSPD",&pileupSPD,"pileupSPD/F"); // fraction of events with SPD pileup vertex
     ttree->Branch("errpileupSPD",&errpileupSPD,"errpileupSPD/F"); // fraction of events with SPD pileup vertex
+    ttree->Branch("diamondX",&diamondX,"diamondX/F"); // OCDB diamond <x>
+    ttree->Branch("diamondY",&diamondY,"diamondY/F"); // OCDB diamond <y>
+    ttree->Branch("diamondZ",&diamondZ,"diamondZ/F"); // OCDB diamond <z>
+    ttree->Branch("diamondSigX",&diamondSigX,"diamondSigX/F"); // OCDB diamond rms x
+    ttree->Branch("diamondSigY",&diamondSigY,"diamondSigY/F"); // OCDB diamond rms x
+    ttree->Branch("diamondSigZ",&diamondSigZ,"diamondSigZ/F"); // OCDB diamond rms x
 
     // TPC-ITS ME branches
     ttree->Branch("Eff6Pt02",&Eff6Pt02,"Eff6Pt02/F"); // matching efficiency low pt 6 clusters
@@ -818,7 +827,36 @@ void FillVertexBranches(TList * VertxList){
     if(zVtxSPD->GetEntries()==0) zVtxSPD = (TH1F*)VertxList->FindObject("fhSPDVertexZonly"); // PbPb runs!!!
     TH1F *zVtxSPD_Zonly = (TH1F*)VertxList->FindObject("fhSPDVertexZonly");
     TH1F *zVtxSPDpil = (TH1F*)VertxList->FindObject("fhSPDVertexZPile");
-    
+    TTree *diamTree = (TTree*)VertxList->FindObject("fTreeDiamond");
+    Bool_t diamondExists = kFALSE;
+    Bool_t diamondOK = kFALSE;
+    if(diamTree){
+      diamondExists = kTRUE;
+      UInt_t theRun;
+      Float_t xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam;
+      diamTree->SetBranchAddress("run",&theRun);
+      diamTree->SetBranchAddress("xdiam",&xdiam);
+      diamTree->SetBranchAddress("ydiam",&ydiam);
+      diamTree->SetBranchAddress("zdiam",&zdiam);
+      diamTree->SetBranchAddress("sigxdiam",&sigxdiam);
+      diamTree->SetBranchAddress("sigydiam",&sigydiam);
+      diamTree->SetBranchAddress("sigzdiam",&sigzdiam);
+      for(Int_t j=0; j<diamTree->GetEntriesFast(); j++){
+	diamTree->GetEvent(j);
+	if(theRun==nrun){
+	  myfile << Form("Run %d  Diamond x,y,z (%f,%f,%f)  Diamond rms (%f,%f,%f)\n",theRun,xdiam,ydiam,zdiam,sigxdiam,sigydiam,sigzdiam) << endl;
+	  diamondX=xdiam;
+	  diamondY=ydiam;
+	  diamondZ=zdiam;
+	  diamondSigX=sigxdiam;
+	  diamondSigY=sigydiam;
+	  diamondSigZ=sigzdiam;
+	  diamondOK = kTRUE;
+	  break;
+	}
+      }
+    }
+
     if(xVtxTRK){
      TF1 *fxTRK = new TF1("gausx", "gaus", -1, 1);
         if(xVtxTRK->GetEntries()>0){
@@ -850,7 +888,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxTRK){
-        TF1 *fzTRK = new TF1("gausz", "gaus", -1, 1);
+        TF1 *fzTRK = new TF1("gausz", "gaus", -10., 10.);
         if(zVtxTRK->GetEntries()>0){
             zVtxTRK->Fit("gausz","NQRL");
             meanVtxTRKz=(Float_t)fzTRK->GetParameter(1);
@@ -895,7 +933,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxSPD){
-        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -1, 1);
+        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -10., 10.);
         if(zVtxSPD->GetEntries()>0){
             zVtxSPD->Fit("gauszSPD","NQRL");
             meanVtxSPDz=(Float_t)fzSPD->GetParameter(1);
@@ -933,7 +971,7 @@ void FillVertexBranches(TList * VertxList){
     gStyle->SetOptFit(111);
     
     TRK_SPD3D_Vtx->cd(1);
-    if(xVtxSPD->GetEntries()>0){
+    if(xVtxTRK->GetEntries()>0 || xVtxSPD->GetEntries()>0){
         xVtxSPD->SetMarkerStyle(20);
         xVtxSPD->SetLineWidth(3);
         xVtxSPD->SetMarkerColor(kBlue+2);
@@ -941,11 +979,18 @@ void FillVertexBranches(TList * VertxList){
         xVtxTRK->SetMarkerStyle(20);
         xVtxTRK->SetLineWidth(4);
         xVtxTRK->SetLineColor(2);
-        xVtxTRK->Draw("PE");
-        xVtxTRK->Fit("gaus", "QM");
-        xVtxSPD->Draw("PE SAME");
-        xVtxTRK->GetXaxis()->SetRangeUser(-0.05, 0.15);
-        xVtxSPD->GetXaxis()->SetRangeUser(-0.05, 0.15);
+	xVtxTRK->SetMarkerColor(2);
+	fx->SetLineColor(2);
+	if(xVtxTRK->GetEntries()>0){
+	  if(xVtxSPD->GetEntries()>0) xVtxTRK->GetXaxis()->SetRangeUser(xVtxSPD->GetMean()-3.*xVtxSPD->GetRMS(),xVtxSPD->GetMean()+3.*xVtxSPD->GetRMS());
+	  else xVtxTRK->GetXaxis()->SetRangeUser(xVtxTRK->GetMean()-10.*xVtxTRK->GetRMS(),xVtxTRK->GetMean()+10.*xVtxTRK->GetRMS());
+	  xVtxTRK->Draw("PE");
+	  xVtxTRK->Fit("gaus", "QM");
+	  if(xVtxSPD->GetEntries()>0) xVtxSPD->Draw("PE SAME");
+	}else{
+	  xVtxSPD->GetXaxis()->SetRangeUser(xVtxSPD->GetMean()-10.*xVtxSPD->GetRMS(),xVtxSPD->GetMean()+10.*xVtxSPD->GetRMS());
+	  xVtxSPD->Draw("PE");
+	}
         delete fx;
         TLatex* tVTX1=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX1->SetNDC();
@@ -955,22 +1000,47 @@ void FillVertexBranches(TList * VertxList){
         tVTX2->SetNDC();
         tVTX2->SetTextColor(2);
         tVTX2->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondX,xVtxTRK->GetMinimum(),diamondX,xVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTXd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f #mum}}",diamondX,diamondSigX*10000.));
+	  tVTXd->SetNDC();
+	  tVTXd->SetTextColor(kMagenta+1);
+	  tVTXd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTXd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTXd->SetNDC();
+	    tVTXd->SetTextColor(kMagenta+1);
+	    tVTXd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(2);
-    if(yVtxSPD->GetEntries()>0){
+    if(yVtxTRK->GetEntries()>0 || yVtxSPD->GetEntries()>0){
         yVtxSPD->SetMarkerStyle(20);
         yVtxSPD->SetLineWidth(3);
         yVtxSPD->SetMarkerColor(kBlue+2);
         TF1 *fy = new TF1("gaus", "gaus", -1, 1);
         yVtxTRK->SetMarkerStyle(20);
         yVtxTRK->SetLineWidth(3);
-        yVtxTRK->SetLineColor(2);
-        yVtxTRK->Draw("PE");
-        yVtxTRK->Fit("gaus", "QM");
-        yVtxSPD->Draw("PE SAME");
-        yVtxTRK->GetXaxis()->SetRangeUser(-0.2, 0.6);
-        yVtxSPD->GetXaxis()->SetRangeUser(-0.2, 0.6);
+	yVtxTRK->SetLineColor(2);
+	yVtxTRK->SetMarkerColor(2);
+	fy->SetLineColor(2);
+	if(yVtxTRK->GetEntries()>0){
+	  if(yVtxSPD->GetEntries()>0) yVtxTRK->GetXaxis()->SetRangeUser(yVtxSPD->GetMean()-3.*yVtxSPD->GetRMS(),yVtxSPD->GetMean()+3.*yVtxSPD->GetRMS());
+	  else yVtxTRK->GetXaxis()->SetRangeUser(yVtxTRK->GetMean()-10.*yVtxTRK->GetRMS(),yVtxTRK->GetMean()+10.*yVtxTRK->GetRMS());
+	  yVtxTRK->Draw("PE");
+	  yVtxTRK->Fit("gaus", "QM");
+	  if(yVtxSPD->GetEntries()>0) yVtxSPD->Draw("PE SAME");
+	}else{
+	  yVtxSPD->GetXaxis()->SetRangeUser(yVtxSPD->GetMean()-10.*yVtxSPD->GetRMS(),yVtxSPD->GetMean()+10.*yVtxSPD->GetRMS());
+	  yVtxSPD->Draw("PE");
+	}
         delete fy;
         TLatex* tVTX3=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX3->SetNDC();
@@ -980,6 +1050,24 @@ void FillVertexBranches(TList * VertxList){
         tVTX4->SetNDC();
         tVTX4->SetTextColor(2);
         tVTX4->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondY,yVtxTRK->GetMinimum(),diamondY,yVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTYd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f #mum}}",diamondY,diamondSigY*10000.));
+	  tVTYd->SetNDC();
+	  tVTYd->SetTextColor(kMagenta+1);
+	  tVTYd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTYd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTYd->SetNDC();
+	    tVTYd->SetTextColor(kMagenta+1);
+	    tVTYd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(3);
@@ -997,6 +1085,7 @@ void FillVertexBranches(TList * VertxList){
         zVtxSPD->SetMarkerColor(kBlue+2);
         zVtxSPD->SetMarkerSize(0.8);
         zVtxSPD->Draw("PE SAME");
+	if(zVtxSPD->GetMaximum()>zVtxTRK->GetMaximum()) zVtxTRK->SetMaximum(1.1*zVtxSPD->GetMaximum());
         delete fz;
         TLatex* tVTX5=new TLatex(0.15,0.85,"VertexSPD - DATA");
         tVTX5->SetNDC();
@@ -1006,6 +1095,24 @@ void FillVertexBranches(TList * VertxList){
         tVTX6->SetNDC();
         tVTX6->SetTextColor(2);
         tVTX6->Draw();
+	if(diamondOK){
+	  TLine* l0 = new TLine(diamondZ,zVtxTRK->GetMinimum(),diamondZ,zVtxTRK->GetMaximum());
+	  l0->SetLineColor(kMagenta+1);
+	  l0->SetLineStyle(7);
+	  l0->SetLineWidth(2);
+	  l0->Draw();
+	  TLatex* tVTZd=new TLatex(0.15,0.72,Form("#splitline{DIAMOND - OCDB}{#splitline{mean=%.3f cm}{rms=%.1f cm}}",diamondZ,diamondSigZ));
+	  tVTZd->SetNDC();
+	  tVTZd->SetTextColor(kMagenta+1);
+	  tVTZd->Draw();
+	}else{
+	  if(diamondExists){
+	    TLatex* tVTZd=new TLatex(0.15,0.72,"DIAMOND info missing");
+	    tVTZd->SetNDC();
+	    tVTZd->SetTextColor(kMagenta+1);
+	    tVTZd->Draw();
+	  }
+	}
     }
     
     TRK_SPD3D_Vtx->cd(4);
@@ -1041,7 +1148,7 @@ void FillVertexBranches(TList * VertxList){
 //    delete fy;
 //    delete fz;
     
-    } /// end void FillVertexBranches(TList * VertxList)
+} /// end void FillVertexBranches(TList * VertxList)
 
 
    ///////////////////////  SSD
@@ -1234,48 +1341,6 @@ void FillSSDBranches(TList * SSDList){
                     mpv[i]=1;
                 }	
             }
-/*            //
-                {
-                tmpQ+="fit";
-                Float_t range=fHist1DQ->GetBinCenter(fHist1DQ->GetMaximumBin());
-                TF1 *f1 = new TF1(tmpQ,LangausFun,range*0.45,range*3.0,4);
-                f1->SetParameters(7.0,range,1.0,5.5);
-                Float_t normalization=fHist1DQ->GetEntries()*fHist1DQ->GetXaxis()->GetBinWidth(2)/f1->Integral(range*0.45,range*3.0);
-                f1->SetParameters(7.0,range,normalization,5.5);
-                //f1->SetParameters(7.0,range,fHist1DQ->GetMaximum(),5.5);
-                f1->SetParNames("sigma Landau","MPV","N","sigma Gaus");
-                f1->SetParLimits(0,2.0,100.0);
-                f1->SetParLimits(3,0.0,100.0);
-//                if(fHist1DQ->Fit(tmpQ,"BRQON")==0)
-                TFitResultPtr r = fHist1DQ->Fit(tmpQ,"BRQON");
-                Int_t fitStatus = (Int_t)r;
-                if(fitStatus==0)
-                {
-                    mpv[i]=f1->GetParameter(1);
-                    fHistMPVs->Fill(mpv[i]);
-                    fMPVGraph->SetBinContent(i+1,f1->GetParameter(1));
-                    fMPVGraph->SetBinError(i+1,f1->GetParError(1));
-                    if(mpv[i]<75.0)
-                    {
-                        //outfiletxtbad<<"MPV lower than 75 \t module="<<i<<endl;
-                    }	
-                    if(mpv[i]>100.0)
-                    {
-                        // outfiletxtbad<<"MPV higher than 100 \t module="<<i<<endl;		  
-                    }
-                    if(f1->GetParError(1)>1.0)
-                    {
-                        //outfiletxtbad<<"MPV high error on MPV  \t module="<<i<<endl;				
-                    }
-                }
-                else
-                {
-                    mpv[i]=1;
-                    //outfiletxtbad<<"BAD FIT \t module="<<i<<endl;
-                    continue;
-                }	
-            }
-//*/
         }   // for 1698
  
 
@@ -1406,14 +1471,15 @@ void FillSDDBranches(TList * SDDList){
     if(hgamod){
         if(hgamod->GetEntries()>0){
             Int_t bestMod=0;
-            Int_t deadMod3=0, deadMod4=0;
+//            Int_t deadMod3=0, deadMod4=0;
+            Int_t chOK3=0, chOK4=0;
             for(Int_t iMod=0; iMod<260;iMod++){
                 Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
                 if(gda>bestMod) bestMod=gda;
-                if(gda == 0) {
-                    if(iMod<84) deadMod3+=1;
-                    else deadMod4+=1;
-                }
+//                if(gda == 0) {
+//                    if(iMod<84) deadMod3+=1;
+//                    else deadMod4+=1;
+//                }
             }
     
             Int_t nChunks=1;
@@ -1421,12 +1487,18 @@ void FillSDDBranches(TList * SDDList){
                 nChunks=(Int_t)(bestMod/512.+0.5);
             }
             hgamod->Scale(1./nChunks);
+            for(Int_t iMod=0; iMod<84;iMod++) chOK3 += (Int_t)hgamod->GetBinContent(iMod+1);
+            for(Int_t iMod=84; iMod<260;iMod++) chOK4 += (Int_t)hgamod->GetBinContent(iMod+1);
 
-            fracDead3 = 1.-(Float_t)deadMod3/84;
-            fracDead4 = 1.-(Float_t)deadMod4/176;
-            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
-            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
-            
+//            fracDead3 = 1.-(Float_t)deadMod3/84;
+//            fracDead4 = 1.-(Float_t)deadMod4/176;
+//            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
+//            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
+            fracDead3 = (Float_t)chOK3/(84*512); // fraction of good anodes for layer 3
+            fracDead4 = (Float_t)chOK4/(176*512); // fraction of good anodes for layer 4
+            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/(84*512));         //
+            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/(176*512));
+
             if(fracDead3 > 0.8)FlagSDD1=1.; else FlagSDD1=0.;
             if(fracDead4 > 0.75)FlagSDD2=1.; else FlagSDD2=0.;
         }
@@ -2290,6 +2362,7 @@ void FillITSsaBranches(TList * ITSsaList){
     TH1D* clus_eta_1, *clus_eta_2, *clus_eta_3, *clus_eta_4, *clus_eta_5, *clus_eta_6;
 
     if(hEtaPhiTracksLay1TPCITS){
+        if(hEtaPhiTracksLay1TPCITS->GetEntries()>0){
         clus_phi_1 = hEtaPhiTracksLay1TPCITS->ProjectionY();
         clus_phi_1->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2302,9 +2375,11 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_1[etabin]=clus_eta_1->GetBinContent(etabin+1)/clus_eta_1->GetEntries();
             //            erocc_eta_1[etabin]= TMath::Sqrt(occ_eta_1[etabin]*(1-occ_eta_1[etabin])/clus_eta_1->GetEntries());
         }
+        }
     }
 
     if(hEtaPhiTracksLay2TPCITS){
+        if(hEtaPhiTracksLay2TPCITS->GetEntries()>0){
         clus_phi_2 = hEtaPhiTracksLay2TPCITS->ProjectionY();
         clus_phi_2->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2315,9 +2390,11 @@ void FillITSsaBranches(TList * ITSsaList){
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_2[etabin]=clus_eta_2->GetBinContent(etabin+1)/clus_eta_2->GetEntries();
         }
+        }
     }
     
     if(hEtaPhiTracksLay3TPCITS){
+        if(hEtaPhiTracksLay3TPCITS->GetEntries()>0){
         clus_phi_3 = hEtaPhiTracksLay3TPCITS->ProjectionY();
         clus_phi_3->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2329,8 +2406,10 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_3[etabin]=clus_eta_3->GetBinContent(etabin+1)/clus_eta_3->GetEntries();
         }
     }
+    }
     
     if(hEtaPhiTracksLay4TPCITS){
+        if(hEtaPhiTracksLay4TPCITS->GetEntries()>0){
         clus_phi_4 = hEtaPhiTracksLay4TPCITS->ProjectionY();
         clus_phi_4->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2341,9 +2420,11 @@ void FillITSsaBranches(TList * ITSsaList){
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_4[etabin]=clus_eta_4->GetBinContent(etabin+1)/clus_eta_4->GetEntries();
         }
+        }
     }
     
     if(hEtaPhiTracksLay5TPCITS){
+        if(hEtaPhiTracksLay5TPCITS->GetEntries()>0){
         clus_phi_5 = hEtaPhiTracksLay5TPCITS->ProjectionY();
         clus_phi_5->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2355,8 +2436,10 @@ void FillITSsaBranches(TList * ITSsaList){
             occ_eta_5[etabin]=clus_eta_5->GetBinContent(etabin+1)/clus_eta_5->GetEntries();
         }
     }
+    }
     
     if(hEtaPhiTracksLay6TPCITS){
+        if(hEtaPhiTracksLay6TPCITS->GetEntries()>0){
         clus_phi_6 = hEtaPhiTracksLay6TPCITS->ProjectionY();
         clus_phi_6->Rebin(5); // 40 bins in phi, 9 degrees/bin
         for(Int_t phibin=0;phibin<40;phibin++){
@@ -2366,6 +2449,7 @@ void FillITSsaBranches(TList * ITSsaList){
         clus_eta_6->Rebin(25); // 2 bins in phi, HS, HL
         for(Int_t etabin=0;etabin<2;etabin++){
             occ_eta_6[etabin]=clus_eta_6->GetBinContent(etabin+1)/clus_eta_6->GetEntries();
+        }
         }
     }
 
@@ -2861,6 +2945,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
     //
     
     TH1F *fHistPtTPCInAcc = (TH1F*)ITSList->FindObject("fHistPtTPCInAcc");
+    if(fHistPtTPCInAcc){
     if(fHistPtTPCInAcc->GetEntries()>0){
     TH1F *fHistPtITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAcc");
     TH1F *fHistPtITSMI5InAcc = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAcc");
@@ -2930,11 +3015,13 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
 //        }
+       } // if(fHistPtTPCInAcc->GetEntries()>0){
     } // if(fHistPtTPCInAcc){
     
     // TOFITS vs pt
     
     TH1F *fHistPtTPCInAccTOF = (TH1F*)ITSList->FindObject("fHistPtTPCInAccTOFbc0");
+    if(fHistPtTPCInAccTOF){
     if(fHistPtTPCInAccTOF->GetEntries()>0){
     TH1F *fHistPtITSMI6InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI6InAccTOFbc0");
     TH1F *fHistPtITSMI5InAccTOF = (TH1F*)ITSList->FindObject("fHistPtITSMI5InAccTOFbc0");
@@ -3004,6 +3091,7 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
 //        }
+        } //if(fHistPtTPCInAccTOF->GetEntries()>0)
     } // if(fHistPtTPCInAccTOF)
     
     if(fHistPtTPCInAcc){
@@ -3015,7 +3103,8 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         // TPCITS vs phi
         
     TH1F *fHistPhiTPCInAcc = (TH1F*)ITSList->FindObject("fHistPhiTPCInAcc");
-    if(fHistPhiTPCInAcc->GetEntries()>0){
+    if(fHistPhiTPCInAcc){
+        if(fHistPhiTPCInAcc->GetEntries()>0){
         fHistPhiTPCInAcc->Rebin(2);
         TH1F *fHistPhiITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistPhiITSMI6InAcc");
         fHistPhiITSMI6InAcc->Rebin(2);
@@ -3187,13 +3276,15 @@ void DrawMatching(TList *SPDList, TList *ITSList)
         l2phi->AddEntry(spdFrac1phi,"Frac. active SPD1","p");
         l2phi->Draw();
         //        }
+        } // if(fHistPhiTPCInAcc->GetEntries()>0)
     } // if(fHistPhiTPCInAcc){
 
 
         // TPCITS vs eta
         
         TH1F *fHistEtaTPCInAcc = (TH1F*)ITSList->FindObject("fHistEtaTPCInAcc");
-        if(fHistEtaTPCInAcc->GetEntries()>0){
+        if(fHistEtaTPCInAcc){
+            if(fHistEtaTPCInAcc->GetEntries()>0){
             fHistEtaTPCInAcc->Rebin(2);
             TH1F *fHistEtaITSMI6InAcc = (TH1F*)ITSList->FindObject("fHistEtaITSMI6InAcc");
             fHistEtaITSMI6InAcc->Rebin(2);
@@ -3369,8 +3460,9 @@ void DrawMatching(TList *SPDList, TList *ITSList)
             spdFrac0->Draw("p");
             spdFrac1->Draw("p");
             //        }
+            } // if(fHistEtaTPCInAcc->GetEntries()>0){
         } // if(fHistEtaTPCInAcc){
-        
+
         if(fHistEtaTPCInAcc){
 //            cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.pdf");
             cITSTPCmatch2->SaveAs("MatchingPerformanceVsEtaPhi.png");
@@ -3433,5 +3525,6 @@ Double_t LangausFun(Double_t *x, Double_t *par) {
     
     return (par[2] * step * sum * invsq2pi / par[3]);
 }
+
 
 

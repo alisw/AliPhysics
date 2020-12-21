@@ -34,6 +34,7 @@
 #include <TKey.h>
 #include <TBits.h>
 #include <TRandom3.h>
+#include <TGrid.h>
 
 #include <AliLog.h>
 
@@ -67,6 +68,7 @@
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <AliESDtrackCuts.h>
+#include <AliESDUtils.h>
 
 #include "AliDielectronPair.h"
 #include "AliDielectronMC.h"
@@ -74,6 +76,7 @@
 #include "AliDielectronHelper.h"
 #include "AliDielectronQnEPcorrection.h"
 
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
@@ -81,6 +84,10 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+
+#include "AliFlowVector.h"
+#include "AliFlowEvent.h"
+#include "AliAnalysisTaskZDCEP.h"
 
 #include "AliAODMCHeader.h"
 #include "AliTRDgeometry.h"
@@ -121,16 +128,28 @@ public:
     kNclsITS,                // number of clusters assigned in the ITS
     kITSFakeFlag,            // ITS fake flag
     kITSchi2Cl,              // chi2/cl in the ITS
+    kITSchi2,                // chi2 in the ITS
+    kChi2GlobalNDF,           // chi2/ndf for global track
     kNclsTPC,                // number of clusters assigned in the TPC
     kNclsSTPC,               // number of shared clusters assigned in the TPC
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
-    kNclsSITS,                // number of shared clusters assigned in the ITS
+    kNclsSITS,               // number of shared clusters assigned in the ITS
     kNclsSFracITS,           // fraction of shared clusters assigned in the ITS
+    kNclsSMapITS,            // ITS shared cluster map
+    kClsS1ITS,               // ITS shared cluster layer 1
+    kClsS2ITS,               // ITS shared cluster layer 2
+    kClsS3ITS,               // ITS shared cluster layer 3
+    kClsS4ITS,               // ITS shared cluster layer 4
+    kClsS5ITS,               // ITS shared cluster layer 5
+    kClsS6ITS,               // ITS shared cluster layer 6
+
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
+    kNclsCrTPC,              // number of crossed rows in the TPC
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
+    kChi2TPCConstrainedVsGlobal, // "Golden Chi 2" Chi2 of the TPC track constrained to the global vertex and the global track, in AODs only available for production using AliRoot 7310 or later
     kTPCsignalN,             // number of points used for dEdx
     kTPCsignalNfrac,         // fraction of points used for dEdx / cluster used for tracking
     kTPCchi2Cl,              // chi2/cl in TPC
@@ -171,6 +190,8 @@ public:
     kImpactParZ,             // Impact parameter in Z
     kImpactParXYsigma,       // Impact parameter in XY plane normalized to resolution
     kImpactParZsigma,        // Impact parameter in Z normalized to resolution
+    kImpactParXYres,         // Resolution of the Impact parameter in XY plane
+    kImpactParZres,          // Resolution of the Impact parameter in Z
     kTrackLength,            // Track length
     kDistPrimToSecVtxXYMC,      // Distance of secondary vertex to primary vertex  in the XY plane
     kDistPrimToSecVtxZMC,       // Distance of secondary vertex to primary vertex in Z
@@ -220,6 +241,7 @@ public:
     kTPCnSigmaKao,           // number of sigmas to the dE/dx kaon line in the TPC
     kTPCnSigmaPro,           // number of sigmas to the dE/dx proton line in the TPC
 
+    kTOFnSigmaEleRaw,        // raw number of sigmas to the electron line in the TOF
     kTOFnSigmaEle,           // number of sigmas to the electron line in the TOF
     kTOFnSigmaPio,           // number of sigmas to the pion line in the TOF
     kTOFnSigmaMuo,           // number of sigmas to the muon line in the TOF
@@ -280,8 +302,13 @@ public:
     kThetaSqCS,              // squared value of kThetaCS
     kPsiPair,                // phi in mother's rest frame in Collins-Soper picture
     kPhivPair,               // angle between ee plane and the magnetic field (can be useful for conversion rejection)
+    kITSscPair,              // ITS shared cluster of both daughters of a pair
     kDeltaCotTheta,          // difference of cotangens of theta of daughters
 
+    kDeltaPhiSumDiff,        //Azimuthal angle between sum and difference of momentum vector   
+    kDeltaPhiSumPos,         //Azimuthal angle between pair momentum vector (= sum of legs) and positron momentum vector   
+    kDeltaPhiSumNeg,         //Azimuthal angle between pair momentum vector (= sum of legs) and electron momentum vector   
+    
     kPairPlaneAngle1A,         // angle between ee decay plane and x'-z reaction plane by using V0-A
     kPairPlaneAngle2A,         // angle between ee decay plane and (p1+p2) rot ez
     kPairPlaneAngle3A,         // angle between ee decay plane and (p1+p2) rot (p1+p2)x'z
@@ -301,8 +328,9 @@ public:
     kRandomRP,                //Random reaction plane
     kDeltaPhiRandomRP,        //delta phi of the pair
 
-    kPairPlaneMagInPro,     // Inner Product of strong magnetic field and ee plane
-	kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
+    kPairPlaneMagInPro,      // Inner Product of strong magnetic field and ee plane
+    kPairPlaneMagInProZDC,   // Inner Product of strong magnetic field and ee plane (from Qn correction framework - ZDC)
+    kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
     kSinPhiH2,               // sinus  of pair phi for 2nd harmonic
@@ -324,9 +352,19 @@ public:
 
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
-    kDeltaEta,         // Absolute value of Delta Eta for the legs
-    kDeltaPhi,           // Absolute value of Delta Phi for the legs
+    kDeltaEta,               // Absolute value of Delta Eta for the legs
+    kLeg1Eta,                // Eta of the first leg
+    kLeg2Eta,                // Eta of the second leg
+    kDeltaPhi,               // Absolute value of Delta Phi for the legs
+    kLeg1Phi,                // Phi of the first leg
+    kLeg2Phi,                // Phi of the second leg
     kDeltaPhiChargeOrdered,  // Absolute value of Delta Phi for the legs
+    kLeg1Pt,                  //pt for first daughter of the pair
+    kLeg2Pt,                  //pt for second daughter of the pair
+    kLeg1PIn,                  //pt for first daughter of the pair
+    kLeg2PIn,                  //pt for second daughter of the pair
+    kLeg1TPCnSigmaEle,        // TPC signal for leg1
+    kLeg2TPCnSigmaEle,        // TPC signal for leg2
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
@@ -342,14 +380,33 @@ public:
     kOneOverPairEffSq,        // 1 / pair efficiency squared (correction factor)
     kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
     kRndm=kRndmPair,
+    kLogDCAXY,                //TMath::Log(TMath::Abs(DCAxy)) - used as MVA input for conversion rejection
+    kLogDCAZ,                 //TMath::Log(TMath::Abs(DCAz))  - used as MVA input for conversion rejection
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    kLeg1DCAsigZ,             //DCA in sigma for first daughter of the pair in z-plane
+    kLeg1DCAabsZ,             //DCA in cm for first daughter of the pair in z-plane
+    kLeg1DCAresZ,             //resolution from kov matrix for first daughter of the pair in z-plane
+    kLeg1DCAsigXYZ,           //DCA in sigma for first daughter of the pair in xyz-plane
+    kLeg1DCAabsXYZ,           //DCA in cm for first daughter of the pair in xyz-plane
+    kLeg2DCAsigXY,            //DCA in sigma for second daughter of the pair in xy-plane
+    kLeg2DCAabsXY,            //DCA in cm for second daughter of the pair in xy-plane
+    kLeg2DCAresXY,            //resolution from kov matrix for second daughter of the pair in xy-plane
+    kLeg2DCAsigZ,             //DCA in sigma for second daughter of the pair in z-plane
+    kLeg2DCAabsZ,             //DCA in cm for second daughter of the pair in z-plane
+    kLeg2DCAresZ,             //resolution from kov matrix for second daughter of the pair in z-plane
+    kLeg2DCAsigXYZ,           //DCA in sigma for second daughter of the pair in xyz-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for second daughter of the pair in xyz-plane
+    kDeltaDCAabsZ,            //Difference in DCA in cm of both daughters of the pair in z-plane
+
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAsigXYZ,
     kPairDCAabsXY,             // dca in xy-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAabsZ,              // dca in z-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAabsXYZ,
     kPairLinDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
@@ -370,31 +427,32 @@ public:
     kMaxPt,                  // track with maximum pt
 
     //// v0 reaction plane quantities from AliEPSelectionTaks, angles interval [-pi/2,+pi/2]
-    kv0ArpH2,                // VZERO-A reaction plane of the Q vector for 2nd harmonic
-    kv0CrpH2,                //         reaction plane
-    kv0ACrpH2,               // VZERO-AC reaction plane of the Q vector for 2nd harmonic
-    kv0AxH2,                 // VZERO-A x-component of the Q vector for 2nd harmonic
-    kv0AyH2,                 // VZERO-A y-component of the Q vector for 2nd harmonic
-    kv0CxH2,                 // VZERO-C x-component of the Q vector for 2nd harmonic
-    kv0CyH2,                 // VZERO-C y-component of the Q vector for 2nd harmonic
-    kv0ACxH2,                // VZERO-AC x-component of the Q vector for 2nd harmonic
-    kv0ACyH2,                // VZERO-AC y-component of the Q vector for 2nd harmonic
-    kv0AmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
-    kv0CmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
-    kv0ACmagH2,              // VZERO-A the Q vectors magnitude for 2nd harmonic
-    kv0A0rpH2,                 // VZERO-A 1st  ring reaction plane of the Q vector for 2nd harmonic
-    kv0A3rpH2,                 // VZERO-A last ring reaction plane of the Q vector for 2nd harmonic
-    kv0C0rpH2,                 // VZERO-C 1st  ring reaction plane of the Q vector for 2nd harmonic
-    kv0C3rpH2,                 // VZERO-C last ring reaction plane of the Q vector for 2nd harmonic
-    kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
-    kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
-    kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
-    kv0Av0C0DiffH2,             // V0A-ring 0 ofV0C reaction plane difference for 2nd harmonic
-    kv0Av0C3DiffH2,             // V0A-ring 3 ofV0C reaction plane difference for 2nd harmonic
-    kv0Cv0A0DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
-    kv0Cv0A3DiffH2,             // V0C-ring 3 ofV0A reaction plane difference for 2nd harmonic
-    kv0A0v0A3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
-    kv0C0v0C3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
+    // Outdated for run2 commented out for memory savior PD 20180312
+    // kv0ArpH2,                // VZERO-A reaction plane of the Q vector for 2nd harmonic
+    // kv0CrpH2,                //         reaction plane
+    // kv0ACrpH2,               // VZERO-AC reaction plane of the Q vector for 2nd harmonic
+    // kv0AxH2,                 // VZERO-A x-component of the Q vector for 2nd harmonic
+    // kv0AyH2,                 // VZERO-A y-component of the Q vector for 2nd harmonic
+    // kv0CxH2,                 // VZERO-C x-component of the Q vector for 2nd harmonic
+    // kv0CyH2,                 // VZERO-C y-component of the Q vector for 2nd harmonic
+    // kv0ACxH2,                // VZERO-AC x-component of the Q vector for 2nd harmonic
+    // kv0ACyH2,                // VZERO-AC y-component of the Q vector for 2nd harmonic
+    // kv0AmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
+    // kv0CmagH2,               // VZERO-A the Q vectors magnitude for 2nd harmonic
+    // kv0ACmagH2,              // VZERO-A the Q vectors magnitude for 2nd harmonic
+    // kv0A0rpH2,                 // VZERO-A 1st  ring reaction plane of the Q vector for 2nd harmonic
+    // kv0A3rpH2,                 // VZERO-A last ring reaction plane of the Q vector for 2nd harmonic
+    // kv0C0rpH2,                 // VZERO-C 1st  ring reaction plane of the Q vector for 2nd harmonic
+    // kv0C3rpH2,                 // VZERO-C last ring reaction plane of the Q vector for 2nd harmonic
+    // kv0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
+    // kv0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
+    // kv0Av0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
+    // kv0Av0C0DiffH2,             // V0A-ring 0 ofV0C reaction plane difference for 2nd harmonic
+    // kv0Av0C3DiffH2,             // V0A-ring 3 ofV0C reaction plane difference for 2nd harmonic
+    // kv0Cv0A0DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
+    // kv0Cv0A3DiffH2,             // V0C-ring 3 ofV0A reaction plane difference for 2nd harmonic
+    // kv0A0v0A3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
+    // kv0C0v0C3DiffH2,             // V0C-ring 0 ofV0A reaction plane difference for 2nd harmonic
 
     kMultV0A,                // VZERO multiplicity and ADC amplitudes
     kMultV0C,
@@ -408,6 +466,7 @@ public:
     kVZEROchMult,
     // VZERO reaction plane quantities
     kV0AxH2=kVZEROchMult+64,   // VZERO-A x-component of the Q vector for 2nd harmonic
+    // Run1 eventplane estimation not valid for run2 commented out for memory savior
     kV0AyH2,                   // VZERO-A y-component of the Q vector for 2nd harmonic
     kV0ArpH2,                  // VZERO-A reaction plane of the Q vector for 2nd harmonic
     kV0CxH2,                   // VZERO-C x-component of the Q vector for 2nd harmonic
@@ -425,44 +484,45 @@ public:
     kV0YaXcH2,
     kV0YaYcH2,
     kV0XcYcH2,
-    kV0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
-    kV0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
-    kV0AV0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
+    // kV0ATPCDiffH2,             // V0A-TPC reaction plane difference for 2nd harmonic
+    // kV0CTPCDiffH2,             // V0C-TPC reaction plane difference for 2nd harmonic
+    // kV0AV0CDiffH2,             // V0A-V0C reaction plane difference for 2nd harmonic
     // TPC reaction plane quantities, angle interval [-pi/2,+pi/2]
     kTPCxH2,                  // TPC x-component of the Q vector for 2nd harmonic (corrected)
     kTPCyH2,                  // TPC y-component of the Q vector for 2nd harmonic (corrected)
-    kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
+    // kTPCmagH2,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (corrected)
     kTPCrpH2,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
-    kCosTPCrpH2,              // cosine of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
-    kSinTPCrpH2,              // sinus of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
-    kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1)
-    kTPCsub1yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 1)
-    kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
-    kTPCsub2xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 2)
-    kTPCsub2yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 2)
-    kTPCsub2rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 2)
-    kTPCsub12DiffH2,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic
-    kTPCsub12DiffH2Sin,       // TPC reaction plane difference of sub event 1,2 for 2nd harmonic, sinus term
+    // kCosTPCrpH2,              // cosine of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    // kSinTPCrpH2,              // sinus of TPC reaction plane angle of the Q vector for 2nd harmonic (corrected)
+    // kTPCsub1xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 1)
+    // kTPCsub1yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 1)
+    // kTPCsub1rpH2,             // TPC reaction plane of the Q vector for 2nd harmonic (corrected, sub event 1)
+    // kTPCsub2xH2,              // TPC x-component of the Q vector for 2nd harmonic (corrected, sub event 2)
+    // kTPCsub2yH2,              // TPC y-component of the Q vector for 2nd harmonic (corrected, sub event 2)
+    // kTPCsub2rpH2,             // TPC reaction plane of the Q vector for2nd harmonic (corrected, sub event 2)
+    // kTPCsub12DiffH2,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic
+    // kTPCsub12DiffH2Sin,       // TPC reaction plane difference of sub event 1,2 for 2nd harmonic, sinus term
+    //
+    // kTPCxH2uc,                  // TPC x-component of the Q vector for 2nd harmonic (uncorrected)
+    // kTPCyH2uc,                  // TPC y-component of the Q vector for 2nd harmonic (uncorrected)
+    // kTPCmagH2uc,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (uncorrected)
+    // kTPCrpH2uc,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (uncorrected) -- corrected if the QnCorrections framework est. 2016 is used
+    // kTPCsub1xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
+    // kTPCsub1yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
+    // kTPCsub1rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 1)
+    // kTPCsub2xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 2)
+    // kTPCsub2yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 2)
+    // kTPCsub2rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 2)
+    // kTPCsub12DiffH2uc,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic (uncorrected)
+    //
+    // //ZDC reaction plane(v1 plane) quantities
+    //
+    // kZDCArpH1,                  // ZDC-A reaction plane of the Q vector for 1st harmonic
+    // kZDCCrpH1,                  // ZDC-C reaction plane of the Q vector for 1st harmonic
+    // kZDCACrpH1,                  // ZDC-AC reaction plane of the Q vector for 1st harmonic
+    // kZDCrpResH1,                  // 1st harmonic reaction plane resolution for ZDC
+    // kv0ZDCrpRes,                //ZDC reaction plane for 1st harmonic and VZERO reaction plane for 2nd harmonic correlation
 
-    kTPCxH2uc,                  // TPC x-component of the Q vector for 2nd harmonic (uncorrected)
-    kTPCyH2uc,                  // TPC y-component of the Q vector for 2nd harmonic (uncorrected)
-    kTPCmagH2uc,                // TPC reaction plane the Q vectors magnitude for 2nd harmonic (uncorrected)
-    kTPCrpH2uc,                 // TPC reaction plane angle of the Q vector for 2nd harmonic (uncorrected) -- corrected if the QnCorrections framework est. 2016 is used
-    kTPCsub1xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
-    kTPCsub1yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 1)
-    kTPCsub1rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 1)
-    kTPCsub2xH2uc,              // TPC x-component of the Q vector for 2nd harmonic (uncorrected, sub event 2)
-    kTPCsub2yH2uc,              // TPC y-component of the Q vector for 2nd harmonic (uncorrected, sub event 2)
-    kTPCsub2rpH2uc,             // TPC reaction plane of the Q vector for 2nd harmonic (uncorrected, sub event 2)
-    kTPCsub12DiffH2uc,          // TPC reaction plane difference of sub event 1,2 for 2nd harmonic (uncorrected)
-
-    //ZDC reaction plane(v1 plane) quantities
-
-    kZDCArpH1,                  // ZDC-A reaction plane of the Q vector for 1st harmonic
-    kZDCCrpH1,                  // ZDC-C reaction plane of the Q vector for 1st harmonic
-    kZDCACrpH1,                  // ZDC-AC reaction plane of the Q vector for 1st harmonic
-    kZDCrpResH1,                  // 1st harmonic reaction plane resolution for ZDC
-    kv0ZDCrpRes,                //ZDC reaction plane for 1st harmonic and VZERO reaction plane for 2nd harmonic correlation
     // Beginning of Eventplane variables from Qn Framework
     // Eventplanes for 2nd harmonic from QnCorrections framework est. 2016
     kQnTPCrpH2,                // TPC eventplane from QnCorrections framework
@@ -494,6 +554,13 @@ public:
     kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
     kQnFMDCxH2,
     kQnFMDCyH2,
+    kQnZDCArpH1,               // ZDCA eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCCrpH1,               // ZDCC eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCAX,                  // ZDCA Q vector, X component from ZDC Event plane task
+    kQnZDCAY,                  // ZDCA Q vector, Y component from ZDC Event plane task
+    kQnZDCCX,                  // ZDCC Q vector, X component from ZDC Event plane task
+    kQnZDCCY,                  // ZDCC Q vector, Y component from ZDC Event plane task
+ 
     // Average Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
     // Returns cos(2(psi_DetA-psi_DetB))
     kQnDiffTPC_V0A,
@@ -520,70 +587,73 @@ public:
     kQnDiffFMDA_FMDC,
 
     // // Average XX YX XY differences for 2nd harmonics from QnCorrections framework est. 2016
-    kQnCorrTPCx_V0Ax,
-    kQnCorrTPCx_V0Ay,
-    kQnCorrTPCy_V0Ax,
-    kQnCorrTPCy_V0Ay,
-    kQnCorrTPCx_V0Cx,
-    kQnCorrTPCx_V0Cy,
-    kQnCorrTPCy_V0Cx,
-    kQnCorrTPCy_V0Cy,
-    kQnCorrTPCx_SPDx,
-    kQnCorrTPCx_SPDy,
-    kQnCorrTPCy_SPDx,
-    kQnCorrTPCy_SPDy,
-    kQnCorrTPCx_FMDAx,
-    kQnCorrTPCx_FMDAy,
-    kQnCorrTPCy_FMDAx,
-    kQnCorrTPCy_FMDAy,
-    kQnCorrTPCx_FMDCx,
-    kQnCorrTPCx_FMDCy,
-    kQnCorrTPCy_FMDCx,
-    kQnCorrTPCy_FMDCy,
-    kQnCorrV0Ax_V0Cx,
-    kQnCorrV0Ax_V0Cy,
-    kQnCorrV0Ay_V0Cx,
-    kQnCorrV0Ay_V0Cy,
-    kQnCorrV0Ax_SPDx,
-    kQnCorrV0Ax_SPDy,
-    kQnCorrV0Ay_SPDx,
-    kQnCorrV0Ay_SPDy,
-    kQnCorrV0Ax_FMDAx,
-    kQnCorrV0Ax_FMDAy,
-    kQnCorrV0Ay_FMDAx,
-    kQnCorrV0Ay_FMDAy,
-    kQnCorrV0Ax_FMDCx,
-    kQnCorrV0Ax_FMDCy,
-    kQnCorrV0Ay_FMDCx,
-    kQnCorrV0Ay_FMDCy,
-    kQnCorrV0Cx_FMDAx,
-    kQnCorrV0Cx_FMDAy,
-    kQnCorrV0Cy_FMDAx,
-    kQnCorrV0Cy_FMDAy,
-    kQnCorrV0Cx_FMDCx,
-    kQnCorrV0Cx_FMDCy,
-    kQnCorrV0Cy_FMDCx,
-    kQnCorrV0Cy_FMDCy,
-    kQnCorrV0Cx_SPDx,
-    kQnCorrV0Cx_SPDy,
-    kQnCorrV0Cy_SPDx,
-    kQnCorrV0Cy_SPDy,
-    kQnCorrSPDx_FMDAx,
-    kQnCorrSPDx_FMDAy,
-    kQnCorrSPDy_FMDAx,
-    kQnCorrSPDy_FMDAy,
-    kQnCorrSPDx_FMDCx,
-    kQnCorrSPDx_FMDCy,
-    kQnCorrSPDy_FMDCx,
-    kQnCorrSPDy_FMDCy,
-    kQnCorrFMDAx_FMDCx,
-    kQnCorrFMDAx_FMDCy,
-    kQnCorrFMDAy_FMDCx,
+    // Only needed for detailed eventplane checks commented out for memory savior (specially in mixed event)
+    // kQnCorrTPCx_V0Ax,
+    // kQnCorrTPCx_V0Ay,
+    // kQnCorrTPCy_V0Ax,
+    // kQnCorrTPCy_V0Ay,
+    // kQnCorrTPCx_V0Cx,
+    // kQnCorrTPCx_V0Cy,
+    // kQnCorrTPCy_V0Cx,
+    // kQnCorrTPCy_V0Cy,
+    // kQnCorrTPCx_SPDx,
+    // kQnCorrTPCx_SPDy,
+    // kQnCorrTPCy_SPDx,
+    // kQnCorrTPCy_SPDy,
+    // kQnCorrTPCx_FMDAx,
+    // kQnCorrTPCx_FMDAy,
+    // kQnCorrTPCy_FMDAx,
+    // kQnCorrTPCy_FMDAy,
+    // kQnCorrTPCx_FMDCx,
+    // kQnCorrTPCx_FMDCy,
+    // kQnCorrTPCy_FMDCx,
+    // kQnCorrTPCy_FMDCy,
+    // kQnCorrV0Ax_V0Cx,
+    // kQnCorrV0Ax_V0Cy,
+    // kQnCorrV0Ay_V0Cx,
+    // kQnCorrV0Ay_V0Cy,
+    // kQnCorrV0Ax_SPDx,
+    // kQnCorrV0Ax_SPDy,
+    // kQnCorrV0Ay_SPDx,
+    // kQnCorrV0Ay_SPDy,
+    // kQnCorrV0Ax_FMDAx,
+    // kQnCorrV0Ax_FMDAy,
+    // kQnCorrV0Ay_FMDAx,
+    // kQnCorrV0Ay_FMDAy,
+    // kQnCorrV0Ax_FMDCx,
+    // kQnCorrV0Ax_FMDCy,
+    // kQnCorrV0Ay_FMDCx,
+    // kQnCorrV0Ay_FMDCy,
+    // kQnCorrV0Cx_FMDAx,
+    // kQnCorrV0Cx_FMDAy,
+    // kQnCorrV0Cy_FMDAx,
+    // kQnCorrV0Cy_FMDAy,
+    // kQnCorrV0Cx_FMDCx,
+    // kQnCorrV0Cx_FMDCy,
+    // kQnCorrV0Cy_FMDCx,
+    // kQnCorrV0Cy_FMDCy,
+    // kQnCorrV0Cx_SPDx,
+    // kQnCorrV0Cx_SPDy,
+    // kQnCorrV0Cy_SPDx,
+    // kQnCorrV0Cy_SPDy,
+    // kQnCorrSPDx_FMDAx,
+    // kQnCorrSPDx_FMDAy,
+    // kQnCorrSPDy_FMDAx,
+    // kQnCorrSPDy_FMDAy,
+    // kQnCorrSPDx_FMDCx,
+    // kQnCorrSPDx_FMDCy,
+    // kQnCorrSPDy_FMDCx,
+    // kQnCorrSPDy_FMDCy,
+    // kQnCorrFMDAx_FMDCx,
+    // kQnCorrFMDAx_FMDCy,
+    // kQnCorrFMDAy_FMDCx,
     kQnCorrFMDAy_FMDCy,
 
     // Flow estimators for measured Jpsis
-
+    // Eventplane Fourier calculation
     kQnDeltaPhiTPCrpH2,
+    kQnDeltaPhiTrackTPCrpH2, // Track delta phi for cross-checks
+    kQnDeltaPhiTrackV0CrpH2, // Track delta phi for cross-checks
     kQnDeltaPhiV0ArpH2,
     kQnDeltaPhiV0CrpH2,
     kQnDeltaPhiV0rpH2,
@@ -594,7 +664,33 @@ public:
     kQnV0rpH2FlowV2,
     kQnSPDrpH2FlowV2,
 
+    // Eventplane Scalar-Product
+    kQnTPCrpH2FlowSPV2,
+    kQnV0ArpH2FlowSPV2,
+    kQnV0CrpH2FlowSPV2,
+    kQnV0rpH2FlowSPV2,
+    kQnSPDrpH2FlowSPV2,
+
+
     // End of Eventplane variables from Qn Framework
+
+		kNclsITS1, //number of clusters on ITS1(SPD0) in an event
+		kNclsITS2, //number of clusters on ITS2(SPD1) in an event
+		kNclsITS3, //number of clusters on ITS3(SDD0) in an event
+		kNclsITS4, //number of clusters on ITS4(SDD1) in an event
+		kNclsITS5, //number of clusters on ITS5(SSD0) in an event
+		kNclsITS6, //number of clusters on ITS6(SSD1) in an event
+    kNSPDclsEvent,     // Number of SPD clusters in the event
+    kNSDDclsEvent,     // Number of SDD clusters in the event
+    kNSSDclsEvent,     // Number of SSD clusters in the event
+    kNSDDSSDclsEvent,  // Number of SDD+SSD clusters in the event
+
+		kTPCpileupZA, //center of gravity (median) of displaced track Z in pileup event, estimated in A side.
+		kTPCpileupZC, //center of gravity (median) of displaced track Z in pileup event, estimated in C side.
+		kTPCpileupZ,  //center of gravity (median) of displaced track Z in pileup event, average (A+C)/2.
+		kTPCpileupMA, //Number of contributors from pileup event in A side.
+		kTPCpileupMC, //Number of contributors from pileup event in C side.
+		kTPCpileupM,  //Number of contributors from pileup event sum A+C
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // track after all cuts
@@ -602,6 +698,10 @@ public:
     kNVtxContribTPC,         // number of TPC vertex contibutors
     kNacc,                   // Number of accepted tracks
     kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
+    kMatchEffITSTPCinPlane,         // ruff estimate on the ITS-TPC matching efficiceny inPlane wrt TPC eventplane
+    kMatchEffITSTPCoutPlane,         // ruff estimate on the ITS-TPC matching efficiceny outPlane wrt TPC eventplane
+    kMatchEffITSTPCinPlaneV0C,         // ruff estimate on the ITS-TPC matching efficiceny inPlane wrt V0C eventplane
+    kMatchEffITSTPCoutPlaneV0C,         // ruff estimate on the ITS-TPC matching efficiceny outPlane wrt V0C eventplane
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6
     kNaccTrcklts09,          // number of accepted SPD tracklets in |eta|<0.9
     kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.
@@ -631,6 +731,8 @@ public:
     kNaccItsPureEsd16Corr,   //
     kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
     kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
+    kNTPCtrkswITSout,        // Number of TPC tracks with kITSout flag
+    kNTPCclsEvent,           // Number of TPC clusters in the event
     kRefMultOvRefMultTPConly,   // ref mult / tpc only ref mult should give a hint on out of bunch pile-up if much higher than factor ~4 (LHC15o)
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
@@ -639,6 +741,8 @@ public:
     kNch05JpsiExcl,          // MC true number of charged particles in |eta|<0.5 without J/psi daughter tracks
     kNch10,                  // MC true number of charged particles in |eta|<1.0
     kNch10JpsiExcl,          // MC true number of charged particles in |eta|<1.0 without J/psi daughter tracks
+    kNch09,                  // MC true number of charged particles in |eta|<1.0
+    kNch09JpsiExcl,          // MC true number of charged particles in |eta|<1.0 without J/psi daughter tracks
 
     kCentrality,             // event centrality fraction V0M
     kCentralityV0A,          // event centrality fraction V0A
@@ -647,6 +751,7 @@ public:
     kCentralitySPD,          // centrality using SPD (from second layer)
     //centrality determination for Run 2
     kCentralityNew,          //event centrality V0M
+    kCentralityV0Mcali,      //event centrality V0M, using the calibrated events
     kCentralityCL0,          //event centrality CL0
     kCentralityCL1,          //event centrality CL1
     kCentralitySPDClusters,          //event centrality SPD
@@ -656,7 +761,12 @@ public:
     kCentralityCL0plus10,    //event centrality VO AP +1.0%
     kCentralityCL0minus10,    //event centrality VO AP -1.0%
 
-
+    kTransverseSpherocity,    // transverse Spherocity of the event
+    kTransverseSpherocityFast,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks
+    kTransverseSpherocityESD,  // transverse Spherocity of the event on ESDs
+    kTransverseSpherocityFastESD,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs
+    kTransverseSpherocityESDwoPtWeight,  // transverse Spherocity of the event on ESDs without pT weighting of the tracks
+    kTransverseSpherocityFastESDwoPtWeight,  // faster calculation of the transverse Spherocity of the event for more than 10 charged tracks on ESDs without pT weighting of the tracks
 
     kTriggerInclONL,         // online trigger bits fired (inclusive)
     kTriggerInclOFF,         // offline trigger bits fired (inclusive)
@@ -664,6 +774,18 @@ public:
     kNevents,                // event counter
     kRunNumber,              // run number
     kMixingBin,
+
+    kMCLegSource,            // According to AliDielectronSignalMC::ESource
+
+    kRotationAngle,
+    kWeightFromRotationAngle,
+    kWeightFromRotationMultiplicity,
+    kWeightFromRotationMultiplicity_PP,
+    kWeightFromRotationMultiplicity_MM,
+    kWeightFromRotationSingleTracks,
+    kNumberOfLSPairs,
+    kNumberOfRotatedPairs,
+    kWeightFromRotationSingleTracksForPairSum,
 
     kNMaxValues              //
     // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
@@ -685,8 +807,15 @@ public:
   static void SetLegEffMap( TObject *map) { fgLegEffMap=map; }
   static void SetPairEffMap(TObject *map) { fgPairEffMap=map; }
   static void SetFillMap(   TBits   *map) { fgFillMap=map; }
-  static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
+  static void SetQnCalibrationFilePath(const Char_t* filename, const Bool_t doV0GainEq, const Bool_t doV0recenter, const Bool_t doTPCrecenter) {
+    fgQnCalibrationFilePath = filename;
+    fgDoQnV0GainEqualization = doV0GainEq;
+    fgDoQnV0Recentering      = doV0recenter;
+    fgDoQnTPCRecentering     = doTPCrecenter;
+    printf("path to calibration file = %s , do V0 Gain Eq. = %d , do V0 recentering = %d , do TPC recentering = %d\n",fgQnCalibrationFilePath.Data(),fgDoQnV0GainEqualization,fgDoQnV0Recentering,fgDoQnTPCRecentering);
+  }
 
+  static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   static void SetVZERORecenteringFile(const Char_t* filename) {fgVZERORecenteringFile = filename;}
   static void SetZDCRecenteringFile(const Char_t* filename) {fgZDCRecenteringFile = filename;}
   static void SetPIDResponse(AliPIDResponse *pidResponse) {fgPIDResponse=pidResponse;}
@@ -698,6 +827,7 @@ public:
   static void SetTPCEventPlaneACremoval(AliDielectronQnEPcorrection *acCuts) {fgQnEPacRemoval = acCuts; fgEventPlaneACremoval = kTRUE;}
   static void SetQnVectorNormalisation(TString qnNorm) {fgQnVectorNorm = qnNorm;}
   static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
+  static void GetTPCRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
   static void GetZDCRP(const AliVEvent* event, Double_t qvec[][2]);
   static AliAODVertex* GetVertex(const AliAODEvent *event, AliAODVertex::AODVtx_t vtype);
   static TProfile* GetEstimatorHistogram(Int_t period, Int_t type) {return fgMultEstimatorAvg[period][type];}
@@ -722,7 +852,8 @@ private:
 
   static const char* fgkParticleNames[kNMaxValues][3];  //variable names
 
-  static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
+  static Bool_t Req(ValueTypes var) { if(fgFillMap->GetNbits()>kNMaxValues) return kFALSE; // needed for unknown crashes (TBits with high number of bits after calling GetPrimaryVertex in FillVarESDEvent)
+    return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
   static void FillVarESDtrack(const AliESDtrack *particle,           Double_t * const values);
   static void FillVarAODTrack(const AliAODTrack *particle,           Double_t * const values);
   static void FillVarVTrdTrack(const AliVParticle *particle,         Double_t * const values);
@@ -737,7 +868,9 @@ private:
   static void FillVarMCEvent(const AliMCEvent *event,                Double_t * const values);
   static void FillVarTPCEventPlane(const AliEventplane *evplane,     Double_t * const values);
   static void FillQnEventplanes(TList *qnlist,                       Double_t * const values);
+  static void FillZDCEventPlane(Double_t * const values);
 
+  static void InitQnCalibrationHistograms(Int_t runNo);
   static void InitVZEROCalibrationHistograms(Int_t runNo);
   static void InitVZERORecenteringHistograms(Int_t runNo);
   static void InitZDCRecenteringHistograms(Int_t runNo);
@@ -746,16 +879,22 @@ private:
   static AliVEvent       *fgEvent;              // current event pointer
   static AliEventplane   *fgTPCEventPlane;      // current event tpc plane pointer
   static AliKFVertex     *fgKFVertex;           // kf vertex
-  static TProfile        *fgMultEstimatorAvg[6][9];  // multiplicity estimator averages (6 periods x 18 estimators)
+  static TProfile        *fgMultEstimatorAvg[7][9];  // multiplicity estimator averages (7 periods x 18 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
   static TObject         *fgLegEffMap;             // single electron efficiencies
   static TObject         *fgPairEffMap;             // pair efficiencies
   static TBits           *fgFillMap;             // map for requested variable filling
+  static TString          fgQnCalibrationFilePath;  // file path to VZERO/TPC Qn calibrations
+  static Bool_t           fgDoQnV0GainEqualization;  // flag for gain equalization of V0 for Qn vector
+  static Bool_t           fgDoQnV0Recentering;  // flag for recentering of V0 for Qn vector
+  static Bool_t           fgDoQnTPCRecentering;  // flag for recentering of TPC for Qn vector
+
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
   static TProfile2D      *fgVZEROCalib[64];           // 1 histogram per VZERO channel
   static TProfile2D      *fgVZERORecentering[2][2];   // 2 VZERO sides x 2 Q-vector components
+  static TProfile2D      *fgTPCRecentering[2];   // 2 VZERO sides x 2 Q-vector components
   static Int_t            fgCurrentRun;               // current run number
 
   static TString          fgZDCRecenteringFile; // file with ZDC Q-vector averages needed for event plane recentering
@@ -774,7 +913,7 @@ private:
   AliDielectronVarManager(const AliDielectronVarManager &c);
   AliDielectronVarManager &operator=(const AliDielectronVarManager &c);
 
-  ClassDef(AliDielectronVarManager,1);
+  ClassDef(AliDielectronVarManager,3);
 };
 
 
@@ -832,6 +971,10 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
 
   values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
 
+  AliVTrack *track = (AliVTrack*)particle;
+  if(track->IsA() != AliDielectronPair::Class()) // otherwise crashing with ROOT5
+    values[AliDielectronVarManager::kPIn]= track->GetTPCmomentum();//used for PID calib
+
   if(Req(kPtMC)||Req(kPMC)||Req(kPhiMC)||Req(kEtaMC)){
     values[AliDielectronVarManager::kPtMC]      = -999.;
     values[AliDielectronVarManager::kPMC]       = -999.;
@@ -839,7 +982,7 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
     values[AliDielectronVarManager::kEtaMC]     = -999.;
     AliVParticle *mcTrack(0x0);
     if(AliDielectronMC::Instance()->HasMC())
-      mcTrack = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs(particle->GetLabel()));
+      mcTrack = AliDielectronMC::Instance()->GetMCTrack(particle);
     if(mcTrack){
       values[AliDielectronVarManager::kPtMC]   = mcTrack->Pt();
       values[AliDielectronVarManager::kPMC]    = mcTrack->P();
@@ -870,7 +1013,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if (!esdTrack) return;
   esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack)/AliDielectronPID::GetCorrValdEdx(),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 
-  Double_t pidProbs[AliPID::kSPECIES];
+
   // Fill AliESDtrack interface specific information
   Double_t tpcNcls=particle->GetTPCNcls();
   Double_t tpcNclsS = particle->GetTPCnclsS();
@@ -883,6 +1026,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]       = tpcClusFindable;
+  values[AliDielectronVarManager::kNclsCrTPC]      = particle->GetTPCCrossedRows();
   values[AliDielectronVarManager::kNFclsTPCr]      = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac]  = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
@@ -896,14 +1040,29 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
+  values[AliDielectronVarManager::kClsS1ITS]=0;
+  values[AliDielectronVarManager::kClsS2ITS]=0;
+  values[AliDielectronVarManager::kClsS3ITS]=0;
+  values[AliDielectronVarManager::kClsS4ITS]=0;
+  values[AliDielectronVarManager::kClsS5ITS]=0;
+  values[AliDielectronVarManager::kClsS6ITS]=0;
 
   Double_t itsNclsS = 0.;
   for(int i=0; i<6; i++){
-    if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+    if( particle->HasSharedPointOnITSLayer(i) )   {
+        itsNclsS ++;
+        if(i==0) values[AliDielectronVarManager::kClsS1ITS]=1;
+        if(i==1) values[AliDielectronVarManager::kClsS2ITS]=1;
+        if(i==2) values[AliDielectronVarManager::kClsS3ITS]=1;
+        if(i==3) values[AliDielectronVarManager::kClsS4ITS]=1;
+        if(i==4) values[AliDielectronVarManager::kClsS5ITS]=1;
+        if(i==5) values[AliDielectronVarManager::kClsS6ITS]=1;
+    }
   }
-  values[AliDielectronVarManager::kNclsITS]     = itsNcls;
+  values[AliDielectronVarManager::kNclsITS]      = itsNcls;
   values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
   values[AliDielectronVarManager::kNclsSFracITS] = itsNcls ? itsNclsS/ itsNcls :0;
+  values[AliDielectronVarManager::kNclsSMapITS]  = particle->GetITSSharedMap();
 
 
   UChar_t threshold = 5;
@@ -933,10 +1092,44 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if (tpcNcls>0) values[AliDielectronVarManager::kTPCchi2Cl] = particle->GetTPCchi2() / tpcNcls;
   values[AliDielectronVarManager::kITSchi2Cl] = -1;
   if (itsNcls>0) values[AliDielectronVarManager::kITSchi2Cl] = particle->GetITSchi2() / itsNcls;
-  //TRD pidProbs
-  particle->GetTRDpid(pidProbs);
-  values[AliDielectronVarManager::kTRDprobEle]    = pidProbs[AliPID::kElectron];
-  values[AliDielectronVarManager::kTRDprobPio]    = pidProbs[AliPID::kPion];
+  else values[AliDielectronVarManager::kITSchi2Cl] = -99;
+  values[AliDielectronVarManager::kITSchi2] = particle->GetITSchi2();
+  // //TRD pidProbs
+  // particle->GetTRDpid(pidProbs);
+  // values[AliDielectronVarManager::kTRDprobEle]    = pidProbs[AliPID::kElectron];
+  // values[AliDielectronVarManager::kTRDprobPio]    = pidProbs[AliPID::kPion];
+
+  Double_t prob[AliPID::kSPECIES]={0.0};
+  // Not clear if this is valid for ESDtracks: switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
+  // TODO: find a solution when this is needed (maybe at fill time in histos, CFcontainer and cut selection)
+  // 1D TRD PID
+  if( Req(kTRDprobEle) || Req(kTRDprobPio) ){
+    fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob);
+    values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
+  }
+  // 2D TRD PID
+  if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) || Req(kTRDprob2DPro) ){
+    fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob, AliTRDPIDResponse::kLQ2D);
+    values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
+    values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
+    values[AliDielectronVarManager::kTRDprob2DPro]    = prob[AliPID::kProton];
+  }
+  // 3D TRD PID
+   if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){
+     fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D);
+     values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron];
+     values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion];
+     values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton];
+   }
+  // 7D TRD PID
+   if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){
+     fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob, AliTRDPIDResponse::kLQ7D);
+     values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron];
+     values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion];
+     values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton];
+   }
+
 
   values[AliDielectronVarManager::kV0Index0]      = particle->GetV0Index(0);
   values[AliDielectronVarManager::kKinkIndex0]    = particle->GetKinkIndex(0);
@@ -947,12 +1140,21 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kImpactParZ]    = impactParZ;
   values[AliDielectronVarManager::kImpactParXYsigma]   = -1.;
   values[AliDielectronVarManager::kImpactParZsigma]    = -1.;
+  values[AliDielectronVarManager::kImpactParXYres]   = -1.;
+  values[AliDielectronVarManager::kImpactParZres]    = -1.;
+
+  if(TMath::Abs(impactParXY)>0)  values[AliDielectronVarManager::kLogDCAXY]   = TMath::Log(TMath::Abs(impactParXY));
+  else                    values[AliDielectronVarManager::kLogDCAXY]   = 0;
+  if(TMath::Abs(impactParZ)>0)   values[AliDielectronVarManager::kLogDCAZ]   = TMath::Log(TMath::Abs(impactParZ));
+  else                    values[AliDielectronVarManager::kLogDCAZ]   = 0;
 
   Float_t dca[2] = {-999.,-999.};
   Float_t dcaRes[3] = {-999.,-999.,-999.};
   esdTrack->GetImpactParameters(dca, dcaRes);
   if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = dca[0]/TMath::Sqrt(dcaRes[0]);
   if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = dca[1]/TMath::Sqrt(dcaRes[2]);
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYres] = TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZres]  = TMath::Sqrt(dcaRes[2]);
 
 
   values[AliDielectronVarManager::kPdgCode]=-1;
@@ -966,18 +1168,34 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   AliDielectronMC *mc=AliDielectronMC::Instance();
   if (mc->HasMC()){
     if (mc->GetMCTrack(particle)) {
-      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
-      values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
-      values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
-      values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
-      AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
-      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
-      AliMCParticle *MCpart = mc->GetMCTrack(particle);
+      Int_t trkLbl = TMath::Abs(particle->GetLabel());
+
+      if (Req(kMCLegSource)){
+        values[AliDielectronVarManager::kMCLegSource] = 0;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
+        if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=64;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=128;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromPileUp)) values[AliDielectronVarManager::kMCLegSource] +=256;
+	if (mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kFinalStateFromNoPileUp)) values[AliDielectronVarManager::kMCLegSource] +=512;
+      }
+
+      if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
+      if (Req(kHasCocktailMother)) values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+      if (Req(kPdgCodeMother))     values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
+      if (Req(kPdgCodeGrandMother)){
+        AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
+        if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+      }
       // Fill distance of primary vertex to secondary vertex (as an alternative to the IP)
       // Pure MC variable by intention, no reconstucted value filled.
       if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
-        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
-                                                                             + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+        AliMCParticle *MCpart = mc->GetMCTrack(particle);
+        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2) + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
         values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
       }
     }
@@ -986,7 +1204,6 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
 
 
   values[AliDielectronVarManager::kITSsignal]   =   particle->GetITSsignal();
-
   Double_t itsdEdx[4];
   particle->GetITSdEdxSamples(itsdEdx);
 
@@ -1067,28 +1284,28 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   // TODO: for the moment we set the bethe bloch parameters manually
   //       this should be changed in future!
   values[AliDielectronVarManager::kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
-  values[AliDielectronVarManager::kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
+  values[AliDielectronVarManager::kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(particle,AliPID::kElectron);
 
-  values[AliDielectronVarManager::kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kTPCnSigmaPro]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton);
+  values[AliDielectronVarManager::kTPCnSigmaPio] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kPion  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kTPCnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kMuon  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kTPCnSigmaKao] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kKaon  )) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kTPCnSigmaPro] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kProton)) /  AliDielectronPID::GetWdthCorr(particle,AliPID::kProton);
 
   values[AliDielectronVarManager::kITSnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
-  values[AliDielectronVarManager::kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron)
-                                                     -AliDielectronPID::GetCntrdCorrITS(particle)
-                                                     ) / AliDielectronPID::GetWdthCorrITS(particle);
+  values[AliDielectronVarManager::kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kElectron);
 
-  values[AliDielectronVarManager::kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
+  values[AliDielectronVarManager::kITSnSigmaPio] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kITSnSigmaMuo] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kITSnSigmaKao] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kITSnSigmaPro] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kProton);
 
-  values[AliDielectronVarManager::kTOFnSigmaEle]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
-  values[AliDielectronVarManager::kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
-  values[AliDielectronVarManager::kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
-  values[AliDielectronVarManager::kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
-  values[AliDielectronVarManager::kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
+  values[AliDielectronVarManager::kTOFnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+  values[AliDielectronVarManager::kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kElectron);
+
+  values[AliDielectronVarManager::kTOFnSigmaPio] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kPion  );
+  values[AliDielectronVarManager::kTOFnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kMuon  );
+  values[AliDielectronVarManager::kTOFnSigmaKao] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kKaon  );
+  values[AliDielectronVarManager::kTOFnSigmaPro] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kProton);
 
   //EMCAL PID information
   Double_t eop=0;
@@ -1140,28 +1357,66 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   FillVarVParticle(particle, values);
   Double_t tpcNcls=particle->GetTPCNcls();
 
-  //GetNclsS not present in AODtrack
-  //Replace with method as soon as available
-  TBits tpcSharedMap = particle->GetTPCSharedMap();
-  Double_t tpcNclsS=  tpcSharedMap.CountBits(0)-tpcSharedMap.CountBits(159);
+  if(Req(kQnDeltaPhiTrackTPCrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnTPCrpH2]);
+  if(Req(kQnDeltaPhiTrackV0CrpH2))   values[AliDielectronVarManager::kQnDeltaPhiTrackV0CrpH2]  = TVector2::Phi_mpi_pi(values[AliDielectronVarManager::kPhi] - values[AliDielectronVarManager::kQnV0CrpH2]);
+
+  Double_t tpcNclsS = -99.;
+  if(Req(kNclsSTPC) || Req(kNclsSFracTPC)) tpcNclsS = particle->GetTPCnclsS();
 
   // Reset AliESDtrack interface specific information
-  if(Req(kNclsITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
+  if(Req(kNclsITS) || Req(kNclsSFracITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
+  if(Req(kITSchi2))    values[AliDielectronVarManager::kITSchi2]     = particle->GetITSchi2();
   if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
   if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
-  if(Req(kNclsSTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
+  if(Req(kNclsSTPC) || Req(kNclsSFracTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   if(Req(kNclsTPCiter1)) values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   if(Req(kNFclsTPC)  || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
   if(Req(kNFclsTPCr) || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
+  if(Req(kNclsCrTPC))      values[AliDielectronVarManager::kNclsCrTPC]      = particle->GetTPCCrossedRows();
   if(Req(kNFclsTPCrFrac))  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   if(Req(kNFclsTPCfCross)) values[AliDielectronVarManager::kNFclsTPCfCross]= (values[kNFclsTPC]>0)?(values[kNFclsTPCr]/values[kNFclsTPC]):0;
+  if(Req(kChi2TPCConstrainedVsGlobal)) values[AliDielectronVarManager::kChi2TPCConstrainedVsGlobal] = particle->GetChi2TPCConstrainedVsGlobal();
   if(Req(kNclsTRD))        values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2);
   if(Req(kTRDntracklets))  values[AliDielectronVarManager::kTRDntracklets] = 0;
   if(Req(kTRDpidQuality))  values[AliDielectronVarManager::kTRDpidQuality] = particle->GetTRDntrackletsPID();
   if(Req(kTRDchi2))        values[AliDielectronVarManager::kTRDchi2]       = (particle->GetTRDntrackletsPID()!=0.?particle->GetTRDchi2():-1);
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
+
+  if(Req(kNclsSITS) || Req(kNclsSFracITS) || Req(kNclsSMapITS) || Req(kClsS1ITS) || Req(kClsS2ITS) || Req(kClsS3ITS) || Req(kClsS4ITS) || Req(kClsS5ITS) || Req(kClsS6ITS)){
+    Double_t itsNclsS = 0.;
+    values[AliDielectronVarManager::kClsS1ITS]=0;
+    values[AliDielectronVarManager::kClsS2ITS]=0;
+    values[AliDielectronVarManager::kClsS3ITS]=0;
+    values[AliDielectronVarManager::kClsS4ITS]=0;
+    values[AliDielectronVarManager::kClsS5ITS]=0;
+    values[AliDielectronVarManager::kClsS6ITS]=0;
+    for(int i=0; i<6; i++){
+      if( particle->HasSharedPointOnITSLayer(i) ) {
+        itsNclsS ++;
+        if(i==0) values[AliDielectronVarManager::kClsS1ITS]=1;
+        if(i==1) values[AliDielectronVarManager::kClsS2ITS]=1;
+        if(i==2) values[AliDielectronVarManager::kClsS3ITS]=1;
+        if(i==3) values[AliDielectronVarManager::kClsS4ITS]=1;
+        if(i==4) values[AliDielectronVarManager::kClsS5ITS]=1;
+        if(i==5) values[AliDielectronVarManager::kClsS6ITS]=1;
+      }
+    }
+
+    values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
+    if(Req(kNclsSMapITS))  values[AliDielectronVarManager::kNclsSMapITS]  = particle->GetITSSharedClusterMap();  //not implemented in AODs
+    if(Req(kNclsSFracITS)) values[AliDielectronVarManager::kNclsSFracITS] = itsNclsS > 0. ? itsNclsS / particle->GetITSNcls() : 0.;
+  }
+
+  if(Req(kITSsignalSSD1) || Req(kITSsignalSSD2) || Req(kITSsignalSDD1) || Req(kITSsignalSDD2) ){
+    Double_t itsdEdx[4];
+    particle->GetITSdEdxSamples(itsdEdx);
+    values[AliDielectronVarManager::kITSsignalSSD1]   =   itsdEdx[0];
+    values[AliDielectronVarManager::kITSsignalSSD2]   =   itsdEdx[1];
+    values[AliDielectronVarManager::kITSsignalSDD1]   =   itsdEdx[2];
+    values[AliDielectronVarManager::kITSsignalSDD2]   =   itsdEdx[3];
+  }
 
 
   TBits tpcClusterMap = particle->GetTPCClusterMap();
@@ -1193,6 +1448,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
   }
 
+  if(Req(kChi2GlobalNDF))   values[AliDielectronVarManager::kChi2GlobalNDF]     = particle->Chi2perNDF();
+
   // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   if(Req(kTPCchi2Cl))   values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:-1.;
   if(Req(kTrackStatus)) values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
@@ -1218,13 +1475,22 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   Double_t d0z0[2]={-999.0,-999.0};
   Double_t dcaRes[3] = {-999.,-999.,-999.};
-  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) ) GetDCA(particle, d0z0, dcaRes);
+  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) || Req(kImpactParXYres) || Req(kImpactParZres) || Req(kLogDCAXY) || Req(kLogDCAZ)) GetDCA(particle, d0z0, dcaRes);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
   values[AliDielectronVarManager::kImpactParXYsigma] = -999.0;
   values[AliDielectronVarManager::kImpactParZsigma] = -999.0;
+  values[AliDielectronVarManager::kImpactParXYres] = -999.0;
+  values[AliDielectronVarManager::kImpactParZres] = -999.0;
   if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = d0z0[0]/TMath::Sqrt(dcaRes[0]);
   if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = d0z0[1]/TMath::Sqrt(dcaRes[2]);
+  if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYres] = TMath::Sqrt(dcaRes[0]);
+  if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZres]  = TMath::Sqrt(dcaRes[2]);
+
+  if(TMath::Abs(d0z0[0])>0)  values[AliDielectronVarManager::kLogDCAXY]  = TMath::Log(TMath::Abs(d0z0[0]));
+  else                       values[AliDielectronVarManager::kLogDCAXY]  = 0;
+  if(TMath::Abs(d0z0[1])>0)  values[AliDielectronVarManager::kLogDCAZ]   = TMath::Log(TMath::Abs(d0z0[1]));
+  else                       values[AliDielectronVarManager::kLogDCAZ]   = 0;
 
 
   values[AliDielectronVarManager::kPIn]            =  0.;
@@ -1243,6 +1509,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kTPCnSigmaKao]=0;
   values[AliDielectronVarManager::kTPCnSigmaPro]=0;
 
+  values[AliDielectronVarManager::kTOFnSigmaEleRaw]=0;
   values[AliDielectronVarManager::kTOFnSigmaEle]=0;
   values[AliDielectronVarManager::kTOFnSigmaPio]=0;
   values[AliDielectronVarManager::kTOFnSigmaMuo]=0;
@@ -1300,58 +1567,59 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
     // nsigma for various detectors
     if(Req(kTPCnSigmaEleRaw)) values[kTPCnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron);
-    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron)-AliDielectronPID::GetCorrVal()-AliDielectronPID::GetCntrdCorr(particle)) / AliDielectronPID::GetWdthCorr(particle);
+    if(Req(kTPCnSigmaEle))    values[kTPCnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(particle,AliPID::kElectron);
 
-    if(Req(kTPCnSigmaPio)) values[kTPCnSigmaPio]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion);
-    if(Req(kTPCnSigmaMuo)) values[kTPCnSigmaMuo]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon);
-    if(Req(kTPCnSigmaKao)) values[kTPCnSigmaKao]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon);
-    if(Req(kTPCnSigmaPro)) values[kTPCnSigmaPro]=fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton);
+    if(Req(kTPCnSigmaPio)) values[kTPCnSigmaPio] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kPion)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kPion  );
+    if(Req(kTPCnSigmaMuo)) values[kTPCnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kMuon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kMuon  );
+    if(Req(kTPCnSigmaKao)) values[kTPCnSigmaKao] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kKaon)   - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorr(particle,AliPID::kKaon  );
+    if(Req(kTPCnSigmaPro)) values[kTPCnSigmaPro] = (fgPIDResponse->NumberOfSigmasTPC(particle,AliPID::kProton) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorr(particle,AliPID::kProton);
 
     if(Req(kITSnSigmaEleRaw)) values[kITSnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron);
-    if(Req(kITSnSigmaEle))    values[kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle)) / AliDielectronPID::GetWdthCorrITS(particle);
+    if(Req(kITSnSigmaEle))    values[kITSnSigmaEle]   =(fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kElectron);
 
-    if(Req(kITSnSigmaPio)) values[kITSnSigmaPio]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion);
-    if(Req(kITSnSigmaMuo)) values[kITSnSigmaMuo]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon);
-    if(Req(kITSnSigmaKao)) values[kITSnSigmaKao]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon);
-    if(Req(kITSnSigmaPro)) values[kITSnSigmaPro]=fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton);
+    if(Req(kITSnSigmaPio)) values[kITSnSigmaPio] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kPion  );
+    if(Req(kITSnSigmaMuo)) values[kITSnSigmaMuo] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kMuon  );
+    if(Req(kITSnSigmaKao)) values[kITSnSigmaKao] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kKaon  );
+    if(Req(kITSnSigmaPro)) values[kITSnSigmaPro] = (fgPIDResponse->NumberOfSigmasITS(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrITS(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrITS(particle,AliPID::kProton);
 
-    if(Req(kTOFnSigmaEle)) values[kTOFnSigmaEle]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
-    if(Req(kTOFnSigmaPio)) values[kTOFnSigmaPio]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion);
-    if(Req(kTOFnSigmaMuo)) values[kTOFnSigmaMuo]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon);
-    if(Req(kTOFnSigmaKao)) values[kTOFnSigmaKao]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon);
-    if(Req(kTOFnSigmaPro)) values[kTOFnSigmaPro]=fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton);
+    if(Req(kTOFnSigmaEleRaw)) values[kTOFnSigmaEleRaw]= fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron);
+    if(Req(kTOFnSigmaEle))    values[kTOFnSigmaEle]   =(fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kElectron);
+
+    if(Req(kTOFnSigmaPio)) values[kTOFnSigmaPio] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kPion)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kPion  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kPion  );
+    if(Req(kTOFnSigmaMuo)) values[kTOFnSigmaMuo] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kMuon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kMuon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kMuon  );
+    if(Req(kTOFnSigmaKao)) values[kTOFnSigmaKao] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kKaon)   - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kKaon  )) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kKaon  );
+    if(Req(kTOFnSigmaPro)) values[kTOFnSigmaPro] = (fgPIDResponse->NumberOfSigmasTOF(particle,AliPID::kProton) - AliDielectronPID::GetCntrdCorrTOF(particle,AliPID::kProton)) / AliDielectronPID::GetWdthCorrTOF(particle,AliPID::kProton);
 
     Double_t prob[AliPID::kSPECIES]={0.0};
     // switch computation off since it takes 70% of the CPU time for filling all AODtrack variables
     // TODO: find a solution when this is needed (maybe at fill time in histos, CFcontainer and cut selection)
     // 1D TRD PID
     if( Req(kTRDprobEle) || Req(kTRDprobPio) ){
-      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob);
+      fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob);
       values[AliDielectronVarManager::kTRDprobEle]      = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprobPio]      = prob[AliPID::kPion];
     }
     // 2D TRD PID
     if( Req(kTRDprob2DEle) || Req(kTRDprob2DPio) || Req(kTRDprob2DPro) ){
-      fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ2D);
+      fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob, AliTRDPIDResponse::kLQ2D);
       values[AliDielectronVarManager::kTRDprob2DEle]    = prob[AliPID::kElectron];
       values[AliDielectronVarManager::kTRDprob2DPio]    = prob[AliPID::kPion];
       values[AliDielectronVarManager::kTRDprob2DPro]    = prob[AliPID::kProton];
     }
     // 3D TRD PID
      if( Req(kTRDprob3DEle) || Req(kTRDprob3DPio) || Req(kTRDprob3DPro) ){
-       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D);
+       fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ3D);
        values[AliDielectronVarManager::kTRDprob3DEle]    = prob[AliPID::kElectron];
        values[AliDielectronVarManager::kTRDprob3DPio]    = prob[AliPID::kPion];
        values[AliDielectronVarManager::kTRDprob3DPro]    = prob[AliPID::kProton];
      }
     // 7D TRD PID
      if( Req(kTRDprob7DEle) || Req(kTRDprob7DPio) || Req(kTRDprob7DPro) ){
-       fgPIDResponse->ComputeTRDProbability(particle,AliPID::kSPECIES,prob, AliTRDPIDResponse::kLQ7D);
+       fgPIDResponse->ComputeTRDProbability(particle, AliPID::kSPECIES, prob, AliTRDPIDResponse::kLQ7D);
        values[AliDielectronVarManager::kTRDprob7DEle]    = prob[AliPID::kElectron];
        values[AliDielectronVarManager::kTRDprob7DPio]    = prob[AliPID::kPion];
        values[AliDielectronVarManager::kTRDprob7DPro]    = prob[AliPID::kProton];
      }
-
 
     //restore TPC signal if it was changed
     pid->SetTPCsignal(origdEdx);
@@ -1380,16 +1648,42 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNumberOfDaughters]=-1;
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
+  AliAODMCParticle *mcParticle = 0x0;
   if (mc->HasMC()){
-    if (mc->GetMCTrack(particle)) {
-      Int_t trkLbl = TMath::Abs(mc->GetMCTrack(particle)->GetLabel());
-      values[AliDielectronVarManager::kPdgCode]           =mc->GetMCTrack(particle)->PdgCode();
-      values[AliDielectronVarManager::kHasCocktailMother] =mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
-      values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
-      AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
-      if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+    if ((mcParticle = (AliAODMCParticle*) mc->GetMCTrack(particle))) {
+
+
+
+      // Int_t trkLbl = particle->GetLabel();
+      // using the label this will potentially crash since the label can be out of range for aods
+
+      if (Req(kMCLegSource)){
+        values[AliDielectronVarManager::kMCLegSource] = 0;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kPrimary)) values[AliDielectronVarManager::kMCLegSource] += 1;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalState)) values[AliDielectronVarManager::kMCLegSource] += 2;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kDirect)) values[AliDielectronVarManager::kMCLegSource] +=4;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondary)) values[AliDielectronVarManager::kMCLegSource] +=8;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromWeakDecay)) values[AliDielectronVarManager::kMCLegSource] +=16;
+        if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kSecondaryFromMaterial)) values[AliDielectronVarManager::kMCLegSource] +=32;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=64;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromBGEvent)) values[AliDielectronVarManager::kMCLegSource] +=128;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromPileUp)) values[AliDielectronVarManager::kMCLegSource] +=256;
+	if (mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kFinalStateFromNoPileUp)) values[AliDielectronVarManager::kMCLegSource] +=512;
+      }
+
+      if (Req(kPdgCode))           values[AliDielectronVarManager::kPdgCode]           = mcParticle->PdgCode();
+      if (Req(kHasCocktailMother)) values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(mcParticle, AliDielectronSignalMC::kDirect);
+      if (Req(kPdgCodeMother))     values[AliDielectronVarManager::kPdgCodeMother] = mc->GetMotherPDG(mcParticle);
+      if (Req(kPdgCodeGrandMother)){
+        AliAODMCParticle *motherMC = mc->GetMCTrackMother(mcParticle); //mother
+        if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+      }
+      if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
+        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(mcParticle->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2) + TMath::Power(mcParticle->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+        values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(mcParticle->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
+      }
     }
-    values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
+    if (Req(kNumberOfDaughters)) values[AliDielectronVarManager::kNumberOfDaughters] = mc->NumberOfDaughters(mcParticle);
   } //if(mc->HasMC())
 
   if(Req(kTOFPIDBit))     values[AliDielectronVarManager::kTOFPIDBit]=(particle->GetStatus()&AliESDtrack::kTOFpid? 1: 0);
@@ -1472,7 +1766,6 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   //
   // Fill track information available for histogramming into an array
   //
-
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kITSchi2Cl]     = 0;
   values[AliDielectronVarManager::kNclsTPC]       = 0;
@@ -1521,8 +1814,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill distance of primary vertex to secondary vertex (as a well-defined alternative to the IP-approximation below)
   if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
-    values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2)
-                                                                         + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
+    values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2) + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
     values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(particle->Zv() - values[AliDielectronVarManager::kZvPrim]);
   }
   //Approximation of the Impact Parameter
@@ -1557,7 +1849,6 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   //
   // fill 2 track information starting from MC legs
   //
-
   values[AliDielectronVarManager::kNclsITS]       = 0;
   values[AliDielectronVarManager::kITSchi2Cl]     = -1;
   values[AliDielectronVarManager::kNclsTPC]       = 0;
@@ -1640,8 +1931,8 @@ inline void AliDielectronVarManager::FillVarMCParticle2(const AliVParticle *p1, 
   values[AliDielectronVarManager::kM]         = p1->M()*p1->M()+p2->M()*p2->M()+
                        2.0*(p1->E()*p2->E()-p1->Px()*p2->Px()-p1->Py()*p2->Py()-p1->Pz()*p2->Pz());
   values[AliDielectronVarManager::kM]         = (values[AliDielectronVarManager::kM]>1.0e-8 ? TMath::Sqrt(values[AliDielectronVarManager::kM]) : -1.0);
-  values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
-  values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
+  //values[AliDielectronVarManager::kMMC] = values[AliDielectronVarManager::kM];
+  //values[AliDielectronVarManager::kPtMC] = values[AliDielectronVarManager::kPt];
 
   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
 
@@ -1706,9 +1997,9 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
 
   // Fill AliAODMCParticle interface specific information
   AliDielectronMC *mc=AliDielectronMC::Instance();
-  Int_t trkLbl = TMath::Abs(particle->GetLabel());
+  // Int_t trkLbl = TMath::Abs(particle->GetLabel()); // Handle with caution this is the label of the original esd track not the AODTrack
   values[AliDielectronVarManager::kPdgCode]           = particle->PdgCode();
-  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(trkLbl, AliDielectronSignalMC::kDirect);
+  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(particle, AliDielectronSignalMC::kDirect);
   values[AliDielectronVarManager::kPdgCodeMother]     = mc->GetMotherPDG(particle);
   AliAODMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
   if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
@@ -1797,13 +2088,102 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kArmPt))    values[AliDielectronVarManager::kArmPt]        = pair->GetArmPt();
 
   if(Req(kPsiPair))  values[AliDielectronVarManager::kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-  if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]      = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  if(Req(kPhivPair)) values[AliDielectronVarManager::kPhivPair]     = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  
+  values[AliDielectronVarManager::kDeltaPhiSumDiff]=-999; 
+  values[AliDielectronVarManager::kDeltaPhiSumPos]=-999; 
+  values[AliDielectronVarManager::kDeltaPhiSumNeg]=-999; 
+  if(Req(kDeltaPhiSumDiff)||Req(kDeltaPhiSumPos)||Req(kDeltaPhiSumNeg)){
+    // get track references from pair
+    AliVParticle* d1 = pair->GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
+    AliVParticle* dpos;      // positron track     
+    AliVParticle* dneg;      // positron track     
+    //randomly swap to eliminate any biases in the assignment of the first and second pair leg
+    if(gRandom->Uniform()>0.5){
+      d1 = pair->GetSecondDaughterP();
+      d2 = pair->GetFirstDaughterP();
+    }    
+    if (d1 && d2) { 
+      if(d1->Charge()>0) dpos=d1;
+      else if(d2->Charge()>0) dpos=d2;
+      else dpos=0;
+      if(d1->Charge()<0) dneg=d1;
+      else if(d2->Charge()<0) dneg=d2;
+      else dneg=0;    
+      Double_t p1[3];
+      Double_t p2[3];
+      static_cast<AliAODTrack*>(d1)->PxPyPz(p1);
+      static_cast<AliAODTrack*>(d2)->PxPyPz(p2);
+      TVector3 vl1(p1[0],p1[1],p1[2]);
+      TVector3 vl2(p2[0],p2[1],p2[2]);
+      TVector3 vSum=vl1+vl2;
+      TVector3 vDiff=vl1-vl2;     
+      values[AliDielectronVarManager::kDeltaPhiSumDiff]=TMath::Abs(vSum.DeltaPhi(vDiff));       
+      if(dpos!=0){ 
+        Double_t ppos[3];  
+        static_cast<AliAODTrack*>(dpos)->PxPyPz(ppos);   
+        TVector3 vl(ppos[0],ppos[1],ppos[2]);
+        values[AliDielectronVarManager::kDeltaPhiSumPos]=TMath::Abs(vSum.DeltaPhi(vl));           
+      }
+      if(dneg!=0){ 
+        Double_t pneg[3];  
+        static_cast<AliAODTrack*>(dneg)->PxPyPz(pneg);   
+        TVector3 vlneg(pneg[0],pneg[1],pneg[2]);
+        values[AliDielectronVarManager::kDeltaPhiSumNeg]=TMath::Abs(vSum.DeltaPhi(vlneg));           
+      }
+    }  
+  } 
+    
+  values[AliDielectronVarManager::kITSscPair]   = -999;
+  if(Req(kITSscPair)) {
+
+    // get track references from pair
+    AliVParticle* d1 = pair-> GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
+
+    if (d1 && d2) {
+      // check for ESD or AOD
+      Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
+
+      if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
+
+        ////// first daughter
+        Double_t itsNclsS1 = 0;
+
+        ////// second daughter
+        Double_t itsNclsS2 = 0;
+
+        if (isESD) {
+          for(Int_t i = 0; i<6; i++){
+            if(static_cast<AliESDtrack*>(d1)->HasSharedPointOnITSLayer(i)) itsNclsS1++;
+            if(static_cast<AliESDtrack*>(d2)->HasSharedPointOnITSLayer(i)) itsNclsS2++;
+          }
+        }
+        else { // AOD
+          for(Int_t i = 0; i<6; i++){
+            if(static_cast<AliAODTrack*>(d1)->HasSharedPointOnITSLayer(i)) itsNclsS1++;
+            if(static_cast<AliAODTrack*>(d2)->HasSharedPointOnITSLayer(i)) itsNclsS2++;
+          }
+        }
+
+        if(itsNclsS1 > 0 && itsNclsS2 > 0)
+          values[AliDielectronVarManager::kITSscPair]   = 2.;
+        else if (itsNclsS1 > 0 || itsNclsS2 > 0)
+          values[AliDielectronVarManager::kITSscPair]   = 1.;
+        else
+          values[AliDielectronVarManager::kITSscPair]   = 0.;
+
+      }
+    }
+  }
+
   if(Req(kDeltaCotTheta)) values[kDeltaCotTheta] =  pair->DeltaCotTheta();
   if(Req(kTriangularConversionCut)) values[AliDielectronVarManager::kTriangularConversionCut] = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) - 21. * pair->M() : -999.;
   if(Req(kPseudoProperTime) || Req(kPseudoProperTimeErr)) {
     values[AliDielectronVarManager::kPseudoProperTime] =
       fgEvent ? kfPair.GetPseudoProperDecayTime(*(fgEvent->GetPrimaryVertex()), TDatabasePDG::Instance()->GetParticle(443)->Mass(), &errPseudoProperTime2 ) : -1e10;
-  // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
+      // values[AliDielectronVarManager::kPseudoProperTime] = fgEvent ? pair->GetPseudoProperTime(fgEvent->GetPrimaryVertex()): -1e10;
     values[AliDielectronVarManager::kPseudoProperTimeErr] = (errPseudoProperTime2 > 0) ? TMath::Sqrt(errPseudoProperTime2) : -1e10;
   }
 
@@ -1813,24 +2193,43 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
 
-
   //calculate pair dca in sigma and cm
   values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAsigXYZ]    = -999.;
   values[AliDielectronVarManager::kPairDCAabsXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAabsZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAabsXYZ]    = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsZ]      = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAresZ]      = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXYZ]    = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsZ]      = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresZ]      = -999.;
+  values[AliDielectronVarManager::kDeltaDCAabsZ]     = -999.;
+
 
   // check if calculation is requested
-  if(Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
-     Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ)) {
-
+  if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
+      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
+      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) || Req(kLeg1DCAsigXYZ) || Req(kLeg1DCAabsXYZ) || Req(kLeg2DCAsigXYZ) || Req(kLeg2DCAabsXYZ) ||
+      Req(kLeg1DCAsigXY) || Req(kLeg1DCAabsXY) || Req(kLeg2DCAsigXY) || Req(kLeg2DCAabsXY) || Req(kLeg1DCAsigZ) || Req(kLeg1DCAabsZ) ||
+      Req(kLeg2DCAsigZ) || Req(kLeg2DCAabsZ) || Req(kLeg1DCAresZ) || Req(kLeg2DCAresZ) || Req(kDeltaDCAabsZ) )
+    {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
@@ -1845,17 +2244,13 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t dca1[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes1[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC1[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC1[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC1[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+
 
         ////// second daughter
         Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes2[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC2[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC2[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC2[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+
 
         if (isESD) {
           // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
@@ -1889,10 +2284,48 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         //if(dcaResTPC2[0]>0.) dcaSigTPC2[0] = dcaTPC2[0]/TMath::Sqrt(dcaResTPC2[0]);
         //if(dcaResTPC2[2]>0.) dcaSigTPC2[1] = dcaTPC2[1]/TMath::Sqrt(dcaResTPC2[2]);
 
+	// DCAxyz in sigma
+	Double_t tmp_leg1dcaXYZsig = -1.;
+	Double_t tmp_leg2dcaXYZsig = -1.;
+	Double_t chi22 = -1.;
+	Double_t chi21 = -1.;
+	Double_t det2  = -1.;                // Determinant of covariance matrix
+	Double_t det1  = -1.;                // Determinant of covariance matrix
+	det1 = dcaRes1[0]*dcaRes1[2] - dcaRes1[1]*dcaRes1[1];
+	det2 = dcaRes2[0]*dcaRes2[2] - dcaRes2[1]*dcaRes2[1];
+	if(det1>0.) {
+	  chi21 = (dca1[0]*dca1[0]*dcaRes1[2] + dca1[1]*dca1[1]*dcaRes1[0] - 2*dca1[0]*dca1[1]*dcaRes1[1])/det1;
+	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21/2.));
+	}
+	if(det2>0.) {
+	  chi22 = (dca2[0]*dca2[0]*dcaRes2[2] + dca2[1]*dca2[1]*dcaRes2[0] - 2*dca2[0]*dca2[1]*dcaRes2[1])/det2;
+	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22/2.));
+	}
+	// dcaxyz is Sqrt(chi2/NDF) with NDF = 2 for xyz and 1 for xy or z
+
+	
         // set first daughter variables for cross-checks
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
+        values[AliDielectronVarManager::kLeg1DCAabsZ]    = dca1[1];
+        values[AliDielectronVarManager::kLeg1DCAsigZ]    = dcaSig1[1];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        values[AliDielectronVarManager::kLeg1DCAresZ]    = dcaRes1[1];
+        Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]); // keep this for the moment
+        values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
+        values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
+
+        values[AliDielectronVarManager::kLeg2DCAabsXY]   = dca2[0];
+        values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
+        values[AliDielectronVarManager::kLeg2DCAabsZ]    = dca2[1];
+        values[AliDielectronVarManager::kLeg2DCAsigZ]    = dcaSig2[1];
+        values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
+        values[AliDielectronVarManager::kLeg2DCAresZ]    = dcaRes2[1];
+        Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
+        values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
+        values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
+        values[AliDielectronVarManager::kDeltaDCAabsZ]   = TMath::Abs(dca1[1]-dca2[1]);
+ 
 
         // set pair dca values
         // quadratic summation
@@ -1900,6 +2333,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairDCAabsZ]        = TMath::Sqrt( (dca1[1]*dca1[1] + dca2[1]*dca2[1]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigXY]       = TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigZ]        = TMath::Sqrt( (dcaSig1[1]*dcaSig1[1] + dcaSig2[1]*dcaSig2[1]) / 2 );
+        values[AliDielectronVarManager::kPairDCAabsXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZabs*tmp_leg1dcaXYZabs + tmp_leg2dcaXYZabs*tmp_leg2dcaXYZabs) / 2 );
+        if(tmp_leg1dcaXYZsig>0. && tmp_leg2dcaXYZsig > 0.) values[AliDielectronVarManager::kPairDCAsigXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZsig*tmp_leg1dcaXYZsig + tmp_leg2dcaXYZsig*tmp_leg2dcaXYZsig) / 2 );
+
         // linear summation
         values[AliDielectronVarManager::kPairLinDCAabsXY]    = (TMath::Abs(dca1[0]) + TMath::Abs(dca2[0])) / 2;
         values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
@@ -1910,139 +2346,228 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   }
 
 
-  if (!(pair->GetKFUsage())) {
-	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
-	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
-	//the ESDtrack, the reference to the ESDtrack is not (always) accessible in Mixing, while KF
-	//particles are copied in the Pair-Object
-	static const Double_t mElectron = AliPID::ParticleMass(AliPID::kElectron); // MeV
+  // check if calculation is requested
+  if( Req(kLeg1Eta) || Req(kLeg2Eta) || Req(kLeg1Phi) || Req(kLeg2Phi) || Req(kLeg1Pt) || Req(kLeg2Pt) || Req(kLeg1PIn) || Req(kLeg2PIn) || Req(kLeg1TPCnSigmaEle) || Req(kLeg2TPCnSigmaEle))
+     {
+    // get track references from pair
+    AliVParticle* d1 = pair-> GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
 
-	const AliKFParticle& fD1 = pair->GetKFFirstDaughter();
-	const AliKFParticle& fD2 = pair->GetKFSecondDaughter();
+    if (d1 && d2) {
+      // check for ESD or AOD
+      Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
 
-	//Define local buffer variables for leg properties
-	Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
-	Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
-	Double_t e1 =-9999.,e2 =-9999.;
-	Double_t feta1=-9999.;//,fphi1=-9999.;
-	Double_t feta2=-9999.;//,fphi2=-9999.;
+      if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
 
-	px1 = fD1.GetPx();
-	py1 = fD1.GetPy();
-	pz1 = fD1.GetPz();
-	feta1 = fD1.GetEta();
-	//	fphi1 = fD1.GetPhi();
+        Double_t feta1=-9999.,fphi1=-9999.,fpt1=-9999.,fpin1=-9999.;
+  	Double_t feta2=-9999.,fphi2=-9999.,fpt2=-9999.,fpin2=-9999.;
 
-	px2 = fD2.GetPx();
-	py2 = fD2.GetPy();
-	pz2 = fD2.GetPz();
-	feta2 = fD2.GetEta();
-	//	fphi2 = fD2.GetPhi();
+	Double_t ftpcnSigmaEle1=-9999.,ftpcnSigmaEle2=-9999.;
+	
 
-	//Calculate Energy per particle by hand
-	e1 = TMath::Sqrt(mElectron*mElectron+px1*px1+py1*py1+pz1*pz1);
-	e2 = TMath::Sqrt(mElectron*mElectron+px2*px2+py2*py2+pz2*pz2);
+        if (isESD) {
+	  feta1 = static_cast<AliESDtrack*>(d1)->Eta(); 
+          feta2 = static_cast<AliESDtrack*>(d2)->Eta(); 
 
-	//Now Create TLorentzVector:
-	TLorentzVector lv1,lv2;
-	lv1.SetPxPyPzE(px1,py1,pz1,e1);
-	lv2.SetPxPyPzE(px2,py2,pz2,e2);
+          fphi1 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d1)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliESDtrack*>(d2)->Phi());
 
-	values[AliDielectronVarManager::kPx]        = (lv1+lv2).Px();
-	values[AliDielectronVarManager::kPy]        = (lv1+lv2).Py();
-	values[AliDielectronVarManager::kPz]        = (lv1+lv2).Pz();
+	  fpt1 =  static_cast<AliESDtrack*>(d1)->Pt(); 
+          fpt2 =  static_cast<AliESDtrack*>(d2)->Pt();
 
-	values[AliDielectronVarManager::kPt]        =  (lv1+lv2).Pt();
-	values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
+	  fpin1 =  static_cast<AliESDtrack*>(d1)->GetTPCmomentum(); 
+	  fpin2 =  static_cast<AliESDtrack*>(d2)->GetTPCmomentum();
 
-	values[AliDielectronVarManager::kP]         =  (lv1+lv2).P();
-
-	//Not overwritten, could take event vertex in next iteration
-	values[AliDielectronVarManager::kXv]        = (lv1+lv2).X();
-	values[AliDielectronVarManager::kYv]        = (lv1+lv2).Y();
-	values[AliDielectronVarManager::kZv]        = (lv1+lv2).Z();
-
-	values[AliDielectronVarManager::kE]         = (lv1+lv2).E();
-
-	values[AliDielectronVarManager::kM]         = (lv1+lv2).M();
-
-	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
-
-	values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>0. ? 1./values[AliDielectronVarManager::kPt] : -9999.);
-	values[AliDielectronVarManager::kPhi]       = TVector2::Phi_0_2pi( (lv1+lv2).Phi() );
-	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
-
-	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
-
-	// Fill AliDielectronPair specific information
-	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
-	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
-
-       if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
-	values[AliDielectronVarManager::kPairType]     = pair->GetType();
-
-        // Calculate pair variables for corresponding generated pair
-        if(AliDielectronMC::Instance()->HasMC() && (Req(kMMC)||Req(kPtMC)||Req(kPMC)||Req(kEtaMC)||Req(kPhiMC))){
-          values[AliDielectronVarManager::kMMC]   = -999.;
-          values[AliDielectronVarManager::kPtMC]  = -999.;
-          values[AliDielectronVarManager::kPMC]   = -999.;
-          values[AliDielectronVarManager::kPhiMC] = -999.;
-          values[AliDielectronVarManager::kEtaMC] = -999.;
-          AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetFirstDaughterP() )->GetLabel()));
-          AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrackFromMCEvent(TMath::Abs((pair->GetSecondDaughterP())->GetLabel()));
-          if(mcDaughter1 && mcDaughter2){
-            TLorentzVector lv1MC,lv2MC;
-            lv1MC.SetPtEtaPhiM(mcDaughter1->Pt(),mcDaughter1->Eta(),mcDaughter1->Phi(),mElectron);
-            lv2MC.SetPtEtaPhiM(mcDaughter2->Pt(),mcDaughter2->Eta(),mcDaughter2->Phi(),mElectron);
-            values[AliDielectronVarManager::kMMC]   = (lv1MC+lv2MC).M();
-            values[AliDielectronVarManager::kPtMC]  = (lv1MC+lv2MC).Pt();
-            values[AliDielectronVarManager::kPMC]   = (lv1MC+lv2MC).P();
-            values[AliDielectronVarManager::kPhiMC] = TVector2::Phi_0_2pi( (lv1MC+lv2MC).Phi() );
-            values[AliDielectronVarManager::kEtaMC] = (lv1MC+lv2MC).Eta();
-          }
+	  if(fgPIDResponse) {
+	    if(AliDielectronPID::GetWdthCorr(static_cast<AliESDtrack*>(d1),AliPID::kElectron) > 0.) ftpcnSigmaEle1 = (fgPIDResponse->NumberOfSigmasTPC(static_cast<AliESDtrack*>(d1),AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(static_cast<AliESDtrack*>(d1),AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(static_cast<AliESDtrack*>(d1),AliPID::kElectron);
+	    if(AliDielectronPID::GetWdthCorr(static_cast<AliESDtrack*>(d2),AliPID::kElectron) > 0.) ftpcnSigmaEle2 = (fgPIDResponse->NumberOfSigmasTPC(static_cast<AliESDtrack*>(d2),AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(static_cast<AliESDtrack*>(d2),AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(static_cast<AliESDtrack*>(d2),AliPID::kElectron);
+	  }
+	  
         }
-	/*
-	//Also not overwritten, still coming from KF particle
-	//where needed to be replaced by independent determination
-	values[AliDielectronVarManager::kCharge]    = 0.;
-	values[AliDielectronVarManager::kPdgCode]   = 0.;
-	values[AliDielectronVarManager::kChi2NDF]      = 0.;
-	values[AliDielectronVarManager::kDecayLength]  = 0.;
-	values[AliDielectronVarManager::kR]            = 0.;
-	values[AliDielectronVarManager::kCosPointingAngle] = 0.;
-	values[AliDielectronVarManager::kThetaHE]      = 0.;
-	values[AliDielectronVarManager::kPhiHE]        = 0.;
-	values[AliDielectronVarManager::kThetaSqHE]    = 0.;
-	values[AliDielectronVarManager::kCos2PhiHE]    = 0.;
-	values[AliDielectronVarManager::kCosTilPhiHE]  = 0.;
-	values[AliDielectronVarManager::kThetaCS]      = 0.;
-	values[AliDielectronVarManager::kPhiCS]        = 0.;
-	values[AliDielectronVarManager::kThetaSqCS]    = 0.;
-	values[AliDielectronVarManager::kCos2PhiCS]    = 0.;
-	values[AliDielectronVarManager::kCosTilPhiCS]  = 0.;
-	values[AliDielectronVarManager::kLegDist]      = 0.;
-	values[AliDielectronVarManager::kLegDistXY]    = 0.;
-	values[AliDielectronVarManager::kMerr]         = 0.;
-	values[AliDielectronVarManager::kPseudoProperTime] = 0.;
-	values[AliDielectronVarManager::kPseudoProperTimeErr] = 0.;
-	//Fill in Taku's PhiV?
-	values[AliDielectronVarManager::kPsiPair]      = 0.;
+        else { // AOD
+	  feta1 = static_cast<AliAODTrack*>(d1)->Eta(); 
+          feta2 = static_cast<AliAODTrack*>(d2)->Eta(); 
+          
+	  fphi1 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d1)->Phi()); 
+          fphi2 = TVector2::Phi_0_2pi( static_cast<AliAODTrack*>(d2)->Phi());
 
-	 */
+	  fpt1 = static_cast<AliAODTrack*>(d1)->Pt(); 
+          fpt2 = static_cast<AliAODTrack*>(d2)->Pt();
 
-    if(Req(kOpeningAngleCorr)) {
-      Float_t a = 1.54e-01;
-      values[AliDielectronVarManager::kOpeningAngleCorr]  =
-        values[AliDielectronVarManager::kOpeningAngle]
-        - a * TMath::Sqrt(  values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kOneOverPt] );
+	  fpin1 = static_cast<AliAODTrack*>(d1)->GetTPCmomentum(); 
+          fpin2 = static_cast<AliAODTrack*>(d2)->GetTPCmomentum();
+
+	  if(fgPIDResponse) {
+	    if(AliDielectronPID::GetWdthCorr(static_cast<AliAODTrack*>(d1),AliPID::kElectron) > 0.) ftpcnSigmaEle1 = (fgPIDResponse->NumberOfSigmasTPC(static_cast<AliAODTrack*>(d1),AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(static_cast<AliAODTrack*>(d1),AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(static_cast<AliAODTrack*>(d1),AliPID::kElectron);
+	    if(AliDielectronPID::GetWdthCorr(static_cast<AliAODTrack*>(d2),AliPID::kElectron) > 0.) ftpcnSigmaEle2 = (fgPIDResponse->NumberOfSigmasTPC(static_cast<AliAODTrack*>(d2),AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(static_cast<AliAODTrack*>(d2),AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(static_cast<AliAODTrack*>(d2),AliPID::kElectron);
+	  }
+	   
+        }
+
+        values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
+	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
+	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
+  	values[AliDielectronVarManager::kDeltaPhi]     = TMath::Abs(fphi1 -fphi2 );
+	values[AliDielectronVarManager::kLeg1Phi]      = fphi1;
+	values[AliDielectronVarManager::kLeg2Phi]      = fphi2;
+	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
+	values[AliDielectronVarManager::kLeg2Pt]       = fpt2;
+	values[AliDielectronVarManager::kLeg1PIn]       = fpin1;
+	values[AliDielectronVarManager::kLeg2PIn]       = fpin2;
+	values[AliDielectronVarManager::kLeg1TPCnSigmaEle]       = ftpcnSigmaEle1;
+	values[AliDielectronVarManager::kLeg2TPCnSigmaEle]       = ftpcnSigmaEle2;
+
+      }
     }
+  }
 
-    if(Req(kMCorr)) {
-      Float_t a =  7.59e-02;
-      values[AliDielectronVarManager::kMCorr]  =
-        values[AliDielectronVarManager::kM]
-        - a * TMath::Sqrt( values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kPt] );
-    }
+
+  if (!(pair->GetKFUsage())) {
+  	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
+  	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
+  	//the ESDtrack, the reference to the ESDtrack is not (always) accessible in Mixing, while KF
+  	//particles are copied in the Pair-Object
+  	static const Double_t mElectron = AliPID::ParticleMass(AliPID::kElectron); // MeV
+
+  	const AliKFParticle& fD1 = pair->GetKFFirstDaughter();
+  	const AliKFParticle& fD2 = pair->GetKFSecondDaughter();
+
+  	//Define local buffer variables for leg properties
+  	Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  	Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+  	Double_t e1 =-9999.,e2 =-9999.;
+	Double_t fpt1 =-9999.,fpt2 =-9999.;
+  	Double_t feta1=-9999.;//,fphi1=-9999.;
+  	Double_t feta2=-9999.;//,fphi2=-9999.;
+
+  	px1 = fD1.GetPx();
+  	py1 = fD1.GetPy();
+  	pz1 = fD1.GetPz();
+  	feta1 = fD1.GetEta();
+  	//	fphi1 = fD1.GetPhi();
+
+  	px2 = fD2.GetPx();
+  	py2 = fD2.GetPy();
+  	pz2 = fD2.GetPz();
+  	feta2 = fD2.GetEta();
+  	//	fphi2 = fD2.GetPhi();
+
+  	//Calculate Energy per particle by hand
+  	e1 = TMath::Sqrt(mElectron*mElectron+px1*px1+py1*py1+pz1*pz1);
+  	e2 = TMath::Sqrt(mElectron*mElectron+px2*px2+py2*py2+pz2*pz2);
+
+	// pt
+	fpt1 = TMath::Sqrt(px1*px1+py1*py1);
+	fpt2 = TMath::Sqrt(px2*px2+py2*py2);
+	
+  	//Now Create TLorentzVector:
+  	TLorentzVector lv1,lv2;
+  	lv1.SetPxPyPzE(px1,py1,pz1,e1);
+  	lv2.SetPxPyPzE(px2,py2,pz2,e2);
+
+  	values[AliDielectronVarManager::kPx]        = (lv1+lv2).Px();
+  	values[AliDielectronVarManager::kPy]        = (lv1+lv2).Py();
+  	values[AliDielectronVarManager::kPz]        = (lv1+lv2).Pz();
+
+  	values[AliDielectronVarManager::kPt]        =  (lv1+lv2).Pt();
+  	values[AliDielectronVarManager::kPtSq]      = values[AliDielectronVarManager::kPt] * values[AliDielectronVarManager::kPt];
+
+  	values[AliDielectronVarManager::kP]         =  (lv1+lv2).P();
+
+  	//Not overwritten, could take event vertex in next iteration
+  	values[AliDielectronVarManager::kXv]        = (lv1+lv2).X();
+  	values[AliDielectronVarManager::kYv]        = (lv1+lv2).Y();
+  	values[AliDielectronVarManager::kZv]        = (lv1+lv2).Z();
+
+  	values[AliDielectronVarManager::kE]         = (lv1+lv2).E();
+
+  	values[AliDielectronVarManager::kM]         = (lv1+lv2).M();
+
+  	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
+
+  	values[AliDielectronVarManager::kOneOverPt] = (values[AliDielectronVarManager::kPt]>0. ? 1./values[AliDielectronVarManager::kPt] : -9999.);
+  	values[AliDielectronVarManager::kPhi]       = TVector2::Phi_0_2pi( (lv1+lv2).Phi() );
+  	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
+
+  	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
+
+  	// Fill AliDielectronPair specific information
+  	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );
+	values[AliDielectronVarManager::kLeg1Eta]      = feta1;
+	values[AliDielectronVarManager::kLeg2Eta]      = feta2;
+	values[AliDielectronVarManager::kLeg1Pt]       = fpt1;
+	values[AliDielectronVarManager::kLeg2Pt]       = fpt2;
+  	values[AliDielectronVarManager::kDeltaPhi]     = lv1.DeltaPhi(lv2);
+	values[AliDielectronVarManager::kLeg1Phi]      = TVector2::Phi_0_2pi( (lv1).Phi() );
+	values[AliDielectronVarManager::kLeg2Phi]      = TVector2::Phi_0_2pi( (lv2).Phi() );
+
+        if( Req(kDeltaPhiChargeOrdered) && fgEvent ) values[AliDielectronVarManager::kDeltaPhiChargeOrdered] = fD1.GetQ() * fgEvent->GetMagneticField() > 0 ? lv1.Phi() - lv2.Phi() :lv2.Phi() - lv1.Phi() ;
+  	values[AliDielectronVarManager::kPairType]     = pair->GetType();
+
+          // Calculate pair variables for corresponding generated pair
+          if(AliDielectronMC::Instance()->HasMC() && (Req(kMMC)||Req(kPtMC)||Req(kPMC)||Req(kEtaMC)||Req(kPhiMC))){
+            values[AliDielectronVarManager::kMMC]   = -999.;
+            values[AliDielectronVarManager::kPtMC]  = -999.;
+            values[AliDielectronVarManager::kPMC]   = -999.;
+            values[AliDielectronVarManager::kPhiMC] = -999.;
+            values[AliDielectronVarManager::kEtaMC] = -999.;
+
+
+            AliVParticle *mcDaughter1 = AliDielectronMC::Instance()->GetMCTrack(pair->GetFirstDaughterP());
+            AliVParticle *mcDaughter2 = AliDielectronMC::Instance()->GetMCTrack(pair->GetSecondDaughterP());
+            if(mcDaughter1 && mcDaughter2){
+              TLorentzVector lv1MC,lv2MC;
+              lv1MC.SetPtEtaPhiM(mcDaughter1->Pt(),mcDaughter1->Eta(),mcDaughter1->Phi(),mElectron);
+              lv2MC.SetPtEtaPhiM(mcDaughter2->Pt(),mcDaughter2->Eta(),mcDaughter2->Phi(),mElectron);
+              values[AliDielectronVarManager::kMMC]   = (lv1MC+lv2MC).M();
+              values[AliDielectronVarManager::kPtMC]  = (lv1MC+lv2MC).Pt();
+              values[AliDielectronVarManager::kPMC]   = (lv1MC+lv2MC).P();
+              values[AliDielectronVarManager::kPhiMC] = TVector2::Phi_0_2pi( (lv1MC+lv2MC).Phi() );
+              values[AliDielectronVarManager::kEtaMC] = (lv1MC+lv2MC).Eta();
+            }
+          }
+  	/*
+  	//Also not overwritten, still coming from KF particle
+  	//where needed to be replaced by independent determination
+  	values[AliDielectronVarManager::kCharge]    = 0.;
+  	values[AliDielectronVarManager::kPdgCode]   = 0.;
+  	values[AliDielectronVarManager::kChi2NDF]      = 0.;
+  	values[AliDielectronVarManager::kDecayLength]  = 0.;
+  	values[AliDielectronVarManager::kR]            = 0.;
+  	values[AliDielectronVarManager::kCosPointingAngle] = 0.;
+  	values[AliDielectronVarManager::kThetaHE]      = 0.;
+  	values[AliDielectronVarManager::kPhiHE]        = 0.;
+  	values[AliDielectronVarManager::kThetaSqHE]    = 0.;
+  	values[AliDielectronVarManager::kCos2PhiHE]    = 0.;
+  	values[AliDielectronVarManager::kCosTilPhiHE]  = 0.;
+  	values[AliDielectronVarManager::kThetaCS]      = 0.;
+  	values[AliDielectronVarManager::kPhiCS]        = 0.;
+  	values[AliDielectronVarManager::kThetaSqCS]    = 0.;
+  	values[AliDielectronVarManager::kCos2PhiCS]    = 0.;
+  	values[AliDielectronVarManager::kCosTilPhiCS]  = 0.;
+  	values[AliDielectronVarManager::kLegDist]      = 0.;
+  	values[AliDielectronVarManager::kLegDistXY]    = 0.;
+  	values[AliDielectronVarManager::kMerr]         = 0.;
+  	values[AliDielectronVarManager::kPseudoProperTime] = 0.;
+  	values[AliDielectronVarManager::kPseudoProperTimeErr] = 0.;
+  	//Fill in Taku's PhiV?
+  	values[AliDielectronVarManager::kPsiPair]      = 0.;
+
+  	 */
+
+      if(Req(kOpeningAngleCorr)) {
+        Float_t a = 1.54e-01;
+        values[AliDielectronVarManager::kOpeningAngleCorr]  =
+          values[AliDielectronVarManager::kOpeningAngle]
+          - a * TMath::Sqrt(  values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kOneOverPt] );
+      }
+
+      if(Req(kMCorr)) {
+        Float_t a =  7.59e-02;
+        values[AliDielectronVarManager::kMCorr]  =
+          values[AliDielectronVarManager::kM]
+          - a * TMath::Sqrt( values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kPt] );
+      }
 
   }
   //common, regardless of calculation method
@@ -2051,63 +2576,66 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   Double_t phi=values[AliDielectronVarManager::kPhi];
   if(Req(kCosPhiH2)) values[AliDielectronVarManager::kCosPhiH2] = TMath::Cos(2*phi);
   if(Req(kSinPhiH2)) values[AliDielectronVarManager::kSinPhiH2] = TMath::Sin(2*phi);
-  Double_t delta=0.0;
-  // v2 with respect to VZERO-A event plane
-  delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0ArpH2]);
-  if(Req(kV0ArpH2FlowV2))   values[AliDielectronVarManager::kV0ArpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
-  if(Req(kDeltaPhiV0ArpH2)) values[AliDielectronVarManager::kDeltaPhiV0ArpH2] = delta;
-  // v2 with respect to VZERO-C event plane
-  delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0CrpH2]);
-  if(Req(kV0CrpH2FlowV2))   values[AliDielectronVarManager::kV0CrpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
-  if(Req(kDeltaPhiV0CrpH2)) values[AliDielectronVarManager::kDeltaPhiV0CrpH2] = delta;
-  // v2 with respect to the combined VZERO-A and VZERO-C event plane
-  delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0ACrpH2]);
-  if(Req(kV0ACrpH2FlowV2))   values[AliDielectronVarManager::kV0ACrpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
-  if(Req(kDeltaPhiV0ACrpH2)) values[AliDielectronVarManager::kDeltaPhiV0ACrpH2] = delta;
+  // Double_t delta=0.0;
 
+  // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
 
-  // quantities using the values of  AliEPSelectionTask , interval [-pi,+pi]
-  values[AliDielectronVarManager::kDeltaPhiv0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0ArpH2]);
-  values[AliDielectronVarManager::kDeltaPhiv0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0CrpH2]);
-  values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0ACrpH2]);
-  values[AliDielectronVarManager::kDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kTPCrpH2]);
-  values[AliDielectronVarManager::kv0ACrpH2FlowV2]   = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] );
-  values[AliDielectronVarManager::kv0ArpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0ArpH2] );
-  values[AliDielectronVarManager::kv0CrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0CrpH2] );
-  values[AliDielectronVarManager::kTPCrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiTPCrpH2] );
-  values[AliDielectronVarManager::kTPCrpH2FlowV2Sin] = TMath::Sin( 2.*values[AliDielectronVarManager::kDeltaPhiTPCrpH2] );
-
-  //calculate inner product of strong Mag and ee plane
-  if(Req(kPairPlaneMagInPro)) values[AliDielectronVarManager::kPairPlaneMagInPro] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kZDCACrpH1]);
-
-  //Calculate the angle between electrons decay plane and variables 1-4
-  if(Req(kPairPlaneAngle1A)) values[AliDielectronVarManager::kPairPlaneAngle1A] = pair->GetPairPlaneAngle(values[kv0ArpH2],1);
-  if(Req(kPairPlaneAngle2A)) values[AliDielectronVarManager::kPairPlaneAngle2A] = pair->GetPairPlaneAngle(values[kv0ArpH2],2);
-  if(Req(kPairPlaneAngle3A)) values[AliDielectronVarManager::kPairPlaneAngle3A] = pair->GetPairPlaneAngle(values[kv0ArpH2],3);
-  if(Req(kPairPlaneAngle4A)) values[AliDielectronVarManager::kPairPlaneAngle4A] = pair->GetPairPlaneAngle(values[kv0ArpH2],4);
-
-  if(Req(kPairPlaneAngle1C)) values[AliDielectronVarManager::kPairPlaneAngle1C] = pair->GetPairPlaneAngle(values[kv0CrpH2],1);
-  if(Req(kPairPlaneAngle2C)) values[AliDielectronVarManager::kPairPlaneAngle2C] = pair->GetPairPlaneAngle(values[kv0CrpH2],2);
-  if(Req(kPairPlaneAngle3C)) values[AliDielectronVarManager::kPairPlaneAngle3C] = pair->GetPairPlaneAngle(values[kv0CrpH2],3);
-  if(Req(kPairPlaneAngle4C)) values[AliDielectronVarManager::kPairPlaneAngle4C] = pair->GetPairPlaneAngle(values[kv0CrpH2],4);
-
-  if(Req(kPairPlaneAngle1AC)) values[AliDielectronVarManager::kPairPlaneAngle1AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],1);
-  if(Req(kPairPlaneAngle2AC)) values[AliDielectronVarManager::kPairPlaneAngle2AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],2);
-  if(Req(kPairPlaneAngle3AC)) values[AliDielectronVarManager::kPairPlaneAngle3AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],3);
-  if(Req(kPairPlaneAngle4AC)) values[AliDielectronVarManager::kPairPlaneAngle4AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],4);
-
-  //Random reaction plane
-  values[AliDielectronVarManager::kRandomRP] = gRandom->Uniform(-TMath::Pi()/2.0,TMath::Pi()/2.0);
-  //delta phi of pair fron random reaction plane
-  values[AliDielectronVarManager::kDeltaPhiRandomRP] = phi - values[kRandomRP];
-  // keep the interval [-pi,+pi]
-  if ( values[AliDielectronVarManager::kDeltaPhiRandomRP] > TMath::Pi() )
-    values[AliDielectronVarManager::kDeltaPhiRandomRP] -= TMath::TwoPi();
-
-  if(Req(kPairPlaneAngle1Ran)) values[AliDielectronVarManager::kPairPlaneAngle1Ran]= pair->GetPairPlaneAngle(values[kRandomRP],1);
-  if(Req(kPairPlaneAngle2Ran)) values[AliDielectronVarManager::kPairPlaneAngle2Ran]= pair->GetPairPlaneAngle(values[kRandomRP],2);
-  if(Req(kPairPlaneAngle3Ran)) values[AliDielectronVarManager::kPairPlaneAngle3Ran]= pair->GetPairPlaneAngle(values[kRandomRP],3);
-  if(Req(kPairPlaneAngle4Ran)) values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[kRandomRP],4);
+  // // v2 with respect to VZERO-A event plane
+  // delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0ArpH2]);
+  // if(Req(kV0ArpH2FlowV2))   values[AliDielectronVarManager::kV0ArpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
+  // if(Req(kDeltaPhiV0ArpH2)) values[AliDielectronVarManager::kDeltaPhiV0ArpH2] = delta;
+  // // v2 with respect to VZERO-C event plane
+  // delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0CrpH2]);
+  // if(Req(kV0CrpH2FlowV2))   values[AliDielectronVarManager::kV0CrpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
+  // if(Req(kDeltaPhiV0CrpH2)) values[AliDielectronVarManager::kDeltaPhiV0CrpH2] = delta;
+  // // v2 with respect to the combined VZERO-A and VZERO-C event plane
+  // delta = TVector2::Phi_mpi_pi(phi - fgData[AliDielectronVarManager::kV0ACrpH2]);
+  // if(Req(kV0ACrpH2FlowV2))   values[AliDielectronVarManager::kV0ACrpH2FlowV2] = TMath::Cos(2.0*delta);  // 2nd harmonic flow coefficient
+  // if(Req(kDeltaPhiV0ACrpH2)) values[AliDielectronVarManager::kDeltaPhiV0ACrpH2] = delta;
+  //
+  //
+  // // quantities using the values of  AliEPSelectionTask , interval [-pi,+pi]
+  // values[AliDielectronVarManager::kDeltaPhiv0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0ArpH2]);
+  // values[AliDielectronVarManager::kDeltaPhiv0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0CrpH2]);
+  // values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kv0ACrpH2]);
+  // values[AliDielectronVarManager::kDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kTPCrpH2]);
+  // values[AliDielectronVarManager::kv0ACrpH2FlowV2]   = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0ACrpH2] );
+  // values[AliDielectronVarManager::kv0ArpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0ArpH2] );
+  // values[AliDielectronVarManager::kv0CrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiv0CrpH2] );
+  // values[AliDielectronVarManager::kTPCrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kDeltaPhiTPCrpH2] );
+  // values[AliDielectronVarManager::kTPCrpH2FlowV2Sin] = TMath::Sin( 2.*values[AliDielectronVarManager::kDeltaPhiTPCrpH2] );
+  //
+  // //calculate inner product of strong Mag and ee plane
+  // if(Req(kPairPlaneMagInPro)) values[AliDielectronVarManager::kPairPlaneMagInPro] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kZDCACrpH1]);
+  //
+  // //Calculate the angle between electrons decay plane and variables 1-4
+  // if(Req(kPairPlaneAngle1A)) values[AliDielectronVarManager::kPairPlaneAngle1A] = pair->GetPairPlaneAngle(values[kv0ArpH2],1);
+  // if(Req(kPairPlaneAngle2A)) values[AliDielectronVarManager::kPairPlaneAngle2A] = pair->GetPairPlaneAngle(values[kv0ArpH2],2);
+  // if(Req(kPairPlaneAngle3A)) values[AliDielectronVarManager::kPairPlaneAngle3A] = pair->GetPairPlaneAngle(values[kv0ArpH2],3);
+  // if(Req(kPairPlaneAngle4A)) values[AliDielectronVarManager::kPairPlaneAngle4A] = pair->GetPairPlaneAngle(values[kv0ArpH2],4);
+  //
+  // if(Req(kPairPlaneAngle1C)) values[AliDielectronVarManager::kPairPlaneAngle1C] = pair->GetPairPlaneAngle(values[kv0CrpH2],1);
+  // if(Req(kPairPlaneAngle2C)) values[AliDielectronVarManager::kPairPlaneAngle2C] = pair->GetPairPlaneAngle(values[kv0CrpH2],2);
+  // if(Req(kPairPlaneAngle3C)) values[AliDielectronVarManager::kPairPlaneAngle3C] = pair->GetPairPlaneAngle(values[kv0CrpH2],3);
+  // if(Req(kPairPlaneAngle4C)) values[AliDielectronVarManager::kPairPlaneAngle4C] = pair->GetPairPlaneAngle(values[kv0CrpH2],4);
+  //
+  // if(Req(kPairPlaneAngle1AC)) values[AliDielectronVarManager::kPairPlaneAngle1AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],1);
+  // if(Req(kPairPlaneAngle2AC)) values[AliDielectronVarManager::kPairPlaneAngle2AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],2);
+  // if(Req(kPairPlaneAngle3AC)) values[AliDielectronVarManager::kPairPlaneAngle3AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],3);
+  // if(Req(kPairPlaneAngle4AC)) values[AliDielectronVarManager::kPairPlaneAngle4AC] = pair->GetPairPlaneAngle(values[kv0ACrpH2],4);
+  //
+  // //Random reaction plane
+  // values[AliDielectronVarManager::kRandomRP] = gRandom->Uniform(-TMath::Pi()/2.0,TMath::Pi()/2.0);
+  // //delta phi of pair from random reaction plane
+  // values[AliDielectronVarManager::kDeltaPhiRandomRP] = phi - values[kRandomRP];
+  // // keep the interval [-pi,+pi]
+  // if ( values[AliDielectronVarManager::kDeltaPhiRandomRP] > TMath::Pi() )
+  //   values[AliDielectronVarManager::kDeltaPhiRandomRP] -= TMath::TwoPi();
+  //
+  // if(Req(kPairPlaneAngle1Ran)) values[AliDielectronVarManager::kPairPlaneAngle1Ran]= pair->GetPairPlaneAngle(values[kRandomRP],1);
+  // if(Req(kPairPlaneAngle2Ran)) values[AliDielectronVarManager::kPairPlaneAngle2Ran]= pair->GetPairPlaneAngle(values[kRandomRP],2);
+  // if(Req(kPairPlaneAngle3Ran)) values[AliDielectronVarManager::kPairPlaneAngle3Ran]= pair->GetPairPlaneAngle(values[kRandomRP],3);
+  // if(Req(kPairPlaneAngle4Ran)) values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[kRandomRP],4);
 
   // Calculate v2 of Jpsi using the EP from the 2016 est. qVecQnFramework
   Double_t qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
@@ -2121,7 +2649,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           if(qnlist != NULL){
             qnTPCeventplane = fgQnEPacRemoval->GetACcorrectedQnTPCEventplane(pair, qnlist); // Remove auto correlations from the eventplane for the given pair
           }
-          if(qnTPCeventplane == -999.) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
+          if(TMath::AreEqualRel(qnTPCeventplane, -999., 1e-12)) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
         }
       }
     }
@@ -2137,7 +2665,38 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kQnV0rpH2FlowV2)) values[AliDielectronVarManager::kQnV0rpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0rpH2] );
   if(Req(kQnSPDrpH2FlowV2)) values[AliDielectronVarManager::kQnSPDrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2] );
 
-  AliDielectronMC *mc=AliDielectronMC::Instance();
+  // Eventplane Scalar-Product Second Harmonic
+  Int_t harmonic = 2;
+  TVector2 uDielectronSP( cos( harmonic * phi ), sin( harmonic * phi )); //Unitary Q vector of the dielectron pair
+
+  if(Req(kQnTPCrpH2FlowSPV2)){
+    TVector2 qVec2tpcACCorrected; qVec2tpcACCorrected.SetMagPhi(1,qnTPCeventplane); //Unitary Q vector from TPC
+    values[AliDielectronVarManager::kQnTPCrpH2FlowSPV2]    = uDielectronSP * qVec2tpcACCorrected;
+  }
+  if(Req(kQnV0ArpH2FlowSPV2)){
+    TVector2 qVec2V0A;
+    qVec2V0A.Set(values[AliDielectronVarManager::kQnV0AxH2], values[AliDielectronVarManager::kQnV0AyH2]); //Unitary Q vector from V0A
+    values[AliDielectronVarManager::kQnV0ArpH2FlowSPV2]    = uDielectronSP * qVec2V0A;
+  }
+  if(Req(kQnV0CrpH2FlowSPV2)){
+    TVector2 qVec2V0C; qVec2V0C.Set(values[AliDielectronVarManager::kQnV0CxH2], values[AliDielectronVarManager::kQnV0CyH2]); //Unitary Q vector from V0C
+    values[AliDielectronVarManager::kQnV0CrpH2FlowSPV2]    = uDielectronSP * qVec2V0C;
+  }
+  if(Req(kQnV0rpH2FlowSPV2)){
+    TVector2 qVec2V0; qVec2V0.Set(values[AliDielectronVarManager::kQnV0xH2], values[AliDielectronVarManager::kQnV0yH2]);     //Unitary Q vector from V0
+    values[AliDielectronVarManager::kQnV0rpH2FlowSPV2]      = uDielectronSP * qVec2V0;
+  }
+  if(Req(kQnSPDrpH2FlowSPV2)){
+    TVector2 qVec2SPD; qVec2SPD.Set(values[AliDielectronVarManager::kQnSPDxH2], values[AliDielectronVarManager::kQnSPDyH2]);     //Unitary Q vector from SPD
+    values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
+  }
+
+  // calculate inner Product of strong magnetic field (from ZDC 1st order event plane, correction framework) and ee plane
+  if(Req(kPairPlaneMagInProZDC)) values[AliDielectronVarManager::kPairPlaneMagInProZDC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnZDCCrpH1]);
+
+
+
+  AliDielectronMC *mc = AliDielectronMC::Instance();
 
   if (mc->HasMC()){
     values[AliDielectronVarManager::kPseudoProperTimeResolution] = -10.0e+10;
@@ -2151,19 +2710,26 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     if(samemother && fgEvent) {
       if(pair->GetFirstDaughterP()->GetLabel() > 0) {
         const AliVParticle *motherMC = 0x0;
-        if(fgEvent->IsA() == AliESDEvent::Class())  motherMC = (AliMCParticle*)mc->GetMCTrackMother((AliESDtrack*)pair->GetFirstDaughterP());
-        else if(fgEvent->IsA() == AliAODEvent::Class())  motherMC = (AliAODMCParticle*)mc->GetMCTrackMother((AliAODTrack*)pair->GetFirstDaughterP());
+        Int_t motherLbl = 0;
+        if(fgEvent->IsA() == AliESDEvent::Class()){
+          motherMC = (AliMCParticle*) mc->GetMCTrackMother((AliESDtrack*) pair->GetFirstDaughterP());
+          motherLbl = motherMC->GetLabel();
+        }
+        else if(fgEvent->IsA() == AliAODEvent::Class()){
+          motherMC = (AliAODMCParticle*) mc->GetMCTrackMother((AliAODTrack*) pair->GetFirstDaughterP());
+          AliAODMCParticle *daughterMC = (AliAODMCParticle*) mc->GetMCTrack(pair->GetFirstDaughterP());
+          motherLbl = daughterMC->GetMother();
+        }
         Double_t vtxX, vtxY, vtxZ;
-	if(motherMC && mc->GetPrimaryVertex(vtxX,vtxY,vtxZ)) {
-	  Int_t motherLbl = motherMC->GetLabel();
-	  values[AliDielectronVarManager::kHasCocktailMother]=mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
-      	  const Double_t lxyMC = ( (motherMC->Xv() - vtxX) * motherMC->Px() +
-                                   (motherMC->Yv() - vtxY) * motherMC->Py()   ) / motherMC->Pt();
-	  const Double_t pseudoMC = lxyMC * (TDatabasePDG::Instance()->GetParticle(443)->Mass())/motherMC->Pt();
-	  values[AliDielectronVarManager::kPseudoProperTimeResolution] = values[AliDielectronVarManager::kPseudoProperTime] - pseudoMC;
-          if (errPseudoProperTime2 > 0)
-            values[AliDielectronVarManager::kPseudoProperTimePull] = values[AliDielectronVarManager::kPseudoProperTimeResolution]/sqrt(errPseudoProperTime2);
-      }
+      	if(motherMC && mc->GetPrimaryVertex(vtxX,vtxY,vtxZ)) {
+
+      	  values[AliDielectronVarManager::kHasCocktailMother] = mc->CheckParticleSource(motherLbl, AliDielectronSignalMC::kDirect);
+          const Double_t lxyMC = ( (motherMC->Xv() - vtxX) * motherMC->Px() + (motherMC->Yv() - vtxY) * motherMC->Py()   ) / motherMC->Pt();
+      	  const Double_t pseudoMC = lxyMC * (TDatabasePDG::Instance()->GetParticle(443)->Mass())/motherMC->Pt();
+      	  values[AliDielectronVarManager::kPseudoProperTimeResolution] = values[AliDielectronVarManager::kPseudoProperTime] - pseudoMC;
+                if (errPseudoProperTime2 > 0)
+                  values[AliDielectronVarManager::kPseudoProperTimePull] = values[AliDielectronVarManager::kPseudoProperTimeResolution]/sqrt(errPseudoProperTime2);
+        }
       }
     }
 
@@ -2212,8 +2778,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kOneOverPairEffSq] = (values[AliDielectronVarManager::kPairEff]>0.0 ? 1./values[AliDielectronVarManager::kPairEff]/values[AliDielectronVarManager::kPairEff] : 1.0);
   }
 
-  if(kRndmPair) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
-}
+  if(Req(kRndmPair)) values[AliDielectronVarManager::kRndmPair] = gRandom->Rndm();
+} // end FillVarDielectronPair
 
 inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
 {
@@ -2295,21 +2861,49 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   if(fgCurrentRun!=event->GetRunNumber()) {
     if(fgVZEROCalibrationFile.Contains(".root")) InitVZEROCalibrationHistograms(event->GetRunNumber());
     if(fgVZERORecenteringFile.Contains(".root")) InitVZERORecenteringHistograms(event->GetRunNumber());
-    if(fgZDCRecenteringFile.Contains(".root")) InitZDCRecenteringHistograms(event->GetRunNumber());
+    if(fgZDCRecenteringFile.Contains(".root"))   InitZDCRecenteringHistograms(event->GetRunNumber());
+
+    //printf("run number changed. load root file again\n");
+    if(fgQnCalibrationFilePath != "") InitQnCalibrationHistograms(event->GetRunNumber());
+
     fgCurrentRun=event->GetRunNumber();
   }
-  values[AliDielectronVarManager::kMixingBin]=0;
 
+  values[AliDielectronVarManager::kMixingBin]=0;
   values[AliDielectronVarManager::kXvPrim]       = 0;
   values[AliDielectronVarManager::kYvPrim]       = 0;
   values[AliDielectronVarManager::kZvPrim]       = 0;
   values[AliDielectronVarManager::kNVtxContrib]  = 0;
 //   values[AliDielectronVarManager::kChi2NDF]      = 0; //This is the pair value!!!
 
+  values[AliDielectronVarManager::kNclsITS1] = 0;
+  values[AliDielectronVarManager::kNclsITS2] = 0;
+  values[AliDielectronVarManager::kNclsITS3] = 0;
+  values[AliDielectronVarManager::kNclsITS4] = 0;
+  values[AliDielectronVarManager::kNclsITS5] = 0;
+  values[AliDielectronVarManager::kNclsITS6] = 0;
+
+  values[AliDielectronVarManager::kNSPDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSDDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSSDclsEvent   ] = 0;
+  values[AliDielectronVarManager::kNSDDSSDclsEvent] = 0;
+
+  values[AliDielectronVarManager::kTPCpileupZA] = 0;
+  values[AliDielectronVarManager::kTPCpileupZC] = 0;
+  values[AliDielectronVarManager::kTPCpileupZ]  = 0;
+  values[AliDielectronVarManager::kTPCpileupMA] = 0;
+  values[AliDielectronVarManager::kTPCpileupMC] = 0;
+  values[AliDielectronVarManager::kTPCpileupM]  = 0;
+
+
   values[AliDielectronVarManager::kNTrk]            = 0;
   values[AliDielectronVarManager::kNVtxContrib]     = 0;
   values[AliDielectronVarManager::kNacc]            = 0;
   values[AliDielectronVarManager::kMatchEffITSTPC]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCinPlaneV0C]  = 0;
+  values[AliDielectronVarManager::kMatchEffITSTPCoutPlaneV0C]  = 0;
   values[AliDielectronVarManager::kNaccTrcklts]     = 0;
   values[AliDielectronVarManager::kNaccTrcklts09]   = 0;
   values[AliDielectronVarManager::kNaccTrcklts10]   = 0;
@@ -2317,9 +2911,12 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNevents]         = 0; //always fill bin 0;
   values[AliDielectronVarManager::kRefMult]         = 0;
   values[AliDielectronVarManager::kRefMultTPConly]  = 0;
+  values[AliDielectronVarManager::kNTPCtrkswITSout] = 0;
+  values[AliDielectronVarManager::kNTPCclsEvent]    = 0;
 
   //Centrality Run2 - from 2015 on
   values[AliDielectronVarManager::kCentralityNew] = 0.;
+  values[AliDielectronVarManager::kCentralityV0Mcali] = 0.;
   values[AliDielectronVarManager::kCentralityCL0] = 0.;
   values[AliDielectronVarManager::kCentralityCL1] = 0.;
   values[AliDielectronVarManager::kCentralitySPDClusters]  = 0.;
@@ -2329,6 +2926,10 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kCentralityCL0plus10]    = 0.;
   values[AliDielectronVarManager::kCentralityCL0minus10]   = 0.;
 
+  values[AliDielectronVarManager::kTransverseSpherocity] = -1.;
+  values[AliDielectronVarManager::kTransverseSpherocityFast] = -1.;
+  
+
   AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
   if(!multSelection){
     // only for debugging purpose
@@ -2336,6 +2937,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   }
   else {
     values[AliDielectronVarManager::kCentralityNew]          = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+    values[AliDielectronVarManager::kCentralityV0Mcali]      = multSelection->GetMultiplicityPercentile("V0M",kTRUE);
     values[AliDielectronVarManager::kCentralityCL0]          = multSelection->GetMultiplicityPercentile("CL0",kFALSE);
     values[AliDielectronVarManager::kCentralityCL1]          = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
     values[AliDielectronVarManager::kCentralitySPDClusters]  = multSelection->GetMultiplicityPercentile("SPDClustersCorr",kFALSE);
@@ -2363,18 +2965,46 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kTriggerExclOFF]        = -1;
   for(Int_t i=0; i<30; i++) { if(maskOff==BIT(i)) values[AliDielectronVarManager::kTriggerExclOFF]=i; }
 
+  values[AliDielectronVarManager::kNclsITS1] = event->GetMultiplicity()->GetNumberOfITSClusters(0);
+  values[AliDielectronVarManager::kNclsITS2] = event->GetMultiplicity()->GetNumberOfITSClusters(1);
+  values[AliDielectronVarManager::kNclsITS3] = event->GetMultiplicity()->GetNumberOfITSClusters(2);
+  values[AliDielectronVarManager::kNclsITS4] = event->GetMultiplicity()->GetNumberOfITSClusters(3);
+  values[AliDielectronVarManager::kNclsITS5] = event->GetMultiplicity()->GetNumberOfITSClusters(4);
+  values[AliDielectronVarManager::kNclsITS6] = event->GetMultiplicity()->GetNumberOfITSClusters(5);
+
+  values[AliDielectronVarManager::kNSPDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(0) + event->GetMultiplicity()->GetNumberOfITSClusters(1);
+  values[AliDielectronVarManager::kNSDDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(2) + event->GetMultiplicity()->GetNumberOfITSClusters(3);
+  values[AliDielectronVarManager::kNSSDclsEvent] = event->GetMultiplicity()->GetNumberOfITSClusters(4) + event->GetMultiplicity()->GetNumberOfITSClusters(5);
+  values[AliDielectronVarManager::kNSDDSSDclsEvent] = values[AliDielectronVarManager::kNSDDclsEvent] + values[AliDielectronVarManager::kNSSDclsEvent];
+
   values[AliDielectronVarManager::kNTrk]            = event->GetNumberOfTracks();
   if(Req(kNacc))            values[AliDielectronVarManager::kNacc]            = AliDielectronHelper::GetNacc(event);
-  if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
-  if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
-    values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
+
+  if(Req(kTransverseSpherocity))     values[AliDielectronVarManager::kTransverseSpherocity] = AliDielectronHelper::GetTransverseSpherocity(event);
+  if(Req(kTransverseSpherocityFast)) values[AliDielectronVarManager::kTransverseSpherocityFast] = AliDielectronHelper::GetTransverseSpherocityTracks(event);
+
+  if(Req(kMatchEffITSTPCinPlane) || Req(kMatchEffITSTPCoutPlane)){
+
+    Double_t efficiencies[2] = {-1.};
+    values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE);
+    values[AliDielectronVarManager::kMatchEffITSTPCinPlane]  = efficiencies[0];
+    values[AliDielectronVarManager::kMatchEffITSTPCoutPlane]  = efficiencies[1];
+  }
+  if(Req(kMatchEffITSTPCinPlaneV0C) || Req(kMatchEffITSTPCoutPlaneV0C)){
+
+    Double_t efficiencies[2] = {-1.};
+    values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event, efficiencies, kTRUE, kTRUE);
+    values[AliDielectronVarManager::kMatchEffITSTPCinPlaneV0C]  = efficiencies[0];
+    values[AliDielectronVarManager::kMatchEffITSTPCoutPlaneV0C]  = efficiencies[1];
+  }
+  else if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
+  if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))  values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
   if(Req(kNaccTrcklts09))
       values[AliDielectronVarManager::kNaccTrcklts09]     = AliDielectronHelper::GetNaccTrcklts(event,0.9);
   if(Req(kNaccTrcklts10) || Req(kNaccTrcklts10Corr))
     values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
   if(Req(kNaccTrcklts0916))
     values[AliDielectronVarManager::kNaccTrcklts0916] = AliDielectronHelper::GetNaccTrcklts(event,1.6)-AliDielectronHelper::GetNaccTrcklts(event,.9);
-
   if(Req(kNaccTrckltsCorr))
   values[AliDielectronVarManager::kNaccTrckltsCorr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts],
@@ -2384,90 +3014,99 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
     AliDielectronHelper::GetNaccTrckltsCorrected(event, values[AliDielectronVarManager::kNaccTrcklts10],
 						 values[AliDielectronVarManager::kZvPrim],1);
 
-
   Double_t ptMaxEv    = -1., phiptMaxEv= -1.;
   if(Req(kMaxPt) || Req(kPhiMaxPt)) AliDielectronHelper::GetMaxPtAndPhi(event, ptMaxEv, phiptMaxEv);
   values[AliDielectronVarManager::kPhiMaxPt]          = phiptMaxEv;
   values[AliDielectronVarManager::kMaxPt]             = ptMaxEv;
 
 
-  // event plane quantities from the AliEPSelectionTask
-  for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
-  for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
+  // // event plane quantities from the AliEPSelectionTask
+  // for(Int_t ivar=AliDielectronVarManager::kv0ArpH2; ivar<=kv0C0v0C3DiffH2;   ivar++) values[ivar] = 0.0; // v0  variables
+  // for(Int_t ivar=AliDielectronVarManager::kTPCxH2;  ivar<=kTPCsub12DiffH2uc; ivar++) values[ivar] = 0.0; // tpc variables
+
 
   // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
   if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
-      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
-  if(flowQnVectorTask != NULL){
-    AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
-    if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
-  }
-
-  // ep angle interval [todo, fill]
-  AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
-  if(ep) {
-
-    // TPC event plane quantities (uncorrected)
-    TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
-    TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
-    TVector2 *qsub2 = ep->GetQsub2();
-
-    if(qstd) {
-      values[AliDielectronVarManager::kTPCxH2uc]       = qstd->X();
-      values[AliDielectronVarManager::kTPCyH2uc]       = qstd->Y();
-      values[AliDielectronVarManager::kTPCmagH2uc]     = qstd->Mod();
-      values[AliDielectronVarManager::kTPCrpH2uc]      = TVector2::Phi_mpi_pi(qstd->Phi())/2;
-      if(qsub1 && qsub2){
-        values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
-        values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
-        values[AliDielectronVarManager::kTPCsub1rpH2uc]  = TVector2::Phi_mpi_pi(qsub1->Phi())/2;
-        values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
-        values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
-        values[AliDielectronVarManager::kTPCsub2rpH2uc]  = TVector2::Phi_mpi_pi(qsub2->Phi())/2;
-
-        values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
-  									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
+      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
+    if(flowQnVectorTask != NULL){
+      AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+      TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+      if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
+      else{
+        for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
+          values[i] = -999.;
+        }
       }
     }
+  }// end if QnCorrections framework
+  else if (dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"))){
+    // else fill ZDC event plane from charged particle and D meson v1 analysis)
+    FillZDCEventPlane(values);
+  }
 
-    // VZERO event plane
-    TVector2 qvec;
-    TVector2 *qVecQnFramework;
-    Double_t qx = 0, qy = 0;
-
-    ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
-
-    qx = qy = 0.;
-    ep->CalculateVZEROEventPlane(event, 8, 2, qy, qy);
-    qvec.Set(qx,qy);
-
-    values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
-
-    qx = qy = 0.;
-    ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);
-    qvec.Set(qx,qy);
-
-    values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
-    ep->CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep->CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep->CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep->CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-  } //if: eventplane
+  // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
+  // ep angle interval [todo, fill]
+  // AliEventplane *ep = const_cast<AliVEvent*>(event)->GetEventplane();
+  // if(ep) {
+  //   // TPC event plane quantities (uncorrected)
+  //   TVector2 *qstd  = ep->GetQVector();  // This is the "standard" Q-Vector for TPC
+  //   TVector2 *qsub1 = ep->GetQsub1();    // random subevent plane
+  //   TVector2 *qsub2 = ep->GetQsub2();
+  //   if(qstd) {
+  //     values[AliDielectronVarManager::kTPCxH2uc]       = qstd->X();
+  //     values[AliDielectronVarManager::kTPCyH2uc]       = qstd->Y();
+  //     values[AliDielectronVarManager::kTPCmagH2uc]     = qstd->Mod();
+  //     values[AliDielectronVarManager::kTPCrpH2uc]      = TVector2::Phi_mpi_pi(qstd->Phi())/2;
+  //     if(qsub1 && qsub2){
+  //       values[AliDielectronVarManager::kTPCsub1xH2uc]   = qsub1->X();
+  //       values[AliDielectronVarManager::kTPCsub1yH2uc]   = qsub1->Y();
+  //       values[AliDielectronVarManager::kTPCsub1rpH2uc]  = TVector2::Phi_mpi_pi(qsub1->Phi())/2;
+  //       values[AliDielectronVarManager::kTPCsub2xH2uc]   = qsub2->X();
+  //       values[AliDielectronVarManager::kTPCsub2yH2uc]   = qsub2->Y();
+  //       values[AliDielectronVarManager::kTPCsub2rpH2uc]  = TVector2::Phi_mpi_pi(qsub2->Phi())/2;
+  //
+  //       values[AliDielectronVarManager::kTPCsub12DiffH2uc] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2uc] -
+  // 									   values[AliDielectronVarManager::kTPCsub2rpH2uc]) );
+  //     }
+  //   }
+  //
+  //
+  //   // VZERO event plane
+  //   TVector2 qvec;
+  //   Double_t qx = 0, qy = 0;
+  //
+  //   ep->CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
+  //   values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
+  //   values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
+  //   values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
+  //
+  //   qx = qy = 0.;
+  //   ep->CalculateVZEROEventPlane(event, 8, 2, qy, qy);
+  //   qvec.Set(qx,qy);
+  //
+  //   values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
+  //   values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
+  //   values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
+  //
+  //   qx = qy = 0.;
+  //   ep->CalculateVZEROEventPlane(event, 9, 2, qx, qy);
+  //   qvec.Set(qx,qy);
+  //
+  //   values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
+  //   values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
+  //   values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
+  //   ep->CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
+  //   values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   ep->CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
+  //   values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   ep->CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
+  //   values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  //   ep->CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
+  //   values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+  // } //if: eventplane
 
   // ESD VZERO information
   AliVVZERO* vzeroData = event->GetVZEROData();
@@ -2495,15 +3134,18 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   // VZERO event plane quantities
   Double_t qvec[3]={0.0};
   GetVzeroRP(event, qvec,0);      // V0-A
-  values[AliDielectronVarManager::kV0AxH2] = qvec[0]; values[AliDielectronVarManager::kV0AyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0AxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0AyH2] = qvec[1];
   values[AliDielectronVarManager::kV0ArpH2] = qvec[2];
   qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
   GetVzeroRP(event, qvec,1);      // V0-C
-  values[AliDielectronVarManager::kV0CxH2] = qvec[0]; values[AliDielectronVarManager::kV0CyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0CxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0CyH2] = qvec[1];
   values[AliDielectronVarManager::kV0CrpH2] = qvec[2];
   qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
   GetVzeroRP(event, qvec,2);      // V0-A and V0-C combined
-  values[AliDielectronVarManager::kV0ACxH2] = qvec[0]; values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
+  values[AliDielectronVarManager::kV0ACxH2] = qvec[0];
+  values[AliDielectronVarManager::kV0ACyH2] = qvec[1];
   values[AliDielectronVarManager::kV0ACrpH2] = qvec[2];
   // VZERO event plane resolution
   values[AliDielectronVarManager::kV0ArpResH2] = 1.0;
@@ -2517,62 +3159,67 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kV0YaYcH2] = values[AliDielectronVarManager::kV0AyH2]*values[AliDielectronVarManager::kV0CyH2];
   values[AliDielectronVarManager::kV0XcYcH2] = values[AliDielectronVarManager::kV0CxH2]*values[AliDielectronVarManager::kV0CyH2];
 
+  // TPC event plane quantities
+  qvec[0]=0.0; qvec[1]=0.0; qvec[2]=0.0;
+  GetTPCRP(event, qvec,0);
+  values[AliDielectronVarManager::kTPCxH2] = qvec[0];
+  values[AliDielectronVarManager::kTPCyH2] = qvec[1];
+  values[AliDielectronVarManager::kTPCrpH2] = qvec[2];
+ 
+  // // event plane differences used for EP resolution calculation
+  // values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
+	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
+  //
+  // values[AliDielectronVarManager::kV0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0CrpH2] -
+	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
+  //
+  // values[AliDielectronVarManager::kV0AV0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
+	// 							     values[AliDielectronVarManager::kV0CrpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 							     values[AliDielectronVarManager::kTPCrpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 							     values[AliDielectronVarManager::kv0CrpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0Av0C0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 							     values[AliDielectronVarManager::kv0C0rpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0Av0C3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 							     values[AliDielectronVarManager::kv0C3rpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0Cv0A0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 							     values[AliDielectronVarManager::kv0A0rpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0Cv0A3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 							     values[AliDielectronVarManager::kv0A3rpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0A0v0A3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0A0rpH2] -
+	// 							     values[AliDielectronVarManager::kv0A3rpH2]) );
+  //
+  // values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] -
+	// 							     values[AliDielectronVarManager::kv0C3rpH2]) );
+  //
+  // Double_t ZDCqvec[3][2] = {{999., 999.}, {999., 999.}, {999., 999.} };
+  // GetZDCRP(event, ZDCqvec);
+  //
+  // values[AliDielectronVarManager::kZDCArpH1] = TMath::ATan2(ZDCqvec[0][1], ZDCqvec[0][0]);
+  // values[AliDielectronVarManager::kZDCCrpH1] = TMath::ATan2(ZDCqvec[1][1], ZDCqvec[1][0]);
+  // values[AliDielectronVarManager::kZDCACrpH1] = TMath::ATan2(ZDCqvec[2][1], ZDCqvec[2][0]);
+  //
+  // if(TMath::Abs(ZDCqvec[0][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[0][1] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][1] - 999.) < 1e-10){
+     //   values[AliDielectronVarManager::kZDCArpH1] = 999;
+     //   values[AliDielectronVarManager::kZDCCrpH1] = 999;
+     //values[AliDielectronVarManager::kZDCACrpH1] = 999;
+  // }
 
-  // event plane differences used for EP resolution calculation
-  values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
-								     values[AliDielectronVarManager::kTPCrpH2]) );
-
-  values[AliDielectronVarManager::kV0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0CrpH2] -
-								     values[AliDielectronVarManager::kTPCrpH2]) );
-
-  values[AliDielectronVarManager::kV0AV0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
-								     values[AliDielectronVarManager::kV0CrpH2]) );
-
-  values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-								     values[AliDielectronVarManager::kTPCrpH2]) );
-
-  values[AliDielectronVarManager::kv0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-								     values[AliDielectronVarManager::kTPCrpH2]) );
-
-  values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-								     values[AliDielectronVarManager::kv0CrpH2]) );
-
-  values[AliDielectronVarManager::kv0Av0C0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-								     values[AliDielectronVarManager::kv0C0rpH2]) );
-
-  values[AliDielectronVarManager::kv0Av0C3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-								     values[AliDielectronVarManager::kv0C3rpH2]) );
-
-  values[AliDielectronVarManager::kv0Cv0A0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-								     values[AliDielectronVarManager::kv0A0rpH2]) );
-
-  values[AliDielectronVarManager::kv0Cv0A3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-								     values[AliDielectronVarManager::kv0A3rpH2]) );
-
-  values[AliDielectronVarManager::kv0A0v0A3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0A0rpH2] -
-								     values[AliDielectronVarManager::kv0A3rpH2]) );
-
-  values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] -
-								     values[AliDielectronVarManager::kv0C3rpH2]) );
-
-  Double_t ZDCqvec[3][2] = {{999., 999.}, {999., 999.}, {999., 999.} };
-  GetZDCRP(event, ZDCqvec);
-
-  values[AliDielectronVarManager::kZDCArpH1] = TMath::ATan2(ZDCqvec[0][1], ZDCqvec[0][0]);
-  values[AliDielectronVarManager::kZDCCrpH1] = TMath::ATan2(ZDCqvec[1][1], ZDCqvec[1][0]);
-  values[AliDielectronVarManager::kZDCACrpH1] = TMath::ATan2(ZDCqvec[2][1], ZDCqvec[2][0]);
-
-  if(TMath::Abs(ZDCqvec[0][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[0][1] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][0] - 999.) < 1e-10 || TMath::Abs(ZDCqvec[1][1] - 999.) < 1e-10){
-    values[AliDielectronVarManager::kZDCArpH1] = 999;
-    values[AliDielectronVarManager::kZDCCrpH1] = 999;
-    values[AliDielectronVarManager::kZDCACrpH1] = 999;
-  }
 
 
-
-  values[AliDielectronVarManager::kv0ZDCrpRes] = cos(2*(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kv0ArpH2]));
-  values[AliDielectronVarManager::kZDCrpResH1] = cos(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kZDCCrpH1]);
-
+  // values[AliDielectronVarManager::kv0ZDCrpRes] = cos(2*(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kv0ArpH2]));
+  // values[AliDielectronVarManager::kZDCrpResH1] = cos(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kZDCCrpH1]);
 
 }
 
@@ -2612,6 +3259,15 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kCentralityV0C] = centralityV0C;
   values[AliDielectronVarManager::kCentralityZNA] = centralityZNA;
 
+  values[AliDielectronVarManager::kTransverseSpherocityESD] = -1.;
+  if(Req(kTransverseSpherocityESD)) values[AliDielectronVarManager::kTransverseSpherocityESD] = AliDielectronHelper::GetTransverseSpherocityESD(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESD] = -1.;
+  if(Req(kTransverseSpherocityFastESD)) values[AliDielectronVarManager::kTransverseSpherocityFastESD] = AliDielectronHelper::GetTransverseSpherocityESDtracks(event);
+  values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(event);
+  values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = -1.;
+  if(Req(kTransverseSpherocityFastESDwoPtWeight)) values[AliDielectronVarManager::kTransverseSpherocityFastESDwoPtWeight] = AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(event);
+
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC();
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
 
@@ -2619,7 +3275,7 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   if (AliDielectronMC::Instance()->HasMC()){
     if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC) || Req(kXvPrimMCtruth) || Req(kYvPrimMCtruth) || Req(kZvPrimMCtruth)) {
       AliMCEvent* mcevent = AliDielectronMC::Instance()->GetMCEvent();
-      const AliVVertex* mcvtx = mcevent->GetPrimaryVertex();
+      const AliVVertex* mcvtx = (mcevent ? mcevent->GetPrimaryVertex() : 0);
       values[AliDielectronVarManager::kXvPrimMCtruth] = (mcvtx ? mcvtx->GetX() : 0.0);
       values[AliDielectronVarManager::kYvPrimMCtruth] = (mcvtx ? mcvtx->GetY() : 0.0);
       values[AliDielectronVarManager::kZvPrimMCtruth] = (mcvtx ? mcvtx->GetZ() : 0.0);
@@ -2669,6 +3325,20 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   values[AliDielectronVarManager::kNaccItsPureEsd16Corr] =
     AliDielectronHelper::GetNaccTrckltsCorrected(event,Double_t(nTrITSSA16),values[AliDielectronVarManager::kZvPrim],8);
 
+  values[AliDielectronVarManager::kNTPCclsEvent] = event->GetNumberOfTPCClusters();
+
+	//fill TPC pileup event information
+	//see AliESDUtils::GetTPCPileupVertexInfo for more details
+	// ---| TPC pileup vertex info |----------------------------------------------
+	TVectorF tpcVertexInfo(10);
+	AliESDUtils::GetTPCPileupVertexInfo(event, tpcVertexInfo);
+  values[AliDielectronVarManager::kTPCpileupZA] = tpcVertexInfo[0];
+  values[AliDielectronVarManager::kTPCpileupZC] = tpcVertexInfo[1];
+  values[AliDielectronVarManager::kTPCpileupZ]  = tpcVertexInfo[2];
+  values[AliDielectronVarManager::kTPCpileupMA] = tpcVertexInfo[3];
+  values[AliDielectronVarManager::kTPCpileupMC] = tpcVertexInfo[4];
+  values[AliDielectronVarManager::kTPCpileupM]  = tpcVertexInfo[5];
+
 }
 
 inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, Double_t * const values)
@@ -2716,6 +3386,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
+  if(Req(kNTPCtrkswITSout)) values[AliDielectronVarManager::kNTPCtrkswITSout] = header->GetNumberOfTPCTracks();
+  if(Req(kNTPCclsEvent)) values[AliDielectronVarManager::kNTPCclsEvent] = header->GetNumberOfTPCClusters();
   values[AliDielectronVarManager::kRefMultOvRefMultTPConly] = (values[AliDielectronVarManager::kRefMultTPConly] > 0. ? (values[AliDielectronVarManager::kRefMult]/values[AliDielectronVarManager::kRefMultTPConly]) : 0.);
 
   // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
@@ -2745,63 +3417,76 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     // TPC
 
     TList *qnlist = (TList*) event->FindListObject("qnVectorList");
-    if(Req(kQnTPCrpH2) && qnlist ==NULL){
+    if((Req(kQnTPCrpH2) || Req(kQnV0rpH2)) && qnlist == NULL){
       for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
         values[i] = -999.;
       }
     }
     if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
 
-    qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
-    values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
-    values[AliDielectronVarManager::kTPCyH2uc]   = qvec.Y();
-    values[AliDielectronVarManager::kTPCmagH2uc] = qvec.Mod();
-    values[AliDielectronVarManager::kTPCrpH2uc]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-
-    // VZERO
-    AliEventplane ep2;
-    // get event plane corrections from the VZERO EP selection task
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliVZEROEPSelectionTask *eptask = dynamic_cast<AliVZEROEPSelectionTask *>(man->GetTask("AliVZEROEPSelectionTask"));
-    if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
-    else if(!qnlist) printf("no VZERO event plane selection task added! \n");
-
-
-    Double_t qx = 0, qy = 0;
-    ep2.CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
-
-
-
-    ep2.CalculateVZEROEventPlane(event, 8, 2, qx, qy);
-    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
-
-    ep2.CalculateVZEROEventPlane(event, 9, 2, qx, qy);
-    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
-    values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
-    values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
-    ep2.CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep2.CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep2.CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
-    ep2.CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
-    values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
+    // qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
+    // values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
+    // values[AliDielectronVarManager::kTPCyH2uc]   = qvec.Y();
+    // values[AliDielectronVarManager::kTPCmagH2uc] = qvec.Mod();
+    // values[AliDielectronVarManager::kTPCrpH2uc]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    //
+    // // VZERO
+    // AliEventplane ep2;
+    // // get event plane corrections from the VZERO EP selection task
+    // AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+    // AliVZEROEPSelectionTask *eptask = dynamic_cast<AliVZEROEPSelectionTask *>(man->GetTask("AliVZEROEPSelectionTask"));
+    // if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
+    // else if(!qnlist) printf("no VZERO event plane selection task added! \n");
+    //
+    //
+    // Double_t qx = 0, qy = 0;
+    // ep2.CalculateVZEROEventPlane(event,10, 2, qx, qy);    qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0ACrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // values[AliDielectronVarManager::kv0ACxH2]   = qvec.X();
+    // values[AliDielectronVarManager::kv0ACyH2]   = qvec.Y();
+    // values[AliDielectronVarManager::kv0ACmagH2] = qvec.Mod();
+    //
+    //
+    //
+    // ep2.CalculateVZEROEventPlane(event, 8, 2, qx, qy);
+    // qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0ArpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // values[AliDielectronVarManager::kv0AxH2]   = qvec.X();
+    // values[AliDielectronVarManager::kv0AyH2]   = qvec.Y();
+    // values[AliDielectronVarManager::kv0AmagH2] = qvec.Mod();
+    //
+    // ep2.CalculateVZEROEventPlane(event, 9, 2, qx, qy);
+    // qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0CrpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // values[AliDielectronVarManager::kv0CxH2]   = qvec.X();
+    // values[AliDielectronVarManager::kv0CyH2]   = qvec.Y();
+    // values[AliDielectronVarManager::kv0CmagH2] = qvec.Mod();
+    // ep2.CalculateVZEROEventPlane(event, 0, 0, 2, qx, qy);    qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0C0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // ep2.CalculateVZEROEventPlane(event, 3, 3, 2, qx, qy);    qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0C3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // ep2.CalculateVZEROEventPlane(event, 4, 4, 2, qx, qy);    qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0A0rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
+    // ep2.CalculateVZEROEventPlane(event, 7, 7, 2, qx, qy);    qvec.Set(qx,qy);
+    // values[AliDielectronVarManager::kv0A3rpH2]  = TVector2::Phi_mpi_pi(qvec.Phi())/2;
 
   }
 
   const AliAODVertex *vtxtpc = GetVertex(event, AliAODVertex::kMainTPC);
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxtpc ? vtxtpc->GetNContributors() : 0);
+
+	//fill TPC pileup event information
+	//see AliESDUtils::GetTPCPileupVertexInfo for more details
+	static TVectorF dummyVertexInfo(10); // to be used with old AODs w/o vertex info
+
+	const TVectorF &tpcVertexInfo = header->GetTPCPileUpInfo() ? *header->GetTPCPileUpInfo() : dummyVertexInfo;
+  values[AliDielectronVarManager::kTPCpileupZA] = tpcVertexInfo[0];
+  values[AliDielectronVarManager::kTPCpileupZC] = tpcVertexInfo[1];
+  values[AliDielectronVarManager::kTPCpileupZ]  = tpcVertexInfo[2];
+  values[AliDielectronVarManager::kTPCpileupMA] = tpcVertexInfo[3];
+  values[AliDielectronVarManager::kTPCpileupMC] = tpcVertexInfo[4];
+  values[AliDielectronVarManager::kTPCpileupM]  = tpcVertexInfo[5];
 
 }
 
@@ -2822,16 +3507,32 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kYvPrimMCtruth]       = values[AliDielectronVarManager::kYvPrim];
   values[AliDielectronVarManager::kZvPrimMCtruth]       = values[AliDielectronVarManager::kZvPrim];
   // Fill AliMCEvent interface specific information
-  values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
-  values[AliDielectronVarManager::kNchJpsiExcl]   = AliDielectronHelper::GetNch(event, 1.6, kTRUE);
-  values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
-  values[AliDielectronVarManager::kNch05JpsiExcl] = AliDielectronHelper::GetNch(event, 0.5, kTRUE);
-  values[AliDielectronVarManager::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
-  values[AliDielectronVarManager::kNch10JpsiExcl] = AliDielectronHelper::GetNch(event, 1.0, kTRUE);
+  Double_t numbers[11] = {0};
 
-  values[AliDielectronVarManager::kNumberOfJPsis] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11);
-  values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 1);
-  values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 0);
+  AliDielectronHelper::CountMCtracks(event, numbers, 443, 11);
+  values[AliDielectronVarManager::kNch]           = numbers[0];
+  values[AliDielectronVarManager::kNchJpsiExcl]   = numbers[1];
+  values[AliDielectronVarManager::kNch05]         = numbers[2];
+  values[AliDielectronVarManager::kNch05JpsiExcl] = numbers[3];
+  values[AliDielectronVarManager::kNch10]         = numbers[4];
+  values[AliDielectronVarManager::kNch10JpsiExcl] = numbers[5];
+  values[AliDielectronVarManager::kNch09]         = numbers[6];
+  values[AliDielectronVarManager::kNch09JpsiExcl] = numbers[7];
+
+  values[AliDielectronVarManager::kNumberOfJPsis]        = numbers[8];
+  values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = numbers[9];
+  values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = numbers[10];
+
+  // values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
+  // values[AliDielectronVarManager::kNchJpsiExcl]   = AliDielectronHelper::GetNch(event, 1.6, kTRUE);
+  // values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
+  // values[AliDielectronVarManager::kNch05JpsiExcl] = AliDielectronHelper::GetNch(event, 0.5, kTRUE);
+  // values[AliDielectronVarManager::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
+  // values[AliDielectronVarManager::kNch10JpsiExcl] = AliDielectronHelper::GetNch(event, 1.0, kTRUE);
+  //
+  // values[AliDielectronVarManager::kNumberOfJPsis] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11);
+  // values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 1);
+  // values[AliDielectronVarManager::kNumberOfJPsisNPrompt] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 0);
 }
 
 inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *evplane, Double_t * const values)
@@ -2839,54 +3540,56 @@ inline void AliDielectronVarManager::FillVarTPCEventPlane(const AliEventplane *e
   //
   // Fill TPC event plane information after correction
   //
-  if(evplane) {
-    TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
-    TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
-    TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
-    if(qcorr) {
-      values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
-      values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
-      values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
-      values[AliDielectronVarManager::kTPCrpH2]  = TVector2::Phi_mpi_pi(qcorr->Phi())/2;
-      // detector effects
-      values[AliDielectronVarManager::kCosTPCrpH2]     = TMath::Cos( 2.* values[AliDielectronVarManager::kTPCrpH2] );
-      values[AliDielectronVarManager::kSinTPCrpH2]     = TMath::Sin( 2.* values[AliDielectronVarManager::kTPCrpH2] );
 
-      // correlations for event plane resoultion
-      values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-									 values[AliDielectronVarManager::kTPCrpH2]) );
-      values[AliDielectronVarManager::kv0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-									 values[AliDielectronVarManager::kTPCrpH2]) );
-      values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-									 values[AliDielectronVarManager::kv0CrpH2]) );
-      values[AliDielectronVarManager::kv0Av0C0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-									 values[AliDielectronVarManager::kv0C0rpH2]) );
-      values[AliDielectronVarManager::kv0Av0C3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
-									 values[AliDielectronVarManager::kv0C3rpH2]) );
-      values[AliDielectronVarManager::kv0Cv0A0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-									 values[AliDielectronVarManager::kv0A0rpH2]) );
-      values[AliDielectronVarManager::kv0Cv0A3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
-									 values[AliDielectronVarManager::kv0A3rpH2]) );
-      values[AliDielectronVarManager::kv0A0v0A3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0A0rpH2] -
-									 values[AliDielectronVarManager::kv0A3rpH2]) );
-      values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] -
-									 values[AliDielectronVarManager::kv0C3rpH2]) );
-    }
-    if(qcsub1 && qcsub2) {
-      values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
-      values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
-      values[AliDielectronVarManager::kTPCsub1rpH2]  = TVector2::Phi_mpi_pi(qcsub1->Phi())/2;
-
-      values[AliDielectronVarManager::kTPCsub2xH2]   = qcsub2->X();
-      values[AliDielectronVarManager::kTPCsub2yH2]   = qcsub2->Y();
-      values[AliDielectronVarManager::kTPCsub2rpH2]  = TVector2::Phi_mpi_pi(qcsub2->Phi())/2;
-
-      values[AliDielectronVarManager::kTPCsub12DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
-									 values[AliDielectronVarManager::kTPCsub2rpH2]) );
-      values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
-									    values[AliDielectronVarManager::kTPCsub2rpH2]) );
-    }
-  }
+  // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
+  // if(evplane) {
+  //   TVector2 *qcorr  = const_cast<AliEventplane *>(evplane)->GetQVector();  // This is the "corrected" Q-Vector
+  //   TVector2 *qcsub1 = const_cast<AliEventplane *>(evplane)->GetQsub1();
+  //   TVector2 *qcsub2 = const_cast<AliEventplane *>(evplane)->GetQsub2();
+  //   if(qcorr) {
+  //     values[AliDielectronVarManager::kTPCxH2]   = qcorr->X();
+  //     values[AliDielectronVarManager::kTPCyH2]   = qcorr->Y();
+  //     values[AliDielectronVarManager::kTPCmagH2] = qcorr->Mod();
+  //     values[AliDielectronVarManager::kTPCrpH2]  = TVector2::Phi_mpi_pi(qcorr->Phi())/2;
+  //     // detector effects
+  //     values[AliDielectronVarManager::kCosTPCrpH2]     = TMath::Cos( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+  //     values[AliDielectronVarManager::kSinTPCrpH2]     = TMath::Sin( 2.* values[AliDielectronVarManager::kTPCrpH2] );
+  //
+  //     // correlations for event plane resoultion
+  //     values[AliDielectronVarManager::kv0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 								 values[AliDielectronVarManager::kTPCrpH2]) );
+  //     values[AliDielectronVarManager::kv0CTPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 								 values[AliDielectronVarManager::kTPCrpH2]) );
+  //     values[AliDielectronVarManager::kv0Av0CDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 								 values[AliDielectronVarManager::kv0CrpH2]) );
+  //     values[AliDielectronVarManager::kv0Av0C0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 								 values[AliDielectronVarManager::kv0C0rpH2]) );
+  //     values[AliDielectronVarManager::kv0Av0C3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0ArpH2] -
+	// 								 values[AliDielectronVarManager::kv0C3rpH2]) );
+  //     values[AliDielectronVarManager::kv0Cv0A0DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 								 values[AliDielectronVarManager::kv0A0rpH2]) );
+  //     values[AliDielectronVarManager::kv0Cv0A3DiffH2]  = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0CrpH2] -
+	// 								 values[AliDielectronVarManager::kv0A3rpH2]) );
+  //     values[AliDielectronVarManager::kv0A0v0A3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0A0rpH2] -
+	// 								 values[AliDielectronVarManager::kv0A3rpH2]) );
+  //     values[AliDielectronVarManager::kv0C0v0C3DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kv0C0rpH2] -
+	// 								 values[AliDielectronVarManager::kv0C3rpH2]) );
+  //   }
+  //   if(qcsub1 && qcsub2) {
+  //     values[AliDielectronVarManager::kTPCsub1xH2]   = qcsub1->X();
+  //     values[AliDielectronVarManager::kTPCsub1yH2]   = qcsub1->Y();
+  //     values[AliDielectronVarManager::kTPCsub1rpH2]  = TVector2::Phi_mpi_pi(qcsub1->Phi())/2;
+  //
+  //     values[AliDielectronVarManager::kTPCsub2xH2]   = qcsub2->X();
+  //     values[AliDielectronVarManager::kTPCsub2yH2]   = qcsub2->Y();
+  //     values[AliDielectronVarManager::kTPCsub2rpH2]  = TVector2::Phi_mpi_pi(qcsub2->Phi())/2;
+  //
+  //     values[AliDielectronVarManager::kTPCsub12DiffH2] = TMath::Cos( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
+	// 								 values[AliDielectronVarManager::kTPCsub2rpH2]) );
+  //     values[AliDielectronVarManager::kTPCsub12DiffH2Sin] = TMath::Sin( 2.*(values[AliDielectronVarManager::kTPCsub1rpH2] -
+	// 								    values[AliDielectronVarManager::kTPCsub2rpH2]) );
+  //   }
+  // }
 }
 
 inline void AliDielectronVarManager::InitESDpid(Int_t type)
@@ -2964,11 +3667,11 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[6] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC13b", "LHC13c"};
+  const Char_t* periodNames[7] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l", "LHC13b", "LHC13c"};
   TFile* file=TFile::Open(filename);
   if(!file) return;
 
-  for(Int_t ip=0; ip<6; ++ip) {
+  for(Int_t ip=0; ip<7; ++ip) {
     for(Int_t ie=0; ie<9; ++ie) {
       fgMultEstimatorAvg[ip][ie] = (TProfile*)(file->Get(Form("%s_%s",estimatorNames[ie],periodNames[ip]))->Clone(Form("%s_%s_clone",estimatorNames[ie],periodNames[ip])));
     }
@@ -2986,13 +3689,13 @@ inline void AliDielectronVarManager::InitEstimatorObjArrayAvg(const TObjArray* a
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16",
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+  const Char_t* periodNames[5] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC16l"};
 
   TString key;
 
   Int_t ieTotal = 9;
 
-  for(Int_t ip=0; ip<4; ++ip) {
+  for(Int_t ip=0; ip<5; ++ip) {
     for(Int_t ie=0; ie<ieTotal; ++ie) {
       key = Form("%s_%s",estimatorNames[ie],periodNames[ip]);
       if(array->FindObject(key.Data())){
@@ -3107,6 +3810,90 @@ inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
   return -1.;
 }
 
+inline void AliDielectronVarManager::InitQnCalibrationHistograms(Int_t runNo) {
+  //
+  // Initialize the VZERO/TPC Qn calibration histograms
+  //
+
+  if(!gGrid){
+    printf("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+
+  printf("reading ... %s/000%d/dstAnalysisHistograms.root\n", fgQnCalibrationFilePath.Data(), runNo);
+  TFile *file = TFile::Open(Form("%s/000%d/dstAnalysisHistograms.root", fgQnCalibrationFilePath.Data(), runNo),"READ");
+  if (!file){
+    printf("calibration file %s/000%d/dstAnalysisHistograms.root does not exist! do nothing.\n", fgVZEROCalibrationFile.Data(), runNo);
+    return;
+  }
+  if (!file->IsOpen()){
+    printf("calibration file %s/000%d/dstAnalysisHistograms.root can not be opened! do nothing.\n", fgVZEROCalibrationFile.Data(), runNo);
+    return;
+  }
+
+  if(fgDoQnV0GainEqualization){ //gain equalization of V0
+    //initialize only once
+    //if(fgVZEROCalib[0]) return;
+
+    for(Int_t i=0; i<64; ++i){
+      if(fgVZEROCalib[i]) {
+        delete fgVZEROCalib[i];
+        fgVZEROCalib[i] = 0x0;
+      }
+    }
+
+    for(Int_t i=0; i<64; ++i){
+      fgVZEROCalib[i] = (TProfile2D*)(file->Get(Form("VZEROmult_ch%d_VtxCent_prof", i))->Clone(Form("run%d_ch%d", runNo, i)));
+      if (fgVZEROCalib[i]) fgVZEROCalib[i]->SetDirectory(0x0);
+      //if (fgVZEROCalib[i]) printf("%s is found for V0 gain equalization\n",fgVZEROCalib[i]->GetName());
+    }
+
+  }
+
+  if(fgDoQnV0Recentering){ //recentering of V0
+    //initialize only once
+    //if(fgVZERORecentering[0][0]) return;
+
+    for(Int_t i=0; i<2; ++i){
+      for(Int_t j=0; j<2; ++j){
+        if(fgVZERORecentering[i][j]) {
+          delete fgVZERORecentering[i][j];
+          fgVZERORecentering[i][j] = 0x0;
+        }
+      }
+    }
+
+    fgVZERORecentering[0][0] = (TProfile2D*)(file->Get(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", runNo)));
+    fgVZERORecentering[0][1] = (TProfile2D*)(file->Get(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", runNo)));
+    fgVZERORecentering[1][0] = (TProfile2D*)(file->Get(Form("QvecX_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROC", runNo)));
+    fgVZERORecentering[1][1] = (TProfile2D*)(file->Get(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", runNo)));
+
+    if (fgVZERORecentering[0][0]) fgVZERORecentering[0][0]->SetDirectory(0x0);
+    if (fgVZERORecentering[0][1]) fgVZERORecentering[0][1]->SetDirectory(0x0);
+    if (fgVZERORecentering[1][0]) fgVZERORecentering[1][0]->SetDirectory(0x0);
+    if (fgVZERORecentering[1][1]) fgVZERORecentering[1][1]->SetDirectory(0x0);
+    //if (fgVZERORecentering[0][0]) printf("%s is found for recentering of V0A X\n",fgVZERORecentering[0][0]->GetName());
+    //if (fgVZERORecentering[0][1]) printf("%s is found for recentering of V0A Y\n",fgVZERORecentering[0][1]->GetName());
+    //if (fgVZERORecentering[1][0]) printf("%s is found for recentering of V0C X\n",fgVZERORecentering[1][0]->GetName());
+    //if (fgVZERORecentering[1][1]) printf("%s is found for recentering of V0C Y\n",fgVZERORecentering[1][1]->GetName());
+  }
+  if(fgDoQnTPCRecentering){
+    for(Int_t i=0; i<2; ++i){
+      if(fgTPCRecentering[i]) {
+        delete fgTPCRecentering[i];
+        fgTPCRecentering[i] = 0x0;
+      }
+    }
+
+    fgTPCRecentering[0] = (TProfile2D*)(file->Get(Form("QvecX_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecX_TPC", runNo)));
+    fgTPCRecentering[1] = (TProfile2D*)(file->Get(Form("QvecY_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecY_TPC", runNo)));
+    if(fgTPCRecentering[0]) fgTPCRecentering[0]->SetDirectory(0x0);
+    if(fgTPCRecentering[1]) fgTPCRecentering[1]->SetDirectory(0x0);
+  }
+
+  file->Close();
+
+}
 
 inline void AliDielectronVarManager::InitVZEROCalibrationHistograms(Int_t runNo) {
   //
@@ -3249,13 +4036,11 @@ inline Double_t AliDielectronVarManager::GetTRDpidEfficiency(Int_t runNo, Double
 
 inline void AliDielectronVarManager::SetEvent(AliVEvent * const ev)
 {
-
   fgEvent = ev;
   if (fgKFVertex) delete fgKFVertex;
   fgKFVertex=0x0;
   if (!ev) return;
   if (ev->GetPrimaryVertex()) fgKFVertex=new AliKFVertex(*ev->GetPrimaryVertex());
-
   for (Int_t i=0; i<AliDielectronVarManager::kNMaxValues;++i) fgData[i]=0.;
   AliDielectronVarManager::Fill(fgEvent, fgData);
 }
@@ -3333,36 +4118,19 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
 
   // get centrality and vertex for this event
   Double_t centralitySPD = -1; Double_t vtxZ = -999.;
-  if(event->IsA() == AliESDEvent::Class()) {
-    const AliESDEvent* esdEv = static_cast<const AliESDEvent*>(event);
-    //   }
-   AliCentrality *esdCentrality = const_cast<AliESDEvent*>(esdEv)->GetCentrality();
-    if(esdCentrality) centralitySPD = esdCentrality->GetCentralityPercentile("CL1");
-    //2015 cent
-    // AliMultSelection *MultSelection = (AliMultSelection*)const_cast<AliESDEvent*>(esdEv)->FindListObject("MultSelection");
-    //if(MultSelection){
-    // centralitySPD = MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    // }
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
   }
-  if(event->IsA() == AliAODEvent::Class()) {
-    const AliAODEvent* aodEv = static_cast<const AliAODEvent*>(event);
-    AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEv->GetHeader());
-    assert(header&&"Not a standard AOD");
-    AliCentrality *aodCentrality = header->GetCentralityP();
-    // Run1 aodCentrality -- Run2 multSelection
-    if(AliMultSelection *multSelection = (AliMultSelection*) aodEv->FindListObject("MultSelection")){
-      centralitySPD = multSelection->GetMultiplicityPercentile("CL1",kFALSE);
-    }
-    else{
-      if(aodCentrality) centralitySPD = aodCentrality->GetCentralityPercentile("CL1");
-      else printf("GetVzeroRP: No centrality estimation avaible!\n");
-    }
+  else{
+    centralitySPD = -1;
+    //printf("GetVzeroRP: No centrality estimation avaible!\n");
   }
+
   const AliVVertex *primVtx = event->GetPrimaryVertex();
   if(!primVtx) return;
   vtxZ = primVtx->GetZ();
   if(TMath::Abs(vtxZ)>10.) return;
-  if(centralitySPD<0. || centralitySPD>80.) return;
+  if(centralitySPD < 0. || centralitySPD > 90.) return;
 
   Int_t binCent = -1; Int_t binVtx = -1;
   if(fgVZEROCalib[0]) {
@@ -3371,6 +4139,7 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   }
   AliVVZERO* vzero = event->GetVZEROData();
   Double_t average = 0.0;
+  Double_t refMult = 0.0;
   for(Int_t iChannel=0; iChannel<64; ++iChannel) {
     if(iChannel<32 && sideOption==0) continue;
     if(iChannel>=32 && sideOption==1) continue;
@@ -3378,14 +4147,23 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     mult = vzero->GetMultiplicity(iChannel);
     if(fgVZEROCalib[iChannel])
       average = fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
-    if(average>1.0e-10 && mult>0.5)
-      mult /= average;
+
+    Int_t refCh = iChannel-(iChannel%8);
+    if(iChannel==refCh && fgVZEROCalib[iChannel])
+      refMult=fgVZEROCalib[iChannel]->GetBinContent(binVtx, binCent);
+
+    if(average>1.0e-6 && mult>0.5)
+      //mult /= average;
+      mult = mult / average * refMult;
     else
-      mult = 0.0;
+      //mult = 0.0;
+      mult = mult / 1.0 * refMult;
     //  2nd harmonic
     qvec[0] += mult*(2.0*TMath::Power(kX[phi],2.0)-1);
     qvec[1] += mult*(2.0*kX[phi]*kY[phi]);
   }    // end loop over channels
+
+  //printf("V0: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
 
   // do recentering
   if(fgVZERORecentering[0][0]) {
@@ -3393,25 +4171,171 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
     Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
     binCentRecenter = fgVZERORecentering[0][0]->GetXaxis()->FindBin(centralitySPD);
     binVtxRecenter = fgVZERORecentering[0][0]->GetYaxis()->FindBin(vtxZ);
+
+    Double_t widthEqV0_X = 1.0;
+    Double_t widthEqV0_Y = 1.0;
+
     if(sideOption==0) {  // side A
       qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      widthEqV0_X = fgVZERORecentering[0][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[0][1]->GetBinError(binCentRecenter, binVtxRecenter);
+
+      //printf("A : width Q2x = %f , Q2y = %f\n",widthEqV0_X,widthEqV0_Y);
+
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
     }
     if(sideOption==1) {  // side C
       qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      widthEqV0_X = fgVZERORecentering[1][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[1][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      //printf("C : width Q2x = %f , Q2y = %f\n",widthEqV0_X,widthEqV0_Y);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
     }
     if(sideOption==2) {  // side A and C together
       qvec[0] -= fgVZERORecentering[0][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[0] -= fgVZERORecentering[1][0]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[0][1]->GetBinContent(binCentRecenter, binVtxRecenter);
       qvec[1] -= fgVZERORecentering[1][1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+      //for A side
+      widthEqV0_X = fgVZERORecentering[0][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[0][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
+
+      //for C side
+      widthEqV0_X = fgVZERORecentering[1][0]->GetBinError(binCentRecenter, binVtxRecenter);
+      widthEqV0_Y = fgVZERORecentering[1][1]->GetBinError(binCentRecenter, binVtxRecenter);
+      if(widthEqV0_X > 0.0) qvec[0] /= widthEqV0_X;
+      if(widthEqV0_Y > 0.0) qvec[1] /= widthEqV0_Y;
+
     }
+  }
+
+  //printf("after gain eq. and recentering Q2x = %f , Q2y = %f\n",qvec[0],qvec[1]);
+
+  // calculate the reaction plane
+  if(TMath::Abs(qvec[0])>1.0e-10)
+    qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
+}
+inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption) {
+  Float_t DCAxy = 999.;
+  Float_t DCAz  = 999.;
+  const Double_t absWeight = 1.0;
+  Double_t x = 1.0;
+  Double_t y = 1.0;
+  Double_t d0z0[2] = {-999.0,-999.0};
+  Double_t dcaRes[3] = {-999.,-999.,-999.};
+
+  const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(event);
+  const AliAODEvent *aod = dynamic_cast<const AliAODEvent*>(event);
+
+  const Int_t Ntrack = event->GetNumberOfTracks();
+
+  if(esd){
+    for(Int_t i=0;i<Ntrack;i++){
+      AliESDtrack *track = (AliESDtrack*)esd->GetTrack(i);
+
+      if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
+      if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
+      if(track->GetTPCNcls() < 70) continue;
+      if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
+      if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
+
+      DCAxy = 999.; DCAz  = 999.;
+      track->GetImpactParameters(DCAxy,DCAz);
+      if(TMath::Abs(DCAxy) > 1.0) continue;
+      if(TMath::Abs(DCAz)  > 3.0) continue;
+
+      x = TMath::Cos(track->Phi());
+      y = TMath::Sin(track->Phi());
+      //  2nd harmonic
+      qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
+      qvec[1] += absWeight*(2.0*x*y);
+
+    }//end of track loop
+  }//end of ESD event
+  else if(aod){
+    for(Int_t i=0;i<Ntrack;i++){
+      AliAODTrack *track = (AliAODTrack*)aod->GetTrack(i);
+
+      if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
+      if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
+      if(track->GetTPCNcls() < 70) continue;
+      if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
+      if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
+
+      //DCAxy = 999.; DCAz  = 999.;
+      //track->GetImpactParameters(DCAxy,DCAz);
+      //if(TMath::Abs(DCAxy) > 1.0) continue;
+      //if(TMath::Abs(DCAz)  > 3.0) continue;
+
+      d0z0[0] = -999.0; d0z0[1] = -999.0;
+      dcaRes[0] = -999.; dcaRes[1] = -999.; dcaRes[2] = -999.;
+      GetDCA(track, d0z0, dcaRes);
+
+      //printf("DCAxy = %f , DCAz = %f , d0z0[0] = %f , d0z0[1] = %f\n",DCAxy,DCAz,d0z0[0],d0z0[1]);
+
+      if(TMath::Abs(d0z0[0]) > 1.0) continue;
+      if(TMath::Abs(d0z0[1]) > 3.0) continue;
+
+      x = TMath::Cos(track->Phi());
+      y = TMath::Sin(track->Phi());
+      //  2nd harmonic
+      qvec[0] += absWeight*(2.0*TMath::Power(x,2.0)-1);
+      qvec[1] += absWeight*(2.0*x*y);
+
+    }//end of track loop
+  }//end of AOD event
+
+  //printf("TPC: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
+
+  // get centrality and vertex for this event
+  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  }
+  else{
+    centralityV0M = -1;
+    //printf("GetTPCRP: No centrality estimation avaible!\n");
+  }
+
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
+  if(!primVtx) return;
+  vtxZ = primVtx->GetZ();
+  if(TMath::Abs(vtxZ)>10.) return;
+  if(centralityV0M < 0. || centralityV0M > 90.) return;
+
+  if(fgTPCRecentering[0]) {
+    //     printf("TPC: %p\n",fgTPCRecentering[0]);
+    Int_t binCentRecenter = -1; Int_t binVtxRecenter = -1;
+    binCentRecenter = fgTPCRecentering[0]->GetXaxis()->FindBin(centralityV0M);
+    binVtxRecenter  = fgTPCRecentering[0]->GetYaxis()->FindBin(vtxZ);
+
+    Double_t widthEqTPC_X = 1.0;
+    Double_t widthEqTPC_Y = 1.0;
+
+    qvec[0] -= fgTPCRecentering[0]->GetBinContent(binCentRecenter, binVtxRecenter);
+    qvec[1] -= fgTPCRecentering[1]->GetBinContent(binCentRecenter, binVtxRecenter);
+
+    //widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
+    //widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
+
+    //if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
+    //if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+
   }
 
   // calculate the reaction plane
   if(TMath::Abs(qvec[0])>1.0e-10)
     qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
+
 }
 inline void AliDielectronVarManager::GetZDCRP(const AliVEvent* event, Double_t qvec[][2]) {
 
@@ -3551,7 +4475,7 @@ inline void AliDielectronVarManager::FillValues(const TParticle *particle, Doubl
 
 //________________________________________________________________
 inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t * const values){
-  Bool_t bTPCqVector(kFALSE), bTPCaSideqVector(kFALSE), bTPCcSideqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bV0qVector(kFALSE),bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE);
+  Bool_t bTPCqVector(kFALSE), bTPCaSideqVector(kFALSE), bTPCcSideqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bV0qVector(kFALSE),bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE), bZDCAqVector(kFALSE), bZDCCqVector(kFALSE);
   for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
     values[i] = -999.;
   }
@@ -3564,8 +4488,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bTPCqVector = kTRUE;
     qVectorTPC->Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
     values[AliDielectronVarManager::kQnTPCrpH2] = TVector2::Phi_mpi_pi(qVectorTPC->Phi())/2;
-    values[AliDielectronVarManager::kQnTPCxH2]  = qVecQnFrameworkTPC->Qx(2);
-    values[AliDielectronVarManager::kQnTPCyH2]  = qVecQnFrameworkTPC->Qy(2);
+    // values[AliDielectronVarManager::kQnTPCxH2]  = qVecQnFrameworkTPC->Qx(2);
+    // values[AliDielectronVarManager::kQnTPCyH2]  = qVecQnFrameworkTPC->Qy(2);
   }
   delete qVectorTPC;
 
@@ -3577,8 +4501,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bTPCaSideqVector = kTRUE;
     qVectorTPCaSide->Set(qVecQnFrameworkTPCaSide->Qx(2),qVecQnFrameworkTPCaSide->Qy(2));
     values[AliDielectronVarManager::kQnTPCaSiderpH2] = TVector2::Phi_mpi_pi(qVectorTPCaSide->Phi())/2;
-    values[AliDielectronVarManager::kQnTPCaSidexH2]  = qVecQnFrameworkTPCaSide->Qx(2);
-    values[AliDielectronVarManager::kQnTPCaSideyH2]  = qVecQnFrameworkTPCaSide->Qy(2);
+    // values[AliDielectronVarManager::kQnTPCaSidexH2]  = qVecQnFrameworkTPCaSide->Qx(2);
+    // values[AliDielectronVarManager::kQnTPCaSideyH2]  = qVecQnFrameworkTPCaSide->Qy(2);
   }
   delete qVectorTPCaSide;
 
@@ -3590,8 +4514,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bTPCcSideqVector = kTRUE;
     qVectorTPCcSide->Set(qVecQnFrameworkTPCcSide->Qx(2),qVecQnFrameworkTPCcSide->Qy(2));
     values[AliDielectronVarManager::kQnTPCcSiderpH2] = TVector2::Phi_mpi_pi(qVectorTPCcSide->Phi())/2;
-    values[AliDielectronVarManager::kQnTPCcSidexH2]  = qVecQnFrameworkTPCcSide->Qx(2);
-    values[AliDielectronVarManager::kQnTPCcSideyH2]  = qVecQnFrameworkTPCcSide->Qy(2);
+    // values[AliDielectronVarManager::kQnTPCcSidexH2]  = qVecQnFrameworkTPCcSide->Qx(2);
+    // values[AliDielectronVarManager::kQnTPCcSideyH2]  = qVecQnFrameworkTPCcSide->Qy(2);
   }
   delete qVectorTPCcSide;
 
@@ -3603,8 +4527,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bV0AqVector = kTRUE;
     qVectorV0A->Set(qVecQnFrameworkV0A->Qx(2),qVecQnFrameworkV0A->Qy(2));
     values[AliDielectronVarManager::kQnV0ArpH2] = TVector2::Phi_mpi_pi(qVectorV0A->Phi())/2;
-    values[AliDielectronVarManager::kQnV0AxH2]  = qVecQnFrameworkV0A->Qx(2);
-    values[AliDielectronVarManager::kQnV0AyH2]  = qVecQnFrameworkV0A->Qy(2);
+    // values[AliDielectronVarManager::kQnV0AxH2]  = qVecQnFrameworkV0A->Qx(2);
+    // values[AliDielectronVarManager::kQnV0AyH2]  = qVecQnFrameworkV0A->Qy(2);
   }
   delete qVectorV0A;
 
@@ -3616,8 +4540,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bV0CqVector = kTRUE;
     qVectorV0C->Set(qVecQnFrameworkV0C->Qx(2),qVecQnFrameworkV0C->Qy(2));
     values[AliDielectronVarManager::kQnV0CrpH2] = TVector2::Phi_mpi_pi(qVectorV0C->Phi())/2;
-    values[AliDielectronVarManager::kQnV0CxH2]  = qVecQnFrameworkV0C->Qx(2);
-    values[AliDielectronVarManager::kQnV0CyH2]  = qVecQnFrameworkV0C->Qy(2);
+    // values[AliDielectronVarManager::kQnV0CxH2]  = qVecQnFrameworkV0C->Qx(2);
+    // values[AliDielectronVarManager::kQnV0CyH2]  = qVecQnFrameworkV0C->Qy(2);
   }
   delete qVectorV0C;
 
@@ -3629,8 +4553,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bV0qVector = kTRUE;
     qVectorV0->Set(qVecQnFrameworkV0->Qx(2),qVecQnFrameworkV0->Qy(2));
     values[AliDielectronVarManager::kQnV0rpH2] = TVector2::Phi_mpi_pi(qVectorV0->Phi())/2;
-    values[AliDielectronVarManager::kQnV0xH2]  = qVecQnFrameworkV0->Qx(2);
-    values[AliDielectronVarManager::kQnV0yH2]  = qVecQnFrameworkV0->Qy(2);
+    // values[AliDielectronVarManager::kQnV0xH2]  = qVecQnFrameworkV0->Qx(2);
+    // values[AliDielectronVarManager::kQnV0yH2]  = qVecQnFrameworkV0->Qy(2);
   }
   delete qVectorV0;
 
@@ -3642,8 +4566,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bSPDqVector = kTRUE;
     qVectorSPD->Set(qVecQnFrameworkSPD->Qx(2),qVecQnFrameworkSPD->Qy(2));
     values[AliDielectronVarManager::AliDielectronVarManager::kQnSPDrpH2] = TVector2::Phi_mpi_pi(qVectorSPD->Phi())/2;
-    values[AliDielectronVarManager::kQnSPDxH2]  = qVecQnFrameworkSPD->Qx(2);
-    values[AliDielectronVarManager::kQnSPDyH2]  = qVecQnFrameworkSPD->Qy(2);
+    // values[AliDielectronVarManager::kQnSPDxH2]  = qVecQnFrameworkSPD->Qx(2);
+    // values[AliDielectronVarManager::kQnSPDyH2]  = qVecQnFrameworkSPD->Qy(2);
   }
   delete qVectorSPD;
 
@@ -3655,8 +4579,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bFMDAqVector = kTRUE;
     qVectorFMDA->Set(qVecQnFrameworkFMDA->Qx(2),qVecQnFrameworkFMDA->Qy(2));
     values[AliDielectronVarManager::kQnFMDArpH2] = TVector2::Phi_mpi_pi(qVectorFMDA->Phi())/2;
-    values[AliDielectronVarManager::kQnFMDAxH2]  = qVecQnFrameworkFMDA->Qx(2);
-    values[AliDielectronVarManager::kQnFMDAyH2]  = qVecQnFrameworkFMDA->Qy(2);
+    // values[AliDielectronVarManager::kQnFMDAxH2]  = qVecQnFrameworkFMDA->Qx(2);
+    // values[AliDielectronVarManager::kQnFMDAyH2]  = qVecQnFrameworkFMDA->Qy(2);
   }
   delete qVectorFMDA;
 
@@ -3668,47 +4592,69 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     bFMDCqVector = kTRUE;
     qVectorFMDC->Set(qVecQnFrameworkFMDC->Qx(2),qVecQnFrameworkFMDC->Qy(2));
     values[AliDielectronVarManager::kQnFMDCrpH2] = TVector2::Phi_mpi_pi(qVectorFMDC->Phi())/2;
-    values[AliDielectronVarManager::kQnFMDCxH2]  = qVecQnFrameworkFMDC->Qx(2);
-    values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
+    // values[AliDielectronVarManager::kQnFMDCxH2]  = qVecQnFrameworkFMDC->Qx(2);
+    // values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
   }
   delete qVectorFMDC;
+  
+  // ZDCA Eventplane q-Vector
+  qnListDetector = "ZDCA" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkZDCA = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorZDCA = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkZDCA != NULL){
+    bZDCAqVector = kTRUE;
+    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(1),qVecQnFrameworkZDCA->Qy(1));
+    values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi());
+  }
+  delete qVectorZDCA;
+
+  // ZDCC Eventplane q-Vector
+  qnListDetector = "ZDCC" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkZDCC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorZDCC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkZDCC != NULL){
+    bZDCCqVector = kTRUE;
+    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(1),qVecQnFrameworkZDCC->Qy(1));
+    values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi());
+  }
+  delete qVectorZDCC;
 
   // TPC Diff
   if(bTPCqVector){
     if(bV0AqVector){
       values[AliDielectronVarManager::kQnDiffTPC_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
-      values[kQnCorrTPCx_V0Ax] = values[kQnTPCxH2] * values[kQnV0AxH2];
-      values[kQnCorrTPCx_V0Ay] = values[kQnTPCxH2] * values[kQnV0AyH2];
-      values[kQnCorrTPCy_V0Ax] = values[kQnTPCyH2] * values[kQnV0AxH2];
-      values[kQnCorrTPCy_V0Ay] = values[kQnTPCyH2] * values[kQnV0AyH2];
+      // values[kQnCorrTPCx_V0Ax] = values[kQnTPCxH2] * values[kQnV0AxH2];
+      // values[kQnCorrTPCx_V0Ay] = values[kQnTPCxH2] * values[kQnV0AyH2];
+      // values[kQnCorrTPCy_V0Ax] = values[kQnTPCyH2] * values[kQnV0AxH2];
+      // values[kQnCorrTPCy_V0Ay] = values[kQnTPCyH2] * values[kQnV0AyH2];
     }
     if(bV0CqVector){
       values[AliDielectronVarManager::kQnDiffTPC_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
-      values[kQnCorrTPCx_V0Cx] = values[kQnTPCxH2] * values[kQnV0CxH2];
-      values[kQnCorrTPCx_V0Cy] = values[kQnTPCxH2] * values[kQnV0CyH2];
-      values[kQnCorrTPCy_V0Cx] = values[kQnTPCyH2] * values[kQnV0CxH2];
-      values[kQnCorrTPCy_V0Cy] = values[kQnTPCyH2] * values[kQnV0CyH2];
+      // values[kQnCorrTPCx_V0Cx] = values[kQnTPCxH2] * values[kQnV0CxH2];
+      // values[kQnCorrTPCx_V0Cy] = values[kQnTPCxH2] * values[kQnV0CyH2];
+      // values[kQnCorrTPCy_V0Cx] = values[kQnTPCyH2] * values[kQnV0CxH2];
+      // values[kQnCorrTPCy_V0Cy] = values[kQnTPCyH2] * values[kQnV0CyH2];
     }
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffTPC_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnCorrTPCx_SPDx] = values[kQnTPCxH2] * values[kQnSPDxH2];
-      values[kQnCorrTPCx_SPDy] = values[kQnTPCxH2] * values[kQnSPDyH2];
-      values[kQnCorrTPCy_SPDx] = values[kQnTPCyH2] * values[kQnSPDxH2];
-      values[kQnCorrTPCy_SPDy] = values[kQnTPCyH2] * values[kQnSPDyH2];
+      // values[kQnCorrTPCx_SPDx] = values[kQnTPCxH2] * values[kQnSPDxH2];
+      // values[kQnCorrTPCx_SPDy] = values[kQnTPCxH2] * values[kQnSPDyH2];
+      // values[kQnCorrTPCy_SPDx] = values[kQnTPCyH2] * values[kQnSPDxH2];
+      // values[kQnCorrTPCy_SPDy] = values[kQnTPCyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffTPC_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnCorrTPCx_FMDAx] = values[kQnTPCxH2] * values[kQnFMDAxH2];
-      values[kQnCorrTPCx_FMDAy] = values[kQnTPCxH2] * values[kQnFMDAyH2];
-      values[kQnCorrTPCy_FMDAx] = values[kQnTPCyH2] * values[kQnFMDAxH2];
-      values[kQnCorrTPCy_FMDAy] = values[kQnTPCyH2] * values[kQnFMDAyH2];
+      // values[kQnCorrTPCx_FMDAx] = values[kQnTPCxH2] * values[kQnFMDAxH2];
+      // values[kQnCorrTPCx_FMDAy] = values[kQnTPCxH2] * values[kQnFMDAyH2];
+      // values[kQnCorrTPCy_FMDAx] = values[kQnTPCyH2] * values[kQnFMDAxH2];
+      // values[kQnCorrTPCy_FMDAy] = values[kQnTPCyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnCorrTPCx_FMDCx] = values[kQnTPCxH2] * values[kQnFMDCxH2];
-      values[kQnCorrTPCx_FMDCy] = values[kQnTPCxH2] * values[kQnFMDCyH2];
-      values[kQnCorrTPCy_FMDCx] = values[kQnTPCyH2] * values[kQnFMDCxH2];
-      values[kQnCorrTPCy_FMDCy] = values[kQnTPCyH2] * values[kQnFMDCyH2];
+      // values[kQnCorrTPCx_FMDCx] = values[kQnTPCxH2] * values[kQnFMDCxH2];
+      // values[kQnCorrTPCx_FMDCy] = values[kQnTPCxH2] * values[kQnFMDCyH2];
+      // values[kQnCorrTPCy_FMDCx] = values[kQnTPCyH2] * values[kQnFMDCxH2];
+      // values[kQnCorrTPCy_FMDCy] = values[kQnTPCyH2] * values[kQnFMDCyH2];
     }
   }
 
@@ -3745,55 +4691,55 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(bV0AqVector){
     if(bV0CqVector){
       values[AliDielectronVarManager::kQnDiffV0A_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
-      values[kQnCorrV0Ax_V0Cx] = values[kQnV0AxH2] * values[kQnV0CxH2];
-      values[kQnCorrV0Ax_V0Cy] = values[kQnV0AxH2] * values[kQnV0CyH2];
-      values[kQnCorrV0Ay_V0Cx] = values[kQnV0AyH2] * values[kQnV0CxH2];
-      values[kQnCorrV0Ay_V0Cy] = values[kQnV0AyH2] * values[kQnV0CyH2];
+      // values[kQnCorrV0Ax_V0Cx] = values[kQnV0AxH2] * values[kQnV0CxH2];
+      // values[kQnCorrV0Ax_V0Cy] = values[kQnV0AxH2] * values[kQnV0CyH2];
+      // values[kQnCorrV0Ay_V0Cx] = values[kQnV0AyH2] * values[kQnV0CxH2];
+      // values[kQnCorrV0Ay_V0Cy] = values[kQnV0AyH2] * values[kQnV0CyH2];
     }
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffV0A_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnCorrV0Ax_SPDx] = values[kQnV0AxH2] * values[kQnSPDxH2];
-      values[kQnCorrV0Ax_SPDy] = values[kQnV0AxH2] * values[kQnSPDyH2];
-      values[kQnCorrV0Ay_SPDx] = values[kQnV0AyH2] * values[kQnSPDxH2];
-      values[kQnCorrV0Ay_SPDy] = values[kQnV0AyH2] * values[kQnSPDyH2];
+      // values[kQnCorrV0Ax_SPDx] = values[kQnV0AxH2] * values[kQnSPDxH2];
+      // values[kQnCorrV0Ax_SPDy] = values[kQnV0AxH2] * values[kQnSPDyH2];
+      // values[kQnCorrV0Ay_SPDx] = values[kQnV0AyH2] * values[kQnSPDxH2];
+      // values[kQnCorrV0Ay_SPDy] = values[kQnV0AyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffV0A_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnCorrV0Ax_FMDAx] = values[kQnV0AxH2] * values[kQnFMDAxH2];
-      values[kQnCorrV0Ax_FMDAy] = values[kQnV0AxH2] * values[kQnFMDAyH2];
-      values[kQnCorrV0Ay_FMDAx] = values[kQnV0AyH2] * values[kQnFMDAxH2];
-      values[kQnCorrV0Ay_FMDAy] = values[kQnV0AyH2] * values[kQnFMDAyH2];
+      // values[kQnCorrV0Ax_FMDAx] = values[kQnV0AxH2] * values[kQnFMDAxH2];
+      // values[kQnCorrV0Ax_FMDAy] = values[kQnV0AxH2] * values[kQnFMDAyH2];
+      // values[kQnCorrV0Ay_FMDAx] = values[kQnV0AyH2] * values[kQnFMDAxH2];
+      // values[kQnCorrV0Ay_FMDAy] = values[kQnV0AyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffV0A_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnCorrV0Ax_FMDCx] = values[kQnV0AxH2] * values[kQnFMDCxH2];
-      values[kQnCorrV0Ax_FMDCy] = values[kQnV0AxH2] * values[kQnFMDCyH2];
-      values[kQnCorrV0Ay_FMDCx] = values[kQnV0AyH2] * values[kQnFMDCxH2];
-      values[kQnCorrV0Ay_FMDCy] = values[kQnV0AyH2] * values[kQnFMDCyH2];
+      // values[kQnCorrV0Ax_FMDCx] = values[kQnV0AxH2] * values[kQnFMDCxH2];
+      // values[kQnCorrV0Ax_FMDCy] = values[kQnV0AxH2] * values[kQnFMDCyH2];
+      // values[kQnCorrV0Ay_FMDCx] = values[kQnV0AyH2] * values[kQnFMDCxH2];
+      // values[kQnCorrV0Ay_FMDCy] = values[kQnV0AyH2] * values[kQnFMDCyH2];
     }
   }
   // V0C Diff
   if(bV0CqVector){
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffV0C_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnCorrV0Cx_SPDx] = values[kQnV0CxH2] * values[kQnSPDxH2];
-      values[kQnCorrV0Cx_SPDy] = values[kQnV0CxH2] * values[kQnSPDyH2];
-      values[kQnCorrV0Cy_SPDx] = values[kQnV0CyH2] * values[kQnSPDxH2];
-      values[kQnCorrV0Cy_SPDy] = values[kQnV0CyH2] * values[kQnSPDyH2];
+      // values[kQnCorrV0Cx_SPDx] = values[kQnV0CxH2] * values[kQnSPDxH2];
+      // values[kQnCorrV0Cx_SPDy] = values[kQnV0CxH2] * values[kQnSPDyH2];
+      // values[kQnCorrV0Cy_SPDx] = values[kQnV0CyH2] * values[kQnSPDxH2];
+      // values[kQnCorrV0Cy_SPDy] = values[kQnV0CyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffV0C_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnCorrV0Cx_FMDAx] = values[kQnV0CxH2] * values[kQnFMDAxH2];
-      values[kQnCorrV0Cx_FMDAy] = values[kQnV0CxH2] * values[kQnFMDAyH2];
-      values[kQnCorrV0Cy_FMDAx] = values[kQnV0CyH2] * values[kQnFMDAxH2];
-      values[kQnCorrV0Cy_FMDAy] = values[kQnV0CyH2] * values[kQnFMDAyH2];
+      // values[kQnCorrV0Cx_FMDAx] = values[kQnV0CxH2] * values[kQnFMDAxH2];
+      // values[kQnCorrV0Cx_FMDAy] = values[kQnV0CxH2] * values[kQnFMDAyH2];
+      // values[kQnCorrV0Cy_FMDAx] = values[kQnV0CyH2] * values[kQnFMDAxH2];
+      // values[kQnCorrV0Cy_FMDAy] = values[kQnV0CyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffV0C_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnCorrV0Cx_FMDCx] = values[kQnV0CxH2] * values[kQnFMDCxH2];
-      values[kQnCorrV0Cx_FMDCy] = values[kQnV0CxH2] * values[kQnFMDCyH2];
-      values[kQnCorrV0Cy_FMDCx] = values[kQnV0CyH2] * values[kQnFMDCxH2];
-      values[kQnCorrV0Cy_FMDCy] = values[kQnV0CyH2] * values[kQnFMDCyH2];
+      // values[kQnCorrV0Cx_FMDCx] = values[kQnV0CxH2] * values[kQnFMDCxH2];
+      // values[kQnCorrV0Cx_FMDCy] = values[kQnV0CxH2] * values[kQnFMDCyH2];
+      // values[kQnCorrV0Cy_FMDCx] = values[kQnV0CyH2] * values[kQnFMDCxH2];
+      // values[kQnCorrV0Cy_FMDCy] = values[kQnV0CyH2] * values[kQnFMDCyH2];
     }
   }
 
@@ -3801,28 +4747,77 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(bSPDqVector){
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffSPD_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnCorrSPDx_FMDAx] = values[kQnSPDxH2] * values[kQnFMDAxH2];
-      values[kQnCorrSPDx_FMDAy] = values[kQnSPDxH2] * values[kQnFMDAyH2];
-      values[kQnCorrSPDy_FMDAx] = values[kQnSPDyH2] * values[kQnFMDAxH2];
-      values[kQnCorrSPDy_FMDAy] = values[kQnSPDyH2] * values[kQnFMDAyH2];
+      // values[kQnCorrSPDx_FMDAx] = values[kQnSPDxH2] * values[kQnFMDAxH2];
+      // values[kQnCorrSPDx_FMDAy] = values[kQnSPDxH2] * values[kQnFMDAyH2];
+      // values[kQnCorrSPDy_FMDAx] = values[kQnSPDyH2] * values[kQnFMDAxH2];
+      // values[kQnCorrSPDy_FMDAy] = values[kQnSPDyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffSPD_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnCorrSPDx_FMDCx] = values[kQnSPDxH2] * values[kQnFMDCxH2];
-      values[kQnCorrSPDx_FMDCy] = values[kQnSPDxH2] * values[kQnFMDCyH2];
-      values[kQnCorrSPDy_FMDCx] = values[kQnSPDyH2] * values[kQnFMDCxH2];
-      values[kQnCorrSPDy_FMDCy] = values[kQnSPDyH2] * values[kQnFMDCyH2];
+      // values[kQnCorrSPDx_FMDCx] = values[kQnSPDxH2] * values[kQnFMDCxH2];
+      // values[kQnCorrSPDx_FMDCy] = values[kQnSPDxH2] * values[kQnFMDCyH2];
+      // values[kQnCorrSPDy_FMDCx] = values[kQnSPDyH2] * values[kQnFMDCxH2];
+      // values[kQnCorrSPDy_FMDCy] = values[kQnSPDyH2] * values[kQnFMDCyH2];
     }
   }
 
   // FMDA Diff
   if(bFMDAqVector && bFMDCqVector){
     values[AliDielectronVarManager::kQnDiffFMDA_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnFMDArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-    values[kQnCorrFMDAx_FMDCx] = values[kQnFMDAxH2] * values[kQnFMDCxH2];
-    values[kQnCorrFMDAx_FMDCy] = values[kQnFMDAxH2] * values[kQnFMDCyH2];
-    values[kQnCorrFMDAy_FMDCx] = values[kQnFMDAyH2] * values[kQnFMDCxH2];
-    values[kQnCorrFMDAy_FMDCy] = values[kQnFMDAyH2] * values[kQnFMDCyH2];
+    // values[kQnCorrFMDAx_FMDCx] = values[kQnFMDAxH2] * values[kQnFMDCxH2];
+    // values[kQnCorrFMDAx_FMDCy] = values[kQnFMDAxH2] * values[kQnFMDCyH2];
+    // values[kQnCorrFMDAy_FMDCx] = values[kQnFMDAyH2] * values[kQnFMDCxH2];
+    // values[kQnCorrFMDAy_FMDCy] = values[kQnFMDAyH2] * values[kQnFMDCyH2];
   }
+}
+
+//________________________________________________________________
+inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
+
+  AliFlowVector vQarray[2];
+  
+  AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
+
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  values[AliDielectronVarManager::kQnZDCCrpH1] = -999;
+  values[AliDielectronVarManager::kQnZDCArpH1] = -999;
+
+  // for QA store also components
+  values[AliDielectronVarManager::kQnZDCCX] = -999;
+  values[AliDielectronVarManager::kQnZDCCY] = -999;
+  values[AliDielectronVarManager::kQnZDCAX] = -999;
+  values[AliDielectronVarManager::kQnZDCAY] = -999;
+  
+  if (fZDCEPTask != NULL) {
+
+    // get ZDC Q-vectors
+    TObjArray* dataContainers               = (AliAnalysisManager::GetAnalysisManager())->GetContainers();
+    AliAnalysisDataContainer* dataContainer = dynamic_cast<AliAnalysisDataContainer*>(dataContainers->FindObject("ZDCEPExchangeContainer"));
+    AliFlowEvent* anEvent                   = dynamic_cast<AliFlowEvent*>(dataContainer->GetData());
+    if(anEvent) {
+      // Get Q vectors for the subevents
+      anEvent->GetZDC2Qsub(vQarray);
+     } else { 
+      Printf("Flowevent not found. Aborting!!!\n");
+      return;
+    }
+  } 
+  else {
+    Printf("This task needs AliAnalysisTaskZDCEP and it is not present. Aborting!!!");
+    return;
+  }
+
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi());
+  values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi());
+
+  // for QA store also components
+  values[AliDielectronVarManager::kQnZDCCX] = vQarray[0].X();
+  values[AliDielectronVarManager::kQnZDCCY] = vQarray[0].Y();
+  values[AliDielectronVarManager::kQnZDCAX] = vQarray[1].X();
+  values[AliDielectronVarManager::kQnZDCAY] = vQarray[1].Y();
+  
+  return;
 }
 
 //________________________________________________________________

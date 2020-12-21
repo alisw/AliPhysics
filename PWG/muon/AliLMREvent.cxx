@@ -33,16 +33,24 @@ ClassImp(AliLMREvent)
 AliLMREvent::AliLMREvent() : TObject(), 
 fMuons(new TClonesArray("AliLMRMuon",20)), 
   fEventPlane(0),
-  fMultiplicity_V0M(0),
+  fMultiplicity_V0M(0.0),
   fMultiplicity_ADM(0),
   fMultiplicity_SPDTracklets(0),
   fMultiplicity_SPDClusters(0),
   fMultiplicity_RefMult05(0),
   fMultiplicity_RefMult08(0),
+  fMultiplicity_V0A(0),
+  fMultiplicity_V0C(0),
+  fMultiplicity_V0EqA(0),
+  fMultiplicity_V0EqC(0),
+  fMultiplicity_V0EqM(0),
+  fMultiplicity_ZNA(0),
+  fMultiplicity_ZNC(0),
   fRunNb(0), 
   fNMuons(0),   
   fNVtxContributors(0),
-  fTriggerString(0)
+  fTriggerString(0),
+  fPileupFromSPD(0)
  {
    for(Int_t i=0;i<3;i++)
      fVertex[i]=0.0;
@@ -61,10 +69,18 @@ AliLMREvent::AliLMREvent(Int_t run, Double_t evtPlane, Double_t Vert[3],Double_t
   fMultiplicity_SPDClusters(Activity[3]),
   fMultiplicity_RefMult05(Activity[4]),
   fMultiplicity_RefMult08(Activity[5]),
+  fMultiplicity_V0A(Activity[6]),
+  fMultiplicity_V0C(Activity[7]),
+  fMultiplicity_V0EqA(Activity[8]),
+  fMultiplicity_V0EqC(Activity[9]),
+  fMultiplicity_V0EqM(Activity[10]),
+  fMultiplicity_ZNA(Activity[11]),
+  fMultiplicity_ZNC(Activity[12]),
   fRunNb(run), 
   fNMuons(0), 
   fNVtxContributors(0),
-  fTriggerString(0) 
+  fTriggerString(0),
+  fPileupFromSPD(0)
 {
   for(Int_t i=0;i<3;i++)
     fVertex[i]=Vert[i];
@@ -81,10 +97,18 @@ AliLMREvent::AliLMREvent(const AliLMREvent& evt):
   fMultiplicity_SPDClusters(evt.fMultiplicity_SPDClusters),
   fMultiplicity_RefMult05(evt.fMultiplicity_RefMult05),
   fMultiplicity_RefMult08(evt.fMultiplicity_RefMult08),
+  fMultiplicity_V0A(evt.fMultiplicity_V0A),
+  fMultiplicity_V0C(evt.fMultiplicity_V0C),
+  fMultiplicity_V0EqA(evt.fMultiplicity_V0EqA),
+  fMultiplicity_V0EqC(evt.fMultiplicity_V0EqC),
+  fMultiplicity_V0EqM(evt.fMultiplicity_V0EqM),
+  fMultiplicity_ZNA(evt.fMultiplicity_ZNA),
+  fMultiplicity_ZNC(evt.fMultiplicity_ZNC),
   fRunNb(evt.fRunNb), 
   fNMuons(evt.fNMuons), 
   fNVtxContributors(evt.fNVtxContributors),
-  fTriggerString(evt.fTriggerString) 
+  fTriggerString(evt.fTriggerString),
+  fPileupFromSPD(evt.fPileupFromSPD)
 {
   ///copy constructor
   // 
@@ -143,14 +167,22 @@ AliLMREvent& AliLMREvent::operator=(const AliLMREvent&evt)
       fMultiplicity_ADM = evt.fMultiplicity_ADM;
       fMultiplicity_SPDTracklets = evt.fMultiplicity_SPDTracklets;
       fMultiplicity_SPDClusters = evt.fMultiplicity_SPDClusters;
-      fMultiplicity_RefMult05 = evt.fMultiplicity_RefMult05;
-      fMultiplicity_RefMult08 = evt.fMultiplicity_RefMult08;
+      fMultiplicity_RefMult05   = evt.fMultiplicity_RefMult05;
+      fMultiplicity_RefMult08   = evt.fMultiplicity_RefMult08;
+      fMultiplicity_V0A         = evt.fMultiplicity_V0A;
+      fMultiplicity_V0C         = evt.fMultiplicity_V0C;
+      fMultiplicity_V0EqA       = evt.fMultiplicity_V0EqA;
+      fMultiplicity_V0EqC       = evt.fMultiplicity_V0EqC;
+      fMultiplicity_V0EqM       = evt.fMultiplicity_V0EqM;
+      fMultiplicity_ZNA         = evt.fMultiplicity_ZNA;
+      fMultiplicity_ZNC         = evt.fMultiplicity_ZNC;
       fRunNb = evt.fRunNb;
       fNMuons = evt.fNMuons;
       for(Int_t i=0;i<3;i++)
    	fVertex[i] = evt.fVertex[i];
       fNVtxContributors = evt.fNVtxContributors;
       fTriggerString = evt.fTriggerString;
+      fPileupFromSPD = evt.fPileupFromSPD;
     }
     return *this;
 }
@@ -187,20 +219,27 @@ void AliLMREvent::SetVertex(Double_t V[3])
 //__________________________________________________________________________
 
 
-void AliLMREvent::SetMultiplicity(TString method, Double_t val)
- {
-   if      (method.EqualTo("V0M")) fMultiplicity_V0M = val;
-   else if (method.EqualTo("SPDTracklets")) fMultiplicity_SPDTracklets = val;
-   else if (method.EqualTo("ADM")) fMultiplicity_ADM = val;
-   else if (method.EqualTo("SPDClusters")) fMultiplicity_SPDClusters = val;
-   else if (method.EqualTo("RefMult05")) fMultiplicity_RefMult05 = val;
-   else if (method.EqualTo("RefMult08")) fMultiplicity_RefMult08 = val;
-   else printf("AliLMREvent::SetMultiplicity - Error: method %s not recognized\n",method.Data());
+void AliLMREvent::SetMultiplicity(TString method, Float_t val)
+{
+  if      (method.EqualTo("V0M")) fMultiplicity_V0M = val;
+  else if (method.EqualTo("SPDTracklets")) fMultiplicity_SPDTracklets = val;
+  else if (method.EqualTo("ADM")) fMultiplicity_ADM = val;
+  else if (method.EqualTo("SPDClusters")) fMultiplicity_SPDClusters = val;
+  else if (method.EqualTo("RefMult05")) fMultiplicity_RefMult05 = val;
+  else if (method.EqualTo("RefMult08")) fMultiplicity_RefMult08 = val;
+  else if (method.EqualTo("V0A"))   fMultiplicity_V0A = val;
+  else if (method.EqualTo("V0C"))   fMultiplicity_V0C = val;
+  else if (method.EqualTo("V0EqA")) fMultiplicity_V0EqA = val;
+  else if (method.EqualTo("V0EqC")) fMultiplicity_V0EqC = val;
+  else if (method.EqualTo("V0EqM")) fMultiplicity_V0EqM = val;
+  else if (method.EqualTo("ZNA"))   fMultiplicity_ZNA = val;
+  else if (method.EqualTo("ZNC"))   fMultiplicity_ZNC = val;
+  else printf("AliLMREvent::SetMultiplicity - Error: method %s not recognized\n",method.Data());
 }
 
 //__________________________________________________________________________
 
-Double_t AliLMREvent::GetMultiplicity(TString method)
+Float_t AliLMREvent::GetMultiplicity(TString method)
 {
   if      (method.EqualTo("V0M")) return fMultiplicity_V0M;
   else if (method.EqualTo("SPDTracklets")) return fMultiplicity_SPDTracklets;
@@ -208,6 +247,13 @@ Double_t AliLMREvent::GetMultiplicity(TString method)
   else if (method.EqualTo("SPDClusters")) return fMultiplicity_SPDClusters;
   else if (method.EqualTo("RefMult05")) return fMultiplicity_RefMult05;
   else if (method.EqualTo("RefMult08")) return fMultiplicity_RefMult08;
+  else if (method.EqualTo("V0A")) return fMultiplicity_V0A;
+  else if (method.EqualTo("V0C")) return fMultiplicity_V0C;
+  else if (method.EqualTo("V0EqA")) return fMultiplicity_V0EqA;
+  else if (method.EqualTo("V0EqC")) return fMultiplicity_V0EqC;
+  else if (method.EqualTo("V0EqM")) return fMultiplicity_V0EqM;
+  else if (method.EqualTo("ZNA")) return fMultiplicity_ZNA;
+  else if (method.EqualTo("ZNC")) return fMultiplicity_ZNC;
   else 
     {
       printf("AliLMREvent::GetMultiplicity - Error: method %s not recognized\n",method.Data());

@@ -19,7 +19,6 @@ AliAnalysisTask *AddTaskLMREventFilter()
   MuonTrackCuts->Print("all");
 
   AliAnalysisTaskLMREventFilter* task = new AliAnalysisTaskLMREventFilter("AliAnalysisTaskLMREventFilter", MuonTrackCuts);
-  task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kMUS7|AliVEvent::kMUSH7|AliVEvent::kMUU7| AliVEvent::kMUL7);
 
   mgr->AddTask(task);
 

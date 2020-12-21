@@ -16,7 +16,7 @@ class AliAODTrack;
 class AliAnalysisC2Utils : public TObject {
  public:
   static Double_t Mod(Double_t x, Double_t y);
-  static Double_t WrapAngle(Double_t angle, TAxis* ax);
+  static Double_t Wrap02pi(Double_t angle);
   static Int_t ExcludeOverUnderFlow(THn *h);
   static void CopyAxisFromHist(Int_t from_axis, THn *from_hist, Int_t to_axis, THn *to_hist);
   static void TransformPoints(Double_t *points_in, Double_t *points_out);

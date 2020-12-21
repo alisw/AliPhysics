@@ -1,13 +1,39 @@
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIEMCALTRACKSELECTIONAOD_H_
 #define ALIEMCALTRACKSELECTIONAOD_H_
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 #include <AliEmcalTrackSelection.h>
-#include "AliESDtrackCuts.h"
+#include "AliEmcalTrackSelResultPtr.h"
 
 class AliVCuts;
 class AliVTrack;
+
+class AliEmcalTrackSelResultHybrid;
 
 /**
  * @class AliEmcalTrackSelectionAOD
@@ -77,7 +103,7 @@ public:
 	 * @param[in] trk Track to check
 	 * @return true if selected, false otherwise
 	 */
-	virtual bool IsTrackAccepted(AliVTrack * const trk);
+	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk);
 
 	/**
 	 * @brief Add a new filter bit to the track selection.
@@ -87,7 +113,7 @@ public:
 	 *
 	 * @param filterbits Filter bits used to select tracks
 	 */
-	void AddFilterBit(UInt_t filterbits) { fFilterBits |= filterbits; }
+	void AddFilterBit(UInt_t filterbits);
 
 	/**
 	 * @brief Returns the hybrid filter bits according to a hard-coded look-up table
@@ -98,14 +124,83 @@ public:
 	static Bool_t GetHybridFilterBits(Char_t bits[], TString period);
 
 private:
-	UInt_t			fFilterBits;				    ///< Track filter bits
-	Bool_t      fFilterHybridTracks;    ///< Filter hybrid tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
-	Bool_t      fFilterTPCTracks;       ///< Filter TPC-only tracks using AliAODTrack::IsHybridGlobalConstrainedGlobal
-	Char_t      fHybridFilterBits[2];   ///< Filter bits of hybrid tracks
 
 	/// \cond CLASSIMP
 	ClassDef(AliEmcalTrackSelectionAOD, 2);
 	/// \endcond
 };
+
+namespace PWG {
+
+namespace EMCAL{
+
+/**
+ * @class TestAliEmcalTrackSelectionAOD
+ * @brief Unit test for the class AliEmcalTrackSelectionAOD
+ * @ingroup EMCALCOREFW
+ * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Dec 19, 2018 
+ */
+class TestAliEmcalTrackSelectionAOD : public TObject {
+public:
+
+	/**
+	 * @brief Constructor
+	 */
+	TestAliEmcalTrackSelectionAOD();
+
+	/**
+	 * @brief Destructor
+	 */
+	virtual ~TestAliEmcalTrackSelectionAOD();
+
+	/**
+	 * @brief Init test suite
+	 * 
+	 * Create track selection objects for the various selections supported in the test suite
+	 */
+	void Init();
+
+	/**
+	 * @brief Run all tests
+	 * 
+	 * @return true  All tests passed
+	 * @return false At least one test failed
+	 */
+	bool RunAllTests() const;
+	bool TestHybridDef2010wRefit() const;
+	bool TestHybridDef2010woRefit() const;
+	bool TestHybridDef2011() const;
+	bool TestTPConly() const;
+
+private:
+	/**
+	 * @brief Extract hybrid track user object from a track selection result ptr
+	 * 
+	 * Tool used to extract recursively a user object of type AliEmcalTrackSelResultHybrid. 
+	 * In case the user object is of type AliEmcalTrackSelResultCombined it tries to find
+	 * the hybrid user information within the results of the combined track selection result.
+	 * 
+	 * @param data Track selection result pointer to be inspected
+	 * @return Pointer to the hybrid track selection user object (if existing), nullptr otherwise
+	 */
+	const AliEmcalTrackSelResultHybrid 			*FindHybridSelectionResult(const AliEmcalTrackSelResultPtr &data) const;
+
+	AliEmcalTrackSelectionAOD 				*fTrackSelHybrid2010wRefit;				///< Hybrid tracks from 2010 including non-refit tracks
+	AliEmcalTrackSelectionAOD					*fTrackSelHybrid2010woRefit;			///< Hybrid tracks from 2010 excluding non-refit tracks
+	AliEmcalTrackSelectionAOD					*fTrackSelHybrid2011;							///< Hybrid tracks from 2011
+	AliEmcalTrackSelectionAOD					*fTrackSelTPConly;								///< TPConly tracks
+
+	TestAliEmcalTrackSelectionAOD(const TestAliEmcalTrackSelectionAOD &);
+	TestAliEmcalTrackSelectionAOD &operator=(const TestAliEmcalTrackSelectionAOD &);
+
+	/// \cond CLASSIMP
+	ClassDef(TestAliEmcalTrackSelectionAOD, 1);
+	/// \endcond
+};
+
+}
+
+}
 
 #endif /* ALIEMCALTRACKSELECTIONAOD_H_ */

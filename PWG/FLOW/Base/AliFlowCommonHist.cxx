@@ -73,7 +73,8 @@ AliFlowCommonHist::AliFlowCommonHist():
   fRefMultVsNoOfRPs(NULL),
   fHistRefMult(NULL),
   fHistMassPOI(NULL),
-  fHistList(NULL)
+  fHistList(NULL),
+  fHarmonicInt(2)
 {
   
   //default constructor
@@ -110,7 +111,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fRefMultVsNoOfRPs(new TProfile(*a.fRefMultVsNoOfRPs)),
   fHistRefMult(new TH1F(*a.fHistRefMult)),  
   fHistMassPOI(new TH2F(*a.fHistMassPOI)),  
-  fHistList(NULL)
+  fHistList(NULL),
+  fHarmonicInt(a.fHarmonicInt)
 {
   // copy constructor
 
@@ -149,7 +151,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist(const char *anInput, const char *title, Bool_t bookOnlyBasic):
+  AliFlowCommonHist::AliFlowCommonHist(const char *anInput, const char *title, Bool_t bookOnlyBasic, Int_t harmonic):
     TNamed(anInput,title),
     fBookOnlyBasic(bookOnlyBasic),
     fHistMultRP(NULL),
@@ -179,7 +181,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
     fRefMultVsNoOfRPs(NULL),
     fHistRefMult(NULL),
     fHistMassPOI(NULL),
-    fHistList(NULL)
+    fHistList(NULL),
+    fHarmonicInt(harmonic)
 {
 
   //constructor creating histograms 
@@ -564,7 +567,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 
   
   //fill the histograms
-  AliFlowVector vQ = anEvent->GetQ(2, weightsList, usePhiWeights, usePtWeights, useEtaWeights); 
+  AliFlowVector vQ = anEvent->GetQ(fHarmonicInt, weightsList, usePhiWeights, usePtWeights, useEtaWeights); 
   //weight by the Multiplicity
   Double_t dQX = 0.;
   Double_t dQY = 0.;
@@ -574,14 +577,14 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
   }
   vQ.Set(dQX,dQY);
   if(!fBookOnlyBasic){fHistQ->Fill(vQ.Mod());}
-  if(!fBookOnlyBasic){fHistAngleQ->Fill(vQ.Phi()/2);}
+  if(!fBookOnlyBasic){fHistAngleQ->Fill(vQ.Phi()/float(fHarmonicInt));}
 
   AliFlowVector* vQSub = new AliFlowVector[2];
-  anEvent->Get2Qsub(vQSub, 2, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
+  anEvent->Get2Qsub(vQSub, fHarmonicInt, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
   AliFlowVector vQa = vQSub[0];
   AliFlowVector vQb = vQSub[1];
-  if(!fBookOnlyBasic){fHistAngleQSub0->Fill(vQa.Phi()/2);}
-  if(!fBookOnlyBasic){fHistAngleQSub1->Fill(vQb.Phi()/2);}
+  if(!fBookOnlyBasic){fHistAngleQSub0->Fill(vQa.Phi()/float(fHarmonicInt));}
+  if(!fBookOnlyBasic){fHistAngleQSub1->Fill(vQb.Phi()/float(fHarmonicInt));}
 
   Double_t dMultRP = 0.;
   Double_t dMultPOI = 0.;

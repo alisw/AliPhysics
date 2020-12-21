@@ -17,8 +17,8 @@ double AliFemtoPair::fgMaxDzOuter = 3.2;
 
 
 AliFemtoPair::AliFemtoPair():
-  fTrack1(NULL),
-  fTrack2(NULL),
+  fTrack1(nullptr),
+  fTrack2(nullptr),
   fPairAngleEP(0.0),
   fNonIdParNotCalculated(0.0),
   fDKSide(0.0),
@@ -52,6 +52,8 @@ AliFemtoPair::AliFemtoPair():
 {
   // Default constructor
   SetDefaultHalfFieldMergingPar();
+  std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fFemtoWeightCache, 3, std::make_pair(0, NAN));
 }
 
 AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
@@ -90,6 +92,8 @@ AliFemtoPair::AliFemtoPair(AliFemtoParticle* a, AliFemtoParticle* b):
 {
   // Construct a pair from two particles
   SetDefaultHalfFieldMergingPar();
+  std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fFemtoWeightCache, 3, std::make_pair(0, NAN));
 }
 
 void AliFemtoPair::SetDefaultHalfFieldMergingPar()
@@ -159,6 +163,7 @@ AliFemtoPair::AliFemtoPair(const AliFemtoPair &aPair):
 {
   // Copy constructor
   /* no-op */
+  std::fill_n(fAverageSeparations, 4, NAN);
 }
 
 AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
@@ -210,6 +215,8 @@ AliFemtoPair& AliFemtoPair::operator=(const AliFemtoPair &aPair)
   fFracOfMergedRowV0NegV0Neg = aPair.fFracOfMergedRowV0NegV0Neg;
   fClosestRowAtDCAV0NegV0Neg = aPair.fClosestRowAtDCAV0NegV0Neg;
 
+  std::fill_n(fAverageSeparations, 4, NAN);
+
   return *this;
 }
 
@@ -223,7 +230,7 @@ double AliFemtoPair::MInv() const
 {
   // invariant mass
     double tInvariantMass = abs(fTrack1->FourMomentum() + fTrack2->FourMomentum());
-    return (tInvariantMass);
+    return tInvariantMass;
 }
 //_________________
 double AliFemtoPair::KT() const
@@ -232,7 +239,7 @@ double AliFemtoPair::KT() const
   double tmp = (fTrack1->FourMomentum() + fTrack2->FourMomentum()).Perp();
   tmp *= .5;
 
-  return (tmp);
+  return tmp;
 }
 //_________________
 double AliFemtoPair::Rap() const
@@ -245,13 +252,14 @@ double AliFemtoPair::Rap() const
                Z = p1.z() + p2.z(),
              tmp = 0.5 * log ( (E + Z) / (E - Z) );
 
-  return (tmp);
+  return tmp;
 }
 //_________________
 double AliFemtoPair::EmissionAngle() const {
   // emission angle
-  double pxTotal = this->FourMomentumSum().x();
-  double pyTotal = this->FourMomentumSum().y();
+  const AliFemtoLorentzVector p = FourMomentumSum();
+  double pxTotal = p.x();
+  double pyTotal = p.y();
   double angle = atan2(pyTotal,pxTotal)*180.0/3.1415926536;
   if (angle<0.0) angle+=360.0;
   return angle;
@@ -278,18 +286,18 @@ void AliFemtoPair::QYKPCMS(double& qP, double& qT, double& q0) const
   ////
   // calculate momentum difference in source rest frame (= lab frame)
   ////
-  AliFemtoLorentzVector l1 = fTrack1->FourMomentum() ;
-  AliFemtoLorentzVector l2 = fTrack2->FourMomentum() ;
-  AliFemtoLorentzVector  l ;
+  const AliFemtoLorentzVector &l1 = fTrack1->FourMomentum();
+  const AliFemtoLorentzVector &l2 = fTrack2->FourMomentum();
+
   // random ordering of the particles
-  if ( rand()/(double)RAND_MAX > 0.50 )
-    { l = l1-l2 ; }
-  else
-    { l = l2-l1 ; } ;
+  AliFemtoLorentzVector l = (rand()/(double)RAND_MAX > 0.50)
+                          ? l1 - l2
+                          : l2 - l1;
+
   // fill momentum differences into return variables
-  qP = l.z() ;
-  qT = l.vect().Perp() ;
-  q0 = l.e() ;
+  qP = l.z();
+  qT = l.vect().Perp();
+  q0 = l.e();
 }
 //___________________________________
 void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
@@ -298,33 +306,43 @@ void AliFemtoPair::QYKPLCMS(double& qP, double& qT, double& q0) const
   ////
   //  calculate momentum difference in LCMS : frame where pz1 + pz2 = 0
   ////
-  AliFemtoLorentzVector l1 = fTrack1->FourMomentum() ;
-  AliFemtoLorentzVector l2 = fTrack2->FourMomentum() ;
+  const AliFemtoLorentzVector &l1 = fTrack1->FourMomentum();
+  const AliFemtoLorentzVector &l2 = fTrack2->FourMomentum();
+
   // determine beta to LCMS
-  double beta = (l1.z()+l2.z()) / (l1.e()+l2.e()) ;
-  double beta2 =  beta*beta ;
+  double beta = (l1.z()+l2.z()) / (l1.e()+l2.e());
+  double beta2 = beta*beta;
+
   // unfortunately STAR Class lib knows only boost(particle) not boost(beta) :(
   // -> create particle with velocity beta and mass 1.0
   // actually this is : dummyPz = ::sqrt( (dummyMass*dummyMass*beta2) / (1-beta2) ) ;
-  double dummyPz = ::sqrt( (beta2) / (1-beta2) ) ;
+  double dummyPz = ::sqrt( (beta2) / (1-beta2) );
+
   // boost in the correct direction
-  if (beta>0.0) { dummyPz = -dummyPz; } ;
+  if (beta>0.0) {
+    dummyPz = -dummyPz;
+  }
+
   // create dummy particle
-  AliFemtoLorentzVector  l(0.0, 0.0, dummyPz) ;
-  double dummyMass = 1.0 ;
+  AliFemtoLorentzVector  l(0.0, 0.0, dummyPz);
+  double dummyMass = 1.0;
   l.SetE(l.vect().MassHypothesis(dummyMass) );
+
   // boost particles along the beam into a frame with velocity beta
-  AliFemtoLorentzVector l1boosted = l1.boost(l) ;
-  AliFemtoLorentzVector l2boosted = l2.boost(l) ;
+  AliFemtoLorentzVector l1boosted = l1.boost(l);
+  AliFemtoLorentzVector l2boosted = l2.boost(l);
+
   // caculate the momentum difference with random ordering of the particle
-  if ( rand()/(double)RAND_MAX >0.50)
-    { l = l1boosted-l2boosted ; }
-  else
-    { l = l2boosted-l1boosted ;} ;
+  if ( rand()/(double)RAND_MAX >0.50) {
+    l = l1boosted-l2boosted;
+  } else {
+    l = l2boosted-l1boosted;
+  }
+
   // fill momentum differences into return variables
-  qP = l.z() ;
-  qT = l.vect().Perp() ;
-  q0 = l.e() ;
+  qP = l.z();
+  qT = l.vect().Perp();
+  q0 = l.e();
 }
 //___________________________________
 // Yano-Koonin-Podgoretskii Parametrisation in pair rest frame
@@ -333,114 +351,139 @@ void AliFemtoPair::QYKPPF(double& qP, double& qT, double& q0) const
   ///
   /// Calculate momentum difference in pair rest frame : frame where (pz1 + pz2, py1 + py2, px1 + px2) = (0,0,0)
   ///
-  AliFemtoLorentzVector l1 = fTrack1->FourMomentum() ;
-  AliFemtoLorentzVector l2 = fTrack2->FourMomentum() ;
+  const AliFemtoLorentzVector &l1 = fTrack1->FourMomentum();
+  const AliFemtoLorentzVector &l2 = fTrack2->FourMomentum();
+
   // the center of gravity of the pair travels with l
-  AliFemtoLorentzVector  l = l1 + l2 ;
-  l = -l ;
-  l.SetE(-l.e()) ;
+  AliFemtoLorentzVector  l = l1 + l2;
+  l = -l;
+  l.SetE(-l.e());
+
   // boost particles
-  AliFemtoLorentzVector l1boosted = l1.boost(l) ;
-  AliFemtoLorentzVector l2boosted = l2.boost(l) ;
+  AliFemtoLorentzVector l1boosted = l1.boost(l);
+  AliFemtoLorentzVector l2boosted = l2.boost(l);
+
   // caculate the momentum difference with random ordering of the particle
-  if ( rand()/(double)RAND_MAX > 0.50)
-    { l = l1boosted-l2boosted ; }
-  else
-    { l = l2boosted-l1boosted ;} ;
+  if ( rand()/(double)RAND_MAX > 0.50) {
+    l = l1boosted-l2boosted;
+  } else {
+    l = l2boosted-l1boosted;
+  }
+
   // fill momentum differences into return variables
   qP = l.z();
   qT = l.vect().Perp();
   q0 = l.e();
 }
+
+
+// optimized division - returns 0 if denominator zero
+#ifdef __GNUC__
+  #define CHECKED_DIVIDE_ELSE_ZERO(_num, _den) \
+    __builtin_expect(_den == 0.0, false) ? 0.0 : _num / _den
+#else
+  #define CHECKED_DIVIDE_ELSE_ZERO(_num, _den) \
+    _den == 0.0 ? 0.0 : _num / _den
+#endif
+
+
 //_________________
 double AliFemtoPair::QOutCMS() const
 {
   // relative momentum out component in lab frame
-    AliFemtoThreeVector tmp1 = fTrack1->FourMomentum().vect();
-    AliFemtoThreeVector tmp2 = fTrack2->FourMomentum().vect();
+  const AliFemtoThreeVector
+    &p1 = fTrack1->FourMomentum().vect(),
+    &p2 = fTrack2->FourMomentum().vect();
 
-    double dx = tmp1.x() - tmp2.x();
-    double xt = tmp1.x() + tmp2.x();
+  const double
+    dx = p1.x() - p2.x(),
+    px = p1.x() + p2.x(),
 
-    double dy = tmp1.y() - tmp2.y();
-    double yt = tmp1.y() + tmp2.y();
+    dy = p1.y() - p2.y(),
+    py = p1.y() + p2.y(),
 
-    double k1 = (::sqrt(xt*xt+yt*yt));
-    double k2 = (dx*xt+dy*yt);
-    double tmp;
+    k = dx*px + dy*py,
+    pt = ::sqrt(px*px + py*py);
 
-    if(k1!=0) tmp= k2/k1;
-    else tmp=0;
-
-    return (tmp);
+  return CHECKED_DIVIDE_ELSE_ZERO(k, pt);
 }
+
 //_________________
 double AliFemtoPair::QSideCMS() const
 {
   // relative momentum side component in lab frame
-    AliFemtoThreeVector tmp1 = fTrack1->FourMomentum().vect();
-    AliFemtoThreeVector tmp2 = fTrack2->FourMomentum().vect();
+  const AliFemtoThreeVector
+    &p1 = fTrack1->FourMomentum().vect(),
+    &p2 = fTrack2->FourMomentum().vect();
 
-    double x1 = tmp1.x();  double y1 = tmp1.y();
-    double x2 = tmp2.x();  double y2 = tmp2.y();
+  const double
+    x1 = p1.x(),
+    y1 = p1.y(),
 
-    double xt = x1+x2;  double yt = y1+y2;
-    double k1 = ::sqrt(xt*xt+yt*yt);
+    x2 = p2.x(),
+    y2 = p2.y(),
 
-    double tmp;
-    if(k1!=0) tmp= 2.0*(x2*y1-x1*y2)/k1;
-    else tmp=0;
+    xt = x1+x2,
+    yt = y1+y2,
 
-    return (tmp);
+    k = 2.0 * (x2*y1 - x1*y2),
+    pt = ::sqrt(xt*xt + yt*yt);
+
+  return CHECKED_DIVIDE_ELSE_ZERO(k, pt);
 }
 
 //_________________________
 double AliFemtoPair::QLongCMS() const
 {
   // relative momentum component in lab frame
-    AliFemtoLorentzVector tmp1 = fTrack1->FourMomentum();
-    AliFemtoLorentzVector tmp2 = fTrack2->FourMomentum();
+  const AliFemtoLorentzVector
+    &tmp1 = fTrack1->FourMomentum(),
+    &tmp2 = fTrack2->FourMomentum();
 
-    double dz = tmp1.z() - tmp2.z();
-    double zz = tmp1.z() + tmp2.z();
+  double dz = tmp1.z() - tmp2.z();
+  double zz = tmp1.z() + tmp2.z();
 
-    double dt = tmp1.t() - tmp2.t();
-    double tt = tmp1.t() + tmp2.t();
+  double dt = tmp1.t() - tmp2.t();
+  double tt = tmp1.t() + tmp2.t();
 
-    double beta = zz/tt;
-    double gamma = 1.0/TMath::Sqrt((1.-beta)*(1.+beta));
+  double beta = zz/tt;
+  double gamma = 1.0/TMath::Sqrt((1.-beta)*(1.+beta));
 
-    double temp = gamma*(dz - beta*dt);
-    return (temp);
+  return gamma * (dz - beta*dt);
 }
 
 //________________________________
 double AliFemtoPair::QOutPf() const
 {
   // relative momentum out component in pair frame
-  AliFemtoLorentzVector tmp1 = fTrack1->FourMomentum();
-  AliFemtoLorentzVector tmp2 = fTrack2->FourMomentum();
+  const AliFemtoLorentzVector
+    &tmp1 = fTrack1->FourMomentum(),
+    &tmp2 = fTrack2->FourMomentum();
 
-  double dt = tmp1.t() - tmp2.t();
-  double tt = tmp1.t() + tmp2.t();
+  const double
+    dt = tmp1.t() - tmp2.t(),
+    tt = tmp1.t() + tmp2.t(),
 
-  double xt = tmp1.x() + tmp2.x();
-  double yt = tmp1.y() + tmp2.y();
+    xt = tmp1.x() + tmp2.x(),
+    yt = tmp1.y() + tmp2.y(),
 
-  double k1 = ::sqrt(xt*xt + yt*yt);
-  double bOut = k1/tt;
-  double gOut = 1.0/TMath::Sqrt((1.-bOut)*(1.+bOut));
+    pt = ::sqrt(xt*xt + yt*yt),
 
-  double temp = gOut*(QOutCMS() - bOut*dt);
-  return (temp);
+    bOut = pt / tt,
+    gammaOut = 1.0 / TMath::Sqrt((1.-bOut)*(1.+bOut));
+
+  return gammaOut * (QOutCMS() - bOut*dt);
 }
+
+#undef CHECKED_DIVIDE_ELSE_ZERO
+
 
 //___________________________________
 double AliFemtoPair::QSidePf() const
 {
   // relative momentum side component in pair frame
 
- return(this->QSideCMS());
+ return QSideCMS();
 }
 
 //___________________________________
@@ -449,14 +492,14 @@ double AliFemtoPair::QLongPf() const
 {
   // relative momentum long component in pair frame
 
-  return(this->QLongCMS());
+  return QLongCMS();
 }
 
 //___________________________________
 double AliFemtoPair::QOutBf(double /* beta */) const
 {
   // relative momentum out component
- return(this->QOutCMS());
+  return QOutCMS();
 }
 
 //___________________________________
@@ -464,23 +507,23 @@ double AliFemtoPair::QOutBf(double /* beta */) const
 double AliFemtoPair::QSideBf(double /* beta */) const
 {
   // relative momentum side component
- return(this->QSideCMS());
+  return QSideCMS();
 }
 
 //___________________________________
 double AliFemtoPair::QLongBf(double beta) const
 {
   // relative momentum long component
-    AliFemtoLorentzVector tmp1 = fTrack1->FourMomentum();
-    AliFemtoLorentzVector tmp2 = fTrack2->FourMomentum();
+  const AliFemtoLorentzVector
+    &tmp1 = fTrack1->FourMomentum(),
+    &tmp2 = fTrack2->FourMomentum();
 
-    double dz = tmp1.z() - tmp2.z();
-    double dt = tmp1.t() + tmp2.t();
+  const double
+    dz = tmp1.z() - tmp2.z(),
+    dt = tmp1.t() + tmp2.t(),
+    gamma = 1.0/::sqrt((1.-beta)*(1.+beta));
 
-    double gamma = 1.0/::sqrt((1.-beta)*(1.+beta));
-
-    double temp = gamma*(dz - beta*dt);
-    return (temp);
+  return gamma*(dz - beta*dt);
 }
 
 double AliFemtoPair::Quality() const
@@ -501,7 +544,6 @@ double AliFemtoPair::Quality() const
   unsigned long bitI;
   int ibits;
   int tQuality = 0;
-  double normQual = 0.0;
   int tMaxQuality = fTrack1->NumberOfHits() + fTrack2->NumberOfHits();
   for (ibits=8;ibits<=31;ibits++) {
     bitI = 0;
@@ -525,9 +567,9 @@ double AliFemtoPair::Quality() const
       if ( bothPads25To45 & bitI ) tQuality--;
     }
   }
-  normQual = (double)tQuality/( (double) tMaxQuality );
-  return ( normQual );
 
+  double normQual = (double)tQuality / (double)tMaxQuality;
+  return normQual;
 }
 
 double AliFemtoPair::Quality2() const
@@ -575,7 +617,7 @@ double AliFemtoPair::Quality2() const
     //}
   }
   normQual = (double)tQuality/( (double) tMaxQuality );
-  return ( normQual );
+  return normQual;
 
 }
 
@@ -583,15 +625,19 @@ double AliFemtoPair::Quality2() const
 double AliFemtoPair::NominalTpcExitSeparation() const
 {
   // separation at exit from STAR TPC
-  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcExitPoint() - fTrack2->Track()->NominalTpcExitPoint();
-  return (diff.Mag());
+  const auto &point1 = fTrack1->Track()->NominalTpcExitPoint(),
+             &point2 = fTrack2->Track()->NominalTpcExitPoint();
+
+  return (point1 - point2).Mag();
 }
 
 double AliFemtoPair::NominalTpcEntranceSeparation() const
 {
   // separation at entrance to STAR TPC
-  AliFemtoThreeVector diff = fTrack1->Track()->NominalTpcEntrancePoint() - fTrack2->Track()->NominalTpcEntrancePoint();
-  return (diff.Mag());
+  const auto &point1 = fTrack1->Track()->NominalTpcEntrancePoint(),
+             &point2 = fTrack2->Track()->NominalTpcEntrancePoint();
+
+  return (point1 - point2).Mag();
 }
 
 // double AliFemtoPair::NominalTpcAverageSeparation() const {
@@ -614,7 +660,7 @@ double AliFemtoPair::NominalTpcEntranceSeparation() const
 //     tAveSep += diff.Mag();
 //   }
 //   tAveSep = tAveSep/(ipt+1.);
-//   return (tAveSep);}
+//   return tAveSep;}
 //   else return -1;
 // }
 
@@ -626,7 +672,7 @@ double AliFemtoPair::OpeningAngle() const
 //   AliFemtoThreeVector p2 = fTrack2->FourMomentum().vect();
 //   return 57.296*(p1.phi()-p2.phi());
 //   //double dAngInv = 57.296*acos((p1.dot(p2))/(p1.Mag()*p2.Mag()));
-//   //return (dAngInv);
+//   //return dAngInv;
 }
 //_________________
 
@@ -636,16 +682,17 @@ double AliFemtoPair::KStarFlipped() const
   // kstar with sign flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
 
-  AliFmThreeVectorD qwe = tP1.vect();
-  qwe *= -1.; // flip it
-  tP1.SetVect(qwe);
+  // flip it
+  tP1.SetVect(-1.0 * tP1.vect());
 
-  AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
-  double tMass = abs(tSum);
-  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect();
+  AliFemtoLorentzVector tSum = tP1 + fTrack2->FourMomentum();
+  double tMass = tSum.m();
   double tGamma = tSum.e()/tMass;
-  AliFmThreeVectorD tLongMom  = ((tP1.vect()*tGammaBeta)/
-			      (tGammaBeta*tGammaBeta))*tGammaBeta;
+
+  const AliFemtoThreeVector
+    tGammaBeta = tSum.vect() / tMass,
+    tLongMom = ((tP1.vect()*tGammaBeta)/ tGammaBeta.Mag2()) * tGammaBeta;
+
   AliFmLorentzVectorD tK(tGamma*tP1.e() - tP1.vect()*tGammaBeta,
 		      tP1.vect() + (tGamma-1.)*tLongMom - tP1.e()*tGammaBeta);
 //VP  tP1.vect() *= -1.; // unflip it
@@ -662,7 +709,7 @@ double AliFemtoPair::KStarFlipped() const
 //		      (tGammaBeta*tGammaBeta))*tGammaBeta;
 //AliFmLorentzVectorD tK(tGamma*tP1.e() - tP1.vect()*tGammaBeta,
 //	      tP1.vect() + (tGamma-1.)*tLongMom - tP1.e()*tGammaBeta);
-//return (tK.vect())*tGammaBeta/tK.vect().Magnitude()/tGammaBeta.Magnitude();
+//return tK.vect()*tGammaBeta/tK.vect().Magnitude()/tGammaBeta.Magnitude();
 //}
 
 double AliFemtoPair::CVKFlipped() const
@@ -675,21 +722,25 @@ double AliFemtoPair::CVKFlipped() const
 
   AliFemtoLorentzVector tSum = (tP1+fTrack2->FourMomentum());
   double tMass = abs(tSum);
-  AliFmThreeVectorD tGammaBeta = (1./tMass)*tSum.vect();
   double tGamma = tSum.e()/tMass;
-  AliFmThreeVectorD tLongMom  = ((tP1.vect()*tGammaBeta)/
-			      (tGammaBeta*tGammaBeta))*tGammaBeta;
+
+  const AliFmThreeVectorD
+    tGammaBeta = (1./tMass)*tSum.vect(),
+    tLongMom = ((tP1.vect()*tGammaBeta) / tGammaBeta.Mag2())*tGammaBeta;
+
   AliFmLorentzVectorD tK(tGamma*tP1.e() - tP1.vect()*tGammaBeta,
 		      tP1.vect() + (tGamma-1.)*tLongMom - tP1.e()*tGammaBeta);
 //VP  tP1.vect() *= -1.; // unflip it
-  return (tK.vect())*tGammaBeta/tGamma;
+  return tK.vect()*tGammaBeta/tGamma;
 }
 
 double AliFemtoPair::PInv() const
 {
   // invariant total momentum
-  AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
-  AliFemtoLorentzVector tP2 = fTrack2->FourMomentum();
+  const AliFemtoLorentzVector
+    &tP1 = fTrack1->FourMomentum(),
+    &tP2 = fTrack2->FourMomentum();
+
   double tP = (tP1.px()+tP2.px())*(tP1.px()+tP2.px())+
               (tP1.py()+tP2.py())*(tP1.py()+tP2.py())+
               (tP1.pz()+tP2.pz())*(tP1.pz()+tP2.pz())-
@@ -701,10 +752,11 @@ double AliFemtoPair::QInvFlippedXY() const
 {
   // qinv with X and Y flipped
   AliFemtoLorentzVector tP1 = fTrack1->FourMomentum();
-  tP1.SetX(-1.*tP1.x());
-  tP1.SetY(-1.*tP1.y());
-  AliFemtoLorentzVector tDiff = (tP1-fTrack2->FourMomentum());
-  return ( -1.* tDiff.m());
+  tP1.SetX(-tP1.x());
+  tP1.SetY(-tP1.y());
+  AliFemtoLorentzVector tDiff = tP1 - fTrack2->FourMomentum();
+
+  return -tDiff.m();
 }
 
 void AliFemtoPair::CalcNonIdPar() const
@@ -713,42 +765,40 @@ void AliFemtoPair::CalcNonIdPar() const
   // Use this instead of qXYZ() function when calculating
   // anything for non-identical particles
   fNonIdParNotCalculated=0;
-  double px1 = fTrack1->FourMomentum().vect().x();
-  double py1 = fTrack1->FourMomentum().vect().y();
-  double pz1 = fTrack1->FourMomentum().vect().z();
-  double pE1  = fTrack1->FourMomentum().e();
-  double tParticle1Mass;
-  if((pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1)>0)
-    tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
-  else
-    tParticle1Mass = 0;
 
-  double px2 = fTrack2->FourMomentum().vect().x();
-  double py2 = fTrack2->FourMomentum().vect().y();
-  double pz2 = fTrack2->FourMomentum().vect().z();
-  double pE2  = fTrack2->FourMomentum().e();
-  double tParticle2Mass;
-  if((pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2)>0)
-    tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
-  else
-    tParticle2Mass = 0;
+  const AliFemtoLorentzVector
+    &p1 = fTrack1->FourMomentum(),
+    &p2 = fTrack2->FourMomentum();
 
-  double tPx = px1+px2;
-  double tPy = py1+py2;
-  double tPz = pz1+pz2;
-  double tPE = pE1+pE2;
+  const double
+    px1 = p1.x(),
+    py1 = p1.y(),
+    pz1 = p1.z(),
+    pE1  = p1.e(),
+    mass1_sqrd = std::max({0.0, p1.m2()}),
+
+    px2 = p2.x(),
+    py2 = p2.y(),
+    pz2 = p2.z(),
+    pE2  = p2.e(),
+    mass2_sqrd = std::max({0.0, p2.m2()}),
+
+    tPx = px1 + px2,
+    tPy = py1 + py2,
+    tPz = pz1 + pz2,
+    tPE = pE1 + pE2;
 
   double tPtrans = tPx*tPx + tPy*tPy;
   double tMtrans = tPE*tPE - tPz*tPz;
-  double tPinv =   ::sqrt(tMtrans - tPtrans);
+  double tPinv = ::sqrt(tMtrans - tPtrans);
   tMtrans = ::sqrt(tMtrans);
   tPtrans = ::sqrt(tPtrans);
 
   double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
     (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
 
-  double tQ = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/tPinv;
-  tQ = sqrt ( tQ*tQ - tQinvL);
+  double tQ = (mass1_sqrd - mass2_sqrd)/tPinv;
+  tQ = ::sqrt( tQ*tQ - tQinvL);
 
   fKStarCalc = tQ/2;
 
@@ -781,6 +831,290 @@ void AliFemtoPair::CalcNonIdPar() const
   fCVK = (fDKOut*tPtrans + fDKLong*tPz)/fKStarCalc/::sqrt(tPtrans*tPtrans+tPz*tPz);
 }
 
+
+static double _calc_avgsep_mean(double sep, int count)
+{
+  return __builtin_expect(count != 0, 1)
+       ? sep / count
+       : -1.0;
+}
+
+double
+AliFemtoPair::CalcAvgSepTracks(const AliFemtoTrack &t1, const AliFemtoTrack &t2)
+{
+  double sep = 0.0;
+  int count = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &p1 = t1.NominalTpcPoint(i),
+               &p2 = t2.NominalTpcPoint(i);
+
+    if (IsPointUnset(p1) || IsPointUnset(p2)) {
+      continue;
+    }
+
+    sep += (p1 - p2).Mag();
+    count++;
+  }
+
+  return _calc_avgsep_mean(sep, count);
+}
+
+// std::tuple<double, double>
+//AliFemtoPair::CalcAvgSepTrackV0(const AliFemtoTrack &trk,
+//                                const AliFemtoV0 &v0)
+void
+AliFemtoPair::CalcAvgSepTrackV0(const AliFemtoTrack &trk,
+                                const AliFemtoV0 &v0,
+                                double &avgsep_neg,
+                                double &avgsep_pos)
+{
+  double sep_neg = 0.0,
+         sep_pos = 0.0;
+  int count_neg = 0,
+      count_pos = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &tpt = trk.NominalTpcPoint(i),
+               &npt = v0.NominalTpcPointNeg(i),
+               &ppt = v0.NominalTpcPointPos(i);
+
+    if (IsPointUnset(tpt)) {
+      continue;
+    }
+    if (!IsPointUnset(npt)) {
+      sep_neg += (tpt - npt).Mag();
+      count_neg++;
+    }
+    if (!IsPointUnset(npt)) {
+      sep_pos += (tpt - ppt).Mag();
+      count_pos++;
+    }
+  }
+
+  avgsep_neg = _calc_avgsep_mean(sep_neg, count_neg);
+  avgsep_pos = _calc_avgsep_mean(sep_pos, count_pos);
+
+  // return std::make_tuple(avgsep_neg, avgsep_pos);
+}
+
+// std::tuple<double, double, double, double>
+void
+AliFemtoPair::CalcAvgSepV0V0(const AliFemtoV0 &v1,
+                             const AliFemtoV0 &v2,
+                             double &avgsep_nn,
+                             double &avgsep_np,
+                             double &avgsep_pn,
+                             double &avgsep_pp)
+{
+  double sep_nn = 0.0,
+         sep_pn = 0.0,
+         sep_np = 0.0,
+         sep_pp = 0.0;
+
+  int count_nn = 0,
+      count_pn = 0,
+      count_np = 0,
+      count_pp = 0;
+
+  for (int i=0; i < 9; ++i) {
+    const auto &n1 = v1.NominalTpcPointNeg(i),
+               &p1 = v1.NominalTpcPointPos(i),
+               &n2 = v2.NominalTpcPointNeg(i),
+               &p2 = v2.NominalTpcPointPos(i);
+
+    if (!IsPointUnset(n1)) {
+      if (!IsPointUnset(n2)) {
+        sep_nn += (n1 - n2).Mag();
+        count_nn++;
+      }
+      if (!IsPointUnset(p2)) {
+        sep_np += (n1 - p2).Mag();
+        count_np++;
+      }
+    }
+
+    if (!IsPointUnset(p1)) {
+      if (!IsPointUnset(n2)) {
+        sep_pn += (p1 - n2).Mag();
+        count_pn++;
+      }
+      if (!IsPointUnset(p2)) {
+        sep_pp += (p1 - p2).Mag();
+        count_pp++;
+      }
+    }
+  }
+
+  avgsep_nn = _calc_avgsep_mean(sep_nn, count_nn);
+  avgsep_np = _calc_avgsep_mean(sep_np, count_np);
+  avgsep_pn = _calc_avgsep_mean(sep_pn, count_pn);
+  avgsep_pp = _calc_avgsep_mean(sep_pp, count_pp);
+
+  // return std::make_tuple(avgsep_nn,
+  //                        avgsep_np,
+  //                        avgsep_pn,
+  //                        avgsep_pp);
+}
+
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTracks() const
+{
+  if (std::isnan(fAverageSeparations[0])) {
+    fAverageSeparations[0] = CalcAvgSepTracks(*fTrack1->Track(), *fTrack2->Track());
+  }
+  return fAverageSeparations[0];
+}
+
+void AliFemtoPair::FillCacheAvgSepTrackV0() const
+{
+  const AliFemtoTrack *trk = fTrack1->Track() ?: fTrack2->Track();
+  const AliFemtoV0 *v0 = fTrack2->V0() ?: fTrack1->V0();
+
+  CalcAvgSepTrackV0(*trk, *v0,
+                    fAverageSeparations[0],
+                    fAverageSeparations[1]);
+}
+
+void AliFemtoPair::FillCacheAvgSepV0V0() const
+{
+  CalcAvgSepV0V0(*fTrack1->V0(),
+                 *fTrack2->V0(),
+                 fAverageSeparations[0],
+                 fAverageSeparations[1],
+                 fAverageSeparations[2],
+                 fAverageSeparations[3]);
+}
+
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTrackV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[1])) {
+    FillCacheAvgSepTrackV0();
+  }
+  return fAverageSeparations[0];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationTrackV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[1])) {
+    FillCacheAvgSepTrackV0();
+  }
+  return fAverageSeparations[1];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0NegV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[0];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0NegV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[1];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0PosV0Neg() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[2];
+}
+
+double
+AliFemtoPair::NominalTpcAverageSeparationV0PosV0Pos() const
+{
+  if (std::isnan(fAverageSeparations[3])) {
+    FillCacheAvgSepV0V0();
+  }
+
+  return fAverageSeparations[3];
+}
+
+void
+AliFemtoPair::CalcTrackShareQualFractions(double &share_frac, double &quality) const
+{
+  if (!std::isnan(fSharingCache[0])) {
+    share_frac = fSharingCache[0];
+    quality = fSharingCache[1];
+    return;
+  }
+
+  CalcShareQualFractions(*Track1()->Track(),
+                         *Track2()->Track(),
+                         share_frac,
+                         quality);
+
+  fSharingCache[0] = share_frac;
+  fSharingCache[1] = quality;
+  return;
+}
+
+void
+AliFemtoPair::CalcShareQualFractions(const AliFemtoTrack &track1,
+                                     const AliFemtoTrack &track2,
+                                     double &frac, double &quality)
+{
+
+  frac = 0.0;
+  quality = 0.0;
+
+  Int_t nh = 0;
+  Int_t an = 0;
+  Int_t ns = 0;
+
+  const unsigned int n_bits = track1.TPCclusters().GetNbits();
+
+  const auto &tpc_clusters_1 = track1.TPCclusters(),
+             &tpc_clusters_2 = track2.TPCclusters(),
+
+             &tpc_sharing_1 = track1.TPCsharing(),
+             &tpc_sharing_2 = track2.TPCsharing();
+
+  for (unsigned int imap = 0; imap < n_bits; imap++) {
+    const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
+               cluster_bit_2 = tpc_clusters_2.TestBitNumber(imap);
+    // If both have clusters in the same row
+    if (cluster_bit_1 && cluster_bit_2) {
+      // Do they share it ?
+      if (tpc_sharing_1.TestBitNumber(imap) && tpc_sharing_2.TestBitNumber(imap)) {
+         an += 1;
+         nh += 2;
+         ns += 2;
+      }
+      // Different hits on the same padrow
+      else {
+         an -= 1;
+         nh += 2;
+      }
+    }
+    else if (cluster_bit_1 || cluster_bit_2) {
+       // One track has a hit, the other does not
+       an++;
+       nh++;
+    }
+  }
+
+  if (__builtin_expect(nh > 0, 1)) {
+    quality = an * 1.0 / nh;
+    frac = ns * 1.0 / nh;
+  }
+}
 
 /*void AliFemtoPair::calcNonIdParGlobal() const{ // fortran like function! faster?
   fNonIdParNotCalculatedGlobal=0;

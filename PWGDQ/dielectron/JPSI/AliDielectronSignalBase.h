@@ -44,7 +44,8 @@ public:
     kLikeSignFit,
     kEventMixing,
     kEventMixingFit,
-    kRotation
+    kRotation,
+    kCombinatorialPlusFit
   };
 
   enum ESignalExtractionMethod {
@@ -163,7 +164,7 @@ protected:
 
   void SetSignificanceAndSOB();      // calculate the significance and S/B
   void SetFWHM();                    // calculate the fwhm
-  void SetBackgroundEnumMap();	     // set enum string relations
+  void SetBackgroundEnumMap();       // set enum string relations
   void SetSignalExtractionEnumMap(); // set enum string relations
   static const char* fgkValueNames[6];  //value names
   static const Double_t fgkErrorZero;  //statistical error if zero entries

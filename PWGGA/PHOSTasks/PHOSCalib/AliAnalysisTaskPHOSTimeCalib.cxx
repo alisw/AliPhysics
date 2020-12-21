@@ -22,10 +22,13 @@
 #include "AliVCaloCells.h"
 #include "AliLog.h"
 
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliOADBContainer.h"
 #include "AliAnalysisTaskPHOSTimeCalib.h"
 
 // Author: Daiki Sekihata (Hiroshima University)
+using namespace std;
 
 ClassImp(AliAnalysisTaskPHOSTimeCalib)
 //________________________________________________________________________
@@ -66,6 +69,18 @@ void AliAnalysisTaskPHOSTimeCalib::UserCreateOutputObjects()
 	fOutputContainer = new THashList();
 	fOutputContainer->SetOwner(kTRUE);
 
+
+  TH1F *hEventSummary = new TH1F("hEventSummary","Event Summary",10,0.5,10.5);
+  hEventSummary->GetXaxis()->SetBinLabel(1,"all");
+  hEventSummary->GetXaxis()->SetBinLabel(2,"selected");
+  hEventSummary->GetXaxis()->SetBinLabel(3,"kINT7");
+  hEventSummary->GetXaxis()->SetBinLabel(4,"kPHI7 0PH0");
+  hEventSummary->GetXaxis()->SetBinLabel(5,"kPHI7 1PHL");
+  hEventSummary->GetXaxis()->SetBinLabel(6,"kPHI7 1PHM");
+  hEventSummary->GetXaxis()->SetBinLabel(7,"kPHI7 1PHH");
+  fOutputContainer->Add(hEventSummary);
+
+
 	Char_t key[55];
 	Char_t key1[55];
 	Char_t key2[55];
@@ -85,27 +100,29 @@ void AliAnalysisTaskPHOSTimeCalib::UserExec(Option_t *)
   // Main loop
   // Called for each event
 
-  const Double_t logWeight=4.5;
-
   // Post output data.
   fVEvent = InputEvent();
   if(!fVEvent) {
-    AliError ("ESD event not found. Nothing done!");
+    AliError ("event not found. Nothing done!");
     return;
   }
 
+  FillHistogram("hEventSummary",1);//all
 
   fRunNumber = fVEvent->GetRunNumber();
 
   if(!fPHOSGeo){
 
-    fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
+    if(fRunNumber < 209122)//Run1
+      fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
+    else//Run2
+      fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
 
     AliOADBContainer geomContainer("phosGeo");
     geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
 
-    for(Int_t mod=0; mod<5; mod++) {
+    for(Int_t mod=0; mod<6; mod++) {
       if(!matrixes->At(mod)) {
         if( fDebug )
           AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
@@ -120,8 +137,15 @@ void AliAnalysisTaskPHOSTimeCalib::UserExec(Option_t *)
   }
 
   AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fVEvent->GetPHOSCells());
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fVEvent);
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fVEvent);
 
   UShort_t BC = fVEvent->GetBunchCrossNumber();
+  //UShort_t BC = -999;
+  //if(esd)      BC = esd->GetBunchCrossNumber();
+  //else if(aod) BC = aod->GetBunchCrossNumber();
+
+
   CalibrateCellTime(cells,BC);
 
   PostData(1, fOutputContainer);
@@ -156,6 +180,7 @@ void AliAnalysisTaskPHOSTimeCalib::CalibrateCellTime(AliVCaloCells *cells, UShor
   Int_t timeshift = -999;
 
   Int_t multCells = cells->GetNumberOfCells();
+  //cout << "BC = " << BC << " , BC%4 = " << BC%4 << endl;
 
   Double_t value[4]={};
 
@@ -239,16 +264,22 @@ void AliAnalysisTaskPHOSTimeCalib::FillHistogram(const char * key,Double_t x)con
 void AliAnalysisTaskPHOSTimeCalib::FillHistogram(const char * key,Double_t x,Double_t y)const
 {
   //FillHistogram
-  TH1 * th1 = dynamic_cast<TH1*> (fOutputContainer->FindObject(key));
-  if(th1)
+  TObject * obj = fOutputContainer->FindObject(key);
+  TH1 * th1 = dynamic_cast<TH1*> (obj);
+  TH2 * th2 = dynamic_cast<TH2*> (obj);
+  if(th1){
     th1->Fill(x, y) ;
-  else
-    AliError(Form("can not find histogram (of instance TH1) <%s> ",key)) ;
+    return;
+  }
+  else if(th2){
+    th2->Fill(x, y) ;
+    return;
+  }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskPHOSTimeCalib::FillHistogram(const char * key, Double_t x,Double_t y, Double_t z) const
 {
-  //Fills 1D histograms with key
+  //FillHistogram
   TObject * obj = fOutputContainer->FindObject(key);
 
   TH2 * th2 = dynamic_cast<TH2*> (obj);

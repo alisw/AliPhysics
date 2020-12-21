@@ -25,5 +25,6 @@ add_subdirectory (ThermalFits)
 add_subdirectory (totEt)
 add_subdirectory (ppVsMult)
 add_subdirectory (NUCLEX)
+add_subdirectory (CommonUtils)
 
 message(STATUS "PWGLF enabled")

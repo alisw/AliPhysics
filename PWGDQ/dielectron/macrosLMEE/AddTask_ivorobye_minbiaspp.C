@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_ivorobye_minbiaspp(Bool_t getFromAlien=kFALSE,
                                         TString cFileName = "Config_ivorobye_pp.C",
                                         Char_t* outputFileName="LMEE_output.root",
                                         ULong64_t triggerMask = AliVEvent::kINT7,
-                                        Bool_t rejectPileup = kTRUE
+                                        Bool_t rejectPileup = kTRUE,
+                                        Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins
                                             )
 {
     
@@ -39,8 +40,11 @@ AliAnalysisTask *AddTask_ivorobye_minbiaspp(Bool_t getFromAlien=kFALSE,
     task->SetTriggerMask(triggerMask);
     task->SetTriggerOnV0AND(kTRUE); // only for cross-check
     
-    // SPD pile-up rejection with 3 contributors is applied only for min.bias analysis
-    if (rejectPileup) task->SetRejectPileup(kTRUE); // rejectPileup == kTRUE by default for min.bias
+    // SPD pile-up rejection in mult. bins
+    if (rejectPileup) {
+        task->SetRejectPileup(kTRUE);
+        task->SetPileupRejTool(pileuprej);
+    }
     
     // randomize daughters
     task->SetRandomizeDaughters(kTRUE);

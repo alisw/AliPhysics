@@ -72,10 +72,10 @@ private:
    TF1 *fFitInvGaussRejP;//fit function for second fit with gaussian to improve result
 
    // infput for fit functions
-   static Double_t Polynomial(Double_t *x, const Double_t *par);
-   static Double_t PolynomialRejP(Double_t *x, const Double_t *par);
-   static Double_t InvGauss(Double_t *x, const Double_t *par);
-   static Double_t InvGaussRejP(Double_t *x, const Double_t *par);
+   static Double_t Polynomial(Double_t *x, Double_t *par);
+   static Double_t PolynomialRejP(Double_t *x, Double_t *par);
+   static Double_t InvGauss(Double_t *x, Double_t *par);
+   static Double_t InvGaussRejP(Double_t *x, Double_t *par);
 
    //functions for fitting procedure
    void MakeFit(TH1D *dmproy, TF1 * fitpb, Double_t &mean, Double_t &ErrMean,  Double_t &excl,Double_t &range);

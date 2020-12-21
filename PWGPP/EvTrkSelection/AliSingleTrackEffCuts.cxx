@@ -29,6 +29,7 @@ AliAnalysisCuts(),
   fisAOD(kTRUE),
   fIsPdgCode(kFALSE),
   fPdgCode(0),
+  fMaxProdRadius(9999.),
   fEtaMin(-12),
   fEtaMax(12),
   fYMin(-12),
@@ -73,6 +74,7 @@ AliAnalysisCuts(name,title),
   fisAOD(kTRUE),
   fIsPdgCode(kFALSE),
   fPdgCode(0),
+  fMaxProdRadius(9999.),
   fEtaMin(-12),
   fEtaMax(12),
   fYMin(-12),
@@ -117,6 +119,7 @@ AliSingleTrackEffCuts::AliSingleTrackEffCuts(const AliSingleTrackEffCuts &source
   fisAOD(source.fisAOD),
   fIsPdgCode(source.fIsPdgCode),
   fPdgCode(source.fPdgCode),
+  fMaxProdRadius(source.fMaxProdRadius),
   fEtaMin(source.fEtaMin),
   fEtaMax(source.fEtaMax),
   fYMin(source.fYMin),
@@ -168,6 +171,7 @@ AliSingleTrackEffCuts &AliSingleTrackEffCuts::operator=(const AliSingleTrackEffC
 
   fIsPdgCode = source.fIsPdgCode;
   fPdgCode = source.fPdgCode;
+  fMaxProdRadius = source.fMaxProdRadius;
   fEtaMin = source.fEtaMin;
   fEtaMax = source.fEtaMax;
   fYMin = source.fYMin;
@@ -310,6 +314,7 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
   if(fIsCharged && (particle->Charge()==0)) isSelected = kFALSE;
 
   // Selection of Physical Primary particles
+  Double_t radius2=0.;
   if(!fisAOD) { // check on ESDs
     AliMCEventHandler* mcinfo = (AliMCEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());  	     
     AliMCEvent* mcevent = mcinfo->MCEvent();
@@ -318,11 +323,14 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
     if(!mcevent->IsPhysicalPrimary(mcPart->GetLabel())) {
       isSelected = kFALSE;
     }
+    radius2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
   } else { // Check on AODs
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle *>(obj);	    
     if (!mcPart) return kFALSE;
     if(!mcPart->IsPhysicalPrimary()) isSelected = kFALSE;
+    radius2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
   }
+  if(fMaxProdRadius<999. && radius2>fMaxProdRadius*fMaxProdRadius) isSelected = kFALSE;
 
   return isSelected;
 }

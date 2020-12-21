@@ -69,7 +69,7 @@ AliFemtoString AliFemtoBetaTPairCut::Report()
 
   report += TString::Format("Accept pair with betaT in range %f , %f", fBetaTMin, fBetaTMax);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //__________________

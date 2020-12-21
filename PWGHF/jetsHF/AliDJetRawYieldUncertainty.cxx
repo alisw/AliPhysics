@@ -33,6 +33,8 @@
 class TNtuple;
 #include "AliHFMultiTrials.h"
 
+#include <AliLog.h>
+
 #include "AliDJetVReader.h"
 
 #include "AliDJetRawYieldUncertainty.h"
@@ -61,8 +63,12 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fzmax(0),
   fnDbins(0),
   fDbinpTedges(nullptr),
-  fnJetbins(0),
-  fJetbinpTedges(nullptr),
+  fnDbinsForEff(0),
+  fDbinpTedgesForEff(nullptr),
+  fnJetPtbins(0),
+  fJetPtBinEdges(nullptr),
+  fnJetzbins(0),
+  fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
   fnSigmaSignReg(0),
   fnSigmaSideBandLeft1(0),
@@ -93,14 +99,22 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty():
   fReflRangeL(0),
   fReflRangeR(0),
   fCoherentChoice(kFALSE),
+  fUseBkgInBinEdges(kTRUE),
+  fEfficiencyWeightSB(kFALSE),
   fDebug(0),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
-  fJetYieldCentral(nullptr),
-  fJetYieldUnc(nullptr),
-  fJetSpectrSBVars(nullptr),
-  fJetSpectrSBDef(nullptr),
+  fMassVsJetzPlot(nullptr),
+  fJetPtYieldCentral(nullptr),
+  fJetPtYieldUnc(nullptr),
+  fJetPtSpectrSBVars(nullptr),
+  fJetPtSpectrSBDef(nullptr),
   fJetPtBinYieldDistribution(nullptr),
+  fJetzYieldCentral(nullptr),
+  fJetzYieldUnc(nullptr),
+  fJetzSpectrSBVars(nullptr),
+  fJetzSpectrSBDef(nullptr),
+  fJetzBinYieldDistribution(nullptr),
   fSuccess(kFALSE),
   fCanvases()
 {
@@ -126,8 +140,12 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fzmax(source.fzmax),
   fnDbins(0),
   fDbinpTedges(nullptr),
-  fnJetbins(0),
-  fJetbinpTedges(nullptr),
+  fnDbinsForEff(0),
+  fDbinpTedgesForEff(nullptr),
+  fnJetPtbins(0),
+  fJetPtBinEdges(nullptr),
+  fnJetzbins(0),
+  fJetzBinEdges(nullptr),
   fDEffValues(nullptr),
   fnSigmaSignReg(source.fnSigmaSignReg),
   fnSigmaSideBandLeft1(source.fnSigmaSideBandLeft1),
@@ -158,14 +176,22 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
   fReflRangeL(source.fReflRangeL),
   fReflRangeR(source.fReflRangeR),
   fCoherentChoice(source.fCoherentChoice),
+  fUseBkgInBinEdges(source.fUseBkgInBinEdges),
+  fEfficiencyWeightSB(source.fEfficiencyWeightSB),
   fDebug(source.fDebug),
   fMassPlot(nullptr),
   fMassVsJetPtPlot(nullptr),
-  fJetYieldCentral(nullptr),
-  fJetYieldUnc(nullptr),
-  fJetSpectrSBVars(nullptr),
-  fJetSpectrSBDef(nullptr),
+  fMassVsJetzPlot(nullptr),
+  fJetPtYieldCentral(nullptr),
+  fJetPtYieldUnc(nullptr),
+  fJetPtSpectrSBVars(nullptr),
+  fJetPtSpectrSBDef(nullptr),
   fJetPtBinYieldDistribution(nullptr),
+  fJetzYieldCentral(nullptr),
+  fJetzYieldUnc(nullptr),
+  fJetzSpectrSBVars(nullptr),
+  fJetzSpectrSBDef(nullptr),
+  fJetzBinYieldDistribution(nullptr),
   fSuccess(kFALSE),
   fCanvases()
 {
@@ -173,17 +199,22 @@ AliDJetRawYieldUncertainty::AliDJetRawYieldUncertainty(const AliDJetRawYieldUnce
     fnDbins = source.fnDbins;
     fDbinpTedges = new Double_t[fnDbins+1];
     memcpy(fDbinpTedges, source.fDbinpTedges, sizeof(Double_t)*(fnDbins+1));
-    fDEffValues = new Double_t[fnDbins+1];
-    memcpy(fDEffValues, source.fDEffValues, sizeof(Double_t)*(fnDbins+1));
     fSigmaToFixDPtBins = new Double_t[fnDbins+1];
     memcpy(fSigmaToFixDPtBins, source.fSigmaToFixDPtBins, sizeof(Double_t)*(fnDbins+1));
   }
-  if (source.fnJetbins > 0) {
-    fnJetbins = source.fnJetbins;
-    fJetbinpTedges = new Double_t[fnJetbins+1];
-    memcpy(fJetbinpTedges, source.fJetbinpTedges, sizeof(Double_t)*(fnJetbins+1));
-    fSigmaToFixJetPtBins = new Double_t[fnJetbins+1];
-    memcpy(fSigmaToFixJetPtBins, source.fSigmaToFixJetPtBins, sizeof(Double_t)*(fnJetbins+1));
+  if (source.fnDbinsForEff > 0) {
+    fnDbinsForEff = source.fnDbinsForEff;
+    fDbinpTedgesForEff = new Double_t[fnDbinsForEff+1];
+    memcpy(fDbinpTedgesForEff, source.fDbinpTedgesForEff, sizeof(Double_t)*(fnDbinsForEff+1));
+    fDEffValues = new Double_t[fnDbinsForEff+1];
+    memcpy(fDEffValues, source.fDEffValues, sizeof(Double_t)*(fnDbinsForEff+1));
+  }
+  if (source.fnJetPtbins > 0) {
+    fnJetPtbins = source.fnJetPtbins;
+    fJetPtBinEdges = new Double_t[fnJetPtbins+1];
+    memcpy(fJetPtBinEdges, source.fJetPtBinEdges, sizeof(Double_t)*(fnJetPtbins+1));
+    fSigmaToFixJetPtBins = new Double_t[fnJetPtbins+1];
+    memcpy(fSigmaToFixJetPtBins, source.fSigmaToFixJetPtBins, sizeof(Double_t)*(fnJetPtbins+1));
   }
   if (source.fnRebinSteps > 0) {
     fnRebinSteps = source.fnRebinSteps;
@@ -224,16 +255,28 @@ AliDJetRawYieldUncertainty::~AliDJetRawYieldUncertainty()
 
   if (fMassPlot) delete fMassPlot;
   if (fMassVsJetPtPlot) delete fMassVsJetPtPlot;
-  if (fJetYieldCentral) delete fJetYieldCentral;
-  if (fJetYieldUnc) delete fJetYieldUnc;
-  if (fJetSpectrSBVars) {
-    for (int i = 0; i < fnMaxTrials; i++) delete fJetSpectrSBVars[i];
-    delete[] fJetSpectrSBVars;
+  if (fMassVsJetzPlot) delete fMassVsJetzPlot;
+  if (fJetPtYieldCentral) delete fJetPtYieldCentral;
+  if (fJetPtYieldUnc) delete fJetPtYieldUnc;
+  if (fJetPtSpectrSBVars) {
+    for (int i = 0; i < fnMaxTrials; i++) delete fJetPtSpectrSBVars[i];
+    delete[] fJetPtSpectrSBVars;
   }
-  if (fJetSpectrSBDef) delete fJetSpectrSBDef;
+  if (fJetPtSpectrSBDef) delete fJetPtSpectrSBDef;
   if (fJetPtBinYieldDistribution) {
-    for (int i = 0; i < fnJetbins; i++) delete fJetPtBinYieldDistribution[i];
+    for (int i = 0; i < fnJetPtbins; i++) delete fJetPtBinYieldDistribution[i];
     delete[] fJetPtBinYieldDistribution;
+  }
+  if (fJetzYieldCentral) delete fJetzYieldCentral;
+  if (fJetzYieldUnc) delete fJetzYieldUnc;
+  if (fJetzSpectrSBVars) {
+    for (int i = 0; i < fnMaxTrials; i++) delete fJetzSpectrSBVars[i];
+    delete[] fJetzSpectrSBVars;
+  }
+  if (fJetzSpectrSBDef) delete fJetzSpectrSBDef;
+  if (fJetzBinYieldDistribution) {
+    for (int i = 0; i < fnJetzbins; i++) delete fJetzBinYieldDistribution[i];
+    delete[] fJetzBinYieldDistribution;
   }
   for (auto c : fCanvases) delete c;
 }
@@ -294,10 +337,11 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
   std::cout << "Configuration:\nD meson: " << fDmesonLabel << "\nMethod: " << fMethodLabel << std::endl;
 
   fDJetReader->SetPtBinEdgesForMassPlot(fpTmin, fpTmax);
-  fDJetReader->SetZedges(fzmin, fzmax);
-  fDJetReader->SetDmesonPtBins(fnDbins, fDbinpTedges);
-  fDJetReader->SetJetPtBins(fnJetbins, fJetbinpTedges);
+  fDJetReader->SetDmesonPtBins(fnDbinsForEff, fDbinpTedgesForEff);
+  fDJetReader->SetJetPtBins(fnJetPtbins, fJetPtBinEdges);
+  fDJetReader->SetJetzBins(fnJetzbins, fJetzBinEdges);
   fDJetReader->SetDmesonEfficiency(fDEffValues);
+  fDJetReader->SetEfficiencyWeightSB(fEfficiencyWeightSB);
 
   Bool_t success = kFALSE;
   switch (fYieldApproach) {
@@ -315,6 +359,7 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
   if (success) {
     fMassPlot = fDJetReader->GetMassPlot();
     fMassVsJetPtPlot = fDJetReader->GetMassVsJetPtPlot();
+    fMassVsJetzPlot = fDJetReader->GetMassVsJetzPlot();
     std::cout << "Extracted mass spectrum for fit variations" << std::endl;
     std::cout << "Mass spectrum entries: " << fMassPlot->GetEntries() << std::endl;
   }
@@ -325,7 +370,7 @@ Bool_t AliDJetRawYieldUncertainty::ExtractInputMassPlot()
 /**
  * Run the multi-trial analysis.
  */
-AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
+AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial(TString spectrum_name)
 {
   TH1::AddDirectory(kFALSE);
 
@@ -345,13 +390,13 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
 
   if(fDebug) std::cout << "D-meson mass: " << massD << std::endl;
 
-  TString outfilnam = TString::Format("RawYieldVariations_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  TString outfilnam = TString::Format("%s_RawYieldVariations_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
 
   Double_t sigmaToFix = 0;
   switch (fYieldApproach) {
   case kEffScale:
-    for (Int_t i = 0; i < fnJetbins; i++){
-      if (fpTmin == fJetbinpTedges[i]) {
+    for (Int_t i = 0; i < fnJetPtbins; i++){
+      if (fpTmin == fJetPtBinEdges[i]) {
         sigmaToFix = fSigmaToFixJetPtBins[i];
         Printf("InvMassFit, Jet pt Bin %d (%.2f, %.2f), sigma = %.5f", i, fpTmin, fpTmax, sigmaToFix);
         break;
@@ -396,6 +441,12 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
   mt->ConfigureRebinSteps(fnRebinSteps,fRebinSteps);
   mt->ConfigureLowLimFitSteps(fnMinMassSteps,fMinMassSteps);
   mt->ConfigureUpLimFitSteps(fnMaxMassSteps,fMaxMassSteps);
+  if ((fEfficiencyWeightSB || fYieldApproach == kEffScale) && IsHistogramWeighted()) {
+    mt->SetUseLikelihoodWithWeightsFit();
+  }
+  else {
+    mt->SetUseLogLikelihoodFit();
+  }
   if (fSaveInvMassFitCanvases) {
     mt->AddInvMassFitSaveAsFormat("pdf");
     mt->AddInvMassFitSaveAsFormat("root");
@@ -408,7 +459,7 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
   if (fDebug >= 2) mt->SetDrawIndividualFits(kTRUE);
 
   TString cname;
-  cname = TString::Format("MassFit_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  cname = TString::Format("%s_MassFit_%s_%s_%1.1fto%1.1f", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* c0 = new TCanvas(cname,cname);
   fCanvases.push_back(c0);
 
@@ -462,7 +513,7 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
 
   Bool_t isOK = mt->DoMultiTrials(fMassPlot, c0);
 
-  cname = TString::Format("AllTrials_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  cname = TString::Format("%s_AllTrials_%s_%s_%1.1fto%1.1f", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* cOut = new TCanvas(cname, cname);
   fCanvases.push_back(cOut);
   std::cout << "Has MultiTrial suceeded? " << isOK << std::endl;
@@ -476,19 +527,30 @@ AliHFMultiTrials* AliDJetRawYieldUncertainty::RunMultiTrial()
     return nullptr;
   }
 
-  fSuccess = CombineMultiTrialOutcomes();
+  fSuccess = CombineMultiTrialOutcomes(spectrum_name);
 
   return mt;
 }
 
 /**
+ * Checks whether efficiencies != 1
+ */
+Bool_t AliDJetRawYieldUncertainty::IsHistogramWeighted() const
+{
+  for (int i = 0; i < fnDbinsForEff; i++) {
+    if (fDEffValues[i] != 1) return kTRUE;
+  }
+  return kFALSE;
+}
+
+/**
  * Combines outcomes of the multi-trial run.
  */
-Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
+Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes(TString spectrum_name)
 {
   TH1::AddDirectory(kFALSE);
 
-  TString infilnam = TString::Format("RawYieldVariations_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  TString infilnam = TString::Format("%s_RawYieldVariations_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TFile fil(infilnam.Data());
 
   TString confCase[fgkNSigmaVar] = { "", "", "", "", "", "" };
@@ -600,7 +662,12 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
       TH1F* hchi2t = dynamic_cast<TH1F*>(fil.Get(hchi2name.Data()));
 
       TString hbkgname = histo[j]->GetName();
-      hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
+      if (fUseBkgInBinEdges) {
+        hbkgname.ReplaceAll("RawYield","BkgInBinEdges");
+      }
+      else {
+        hbkgname.ReplaceAll("RawYield","Bkg");
+      }
       TH1F* hbkg = dynamic_cast<TH1F*>(fil.Get(hbkgname.Data()));
 
       for (Int_t ib = 1; ib <= histo[j]->GetNbinsX(); ib++) {
@@ -666,7 +733,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
   hBkgAll->SetStats(0);
   hSigmaAll->SetMinimum(0.);
 
-  TString cname = TString::Format("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  TString cname = TString::Format("%s_All_%s_%s_%1.1fto%1.1f", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   TCanvas* call = new TCanvas(cname, cname, 1400 ,800);
   fCanvases.push_back(call);
   call->Divide(4,2);
@@ -768,7 +835,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
   TString outfilnam;
   TFile* outfile = nullptr;
 
-  outfilnam = TString::Format("RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
+  outfilnam = TString::Format("%s_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fpTmin, fpTmax);
   outfile = TFile::Open(outfilnam, "recreate");
   if (!outfile || outfile->IsZombie()) {
     Printf("Could not create file '%s'!", outfilnam.Data());
@@ -778,6 +845,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
     outfile->cd();
     call->Write();
     if (fMassVsJetPtPlot) fMassVsJetPtPlot->Write();
+    if (fMassVsJetzPlot) fMassVsJetzPlot->Write();
     outfile->Close();
     delete outfile;
     outfile = nullptr;
@@ -787,7 +855,7 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
   hUnc->SetBinContent(1, aver);
   hUnc->SetBinError(1, rms * aver / 100.);
 
-  outfilnam = TString::Format("Hist_%s", outfilnam.Data());
+  outfilnam = outfilnam.ReplaceAll("RawYieldSyst", "Hist_RawYieldSyst");
   outfile = TFile::Open(outfilnam, "recreate");
   if (!outfile || outfile->IsZombie()) {
     Printf("Could not create file '%s'!", outfilnam.Data());
@@ -810,17 +878,17 @@ Bool_t AliDJetRawYieldUncertainty::CombineMultiTrialOutcomes()
 /**
  * Evaluate final uncertainty.
  */
-Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty()
+Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty(TString spectrum_name)
 {
   TH1::AddDirectory(kFALSE);
 
   Bool_t success = kTRUE;
   switch (fYieldApproach) {
   case kEffScale:
-    success = EvaluateUncertaintyEffScale();
+    success = EvaluateUncertaintyEffScale(spectrum_name);
     break;
   case kSideband:
-    success = EvaluateUncertaintySideband();
+    success = EvaluateUncertaintySideband(spectrum_name);
     break;
   default:
     break;
@@ -834,31 +902,35 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertainty()
 /**
  * Evaluate final uncertainty for the efficiency scaled method.
  */
-Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
+Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale(TString spectrum_name)
 {
+  if (fnJetPtbins == 0) {
+    AliErrorStream() << "Jet spectrum pT bin edges not set!" << std::endl;
+    return kFALSE;
+  }
   std::cout << "Jet spectrum pT bin edges: ";
-  for (int i = 0; i < fnJetbins; i++) std::cout << fJetbinpTedges[i] << " - ";
-  std::cout << fJetbinpTedges[fnJetbins] << std::endl;
+  for (int i = 0; i < fnJetPtbins; i++) std::cout << fJetPtBinEdges[i] << " - ";
+  std::cout << fJetPtBinEdges[fnJetPtbins] << std::endl;
 
-  fJetYieldUnc = new TH1D("JetRawYieldUncert", "Raw yield uncertainty on jet spectrum - Dzero - Eff.scaling", fnJetbins, fJetbinpTedges);
-  fJetYieldCentral = new TH1D("JetRawYieldCentral", "Jet spectrum central values + syst yield uncertainty - Dzero - Eff.scaling", fnJetbins, fJetbinpTedges);
+  fJetPtYieldUnc = new TH1D("JetPtRawYieldUncert", "Raw yield uncertainty on jet pt spectrum - Dzero - Eff.scaling", fnJetPtbins, fJetPtBinEdges);
+  fJetPtYieldCentral = new TH1D("JetPtRawYieldCentral", "Jet pt spectrum central values + syst yield uncertainty - Dzero - Eff.scaling", fnJetPtbins, fJetPtBinEdges);
 
   TH1D *hUnc = 0;
 
   // loop over the jet pT bins already extracted
-  for (int ibin = 0; ibin < fnJetbins; ibin++) {
-    TString fname = TString::Format("Hist_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]);
+  for (int ibin = 0; ibin < fnJetPtbins; ibin++) {
+    TString fname = TString::Format("%s_Hist_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fJetPtBinEdges[ibin], fJetPtBinEdges[ibin+1]);
     if (fDebug) std::cout << fname.Data() << std::endl;
     TFile f(fname, "read");
     if (f.IsZombie()) {
-      std::cout << "Uncertainty file for bin " << fJetbinpTedges[ibin] << " - " << fJetbinpTedges[ibin+1] << " cannot be opened! Did you already evaluate it?" << std::endl;
+      std::cout << "Uncertainty file for bin " << fJetPtBinEdges[ibin] << " - " << fJetPtBinEdges[ibin+1] << " cannot be opened! Did you already evaluate it?" << std::endl;
       return kFALSE;
     }
     else {
-      if (fDebug) std::cout << "Building uncertainty for bin " << fJetbinpTedges[ibin] << " - " << fJetbinpTedges[ibin+1] << std::endl;
+      if (fDebug) std::cout << "Building uncertainty for bin " << fJetPtBinEdges[ibin] << " - " << fJetPtBinEdges[ibin+1] << std::endl;
     }
 
-    hUnc = dynamic_cast<TH1D*>(f.Get(Form("hUnc_%1.1fto%1.1f", fJetbinpTedges[ibin], fJetbinpTedges[ibin+1])));
+    hUnc = dynamic_cast<TH1D*>(f.Get(Form("hUnc_%1.1fto%1.1f", fJetPtBinEdges[ibin], fJetPtBinEdges[ibin+1])));
     if (!hUnc) {
       std::cout << "Histogram with uncertainty from mass plot not found! Returning..." << std::endl;
       f.Close();
@@ -868,27 +940,38 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
     Double_t centrYield = hUnc->GetBinContent(1);
     Double_t rmsPct = hUnc->GetBinError(1);
 
-    fJetYieldUnc->SetBinContent(ibin+1, rmsPct);
-    fJetYieldCentral->SetBinContent(ibin+1, centrYield);
-    fJetYieldCentral->SetBinError(ibin+1, rmsPct);
+    fJetPtYieldUnc->SetBinContent(ibin+1, rmsPct);
+    fJetPtYieldCentral->SetBinContent(ibin+1, centrYield);
+    fJetPtYieldCentral->SetBinError(ibin+1, rmsPct);
     f.Close();
   }
 
-  fJetYieldUnc->SetStats(kFALSE);
-  fJetYieldUnc->Draw();
-  fJetYieldUnc->SaveAs(Form("FinalRawYieldUncertainty_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
-  fJetYieldCentral->SetStats(kFALSE);
-  fJetYieldCentral->Draw();
-  fJetYieldCentral->SaveAs(Form("FinalRawYieldCentralPlusSystUncertainty_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
+  fJetPtYieldUnc->SetStats(kFALSE);
+  fJetPtYieldUnc->Draw();
+  fJetPtYieldUnc->SaveAs(Form("%s_FinalRawYieldUncertainty_JetPt_%s_%s.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
+  fJetPtYieldCentral->SetStats(kFALSE);
+  fJetPtYieldCentral->Draw();
+  fJetPtYieldCentral->SaveAs(Form("%s_FinalRawYieldCentralPlusSystUncertainty_JetPt_%s_%s.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
 
   // print distribution of yields for each variation
-  for (int ibin = 0; ibin < fnJetbins; ibin++) {
-    TFile f2(Form("RawYieldSyst_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]), "read");
-    TString cname = TString::Format("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]);
+  for (int ibin = 0; ibin < fnJetPtbins; ibin++) {
+    TFile f2(Form("%s_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fJetPtBinEdges[ibin], fJetPtBinEdges[ibin+1]), "read");
+    TString cname = TString::Format("%s_All_%s_%s_%1.1fto%1.1f", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fJetPtBinEdges[ibin], fJetPtBinEdges[ibin+1]);
     TCanvas *c = dynamic_cast<TCanvas*>(f2.Get(cname));
+    if (c) {
+      AliInfoStream() << "Canvas '" << cname.Data() << "'" << " loaded" << std::endl;
+    }
+    else {
+      AliErrorStream() << "Could not find canvas '" << cname.Data() << "' in file '" << f2.GetName() << "'." << std::endl;
+      throw;
+    }
     TH1F *hDist = dynamic_cast<TH1F*>(c->FindObject("hRawYieldDistAll"));
+    if (!c) {
+      AliErrorStream() << "Could not find histogram 'hRawYieldDistAll'." << std::endl;
+      throw;
+    }
     hDist->SetStats(kTRUE);
-    hDist->SaveAs(Form("YieldDistribution_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[ibin], fJetbinpTedges[ibin+1]));
+    hDist->SaveAs(Form("%s_YieldDistribution_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fJetPtBinEdges[ibin], fJetPtBinEdges[ibin+1]));
     f2.Close();
   }
 
@@ -897,21 +980,21 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintyEffScale()
 
 /**
  * Generate the jet pt spectrum for a given D-meson pt bin (side-band method).
- * @param[in] hInvMassJetPt Valid pointer to a 2-dimensional histogram with x = inv.mass and y = jet pt
+ * @param[in] hInvMassJetObs Valid pointer to a 2-dimensional histogram with x = inv.mass and y = jet observable (pt, z, etc.)
  * @param[in] mean Mean of the invariant mass fit in the D meson pt bin
  * @param[in] sigma Sigma of the invariant mass fit in the D meson pt bin
  * @param[in] bkg Background of the invariant mass fit in the D meson pt bin
  * @param[in] iDbin D meson pt bin
- * @param[out] hjetpt Valid pointer to a histogram which will be filled with the subtracted jet pt spectrum
- * @param[out] hjetpt_s Valid pointer to a histogram which will be filled with the side-band jet pt spectrum
- * @param[out] hjetpt_s1 Valid pointer to a histogram which will be filled with the side-band jet pt spectrum (left)
- * @param[out] hjetpt_s2 Valid pointer to a histogram which will be filled with the side-band jet pt spectrum (right)
+ * @param[out] hjetobs Valid pointer to a histogram which will be filled with the subtracted jet spectrum
+ * @param[out] hjetobs_s Valid pointer to a histogram which will be filled with the side-band jet spectrum
+ * @param[out] hjetobs_s1 Valid pointer to a histogram which will be filled with the side-band jet spectrum (left)
+ * @param[out] hjetobs_s2 Valid pointer to a histogram which will be filled with the side-band jet spectrum (right)
  * @return kTRUE if successful
  */
-Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2)
+Bool_t AliDJetRawYieldUncertainty::GenerateJetSpectrum(TH2* hInvMassJetObs, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetobs, TH1* hjetobs_s, TH1* hjetobs_s1, TH1* hjetobs_s2)
 {
-  Double_t jetmin = 5;
-  Double_t jetmax = 30;
+  Double_t jetmin = hjetobs->GetXaxis()->GetXmin();
+  Double_t jetmax = hjetobs->GetXaxis()->GetXmax();
 
   Float_t signal_l_min = mean - fnSigmaSideBandLeft1 * sigma;
   Float_t signal_l_max = mean - fnSigmaSideBandLeft2 * sigma;
@@ -921,46 +1004,56 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
   Float_t signal_c_max = mean + fnSigmaSignReg * sigma;
 
   //extract signal and sideband region spectra
-  TH1* tmphjetpt = hInvMassJetPt->ProjectionY(Form("tmphjetpt%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_c_min), hInvMassJetPt->GetXaxis()->FindBin(signal_c_max));
-  TH1* tmphjetpt_s1 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s1%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_l_min), hInvMassJetPt->GetXaxis()->FindBin(signal_l_max));
-  TH1* tmphjetpt_s2 = hInvMassJetPt->ProjectionY(Form("tmphjetpt_s2%d",iDbin), hInvMassJetPt->GetXaxis()->FindBin(signal_u_min), hInvMassJetPt->GetXaxis()->FindBin(signal_u_max));
-  TH1* tmphjetpt_s = static_cast<TH1*>(tmphjetpt_s1->Clone(Form("tmphjetpt_s%d",iDbin)));
-  tmphjetpt_s->Add(tmphjetpt_s2);
+  TH1* tmphjet = hInvMassJetObs->ProjectionY(Form("tmphjetobs%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_c_min), hInvMassJetObs->GetXaxis()->FindBin(signal_c_max));
+  TH1* tmphjet_s1 = hInvMassJetObs->ProjectionY(Form("tmphjetobs_s1%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_l_min), hInvMassJetObs->GetXaxis()->FindBin(signal_l_max));
+  TH1* tmphjet_s2 = hInvMassJetObs->ProjectionY(Form("tmphjetobs_s2%d",iDbin), hInvMassJetObs->GetXaxis()->FindBin(signal_u_min), hInvMassJetObs->GetXaxis()->FindBin(signal_u_max));
+  TH1* tmphjet_s = static_cast<TH1*>(tmphjet_s1->Clone(Form("tmphjetobs_s%d",iDbin)));
+  tmphjet_s->Add(tmphjet_s2);
 
   // scale background from side bands to the background under the peak
-  if (tmphjetpt_s->Integral() == 0) {
+  if (tmphjet_s->Integral() == 0) {
     std::cout << "Error! At least one variation with no entries! Exiting..." << std::endl;
     return kFALSE;
   }
-  Double_t scaling = bkg / tmphjetpt_s->Integral(tmphjetpt_s->FindBin(jetmin+0.0001), tmphjetpt_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
+  Double_t scaling = bkg / tmphjet_s->Integral(tmphjet_s->FindBin(jetmin+0.0001), tmphjet_s->FindBin(jetmax-0.0001)); //integral btw jetmin and jetmax (where you get the bkg from the mass plot)
   Printf("Background scaling factor = %.6f", scaling);
-  for (int j = 1; j <= tmphjetpt->GetNbinsX(); j++) {
-    Double_t centerbin = tmphjetpt->GetBinCenter(j); //bin of hjetpt corresponding to j-th bin of THnSparse projection
-    hjetpt->Fill(centerbin, tmphjetpt->GetBinContent(j));
-    hjetpt_s1->Fill(centerbin, tmphjetpt_s1->GetBinContent(j));
-    hjetpt_s2->Fill(centerbin, tmphjetpt_s2->GetBinContent(j));
-    hjetpt_s->Fill(centerbin, tmphjetpt_s->GetBinContent(j));
-  }
-  for (int j = 1; j <= hjetpt->GetNbinsX(); j++) {
-    hjetpt->SetBinError(j, TMath::Sqrt(hjetpt->GetBinContent(j)));
-    hjetpt_s1->SetBinError(j, TMath::Sqrt(hjetpt_s1->GetBinContent(j)));
-    hjetpt_s2->SetBinError(j, TMath::Sqrt(hjetpt_s2->GetBinContent(j)));
-    hjetpt_s->SetBinError(j, TMath::Sqrt(hjetpt_s->GetBinContent(j)));
+  for (int j = 1; j <= tmphjet->GetNbinsX(); j++) {
+    Int_t bin = hjetobs->GetXaxis()->FindBin(tmphjet->GetBinCenter(j));
+    hjetobs->SetBinContent(bin, hjetobs->GetBinContent(bin) + tmphjet->GetBinContent(j));
+    hjetobs->SetBinError(bin, TMath::Sqrt(hjetobs->GetBinError(bin)*hjetobs->GetBinError(bin) + tmphjet->GetBinError(j)*tmphjet->GetBinError(j)));
+
+    hjetobs_s1->SetBinContent(bin, hjetobs_s1->GetBinContent(bin) + tmphjet_s1->GetBinContent(j));
+    hjetobs_s1->SetBinError(bin, TMath::Sqrt(hjetobs_s1->GetBinError(bin)*hjetobs_s1->GetBinError(bin) + tmphjet_s1->GetBinError(j)*tmphjet_s1->GetBinError(j)));
+
+    hjetobs_s2->SetBinContent(bin, hjetobs_s2->GetBinContent(bin) + tmphjet_s2->GetBinContent(j));
+    hjetobs_s2->SetBinError(bin, TMath::Sqrt(hjetobs_s2->GetBinError(bin)*hjetobs_s2->GetBinError(bin) + tmphjet_s2->GetBinError(j)*tmphjet_s2->GetBinError(j)));
+
+    hjetobs_s->SetBinContent(bin, hjetobs_s->GetBinContent(bin) + tmphjet_s->GetBinContent(j));
+    hjetobs_s->SetBinError(bin, TMath::Sqrt(hjetobs_s->GetBinError(bin)*hjetobs_s->GetBinError(bin) + tmphjet_s->GetBinError(j)*tmphjet_s->GetBinError(j)));
   }
 
-  hjetpt_s->Scale(scaling);
+  hjetobs_s->Scale(scaling);
 
   // subtract background from signal jet
-  hjetpt->Add(hjetpt_s, -1);
+  hjetobs->Add(hjetobs_s, -1);
 
   // correct for D* efficiency
-  hjetpt->Scale(1. / fDEffValues[iDbin]); // D efficiency
-  hjetpt->SetMarkerColor(kBlue + 3);
-  hjetpt->SetLineColor(kBlue + 3);
+  if (!fEfficiencyWeightSB) hjetobs->Scale(1. / fDEffValues[iDbin]); // D efficiency
+  hjetobs->SetMarkerColor(kBlue + 3);
+  hjetobs->SetLineColor(kBlue + 3);
 
   //Normalize to full range the signal range (from fnSigmaSignReg range)
-  Double_t normNsigma = 1.0 - TMath::Erfc(fnSigmaSignReg / TMath::Sqrt2());
-  hjetpt->Scale(1.0 / normNsigma);
+  Double_t normNsigma = 1.0;
+  if (!fUseBkgInBinEdges) {
+    normNsigma -= TMath::Erfc(fnSigmaSignReg / TMath::Sqrt2());
+  }
+  else {
+    Double_t effSigma1 = (mean - hInvMassJetObs->GetXaxis()->GetBinLowEdge(hInvMassJetObs->GetXaxis()->FindBin(mean - fnSigmaSignReg * sigma))) / sigma;
+    Double_t effSigma2 = (hInvMassJetObs->GetXaxis()->GetBinUpEdge(hInvMassJetObs->GetXaxis()->FindBin(mean + fnSigmaSignReg * sigma)) - mean) / sigma;
+    normNsigma -= TMath::Erfc(effSigma1 / TMath::Sqrt2()) / 2 + TMath::Erfc(effSigma2 / TMath::Sqrt2()) / 2;
+    Printf("The left effective sigma is %.3f. The right effective sigma is %.3f.", effSigma1, effSigma2);
+  }
+  hjetobs->Scale(1.0 / normNsigma);
   return kTRUE;
 }
 
@@ -968,53 +1061,90 @@ Bool_t AliDJetRawYieldUncertainty::GenerateJetPtSpectrum(TH2* hInvMassJetPt, Dou
  * Evaluate final uncertainty for the side-band method.
  * @return kTRUE if successful
  */
-Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
+Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband(TString spectrum_name)
+{
+  Bool_t s = kTRUE;
+
+  if (fnJetPtbins > 1) {
+    SBResults jetPtRes = EvaluateUncertaintySideband(spectrum_name, "Pt", fnJetPtbins, fJetPtBinEdges);
+    fJetPtYieldCentral = jetPtRes.fJetYieldCentral;
+    fJetPtYieldUnc = jetPtRes.fJetYieldUnc;
+    fJetPtSpectrSBVars = jetPtRes.fJetSpectrSBVars;
+    fJetPtSpectrSBDef = jetPtRes.fJetSpectrSBDef;
+    fJetPtBinYieldDistribution = jetPtRes.fJetBinYieldDistribution;
+    s = s && jetPtRes.fSuccess;
+  }
+
+  if (fnJetzbins > 1) {
+    SBResults jetzRes = EvaluateUncertaintySideband(spectrum_name, "z", fnJetzbins, fJetzBinEdges);
+    fJetzYieldCentral = jetzRes.fJetYieldCentral;
+    fJetzYieldUnc = jetzRes.fJetYieldUnc;
+    fJetzSpectrSBVars = jetzRes.fJetSpectrSBVars;
+    fJetzSpectrSBDef = jetzRes.fJetSpectrSBDef;
+    fJetzBinYieldDistribution = jetzRes.fJetBinYieldDistribution;
+    s = s && jetzRes.fSuccess;
+  }
+
+  return s;
+}
+
+/**
+ * Evaluate final uncertainty for the side-band method.
+ * @return kTRUE if successful
+ */
+AliDJetRawYieldUncertainty::SBResults AliDJetRawYieldUncertainty::EvaluateUncertaintySideband(TString spectrum_name, TString obs, Int_t nJetBins, Double_t* jetBinEdges)
 {
   TRandom2 gen;
   gen.SetSeed(0);
 
+  TH1F* jetSpectrSBDef = 0;
+  TH1D* jetYieldUnc = 0;
+  TH1D* jetYieldCentral = 0;
+  TH1F** jetBinYieldDistribution = 0;
+
   //define list of histograms, one per variation
-  fJetSpectrSBVars = new TH1F*[fnMaxTrials];
-  for(Int_t k=0; k<fnMaxTrials; k++) fJetSpectrSBVars[k] = nullptr;
+  TH1F** jetSpectrSBVars = new TH1F*[fnMaxTrials];
+  for(Int_t k=0; k<fnMaxTrials; k++) jetSpectrSBVars[k] = nullptr;
 
   //for debug and thorough studies
-  Double_t arrYldBinPerBin[fnDbins][fnJetbins][fnMaxTrials];
-  for (Int_t i = 0; i < fnDbins; i++) for(Int_t j=0; j<fnJetbins; j++) for(Int_t k=0; k<fnMaxTrials; k++) arrYldBinPerBin[i][j][k] = 0;
+  Double_t arrYldBinPerBin[fnDbins][nJetBins][fnMaxTrials];
+  for (Int_t i = 0; i < fnDbins; i++) for(Int_t j=0; j<nJetBins; j++) for(Int_t k=0; k<fnMaxTrials; k++) arrYldBinPerBin[i][j][k] = 0;
 
   TString fname;
   TString cname;
   for (int iDbin = 0; iDbin < fnDbins; iDbin++) {
     if (fDebug) std::cout << "Running bin pT(D) " << iDbin << std::endl;
 
-    TH1* hjetpt = new TH1F(Form("hjetpt%d",iDbin), "hJetPt_signReg_Rebinned", fnJetbins, fJetbinpTedges);
-    TH1* hjetpt_s1 = new TH1F(Form("hjetpt_s1%d",iDbin), "hJetPt_sb1_Rebinned", fnJetbins, fJetbinpTedges);
-    TH1* hjetpt_s2 = new TH1F(Form("hjetpt_s2%d",iDbin), "hJetPt_sb2_Rebinned", fnJetbins, fJetbinpTedges);
-    TH1* hjetpt_s = new TH1F(Form("hjetpt_s%d",iDbin), "hJetPt_sb2_Rebinned", fnJetbins, fJetbinpTedges);
-    hjetpt->Sumw2();
-    hjetpt_s1->Sumw2();
-    hjetpt_s2->Sumw2();
-    hjetpt_s->Sumw2();
+    TH1* hjet = new TH1F(Form("hjet%d",iDbin), "hjet_signReg_Rebinned", nJetBins, jetBinEdges);
+    TH1* hjet_s1 = new TH1F(Form("hjet_s1%d",iDbin), "hjet_sb1_Rebinned", nJetBins, jetBinEdges);
+    TH1* hjet_s2 = new TH1F(Form("hjet_s2%d",iDbin), "hjet_sb2_Rebinned", nJetBins, jetBinEdges);
+    TH1* hjet_s = new TH1F(Form("hjet_s%d",iDbin), "hjet_sb2_Rebinned", nJetBins, jetBinEdges);
+    hjet->Sumw2();
+    hjet_s1->Sumw2();
+    hjet_s2->Sumw2();
+    hjet_s->Sumw2();
 
     //open file with summary of variations from MultiTrial - get histos of variations
-    fname = TString::Format("RawYieldSyst_%s_%s_%1.1fto%1.1f.root",fDmesonLabel.Data(),fMethodLabel.Data(),fDbinpTedges[iDbin],fDbinpTedges[iDbin+1]);
+    fname = TString::Format("%s_RawYieldSyst_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), fDbinpTedges[iDbin], fDbinpTedges[iDbin+1]);
     TFile fileMult(fname, "read");
     if (fileMult.IsZombie()) {
       std::cout << "Uncertainty file for bin " << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin+1] << " cannot be opened! Did you already evaluate it?" << std::endl;
-      return kFALSE;
+      return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
     }
     if (fDebug) Printf("File '%s' open successfully.", fname.Data());
-    TH2* hInvMassJetPt = dynamic_cast<TH2*>(fileMult.Get("hInvMassJetPt"));
-    if (!hInvMassJetPt) {
-      Printf("Could not find histogram hInvMassJetPt!");
+    TString hname = TString::Format("hInvMassJet%s", obs.Data());
+    TH2* hInvMassJet = dynamic_cast<TH2*>(fileMult.Get(hname));
+    if (!hInvMassJet) {
+      Printf("Could not find histogram %s!", hname.Data());
       fileMult.Close();
-      return kFALSE;
+      return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
     }
-    cname = Form("All_%s_%s_%1.1fto%1.1f", fDmesonLabel.Data(), fMethodLabel.Data(),fDbinpTedges[iDbin],fDbinpTedges[iDbin+1]);
+    cname = Form("%s_All_%s_%s_%1.1fto%1.1f", spectrum_name.Data(), fDmesonLabel.Data(), fMethodLabel.Data(),fDbinpTedges[iDbin],fDbinpTedges[iDbin+1]);
     TCanvas *c = dynamic_cast<TCanvas*>(fileMult.Get(cname));
     if (!c) {
       Printf("Could not find canvas '%s'!", cname.Data());
       fileMult.Close();
-      return kFALSE;
+      return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
     }
     TH1F *hMean = dynamic_cast<TH1F*>(c->FindObject("hMeanAll"));
     TH1F *hSigma = dynamic_cast<TH1F*>(c->FindObject("hSigmaAll"));
@@ -1023,18 +1153,41 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
 
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());
 
-    fname = TString::Format("RawYieldVariations_Dzero_SideBand_%1.1fto%1.1f.root", fDbinpTedges[iDbin], fDbinpTedges[iDbin + 1]);
+    fname = TString::Format("%s_RawYieldVariations_Dzero_SideBand_%1.1fto%1.1f.root", spectrum_name.Data(), fDbinpTedges[iDbin], fDbinpTedges[iDbin + 1]);
     TFile fileMultVar(fname, "read");
     if (fileMultVar.IsZombie()) {
       std::cout << "Uncertainty file for bin " << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin + 1] << " cannot be opened! Did you already evaluate it?" << std::endl;
-      return kFALSE;
+      return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
     }
     if (fDebug) Printf("File '%s' open successfully.", fname.Data());
     if (fDebug) std::cout << "Default trial" << " TrialExpoFreeS" << std::endl;
     TH1F *hMeanDef = static_cast<TH1F*>(fileMultVar.Get("hMeanTrialExpoFreeS"));
+    if (!hMeanDef) {
+      AliErrorStream() << "Could not find histogram 'hMeanTrialExpoFreeS'" << std::endl;
+      throw;
+    }
     TH1F *hSigmaDef = static_cast<TH1F*>(fileMultVar.Get("hSigmaTrialExpoFreeS"));
-    TH1F *hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
+    if (!hSigmaDef) {
+      AliErrorStream() << "Could not find histogram 'hSigmaTrialExpoFreeS'" << std::endl;
+      throw;
+    }
+    TH1F *hBkgDef = 0;
+    if (fUseBkgInBinEdges) {
+      hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgInBinEdgesTrialExpoFreeS"));
+    }
+    else {
+      hBkgDef = static_cast<TH1F*>(fileMultVar.Get("hBkgTrialExpoFreeS"));
+    }
+    if (!hBkgDef) {
+      AliErrorStream() << "Could not find histogram 'hBkgInBinEdgesTrialExpoFreeS' or 'hBkgTrialExpoFreeS'" << std::endl;
+      throw;
+    }
+
     TH1F *hRawYieldDef = static_cast<TH1F*>(fileMultVar.Get("hRawYieldTrialExpoFreeS"));
+    if (!hRawYieldDef) {
+      AliErrorStream() << "Could not find histogram 'hRawYieldTrialExpoFreeS'" << std::endl;
+      throw;
+    }
     fileMultVar.Close();
     if (fDebug) Printf("File '%s' closed successfully.", fname.Data());
 
@@ -1048,28 +1201,28 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       std::cout << "Error while generating spectrum for TrialExpoFreeS variation: trial did not converge!" << std::endl;
     }
 
-    Bool_t resDefSpectrum = GenerateJetPtSpectrum(hInvMassJetPt, meanDef, sigmaDef, bkgDef, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
+    Bool_t resDefSpectrum = GenerateJetSpectrum(hInvMassJet, meanDef, sigmaDef, bkgDef, iDbin, hjet, hjet_s, hjet_s1, hjet_s2);
     if (!resDefSpectrum) {
       std::cout << "Error while generating spectrum for TrialExpoFreeS variation" << std::endl;
-      return kFALSE;
+      return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
     }
 
     // add 'iDbin' pT(D) bin to total spectrum for variation 'iTrial'
-    if (!iDbin) fJetSpectrSBDef = (TH1F*)hjetpt->Clone("fJetSpectrSBDef");
-    else fJetSpectrSBDef->Add(hjetpt);
+    if (!iDbin) jetSpectrSBDef = static_cast<TH1F*>(hjet->Clone(TString::Format("fJet%sSpectrSBDef", obs.Data())));
+    else jetSpectrSBDef->Add(hjet);
 
-    hjetpt->SaveAs(Form("TrialExpoFreeS_%s_%s_%d.root", fDmesonLabel.Data(),fMethodLabel.Data(), iDbin));
+    hjet->SaveAs(Form("%s_TrialExpoFreeS_Jet%s_%s_%s_%d.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(),fMethodLabel.Data(), iDbin));
 
-    hjetpt->Reset();
-    hjetpt_s1->Reset();
-    hjetpt_s2->Reset();
-    hjetpt_s->Reset();
+    hjet->Reset();
+    hjet_s1->Reset();
+    hjet_s2->Reset();
+    hjet_s->Reset();
 
     if (fnMaxTrials > 0) {
       if (!fAllowRepetitions && fnMaxTrials > hMean->GetNbinsX()) {
         std::cout << "Error! you set more set spectrum total variations than those done for pT(D) bin" << fDbinpTedges[iDbin] << " - " << fDbinpTedges[iDbin+1] << "! ";
         std::cout << "Impossible to do without allowing repetitions! Exiting..." << std::endl;
-        return kFALSE;
+        return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
       }
 
       if (fDebug) std::cout << "Running bin pT(D) " << iDbin << std::endl;
@@ -1083,6 +1236,8 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
           jTrial = iTrial;
         }
         else {
+          const int maxAttempts = fnMaxTrials * 1000;
+          int attempts = 0;
           do {  //just one time if fAllowRepetitions==kTRUE, repeat extraction till new number is obtained if fAllowRepetitions==kFALSE
             jTrial = gen.Integer(hMean->GetNbinsX()) + 1;
 
@@ -1091,8 +1246,14 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
 
             //check if already extracted for this pT(D) bin
             if (!fAllowRepetitions && extracted.find(jTrial) != extracted.end()) extractOk = kFALSE;
-          } while (extractOk == kFALSE);
+            attempts++;
+          } while (extractOk == kFALSE && attempts < maxAttempts);
+          if (attempts >= maxAttempts) {
+            AliErrorStream() << "After " << attempts << " attempts, no valid trial was found! Stopping at " << iTrial << " trials" << std::endl;
+            break;
+          }
         }
+
         extracted.insert(jTrial);
 
         Double_t mean = hMean->GetBinContent(jTrial);
@@ -1101,92 +1262,92 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
 
         std::cout << "Mean " << mean << ", sigma " << sigma << ", bkg " << bkg << std::endl;
 
-        Bool_t resSpectrum = GenerateJetPtSpectrum(hInvMassJetPt, mean, sigma, bkg, iDbin, hjetpt, hjetpt_s, hjetpt_s1, hjetpt_s2);
+        Bool_t resSpectrum = GenerateJetSpectrum(hInvMassJet, mean, sigma, bkg, iDbin, hjet, hjet_s, hjet_s1, hjet_s2);
         if (!resSpectrum) {
           std::cout << "Error while generating spectrum for one of the variations" << std::endl;
-          return kFALSE;
+          return {kFALSE, nullptr, nullptr, nullptr, nullptr, nullptr};
         }
 
         // for every trial of every pT(D) bin, save the value of the yield, after eff scaling, in each pT(jet) bin (to study pT(D)->pT(jet) yield correlations)
-        for (int l = 0; l < hjetpt->GetNbinsX(); l++) arrYldBinPerBin[iDbin][l][iTrial] = hjetpt->GetBinContent(l + 1);
+        for (int l = 0; l < hjet->GetNbinsX(); l++) arrYldBinPerBin[iDbin][l][iTrial] = hjet->GetBinContent(l + 1);
 
         // add 'iDbin' pT(D) bin to total spectrum for variation 'iTrial'
-        if( !iDbin) fJetSpectrSBVars[iTrial] = static_cast<TH1F*>(hjetpt->Clone(Form("JetRawYieldUncert_%d", iTrial)));
-        else fJetSpectrSBVars[iTrial]->Add(hjetpt);
+        if( !iDbin) jetSpectrSBVars[iTrial] = static_cast<TH1F*>(hjet->Clone(Form("Jet%sRawYieldUncert_%d", obs.Data(), iTrial)));
+        else jetSpectrSBVars[iTrial]->Add(hjet);
 
-        hjetpt->Reset();
-        hjetpt_s1->Reset();
-        hjetpt_s2->Reset();
-        hjetpt_s->Reset();
+        hjet->Reset();
+        hjet_s1->Reset();
+        hjet_s2->Reset();
+        hjet_s->Reset();
       } //end loop on trials for sideband approach
     }
-    delete hjetpt;
-    delete hjetpt_s1;
-    delete hjetpt_s2;
-    delete hjetpt_s;
+    delete hjet;
+    delete hjet_s1;
+    delete hjet_s2;
+    delete hjet_s;
   } //end loop on pT(D) bins
 
-  fJetSpectrSBDef->SetStats(kFALSE);
-  fJetSpectrSBDef->Draw();
-  fJetSpectrSBDef->SaveAs(Form("TrialExpoFreeS_%s_%s.root", fDmesonLabel.Data(),fMethodLabel.Data()));
+  jetSpectrSBDef->SetStats(kFALSE);
+  jetSpectrSBDef->Draw();
+  jetSpectrSBDef->SaveAs(Form("%s_TrialExpoFreeS_Jet%s_%s_%s.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(),fMethodLabel.Data()));
   if (fnMaxTrials > 0) {
     //Now evaluate central value + rms in each pT(jet) bin to build the uncertainty
-    Double_t arrYld[fnJetbins][fnMaxTrials];
-    for (Int_t i = 0; i < fnJetbins; i++) for (Int_t j = 0; j < fnMaxTrials; j++) arrYld[i][j] = 0;
+    Double_t arrYld[nJetBins][fnMaxTrials];
+    for (Int_t i = 0; i < nJetBins; i++) for (Int_t j = 0; j < fnMaxTrials; j++) arrYld[i][j] = 0;
 
-    fJetPtBinYieldDistribution = new TH1F*[fnJetbins];
-    for (int i = 0; i < fnJetbins; i++) fJetPtBinYieldDistribution[i] = nullptr;
+    jetBinYieldDistribution = new TH1F*[nJetBins];
+    for (int i = 0; i < nJetBins; i++) jetBinYieldDistribution[i] = nullptr;
 
-    fJetYieldUnc = static_cast<TH1D*>(fJetSpectrSBVars[0]->Clone("JetRawYieldUncert"));
-    fJetYieldUnc->Reset();
-    fJetYieldUnc->SetTitle("Raw yield uncertainty on jet spectrum - Dstar - Sideband subtraction");
-    fJetYieldCentral =  static_cast<TH1D*>(fJetSpectrSBVars[0]->Clone("JetRawYieldCentral"));
-    fJetYieldCentral->Reset();
-    fJetYieldCentral->SetTitle("Jet spectrum central values + syst yield uncertainty - Dstar - Sideband subtraction");
+    jetYieldUnc = static_cast<TH1D*>(jetSpectrSBVars[0]->Clone(TString::Format("Jet%sRawYieldUncert", obs.Data())));
+    jetYieldUnc->Reset();
+    jetYieldUnc->SetTitle("Raw yield uncertainty on jet spectrum - Dstar - Sideband subtraction");
+    jetYieldCentral =  static_cast<TH1D*>(jetSpectrSBVars[0]->Clone(TString::Format("Jet%sRawYieldCentral", obs.Data())));
+    jetYieldCentral->Reset();
+    jetYieldCentral->SetTitle("Jet spectrum central values + syst yield uncertainty - Dstar - Sideband subtraction");
 
-    for (Int_t iJetbin = 0; iJetbin < fnJetbins; iJetbin++) { //loop on jet spectrum pT bins
+    for (Int_t iJetbin = 0; iJetbin < nJetBins; iJetbin++) { //loop on jet spectrum pT bins
 
-      fJetPtBinYieldDistribution[iJetbin] = new TH1F(Form("fJetPtBinYieldDistribution_Bin%d", iJetbin), "  ; Yield distribution", 50000, 0., 50000.);
+      jetBinYieldDistribution[iJetbin] = new TH1F(Form("fJet%sBinYieldDistribution_Bin%d", obs.Data(), iJetbin), "  ; Yield distribution", 50000, 0., 50000.);
 
       for (Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) { //loop on trials and build array of variations for a given pT(jet) bin
-        arrYld[iJetbin][iTrial] = fJetSpectrSBVars[iTrial]->GetBinContent(iJetbin + 1);
-        fJetPtBinYieldDistribution[iJetbin]->Fill(arrYld[iJetbin][iTrial]);
+        arrYld[iJetbin][iTrial] = jetSpectrSBVars[iTrial]->GetBinContent(iJetbin + 1);
+        jetBinYieldDistribution[iJetbin]->Fill(arrYld[iJetbin][iTrial]);
       }
 
       Double_t mean = TMath::Mean(fnMaxTrials, arrYld[iJetbin]);
       Double_t rms = TMath::RMS(fnMaxTrials, arrYld[iJetbin]);
       if (fDebug) {
-        std::cout << "Jet bin " << iJetbin << " (" << fJetSpectrSBVars[0]->GetXaxis()->GetBinLowEdge(iJetbin+1) << "-" << fJetSpectrSBVars[0]->GetXaxis()->GetBinUpEdge(iJetbin+1) << ")";
+        std::cout << "Jet bin " << iJetbin << " (" << jetSpectrSBVars[0]->GetXaxis()->GetBinLowEdge(iJetbin+1) << "-" << jetSpectrSBVars[0]->GetXaxis()->GetBinUpEdge(iJetbin+1) << ")";
         std::cout << ": Mean = " << mean << ", RMS = " << rms << std::endl;
       }
 
-      fJetYieldUnc->SetBinContent(iJetbin + 1, rms);
-      fJetYieldCentral->SetBinContent(iJetbin + 1, mean);
-      fJetYieldCentral->SetBinError(iJetbin + 1, rms);
+      jetYieldUnc->SetBinContent(iJetbin + 1, rms);
+      jetYieldCentral->SetBinContent(iJetbin + 1, mean);
+      jetYieldCentral->SetBinError(iJetbin + 1, rms);
 
-      fJetPtBinYieldDistribution[iJetbin]->SaveAs(Form("YieldDistribution_%s_%s_%1.1fto%1.1f.root", fDmesonLabel.Data(), fMethodLabel.Data(), fJetbinpTedges[iJetbin], fJetbinpTedges[iJetbin + 1]));
+      jetBinYieldDistribution[iJetbin]->SaveAs(Form("%s_YieldDistribution_Jet%s_%s_%s_%1.1fto%1.1f.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(), fMethodLabel.Data(), jetBinEdges[iJetbin], jetBinEdges[iJetbin + 1]));
     }
 
-    fJetYieldUnc->SetStats(kFALSE);
-    fJetYieldUnc->Draw();
-    fJetYieldUnc->SaveAs(Form("FinalRawYieldUncertainty_%s_%s.root", fDmesonLabel.Data(), fMethodLabel.Data()));
-    fJetYieldCentral->SetStats(kFALSE);
-    fJetYieldCentral->Draw();
-    fJetYieldCentral->SaveAs(Form("FinalRawYieldCentralPlusSystUncertainty_%s_%s.root",fDmesonLabel.Data(),fMethodLabel.Data()));
+    jetYieldUnc->SetStats(kFALSE);
+    jetYieldUnc->Draw();
+    jetYieldUnc->SaveAs(Form("%s_FinalRawYieldUncertainty_Jet%s_%s_%s.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(), fMethodLabel.Data()));
+    jetYieldCentral->SetStats(kFALSE);
+    jetYieldCentral->Draw();
+    jetYieldCentral->SaveAs(Form("%s_FinalRawYieldCentralPlusSystUncertainty_Jet%s_%s_%s.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(),fMethodLabel.Data()));
 
     if (fDebug) {
       //ADVANCED - save distribution of final jet yields (summing all pT(D) bins) in a single plot
-      cname = Form("cDistr_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
+      cname = Form("%s_cDistr_Jet%s_%s_%s", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr = new TCanvas(cname, cname, 900, 600);
       fCanvases.push_back(cDistr);
       for (Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
-        for (int l=0; l < fJetSpectrSBVars[iTrial]->GetNbinsX();l++) fJetSpectrSBVars[iTrial]->SetBinError(l + 1, 0.0001);
-        fJetSpectrSBVars[iTrial]->SetMarkerColor(iTrial + 1);
-        fJetSpectrSBVars[iTrial]->SetLineColor(iTrial + 1);
-        if (!iTrial) fJetSpectrSBVars[iTrial]->Draw();
-        else fJetSpectrSBVars[iTrial]->Draw("same");
+        for (int l=0; l < jetSpectrSBVars[iTrial]->GetNbinsX();l++) jetSpectrSBVars[iTrial]->SetBinError(l + 1, 0.0001);
+        jetSpectrSBVars[iTrial]->SetMarkerColor(iTrial + 1);
+        jetSpectrSBVars[iTrial]->SetLineColor(iTrial + 1);
+        if (!iTrial) jetSpectrSBVars[iTrial]->Draw();
+        else jetSpectrSBVars[iTrial]->Draw("same");
       }
-      cDistr->SaveAs(Form("DistributionOfFinalYields_SBApproach_%s_AfterDbinSum.root", fDmesonLabel.Data()));
+      cDistr->SaveAs(Form("%s_DistributionOfFinalYields_SBApproach_Jet%s_%s_AfterDbinSum.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data()));
 
       //ADVANCED - save distribution of final jet yields from each single pT(D) bin in a single plot (one per each pT(D) bin)
       for (int iDbin = 0; iDbin < fnDbins; iDbin++) {
@@ -1195,7 +1356,7 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
         fCanvases.push_back(cDistr1);
         TH1F** hJetSpectrFromSingleDbin = new TH1F*[fnMaxTrials];
         for(Int_t iTrial = 0; iTrial < fnMaxTrials; iTrial++) {
-          hJetSpectrFromSingleDbin[iTrial] = static_cast<TH1F*>(fJetSpectrSBVars[0]->Clone(Form("JetRawYieldDistr_Dbin%d",iDbin)));
+          hJetSpectrFromSingleDbin[iTrial] = static_cast<TH1F*>(jetSpectrSBVars[0]->Clone(Form("Jet%sRawYieldDistr_Dbin%d",obs.Data(),iDbin)));
           for (int l = 0; l < hJetSpectrFromSingleDbin[iTrial]->GetNbinsX(); l++) {
             hJetSpectrFromSingleDbin[iTrial]->SetBinContent(l + 1, arrYldBinPerBin[iDbin][l][iTrial]);
             hJetSpectrFromSingleDbin[iTrial]->SetBinError(l + 1, 0.0001);
@@ -1205,28 +1366,28 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
           if (!iTrial) hJetSpectrFromSingleDbin[iTrial]->Draw();
           else hJetSpectrFromSingleDbin[iTrial]->Draw("same");
         }
-        cDistr1->SaveAs(Form("DistributionOfFinalYields_SBApproach_%s_Bin%d.root", fDmesonLabel.Data(), iDbin));
+        cDistr1->SaveAs(Form("%s_DistributionOfFinalYields_SBApproach_Jet%s_%s_Bin%d.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(), iDbin));
       }
 
       //ADVANCED - save averages of final jet yields from each single pT(D) bin, with their RMS, without summing them, in a single plot
-      cname = Form("cDistrAllAvgs_%s_%s", fDmesonLabel.Data(), fMethodLabel.Data());
+      cname = Form("%s_cDistrAllAvgs_Jet%s_%s_%s", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data(), fMethodLabel.Data());
       TCanvas *cDistr2 = new TCanvas(cname, cname, 900, 600);
       fCanvases.push_back(cDistr2);
 
-      fJetYieldCentral->SetLineWidth(3);
-      fJetYieldCentral->Draw();
+      jetYieldCentral->SetLineWidth(3);
+      jetYieldCentral->Draw();
 
       TH1F** hJetSpectrFromSingleDbin_Avg = new TH1F*[fnDbins];
 
       for (Int_t iDbin = 0; iDbin < fnDbins; iDbin++) {
-        hJetSpectrFromSingleDbin_Avg[iDbin] = static_cast<TH1F*>(fJetSpectrSBVars[0]->Clone(Form("JetRawYieldAvgDistr_%d",iDbin)));
+        hJetSpectrFromSingleDbin_Avg[iDbin] = static_cast<TH1F*>(jetSpectrSBVars[0]->Clone(Form("Jet%sRawYieldAvgDistr_%d",obs.Data(),iDbin)));
 
-        for(Int_t iJetbin = 0; iJetbin < fnJetbins; iJetbin++) { //loop on jet spectrum pT bins
+        for(Int_t iJetbin = 0; iJetbin < nJetBins; iJetbin++) { //loop on jet spectrum pT bins
 
           Double_t mean = TMath::Mean(fnMaxTrials, arrYldBinPerBin[iDbin][iJetbin]);
           Double_t rms = TMath::RMS(fnMaxTrials, arrYldBinPerBin[iDbin][iJetbin]);
 
-          fJetYieldUnc->SetBinContent(iJetbin + 1, rms);
+          jetYieldUnc->SetBinContent(iJetbin + 1, rms);
           hJetSpectrFromSingleDbin_Avg[iDbin]->SetBinContent(iJetbin + 1, mean);
           hJetSpectrFromSingleDbin_Avg[iDbin]->SetBinError(iJetbin + 1, rms);
         }
@@ -1237,15 +1398,16 @@ Bool_t AliDJetRawYieldUncertainty::EvaluateUncertaintySideband()
       }
 
       TLegend* leg = new TLegend(0.1, 0.7, 0.48, 0.9);
-      leg->AddEntry(fJetYieldCentral, "Average after pT(D) bin sum", "pl");
+      leg->AddEntry(jetYieldCentral, "Average after pT(D) bin sum", "pl");
       for (Int_t iDbin = 0; iDbin < fnDbins; iDbin++) leg->AddEntry(hJetSpectrFromSingleDbin_Avg[iDbin], Form("pt(D) %1.1f - %1.1f", fDbinpTedges[iDbin], fDbinpTedges[iDbin+1]), "pl");
       leg->Draw();
 
-      cDistr2->SaveAs(Form("AverageOfFinalYields_SBApproach_%s_AllDBins.root", fDmesonLabel.Data()));
+      cDistr2->SaveAs(Form("%s_AverageOfFinalYields_SBApproach_Jet%s_%s_AllDBins.root", spectrum_name.Data(), obs.Data(), fDmesonLabel.Data()));
 
     } //end of advanced plots
   }
-  return kTRUE;
+  SBResults result = {kTRUE, jetYieldCentral, jetYieldUnc, jetSpectrSBVars, jetSpectrSBDef, jetBinYieldDistribution};
+  return result;
 }
 
 /**
@@ -1271,11 +1433,18 @@ void AliDJetRawYieldUncertainty::FitReflDistr(Int_t nPtBins, TString inputfile, 
     }
   }
 
-  TCanvas *cy = new TCanvas(Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data()));
+  TString cname;
+
+  cname = TString::Format("%s_%s_fitCanv", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cy = new TCanvas(cname, cname);
   cy->Divide(4,3);
-  TCanvas *cy2 = new TCanvas(Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data()));
+
+  cname = TString::Format("%s_%s_fitCanv2", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cy2 = new TCanvas(cname, cname);
   cy2->Divide(4,3);
-  TCanvas *cyRatio = new TCanvas(Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()), Form("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data()));
+
+  cname = TString::Format("%s_%s_fitCanvRatio", fitType.Data(), inputfileNoExt.Data());
+  TCanvas *cyRatio = new TCanvas(cname, cname);
   cyRatio->Divide(4,3);
 
   for (Int_t iBin = 0; iBin < nPtBins; iBin++) {
@@ -1377,20 +1546,54 @@ void AliDJetRawYieldUncertainty::SetDmesonPtBins(Int_t nbins, Double_t* ptedges)
 }
 
 /**
+ * Set the D meson pt bins
+ * @param[in] nbins Number of pt bins
+ * @param[in] ptedges Edges of the pt bins
+ */
+void AliDJetRawYieldUncertainty::SetDmesonPtBinsForEff(Int_t nbins, Double_t* ptedges)
+{
+  fnDbinsForEff = nbins;
+  if (fDbinpTedgesForEff) {
+    delete[] fDbinpTedgesForEff;
+    fDbinpTedgesForEff = nullptr;
+  }
+  if (nbins == 0) return;
+  fDbinpTedgesForEff = new Double_t[fnDbinsForEff + 1];
+  memcpy(fDbinpTedgesForEff, ptedges, sizeof(Double_t) * (fnDbinsForEff + 1));
+}
+
+/**
  * Set the jet pt bins
  * @param[in] nbins Number of pt bins
  * @param[in] ptedges Edges of the pt bins
  */
 void AliDJetRawYieldUncertainty::SetJetPtBins(Int_t nbins, Double_t* ptedges)
 {
-  fnJetbins = nbins;
-  if (fJetbinpTedges) {
-    delete[] fJetbinpTedges;
-    fJetbinpTedges = nullptr;
+  fnJetPtbins = nbins;
+  if (fJetPtBinEdges) {
+    delete[] fJetPtBinEdges;
+    fJetPtBinEdges = nullptr;
   }
   if (nbins == 0) return;
-  fJetbinpTedges = new Double_t[fnJetbins + 1];
-  memcpy(fJetbinpTedges, ptedges, sizeof(Double_t) * (fnJetbins + 1));
+  fJetPtBinEdges = new Double_t[fnJetPtbins + 1];
+  memcpy(fJetPtBinEdges, ptedges, sizeof(Double_t) * (fnJetPtbins + 1));
+}
+
+/**
+ * Set the jet z bins
+ * @param[in] nbins Number of z bins
+ * @param[in] zedges Edges of the z bins
+ */
+void AliDJetRawYieldUncertainty::SetJetzBins(Int_t nbins, Double_t* zedges)
+{
+  fnJetzbins = nbins;
+  if (fJetzBinEdges) {
+    delete[] fJetzBinEdges;
+    fJetzBinEdges = nullptr;
+  }
+  if (nbins == 0) return;
+  fJetzBinEdges = new Double_t[fnJetzbins + 1];
+  memcpy(fJetzBinEdges, zedges, sizeof(Double_t) * (fnJetzbins + 1));
 }
 
 /**
@@ -1418,9 +1621,9 @@ void AliDJetRawYieldUncertainty::SetSigmaToFixJetPtBins(Double_t* sigmafix)
     delete[] fSigmaToFixJetPtBins;
     fSigmaToFixJetPtBins = nullptr;
   }
-  if (fnJetbins == 0) return;
-  fSigmaToFixJetPtBins = new Double_t[fnJetbins];
-  memcpy(fSigmaToFixJetPtBins, sigmafix, sizeof(Double_t) * fnJetbins);
+  if (fnJetPtbins == 0) return;
+  fSigmaToFixJetPtBins = new Double_t[fnJetPtbins];
+  memcpy(fSigmaToFixJetPtBins, sigmafix, sizeof(Double_t) * fnJetPtbins);
 }
 
 /**
@@ -1433,9 +1636,9 @@ void AliDJetRawYieldUncertainty::SetDmesonEfficiency(Double_t* effvalues)
     delete[] fDEffValues;
     fDEffValues = nullptr;
   }
-  if (fnDbins == 0) return;
-  fDEffValues = new Double_t[fnDbins];
-  memcpy(fDEffValues, effvalues, sizeof(Double_t) * fnDbins);
+  if (fnDbinsForEff == 0) return;
+  fDEffValues = new Double_t[fnDbinsForEff];
+  memcpy(fDEffValues, effvalues, sizeof(Double_t) * fnDbinsForEff);
 }
 
 /**
@@ -1550,9 +1753,13 @@ void AliDJetRawYieldUncertainty::ClearObjects()
     delete[] fDbinpTedges;
     fDbinpTedges = nullptr;
   }
-  if (fJetbinpTedges) {
-    delete[] fJetbinpTedges;
-    fJetbinpTedges = nullptr;
+  if (fJetPtBinEdges) {
+    delete[] fJetPtBinEdges;
+    fJetPtBinEdges = nullptr;
+  }
+  if (fJetzBinEdges) {
+    delete[] fJetzBinEdges;
+    fJetzBinEdges = nullptr;
   }
   if (fDEffValues) {
     delete[] fDEffValues;
@@ -1588,7 +1795,8 @@ void AliDJetRawYieldUncertainty::ClearObjects()
   }
 
   fnDbins = 0;
-  fnJetbins = 0;
+  fnJetPtbins = 0;
+  fnJetzbins = 0;
   fnRebinSteps = 0;
   fnMinMassSteps = 0;
   fnMaxMassSteps = 0;

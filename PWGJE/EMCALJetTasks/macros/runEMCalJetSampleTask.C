@@ -19,7 +19,23 @@ class AliPhysicsSelectionTask;
 class AliCentralitySelectionTask;
 class AliEmcalCorrectionTask;
 class AliEmcalJetTask;
+class AliAnalysisTaskRho;
+class AliAnalysisTaskEmcalJetSample;
 class AliAnalysisGrid;
+class AliAnalysisAlien;
+
+// Include AddTask macros for ROOT 6 compatibility
+#ifdef __CLING__
+// Tell ROOT where to find AliRoot headers
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "OADB/macros/AddTaskPhysicsSelection.C"
+#include "OADB/macros/AddTaskCentrality.C"
+#include "PWGPP/PilotTrain/AddTaskCDBconnect.C"
+#include "PWGJE/EMCALJetTasks/macros/AddTaskRhoNew.C"
+#include "PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C"
+#endif
 
 void LoadMacros();
 void StartGridAnalysis(AliAnalysisManager* pMgr, const char* uniqueName, const char* cGridMode);
@@ -102,7 +118,9 @@ AliAnalysisManager* runEMCalJetSampleTask(
     Printf("Setting local analysis for %d files from list %s, max events = %d", iNumFiles, sLocalFiles.Data(), iNumEvents);
   }
 
+  #ifndef __CLING__
   LoadMacros();
+  #endif
 
   // Analysis manager
   AliAnalysisManager* pMgr = new AliAnalysisManager(cTaskName);
@@ -137,7 +155,7 @@ AliAnalysisManager* runEMCalJetSampleTask(
     //       The AddTask macro still exists for use on the LEGO train
     AliEmcalCorrectionTask * correctionTask = AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask();
     correctionTask->SelectCollisionCandidates(kPhysSel);
-    correctionTask->SetForceBeamType(iBeamType);
+    correctionTask->SetForceBeamType(static_cast<AliEmcalCorrectionTask::BeamType>(iBeamType));
 
     // Configure and initialize
     correctionTask->SetUserConfigurationFilename("$ALICE_PHYSICS/PWG/EMCAL/config/PWGJESampleConfig.yaml");
@@ -245,12 +263,32 @@ AliAnalysisManager* runEMCalJetSampleTask(
   if (iStartAnalysis == 1) { // start local analysis
     TChain* pChain = 0;
     if (iDataType == kAod) {
+      #ifdef __CLING__
+      std::stringstream aodChain;
+      aodChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateAODChain.C(";
+      aodChain << "\"" << sLocalFiles.Data() << "\", ";
+      aodChain << iNumEvents << ", ";
+      aodChain << 0 << ", ";
+      aodChain << std::boolalpha << kFALSE << ");";
+      pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(aodChain.str().c_str()));
+      #else
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
       pChain = CreateAODChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+      #endif
     }
     else {
+      #ifdef __CLING__
+      std::stringstream esdChain;
+      esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
+      esdChain << "\"" << sLocalFiles.Data() << "\", ";
+      esdChain << iNumEvents << ", ";
+      esdChain << 0 << ", ";
+      esdChain << std::boolalpha << kFALSE << ");";
+      pChain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+      #else
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       pChain = CreateESDChain(sLocalFiles.Data(), iNumFiles, 0, kFALSE);
+      #endif
     }
 
     // start analysis
@@ -319,7 +357,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   plugin->SetRunMode(gridMode);
 
   // Here you can set the (Ali)PHYSICS version you want to use
-  plugin->SetAliPhysicsVersion("vAN-20160203-1");
+  plugin->SetAliPhysicsVersion("vAN-20170628-1");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory

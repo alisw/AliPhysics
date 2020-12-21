@@ -17,13 +17,22 @@ AliEventClassifierMult::AliEventClassifierMult(const char* name, const char* tit
 						 Int_t lengthRegions,
 						 Bool_t regionsAreInclusive,
 						 Bool_t countCharged,
-						 TList *taskOutputList)
-  : AliEventClassifierBase(name, title, taskOutputList),
+						 TList *taskOutputList,
+                                                 Int_t collisionSystem)
+  : AliEventClassifierBase(name, title, taskOutputList, collisionSystem),
   fRegionsAreInclusive(regionsAreInclusive),
   fCountCharged(countCharged)
 {
-  fExpectedMinValue = 0;
-  fExpectedMaxValue = 250;
+  if(fCollisionSystem == 0) {
+      fExpectedMinValue = 0;
+      fExpectedMaxValue = 250;
+  } else if (fCollisionSystem == 1) {
+      fExpectedMinValue = 0;
+      fExpectedMaxValue = 250;
+  } else {
+      fExpectedMinValue = 0;
+      fExpectedMaxValue = 1500;
+  }
   std::vector<Float_t> v(2);
   for (Int_t i=0; i<lengthRegions; i+=2){
     v[0] = regions[i];

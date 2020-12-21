@@ -1,12 +1,21 @@
+///
+/// \file V0LamAnalysis/AliAnalysisV0LamEventCollection.cxx
+///
+
+
 #include "AliAnalysisV0LamEventCollection.h"
+
+using namespace std;
+
 //_____________________________________________________________________________
-AliAnalysisV0LamEventCollection::~AliAnalysisV0LamEventCollection(){
+AliAnalysisV0LamEventCollection::~AliAnalysisV0LamEventCollection()
+{
   if(fEvt) {
     delete [] fEvt;
     fEvt = NULL;
   }
 }
-// //_____________________________________________________________________________
+//_____________________________________________________________________________
 AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection():
   fEvt(NULL),
   fFifoSize(0)
@@ -14,7 +23,8 @@ AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection():
 }
 
 //_____________________________________________________________________________
-AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection(short eventBuffSize, int maxV0Mult){
+AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection(short eventBuffSize, int maxV0Mult)
+{
   SetBuffSize(eventBuffSize);
   fEvt = new AliAnalysisV0LamEvent[fFifoSize];  //allocate pointer array of AliAnalysisV0LamEvents
   for(int ii = 0; ii < fFifoSize; ii++){ //Initialize particle table pointers to NULL
@@ -33,7 +43,7 @@ AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection(short eventBuff
 AliAnalysisV0LamEventCollection::AliAnalysisV0LamEventCollection(const AliAnalysisV0LamEventCollection &eventCollection)
 {
   SetBuffSize(eventCollection.GetFifoSize());
-  fEvt = new AliAnalysisV0LamEvent[fFifoSize];  
+  fEvt = new AliAnalysisV0LamEvent[fFifoSize];
   for(Int_t i = 0; i < fFifoSize; i++) {
     fEvt[i] = AliAnalysisV0LamEvent(eventCollection.fEvt[i]);
   }
@@ -49,7 +59,7 @@ AliAnalysisV0LamEventCollection& AliAnalysisV0LamEventCollection::operator=(cons
   if(fEvt) {
     delete [] fEvt;
   }
-  fEvt = new AliAnalysisV0LamEvent[fFifoSize];  
+  fEvt = new AliAnalysisV0LamEvent[fFifoSize];
   for(Int_t i = 0; i < fFifoSize; i++) {
     fEvt[i] = AliAnalysisV0LamEvent(eventCollection.fEvt[i]);
   }
@@ -58,8 +68,9 @@ AliAnalysisV0LamEventCollection& AliAnalysisV0LamEventCollection::operator=(cons
 
 
 //_____________________________________________________________________________
-void AliAnalysisV0LamEventCollection::FifoShift(){
-  //Shift elements in FIFO by one and clear last element in FIFO 
+void AliAnalysisV0LamEventCollection::FifoShift()
+{
+  //Shift elements in FIFO by one and clear last element in FIFO
   for(unsigned short i=fFifoSize-1 ; i > 0; i--){
     for(int j=0; j<(fEvt + i-1)->fNumberCandidateV0; j++){
       (fEvt + i)->fReconstructedV0[j] = (fEvt + i-1)->fReconstructedV0[j];

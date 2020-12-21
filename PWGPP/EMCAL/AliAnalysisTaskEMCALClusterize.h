@@ -20,6 +20,7 @@
 // Root
 class TTree;
 class TClonesArray;
+#include <TRandom3.h>
 
 // EMCAL
 class AliEMCALGeometry;
@@ -29,6 +30,7 @@ class AliEMCALRecPoint;
 class AliAODCaloCluster;
 class AliCentrality;
 class AliMultSelection;
+class AliVCaloCells;
 
 #include "AliEMCALRecParam.h"
 #include "AliEMCALRecoUtils.h"
@@ -47,9 +49,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Init();
   virtual void   LocalInit()                                   { Init()                        ; }
-    
+  void           PrintParam();
+  
   // Event methods, settings
   
+  Bool_t         AcceptCell(Int_t absID, Bool_t badmap = kTRUE);
   Bool_t         AcceptEventEMCAL();
   void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent   = kTRUE   ; }
   void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent   = kFALSE  ; }
@@ -71,7 +75,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // OCDB, avoid acessing OCDB!
     
-  Bool_t         AccessOCDB();
+  void           AccessOCDB();
   void           SwitchOnAccessOCDB()                           { fAccessOCDB       = kTRUE    ; }
   void           SwitchOffAccessOCDB()                          { fAccessOCDB       = kFALSE   ; } 
   void           SetOCDBPath(const char *path)                  { fOCDBpath         = path     ; }
@@ -79,7 +83,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Geometry methods
     
   void           InitGeometry();
-  void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
+  void           SetGeometryName(TString name)                  { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
@@ -90,7 +94,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
                                                                   fImportGeometryFilePath = pa ; }    
   // Outout AOD branch methods
     
-  void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
+  void           SetAODBranchName(TString name)                 { fOutputAODBranchName = name  ; }
+  void           SetAODCellsName(TString name)                  { fOutputAODCellsName  = name  ; }
+  void           SetInputCaloCellsName(TString name)            { fInputCaloCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
@@ -109,17 +115,24 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   AliEMCALRecoUtils* GetRecoUtils()                             { if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;  
                                                                   return fRecoUtils            ; }
-
+  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Bool_t  bNonLin= kFALSE,  
+                                        Bool_t  bRecalE= kTRUE , Bool_t  bBad   = kTRUE, Bool_t  bRecalT= kTRUE, Int_t   debug  = -1);
+  
   void           InitClusterization();
   void           ClusterizeCells();
   void           ClusterUnfolding();
   void           JustUnfold(Bool_t yesno)                       { fJustUnfold        = yesno   ; }
-    
+  void           UpdateCells();
+  
   void           SetConfigFileName(TString name)                { fConfigName        = name    ; }
   void           SetMaxEvent(Int_t max)                         { fMaxEvent          = max     ; }
+  void           SetMinEvent(Int_t max)                         { fMinEvent          = max     ; }
   
   void           SwitchOnTrackMatching()                        { fDoTrackMatching   = kTRUE   ; }
   void           SwitchOffTrackMatching()                       { fDoTrackMatching   = kFALSE  ; } 
+
+  void           SwitchOnUpdateCell()                           { fUpdateCell        = kTRUE   ; } 
+  void           SwitchOffUpdateCell()                          { fUpdateCell        = kFALSE  ; }  
 
   // Cell selection after unfolding
     
@@ -166,12 +179,147 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint* recPoint, AliAODCaloCluster *clus) ;
   void           SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus) ;
   
-  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2){ fSetCellMCLabelFromCluster = opt     ; }
+  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 0){ fSetCellMCLabelFromCluster = opt     ; }
   void           SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = 0       ; }
 
   void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
                                                                    fSetCellMCLabelFromCluster = 0      ; }
   void           SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE ; }
+  
+  //-----------------------------------------
+  // T-Card correlation emulation, do on MC
+  
+  void           MakeCellTCardCorrelation() ;
+  void           CalculateInducedEnergyInTCardCell(Int_t absId, Int_t absIdRef, Int_t sm, Float_t ampRef, Int_t cellCase) ;
+  void           AddNewTCardInducedCellsToDigit() ;
+  
+  /// Activate T-Card cells correlation, 
+  /// \param conservEnergy activate cluster energy conservation, not by default
+  void           SwitchOnTCardCorrelation(Bool_t conservEnergy = kFALSE)  { fTCardCorrEmulation = kTRUE  ; fTCardCorrClusEnerConserv = conservEnergy ; }   
+  
+  /// De-activate T-Card cells correlation, 
+  void           SwitchOffTCardCorrelation()                              { fTCardCorrEmulation = kFALSE ; fTCardCorrClusEnerConserv = kFALSE        ; }      
+
+  
+  /// Constant energy lost by max energy cell in one of T-Card cells, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossConstant(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEner[0][ism] = ud; fTCardCorrInduceEner[1][ism] = udlr;  
+      fTCardCorrInduceEner[2][ism] = lr; fTCardCorrInduceEner[3][ism] = sec ; } } 
+  
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFraction(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFrac[0][ism] = ud; fTCardCorrInduceEnerFrac[1][ism] = udlr;  
+      fTCardCorrInduceEnerFrac[2][ism] = lr; fTCardCorrInduceEnerFrac[3][ism] = sec ; } } 
+
+  /// Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionP1(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFracP1[0][ism] = ud; fTCardCorrInduceEnerFracP1[1][ism] = udlr;  
+      fTCardCorrInduceEnerFracP1[2][ism] = lr; fTCardCorrInduceEnerFracP1[3][ism] = sec ; } }
+
+  /// Constant energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossConstantPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEner[0][sm] = ud; fTCardCorrInduceEner[1][sm] = udlr;  
+      fTCardCorrInduceEner[2][sm] = lr; fTCardCorrInduceEner[3][sm] = sec ; } } 
+  
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFrac[0][sm] = ud; fTCardCorrInduceEnerFrac[1][sm] = udlr;  
+      fTCardCorrInduceEnerFrac[2][sm] = lr; fTCardCorrInduceEnerFrac[3][sm] = sec ; } } 
+  
+  /// Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionP1PerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) { 
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFracP1[0][sm] = ud; fTCardCorrInduceEnerFracP1[1][sm] = udlr;  
+      fTCardCorrInduceEnerFracP1[2][sm] = lr; fTCardCorrInduceEnerFracP1[3][sm] = sec ; } }
+
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian, same for all SM
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionWidth(Float_t ud, Float_t udlr, Float_t lr, Float_t sec) {
+    for(Int_t ism = 0; ism < 22; ism++) {
+      fTCardCorrInduceEnerFracWidth[0][ism] = ud; fTCardCorrInduceEnerFracWidth[1][ism] = udlr;  
+      fTCardCorrInduceEnerFracWidth[2][ism] = lr; fTCardCorrInduceEnerFracWidth[3][ism] = sec ; } }
+
+  /// Fraction of energy lost by max energy cell in one of T-Card cells, width of random gaussian, per SM
+  /// \param sm super module index
+  /// \param ud energy lost in upper/lower cell, same column
+  /// \param udlr energy lost in upper/lower cell, left or right
+  /// \param lr   energy lost in left or right cell, same row
+  void           SetInducedEnergyLossFractionWidthPerSM(Int_t sm, Float_t ud, Float_t udlr, Float_t lr, Float_t sec) {
+    if ( sm < 22 && sm >= 0 ) {
+      fTCardCorrInduceEnerFracWidth[0][sm] = ud; fTCardCorrInduceEnerFracWidth[1][sm] = udlr;  
+      fTCardCorrInduceEnerFracWidth[2][sm] = lr; fTCardCorrInduceEnerFracWidth[3][sm] = sec ; } }
+
+  /// Maximum induced energy fraction when linear dependency is set, per SM number
+  /// \param max maximum fraction
+  /// \param sm  super-module number
+  void           SetInducedEnergyLossMaximumFractionPerSM(Float_t max, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMax[sm] = max ; }  
+  
+  /// Minimum induced energy fraction when linear dependency is set, per SM number
+  /// \param min minimum fraction
+  /// \param sm  super-module number
+  void           SetInducedEnergyLossMinimumFractionPerSM(Float_t min, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerFracMin[sm] = min ; }  
+  
+  /// Maximum induced energy fraction when linear dependency is set, same for all SM
+  /// \param max maximum fraction
+  void           SetInducedEnergyLossMaximumFraction(Float_t max) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMax[ism] = max ; }  
+  
+  /// Minimum induced energy fraction when linear dependency is set, same for all SM
+  /// \param min minimum fraction
+  void           SetInducedEnergyLossMinimumFraction(Float_t min) { 
+    for(Int_t ism = 0; ism < 22; ism++) fTCardCorrInduceEnerFracMin[ism] = min ; }  
+  
+  /// fraction of times max cell energy correlates with cross cells, different for each super-module
+  /// \param prob probability per event, from 0 to 1
+  /// \param sm   probability assigned to this super-module number
+  void           SetInducedEnergyLossProbabilityPerSM(Float_t prob, Int_t sm) { 
+    if ( sm < 22 && sm >= 0 ) fTCardCorrInduceEnerProb[sm] = prob ; }  
+  
+  void           SwitchOnRandomizeTCardInducedEnergy()          { fRandomizeTCard = kTRUE   ; } 
+  void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
+
+  void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
+  void           SetInducedTCardMaximum(Float_t ma)             { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMinimum(Float_t mi)             { fTCardCorrMinInduced = mi ; }
+  void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
+  
+  void           PrintTCardParam();
+
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
+
+  void     SetUse1DRecalibration(Bool_t use1D)     { fLoad1DRecalibFactors     = use1D; }
+  
+  //------------------------------------------
   
 private:
     
@@ -198,6 +346,7 @@ private:
   TClonesArray          *fDigitsArr;               //!<! Digits array
   TObjArray             *fClusterArr;              //!<! Recpoints array
   TObjArray             *fCaloClusterArr;          //!<! CaloClusters array
+  AliVCaloCells         *fCaloCells;               //!<! CaloCells container
 
   // Clusterizers
   AliEMCALRecParam      *fRecParam;                ///<  Reconstruction parameters container
@@ -207,7 +356,10 @@ private:
   
   // AOD
   TClonesArray          *fOutputAODBranch;         //!<! AOD Branch with output clusters
-  TString                fOutputAODBranchName;     ///<  New of output AOD branch
+  TString                fOutputAODBranchName;     ///<  New of output clusters AOD branch
+  AliAODCaloCells       *fOutputAODCells;          //!<! AOD Branch with output cells
+  TString                fOutputAODCellsName;      ///<  New of output cells AOD branch name
+  TString                fInputCaloCellsName;      ///<  Input cells branch name, if different from default branch
   Bool_t                 fOutputAODBranchSet ;     ///<  Set the AOD clusters branch in the input event once
   Bool_t                 fFillAODFile;             ///<  Fill the output AOD file with the new clusters, 
                                                    ///<  if not they will be only available for the event they were generated
@@ -230,9 +382,11 @@ private:
 
   Bool_t                 fRecalibrateWithClusterTime;       ///<  Use fCellTime to store time of cells in cluster
   
-  Int_t                  fMaxEvent;                ///<  Set a maximum event
+  Int_t                  fMaxEvent;                ///<  Set a maximum event number, for testing
+  Int_t                  fMinEvent;                ///<  Set a minimum event number, for testing
   
-  Bool_t                 fDoTrackMatching;         ///<  On/Off the matching recalulation to speed up analysis in PbPb
+  Bool_t                 fDoTrackMatching;         ///<  On/Off the matching recalculation to speed up analysis in PbPb
+  Bool_t                 fUpdateCell;              ///<  On/Off the upate of the CaloCells container
   Bool_t                 fSelectCell;              ///<  Reject cells from cluster if energy is too low and recalculate position/energy and other
   Float_t                fSelectCellMinE;          ///<  Min energy cell threshold, after unfolding
   Float_t                fSelectCellMinFrac;       ///<  Min fraction of cell energy after unfolding cut
@@ -260,8 +414,10 @@ private:
 
   ///<  Use cluster MC label as cell label:
   ///<   * 0 - get the MC label stored in cells
-  ///<   * 1 - from old way, select 2 most likely labels
-  ///<   * 2 - from new way, get the original clusters, add all the MC labels (useful for any reclusterization with output V1 clusters)
+  ///<   * 1 - select 2 most likely labels
+  ///<   * 2 - get the original clusters, add all the MC labels 
+  ///< Options 1 and 2 useful for any reclusterization with output V1 clusters and similar clusterization thresholds as original cluster,
+  ///< if original is 50 MeV cell E cut and new is 100 MeV, this does not work well.
   Int_t                  fSetCellMCLabelFromCluster;
   
   ///< For MC generated with aliroot > v5-07-21, check the EDep information 
@@ -272,6 +428,35 @@ private:
 
   Bool_t                 fInputFromFilter ;        ///<  Get the input from AODs from the filter.
     
+  
+  // T-Card correlation emulation, do on MC
+  Bool_t                fTCardCorrEmulation;       ///< Activate T-Card cells energy correlation
+  Bool_t                fTCardCorrClusEnerConserv; ///< When making correlation, subtract from the reference cell the induced energy on the neighbour cells
+  Float_t               fTCardCorrCellsEner[fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells
+  Bool_t                fTCardCorrCellsNew [fgkNEMCalCells]; ///<  Array with induced cell energy in T-Card neighbour cells, that before had no signal
+  
+  Float_t               fTCardCorrInduceEner         [4 ][22]; ///< Induced energy loss gauss constant on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
+  Float_t               fTCardCorrInduceEnerFrac     [4 ][22]; ///< Induced energy loss gauss fraction param0 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param 0  
+  Float_t               fTCardCorrInduceEnerFracP1   [4 ][22]; ///< Induced energy loss gauss fraction param1 on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells, param1  
+  Float_t               fTCardCorrInduceEnerFracWidth[4 ][22]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells  
+  Float_t               fTCardCorrInduceEnerFracMax[22];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the maximum fraction of induced energy per SM  
+  Float_t               fTCardCorrInduceEnerFracMin[22];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the minimum fraction of induced energy per SM  
+  Float_t               fTCardCorrInduceEnerProb[22];      ///< Probability to induce energy loss per SM   
+ 
+ 
+  TRandom3              fRandom   ;                ///<  Random generator
+  Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
+  
+  Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy, use same as cell energy clusterization cut
+  Float_t               fTCardCorrMaxInducedLowE;  ///<  Maximum value of induced energy signal that is always accepted, order of ADC, tipically 10 MeV
+  Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
+  
+  Bool_t                fPrintOnce;                ///< Print once analysis parameters
+
+  Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
+  Bool_t                fLoad1DRecalibFactors;     ///< Flag to load 1D energy recalibration factors
+  
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     
@@ -279,7 +464,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 32) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 44) ;
   /// \endcond
 
 };

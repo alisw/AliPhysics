@@ -40,10 +40,10 @@ class TObjString;
 #include "AliNeutralMesonSelection.h"
 #include "AliCalorimeterUtils.h" 
 #include "AliHistogramRanges.h"
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliMixedEvent.h" 
 class AliVCaloCells;
-class AliStack ; 
+class AliMCEvent ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
 class AliEMCALGeometry;
@@ -55,7 +55,7 @@ class AliEventplane;
 #include "AliLog.h"
 
 // Jets
-class AliAODJetEventBackground;
+//class AliAODJetEventBackground;
 
 class AliAnaCaloTrackCorrBaseClass : public TObject {
 	
@@ -67,11 +67,13 @@ public:
   // General methods, to be declared in deriving classes if needed
   
   virtual TList *        GetCreateOutputObjects()               { return (new TList)          ; }
-  
+
   virtual void           Init()                                 { ; }
   virtual void           InitDebug()      ;
   virtual void           InitParameters() ;
-  
+  virtual void           InitCaloParameters() ;
+  virtual void           InitHistoRangeArrays();
+
   virtual void           FillEventMixPool()                     { ; }
 
   virtual void           MakeAnalysisFillAOD()                  { ; }
@@ -114,7 +116,7 @@ public:
   
   // AOD branch
   
-  virtual void           AddAODParticle(AliAODPWG4Particle part) ;
+  virtual void           AddAODParticle(AliCaloTrackParticle part) ;
   
   virtual void           ConnectInputOutputAODBranches();
   
@@ -136,7 +138,7 @@ public:
   
   virtual TClonesArray * GetInputAODBranch()               const { return fInputAODBranch  ; }
   virtual TClonesArray * GetOutputAODBranch()              const { if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ; }
-  virtual TClonesArray * GetAODBranch(const TString & aodBranchName) const ;
+  virtual TClonesArray * GetAODBranch(TString & aodBranchName) const ;
 	
   // Track cluster arrays access methods
   
@@ -151,7 +153,7 @@ public:
   // Jets
   
   virtual TClonesArray*  GetNonStandardJets()              const { return fReader->GetNonStandardJets() ;}
-  virtual AliAODJetEventBackground*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
+  virtual TClonesArray*  GetBackgroundJets()   const { return fReader->GetBackgroundJets() ;}
 
   // Common analysis switchs 
   
@@ -167,12 +169,11 @@ public:
 
   virtual Int_t          GetCalorimeter()                 const  { return fCalorimeter          ; }
   virtual TString        GetCalorimeterString()           const  { return fCalorimeterString    ; }
-  virtual void           SetCalorimeter(TString & calo);
+  virtual void           SetCalorimeter(TString calo);
   virtual void           SetCalorimeter(Int_t calo) ;
 
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
-  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ;
-                                                                   if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils() ; }
+  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE               ; }
   virtual void           SwitchOffDataMC()                       { fDataMC = kFALSE              ; }
   
   virtual Bool_t         IsFiducialCutOn()                 const { return fCheckFidCut           ; }
@@ -197,10 +198,25 @@ public:
   virtual void           SwitchOnFillPileUpHistograms()          { fFillPileUpHistograms = kTRUE ; }
   virtual void           SwitchOffFillPileUpHistograms()         { fFillPileUpHistograms = kFALSE; }
   
+  virtual Bool_t         IsEmbedingAnalysisOn()            const { return fFillEmbedHistograms   ; }
+  virtual void           SwitchOnFillEmbededSignalHistograms()   { fFillEmbedHistograms = kTRUE  ; }
+  virtual void           SwitchOffFillEmbededSignalHistograms()  { fFillEmbedHistograms = kFALSE ; }
+  
+  virtual Bool_t         SelectEmbededSignal()             const { return fSelectEmbededSignal   ; }
+  virtual void           SwitchOnEmbededSignalSelection()        { fSelectEmbededSignal = kTRUE  ; }
+  virtual void           SwitchOffEmbededSignalSelection()       { fSelectEmbededSignal = kFALSE ; }
+  
   virtual Bool_t         IsHighMultiplicityAnalysisOn()     const { return fFillHighMultHistograms   ; }
   virtual void           SwitchOnFillHighMultiplicityHistograms() { fFillHighMultHistograms = kTRUE  ; }
   virtual void           SwitchOffFillHighMultiplicityHistograms(){ fFillHighMultHistograms = kFALSE ; }
-
+  
+  virtual Bool_t         IsGeneratedParticlesAnalysisOn()  const { return fFillGenPartHisto  ; }
+  virtual void           SwitchOnGeneratedParticleHistoFill()    { fFillGenPartHisto = kTRUE ; }
+  virtual void           SwitchOffGeneratedParticleHistoFill()   { fFillGenPartHisto = kFALSE; }
+  
+  void                   SwitchOnNonConstantPtBinHistoArray()    { fHistoPtBinNonConstantInArray = kTRUE ; }
+  void                   SwitchOffNonConstantPtBinHistoArray()   { fHistoPtBinNonConstantInArray = kFALSE; }  
+   
   // Cluster energy/momentum cut
   
   virtual Float_t        GetMaxPt()                        const { return fMaxPt ; }
@@ -234,11 +250,12 @@ public:
   virtual Int_t          GetNMaxEvMix()                    const { return fNmaxMixEv ; }    /// Maximal number of events for mixin
   virtual Float_t        GetZvertexCut()                   const { return GetReader()->GetZvertexCut();} /// Cut on vertex position
   virtual Int_t          GetTrackMultiplicityBin()         const ;
-  virtual Int_t          GetEventCentralityBin()           const ;
+  virtual Int_t          GetEventCentralityBin()                 ;
+  virtual void           SetEventCentralityBins()                ; // Define centrality bin ranges array for histogramming
   virtual Int_t          GetEventRPBin()                   const ;
   virtual Int_t          GetEventVzBin()                   const ;
-  virtual Int_t          GetEventMixBin()                  const ;
-  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP) const;
+  virtual Int_t          GetEventMixBin()                        ;
+  virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP);
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
   virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) 
@@ -293,9 +310,9 @@ public:
   Float_t                RadToDeg(Float_t rad)             const { rad *= TMath::RadToDeg(); return rad ; }
   
   // Calorimeter specific access methods and calculations
-  
-  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) 
-  { return GetCaloPID()->IsTrackMatched(cluster, fCaloUtils, event)             ; } 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event) ; 
+  virtual Bool_t         IsTrackMatched(AliVCluster * cluster, AliVEvent* event,
+                                        Bool_t & bEoP, Bool_t & bRes ) ; 
   
   virtual Int_t          GetModuleNumberCellIndexes(Int_t absId, Int_t calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const 
   { return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU) ; }
@@ -305,7 +322,7 @@ public:
                                                               Int_t & icolAbs, Int_t & irowAbs) const 
   { return fCaloUtils->GetModuleNumberCellIndexesAbsCaloMap(absId, calo, icol, irow,iRCU,icolAbs,irowAbs) ; }
   
-  virtual Int_t          GetModuleNumber(AliAODPWG4Particle * part) const 
+  virtual Int_t          GetModuleNumber(AliCaloTrackParticle * part) const 
   { return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent())          ; }
   
   virtual Int_t          GetModuleNumber(AliVCluster * cluster)     const 
@@ -316,7 +333,7 @@ public:
   
   // MC event acces methods
   
-  virtual AliStack *                 GetMCStack()          const ;
+  virtual AliMCEvent *               GetMC()               const ;
   
   virtual AliHeader*                 GetMCHeader()         const ;
   
@@ -334,7 +351,7 @@ public:
   
   virtual AliIsolationCut          * GetIsolationCut()           { if(!fIC)      fIC      = new AliIsolationCut();          return  fIC      ; }
   
-  virtual AliMCAnalysisUtils       * GetMCAnalysisUtils()        { if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils();       return  fMCUtils ; }
+  virtual AliMCAnalysisUtils       * GetMCAnalysisUtils()        { return GetReader()->GetMCAnalysisUtils() ; }
   
   virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  { if(!fNMS)     fNMS     = new AliNeutralMesonSelection(); return  fNMS     ; }
   
@@ -353,9 +370,7 @@ public:
   virtual void                       SetHistogramRanges(AliHistogramRanges * hr)                    { delete fHisto;   fHisto   = hr      ; }
   
   virtual void                       SetIsolationCut(AliIsolationCut * ic)                          { delete fIC;      fIC      = ic      ; }
-  
-  virtual void                       SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils)               { delete fMCUtils; fMCUtils = mcutils ; }
-  
+    
   virtual void                       SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { delete fNMS;     fNMS     = nms     ; }
   
   virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
@@ -380,6 +395,31 @@ public:
                                                                        TString & genName   , Int_t & index,
                                                                        TString & genNameBkg, Int_t & indexBkg);
   
+protected:
+
+  Int_t                      fNModules    ;        ///<  Number of EMCAL/PHOS modules to use in analysis, set in CaloUtils
+  Int_t                      fNRCU        ;        ///<  Number of EMCAL/PHOS RCU
+  Int_t                      fFirstModule ;        ///<  First EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fLastModule  ;        ///<  Last EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fNMaxCols    ;        ///<  Number of EMCAL/PHOS columns per SM
+  Int_t                      fNMaxRows    ;        ///<  Number of EMCAL/PHOS rows per SM
+  Int_t                      fNMaxColsFull;        ///<  Number of EMCAL/PHOS columns full detector
+  Int_t                      fNMaxRowsFull;        ///<  Number of EMCAL/PHOS rows full detector
+  Int_t                      fNMaxRowsFullMin;     ///<  Last of EMCAL/PHOS rows full detector
+  Int_t                      fNMaxRowsFullMax;     ///<  First of EMCAL/PHOS rows full detector
+
+  Int_t                      fTotalUsedSM    ;      ///< Number of SM used: fLastModule-fFirstModule+1;
+  TArrayD                    fHistoSMArr     ;      ///< Calorimeter SM number dependent histogram bin array
+  Int_t                      fHistoNColumns  ;      ///< Column histogram N bins: fNMaxColsFull+2
+  TArrayD                    fHistoColumnArr ;      ///< Calorimeter column histogram bin array
+  Float_t                    fHistoColumnMin ;      ///< Minimum column histogram range: -1.5; 
+  Float_t                    fHistoColumnMax ;      ///< Maximum column histogram range: fNMaxColsFull+0.5; 
+  Int_t                      fHistoNRows;           ///< Calorimeter row histogram N bins: fNMaxRowsFullMax-fNMaxRowsFullMin+2; 
+  TArrayD                    fHistoRowArr    ;      ///< Calorimeter row histogram bin array
+  Float_t                    fHistoRowMin    ;      ///< Minimum calorimeter row histogram range: fNMaxRowsFullMin-1.5;
+  Float_t                    fHistoRowMax    ;      ///< Maximum calorimeter row histogram range: fNMaxRowsFullMax+0.5; 
+  Bool_t                     fHistoPtBinNonConstantInArray; ///< Fill array pt bins with non constant binning
+
 private:    
   
   Bool_t                     fDataMC ;             ///< Flag to access MC data when using ESD or AOD.    
@@ -404,14 +444,17 @@ private:
   Int_t                      fTrackMultBins[20];   ///< Multiplicity bins limits. Number of bins set with SetNTrackMult() that calls SetNCentrBin().
   Bool_t                     fFillPileUpHistograms;   ///< Fill pile-up related histograms.
   Bool_t                     fFillHighMultHistograms; ///< Histograms with centrality and event plane for triggers pT.
+  Bool_t                     fFillGenPartHisto;    ///< Fill primary generated particles histograms
   Bool_t                     fMakePlots   ;        ///< Print plots.
-    
+  Bool_t                     fFillEmbedHistograms ; ///< Fill histograms for embeded signals
+  Bool_t                     fSelectEmbededSignal ; ///< Select clusters/tracks in analysis only from embedded signal
+      
   TClonesArray*              fInputAODBranch ;     //!<! Selected input particles branch.
   TString                    fInputAODName ;       ///<  Name of input AOD branch.
   TClonesArray*              fOutputAODBranch ;    //!<! Selected output particles branch.
   Bool_t                     fNewAOD ;             ///<  Flag, new aod branch added to the analysis or not.
   TString                    fOutputAODName ;      ///<  Name of output AOD branch.
-  TString                    fOutputAODClassName;  ///<  Type of aod objects to be stored in the TClonesArray (AliAODPWG4Particle, AliAODPWG4ParticleCorrelation ...).	
+  TString                    fOutputAODClassName;  ///<  Type of aod objects to be stored in the TClonesArray (AliCaloTrackParticle, AliCaloTrackParticleCorrelation ...).	
   TString                    fAODObjArrayName ;    ///<  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track. references.
   TString                    fAddToHistogramsName; ///<  Add this string to histograms name.
   
@@ -421,7 +464,6 @@ private:
   AliFiducialCut           * fFidCut;              ///< Acceptance cuts detector dependent.
   AliHistogramRanges       * fHisto ;              ///< Histogram ranges container.
   AliIsolationCut          * fIC;                  ///< Isolation cut utils. 
-  AliMCAnalysisUtils       * fMCUtils;             ///< MonteCarlo Analysis utils. 
   AliNeutralMesonSelection * fNMS;                 ///< Neutral Meson Selection utities.
   AliCaloTrackReader       * fReader;              ///< Access to ESD/AOD/MC data and other utilities.
 
@@ -438,7 +480,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,28) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,32) ;
   /// \endcond
 
 } ;

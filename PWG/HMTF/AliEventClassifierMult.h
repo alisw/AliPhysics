@@ -12,7 +12,8 @@ class AliEventClassifierMult : public AliEventClassifierBase {
 			  Int_t lengthRegions,   //how many points are in "regions"
 			  Bool_t regionsAreInclusive,
 			  Bool_t countCharged,
-			  TList *taskOutputList);
+			  TList *taskOutputList,
+                          Int_t collisionSystem);
   virtual ~AliEventClassifierMult() {}
 
  private:

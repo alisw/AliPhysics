@@ -93,13 +93,21 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent *aod);
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedPID(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPID(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedCombinedPIDSoft(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPIDSoft(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedCombinedPIDpPb(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPIDpPb(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPIDpPb2(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedPIDStrong(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedPIDStrong(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedNSigmaPbPb(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedNSigmaPbPb(Double_t Pt, TObjArray aodtracks);
   Int_t IsSelectedCombinedPIDProb(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPIDProb(Double_t Pt, TObjArray aodtracks);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
@@ -113,7 +121,17 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Bool_t GetUseImpParProdCorrCut() const {
     return fUseImpParProdCorrCut;
   }
+  void SetMaxDistanceSecPrimVertex(Double_t cut){
+    fMaxDistanceSecPrimVertex=cut;
+  }
+  Double_t GetMaxDistanceSecPrimVertex() const {
+    return fMaxDistanceSecPrimVertex;
+  }
+  Double_t ComputeInvMass3tracks(AliAODTrack* track1, AliAODTrack* track2, AliAODTrack* track3, Int_t pdg1, Int_t pdg2, Int_t pdg3);
 
+  virtual Int_t PreSelect(TObjArray aodtracks);
+  Bool_t PreSelectMass(TObjArray aodTracks);
+    
   AliKFParticle* ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const;
  protected:
   AliAODPidHF *fPidObjprot;
@@ -125,9 +143,10 @@ private:
   Double_t fPIDThreshold[AliPID::kSPECIES]; /// PID threshold for each species
   ECutsStrategy fCutsStrategy;              /// cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
+  Double_t fMaxDistanceSecPrimVertex;       /// upper cut on the decay length
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctopKpi,10);  /// class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,12);  /// class for cuts on AOD reconstructed Lc->pKpi
   /// \endcond
 };
 

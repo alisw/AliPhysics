@@ -14,24 +14,28 @@ class AliReducedEventPlaneInfo : public TObject {
   friend class AliAnalysisTaskReducedTreeMaker;    // friend analysis task which fills the object
   
  public: 
+
   enum EventPlaneStatus {
-    kRaw=0,
-    kCalibrated,
-    kRecentered,
-    kShifted,
-    kUnset,
+    kRaw=0,                  // Not-calibrated 
+    kCalibrated,             // Calibrated (if its the case)
+    kRecentered,             // Recentered
+    kShifted,                // Shifted  
+    kUnset,                  // Q-vector not computed
     kNMaxFlowFlags
   };
+
   enum EventPlaneDetector {
-    kTPC=0,       
-    kTPCptWeights,
-    kTPCpos,
-    kTPCneg,
-    kVZEROA,
-    kVZEROC,
-    kFMD,
-    kZDCA,
-    kZDCC,
+    kTPC=0,                  // All TPC tracks
+    kTPCptWeights,           // All TPC tracks, using pt weights  
+    kTPCpos,                 // Positive TPC tracks 
+    kTPCneg,                 // Negative TPC tracks 
+    kTPCsideA,               // TPC tracks from A-side 
+    kTPCsideC,               // TPC tracks from C-side
+    kVZEROA,                 // VZERO A-side channels
+    kVZEROC,                 // VZERO C-side channels
+    kFMD,                    // FMD 
+    kZDCA,                   // ZDC A-side channels
+    kZDCC,                   // ZDC C-side channels
     kNdetectors
   };
   

@@ -161,14 +161,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       fCollisionSystem.SetBitNumber(kpPb, kFALSE); 
       fCollisionSystem.SetBitNumber(kPbPb, kTRUE); 
     };
-    void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
-    void SetPbPbUserCentralityLimit(Bool_t isPbPbUserBinning = kFALSE){fPbPbUserCentralityBinning = isPbPbUserBinning; };
-    void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr) {fCentralityLimits[icentr] = valuecentr;};
-    void SetPPMultiBinAnalysis(Bool_t isppMultiBin) { fisppMultiBin = isppMultiBin; };
-    void SetNonHFEsystematics(Bool_t isSystematics) {fisNonHFEsystematics = isSystematics; };
-    void SetCalcContamBeauty(Bool_t isCalcContamBeauty) { fCalcContamBeauty = isCalcContamBeauty;};
-    void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-    void SetRejectMCFakeTracks(Bool_t rejectFakes = kTRUE) { fRejectMCFakeTracks = rejectFakes; };
+    void SetCentralityEstimator(const char *estimator)                  { fCentralityEstimator = estimator; }
+    void SetCentralityInterval (const int cMin, const int cMax)         { fCentrMin = cMin; fCentrMax = cMax;}
+    void SetPbPbUserCentralityLimit(Bool_t isPbPbUserBinning = kFALSE)  { fPbPbUserCentralityBinning = isPbPbUserBinning; };
+    void SetPbPbUserCentralityArray(Int_t icentr, Float_t valuecentr)   { fCentralityLimits[icentr] = valuecentr;};
+    void SetPPMultiBinAnalysis(Bool_t isppMultiBin)                     { fisppMultiBin = isppMultiBin; };
+    void SetNonHFEsystematics(Bool_t isSystematics)                     { fisNonHFEsystematics = isSystematics; };
+    void SetCalcContamBeauty(Bool_t isCalcContamBeauty)                 { fCalcContamBeauty = isCalcContamBeauty;};
+    void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE)          { fRejectKinkMother = rejectKinkMother; };
+    void SetRejectMCFakeTracks(Bool_t rejectFakes = kTRUE)              { fRejectMCFakeTracks = rejectFakes; };
     void SetBackGroundFactorsFunction(const TF1 * const backGroundFactorsFunction, Int_t centralitybin=0){  
       fkBackGroundFactorArray[centralitybin]=backGroundFactorsFunction;
       fBackGroundFactorApply=kTRUE;
@@ -178,7 +179,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetBinLimits(Int_t iPt, Double_t momentum){fBinLimit[iPt] = momentum;};
     void PrintStatus() const;
     Bool_t ReadCentrality();
-    void RejectionPileUpVertexRangeEventCut();  
+    void RejectionPileUpVertexRangeEventCut();
     void SelectSpecialTrigger(const Char_t *trgclust, Int_t runMin = 0, Int_t runMax = 999999999); 
     void SetDebugStreaming() {SetBit(kTreeStream);};
     void SetWeightHist() {SetBit(kWeightHist);};
@@ -186,6 +187,16 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t CheckTRDTrigger(AliVEvent *ev);
     void DrawTRDTrigger(AliESDEvent *ev);
     void DrawTRDTriggerAnalysis(AliVEvent *ev);
+
+    // ----- centrality selection -----
+    void SetCentralityCheck(Bool_t centrCheck, char* centrMethod); 
+    Bool_t IsNewFramework() { return fNewFrame; };
+    // --------------------------------
+
+    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+    Bool_t RejectPileUpMultiplicitySelection();
+    void SetApplyPileUpMultiplicitySelection(Bool_t select) {fIsPileUpMultRejApplied = select;};
+    // -------------------------------------------------------------
 
   private:
     enum{
@@ -274,10 +285,16 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fTRDTrigger;                   // Check if event is TRD triggered event
     Int_t  fWhichTRDTrigger;               // Select type of TRD trigger
 
+    // ----- centrality selection ------
+    Bool_t fNewFrame;                     // Check if centrality selection is the new one or not
+    char*  fkCentralityMethod;            // method used to determine centrality
+    Int_t  fCentrMin;                     // minimum centrality
+    Int_t  fCentrMax;                     // maximum centrality
+    // ---------------------------------
+
     AliHFEV0taginfo *fV0Tagger;           // Tags v0 tracks per Event 
 
     AliPIDResponse *fPIDResponse;         //! PID response object
-
 
     //-----------QA and output---------------
     TList *fQA;                           //! QA histos for the cuts
@@ -287,6 +304,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     TList *fHistELECBACKGROUND;           //! Output container for electron background analysis
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
+
+    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+    Bool_t fIsPileUpMultRejApplied;       // switch on/off this selection
+    TH2D*  fEvBeforePileUpMultRej;        //! correlation kTPCout tracks - VZERO multiplicity before the selection
+    TH2D*  fEvAfterPileUpMultRej;         //! correlation kTPCout tracks - VZERO multiplicity after the selection
+    // -------------------------------------------------------------
 
     ClassDef(AliAnalysisTaskHFE, 4)       // The electron Analysis Task
 };

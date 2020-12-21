@@ -15,9 +15,9 @@
 #include <TString.h>
 
 class AliEmcalJet;
-class AliEmcalTrackSelection;
 class AliParticleContainer;
 class AliVEvent;
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 

@@ -25,7 +25,6 @@
 #include "AliQnCorrectionsQnVector.h"
 #include "AliAnalysisTaskZDCEP.h"
 
-
 class TH1F;
 class TH2F;
 class TH2D;
@@ -35,12 +34,13 @@ class AliRDHFCuts;
 class TVector2;
 class AliAnalysisTaskZDCEP;
 
-
 class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
 {
     
  public:
-    
+  enum massD0orD0bar{kmassD0,kmassD0bar}; //for D0_D0bar mass check
+  enum massDstarorDstarbar{kmassDstar, kmassDstarbar}; //for D*_D*bar mass check
+
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO,kZDC}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
@@ -60,7 +60,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     fSubEvDetA=detsubA; fSubEvDetB=detsubB;
   }
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
@@ -111,6 +111,9 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     fScalProdLimit=limit;
   }
   
+  void  SetFunctionForEffScaling(TF1 *effFunc) {feff=effFunc;}
+  void  SetScalingEff(Bool_t scaling){fscaling=scaling;}
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -124,7 +127,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
     
-  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t charge,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
@@ -182,7 +185,8 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
   Double_t fScalProdLimit;      // max value for the scalar product histograms
-  
+  TF1     *feff;//-> func for eff_Correction
+  Bool_t  fscaling;// scaling option
   AliAnalysisTaskHFv1::FlowMethod fFlowMethod;
     
   ClassDef(AliAnalysisTaskHFv1,4); // AliAnalysisTaskSE for the HF v2 analysis

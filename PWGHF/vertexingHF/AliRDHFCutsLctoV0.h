@@ -43,17 +43,22 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliRDHFCutsLctoV0& operator=(const AliRDHFCutsLctoV0& source);
 
   using AliRDHFCuts::GetCutVarsForOpt;
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+    return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+  }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
-  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 
+  virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel)
                          {return IsSelected(obj,selectionLevel,0);}
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
 
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
 
-
+  using AliRDHFCuts::PreSelect;
+  virtual Int_t PreSelect(TObjArray aodtracks);
+  Int_t PreSelectV0(AliAODv0 *v0, Int_t ptbin);
   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
 
   Int_t IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod=0x0);
@@ -62,11 +67,19 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(7,iPtBin)] : 1.e6);}
-
+  Float_t GetV0PtCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(15,iPtBin)] : 0.);}
+  Float_t GetMinV0PtCut() const {
+    Float_t minPtCut=99999.;
+    for(Int_t j=0; j<fnPtBins; j++){Float_t c=GetV0PtCut(j); if(c<minPtCut) minPtCut=c;}
+    return minPtCut;
+  }
   void SetPidSelectionFlag(Int_t a) {fPidSelectionFlag=a;}
   Int_t GetPidSelectionFlag() {return fPidSelectionFlag;}
 
   Bool_t AreLctoV0DaughtersSelected(AliAODRecoDecayHF *rd, AliAODEvent* aod=0x0) const;
+  Bool_t ApplySingleProtonCuts(AliAODTrack *trk, AliAODEvent* aod);
+  Bool_t ApplySingleK0Cuts(AliAODv0 *v0, AliAODEvent* aod);
+  Bool_t ApplyCandidateCuts(AliAODRecoDecayHF *rd, AliAODEvent* aod, Bool_t spdfirst);
 
   Int_t GetV0Type();
 
@@ -76,8 +89,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetLowPtCut(Float_t lowPtCut) {fLowPtCut=lowPtCut;};
   Float_t GetLowPtCut() const {return fLowPtCut;};
 
-  void SetMinCombinedProbability(Int_t ptBins, Float_t *ptMin);
-  const Float_t *GetMinCombinedProbability() {return fMinCombinedProbability;}
+  void SetMinCombinedProbability(Int_t nPBins, Float_t *minProb);
+  Float_t *GetMinCombinedProbability() const {return fMinCombProb;}
 
   void SetExcludedCut(Int_t excludedCut) {fExcludedCut=excludedCut;}
   Int_t GetExcludedCut(){return fExcludedCut;}
@@ -92,11 +105,27 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   { delete fV0daughtersCuts; fV0daughtersCuts = new AliESDtrackCuts(*v0daug); }
   virtual AliESDtrackCuts *GetTrackCutsV0daughters() const {return fV0daughtersCuts;}
 
+  Double_t GetProtonEmissionAngleCMS(AliAODRecoDecayHF *d);
+  Double_t GetReSignedd0(AliAODRecoDecayHF *d);
+  void SetMagneticField(Double_t a){fBzkG = a;}
+
+  void SetBachelorPLimitsForPID(Int_t nPBins, Float_t *pMin);
+  const Float_t *GetBachelorPLimitsForPID() {return fBachelorPLimitsForPID;}
+
+  Float_t GetNTPCSigmaCutForPreselection() const {return fNTPCSigmaCutForPreselection;}
+  void SetGetNTPCSigmaCutForPreselection(Float_t a) {fNTPCSigmaCutForPreselection = a;}
+
   virtual void PrintAll() const;
+
+  Int_t GetNBachelorPBins() const {return fNBachelorPBins;}
+  void SetNBachelorPBins(Int_t nPbins) {fNBachelorPBins=nPbins;}
+
  protected:
 
-  void CheckPID(Int_t candPtBin, AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
+  void CheckPID(AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 		Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4);
+
+  Int_t GetBachelorPBin(Double_t bachelorP) const;
 
  private:
 
@@ -106,12 +135,17 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t fHighPtCut;  /// high pT cut separation for proton identification
   Float_t fLowPtCut;   /// low pT cut separation for proton identification
   Int_t   fExcludedCut; /// cut to be excluded (-1=none)
-  Float_t *fMinCombinedProbability; //[fnPtBins] min value for combined PID probabilities
+  Float_t *fMinCombProbVsLcPt; //[fnPtBins] min value for combined PID probabilities (vs Lc pT)
+  Double_t fBzkG; /// Magnetic field for propagation
+  Int_t fNBachelorPBins; // number of bachelor p bins
+  Float_t *fMinCombProb; //[fNBachelorPBins] min value for combined PID probabilities (vs bachelor p)
+  Float_t *fBachelorPLimitsForPID;  //[fNBachelorPBins] limits for bachelor p bins
+  Float_t fNTPCSigmaCutForPreselection; /// number of TPC sigmas for PID preselection
 
   //UShort_t fV0channel;
 
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctoV0,7);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
+  /// \cond CLASSIMP
+  ClassDef(AliRDHFCutsLctoV0,9);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
   /// \endcond
 };
 

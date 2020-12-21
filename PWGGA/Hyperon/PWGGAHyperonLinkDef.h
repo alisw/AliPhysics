@@ -10,13 +10,5 @@
 #pragma link C++ class AliAnalysisTaskSigma0Corr+;
 #pragma link C++ class AliCaloParticle+;
 
-#pragma link C++ class AliAnalysisTaskSigma0Run2+;
 
 #endif
-
-
-
-
-
-// #pragma link C++ class AliPHOSGeoUtils+;
-// #pragma link C++ class AliPHOSGeometry+;

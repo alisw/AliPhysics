@@ -49,7 +49,7 @@
 
 #include "AliTRDmultiplicity.h"
 #include "AliTRDgeometry.h"
-#include "info/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo.h"
 
 ClassImp(AliTRDmultiplicity)
 

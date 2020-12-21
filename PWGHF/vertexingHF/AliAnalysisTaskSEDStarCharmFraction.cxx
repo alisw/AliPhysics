@@ -82,6 +82,7 @@ AliAnalysisTaskSEDStarCharmFraction::AliAnalysisTaskSEDStarCharmFraction() :
   fPtForTree(0),
   fInvMassForTree(0),
   fImpParForTree(0),
+  fTrueImpParForTree(0),
   fTypeForTree(0),
   fSignalTypeForTree(0)
 { // Default constructor
@@ -116,6 +117,7 @@ AliAnalysisTaskSEDStarCharmFraction::AliAnalysisTaskSEDStarCharmFraction(const c
   fPtForTree(0),
   fInvMassForTree(0),
   fImpParForTree(0),
+  fTrueImpParForTree(0),
   fTypeForTree(0),
   fSignalTypeForTree(0)
 { // Constructor
@@ -185,13 +187,10 @@ void AliAnalysisTaskSEDStarCharmFraction::UserCreateOutputObjects()
   fNEvents->GetXaxis()->SetBinLabel(5, "Candidates");
   fNEvents->GetXaxis()->SetBinLabel(6, "Passed track cuts");
   fNEvents->GetXaxis()->SetBinLabel(7, "Passed fiducial acc cuts");
-  fNEvents->GetXaxis()->SetBinLabel(8, "Passed cand cuts");
-  fNEvents->GetXaxis()->SetBinLabel(9, "Recalc prim vtx");
-  fNEvents->GetXaxis()->SetBinLabel(10, "Calc D* vtx");
-  fNEvents->GetXaxis()->SetBinLabel(11, "Pass daught imppar cut");
-  fNEvents->GetXaxis()->SetBinLabel(12, "Real D* (MC)");
-  fNEvents->GetXaxis()->SetBinLabel(13, "Skip from Hijing (MC)");
-
+  fNEvents->GetXaxis()->SetBinLabel(8, "Calc D* vtx");
+  fNEvents->GetXaxis()->SetBinLabel(9, "Pass daught imppar cut");
+  fNEvents->GetXaxis()->SetBinLabel(10, "Real D* (MC)");
+  fNEvents->GetXaxis()->SetBinLabel(11, "Skip from Hijing (MC)");
   fListCandidate = new TList();
   fListCandidate->SetOwner();
   fListCandidate->SetName("listCandidate");
@@ -228,17 +227,13 @@ void AliAnalysisTaskSEDStarCharmFraction::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter(GetOutputSlot(8)->GetContainer()->GetName());
   fCounter->Init();
 
-  fPtForTree = new Double_t;
-  fInvMassForTree = new Double_t;
-  fImpParForTree = new Double_t;
-  fTypeForTree = new Short_t;
-  fSignalTypeForTree = new Short_t;
   fTreeCandidate = new TTree(GetOutputSlot(9)->GetContainer()->GetName(), GetOutputSlot(9)->GetContainer()->GetName());
-  fTreeCandidate->Branch("pt", fPtForTree, "pt/D");
-  fTreeCandidate->Branch("M", fInvMassForTree, "M/D");
-  fTreeCandidate->Branch("d0", fImpParForTree, "d0/D");
-  fTreeCandidate->Branch("type", fTypeForTree, "type/S");
-  fTreeCandidate->Branch("stype", fSignalTypeForTree, "stype/S");
+  fTreeCandidate->Branch("pt", &fPtForTree, "pt/D");
+  fTreeCandidate->Branch("M", &fInvMassForTree, "M/D");
+  fTreeCandidate->Branch("d0", &fImpParForTree, "d0/D");
+  fTreeCandidate->Branch("trued0", &fTrueImpParForTree, "trued0/D");
+  fTreeCandidate->Branch("type", &fTypeForTree, "type/S");
+  fTreeCandidate->Branch("stype", &fSignalTypeForTree, "stype/S");
 
   PostData(1, fNEvents);
   PostData(2, fListCandidate);
@@ -274,14 +269,7 @@ void AliAnalysisTaskSEDStarCharmFraction::SetUpList(TList *list)
   hDeltaInvMass->SetMarkerSize(0.6);
   list->Add(hDeltaInvMass);
 
-  // DeltaInvMassPre
-  TH1D* hDeltaInvMassPre = new TH1D("DeltaInvMassPre", Form("D*-D^{0} invariant mass pre vtx, %s; #DeltaM [GeV/c^{2}]; Entries", listName.Data()), 700, 0.13, 0.2);
-  hDeltaInvMassPre->Sumw2();
-  hDeltaInvMassPre->SetLineColor(4);
-  hDeltaInvMassPre->SetMarkerColor(4);
-  hDeltaInvMassPre->SetMarkerStyle(20);
-  hDeltaInvMassPre->SetMarkerSize(0.6);
-  list->Add(hDeltaInvMassPre);
+
 
   // InvMassD0
   TH1D* hInvMassD0 = new TH1D("InvMassD0", Form("D^{0} invariant mass, %s; M [GeV/c^{2}]; Entries", listName.Data()), 600, 1.6, 2.2);
@@ -378,13 +366,7 @@ void AliAnalysisTaskSEDStarCharmFraction::SetUpList(TList *list)
     hDeltaInvMassLoop->SetMarkerSize(0.6);
     list->Add(hDeltaInvMassLoop);
 
-    TH1D* hDeltaInvMassPreLoop = new TH1D(Form("DeltaInvMassPre_%d", i), Form("D*-D^{0} invariant mass pre vtx, %s, %.1f < p_{T} < %.1f GeV/c; #DeltaM [GeV/c^{2}]; Entries", listName.Data(), ptLow, ptHigh), 700, 0.13, 0.2);
-    hDeltaInvMassPreLoop->Sumw2();
-    hDeltaInvMassPreLoop->SetLineColor(4);
-    hDeltaInvMassPreLoop->SetMarkerColor(4);
-    hDeltaInvMassPreLoop->SetMarkerStyle(20);
-    hDeltaInvMassPreLoop->SetMarkerSize(0.6);
-    list->Add(hDeltaInvMassPreLoop);
+  
 
     TH1D* hInvMassD0Loop = new TH1D(Form("InvMassD0_%d", i), Form("D^{0} invariant mass, %s, %.1f < p_{T} < %.1f GeV/c; M [GeV/c^{2}]; Entries", listName.Data(), ptLow, ptHigh), 600, 1.6, 2.2);
     hInvMassD0Loop->Sumw2();
@@ -467,7 +449,35 @@ void AliAnalysisTaskSEDStarCharmFraction::SetUpList(TList *list)
     }
   }
 
-  // Mother and grandmother particle IDs for D* dauaghters, background, peak region
+  if (list == fListSignalPrompt || list == fListSignalFromB || list == fListBackground) {
+    for (Int_t i=0;i<fNPtBins;i++) {
+      TH1D* hProdd0d0All = new TH1D(Form("Prodd0d0All_%d", i), Form("d0d0, no cut, %s; d0d0 [cm^{2}]; Entries", listName.Data()), 2000, -0.0002, 0.0002);
+      hProdd0d0All->Sumw2();
+      hProdd0d0All->SetLineColor(4);
+      hProdd0d0All->SetMarkerColor(4);
+      hProdd0d0All->SetMarkerStyle(20);
+      hProdd0d0All->SetMarkerSize(0.6);
+      list->Add(hProdd0d0All);
+
+      TH1D* hCosPntAngleAll = new TH1D(Form("CosPntAngleAll_%d", i), Form("cos #theta_{point}, no cut, %s; cos #theta_{point}; Entries", listName.Data()), 2000, -1, 1);
+      hCosPntAngleAll->Sumw2();
+      hCosPntAngleAll->SetLineColor(4);
+      hCosPntAngleAll->SetMarkerColor(4);
+      hCosPntAngleAll->SetMarkerStyle(20);
+      hCosPntAngleAll->SetMarkerSize(0.6);
+      list->Add(hCosPntAngleAll);
+
+      TH1D* hNormDecLenAll = new TH1D(Form("NormDecLenAll_%d", i), Form("Normalized decay length, no cut, %s; Normalized decay length; Entries", listName.Data()), 2000, 0, 20);
+      hNormDecLenAll->Sumw2();
+      hNormDecLenAll->SetLineColor(4);
+      hNormDecLenAll->SetMarkerColor(4);
+      hNormDecLenAll->SetMarkerStyle(20);
+      hNormDecLenAll->SetMarkerSize(0.6);
+      list->Add(hNormDecLenAll);
+    }
+  }
+
+  // Mother and grandmother particle IDs for D* daughters, background, peak region
   if (list == fListBackground) {
     Int_t sparseBins[3] = {1000, 1000, 1000}; Double_t sparseLow[3] = {-0.5, -0.5, -0.5}; Double_t sparseHigh[3] = {999.5, 999.5, 999.5};
     THnSparseF* hPDG = new THnSparseF("PDGMotherPeak", "PDG mother, peak region, background", 3, sparseBins, sparseLow, sparseHigh);
@@ -626,30 +636,71 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
     nSelectedProd++;
     nSelectedAna++;
 
+    // Match candidate to MC
+    AliAODMCParticle *partDSt = 0;
+    if (fReadMC) {
+      Int_t mcLabel = cand->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, mcArray);
+      if (mcLabel >= 0) {
+        fIsSignal = kTRUE;
+
+        fNEvents->Fill(10);
+
+        partDSt = (AliAODMCParticle*) mcArray->At(mcLabel);
+
+        if (fSkipHijing && IsFromHijing(mcArray, partDSt)) {
+          fNEvents->Fill(11);
+          continue;
+        }
+
+        if (IsFromB(mcArray, partDSt)) {
+          fIsSignalFromB = kTRUE;
+        }
+        else {
+          fIsSignalPrompt = kTRUE;
+        }
+      }
+      else {
+        fIsBackground = kTRUE;
+      }
+    }
+
+    // Fill histograms for topological variables before applying cuts
+    if (fReadMC) {
+      Double_t prodd0d0 = candD0->Prodd0d0();
+      Double_t cosPntAngle = candD0->CosPointingAngle();
+      Double_t normDecLen = candD0->NormalizedDecayLengthXY()*(candD0->P()/candD0->Pt());
+
+      if (fIsSignalPrompt) {
+        ((TH1D*) fListSignalPrompt->FindObject(Form("Prodd0d0All_%d", ptBin)))->Fill(prodd0d0);
+        ((TH1D*) fListSignalPrompt->FindObject(Form("CosPntAngleAll_%d", ptBin)))->Fill(cosPntAngle);
+        ((TH1D*) fListSignalPrompt->FindObject(Form("NormDecLenAll_%d", ptBin)))->Fill(normDecLen);
+      }
+
+      if (fIsSignalFromB) {
+        ((TH1D*) fListSignalFromB->FindObject(Form("Prodd0d0All_%d", ptBin)))->Fill(prodd0d0);
+        ((TH1D*) fListSignalFromB->FindObject(Form("CosPntAngleAll_%d", ptBin)))->Fill(cosPntAngle);
+        ((TH1D*) fListSignalFromB->FindObject(Form("NormDecLenAll_%d", ptBin)))->Fill(normDecLen);
+      }
+
+      if (fIsBackground) {
+        ((TH1D*) fListBackground->FindObject(Form("Prodd0d0All_%d", ptBin)))->Fill(prodd0d0);
+        ((TH1D*) fListBackground->FindObject(Form("CosPntAngleAll_%d", ptBin)))->Fill(cosPntAngle);
+        ((TH1D*) fListBackground->FindObject(Form("NormDecLenAll_%d", ptBin)))->Fill(normDecLen);
+      }
+    }
+
     Int_t isSelected = fCuts->IsSelected(cand, AliRDHFCuts::kCandidate, aodEvent);
     if (!isSelected) {
       continue;
     }
     fNEvents->Fill(7);
-
-    //Fill invariant mass pre vtx calculations
-    FillHistogram("DeltaInvMassPre", deltaInvMass);
-    FillHistogram(Form("DeltaInvMassPre_%d", ptBin), deltaInvMass);
-
-    // Calculate new primary vertex without D* daughters
-    fNewPrimVtx = RemoveDaughtersFromPrimaryVtx(aodEvent, cand);
-    if (!fNewPrimVtx) {
+    
+    if(!aodEvent->GetPrimaryVertex()){
       delete fNewPrimVtx; fNewPrimVtx = 0;
       continue;
     }
-
-    /*if (cand->GetOwnPrimaryVtx()) {
-      origVtx = new AliAODVertex(*cand->GetOwnPrimaryVtx());
-    }
-    cand->SetOwnPrimaryVtx(fNewPrimVtx);*/
-
-    fNEvents->Fill(8);
-
+    fNewPrimVtx = new AliAODVertex(*aodEvent->GetPrimaryVertex());
+    
     //D* vertexing
     fDStarVtx = ReconstructDStarVtx(cand);
     if (!fDStarVtx) {
@@ -657,7 +708,7 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       continue;
     }
 
-    fNEvents->Fill(9);
+    fNEvents->Fill(8);
 
     Double_t d0, d0Err;
     if (CalculateImpactParameter(candSoftPi, d0, d0Err)) {
@@ -685,39 +736,9 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       }
     }
 
-    fNEvents->Fill(10);
+    fNEvents->Fill(9);
 
-    AliAODMCParticle *partDSt = 0;
-
-    if (fReadMC) {
-      // Match candidate to MC
-      Int_t mcLabel = cand->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, mcArray);
-      if (mcLabel >= 0) {
-        fIsSignal = kTRUE;
-
-        fNEvents->Fill(11);
-
-        partDSt = (AliAODMCParticle*) mcArray->At(mcLabel);
-
-        if (fSkipHijing && IsFromHijing(mcArray, partDSt)) {
-          fNEvents->Fill(12);
-
-          delete fNewPrimVtx; fNewPrimVtx = 0;
-          delete fDStarVtx; fDStarVtx = 0;
-          continue;
-        }
-
-        if (IsFromB(mcArray, partDSt)) {
-          fIsSignalFromB = kTRUE;
-        }
-        else {
-          fIsSignalPrompt = kTRUE;
-        }
-      }
-      else {
-        fIsBackground = kTRUE;
-      }
-    }
+    fTrueImpParForTree = fReadMC && fIsSignal ? CalculateTrueImpactParameterDStar(mcHeader, mcArray, cand) : -9998.;
 
     CheckInvMassDStar(cand);
     FillHistograms(cand);
@@ -771,7 +792,7 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
     }
 
     if (fReadMC && fIsSignalFromB) {
-      FillTrueImpactParameter(mcHeader, mcArray, cand);
+      FillTrueImpactParameter(cand);
     }
 
 
@@ -1038,6 +1059,54 @@ Double_t AliAnalysisTaskSEDStarCharmFraction::CalculateImpactParameterDStar(AliA
   return (cross.Z() > 0. ? absImpPar : -absImpPar);
 }
 
+Double_t AliAnalysisTaskSEDStarCharmFraction::CalculateTrueImpactParameterDStar(AliAODMCHeader *headerMC, TClonesArray *arrayMC, AliAODRecoCascadeHF *cand)
+{ // Calculate true impact parameter of the D*
+  AliAODRecoDecayHF2Prong *candD0 = cand->Get2Prong();
+  AliAODTrack *tr1 = (AliAODTrack*) candD0->GetDaughter(0);
+  AliAODTrack *tr2 = (AliAODTrack*) candD0->GetDaughter(1);
+  AliAODTrack *tr3 = (AliAODTrack*) cand->GetBachelor();
+
+  Int_t label1 = tr1->GetLabel();
+  Int_t label2 = tr2->GetLabel();
+  Int_t label3 = tr3->GetLabel();
+
+  if (label1 < 0 || label2 < 0 || label3 < 0) {
+    return -9999.;
+  }
+
+  AliAODMCParticle *part1 = (AliAODMCParticle*) arrayMC->At(label1);
+  AliAODMCParticle *part2 = (AliAODMCParticle*) arrayMC->At(label2);
+  AliAODMCParticle *part3 = (AliAODMCParticle*) arrayMC->At(label3);
+
+  if (part1 == 0 || part2 == 0 || part3 == 0) {
+    return -9999.;
+  }
+
+  Double_t PxTotal = part1->Px()+part2->Px()+part3->Px();
+  Double_t PyTotal = part1->Py()+part2->Py()+part3->Py();
+  Double_t PzTotal = part1->Pz()+part2->Pz()+part3->Pz();
+
+
+  // True primary+secondary vertices and momentum
+  Double_t prim[3] = {headerMC->GetVtxX(), headerMC->GetVtxY(), headerMC->GetVtxZ()};
+  Double_t sec[3] = {part3->Xv(), part3->Yv(), part3->Zv()}; // Put soft pion production vertex as secondary vertex
+  Double_t p[3] = {PxTotal, PyTotal, PzTotal};
+
+
+  Double_t ptsq = p[0]*p[0] + p[1]*p[1];
+  Double_t k = - (sec[0]-prim[0])*p[0] - (sec[1]-prim[1])*p[1];
+  k /= ptsq;
+  Double_t dx = sec[0] - prim[0] + k*p[0];
+  Double_t dy = sec[1] - prim[1] + k*p[1];
+  Double_t absImpPar = TMath::Sqrt(dx*dx+dy*dy)*1.e4;
+
+  TVector3 mom(p[0], p[1], p[2]);
+  TVector3 fline(sec[0]-prim[0], sec[1]-prim[1], sec[2]-prim[2]);
+  TVector3 cross = mom.Cross(fline);
+
+  return cross.Z() > 0. ? absImpPar : -absImpPar;
+}
+
 void AliAnalysisTaskSEDStarCharmFraction::FillHistograms(AliAODRecoCascadeHF *cand)
 { // Fill histograms for a D* candidate
   Double_t Pt = cand->Pt();
@@ -1062,11 +1131,12 @@ void AliAnalysisTaskSEDStarCharmFraction::FillHistograms(AliAODRecoCascadeHF *ca
   }
 
   // Store candidate in tree
-  *fPtForTree = Pt;
-  *fInvMassForTree = deltaInvMass;
-  *fImpParForTree = impPar;
-  *fTypeForTree = fIsPeak ? 1 : (fIsSideband ? (deltaInvMass < fPDGMDStarD0 ? 2 : 3) : 0);
-  *fSignalTypeForTree = fReadMC ? (fIsSignalPrompt ? 1 : (fIsSignalFromB ? 2 : 0)) : -1;
+  fPtForTree = Pt;
+  fInvMassForTree = deltaInvMass;
+  fImpParForTree = impPar;
+  // fTrueImpParForTree was already updated before this
+  fTypeForTree = fIsPeak ? 1 : (fIsSideband ? (deltaInvMass < fPDGMDStarD0 ? 2 : 3) : 0);
+  fSignalTypeForTree = fReadMC ? (fIsSignalPrompt ? 1 : (fIsSignalFromB ? 2 : 0)) : -1;
   fTreeCandidate->Fill();
 
   AliAODTrack *softPi = cand->GetBachelor();
@@ -1174,7 +1244,7 @@ void AliAnalysisTaskSEDStarCharmFraction::FillRegionHistogram(const char *name, 
   }
 }
 
-void AliAnalysisTaskSEDStarCharmFraction::FillTrueImpactParameter(AliAODMCHeader *headerMC, TClonesArray *arrayMC, AliAODRecoCascadeHF* cand)
+void AliAnalysisTaskSEDStarCharmFraction::FillTrueImpactParameter(AliAODRecoCascadeHF* cand)
 { // Fill histogram with true impact parameter distribution for D from B
   Double_t Pt = cand->Pt();
   Int_t ptBin = fCuts->PtBin(Pt);
@@ -1183,53 +1253,12 @@ void AliAnalysisTaskSEDStarCharmFraction::FillTrueImpactParameter(AliAODMCHeader
     return;
   }
 
-  AliAODRecoDecayHF2Prong *candD0 = cand->Get2Prong();
-  AliAODTrack *tr1 = (AliAODTrack*) candD0->GetDaughter(0);
-  AliAODTrack *tr2 = (AliAODTrack*) candD0->GetDaughter(1);
-  AliAODTrack *tr3 = (AliAODTrack*) cand->GetBachelor();
-
-  Int_t label1 = tr1->GetLabel();
-  Int_t label2 = tr2->GetLabel();
-  Int_t label3 = tr3->GetLabel();
-
-  if (label1 < 0 || label2 < 0 || label3 < 0) {
+  if (fTrueImpParForTree == -9999.) {
     return;
   }
-
-  AliAODMCParticle *part1 = (AliAODMCParticle*) arrayMC->At(label1);
-  AliAODMCParticle *part2 = (AliAODMCParticle*) arrayMC->At(label2);
-  AliAODMCParticle *part3 = (AliAODMCParticle*) arrayMC->At(label3);
-
-  if (part1 == 0 || part2 == 0 || part3 == 0) {
-    return;
-  }
-
-  Double_t PxTotal = part1->Px()+part2->Px()+part3->Px();
-  Double_t PyTotal = part1->Py()+part2->Py()+part3->Py();
-  Double_t PzTotal = part1->Pz()+part2->Pz()+part3->Pz();
-
-
-  // True primary+secondary vertices and momentum
-  Double_t prim[3] = {headerMC->GetVtxX(), headerMC->GetVtxY(), headerMC->GetVtxZ()};
-  Double_t sec[3] = {part3->Xv(), part3->Yv(), part3->Zv()}; // Put soft pion production vertex as secondary vertex
-  Double_t p[3] = {PxTotal, PyTotal, PzTotal};
-
-
-  Double_t ptsq = p[0]*p[0] + p[1]*p[1];
-  Double_t k = - (sec[0]-prim[0])*p[0] - (sec[1]-prim[1])*p[1];
-  k /= ptsq;
-  Double_t dx = sec[0] - prim[0] + k*p[0];
-  Double_t dy = sec[1] - prim[1] + k*p[1];
-  Double_t absImpPar = TMath::Sqrt(dx*dx+dy*dy)*1.e4;
-
-  TVector3 mom(p[0], p[1], p[2]);
-  TVector3 fline(sec[0]-prim[0], sec[1]-prim[1], sec[2]-prim[2]);
-  TVector3 cross = mom.Cross(fline);
-
-  Double_t impParTrue = cross.Z() > 0. ? absImpPar : -absImpPar;
 
   TH1D* hImpParTrue = (TH1D*) fListSignalFromB->FindObject(Form("ImpParTrue_%d", ptBin));
-  hImpParTrue->Fill(impParTrue);
+  hImpParTrue->Fill(fTrueImpParForTree);
 }
 
 void AliAnalysisTaskSEDStarCharmFraction::Terminate(const Option_t*)

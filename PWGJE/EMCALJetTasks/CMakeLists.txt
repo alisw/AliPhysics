@@ -24,14 +24,22 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                   )
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
+                             )
 
 # Sources in alphabetical order
 set(SRCS
@@ -39,6 +47,7 @@ set(SRCS
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskEmcalJetQA.cxx
     AliAnalysisTaskEmcalJetSpectraQA.cxx
+    AliAnalysisTaskEmcalJetTagger.cxx
     AliAnalysisTaskPWGJEQA.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
@@ -49,8 +58,13 @@ set(SRCS
     AliAnalysisTaskRhoMass.cxx
     AliAnalysisTaskRhoMassSparse.cxx
     AliAnalysisTaskRhoSparse.cxx
+    AliAnalysisTaskJetUE.cxx
+    AliAnalysisTaskRhoBaseDev.cxx
+    AliAnalysisTaskRhoDev.cxx
+    AliAnalysisTaskRhoTransDev.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
+    AliEmcalJetTaggerTaskFast.cxx
     AliEmcalPicoTrackInGridMaker.cxx
     AliJetConstituentTagCopier.cxx
     AliJetEmbeddingFromGenTask.cxx
@@ -62,6 +76,8 @@ set(SRCS
     AliJetRandomizerTask.cxx
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
+    AliNanoAODArrayMaker.cxx
+    AliPWGJETrainHelpers.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBase.cxx
     Tracks/AliAnalysisTaskEmcalTriggerPosition.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
@@ -113,6 +129,8 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalRecalcPatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelation.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
@@ -121,11 +139,30 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDensityData.cxx
     Tracks/AliEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
-    Tracks/AliAnalysisTaskEmcalMaxPatch.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
-    Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
+    Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
+    Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
+    Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
+    Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
+    Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
+    Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
+    Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
+    Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
+    Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
+    Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
+    Tracks/AliAnalysisTaskEmcalQoverPtShift.cxx
+    Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
+    Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
+    Tracks/AliEmcalTRDTrackingTask.cxx
+    UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
@@ -141,13 +178,18 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
+    UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
+    UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
+    UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
-    UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+    UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
-    UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
     UserTasks/AliAnalysisTaskEmcalJetMass.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
@@ -157,12 +199,11 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
-    UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalRun2QA.cxx
-    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+    UserTasks/AliAnalysisTaskEmcalHfeTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskEmcalNeutralJets.cxx
@@ -170,6 +211,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTmpSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
+    UserTasks/AliAnalysisTaskEventExtractor.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
@@ -181,13 +223,14 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
+    UserTasks/AliAnalysisTaskJetVn.cxx
     UserTasks/AliAnalysisTaskPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
-    UserTasks/AliAnalysisTaskSoftDrop.cxx
+
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -198,32 +241,73 @@ set(SRCS
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx)
 
+# Tasks that need direct access to RooUnfold
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${ROOUNFOLD_INCLUDE_DIR})
+    add_definitions("-DWITH_ROOUNFOLD")
+endif(RooUnfold_FOUND)
+
+# Tasks that need direct access to Fastjet
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
         AliFJWrapper.cxx
         AliEmcalJetUtility.cxx
         AliEmcalJetUtilityGenSubtractor.cxx
         AliEmcalJetUtilityConstSubtractor.cxx
-	AliEmcalJetUtilityEventSubtractor.cxx
+	    AliEmcalJetUtilityEventSubtractor.cxx
         AliEmcalJetUtilitySoftDrop.cxx
         AliEmcalJetTask.cxx
         AliEmcalJetFinder.cxx
         AliJetEmbeddingFromAODTask.cxx
-	AliJetEmbeddingFromPYTHIATask.cxx
+	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
+        AliLundPlaneHelper.cxx
+      AliAnalysisTaskJetCharge.cxx
+      AliAnalysisTaskJetChargeFlavourTemplates.cxx
+	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
+	    UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskLundPlane.cxx
+	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
+	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
+	    UserTasks/AliAnalysisTaskHardestBranch.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
-        UserTasks/AliAnalysisTaskFullpAJets.cxx
+        UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
+	    UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
+        UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
+        UserTasks/AliAnalysisTaskEA.cxx
+        UserTasks/AliAnalysisEmcalJetHelperEA.cxx
+        UserTasks/AliAnalysisTaskPythiaBranchEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
-	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
+	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
+	    UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
+        UserTasks/AliAnalysisTaskSoftDrop.cxx
+        UserTasks/AliAnalysisTaskSoftDropResponse.cxx
+        UserTasks/AliAnalysisTaskSDKL.cxx
+        UserTasks/AliAnalysisTaskSDKLResponse.cxx
+        UserTasks/AliAnalysisTaskEmcalSubjet.cxx
+	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
+        UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
+	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
+        Tracks/AliAnalysisEmcalSoftdropHelper.cxx
+        Tracks/AliAnalysisTaskEmcalSoftDropData.cxx
         )
+    # Tasks that need both Fastjet and RooUnfold
+    if(RooUnfold_FOUND)
+        set(SRCS ${SRCS}
+        Tracks/AliAnalysisTaskEmcalSoftDropResponse.cxx)
+    endif(RooUnfold_FOUND)
     include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
@@ -240,8 +324,13 @@ set(HDRS ${HDRS} Tracks/AliEMCalTriggerAnaHelper.h)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
-set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+    set(ROOT_DEPENDENCIES PyROOT)
+else()
+    set(ROOT_DEPENDENCIES)
+endif()
+
+set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD PWGPPevcharQn PWGPPevcharQnInterface KFParticle)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
@@ -260,6 +349,12 @@ if(FASTJET_FOUND)
     fastjet
     )
 endif(FASTJET_FOUND)
+set(ROOUNFOLD_DEPENDENCIES)
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
+    set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
+endif(RooUnfold_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
@@ -270,7 +365,8 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

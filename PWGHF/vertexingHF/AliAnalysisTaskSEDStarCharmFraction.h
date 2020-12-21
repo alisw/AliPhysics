@@ -86,11 +86,12 @@ class AliAnalysisTaskSEDStarCharmFraction : public AliAnalysisTaskSE {
     AliAODVertex *fNewPrimVtx;                        // Newly determined primary vertex without D* daughters
     AliAODVertex *fDStarVtx;                          // D* vertex
     Double_t fMagneticField;                          // Magnetic field strength in current event
-    Double_t *fPtForTree;                             // Use this to fill pT branch
-    Double_t *fInvMassForTree;                        // Use this to fill invariant mass branch
-    Double_t *fImpParForTree;                         // Use this to fill impact parameter branch
-    Short_t *fTypeForTree;                            // Use this to fill the type branch (0=other, 1=peak, 2=SB left, 3=SB right)
-    Short_t *fSignalTypeForTree;                      // Use this to fill the signal type branch (data: -1, MC: 0=background, 1=signal prompt, 2=signal non-prompt)
+    Double_t fPtForTree;                              // Use this to fill pT branch
+    Double_t fInvMassForTree;                         // Use this to fill invariant mass branch
+    Double_t fImpParForTree;                          // Use this to fill impact parameter branch
+    Double_t fTrueImpParForTree;                      // Use this to fill true impact parameter branch
+    Short_t fTypeForTree;                             // Use this to fill the type branch (0=other, 1=peak, 2=SB left, 3=SB right)
+    Short_t fSignalTypeForTree;                       // Use this to fill the signal type branch (data: -1, MC: 0=background, 1=signal prompt, 2=signal non-prompt)
 
     void SetUpList(TList *list); // Fill a TList with histograms
     void CheckInvMassDStar(AliAODRecoCascadeHF *cand); // Check if D* candidate falls within peak or sideband region
@@ -98,17 +99,18 @@ class AliAnalysisTaskSEDStarCharmFraction : public AliAnalysisTaskSE {
     Bool_t IsFromHijing(TClonesArray *arrayMC, const AliAODMCParticle *mcPartCandidate); // Check if the MC particle is from Hijing
     Bool_t CalculateImpactParameter(AliAODTrack *track, Double_t &d0, Double_t &d0Err); // Calculate impact parameter for a track
     Double_t CalculateImpactParameterDStar(AliAODRecoCascadeHF *cand); // Calculate impact parameter of the D*
+    Double_t CalculateTrueImpactParameterDStar(AliAODMCHeader *headerMC, TClonesArray *arrayMC, AliAODRecoCascadeHF* cand); // Calculate true impact parameter of the D*
     void FillHistograms(AliAODRecoCascadeHF *cand); // Fill histograms for a D* candidate
     void FillHistogram(const char *name, Double_t value); // Fill a specific histogram in multiple lists
     void FillRegionHistogram(const char *name, Double_t value); // Fill a specific histogram in multiple lists, in the approprate regions (all, peak region, sideband region)
-    void FillTrueImpactParameter(AliAODMCHeader *headerMC, TClonesArray *arrayMC, AliAODRecoCascadeHF* cand); // Fill histogram with true impact parameter distribution for D from B
+    void FillTrueImpactParameter(AliAODRecoCascadeHF* cand); // Fill histogram with true impact parameter distribution for D from B
     AliAODVertex *RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod, AliAODRecoCascadeHF *cand); // Determine primary vertex without D* daughters
     AliAODVertex *ReconstructDStarVtx(AliAODRecoCascadeHF *cand); //Determine the D* vertex
 
     AliAnalysisTaskSEDStarCharmFraction(const AliAnalysisTaskSEDStarCharmFraction&); // Not implemented
     AliAnalysisTaskSEDStarCharmFraction& operator=(const AliAnalysisTaskSEDStarCharmFraction&); // Not implemented
   
-  ClassDef(AliAnalysisTaskSEDStarCharmFraction, 1); // Analysis task for D* prompt charm fraction
+    ClassDef(AliAnalysisTaskSEDStarCharmFraction, 2); // Analysis task for D* prompt charm fraction
 };
 
 #endif

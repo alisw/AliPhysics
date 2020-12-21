@@ -99,8 +99,8 @@
 
 #include "AliTRDresolution.h"
 #include "AliTRDinfoGen.h"
-#include "info/AliTRDclusterInfo.h"
-#include "info/AliTRDeventInfo.h"
+#include "AliTRDclusterInfo.h"
+#include "AliTRDeventInfo.h"
 
 ClassImp(AliTRDresolution)
 ClassImp(AliTRDresolution::AliTRDrecoProjection)

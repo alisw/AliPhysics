@@ -16,9 +16,9 @@ class AliAODv0;
 class AliESDv0;
 class AliAODEvent;
 class AliESDEvent;
-class AliCentrality;
 class AliPIDResponse;
-class AliAnalysisUtils;
+
+class AliPicoV0MC;
 
 class AliAnalysisTaskSEPicoV0MakerMC : public AliAnalysisTaskSE {
 
@@ -38,12 +38,22 @@ class AliAnalysisTaskSEPicoV0MakerMC : public AliAnalysisTaskSE {
 
   void SetTriggerMask(UInt_t w)       { fTriggerMask   = w; }
   void SetCollitionType(UInt_t w)     { fCollisionType = w; }
-  void SetVertexContributorN(Int_t i) { fCutMinEventVtxContr = i; }
-  void SetCentralityEstimator(TString s) { fCentEst = s; }
+
+  void SetMultRange(const Double_t dMin,
+                    const Double_t dMax,
+                    const TString sEsti="V0M",
+                    const Bool_t  bOld=kFALSE) {
+    fMultMin = dMin;
+    fMultMax = dMax;
+    fMultEst = sEsti;
+    fMultOld = bOld;
+    return;
+  }
 
   void SetRefitV0ESD()   { fIsRefitV0sESD  = kTRUE; }
   void SetSkipFastOnly() { fIsSkipFastOnly = kTRUE; }
   void SetDMPjetMC()     { fIsDPMjetMC     = kTRUE; }
+//=============================================================================
 
   void SetV0PtRange(Double_t  dMin, Double_t dMax) { fCutMinV0Pt  = dMin; fCutMaxV0Pt  = dMax; }
   void SetV0RapRange(Double_t dMin, Double_t dMax) { fCutMinV0Rap = dMin; fCutMaxV0Rap = dMax; }
@@ -64,8 +74,8 @@ class AliAnalysisTaskSEPicoV0MakerMC : public AliAnalysisTaskSE {
 
   void FillPicoV0s();
 
-  AliPicoV0MC* SelectV0Candidate(AliAODv0 const *pV0);
-  AliPicoV0MC* SelectV0Candidate(AliESDv0 const *pV0);
+  AliPicoV0MC *SelectV0Candidate(AliAODv0 const *pV0);
+  AliPicoV0MC *SelectV0Candidate(AliESDv0 const *pV0);
 
   Bool_t IsEventNotAcpt();
   Bool_t IsEventNotINEL();
@@ -77,28 +87,20 @@ class AliAnalysisTaskSEPicoV0MakerMC : public AliAnalysisTaskSE {
   void InitAnalysis();
 //=============================================================================
 
-  AliAODEvent      *fEventAOD;  //!
-  AliESDEvent      *fEventESD;  //!
-  AliCentrality    *fCentInfo;  //!
-  AliPIDResponse   *fRespoPID;  //!
-  AliAnalysisUtils *fAnaUtils;  //!
+  UInt_t fTriggerMask;   //
+  UInt_t fCollisionType; //
 
-  UInt_t fEventAcptMask;    //
-  Double_t fPrimaryVtx[3];  //!
+  Bool_t fUseAnaUtils; //
+  Bool_t fIsDPMjetMC; //
+
+  TString  fMultEst;  //
+  Double_t fMultMin;  //
+  Double_t fMultMax;  //
+  Bool_t   fMultOld;  //
+
+  Bool_t fIsSkipFastOnly; //
+  Bool_t fIsRefitV0sESD;  //
 //=============================================================================
-
-  UInt_t fTriggerMask;    //
-  UInt_t fCollisionType;  //
-
-  TString fCentEst;  //
-
-  Bool_t fIsRefitV0sESD;   //
-  Bool_t fIsSkipFastOnly;  //
-  Bool_t fIsDPMjetMC;      //
-//=============================================================================
-
-  Int_t   fCutMinEventVtxContr;  //
-  Float_t fCutMaxEventVzAbs;     //
 
   Double_t fCutMinV0Pt;   //
   Double_t fCutMaxV0Pt;   //
@@ -131,17 +133,19 @@ class AliAnalysisTaskSEPicoV0MakerMC : public AliAnalysisTaskSE {
   Double_t fCutMinLambdaDeletaM;   //
 //=============================================================================
 
-  static const Double_t fgkMassPion;    //
-  static const Double_t fgkMassKshort;  //
-  static const Double_t fgkMassLambda;  //
-  static const Double_t fgkMassProton;  //
+  AliAODEvent      *fEventAOD; //!
+  AliESDEvent      *fEventESD; //!
+  AliPIDResponse   *fRespoPID; //!
+
+  Double_t fPrimaryVtx[3]; //!
+  UInt_t fEventAcptMask;   //
 //=============================================================================
 
   TClonesArray *fPicoV0sClArr;  //!
-
   TList *fListUserOutputs;  //!
+//=============================================================================
 
-  ClassDef(AliAnalysisTaskSEPicoV0MakerMC, 1)
+  ClassDef(AliAnalysisTaskSEPicoV0MakerMC, 2)
 };
 
 #endif

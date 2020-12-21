@@ -109,6 +109,9 @@ fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
 fRandomizeReactionPlane(kFALSE),
+fV0CL1PileUp(0),
+fESDTPCTrackPileUp(0),
+fTPCITSTOFPileUp(0),
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
 fMap(0x0),
@@ -142,6 +145,7 @@ fTrackEtaCutMin(-1.),
 fTrackPhiCutEvPlMin(0.),
 fTrackPhiCutEvPlMax(0.),
 fOnlyOneEtaSide(0),
+fOnlyOneAssocEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
 fSharedClusterCut(-1),
@@ -162,6 +166,16 @@ fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
 fCutConversionsV(-1),
 fCutResonancesV(-1),
+fCutOnCustomMass(-1),
+fCutOnCustomFirst(-1),
+fCutOnCustomSecond(-1),
+fCutOnCustomV(-1),
+fCutOnPhi(kFALSE),
+fCutOnPhiV(-1),
+fCutOnRho(kFALSE),
+fCutOnRhoV(-1),
+fCutOnLambdaV(-1),
+fCutOnK0sV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
@@ -322,11 +336,35 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetOnlyOneEtaSide(fOnlyOneEtaSide);
   fHistosMixed->SetOnlyOneEtaSide(fOnlyOneEtaSide);
   
+  fHistos->SetOnlyOneAssocEtaSide(fOnlyOneAssocEtaSide);
+  fHistosMixed->SetOnlyOneAssocEtaSide(fOnlyOneAssocEtaSide);
+  
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
 
   fHistos->SetPairCuts(fCutConversionsV, fCutResonancesV);
   fHistosMixed->SetPairCuts(fCutConversionsV, fCutResonancesV);
+  
+  fHistos->SetCustomCut(fCutOnCustomMass, fCutOnCustomFirst, fCutOnCustomSecond, fCutOnCustomV);
+  fHistosMixed->SetCustomCut(fCutOnCustomMass, fCutOnCustomFirst, fCutOnCustomSecond, fCutOnCustomV);
+
+  fHistos->SetCutOnPhi(fCutOnPhi);
+  fHistosMixed->SetCutOnPhi(fCutOnPhi);
+  
+  fHistos->SetCutOnPhi(fCutOnPhiV);
+  fHistosMixed->SetCutOnPhi(fCutOnPhiV);
+  
+  fHistos->SetCutOnRho(fCutOnRho);
+  fHistosMixed->SetCutOnRho(fCutOnRho);
+  
+  fHistos->SetCutOnRho(fCutOnRhoV);
+  fHistosMixed->SetCutOnRho(fCutOnRhoV);
+  
+  fHistos->SetCutOnK0s(fCutOnK0sV);
+  fHistosMixed->SetCutOnK0s(fCutOnK0sV);
+  
+  fHistos->SetCutOnLambda(fCutOnLambdaV);
+  fHistosMixed->SetCutOnLambda(fCutOnLambdaV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -368,7 +406,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5));
-  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
+  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, -0.5, 199.5));
   if (fCentralityMethod == "V0A_MANUAL")
   {
     fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
@@ -387,9 +425,21 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2D("Mult_MCGen_V0M", "Mult_MCGen_V0M", 1010, -9.5, 1000.5, 1010, -9.5, 1000.5));
   if (fCentralityMethod == "MCGen_CL1")
     fListOfHistos->Add(new TH2D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 1010, -9.5, 1000.5, 1010, -9.5, 1000.5));
-  if (fCentralityMethod == "TRACKS_MANUAL")
-    fListOfHistos->Add(new TH3F("t0time", "t0time;Centrality;Side;Time", 42, -0.5, 41.5, 3, -0.5, 2.5, 200, 0, 2000));
-
+  if (fV0CL1PileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0BeforePileUpCuts", "fHistGlobalvsV0BeforePileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0AfterPileUpCuts", "fHistGlobalvsV0AfterPileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
+  }
+  if (fESDTPCTrackPileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDBeforePileUpCuts", "fHistGlobalvsESDBeforePileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDAfterPileUpCuts", "fHistGlobalvsESDAfterPileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
+  }
+  if (fTPCITSTOFPileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutBeforePileUpCuts", "fHistV0MvsTPCoutBeforePileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutAfterPileUpCuts", "fHistV0MvsTPCoutAfterPileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
+  }
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
@@ -413,7 +463,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   AddSettingsTree();
 
   // event mixing
-  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemention of AliEventPoolManager
+  Int_t poolsize   = -1;  // Maximum number of events, -1 means no limit
    
   const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm
@@ -461,7 +511,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // If some bins of the pool should be saved, fEventPoolOutputList must be given
   // using AddEventPoolToOutput()
   // Note that this is in principle also possible, if an external poolmanager was given
-  for(Int_t i = 0; i < fEventPoolOutputList.size(); i++)
+  for(UInt_t i = 0; i < fEventPoolOutputList.size(); i++)
   {
     Double_t minCent = fEventPoolOutputList[i][0];
     Double_t maxCent = fEventPoolOutputList[i][1];
@@ -531,6 +581,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fTrackPhiCutEvPlMin", &fTrackPhiCutEvPlMin, "TrackPhiCutEvPlMin/D");
   settingsTree->Branch("fTrackPhiCutEvPlMax", &fTrackPhiCutEvPlMax, "TrackPhiCutEvPlMax/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
+  settingsTree->Branch("fOnlyOneAssocEtaSide", &fOnlyOneAssocEtaSide,"OnlyOneAssocEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   settingsTree->Branch("fSharedClusterCut", &fSharedClusterCut,"SharedClusterCut/D");
@@ -549,6 +600,16 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
   settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
+  settingsTree->Branch("fCutOnCustomMass", &fCutOnCustomMass,"CutOnCustomMass/D");
+  settingsTree->Branch("fCutOnCustomFirst", &fCutOnCustomFirst,"CutOnCustomFirst/D");
+  settingsTree->Branch("fCutOnCustomSecond", &fCutOnCustomSecond,"CutOnCustomSecond/D");
+  settingsTree->Branch("fCutOnCustomV", &fCutOnCustomV,"CutOnCustomV/D");
+  settingsTree->Branch("fCutOnPhi", &fCutOnPhi,"CutOnPhi/O");
+  settingsTree->Branch("fCutOnPhiV", &fCutOnPhiV,"CutOnPhiV/D");
+  settingsTree->Branch("fCutOnRho", &fCutOnRho,"CutOnRho/O");
+  settingsTree->Branch("fCutOnRhoV", &fCutOnRhoV,"CutOnRhoV/D");
+  settingsTree->Branch("fCutOnLambdaV", &fCutOnLambdaV,"CutOnLambdaV/D");
+  settingsTree->Branch("fCutOnK0sV", &fCutOnK0sV,"CutOnK0sV/D");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
@@ -568,7 +629,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
-  settingsTree->Branch("fFillCorrelationsRapidity", &fFillYieldRapidity,"fFillCorrelationsRapidity/O");
+  settingsTree->Branch("fFillCorrelationsRapidity", &fFillCorrelationsRapidity,"fFillCorrelationsRapidity/O");
   settingsTree->Branch("fUseNewCentralityFramework", &fUseNewCentralityFramework,"fUseNewCentralityFramework/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
@@ -620,7 +681,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex)) 
     return;
     
-    Float_t zVtx = 0;
+  Float_t zVtx = 0;
   if (fAOD)
     zVtx = ((AliAODMCHeader*) vertexSupplier)->GetVtxZ();
   else
@@ -1147,6 +1208,64 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  if (fV0CL1PileUp)
+  {
+    AliMultSelection *multSelection = (AliMultSelection*) inputEvent->FindListObject("MultSelection");
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0BeforePileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0AfterPileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+  }
+
+  if (fESDTPCTrackPileUp)
+  {
+    const Int_t nTracks = inputEvent->GetNumberOfTracks();
+    Int_t multEsd = ((AliAODHeader*)inputEvent->GetHeader())->GetNumberOfESDTracks();
+    ((TH2D*)fListOfHistos->FindObject("fHistGlobalvsESDBeforePileUpCuts"))->Fill(nTracks,multEsd);
+    Int_t multTPC = 0;
+    for (Int_t it = 0; it < nTracks; it++) {
+      AliAODTrack* AODTrk = (AliAODTrack*)inputEvent->GetTrack(it);
+     if (!AODTrk){ delete AODTrk; continue; }
+     if (AODTrk->TestFilterBit(128)) {multTPC++;}
+    } // end of for (Int_t it = 0; it < nTracks; it++)
+    double fPileupLHC15oSlope = 3.38;
+    double fPileupLHC15oOffset = 15000;
+    if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset)
+    {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsESDAfterPileUpCuts"))->Fill(nTracks,multEsd);
+  }
+
+  if (fTPCITSTOFPileUp)
+  {
+    Int_t ntrkTPCout = 0;
+    for (int it = 0; it < inputEvent->GetNumberOfTracks(); it++) {
+      AliAODTrack* AODTrk = (AliAODTrack*)inputEvent->GetTrack(it);
+      if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+        ntrkTPCout++;
+    }
+  
+    Double_t multVZERO =0; 
+    AliVVZERO *vzero = (AliVVZERO*)inputEvent->GetVZEROData();
+    if(vzero) {
+      for(int ich=0; ich < 64; ich++)
+        multVZERO += vzero->GetMultiplicity(ich);
+    }
+  
+  
+    ((TH2I*)fListOfHistos->FindObject("fHistV0MvsTPCoutBeforePileUpCuts"))->Fill(ntrkTPCout, multVZERO);
+  
+    if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistV0MvsTPCoutAfterPileUpCuts"))->Fill(ntrkTPCout, multVZERO);
+  }
+
   // Reject events without a muon in the muon arm ************************************************
   if(fAcceptOnlyMuEvents && !IsMuEvent())return;
   
@@ -1427,10 +1546,6 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
       if (centrality > 40)
         centrality = 41;
 //       Printf("%d %f", tracks->GetEntriesFast(), centrality);
-
-      for (int i=0; i<3; i++)
-        ((TH3F*) fListOfHistos->FindObject("t0time"))->Fill(centrality, i, inputEvent->GetT0TOF()[i]);
-      
       delete tracks;
     }
     else if (fCentralityMethod == "V0A_MANUAL")
@@ -1453,6 +1568,17 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     else if (fCentralityMethod == "nano")
     {
       centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
+    }
+    else if (fCentralityMethod.BeginsWith("Nano."))
+    {
+      AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fAOD->GetHeader());
+      if (!nanoHeader)
+        AliFatal("Nano Header not found");
+      
+      static TString nanoField = fCentralityMethod(5, fCentralityMethod.Length());
+      static const Int_t kField = nanoHeader->GetVarIndex(nanoField);
+
+      centrality = nanoHeader->GetVar(kField);
     }
     else if (fCentralityMethod == "PPVsMultUtils")
     {
@@ -1708,8 +1834,7 @@ void AliAnalysisTaskPhiCorrelations::RemoveWeakDecaysInMC(TObjArray* tracks, TOb
     if (!particle) 
       continue;
   
-    Bool_t kExcludeParticle = kFALSE;
-    Int_t motherIndex = particle->GetFirstMother();
+    Int_t motherIndex = particle->GetMother(0);
     if (motherIndex == -1)
       continue;
     

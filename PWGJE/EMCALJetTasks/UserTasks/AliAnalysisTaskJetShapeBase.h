@@ -1,7 +1,7 @@
 /// \class AliAnalysisTaskJetShapeBase
 /// \brief Background fluctuation studies: dMdpT spectrum for PYTHIA and single track embedding
 ///
-/// \ingroup PWGJETASKS
+/// \ingroup PWGJEUSER
 /// The task requires the JetTagger for PYTHIA matching to be run first
 /// 
 /// 

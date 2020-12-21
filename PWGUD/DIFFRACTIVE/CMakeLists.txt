@@ -19,11 +19,12 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel
-                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/Resonance
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel/RawBuffers
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -46,6 +47,9 @@ set(SRCS
     legotrain/AliAnalysisTaskDG.cxx
     legotrain/AliAnalysisTaskDiffCrossSections.cxx
     legotrain/AliSPDGeometryUtils.cxx
+    legotrain/AliAnalysisTaskDgTree.cxx
+    legotrain/AliTOFTriggerEfficiencyTask.cxx
+    legotrain/AliSPDTriggerEfficiencyTask.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
@@ -54,13 +58,18 @@ set(SRCS
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
     DGTrigger/AliTriggerStudy0STP.cxx
-    CEPdevel/CEPEventBuffer.cxx
-    CEPdevel/CEPTrackBuffer.cxx
     CEPdevel/AliCEPBase.cxx
     CEPdevel/AliCEPUtils.cxx
+    CEPdevel/RawBuffers/CEPRawADBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawCaloBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawCaloClusterTrack.cxx
+    CEPdevel/RawBuffers/CEPRawEventBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawFMDBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawTrackBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawV0Buffer.cxx
+    CEPdevel/CEPEventBuffer.cxx
+    CEPdevel/CEPTrackBuffer.cxx
     CEPdevel/AliAnalysisTaskCEP.cxx
-    Resonance/AliAnalysisTaskf0f2.cxx
-    Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )
 
 # Headers from sources
@@ -72,7 +81,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSbase ITSrec VZERObase PWGPP)
+set(ALIROOT_DEPENDENCIES STEERBase STEER CDB ANALYSISalice ANALYSIS ITSbase ITSrec VZERObase PWGPP PWGUDbase)
 
 # Generate the ROOT map
 # Dependecies

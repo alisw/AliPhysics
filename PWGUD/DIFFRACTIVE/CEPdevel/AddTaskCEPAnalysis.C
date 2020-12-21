@@ -4,15 +4,15 @@
 AliAnalysisTaskSE* AddTaskCEPAnalysis (
   TString taskname        = TString("CEPAnalysis"),
   UInt_t  taskconfig      = AliCEPBase::kBitConfigurationSet,
-  Int_t rnummin,
-  Int_t rnummax,
+  Int_t rnummin           = 114000,
+  Int_t rnummax           = 300000,
   Int_t   numTracksMax    = 6,
   Double_t fracDG         = 1.0,
   Double_t fracNDG        = 0.0,
-  UInt_t  ETmaskDG        = AliCEPBase::kBitBaseLine,
-  UInt_t  ETpatternDG     = AliCEPBase::kBitBaseLine,
-  UInt_t  ETmaskNDG       = AliCEPBase::kBitBaseLine,
-  UInt_t  ETpatternNDG    = AliCEPBase::kBitBaseLine,
+  UInt_t  ETmaskDG        = AliCEPBase::kETBaseLine,
+  UInt_t  ETpatternDG     = AliCEPBase::kETBaseLine,
+  UInt_t  ETmaskNDG       = AliCEPBase::kETBaseLine,
+  UInt_t  ETpatternNDG    = AliCEPBase::kETBaseLine,
   UInt_t  TTmask          = AliCEPBase::kTTBaseLine,
   UInt_t  TTpattern       = AliCEPBase::kTTBaseLine
   )

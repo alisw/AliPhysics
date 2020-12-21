@@ -25,6 +25,8 @@ class TH2D;
 class TH3D;
 class TProfile;
 class AliAnalysisUtils;
+class AliEventCuts;
+class AliHelperPID;
 
 class AliAnalysisTaskPIDBFDptDpt : public AliAnalysisTaskSE
 {
@@ -34,24 +36,33 @@ public:
  
   //PID functions
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
-  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method.
+  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_CircularCut( AliVTrack * trk );
+  Int_t TellParticleSpecies_by_P( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
+  Int_t TellParticleSpecies_by_P_CircularCut( AliVTrack * trk );
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
   void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
   Double_t TOFBetaCalculation( AliVTrack * track ) const;
   Double_t massSquareCalculation( AliVTrack * track ) const;
+  Float_t TPC_EventPlane(AliAODEvent *event);
+  Bool_t Is2015PileUpEvent();
+  Bool_t StoreEventMultiplicities(AliVEvent *event);
+  Double_t CalculateSharedFraction(const TBits *triggerClusterMap,const TBits *assocClusterMap,const TBits *triggerShareMap,const TBits *assocShareMap);
     
 private:
     Double_t fnsigmas[4][2]; //nsigma values
     Bool_t fHasTOFPID;
     Double_t fNSigmaPID; // number of sigma for PID cut
+    Double_t fNSigmaPID_veto;
     Double_t ptUpperLimit; //pt cut upper limit
     Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
+    Double_t fSharedfraction_Pair_cut;
 
-    //AliAnalysisUtils
-    AliAnalysisUtils *fUtils;//AliAnalysisUtils
+    AliAnalysisUtils *fUtils; //!
+    AliEventCuts *   fEventCut;  //!
     
     AliAnalysisTaskPIDBFDptDpt(const  AliAnalysisTaskPIDBFDptDpt&);
     const AliAnalysisTaskPIDBFDptDpt& operator=(const  AliAnalysisTaskPIDBFDptDpt&);
@@ -106,9 +117,18 @@ public:
     virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
     virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; }
     virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
+    virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
+    virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
+    virtual     void    SetUse_CircularCutPID( bool v )     { useCircularCutPID = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
+    virtual     void    SetIfContaminationWeakInMC( bool v )    { NoContaminationWeak   = v; }
+    virtual     void    SetIfContaminationWeakMaterialInMC( bool v )    { NoContaminationWeakMaterial   = v; }
+    virtual     void    SetIfMisIDWeakMaterialInMCClosure( bool v )     { Closure_NoMisIDWeakMaterial   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
+    virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
+    virtual     void    SetEPmin( double v)                 { EP_min          = v; }
+    virtual     void    SetEPmax( double v)                 { EP_max          = v; }
     virtual     void    SetSameFilter(int v)                { _sameFilter   = v; }
     
     virtual     void    SetRejectPileup(int v)              { _rejectPileup         = v; }
@@ -153,7 +173,9 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
- 
+
+    AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
+    void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid;  }
 
     void SetParticleSpecies( int species )            { particleSpecies = species; }
 
@@ -163,10 +185,13 @@ public:
     void SetElectronCut( Bool_t NoElectron )          { fExcludeElectronsInMC = NoElectron; }
 
     void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
+    void SetNSigmaCut_veto( double nsigma )        { fNSigmaPID_veto = nsigma; }
     void SetPtCutUpperLimit( double ptUpper )      { ptUpperLimit = ptUpper; }
     void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
+    //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
+    void SetSharedFractionPairCut( double v )   { fSharedfraction_Pair_cut = v; }
     
 protected:
     
@@ -175,11 +200,12 @@ protected:
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
     
-    AliPIDResponse*          fPIDResponse;
+    AliPIDResponse*          fPIDResponse; //!
+    AliHelperPID* fHelperPID;       // points to class for PID
     
     // Histogram settings
     //TList*              _inputHistoList;
-    TList*              _outputHistoList;
+    TList*              _outputHistoList;   //!
     //int _outputSlot;
     
     
@@ -190,9 +216,19 @@ protected:
     int      _debugLevel;
     int      _singlesOnly;
     bool      PIDparticle;
+    bool      use_pT_cut;
+    bool      useAliHelperPID;
+    bool      useCircularCutPID;
     bool      NoContamination;
+    bool      NoContaminationWeak;
+    bool      NoContaminationWeakMaterial;
+    bool      Closure_NoMisIDWeakMaterial;
     int      _useWeights;
     int      _useRapidity;
+    bool     _useEventPlane;
+    double   EP_min;
+    double   EP_max;
+    TH1F  *  _psi_EventPlane;
     int      _sameFilter;
     int      _rejectPileup;
     int      _rejectPairConversion;
@@ -222,6 +258,12 @@ protected:
 
     Bool_t fExcludeResonancesInMC;
     Bool_t fExcludeElectronsInMC;
+
+    TFormula *f2015V0MtoTrkTPCout;
+    TFormula *f2015V0MtoTrkTPCout_Upper;
+    Int_t fV0Multiplicity;
+    Int_t fV0Multiplicity_Victor;
+    Int_t fNoOfTPCoutTracks;
     
     int _tpcnclus;
     double _chi2ndf;
@@ -257,6 +299,7 @@ protected:
     //float*  _eta_1;             //!
     float  *_correction_1;           //!
     float  *_dedx_1;           //!
+    AliAODTrack ** _TrackArray;  //!
     
     //particle 2
     int    *_id_2;              //!
@@ -325,11 +368,21 @@ protected:
     double __s2PtNNw_12;
     
     double * __n1_1_vsPt;   //!
+    double * __n1_1_vsPt_pdg;   //!
+    double * __n1_1_vsPt_pdg_Weak;   //!
+    double * __n1_1_vsPt_pdg_Weak_Material;   //!
+    double * __n1_1_vsPt_Weak;   //!
+    double * __n1_1_vsPt_Material;   //!
     double * __n1_1_vsEtaPhi;     //!
     double * __s1pt_1_vsEtaPhi;    //!
     float  * __n1_1_vsZEtaPhiPt;    //!
     
     double * __n1_2_vsPt;   //!
+    double * __n1_2_vsPt_pdg;   //!
+    double * __n1_2_vsPt_pdg_Weak;   //!
+    double * __n1_2_vsPt_pdg_Weak_Material;   //!
+    double * __n1_2_vsPt_Weak;   //!
+    double * __n1_2_vsPt_Material;   //!
     double * __n1_2_vsEtaPhi;     //!
     double * __s1pt_2_vsEtaPhi;    //!
     float  * __n1_2_vsZEtaPhiPt;    //!
@@ -374,9 +427,6 @@ protected:
     TH1F * _timeTOF_1d_POI;
     TH1F * _realTOF_1d_POI;
     
-    TH1F * _nsigmakaon_1d;
-    TH1F * _nsigmaTOFkaon_1d;
-    
     TH1F * _etadis_POI_AliHelperPID;
     TH1F * _etadis_before_any_cuts;
 
@@ -401,8 +451,18 @@ protected:
     TH2F *  _beta_p;
     TH2F *  _beta_p_POI_AliHelperPID;
     TH2F *  _beta_p_AliHelperPID_no_Undefined;
-    TH2F *  _nSigmaTOF_p_POI;
-    TH2F *  _nSigmaTOF_p;
+    TH2F *  _nSigmaTOF_p_pion_before;
+    TH2F *  _nSigmaTOF_p_pion_after;
+    TH2F *  _nSigmaTOF_p_kaon_before;
+    TH2F *  _nSigmaTOF_p_kaon_after;
+    TH2F *  _nSigmaTOF_p_proton_before;
+    TH2F *  _nSigmaTOF_p_proton_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Pion_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Pion_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Kaon_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Kaon_after;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Proton_before;
+    TH2F *  _nSigmaTPC_nSigmaTOF_Proton_after;
     
     TH2F *  _inverse_beta_p;
     TH2F *  _inverse_beta_p_POI_AliHelperPID;
@@ -411,10 +471,16 @@ protected:
     TH2F *  _msquare_p;
     TH2F *  _msquare_p_POI_AliHelperPID;
     TH2F *  _msquare_p_AliHelperPID_no_Undefined;
+    TH2F *  _fhV0MvsTracksTPCout_after;
     
     // PARTICLE 1 (satisfies filter 1)
     // Primary filled quantities
     TH1F      *  _n1_1_vsPt;
+    TH1F      *  _n1_1_vsPt_pdg;
+    TH1F      *  _n1_1_vsPt_pdg_Weak;
+    TH1F      *  _n1_1_vsPt_pdg_Weak_Material;
+    TH1F      *  _n1_1_vsPt_Weak;
+    TH1F      *  _n1_1_vsPt_Material;
     TH2F      *  _n1_1_vsEtaVsPhi;
     TH2F      *  _s1pt_1_vsEtaVsPhi;
     TH3F      *  _n1_1_vsZVsEtaVsPhiVsPt;
@@ -429,6 +495,11 @@ protected:
     // PARTICLE 2 (satisfies filter 2)
     // Primary filled quantities
     TH1F      *  _n1_2_vsPt;
+    TH1F      *  _n1_2_vsPt_pdg;
+    TH1F      *  _n1_2_vsPt_pdg_Weak;
+    TH1F      *  _n1_2_vsPt_pdg_Weak_Material;
+    TH1F      *  _n1_2_vsPt_Weak;
+    TH1F      *  _n1_2_vsPt_Material;
     TH2F      *  _n1_2_vsEtaVsPhi;
     TH2F      *  _s1pt_2_vsEtaVsPhi;
     TH3F      *  _n1_2_vsZVsEtaVsPhiVsPt;
@@ -456,8 +527,13 @@ protected:
     TProfile * _s2PtNNw_12_vsM;
     TProfile * _s2NPtNw_12_vsM;
     
-    TH1F      * _invMass;
-    TH1F      * _invMassElec;
+    TH1F     * _invMassKaon;
+    TH1F     * _invMassKaonSq;
+    TH1F     * _invMassElec;
+    TH1F     * _ClusterSharedFraction_beforeCut;
+    TH1F     * _ClusterSharedFraction_afterCut;
+    TH1F     * _ClusterSharedFraction_3by3Bins_beforeCut;
+    TH1F     * _ClusterSharedFraction_3by3Bins_afterCut;
     
     TString n1Name;
     TString n1NwName;
@@ -562,7 +638,9 @@ protected:
     TString vsEta; 
     TString vsEtaPhi; 
     TString vsPtVsPt;
-    
+    TString pdg;
+    TString Weak;
+    TString Material;
     
     ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
 }; 

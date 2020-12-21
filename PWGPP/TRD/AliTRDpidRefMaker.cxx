@@ -15,9 +15,9 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDpidRefMaker.h"
 #include "AliTRDinfoGen.h"
-#include "info/AliTRDeventInfo.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDpidInfo.h"
+#include "AliTRDeventInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDpidInfo.h"
 
 
 // Defines and implements basic functionality for building reference data for TRD PID. 

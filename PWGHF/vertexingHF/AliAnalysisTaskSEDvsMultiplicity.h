@@ -17,6 +17,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include <TArrayD.h>
 #include <TFile.h>
 #include <TRandom.h>
@@ -40,6 +41,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEDvsMultiplicity();
 
 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
   void SetMassLimits(Int_t pdg, Double_t range);
   Double_t GetUpperMassLimit() const {return fUpmasslimit;}
@@ -83,12 +85,205 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetMultiplVsZProfileLHC13b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
     fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 13;
   }
   void SetMultiplVsZProfileLHC13c(TProfile* hprof){
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 13;
   }
     
+  void SetMultiplVsZProfileLHC16qt1stBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16qt2ndBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16qt4thBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+
+  void SetMultiplVsZProfileLHC16d(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16e(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16g(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16h1(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16h2(TProfile* hprof){
+    if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+    fMultEstimatorAvg[4]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16j(TProfile* hprof){
+    if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+    fMultEstimatorAvg[5]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16k(TProfile* hprof){
+    if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+    fMultEstimatorAvg[6]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16l(TProfile* hprof){
+    if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+    fMultEstimatorAvg[7]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16o(TProfile* hprof){
+    if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+    fMultEstimatorAvg[8]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC16p(TProfile* hprof){
+    if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+    fMultEstimatorAvg[9]=new TProfile(*hprof);
+    fYearNumber = 16;
+  }
+  void SetMultiplVsZProfileLHC17e(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17f(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17h(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17i(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17j(TProfile* hprof){
+    if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+    fMultEstimatorAvg[4]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17k(TProfile* hprof){
+    if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+    fMultEstimatorAvg[5]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17l(TProfile* hprof){
+    if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+    fMultEstimatorAvg[6]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17m(TProfile* hprof){
+    if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+    fMultEstimatorAvg[7]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17o(TProfile* hprof){
+    if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+    fMultEstimatorAvg[8]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC17r(TProfile* hprof){
+    if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+    fMultEstimatorAvg[9]=new TProfile(*hprof);
+    fYearNumber = 17;
+  }
+  void SetMultiplVsZProfileLHC18b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18d(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18e(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18f(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18g(TProfile* hprof){
+    if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+    fMultEstimatorAvg[4]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18h(TProfile* hprof){
+    if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+    fMultEstimatorAvg[5]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18i(TProfile* hprof){
+    if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+    fMultEstimatorAvg[6]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18j(TProfile* hprof){
+    if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+    fMultEstimatorAvg[7]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18k(TProfile* hprof){
+    if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+    fMultEstimatorAvg[8]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18l(TProfile* hprof){
+    if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+    fMultEstimatorAvg[9]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18m(TProfile* hprof){
+    if(fMultEstimatorAvg[10]) delete fMultEstimatorAvg[10];
+    fMultEstimatorAvg[10]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18n(TProfile* hprof){
+    if(fMultEstimatorAvg[11]) delete fMultEstimatorAvg[11];
+    fMultEstimatorAvg[11]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18o(TProfile* hprof){
+    if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
+    fMultEstimatorAvg[12]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
+  void SetMultiplVsZProfileLHC18p(TProfile* hprof){
+    if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+    fMultEstimatorAvg[13]=new TProfile(*hprof);
+    fYearNumber = 18;
+  }
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
   /// Nch Ntrk weights on MC
@@ -104,6 +299,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+
+  void SetLcToV0decay(Bool_t flag) {fLctoV0=flag;  }
 
   /// Flag to use the zvtx correction from ( 0= none, 1= usual d2h, 2=AliESDUtils for VZERO multiplicity)
   void SetUseVZEROParameterizedVertexCorr(Int_t flag) { fDoVZER0ParamVertexCorr=flag; }
@@ -194,6 +391,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
   TH1F* fHistNtrCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
   TH1F* fHistNtrCorrEvWithD;//!<! hist. of ntracklets for evnts with a candidate in D mass peak
+  TH1F *fHistV0MPerc;//!<! hist. of V0M percentile from AliMultTask
 
 
   TH3F *fPtVsMassVsMult;  //!<! hist. of Pt vs Mult vs. mass (
@@ -226,23 +424,27 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fUseBit;    /// flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; /// flag for subtracting D meson daughter contribution to N of tracklets
   Bool_t fKeepCorrPlots; /// flag to look at the correlation of different estimators (eta ranges)
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   Int_t fUseNchWeight; /// weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
   TH1F* fHistoMCNch;    /// weight histogram for the MC on the generated multiplicity
   TH1F* fHistoMeasNch;  /// weight histogram on the true measured multiplicity
   
-  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+  TProfile* fMultEstimatorAvg[14]; /// TProfile with mult vs. Z per period
   Double_t fRefMult;   /// refrence multiplcity (period b)
   Int_t fPdgMeson;   /// pdg code of analyzed meson
+  Bool_t fLctoV0;    /// flag for Lc in K0sp decay
 
   Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  /// Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2
 
   Int_t fDoVZER0ParamVertexCorr; /// Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
   
+  Int_t fYearNumber; ///year number of the data taking
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,16); /// D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,20); /// charmed hadrons vs. mult task
   /// \endcond
 };
 

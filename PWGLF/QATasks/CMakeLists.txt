@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/QATasks)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
@@ -30,10 +31,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskQAHighPtDeDx.cxx
   AliAnalysisTaskQAV0.cxx
   AliAnalysisTaskQAV0AOD.cxx
   AliAnalysisTaskQAMultistrange.cxx
+  AliAnalysisTaskLFefficiencies.cxx
+  AliAnalysisTaskStrAODqa.cxx
   )
 
 # Headers from sources
@@ -51,6 +53,9 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Dependecies
 set(LIBDEPS ANALYSISalice CORRFW PWGLFSTRANGENESS)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})

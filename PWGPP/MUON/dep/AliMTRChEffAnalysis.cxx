@@ -14,6 +14,8 @@
  **************************************************************************/
 
 #include "AliMTRChEffAnalysis.h"
+#include <array>
+#include <vector>
 
 // ROOT includes
 #include <Riostream.h>
@@ -43,6 +45,7 @@
 #include "TLatex.h"
 #include "TFileMerger.h"
 #include "TFitResultPtr.h"
+#include "THashList.h"
 
 #include "AliLog.h"
 #include "AliMergeableCollection.h"
@@ -85,7 +88,7 @@ AliMTRChEffAnalysis::AliMTRChEffAnalysis ( const char *localFileList, const char
   fNamer(0x0)
 {
   /// Ctor.
-  SetOutList(localFileList,outputName);
+  InitFromLocal(localFileList,outputName);
 }
 
 //________________________________________________________________________
@@ -340,6 +343,17 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
 }
 
 //________________________________________________________________________
+Int_t AliMTRChEffAnalysis::Check () const
+{
+  /// Check initialization. Return 0 if everything is ok
+  if ( fRunMap.empty() ) {
+    AliError("The list of trigger efficiency object is not initialized. Please use either InitFromLocal, InitFromGrid or InitFromWeb");
+    return 1;
+  }
+  return 0;
+}
+
+//________________________________________________________________________
 Int_t AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
   /// Compare efficiency objects
@@ -406,7 +420,6 @@ Int_t AliMTRChEffAnalysis::CompareEfficiencies ( TObjArray* effHistoLists, const
   Int_t ncolors = sizeof(colors)/sizeof(colors[0]);
 
   Int_t hTypes[2] = {AliTrigChEffOutput::kHboardEff,AliTrigChEffOutput::kHslatEff};
-  Int_t countTypes[3] = {AliTrigChEffOutput::kBendingEff,AliTrigChEffOutput::kNonBendingEff,AliTrigChEffOutput::kBothPlanesEff};
 
   TString currName = "";
   Int_t ican = 0;
@@ -548,7 +561,7 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 //________________________________________________________________________
 Int_t AliMTRChEffAnalysis::ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
 {
-  /// Copute the efficiency for the selected condition and compare them
+  /// Compute the efficiency for the selected condition and compare them
   TString srcs(sources);
   TObjArray* sourceList = srcs.Tokenize(",");
   TObjArray effHistoLists;
@@ -768,6 +781,8 @@ Bool_t AliMTRChEffAnalysis::CopyLocally ( const char* runList, const char* path,
 void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNsigmaOutliers, Double_t minEff, Double_t maxEff ) const
 {
   /// Draw trenidng
+  if ( Check() ) return;
+
   TString baseNames[3] = {"Chamber","RPC","Board"};
   TString base = baseNames[itype] + "Eff";
   if ( itype == AliTrigChEffOutput::kHboardEff ) {
@@ -784,6 +799,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
   Int_t height = 600;
   Int_t nDetEl = 4;
   Int_t nCh = 1;
+  Double_t legYmin = 0.65;
+  Double_t legYmax = 0.9;
   if ( itype != AliTrigChEffOutput::kHchamberEff ) {
     nColumns = 6;
     nRows = 3;
@@ -791,6 +808,8 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     height = 800;
     nDetEl = 18;
     nCh = 4;
+    legYmin = 0.15;
+    legYmax = 0.4;
   }
   TArrayI boards = BoardsInRPC(irpc);
   if ( itype == AliTrigChEffOutput::kHboardEff ) nDetEl = boards.GetSize();
@@ -800,10 +819,12 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
     if ( itype != AliTrigChEffOutput::kHchamberEff ) canName += Form("Ch%i",11+ich);
     TCanvas* can = new TCanvas(canName.Data(),canName.Data(),25*ich,25*ich,width,height);
     can->Divide(nColumns,nRows,0,0);
-    //    can->SetTopMargin(0.03);
-    //    can->SetBottomMargin(0.1);
+    can->SetTopMargin(0.);
+    can->SetBottomMargin(0.);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( idetelem/nColumns == nRows - 1 ) gPad->SetBottomMargin(0.15);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -811,7 +832,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
       else if ( itype == AliTrigChEffOutput::kHboardEff ) detElemId = boards[idetelem];
 
       TString title = Form("%s %i",baseNames[itype].Data(),detElemId);
-      TLegend* leg = new TLegend(0.2,0.15,0.8,0.4);
+      TLegend* leg = new TLegend(0.2,legYmin,0.8,legYmax);
       leg->SetHeader(title.Data());
       for ( Int_t icount=0; icount<2; icount++ ) {
         TGraphAsymmErrors* gr = GetTrendEff(itype, icount, ich, detElemId);
@@ -820,6 +841,7 @@ void AliMTRChEffAnalysis::DrawEffTrend ( Int_t itype, Int_t irpc, Double_t maxNs
         gr->SetMarkerStyle(24+2*icount);
         gr->GetYaxis()->SetRangeUser(minEff,maxEff);
         gr->GetXaxis()->SetLabelSize(0.07);
+        gr->GetXaxis()->SetTitle("");
         //        gr->GetYaxis()->SetLabelSize(0.025*nRows);
         //        gr->GetXaxis()->SetLabelSize(0.025*nColumns);
         gr->SetTitle("");
@@ -890,6 +912,7 @@ void AliMTRChEffAnalysis::DrawStatContribution ( Int_t itype, Int_t irpc, Double
     can->Divide(nColumns,nRows,0,0);
     for ( Int_t idetelem=0; idetelem<nDetEl; idetelem++ ) {
       can->cd(idetelem+1);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
       gPad->SetTicks(1,1);
       gPad->SetGridy();
       Int_t detElemId = idetelem;
@@ -1004,6 +1027,7 @@ Bool_t AliMTRChEffAnalysis::DrawSystematicEnvelope ( Bool_t perRPC ) const
       for ( Int_t ich=0; ich<4; ich++ ) {
         Int_t iplane = 4*icount+ich;
         can->cd(iplane+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetLogy();
         TLegend* leg = new TLegend(0.15,0.7,0.9,0.9);
@@ -1248,6 +1272,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
 
   Int_t nCanvas = perRPC ? 4 : 18;
   TObjArray canList(nCanvas);
+  THashList legList;
 
   for ( Int_t irpc=0; irpc<18; irpc++ ) {
     Int_t icount = AliTrigChEffOutput::kBothPlanesEff;
@@ -1274,16 +1299,18 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
         trendGraph->GetYaxis()->SetRangeUser(minEff,maxEff);
 
         can->cd(idetel+1);
+        if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRChEffAnalysis::ZoomPad()");
         gPad->SetTicks(1,1);
         gPad->SetMargin(0.08,0.,0.08,0.);
         TString drawOpt = ( gPad->GetListOfPrimitives()->GetEntries() == 0 ) ? "ap" : "p";
 
         TString legendName = Form("%s_%i",can->GetName(),currDE);
-        TLegend* leg = static_cast<TLegend*>(gPad->GetListOfPrimitives()->FindObject(legendName.Data()));
+        TLegend* leg =  static_cast<TLegend*>(legList.FindObject(legendName.Data()));
         if ( ! leg ) {
           leg = new TLegend(0.2,0.15,0.8,0.4);
           leg->SetHeader(Form("%s %i",perRPC?"RPC":"Board",currDE));
           leg->SetName(legendName.Data());
+          legList.Add(leg);
         }
 
         if ( ! perRPC ) {
@@ -1302,7 +1329,7 @@ TArrayI AliMTRChEffAnalysis::GetHomogeneousRanges ( Double_t chi2Cut, Int_t maxN
 
         trendGraph->Draw(drawOpt.Data());
         leg->AddEntry(trendGraph,Form("Chamber %i",11+ich),"lp");
-        leg->Draw();
+        if ( perRPC || ich == 3 ) leg->Draw();
         for ( Int_t ichange=2; ichange<range.GetSize(); ichange++ ) {
           // Store only the run when the change applies
           if ( ichange%2 == 1 ) continue;
@@ -1530,7 +1557,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetOutliers ( TGraphAsymmErrors* graph, 
     graph->GetPoint(ipt,xpt,ypt);
     Double_t diff = ypt - func->Eval(xpt);
     Double_t err = ( diff > 0. ) ? graph->GetErrorYlow(ipt) : graph->GetErrorYhigh(ipt);
-    if ( err < 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
+    if ( err <= 0. || TMath::Abs(diff)/err > maxNsigmas ) continue;
     outliers->RemovePoint(ipt-nremoved);
     nremoved++;
 //    outliers->SetPoint(iopt,xpt,ypt);
@@ -1646,6 +1673,7 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
     Int_t currBin = histo->GetXaxis()->FindBin(idetelem);
     outHisto->SetBinContent(ibin,histo->GetBinContent(currBin));
     outHisto->SetBinError(ibin,histo->GetBinError(currBin));
+    // if ( idetelem == 99 ) printf("Type %i  count %i  ch %i  bin %i (%i)  val %g\n",itype,icount,ichamber,ibin,currBin,histo->GetBinContent(currBin)); // REMEMBER TO CUT
   }
   if ( outHisto ) outHisto->GetXaxis()->LabelsOption("v");
   return outHisto;
@@ -1655,6 +1683,7 @@ TH1* AliMTRChEffAnalysis::GetTrend ( Int_t itype, Int_t icount, Int_t ichamber, 
 TGraphAsymmErrors* AliMTRChEffAnalysis::GetTrendEff ( Int_t itype, Int_t icount, Int_t ichamber, Int_t idetelem ) const
 {
   /// Get trending histogram
+  if ( Check() ) return NULL;
   if ( icount == AliTrigChEffOutput::kAllTracks ) {
     AliWarning("Chose either bending plane, non-bending plane or both planes");
     return NULL;
@@ -1666,6 +1695,7 @@ TGraphAsymmErrors* AliMTRChEffAnalysis::GetTrendEff ( Int_t itype, Int_t icount,
   histoNum->SetStats(kFALSE);
   // Solves crash when saving the canvas as a root file
   graph->SetHistogram(new TH1F(*static_cast<TH1F*>(histoNum)));
+  graph->GetHistogram()->SetDirectory(0);
   graph->GetYaxis()->SetTitle("Efficiency");
   graph->SetMarkerSize(0.5);
 //  for ( Int_t ibin=1; ibin<=histoNum->GetXaxis()->GetNbins(); ibin++ ) {
@@ -1707,6 +1737,61 @@ Bool_t AliMTRChEffAnalysis::HasMergedResults () const
     return kFALSE;
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromLocal ( const char *localFileList, const char *outputName )
+{
+  /// Initialize output list
+
+  AliInfo("Reading efficiency objects");
+
+  if ( ! fConditions ) SetDefaultEffConditions();
+
+  TString filename(localFileList);
+  gSystem->ExpandPathName(filename);
+  if ( gSystem->AccessPathName(filename.Data()) ) {
+    AliWarning(Form("Cannot find %s",filename.Data()));
+    return kFALSE;
+  }
+  if ( filename.EndsWith(".root") ) return AddToList(filename.Data(),outputName);
+
+  Bool_t isOk = kTRUE;
+  // std::vector<Int_t> orderedRuns;
+  std::map<int,std::string> tmpMap;
+  ifstream inFile(filename.Data());
+  TString currLine = "";
+  while ( ! inFile.eof() ) {
+    currLine.ReadLine(inFile);
+    if ( currLine.IsNull() ) continue;
+    if ( gSystem->AccessPathName(currLine.Data()) ) continue;
+    int currRun = AliAnalysisMuonUtility::GetRunNumber ( currLine );
+    tmpMap[currRun] = std::string(currLine.Data());
+    // orderedRuns.push_back(currRun);
+  }
+  inFile.close();
+
+  for ( auto it = tmpMap.begin(); it != tmpMap.end(); ++it ) {
+    if ( ! AddToList(it->second.c_str(), outputName) ) isOk = kFALSE;
+  }
+
+  return isOk;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromGrid ( const char *runList, const char *path, const char *pattern, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
+{
+  /// Search for results on grid
+  CopyLocally(runList,path,pattern,localFileList,outDir,directory);
+  return InitFromLocal(localFileList,outputName);
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::InitFromWeb ( const char *runList, const char *path, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
+{
+  /// Search for results on grid
+  CopyLocally(runList,path,"",localFileList,outDir,directory);
+  return InitFromLocal(localFileList,outputName);
 }
 
 //________________________________________________________________________
@@ -1773,6 +1858,54 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
 }
 
 //________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::CheckRanges ( TArrayI runRanges ) const
+{
+  /// Check that all runs are in the specified ranges
+
+  Bool_t isOk = kTRUE;
+
+  std::vector<bool> rangeOk;
+  for ( Int_t irun=0; irun<runRanges.GetSize(); ++irun ) {
+    rangeOk.push_back(false);
+  }
+
+  Int_t nRanges = runRanges.GetSize()/2;
+
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fRunMap ) {
+    Int_t run = obj->GetMinRun();
+    bool isInside = false;
+    for ( Int_t irange=0; irange<nRanges; ++irange ) {
+      Int_t istart = 2*irange;
+      Int_t iend = istart+1;
+      Int_t firstRun = runRanges[istart];
+      Int_t lastRun = runRanges[iend];
+      // Sometimes we can have a range made by just one run
+      // In this case the firstRun and lastRun coincide
+      // So the start and end must be tested separately
+      if ( run == firstRun ) rangeOk[istart] = true;
+      if ( run == lastRun ) rangeOk[iend] = true;
+      if ( run >= firstRun && run <= lastRun ) {
+        isInside = true;
+        break;
+      }
+    }
+    if ( ! isInside ) {
+      AliWarning(Form("Warning: run %i is not inside range!",run));
+      isOk = kFALSE;
+    }
+  }
+
+  for ( int irun=0; irun<rangeOk.size(); ++irun ) {
+    if ( ! rangeOk[irun] ) {
+      AliWarning(Form("Warning: range limit %i not taken from the list of runs",runRanges[irun]));
+      isOk = kFALSE;
+    }
+  }
+
+  return isOk;
+}
+
+//________________________________________________________________________
 TArrayI AliMTRChEffAnalysis::MergeRangesForStat ( TArrayI runRanges, Double_t averageStatError, Bool_t excludePeriphericBoards ) const
 {
   if ( averageStatError <= 0. || averageStatError >= 1. ) return runRanges;
@@ -1832,6 +1965,100 @@ AliTrigChEffOutput* AliMTRChEffAnalysis::Namer () const
   return fNamer;
 }
 
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::PatchEffLists ( TList* listToModify, TList* fromList, const char* boardsToPatch ) const
+{
+  /// Replace the efficiency in inEffList using the efficiency in patchEffList
+  /// for the specified local boards.
+  /// boardsToPatch is the name of a txt file with one or two columns:
+  /// boardId chamberId
+  /// with 1 <= boardId <= 234
+  /// and optionally 11 <= chamberId <= 14
+
+  if ( ! listToModify || ! fromList ) return kFALSE;
+  ifstream inFile(gSystem->ExpandPathName(boardsToPatch));
+  if ( ! inFile.is_open() ) {
+    AliError(Form("Cannot open %s",boardsToPatch));
+    return kFALSE;
+  }
+  TString line;
+  while ( ! inFile.eof() ) {
+    line.ReadLine(inFile);
+    if ( line.IsNull() ) continue;
+    TObjArray* arr = line.Tokenize(" ");
+    Int_t iboard = static_cast<TObjString*>(arr->UncheckedAt(0))->String().Atoi();
+    if ( iboard <= 0 ) continue;
+    Int_t firstCh = 11, lastCh = 14;
+    if ( arr->GetEntries() == 2 ) {
+      Int_t currCh = static_cast<TObjString*>(arr->UncheckedAt(1))->String().Atoi();
+      if ( currCh >= firstCh && currCh <= lastCh ) {
+        firstCh = currCh;
+        lastCh = currCh;
+      }
+    }
+    firstCh -= 11;
+    lastCh -= 11;
+    for ( Int_t ich=firstCh; ich<=lastCh; ich++ ) {
+      AliInfo(Form("Patching efficiency of board %i  in ch %i",iboard,11+ich));
+      for ( Int_t icount=0; icount<4; icount++ ) {
+        TString currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
+        TH1* histoToPatch = static_cast<TH1*>(listToModify->FindObject(currName.Data()));
+        TH1* fromHisto = static_cast<TH1*>(fromList->FindObject(currName.Data()));
+        histoToPatch->SetBinContent(iboard,fromHisto->GetBinContent(iboard));
+      }
+    }
+  }
+  inFile.close();
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::AdditionalSystematics ( const char* additionalSystematics, const char* affectedBoards ) const
+{
+  /// Add systematic uncertainties
+  if ( ! HasMergedResults() ) return kFALSE;
+
+  AliInfo(Form("Additional systematic uncertainties from %s",additionalSystematics));
+
+  TList* additionalSystList = ReadEffHistoList(additionalSystematics);
+  TString systName = gSystem->BaseName(additionalSystematics);
+  systName.Remove(0,systName.Index("?")+1);
+  systName.Prepend("added_syst_from_");
+
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
+    TList* effList = obj->GetEffHistoList(fConditions->UncheckedAt(0)->GetName());
+    TList* newSyst = CloneEffHistoList(effList);
+    newSyst->SetName(systName.Data());
+    if ( PatchEffLists(newSyst,additionalSystList,affectedBoards) ) {
+      obj->AddEffHistoList(systName.Data(),newSyst);
+    }
+    else delete newSyst;
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::PatchEfficiency ( const char* effToModify, const char* fromEff, const char* boardsToPatch, const char* outFilename ) const
+{
+  /// Replace the efficiency in inputEff using the efficiency in patchEff
+  /// for the specified local boards.
+  /// See PatchEffLisrs for further details
+
+  TList* listToModify = ReadEffHistoList(effToModify);
+  TList* fromList = ReadEffHistoList(fromEff);
+
+  Bool_t isOk = PatchEffLists(listToModify,fromList,boardsToPatch);
+
+  if ( isOk ) {
+    TFile* outFile = TFile::Open(gSystem->ExpandPathName(outFilename),"create");
+    listToModify->Write("triggerChamberEff",TObject::kSingleKey);
+    outFile->Close();
+  }
+
+  return isOk;
+}
 
 //________________________________________________________________________
 TList* AliMTRChEffAnalysis::ReadEffHistoList ( const char* src ) const
@@ -1886,7 +2113,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   /// (this happens when one local board is dead)
   /// and attribute the efficiency measured in the past
   /// In particular, the efficiency of the run referenceRun will be used.
-  /// If this vaue is negative, then the last run in the runList will be used for the new efficiency
+  /// If this value is negative, then the last run in the runList will be used for the new efficiency
   /// Include the fluctuation of efficiency over the specified run list
   /// as an additional systematic uncertainty
 
@@ -1906,8 +2133,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   TString currName = "";
   for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
     TList* effList = obj->GetEffHistoList(fConditions->UncheckedAt(0)->GetName());
-    std::vector<TH1*> histoList;
-    histoList.reserve(16);
+    std::array<TH1*,16> histoList;
     for ( Int_t ich=0; ich<4; ich++ ) {
       for ( Int_t icount=0; icount<4; icount++ ) {
         currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
@@ -1931,8 +2157,8 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
       if ( nDead > 0 ) {
         if ( nUnknown == 3 ) {
           for ( Int_t ich=0; ich<4; ich++ ) {
-            AliInfo(Form("Recovering board %i in ch %i",ibin,11+ich));
             if ( ! isUnknown[ich] ) continue;
+            AliInfo(Form("Recovering board %i in ch %i",ibin,11+ich));
             if ( readEffLists.size() == 0 ) {
               // Initialize once all needed objects for recovery
               rList = GetRunList(runList);
@@ -1954,22 +2180,34 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
                   // We only need the systematics for the chosen run
                   if ( itype == 1 && ! isRefRun ) continue;
                   TList* readList = ReadEffHistoList(Form("%s?%s",currOcdb.Data(),runObj->GetName()));
+                  readList->SetName(Form("%s_%s",baseName.Data(),runObj->GetName()));
                   readEffLists.push_back(readList);
-
-                  // The systematic efficiency list is a clone of the merged efficiency object
-                  // We will copy later on the recovered efficiency ONLY for the missing boards
-                  TList* systEffList = CloneEffHistoList(effList);
-                  systEffList->SetName(Form("%s_%s",baseName.Data(),runObj->GetName()));
-                  systLists.push_back(systEffList);
 
                   if ( isRefRun && itype == 0 ) {
                     refRead = readList;
-                    refSyst = systEffList;
                   }
                 } // loop on runs
               } // loop on standard or systematic OCDB
             }
-            for ( Int_t imap=0; imap<readEffLists.size(); imap++ ) {
+
+            if ( systLists.size() == 0 ) {
+              for ( UInt_t imap=0; imap<readEffLists.size(); imap++ ) {
+                // The systematic efficiency list is a clone of the merged efficiency object
+                // where we only modify the efficiency of the recovered board with either:
+                // - the systematic uncertainty of the reference efficiency
+                // - the efficiency for the other runs
+                //   (in this way the fluctuations of the efficiency with time
+                //    will be treated as systematic variations)
+                TList* systEffList = CloneEffHistoList(effList);
+                systEffList->SetName(readEffLists[imap]->GetName());
+                systLists.push_back(systEffList);
+                // This is dummy. The read efficiency is the one we will use to patch
+                // the missing efficiency. So it will not enter the systematic uncertainties
+                if ( readEffLists[imap] == refRead ) refSyst = systEffList;
+              }
+            }
+
+            for ( UInt_t imap=0; imap<readEffLists.size(); imap++ ) {
               TList* readList = readEffLists[imap];
               for ( Int_t icount=0; icount<4; icount++ ) {
                 currName = Namer()->GetHistoName(AliTrigChEffOutput::kHboardEff, icount, ich, -1, -1, -1);
@@ -1984,13 +2222,22 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
       }
     } // loop on local boards
     for ( TList* systEffHistoList : systLists ) {
-      if ( systEffHistoList == refSyst ) continue;
+      if ( systEffHistoList == refSyst ) {
+        delete systEffHistoList;
+        // Otherwise it will never be deleted since this "systematic" is dummy
+        // and will not be added to the object
+        continue;
+      }
       obj->AddEffHistoList(systEffHistoList->GetName(),systEffHistoList);
     }
+    // CAVEAT: we do not delete the objects in systLists
+    // since they where added to the list of systematics uncertainties of the merged object
+    // If we delete them, this will result in memory issues
+    // when building the systematic uncertainties
+    systLists.clear();
   } // loop on merged objects
 
   // Delete objects
-  for ( TList* obj : systLists ) delete obj;
   readEffLists.clear();
   delete rList;
 
@@ -2075,53 +2322,6 @@ Bool_t AliMTRChEffAnalysis::SetEffConditions ( const char* physSel, const char* 
 }
 
 //________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetOutList ( const char *localFileList, const char *outputName )
-{
-  /// Initialize output list
-
-  AliInfo("Reading efficiency objects");
-
-  if ( ! fConditions ) SetDefaultEffConditions();
-
-  TString filename(localFileList);
-  gSystem->ExpandPathName(filename);
-  if ( gSystem->AccessPathName(filename.Data()) ) {
-    AliWarning(Form("Cannot find %s",filename.Data()));
-    return kFALSE;
-  }
-  if ( filename.EndsWith(".root") ) return AddToList(filename.Data(),outputName);
-
-  Bool_t isOk = kTRUE;
-  ifstream inFile(filename.Data());
-  TString currLine = "";
-  while ( ! inFile.eof() ) {
-    currLine.ReadLine(inFile);
-    if ( currLine.IsNull() ) continue;
-    if ( gSystem->AccessPathName(currLine.Data()) ) continue;
-    if ( ! AddToList(currLine.Data(), outputName) ) isOk = kFALSE;
-  }
-  inFile.close();
-
-  return isOk;
-}
-
-//________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetResultsFromGrid ( const char *runList, const char *path, const char *pattern, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
-{
-  /// Search for results on grid
-  CopyLocally(runList,path,pattern,localFileList,outDir,directory);
-  return SetOutList(localFileList,outputName);
-}
-
-//________________________________________________________________________
-Bool_t AliMTRChEffAnalysis::SetResultsFromWeb ( const char *runList, const char *path, const char* localFileList, const char* outDir, const char *directory, const char* outputName )
-{
-  /// Search for results on grid
-  CopyLocally(runList,path,"",localFileList,outDir,directory);
-  return SetOutList(localFileList,outputName);
-}
-
-//________________________________________________________________________
 Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t writeSystematics ) const
 {
   /// Create the OCDB objects
@@ -2164,34 +2364,95 @@ Bool_t AliMTRChEffAnalysis::WriteMergedToOCDB ( const char* outputCDB, Bool_t wr
       continue;
     }
 
-    // Write OCDB object
-    Int_t firstRun = obj->GetMinRun();
-    Int_t lastRun = obj->GetMaxRun();
-
-    // If an object is already there, ask to remove it or keep it
-    for ( Int_t irun=0; irun<2; irun++ ) {
-      Int_t runnr = ( irun == 0 ) ? firstRun : lastRun;
-      specificStorage->QueryCDB(runnr);
-      TObjArray* allIdsForRun = specificStorage->GetQueryCDBList();
-      TIter nextId(allIdsForRun);
-      AliCDBId* id = 0x0;
-      while ((id = static_cast<AliCDBId*>(nextId()))) {
-        TString path(id->GetPath());
-        Int_t foundFirst = id->GetFirstRun();
-        Int_t foundLast = id->GetLastRun();
-        Int_t version = id->GetVersion();
-        Int_t subversion = TMath::Max(id->GetSubVersion(),0);
-        TString fullPath = Form("%s/%s/Run%d_%d_v%d_s%d.root",baseOutDir.Data(),path.Data(),foundFirst,foundLast,version,subversion);
-        ExecCommand(Form("%s %s",rmCommand.Data(),fullPath.Data()), kTRUE);
-      }
-    }
-
-    // Save the CDB object in the specific storage
-    AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(CloneEffHistoList(effHistos));
-    AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
-    delete effMap; // CAVEAT: effMap is owner of effHistos
+    WriteToOCDB(effHistos,outputCDB,obj->GetMinRun(),obj->GetMaxRun());
   }
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::WriteToOCDB ( const char* inFilename, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB ) const
+{
+  /// Write the efficiency object in the file to the OCDB
+  TList* effHistos = ReadEffHistoList ( inFilename );
+  if ( ! effHistos ) return kFALSE;
+  return WriteToOCDB(effHistos,outputCDB,firstRun,lastRun,defaultOCDB);
+}
+
+//________________________________________________________________________
+Bool_t AliMTRChEffAnalysis::WriteToOCDB ( TList* effHistos, const char* outputCDB, Int_t firstRun, Int_t lastRun, const char* defaultOCDB ) const
+{
+  /// Write the efficiency to the OCDB
+  AliInfo("Writing merged efficiencies to OCDB");
+
+  TString outCDB(outputCDB);
+  if ( ! outCDB.Contains("://") || outCDB == "raw://" ) {
+    AliError("Invalid CDB output dir");
+    return kFALSE;
+  }
+
+  TString rmCommand = "rm";
+  if ( outCDB.BeginsWith("alien://") ) {
+    rmCommand = "alien_rm";
+    if ( ! gGrid ) {
+      if ( ! TGrid::Connect("alien://") ) {
+        AliError("Cannot open grid connection");
+        return kFALSE;
+      }
+    }
+  }
+
+  AliCDBManager* mgr = AliCDBManager::Instance();
+  if ( ! mgr->GetDefaultStorage() ) mgr->SetDefaultStorage(defaultOCDB);
+
+  TString trigEffCDBdir = "MUON/Calib/TriggerEfficiency";
+  mgr->SetSpecificStorage(trigEffCDBdir.Data(),outCDB.Data());
+
+  AliCDBStorage* specificStorage = mgr->GetSpecificStorage(trigEffCDBdir.Data());
+  TString baseOutDir = specificStorage->GetBaseFolder();
+
+  // If an object is already there, ask to remove it or keep it
+  for ( Int_t irun=0; irun<2; irun++ ) {
+    Int_t runnr = ( irun == 0 ) ? firstRun : lastRun;
+    specificStorage->QueryCDB(runnr);
+    TObjArray* allIdsForRun = specificStorage->GetQueryCDBList();
+    TIter nextId(allIdsForRun);
+    AliCDBId* id = 0x0;
+    while ((id = static_cast<AliCDBId*>(nextId()))) {
+      TString path(id->GetPath());
+      Int_t foundFirst = id->GetFirstRun();
+      Int_t foundLast = id->GetLastRun();
+      Int_t version = id->GetVersion();
+      Int_t subversion = TMath::Max(id->GetSubVersion(),0);
+      TString fullPath = Form("%s/%s/Run%d_%d_v%d_s%d.root",baseOutDir.Data(),path.Data(),foundFirst,foundLast,version,subversion);
+      ExecCommand(Form("%s %s",rmCommand.Data(),fullPath.Data()), kTRUE);
+    }
+  }
+
+  // Save the CDB object in the specific storage
+  AliMUONTriggerEfficiencyCells* effMap = new AliMUONTriggerEfficiencyCells(CloneEffHistoList(effHistos));
+  AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
+  delete effMap; // CAVEAT: effMap is owner of effHistos
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+void AliMTRChEffAnalysis::ZoomPad()
+{
+  if ( gPad->GetEvent() != kButton1Double ) return;
+  TVirtualPad* pad = gPad;
+  Int_t px = pad->GetEventX();
+  Int_t py = pad->GetEventY();
+  TObjLink *lnk = pad->GetListOfPrimitives()->FirstLink();
+  TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
+  can->cd();
+  while (lnk) {
+    TObject* obj = lnk->GetObject()->DrawClone(lnk->GetOption());
+    obj->SetBit(kCanDelete);
+    lnk = lnk->Next();
+  }
+  can->Modified();
+  can->Update();
 }
 
 //___________________________________________________________________________
@@ -2210,7 +2471,9 @@ AliMTRChEffAnalysis::AliMTRChEffInnerObj::AliMTRChEffInnerObj ( const char* file
 AliMTRChEffAnalysis::AliMTRChEffInnerObj::~AliMTRChEffInnerObj ()
 {
   /// Destructor
-  for ( auto& mapEntry : fEffLists ) delete mapEntry.second;
+  for ( auto& mapEntry : fEffLists ) {
+    delete mapEntry.second;
+  }
   fEffLists.clear();
 }
 

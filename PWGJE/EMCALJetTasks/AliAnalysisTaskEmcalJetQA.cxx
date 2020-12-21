@@ -59,14 +59,14 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
   fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
   fIsEmbedded(kFALSE),
+  fHistManager("AliAnalysisTaskEmcalJetQA"),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
   fNTotTracks(0),
-  fLeadingTrack(),
-  fHistManager("AliAnalysisTaskEmcalJetQA")
+  fLeadingTrack()
 {
   // Default constructor.
 
@@ -91,14 +91,14 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA(const char *name) :
   fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
   fIsEmbedded(kFALSE),
+  fHistManager(name),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
   fNTotTracks(0),
-  fLeadingTrack(),
-  fHistManager(name)
+  fLeadingTrack()
 {
   // Standard
 
@@ -280,24 +280,24 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
     axistitle[dim] = "Centrality %";
-    nbins[dim] = 101;
+    nbins[dim] = 100;
     min[dim] = 0;
-    max[dim] = 101;
+    max[dim] = 100;
     dim++;
 
     if (!fCentMethod2.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod2.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
     if (!fCentMethod3.IsNull()) {
       axistitle[dim] = Form("Centrality %s %%", fCentMethod3.Data());
-      nbins[dim] = 101;
+      nbins[dim] = 100;
       min[dim] = 0;
-      max[dim] = 101;
+      max[dim] = 100;
       dim++;
     }
 
@@ -538,6 +538,11 @@ Bool_t AliAnalysisTaskEmcalJetQA::RetrieveEventObjects()
 Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
 {
   // Fill histograms.
+
+  if (fCentBin < 0) {
+    AliError(Form("fCentBin is %d! fCent = %.3f. Fix the centrality bins to include all possible values of centrality.", fCentBin, fCent));
+    return kFALSE;
+  }
 
   EventQA_t eventQA;
 

@@ -4,35 +4,49 @@
 /* $Id$ */
 
 AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarCorrelations::CollSyst syst, // set collisional system (pp, pA, AA)
-                                                           Bool_t theMCon, // flag for Data (kFALSE) or MC (kTRUE) analysis
-                                                           Bool_t mixing, // flag for Single Event (kFALSE) or Mixed Event (kTRUE) analysis
+                                                           Bool_t theMCon=kFALSE, // flag for Data (kFALSE) or MC (kTRUE) analysis
+                                                           Bool_t mixing=kFALSE, // flag for Single Event (kFALSE) or Mixed Event (kTRUE) analysis
                                                            Bool_t UseReco=kTRUE, // flag for Kine/pure MC (kFALSE) or Reconstruction (kTRUE) analysis - in data, kTRUE by default
-                                                           Bool_t UseHadChannelinMC, // flag to use D*->Kpipi (kTRUE) or any decay (kFALSE) in MC kine
+                                                           Bool_t UseHadChannelinMC=kFALSE, // flag to use D*->Kpipi (kTRUE) or any decay (kFALSE) in MC kine
                                                            Bool_t fullmode = kFALSE, // flag to run in fast mode (kFALSE) or slow and detailed (kTRUE)
                                                            Bool_t UseEffic=kTRUE, // flag to use associated track eff (kTRUE = YES, kFALSE = NO)
                                                            Bool_t UseDEffic = kTRUE, // flag to use Dmeson track eff (kTRUE = YES, kFALSE = NO)
                                                            Bool_t useDStarSidebands = kTRUE, // flag to use sidebands from D0 (kFALSE) or sidebands from Dstar (kTRUE)
-                                                           Bool_t useOnlyOneDStarPerEvent, // use only one D* per event (kTRUE) or all of them (kFALSE)
-                                                           Bool_t limitaccept, // kTRUE to run only with acceptance cut on MC kine
-                                                           AliAnalysisTaskDStarCorrelations::DEffVariable var, // variable to use in D mesn efficiency correction besides pt
+                                                           Bool_t useOnlyOneDStarPerEvent=kFALSE, // use only one D* per event (kTRUE) or all of them (kFALSE)
+                                                           Bool_t limitaccept=kFALSE, // kTRUE to run only with acceptance cut on MC kine
+                                                           AliAnalysisTaskDStarCorrelations::DEffVariable var=AliAnalysisTaskDStarCorrelations::kMult, // variable to use in D mesn efficiency correction besides pt
                                                            Int_t trackselect =1, // correlate with hadrons (1), kaons (2), kzeros (3)
                                                            Int_t usedispl =0, // don't use displacement (0), use absolute displacement (1) or relative (normalized by impac.par resol.) displacement (2)
-                                                           Int_t nbins, //number of bins in correlations histo
-                                                           Float_t DStarSigma, // number of sigmas in dstar selection (for pt shape, eta, phi distr. studies)
-                                                           Float_t D0Sigma, // number of sigmas in dzero selection (for pt shape, eta, phi distr. studies)
-                                                           Float_t D0SBSigmaLow, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
-                                                           Float_t D0SBSigmaHigh, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
-                                                           Float_t eta, // maximum D* eta
-                                                           Float_t minDStarPt, // set minimum pt for Dstar
-                                                           TString DStarCutsFile, // path of Dmeson cut object
-                                                           TString TrackCutsFile, // path of associated cut object
+                                                           Int_t nbins=32, //number of bins in correlations histo
+                                                           Float_t DStarSigma=2, // number of sigmas in dstar selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0Sigma=3, // number of sigmas in dzero selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0SBSigmaLow=5, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t D0SBSigmaHigh=10, // number of sigmas in dzero sb selection (for pt shape, eta, phi distr. studies)
+                                                           Float_t eta=0.8, // maximum D* eta
+                                                           Float_t minDStarPt=2, // set minimum pt for Dstar
+                                                           TString DStarCutsFile="", // path of Dmeson cut object
+                                                           TString TrackCutsFile="", // path of associated cut object 
                                                            TString suffix = "", // suffix for output
                                                            TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
 							   TString cutsTrkname = "AssociatedCuts", // name of track cut container
-							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
-							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10, 
-							   Double_t refMult=9.26, Bool_t usemultiplicity, Int_t AODprot=1)
-{
+                                                                   
+                               Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
+							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10,
+							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=0,
+                                                                      
+                                                           Bool_t LoadEffFromMaps = kFALSE, // flag to allow laoding the maps not from the cut file but directly from input map files (kTRUE)
+                                                           TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c
+                                                           TString effDstarnameb = "DStarEff_From_b_wLimAcc_2d.root",// eff map name from b
+                                                           TString effName= "3D_eff_Std.root",
+                                                           Bool_t useSmallSizePlots=kFALSE, //reduce number of bins in THnSparse (use for heavy datasets)
+                                                                         
+                                                           AliAnalysisTaskDStarCorrelations::TreeFill fillTrees=AliAnalysisTaskDStarCorrelations::kNoTrees)
+// AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees)
+//AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees//kTRUE to run in offline mode
+
+
+                                                           
+{ 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -40,7 +54,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     return NULL;
   } 
 
-	cout << "==========================================================" << endl;
+    //cout << "==========================================================" << endl; getchar();
     cout << "Set Inputs : " << endl;
     cout << " " << endl;
     if(syst == AliAnalysisTaskDStarCorrelations::pp) cout << "Running on pp @ 7 TeV" << endl;
@@ -84,7 +98,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
     cout << "N of Sigmas in D* selection =" << DStarSigma << endl;
     cout << "N of Sigmas in D0 selection = " << D0Sigma << endl;
-    cout << "D0 Sidebands taken from  = " << D0SBSigmaLow << " - " << D0SBSigmaHigh << " sigmas " << endl; endl;
+    cout << "D0 Sidebands taken from  = " << D0SBSigmaLow << " - " << D0SBSigmaHigh << " sigmas " << endl;
     
     cout << "DStar cut object:     " << DStarCutsFile << endl;
     cout << "Tracks cut object:    " << TrackCutsFile << endl;
@@ -103,7 +117,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     TFile* filecuts=TFile::Open(DStarCutsFile.Data());
     if(!filecuts->IsOpen()){
     cout<<"DStar cut object file not found: exit"<<endl;
-    return;
+    return NULL;
     }
     
     AliRDHFCutsDStartoKpipi* RDHFDStartoKpipi=new AliRDHFCutsDStartoKpipi();
@@ -111,55 +125,108 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     // mm let's see if everything is ok
     if(!RDHFDStartoKpipi){
 	cout<<"Specific AliRDHFCuts not found"<<endl;
-	return;
+	return NULL;
     }
     RDHFDStartoKpipi->SetName("DStartoKpipiCuts");    
         
        // RDHFDStartoKpipi->SetTriggerClass("");
        // RDHFDStartoKpipi->SetTriggerMask(AliVEvent::kCentral);
     
+    printf("Min pt default %f\n ",RDHFDStartoKpipi->GetMinPtCandidate() );
+    
+    printf("Max pt default %f\n ",RDHFDStartoKpipi->GetMaxPtCandidate() );
+    
     if(minDStarPt>RDHFDStartoKpipi->GetMinPtCandidate()){
+        
         cout << "Changing minimum pT of DStar from " << RDHFDStartoKpipi->GetMinPtCandidate() << " to " << minDStarPt << endl;
+        
+        
         RDHFDStartoKpipi->SetMinPtCandidate(minDStarPt);
     }
-	
+    	
 // ******************************** OPENING THE ASSOCIATED TRACK CUTS ************************************
 	cout << "Getting associated track cut object from file \n" << TrackCutsFile.Data() << "\n " << endl;
 	TFile* filecuts2=TFile::Open(TrackCutsFile.Data());
 	  if(!filecuts2->IsOpen()){
 		  cout<<"Track cut object file not found: exit"<<endl;
-		  return;
+		  return NULL;
     }
  	AliHFAssociatedTrackCuts* corrCuts=new AliHFAssociatedTrackCuts();
 	corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get(cutsTrkname.Data());
 	if(!corrCuts){
 		cout<<"Specific associated track cuts not found"<<endl;
-		return;
+		return NULL;
 	}
 	corrCuts->SetName("AssociatedCuts");
 	corrCuts->PrintAll();
+    
+    if(!LoadEffFromMaps){
 	
     if(UseEffic && !corrCuts->IsTrackEffMap()){
         cout << "You are trying to use the single track efficiency, but there is no map loaded in the cut object " << endl;
-        return;
+        return NULL;
     }
     
 
     
     if(UseDEffic && var == AliAnalysisTaskDStarCorrelations::kNone && (!corrCuts->IsTrigEffMap1D()&&(!corrCuts->IsTrigEffMap1DB()))){
         cout << "You are trying to use the DStar efficiency vs pt only, but there is no map loaded in the cut object " << endl;
-        return;
+        return NULL;
     }
     
     if(UseDEffic && (var != AliAnalysisTaskDStarCorrelations::kNone) && (!corrCuts->IsTrigEffMap2D()&&(!corrCuts->IsTrigEffMap2DB()))){
         cout << "You are trying to use the DStar efficiency vs pt only, but there is no map loaded in the cut object " << endl;
-        return;
+        return NULL;
+    }
+    }
+      
+    
+    //********************************  SELECTING THE EFFICIENCY MAPS *******************************
+    if(LoadEffFromMaps){
+            
+    if(!effName.EqualTo("")) {
+        TFile* fileeff=TFile::Open(effName.Data());
+        if(!fileeff->IsOpen()){
+            cout<<"Input file not found for efficiency! Exiting..."<<endl;
+            return NULL;
+        }
+        TCanvas *c = (TCanvas*)fileeff->Get("c");
+        TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
+        if(UseReco) corrCuts->SetEfficiencyWeightMap(h3D); //data and MC Reco
+    } else cout<<"*** WARNING! No tracking efficiency map set! ***"<<endl;
+        
+    //Load Dstar efficiency map
+    if(!effDstarnamec.EqualTo("")) {
+        TFile* fileeffDstarc=TFile::Open(effDstarnamec.Data());
+        if(!fileeffDstarc->IsOpen()){
+            cout<<"Input file not found for efficiency! Exiting..."<<endl;
+            return NULL;
+        }
+        TH2D *hEffDstarc = (TH2D*)fileeffDstarc->Get("h_Eff");
+        if(UseReco) corrCuts->SetTriggerEffWeightMap(hEffDstarc); //data and MC Reco
+    } else cout<<"*** WARNING! No prompt trigger efficiency map set! ***"<<endl;
+    
+    //Load Dstar efficiency map from b
+    if(theMCon) {
+        if(!effDstarnameb.EqualTo("")) {
+            TFile* fileeffDstarb=TFile::Open(effDstarnameb.Data());
+            if(!fileeffDstarb->IsOpen()){
+                cout<<"Input file not found for efficiency! Exiting..."<<endl;
+                return NULL;
+            }
+            TH2D *hEffDstarb = (TH2D*)fileeffDstarb->Get("h_Eff");
+            if(UseReco && theMCon) corrCuts->SetTriggerEffWeightMapB(hEffDstarb); //MC Reco
+        } else cout<<"*** WARNING! No feed-down trigger efficiency map set! ***"<<endl;
+    }
+    
+    corrCuts->PrintAll();
+
     }
     
 // ******************************** SELECTING THE MC PROCESS  ************************************
 
+    TString selectMCproc = "";
     if(UseMCEventType){
-	TString selectMCproc = "";
 	
 	Int_t NMCevents = corrCuts->GetNofMCEventType();
 	for(Int_t k=0; k<NMCevents; k++){
@@ -210,6 +277,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
     task->SetUseMCEventType(UseMCEventType);
     task->SetAODMismatchProtection(AODprot);
+    task->SetUseSmallSizePlots(useSmallSizePlots);
+    task->SetFillTrees(fillTrees);
 
     if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);
@@ -239,8 +308,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                      
   	   TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
   	   if(!fileEstimator)  {
-   	     AliFatal("File with multiplicity estimator not found\n");
-   	     return;
+   	     printf("File with multiplicity estimator not found\n");
+   	     return NULL;
    	   }
 
     	  task->SetReferenceMultiplcity(refMult);
@@ -254,8 +323,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
       	  for(Int_t ip=0; ip<4; ip++) {
 	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
 	    if (!multEstimatorAvg[ip]) {
-	      AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	      return;
+	      printf(Form("Multiplicity estimator for %s not found! Please check your estimator file\n",periodNames[ip]));
+	      return NULL;
 	    }
           }
       	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -271,6 +340,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     TString contname4 = "OutputEventMixing";
     TString contname5 = "OutputCorrelations";
     TString contname6 = "OutputMC";
+    TString contname10 = "TreeDstar";
     TString counter = "NormCounter";
     TString cutname1 = "Dcuts" ;
 	TString cutname2 = "hadroncuts" ;
@@ -282,6 +352,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
         contname4 += suffix;
         contname5 += suffix;
          contname6 += suffix;
+    contname10 += suffix;
         counter += suffix;
         cutname1 += suffix;
         cutname2 += suffix;
@@ -362,6 +433,9 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 		//outputfileMC += "DEffN_";
 		
     }
+    
+    
+ 
 	
     
     outputfile += Form("%d_bins_",nbins);
@@ -412,7 +486,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	cout << cutname2 << endl;
 	cout << counter << endl;
 	cout << outputfile << endl;*/
-	//return;
+	//return NULL;
 	//}// end else
   mgr->AddTask(task);
   // ------ input data ------
@@ -425,15 +499,17 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	//TLists
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-     AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-     AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(contname5, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(contname6, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(contname5, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(contname6, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     // Normalization Counter
-    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
    // Cut Objects
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(cutname1,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts D
   AliAnalysisDataContainer *coutput9 = mgr->CreateContainer(cutname2,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts tracks
+    
+    AliAnalysisDataContainer *coutput10 = mgr->CreateContainer(contname10,TTree::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //TTree D0
 
   
 	
@@ -443,10 +519,12 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
   mgr->ConnectOutput(task,5,coutput5);
-     mgr->ConnectOutput(task,6,coutput6);
-    mgr->ConnectOutput(task,7,coutput7);
-    mgr->ConnectOutput(task,8,coutput8);
-    mgr->ConnectOutput(task,9,coutput9);
+  mgr->ConnectOutput(task,6,coutput6);
+  mgr->ConnectOutput(task,7,coutput7);
+  mgr->ConnectOutput(task,8,coutput8);
+  mgr->ConnectOutput(task,9,coutput9);
+  mgr->ConnectOutput(task,10,coutput10);
+
 
   return task ;
 

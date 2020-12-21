@@ -21,7 +21,10 @@
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
+#include "AliGenEventHeader.h"
 #include "AliLog.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include <TObjString.h>
 
 /// \cond CLASSIMP
 ClassImp(AliCaloTrackAODReader) ;
@@ -37,15 +40,18 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
   fSelectFractionTPCSharedClusters(0), fCutTPCSharedClustersFraction(0)
 {
   fDataType = kAOD;
-  
-  fReadStack          = kTRUE;
-  fReadAODMCParticles = kFALSE;
  
-  fTrackFilterMask = 128;
-  fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
+  //fTrackFilterMask = 128;
+  //fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
   
-  fSelectFractionTPCSharedClusters = kTRUE;
+  //fSelectFractionTPCSharedClusters = kTRUE;
   fCutTPCSharedClustersFraction    = 0.4;
+  
+  for(Int_t i = 0; i < 8; i++)
+  {
+    fhCTSAODTrackCutsPt   [i] = 0;
+    fhCTSAODTrackCutsPtCen[i] = 0;
+  }
 }
 
 //_________________________________________________________
@@ -54,26 +60,34 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 //_________________________________________________________
 Bool_t AliCaloTrackAODReader::CheckForPrimaryVertex() const
 {  
-  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
-  if(!aodevent) return kFALSE;
+  AliAODEvent * aodevent = NULL;
+  // In case of analysis of pure MC event used in embedding 
+  // get bkg PbPb event since cuts for embedded event are based on 
+  // data vertex and not on pp simu vertex
+  if ( fEmbeddedEvent[1] ) // Input event is MC
+    aodevent = dynamic_cast<AliAODEvent*>(((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetEvent());
+  else 
+    aodevent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
-  if (aodevent->GetPrimaryVertex() != NULL)
+  if ( !aodevent ) return kFALSE;
+  
+  if ( aodevent->GetPrimaryVertex() != NULL )
   {
-    if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+    if ( aodevent->GetPrimaryVertex()->GetNContributors() > 0 )
     {
       return kTRUE;
     }
   }
   
-  if(aodevent->GetPrimaryVertexSPD() != NULL)
+  if ( aodevent->GetPrimaryVertexSPD() != NULL )
   {
-    if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    if ( aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0 )
     {
       return kTRUE;
     }
     else
     {
-      AliWarning(Form("Number of contributors from bad vertex type:: %s",
+      AliDebug(1,Form("Null number of contributors from bad vertex type:: %s",
                       aodevent->GetPrimaryVertex()->GetName()));
       return kFALSE;
     }
@@ -93,18 +107,45 @@ TList * AliCaloTrackAODReader::GetCreateControlHistograms()
 {  
   AliCaloTrackReader::GetCreateControlHistograms();
     
-  if(fFillCTS)
+  if ( fFillCTS )
   {
-    for(Int_t i = 0; i < 4; i++)
+    TString names[] = {"FilterBit_Hybrid", "SPDHit", "NclustersITS", "Chi2ITS",
+      "NclustersTPC", "Chi2TPC", "SharedCluster", "Primary"};
+    
+    for(Int_t i = 0; i < 8; i++)
     {
-      TString names[] = {"FilterBit_Hybrid", "SPDHit", "SharedCluster", "Primary"};
+      if ( names[i].Contains("Filter") && !fTrackFilterMask && 
+          !fTrackFilterMaskComplementary && !fSelectHybridTracks            ) continue;
+      if ( names[i] == "SPDHit"        && !fSelectSPDHitTracks              ) continue;
+      if ( names[i] == "NclustersITS"  && fSelectMinITSclusters <= 0        ) continue;
+      if ( names[i] == "Chi2ITS"       && fSelectMaxChi2PerITScluster > 1000) continue;
+      if ( names[i] == "NclustersTPC"  && fSelectMinTPCclusters <= 0        ) continue;
+      if ( names[i] == "Chi2TPC"       && fSelectMaxChi2PerTPCcluster > 1000) continue;
+      if ( names[i] == "SharedCluster" && !fSelectFractionTPCSharedClusters ) continue;
+      if ( names[i] == "Primary"       && !fSelectPrimaryTracks             ) continue;
       
-      fhCTSAODTrackCutsPt[i] = new TH1F(Form("hCTSReaderAODClusterCuts_%d_%s",i,names[i].Data()),
-                                        Form("AOD CTS Cut %d, %s",i,names[i].Data()), 
-                                        fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]) ;
-      fhCTSAODTrackCutsPt[i]->SetYTitle("# tracks");
-      fhCTSAODTrackCutsPt[i]->SetXTitle("#it{p}_{T} (GeV)");
-      fOutputContainer->Add(fhCTSAODTrackCutsPt[i]);
+      if ( !IsHistoCentDependentOn() )
+      {
+        fhCTSAODTrackCutsPt[i] = new TH1F
+        (Form("hCTSReaderAODTrackCuts_%d_%s",i,names[i].Data()),
+         Form("AOD CTS Cut %d, %s",i,names[i].Data()), 
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1]) ;
+        fhCTSAODTrackCutsPt[i]->SetYTitle("# tracks");
+        fhCTSAODTrackCutsPt[i]->SetXTitle("#it{p}_{T} (GeV)");
+        fOutputContainer->Add(fhCTSAODTrackCutsPt[i]);
+      }
+      else
+      {
+        fhCTSAODTrackCutsPtCen[i] = new TH2F
+        (Form("hCTSReaderAODTrackCutsCen_%d_%s",i,names[i].Data()),
+         Form("AOD CTS Cut %d, %s",i,names[i].Data()), 
+         fEnergyHistogramNbins, fEnergyHistogramLimit[0], fEnergyHistogramLimit[1],
+         100, 0, 100) ;
+        fhCTSAODTrackCutsPtCen[i]->SetYTitle("# tracks");
+        fhCTSAODTrackCutsPtCen[i]->SetXTitle("#it{p}_{T} (GeV)");
+        fhCTSAODTrackCutsPtCen[i]->SetYTitle("Centrality (%)");
+        fOutputContainer->Add(fhCTSAODTrackCutsPtCen[i]);
+      }
     }
   }
   
@@ -126,7 +167,7 @@ TObjString *  AliCaloTrackAODReader::GetListOfParameters()
            fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
   parList+=onePar ;
   
-  if(fSelectFractionTPCSharedClusters)
+  if ( fSelectFractionTPCSharedClusters )
   {
     snprintf(onePar,buffersize,"Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
     parList+=onePar ;
@@ -156,10 +197,54 @@ AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
 {  
   AliAODMCHeader *mch = NULL;
   
-  AliAODEvent * aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+  AliAODEvent * aod =  NULL; 
+  
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] )
+    aod =  dynamic_cast<AliAODEvent*> (AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent());
+  else 
+    aod = dynamic_cast<AliAODEvent*> (fInputEvent);
+  
   if(aod) mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
   
   return mch;
+}
+
+//______________________________________________________________
+/// \return pointer to Generated event header (AliGenEventHeader)
+//______________________________________________________________
+AliGenEventHeader* AliCaloTrackAODReader::GetGenEventHeader() const
+{
+  if ( !GetAODMCHeader() ) return 0x0;
+  
+  if ( fGenEventHeader ) return fGenEventHeader;
+  
+  Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
+  
+  if ( nGenerators <= 0  ) return 0x0;
+  
+  if ( fMCGenerEventHeaderToAccept=="" ) 
+    return GetAODMCHeader()->GetCocktailHeader(0);
+  
+  //if(nGenerators < 1) printf("No generators %d\n",nGenerators);
+  
+  for(Int_t igen = 0; igen < nGenerators; igen++)
+  {
+    AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
+   
+    TString name = eventHeader->GetName();
+    
+    AliDebug(2,Form("AOD Event header %d name %s event header class %s: Select if contains <%s>",
+             igen,name.Data(),eventHeader->ClassName(),fMCGenerEventHeaderToAccept.Data()));
+    
+//   if(nGenerators < 2) 
+//     printf("AOD Event header %d name %s event header class %s: Select if contains <%s>\n",
+//           igen,name.Data(),eventHeader->ClassName(),fMCGenerEventHeaderToAccept.Data());
+    
+    if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
+      return eventHeader ;
+  }
+  
+  return 0x0;
 }
 
 //_____________________________
@@ -184,6 +269,25 @@ Int_t AliCaloTrackAODReader::GetTrackID(AliVTrack* track)
 }
 
 
+//________________________________________________________
+/// Print parameters
+//________________________________________________________
+void AliCaloTrackAODReader::Print(const Option_t * opt) const
+{  
+  if(! opt)
+    return;
+  
+  AliCaloTrackReader::Print(opt);
+  
+  printf("AOD Track: Hybrid %d, Filter bit %d, Complementary bit %d, Primary %d; \n", 
+           fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
+  
+  if ( fSelectFractionTPCSharedClusters )
+  {
+    printf("Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
+  }
+}
+
 //_____________________________________________________________________________
 /// Select AOD track using the AOD filter bits or predefined selection methods.
 //_____________________________________________________________________________
@@ -193,37 +297,130 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   
   if(!aodtrack) return kFALSE;
   
+  track->GetPxPyPz(pTrack) ;
+  
   AliDebug(2,Form("AOD track type: %d (primary %d), hybrid? %d",
                   aodtrack->GetType(),AliAODTrack::kPrimary,
                   aodtrack->IsHybridGlobalConstrainedGlobal()));
-  
+
+  Int_t cen = GetEventCentrality();
+
   // Hybrid?
-  if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
+  if ( fSelectHybridTracks && fTrackFilterMaskComplementary == 0 )
   {
-    if (!aodtrack->IsHybridGlobalConstrainedGlobal()) return kFALSE ;
+    if ( !aodtrack->IsHybridGlobalConstrainedGlobal() ) return kFALSE ;
   }
-  else // Filter Bit?
+  else if ( fTrackFilterMask > 0 || fTrackFilterMaskComplementary > 0 ) // Filter Bit?
   {
     Bool_t accept = aodtrack->TestFilterBit(fTrackFilterMask);
     
-    if(!fSelectHybridTracks && !accept) return kFALSE ;
+    if ( !fSelectHybridTracks && !accept ) return kFALSE ;
     
-    if(fSelectHybridTracks) // Second filter bit for hybrids?
+    if ( fSelectHybridTracks ) // Second filter bit for hybrids?
     {
       Bool_t acceptcomplement = aodtrack->TestFilterBit(fTrackFilterMaskComplementary);
-      if (!accept && !acceptcomplement) return kFALSE ;
+      if ( !accept && !acceptcomplement ) return kFALSE ;
     }
   }
 
-  fhCTSAODTrackCutsPt[0]->Fill(aodtrack->Pt());
+  if ( fSelectHybridTracks || fTrackFilterMaskComplementary || fTrackFilterMask )
+  {
+    AliDebug(2,"Pass mask cut");
 
-  //
-  if(fSelectSPDHitTracks)
-  { // Not much sense to use with TPC only or Hybrid tracks
-    if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) return kFALSE ;
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [0]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[0]->Fill(aodtrack->Pt(),cen);
   }
   
-  fhCTSAODTrackCutsPt[1]->Fill(aodtrack->Pt());
+  //
+  // ITS related cuts
+  // Not much sense to use with TPC only or Hybrid tracks
+  //
+  
+//  printf("SPD %d (%d,%d) - n clus %d >= %d - chi2 %f max chi2/n cls %f\n",
+//         fSelectSPDHitTracks, aodtrack->HasPointOnITSLayer(0),!aodtrack->HasPointOnITSLayer(1),
+//         aodtrack->GetITSNcls(),fSelectMinITSclusters,
+//         aodtrack->GetITSchi2(),fSelectMaxChi2PerITScluster);
+  
+  if ( fSelectSPDHitTracks )
+  { 
+    if ( !aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1) ) 
+      return kFALSE ;
+    
+    AliDebug(2,"Pass SPD layer cut");
+    
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [1]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[1]->Fill(aodtrack->Pt(),cen);
+  }
+  
+  Int_t nITScls = aodtrack->GetITSNcls();
+  if ( fSelectMinITSclusters > 0 )
+  {
+    if ( nITScls < fSelectMinITSclusters  ) 
+    {
+      return kFALSE;    
+    }
+    
+    AliDebug(2,"Pass n ITS cluster cut");
+    
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [2]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[2]->Fill(aodtrack->Pt(),cen);
+  }
+  
+  Float_t chi2PerITScluster = 0.;
+  if ( nITScls > 0 ) chi2PerITScluster = aodtrack->GetITSchi2()/nITScls;
+  
+  if ( chi2PerITScluster > fSelectMaxChi2PerITScluster ) 
+  {
+    return kFALSE; 
+  }
+  
+  if ( fSelectMaxChi2PerITScluster < 1000 )
+  {
+    AliDebug(2,"Pass ITS chi2/ncls cut");
+
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [3]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[3]->Fill(aodtrack->Pt(),cen);
+  }
+  
+  //
+  // TPC related cuts
+  // Not much sense to use with ITS only
+  //
+
+//  printf("TPC - n clus %d >= %d - chi2 %f max chi2/ncls %f\n",
+//         aodtrack->GetTPCNcls(),fSelectMinTPCclusters,
+//         aodtrack->GetTPCchi2(),fSelectMaxChi2PerTPCcluster);
+
+  Int_t nTPCcls = aodtrack->GetTPCNcls();
+  if ( fSelectMinTPCclusters > 0 )
+  {
+    if ( nTPCcls < fSelectMinTPCclusters  )
+    {
+      return kFALSE;
+    }
+
+    AliDebug(2,"Pass n TPC cluster cut");
+
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [4]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[4]->Fill(aodtrack->Pt(),cen);
+  }
+
+  //
+  Float_t chi2PerTPCcluster = 0.;
+  if ( nTPCcls > 0 ) chi2PerTPCcluster = aodtrack->GetTPCchi2()/nTPCcls;
+
+  if ( chi2PerTPCcluster > fSelectMaxChi2PerTPCcluster )
+  {
+    return kFALSE;
+  }
+
+  if ( fSelectMaxChi2PerTPCcluster < 1000 )
+  {
+    AliDebug(2,"Pass TPC chi2/ncls cut");
+
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [5]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[5]->Fill(aodtrack->Pt(),cen);
+  }
 
   //
   if ( fSelectFractionTPCSharedClusters )
@@ -233,15 +430,19 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     Float_t nclsS = Float_t(aodtrack->GetTPCnclsS());
     if (  ncls> 0 )  frac =  nclsS / ncls ;
     
-    if (frac > fCutTPCSharedClustersFraction)
+    if ( frac > fCutTPCSharedClustersFraction )
     {
       AliDebug(2,Form("\t Reject track, shared cluster fraction %f > %f",frac, fCutTPCSharedClustersFraction));
+      
       return kFALSE ;
     }
+    
+    AliDebug(2,"Pass TPC shared cluster cut");
+    
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [6]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[6]->Fill(aodtrack->Pt(),cen);
   }
   
-  fhCTSAODTrackCutsPt[2]->Fill(aodtrack->Pt());
-
   //
   if ( fSelectPrimaryTracks )
   {
@@ -250,13 +451,12 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
       AliDebug(2,"\t Remove not primary track");
       return kFALSE ;
     }
+    
+    AliDebug(2,"\t accepted track!");
+    
+    if ( !IsHistoCentDependentOn() ) fhCTSAODTrackCutsPt   [7]->Fill(aodtrack->Pt());
+    else                             fhCTSAODTrackCutsPtCen[7]->Fill(aodtrack->Pt(),cen);
   }
-
-  AliDebug(2,"\t accepted track!");
-  
-  fhCTSAODTrackCutsPt[3]->Fill(aodtrack->Pt());
-  
-  track->GetPxPyPz(pTrack) ;
   
   return kTRUE;
 }

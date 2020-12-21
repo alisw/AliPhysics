@@ -35,6 +35,7 @@ set(SRCS
     AlidNdEtaCorrection.cxx
     AliMultiplicityCorrection.cxx
     AliPWG0Helper.cxx
+    AliUpcParticle.cxx
     dNdEtaAnalysis.cxx
    )
 

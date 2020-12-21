@@ -171,6 +171,11 @@ For example, you can set the geometrical jet acceptance selection you would like
 
 Additionally, since the jet acceptance bits are stored in the jet, you can manipulate them in your analysis using the AliEmcalJet::GetJetAcceptanceType() function. This may be useful when studying jets in the DCal region, since there are several different partially overlapping bits.
 
+## Artificial track efficiency
+
+In some cases it is useful to artificially reduce the tracking efficiency by applying an additional
+tracking efficiency. See [here](\ref emcEmbeddingJetFinding) for details.
+
 ## Utilities (e.g. FJ contribs)
 
 For information on utilities such as ``fastjet`` contrib, see \subpage READMEjetfwUtilities.

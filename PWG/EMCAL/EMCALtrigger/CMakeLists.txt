@@ -35,13 +35,17 @@ set(SRCS
   AliEmcalTriggerMakerKernel.cxx
   AliEmcalTriggerMakerTask.cxx
   AliEmcalTriggerSetupInfo.cxx
+  AliEmcalTriggerAlias.cxx
   AliEmcalTriggerDecision.cxx
   AliEmcalTriggerDecisionContainer.cxx
   AliEmcalTriggerSelectionCuts.cxx
   AliEmcalTriggerSelection.cxx
   AliEmcalTriggerQATask.cxx
+  AliEmcalTriggerSimQATask.cxx
   AliEMCALTriggerOfflineQAPP.cxx
+  AliEMCALTriggerOfflineLightQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
+  AliEmcalTriggerStringDecoder.cxx
   )
 
 # Headers from sources

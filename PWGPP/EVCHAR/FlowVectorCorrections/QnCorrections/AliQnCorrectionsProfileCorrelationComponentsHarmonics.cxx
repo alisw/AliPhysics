@@ -176,17 +176,17 @@ Bool_t AliQnCorrectionsProfileCorrelationComponentsHarmonics::CreateCorrelationC
     else {
       currentHarmonic++;
     }
-    fXXValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoXXName, currentHarmonic),
-        Form("%s h%d", (const char *) histoXXTitle, currentHarmonic),
+    fXXValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoXXName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoXXTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
-    fXYValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoXYName, currentHarmonic),
-        Form("%s h%d", (const char *) histoXYTitle, currentHarmonic),
+    fXYValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoXYName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoXYTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
-    fYXValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoYXName, currentHarmonic),
-        Form("%s h%d", (const char *) histoYXTitle, currentHarmonic),
+    fYXValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoYXName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoYXTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
-    fYYValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoYYName, currentHarmonic),
-        Form("%s h%d", (const char *) histoYYTitle, currentHarmonic),
+    fYYValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoYYName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoYYTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
 
     /* now let's set the proper binning and label on each axis */
@@ -305,10 +305,10 @@ Bool_t AliQnCorrectionsProfileCorrelationComponentsHarmonics::AttachHistograms(T
     for (Int_t i = 0; i < nMaxHarmonicNumberSupported; i++) {
       currentHarmonic++;
 
-      fXXValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoXXName, currentHarmonic));
-      fXYValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoXYName, currentHarmonic));
-      fYXValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoYXName, currentHarmonic));
-      fYYValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoYYName, currentHarmonic));
+      fXXValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoXXName, currentHarmonic).Data());
+      fXYValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoXYName, currentHarmonic).Data());
+      fYXValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoYXName, currentHarmonic).Data());
+      fYYValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoYYName, currentHarmonic).Data());
 
       /* and update the fully filled condition whether applicable */
       if ((fXXValues[currentHarmonic]  != NULL) && (fXYValues[currentHarmonic] != NULL)

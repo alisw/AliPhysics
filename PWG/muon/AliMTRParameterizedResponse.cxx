@@ -95,22 +95,42 @@ AliMTRParameterizedResponse& AliMTRParameterizedResponse::operator = ( const Ali
 }
 
 //________________________________________________________________________
+void AliMTRParameterizedResponse::InitFunctionParams ( TF1* func, Bool_t fitLowPtIncrease, Int_t itype ) const
+{
+  /// Initialize function parameters for fit
+  Double_t defParams[8] = {0.5,1.,0.3,1.,0.2,0.1,0.35,1.};
+//  Double_t defParams[7] = {0.5,1.,0.3,100.,2.5,0.5,0.5};
+  Double_t fixLowPtIncrease[] = {0.,0.,1.,-1.};
+
+  for ( Int_t ipar=0; ipar<func->GetNpar(); ipar++ ) func->ReleaseParameter(ipar);
+
+  func->SetParameters(defParams);
+  if ( itype == kLptOverApt ) func->SetParameter(7,1.);
+  if ( ! fitLowPtIncrease ) {
+    for ( Int_t ipar=3; ipar<7; ipar++ ) func->FixParameter(ipar,fixLowPtIncrease[ipar-3]);
+  }
+
+  func->SetParLimits(7,0.,1.);
+}
+
+
+//________________________________________________________________________
 Bool_t AliMTRParameterizedResponse::FitResponses ( Bool_t buildDataAptOverAllFromGraph, Bool_t fitLowPtIncrease )
 {
   /// Fit Response
 
   Double_t minPt = 0., maxPt = 100.;
-  TF1* fitFuncData = new TF1("fitFuncData",this,&AliMTRParameterizedResponse::FitFunctionErf,minPt,maxPt,7);
+  TF1* fitFuncData = new TF1("fitFuncData",this,&AliMTRParameterizedResponse::FitFunctionErf,minPt,maxPt,8);
   fitFuncData->SetNpx(1000);
-  TF1* fitFuncMC = new TF1("fitFuncMC",this,&AliMTRParameterizedResponse::FitFunctionErf,minPt,maxPt,7);
+  TF1* fitFuncMC = new TF1("fitFuncMC",this,&AliMTRParameterizedResponse::FitFunctionErf,minPt,maxPt,8);
   fitFuncMC->SetNpx(1000);
-  TString parNames[7] = {"Norm","p_{T}^{cut}","#sigma","Norm_{low}","p_{T,low}^{cut}","#sigma_{low}","p_{T}^{limit}"};
+  TString parNames[8] = {"Norm","p_{T}^{cut}","#sigma","Norm_{low}","p_{T,low}^{cut}","#sigma_{low}","p_{T}^{limit}","maxEff"};
 
   TF1* fitFuncMCApt = new TF1("fitFuncApt",this,&AliMTRParameterizedResponse::FitFunctionErfApt,minPt,maxPt,3);
   fitFuncMCApt->SetNpx(1000);
   TString parNamesApt[3] = {"Norm","p_{T}^{cut}","#sigma"};
 
-  for ( Int_t ipar=0; ipar<7; ipar++ ) {
+  for ( Int_t ipar=0; ipar<8; ipar++ ) {
     fitFuncData->SetParName(ipar,parNames[ipar].Data());
     fitFuncMC->SetParName(ipar,parNames[ipar].Data());
   }
@@ -121,9 +141,6 @@ Bool_t AliMTRParameterizedResponse::FitResponses ( Bool_t buildDataAptOverAllFro
 
   TString funcName = "fitResponse";
   TString fitOpt = "QNWR";
-
-  Double_t defParams[7] = {0.5,1.,0.3,1.,0.2,0.1,0.35};
-//  Double_t defParams[7] = {0.5,1.,0.3,100.,2.5,0.5,0.5};
 
   TGraphAsymmErrors* graph = 0x0;
   for ( Int_t iresp=0; iresp<2; iresp++ ) {
@@ -149,17 +166,15 @@ Bool_t AliMTRParameterizedResponse::FitResponses ( Bool_t buildDataAptOverAllFro
     for ( Int_t itype=kLptOverApt; itype<=kHptOverLpt; itype++ ) {
       TObjArray* dataLptApt = GetResponse(itype,kFALSE,iresp,kFALSE);
       if ( ! dataLptApt ) continue;
+      TObjArray* mcLptApt = GetResponse(itype,kTRUE,iresp,kFALSE);
+
       Double_t minFit = ( itype == kLptOverApt ) ? 0.6 : 1.;
       Double_t maxFit = ( itype == kLptOverApt ) ? 4. : 10.;
 
-      TObjArray* mcLptApt = GetResponse(itype,kTRUE,iresp,kFALSE);
       for ( Int_t igraph=0; igraph<dataLptApt->GetEntriesFast(); igraph++ ) {
         graph = static_cast<TGraphAsymmErrors*>(dataLptApt->UncheckedAt(igraph));
-        fitFuncData->SetParameters(defParams);
+        InitFunctionParams(fitFuncData, fitLowPtIncrease, itype);
         fitFuncData->SetParLimits(0,0.,0.5);
-        if ( ! fitLowPtIncrease ) {
-          for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncData->FixParameter(ipar,-1.);
-        }
         graph->Fit(fitFuncData,fitOpt.Data(),"",minFit,maxFit);
         TF1* clonedFitFuncData = static_cast<TF1*>(fitFuncData->Clone(funcName.Data()));
         graph->GetListOfFunctions()->Add(clonedFitFuncData);
@@ -167,12 +182,10 @@ Bool_t AliMTRParameterizedResponse::FitResponses ( Bool_t buildDataAptOverAllFro
 
         if ( ! mcLptApt ) continue;
         graph = static_cast<TGraphAsymmErrors*>(mcLptApt->UncheckedAt(igraph));
-        fitFuncMC->SetParameters(defParams);
-        if ( ! fitLowPtIncrease ) {
-          for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncMC->FixParameter(ipar,-1.);
-        }
-        if ( mcAptAll ) {
+        InitFunctionParams(fitFuncMC, fitLowPtIncrease, itype);
+        if ( mcAptAll && itype == kLptOverApt ) {
           fitFuncMC->FixParameter(0,fitFuncData->GetParameter(0));
+          fitFuncMC->FixParameter(7,fitFuncData->GetParameter(7));
         }
         graph->Fit(fitFuncMC,fitOpt.Data(),"",minFit,maxFit);
         TF1* clonedFitFuncMC = static_cast<TF1*>(fitFuncMC->Clone(funcName.Data()));
@@ -322,7 +335,7 @@ Double_t AliMTRParameterizedResponse::FitFunctionErf ( Double_t* xVal, Double_t 
   Double_t xx = xVal[0];
   Double_t currX = TMath::Max(xx,par[6]);
   Double_t sqrtTwo = TMath::Sqrt(2.);
-  Double_t yVal = 1.+par[0]*(TMath::Erf((currX-par[1])/par[2]/sqrtTwo)-1.);
+  Double_t yVal = par[7]+par[0]*(TMath::Erf((currX-par[1])/par[2]/sqrtTwo)-1.);
   if ( xx < par[6] ) yVal += par[3]*(TMath::Erf((-xx-par[4])/par[5]/sqrtTwo) - TMath::Erf((-par[6]-par[4])/par[5]/sqrtTwo));
 //  Double_t zz = xx-par[6];
 //  if ( xx < par[6] ) yVal += par[3]*zz+par[4]*zz*zz+par[5]*zz*zz*zz;
@@ -541,6 +554,34 @@ Bool_t AliMTRParameterizedResponse::SetFromMTRResponseTaskOutput ( Bool_t perBoa
 }
 
 //________________________________________________________________________
+void AliMTRParameterizedResponse::ZoomPad()
+{
+  if ( gPad->GetEvent() != kButton1Double ) return;
+  TVirtualPad* pad = gPad;
+  Int_t px = pad->GetEventX();
+  Int_t py = pad->GetEventY();
+  TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
+  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
+    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
+    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
+    TString drawOpt = obj->GetOption();
+    if ( drawOpt.IsNull() ) {
+      if ( obj->InheritsFrom(TGraph::Class()) ) {
+        drawOpt = "p";
+        if ( iobj == 1 ) drawOpt.Append("a");
+      }
+      else if ( obj->InheritsFrom(TH1::Class()) ) {
+        drawOpt = "e";
+        if ( iobj == 1 ) drawOpt.Append("same");
+      }
+    }
+    obj->Draw(drawOpt.Data());
+  }
+  can->Modified();
+  can->Update();
+}
+
+//________________________________________________________________________
 Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBoard ) const
 {
   /// Compare data and MC responses
@@ -562,6 +603,7 @@ Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBo
     Int_t ipad = 1;
     while ( (graph=static_cast<TGraphAsymmErrors*>(next())) ) {
       can->cd(ipad++);
+      if ( gPad->GetListOfExecs()->GetEntries() == 0 ) gPad->AddExec("ZoomPad","AliMTRParameterizedResponse::ZoomPad()");
       TGraphAsymmErrors* clonedGraph = static_cast<TGraphAsymmErrors*>(graph->Clone());
       Int_t icolor = imc+1;
       clonedGraph->SetLineColor(icolor);
@@ -577,7 +619,8 @@ Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBo
         pt->SetTextColor(icolor);
         pt->SetFillColor(0);
         pt->AddText(imc==0?"Data":"MC");
-        for ( Int_t ipar=0; ipar<3; ipar++ ) {
+        for ( Int_t selpar=0; selpar<4; selpar++ ) {
+          Int_t ipar = ( selpar < 3 ) ? selpar : 7;
           pt->AddText(Form("%s: %g #pm %g",func->GetParName(ipar),func->GetParameter(ipar),func->GetParError(ipar)));
         }
         pt->Draw();
@@ -723,10 +766,3 @@ Double_t AliMTRParameterizedResponse::WeightPerEta ( Double_t pt, Double_t eta, 
   if ( ibin == 0 || ibin > fEtaBinning->GetNbins() ) return 0.;
   return GetWeight(pt,ibin-1,itype,isMC,useFit,kFALSE);
 }
-
-
-
-
-
-
-

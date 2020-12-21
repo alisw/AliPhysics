@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -12,6 +12,7 @@
 #pragma link C++ class AliBFBasicParticle+;
 #pragma link C++ class AliAnalysisTaskBF+;
 #pragma link C++ class AliAnalysisTaskBFPsi+;
+#pragma link C++ class AliAnalysisTaskSignedBF+;
 #pragma link C++ class AliAnalysisTaskEventMixingBF+;
 #pragma link C++ class AliAnalysisTaskTriggeredBF+;
 #pragma link C++ class AliAnalysisTaskEfficiencyBF+;
@@ -19,9 +20,14 @@
 #pragma link C++ class AliAnalysisTaskEffContBF+;
 #pragma link C++ class AliAnalysisTaskEffContPIDBF+;
 #pragma link C++ class AliAnalysisTaskToyModel+;
+#pragma link C++ class AliAnalysisTaskLcToD0MC+;
 #pragma link C++ class AliAnalysisTaskAODFilterBitQA+;
 #pragma link C++ class AliAnalysisTaskParticleStudies+;
 #pragma link C++ class AliAnalysisTaskPIDBF+;
+#pragma link C++ class AliPidBFBase+;
+#pragma link C++ class AliAnalysisTaskAccCont+;
+#pragma link C++ class AliAnalysisTaskPIDMCEffCont+;
+#pragma link C++ class AliAnalysisTaskPIDPerformCombIDPtDep+;
 
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;
@@ -74,5 +80,29 @@
 #pragma link C++ class AliAnalysisTempFluc+;
 
 #pragma link C++ class AliAnalysisFBMultFluct+;
+#pragma link C++ class AliAnalysisTaskLongFluctuations+;
+
+#pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
+#pragma link C++ class AliLightV0+;
+#pragma link C++ class AliLightGenV0+;
+#pragma link C++ class AliLightV0track+;
+
+#pragma link C++ class AliAnalysisTaskEbyeCharge+;
+
+#pragma link C++ class AliAnalysisTaskNetLambdaMCTrad+;
+#pragma link C++ class AliAnalysisTaskNetLambdaTrad+;
+
+#pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
+#pragma link C++ class AliAnalysisTaskEbyeNetChargeMCPbPbESD+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucPbPb+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucpPb+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucpp+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucPbPbQA+;
+#pragma link C++ class AliAnalysisTaskEbyeChargeFlucLHC10h+;
+#pragma link C++ class AliEbyEPhiDistNew+;
+
+#pragma link C++ class AliAnalysisTaskStronglyIntensiveCorrTree+;
+#pragma link C++ class TrackInfoCorr+;
+
 
 #endif

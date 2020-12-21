@@ -20,6 +20,7 @@
 
 // Root system
 class TH2F; 
+class TH3F; 
 
 // Analysis system
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -62,12 +63,20 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
   void    SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
+  void    SwitchOnFillTrackDCAHistograms()       { fFillTrackDCAHistograms = kTRUE  ; }
+  void    SwitchOffFillTrackDCAHistograms()      { fFillTrackDCAHistograms = kFALSE ; }
+  
+  void    SwitchOnFillClusterHistograms()       { fFillClusterHistograms = kTRUE  ; }
+  void    SwitchOffFillClusterHistograms()      { fFillClusterHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
   Bool_t  fFillVertexBC0Histograms;         ///<  Fill histograms for tracks with vertex BC=0 or not related histograms
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
-  Bool_t  fFillTrackMultHistograms;      ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
+  Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
+  Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
+  Bool_t  fFillClusterHistograms;           ///< Fill TPC or ITS number oc clusters
   
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
@@ -89,6 +98,20 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtNotPrimary;                    //!<! pT spectra of tracks not declared as primary (AOD)
   TH1F * fhPtNotSharedClusterCut;           //!<! pT spectra of tracks not passing the shared clusters cut (AOD)
   
+  TH3F * fhNTracksCent;                     //!<! Track multiplicity distribution per event, different pT cuts per centrality
+  TH3F * fhSumPtTracksCent;                 //!<! Track sum pT distribution per event, different pT cuts per centrality
+  TH2F * fhPtCent;                          //!<! pT distribution, per centrality
+  
+  TH2F * fhNTPCClusters;                    //!<! Number of TPC clusters vs track pT
+  TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
+  TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality
+  TH3F * fhNITSClustersCent;                //!<! Number of ITS clusters vs track pT vs centrality
+ 
+  TH2F * fhTPCChi2PerCluster;              //!<! Chi2 per TPC clusters vs track pT
+  TH2F * fhITSChi2PerCluster;              //!<! Chi2 per ITS clusters vs track pT
+  TH3F * fhTPCChi2PerClusterCent;          //!<! Chi2 per TPC clusters vs track pT vs centrality
+  TH3F * fhITSChi2PerClusterCent;          //!<! Chi2 per clusters vs track pT vs centrality
+  
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative
   TH2F * fhEtaNeg;                          //!<! eta distribution vs pT, negative
@@ -107,6 +130,10 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtSPDRefit;                      //!<! pT distribution of tracks with SPD and ITS refit
   TH1F * fhPtNoSPDRefit;                    //!<! pT distribution of constrained tracks no SPD and with ITSRefit
   TH1F * fhPtNoSPDNoRefit;                  //!<! pT distribution of constrained tracks with no SPD requierement and without ITSRefit
+  
+  TH2F * fhEtaPhiSPDRefit;                  //!<! eta-phi distribution of tracks with SPD and ITS refit
+  TH2F * fhEtaPhiNoSPDRefit;                //!<! eta-phi distribution of constrained tracks no SPD and with ITSRefit
+  TH2F * fhEtaPhiNoSPDNoRefit;              //!<! eta-phi distribution of constrained tracks with no SPD requierement and without ITSRefit
 
   TH2F * fhEtaPhiSPDRefitPt02;              //!<! eta-phi distribution of tracks with SPD and ITS refit, 0 < pT < 2 GeV
   TH2F * fhEtaPhiNoSPDRefitPt02;            //!<! eta-phi distribution of constrained tracks no SPD and with ITSRefit,  0 < pT < 2 GeV
@@ -128,7 +155,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPhiMCPrimPart[6];                //!<! Number of generated charged hadrons vs phi coming from MC particle, 6 hadron ID
   TH2F * fhEtaMCPrimPart[6];                //!<! Number of generated charged hadrons vs eta coming from MC particle, 6 hadron ID
 
-  // TOF
+  // TOF and BC
   TH1F * fhTOFSignal;                       //!<! TOF signal
   TH1F * fhTOFSignalPtCut;                  //!<! TOF signal pt and acceptance cut
   TH1F * fhTOFSignalBCOK;                   //!<! TOF signal pt and acceptance cut
@@ -151,6 +178,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhProductionVertexBC;              //!<! Check BC of production vertex
   TH1F * fhProductionVertexBCPileUp[7];     //!<! Check BC of production vertex, pile-up
 
+  // DCA
   TH2F * fhPtDCA[3];                        //!<! DCA (xy,z,constrained) of all tracks
   
   TH2F * fhPtDCASPDRefit[3];                //!<! DCA (xy,z,constrained) of tracks with SPD and ITS refit
@@ -174,6 +202,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtDCAVtxOutBC0PileUpNoTOFHit[3]; //!<! DCA (xy,z,constrained) of all tracks, vertex BC!=0, SPD pile-up, no hit in TOF
   TH2F * fhPtDCAVtxInBC0PileUpNoTOFHit[3];  //!<! DCA (xy,z,constrained) of all tracks, vertex BC=0, SPD pile-up, no hit in TOF
   
+  // pile-up
   TH2F * fhPtNPileUpSPDVtx;	                //!<! cluster pt vs number of spd pile-up vertices
   TH2F * fhPtNPileUpTrkVtx;                 //!<! cluster pt vs number of track pile-up vertices
   TH2F * fhPtNPileUpSPDVtxBC0;	            //!<! cluster pt vs number of spd pile-up vertices, track in BC=0
@@ -186,7 +215,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & ch) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaChargedParticles,12) ;
+  ClassDef(AliAnaChargedParticles,14) ;
   /// \endcond
 
 } ;

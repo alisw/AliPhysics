@@ -29,6 +29,8 @@
 #include "TRandom3.h"
 #include "AliFlowCommonConstants.h"
 #include "TNamed.h"
+#include <complex>
+#include <cmath>
 
 class TObjArray;
 class TList;
@@ -59,18 +61,19 @@ public:
                        Int_t nCen=7,
                        Double_t CenWidth=10.);
   virtual ~AliFlowAnalysisCRC();
-  
+
   enum CorrelationWeights { kMultiplicity,
     kUnit
   };
-  
+
   enum DataSet { k2010,
     k2011,
     k2015,
     k2015v6,
+    k2015pidfix,
     kAny
   };
-  
+
   enum InteractionRate {
     kHigh, // >0.9
     kLow,  // <0.6
@@ -78,21 +81,24 @@ public:
     kNeg,  // mag.field pol.-
     kAll
   };
-  
+
   enum SelectCharge {
     kPosCh,
     kNegCh,
     kAllCh
   };
-  
+
   enum POIExtraWeights {
     kNone,
     kEtaPhi,
     kEtaPhiCh,
     kEtaPhiVtx,
     kEtaPhiChPt,
+    kEtaPhiRbR,
+    kEtaPhiChRbR,
+    kEtaPhiVtxRbR,
   };
-  
+
   // 0.) methods called in the constructor:
   virtual void InitializeArraysForIntFlow();
   virtual void InitializeArraysForDiffFlow();
@@ -112,11 +118,11 @@ public:
   virtual void InitializeArraysForCRC2();
   virtual void InitializeArraysForFlowEbE();
   virtual void InitializeArraysForFlowQC();
-  virtual void InitializeArraysForFlowQCHighOrders();
+  virtual void InitializeArraysForFlowGF();
   virtual void InitializeArraysForFlowSPZDC();
   virtual void InitializeArraysForFlowSPVZ();
   virtual void InitializeArraysForEbEFlow();
-  
+
   // 1.) method Init() and methods called within Init():
   virtual void Init();
   virtual void InitializeArraysForQVec();
@@ -145,7 +151,7 @@ public:
   virtual void BookEverythingForCRC2();
   virtual void BookEverythingForFlowEbE();
   virtual void BookEverythingForFlowQC();
-  virtual void BookEverythingForFlowQCHighOrders();
+  virtual void BookEverythingForFlowGF();
   virtual void BookEverythingForFlowSPZDC();
   virtual void BookEverythingForFlowSPVZ();
   virtual void BookEverythingForEbEFlow();
@@ -158,7 +164,7 @@ public:
   virtual void StoreBootstrapFlags();
   virtual void StoreCRCFlags();
   virtual void SetCentralityWeights();
-  
+
   // 2.) method Make() and methods called within Make():
   virtual void Make(AliFlowEventSimple *anEvent);
   // 2a.) Common:
@@ -181,6 +187,8 @@ public:
   virtual void CalculateIntFlowSumOfEventWeightsNUA();
   virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
   virtual void CalculateMixedHarmonics();
+  virtual std::complex<double> ucN(const Int_t n, const TArrayI& h, Int_t ptb);
+  virtual std::complex<double> ucN2(const Int_t n, TArrayI& h, TArrayI& cnt, Int_t ptb);
   // 2c.) Cross-checking reference flow correlations with nested loops:
   virtual void EvaluateIntFlowNestedLoops(AliFlowEventSimple* const anEvent);
   virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent);
@@ -214,8 +222,10 @@ public:
   // 2i.) Charge-Rapidity Correlations
   virtual void RecenterCRCQVec();
   virtual void RecenterCRCQVecZDC();
+  virtual void RecenterCRCQVecZDC2(); //@Shi load my recentering file
   virtual void RecenterCRCQVecVZERO();
-  virtual Bool_t PassQAZDCCuts();
+  virtual void PassQAZDCCuts();
+  virtual Bool_t PassCutZDCQVecDis(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm);
   virtual Bool_t MultCut2015o();
   virtual void CalculateCRCCorr();
   virtual void CalculateCRCVZERO();
@@ -225,15 +235,17 @@ public:
   virtual void CalculateVZvsZDC();
   virtual void CalculateCMETPC();
   virtual void CalculateCMEZDC();
+  virtual void CalculateCMESPPP(); //@shi add CalculateCMESPPP() for spectator plane participant plane method
   virtual void CalculateCRC2Cor();
   virtual void CalculateFlowQC();
-  virtual void CalculateFlowQCHighOrders();
-  virtual void CalculateFlowSPZDC();
+  virtual void CalculateFlowGF();
+  virtual void CalculateFlowSCZDC();
+  virtual void CalculateFlowSPZDC(Double_t ZCRe, Double_t ZCIm, Double_t ZARe, Double_t ZAIm, Double_t dPhi, Double_t dEta, Double_t dPt, Double_t wPhiEta, Double_t dCharge, Int_t dCnt);
   virtual void CalculateFlowSPVZ();
   virtual void FitEbEFlow();
   // 2h.) Various
   virtual void FillVarious();
-  
+
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
   virtual void CheckPointersUsedInFinish();
@@ -280,15 +292,17 @@ public:
   virtual void FinalizeCRCPtCorr();
   virtual void FinalizeCMETPC();
   virtual void FinalizeCMEZDC();
+  virtual void FinalizeCMESPPP(); //@shi add finalize function for spectator plane participant plane method
   virtual void FinalizeCRC2Cor();
   virtual void FinalizeFlowQC();
-  virtual void FinalizeFlowQCHighOrders();
+  virtual void FinalizeFlowGF();
   virtual void FinalizeFlowSPZDC();
   virtual void FinalizeFlowSPVZ();
-  virtual Bool_t CheckRunFullTPCFlow(Int_t RunNum);
   // 3h.) Various:
   virtual void FinalizeVarious();
-  
+  virtual Double_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
+  virtual Bool_t EvaulateIfSplitMergedTracks(AliFlowEventSimple* anEvent, AliFlowTrackSimple* aftsTrack, Int_t it1);
+
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms():
   virtual void GetOutputHistograms(TList *outputListHistos);
   virtual void GetPointersForCommonHistograms();
@@ -309,12 +323,12 @@ public:
   virtual void GetPointersForQVec();
   virtual void GetPointersForCME();
   virtual void GetPointersForFlowQC();
-  virtual void GetPointersForFlowQCHighOrders();
+  virtual void GetPointersForFlowGF();
   virtual void GetPointersForFlowSPZDC();
   virtual void GetPointersForFlowSPVZ();
   virtual void GetPointersForEbEFlow();
   virtual void GetPointersForVarious();
-  
+
   // 5.) other methods:
   TProfile* MakePtProjection(TProfile2D *profilePtEta) const;
   TProfile* MakeEtaProjection(TProfile2D *profilePtEta) const;
@@ -327,15 +341,15 @@ public:
   virtual Int_t GetCRCCenBin(Double_t Centrality);
   virtual Int_t GetWideCenBin(Double_t Centrality);
   virtual Double_t GetSumPro(TProfile *pro, Int_t bin);
-  
+
   virtual Double_t GetSPZDChar(Int_t har, Double_t QRe,Double_t QIm,Double_t ZARe,Double_t ZAIm,Double_t ZCRe,Double_t ZCIm);
-  
+
   // **** SETTERS and GETTERS ****
-  
+
   // 0.) base:
   void SetHistList(TList* const hlist) {this->fHistList = hlist;}
   TList* GetHistList() const {return this->fHistList;}
-  
+
   // 1.) common:
   void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};
@@ -367,7 +381,7 @@ public:
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetPrintFinalResults(Bool_t const printOrNot, Int_t const i) {this->fPrintFinalResults[i] = printOrNot;};
   Bool_t GetPrintFinalResults(Int_t i) const {return this->fPrintFinalResults[i];};
-  
+
   // 2a.) particle weights:
   void SetWeightsList(TList* const wlist) {this->fWeightsList = wlist;}
   TList* GetWeightsList() const {return this->fWeightsList;}
@@ -393,15 +407,17 @@ public:
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
   void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
   Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
+  void SetCutMultiplicityOutliers(Bool_t const uPhiEtaW) {this->fCutMultiplicityOutliers = uPhiEtaW;};
+  Bool_t GetCutMultiplicityOutliers() const {return this->fCutMultiplicityOutliers;};
   void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
-  
+
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
   void SetMultiplicityIs(AliFlowCommonConstants::ERefMultSource mi) {this->fMultiplicityIs = mi;};
-  
+
   // 3.) Reference flow:
   // Flags:
   void SetIntFlowFlags(TProfile* const intFlowFlags) {this->fIntFlowFlags = intFlowFlags;};
@@ -436,7 +452,7 @@ public:
   Bool_t GetFillProfilesVsMUsingWeights() const {return this->fFillProfilesVsMUsingWeights;};
   void SetUseQvectorTerms(Bool_t const uqvt){this->fUseQvectorTerms = uqvt;if(uqvt){this->fStoreControlHistograms = kTRUE;}};
   Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
-  
+
   // Reference flow profiles:
   void SetAvMultiplicity(TProfile* const avMultiplicity) {this->fAvMultiplicity = avMultiplicity;};
   TProfile* GetAvMultiplicity() const {return this->fAvMultiplicity;};
@@ -507,7 +523,7 @@ public:
   TH1D* GetIntFlowDetectorBias() const {return this->fIntFlowDetectorBias;};
   void SetIntFlowDetectorBiasVsM(TH1D* const ifdbvm, Int_t ci) {this->fIntFlowDetectorBiasVsM[ci] = ifdbvm;};
   TH1D* GetIntFlowDetectorBiasVsM(Int_t ci) const {return this->fIntFlowDetectorBiasVsM[ci];};
-  
+
   // 4.) Differential flow:
   //  Flags:
   void SetDiffFlowFlags(TProfile* const diffFlowFlags) {this->fDiffFlowFlags = diffFlowFlags;};
@@ -556,7 +572,7 @@ public:
   TH2D* Get2DDiffFlowCumulants(Int_t i, Int_t j) const {return this->f2DDiffFlowCumulants[i][j];};
   void Set2DDiffFlow(TH2D* const h2ddf, Int_t const i, Int_t const j) {this->f2DDiffFlow[i][j] = h2ddf;};
   TH2D* Get2DDiffFlow(Int_t i, Int_t j) const {return this->f2DDiffFlow[i][j];};
-  
+
   // 5.) distributions of correlations:
   // profile:
   void SetDistributionsFlags(TProfile* const distributionsFlags) {this->fDistributionsFlags = distributionsFlags;};
@@ -585,7 +601,7 @@ public:
   Double_t GetMinValueOfQvectorTerms(Int_t qvti) const {return this->fMinValueOfQvectorTerms[qvti];};
   void SetMaxValueOfQvectorTerms(Int_t const qvti, Double_t const maxValue) {this->fMaxValueOfQvectorTerms[qvti] = maxValue;};
   Double_t GetMaxValueOfQvectorTerms(Int_t qvti) const {return this->fMaxValueOfQvectorTerms[qvti];};
-  
+
   // x.) debugging and cross-checking:
   void SetNestedLoopsList(TList* const nllist) {this->fNestedLoopsList = nllist;};
   TList* GetNestedLoopsList() const {return this->fNestedLoopsList;};
@@ -617,7 +633,7 @@ public:
   TProfile* GetOtherDirectDiffCorrelators(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fOtherDirectDiffCorrelators[i][j][k][l];};
   void SetMixedHarmonicsNestedLoops(TProfile* const mhnl) {this->fMixedHarmonicsNestedLoops = mhnl;};
   TProfile* GetMixedHarmonicsNestedLoops() const {return this->fMixedHarmonicsNestedLoops;};
-  
+
   // 9.) Mixed harmonics:
   void SetMixedHarmonicsList(TList* const mhlist) {this->fMixedHarmonicsList = mhlist;};
   void SetMixedHarmonicsFlags(TProfile* const mhFlags) {this->fMixedHarmonicsFlags = mhFlags;};
@@ -660,7 +676,7 @@ public:
   TH2D* GetMixedHarmonicProductOfEventWeights() const {return this->fMixedHarmonicProductOfEventWeights;};
   void SetMixedHarmonicProductOfCorrelations(TProfile2D* const mhpoc) {this->fMixedHarmonicProductOfCorrelations = mhpoc;};
   TProfile2D* GetMixedHarmonicProductOfCorrelations() const {return this->fMixedHarmonicProductOfCorrelations;};
-  
+
   // 10.) Control histograms:
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
   void SetControlHistogramsFlags(TProfile* const chf) {this->fControlHistogramsFlags = chf;};
@@ -679,7 +695,7 @@ public:
   TH2D* GetCorrelationProduct2468VsMult(Int_t ci) const {return this->fCorrelationProduct2468VsMult[ci];};
   void SetQvectorTermsVsMult(TH2D* const qvtvm, Int_t const qvti) {this->fQvectorTermsVsMult[qvti] = qvtvm;};
   TH2D* GetQvectorTermsVsMult(Int_t qvti) const {return this->fQvectorTermsVsMult[qvti];};
-  
+
   // 11.) Bootstrap:
   void SetBootstrapList(TList* const bl) {this->fBootstrapList = bl;};
   void SetBootstrapProfilesList(TList* const bpl) {this->fBootstrapProfilesList = bpl;};
@@ -700,7 +716,7 @@ public:
   TH2D* GetBootstrapCumulants() const {return this->fBootstrapCumulants;};
   void SetBootstrapCumulantsVsM(TH2D* const bcpVsM, Int_t const qvti) {this->fBootstrapCumulantsVsM[qvti] = bcpVsM;};
   TH2D* GetBootstrapCumulantsVsM(Int_t qvti) const {return this->fBootstrapCumulantsVsM[qvti];};
-  
+
   // 12.) CRC
   void SetCRCList(TList* const CRCL) {this->fCRCList = CRCL;};
   void SetCRCIntList(TList* const CRCL) {this->fCRCIntList = CRCL;};
@@ -744,6 +760,8 @@ public:
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
   Bool_t GetUseZDC() const {return this->fUseZDC;};
+  void SetRemoveSplitMergedTracks(Bool_t const uPhiEtaW) {this->fRemoveSplitMergedTracks = uPhiEtaW;};
+  Bool_t GetRemoveSplitMergedTracks() const {return this->fRemoveSplitMergedTracks;};
   void SetRecenterZDC(Bool_t const cCRC) {this->fRecenterZDC = cCRC;};
   Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
   void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
@@ -752,8 +770,11 @@ public:
   Bool_t GetInvertZDC() const {return this->fInvertZDC;};
   void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
   Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
+  void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
   Bool_t GetTestSin() const {return this->fCRCTestSin;};
+  void SetRecenterZDCVtxRbR(Bool_t const cCRC) {this->fVtxRbR = cCRC;};
+  Bool_t GetRecenterZDCVtxRbR() const {return this->fVtxRbR;};
   void SetNUAforCRC(Bool_t const cCRC) {this->fNUAforCRC = cCRC;};
   Bool_t GetNUAforCRC() const {return this->fNUAforCRC;};
   void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -763,6 +784,13 @@ public:
   TList* GetCRCQVecWeightsList() const {return this->fCRCQVecWeightsList;}
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  //@Shi my ZDC recenter calib hist
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
+  void SetZDCCalibListFinalRunByRun(TList* const kList) {this->fZDCCalibListFinalRunByRun = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalRunByRun() const {return this->fZDCCalibListFinalRunByRun;};
+  
+  void SetCRCZDC2DCutList(TList* const wlist) {this->fCRCZDC2DCutList = wlist;}
   void SetCRCVZEROCalibList(TList* const wlist) {this->fCRCVZEROCalibList = wlist;}
   TList* GetCRCVZEROCalibList() const {return this->fCRCVZEROCalibList;}
   void SetCRCZDCResList(TList* const wlist) {this->fCRCZDCResList = wlist;}
@@ -787,14 +815,14 @@ public:
   // 12.d) NUA corrections:
   void SetCRCNUATermsHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsHist[c][eg][h] = TH;};
   TH1D* GetCRCNUATermsHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsHist[c][eg][h];};
-  
+
   void SetCRCCorrPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCCorrPro[r][c][eg][h] = TP;};
   TProfile* GetCRCCorrPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCCorrPro[r][c][eg][h];};
   void SetCRCSumWeigHist(TH1D* const TH, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCSumWeigHist[r][c][eg][h] = TH;};
   TH1D* GetCRCSumWeigHist(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCSumWeigHist[r][c][eg][h];};
   void SetCRCNUATermsPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCNUATermsPro[r][c][eg][h] = TP;};
   TProfile* GetCRCNUATermsPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[r][c][eg][h];};
-  
+
   // 12.e) Q Vectors:
   void SetCRCQnReHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnRe[r][h] = TH;};
   TProfile* GetCRCQnReHist(Int_t const r, Int_t const h) const {return this->fCRCQnRe[r][h];};
@@ -804,12 +832,12 @@ public:
   TProfile* GetCRCQnReCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnReCorr[r][h];};
   void SetCRCQnImCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQnImCorr[r][h] = TH;};
   TProfile* GetCRCQnImCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQnImCorr[r][h];};
-  
+
   void SetCRCVZQVecAHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecA[r][c] = TH;};
   TProfile* GetCRCVZQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecA[r][c];};
   void SetCRCVZQVecCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecC[r][c] = TH;};
   TProfile* GetCRCVZQVecCHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecC[r][c];};
-  
+
   void SetCRCZDCQVecAHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecA[r][c] = TH;};
   TProfile* GetCRCZDCQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecA[r][c];};
   void SetCRCZDCQVecCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecC[r][c] = TH;};
@@ -822,20 +850,20 @@ public:
 //  TH2D* GetCRCZDCQVecEP(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecEP[r][c];};
   void SetCRCZDCQVecRes(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecRes[r][c] = TH;};
   TProfile* GetCRCZDCQVecRes(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecRes[r][c];};
-  void SetCRCZDCQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
-  TProfile* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
-  
+  void SetCRCZDCQVecCov(TProfile2D* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
+  TProfile2D* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
+
   // void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
   // TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
-  
+
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
-  
+
   // CRC VZERO:
   void SetCRCVZEROetaPro(TProfile* const TP, Int_t const c, Int_t const r) {this->fCRCVZEROetaPro[c][r] = TP;};
   TProfile* GetCRCVZEROetaPro(Int_t const c, Int_t const r) const {return this->fCRCVZEROetaPro[c][r];};
   void SetCRCVZEROetaHist(TH1D* const TP, Int_t const c, Int_t const r) {this->fCRCVZEROetaHist[c][r] = TP;};
   TH1D* GetCRCVZEROetaHist(Int_t const c, Int_t const r) const {return this->fCRCVZEROetaHist[c][r];};
-  
+
   // CRC ZDC:
   // 12.a) EbE Corr:
   void SetCRCZDCCorrPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCorrPro[r][c][eg][h] = TP;};
@@ -851,13 +879,13 @@ public:
   TH1D* GetCRCZDCCFunHist(Int_t const eg, Int_t const h) const {return this->fCRCZDCCFunHist[eg][h];};
   void SetCRCZDCSpectra(TProfile* const TH, Int_t const eg, Int_t const h) {this->fCRCZDCSpectra[eg][h] = TH;};
   TProfile* GetCRCZDCSpectra(Int_t const eg, Int_t const h) const {return this->fCRCZDCSpectra[eg][h];};
-  
+
   // 12.c) Covariances:
   void SetCRCZDCCovHist(TH2D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCovHist[c][eg][h] = TH;};
   TH2D* GetCRCZDCCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCovHist[c][eg][h];};
   void SetCRCZDCCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCorrProdTempHist[c][eg][h] = TH;};
   TH1D* GetCRCZDCCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCorrProdTempHist[c][eg][h];};
-  
+
   // CRC2:
   void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
   Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
@@ -873,9 +901,13 @@ public:
   TProfile* GetCRC2CovPro(Int_t const r, Int_t const h, Int_t const c) const {return this->fCRC2CovPro[r][h][c];};
   void SetCRC2CovHist(TH1D* const TP, Int_t const r, Int_t const h, Int_t const c) {this->fCRC2CovHist[r][h][c] = TP;};
   TH1D* GetCRC2CovHist(Int_t const r, Int_t const h, Int_t const c) const {return this->fCRC2CovHist[r][h][c];};
-  
+
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
+  void SetRefMultRbRPro(TProfile2D* const n) {this->fRefMultRbRPro = n;};
+  void SetAvEZDCRbRPro(TProfile2D* const A, TProfile2D* const B) {this->fAvEZDCCRbRPro = A; this->fAvEZDCARbRPro = B;};
+  void SetPhiExclZoneHist(TH2D* const n) {this->fPhiExclZoneHist = n;};
+  TH2D* GetPhiExclZoneHist() const {return this->fPhiExclZoneHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
   TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
   void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
@@ -898,18 +930,19 @@ public:
   TH2F* GetCenvsSpec(Int_t const h) const {return this->fhCenvsSpec[h];};
   void SetZNvsMul(TH2F* const n) {this->fhZNvsMul = n;};
   TH2F* GetZNvsMul() const {return this->fhZNvsMul;};
-  
+
   void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
   TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
   void SetZNResvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsMul[eg][h] = n;};
   TH2F* GetZNResvsMul(Int_t const eg, Int_t const h) const {return this->fhZNResvsMul[eg][h];};
   void SetZNResvsCen(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsCen[eg][h] = n;};
   TH2F* GetZNResvsCen(Int_t const eg, Int_t const h) const {return this->fhZNResvsCen[eg][h];};
-  
+
   void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
-  
+
   // Flow QC
   void SetFlowQCList(TList* const TL) {this->fFlowQCList = TL;};
+  void SetFlowQCCorrZDCList(TList* const TL) {this->fFlowQCCorrZDCList = TL;};
   void SetFlowQCVtxList(TList* const TL, Int_t r) {this->fFlowQCVtxList[r] = TL;};
   void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
   Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
@@ -931,9 +964,7 @@ public:
   TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   void SetFlowQCCorProPhi(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorProPhi[c][eg][h] = TP;};
   TProfile* GetFlowQCCorProPhi(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorProPhi[c][eg][h];};
-  void SetFlowQCIntCorProVtx(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCorProVtx[r][c][eg][h] = TP;};
-  TProfile* GetFlowQCIntCorProVtx(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProVtx[r][c][eg][h];};
-  
+
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
   TProfile* GetFlowQCIntCorNUAPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAPro[eg][h];};
@@ -952,85 +983,127 @@ public:
   void SetFlowQCIntCorNUAHistEG(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAHistEG[eg][k] = TP;};
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
-  
+
+  void SetFlowQCIntPtRanCorPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAPro(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAPro[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCumHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCumHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHist(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHist[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorProEG(TProfile* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorProEG[pt][eg] = TP;};
+  void SetFlowQCIntPtRanCorNUAProEG(TProfile* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAProEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorNUAHistEG(TH1D* const TP, Int_t const pt, Int_t const eg, Int_t const k) {this->fFlowQCIntPtRanCorNUAHistEG[pt][eg][k] = TP;};
+  void SetFlowQCIntPtRanCorHistEG(TH1D* const TP, Int_t const pt, Int_t const eg) {this->fFlowQCIntPtRanCorHistEG[pt][eg] = TP;};
+
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
-  void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorProTest[eg][k] = TP;};
-  TProfile2D* GetFlowQCIntCorProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
-  void SetFlowQCIntCorHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHistTest[eg][k] = TP;};
-  TH2D* GetFlowQCIntCorHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHistTest[eg][h];};
-  void SetFlowQCIntCumHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCumHistTest[eg][k] = TP;};
-  TH2D* GetFlowQCIntCumHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCumHistTest[eg][h];};
-  void SetFlowQCIntFinHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntFinHistTest[eg][k] = TP;};
-  TH2D* GetFlowQCIntFinHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntFinHistTest[eg][h];};
-  
+  void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntCorProTest[eg][j][k] = TP;};
+  TProfile2D* GetFlowQCIntCorProTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][j][h];};
+  void SetFlowQCIntCorHistTest(TH2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntCorHistTest[eg][j][k] = TP;};
+  TH2D* GetFlowQCIntCorHistTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntCorHistTest[eg][j][h];};
+  void SetFlowQCIntCumHistTest(TH2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntCumHistTest[eg][j][k] = TP;};
+  TH2D* GetFlowQCIntCumHistTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntCumHistTest[eg][j][h];};
+  void SetFlowQCIntFinHistTest(TH2D* const TP, Int_t const eg, Int_t const j, Int_t const k) {this->fFlowQCIntFinHistTest[eg][j][k] = TP;};
+  TH2D* GetFlowQCIntFinHistTest(Int_t const eg, Int_t const j, Int_t const h) const {return this->fFlowQCIntFinHistTest[eg][j][h];};
+  void SetFlowQCIntCorNUAProTest(TProfile2D* const TP, Int_t const eg, Int_t const j) {this->fFlowQCIntCorNUAProTest[eg][j] = TP;};
+  TProfile2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const j) const {return this->fFlowQCIntCorNUAProTest[eg][j];};
+
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
   TH1D* GetFlowQCRefCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorHist[eg][h];};
   void SetFlowQCRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorHist[eg][k] = TP;};
   TH1D* GetFlowQCRefCorFinal(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorFinal[eg][h];};
   void SetFlowQCRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorFinal[eg][k] = TP;};
-  
-  void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
-  TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
-  void SetFlowSCv2vsZNv1Hist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Hist[c][eg] = TP;};
-  TH1D* GetFlowSCv2vsZNv1Hist(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Hist[c][eg];};
-  void SetFlowSCv2vsZNv1FinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1FinalHist[c][eg] = TP;};
-  TH1D* GetFlowSCv2vsZNv1FinalHist(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1FinalHist[c][eg];};
-  
-  void SetFlowSCv2vsZNv1PtPro(TProfile* const TP, Int_t const c, Int_t const pt, Int_t const eg) {this->fFlowSCv2vsZNv1PtPro[c][pt][eg] = TP;};
-  TProfile* GetFlowSCv2vsZNv1PtPro(Int_t const c, Int_t const pt, Int_t const eg) const {return this->fFlowSCv2vsZNv1PtPro[c][pt][eg];};
-  void SetFlowSCv2vsZNv1PtHist(TH1D* const TP, Int_t const c, Int_t const pt, Int_t const eg) {this->fFlowSCv2vsZNv1PtHist[c][pt][eg] = TP;};
-  TH1D* GetFlowSCv2vsZNv1PtHist(Int_t const c, Int_t const pt, Int_t const eg) const {return this->fFlowSCv2vsZNv1PtHist[c][pt][eg];};
-  void SetFlowSCv2vsZNv1PtFinalHist(TH1D* const TP, Int_t const c, Int_t const pt, Int_t const eg) {this->fFlowSCv2vsZNv1PtFinalHist[c][pt][eg] = TP;};
-  TH1D* GetFlowSCv2vsZNv1PtFinalHist(Int_t const c, Int_t const pt, Int_t const eg) const {return this->fFlowSCv2vsZNv1PtFinalHist[c][pt][eg];};
-  
-  // Flow QC high orders
-  void SetFlowQCHOList(TList* const TL) {this->fFlowQCHOList = TL;};
-  void SetFlowQCIntCorHOPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOPro[c][eg] = TP;};
-  TProfile* GetFlowQCIntCorHOPro(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOPro[c][eg];};
-  void SetFlowQCIntCorHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntCorHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntCorHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntCorHOHist[c][eg];};
-  void SetFlowQCIntQCHOHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowQCIntQCHOHist[c][eg] = TP;};
-  TH1D* GetFlowQCIntQCHOHist(Int_t const c, Int_t const eg) const {return this->fFlowQCIntQCHOHist[c][eg];};
-  
+
+  void SetFlowSCProdPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCProdPro[c][eg] = TP;};
+  TProfile* GetFlowSCProdPro(Int_t const c, Int_t const eg) const {return this->fFlowSCProdPro[c][eg];};
+  void SetFlowSCProdHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCProdHist[c][eg] = TP;};
+  TH1D* GetFlowSCProdHist(Int_t const c, Int_t const eg) const {return this->fFlowSCProdHist[c][eg];};
+  void SetFlowSCFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCFinalHist[c][eg] = TP;};
+  TH1D* GetFlowSCFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowSCFinalHist[c][eg];};
+  void SetFlowSCCovHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCCovHist[c][eg] = TP;};
+  TH1D* GetFlowSCCovHist(Int_t const c, Int_t const eg) const {return this->fFlowSCCovHist[c][eg];};
+  void SetFlowSCCrossProdPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdPro[c][eg][k] = TP;};
+  TProfile* GetFlowSCCrossProdPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdPro[c][eg][k];};
+  void SetFlowSCCrossProdProMult(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowSCCrossProdProMult[c][eg][k] = TP;};
+  TProfile* GetFlowSCCrossProdProMult(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowSCCrossProdProMult[c][eg][k];};
+
+  // Flow Generic Framework
+  void SetFlowGFList(TList* const TL) {this->fFlowGFList = TL;};
+  void SetFlowGFIntCorPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCorPro[c][eg] = TP;};
+  TProfile* GetFlowGFIntCorPro(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCorPro[c][eg];};
+  void SetFlowGFIntCorHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntCorHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCorHist[c][eg];};
+  void SetFlowGFIntCumHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntCumHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntCumHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntCumHist[c][eg];};
+  void SetFlowGFIntFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntFinalHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntFinalHist[c][eg];};
+  void SetFlowGFIntExtraHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFIntExtraHist[c][eg] = TP;};
+  TH1D* GetFlowGFIntExtraHist(Int_t const c, Int_t const eg) const {return this->fFlowGFIntExtraHist[c][eg];};
+
+  void SetFlowGFIntCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovPro[c][eg][k] = TP;};
+  TProfile* GetFlowGFIntCovPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowGFIntCovPro[c][eg][k];};
+  void SetFlowGFIntCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHist[c][eg][k] = TP;};
+  TH1D* GetFlowGFIntCovHist(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowGFIntCovHist[c][eg][k];};
+
+  void SetFlowGFMixedCorPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedCorPro[c][eg] = TP;};
+  TProfile* GetFlowGFMixedCorPro(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedCorPro[c][eg];};
+  void SetFlowGFMixedCorHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedCorHist[c][eg] = TP;};
+  TH1D* GetFlowGFMixedCorHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedCorHist[c][eg];};
+  void SetFlowGFMixedFinalHist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowGFMixedFinalHist[c][eg] = TP;};
+  TH1D* SetFlowGFMixedFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowGFMixedFinalHist[c][eg];};
+
+  // sub-sampling
+  void SetFlowGFIntCorProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorProSS[s][c][eg] = TP;};
+  void SetFlowGFIntCorHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHistSS[s][c][eg] = TP;};
+  void SetFlowGFIntCovProSS(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProSS[s][c][eg][k] = TP;};
+  void SetFlowGFIntCovHistSS(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistSS[s][c][eg][k] = TP;};
+
+  // in wide pt bins
+  void SetFlowGFIntCorProPtB(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorProPtB[s][c][eg] = TP;};
+  void SetFlowGFIntCorHistPtB(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg) {this->fFlowGFIntCorHistPtB[s][c][eg] = TP;};
+  void SetFlowGFIntCovProPtB(TProfile* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovProPtB[s][c][eg][k] = TP;};
+  void SetFlowGFIntCovHistPtB(TH1D* const TP, Int_t const s, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowGFIntCovHistPtB[s][c][eg][k] = TP;};
+
   // Flow SP ZDC
   void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
-  
+
   void SetFlowSPZDCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorPro[c][eg][h] = TP;};
   TProfile* GetFlowSPZDCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorPro[c][eg][h];};
   void SetFlowSPZDCCorNUA(TProfile* const TP, Int_t const c, Int_t const h) {this->fFlowSPZDCCorNUA[c][h] = TP;};
   TProfile* GetFlowSPZDCCorNUA(Int_t const c, Int_t const h) const {return this->fFlowSPZDCCorNUA[c][h];};
   void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
   TH1D* GetFlowSPZDCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorHist[c][eg][h];};
-  
+
   void SetFlowSPZDCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCFinalPtDifHist[c][eg][h] = TH;};
   TH1D* GetFlowSPZDCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCFinalPtDifHist[c][eg][h];};
   void SetFlowSPZDCIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntHist[c][eg] = TH;};
   TH1D* GetFlowSPZDCIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntHist[c][eg];};
   void SetFlowSPZDCIntFinalHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntFinalHist[c][eg] = TH;};
   TH1D* GetFlowSPZDCIntFinalHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntFinalHist[c][eg];};
-  
+
   void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[c][eg] = TP;};
   TProfile* GetFlowSPZDCIntPro(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[c][eg];};
   void SetFlowSPZDCIntNUA(TProfile* const TP, Int_t const eg) {this->fFlowSPZDCIntNUA[eg] = TP;};
   TProfile* GetFlowSPZDCIntNUA(Int_t const eg) const {return this->fFlowSPZDCIntNUA[eg];};
-  
+
   // v1
-  void SetFlowSPZDCv1Pro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1Pro[r] = TP;};
-  TProfile* GetFlowSPZDCv1Pro(Int_t const r) const {return this->fFlowSPZDCv1Pro[r];};
   void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaPro[c][k][r] = TP;};
   TProfile* GetFlowSPZDCv1etaPro(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaPro[c][k][r];};
   void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaHist[c][k][r] = TP;};
   TH1D* GetFlowSPZDCv1etaHist(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaHist[c][k][r];};
   void SetFlowSPZDCv1etaNUAPro(TProfile* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaNUAPro[c][k][r] = TP;};
   TProfile* GetFlowSPZDCv1etaNUAPro(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaNUAPro[c][k][r];};
-  
+
   void SetFlowSPZDCv1etaPtPro(TProfile2D* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaPtPro[c][k] = TP;};
   TProfile2D* GetFlowSPZDCv1etaPtPro(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaPtPro[c][k];};
   void SetFlowSPZDCv1etaPtHist(TH2D* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaPtHist[c][k] = TP;};
   TH2D* GetFlowSPZDCv1etaPtHist(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaPtHist[c][k];};
-  
+
+  void SetFlowSPZDCv1etaCovPro(TProfile* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaCovPro[c][k] = TP;};
+  TProfile* GetFlowSPZDCv1etaCovPro(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaCovPro[c][k];};
+  void SetFlowSPZDCv1etaCovHist(TH1D* const TP, Int_t const c, Int_t const k) {this->fFlowSPZDCv1etaCovHist[c][k] = TP;};
+  TH1D* GetFlowSPZDCv1etaCovHist(Int_t const c, Int_t const k) const {return this->fFlowSPZDCv1etaCovHist[c][k];};
+
   // Flow SP VZ
   void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
   void SetFlowSPVZCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorPro[c][eg][h] = TP;};
@@ -1039,7 +1112,7 @@ public:
   TProfile* GetFlowSPVZNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPVZNUAPro[c][eg][h];};
   void SetFlowSPVZCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorHist[c][eg][h] = TH;};
   TH1D* GetFlowSPVZCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPVZCorHist[c][eg][h];};
-  
+
   Int_t GetnRun() const {return this->fCRCnRun;};
   Int_t GetCRCPtnCen() const {return this->fCRCPtnCenBin;};
   Double_t GetCRCPtwCen() const {return this->fCRCPtwCenBin;};
@@ -1051,11 +1124,12 @@ public:
   Double_t* GetCRCPtvarPtBins() const {return this->fCRCPtvarPtBins;};
   Int_t GetCRCZDCnCR() const {return this->fCRCZDCnCR;};
   Int_t GetCRCZDCnEtaBin() const {return this->fCRCZDCnEtaBin;};
-  
+
   // CME:
   void SetCMEList(TList* const TL) {this->fCMEList = TL;};
   void SetCMETPCList(TList* const TL) {this->fCMETPCList = TL;};
   void SetCMEZDCList(TList* const TL) {this->fCMEZDCList = TL;};
+  void SetCMESPPPList(TList* const TL) {this->fCMESPPPList = TL;}; //@shi add SetCMESPPPList
   // CME TPC only:
   void SetCMETPCCorPro(TProfile* const TP, Int_t const c, Int_t const h) {this->fCMETPCCorPro[c][h] = TP;};
   TProfile* GetCMETPCCorPro(Int_t const c, Int_t const h) const {return this->fCMETPCCorPro[c][h];};
@@ -1065,12 +1139,12 @@ public:
   TH1D* GetCMETPCFinalHist(Int_t const c, Int_t const h) const {return this->fCMETPCFinalHist[c][h];};
   void SetCMETPCCorPro2D(TProfile2D* const TP, Int_t const c) {this->fCMETPCCorPro2D[c] = TP;};
   TProfile2D* GetCMETPCCorPro2D(Int_t const c) const {return this->fCMETPCCorPro2D[c];};
-  
+
   void SetCMETPCSCPro(TProfile* const TP, Int_t const c, Int_t const h) {this->fCMETPCSCPro[c][h] = TP;};
   TProfile* GetCMETPCSCPro(Int_t const c, Int_t const h) const {return this->fCMETPCSCPro[c][h];};
   void SetCMETPCSCHist(TH1D* const TH, Int_t const c, Int_t const h) {this->fCMETPCSCHist[c][h] = TH;};
   TH1D* GetCMETPCSCHist(Int_t const c, Int_t const h) const {return this->fCMETPCSCHist[c][h];};
-  
+
   // CME TPC-ZDCs:
   void SetCMEZDCCorPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMEZDCCorPro[eg][h] = TP;};
   TProfile* GetCMEZDCCorPro(Int_t const eg, Int_t const h) const {return this->fCMEZDCCorPro[eg][h];};
@@ -1084,19 +1158,226 @@ public:
   TH2D* GetCMEZDCCovHist(Int_t const eg, Int_t const h) const {return this->fCMEZDCCovHist[eg][h];};
   void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
   TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
+
+  //@shi CME SP-PP spectator plane participant plane method (begin)
+  void SetCMESPPPTPCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPTPCCorPro[h] = TP;};
+  TProfile* GetCMESPPPTPCCorPro(Int_t const h) const {return this->fCMESPPPTPCCorPro[h];};
+  void SetCMESPPPV0CorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPV0CorPro[h] = TP;};
+  TProfile* GetCMESPPPV0CorPro(Int_t const h) const {return this->fCMESPPPV0CorPro[h];};
+  void SetCMESPPPZDCCorPro(TProfile* const TP, Int_t const h) {this->fCMESPPPZDCCorPro[h] = TP;};
+  TProfile* GetCMESPPPZDCCorPro(Int_t const h) const {return this->fCMESPPPZDCCorPro[h];};
+  void SetCMESPPPV2(TProfile* const TP, Int_t const h) {this->fCMESPPPV2[h] = TP;};
+  TProfile* GetCMESPPPV2(Int_t const h) const {return this->fCMESPPPV2[h];};
+  
+  void SetCMESPPPTPCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCCorHist[h] = TH;};
+  TH1D* GetCMESPPPTPCCorHist(Int_t const h) const {return this->fCMESPPPTPCCorHist[h];};
+  void SetCMESPPPV0CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0CorHist[h] = TH;};
+  TH1D* GetCMESPPPV0CorHist(Int_t const h) const {return this->fCMESPPPV0CorHist[h];};
+  void SetCMESPPPZDCCorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCCorHist[h] = TH;};
+  TH1D* GetCMESPPPZDCCorHist(Int_t const h) const {return this->fCMESPPPZDCCorHist[h];};
+  void SetCMESPPPV2CorHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV2CorHist[h] = TH;};
+  TH1D* GetCMESPPPV2CorHist(Int_t const h) const {return this->fCMESPPPV2CorHist[h];};
+  
+  void SetCMESPPPTPCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPTPCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPTPCFinalHist(Int_t const h) const {return this->fCMESPPPTPCFinalHist[h];};
+  void SetCMESPPPV0FinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPV0FinalHist[h] = TH;};
+  TH1D* GetCMESPPPV0FinalHist(Int_t const h) const {return this->fCMESPPPV0FinalHist[h];};
+  void SetCMESPPPZDCFinalHist(TH1D* const TH, Int_t const h) {this->fCMESPPPZDCFinalHist[h] = TH;};
+  TH1D* GetCMESPPPZDCFinalHist(Int_t const h) const {return this->fCMESPPPZDCFinalHist[h];};
+  void SetCMESPPPDoubleRatioHist(TH1D* const TH, Int_t const h) {this->fCMESPPPDoubleRatioHist[h] = TH;};
+  TH1D* GetCMESPPPDoubleRatioHist(Int_t const h) const {return this->fCMESPPPDoubleRatioHist[h];};
+
+  void SetQACMESPPPTPCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPTPCPro[h] = TP;};
+  TProfile* GetQACMESPPPTPCPro(Int_t const h) const {return this->fQACMESPPPTPCPro[h];};
+  void SetQACMESPPPTPCaveragePro(TProfile* const TP) {this->fQACMESPPPTPCaveragePro = TP;};
+  TProfile* GetQACMESPPPTPCaveragePro() const {return this->fQACMESPPPTPCaveragePro;};
+  
+  void SetQACMESPPPV0Pro(TProfile* const TP, Int_t const h) {this->fQACMESPPPV0Pro[h] = TP;};
+  TProfile* GetQACMESPPPV0Pro(Int_t const h) const {return this->fQACMESPPPV0Pro[h];};
+  void SetQACMESPPPV0averagePro(TProfile* const TP) {this->fQACMESPPPV0averagePro = TP;};
+  TProfile* GetQACMESPPPV0averagePro() const {return this->fQACMESPPPV0averagePro;};
+  
+  void SetQACMESPPPZDCPro(TProfile* const TP, Int_t const h) {this->fQACMESPPPZDCPro[h] = TP;};
+  TProfile* GetQACMESPPPZDCPro(Int_t const h) const {return this->fQACMESPPPZDCPro[h];};
+  void SetQACMESPPPZDCaveragePro(TProfile* const TP) {this->fQACMESPPPZDCaveragePro = TP;};
+  TProfile* GetQACMESPPPZDCaveragePro() const {return this->fQACMESPPPZDCaveragePro;};
+  
+  void SetCMESPPPcosDiffEvPlTPC(TProfile* const TP) {this->fCMESPPPcosDiffEvPlTPC = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlTPC() const {return this->fCMESPPPcosDiffEvPlTPC;};
+  void SetCMESPPPEvPlTPCdistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCdistribution() const {return this->fCMESPPPEvPlTPCdistribution;};
+  void SetCMESPPPEvPlTPCPosEtadistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtadistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtadistribution() const {return this->fCMESPPPEvPlTPCPosEtadistribution;};
+  void SetCMESPPPEvPlTPCNegEtadistribution(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtadistribution = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtadistribution() const {return this->fCMESPPPEvPlTPCNegEtadistribution;};
+  void SetCMESPPPcosDiffEvPlVZ(TProfile* const TP) {this->fCMESPPPcosDiffEvPlVZ = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlVZ() const {return this->fCMESPPPcosDiffEvPlVZ;};
+  void SetCMESPPPEvPlVZCdistribution(TH2D* const TP) {this->fCMESPPPEvPlVZCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlVZCdistribution() const {return this->fCMESPPPEvPlVZCdistribution;};
+  void SetCMESPPPEvPlVZAdistribution(TH2D* const TP) {this->fCMESPPPEvPlVZAdistribution = TP;};
+  TH2D* GetCMESPPPEvPlVZAdistribution() const {return this->fCMESPPPEvPlVZAdistribution;};
+  void SetCMESPPPcosDiffEvPlZDC(TProfile* const TP) {this->fCMESPPPcosDiffEvPlZDC = TP;};
+  TProfile* GetCMESPPPcosDiffEvPlZDC() const {return this->fCMESPPPcosDiffEvPlZDC;};
+  void SetCMESPPPEvPlZDCAdistribution(TH2D* const TP) {this->fCMESPPPEvPlZDCAdistribution = TP;};
+  TH2D* GetCMESPPPEvPlZDCAdistribution() const {return this->fCMESPPPEvPlZDCAdistribution;};
+  void SetCMESPPPEvPlZDCCdistribution(TH2D* const TP) {this->fCMESPPPEvPlZDCCdistribution = TP;};
+  TH2D* GetCMESPPPEvPlZDCCdistribution() const {return this->fCMESPPPEvPlZDCCdistribution;};
+  
+  
+  void SetCMESPPPEvPlTPCVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZCcorr() const {return this->fCMESPPPEvPlTPCVZCcorr;};
+  void SetCMESPPPEvPlTPCVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZAcorr() const {return this->fCMESPPPEvPlTPCVZAcorr;};
+  void SetCMESPPPEvPlTPCPosEtaVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZCcorr() const {return this->fCMESPPPEvPlTPCPosEtaVZCcorr;};
+  void SetCMESPPPEvPlTPCPosEtaVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZAcorr() const {return this->fCMESPPPEvPlTPCPosEtaVZAcorr;};
+  void SetCMESPPPEvPlTPCNegEtaVZCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZCcorr() const {return this->fCMESPPPEvPlTPCNegEtaVZCcorr;};
+  void SetCMESPPPEvPlTPCNegEtaVZAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZAcorr() const {return this->fCMESPPPEvPlTPCNegEtaVZAcorr;};
+  
+  void SetCMESPPPEvPlTPCVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZCdiff() const {return this->fCMESPPPEvPlTPCVZCdiff;};
+  void SetCMESPPPEvPlTPCVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCVZAdiff() const {return this->fCMESPPPEvPlTPCVZAdiff;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZCdiff() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiff;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaVZAdiff() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiff;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZCdiff() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiff;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaVZAdiff() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiff;};
+  
+  void SetCMESPPPEvPlTPCZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCCcorr() const {return this->fCMESPPPEvPlTPCZDCCcorr;};
+  void SetCMESPPPEvPlTPCZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCAcorr() const {return this->fCMESPPPEvPlTPCZDCAcorr;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCCcorr() const {return this->fCMESPPPEvPlTPCPosEtaZDCCcorr;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCAcorr() const {return this->fCMESPPPEvPlTPCPosEtaZDCAcorr;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCCcorr() const {return this->fCMESPPPEvPlTPCNegEtaZDCCcorr;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCAcorr() const {return this->fCMESPPPEvPlTPCNegEtaZDCAcorr;};
+  
+  void SetCMESPPPEvPlTPCZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCCdiff() const {return this->fCMESPPPEvPlTPCZDCCdiff;};
+  void SetCMESPPPEvPlTPCZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCZDCAdiff() const {return this->fCMESPPPEvPlTPCZDCAdiff;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCCdiff() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiff;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCPosEtaZDCAdiff() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiff;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCCdiff() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiff;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlTPCNegEtaZDCAdiff() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiff;};
+  
+  void SetCMESPPPEvPlVZCZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCCcorr() const {return this->fCMESPPPEvPlVZCZDCCcorr;};
+  void SetCMESPPPEvPlVZAZDCCcorr(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCCcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCCcorr() const {return this->fCMESPPPEvPlVZAZDCCcorr;};
+  void SetCMESPPPEvPlVZCZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCAcorr() const {return this->fCMESPPPEvPlVZCZDCAcorr;};
+  void SetCMESPPPEvPlVZAZDCAcorr(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCAcorr = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCAcorr() const {return this->fCMESPPPEvPlVZAZDCAcorr;};
+    
+  void SetCMESPPPEvPlVZCZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCCdiff() const {return this->fCMESPPPEvPlVZCZDCCdiff;};
+  void SetCMESPPPEvPlVZAZDCCdiff(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCCdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCCdiff() const {return this->fCMESPPPEvPlVZAZDCCdiff;};
+  void SetCMESPPPEvPlVZCZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlVZCZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZCZDCAdiff() const {return this->fCMESPPPEvPlVZCZDCAdiff;};
+  void SetCMESPPPEvPlVZAZDCAdiff(TProfile* const TP) {this->fCMESPPPEvPlVZAZDCAdiff = TP;};
+  TProfile* GetCMESPPPEvPlVZAZDCAdiff() const {return this->fCMESPPPEvPlVZAZDCAdiff;};
+  
+  //////////////////////////////////////////////////////////////////////////////////////
+  void SetCMESPPPEvPlTPCVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlVZCZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZCZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZCZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlVZCZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlVZAZDCCdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZAZDCCdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZAZDCCdiffDistribution1D() const {return this->fCMESPPPEvPlVZAZDCCdiffDistribution1D;};
+  void SetCMESPPPEvPlVZCZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZCZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZCZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlVZCZDCAdiffDistribution1D;};
+  void SetCMESPPPEvPlVZAZDCAdiffDistribution1D(TH1D* const TP) {this->fCMESPPPEvPlVZAZDCAdiffDistribution1D = TP;};
+  TH1D* GetCMESPPPEvPlVZAZDCAdiffDistribution1D() const {return this->fCMESPPPEvPlVZAZDCAdiffDistribution1D;};
+  
+  //////////////////////////////////////////////////////////////////////////////////////
+  void SetCMESPPPEvPlTPCVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlVZCZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZCZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZCZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlVZCZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlVZAZDCCdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZAZDCCdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZAZDCCdiffDistribution2D() const {return this->fCMESPPPEvPlVZAZDCCdiffDistribution2D;};
+  void SetCMESPPPEvPlVZCZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZCZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZCZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlVZCZDCAdiffDistribution2D;};
+  void SetCMESPPPEvPlVZAZDCAdiffDistribution2D(TH2D* const TP) {this->fCMESPPPEvPlVZAZDCAdiffDistribution2D = TP;};
+  TH2D* GetCMESPPPEvPlVZAZDCAdiffDistribution2D() const {return this->fCMESPPPEvPlVZAZDCAdiffDistribution2D;};
+  
+  void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
+  Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
+  //@shi CME SP-PP spectator plane participant plane method (end)
   
   // EbE Flow
   void SetEbEFlowList(TList* const TL) {this->fEbEFlowList = TL;};
-  
-  
+
+
   // 15.) Various
   void SetVariousList(TList* const Various) {this->fVariousList = Various;};
   void SetMultHist(TH1D* const TH) {this->fMultHist = TH;};
   TH1D* GetMultHist() const {return this->fMultHist;}
   void SetCenHist(TH1D* const TH) {this->fCenHist = TH;};
   TH1D* GetCenHist() const {return this->fCenHist;}
-  void SetVtxHist(TH2F* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
-  TH2F* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
+  void SetVtxHist(TH3D* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
+  TH3D* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
   void SetRunNumber(Int_t const n) {this->fRunNum = n;};
   Int_t GetRunNumber() const {return this->fRunNum;}
   void SetDataSet(DataSet set) {this->fDataSet = set;};
@@ -1117,15 +1398,16 @@ public:
   Int_t GetMinMulZN() const {return this->fMinMulZN;};
   void SetMaxDevZN(Float_t weights) {this->fMaxDevZN = weights;};
   Float_t GetMaxDevZN() const {return this->fMaxDevZN;};
-  
+  void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
+
 private:
-  
+
   AliFlowAnalysisCRC(const AliFlowAnalysisCRC& afawQc);
   AliFlowAnalysisCRC& operator=(const AliFlowAnalysisCRC& afawQc);
-  
+
   // 0.) base:
   TList* fHistList; //! base list to hold all output object
-  
+
   // 1.) common:
   Bool_t fBookOnlyBasicCCH; // book only basis common control histrograms (by default book them all)
   AliFlowCommonHist *fCommonHists; //! common control histograms (taking into account ALL events)
@@ -1154,7 +1436,7 @@ private:
   Int_t fHarmonic; // harmonic
   TString *fAnalysisLabel; //! analysis label (all histograms and output file will have this label)
   Bool_t fPrintFinalResults[4]; // print on the screen the final results (0=RF, 1=RP, 2=POI, 3=RF rebinned in M)
-  
+
   // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
@@ -1168,6 +1450,7 @@ private:
   Bool_t fUsePhiEtaCuts; // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE spec. weights
+  Bool_t fCutMultiplicityOutliers;  // cut on reference multiplicity
   TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
   // TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
   // TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
@@ -1185,11 +1468,11 @@ private:
   // TH1D *fEtaDistrRefRPs; //!
   // TH2D *fPhiEtaDistrRefRPs; //!
   // TH1D *fPtWeights[2]; //! histogram holding pt weights
-  
+
   // 2b.) event weights:
   TString *fMultiplicityWeight; //! event-by-event weights for multiparticle correlations
   AliFlowCommonConstants::ERefMultSource fMultiplicityIs; // by default "kRP"
-  
+
   // 3.) integrated flow
   //  3a.) lists:
   TList *fIntFlowList; //! list to hold all histograms and profiles relevant for integrated flow
@@ -1213,11 +1496,16 @@ private:
   Bool_t fUse2DHistograms; // use TH2D instead of TProfile to improve numerical stability in reference flow calculation
   Bool_t fFillProfilesVsMUsingWeights; // if the width of multiplicity bin is 1, weights are not needed
   Bool_t fUseQvectorTerms; // use TH2D with separate Q-vector terms instead of TProfile to improve numerical stability in reference flow calculation
-  
+
   //  3c.) event-by-event quantities:
   TMatrixD *fReQ; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
   TMatrixD *fImQ; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TMatrixD *fSpk; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
+  TMatrixD *fReQGF; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+  TMatrixD *fImQGF; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
+  const static Int_t fkGFPtB = 8;
+  TMatrixD *fReQGFPt[fkGFPtB]; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+  TMatrixD *fImQGFPt[fkGFPtB]; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
   TH1D *fIntFlowCorrelationsEBE; //! 1st bin: <2>, 2nd bin: <4>, 3rd bin: <6>, 4th bin: <8>
   TH1D *fIntFlowEventWeightsForCorrelationsEBE; //! 1st bin: eW_<2>, 2nd bin: eW_<4>, 3rd bin: eW_<6>, 4th bin: eW_<8>
   TH1D *fIntFlowCorrelationsAllEBE; //! to be improved (add comment)
@@ -1226,6 +1514,7 @@ private:
   Double_t fNumberOfRPsEBE; // # of Reference Particles
   Double_t fNumberOfPOIsEBE; // # of Particles of Interest
   Double_t fReferenceMultiplicityEBE; // reference multiplicity
+  Double_t fReferenceMultiplicityRecEBE; // reference multiplicity - <reference multiplicity>
   Double_t fCentralityEBE; // centrality percentile
   Double_t fNewCentralityEBE; // new centrality percentile
   Double_t fNewMetricLEBE; // new metric L
@@ -1250,7 +1539,7 @@ private:
   TProfile *fIntFlowProductOfCorrectionTermsForNUAPro; //! average product of correction terms for NUA
   TProfile *fIntFlowCorrectionTermsForNUAPro[2]; //! average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms]
   TProfile *fIntFlowCorrectionTermsForNUAVsMPro[2][4]; //! average correction terms for non-uniform acceptance (with wrong errors!) [0=sin terms,1=cos terms][correction term index] vs multiplicity
-  
+
   //  3e.) histograms with final results:
   TH1D *fIntFlowCorrelationsHist; //! final results for average correlations <<2>>, <<4>>, <<6>> and <<8>> (with correct errors!)
   TH1D *fIntFlowCorrelationsVsMHist[4]; //! average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is correct here!)
@@ -1311,7 +1600,7 @@ private:
   TH1D *fDiffFlowCorrelationsEBE[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][reduced correlation index]
   TH1D *fDiffFlowEventWeightsForCorrelationsEBE[2][2][4]; //! [0=RP,1=POI][0=pt,1=eta][event weights for reduced correlation index]
   TH1D *fDiffFlowCorrectionTermsForNUAEBE[2][2][2][10]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
-  
+
   //   2D:
   TProfile2D *fReRPQ2dEBE[3][4][9]; //! real part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
   TProfile2D *fImRPQ2dEBE[3][4][9]; //! imaginary part of r_{m*n,k}(pt,eta), p_{m*n,k}(pt,eta) and q_{m*n,k}(pt,eta)
@@ -1354,7 +1643,7 @@ private:
   Double_t fMaxValueOfCorrelationProduct[1]; // max values of <2><4>, <2><6>, <2><8>, <4><6> etc. TBI add the other ones when needed first time
   Double_t fMinValueOfQvectorTerms[4]; // MinValueOfQvectorTerms
   Double_t fMaxValueOfQvectorTerms[4]; // MaxValueOfQvectorTerms
-  
+
   // 8.) debugging and cross-checking:
   TList *fNestedLoopsList; //! list to hold all profiles filled with nested loops
   Bool_t fEvaluateIntFlowNestedLoops; // evaluate nested loops relevant for integrated flow
@@ -1375,7 +1664,7 @@ private:
   TProfile *fOtherDirectDiffCorrelators[2][2][2][1]; //! [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index]
   // mixed harmonics:
   TProfile *fMixedHarmonicsNestedLoops; //! Cross-check mixed harmonics with nested loops.
-  
+
   // 9.) mixed harmonics:
   //  9a.) lists:
   TList *fMixedHarmonicsList; //! list to hold all histograms and profiles for mixed harmonics
@@ -1437,9 +1726,9 @@ private:
   //  11d) histograms:
   TH2D *fBootstrapCumulants; //! x-axis => QC{2}, QC{4}, QC{6}, QC{8}; y-axis => subsample #
   TH2D *fBootstrapCumulantsVsM[4]; //! index => QC{2}, QC{4}, QC{6}, QC{8}; x-axis => multiplicity; y-axis => subsample #
-  
+
   // 12.) CRC
-  
+
   TList *fCRCList; //! list to hold CRC histograms
   TList *fTempList; //! list to hold temp histograms
   TProfile *fCRCFlags; //! profile to hold all flags for CRC
@@ -1455,12 +1744,14 @@ private:
   Bool_t fCalculateFlowVZ;
   Bool_t fUseVZERO;
   Bool_t fUseZDC;
+  Bool_t fRemoveSplitMergedTracks;
   Bool_t fRecenterZDC;
   Bool_t fNUAforCRC;
   Bool_t fUseCRCRecenter;
   Bool_t fDivSigma;
   Bool_t fInvertZDC;
   Bool_t fCRCTestSin;
+  Bool_t fVtxRbR;
   Double_t fCRCEtaMin;
   Double_t fCRCEtaMax;
   Int_t fRunNum;
@@ -1470,7 +1761,7 @@ private:
   CorrelationWeights fCorrWeightTPC;
   CorrelationWeights fCorrWeightVZ;
   CorrelationWeights fCorrWeightZDC;
-  
+
   TList *fCRCIntList; //! list to hold CRC histograms
   const static Int_t fCRCnCR = 16;
   const static Int_t fCRCnNUA = 14;
@@ -1482,11 +1773,15 @@ private:
   Int_t fCRCCenBinWidth;
   const static Int_t fCRCnHar = 3;
   const static Int_t fCRCMaxnRun = 211;
-  
+
   TH3D *fPhiEtaWeights; //!
   TH3D *fPhiEtaWeightsCh[2]; //!
   TH3D *fPhiEtaWeightsChPt[2][3]; //!
-  
+  TH2F *fPtWeightsCent; //!
+  TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
+  TH3D *fPhiEtaRbRWeights; //!
+  TH3D *fPhiEtaRbRWeightsCh[2]; //!
+
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
   TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
@@ -1495,7 +1790,7 @@ private:
   TProfile *fCRCCorrPro[fCRCMaxnRun][fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
   TH1D *fCRCSumWeigHist[fCRCMaxnRun][fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
   TProfile *fCRCNUATermsPro[fCRCMaxnRun][fCRCnNUA][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms profile
-  
+
   TH1D *fCRCCorrProdTempHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! temporary correlation products for covariances, [CRCBin][eg]
   TH1D *fCRCCorrHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
   TH1D *fCRCCumHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! QC{2}, [CRCBin][eg]
@@ -1503,7 +1798,7 @@ private:
   TH1D *fCRCCovHist[fCRCnCorr][fCRCnEtaGap][fCRCMaxnCen]; //! covariances final histo
   TH1D *fCRCCFunHist[fCRCnEtaGap][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
   TH1D *fCRCNUATermsHist[fCRCnNUA][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms final histo
-  
+
   // Q vectors
   const static Int_t fCRCQVecnCR = 64;
   Int_t fCRCnRun;
@@ -1515,12 +1810,21 @@ private:
   TArrayD fAvVtxPosX;    // Run list
   TArrayD fAvVtxPosY;    // Run list
   TArrayD fAvVtxPosZ;    // Run list
+  //@Shi add ave vtx IR split
+  TArrayD fAvVtxPosX15oIRSplit;    // Run list
+  TArrayD fAvVtxPosY15oIRSplit;    // Run list
+  TArrayD fAvVtxPosZ15oIRSplit;    // Run list
+  TArrayI fnEvRbR; // number of events in each run
   TList *fCRCQVecList; //! Q Vectors list
+  TList *fCRCQVecEtaPhiList; //!
   TList *fCRCQVecListTPC; //! Q Vectors list TPC
   TList *fCRCQVecListVZ; //! Q Vectors list VZERO
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
+  TList *fZDCCalibListFinalCommonPart; //! Shi my ZDC calbration split to run independent part and run-by-run calib due to limited size of content that can be held by TList
+  TList *fZDCCalibListFinalRunByRun; // Shi run dependent calib part, run-by-run was set in AliAnalysisTaskCRC
+  TList *fCRCZDC2DCutList; //! ZDC 2D cut
   TList *fCRCVZEROCalibList; //! ZDC calibration
   TList *fCRCZDCResList; //! ZDC rescaling list
   TList *fZDCESEList; //! ZDC ESE
@@ -1531,12 +1835,16 @@ private:
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
   TH3D* fCRCQVecPhiHist; //! phi ditribution POIs
+  TH2D* fCRCQVecPtHistMagField; //!
   TH3D* fCRCQVecPhiHistCh[2]; //! phi ditribution POIs bins ch
+  //@Shi uncomment run-by-run phi eta distribution
   TH3D* fCRCQVecPhiRbRHist[fCRCMaxnRun]; //! phi ditribution POIs run-by-run
   TH3D* fCRCQVecPhiRbRHistCh[fCRCMaxnRun][2]; //! phi ditribution POIs bins ch run-by-run
   TProfile3D* fCRCQVecHarCosProCh[2]; //! phi ditribution POIs
   TProfile3D* fCRCQVecHarSinProCh[2]; //! phi ditribution POIs
-//  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnRun][fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
+  TH3D* fCRCQVecPhiHistVtx[fCRCMaxnCen][fCRCMaxnRun]; //! phi ditribution POIs, vtx dep, run-by-run
+  TH3D* fCRCQVecPhiHistRefMul[fCRCMaxnCen]; //!
+  TH3D* fCRCQVecPhiHistVtxAll[fCRCMaxnCen]; //!
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
@@ -1546,21 +1854,55 @@ private:
   const static Int_t fkNRbRIntFlow = 2;
   TProfile *fCRCFlowQCRbRIntFlow[fCRCMaxnRun][fkNRbRFlowHar][fkNRbRIntFlow]; //! VZA_cosn
   TProfile *fCRCFlowQCRbRMulFlow[fCRCMaxnRun][fkNRbRFlowHar][fkNRbRIntFlow]; //! VZA_cosn
-  
+
   // temp
   TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
-  TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
+  TProfile *fZDCQHist[12];  //! Run-by-run ZDCQvecHist
   TH2D *fZDCQHist2;  //! Run-by-run ZDCQvecHist
   const static Int_t fkNZDCResHist = 4;
   TH1D *fZDCResHist[fkNZDCResHist]; //!
-  TH1D *fZDCEPHist[20][3];  //! Run-by-run ZDCQvecHist
+  TH2D *fZDCEPHist[2];  //! Run-by-run ZDCQvecHist
   TF1* fFitPol0EP; //!
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomHist[4];//! Run-by-run vtxZDCQvec
   TProfile2D *fZDCEcomTotHist[4];//! Run-by-run vtxZDCQvec
   TProfile3D *fZDCEcomTotvsVtxHist[12];//! Run-by-run vtxZDCQvec
+  //@Shi temp ZDC calib histograms
+  TProfile *fAvr_Run_CentQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[20][4]; //!
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
+
+//  TProfile2D *fCRCZDCQVecCenEComTot[fCRCMaxnRun][4]; //!
+  TProfile2D *fCRCZDCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
+//  TProfile2D *fCRCTPCQVecCenEComTot[fCRCMaxnRun][4]; //!
+  TProfile2D *fCRCTPCQVecCenRefMulTot[fCRCMaxnRun][4]; //!
+  TH2D *fMulvsCenRbR[fCRCMaxnRun]; //!
+  TProfile2D *fhAvRefMulRbR; //! Average reference multiplicity vs run vs centrality
+  TProfile2D *fhAvQMCRbR; //!
+  TProfile2D *fhAvQMARbR; //!
+  TProfile *fhAvAbsOrbit; //!
+
   TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
+  TProfile3D *fZDCVtxCenHistMagPol[10][8]; //! Run-by-run vtxZDCQvec
   TProfile2D *fVZEROCenHist[3];//! Run-by-run VZERO Q-vector (harmonics 1-3)
+  TH3D *fZDCVtxFitHist[4]; //!
+  TH1D *fZDCVtxFitCenProjHist[4][3]; //!
+  TH3D *fZDCVtxFitHist2[4]; //!
+  TH1D *fZDCVtxFitCenProjHist2[4][3]; //!
+  TH3D *fZDCBinsCenRefMult[10]; //!
+  TProfile2D *fZDCBinsCenRefMultRbR[4]; //!
+  TProfile2D *fZDCBinsCenRefMultTot[4]; //!
+  TProfile *fZDCBinsCenRefMultRbRProf[10][4]; //!
+  TProfile *fZDCBinsCenRefMultTotProf[10][4]; //!
+  TH1D *fZDCBinsCenRefMultRbRProj[10][4]; //!
+  TH1D *fZDCBinsCenRefMultTotProj[10][4]; //!
+  TH3D *fZDCBinsVtxCenEZDC[3][4]; //!
+  TH3D *fZDCQVecVtxCenEZDC3D[10][10][4]; //!
+  TH3D *fZDCQVecVtxCenEZDCFit0; //!
+  TH3D *fZDCQVecVtxCenEZDCFit1; //!
+  TH2D *fCRCZDC2DCutZDCC[2][10]; //!
+  TH2D *fCRCZDC2DCutZDCA[2][10]; //!
+
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
   TH1D *fZDCESEMaxHist[2]; //!
@@ -1568,28 +1910,32 @@ private:
   TH1D *fZDCESEMinMetricHist[2]; //!
   TH1D *fZDCESEMaxMetricHist[2]; //!
   TH1D *fEBEAzimuthalDis; //!
-  
+
   TProfile *fCRCVZQVecA[fCRCMaxnRun][2]; //! Q Vectors VZERO-A
   TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
-  const static Int_t fCRCQVecnCov = 18;
-  TProfile *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
-  
+  const static Int_t fCRCQVecnCov = 12;
+  TProfile2D *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
+
   TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
   TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
 //  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
-  TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
-  const static Int_t fkCRCnCQVecVtxPos = 4;
+  TProfile *fCRCZDCQVecRes[fCRCMaxnRun][4]; //! Q Vectors Resolution Terms
+  TProfile *fCRCZDCQVecTest[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
+  const static Int_t fkCRCnCQVecVtxPos = 8;
   Bool_t fStoreZDCQVecVtxPos; //
-  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
-//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
-  TProfile3D *fCRCVZQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! VZERO Vtx positions re-centered Qvec in cen bins
+  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec run by run
+  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
+  TProfile3D *fCRCZDCQVecVtxCenEZDC[3][fkCRCnCQVecVtxPos]; //!
+  const static Int_t fknEZDCBins = 10;
+  TProfile3D *fCRCZDCQVecVtxCenEZDC3D[fCRCMaxnCen][fknEZDCBins][fkCRCnCQVecVtxPos]; //!
+  TH1D* fCRCZDCQVecDummyEZDCBins[fCRCMaxnCen]; //!
 //  TProfile2D *fCRCZDCQVecECom[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! re-centering Qvec vs Energy common tower
   const static Int_t fkCRCnCQVecEcomPos = 12;
 //  TProfile3D *fCRCZDCQVecEComTot[fkCRCnCQVecEcomPos]; //! re-centering Qvec vs Energy common tower
-  const static Int_t fkNsteps = 8;
+  const static Int_t fkNsteps = 14;
   TProfile2D *fCRCZDCQVecCorSteps[4]; //!
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1597,14 +1943,20 @@ private:
   Double_t fEvPlZDCAflat;
   Double_t fEvPlDPsiC;
   Double_t fEvPlDPsiA;
-  
+
   // test
-//  TProfile2D *fCRCZDCQVecResvsEAsym; //!
-//  TProfile2D *fCRCZDCQVecResvsETot; //!
-//  TProfile2D *fCRCZDCQVecResvsESum; //!
-  
+//  TProfile3D *fCRCZDCQVecResVtx[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResEZDC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1QA[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1QC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResv1Cross[2][3]; //!
+//
+//  TProfile2D *fCRCZDCQVecResCrossC[2][3]; //!
+//  TProfile2D *fCRCZDCQVecResCrossA[2][3]; //!
+  TH2D* fCRCZDCQVecDis[2][fCRCMaxnCen][2]; //!
+
   // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
-  
+
   // CRCVZERO
   TList *fCRCVZList; //! VZERO CRC List
   AliFlowVector fVZFlowVect[2][fCRCnHar];
@@ -1612,7 +1964,7 @@ private:
   TProfile *fCRCVZEROetaPro[fCRCMaxnCen][fkNHistCRCVZ]; //!
   TH1D *fCRCVZEROetaHist[fCRCMaxnCen][fkNHistCRCVZ]; //!
 //  TProfile2D *fCRCVZEROQVec[fCRCMaxnRun][fCRCnHar]; //!
-  
+
   // CRCZDC
   TList *fCRCZDCList; //! ZDCERO CRC List
   const static Int_t fCRCZDCnCR = 13;
@@ -1631,10 +1983,10 @@ private:
   TH1D *fCRCZDCCFunHist[fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
   TH2D *fCRCZDCCovHist[2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! covariances final histo
   TProfile *fCRCZDCSpectra[fCRCZDCnEtaBin][fCRCMaxnCen]; //! spectra
-  
+
   // CRC Pt differential
   TList *fCRCPtList; //! list to hold CRC histograms
-  
+
   Int_t fCRCPtnPtBin;
   const static Int_t fCRCPtnPtBinMax = 48;
   Double_t fCRCPtMinPt;
@@ -1645,7 +1997,7 @@ private:
   Double_t fCRCPtCenMin;
   Double_t fCRCPtCenMax;
   Double_t fCRCPtwCenBin;
-  
+
   // CME
   const static Int_t fCMETPCnCR = 20;
   const static Int_t fCMEnEtaBin = 2;
@@ -1656,9 +2008,26 @@ private:
   TList *fCMEList;    //! CME List
   TList *fCMETPCList; //! CME list of histograms TPC only
   TList *fCMEZDCList; //! CME list of histograms TPC-ZDCs
+  //@shi add fCMESPPPList
+  TList *fCMESPPPList; //! CME list of histograms for spectator plane participant plane method
+  
   TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  
+  ////////////////////////////////////////////// begin test //////////////////////////////////////////////
+  TProfile* fCME2Csubtract2V0CPSInoWeight; //!
+  TProfile* fCME2Csubtract2V0APSInoWeight; //!
+  TProfile* fCME2Csubtract2V0CPSIwithWeight; //!
+  TProfile* fCME2Csubtract2V0APSIwithWeight; //!
+  ////////////////////////////////////////////// end test //////////////////////////////////////////////
+  
+  //@shi add Qvector for both charge (begin)
+  TH1D *fCMEQReBothCharge[2][fCRCnHar]; //! real part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEQImBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  TH1D *fCMEMultBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
+  //@shi add Qvector for both charge (end)
+  
   TH1D *fCMEZDCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
   TH2D *fCMEZDCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
   TH1D *fCMEZDCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEZDCnDist]; //! <<2'>>, [CRCBin][eg]
@@ -1675,6 +2044,130 @@ private:
   TH1D *fCMETPCSCHist[fCMETPCnSC][2]; //! correlation profile, [CRCBin][eg]
   const static Int_t fCMETPCnHist2D = 3;
   TProfile2D* fCMETPCCorPro2D[fCMETPCnHist2D]; //!
+
+  //@shi add some tprofile for calculateCMESPPP
+  const static Int_t fCMESPPPTPCnHist = 18; // originally 9
+  const static Int_t fCMESPPPV0nHist = 11;
+  const static Int_t fCMESPPPZDCnHist = 9;
+  const static Int_t fCMESPPPV2nHist = 8; // originally 7
+  const static Int_t fQACMESPPPTPCnHist = 6;
+  const static Int_t fQACMESPPPTPCaverageNbins = 6;
+  const static Int_t fQACMESPPPV0nHist = 4;
+  const static Int_t fQACMESPPPV0averageNbins = 4;
+  const static Int_t fQACMESPPPZDCnHist = 4;
+  const static Int_t fQACMESPPPZDCaverageNbins = 4;
+  TProfile *fCMESPPPTPCCorPro[fCMESPPPTPCnHist]; //! TPC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV0CorPro[fCMESPPPV0nHist]; //! V0 correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPZDCCorPro[fCMESPPPZDCnHist]; //! ZDC correlation profile for spectator plane participant plane method 
+  TProfile *fCMESPPPV2[fCMESPPPV2nHist];        //! v2 calculated using TPC, V0 and ZDC plane 
+  
+  TProfile *fQACMESPPPTPCPro[fQACMESPPPTPCnHist]; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPTPCaveragePro; //! QA for TPC SPPP method
+  TProfile *fQACMESPPPV0Pro[fQACMESPPPV0nHist]; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPV0averagePro; //! QA for V0 SPPP method
+  TProfile *fQACMESPPPZDCPro[fQACMESPPPZDCnHist]; //! QA for ZDC SPPP method
+  TProfile *fQACMESPPPZDCaveragePro; //! QA for ZDC SPPP method
+  
+  //@Shi QA for checking event plane
+  Bool_t fStoreQAforDiffEventPlanes;
+  TProfile *fCMESPPPcosDiffEvPlTPC; //!
+  TH2D *fCMESPPPEvPlTPCdistribution; //!
+  TH2D *fCMESPPPEvPlTPCPosEtadistribution; //!
+  TH2D *fCMESPPPEvPlTPCNegEtadistribution; //!
+  TProfile *fCMESPPPcosDiffEvPlVZ; //!
+  TH2D *fCMESPPPEvPlVZCdistribution; //!
+  TH2D *fCMESPPPEvPlVZAdistribution; //!
+  TProfile *fCMESPPPcosDiffEvPlZDC; //!
+  TH2D *fCMESPPPEvPlZDCAdistribution; //!
+  TH2D *fCMESPPPEvPlZDCCdistribution; //!
+  
+  TProfile *fCMESPPPEvPlTPCVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCVZAcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZAcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZCcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZAcorr; //!
+  
+  TProfile *fCMESPPPEvPlTPCVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCVZAdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaVZAdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZCdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaVZAdiff; //!
+  
+  TProfile *fCMESPPPEvPlTPCZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCZDCAcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCAcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCCcorr; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCAcorr; //!
+  
+  TProfile *fCMESPPPEvPlTPCZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCZDCAdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCPosEtaZDCAdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCCdiff; //!
+  TProfile *fCMESPPPEvPlTPCNegEtaZDCAdiff; //!
+  
+  TProfile *fCMESPPPEvPlVZCZDCCcorr; //!
+  TProfile *fCMESPPPEvPlVZAZDCCcorr; //!
+  TProfile *fCMESPPPEvPlVZCZDCAcorr; //!
+  TProfile *fCMESPPPEvPlVZAZDCAcorr; //!
+  
+  TProfile *fCMESPPPEvPlVZCZDCCdiff; //!
+  TProfile *fCMESPPPEvPlVZAZDCCdiff; //!
+  TProfile *fCMESPPPEvPlVZCZDCAdiff; //!
+  TProfile *fCMESPPPEvPlVZAZDCAdiff; //!
+  
+  //////////////////////////////////////////////////////////////////
+  TH1D *fCMESPPPEvPlTPCVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaVZCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaVZAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZCZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZAZDCCdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZCZDCAdiffDistribution1D; //!
+  TH1D *fCMESPPPEvPlVZAZDCAdiffDistribution1D; //!
+  
+  //////////////////////////////////////////////////////////////////
+  TH2D *fCMESPPPEvPlTPCVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaVZCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaVZAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCPosEtaZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlTPCNegEtaZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZCZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZAZDCCdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZCZDCAdiffDistribution2D; //!
+  TH2D *fCMESPPPEvPlVZAZDCAdiffDistribution2D; //!
+  //@shi add histograms for finalizeCMESPPP
+  TH1D *fCMESPPPV2CorHist[fCMESPPPV2nHist]; //! v2 final e.g. <cos(2phi-2phi)> for SPPP method
+  TH1D *fCMESPPPTPCCorHist[fCMESPPPTPCnHist]; //! TPC final e.g. <cos(2phi-2phi_{TPC})> for SPPP method
+  TH1D *fCMESPPPV0CorHist[fCMESPPPV0nHist]; //! V0 final e.g. <cos(2phi-2phi_{V0})> for SPPP method
+  TH1D *fCMESPPPZDCCorHist[fCMESPPPZDCnHist]; //! ZDC final e.g. <cos(2phi-2phi_{ZDC})> for SPPP method
+  
+  const static Int_t fCMESPPPTPCFinalnHist = 8;
+  const static Int_t fCMESPPPV0FinalnHist = 12;
+  const static Int_t fCMESPPPZDCFinalnHist = 12;
+  const static Int_t fCMESPPPDoubleRationHist = 15;
+  TH1D *fCMESPPPTPCFinalHist[fCMESPPPTPCFinalnHist]; //! TPC components for calculating double ratio
+  TH1D *fCMESPPPV0FinalHist[fCMESPPPV0FinalnHist]; //! V0 components for calculating double ratio
+  TH1D *fCMESPPPZDCFinalHist[fCMESPPPZDCFinalnHist]; //! ZDC components for calculating double ratio
+  TH1D *fCMESPPPDoubleRatioHist[fCMESPPPDoubleRationHist]; //! double ratio
   
   // CRC2
   const static Int_t fkNCorCRC2 = 6;
@@ -1689,17 +2182,21 @@ private:
   TH1D *fCRC2NUAHist[fCRCMaxnCen][fkNCorCRC2][4]; //! NUA hist
   TProfile *fCRC2CovPro[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov pro
   TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov hist
-  
+
   // Flow all
   const static Int_t fFlowNHarm = 6;
   const static Int_t fFlowNHarmMax = 14; // WARNING: MIN (2*fFlowNHarm+2)
   const static Int_t fQVecPower = 5;
+  const static Int_t fkNITStypes = 16;
   Int_t fPtDiffNBins; //
   const static Int_t fkEtaDiffNBins = 5;
   const static Int_t fkEtaDiffMaxNBins = 10;
   TH1D *fPOIPhiDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPhiDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH2D *fPOIPhiEtaDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH2D *fPOIPhiEtaDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   TH1D *fEtaDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
@@ -1719,47 +2216,58 @@ private:
   TH2D *fPOIEtaPtQIm[2][fFlowNHarmMax]; //!
   TH2D *fPOIEtaPtMul[2][fFlowNHarmMax]; //!
   const static Int_t fZDCPtDiffNBins = 3;
-  TH3D* fCRCQVecPhiHistChPt[2][fZDCPtDiffNBins]; //! phi ditribution POIs bins ch and pT
-  
+
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
-  const static Int_t fFlowNPro = 9;
-  const static Int_t fFlowNNUA = 4;
+  const static Int_t fFlowNPro = 8;
+  const static Int_t fFlowNNUA = 2;
   const static Int_t fFlowNHarmZDC = 1;
-  
+
   TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarmZDC][fFlowNPro]; //! correlation profile, [CRCBin][eg]
   TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarmZDC][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
   TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarmZDC][fFlowNPro]; //!
   TProfile *fFlowSPZDCCorNUA[fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]
-  
+
   TProfile *fFlowSPZDCIntPro[fFlowNHarmZDC][fFlowNPro]; //! reference flow
   TH1D *fFlowSPZDCIntHist[fFlowNHarmZDC][fFlowNPro]; //!
   TH1D *fFlowSPZDCIntFinalHist[fFlowNHarmZDC][fFlowNPro]; //!
   TProfile *fFlowSPZDCIntNUA[fFlowNNUA]; //!
-  
-  TProfile *fFlowSPZDCv1Pro[4]; //!
+
   const static Int_t fkNHistv1eta = 14;
-  const static Int_t fkNHarv1eta = 2;
+  const static Int_t fkNHarv1eta = 3;
   TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  TProfile *fFlowSPZDCv1etaProImag[fCRCMaxnCen][fkNHistv1eta]; //!
+  const static Int_t fkNHistv1etaCov = 13;
+  TProfile *fFlowSPZDCv1etaCovPro[fCRCMaxnCen][fkNHistv1etaCov]; //!
+  TH1D *fFlowSPZDCv1etaCovHist[fCRCMaxnCen][fkNHistv1etaCov]; //!
+  TProfile2D *fFlowSPZDCv1etaProPhi[fkNHistv1eta]; //!
+  const static Int_t fkNHistv2eta = 4;
+  TProfile2D *fFlowSPZDCv1etaProITS[fkNHistv1eta]; //!
+  TH2D *fFlowSPZDCv1etaProITSDis[2][fkNITStypes];//!
   TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   TProfile *fFlowSPZDCv1etaNUAPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   const static Int_t fkNHistv1etaPt = 6;
   TProfile2D *fFlowSPZDCv1etaPtPro[fCRCMaxnCen][fkNHistv1etaPt]; //!
   TH2D *fFlowSPZDCv1etaPtHist[fCRCMaxnCen][fkNHistv1etaPt]; //!
-  const static Int_t fkNHistQVecCorrv1eta = 10;
+  const static Int_t fkNHistQVecCorrv1eta = 6;
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
+  TProfile2D *fCRCTPCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
+  TProfile2D *fCRCZDCQVecCenVtxTime[fCRCMaxnRun][3][4]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   TProfile3D *fCRCTPCQVecVtxPosCen[fCRCMaxnCen][fCRCZDCnEtaBin][6]; //!
-  TProfile3D *fTPCQVecProTemp[2][2]; //!
+  TProfile2D *fTPCQVecProTemp[2][4]; //!
   const static Int_t fkNv1evenCor = 6;
   TProfile2D *fFlowSPZDCv1evenCorPro[fkNv1evenCor]; //!
-  
+  const static Int_t fkNZDCDistPro = 6;
+  TProfile2D *fFlowSPZDCDistPro[fkNv1evenCor]; //!
+
   // Flow QC
   TList *fFlowQCList;    //! QC List
   const static Int_t fFlowQCNPro = 4;
   const static Int_t fFlowQCNNUA = 12;
   const static Int_t fFlowQCNCov = 8;
   Int_t fFlowQCCenBin; //
+  Int_t fCMESPPPCenBin; //@Shi add the number of cen bin for SPPP
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
@@ -1769,75 +2277,116 @@ private:
   TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //!
   TProfile *fFlowQCCorProPhi[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
-  
+  const static Int_t fFlowQCNProPhiEta = 6;
+  TProfile2D *fFlowQCIntCorProPhiEta[fCRCMaxnCen][fFlowNHarm][fFlowQCNProPhiEta]; //! vn vs phi vs eta [CRCBin][eg]
+  // TProfile2D *fFlowQCCorProPhiEtaITSType[fCRCMaxnCen][fFlowNHarm][fkNITStypes]; //! vn vs phi vs eta [CRCBin][eg]
+
   TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
-  const static Int_t fkFlowQCnVtx = 6;
-  const static Int_t fkFlowQCnHarVtx = 3;
-  TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
-  
+  const static Int_t fkFlowQCRbRnHist = 3;
+  // const static Int_t fkFlowQCRbRnHist2 = 3;
+  const static Int_t fkFlowQCRbRnHar = 3;
+  const static Int_t fkFlowQCRbRnVar = 4;
+  // const static Int_t fkFlowQCRbRnVar2 = 2;
+  // TProfile2D *fFlowQCIntRbRProPtEta[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+  // TProfile *fFlowQCIntRbRPro[fCRCMaxnRun][fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  // TProfile *fFlowQCIntRbRProTotal[fkFlowQCRbRnHar][fkFlowQCRbRnVar2][fkFlowQCRbRnHist2]; //!
+  TProfile2D *fFlowQCIntProEta[fkFlowQCRbRnHar][fkFlowQCRbRnVar][fkFlowQCRbRnHist]; //!
+
   const static Int_t fkFlowQCnIntCorPro = 5;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TH1D *fFlowQCIntCumHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
-  
-  const static Int_t fkFlowQCnIntCorTest = 6;
-  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
-  TH2D *fFlowQCIntCorHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
-  TH2D *fFlowQCIntCumHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
-  TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
-  
-//  TList* fFlowQCOrdMagList;
-//  const static Int_t fkNOrdMag = 20;
-//  const static Int_t fkNHistOrdMag = 4;
-//  TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
-  
+
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
   TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
-  
+
+  const static Int_t fkFlowQCnPtRanges = 2; // 0.2-3, 0.2-5
+  TProfile *fFlowQCIntPtRanCorPro[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCorHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntPtRanCumHist[fkFlowQCnPtRanges][fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TProfile *fFlowQCIntPtRanCorNUAPro[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHist[fkFlowQCnPtRanges][fFlowNHarm][6]; //!
+
+  TProfile *fFlowQCIntPtRanCorProEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TH1D *fFlowQCIntPtRanCorHistEG[fkFlowQCnPtRanges][fFlowNHarm]; //!
+  TProfile *fFlowQCIntPtRanCorNUAProEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntPtRanCorNUAHistEG[fkFlowQCnPtRanges][fFlowNHarm][4]; //!
+
+  const static Int_t fkFlowQCnIntCorTest = 1;
+  const static Int_t fkFlowQCnVtxCorTest = 3;
+  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntCorHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntCumHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnVtxCorTest][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  const static Int_t fkFlowQCnNUATest = 6;
+  TProfile2D *fFlowQCIntCorNUAProTest[fFlowNHarm][fkFlowQCnNUATest]; //!
+
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
   TH1D *fFlowQCRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
-  TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
-  
+  TH1D *fFlowQCRefCorFinal[fFlowNHarm][4]; //!
+
   TH2D *fFlowQCSpectra; //!
   TH2D *fFlowQCSpectraCharge[2]; //!
   TH2D *fFlowQCSpectraPubBin; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
-  TH2F *fFlowQCMetricCent; //!
-  
-  // flow QC high order
-  TList *fFlowQCHOList;    //! QC high order List
-  const static Int_t fFlowNHarmHighOrd = 2;
-  const static Int_t fFlowQCHONHist = 4;
-  const static Int_t fFlowQCHOCenBin = 100;
-  TProfile *fFlowQCIntCorHOPro[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntCorHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  TH1D *fFlowQCIntQCHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
-  
+
+  // flow Generic Framework
+  TList *fFlowGFList;    //! QC with Generic Framework List
+  const static Int_t fkFlowGFNHarm = 4;
+  const static Int_t fkFlowGFNOrde = 4;
+  const static Int_t fFlowGFCenBin = 100;
+  TProfile *fFlowGFIntCorPro[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCumHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntFinalHist[fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  const static Int_t fkFlowGFNExtra = 5;
+  TH1D *fFlowGFIntExtraHist[fkFlowGFNHarm][fkFlowGFNExtra]; //!
+  TProfile *fFlowGFIntCovPro[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHist[fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+
+  TProfile *fFlowGFMixedCorPro[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+  TH1D *fFlowGFMixedCorHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+  TH1D *fFlowGFMixedFinalHist[fkFlowGFNHarm][fkFlowGFNHarm]; //!
+
+  // sub-sampling
+  const static Int_t fkFlowGFNSubSampling = 10;
+  TProfile *fFlowGFIntCorProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovProSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHistSS[fkFlowGFNSubSampling][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+
+  // in wide pt bins
+  TProfile *fFlowGFIntCorProPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCorHistPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde]; //!
+  TProfile *fFlowGFIntCovProPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+  TH1D *fFlowGFIntCovHistPtB[fkGFPtB][fkFlowGFNHarm][fkFlowGFNOrde][fkFlowGFNOrde]; //!
+
   // SC w ZDC
+  TList *fFlowQCCorrZDCList; //!
   const static Int_t fSCv2vsZNPtBins = 3;
   const static Int_t fSCv2vsZNHarm = 2;
-  TProfile *fFlowSCv2vsZNv1Pro[fSCv2vsZNHarm][3]; //!
-  TH1D *fFlowSCv2vsZNv1Hist[fSCv2vsZNHarm][3]; //!
-  TH1D *fFlowSCv2vsZNv1FinalHist[fSCv2vsZNHarm][3]; //!
-  TProfile *fFlowSCv2vsZNv1PtPro[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
-  TH1D *fFlowSCv2vsZNv1PtHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
-  TH1D *fFlowSCv2vsZNv1PtFinalHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
-  TH3F *fFlowSCMultvsZN; //!
-  TProfile2D *fFlowSCAvPtvsZN; //!
-  
+  const static Int_t fkSCNHist = 6;
+  const static Int_t fkFlowSCNvar = 6;
+  TProfile *fFlowSCProdPro[fSCv2vsZNHarm][fkSCNHist]; //!
+  TH1D *fFlowSCProdHist[fSCv2vsZNHarm][fkSCNHist]; //!
+  TH1D *fFlowSCFinalHist[fSCv2vsZNHarm][fkSCNHist]; //!
+  TH1D *fFlowSCCovHist[fSCv2vsZNHarm][fkSCNHist]; //!
+  TProfile *fFlowSCCrossProdPro[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
+  TProfile *fFlowSCCrossProdProMult[fSCv2vsZNHarm][fkFlowSCNvar][fkFlowSCNvar]; //!
+
   // Flow SP VZ
   const static Int_t fkFlowSPVZnHist = 4;
   TList *fFlowSPVZList;    //! SPVZ List
   TProfile *fFlowSPVZCorPro[fCRCMaxnCen][fCRCnHar][fkFlowSPVZnHist]; //! correlation profile, [CRCBin][eg]
   TProfile *fFlowSPVZNUAPro[fCRCMaxnCen][fCRCnHar][fkFlowSPVZnHist]; //! NUA profile, [CRCBin][eg]
   TH1D *fFlowSPVZCorHist[fCRCMaxnCen][fCRCnHar][fkFlowSPVZnHist]; //! <<2'>>, [CRCBin][eg]
-  
+
   // EbE Flow
   Bool_t fCalculateEbEFlow;
   Int_t fEBEFlowMulBin;
@@ -1852,15 +2401,22 @@ private:
   TF1* FourierExp; //!
   Double_t *fchisqVA; //!
   Double_t *fchisqVC; //!
-  
+
   // Various:
   TList *fVariousList; //! list to hold various unclassified objects
   TH1D *fMultHist; //! TPC Multiplicity distribution
   TH1D *fV0MMultHist; //! V0M Multiplicity distribution
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
-  TH2F *fVtxHist[3]; //! primary vertex
+  TH3D *fVtxHist[3]; //! primary vertex
+  TH3F* fTwoTrackDistanceLS[2]; //!
+  TH3F* fTwoTrackDistanceUS[2]; //!
+  TH2D *fRefMulRecHist; //!
   TH1D* fCenWeightsHist; //! Centrality weights
+  TProfile2D* fRefMultRbRPro; //! run-by-run average reference multiplicity
+  TProfile2D* fAvEZDCCRbRPro; //! run-by-run average EZDC-C
+  TProfile2D* fAvEZDCARbRPro; //! run-by-run average EZDC-A
+  TH2D* fPhiExclZoneHist; //!
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
   TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights
@@ -1882,9 +2438,13 @@ private:
   TH2F* fhZNvsMul; //! cen vs mul
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
+  TH1F* fMultCutAv; //!
+  TH1F* fRMSRefMulCenBins[10]; //!
   TH1F* fEZNCutMin; //!
   TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
+  Double_t fVtxPosCor[3]; // primary vertex position (x,y,z), re-centered at 0
+  Double_t fVtxPosCor15oIRSplit[3];  //@Shi primary vertex position (x,y,z), re-centered at 0
   TF1 *fPolMin[2]; //!
   TF1 *fPolMax[2]; //!
   TF1 *fPolAv[2]; //!
@@ -1893,32 +2453,35 @@ private:
   TF1 *fPolDist[2]; //!
   TF1 *fPolSlope[2]; //!
   TGraph *fCenMetric; //!
+  Double_t fZNCQ0; // common tower energy from ZNC-C
+  Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
+  Double_t fZPCen; // total energy from ZPC-C
+  Double_t fZPAen; // total energy from ZPC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
   TH2F* fZDCESEMultWeightsHist[5]; //! ZDC-ESE mult weights
   TH2F* fZDCESESpecWeightsHist[5]; //! ZDC-ESE mult weights
   Double_t *fZDCEPweightEbE; //!
-  
+
   const static Int_t fZDCESEnPol=4;
   TF1 *fPolCuts[fZDCESEnPol]; //!
   TH1D *fZDCESECutsHist[fZDCESEnPol]; //!
-  
+
   Bool_t fQAZDCCuts;
+  Bool_t fUseTracklets;
   Bool_t fQAZDCCutsFlag;
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
-  
-  ClassDef(AliFlowAnalysisCRC,49);
-  
+  Bool_t fbFlagIsPosMagField;
+  Bool_t fbFlagIsBadRunForC34;
+  Bool_t fStoreExtraHistoForSubSampling;
+
+  ClassDef(AliFlowAnalysisCRC,75);
+
 };
 
 //================================================================================================================
 
 #endif
-
-
-
-
-

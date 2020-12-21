@@ -25,6 +25,8 @@
 #pragma link C++ class AliJHistManager+;
 #pragma link C++ class AliJFFlucTask+;
 #pragma link C++ class AliJFFlucAnalysis+;
+#pragma link C++ class AliAnalysisAnaTwoMultiCorrelations+;
+#pragma link C++ class AliJHSCTask+;
 #pragma link C++ class AliJXtTask+;
 #pragma link C++ class AliJXtAnalysis+;
 #pragma link C++ class AliJHistogramInterface+;
@@ -45,6 +47,12 @@
 #pragma link C++ class AliJTrackCut+;
 #pragma link C++ class AliJRunTable+;
 #pragma link C++ class AliJPartLifetime+;
+
+#pragma link C++ class AliJCatalystTask+;
+#pragma link C++ class AliJJtTask+;
+#pragma link C++ class AliJJtAna+;
+#pragma link C++ class AliJCIaaTask+;
+#pragma link C++ class AliJIaaAna+;
 
 
 #endif /* __CINT__ */

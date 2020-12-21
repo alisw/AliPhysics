@@ -13,6 +13,16 @@
 #define ALIFEMTOPAIR_H
 
 #include <utility>
+#include <cmath>
+#include <algorithm>
+
+#if __cplusplus < 201103L
+namespace std {
+ typedef long long intptr_t;
+}
+#else
+#include <cstdint>
+#endif
 
 #include "AliFemtoParticle.h"
 #include "AliFemtoTypes.h"
@@ -37,17 +47,19 @@ public:
   double QInv() const;
   double KT()   const;
   double MInv() const;
-  // pair rapidity
+  /// pair rapidity
   double Rap() const;
   double EmissionAngle() const;
 
-  // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
+  /// Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
+  ///
   double QSidePf() const;
   double QOutPf() const;
   double QLongPf() const;
 
-  // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-  // - written by Bekele/Humanic
+  /// Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
+  ///
+  /// - written by Bekele/Humanic
   double QSideCMS() const;
   double QOutCMS() const;
   double QLongCMS() const;
@@ -56,17 +68,20 @@ public:
   double KOut() const;
   double KLong() const;
 
-  // Bertsch-Pratt momentum components in a longitudinally boosted frame
-  // the argument is the beta of the longitudinal boost (default is 0.0, meaning lab frame)
-  // - written by Bekele/Humanic
+  /// Bertsch-Pratt momentum components in a longitudinally boosted frame
+  /// the argument is the beta of the longitudinal boost (default is
+  /// 0.0, meaning lab frame)
+  ///
+  /// - written by Bekele/Humanic
   double QSideBf(double beta=0.0) const;
   double QOutBf(double beta=0.0) const;
   double QLongBf(double beta=0.0) const;
 
-  // Yano-Koonin-Podgoretskii Parametrisation
-  // source rest frame (usually lab frame)
+  /// Yano-Koonin-Podgoretskii Parametrisation
+  /// source rest frame (usually lab frame)
+  ///
   void QYKPCMS(double& qP, double& qT, double& q0) const ;
-  // longitudinal comoving frame
+  /// longitudinal comoving frame
   void QYKPLCMS(double& qP, double& qT, double& q0) const;
   void QYKPPF(double& qP, double& qT, double& q0) const; /// Calculate the momentum diffference in the pair rest frame
 
@@ -105,6 +120,16 @@ public:
 /*   double TpcExitSeparationV0NegV0Neg() const; */
 /*   double TpcEntranceSeparationV0NegV0Neg() const; */
 /*   double TpcAverageSeparationV0NegV0Neg() const;  */
+
+  double NominalTpcAverageSeparationTracks() const;
+
+  double NominalTpcAverageSeparationTrackV0Neg() const;
+  double NominalTpcAverageSeparationTrackV0Pos() const;
+
+  double NominalTpcAverageSeparationV0NegV0Neg() const;
+  double NominalTpcAverageSeparationV0NegV0Pos() const;
+  double NominalTpcAverageSeparationV0PosV0Neg() const;
+  double NominalTpcAverageSeparationV0PosV0Pos() const;
 
   double PInv() const;
   double KStar() const;
@@ -158,6 +183,44 @@ public:
   double	GetPairAngleEP() const;
   void		SetPairAngleEP(double x) {fPairAngleEP = x;}
 
+  /// Calcuates the share fraction and share quality between pair of tracks
+  void CalcTrackShareQualFractions(double &frac, double &quality) const;
+
+  static void CalcShareQualFractions(const AliFemtoTrack &track1,
+                                     const AliFemtoTrack &track2,
+                                     double &frac,
+                                     double &quality);
+
+  /// Read cached femto-weight value created from weight-generator
+  /// located at 'ptr'
+  ///
+  /// If no cached value present, return -1
+  ///
+  double LookupFemtoWeightCache(std::intptr_t key) const;
+  double LookupFemtoWeightCache(const void *ptr) const
+    { return LookupFemtoWeightCache(reinterpret_cast<std::intptr_t>(ptr)); }
+
+  /// Push a cacluated femto-weight value into the cache
+  void AddWeightToCache(std::intptr_t key, double value);
+  void AddWeightToCache(const void *ptr, double value)
+    { AddWeightToCache(reinterpret_cast<std::intptr_t>(ptr), value); }
+
+
+  /// Remove all values from cache
+  void ClearWeightCache();
+
+  static bool IsPointUnset(const AliFemtoThreeVector &v)
+    { return v.x() < -9000.0 && v.y() < -9000.0 && v.z() < -9000.0; }
+
+  static double CalcAvgSepTracks(const AliFemtoTrack &t1, const AliFemtoTrack &t2);
+  static void CalcAvgSepTrackV0(const AliFemtoTrack &, const AliFemtoV0 &,
+                                double &avgsep_neg, double &avgsep_pos);
+  static void CalcAvgSepV0V0(const AliFemtoV0 &, const AliFemtoV0 &,
+                             double &avgsep_nn, double &avgsep_np,
+                             double &avgsep_pn, double &avgsep_pp);
+  // static double CalcAvgSepTracks(const AliFemtoTrack &t1, const AliFemtoTrack &t2);
+
+
 private:
   AliFemtoParticle* fTrack1; // Link to the first track in the pair
   AliFemtoParticle* fTrack2; // Link to the second track in the pair
@@ -209,10 +272,24 @@ private:
   mutable double fFracOfMergedRowV0NegV0Neg;	    // fraction of merged rows for V0 neg - V0 neg
   mutable double fClosestRowAtDCAV0NegV0Neg;	    // Row at which DCA occurs for V0 neg - V0 neg
 
+  /// Used to store the average separations of tracks
+  mutable double fAverageSeparations[4];
+
+  /// Cache value of ssharing
+  mutable double fSharingCache[2];
+
+  /// Cache for re-using MC-generated weights
+  /// First item in pair is pointer to weight, second is the weight
+  mutable std::pair<std::intptr_t, double> fFemtoWeightCache[3];
+
   static double fgMaxDuInner; // Minimum cluster separation in x in inner TPC padrow
   static double fgMaxDzInner; // Minimum cluster separation in z in inner TPC padrow
   static double fgMaxDuOuter; // Minimum cluster separation in x in outer TPC padrow
   static double fgMaxDzOuter; // Minimum cluster separation in z in outer TPC padrow
+
+  void FillCacheAvgSepTrackV0() const;
+  void FillCacheAvgSepV0V0() const;
+
   void CalcMergingPar() const;
 
   void CalcMergingParFctn(short* tmpMergingParNotCalculatedFctn,
@@ -236,6 +313,10 @@ inline void AliFemtoPair::ResetParCalculated(){
   fMergingParNotCalculatedV0NegV0Pos=1;
   fMergingParNotCalculatedV0PosV0Neg=1;
   fMergingParNotCalculatedV0NegV0Neg=1;
+
+  std::fill_n(fAverageSeparations, 4, NAN);
+  std::fill_n(fSharingCache, 2, NAN);
+  ClearWeightCache();
 }
 
 inline void AliFemtoPair::SetTrack1(const AliFemtoParticle* trkPtr){
@@ -268,7 +349,7 @@ inline double AliFemtoPair::KStar() const{
 }
 inline double AliFemtoPair::QInv() const {
   AliFemtoLorentzVector tDiff = (fTrack1->FourMomentum()-fTrack2->FourMomentum());
-  return ( -1.* tDiff.m());
+  return -tDiff.m();
 }
 
 // Fabrice private <<<
@@ -321,6 +402,46 @@ inline double AliFemtoPair::GetClosestRowAtDCA() const {
 inline double AliFemtoPair::GetWeightedAvSep() const {
   if(fMergingParNotCalculated) CalcMergingPar();
   return fWeightedAvSep;
+}
+
+inline void AliFemtoPair::AddWeightToCache(std::intptr_t key, double val)
+{
+  static const size_t N = 3;  // length of fFemtoWeightCache
+
+  size_t i = 0;
+  for (; i < N-1; ++i) {
+    const std::intptr_t &k = fFemtoWeightCache[i].first;
+    if (k == 0 || k == key) {
+        break;
+    }
+  }
+
+  // shift-right
+  for (size_t j=i; j>0; --j) {
+    fFemtoWeightCache[j] = fFemtoWeightCache[j-1];
+  }
+
+  fFemtoWeightCache[0] = std::make_pair(key, val);
+}
+
+inline double AliFemtoPair::LookupFemtoWeightCache(std::intptr_t key) const
+{
+  for (auto it = std::begin(fFemtoWeightCache);
+       it != std::end(fFemtoWeightCache);
+       ++it) {
+    if (it->first == key) {
+      return it->second;
+    }
+  }
+  return NAN;
+}
+
+
+inline void AliFemtoPair::ClearWeightCache()
+{
+  std::fill(std::begin(fFemtoWeightCache),
+            std::end(fFemtoWeightCache),
+            std::make_pair(0, NAN));
 }
 
 

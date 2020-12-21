@@ -38,6 +38,7 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
 
   void   SetSpecialPDG(Int_t pdg)          { fSpecialPDG = pdg            ; }
 
+   void  SetSpecialIndex(Int_t sindex)          { fSpecialIndex = sindex            ; }
   void   SetRejectQuarkNotFound(Bool_t c)  { fRejectedOrigin = c ?  fRejectedOrigin | AliAnalysisTaskDmesonJets::kUnknownQuark : fRejectedOrigin & ~AliAnalysisTaskDmesonJets::kUnknownQuark; }
   Bool_t GetRejectQuarkNotFound() const    { return (fRejectedOrigin & AliAnalysisTaskDmesonJets::kUnknownQuark) != 0 ; }
 
@@ -53,6 +54,8 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
   void   SetRejectedOriginMap(UInt_t m)    { fRejectedOrigin = m; }
   void   SetAcceptedDecayMap(UInt_t m)     { fAcceptedDecay  = m; }
 
+  void   SetRejectISR(Bool_t b)            { fRejectISR      = b; }
+
   void   SelectCharmtoD0toKpi();
   void   SelectCharmtoDStartoKpipi();
   
@@ -66,10 +69,14 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
  protected:
   Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
   Bool_t          IsSpecialPDG(const AliAODMCParticle* part, TH1* histOrigin = 0) const;
+  Bool_t          IsSpecialIndexDaughter(const AliAODMCParticle* part) const;
+  Bool_t          IsSpecialIndex(const AliAODMCParticle* part, TH1* histOrigin = 0) const;
 
   Int_t           fSpecialPDG;             ///<  include particles with this PDG code even if they are not primary particles (and exclude their daughters)
+  Int_t           fSpecialIndex;           ///<  index of the given D meson, in case we want to remove the decays D by D
   UInt_t          fRejectedOrigin;         ///<  Bit mask with D meson origins that are rejected
   UInt_t          fAcceptedDecay;          ///<  Bit mask with D meson decays that are accepted
+  Bool_t          fRejectISR;              ///<  Reject initial state radiation
   TH1*            fHistOrigin;             //!<! Book-keeping histogram with origin of special PDG particles
 
  private:
@@ -77,7 +84,7 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
   AliHFAODMCParticleContainer &operator=(const AliHFAODMCParticleContainer&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliHFAODMCParticleContainer, 2);
+  ClassDef(AliHFAODMCParticleContainer, 3);
   /// \endcond
 };
 #endif

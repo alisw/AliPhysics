@@ -20,6 +20,7 @@
 //          A. Grelli,  Utrecht University
 //          C. Bianchin, Utrecht University
 //          X. Zhang, LBNL
+//	    B. Trzeciak, Utrecht Univeristy
 //-----------------------------------------------------------------------
 
 
@@ -41,37 +42,40 @@ class AliParticleContainer;
 class AliClusterContainer;
 class AliJetContainer;
 
-class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet 
+class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
 {
-   
+
 public:
-   
+
    enum ECandidateType{ kD0toKpi, kDstartoKpipi };
    enum ECorrelationMethod{ kConstituent, kAngular, kResponseMatrix };
-   
+
    AliAnalysisTaskFlavourJetCorrelations();
    AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
    virtual ~AliAnalysisTaskFlavourJetCorrelations();
-   
+
    virtual void     UserCreateOutputObjects();
    virtual Bool_t   Run();
    virtual void     Terminate(Option_t *);
    virtual void     Init();
    virtual void     LocalInit() {Init();}
-   
+
    // inizializations
-   Bool_t DefineHistoForAnalysis();  
-   
+   Bool_t DefineHistoForAnalysis();
+
    // set MC usage
    void   SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
    Bool_t GetMC() const {return fUseMCInfo;}
+   // set use Pythia info only for MC
+   void   SetUsePythia(Bool_t theUsePythia) {fUsePythia = theUsePythia; }
+   Bool_t GetUsePythia() const { return fUsePythia; }
    // set usage of reconstructed tracks
    void   SetUseReco(Bool_t reco) {fUseReco=reco;}
    Bool_t GetUseReco() const {return fUseReco;}
-   
+
    void SetMassLimits(Double_t range, Int_t pdg);
    void SetMassLimits(Double_t lowlimit, Double_t uplimit);
-   
+
    void SetCorrelationMethod(Int_t c) {fCorrelationMethod=c;}
    Int_t GetCorrelationMethod() const {return fCorrelationMethod;}
 
@@ -86,11 +90,12 @@ public:
    void ConstituentCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
    void AngularCorrelationMethod(Bool_t IsBkg, AliAODEvent* aodEvent);
    void CreateResponseMatrix(AliEmcalJet* jet);
+   void CreateMCResponseMatrix(AliEmcalJet* MCjet, AliAODEvent* aodEvent);
    void FillDJetHistograms(AliEmcalJet* jet, Double_t rho, Bool_t IsBkg, AliAODEvent* aodEvent);
    void GetHFJet(AliEmcalJet*& jet, Bool_t IsBkg);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
-   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
-   void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent, Int_t pdg);
+   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t z, Double_t ptD, Double_t ptj, Double_t jetEta, Bool_t IsBkg, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsMCGenDJetCorr(Double_t z,Double_t ptD,Double_t ptjet, Double_t yD, Double_t jetEta, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void FindMCJet(AliEmcalJet*& mcjet);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
    Bool_t InEMCalAcceptance(AliVParticle *vpart);
@@ -99,13 +104,15 @@ public:
    Bool_t GetAnalyseDBackground() const {return fAnalyseDBkg;}
    void SetBuildResponseMatrix(Bool_t b){ fBuildRM=b; }
    Bool_t GetBuildResponseMatrix() const {return fBuildRM;}
-   
-   
+   void SetBuildResponseMatrixEff(Bool_t b){ fBuildRMEff=b; }
+   Bool_t GetBuildResponseMatrixEff() const {return fBuildRMEff;}
+
+
 private:
-   
+
    AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
-   AliAnalysisTaskFlavourJetCorrelations& operator=(const AliAnalysisTaskFlavourJetCorrelations& source); 
-   
+   AliAnalysisTaskFlavourJetCorrelations& operator=(const AliAnalysisTaskFlavourJetCorrelations& source);
+
    Double_t Z(AliVParticle* part, AliEmcalJet* jet, Double_t rho) const;
    Double_t Z(AliVParticle* part, AliEmcalJet* jet) const;
    Double_t Z(Double_t* p, Double_t *pj) const;
@@ -116,6 +123,10 @@ private:
 
    Bool_t fUseMCInfo;               // Use MC info
    Bool_t fUseReco;                 // use reconstructed tracks when running on MC
+   Bool_t fUsePythia;		    // Use Pythia info only for MC
+   Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
+   Bool_t fBuildRMEff;              // flag to switch on/off the Response Matrix with efficiencies (Needs MC)
+
    Int_t  fCandidateType;           // Dstar or D0
    Int_t  fCorrelationMethod;       // Method to correlate D mesons and jets
    Int_t  fPDGmother;               // PDG code of D meson
@@ -131,8 +142,8 @@ private:
    TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
    TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
-   Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
-    
+
+
    Int_t fNAxesBigSparse;           // number of axis
    Bool_t fUseCandArray;            //! Use D meson candidates array
    Bool_t fUseSBArray;              //! Use D meson SB array
@@ -157,9 +168,9 @@ private:
    //main histograms
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
-   
 
-   ClassDef(AliAnalysisTaskFlavourJetCorrelations,7); // class for charm-jet CorrelationsExch
+
+   ClassDef(AliAnalysisTaskFlavourJetCorrelations,8); // class for charm-jet CorrelationsExch
 };
 
 #endif

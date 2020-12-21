@@ -47,7 +47,7 @@ public:
   virtual void MakePairs(const char* typeIn, AliFemtoPicoEventRP *coll1, AliFemtoPicoEventRP *coll2=0);
   virtual TList* GetOutputList();
   virtual void Finish() {;}
-	
+
  // Get the particle cuts
   virtual AliFemtoParticleCut*   FirstParticleCut() {return fFirstParticleCut;}
   virtual AliFemtoParticleCut*   SecondParticleCut() {return fSecondParticleCut;}
@@ -57,12 +57,12 @@ public:
   void SetEventCut(AliFemtoEventCut* x) {fEventCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
   void SetPairCut(AliFemtoPairCut* x) {fPairCut = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
   void SetPairCutRD(AliFemtoPairCutRadialDistanceLM* x) {fPairCutRD = x; x->SetAnalysis((AliFemtoAnalysis*)this);}
-  void SetEPhistname(char* histname);
+  void SetEPhistname(const char* histname);
 
 protected:
 
-  AliFemtoParticleCut*         	fFirstParticleCut;    //  select particles of type #1 
-  AliFemtoParticleCut*  	fSecondParticleCut;   //  select particles of type #2 
+  AliFemtoParticleCut*         	fFirstParticleCut;    //  select particles of type #1
+  AliFemtoParticleCut*  	fSecondParticleCut;   //  select particles of type #2
   AliFemtoPairCutRadialDistanceLM* fPairCutRD;
   AliFemtoPicoEventRP*		fPicoEventRP;
 
@@ -86,7 +86,7 @@ protected:
 #ifdef __ROOT__
   ClassDef(AliFemtoAnalysisAzimuthalPbPb, 0)
 #endif
-    
+
 };
 
 #endif

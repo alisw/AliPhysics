@@ -28,8 +28,9 @@ class TVector3;
 class TClonesArray;
 
 //--- AliRoot system ---
-class AliCaloTrackReader ;
-class AliStack ;
+class AliMCEvent;
+class AliGenEventHeader;
+class AliGenPythiaEventHeader;
 
 class AliMCAnalysisUtils : public TObject {
 	
@@ -62,40 +63,39 @@ class AliMCAnalysisUtils : public TObject {
   // Methods to check origin of clusters
   //--------------------------------------
   
-  Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
+  Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, Int_t calorimeter) ;
+  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE) ;  
+  Int_t   CheckOrigin(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                      AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE,
+                      const TObjArray *arrayCluster = 0x0) ; 
   
-  //Check the label of the most significant particle but do checks on the rest of the contributing labels
-  Int_t   CheckOrigin       (const Int_t *label,  Int_t nlabels, const AliCaloTrackReader * reader, Int_t calorimeter) ;
-  Int_t   CheckOriginInStack(const Int_t *labels, Int_t nlabels, AliStack * stack               , const TObjArray *arrayCluster) ; // ESD
-  Int_t   CheckOriginInAOD  (const Int_t *labels, Int_t nlabels, const TClonesArray* mcparticles, const TObjArray *arrayCluster) ; // AOD
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                                     Int_t mesonIndex, Float_t clusE, const AliMCEvent* mcevent, Int_t & tag); 
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, AliStack * stack,                Int_t & tag); // ESD
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
+  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
-  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, AliStack* stack,                 Int_t & tag); // ESD
-  void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const TClonesArray* mcparticles, Int_t & tag); // AOD
-  
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok);
-  TLorentzVector GetMother     (Int_t label,const AliCaloTrackReader* reader, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
-  TLorentzVector GetGrandMother(Int_t label,const AliCaloTrackReader* reader,
-                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok);
+  TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetGrandMother(Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
 
-  TLorentzVector GetMotherWithPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetMotherWithPDG     (Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetFirstMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
+  TLorentzVector GetFirstMotherWithPDGAndPrimary(Int_t label, Int_t pdg, 
+                                                const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
   
-  void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliCaloTrackReader* reader,
+  void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent,
                                       Float_t & asy, Float_t & angle, Bool_t & ok);
 
-  Int_t          GetNDaughters(Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
-  TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliCaloTrackReader* reader,
+  Int_t          GetNDaughters(Int_t label,const AliMCEvent* mcevent, Bool_t & ok);
+  TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliMCEvent* mcevent,
                                Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel, TVector3 & prodVertex);
 
   Int_t          GetNOverlaps(const Int_t * label, UInt_t nlabels,
                               Int_t mctag, Int_t mesonLabel,
-                              AliCaloTrackReader * reader,
+                              AliMCEvent* mcevent,
                               Int_t *overpdg, Int_t *overlabel);
   
   //Check or set the bits produced in the above methods
@@ -105,6 +105,7 @@ class AliMCAnalysisUtils : public TObject {
   } 
   
   Bool_t  CheckTagBit(Int_t tag, UInt_t test) const {
+    if ( tag < 0 ) return kFALSE;
     // Check if in tag the bit test (mcTypes) is set.
     if (tag & (1<<test) ) return  kTRUE ;    
     else return kFALSE ;
@@ -115,7 +116,24 @@ class AliMCAnalysisUtils : public TObject {
   //--------------------------------------
     
   // Method to recover MC jets stored in generator
-  TList * GetJets(const AliCaloTrackReader * reader) ;
+  TList * GetJets(AliMCEvent* mcevent, Bool_t check) ;
+  
+  static AliGenPythiaEventHeader * GetPythiaEventHeader
+  (AliMCEvent* mcevent, TString selecHeaderName, 
+   TString & genName, TString & processName, 
+   Int_t   & process, Int_t & firstParticle, 
+   Int_t   & pythiaVersion);
+
+  AliGenPythiaEventHeader * CheckAndGetPythiaEventHeader
+  (AliMCEvent* mcevent, TString selecHeaderName);
+  TString GetPythiaHeaderName()   const { return fPyGenName       ; }
+  TString GetPythiaProcessName()  const { return fPyProcessName   ; } 
+  Int_t   GetPythiaProcess()      const { return fPyProcess       ; }
+  Int_t   GetPythiaFirstParticle()const { return fPyFirstParticle ; } 
+  Int_t   GetPythiaVersion()      const { return fPyVersion       ; }
+  Int_t   GetPythiaMinPartParent()const { return fMinPartonicParent;}
+  Int_t   GetPythiaMaxPartParent()const { return fMaxPartonicParent;}
+  
   
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	
@@ -127,15 +145,16 @@ class AliMCAnalysisUtils : public TObject {
   TString GetMCGeneratorString()  const { return fMCGeneratorString ; }
   
   void    Print(const Option_t * opt) const;
+  void    PrintAncestry(AliMCEvent* mcevent, Int_t label, Int_t nGenerMax = 1000) const;
   void    PrintMCTag(Int_t tag) const;
 
  private:
 
-  Int_t          fCurrentEvent;        ///<  Current Event number
+  Int_t          fCurrentEvent;        ///<  Current Event number - GetJets()
   
   Int_t          fDebug;               ///<  Debug level
   
-  TList        * fJetsList;            ///<  List of jets
+  TList        * fJetsList;            ///<  List of jets - GetJets()
   
   Int_t          fMCGenerator;         ///<  MC generator used to generate data in simulation
   
@@ -149,6 +168,19 @@ class AliMCAnalysisUtils : public TObject {
   
   TLorentzVector fGMotherMom;          //!<! particle momentum
   
+  // Specific to pythia events and header recovery
+  // avoid multiple times checks
+  AliGenPythiaEventHeader 
+              * fPyGenHead;           //!<! pythia event header of current event
+  TString       fPyGenName;           ///< Pythia header assigned name
+  TString       fPyProcessName;       ///< Pythia process name, Gamma-Jet or Jet-Jet
+  Int_t         fPyProcess;           ///< Pythia process code
+  Int_t         fPyFirstParticle;     ///< First Pythia generated particle in array
+  Int_t         fPyVersion;           ///< Pythia guessed version
+  
+  Int_t         fMinPartonicParent;   ///< Minimum label of partonic parent of direct photon
+  Int_t         fMaxPartonicParent;   ///< Minimum label of partonic parent of direct photon
+  
   /// Copy constructor not implemented.
   AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; 
   
@@ -156,7 +188,7 @@ class AliMCAnalysisUtils : public TObject {
   AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliMCAnalysisUtils,6) ;
+  ClassDef(AliMCAnalysisUtils,8) ;
   /// \endcond
 
 } ;

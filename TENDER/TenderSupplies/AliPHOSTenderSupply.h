@@ -49,21 +49,26 @@ public:
   //If you want to override automatic choise of bad maps and calibration
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
+  void ForceUsingDummyRunNumber(Int_t dummy){fDRN = dummy;}
+
   void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
   void ApplyZeroSuppression(Double_t zsCut=0.020){fApplyZS=kTRUE; fZScut=zsCut;} //Apply Zero Suppression cut (in GeV)
   
   void UseLGForTime(Bool_t toUse=kFALSE){fUseLGForTime=toUse;} //Switch off LowGain digits from time calculation
   void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
+  TH2I * GetPHOSBadChannelStatusMap(Int_t iModule) const { return (TH2I*)fPHOSBadMap[iModule] ; }
+  void SetPrivateOADBBadMap(char * filename){fPrivateOADBBadMap = filename;}
   
   void   InitTender();
+  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
+  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
+  //this returns track index with a minimum distance between a extrapolated track in current and a PHOS cluster where locpos and mod points.
 
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
   AliPHOSTenderSupply& operator= (const AliPHOSTenderSupply&c);
   void ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex) ;
-  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Double_t CorrectNonlinearity(Double_t en) ;
-  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Double_t TestFullLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
@@ -88,6 +93,7 @@ private:
   Int_t fRecoPass ;                          // Reconstruction pass
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
+  TString fPrivateOADBBadMap ;               //Name of force loaded OADB bad channel map
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)
@@ -101,8 +107,9 @@ private:
 
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
+  Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 7); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
 };
 
 

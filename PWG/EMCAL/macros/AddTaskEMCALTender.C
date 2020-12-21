@@ -30,7 +30,13 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Int_t  removeNMCGenerators  = 0,        // set number of accepted MC generators input (only for enableFracEMCRecalc=1)
   Bool_t enableMCGenRemovTrack= 1,        // apply the MC generators rejection also for track matching  
   TString removeMCGen1        = "",       // name of generator input to be accepted
-  TString removeMCGen2        = ""        // name of generator input to be accepted
+  TString removeMCGen2        = "",       // name of generator input to be accepted
+  TString customBCmap         = "",       // location of custom bad channel map (full path including file)
+  Bool_t useNewRWTempCalib    = kFALSE,   // switch for usage of new temperature calib parameters (available for run1 and run2)
+  TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
+  TString customTempParams    = "",        // location of custom temperature calibration parameters OADB file (full path including file)
+  Bool_t useOneHistAllBCS     = kFALSE,    // flag to use on histogram for the all the BCs
+  Bool_t load1DBCmap          = kFALSE     // Flag to load 1D bad channel map
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -73,7 +79,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     configbuilder << (updateCellOnly ? "kTRUE" : "kFALSE") << ", ";
     configbuilder << timeMin << ", ";
     configbuilder << timeMax << ", ";
-    configbuilder << timeCut;
+    configbuilder << timeCut << ", ";
+    configbuilder << diffEAggregation;
     configbuilder << ")";
     std::string configbuilderstring = configbuilder.str();
     std::cout << "Running config macro " << configbuilderstring << std::endl;
@@ -87,9 +94,18 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
                                         cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, diffEAggregation);
   #endif
 
+  EMCALSupply->SwitchUseMergedBCs(useOneHistAllBCS);
+
+  if(load1DBCmap) EMCALSupply->Load1DBadChannelMap();
+
   if (pass) 
     EMCALSupply->SetPass(pass);
-
+  if (customBCmap!="")
+    EMCALSupply->SetCustomBC(customBCmap);
+  if (useNewRWTempCalib)
+    EMCALSupply->SwitchUseNewRunDepTempCalib(useNewRWTempCalib);
+  if(customSMtemps!="" && customTempParams!="")
+    EMCALSupply->SetCustomTimeCalibration(customSMtemps,customTempParams);
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     #ifdef __CLING__
         AliTender* alitender = dynamic_cast<AliTender *>(mgr->GetTopTasks()->FindObject("AliTender"));
@@ -152,7 +168,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
       EMCALSupply->SetRecoUtils(ru);
     }
   }
-  
+
   mgr->AddTask(ana);
 
   // Create ONLY the output containers for the data produced by the task.

@@ -292,6 +292,11 @@ public:
   float ImpactDmatNeg()const;
   double RadiusV0() const;
 
+  int Multiplicity() const;
+  double Zvtx() const;
+  void SetMultiplicity(int mult);
+  void SetZvtx(double vtx);
+  
   void SetprimaryVertex(const AliFemtoThreeVector v);//Gael 24 Sept 02
   /* Th stuff */
   void SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo);
@@ -429,6 +434,9 @@ protected:
 
   double fRadiusV0;
 
+  int fMultiplicity;
+  double fZvtx;
+  
   /* Th stuff */
   // Fab private : add mutable
   mutable AliFemtoHiddenInfo* fHiddenInfo; //! Hidden info
@@ -673,5 +681,7 @@ inline float AliFemtoV0::ImpactDweakNeg() const {return fImpactDweakNeg;}
 inline float AliFemtoV0::ImpactDmatNeg() const {return fImpactDmatNeg;}
 
 inline void AliFemtoV0::SetradiusV0(const double& x) {fRadiusV0 = x;}
+inline int AliFemtoV0::Multiplicity() const{ return fMultiplicity;}
+inline double AliFemtoV0::Zvtx() const{  return fZvtx;}
 
 #endif

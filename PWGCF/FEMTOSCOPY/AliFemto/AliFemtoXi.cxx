@@ -23,16 +23,27 @@ AliFemtoXi::AliFemtoXi():
   fEXi(0), fEOmega(0), fEBacPion(0), fEBacKaon(0),
   fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
   fCTauXi(0), fCTauOmega(0),
-  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
-  fKeyBac(0), fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
+  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), fKeyBac(0),
+  fNominalTpcEntrancePointBac(0,0,0),fNominalTpcExitPointBac(0,0,0), fNominalTpcPointBacShifted(0,0,0),
+  fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
   fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
   fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
-  fTOFKaonTimeBac(0)
+  fTOFKaonTimeBac(0),
+  fCorrXiMinus(0.0),
+  fCorrXiPlus(0.0),
+  fRadiusXi(0.)
 {
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
+
+  for(int i=0;i<9;i++)
+  {
+    fNominalTpcPointsBac[i].SetX(0);
+    fNominalTpcPointsBac[i].SetY(0);
+    fNominalTpcPointsBac[i].SetZ(0);
+  }
 }
 
 // -----------------------------------------------------------------------
@@ -48,39 +59,59 @@ AliFemtoXi::AliFemtoXi(const AliFemtoV0* aV0):
   fEXi(0), fEOmega(0), fEBacPion(0), fEBacKaon(0),
   fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
   fCTauXi(0), fCTauOmega(0),
-  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
-  fKeyBac(0), fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
+  fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), fKeyBac(0),
+  fNominalTpcEntrancePointBac(0,0,0),
+  fNominalTpcExitPointBac(0,0,0),
+  fNominalTpcPointBacShifted(0,0,0),
+  fCosPointingAngleXi(0), fCosPointingAngleV0toXi(0), fPhiXi(0),
   fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
   fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
   fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
   fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
-  fTOFKaonTimeBac(0)
+  fTOFKaonTimeBac(0),
+  fCorrXiMinus(0.0), fCorrXiPlus(0.0),
+  fRadiusXi(0.)
 {
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
+
+  for(int i=0;i<9;i++)
+  {
+    fNominalTpcPointsBac[i].SetX(0);
+    fNominalTpcPointsBac[i].SetY(0);
+    fNominalTpcPointsBac[i].SetZ(0);
+  }
 }
 
 // -----------------------------------------------------------------------
 AliFemtoXi::AliFemtoXi(const AliFemtoXi& aXi) :
   AliFemtoV0(aXi),
-  fCharge(aXi.fCharge), fDecayLengthXi(aXi.fDecayLengthXi), fDecayVertexXi(aXi.fDecayVertexXi), 
-  fDcaXiDaughters(aXi.fDcaXiDaughters), fDcaXiToPrimVertex(aXi.fDcaXiToPrimVertex), fDcaBachelorToPrimVertex(aXi.fDcaBachelorToPrimVertex), 
+  fCharge(aXi.fCharge), fDecayLengthXi(aXi.fDecayLengthXi), fDecayVertexXi(aXi.fDecayVertexXi),
+  fDcaXiDaughters(aXi.fDcaXiDaughters), fDcaXiToPrimVertex(aXi.fDcaXiToPrimVertex), fDcaBachelorToPrimVertex(aXi.fDcaBachelorToPrimVertex),
   fMomBachelor(aXi.fMomBachelor), fKeyBachelor(aXi.fKeyBachelor),
   fTpcHitsBac(aXi.fTpcHitsBac), fChi2Xi(aXi.fChi2Xi), fClXi(aXi.fClXi), fChi2Bachelor(aXi.fChi2Bachelor), fClBachelor(aXi.fClBachelor),
-  fDedxBachelor(aXi.fDedxBachelor), fNufDedxBachelor(aXi.fNufDedxBachelor), 
-  fMomXi(0), fAlphaXi(0), fPtArmXi(0), fEXi(0), fEOmega(0), fEBacPion(0), 
-  fEBacKaon(0), fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0), 
-  fCTauXi(0), fCTauOmega(0), fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), 
-  fKeyBac(aXi.fKeyBac), fCosPointingAngleXi(aXi.fCosPointingAngleXi), fCosPointingAngleV0toXi(aXi.fCosPointingAngleV0toXi), fPhiXi(aXi.fPhiXi), fEtaXi(aXi.fEtaXi), 
-  fTPCNclsBac(aXi.fTPCNclsBac), fNdofBac(aXi.fNdofBac), fStatusBac(aXi.fStatusBac), fEtaBac(aXi.fEtaBac), fIdBac(aXi.fIdBac), 
+  fDedxBachelor(aXi.fDedxBachelor), fNufDedxBachelor(aXi.fNufDedxBachelor),
+  fMomXi(0), fAlphaXi(0), fPtArmXi(0), fEXi(0), fEOmega(0), fEBacPion(0),
+  fEBacKaon(0), fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
+  fCTauXi(0), fCTauOmega(0), fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0), fKeyBac(aXi.fKeyBac),
+  fNominalTpcEntrancePointBac(aXi.fNominalTpcEntrancePointBac),
+  fNominalTpcExitPointBac(aXi.fNominalTpcExitPointBac),
+  fNominalTpcPointBacShifted(aXi.fNominalTpcPointBacShifted),
+  fCosPointingAngleXi(aXi.fCosPointingAngleXi), fCosPointingAngleV0toXi(aXi.fCosPointingAngleV0toXi), fPhiXi(aXi.fPhiXi), fEtaXi(aXi.fEtaXi),
+  fTPCNclsBac(aXi.fTPCNclsBac), fNdofBac(aXi.fNdofBac), fStatusBac(aXi.fStatusBac), fEtaBac(aXi.fEtaBac), fIdBac(aXi.fIdBac),
   fBacNSigmaTPCK(aXi.fBacNSigmaTPCK), fBacNSigmaTPCPi(aXi.fBacNSigmaTPCPi), fBacNSigmaTPCP(aXi.fBacNSigmaTPCP),
   fBacNSigmaTOFK(aXi.fBacNSigmaTOFK), fBacNSigmaTOFPi(aXi.fBacNSigmaTOFPi), fBacNSigmaTOFP(aXi.fBacNSigmaTOFP), fTPCMomentumBac(aXi.fTPCMomentumBac),
-  fTOFProtonTimeBac(aXi.fTOFProtonTimeBac), fTOFPionTimeBac(aXi.fTOFPionTimeBac), fTOFKaonTimeBac(aXi.fTOFKaonTimeBac)
-  
+  fTOFProtonTimeBac(aXi.fTOFProtonTimeBac), fTOFPionTimeBac(aXi.fTOFPionTimeBac), fTOFKaonTimeBac(aXi.fTOFKaonTimeBac),
+  fCorrXiMinus(aXi.fCorrXiMinus),  fCorrXiPlus(aXi.fCorrXiPlus), fRadiusXi(aXi.fRadiusXi)
+
 {
   // copy constructor
   fTopologyMapBachelor[0] = aXi.fTopologyMapBachelor[0];
   fTopologyMapBachelor[1] = aXi.fTopologyMapBachelor[1];
+
+  for (int i = 0; i < 9; i++) {
+    fNominalTpcPointsBac[i] = aXi.fNominalTpcPointsBac[i];
+  }
 
   UpdateXi();
 }
@@ -97,10 +128,10 @@ AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
 
   fCharge = aXi.fCharge;
   fDecayLengthXi = aXi.fDecayLengthXi;
-  fDecayVertexXi = aXi.fDecayVertexXi; 
+  fDecayVertexXi = aXi.fDecayVertexXi;
   fDcaXiDaughters = aXi.fDcaXiDaughters;
   fDcaXiToPrimVertex = aXi.fDcaXiToPrimVertex;
-  fDcaBachelorToPrimVertex = aXi.fDcaBachelorToPrimVertex; 
+  fDcaBachelorToPrimVertex = aXi.fDcaBachelorToPrimVertex;
   fMomBachelor = aXi.fMomBachelor;
 
   fTopologyMapBachelor[0] = aXi.fTopologyMapBachelor[0];
@@ -113,34 +144,37 @@ AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
   fChi2Bachelor = aXi.fChi2Bachelor;
   fClBachelor = aXi.fClBachelor;
   fDedxBachelor = aXi.fDedxBachelor;
-  fNufDedxBachelor = aXi.fNufDedxBachelor; 
+  fNufDedxBachelor = aXi.fNufDedxBachelor;
   fMomXi = 0;
   fAlphaXi = 0;
   fPtArmXi = 0;
   fEXi = 0;
   fEOmega = 0;
-  fEBacPion = 0; 
+  fEBacPion = 0;
   fEBacKaon = 0;
   fMassXi = 0;
   fMassOmega = 0;
   fRapXi = 0;
-  fRapOmega = 0; 
+  fRapOmega = 0;
   fCTauXi = 0;
   fCTauOmega = 0;
   fPtXi = 0;
   fPtotXi = 0;
   fPtBac = 0;
-  fPtotBac = 0; 
+  fPtotBac = 0;
   fKeyBac = aXi.fKeyBac;
+  fNominalTpcEntrancePointBac = aXi.fNominalTpcEntrancePointBac;
+  fNominalTpcExitPointBac = aXi.fNominalTpcExitPointBac;
+  fNominalTpcPointBacShifted = aXi.fNominalTpcPointBacShifted;
   fCosPointingAngleXi = aXi.fCosPointingAngleXi;
   fCosPointingAngleV0toXi = aXi.fCosPointingAngleV0toXi;
   fPhiXi = aXi.fPhiXi;
-  fEtaXi = aXi.fEtaXi; 
+  fEtaXi = aXi.fEtaXi;
   fTPCNclsBac = aXi.fTPCNclsBac;
   fNdofBac = aXi.fNdofBac;
   fStatusBac = aXi.fStatusBac;
   fEtaBac = aXi.fEtaBac;
-  fIdBac = aXi.fIdBac; 
+  fIdBac = aXi.fIdBac;
   fBacNSigmaTPCK = aXi.fBacNSigmaTPCK;
   fBacNSigmaTPCPi = aXi.fBacNSigmaTPCPi;
   fBacNSigmaTPCP = aXi.fBacNSigmaTPCP;
@@ -151,6 +185,14 @@ AliFemtoXi& AliFemtoXi::operator=(const AliFemtoXi& aXi)
   fTOFProtonTimeBac = aXi.fTOFProtonTimeBac;
   fTOFPionTimeBac = aXi.fTOFPionTimeBac;
   fTOFKaonTimeBac = aXi.fTOFKaonTimeBac;
+  fCorrXiMinus =  aXi.fCorrXiMinus;
+  fCorrXiPlus =  aXi.fCorrXiPlus;
+  fRadiusXi = aXi.fRadiusXi;
+
+
+  for (int i = 0; i < 9; i++) {
+    fNominalTpcPointsBac[i] = aXi.fNominalTpcPointsBac[i];
+  }
 
   UpdateXi();
 
@@ -163,7 +205,7 @@ void AliFemtoXi::UpdateXi(){
   //Calc. derived members of the xi class
   float tMomV0AlongXi, tMomBacAlongXi;
 
-   fMomXi  = MomV0() + MomBac(); 
+   fMomXi  = MomV0() + MomBac();
    fPtXi   = fMomXi.Perp();
    fPtotXi = fMomXi.Mag();
    fPtBac  = MomBac().Perp();
@@ -183,10 +225,22 @@ void AliFemtoXi::UpdateXi(){
 
    fRapXi = 0.5*::log( (EXi()+fMomXi.z()) / (EXi()-fMomXi.z()) );
    fCTauXi = kMXIMINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
-   
+
    fRapOmega = 0.5*::log( (EOmega()+fMomXi.z()) / (EOmega()-fMomXi.z()) );// eO,
    fCTauOmega = kMOMEGAMINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
 }
+
 // -----------------------------------------------------------------------
+void AliFemtoXi::SetCorrectionXiMinus(const double& x){fCorrXiMinus=x;}
+float AliFemtoXi::CorrectionXiMinus() const {return fCorrXiMinus;}
+void AliFemtoXi::SetCorrectionXiPlus(const double& x){fCorrXiPlus=x;}
+float AliFemtoXi::CorrectionXiPlus()const {return fCorrXiPlus;}
 
-
+AliFemtoThreeVector AliFemtoXi::NominalTpcPointBac(int i) const
+{
+  if (i < 0)
+    return fNominalTpcPointsBac[0];
+  if (i > 8)
+    return fNominalTpcPointsBac[8];
+  return fNominalTpcPointsBac[i];
+}

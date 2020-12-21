@@ -44,13 +44,16 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
-  void SetIsMC(Bool_t IsMC=kFALSE) {isMC = IsMC;};
-
-  void SetESDtrackCutsObj(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;};
-  
   void SetPPVsMultUtilsObj(AliPPVsMultUtils *fAliPPVsMultUtils) {fPPVsMultUtils = fAliPPVsMultUtils;};
-
+  
+  void SetIsMC(Bool_t IsMC=kFALSE) {isMC = IsMC;};
+  
+  void SetNTPCclustersMin(Int_t min=70) {nTPCclustersMin = min;};
+  
+  void SetNsigmaTPCcut(Float_t max=3.) {nsigmaTPCMax = max;};
+  
   void SetDCAxyMax(Float_t max=0.5) {DCAxyMax = max;};
+  
   void SetDCAzMax(Float_t max=1.) {DCAzMax = max;};
 
  private:
@@ -72,6 +75,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   TList *fList;                                   //! output container
 
+  Int_t nTPCclustersMin;                          // min N_clusters TPC 
+  Float_t nsigmaTPCMax;                           // nsigmaTPC cut
   Float_t DCAxyMax;                               // DCAxy max 
   Float_t DCAzMax;                                // DCAz max 
 
@@ -179,7 +184,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   //---
   
-  ClassDef(AliAnalysisNuclMult, 10);
+  ClassDef(AliAnalysisNuclMult, 12);
 };
 
 #endif

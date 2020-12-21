@@ -49,6 +49,21 @@ public:
     kSideband
   };
 
+  /**
+   * \struct SBResults
+   * \brief Implementation of a struct used to hold results of the SB uncertainty evalualtion
+   *
+   * Implementation of a struct used to hold results of the SB uncertainty evalualtion
+   */
+  struct SBResults {
+    Bool_t     fSuccess                  ; //!<!Status of the last run
+    TH1D      *fJetYieldCentral          ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+    TH1D      *fJetYieldUnc              ; //!<!Yield uncertainty vs jet pT bin
+    TH1F     **fJetSpectrSBVars          ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+    TH1F      *fJetSpectrSBDef           ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+    TH1F     **fJetBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
+  };
+
   AliDJetRawYieldUncertainty();
   AliDJetRawYieldUncertainty(const AliDJetRawYieldUncertainty &source);
   virtual ~AliDJetRawYieldUncertainty();
@@ -73,12 +88,17 @@ public:
   void SetMCSigFilename(TString fname)                             { fSigMCFilenameInput     = fname ; }
   void SetReflHistoname(TString hname)                             { fReflHistoName          = hname ; }
   void SetMCSigHistoname(TString hname)                            { fSigMCHistoName         = hname ; }
+
   void SetUseCoherentChoice(Bool_t c)                              { fCoherentChoice         = c     ; }
+  void SetUseBkgInBinEdges(Bool_t b)                               { fUseBkgInBinEdges       = b     ; }
+  void SetEfficiencyWeightSB(Bool_t b)                             { fEfficiencyWeightSB     = b     ; }
 
   void SetValueOfReflOverSignal(Double_t ratio, Double_t minrange=1.7, Double_t maxrange=2.1) { fFixRiflOverS = ratio; fReflRangeL = minrange; fReflRangeR = maxrange; }
 
   void SetDmesonPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
+  void SetDmesonPtBinsForEff(Int_t nbins=0, Double_t* ptedges=0x0);
   void SetJetPtBins(Int_t nbins=0, Double_t* ptedges=0x0);
+  void SetJetzBins(Int_t nbins=0, Double_t* zedges=0x0);
   void SetDmesonEfficiency(Double_t* effvalues=0x0);
 
   void SetSigmaToFixDPtBins(Double_t* sigmafix);
@@ -94,18 +114,21 @@ public:
 
   static void FitReflDistr(Int_t nPtBins, TString inputfile, TString fitType = "DoubleGaus");
 
-  AliHFMultiTrials* RunMultiTrial();
-  Bool_t CombineMultiTrialOutcomes();
+  AliHFMultiTrials* RunMultiTrial(TString spectrum_name);
+  Bool_t CombineMultiTrialOutcomes(TString spectrum_name);
 
   Bool_t ExtractInputMassPlot();
 
-  Bool_t EvaluateUncertainty();
-  Bool_t EvaluateUncertaintyEffScale();
-  Bool_t EvaluateUncertaintySideband();
+  Bool_t EvaluateUncertainty(TString spectrum_name);
+  Bool_t EvaluateUncertaintyEffScale(TString spectrum_name);
+  SBResults EvaluateUncertaintySideband(TString spectrum_name, TString obs, Int_t nJetBins, Double_t* jetBinEdges);
+  Bool_t EvaluateUncertaintySideband(TString spectrum_name);
+
+  Bool_t IsHistogramWeighted() const;
 
   Bool_t Success() const { return fSuccess; }
 
-  Bool_t GenerateJetPtSpectrum(TH2* hInvMassJetPt, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetpt, TH1* hjetpt_s, TH1* hjetpt_s1, TH1* hjetpt_s2);
+  Bool_t GenerateJetSpectrum(TH2* hInvMassJetObs, Double_t mean, Double_t sigma, Double_t bkg, Int_t iDbin, TH1* hjetobs, TH1* hjetobs_s, TH1* hjetobs_s1, TH1* hjetobs_s2);
 
   virtual void ClearObjects();
 
@@ -124,10 +147,14 @@ protected:
   Double_t           fpTmax                      ; ///< pT upper edge of mass plot to evaluate variations of yields
   Double_t           fzmin                       ; ///< z minimum value to extract jet pT spectrum
   Double_t           fzmax                       ; ///< z maximum value to extract jet pT spectrum
-  Int_t              fnDbins                     ; ///< Number of D-meson pT bins (for eff scaling)
+  Int_t              fnDbins                     ; ///< Number of D-meson pT bins
   Double_t          *fDbinpTedges                ; ///< D-meson pt bin edges values
-  Int_t              fnJetbins                   ; ///< Number of pT-bins to be used for spectrum
-  Double_t          *fJetbinpTedges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnDbinsForEff               ; ///< Number of D-meson pT bins (for efficiency)
+  Double_t          *fDbinpTedgesForEff          ; ///< D-meson pt bin edges values (for efficiency)
+  Int_t              fnJetPtbins                 ; ///< Number of jet pT bins to be used for spectrum
+  Double_t          *fJetPtBinEdges              ; ///< Jet pT bin edges to be used for spectrum
+  Int_t              fnJetzbins                  ; ///< Number of jet z bins to be used for spectrum
+  Double_t          *fJetzBinEdges               ; ///< Jet z bin edges to be used for spectrum
   Double_t          *fDEffValues                 ; ///< D-meson efficiency values
 
   Double_t           fnSigmaSignReg              ; ///< Number of sigma for signal region
@@ -164,15 +191,26 @@ protected:
 
   Bool_t             fCoherentChoice             ; ///< Use coherent choice for the SB method
 
+  Bool_t             fUseBkgInBinEdges           ; ///< Whether the background should be computed between bin edges rather than exact limits (must be false if the binning of the histogram used for the projections in the SB method is different compared to the histogram used for the invariant mass fit)
+  Bool_t             fEfficiencyWeightSB         ; ///< If true the efficiency is applied as a weight in the inv mass distribution also in the side-band method (this is always the case for the inv.mass fit method in jet pt bins)
+
   Int_t              fDebug                      ; ///< Debug level
 
   TH1D              *fMassPlot                   ; //!<!Mass spectra to be fitted
   TH2D              *fMassVsJetPtPlot            ; //!<!Mass vs jet pt (SB method)
-  TH1D              *fJetYieldCentral            ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
-  TH1D              *fJetYieldUnc                ; //!<!Yield uncertainty vs jet pT bin
-  TH1F             **fJetSpectrSBVars            ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
-  TH1F              *fJetSpectrSBDef             ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+  TH2D              *fMassVsJetzPlot             ; //!<!Mass vs jet z (SB method)
+
+  TH1D              *fJetPtYieldCentral          ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+  TH1D              *fJetPtYieldUnc              ; //!<!Yield uncertainty vs jet pT bin
+  TH1F             **fJetPtSpectrSBVars          ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+  TH1F              *fJetPtSpectrSBDef           ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
   TH1F             **fJetPtBinYieldDistribution  ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
+
+  TH1D              *fJetzYieldCentral           ; //!<!Central values of the yield of jet spectrum + syst yield uncertainty
+  TH1D              *fJetzYieldUnc               ; //!<!Yield uncertainty vs jet pT bin
+  TH1F             **fJetzSpectrSBVars           ; //!<!Array of jet spectrum histograms, one per variation (sideband approach)
+  TH1F              *fJetzSpectrSBDef            ; //!<!Array of jet spectrum histograms, default trial (sideband approach)
+  TH1F             **fJetzBinYieldDistribution   ; //!<!Array of histograms with yield distributions from the trials for each pT(jet)
 
   Bool_t             fSuccess                    ; //!<!Status of the last run
 

@@ -51,7 +51,7 @@ class AliPicoTrack: public AliVTrack {
   Double_t        GetEtaEmc()                 const { return GetTrackEtaOnEMCal(); }
   Double_t        GetPhiEmc()                 const { return GetTrackPhiOnEMCal(); }
   Bool_t          IsEMCAL()                   const { return fEmcal;  }
-  ULong_t         GetStatus()                 const { return 0;       }
+  ULong64_t       GetStatus()                 const { return 0;       }
   Bool_t          GetXYZ(Double_t *v)         const { v[0]=0; v[1]=0; v[2]=0; return 0; }
   using AliVTrack::GetXYZ;
   Double_t        GetBz()                     const { return 0;       }

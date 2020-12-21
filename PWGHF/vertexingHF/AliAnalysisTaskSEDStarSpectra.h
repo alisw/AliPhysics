@@ -45,13 +45,13 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   
   /// Background simulation
-  void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
+  void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout, TH1F** histlist);
   void     WrongSignForDStar(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
     /// histos
-  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
+  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout,TH1F** histlist);
   void     DefineHistograms();
   Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
   void CreateImpactParameterHistos();
@@ -74,14 +74,34 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
 
   void SetDoDStarVsY(Bool_t theDStarVsY) {fDoDStarVsY = theDStarVsY;}
 
+  void     SetUseEMCalTrigger(Bool_t bUseEMCalTrigger) {fUseEMCalTrigger = bUseEMCalTrigger;}
+  Bool_t   GetUseEMCalTrigger() const {return fUseEMCalTrigger;}
+
+  void     SetTriggerSelectionString(TString nameEMCalTrigger) {fTriggerSelectionString = nameEMCalTrigger;}
+  Bool_t   GetTriggerSelectionString() const {return fTriggerSelectionString;}
+
+  void     SetCheckEMCalAcceptance(Bool_t bCheckEMCALAcceptance) {fCheckEMCALAcceptance = bCheckEMCALAcceptance;}
+  Bool_t   GetCheckEMCalAcceptance() const {return fCheckEMCALAcceptance;}
+
+  void     SetCheckEMCalAcceptanceNumber(Int_t nCheckEMCALAcceptanceNumber) {fCheckEMCALAcceptanceNumber = nCheckEMCALAcceptanceNumber;}
+  Int_t    GetCheckEMCalAcceptanceNumber() const {return fCheckEMCALAcceptanceNumber;}
+
+  void     SetApplyEMCALClusterEventCut(Bool_t bApplyEMCALClusterEventCut) {fApplyEMCALClusterEventCut = bApplyEMCALClusterEventCut;}
+  Bool_t   GetApplyEMCALClusterEventCut() const {return fApplyEMCALClusterEventCut;}
+
  private:
   
   AliAnalysisTaskSEDStarSpectra(const AliAnalysisTaskSEDStarSpectra &source);
   AliAnalysisTaskSEDStarSpectra& operator=(const AliAnalysisTaskSEDStarSpectra& source); 
-  
+
+  enum{kDzMass, kDstarMass, kDeltaMass,kptMass, ketaMass,kDzSgn, kDstarSgn, kDeltaSgn,kptSgn, ketaSgn,kDzBkg, kDstarBkg, kDeltaBkg,kptBkg, ketaBkg, kSideBandMass, kWrongSignMass};
+
+  TH1F** fAllhist;               // Histogramlist all
+  TH1F** fPIDhist;               // Histogramlist with PID
+  Int_t fNPtBins;                // Number of ptbins specified in the cutfile
   Int_t  fEvents;                ///  n. of events
-  Int_t  fAnalysis;		 ///  0: HD;	1: UU;
-  Double_t fD0Window;		 ///  select width on D0Mass
+  Int_t  fAnalysis;    ///  0: HD;  1: UU;
+  Double_t fD0Window;    ///  select width on D0Mass
   Double_t fPeakWindow;          ///  select width on DstarMass
   Bool_t fUseMCInfo;             ///  Use MC info
   Bool_t fDoSearch;              ///  Rare mesons
@@ -102,11 +122,16 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
   Float_t fHigherImpPar; /// higher limit in impact parameter (um)
   Bool_t  fDoDStarVsY;   /// flag to enable D* vs y
+  Bool_t fUseEMCalTrigger; /// flag to use simulated EMCal trigger in MC
+  TString fTriggerSelectionString; /// Level 1 name of EMCal trigger
+  Bool_t fCheckEMCALAcceptance; /// flag to perform emcal acceptance check
+  Int_t fCheckEMCALAcceptanceNumber; /// selection level for emcal check
+  Bool_t fApplyEMCALClusterEventCut; /// flag to cut events that do not pass EMCAL cluster check
 
   THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDStarSpectra,9); /// class for D* spectra
+  ClassDef(AliAnalysisTaskSEDStarSpectra,11); /// class for D* spectra
   /// \endcond
 };
 

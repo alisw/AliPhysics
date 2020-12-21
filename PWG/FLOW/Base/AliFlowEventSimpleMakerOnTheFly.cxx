@@ -99,6 +99,8 @@ AliFlowEventSimpleMakerOnTheFly::~AliFlowEventSimpleMakerOnTheFly()
 void AliFlowEventSimpleMakerOnTheFly::Init()
 {
  // Book all objects in this method.
+
+ // test for workflow
  
  // a) Define the pt spectra;
  // b) Define the phi distribution.

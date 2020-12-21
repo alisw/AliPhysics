@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFvn::DecChannel decCh=AliAnalysisTaskSEHFvn::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskSEHFvn::EventPlaneMeth flagep=AliAnalysisTaskSEHFvn::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFvn::FlowMethod meth=AliAnalysisTaskSEHFvn::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFvn::q2Method q2meth=AliAnalysisTaskSEHFvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1)
+AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFvn::DecChannel decCh=AliAnalysisTaskSEHFvn::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskSEHFvn::EventPlaneMeth flagep=AliAnalysisTaskSEHFvn::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFvn::FlowMethod meth=AliAnalysisTaskSEHFvn::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFvn::q2Method q2meth=AliAnalysisTaskSEHFvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=0)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -19,7 +19,8 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("FATAL: Input file not found : check your cut object");
+      return NULL;
     }
   }
   
@@ -57,11 +58,21 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
     suffix.Prepend("Ds");
     pdgmes=431;
   }
+  else if(decCh==AliAnalysisTaskSEHFvn::kD0toKpiFromDstar) {
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsD0toKpi();
+      analysiscuts->SetStandardCutsPbPb2011();
+    } else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
+    suffix.Prepend("DzeroFromDstar");
+    pdgmes=421;
+  }
   if(pdgmes==-1){
-    AliFatal("Wrong meson setting");
+    Printf("FATAL: Wrong meson setting");
+    return NULL;
   }
   if(!analysiscuts){
-    AliFatal("Specific AliRDHFCuts not found");
+    Printf("FATAL: Specific AliRDHFCuts not found");
+    return NULL;
   }
     
   // Analysis task
@@ -71,7 +82,7 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
   v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
   if(decCh == AliAnalysisTaskSEHFvn::kDstartoKpipi) {
     v2Task->SetNMassBins(200);
-  } else if(decCh == AliAnalysisTaskSEHFvn::kDplustoKpipi || decCh == AliAnalysisTaskSEHFvn::kD0toKpi) {
+  } else if(decCh == AliAnalysisTaskSEHFvn::kDplustoKpipi || decCh == AliAnalysisTaskSEHFvn::kD0toKpi || decCh == AliAnalysisTaskSEHFvn::kD0toKpiFromDstar) {
     v2Task->SetNMassBins(104);
     v2Task->SetMassLimits(0.2,pdgmes);
   } else if(decCh == AliAnalysisTaskSEHFvn::kDstoKKpi) {

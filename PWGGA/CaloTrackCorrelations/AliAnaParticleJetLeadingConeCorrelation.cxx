@@ -26,7 +26,7 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliAnaParticleJetLeadingConeCorrelation.h"
 #include "AliCaloPID.h"
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliFiducialCut.h"
 
 /// \cond CLASSIMP
@@ -149,7 +149,7 @@ Double_t AliAnaParticleJetLeadingConeCorrelation::CalculateJetRatioLimit(Double_
 //___________________________________________________________________________________________________
 /// Fill jet and background histograms.
 //___________________________________________________________________________________________________
-void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCorrelation * particle,
+void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliCaloTrackParticleCorrelation * particle,
                                                             const TLorentzVector jet,
                                                             const TString & type, const TString & lastname)
 {
@@ -633,7 +633,7 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
 //__________________________________________________________________________________________________________
 /// Search Charged or Neutral leading particle, select the highest one and fill AOD.
 //__________________________________________________________________________________________________________
-Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4ParticleCorrelation * particle)
+Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliCaloTrackParticleCorrelation * particle)
 {
   GetLeadingCharge(particle) ;
   if(!fJetsOnlyInCTS) GetLeadingPi0(particle) ;
@@ -679,7 +679,7 @@ Bool_t  AliAnaParticleJetLeadingConeCorrelation::GetLeadingParticle(AliAODPWG4Pa
 /// Search for the charged particle with highest pt and with
 /// Phi=Phi_trigger-Pi and pT=0.1E_gamma.
 //_______________________________________________________________________________________________________
-void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4ParticleCorrelation * particle)
+void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliCaloTrackParticleCorrelation * particle)
 {
   if(!GetCTSTracks()) return;
   
@@ -721,7 +721,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4Partic
 /// Search for the neutral pion with highest pt and with
 /// Phi=Phi_trigger-Pi and pT=0.1E_gamma.
 //____________________________________________________________________________________________________
-void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleCorrelation * particle)
+void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliCaloTrackParticleCorrelation * particle)
 {
   if(!GetEMCALClusters()) return ;
   
@@ -825,7 +825,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
 //____________________________________________________________________________
 void AliAnaParticleJetLeadingConeCorrelation::InitParameters()
 {
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("CaloTrackParticle");
   SetAODObjArrayName("JetLeadingCone");
   AddToHistogramsName("AnaJetLCCorr_");
   
@@ -1059,8 +1059,8 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
     return;// coverity
   }
   
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
-    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliCaloTrackParticleCorrelation"))
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliCaloTrackParticleCorrelation> and not <%s>",
                   GetInputAODBranch()->GetClass()->GetName()));
   
   
@@ -1073,7 +1073,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD()
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     //  printf("AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillAOD() - Trigger : pt %3.2f, phi %2.2f, eta %2.2f\n",particle->Pt(), particle->Phi(), particle->Eta());
     
@@ -1111,7 +1111,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
     if(OnlyIsolated() && !particle->IsIsolated()) continue;
     
@@ -1207,7 +1207,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::MakeAnalysisFillHistograms()
 /// R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
 /// fill aod with found information.
 //_______________________________________________________________________________________________
-void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorrelation *particle)
+void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliCaloTrackParticleCorrelation *particle)
 {
   Double_t ptTrig   = particle->Pt();
   Double_t phiTrig  = particle->Phi();
@@ -1345,7 +1345,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
 /// R=fJetCone and pt_th = fJetPtThres. Calculate the energy of the jet and
 /// fill aod tlorentzvectors with jet and bakcground found.
 //______________________________________________________________________________________________________
-void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleCorrelation *particle)
+void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliCaloTrackParticleCorrelation *particle)
 {
   Double_t ptTrig  = particle->Pt();
   Double_t phiTrig = particle->Phi();

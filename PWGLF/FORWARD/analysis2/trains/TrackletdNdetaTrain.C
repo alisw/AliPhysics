@@ -99,6 +99,7 @@ protected:
     else if (trg.EqualTo("NSD"))     sel = AliVEvent::kINT7;
     else if (trg.EqualTo("V0OR"))    sel = AliVEvent::kCINT5;
     else if (trg.EqualTo("ANY"))     sel = AliVEvent::kAny;
+    else if (trg.EqualTo("NONE"))    sel = 0;
     task->SelectCollisionCandidates(sel);
     Int_t minTrk = trg.EqualTo("INELGT0") ? 1 : 0;
 

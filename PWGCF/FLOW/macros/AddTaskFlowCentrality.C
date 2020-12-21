@@ -45,24 +45,26 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   Bool_t MCEP     = kFALSE;  // correlation with Monte Carlo reaction plane
   Bool_t SP       = kFALSE;  // scalar product method (similar to eventplane method)
   Bool_t GFC      = kFALSE;  // cumulants based on generating function
-  Bool_t QC       = kFALSE;  // cumulants using Q vectors
+  Bool_t QC       =  kTRUE;  // cumulants using Q vectors
   Bool_t FQD      = kFALSE;  // fit of the distribution of the Q vector (only integrated v)
-  Bool_t LYZ1SUM  = kTRUE;   // Lee Yang Zeroes using sum generating function (integrated v)
-  Bool_t LYZ1PROD = kTRUE;   // Lee Yang Zeroes using product generating function (integrated v)
+  Bool_t LYZ1SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (integrated v)
+  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
   Bool_t LYZ2SUM  = kFALSE;  // Lee Yang Zeroes using sum generating function (second pass differential v)
   Bool_t LYZ2PROD = kFALSE;  // Lee Yang Zeroes using product generating function (second pass differential v)
   Bool_t LYZEP    = kFALSE;  // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-  Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
+  Bool_t MH       =  kTRUE;  // azimuthal correlators in mixed harmonics  
   Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
   Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //=============================================================================
 
-  UInt_t eventSelMask = AliVEvent::kMUSPB;
+//UInt_t eventSelMask = AliVEvent::kMUSPB;
+  UInt_t eventSelMask = AliVEvent::kMB;
+//UInt_t eventSelMask = AliVEvent::kINT7;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kTPCstandalone;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kV0;
-  AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kSPDtracklet;
-  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kMUON;
+  AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kTPCstandalone;
+  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kTPCstandalone;
 
   AliFlowTrackCuts::trackParameterMix rpmix  = AliFlowTrackCuts::kPure;
   AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
@@ -100,7 +102,8 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     cutsRP->SetEtaRange(-0.8,0.8);
   }
 
-  AliFlowTrackCuts* cutsPOI = AliFlowTrackCuts::GetStandardMuonTrackCuts();
+//AliFlowTrackCuts* cutsPOI = AliFlowTrackCuts::GetStandardMuonTrackCuts();
+  AliFlowTrackCuts* cutsPOI = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts();
 //=============================================================================
 
   TString fileName(fileNameBase); fileName.Append(".root");

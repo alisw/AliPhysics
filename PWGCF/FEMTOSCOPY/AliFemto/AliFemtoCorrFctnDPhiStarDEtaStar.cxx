@@ -15,7 +15,7 @@
 #endif
 
 //____________________________
-AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(char* title,
+AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(const char* title,
 								   double radius=1.2,
 								   const int& aEtaBins=50,
 								   double aEtaRangeLow=0.0,
@@ -343,17 +343,15 @@ void AliFemtoCorrFctnDPhiStarDEtaStar::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDPhiStarDEtaStar::Report(){
+AliFemtoString AliFemtoCorrFctnDPhiStarDEtaStar::Report()
+{
   // Create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiStarDEtaStarNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiStarDEtaStarDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "DPhi* DEta* Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fDPhiStarDEtaStarNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDPhiStarDEtaStarDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 
 //____________________________
@@ -477,8 +475,9 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
 void AliFemtoCorrFctnDPhiStarDEtaStar::AddRealPair( AliFemtoPair* pair){
 
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   const AliFemtoParticle *track_1 = pair->Track1();
   const AliFemtoParticle *track_2 = pair->Track2();
@@ -518,8 +517,9 @@ void AliFemtoCorrFctnDPhiStarDEtaStar::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoCorrFctnDPhiStarDEtaStar::AddMixedPair( AliFemtoPair* pair){
   // Add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   const AliFemtoParticle *track_1 = pair->Track1();
   const AliFemtoParticle *track_2 = pair->Track2();

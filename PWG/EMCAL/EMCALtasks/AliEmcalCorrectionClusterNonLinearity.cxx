@@ -28,7 +28,15 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kPi0MCv5", AliEMCALRecoUtils::kPi0MCv5 },
     { "kSDMv6", AliEMCALRecoUtils::kSDMv6 },
     { "kPi0MCv6", AliEMCALRecoUtils::kPi0MCv6 },
-    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 }
+    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 },
+    { "kPCMv1", AliEMCALRecoUtils::kPCMv1 },
+    { "kPCMplusBTCv1", AliEMCALRecoUtils::kPCMplusBTCv1 },
+    { "kPCMsysv1", AliEMCALRecoUtils::kPCMsysv1 },
+    { "kBeamTestCorrectedv4", AliEMCALRecoUtils::kBeamTestCorrectedv4 },
+    { "kBeamTestNS", AliEMCALRecoUtils::kBeamTestNS },
+    { "kPi0MCNS", AliEMCALRecoUtils::kPi0MCNS },
+    { "kTestBeamShaper", AliEMCALRecoUtils::kTestBeamShaper },
+    { "kTestBeamFinalMC", AliEMCALRecoUtils::kTestBeamFinalMC }
 };
 
 /**
@@ -39,8 +47,8 @@ AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   fEnergyDistBefore(0),
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
-  fEnergyTimeHistAfter(0)
-
+  fEnergyTimeHistAfter(0),
+  fSetForceClusterE(kFALSE)
 {
 }
 
@@ -59,12 +67,12 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
-
   std::string nonLinFunctStr = "";
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
+  GetProperty("setForceClusterE", fSetForceClusterE);
+  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -89,11 +97,11 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
   if (fCreateHisto){
     fEnergyDistBefore = new TH1F("hEnergyDistBefore","hEnergyDistBefore;E_{clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyDistBefore);
-    fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+    fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistBefore);
     fEnergyDistAfter = new TH1F("hEnergyDistAfter","hEnergyDistAfter;E_{clus} (GeV)",1500,0,150);
     fOutput->Add(fEnergyDistAfter);
-    fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+    fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time (s)",1500,0,150,500,-1e-6,1e-6);
     fOutput->Add(fEnergyTimeHistAfter);
     
     // Take ownership of output list
@@ -107,7 +115,7 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
   AliEmcalCorrectionComponent::Run();
-  
+
   // loop over clusters
   AliVCluster *clus = 0;
   AliClusterContainer * clusCont = 0;
@@ -130,14 +138,18 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
       if (fRecoUtils) {
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
+          if ( fSetForceClusterE ) clus->SetE(energy);
           clus->SetNonLinCorrEnergy(energy);
         }
       }
 
       // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
       if (fCreateHisto && !clus->GetIsExotic()) {
-        fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
-        fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+        Float_t energy = clus->GetNonLinCorrEnergy();
+        if(fSetForceClusterE) energy = clus->E();
+        
+        fEnergyDistAfter->Fill(energy);
+        fEnergyTimeHistAfter->Fill(energy, clus->GetTOF());
       }
     }
   }

@@ -9,10 +9,16 @@
 
 #include "AliESDtrackCuts.h"
 
+class AliVTrack;
+class AliVEvent;
+class TRootIOCtor;
+
 class AliRecInfoCuts : public AliESDtrackCuts
 {
 public:
-  AliRecInfoCuts(const Char_t* name ="AliRecInfoCuts", const Char_t *title ="");
+  AliRecInfoCuts(TRootIOCtor*);
+  AliRecInfoCuts(const Char_t* name="", const Char_t *title ="");
+  AliRecInfoCuts(const AliRecInfoCuts& obj);
   virtual ~AliRecInfoCuts() {;}
  
   // setters 
@@ -36,7 +42,8 @@ public:
   Int_t GetMinNTrackletsTRD()  const {return fMinNTrackletsTRD;}
   Float_t GetTPCITSMatchingRadius()  const {return fTPCITSMatchingRadius;}
   Float_t GetTPCTRDMatchingRadius()  const {return fTPCTRDMatchingRadius;}
-
+  Bool_t AcceptFTrack(AliVTrack *const vTrack, AliVEvent *const vEvent);
+    
   // cuts init function
   void InitME();
 
@@ -47,9 +54,6 @@ private:
   Float_t fTPCITSMatchingRadius; // TPC-ITS matching radius
   Float_t fTPCTRDMatchingRadius; // TPC-TRD matching radius
   Int_t   fMinNTrackletsTRD; // min number of TRD tracklets
-
-  AliRecInfoCuts(const AliRecInfoCuts&); // not implemented
-  AliRecInfoCuts& operator=(const AliRecInfoCuts&); // not implemented
 
   ClassDef(AliRecInfoCuts, 1)
 };

@@ -8,7 +8,6 @@
 // #include "AliAnalysisTaskLK0Spectra.h"
 // #include "TString.h"
 // #include "TChain.h"
-// #include "TAlienCollection.h"
 // #include <fstream>
 // #include "TObjString.h"
 // #include "TIterator.h"
@@ -176,7 +175,7 @@ TChain * GetAnalysisChain(const char * incollection){
   }
   else if (TString(incollection).Contains("xml")){
     TGrid::Connect("alien://");
-    TGridCollection * coll = TAlienCollection::Open (incollection);
+    TGridCollection * coll = gGrid->OpenCollection(incollection);
     while(coll->Next()){
       analysisChain->Add(TString("alien://")+coll->GetLFN());
     }

@@ -1,0 +1,93 @@
+#ifndef __CLING__
+#include "AliAnalysisManager.h"
+#include "AliAnalysisNanoAODCuts.h"
+#include "AliAnalysisTaskNanoAODFilter.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliAODHandler.h"
+#include "AliAODInputHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliNanoAODTrack.h"
+#include "AliNanoFilterPID.h"
+#include "AliNanoSkimmingPID.h"
+#include "AliAnalysisTaskNanoAODskimming.h"
+
+#include <TChain.h>
+#include <TInterpreter.h>
+#endif
+
+void filterAOD_Nuclex()
+{
+  AliAnalysisManager* mgr = new AliAnalysisManager("NanoAOD Filter", "NanoAOD filter for nanoAOD production");
+
+  AliAODInputHandler* iH = new AliAODInputHandler();
+  mgr->SetInputEventHandler(iH);
+
+  // Define aod output handler
+  AliAODHandler* aodOutputHandler = new AliAODHandler();
+  aodOutputHandler->SetOutputFileName("AliAOD.NanoAOD.root");
+  mgr->SetOutputEventHandler(aodOutputHandler);
+  
+  // Physics selection
+
+  AliPhysicsSelectionTask* physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"));
+
+
+  // Multiplicity selection
+  AliAnalysisTaskSE* multSelTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"));
+
+
+  // PID response
+  AliAnalysisTaskSE* pidRespTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+  
+  AliAnalysisTaskNanoAODskimming* mySkimmingTask = AliAnalysisTaskNanoAODskimming::AddTask();
+  AliNanoSkimmingPID* mySkimmingCuts = new AliNanoSkimmingPID;
+  double nucleiTPCpt[4][2]{{0.6,1.4},{1.,1.8},{1.,10.},{1.,10.}};
+  double nucleiTOFpt[4][2]{{1.4,10.},{1.8,10.},{1.,10.},{1.,10.}};
+  double nucleiTOFsigma[4]{10.,10.,-1.,-1.};
+  AliESDtrackCuts* nucleiCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false);
+    nucleiCuts->SetEtaRange(-0.8,0.8);
+  for (int iN{0}; iN < 4; ++iN)
+    mySkimmingCuts->fTrackFilter.TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
+  mySkimmingTask->AddEventCut(mySkimmingCuts);
+
+  AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
+  nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);  
+  nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
+  
+  AliNanoFilterPID* myFilterCuts = new AliNanoFilterPID;
+  for (int iN{0}; iN < 4; ++iN)
+    myFilterCuts->TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nullptr, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
+
+  nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);
+
+  // NOTE no event cuts. Those are in the Skimming task! nanoFilterTask->AddEvtCuts(evtCuts);
+
+  nanoFilterTask->SetTrkCuts(myFilterCuts);
+  nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
+
+  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,TPCncls,TPCnclsF,TPCNCrossedRows,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,TPCsignal,integratedLength,DCA,posDCAz");
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kAlpha);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kDeuteron);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kTriton);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
+  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kAlpha);
+
+  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber,T0Spread,NumberOfESDTracks");
+
+  mgr->SetDebugLevel(1); // enable debug printouts
+  if (!mgr->InitAnalysis()) 
+    return;
+  mgr->PrintStatus();
+  
+  // Input files
+  TChain * chain = new TChain("aodTree");
+  chain->Add("AliAOD.root");
+
+  Printf("Starting Analysis....");
+  mgr->StartAnalysis("local", chain, 1000);
+}

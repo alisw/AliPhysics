@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
+AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0, Int_t UseExtraPileupCut=0){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -16,28 +16,30 @@ AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
   if(system==1) task->SetppAnalysis();
   if(system==2) task->SetpPbAnalysis();
   if(system==3) task->SetPbPbAnalysis();
+  task->SetUseExtraPileupCut(UseExtraPileupCut);
+
 //  task->SetPbPbAnalysis();
   mgr->AddTask(task);
 
 
   //================================================
-  //              data containers
-  //================================================
-  //            find input container
-  //below the trunk version
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+   //              data containers
+   //================================================
+   //            find input container
+   //below the trunk version
+   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
 
-  //dumm output container
-  AliAnalysisDataContainer *coutput1 =
-      mgr->CreateContainer("TRDPIDTree_tree",
-                           TTree::Class(),
-                           AliAnalysisManager::kOutputContainer,
-                           "TRDPIDTree_tree.root");
-  AliAnalysisDataContainer *coutput2 =
-      mgr->CreateContainer("TRDPIDTree_list",
-                           TList::Class(),
-                           AliAnalysisManager::kOutputContainer,
-                           "TRDPIDTree_hists.root");
+   //dumm output container
+   AliAnalysisDataContainer *coutput1 =
+       mgr->CreateContainer("TRDPIDTree_tree",
+                            TTree::Class(),
+                            AliAnalysisManager::kOutputContainer,
+                            Form("TRDPIDTree_tree_T%i.root",trigger));
+   AliAnalysisDataContainer *coutput2 =
+       mgr->CreateContainer("TRDPIDTree_list",
+                            TList::Class(),
+                            AliAnalysisManager::kOutputContainer,
+                            Form("TRDPIDTree_hists_T%i.root",trigger));
 
   //connect containers
   mgr->ConnectInput(task,  0, cinput );

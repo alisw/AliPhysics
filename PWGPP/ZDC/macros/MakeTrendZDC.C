@@ -24,7 +24,7 @@
 #include <TGaxis.h>
 #endif
 
-int MakeTrendZDC(char *infile, int run) {
+int MakeTrendZDC(TString infile, int run) {
 
   TStopwatch timer;
   timer.Start();
@@ -39,15 +39,13 @@ int MakeTrendZDC(char *infile, int run) {
   gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
 
-  char *outfile = "trending.root";
+  TString outfile = "trending.root";
 
-  if (!infile) return -1;
-  if (!outfile) return -1;
   TFile *f =0;
   f=TFile::Open(infile,"read");
-  if (!f) {
-    printf("File %s not available\n", infile);
-    return -1;
+  if(!f) {
+    printf("File %s not available\n", infile.Data());
+    return 1;
   }
 
   //access histograms lists
@@ -55,14 +53,16 @@ int MakeTrendZDC(char *infile, int run) {
   char genListName[20]="QAZDCHists";
 
   TDirectoryFile * zdcQAdir=(TDirectoryFile*)f->Get(zdcQAdirName);
-  if (!zdcQAdir) {
+  if(!zdcQAdir) {
     Printf("ERROR: ZDC QA directory not present in input file.\n");
-    return -1;
+    return 2;
   }
 
   TList * generalList=(TList*)zdcQAdir->Get(genListName);
-
-  if (!generalList) Printf("WARNING: general QA histograms absent or not accessible\n");
+  if(!generalList){
+     Printf("WARNING: general QA histograms absent or not accessible\n");
+     return 3;
+  }
 
   TH1D    *fhTDCZNC           = (TH1D*)generalList->FindObject("fhTDCZNC");       //! TDC ZNC sum
   TH1D    *fhTDCZNA           = (TH1D*)generalList->FindObject("fhTDCZNA");       //! TDC DIFF sum
@@ -82,8 +82,6 @@ int MakeTrendZDC(char *infile, int run) {
   TH1D    *fhPMCZNAemd        = (TH1D*)generalList->FindObject("fhPMCZNAemd");    //! ZNA PMC low gain chain
   TH1D    *fhPMCZNCemdUncalib = (TH1D*)generalList->FindObject("fhPMCZNCemdUncalib");  //! ZNC PMC low gain chain uncalibrated
   TH1D    *fhPMCZNAemdUncalib = (TH1D*)generalList->FindObject("fhPMCZNAemdUncalib");  //! ZNA PMC low gain chain uncalibrated
-  TH1D    *fhTDCZNAcorr       = (TH1D*)generalList->FindObject("fhTDCZNAcorr");   //! ZNA corrected TDC
-  TH1D    *fhTDCZNCcorr       = (TH1D*)generalList->FindObject("fhTDCZNCcorr");   //! ZNC corrected TDC
   TH2F    *fhZNCCentroid      = (TH2F*)generalList->FindObject("fhZNCCentroid");  //! ZNC centroid
   TH2F    *fhZNACentroid      = (TH2F*)generalList->FindObject("fhZNACentroid");  //! ZNA centroid
   TH2F    *fDebunch           = (TH2F*)generalList->FindObject("fDebunch");       //! TDC sum vs. diff
@@ -99,16 +97,16 @@ int MakeTrendZDC(char *infile, int run) {
   Double_t ZEM1_mean = 0.;
   Double_t ZEM2_mean = 0.;
 
-  if (fhZNCpmc->GetEntries()>0) ZNC_mean = fhZNCpmc->GetMean();
-  if (fhZNApmc->GetEntries()>0) ZNA_mean = fhZNApmc->GetMean();
-  if (fhZPCpmc->GetEntries()>0) ZPC_mean = fhZPCpmc->GetMean();
-  if (fhZPApmc->GetEntries()>0) ZPA_mean = fhZPApmc->GetMean();
-  if (fhZNCpmcUncalib->GetEntries()>0) ZNCuncalib_mean = fhZNCpmcUncalib->GetMean();
-  if (fhZPCpmcUncalib->GetEntries()>0) ZPCuncalib_mean = fhZPCpmcUncalib->GetMean();
-  if (fhZNApmcUncalib->GetEntries()>0) ZNAuncalib_mean = fhZNApmcUncalib->GetMean();
-  if (fhZPApmcUncalib->GetEntries()>0) ZPAuncalib_mean = fhZPApmcUncalib->GetMean();
-  if (fhZEM1Spectrum->GetEntries()>0) ZEM1_mean = fhZEM1Spectrum->GetMean();
-  if (fhZEM2Spectrum->GetEntries()>0) ZEM2_mean = fhZEM2Spectrum->GetMean();
+  if(fhZNCpmc && fhZNCpmc->GetEntries()>0) ZNC_mean = fhZNCpmc->GetMean();
+  if(fhZNApmc && fhZNApmc->GetEntries()>0) ZNA_mean = fhZNApmc->GetMean();
+  if(fhZPCpmc && fhZPCpmc->GetEntries()>0) ZPC_mean = fhZPCpmc->GetMean();
+  if(fhZPApmc && fhZPApmc->GetEntries()>0) ZPA_mean = fhZPApmc->GetMean();
+  if(fhZNCpmcUncalib && fhZNCpmcUncalib->GetEntries()>0) ZNCuncalib_mean = fhZNCpmcUncalib->GetMean();
+  if(fhZPCpmcUncalib && fhZPCpmcUncalib->GetEntries()>0) ZPCuncalib_mean = fhZPCpmcUncalib->GetMean();
+  if(fhZNApmcUncalib && fhZNApmcUncalib->GetEntries()>0) ZNAuncalib_mean = fhZNApmcUncalib->GetMean();
+  if(fhZPApmcUncalib && fhZPApmcUncalib->GetEntries()>0) ZPAuncalib_mean = fhZPApmcUncalib->GetMean();
+  if(fhZEM1Spectrum && fhZEM1Spectrum->GetEntries()>0) ZEM1_mean = fhZEM1Spectrum->GetMean();
+  if(fhZEM2Spectrum && fhZEM2Spectrum->GetEntries()>0) ZEM2_mean = fhZEM2Spectrum->GetMean();
 
   Double_t ZNC_XCent = fhZNCCentroid ? fhZNCCentroid->GetMean(1) : 0.;
   Double_t ZNC_YCent = fhZNCCentroid ? fhZNCCentroid->GetMean(2) : 0.;
@@ -153,35 +151,36 @@ int MakeTrendZDC(char *infile, int run) {
   ttree->Branch("ZNA_TDC",&ZNA_TDC,"ZNA_TDC/D");
 
   Printf(":::: Getting post-analysis info for run %i",run);
-  TFile * trendFile = new TFile(outfile,"recreate");
+  TFile * trendFile = new TFile(outfile.Data(),"recreate");
+  trendFile->cd();
 
   printf("==============  Saving histograms for run %i ===============\n",run);
 
-  if (fhZEM1Spectrum) fhZEM1Spectrum->Write();
-  if (fhZEM2Spectrum) fhZEM2Spectrum->Write();
-  if (fhZNCpmc) fhZNCpmc->Write();
-  if (fhZNApmc) fhZNApmc->Write();
-  if (fhZPCpmc) fhZPCpmc->Write();
-  if (fhZPApmc) fhZPApmc->Write();
-  if (fhZNCpmcUncalib) fhZNCpmcUncalib->Write();
-  if (fhZNApmcUncalib) fhZNApmcUncalib->Write();
-  if (fhZPCpmcUncalib) fhZPCpmcUncalib->Write();
-  if (fhZPApmcUncalib) fhZPApmcUncalib->Write();
-  if (fhZNCCentroid) fhZNCCentroid->Write();
-  if (fhZNACentroid) fhZNACentroid->Write();
-  if (fhPMCZNCemd) fhPMCZNCemd->Write();
-  if (fhPMCZNAemd) fhPMCZNAemd->Write();
-  if (fDebunch) fDebunch->Write();
-  if (fhTDCZNA) fhTDCZNA->Write();
-  if (fhTDCZNC) fhTDCZNC->Write();
-  if (fhTDCZNSum) fhTDCZNSum->Write();
-  if (fhTDCZNDiff) fhTDCZNDiff->Write();
+  if(fhZEM1Spectrum) fhZEM1Spectrum->Write();
+  if(fhZEM2Spectrum) fhZEM2Spectrum->Write();
+  if(fhZNCpmc) fhZNCpmc->Write();
+  if(fhZNApmc) fhZNApmc->Write();
+  if(fhZPCpmc) fhZPCpmc->Write();
+  if(fhZPApmc) fhZPApmc->Write();
+  if(fhZNCpmcUncalib) fhZNCpmcUncalib->Write();
+  if(fhZNApmcUncalib) fhZNApmcUncalib->Write();
+  if(fhZPCpmcUncalib) fhZPCpmcUncalib->Write();
+  if(fhZPApmcUncalib) fhZPApmcUncalib->Write();
+  if(fhZNCCentroid) fhZNCCentroid->Write();
+  if(fhZNACentroid) fhZNACentroid->Write();
+  if(fhPMCZNCemd) fhPMCZNCemd->Write();
+  if(fhPMCZNAemd) fhPMCZNAemd->Write();
+  if(fDebunch) fDebunch->Write();
+  if(fhTDCZNA) fhTDCZNA->Write();
+  if(fhTDCZNC) fhTDCZNC->Write();
+  if(fhTDCZNSum) fhTDCZNSum->Write();
+  if(fhTDCZNDiff) fhTDCZNDiff->Write();
 
   ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",run);
 
-  trendFile->cd();
+  //trendFile->cd();
   ttree->Write();
   trendFile->Close();
-
+  return 0;
 }

@@ -115,6 +115,8 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 	
+        void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
         TString                             fV0ReaderName;
@@ -122,7 +124,6 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		AliGammaConversionAODBGHandler 		**fBGClusHandler;					// BG handler for Cluster
 		AliVEvent 							*fInputEvent;						// current event
 		AliMCEvent 							*fMCEvent;							// corresponding MC event
-		AliStack 							*fMCStack;							// stack belonging to MC event
 		TList 								**fCutFolder;						// Array of lists for containers belonging to cut
 		TList 								**fESDList;							// Array of lists with histograms with reconstructed properties   
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
@@ -359,8 +360,8 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		Double_t 							*fUnsmearedPy; 						//[fNGammaCandidates]
 		Double_t 							*fUnsmearedPz; 						//[fNGammaCandidates]
 		Double_t 							*fUnsmearedE;  						//[fNGammaCandidates]
-		Int_t 								*fMCStackPos;     					//[fNGammaCandidates]
-		Int_t 								*fMCStackNeg;     					//[fNGammaCandidates]
+        Int_t 								*fMCEventPos;     					//[fNGammaCandidates]
+        Int_t 								*fMCEventNeg;     					//[fNGammaCandidates]
 		Int_t 								*fESDArrayPos;    					//[fNGammaCandidates]
 		Int_t 								*fESDArrayNeg;   					//[fNGammaCandidates]
 		Int_t 								fnCuts;								// number of cuts to be analysed in parallel
@@ -374,14 +375,14 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
-		Bool_t 								fDoTHnSparse;                 // flag for THnSparse
-
+        Bool_t 								fDoTHnSparse;                       // flag for THnSparse
+        Int_t                               fTrackMatcherRunningMode;           // CaloTrackMatcher running mode
 		
 	private:
 		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 4);
+        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 6);
 };
 
 #endif

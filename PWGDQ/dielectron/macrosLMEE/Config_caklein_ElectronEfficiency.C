@@ -1,4 +1,21 @@
-TString names=("newPID;TOFreq;TOFif");
+// TString names=("kPbPb2015_Pt100_ResolutionCuts");
+
+TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;kPbPb2015_Pt400_looseTOFif_MB_Track3;kPbPb2015_Pt400_tightTOFreq_MB_Track3");
+// TString names=("kPbPb2015_Pt400_looseTOFif");
+
+// TString names=("kPbPb2015_Pt400_looseTOFif_MB_Track3");
+
+// TString names=("kPbPb2015_Pt400_tightTOFreq_MB;kPbPb2015_Pt400_looseTOFif_MB;kPbPb2015_Pt400_tightTOFreq_MB_exclMismatch;kPbPb2015_Pt400_looseTOFif_MB_exclMismatch");
+// TString names=("kPbPb2015_Pt400_looseTOFif");
+// TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;kPbPb2015_Pt400_tightTOFreq_Excl4;kPbPb2015_Pt400_noTOF");
+
+// TString names = "cut3_pt400";
+// TString names = "cut1_pt200;cut2_pt200;cut3_pt200;cut4_pt200;cut5_pt200;cut6_pt200;cut7_pt200;cut8_pt200;cut9_pt200;cut10_pt200;cut11_pt200;cut12_pt200;cut13_pt200;cut14_pt200;cut15_pt200;cut16_pt200;cut17_pt200;cut18_pt200;cut19_pt200;cut20_pt200";
+// TString names = "NewPID";
+// TString names=("cut1;cut2;cut3;cut4;cut5;cut6;cut7;cut8;cut9;cut10;cut11;cut12;cut13;cut14;cut15;cut16;cut17;cut18;cut19;cut20");
+// TString names=("cut1;cut15");
+// TString names=("cut12");
+
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -19,16 +36,16 @@ const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
 // main task settings
 // fill resolutions for one cutInstance (step 1).
-const Bool_t CalcResolution   = kTRUE;
+const Bool_t CalcResolution   = kFALSE;
 // use previously extracted resolutions (step 2).
-TString resolutionfile = "resolution_PbPb2011_CENTRALITY_deltaXvsP.root";
-Bool_t CalcEfficiencyRec      = kFALSE;  // use given resolution file to smear the kinematics.
+TString resolutionfile = "resolution_PbPb2015_CENTRALITY_deltaXvsP.root";
+Bool_t CalcEfficiencyRec      = kTRUE;  // use given resolution file to smear the kinematics.
 Bool_t bUseRelPResolution     = kTRUE;  // specify if the file contains a relative or an absolute momentum resolution array.
-Bool_t bUseEtaResolution      = kFALSE; // kFALSE means using theta instead of eta.
+Bool_t bUseEtaResolution      = kTRUE; // kFALSE means using theta instead of eta.
 // determine efficiency from only positive label tracks (in addition to using all labels).
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
-const Bool_t doPairing = kFALSE;
+const Bool_t doPairing = kTRUE;
 // specify for which "cutInstance" the support histos should be filled!
 const Int_t     supportedCutInstance = 0;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
@@ -37,12 +54,17 @@ const Bool_t    writeTree = kFALSE;
 //const Bool_t    forcePhysSelAndTrigMask = kFALSE; // default kFALSE
 // ^^^^^^^^^^ [/end main task settings] ^^^^^^^^^^
 //
+// Needs to be set for correct usage of direct pair efficiency
+const Double_t EtaMinCut = -0.8;
+const Double_t EtaMaxCut = 0.8;
+const Double_t PtMinCut  = 0.4;
+const Double_t PtMaxCut  = 8.0;
 //________________________________________________________________
 // binning of output histograms
 // eta bins
 const Double_t EtaMin   = -1.;
 const Double_t EtaMax   =  1.;
-const Int_t    nBinsEta = 100; //flexible to rebin
+const Int_t    nBinsEta = 40; //flexible to rebin
 // phi bins
 const Double_t PhiMin   = 0.;
 const Double_t PhiMax   = 6.2832;
@@ -75,8 +97,8 @@ const Double_t MeeMax    = 5.;
 const Int_t    nBinsMee  = 500;
 // ptee bins
 const Double_t PteeMin   = 0.;
-const Double_t PteeMax   = 6.;
-const Int_t    nBinsPtee = 600;
+const Double_t PteeMax   = 10.;
+const Int_t    nBinsPtee = 1000;
 
 // run string must be sorted in increasing order!
 //AOD_115_goodPID //TString sRuns("167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593");
@@ -91,7 +113,7 @@ const TString sRuns("246087");
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
 const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
-const Double_t  PtMaxGEN  =  8.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
+const Double_t  PtMaxGEN  =  10.;    // 8 GeV is current upper limit of PtBins[]. Dont want overflow bin filled.
 
 const UInt_t    NminEleInEventForRej = 2;
 // ^^^^^^^^^^ [/end common settings] ^^^^^^^^^^
@@ -151,15 +173,20 @@ void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task){
   eleFinalState->SetFillPureMCStep(kFALSE);
   eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)
   eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalStateFromBGEvent, AliDielectronSignalMC::kFinalStateFromBGEvent);
-  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();
+  eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+
+
+  // eleFinalState->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+  // eleFinalState->SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. has no effect for final state ele.
+
+  // eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();
   task->AddSignalMC(eleFinalState);
 }
 
-
 //________________________________________________________________
-AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isESD=kTRUE)
+AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isESD=kTRUE, Bool_t &ExcludeMismatch = false)
 {
+  std::cout << "TEST" << std::endl;
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
   // do not change these initial values!
@@ -174,20 +201,314 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isESD=k
 
 
   LMEECutLib* LMcutlib = new LMEECutLib();
-  if (cutDefinition == 0) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
-
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
-
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  if (cutDefinition == "kPbPb2015_Pt100_ResolutionCuts"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt100_ResolutionCuts);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kResolutionTrackCuts);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "NewPID"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+    ExcludeMismatch = false;
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_Track3"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_MB_Track3"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_MB_Track3"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_tightTOFreq_MB_exclMismatch"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+    ExcludeMismatch = true; // This is false to do the MC closure test
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_looseTOFif_MB_exclMismatch"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_looseTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+    ExcludeMismatch = true;
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_noTOF"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_noTOF);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "kPbPb2015_pt400_tightTOFif_MB"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pt200_tightTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt200"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt200);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut1_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_1_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_1);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut2_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_2_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_2);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut3_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_3_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_3);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut4_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_4_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_4);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_5_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut6_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_6_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_6);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut7_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_7_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_7);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut8_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_8_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_8);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut9_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_9_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_9);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut10_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_10_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_10);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut11_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_11_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_11);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut12_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_12_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_12);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut13_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_13_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_13);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut14_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_14_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_14);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut15_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_15_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_15);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut16_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_16_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_16);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut17_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_17_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_17);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut18_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_18_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_18);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut19_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_19_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_19);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut20_pt400"){
+    AnaCut.SetPIDAna(LMEECutLib::kPIDcut_20_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_20);
+    AnaCut.SetCentrality(LMEECutLib::kPbPb_00to80);
+    AnaCut.SetStandardCut();
   }
 
   else {
@@ -199,10 +520,11 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isESD=k
   }
 
   if (!isPrefilterCutset) {
+    anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
     anaFilter->AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
   }
   else { // cutInstance for prefilter efficiency determination:
-    anafilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
+    anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
     anaFilter->AddCuts( LMcutlib->GetTrackSelectionPre(AnaCut) );
     anaFilterExtra->AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
   }
@@ -292,56 +614,3 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 
   return 1;
 }
-
-
-// //________________________________________________________________
-// AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
-// {
-//   std::cout << "SetupTrackCuts()" <<std::endl;
-//   //AliAnalysisCuts* trackCuts=0x0;
-//
-//   if(cutInstance == 0) {
-//     // reproduce AOD filter bit 4:
-//     AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-//     //esdTrackCuts->SetMaxDCAToVertexXY(2.4);
-//     //esdTrackCuts->SetMaxDCAToVertexZ(3.2);
-//     esdTrackCuts->SetDCAToVertex2D(kTRUE);
-//     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-//     // additional or modified cuts: like in LMEECutLib::GetTrackCutsAna()
-//     esdTrackCuts->SetMaxDCAToVertexXY(1.);
-//     esdTrackCuts->SetMaxDCAToVertexZ(3.);
-//     esdTrackCuts->SetMinNClustersITS(4);
-//     esdTrackCuts->SetMinNCrossedRowsTPC(100); //default is 70 (in GetStandardITSTPCTrackCuts2011())
-//     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //default is 0.8
-//     //
-//     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-//
-//     // kinematic cuts:
-//     // esdTrackCuts->SetPtRange(   0.4 , 3.5 ); // Should be taken care in LMEECutLib
-//     // esdTrackCuts->SetEtaRange( -0.9 , 0.9 ); // Should be taken care in LMEECutLib
-//   }
-//
-//   return esdTrackCuts;
-//   //  trackCuts = fesdTrackCuts;
-//   //  trackCuts->Print();
-//   //  return trackCuts;
-// }
-//
-// //________________________________________________________________
-// AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
-// {
-//   std::cout << "SetupPIDcuts()" <<std::endl;
-//   AliAnalysisCuts* pidCuts=0x0;
-//
-//   if(cutInstance == 0) {
-//     AliDielectronPID *pid = new AliDielectronPID("pidXtraPIn","pidXtraPIn");
-//     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -3.  ,3. ,0.0, 100., kTRUE);
-//     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5 ,3. ,0.0, 100., kFALSE);
-//     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3.  ,3. ,0.0, 1.7 , kFALSE);
-//   }
-//
-//   pidCuts = pid;
-//   //pidCuts->Print();
-//   return pidCuts;
-// }

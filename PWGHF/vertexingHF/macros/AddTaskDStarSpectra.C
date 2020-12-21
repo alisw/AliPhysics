@@ -2,7 +2,7 @@
 
 //by default the task is anyway computing 1, 2 and 3 sigmas
 
-const Bool_t theRareOn = kTRUE;
+const Bool_t theRareOn = kFALSE;
 
 const Bool_t anaType   = 1;//0 HD; 1 UU;
 
@@ -14,11 +14,13 @@ const Bool_t doImp   = kFALSE;// imp par studies
 
 AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/,
 
-						   Float_t minC=0, Float_t maxC=100,
+               Float_t minC=0, Float_t maxC=100,
 
-						   TString cutsfile="", TString usercomment = "username",
+               TString cutsfile="", TString usercomment = "username",
 
-						   Bool_t theMCon=kFALSE, Bool_t doDStarVsY=kFALSE)
+               Bool_t theMCon=kFALSE, Bool_t doDStarVsY=kFALSE, TString cutsname = "DStartoKpipiCuts", 
+
+               Bool_t bUseEMCalTrigger = kFALSE, TString nameEMCalTrigger = "G1", Bool_t bCheckEMCalAcceptance = kFALSE, Int_t nCheckEMCalAcceptanceNumber = 0, Bool_t bApplyEMCALClusterEventCut = kFALSE)
 
 {
 
@@ -48,7 +50,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
   } else {
       filecuts=TFile::Open(cutsfile.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+  ::Fatal("AddTaskDStarSpectra", "Input file not found : check your cut object");
       }
   }
 
@@ -78,7 +80,14 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   }
 
-  else RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get("DStartoKpipiCuts");
+ else {
+    RDHFDStartoKpipi = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsname.Data());
+    if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+      RDHFDStartoKpipi->SetMinCentrality(minC);
+      RDHFDStartoKpipi->SetMaxCentrality(maxC);
+    }
+
+  }
 
   RDHFDStartoKpipi->SetName("DStartoKpipiCuts");
 
@@ -90,7 +99,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
     cout<<"Specific AliRDHFCuts not found"<<endl;
 
-    return;
+    return NULL;
 
   }
 
@@ -115,6 +124,16 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
   task->SetDebugLevel(0);
 
   task->SetDoDStarVsY(doDStarVsY);
+
+  task->SetUseEMCalTrigger(bUseEMCalTrigger);
+
+  task->SetTriggerSelectionString(nameEMCalTrigger);
+
+  task->SetCheckEMCalAcceptance(bCheckEMCalAcceptance);
+
+  task->SetCheckEMCalAcceptanceNumber(nCheckEMCalAcceptanceNumber);
+
+  task->SetApplyEMCALClusterEventCut(bApplyEMCALClusterEventCut);
 
   mgr->AddTask(task);
 
@@ -148,7 +167,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
   AliAnalysisDataContainer *cinput0  =  mgr->CreateContainer(input,TChain::Class(), 
 
-							     AliAnalysisManager::kInputContainer);
+                   AliAnalysisManager::kInputContainer);
 
  // ----- output data -----
 

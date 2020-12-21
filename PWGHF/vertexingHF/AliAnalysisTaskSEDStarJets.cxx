@@ -585,7 +585,7 @@ double AliAnalysisTaskSEDStarJets::FillMCFF(AliAODMCParticle* mcPart, TClonesArr
     Double_t yd =-999;
     Double_t zd =-999;
     
-    daug0 = Part->GetDaughter(0);
+    daug0 = Part->GetDaughterLabel(0);
     
     if(daug0>=0){
       AliAODMCParticle* tdaug = dynamic_cast<AliAODMCParticle*>(mcArray->At(daug0));
@@ -644,7 +644,7 @@ double AliAnalysisTaskSEDStarJets::FillMCFF(AliAODMCParticle* mcPart, TClonesArr
     Double_t yd =-999;
     Double_t zd =-999;
 
-    daug0 = tPart->GetDaughter(0);
+    daug0 = tPart->GetDaughterLabel(0);
 
     if(daug0>=0){
       AliAODMCParticle* tdaug = dynamic_cast<AliAODMCParticle*>(mcArray->At(daug0));

@@ -35,6 +35,10 @@ AliAnalysisTaskUpcEtaC *AddTaskUpcEtaC(Bool_t runTree = kTRUE,Bool_t runHist = k
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("EtaCTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ListTrig", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("ListHistKstar", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("ListHist2Rho4Pion", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("ListHistK0s3PiPi4K", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("ListHistZDC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:EtaCUpc", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
@@ -42,6 +46,10 @@ AliAnalysisTaskUpcEtaC *AddTaskUpcEtaC(Bool_t runTree = kTRUE,Bool_t runHist = k
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
   mgr->ConnectOutput(task, 4, coutput4);
+  mgr->ConnectOutput(task, 5, coutput5);
+  mgr->ConnectOutput(task, 6, coutput6);
+  mgr->ConnectOutput(task, 7, coutput7);
+  mgr->ConnectOutput(task, 8, coutput8);
 
 return task;
 }

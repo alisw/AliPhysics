@@ -19,7 +19,7 @@
 
 class AliFemtoCorrFctnDYDPhiSimple : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnDYDPhiSimple(char* title, const int& aPhiBins, const int& aYBins, const double& mass1, const double& mass2);
+  AliFemtoCorrFctnDYDPhiSimple(const char* title, const int& aPhiBins, const int& aYBins, const double& mass1, const double& mass2);
   AliFemtoCorrFctnDYDPhiSimple(const AliFemtoCorrFctnDYDPhiSimple& aCorrFctn);
   virtual ~AliFemtoCorrFctnDYDPhiSimple();
 
@@ -33,8 +33,11 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDYDPhiSimple(*this); }
+
 private:
-  
+
   TH2D *fDPhiDYNumerator;            // Numerator of dY dPhi function
   TH2D *fDPhiDYDenominator;          // Denominator of dY dPhi function
 

@@ -1,11 +1,36 @@
+/************************************************************************************
+ * Copyright (C) 2015, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIANALYSISTASKEMCALPATCHESREF_H
 #define ALIANALYSISTASKEMCALPATCHESREF_H
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 #include <string>
 #include <vector>
 #include "AliAnalysisTaskEmcalTriggerBase.h"
+#include "AliEMCALTriggerDataGrid.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
 #include <TString.h>
@@ -64,6 +89,19 @@ public:
    * @param[in] max Max. value of the centrality interval
    */
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
+
+  /**
+   * @brief Set time range for cell amplitudes for filling the offline trigger data grid
+   * @param min Min. cell time
+   * @param max Max. cell time
+   */
+  void SetCellTimeRange(double min, double max) { fCellTimeRange.SetLimits(min, max); }
+
+  /**
+   * @brief Set minimum number of FastORs used to accept the patch
+   * @param min Min. number of FastORs
+   */
+  void SetMinNumberOfFastorsPatch(int min) { fMinNumberFastors = min; }
 
   /**
    * @brief Switch for recalc patches
@@ -166,11 +204,30 @@ protected:
    */
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row);
 
+  /**
+   * @brief Fill trigger data grid
+   * 
+   * Fill offline FEE grid in FastOR dimenision in order to 
+   * provide access single FastOR energies included in the
+   * patch
+   */
+  void FillDataGrid();
+
+  /**
+   * @brief Get the number of non-0 FastORs contributing to the trigger patch
+   * @param patch Trigger patch to analyse
+   * @return Number of non-0 FastORs
+   */
+  Int_t GetNumberOfFastORs(const AliEMCALTriggerPatchInfo *patch) const;
+
   AliCutValueRange<double>            fCentralityRange;           ///< Range of accepted event centralities
+  AliCutValueRange<double>            fCellTimeRange;             ///< Range of accepted cell time (for data grid)
+  AliEMCALTriggerDataGrid<double>     fOfflineTriggerData;        ///< Trigger energy data grid       
+  Double_t                            fMinNumberFastors;          ///< Min. number of non-0 fastors contributing to the patch
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation
   Bool_t                              fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
   Bool_t                              fRequestCentrality;         ///< Switch for request of centrality selection
-  Double_t                            fEventCentrality;           //!<1! Event centrality
+  Double_t                            fEventCentrality;           //!<! Event centrality
 
 private:
 

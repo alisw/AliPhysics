@@ -29,6 +29,7 @@
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
 #include "AliGeomManager.h"
+#include "AliITSgeomTGeo.h"
 #include "TMath.h"
 #include "TGeoMatrix.h"
 
@@ -47,12 +48,20 @@ AliAnalysisTaskdEdxSSDQA::AliAnalysisTaskdEdxSSDQA(const char *name)
   fHist4(0),
   fHist5(0),
   fHist6(0),
+  fHist7(0),
+  fHist8(0),
+  fHist9(0),
+  fHist10(0),
   fHist1sa(0),
   fHist2sa(0),
   fHist3sa(0),
   fHist4sa(0),
   fHist5sa(0),
   fHist6sa(0),
+  fHist7sa(0),
+  fHist8sa(0),
+  fHist9sa(0),
+  fHist10sa(0),
   fListOfHistos(0),
   fPcut(0.0),
   fdothecorrection(0),
@@ -115,6 +124,27 @@ void AliAnalysisTaskdEdxSSDQA::UserCreateOutputObjects()
   fHist6sa=new TH2F("QNvQPSA",";QN;QP",160,0,1600,1600,0,1600);
   fListOfHistos->Add(fHist6sa);
 	
+  fHist7=new TH2F("ZetaPhiLay5","Layer 5 - global tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fListOfHistos->Add(fHist7);
+  fHist7sa=new TH2F("ZetaPhiLay5sa","Layer 5 - ITSsa tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fListOfHistos->Add(fHist7sa);
+
+  fHist8=new TH2F("ZetaPhiLay6","Layer 6 - global tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fListOfHistos->Add(fHist8);
+  fHist8sa=new TH2F("ZetaPhiLay6sa","Layer 6 - ITSsa tracks ; z (cm) ; #varphi (rad)",100,-50,50,100,0.,2.*TMath::Pi());
+  fListOfHistos->Add(fHist8sa);
+
+  fHist9=new TH2F("LadModLay5","Layer 5 - global tracks ; Detector ; Ladder",22,0.5,22.5,34,0.5,34.5);
+  fListOfHistos->Add(fHist9);
+  fHist9sa=new TH2F("LadModLay5sa","Layer 5 - ITSsa tracks ; Detector ; Ladder",22,0.5,22.5,34,0.5,34.5);
+  fListOfHistos->Add(fHist9sa);
+
+  fHist10=new TH2F("LadModLay6","Layer 6 - global tracks ; Detector ; Ladder",25,0.5,25.5,38,0.5,38.5);
+  fListOfHistos->Add(fHist10);
+  fHist10sa=new TH2F("LadModLay6sa","Layer 6 - ITSsa tracks ;  Detector ; Ladder",25,0.5,25.5,38,0.5,38.5);
+  fListOfHistos->Add(fHist10sa);
+
+
   PostData(1,  fListOfHistos);
 }
 //________________________________________________________________________
@@ -217,6 +247,9 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
   AliTrackPoint point;
   Int_t nlayer=0;
   Int_t id=0;
+  Int_t iLayer=0;
+  Int_t iLadder=0;
+  Int_t iDetec=0;
   Float_t chargeratio=0.0;
   Float_t charge=0.0;
   for(int itr=0;itr<nTracks;itr++)
@@ -247,8 +280,8 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 	  {									
 	    if(trackar->GetPoint(point,itnp))
 	      {
-		nlayer=AliGeomManager::VolUIDToLayer(point.GetVolumeID(), id);//layer number					
-	      }	
+		nlayer=AliGeomManager::VolUIDToLayer(point.GetVolumeID(), id);//layer number
+	      }
 	    else
 	      continue;		
 	    if(nlayer==5||nlayer==6)
@@ -262,6 +295,9 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 		    global[0]=point.GetX();
 		    global[1]=point.GetY();
 		    global[2]=point.GetZ();
+		    Double_t phi=TMath::ATan2(-global[1],-global[0])+TMath::Pi();
+		    Int_t modId=id+AliITSgeomTGeo::GetModuleIndex(nlayer,1,1);
+		    AliITSgeomTGeo::GetModuleId(modId,iLayer,iLadder,iDetec);
 		    geomatrix->MasterToLocal(global,local);
 		    chargeratio=point.GetChargeRatio();	
 		    charge=point.GetCharge();
@@ -275,10 +311,14 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 			if(goodGlobal){ 
 			  fHist1->Fill(id,chargeratio);
 			  fHist3->Fill(id,charge,chargeratio);
+			  fHist7->Fill(global[2],phi);
+			  fHist9->Fill(iDetec,iLadder);
 			}
 			if(goodSA){ 
 			  fHist1sa->Fill(id,chargeratio);
 			  fHist3sa->Fill(id,charge,chargeratio);
+			  fHist7sa->Fill(global[2],phi);
+			  fHist9sa->Fill(iDetec,iLadder);
 			}
 							
 			if(track->GetP()>fPcut)
@@ -309,10 +349,14 @@ void AliAnalysisTaskdEdxSSDQA::UserExec(Option_t *)
 			if(goodGlobal){ 
 			  fHist1->Fill(id+748,chargeratio);
 			  fHist3->Fill(id+748,charge,chargeratio);	
-			}	
+			  fHist8->Fill(global[2],phi);
+			  fHist10->Fill(iDetec,iLadder);
+			}
 			if(goodSA){ 
 			  fHist1sa->Fill(id+748,chargeratio);
 			  fHist3sa->Fill(id+748,charge,chargeratio);	
+			  fHist8sa->Fill(global[2],phi);
+			  fHist10sa->Fill(iDetec,iLadder);
 			}
 			if(track->GetP()>fPcut)
 			  {

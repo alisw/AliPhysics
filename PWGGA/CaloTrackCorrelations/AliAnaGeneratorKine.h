@@ -21,8 +21,7 @@
 
 // --- ROOT ---
 class TH2F ;
-class TParticle ;
-class AliStack ;
+//class TParticle ;
 class TLorentzVector ;
 
 // --- ANALYSIS ---
@@ -48,7 +47,7 @@ public:
   static const Int_t fgkNLead = 2;
 
   /// Number of isolation cases.
-  static const Int_t fgkNIso  = 4;
+  static const Int_t fgkNIso  = 5;
 
   Bool_t CorrelateWithPartonOrJet(Int_t   indexTrig,
                                   Int_t   pdgTrig,
@@ -75,8 +74,8 @@ public:
     
   void    MakeAnalysisFillHistograms() ;
   
-  void    SetTriggerDetector( TString & det ) ;
-  void    SetTriggerDetector( Int_t  det )    ;
+  void    SetTriggerDetector( TString det ) ;
+  void    SetTriggerDetector( Int_t   det ) ;
   
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }
@@ -87,8 +86,13 @@ public:
   virtual void     SetFiducialCut(AliFiducialCut * fc)
   { delete fFidCutTrigger;  fFidCutTrigger  = fc      ; }
   
+  void SwitchOnPartonAnalysis()  { fMakePartonAnalysis = kTRUE ; }
+  void SwitchOffPartonAnalysis() { fMakePartonAnalysis = kFALSE; }
+  
 private:
 
+  Bool_t           fMakePartonAnalysis;     ///< Activate parton analysis 
+  
   Int_t            fTriggerDetector ;       ///<  Detector : EMCAL, PHOS, CTS
   TString          fTriggerDetectorString ; ///<  Detector : EMCAL, PHOS, CTS
 
@@ -97,9 +101,6 @@ private:
   Float_t          fMinChargedPt;           //!<! Minimum energy for charged particles in correlation
   Float_t          fMinNeutralPt;           //!<! Minimum energy for neutral particles in correlation
   
-  AliStack       * fStack;                  //!<! access ESD stack
-  TClonesArray   * fAODMCparticles ;        //!<! access AOD stack
-
 //  TParticle      * fParton2;              //!<! Initial state Parton
 //  TParticle      * fParton3;              //!<! Initial state Parton
   
@@ -197,7 +198,7 @@ private:
   AliAnaGeneratorKine & operator = (const AliAnaGeneratorKine & gk) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaGeneratorKine,7) ;
+  ClassDef(AliAnaGeneratorKine,8) ;
   /// \endcond
 
 } ;

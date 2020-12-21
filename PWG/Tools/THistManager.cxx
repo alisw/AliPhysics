@@ -412,7 +412,7 @@ void THistManager::FillTH1(const char *name, double x, double weight, Option_t *
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
 	if(!parent){
-		Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
+		Fatal("THistManager::FillTH1", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
 	TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname));
@@ -435,7 +435,7 @@ void THistManager::FillTH1(const char *name, const char *label, double weight, O
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
   if(!parent){
-    Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
+    Fatal("THistManager::FillTH1", "Parent group %s does not exist", dirname.Data());
     return;
   }
   TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname));
@@ -503,6 +503,31 @@ void THistManager::FillTH2(const char *name, double *point, double weight, Optio
 	  if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
 	}
 	hist->Fill(point[0], point[1], weight);
+}
+
+void THistManager::FillTH2(const char *name, const char *labelX, const char *labelY, double weight, Option_t *opt) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent){
+    Fatal("THistManager::FillTH2", "Parent group %s does not exist", dirname.Data());
+    return;
+  }
+  TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname));
+  if(!hist){
+    Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+    return;
+  }
+  TString optstring(opt);
+  Double_t myweight = optstring.Contains("w") ? 1. : weight;
+  if(optstring.Contains("wx")){
+    Int_t binx = hist->GetXaxis()->FindBin(labelY);
+    if(binx != 0 && binx != hist->GetXaxis()->GetNbins()) myweight *= 1./hist->GetXaxis()->GetBinWidth(binx);
+  }
+  if(optstring.Contains("wy")){
+    Int_t biny = hist->GetYaxis()->FindBin(labelX);
+    if(biny != 0 && biny != hist->GetYaxis()->GetNbins()) myweight *= 1./hist->GetYaxis()->GetBinWidth(biny);
+  }
+  hist->Fill(labelX, labelY, weight);
 }
 
 void THistManager::FillTH3(const char* name, double x, double y, double z, double weight, Option_t *opt) {

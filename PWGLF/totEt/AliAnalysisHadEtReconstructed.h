@@ -92,6 +92,7 @@ public:
     void DoTriggerChecksOnly(){kDoTriggerChecks=kTRUE;}
     void SetIsOfflineV0AND(Bool_t val){kIsOfflineV0AND = val;}
     AliAnalysisHadEtCorrections *GetCorrections(){return fCorrections;}
+    void SetUseOldCentrality(Bool_t val){useOldCentrality = val;}
 
     void CreateHistograms();
      virtual void Init();
@@ -160,6 +161,7 @@ protected:
     Bool_t kIsOfflineV0AND;//Boolean to keep track of whether or not this matches the offline trigger
     Bool_t kDoTriggerChecks;//Boolean to keep track of whether or not I want to let the physics selection do the work
     Bool_t kDoTriggerChecksOnly;//Boolean to keep track of whether or not I want to let the physics selection do the work
+    Bool_t useOldCentrality;//Use AliCentrality or AliMultSelection
 
  private:
     //Declare it private to avoid compilation warning

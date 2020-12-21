@@ -151,11 +151,11 @@ Bool_t AliQnCorrectionsProfileComponents::CreateComponentsProfileHistograms(TLis
     else {
       currentHarmonic++;
     }
-    fXValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoXName, currentHarmonic),
-        Form("%s h%d", (const char *) histoXTitle, currentHarmonic),
+    fXValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoXName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoXTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
-    fYValues[currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoYName, currentHarmonic),
-        Form("%s h%d", (const char *) histoYTitle, currentHarmonic),
+    fYValues[currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoYName, currentHarmonic).Data(),
+        TString::Format("%s h%d", (const char *) histoYTitle, currentHarmonic).Data(),
         nVariables,nbins,minvals,maxvals);
 
     /* now let's set the proper binning and label on each axis */
@@ -246,8 +246,8 @@ Bool_t AliQnCorrectionsProfileComponents::AttachHistograms(TList *histogramList)
     for (Int_t i = 0; i < nMaxHarmonicNumberSupported; i++) {
       currentHarmonic++;
 
-      fXValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoXName, currentHarmonic));
-      fYValues[currentHarmonic] = (THnF *) histogramList->FindObject(Form("%s_h%d", (const char *) histoYName, currentHarmonic));
+      fXValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoXName, currentHarmonic).Data());
+      fYValues[currentHarmonic] = (THnF *) histogramList->FindObject(TString::Format("%s_h%d", (const char *) histoYName, currentHarmonic).Data());
 
       /* and update the fully filled condition whether applicable */
       if ((fXValues[currentHarmonic]  != NULL) && (fYValues[currentHarmonic] != NULL))

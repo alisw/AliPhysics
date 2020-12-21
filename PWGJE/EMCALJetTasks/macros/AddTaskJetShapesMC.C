@@ -9,11 +9,11 @@ AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(const char * njetsBase,
                                                     TString     kEmcalTriggers = "",
                                                     TString     tag            = "",
                                                     const char *rhoName = "",
-                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeType jetShapeType,
-                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeSub jetShapeSub,
-                                                    AliAnalysisTaskEmcalJetShapesMC::JetSelectionType jetSelection,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapesMC::kGenShapes,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapesMC::kNoSub,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetSelectionType jetSelection=AliAnalysisTaskEmcalJetShapesMC::kInclusive,
                                                     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0.,
-                                                    AliAnalysisTaskEmcalJetShapesMC::DerivSubtrOrder derivSubtrOrder = 0 ) {
+                                                    AliAnalysisTaskEmcalJetShapesMC::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalJetShapesMC::kSecondOrder ) {
   
 
   

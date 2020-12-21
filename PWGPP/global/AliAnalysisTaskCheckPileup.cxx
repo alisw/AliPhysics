@@ -455,7 +455,7 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   Int_t ncl1=0;
   fNTracklets=0;
   Int_t onlFastOrL1=0;
-  Int_t offlFastOrL1=0;
+  //  Int_t offlFastOrL1=0;
   if(alimult) {
     fNTracklets = alimult->GetNumberOfTracklets();
     for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
@@ -466,7 +466,7 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
     TBits fastorbits = alimult->GetFastOrFiredChips();
     onlFastOrL1 = fastorbits.CountBits(400);
     // FASTOR offline (only layer 1)
-    offlFastOrL1 = alimult->GetNumberOfFiredChips(1);
+    //    offlFastOrL1 = alimult->GetNumberOfFiredChips(1);
   }
   fHistoSPDvertVsFastOr->Fill(onlFastOrL1,contribspd);
   fNFastOr=onlFastOrL1;

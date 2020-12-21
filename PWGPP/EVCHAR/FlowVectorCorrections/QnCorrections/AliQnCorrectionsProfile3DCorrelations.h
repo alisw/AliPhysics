@@ -76,10 +76,68 @@ public:
   virtual Float_t GetYXBinError(const char *comb, Int_t harmonic, Long64_t bin);
   virtual Float_t GetYYBinError(const char *comb, Int_t harmonic, Long64_t bin);
 
-  virtual void Fill(const AliQnCorrectionsQnVector *QnA,
+  void Fill(const AliQnCorrectionsQnVector *QnA,
       const AliQnCorrectionsQnVector *QnB,
       const AliQnCorrectionsQnVector *QnC,
       const Float_t *variableContainer);
+
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXXBinContent(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXXBinContent(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXYBinContent(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXYBinContent(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYXBinContent(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYXBinContent(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYYBinContent(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYYBinContent(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXXBinError(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXXBinError(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXYBinError(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXYBinError(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYXBinError(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYXBinError(bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYYBinError(Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYYBinError(bin); }
+
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXXBinContent(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXXBinContent(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXYBinContent(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXYBinContent(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYXBinContent(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYXBinContent(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYYBinContent(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYYBinContent(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXXBinError(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXXBinError(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetXYBinError(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetXYBinError(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYXBinError(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYXBinError(harmonic, bin); }
+  /// wrong call for this class invoke base class behavior
+  virtual Float_t GetYYBinError(Int_t harmonic, Long64_t bin)
+  { return AliQnCorrectionsHistogramBase::GetYYBinError(harmonic, bin); }
+
+  /// wrong call for this class invoke base class behavior
+  virtual void Fill(const Float_t *variableContainer, Float_t weight)
+  { AliQnCorrectionsHistogramBase::Fill(variableContainer, weight); }
+  /// wrong call for this class invoke base class behavior
+  virtual void Fill(const Float_t *variableContainer, Int_t nChannel, Float_t weight)
+  { AliQnCorrectionsHistogramBase::Fill(variableContainer, nChannel, weight); }
+
 
 private:
   THnF ***fXXValues;            //!<! XX component histogram for each requested harmonic
