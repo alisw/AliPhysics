@@ -10,6 +10,7 @@
 #include <string>
 #include <array>
 #include <iostream>
+#include <numeric>
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -17,14 +18,14 @@
 
 enum { // options for branching ratios
   kBROriginal, // keep the values used in the input files
-  kBRPDG, // use hard coded values from PDG (2018)
-  kBRPDGmix // use hard coded values from PDG (2018) and the B0/B+- admixture
+  kBRPDG, // use hard coded values from PDG (2020)
+  kBRPDGmix // use hard coded values from PDG (2020) and the B0/B+- admixture
 };
 
 enum { // options for fragmentation fractions
-  kFFOriginal, // keep the values used in the input files
-  kFFppbar, // use hard coded values from ppbar, PDG (2018)
-  kFFee  // use hard coded values from e+e-, PDG (2018)
+  kFFOriginal, // keep the values used in the input files (mandatory for simulations produced with LHCb pT-dependent FF)
+  kFFppbar, // use hard coded values from ppbar, PDG (2020)
+  kFFee  // use hard coded values from e+e-, PDG (2020)
 };
 
 enum { // options for re-weight
@@ -32,12 +33,12 @@ enum { // options for re-weight
   kAccurate // correct each b-hadron contribution indipendently (modify also the pT dependence)
 };
 
-void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFppbar_yDcut_pp502TeV.root", // min FONLL predictions
-                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV.root", // central FONLL predictions
-                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV.root",  // max FONLL predictions
-                         std::string outFileName = "DmesonLcPredictions_502TeV_y05_FFppbar_BRPDGmix_SepContr.root",
+void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFptDepmin_yDcut_pp13TeV_PDG2020.root", // min FONLL predictions
+                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFptDepcent_yDcut_pp13TeV_PDG2020.root", // central FONLL predictions
+                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFptDepmax_yDcut_pp13TeV_PDG2020.root",  // max FONLL predictions
+                         std::string outFileName = "DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root",
                          int brOpt = kBROriginal,
-                         int ffOpt = kFFee,
+                         int ffOpt = kFFOriginal,
                          int wOpt = kAccurate) {
 
   std::array<std::string, 3> inFileNames = {inFileNameMin, inFileNameCent, inFileNameMax};
@@ -84,6 +85,13 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
     TH1D *hFFBeauty = (TH1D *)inFile->Get("hbFragmFrac");
     for(int iMother = 0; iMother < numMothers; iMother++) {
       origBFF[iMother] = hFFBeauty->GetBinContent(iMother + 1);
+    }
+
+    double origBFFsum = 0.;
+    std::accumulate(origBFF.begin() , origBFF.end() , origBFFsum);
+    if(ffOpt != kFFOriginal && origBFFsum == 0) {
+      std::cerr << "ERROR: only original FF can be set if pT-dependent LHCb parametrisation used in the simulation! Exit" << std::endl;
+      return;
     }
 
     // get the original BR
@@ -185,13 +193,19 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
           else if(brOpt == kBRPDGmix)
             BRfromB = pdgBRfromBmix[iDau][iMother];
 
-          newFrac += motherFF * BRfromB;
-          oldFrac += origBFF[iMother] * origBR[iDau][iMother];
+          if(origBFF[iMother] > 0) {
+            newFrac += motherFF * BRfromB;
+            oldFrac += origBFF[iMother] * origBR[iDau][iMother];
+          }
+          else {// pt-dependent FF in original file --> always unmodified
+            newFrac += BRfromB;
+            oldFrac += origBR[iDau][iMother];
+          }
         }
 
         double corr = 0.;
         if(oldFrac > 0)
-            corr = newFrac / oldFrac;
+          corr = newFrac / oldFrac;
 
         hDauFDPred = (TH1D *)inFile->Get(predFDHistos[iDau].data());
         hDauFDPred->SetDirectory(0);
@@ -239,9 +253,11 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
             BRfromB = pdgBRfromBmix[iDau][iMother];
 
           double corr = 0.;
-          if(origBR[iDau][iMother] > 0)
+          if(origBR[iDau][iMother] > 0 && origBFF[iMother] > 0)
             corr = motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother];
-
+          else if(origBR[iDau][iMother] > 0) // pt-dependent FF in original file --> always unmodified
+            corr = BRfromB / origBR[iDau][iMother];
+        
           hDauFDPred->Add(hTemp, corr);
           if(iMother < 2)
             hDauFDPredFromNonStrangeB->Add(hTemp, corr);
