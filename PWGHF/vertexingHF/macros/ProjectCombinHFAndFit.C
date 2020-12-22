@@ -81,6 +81,7 @@ Double_t minMass=1.72;
 Double_t maxMass=2.04;
 Double_t massD;
 
+
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo);
 void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin);
 TH1F* FitMCInvMassSpectra(TList* lMC, TString var);
@@ -88,7 +89,7 @@ Bool_t ReadConfig(TString configName);
 void PrintConfig();
 void CheckMCLineShapes();
 
-AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, Bool_t isDirect=kFALSE){
+AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, TCanvas* crf, Bool_t isDirect=kFALSE){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
 
 
@@ -123,8 +124,14 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
     TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,reflopt,-1.,-1.);
     cTest->cd(2);
     hReflModif->Draw();
+    hrfl->SetLineColor(kBlue+1);
     hrfl->Draw("same");
     cTest->SaveAs(Form("figures/ReflectionConfig_PtBin%d.eps",iPtBin));
+    if(crf){
+      crf->cd(iPtBin+1);
+      hReflModif->DrawCopy();
+      hrfl->DrawCopy("same");
+    }
     if(!hrfl){
       Printf("SOMETHING WENT WRONG WHILE SETTINGS REFLECTIONS TEMPLATE");
       delete hReflModif;
@@ -448,6 +455,7 @@ void CheckMCLineShapes(){
   }
 }
 
+
 void ProjectCombinHFAndFit(TString configInput=""){
 
   if(configInput!="") configFileName=configInput.Data();
@@ -473,7 +481,11 @@ void ProjectCombinHFAndFit(TString configInput=""){
   TString dirNameMC=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffixMC.Data());
   TString lstNameMC=Form("coutput%s%s",meson.Data(),suffixMC.Data());
 
-  if(correctForRefl) suffix.Prepend("Refl_");
+  if(correctForRefl){
+    if(reflopt=="template") suffix.Prepend("TemplRefl_");
+    else suffix.Prepend("Refl_");
+    if(TMath::Abs(rOverSmodif-1)>0.01) suffix.ReplaceAll("Refl_",Form("Refl%02d_",(Int_t)(rOverSmodif*10)));
+  }
   if(fileName.Contains("FAST") && !fileName.Contains("wSDD")){
     suffix.Prepend("FAST_");
   }else if(!fileName.Contains("FAST") && fileName.Contains("wSDD")){
@@ -618,6 +630,9 @@ void ProjectCombinHFAndFit(TString configInput=""){
   hpoolEv->GetYaxis()->SetTitle("Multiplicity");
   hpoolEv->GetYaxis()->SetTitleOffset(1.4);
 
+
+  TCanvas* crf=new TCanvas("crf","Reflections",1200,800);
+  DivideCanvas(crf,nPtBins);
 
   TCanvas* c1=new TCanvas("c1","Mass",1200,800);
   DivideCanvas(c1,nPtBins);
@@ -952,9 +967,9 @@ void ProjectCombinHFAndFit(TString configInput=""){
     hBkgFitFunc->SetBinContent(iPtBin+1,bkgToFill);
     hBkgFitFuncSB->SetBinContent(iPtBin+1,bkgToFillSB);
 
-    fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin,typeb,minMass,maxMass);
-    if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin,typeb,minMass,maxMass);
-    fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin,typeb,minMass,maxMass);
+    fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin,typeb,minMass,maxMass,0x0);
+    if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin,typeb,minMass,maxMass,0x0);
+    fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin,typeb,minMass,maxMass,crf);
 
     Bool_t out1=fitterRot[iPtBin]->MassFitter(0);
     Bool_t out2=kFALSE;
@@ -966,7 +981,7 @@ void ProjectCombinHFAndFit(TString configInput=""){
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
       hMassDirectFit=AliVertexingHFUtils::RebinHisto(hMassDirectFit,rebin[iPtBin]);
-      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin],kTRUE);
+      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin],0x0,kTRUE);
       out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSB);
 
       Double_t background,ebkg;
@@ -1282,6 +1297,7 @@ void ProjectCombinHFAndFit(TString configInput=""){
   }
 
   if(saveCanvasAsEps>0){
+    crf->SaveAs(Form("figures/ReflTemplates_%s_%s.eps",sigConf.Data(),suffix.Data()));
     c1->SaveAs(Form("figures/InvMassSpectra_%s_%s_NoBkgSub.eps",sigConf.Data(),suffix.Data()));
     c2->SaveAs(Form("figures/InvMassSpectra_%s_%s_Rot.eps",sigConf.Data(),suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_%s_LS.eps",sigConf.Data(),suffix.Data()));
@@ -1782,6 +1798,7 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
   }
   return hSigmaMC;
 }
+
 void PrintConfig(){
   printf("Meson: %s\n",meson.Data());
   printf("Data file: %s\n", fileName.Data());
