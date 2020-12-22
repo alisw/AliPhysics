@@ -928,7 +928,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			Int_t truePhotonMotherID1 = -1;
 			Int_t truePhotonMotherID2 = -1;
 
-			if( photon.size() > 2){
+			if( photon.size() > 1){
 				for(unsigned int iProton = 0; iProton < proton.size(); ++iProton){
 					if(!proton[iProton]) {
 						Printf("ERROR: Could not find proton[%i][%i]",iCut,iProton);
