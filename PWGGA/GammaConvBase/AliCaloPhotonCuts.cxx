@@ -6233,17 +6233,17 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     break;
     // From TestBeam applied on gamma cluster variation 1
   case 26: // q
-    if (!fUseNCells) fUseNCells=5;
+    if (!fUseNCells) fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 - 0.03);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.210779, -0.0703785);
     break;
     // From TestBeam applied on gamma cluster variation 2
   case 27: // r
-    if (!fUseNCells) fUseNCells=5;
+    if (!fUseNCells) fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 + 0.03);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
     break;
     // take only 1 cell clusters
   case 28: // s
