@@ -88,7 +88,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
     }
 
     double origBFFsum = 0.;
-    std::accumulate(origBFF.begin() , origBFF.end() , origBFFsum);
+    std::accumulate(origBFF.begin(), origBFF.end(), origBFFsum);
     if(ffOpt != kFFOriginal && origBFFsum == 0) {
       std::cerr << "ERROR: only original FF can be set if pT-dependent LHCb parametrisation used in the simulation! Exit" << std::endl;
       return;
