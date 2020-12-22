@@ -1865,7 +1865,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     fIsFromMBHeader = kTRUE;
     fIsOverlappingWithOtherHeader = kFALSE;
 
-
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
       // Set the jetjet weight to 1 in case the photon candidate orignated from the minimum bias header
@@ -1918,7 +1917,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }else {
       fNClusterMergedCandidates++;
     }
-
 
     AliAODCaloCluster* clusSub1 = new AliAODCaloCluster();
     AliAODCaloCluster* clusSub2 = new AliAODCaloCluster();
