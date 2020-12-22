@@ -143,15 +143,18 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     jetCont->SetRhoName("Rho");
     cout << "Name of Rho " << jetCont->GetRhoName() << endl;
     //if(jetradius==0.3)jetareacut=0.2;
-    jetareacut = jetradius*jetradius*TMath::Pi()*0.6;
+    if(jetareacut>-1)
+      {
+       jetareacut = jetradius*jetradius*TMath::Pi()*0.6;
+       //+++ jetCont->SetPercAreaCut(jetareacut);
+       jetCont->SetJetAreaCut(jetareacut);
+      }
     cout << "jetradius = " << jetradius << " ; jetareacut = " << jetareacut << endl;  
-    //+++ jetCont->SetPercAreaCut(jetareacut);
-    jetCont->SetJetAreaCut(jetareacut);
     jetCont->SetJetPtCut(jetptcut);
     jetCont->ConnectParticleContainer(trackCont);
     jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetLeadingHadronType(leadhadtype);
-    jetCont->SetMaxTrackPt(1000);
+    jetCont->SetMaxTrackPt(100);
     jetCont->SetZLeadingCut(0.98,0.98);
     }
 
