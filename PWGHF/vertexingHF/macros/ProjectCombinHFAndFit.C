@@ -86,6 +86,7 @@ void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPt
 TH1F* FitMCInvMassSpectra(TList* lMC, TString var);
 Bool_t ReadConfig(TString configName);
 void PrintConfig();
+void CheckMCLineShapes();
 
 AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, Bool_t isDirect=kFALSE){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
@@ -402,6 +403,51 @@ Double_t GetBackgroundNormalizationFactor(TH1D* hRatio, Int_t reb=1){
   return norm;
 }
 
+void CheckMCLineShapes(){
+  
+  if(configFileName.Length()>0){
+    if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
+      printf("Read configuration from file %s\n",configFileName.Data());
+      Bool_t readOK=ReadConfig(configFileName);
+      if(!readOK){
+	printf("Error in reading configuration file\n");
+	return;
+      }
+    }
+  }
+  printf("***************************************************\n");
+  printf("*** This is the configuration that will be used ***\n");
+  PrintConfig();
+  printf("***                                             ***\n");
+  printf("***************************************************\n");
+  
+  TString dirNameMC=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffixMC.Data());
+  TString lstNameMC=Form("coutput%s%s",meson.Data(),suffixMC.Data());
+  TFile* filMC=new TFile(fileNameMC.Data());
+  if(filMC && filMC->IsOpen()){
+    TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
+    if(!dfMC){
+      printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
+      filMC->ls();
+      return;
+    }
+    TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
+    TH1F* hSigmaMC=FitMCInvMassSpectra(lMC,"Y");
+    TCanvas* csigma=new TCanvas("csigma","",800,700);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetRightMargin(0.05);
+    gPad->SetBottomMargin(0.12);
+    gPad->SetTopMargin(0.05);
+    hSigmaMC->SetMarkerStyle(24);
+    hSigmaMC->SetLineWidth(2);
+    hSigmaMC->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hSigmaMC->GetYaxis()->SetTitle("Gaussian #sigma (GeV/c^{2})");
+    hSigmaMC->GetYaxis()->SetTitleOffset(1.85);
+    hSigmaMC->GetXaxis()->SetTitleOffset(1.2);
+    hSigmaMC->Draw();
+  }
+}
+
 void ProjectCombinHFAndFit(){
 
   if(configFileName.Length()>0){
@@ -710,7 +756,6 @@ void ProjectCombinHFAndFit(){
 
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
-
     printf("\n---------- pt interval %d (%.1f-%.1f)\n",iPtBin,binLims[iPtBin],binLims[iPtBin+1]);
     minMass=minMass4Fit[iPtBin];
     maxMass=maxMass4Fit[iPtBin];
@@ -1465,7 +1510,7 @@ void ProjectCombinHFAndFit(){
   gPad->SetRightMargin(0.05);    
   hRelStatRot->SetStats(0);
   hRelStatRot->SetMinimum(0.04);
-  hRelStatRot->SetMaximum(0.4);
+  hRelStatRot->SetMaximum(0.48);
   hRelStatRot->Draw();
   hRelStatLS->Draw("same");
   hRelStatME->Draw("same");
