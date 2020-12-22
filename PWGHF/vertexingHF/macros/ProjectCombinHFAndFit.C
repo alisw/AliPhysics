@@ -789,7 +789,9 @@ void ProjectCombinHFAndFit(TString configInput=""){
       Int_t bin1MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin]);
       Int_t bin2MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin+1]-0.0001);
       hMCReflPtBin=h3drefl->ProjectionX(Form("hMCReflPtBin%d",iPtBin),bin1MC,bin2MC,zbin1,zbin2);
+      hMCReflPtBin->SetTitle(Form("%.1f<p_{T}<%.1f GeV/c",binLims[iPtBin],binLims[iPtBin+1]));
       hMCSigPtBin=h3dmcsig->ProjectionX(Form("hMCSigPtBin%d",iPtBin),bin1MC,bin2MC,zbin1,zbin2);
+      hMCSigPtBin->SetTitle(Form("%.1f<p_{T}<%.1f GeV/c",binLims[iPtBin],binLims[iPtBin+1]));
     }
 
     TH1D* hMassPtBinlsp=0x0;
