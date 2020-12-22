@@ -448,7 +448,9 @@ void CheckMCLineShapes(){
   }
 }
 
-void ProjectCombinHFAndFit(){
+void ProjectCombinHFAndFit(TString configInput=""){
+
+  if(configInput!="") configFileName=configInput.Data();
 
   if(configFileName.Length()>0){
     if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
