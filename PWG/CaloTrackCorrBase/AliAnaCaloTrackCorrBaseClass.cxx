@@ -45,6 +45,8 @@ AliAnaCaloTrackCorrBaseClass::AliAnaCaloTrackCorrBaseClass() :
 TObject(), 
 fNModules(20),                fNRCU(2),        
 fFirstModule(0),              fLastModule(19),
+fNSectors(10),       
+fFirstSector(0),              fLastSector(9),
 fNMaxCols(48),                fNMaxRows(24),  
 fNMaxColsFull(48),            fNMaxRowsFull(24),  
 fNMaxRowsFullMin(0),          fNMaxRowsFullMax(24),  
@@ -796,6 +798,9 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
   fFirstModule = 0; 
   fLastModule  = fNModules-1;
   
+  fFirstSector = 0;
+  fLastSector  = fNModules/2 - 1;
+  
   // Set First/Last SM depending on CaloUtils or fiducial cut settings
    
   if ( IsFiducialCutOn() )
@@ -813,13 +818,17 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
         
         if     ( minPhi > 70  && maxPhi < 190) // EMCal
         {
-          fFirstModule = 0;
+          fFirstModule =  0;
           fLastModule  = 11;
+          fFirstSector =  0;
+          fLastSector  =  5;
         }
         else if( minPhi > 250 && maxPhi < 330) // DCal
         {
           fFirstModule = 12;
           fLastModule  = 19;
+          fFirstSector =  6;
+          fLastSector  =  9;
         }
       }
     }
@@ -836,6 +845,9 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
       
       fFirstModule = GetCaloUtils()->GetFirstSuperModuleUsed();
       fLastModule  = GetCaloUtils()->GetLastSuperModuleUsed();
+      
+      fFirstSector =  fFirstModule / 2;
+      fLastSector  =  fLastModule  / 2;
     }
   }
   
@@ -916,8 +928,11 @@ void AliAnaCaloTrackCorrBaseClass::InitCaloParameters()
 //                  GetName(),fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
 //                  fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax);
 
-  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d)",
-                  fNModules,fFirstModule,fLastModule, fNMaxCols,fNMaxRows, 
+  AliDebug(1,Form("N SM %d, first SM %d, last SM %d, N sector %d, first sector %d, last sector %d,"
+                  " SM col-row (%d,%d), Full detector col-row (%d, %d), partial calo row min-max(%d,%d)",
+                  fNModules,fFirstModule,fLastModule, 
+                  fNSectors,fFirstSector,fLastSector, 
+                  fNMaxCols,fNMaxRows, 
                   fNMaxColsFull,fNMaxRowsFull, fNMaxRowsFullMin,fNMaxRowsFullMax));
 }
 
