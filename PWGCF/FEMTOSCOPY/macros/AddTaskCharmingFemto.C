@@ -143,6 +143,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
 
   config->SetPhiEtaBinnign((suffix == "0" && fullBlastQA));
   config->SetmTBinning((suffix == "0" && fullBlastQA));
+  config->SetdPhidEtaPlots((suffix == "0" && fullBlastQA));
 
   config->SetPtQA((suffix == "0" && fullBlastQA));
   config->SetMassQA((suffix == "0" && fullBlastQA));
@@ -158,6 +159,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   if (suffix == "2") {
     config->SetPtQA(true);
     config->SetMassQA(true);
+  }
+
+  if (isMC && (suffix == "11" || suffix == "12" || suffix == "13") ) {
+    config->SetdPhidEtaPlots(true);
   }
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
@@ -200,7 +205,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (suffix == "9") {
     task->SetMassWindow(1.69, 1.74);  // lower sideband
   } else if (suffix == "10") {
-    task->SetMassWindow(1.64, 1.79);  // lower sideband
+    task->SetMassWindow(1.64, 1.69);  // lower sideband
   }
 
   if (isMC) {
