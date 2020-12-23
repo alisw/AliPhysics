@@ -1371,7 +1371,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
-            fNtracks->Fill();
+            fNtracks->Fill(9);
 
             fHistEopAll -> Fill(eop);
             
