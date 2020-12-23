@@ -1510,15 +1510,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
       AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
       if(!track) continue;
-      AliInfo(Form("%d: trackID %d",i,track->GetID()));
+
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
 
       for(Int_t j=0; j<nLambda; j++) {
 
         AliAODv0 *v0 = (AliAODv0*)fLambdaArray->ConstructedAt(j);
         if(!v0) continue;
 
-        if(track->GetID() == v0->GetPosID()) continue;
-        if(track->GetID() == v0->GetNegID()) continue;
+        if(trackID == v0->GetPosID()) continue;
+        if(trackID == v0->GetNegID()) continue;
 
         TLorentzVector trackProton, trackLambda, trackSum;
 
@@ -1568,14 +1570,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
       if(!track) continue;
 
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
+
       for(Int_t j=0; j<nXi; j++) {
 
         AliAODcascade *xi = (AliAODcascade*)fXiArray->ConstructedAt(j);
         if(!xi) continue;
 
-        if(track->GetID() == xi->GetBachID()) continue;
-        if(track->GetID() == xi->GetPosID()) continue;
-        if(track->GetID() == xi->GetNegID()) continue;
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
 
         TLorentzVector trackProton, trackXi, trackSum;
 
@@ -1597,14 +1602,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
       if(!track) continue;
 
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
+
       for(Int_t j=0; j<nOmega; j++) {
 
         AliAODcascade *xi = (AliAODcascade*)fOmegaArray->ConstructedAt(j);
         if(!xi) continue;
 
-        if(track->GetID() == xi->GetBachID()) continue;
-        if(track->GetID() == xi->GetPosID()) continue;
-        if(track->GetID() == xi->GetNegID()) continue;
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
 
         TLorentzVector trackProton, trackOmega, trackSum;
 
