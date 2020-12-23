@@ -712,7 +712,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassK0S        = esdV0->GetEffMass();
 
       // Get topological values
-      dcaV0Dghters    = esdV0->GetDcaV0Daughters();
+      dcaV0Dghters    = TMath::Abs(esdV0->GetDcaV0Daughters());
       dcaPosToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       dcaNegToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       cosPointAngle   = esdV0->GetV0CosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
@@ -787,9 +787,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassK0S        = aodV0->MassK0Short();
 
       // Get topological values
-      dcaV0Dghters    = aodV0->DcaV0Daughters();
-      dcaPosToPrimVtx = aodV0->DcaPosToPrimVertex();
-      dcaNegToPrimVtx = aodV0->DcaNegToPrimVertex();
+      dcaV0Dghters    = TMath::Abs(aodV0->DcaV0Daughters());
+      dcaPosToPrimVtx = TMath::Abs(aodV0->DcaPosToPrimVertex());
+      dcaNegToPrimVtx = TMath::Abs(aodV0->DcaNegToPrimVertex());
       cosPointAngle   = aodV0->CosPointingAngle(primaryVtxPos);
       aodV0->GetXYZ(vtxPosV0);
       radius = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
@@ -905,6 +905,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     Double_t invMassLambdaAsCascDghter = 0.;
 
     Double_t dcaXiDghters     = -1.; 
+    Double_t dcaXiToPrimVtx   = -1.;
     Double_t cosPointAngleXi  = -1.;
     Double_t vtxPosXi[3]      = {-999., -999., -999.};
     Double_t radiusXi         = -999.;
@@ -1010,11 +1011,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Get topological values
       esdXi->GetXYZcascade(vtxPosXi[0], vtxPosXi[1], vtxPosXi[2]);
       esdXi->GetXYZ(vtxPosV0[0], vtxPosV0[1], vtxPosV0[2]);
-      dcaXiDghters     = esdXi->GetDcaXiDaughters();
+      dcaXiDghters     = TMath::Abs(esdXi->GetDcaXiDaughters());
+      dcaXiToPrimVtx   = TMath::Abs(esdXi->GetDcascade(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]));
       cosPointAngleXi  = esdXi->GetCascadeCosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusXi         = TMath::Sqrt(vtxPosXi[0]*vtxPosXi[0] + vtxPosXi[1]*vtxPosXi[1]);
-      dcaV0Dghters     = esdXi->GetDcaV0Daughters();
-      dcaV0ToPrimVtx   = esdXi->GetD(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
+      dcaV0Dghters     = TMath::Abs(esdXi->GetDcaV0Daughters());
+      dcaV0ToPrimVtx   = TMath::Abs(esdXi->GetD(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]));
       cosPointAngleV0  = esdXi->GetV0CosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusV0         = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
       dcaBachToPrimVtx = TMath::Abs(bachTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
@@ -1042,6 +1044,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       aodXi = (AliAODcascade*)aodEvent->GetCascade(iXi);
       if(!aodXi) continue;
 
+      chargeXi = aodXi->ChargeXi();
 
       // Get the tracks for the bachelor and daughters
       AliAODTrack *bachTrack = dynamic_cast<AliAODTrack*>(aodXi->GetDecayVertexXi()->GetDaughter(0));
@@ -1111,16 +1114,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       vtxPosV0[0] = aodXi->DecayVertexV0X();
       vtxPosV0[1] = aodXi->DecayVertexV0Y();
       vtxPosV0[2] = aodXi->DecayVertexV0Z();
-      dcaXiDghters     = aodXi->DcaXiDaughters();
+      dcaXiDghters     = TMath::Abs(aodXi->DcaXiDaughters());
+      dcaXiToPrimVtx   = TMath::Abs(aodXi->DcaXiToPrimVertex());
       cosPointAngleXi  = aodXi->CosPointingAngleXi(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusXi         = TMath::Sqrt(vtxPosXi[0]*vtxPosXi[0] + vtxPosXi[1]*vtxPosXi[1]);
-      dcaV0Dghters     = aodXi->DcaV0Daughters();
-      dcaV0ToPrimVtx   = aodXi->DcaV0ToPrimVertex();
+      dcaV0Dghters     = TMath::Abs(aodXi->DcaV0Daughters());
+      dcaV0ToPrimVtx   = TMath::Abs(aodXi->DcaV0ToPrimVertex());
       cosPointAngleV0  = aodXi->CosPointingAngle(primaryVtxPos);
       radiusV0         = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
-      dcaBachToPrimVtx = aodXi->DcaBachToPrimVertex();
-      dcaPosToPrimVtx  = aodXi->DcaPosToPrimVertex();
-      dcaNegToPrimVtx  = aodXi->DcaNegToPrimVertex();
+      dcaBachToPrimVtx = TMath::Abs(aodXi->DcaBachToPrimVertex());
+      dcaPosToPrimVtx  = TMath::Abs(aodXi->DcaPosToPrimVertex());
+      dcaNegToPrimVtx  = TMath::Abs(aodXi->DcaNegToPrimVertex());
 
       momXiX = aodXi->MomXiX();
       momXiY = aodXi->MomXiY();
@@ -1161,29 +1165,49 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwoCuts"))->Fill(invMassOmegaPlus);
     }
 
-    // Topological cuts
-    if(dcaXiDghters > 1.6) continue;
-    if(dcaV0Dghters > 1.6) continue;
-    if(dcaV0ToPrimVtx < 0.07) continue;
-    if(dcaBachToPrimVtx < 0.05) continue;
-    if(dcaPosToPrimVtx < 0.05) continue;
-    if(dcaNegToPrimVtx < 0.05) continue;
-    if(cosPointAngleXi < 0.98) continue;
-    if(cosPointAngleV0 < 0.97) continue;
-    if(radiusXi < 0.8 || 200 < radiusXi) continue;
-    if(radiusV0 < 1.4 || 200 < radiusV0) continue;
+    Bool_t standerdXi    = kTRUE;
+    Bool_t standerdOmega = kTRUE;
+
+    // Topological cuts for Xi
+    if(dcaXiDghters > 1.6)      standerdXi = kFALSE;
+    if(dcaV0Dghters > 1.6)      standerdXi = kFALSE;
+    if(dcaV0ToPrimVtx < 0.07)   standerdXi = kFALSE;
+    if(dcaBachToPrimVtx < 0.05) standerdXi = kFALSE;
+    if(dcaPosToPrimVtx < 0.05)  standerdXi = kFALSE;
+    if(dcaNegToPrimVtx < 0.05)  standerdXi = kFALSE;
+    if(cosPointAngleXi < 0.98)  standerdXi = kFALSE;
+    if(cosPointAngleV0 < 0.97)  standerdXi = kFALSE;
+    if(radiusXi < 0.8 || 200 < radiusXi) standerdXi = kFALSE;
+    if(radiusV0 < 1.4 || 200 < radiusV0) standerdXi = kFALSE;
+
+    // Topological cuts for Omega
+    if(dcaXiDghters > 0.8)      standerdOmega = kFALSE;
+    if(dcaV0Dghters > 1.2)      standerdOmega = kFALSE;
+    if(dcaV0ToPrimVtx < 0.06)   standerdOmega = kFALSE;
+    if(dcaBachToPrimVtx < 0.03) standerdOmega = kFALSE;
+    if(dcaPosToPrimVtx < 0.02)  standerdOmega = kFALSE;
+    if(dcaNegToPrimVtx < 0.02)  standerdOmega = kFALSE;
+    if(cosPointAngleXi < 0.995) standerdOmega = kFALSE;
+    if(cosPointAngleV0 < 0.97)  standerdOmega = kFALSE;
+    if(radiusV0 < 1.0)          standerdOmega = kFALSE;
 
     dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaAsCascDghter"))->Fill(invMassLambdaAsCascDghter);
 
-    if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) < 0.006) {
+    // Mass window cut for V0
+    if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) > 0.006) {
+      standerdXi    = kFALSE;
+      standerdOmega = kFALSE;
+    }
 
-      // Xi Minus
-      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion
-         && (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
+    if(standerdXi) { // select Xi candidates
+
+      if((chargeXi<0) && // for Xi-
+         (isBachelorPion && isPosProton && isNegPion) && // PID info
+         (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
 
-        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) {
+        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) { // mass window cut for Xi-
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))    ->Fill(dcaXiDghters);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
@@ -1218,25 +1242,29 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           }
         }
       }
-      // Xi Plus
-      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion
-         && (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
+      if((chargeXi>0) && // for Xi+
+         (isBachelorPion && isNegProton && isPosPion) && // PID info
+         (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwCuts"))->Fill(invMassXiPlus);
 
-        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) {
+        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) { // mass window cut for Xi+
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hXipPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(6);
         }
       }
-      // Omega Minus
-      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion
-         && (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
+    }
+
+    if(standerdOmega) { // select Omega candidates
+
+      if((chargeXi<0) && // for Omega-
+         (isBachelorKaon && isPosProton && isNegPion) && // PID info
+         (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
 
-        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) {
+        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) { // mass window cut for Omega-
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
@@ -1271,13 +1299,13 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           }
         }
       }
-      // Omega Plus
-      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion
-         && (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
+      if((chargeXi>0) && // for Omega+
+         (isBachelorKaon && isNegProton && isPosPion) && // PID info
+         (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwCuts"))->Fill(invMassOmegaPlus);
 
-        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) {
+        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) { // mass window cut for Omega+
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegapPt"))->Fill(transvMomXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(8);
