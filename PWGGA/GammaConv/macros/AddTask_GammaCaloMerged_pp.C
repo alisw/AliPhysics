@@ -50,6 +50,7 @@ void AddTask_GammaCaloMerged_pp(
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
+  Bool_t    doOverlapsFromCluster         = kFALSE, // overlaps as event criteria (false) or from single clusters (true)
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -1517,6 +1518,8 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe22700001","0163300000000000"); // INT7  > 1 overlaps
   } else if (trainConfig == 1538){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
     cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe22700001","0163300000000000"); // INT7  > 2 overlaps
+  } else if (trainConfig == 1539){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+    cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe22700001","0163300000000000"); // INT7  > 3 overlaps
 
 
   // systematics pp 13 TeV INT7
@@ -2150,6 +2153,7 @@ void AddTask_GammaCaloMerged_pp(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);//Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  task->SetOverlapFromCluster(doOverlapsFromCluster);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
   //connect containers

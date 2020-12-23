@@ -316,6 +316,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
+  fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(8),
@@ -552,6 +553,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
+  fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
@@ -1841,6 +1843,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistPositronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistPositronClusterMatch->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
       fHistograms->Add(fHistPositronClusterMatch);
+
+      fHistElectronClusterNCellsVsE = new TH2F(Form("ElectronClusterNCellsVsE %s",GetCutNumber().Data()), "Electron clusters NCells vs. E",
+                                                nBinsClusterE, arrClusEBinning, 20, 0.5, 20.5);
+      fHistElectronClusterNCellsVsE->GetYaxis()->SetTitle("N_{cells}");
+      fHistElectronClusterNCellsVsE->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistograms->Add(fHistElectronClusterNCellsVsE);
     }
 
 
@@ -4329,6 +4337,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
         } else {
           fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
         }
+        fHistElectronClusterNCellsVsE->Fill(cluster->E(), cluster->GetNCells());
       }
       fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
       fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
@@ -6233,17 +6242,17 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     break;
     // From TestBeam applied on gamma cluster variation 1
   case 26: // q
-    if (!fUseNCells) fUseNCells=5;
+    if (!fUseNCells) fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 - 0.03);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.210779, -0.0703785);
     break;
     // From TestBeam applied on gamma cluster variation 2
   case 27: // r
-    if (!fUseNCells) fUseNCells=5;
+    if (!fUseNCells) fUseNCells=7;
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
-    fFuncNCellCutEfficiencyEMCal->SetParameters(0.213184, -0.0580118 + 0.03);
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
     break;
     // take only 1 cell clusters
   case 28: // s
@@ -6270,6 +6279,20 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus(0)");
     fFuncNCellCutEfficiencyEMCal->SetParameters(2.71596e-01, 1.80393, 6.50026e-01);
+    break;
+    // From TestBeam applied on all cluster var. 1
+  case 32: // w
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.210779, -0.0703785);
+    break;
+    // From TestBeam applied on all cluster var. 2
+  case 33: // x
+    if (!fUseNCells) fUseNCells=3;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
     break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
