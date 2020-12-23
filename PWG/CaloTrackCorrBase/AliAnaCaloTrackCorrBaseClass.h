@@ -401,6 +401,9 @@ protected:
   Int_t                      fNRCU        ;        ///<  Number of EMCAL/PHOS RCU
   Int_t                      fFirstModule ;        ///<  First EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
   Int_t                      fLastModule  ;        ///<  Last EMCAL/PHOS module, set in CaloUtils or depending fidutial cuts
+  Int_t                      fNSectors    ;        ///<  Number of EMCAL sectors  (pair of SM in same phi) to use in analysis, set in CaloUtils
+  Int_t                      fFirstSector ;        ///<  First EMCAL sector, set in CaloUtils or depending fidutial cuts
+  Int_t                      fLastSector  ;        ///<  Last EMCAL sector, set in CaloUtils or depending fidutial cuts
   Int_t                      fNMaxCols    ;        ///<  Number of EMCAL/PHOS columns per SM
   Int_t                      fNMaxRows    ;        ///<  Number of EMCAL/PHOS rows per SM
   Int_t                      fNMaxColsFull;        ///<  Number of EMCAL/PHOS columns full detector
@@ -480,7 +483,7 @@ private:
   AliAnaCaloTrackCorrBaseClass & operator = (const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrBaseClass,32) ;
+  ClassDef(AliAnaCaloTrackCorrBaseClass,33) ;
   /// \endcond
 
 } ;

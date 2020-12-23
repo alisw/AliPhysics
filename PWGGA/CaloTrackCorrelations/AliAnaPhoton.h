@@ -85,6 +85,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeHistogramsPerSM()   { fFillSSPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistogramsPerSM()  { fFillSSPerSMHistograms = kFALSE ; }  
   
+  void         SwitchOnFillShowerShapeEtaHistograms()     { fFillSSEtaHistograms   = kTRUE  ; }
+  void         SwitchOffFillShowerShapeEtaHistograms()    { fFillSSEtaHistograms   = kFALSE ; }
+
   void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
 
@@ -244,6 +247,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
+  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms
+
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
   Bool_t   fFillConversionVertexHisto   ;           ///<  Fill histograms depending on the conversion vertex
@@ -288,6 +293,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   //
   // Histograms
   //
+  /// Total number of EMCal sectors, half of number of SM
+  static const Int_t fgkNSectors = 10;     
+
   /// Total number basic cluster cuts
   static const Int_t fgkNClusterCuts = 11 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
@@ -520,6 +528,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLam0NxNOrLam0[fgkNxNcases][fgkNssTypes];    //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT, per particle origin
   TH3F * fhEnNxNFracNLM;                                 //!<! Cluster energy over  restricted to NxN eenergy vs  pT vs NLM
 
+  TH3F * fhLam0NxNCenPerSM[20] ;                         //!<! Cluster lambda0 vs  Pt vs centrality, in different SM 
+  TH2F * fhLam0NxNPerSM   [20] ;                         //!<! Cluster lambda0 vs  Pt, in different SM
+
+  TH3F * fhLam0NxNEta[fgkNSectors];                      //!<! Cluster lambda0 vs  Pt vs eta
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  TH3F **fhLam0NxNEtaPerCen;                             //![GetNCentrBin()*fgkNSectors]
+
   TH3F * fhLam0NxNOrLam0Cen[fgkNxNcases];                //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT vs centrality
   ///<  Cluster long axis restricted to NxN vs  pT vs nlm, per centrality
   TH3F **fhLam0NxNNLMPerCen;                             //![GetNCentrBin()]
@@ -708,6 +723,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 //TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
 
+  TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
+
   TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
   TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
   TH2F *  fhLocalRegionClusterMultiplicity[6];                   //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, for different cocktail merging cases
@@ -775,7 +794,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,57) ;
+  ClassDef(AliAnaPhoton,58) ;
   /// \endcond
 
 } ;
