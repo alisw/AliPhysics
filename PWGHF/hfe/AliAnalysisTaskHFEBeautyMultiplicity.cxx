@@ -628,9 +628,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtracks->GetYaxis()->SetTitle("counts");
     fNtracks->GetXaxis()->SetBinLabel(1,"matching tracks");
     fNtracks->GetXaxis()->SetBinLabel(2,"AOD standard");
-    //fNtracks->GetXaxis()->SetBinLabel(3,"TPC and ITS refit");
-    fNtracks->GetXaxis()->SetBinLabel(3,"TPCCrossedRow cut");
-    fNtracks->GetXaxis()->SetBinLabel(4,"TPC cluster cut");
+    fNtracks->GetXaxis()->SetBinLabel(3,"TPC and ITS refit");
+    fNtracks->GetXaxis()->SetBinLabel(4,"TPCCrossedRow cut");
+    //fNtracks->GetXaxis()->SetBinLabel(4,"TPC cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(5,"ITS cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(6,"dE/dx calculation");
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
@@ -1271,17 +1271,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fNtracks->Fill(2);
             
             //---- 3.TPC cluster cut ----
-            //if(track->GetTPCNcls() < CutTPCNCls) continue;
-            //fNtracks->Fill(3);
-
-	    //---- 3.TPC CrossedRow cut ----
-            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
+            if(track->GetTPCNcls() < CutTPCNCls) continue;
             fNtracks->Fill(3);
+
+	    //---- 4.TPC CrossedRow cut ----
+            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
+            fNtracks->Fill(4);
 
             
             //---- 4.ITS cluster cut ----
-            if(track->GetITSNcls() < CutITSNCls) continue;
-            fNtracks->Fill(4);
+            //if(track->GetITSNcls() < CutITSNCls) continue;
+            //fNtracks->Fill(4);
             
             //---- 5.TPC cluster cut for dE/dx calculation ----
             if(track->GetTPCsignalN() < CutTPCdEdx) continue;
