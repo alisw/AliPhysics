@@ -737,6 +737,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103v00000000","0453503000000000"); // INT7
   } else if(trainConfig == 527)  { // EDC 13 TeV, change of mass cut w // EMC-EMC - 4 sigma - gamma selection
     cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103w00000000","0453503000000000"); // INT7
+  } else if(trainConfig == 528)  { // EDC 13 TeV, change of mass cut x // EMC-EMC - 2 sigma - gamma selection
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c510b0a","0103103x00000000","0453503000000000"); // INT7
 
 
 
