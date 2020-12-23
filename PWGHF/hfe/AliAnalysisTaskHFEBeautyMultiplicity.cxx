@@ -1371,7 +1371,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
-            fNtracks->Fill(10);
+            fNtracks->Fill();
 
             fHistEopAll -> Fill(eop);
             
@@ -1430,7 +1430,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
 		    	}
 
-                    	if(pid_eleD || TMath::Abs(pidM)==4122)
+                    	if(pid_eleD)
 			{
 			    	fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    	fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
@@ -1649,8 +1649,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::FindMother(AliAODMCParticle *part, in
 Bool_t AliAnalysisTaskHFEBeautyMultiplicity::IsDdecay(int mpid)      // D mason
 {
     int abmpid = TMath::Abs(mpid);
-    // D+ : 411,        D0 : 421,        D*+ : 413,       D*0 : 423,       Ds+ : 431,       Ds*+ : 433
-    if(abmpid == 411 || abmpid == 421 || abmpid == 413 || abmpid == 423 || abmpid == 431 || abmpid == 433)
+    // D+ : 411,        D0 : 421,        D*+ : 413,       D*0 : 423,       Ds+ : 431,       Ds*+ : 433       Lc : 4122
+    if(abmpid == 411 || abmpid == 421 || abmpid == 413 || abmpid == 423 || abmpid == 431 || abmpid == 433 || abmpid == 4122)
       {
           return kTRUE;
       }
