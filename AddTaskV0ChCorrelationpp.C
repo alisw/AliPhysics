@@ -17,7 +17,6 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
                               bool effCorr = 0, bool isMC=0       
                               )
 {
-  // Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -168,6 +167,7 @@ AliAnalysisDataContainer *coutput7
    cinput1->SetData(effList);
 
 return task;
+
   
 }
 
