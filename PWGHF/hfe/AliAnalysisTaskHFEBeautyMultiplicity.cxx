@@ -636,7 +636,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
     fNtracks->GetXaxis()->SetBinLabel(8,"DCA cut");
     fNtracks->GetXaxis()->SetBinLabel(9,"chi2 cut");
-    //fNtracks->GetXaxis()->SetBinLabel(10,"TPCCrossedRow cut");
     fNtracks->GetXaxis()->SetBinLabel(10,"Eta cut");
     
   //pT vs E/p (electron)
@@ -1271,17 +1270,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fNtracks->Fill(2);
             
             //---- 3.TPC cluster cut ----
-            if(track->GetTPCNcls() < CutTPCNCls) continue;
-            fNtracks->Fill(3);
+            //if(track->GetTPCNcls() < CutTPCNCls) continue;
+            //fNtracks->Fill(3);
 
 	    //---- 4.TPC CrossedRow cut ----
             if(TPCCrossedRows < CutTPCNCrossedRow) continue;
-            fNtracks->Fill(4);
+            fNtracks->Fill(3);
 
             
             //---- 4.ITS cluster cut ----
-            //if(track->GetITSNcls() < CutITSNCls) continue;
-            //fNtracks->Fill(4);
+            if(track->GetITSNcls() < CutITSNCls) continue;
+            fNtracks->Fill(4);
             
             //---- 5.TPC cluster cut for dE/dx calculation ----
             if(track->GetTPCsignalN() < CutTPCdEdx) continue;
