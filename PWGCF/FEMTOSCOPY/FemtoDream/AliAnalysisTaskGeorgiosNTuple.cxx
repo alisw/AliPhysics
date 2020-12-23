@@ -323,11 +323,11 @@ fGeorgiosTree->Branch("Trackv0Pz",&fTTrackv0Pz,"fTTrackv0Pz[fTnv0][2]/F");
 //fGeorgiosTree->Branch("Trackv0Eta",&fTTrackv0Eta,"fTTrackv0Eta[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0Charge",&fTTrackv0Charge,"fTTrackv0Charge[fTnv0][2]/S");
 fGeorgiosTree->Branch("Trackv0DCA",&fTTrackv0DCA,"fTTrackv0DCA[fTnv0][2]/F");
+fGeorgiosTree->Branch("Trackv0TPCsigma",&fTTrackv0TPCsigma,"fTTrackv0TPCsigma[fTnv0][2]/F");
+//fGeorgiosTree->Branch("Trackv0TOFsigma",&fTTrackv0TOFsigma,"fTTrackv0TOFsigma[fTnv0][2]/F");
+fGeorgiosTree->Branch("Trackv0Ncl",&fTTrackv0Ncl,"fTTrackv0Ncl[fTnv0][2]/I");
 /*
  * reduce disk space for background
-fGeorgiosTree->Branch("Trackv0TPCsigma",&fTTrackv0TPCsigma,"fTTrackv0TPCsigma[fTnv0][2]/F");
-fGeorgiosTree->Branch("Trackv0TOFsigma",&fTTrackv0TOFsigma,"fTTrackv0TOFsigma[fTnv0][2]/F");
-fGeorgiosTree->Branch("Trackv0Ncl",&fTTrackv0Ncl,"fTTrackv0Ncl[fTnv0][2]/I");
 fGeorgiosTree->Branch("Trackv0CrR",&fTTrackv0CrR,"fTTrackv0CrR[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0CrF",&fTTrackv0CrF,"fTTrackv0CrF[fTnv0][2]/F");
 fGeorgiosTree->Branch("Trackv0ITStime",&fTTrackv0ITStime,"fTTrackv0ITStime[fTnv0][2]/O");
@@ -375,11 +375,11 @@ fGeorgiosTree->Branch("Trackv0ID",&fTTrackv0ID,"fTTrackv0ID[fTnv0][2]/I");
 // fGeorgiosTree->Branch("TrackEta",&fTTrackEta,"fTTrackEta[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackCharge",&fTTrackCharge,"fTTrackCharge[fTnCascade][3]/S");
  fGeorgiosTree->Branch("TrackDCA",&fTTrackDCA,"fTTrackDCA[fTnCascade][3]/F");
+ fGeorgiosTree->Branch("TrackTPCsigma",&fTTrackTPCsigma,"fTTrackTPCsigma[fTnCascade][3]/F");
+// fGeorgiosTree->Branch("TrackTOFsigma",&fTTrackTOFsigma,"fTTrackTOFsigma[fTnCascade][3]/F");
+ fGeorgiosTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
 /*
  * reducing disk space for background
- fGeorgiosTree->Branch("TrackTPCsigma",&fTTrackTPCsigma,"fTTrackTPCsigma[fTnCascade][3]/F");
- fGeorgiosTree->Branch("TrackTOFsigma",&fTTrackTOFsigma,"fTTrackTOFsigma[fTnCascade][3]/F");
- fGeorgiosTree->Branch("TrackNcl",&fTTrackNcl,"fTTrackNcl[fTnCascade][3]/I");
  fGeorgiosTree->Branch("TrackCrR",&fTTrackCrR,"fTTrackCrR[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackCrF",&fTTrackCrF,"fTTrackCrF[fTnCascade][3]/F");
  fGeorgiosTree->Branch("TrackITStime",&fTTrackITStime,"fTTrackITStime[fTnCascade][3]/O");
@@ -529,11 +529,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 //    fTTrackv0Eta[ii][jj]=-100000.;
     fTTrackv0Charge[ii][jj]=-10;
     fTTrackv0DCA[ii][jj]=-100000.;
+    fTTrackv0TPCsigma[ii][jj]=-100000.;
+    //fTTrackv0TOFsigma[ii][jj]=-100000.;
+    fTTrackv0Ncl[ii][jj]=-100000;
 /*
  * reduce disk space for background
-    fTTrackv0TPCsigma[ii][jj]=-100000.;
-    fTTrackv0TOFsigma[ii][jj]=-100000.;
-    fTTrackv0Ncl[ii][jj]=-100000;
     fTTrackv0CrR[ii][jj]=-100000.;
     fTTrackv0CrF[ii][jj]=-100000.;
     fTTrackv0Shared[ii][jj]=-100000;
@@ -657,11 +657,11 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 //    fTTrackEta[ii][jj]=-100000.;
     fTTrackCharge[ii][jj]=-10;
     fTTrackDCA[ii][jj]=-100000.;
+    fTTrackTPCsigma[ii][jj]=-100000.;
+//    fTTrackTOFsigma[ii][jj]=-100000.;
+    fTTrackNcl[ii][jj]=-100000;
 /*
  * disk space for background
-    fTTrackTPCsigma[ii][jj]=-100000.;
-    fTTrackTOFsigma[ii][jj]=-100000.;
-    fTTrackNcl[ii][jj]=-100000;
     fTTrackCrR[ii][jj]=-100000.;
     fTTrackCrF[ii][jj]=-100000.;
     fTTrackShared[ii][jj]=-100000;
@@ -876,20 +876,16 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
   if(jj==0){ //select the proton
    if(Thev0Charge==1) {TheTrackv0 = Thev0->GetPosDaughter();fTTrackv0DCA[fTnv0][jj]= Thev0->GetDCADaugPosVtx();}
    if(Thev0Charge==-1) {TheTrackv0 = Thev0->GetNegDaughter();fTTrackv0DCA[fTnv0][jj]= Thev0->GetDCADaugNegVtx();}
-/*
- * disk space
    fTTrackv0TPCsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTPC((int) (AliPID::kProton)));
-   fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kProton)));
-*/  
+   //fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kProton)));
+
   }
   else if(jj==1) { //select the pion
    if(Thev0Charge==1) {TheTrackv0 = Thev0->GetNegDaughter();fTTrackv0DCA[fTnv0][jj]= Thev0->GetDCADaugNegVtx();}
    if(Thev0Charge==-1) {TheTrackv0 = Thev0->GetPosDaughter();fTTrackv0DCA[fTnv0][jj]= Thev0->GetDCADaugPosVtx();}
-/*
- * disk space   
    fTTrackv0TPCsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTPC((int) (AliPID::kPion)));
-   fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kPion)));
-*/   
+   //fTTrackv0TOFsigma[fTnv0][jj]=(TheTrackv0->GetnSigmaTOF((int) (AliPID::kPion)));
+
    }
   
 #ifdef MONTECARLO
@@ -911,15 +907,14 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::Fillv0(AliFemtoDreamv0 *Thev0, int Thev0Ch
    fTTrackv0Pz[fTnv0][jj] = mom.Z();
 //   fTTrackv0Eta[fTnv0][jj] = TheTrackv0->GetEta().at(0);
    fTTrackv0Charge[fTnv0][jj] = TheTrackv0->GetCharge().at(0);
-/*
- * Excluding to save disk space
+
    fTTrackv0Ncl[fTnv0][jj] = TheTrackv0->GetNClsTPC();
-   fTTrackv0CrF[fTnv0][jj] = TheTrackv0->GetRatioCr();
-   fTTrackv0CrR[fTnv0][jj] = TheTrackv0->GetTPCCrossedRows();
-   fTTrackv0ITStime[fTnv0][jj] = TheTrackv0->GetHasITSHit();
-   fTTrackv0TOFtime[fTnv0][jj] = TheTrackv0->GetTOFTimingReuqirement();
-   fTTrackv0FilterBit[fTnv0][jj] = TheTrackv0->GetFilterMap();
-*/
+   //fTTrackv0CrF[fTnv0][jj] = TheTrackv0->GetRatioCr();
+   //fTTrackv0CrR[fTnv0][jj] = TheTrackv0->GetTPCCrossedRows();
+   //fTTrackv0ITStime[fTnv0][jj] = TheTrackv0->GetHasITSHit();
+   //fTTrackv0TOFtime[fTnv0][jj] = TheTrackv0->GetTOFTimingReuqirement();
+   //fTTrackv0FilterBit[fTnv0][jj] = TheTrackv0->GetFilterMap();
+
 //   fTTrackv0Phi[fTnv0][jj] = (TheTrackv0->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
    fTTrackv0ID[fTnv0][jj] = TheTrackv0->GetIDTracks().at(0);
   }
@@ -965,22 +960,22 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
   if(jj==0){ //select the proton
    if(fTCascadeCharge[fTnCascade]==-1) {TheTrack = TheCasc->GetPosDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0PosToPrimVtx();}
    if(fTCascadeCharge[fTnCascade]==1) {TheTrack = TheCasc->GetNegDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0NegToPrimVtx();}
-/*
    fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kProton)));
+/*
    fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kProton)));
 */
   }else if(jj==1) { //select the pion
    if(fTCascadeCharge[fTnCascade]==-1) {TheTrack = TheCasc->GetNegDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0NegToPrimVtx();}
    if(fTCascadeCharge[fTnCascade]==1) {TheTrack = TheCasc->GetPosDaug();fTTrackDCA[fTnCascade][jj]= TheCasc->Getv0PosToPrimVtx();}
-/*  
    fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kPion)));
+/*  
    fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kPion)));
 */   
   }else if(jj==2) { //select the bachelor
    TheTrack = TheCasc->GetBach();
    fTTrackDCA[fTnCascade][jj]= TheCasc->BachDCAPrimVtx();
-/*  
    fTTrackTPCsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kKaon)));
+/*  
    fTTrackTOFsigma[fTnCascade][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
 */   
   }
@@ -1004,9 +999,9 @@ Bool_t AliAnalysisTaskGeorgiosNTuple::FillCascade(AliFemtoDreamCascade *TheCasc)
   fTTrackPz[fTnCascade][jj] = mom.Z();
 //  fTTrackEta[fTnCascade][jj] = TheTrack->GetEta().at(0);
   fTTrackCharge[fTnCascade][jj] = TheTrack->GetCharge().at(0);
+  fTTrackNcl[fTnCascade][jj] = TheTrack->GetNClsTPC();
 /*
  *
-  fTTrackNcl[fTnCascade][jj] = TheTrack->GetNClsTPC();
   fTTrackCrF[fTnCascade][jj] = TheTrack->GetRatioCr();
   fTTrackCrR[fTnCascade][jj] = TheTrack->GetTPCCrossedRows();
   fTTrackITStime[fTnCascade][jj] = TheTrack->GetHasITSHit();
