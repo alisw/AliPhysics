@@ -376,6 +376,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
     Int_t fDoVZER0ParamVertexCorr; /// Flag to use the zvtx correction from (0=none, 1=usual d2h, 2=AliESDUtils for VZERO multiplicity)
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     AliNormalizationCounter *fCounterC;           //!<!Counter for normalization, corrected multiplicity
+    TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
 
   TList    *fOutputMass;          //!<! list send on output slot 1
   TList    *fOutputMassPt;        //!<! list send on output slot 6
@@ -435,10 +436,12 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   Bool_t    fEnablePileupRejVZEROTPCcls;
   Bool_t    fRejectOutOfBunchPileUp;
   
-  TH3F *h3Invmass[5];     //!<!
-    TH3F *h3Invmass_19[5];     //!<!
-    TH3F *h3Invmass_1029[5];     //!<!
-    TH3F *h3Invmass_3059[5];     //!<!
+  TH3F *h3Invmass[8];     //!<!
+    TH3F *h3Invmass_19[8];     //!<!
+    TH3F *h3Invmass_1029[8];     //!<!
+    TH3F *h3Invmass_3059[8];     //!<!
+    TH3F *h3Invmass_19999[8];     //!<!
+    TH3F *h3Invmass_6099[8];     //!<!
   // = 																   =
   AliRDHFCutsD0toKpi *fCut4BDTptbin;
   																	
