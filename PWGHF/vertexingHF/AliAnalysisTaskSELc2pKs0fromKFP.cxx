@@ -58,6 +58,7 @@ ClassImp(AliAnalysisTaskSELc2pKs0fromKFP) // classimp: necessary for root
 AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   AliAnalysisTaskSE(),
   fIsMC(kFALSE),
+  fIsAnaLc2Lpi(kFALSE),
   fPID(0),
   fPIDCombined(0),
   fAnaCuts(0),
@@ -94,6 +95,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
 AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* name, AliRDHFCutsKFP* cuts) :
   AliAnalysisTaskSE(name),
   fIsMC(kFALSE),
+  fIsAnaLc2Lpi(kFALSE),
   fPID(0),
   fPIDCombined(0),
   fAnaCuts(cuts),
@@ -353,7 +355,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
   fHistEvents->Fill(1);
 
   
-  TClonesArray *arrayLc2pKs0 = NULL;
+  TClonesArray *arrayLc2pKs0orLpi = NULL;
   if (!aodEvent && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
     // event in memory rather than the input (ESD) event.
@@ -364,10 +366,10 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
     if (aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-      arrayLc2pKs0 = (TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
+      arrayLc2pKs0orLpi = (TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
     }
   } else {
-    arrayLc2pKs0 = (TClonesArray*)aodEvent->GetList()->FindObject("CascadesHF");
+    arrayLc2pKs0orLpi = (TClonesArray*)aodEvent->GetList()->FindObject("CascadesHF");
   }
 
 
@@ -491,7 +493,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 //------------------------------------------------
   
   fPID = fInputHandler->GetPIDResponse();
-  MakeAnaLcFromCascadeHF(arrayLc2pKs0, aodEvent, mcArray, PV);
+  MakeAnaLcFromCascadeHF(arrayLc2pKs0orLpi, aodEvent, mcArray, PV);
 
   PostData(2, fCounter);
   PostData(3, fTree_Event);                           // stream the results the analysis of this event to
@@ -558,57 +560,92 @@ Bool_t AliAnalysisTaskSELc2pKs0fromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       Int_t pdgCodeDaugh1 = daugh1->GetPdgCode();
       AliAODMCParticle* bachelorMC = daugh0;
       AliAODMCParticle* v0MC = daugh1;
-      if ( TMath::Abs(pdgCodeDaugh0)==2212 || TMath::Abs(pdgCodeDaugh1)==2212 ) {
-        AliDebug(1, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
-      }
-      if ( (TMath::Abs(pdgCodeDaugh0)==311 && TMath::Abs(pdgCodeDaugh1)==2212) || (TMath::Abs(pdgCodeDaugh0)==2212 && TMath::Abs(pdgCodeDaugh1)==311) ) {
-        if ( TMath::Abs(pdgCodeDaugh0)==311 ) {
-          bachelorMC = daugh1;
-          v0MC = daugh0;
+      if (!fIsAnaLc2Lpi) {
+        if ( TMath::Abs(pdgCodeDaugh0)==2212 || TMath::Abs(pdgCodeDaugh1)==2212 ) {
+          AliDebug(1, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
         }
-        if ( v0MC->GetNDaughters()!=1 ) {
-          AliDebug(2, "The K0 does not decay in 1 body only! Impossible... Continuing...");
-          continue;
-        }
-        AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
-        Int_t labelK0daugh = v0MC->GetDaughterLabel(0);
-        AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
-        if ( !partK0S ) {
-          AliError("Error while casting particle! returning a NULL array");
-          continue;
-        }
+        if ( (TMath::Abs(pdgCodeDaugh0)==311 && TMath::Abs(pdgCodeDaugh1)==2212) || (TMath::Abs(pdgCodeDaugh0)==2212 && TMath::Abs(pdgCodeDaugh1)==311) ) {
+          if ( TMath::Abs(pdgCodeDaugh0)==311 ) {
+            bachelorMC = daugh1;
+            v0MC = daugh0;
+          }
+          if ( v0MC->GetNDaughters()!=1 ) {
+            AliDebug(2, "The K0 does not decay in 1 body only! Impossible... Continuing...");
+            continue;
+          }
+          AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
+          Int_t labelK0daugh = v0MC->GetDaughterLabel(0);
+          AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
+          if ( !partK0S ) {
+            AliError("Error while casting particle! returning a NULL array");
+            continue;
+          }
 //        cout << "=== Lc" << pdg << endl;
 //        cout << "=== pdgCodeDaugh0 " << pdgCodeDaugh0 << endl;
 //        cout << "=== pdgCodeDaugh1 " << pdgCodeDaugh1 << endl;
 //        cout << "=== K0 " << partK0S->GetPdgCode() << endl;
-        if ( TMath::Abs(partK0S->GetPdgCode()) != 310 ) {
-          AliDebug(2, "The K0 daughter is not a K0S");
-          continue;
+          if ( TMath::Abs(partK0S->GetPdgCode()) != 310 ) {
+            AliDebug(2, "The K0 daughter is not a K0S");
+            continue;
+          }
+          //=== check K0S decay ===
+          if ( partK0S->GetNDaughters() != 2 ) {
+            AliDebug(2, "The K0S does not decay in 2 bodies");
+            continue;
+          }
+          AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
+          Int_t labelK0Sdaugh0 = partK0S->GetDaughterLabel(0);
+          Int_t labelK0Sdaugh1 = partK0S->GetDaughterLabel(1);
+          AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
+          AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
+          if ( !daughK0S0 || !daughK0S1 ) {
+            AliDebug(2, "Could not access K0S daughters, continuing...");
+            continue;
+          }
+          AliDebug(2, "Step 4 ok: Could access K0S daughters, continuing...");
+          Int_t pdgK0Sdaugh0 = daughK0S0->GetPdgCode();
+          Int_t pdgK0Sdaugh1 = daughK0S1->GetPdgCode();
+          if ( TMath::Abs(pdgK0Sdaugh0)!=211 || TMath::Abs(pdgK0Sdaugh1)!=211 ) {
+            AliDebug(2, "The K0S does not decay in pi+pi-, continuing");
+            continue;
+          }
+          if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
+            Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
+            FillTreeGenLc(mcPart, CheckOrigin);
+          }
         }
-        //=== check K0S decay ===
-        if ( partK0S->GetNDaughters() != 2 ) {
-          AliDebug(2, "The K0S does not decay in 2 bodies");
-          continue;
+      }
+      if (fIsAnaLc2Lpi) {
+        if ( TMath::Abs(pdgCodeDaugh0)==3122 || TMath::Abs(pdgCodeDaugh1)==3122 ) {
+          AliDebug(1, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
         }
-        AliDebug(2, "Step 3 ok: The K0 daughter is a K0S and does decay in 2 bodies");
-        Int_t labelK0Sdaugh0 = partK0S->GetDaughterLabel(0);
-        Int_t labelK0Sdaugh1 = partK0S->GetDaughterLabel(1);
-        AliAODMCParticle* daughK0S0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh0));
-        AliAODMCParticle* daughK0S1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0Sdaugh1));
-        if ( !daughK0S0 || !daughK0S1 ) {
-          AliDebug(2, "Could not access K0S daughters, continuing...");
-          continue;
-        }
-        AliDebug(2, "Step 4 ok: Could access K0S daughters, continuing...");
-        Int_t pdgK0Sdaugh0 = daughK0S0->GetPdgCode();
-        Int_t pdgK0Sdaugh1 = daughK0S1->GetPdgCode();
-        if ( TMath::Abs(pdgK0Sdaugh0)!=211 || TMath::Abs(pdgK0Sdaugh1)!=211 ) {
-          AliDebug(2, "The K0S does not decay in pi+pi-, continuing");
-          continue;
-        }
-        if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
-          Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-          FillTreeGenLc(mcPart, CheckOrigin);
+        if ( (TMath::Abs(pdgCodeDaugh0)==211 && TMath::Abs(pdgCodeDaugh1)==3122) || (TMath::Abs(pdgCodeDaugh0)==3122 && TMath::Abs(pdgCodeDaugh1)==211) ) {
+          if ( TMath::Abs(pdgCodeDaugh0)==3122 ) {
+            bachelorMC = daugh1;
+            v0MC = daugh0;
+          }
+          if ( v0MC->GetNDaughters()!=2 ) {
+            AliDebug(2, "The Lambda does not decay in 2 bodies");
+            continue;
+          }
+          AliDebug(2, "Step 2 ok: The Lambda does decay in 2 bodies");
+          Int_t labelLamDaugh0 = v0MC->GetDaughterLabel(0);
+          Int_t labelLamDaugh1 = v0MC->GetDaughterLabel(1);
+          AliAODMCParticle* daughLam0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelLamDaugh0));
+          AliAODMCParticle* daughLam1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelLamDaugh1));
+          if ( !daughLam0 || !daughLam1 ) {
+            AliDebug(2, "Could not access Lambda daughters, continuing...");
+            continue;
+          }
+          AliDebug(2, "Step 3 ok: Could access Lambda daughters, continuing...");
+          Int_t pdgLamDaugh0 = daughLam0->GetPdgCode();
+          Int_t pdgLamDaugh1 = daughLam1->GetPdgCode();
+          if ( (TMath::Abs(pdgLamDaugh0)==2212 && TMath::Abs(pdgLamDaugh1)==211) || (TMath::Abs(pdgLamDaugh0)==211 && TMath::Abs(pdgLamDaugh1)==2212) ) {
+            if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
+              Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
+              FillTreeGenLc(mcPart, CheckOrigin);
+            }
+          }
         }
       }
     }
@@ -644,7 +681,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV)
+void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0orLpi, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV)
 {
   // Main analysis called from "UserExec"
 
@@ -652,7 +689,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
 //  std::cout.setf(std::ios::showpoint);
 //  std::cout.precision(3);
 
-  UInt_t nCasc = arrayLc2pKs0->GetEntriesFast();
+  UInt_t nCasc = arrayLc2pKs0orLpi->GetEntriesFast();
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   Double_t covP[21], covN[21], covB[21];
   const Int_t NDaughters = 2;
@@ -662,31 +699,31 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
     // Lc candidates
-    AliAODRecoCascadeHF *Lc2pKs0 = dynamic_cast<AliAODRecoCascadeHF*>(arrayLc2pKs0->At(iCasc));
-    if (!Lc2pKs0) {
+    AliAODRecoCascadeHF *Lc2pKs0orLpi = dynamic_cast<AliAODRecoCascadeHF*>(arrayLc2pKs0orLpi->At(iCasc));
+    if (!Lc2pKs0orLpi) {
       AliDebug(2,Form("Cascade %d doens't exist, skipping",iCasc));
       continue;
     }
 
     // --- Needed for newer samples ---
-    if (!vHF->FillRecoCasc(aodEvent, Lc2pKs0, kFALSE)) { // Fill data members of candidate if not done
+    if (!vHF->FillRecoCasc(aodEvent, Lc2pKs0orLpi, kFALSE)) { // Fill data members of candidate if not done
       AliDebug(2,Form("Cascade %d not refilled, skipping",iCasc));
       continue;
     }
     // --------------------------------
 
-    if (!(Lc2pKs0->CheckCascadeFlags())) {
+    if (!(Lc2pKs0orLpi->CheckCascadeFlags())) {
       AliDebug(2,Form("Cascade %d is not flagged as Lc candidate",iCasc));
       continue;
     }
 
-    if (Lc2pKs0->GetNDaughters()!=2) {
-      AliDebug(2,Form("Cascade %d does not have 2 daughters (nDaughters=%d)",iCasc,Lc2pKs0->GetNDaughters()));
+    if (Lc2pKs0orLpi->GetNDaughters()!=2) {
+      AliDebug(2,Form("Cascade %d does not have 2 daughters (nDaughters=%d)",iCasc,Lc2pKs0orLpi->GetNDaughters()));
       continue;
     }
 
-    AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2pKs0->Getv0());
-    AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2pKs0->GetBachelor());
+    AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2pKs0orLpi->Getv0());
+    AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2pKs0orLpi->GetBachelor());
     if (!v0part || !bachPart) {
       AliDebug(2,Form("Cascade %d has no V0 or no bachelor object",iCasc));
       continue;
@@ -705,8 +742,8 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
       continue;
     }
 
-    AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0PositiveTrack());
-    AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0NegativeTrack());
+    AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2pKs0orLpi->Getv0PositiveTrack());
+    AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2pKs0orLpi->Getv0NegativeTrack());
     if (!v0Pos || !v0Neg) {
       AliDebug(2,Form("V0 by cascade %d has no V0positive or V0negative object",iCasc));
       continue;
@@ -721,142 +758,355 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
     
     // check charge of the first daughter, if negative, define it as the second one
     if (v0Pos->Charge()<0) {
-      v0Pos = (AliAODTrack*) (Lc2pKs0->Getv0NegativeTrack());
-      v0Neg = (AliAODTrack*) (Lc2pKs0->Getv0PositiveTrack());
+      v0Pos = (AliAODTrack*) (Lc2pKs0orLpi->Getv0NegativeTrack());
+      v0Neg = (AliAODTrack*) (Lc2pKs0orLpi->Getv0PositiveTrack());
     }
 
     // === pre-selection for Lc ===
-    if ( !fAnaCuts->PreSelForLc2pKs0(Lc2pKs0) ) continue;
-
-    if ( fabs(v0part->MassLambda()-massLam_PDG) <= fAnaCuts->GetProdMassTolLambda() ) continue;
-    if ( fabs(v0part->MassAntiLambda()-massLam_PDG) <= fAnaCuts->GetProdMassTolLambda() ) continue;
+    if (!fIsAnaLc2Lpi) {
+      if ( !fAnaCuts->PreSelForLc2pKs0(Lc2pKs0orLpi) ) continue;
+      if ( fabs(v0part->MassLambda()-massLam_PDG) <= fAnaCuts->GetProdMassRejLambda() ) continue;
+      if ( fabs(v0part->MassAntiLambda()-massLam_PDG) <= fAnaCuts->GetProdMassRejLambda() ) continue;
+    }
+    if (fIsAnaLc2Lpi) {
+      if ( !fAnaCuts->PreSelForLc2Lpi(Lc2pKs0orLpi) ) continue;
+      if ( fabs(v0part->MassK0Short()-massKs0_PDG) <= fAnaCuts->GetProdMassRejKs0() ) continue;
+    }
 //    if ( v0part->InvMass2Prongs(0,1,11,11) <= fAnaCuts->GetMassCutEplusEminus() ) continue; // InvMass of e+e-
     if ( v0part->InvMass2Prongs(0,1,11,11) <= 0.1 ) continue; // InvMass of e+e-
     // ============================
 
     if ( !bachPart->GetCovarianceXYZPxPyPz(covB) || !v0Pos->GetCovarianceXYZPxPyPz(covP) || !v0Neg->GetCovarianceXYZPxPyPz(covN) ) continue;
     if ( !AliVertexingHFUtils::CheckAODtrackCov(bachPart) || !AliVertexingHFUtils::CheckAODtrackCov(v0Pos) || !AliVertexingHFUtils::CheckAODtrackCov(v0Neg) ) continue;
-    
-    KFParticle kfpProton;
-    if (bachPart->Charge()>0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, 2212);
-    if (bachPart->Charge()<0) kfpProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, -2212);
 
-    KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, 211);
-    KFParticle kfpPionMinus  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, -211);
+    KFParticle kfpBach;
 
-    KFParticle kfpKs0;
-    const KFParticle *Ks0Daughters[2] = {&kfpPionPlus, &kfpPionMinus};
-    kfpKs0.Construct(Ks0Daughters, NDaughters);
-    Float_t massKs0_rec=0., err_massKs0_rec=0.;
-    kfpKs0.GetMass(massKs0_rec, err_massKs0_rec);
+    if (!fIsAnaLc2Lpi) {
+      if (bachPart->Charge()>0) kfpBach = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, 2212); // proton
+      if (bachPart->Charge()<0) kfpBach = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, -2212); // anti-proton
+      KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, 211);
+      KFParticle kfpPionMinus  = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, -211);
+      KFParticle kfpKs0;
+      const KFParticle *Ks0Daughters[2] = {&kfpPionPlus, &kfpPionMinus};
+      kfpKs0.Construct(Ks0Daughters, NDaughters);
+      Float_t massKs0_rec=0., err_massKs0_rec=0.;
+      kfpKs0.GetMass(massKs0_rec, err_massKs0_rec);
 
-    // check rapidity of Ks0
-    if ( TMath::Abs(kfpKs0.GetE())<=TMath::Abs(kfpKs0.GetPz()) ) continue;
+      // check rapidity of Ks0
+      if ( TMath::Abs(kfpKs0.GetE())<=TMath::Abs(kfpKs0.GetPz()) ) continue;
 
-    // chi2>0 && NDF>0 for selecting Ks0
-    if ( (kfpKs0.GetNDF()<=1.e-10 || kfpKs0.GetChi2()<=1.e-10) ) continue;
+      // chi2>0 && NDF>0 for selecting Ks0
+      if ( (kfpKs0.GetNDF()<=1.e-10 || kfpKs0.GetChi2()<=1.e-10) ) continue;
 
-    // check cov. of Ks0
-    if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpKs0) ) continue;
+      // check cov. of Ks0
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpKs0) ) continue;
 
-    // err_mass(Ks0) > 0
-    if ( err_massKs0_rec<=1.e-10 ) continue;
+      // err_mass(Ks0) > 0
+      if ( err_massKs0_rec<=1.e-10 ) continue;
 
-    // Chi2geo cut of Ks0
-    if ( (kfpKs0.GetChi2()/kfpKs0.GetNDF()) >= fAnaCuts->GetKFPKs0_Chi2geoMax() ) continue;
+      // Chi2geo cut of Ks0
+      if ( (kfpKs0.GetChi2()/kfpKs0.GetNDF()) >= fAnaCuts->GetKFPKs0_Chi2geoMax() ) continue;
 
-    // ================ calculate l/Δl for Ks0 ===============
-//    Double_t dx_Ks0 = PV.GetX()-kfpKs0.GetX();
-//    Double_t dy_Ks0 = PV.GetY()-kfpKs0.GetY();
-//    Double_t dz_Ks0 = PV.GetZ()-kfpKs0.GetZ();
-//    Double_t l_Ks0 = TMath::Sqrt(dx_Ks0*dx_Ks0 + dy_Ks0*dy_Ks0 + dz_Ks0*dz_Ks0);
-//    Double_t dl_Ks0 = (PV.GetCovariance(0)+kfpKs0.GetCovariance(0))*dx_Ks0*dx_Ks0 + (PV.GetCovariance(2)+kfpKs0.GetCovariance(2))*dy_Ks0*dy_Ks0 + (PV.GetCovariance(5)+kfpKs0.GetCovariance(5))*dz_Ks0*dz_Ks0 + 2*( (PV.GetCovariance(1)+kfpKs0.GetCovariance(1))*dx_Ks0*dy_Ks0 + (PV.GetCovariance(3)+kfpKs0.GetCovariance(3))*dx_Ks0*dz_Ks0 + (PV.GetCovariance(4)+kfpKs0.GetCovariance(4))*dy_Ks0*dz_Ks0 );
-//    if ( fabs(l_Ks0)<1.e-8f ) l_Ks0 = 1.e-8f;
-//    dl_Ks0 = dl_Ks0<0. ? 1.e8f : sqrt(dl_Ks0)/l_Ks0;
-//    Double_t ldl_Ks0 = l_Ks0/dl_Ks0;
-    Double_t ldl_Ks0 = AliVertexingHFUtils::ldlFromKF(kfpKs0, PV);
-    // =======================================================
+      // Calculate l/Δl for Ks0
+      Double_t ldl_Ks0 = AliVertexingHFUtils::ldlFromKF(kfpKs0, PV);
 
-    // l/Deltal cut of Ks0
-    if ( ldl_Ks0 <= fAnaCuts->GetKFPKs0_lDeltalMin() ) continue;
+      // l/Deltal cut of Ks0
+      if ( ldl_Ks0 <= fAnaCuts->GetKFPKs0_lDeltalMin() ) continue;
 
-    // mass window cut of Ks0
-    if ( TMath::Abs(massKs0_rec-massKs0_PDG) > (fAnaCuts->GetProdMassTolKs0()) ) continue;
-    
-    // mass constraint for Ks0
-    KFParticle kfpKs0_massConstraint = kfpKs0;
-    kfpKs0_massConstraint.SetNonlinearMassConstraint(massKs0_PDG);
+      // mass window cut of Ks0
+      if ( TMath::Abs(massKs0_rec-massKs0_PDG) > (fAnaCuts->GetProdMassTolKs0()) ) continue;
 
-    // QA check after mass constraint
-    if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpKs0_massConstraint) || TMath::Abs(kfpKs0_massConstraint.GetE()) <= TMath::Abs(kfpKs0_massConstraint.GetPz()) ) continue;
+      // mass constraint for Ks0
+      KFParticle kfpKs0_massConstraint = kfpKs0;
+      kfpKs0_massConstraint.SetNonlinearMassConstraint(massKs0_PDG);
 
-    // reconstruct Lc with mass constraint
-    KFParticle kfpLc;
-    const KFParticle *LcDaughters[2] = {&kfpProton, &kfpKs0_massConstraint};
-    kfpLc.Construct(LcDaughters, NDaughters);
+      // QA check after mass constraint
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpKs0_massConstraint) || TMath::Abs(kfpKs0_massConstraint.GetE()) <= TMath::Abs(kfpKs0_massConstraint.GetPz()) ) continue;
 
-    // reconstruct Lc without mass constraint
-    KFParticle kfpLc_woKs0MassConst;
-    const KFParticle *LcDaughters_woKs0MassConst[2] = {&kfpProton, &kfpKs0};
-    kfpLc_woKs0MassConst.Construct(LcDaughters_woKs0MassConst, NDaughters);
+      // reconstruct Lc with mass constraint
+      KFParticle kfpLc;
+      const KFParticle *LcDaughters[2] = {&kfpBach, &kfpKs0_massConstraint};
+      kfpLc.Construct(LcDaughters, NDaughters);
 
-    // === for Lc with mass constraint ===
-    // check rapidity of Lc
-    if ( TMath::Abs(kfpLc.GetE())<=TMath::Abs(kfpLc.GetPz()) ) continue;
+      // reconstruct Lc without mass constraint
+      KFParticle kfpLc_woKs0MassConst;
+      const KFParticle *LcDaughters_woKs0MassConst[2] = {&kfpBach, &kfpKs0};
+      kfpLc_woKs0MassConst.Construct(LcDaughters_woKs0MassConst, NDaughters);
 
-    // chi2>0 && NDF>0
-    if ( kfpLc.GetNDF()<=1.e-10 || kfpLc.GetChi2()<=1.e-10 ) continue;
+      // === for Lc with mass constraint ===
+      // check rapidity of Lc
+      if ( TMath::Abs(kfpLc.GetE())<=TMath::Abs(kfpLc.GetPz()) ) continue;
 
-    // check covariance matrix
-    if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc) ) continue;
+      // chi2>0 && NDF>0
+      if ( kfpLc.GetNDF()<=1.e-10 || kfpLc.GetChi2()<=1.e-10 ) continue;
 
-    // Prefilter
-    if ( kfpLc.GetChi2()/kfpLc.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
-    if ( kfpLc.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
-    
-    // err_mass(Lc) > 0
-    Float_t massLc_rec=0., err_massLc_rec=0.;
-    kfpLc.GetMass(massLc_rec, err_massLc_rec);
-    if (err_massLc_rec <= 1.e-10 ) continue;
-    // ===================================
+      // check covariance matrix
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc) ) continue;
 
-    // === for Lc without mass constraint ===
-    // check rapidity of Lc
-    if ( TMath::Abs(kfpLc_woKs0MassConst.GetE())<=TMath::Abs(kfpLc_woKs0MassConst.GetPz()) ) continue;
+      // Prefilter
+      if ( kfpLc.GetChi2()/kfpLc.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+      if ( kfpLc.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
 
-    // chi2>0 && NDF>0
-    if ( kfpLc_woKs0MassConst.GetNDF()<=1.e-10 || kfpLc_woKs0MassConst.GetChi2()<=1.e-10 ) continue;
+      // err_mass(Lc) > 0
+      Float_t massLc_rec=0., err_massLc_rec=0.;
+      kfpLc.GetMass(massLc_rec, err_massLc_rec);
+      if (err_massLc_rec <= 1.e-10 ) continue;
+      // ===================================
+      
+      // === for Lc without mass constraint ===
+      // check rapidity of Lc
+      if ( TMath::Abs(kfpLc_woKs0MassConst.GetE())<=TMath::Abs(kfpLc_woKs0MassConst.GetPz()) ) continue;
 
-    // check covariance matrix
-    if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc_woKs0MassConst) ) continue;
+      // chi2>0 && NDF>0
+      if ( kfpLc_woKs0MassConst.GetNDF()<=1.e-10 || kfpLc_woKs0MassConst.GetChi2()<=1.e-10 ) continue;
 
-    // Prefilter
-    if ( kfpLc_woKs0MassConst.GetChi2()/kfpLc_woKs0MassConst.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
-    if ( kfpLc_woKs0MassConst.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
-    
-    // err_mass(Lc) > 0
-    Float_t massLc_woKs0MassConst_rec=0., err_massLc_woKs0MassConst_rec=0.;
-    kfpLc_woKs0MassConst.GetMass(massLc_woKs0MassConst_rec, err_massLc_woKs0MassConst_rec);
-    if (err_massLc_woKs0MassConst_rec <= 1.e-10 ) continue;
-    // ===================================
+      // check covariance matrix
+      if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc_woKs0MassConst) ) continue;
 
+      // Prefilter
+      if ( kfpLc_woKs0MassConst.GetChi2()/kfpLc_woKs0MassConst.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+      if ( kfpLc_woKs0MassConst.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
 
-    if (fWriteLcTree) {
-      Int_t lab_Lc  = -9999;
-      Int_t lab_Ks0 = -9999;
-      if ( fIsMC ) {
-        lab_Ks0 = MatchToMCKs0(v0Pos, v0Neg, mcArray);
-        lab_Lc  = MatchToMCLc(v0Pos, v0Neg, bachPart, mcArray);
+      // err_mass(Lc) > 0
+      Float_t massLc_woKs0MassConst_rec=0., err_massLc_woKs0MassConst_rec=0.;
+      kfpLc_woKs0MassConst.GetMass(massLc_woKs0MassConst_rec, err_massLc_woKs0MassConst_rec);
+      if (err_massLc_woKs0MassConst_rec <= 1.e-10 ) continue;
+      // ===================================
+
+      if (fWriteLcTree) {
+        Int_t lab_Lc  = -9999;
+        Int_t lab_Ks0 = -9999;
+        if ( fIsMC ) {
+          lab_Ks0 = MatchToMCKs0(v0Pos, v0Neg, mcArray);
+          lab_Lc  = MatchToMCLc2pKs0(v0Pos, v0Neg, bachPart, mcArray);
+        }
+        FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpKs0, kfpKs0_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Ks0, lab_Lc, kfpLc_woKs0MassConst);
       }
-      FillTreeRecLcFromCascadeHF(Lc2pKs0, kfpLc, bachPart, kfpProton, kfpKs0, kfpKs0_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Ks0, lab_Lc, kfpLc_woKs0MassConst);
+      kfpLc.Clear();
+      kfpKs0_massConstraint.Clear();
+      kfpKs0.Clear();
+      kfpPionMinus.Clear();
+      kfpPionPlus.Clear();
     }
 
-    kfpLc.Clear();
-    kfpKs0_massConstraint.Clear();
-    kfpKs0.Clear();
-    kfpPionMinus.Clear();
-    kfpPionPlus.Clear();
-    kfpProton.Clear();
+    if (fIsAnaLc2Lpi) {
+      if (bachPart->Charge()>0) {
+        kfpBach = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, 211); // pion+
+        KFParticle kfpProton    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, 2212);
+        KFParticle kfpPionMinus = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, -211);
+        KFParticle kfpLam;
+        const KFParticle *LamDaughters[2] = {&kfpProton, &kfpPionMinus};
+        kfpLam.Construct(LamDaughters, 2);
+        Float_t massLam_rec=0., err_massLam_rec=0.;
+        kfpLam.GetMass(massLam_rec, err_massLam_rec);
+
+        // check rapidity of Lam
+        if ( TMath::Abs(kfpLam.GetE())<=TMath::Abs(kfpLam.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0 for selecting Lam
+        if ( (kfpLam.GetNDF()<=1.e-10 || kfpLam.GetChi2()<=1.e-10) ) continue;
+
+        // check cov. of Lam
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLam) ) continue;
+
+        // err_mass(Lam) > 0
+        if ( err_massLam_rec<=1.e-10 ) continue;
+
+        // Chi2geo cut of Lam
+        if ( (kfpLam.GetChi2()/kfpLam.GetNDF()) >= fAnaCuts->GetKFPLam_Chi2geoMax() ) continue;
+
+        // Calculate l/Δl for Lam
+        Double_t ldl_Lam = AliVertexingHFUtils::ldlFromKF(kfpLam, PV);
+
+        // l/Deltal cut of Lam
+        if ( ldl_Lam <= fAnaCuts->GetKFPLam_lDeltalMin() ) continue;
+
+        // mass window cut of Lam
+        if ( TMath::Abs(massLam_rec-massLam_PDG) > (fAnaCuts->GetProdMassTolLambda()) ) continue;
+
+        // mass constraint for Lam
+        KFParticle kfpLam_massConstraint = kfpLam;
+        kfpLam_massConstraint.SetNonlinearMassConstraint(massLam_PDG);
+
+        // QA check after mass constraint
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLam_massConstraint) || TMath::Abs(kfpLam_massConstraint.GetE()) <= TMath::Abs(kfpLam_massConstraint.GetPz()) ) continue;
+
+        // reconstruct Lc with mass constraint
+        KFParticle kfpLc;
+        const KFParticle *LcDaughters[2] = {&kfpBach, &kfpLam_massConstraint};
+        kfpLc.Construct(LcDaughters, 2);
+
+        // reconstruct Lc without mass constraint
+        KFParticle kfpLc_woLamMassConst;
+        const KFParticle *LcDaughters_woLamMassConst[2] = {&kfpBach, &kfpLam};
+        kfpLc_woLamMassConst.Construct(LcDaughters_woLamMassConst, 2);
+
+        // === for Lc with mass constraint ===
+        // check rapidity of Lc
+        if ( TMath::Abs(kfpLc.GetE())<=TMath::Abs(kfpLc.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0
+        if ( kfpLc.GetNDF()<=1.e-10 || kfpLc.GetChi2()<=1.e-10 ) continue;
+
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc) ) continue;
+
+        // Prefilter
+        if ( kfpLc.GetChi2()/kfpLc.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+        if ( kfpLc.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
+
+        // err_mass(Lc) > 0
+        Float_t massLc_rec=0., err_massLc_rec=0.;
+        kfpLc.GetMass(massLc_rec, err_massLc_rec);
+        if (err_massLc_rec <= 1.e-10 ) continue;
+        // ===================================
+
+        // === for Lc without mass constraint ===
+        // check rapidity of Lc
+        if ( TMath::Abs(kfpLc_woLamMassConst.GetE())<=TMath::Abs(kfpLc_woLamMassConst.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0
+        if ( kfpLc_woLamMassConst.GetNDF()<=1.e-10 || kfpLc_woLamMassConst.GetChi2()<=1.e-10 ) continue;
+
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpLc_woLamMassConst) ) continue;
+
+        // Prefilter
+        if ( kfpLc_woLamMassConst.GetChi2()/kfpLc_woLamMassConst.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+        if ( kfpLc_woLamMassConst.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
+
+        // err_mass(Lc) > 0
+        Float_t massLc_woLamMassConst_rec=0., err_massLc_woLamMassConst_rec=0.;
+        kfpLc_woLamMassConst.GetMass(massLc_woLamMassConst_rec, err_massLc_woLamMassConst_rec);
+        if (err_massLc_woLamMassConst_rec <= 1.e-10 ) continue;
+        // ===================================
+
+        if (fWriteLcTree) {
+          Int_t lab_Lc  = -9999;
+          Int_t lab_Lam = -9999;
+          if ( fIsMC ) {
+            lab_Lam = MatchToMCLam(v0Pos, v0Neg, mcArray, kTRUE);
+            lab_Lc  = MatchToMCLc2Lpi(v0Pos, v0Neg, bachPart, mcArray, kTRUE);
+          }
+          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpLam, kfpLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Lam, lab_Lc, kfpLc_woLamMassConst);
+        }
+        kfpLc_woLamMassConst.Clear();
+        kfpLc.Clear();
+        kfpLam_massConstraint.Clear();
+        kfpLam.Clear();
+        kfpPionMinus.Clear();
+        kfpProton.Clear();
+      }
+
+      if (bachPart->Charge()<0) {
+        kfpBach = AliVertexingHFUtils::CreateKFParticleFromAODtrack(bachPart, -211); // pion-
+        KFParticle kfpAntiProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, -2212);
+        KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, 211);
+        KFParticle kfpAntiLam;
+        const KFParticle *AntiLamDaughters[2] = {&kfpAntiProton, &kfpPionPlus};
+        kfpAntiLam.Construct(AntiLamDaughters, 2);
+        Float_t massAntiLam_rec=0., err_massAntiLam_rec=0.;
+        kfpAntiLam.GetMass(massAntiLam_rec, err_massAntiLam_rec);
+
+        // check rapidity of AntiLam
+        if ( TMath::Abs(kfpAntiLam.GetE())<=TMath::Abs(kfpAntiLam.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0 for selecting AntiLam
+        if ( (kfpAntiLam.GetNDF()<=1.e-10 || kfpAntiLam.GetChi2()<=1.e-10) ) continue;
+
+        // check cov. of AntiLam
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLam) ) continue;
+
+        // err_mass(AntiLam) > 0
+        if ( err_massAntiLam_rec<=1.e-10 ) continue;
+
+        // Chi2geo cut of AntiLam
+        if ( (kfpAntiLam.GetChi2()/kfpAntiLam.GetNDF()) >= fAnaCuts->GetKFPLam_Chi2geoMax() ) continue;
+
+        // Calculate l/Δl for AntiLam
+        Double_t ldl_AntiLam = AliVertexingHFUtils::ldlFromKF(kfpAntiLam, PV);
+
+        // l/Deltal cut of AntiLam
+        if ( ldl_AntiLam <= fAnaCuts->GetKFPLam_lDeltalMin() ) continue;
+
+        // mass window cut of AntiLam
+        if ( TMath::Abs(massAntiLam_rec-massLam_PDG) > (fAnaCuts->GetProdMassTolLambda()) ) continue;
+
+        // mass constraint for AntiLam
+        KFParticle kfpAntiLam_massConstraint = kfpAntiLam;
+        kfpAntiLam_massConstraint.SetNonlinearMassConstraint(massLam_PDG);
+
+        // QA check after mass constraint
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLam_massConstraint) || TMath::Abs(kfpAntiLam_massConstraint.GetE()) <= TMath::Abs(kfpAntiLam_massConstraint.GetPz()) ) continue;
+
+        // reconstruct AntiLc with mass constraint
+        KFParticle kfpAntiLc;
+        const KFParticle *AntiLcDaughters[2] = {&kfpBach, &kfpAntiLam_massConstraint};
+        kfpAntiLc.Construct(AntiLcDaughters, 2);
+
+        // reconstruct AntiLc without mass constraint
+        KFParticle kfpAntiLc_woAntiLamMassConst;
+        const KFParticle *AntiLcDaughters_woAntiLamMassConst[2] = {&kfpBach, &kfpAntiLam};
+        kfpAntiLc_woAntiLamMassConst.Construct(AntiLcDaughters_woAntiLamMassConst, 2);
+
+        // === for AntiLc with mass constraint ===
+        // check rapidity of AntiLc
+        if ( TMath::Abs(kfpAntiLc.GetE())<=TMath::Abs(kfpAntiLc.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0
+        if ( kfpAntiLc.GetNDF()<=1.e-10 || kfpAntiLc.GetChi2()<=1.e-10 ) continue;
+
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLc) ) continue;
+
+        // Prefilter
+        if ( kfpAntiLc.GetChi2()/kfpAntiLc.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+        if ( kfpAntiLc.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
+
+        // err_mass(AntiLc) > 0
+        Float_t massAntiLc_rec=0., err_massAntiLc_rec=0.;
+        kfpAntiLc.GetMass(massAntiLc_rec, err_massAntiLc_rec);
+        if (err_massAntiLc_rec <= 1.e-10 ) continue;
+        // ===================================
+
+        // === for AntiLc without mass constraint ===
+        // check rapidity of AntiLc
+        if ( TMath::Abs(kfpAntiLc_woAntiLamMassConst.GetE())<=TMath::Abs(kfpAntiLc_woAntiLamMassConst.GetPz()) ) continue;
+
+        // chi2>0 && NDF>0
+        if ( kfpAntiLc_woAntiLamMassConst.GetNDF()<=1.e-10 || kfpAntiLc_woAntiLamMassConst.GetChi2()<=1.e-10 ) continue;
+
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLc_woAntiLamMassConst) ) continue;
+
+        // Prefilter
+        if ( kfpAntiLc_woAntiLamMassConst.GetChi2()/kfpAntiLc_woAntiLamMassConst.GetNDF() >= fAnaCuts->GetKFPLc_Chi2geoMax() ) continue;
+        if ( kfpAntiLc_woAntiLamMassConst.GetPt() < fAnaCuts->GetPtMinLc() ) continue;
+
+        // err_mass(AntiLc) > 0
+        Float_t massAntiLc_woAntiLamMassConst_rec=0., err_massAntiLc_woAntiLamMassConst_rec=0.;
+        kfpAntiLc_woAntiLamMassConst.GetMass(massAntiLc_woAntiLamMassConst_rec, err_massAntiLc_woAntiLamMassConst_rec);
+        if (err_massAntiLc_woAntiLamMassConst_rec <= 1.e-10 ) continue;
+        // ===================================
+
+        if (fWriteLcTree) {
+          Int_t lab_AntiLc  = -9999;
+          Int_t lab_AntiLam = -9999;
+          if ( fIsMC ) {
+            lab_AntiLam = MatchToMCLam(v0Pos, v0Neg, mcArray, kFALSE);
+            lab_AntiLc  = MatchToMCLc2Lpi(v0Pos, v0Neg, bachPart, mcArray, kFALSE);
+          }
+          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpAntiLc, bachPart, kfpBach, kfpAntiLam, kfpAntiLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_AntiLam, lab_AntiLc, kfpAntiLc_woAntiLamMassConst);
+        }
+        kfpAntiLc_woAntiLamMassConst.Clear();
+        kfpAntiLc.Clear();
+        kfpAntiLam_massConstraint.Clear();
+        kfpAntiLam.Clear();
+        kfpPionPlus.Clear();
+        kfpAntiProton.Clear();
+      }
+    }
+    kfpBach.Clear();
   }
 
   delete vHF;
@@ -932,43 +1182,84 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
   fVar_Lc = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
-  fVarNames[0]  = "nSigmaTPC_PiPlus"; //TPC nsigma for pion+ coming from K0s
-  fVarNames[1]  = "nSigmaTPC_PiMinus"; //TPC nsigma for pion- coming from K0s
-  fVarNames[2]  = "nSigmaTPC_Pr"; //TPC nsigma for proton
-  fVarNames[3]  = "nSigmaTOF_PiPlus"; //TOF nsigma for pion+ coming from K0s
-  fVarNames[4]  = "nSigmaTOF_PiMinus"; //TOF nsigma for pion coming from K0s
-  fVarNames[5]  = "nSigmaTOF_Pr"; //TOF nsigma for proton
+  if (!fIsAnaLc2Lpi) {
+    fVarNames[0]  = "nSigmaTPC_PiPlus"; //TPC nsigma for pion+ coming from K0s
+    fVarNames[1]  = "nSigmaTPC_PiMinus"; //TPC nsigma for pion- coming from K0s
+    fVarNames[2]  = "nSigmaTPC_Pr"; //TPC nsigma for proton
+    fVarNames[3]  = "nSigmaTOF_PiPlus"; //TOF nsigma for pion+ coming from K0s
+    fVarNames[4]  = "nSigmaTOF_PiMinus"; //TOF nsigma for pion coming from K0s
+    fVarNames[5]  = "nSigmaTOF_Pr"; //TOF nsigma for proton
 
-  fVarNames[6]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
+    fVarNames[6]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
 
-  fVarNames[7]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
-  fVarNames[8]  = "chi2topo_Ks0_PV"; //chi2_topological of K0s (with mass constraint) to PV
-  fVarNames[9]  = "ldl_Ks0"; //l/dl of K0s
+    fVarNames[7]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
+    fVarNames[8]  = "chi2topo_Ks0_PV"; //chi2_topological of K0s (with mass constraint) to PV
+    fVarNames[9]  = "ldl_Ks0"; //l/dl of K0s
 
-  fVarNames[10] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
-  fVarNames[11] = "chi2topo_Lc"; //chi2_topological of Lc (with mass const. of Ks0) to PV
-  fVarNames[12] = "ldl_Lc"; //l/dl of Lc (with mass const. of Ks0)
+    fVarNames[10] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
+    fVarNames[11] = "chi2topo_Lc"; //chi2_topological of Lc (with mass const. of Ks0) to PV
+    fVarNames[12] = "ldl_Lc"; //l/dl of Lc (with mass const. of Ks0)
 
-  fVarNames[13] = "DecayLxy_Ks0"; //decay length of K0s in x-y plane
-  fVarNames[14] = "ct_Ks0"; // life time of Ks0
-  fVarNames[15] = "DecayLxy_Lc"; //decay length of Lc in x-y plane
-  fVarNames[16] = "PA_Ks0"; //pointing angle of Ks0 (pointing back to Lc)
-  fVarNames[17] = "PA_Lc"; //pointing angle of Lc (pointing back to PV)
+    fVarNames[13] = "DecayLxy_Ks0"; //decay length of Ks0 in x-y plane
+    fVarNames[14] = "ct_Ks0"; // life time of Ks0
+    fVarNames[15] = "DecayLxy_Lc"; //decay length of Lc in x-y plane
+    fVarNames[16] = "PA_Ks0"; //pointing angle of Ks0 (pointing back to Lc)
+    fVarNames[17] = "PA_Lc"; //pointing angle of Lc (pointing back to PV)
 
-  fVarNames[18] = "pt_Ks0"; //pt of Ks0 (without mass const.)
-  fVarNames[19] = "mass_Ks0"; //mass of Ks0 (without mass const.)
-  fVarNames[20] = "pt_Lc"; //pt of Lc (with mass const. of Ks0 and with PV const.)
-  fVarNames[21] = "rap_Lc"; //rapidity of Lc (with mass const. of Ks0 and with PV const.)
-  fVarNames[22] = "mass_Lc"; //mass of Lc (with mass const. of Ks0 and with PV const.)
-  fVarNames[23] = "pt_Pr"; //pt of proton
-  fVarNames[24] = "pt_PiPlus"; //pt of pion+
-  fVarNames[25] = "pt_PiMinus"; //pt of pion-
-  fVarNames[26] = "d0_PrToPV"; //rphi impact params of proton w.r.t. Primary Vtx [cm]
-  fVarNames[27] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
-  fVarNames[28] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-  fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
-  fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
-  fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+    fVarNames[18] = "pt_Ks0"; //pt of Ks0 (without mass const.)
+    fVarNames[19] = "mass_Ks0"; //mass of Ks0 (without mass const.)
+    fVarNames[20] = "pt_Lc"; //pt of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[21] = "rap_Lc"; //rapidity of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[22] = "mass_Lc"; //mass of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[23] = "pt_Pr"; //pt of proton
+    fVarNames[24] = "pt_PiPlus"; //pt of pion+
+    fVarNames[25] = "pt_PiMinus"; //pt of pion-
+    fVarNames[26] = "d0_PrToPV"; //rphi impact params of proton w.r.t. Primary Vtx [cm]
+    fVarNames[27] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
+    fVarNames[28] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+    fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
+    fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
+    fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+  }
+  if (fIsAnaLc2Lpi) {
+    fVarNames[0]  = "nSigmaTPC_V0Pr"; //TPC nsigma for proton coming from Lam
+    fVarNames[1]  = "nSigmaTPC_V0Pi"; //TPC nsigma for pion coming from Lam
+    fVarNames[2]  = "nSigmaTPC_Bach"; //TPC nsigma for bachlor
+    fVarNames[3]  = "nSigmaTOF_V0Pr"; //TOF nsigma for proton coming from Lam
+    fVarNames[4]  = "nSigmaTOF_V0Pi"; //TOF nsigma for pion coming from Lam
+    fVarNames[5]  = "nSigmaTOF_Bach"; //TOF nsigma for bachlor
+
+    fVarNames[6]  = "DCA_LamDau"; //Distance between daughters coming from Lam (calculated from AOD v0)
+
+    fVarNames[7]  = "chi2geo_Lam"; //chi2_geometry of Lam (without mass constraint)
+    fVarNames[8]  = "chi2topo_Lam_PV"; //chi2_topological of Lam (with mass constraint) to PV
+    fVarNames[9]  = "ldl_Lam"; //l/dl of Lam
+
+    fVarNames[10] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Lam)
+    fVarNames[11] = "chi2topo_Lc"; //chi2_topological of Lc (with mass const. of Lam) to PV
+    fVarNames[12] = "ldl_Lc"; //l/dl of Lc (with mass const. of Lam)
+
+    fVarNames[13] = "DecayLxy_Lam"; //decay length of Lam in x-y plane
+    fVarNames[14] = "ct_Lam"; // life time of Lam
+    fVarNames[15] = "DecayLxy_Lc"; //decay length of Lc in x-y plane
+    fVarNames[16] = "PA_Lam"; //pointing angle of Lam (pointing back to Lc)
+    fVarNames[17] = "PA_Lc"; //pointing angle of Lc (pointing back to PV)
+
+    fVarNames[18] = "pt_Lam"; //pt of Lam (without mass const.)
+    fVarNames[19] = "mass_Lam"; //mass of Lam (without mass const.)
+    fVarNames[20] = "pt_Lc"; //pt of Lc (with mass const. of Lam and with PV const.)
+    fVarNames[21] = "rap_Lc"; //rapidity of Lc (with mass const. of Lam and with PV const.)
+    fVarNames[22] = "mass_Lc"; //mass of Lc (with mass const. of Lam and with PV const.)
+    fVarNames[23] = "pt_Bach"; //pt of bachlor
+    fVarNames[24] = "pt_V0Pr"; //pt of proton
+    fVarNames[25] = "pt_V0Pi"; //pt of pion
+    fVarNames[26] = "d0_BachToPV"; //rphi impact params of bachlor w.r.t. Primary Vtx [cm]
+    fVarNames[27] = "d0_LamToPV"; //rphi impact params of Lam w.r.t. Primary Vtx [cm]
+    fVarNames[28] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+    fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
+    fVarNames[30] = "CombinedPIDProb_V0Pr"; // Bayesian PID probability of proton from Lam decay
+    fVarNames[31] = "armenteros_Lam"; // armenteros qT/|alpha| for cascade
+  }
   
 //  fVarNames[]  = "chi2geo_Ks0_wMassConst"; //chi2_geometry of K0s (with mass constraint)
 //  fVarNames[] = "DecayL_Ks0"; //decay length of K0s in 3D
@@ -1002,47 +1293,92 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec_QA()
   fVar_Lc_QA = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
-  // check pt, rapidity and mass with and without mass constraint
-  // pt and mass without mass constraint in analysis tree
-  fVarNames[0] = "rap_Ks0_woMassConst"; //rapidity of Ks0 (without mass const.)
-  fVarNames[1] = "pt_Ks0_wMassConst"; //pt of Ks0 (with mass const.)
-  fVarNames[2] = "rap_Ks0_wMassConst"; //rapidity of Ks0 (with mass const.)
-  fVarNames[3] = "mass_Ks0_wMassConst"; //mass of Ks0 (with mass const.)
-  fVarNames[4] = "chi2mass_Ks0"; //chi2_MassConst. of Ks0
+  if (!fIsAnaLc2Lpi) {
+    // check pt, rapidity and mass with and without mass constraint
+    // pt and mass without mass constraint in analysis tree
+    fVarNames[0] = "rap_Ks0_woMassConst"; //rapidity of Ks0 (without mass const.)
+    fVarNames[1] = "pt_Ks0_wMassConst"; //pt of Ks0 (with mass const.)
+    fVarNames[2] = "rap_Ks0_wMassConst"; //rapidity of Ks0 (with mass const.)
+    fVarNames[3] = "mass_Ks0_wMassConst"; //mass of Ks0 (with mass const.)
+    fVarNames[4] = "chi2mass_Ks0"; //chi2_MassConst. of Ks0
 
-  // check chi2_topo of Ks0 pointing to PV without Ks0 mass const.
-  fVarNames[5] = "chi2topo_Ks0woMassConst_PV"; //chi2_topo of Ks0 (without mass const.) to PV
+    // check chi2_topo of Ks0 pointing to PV without Ks0 mass const.
+    fVarNames[5] = "chi2topo_Ks0woMassConst_PV"; //chi2_topo of Ks0 (without mass const.) to PV
 
-  // check Lc reconstruction without Ks0 mass const.
-  fVarNames[6] = "chi2geo_Lc_woKs0MassConst"; //chi2_geometry of Lc (without mass constraint of Ks0)
-  fVarNames[7] = "pt_Lc_woKs0MassConst"; //pt of Lc reconstructed without Ks0 mass const.
-  fVarNames[8] = "rap_Lc_woKs0MassConst"; //rap of Lc reconstructed without Ks0 mass const.
-  fVarNames[9] = "mass_Lc_woKs0MassConst"; //mass of Lc reconstructed without Ks0 mass const. (case 1 requested by Silvia)
+    // check Lc reconstruction without Ks0 mass const.
+    fVarNames[6] = "chi2geo_Lc_woKs0MassConst"; //chi2_geometry of Lc (without mass constraint of Ks0)
+    fVarNames[7] = "pt_Lc_woKs0MassConst"; //pt of Lc reconstructed without Ks0 mass const.
+    fVarNames[8] = "rap_Lc_woKs0MassConst"; //rap of Lc reconstructed without Ks0 mass const.
+    fVarNames[9] = "mass_Lc_woKs0MassConst"; //mass of Lc reconstructed without Ks0 mass const. (case 1 requested by Silvia)
 
-  // check Lc reconstruction with Ks0 mass const. and without PV const.
-  fVarNames[10] = "pt_Lc_woPV"; //pt of Lc (with mass const. of Ks0 and without PV const.)
-  fVarNames[11] = "rap_Lc_woPV"; //rap of Lc (with mass const. of Ks0 and without PV const.)
-  fVarNames[12] = "mass_Lc_woPV"; //mass of Lc (with mass const. of Ks0 and without PV const.) (case 2 requested by Silvia)
+    // check Lc reconstruction with Ks0 mass const. and without PV const.
+    fVarNames[10] = "pt_Lc_woPV"; //pt of Lc (with mass const. of Ks0 and without PV const.)
+    fVarNames[11] = "rap_Lc_woPV"; //rap of Lc (with mass const. of Ks0 and without PV const.)
+    fVarNames[12] = "mass_Lc_woPV"; //mass of Lc (with mass const. of Ks0 and without PV const.) (case 2 requested by Silvia)
 
-  // --- reconstruction logic 2 (set production vertex of Ks0 to PV) ---
-  fVarNames[13] = "pt_Ks0_PV"; //pt of Ks0 (with mass and PV const.)
-  fVarNames[14] = "rap_Ks0_PV"; //rapidity of Ks0 (with mass and PV const.)
-  fVarNames[15] = "mass_Ks0_PV"; //mass of Ks0 (with mass and PV const.)
+    // --- reconstruction logic 2 (set production vertex of Ks0 to PV) ---
+    fVarNames[13] = "pt_Ks0_PV"; //pt of Ks0 (with mass and PV const.)
+    fVarNames[14] = "rap_Ks0_PV"; //rapidity of Ks0 (with mass and PV const.)
+    fVarNames[15] = "mass_Ks0_PV"; //mass of Ks0 (with mass and PV const.)
 
-  fVarNames[16] = "chi2geo_Lc_wKs0MassPVConst"; //chi2_geo of Lc (with mass and PV const. of Ks0)
-  fVarNames[17] = "pt_Lc_wKs0MassPVConst"; //pt of Lc (with mass and PV const. of Ks0)
-  fVarNames[18] = "rap_Lc_wKs0MassPVConst"; //rapidity of Lc (with mass and PV const. of Ks0)
-  fVarNames[19] = "mass_Lc_wKs0MassPVConst"; //mass of Lc (with mass and PV const. of Ks0)
-  fVarNames[20] = "ldl_Lc_wKs0MassPVConst"; //l/dl of Lc (with mass and PV const. of Ks0)
+    fVarNames[16] = "chi2geo_Lc_wKs0MassPVConst"; //chi2_geo of Lc (with mass and PV const. of Ks0)
+    fVarNames[17] = "pt_Lc_wKs0MassPVConst"; //pt of Lc (with mass and PV const. of Ks0)
+    fVarNames[18] = "rap_Lc_wKs0MassPVConst"; //rapidity of Lc (with mass and PV const. of Ks0)
+    fVarNames[19] = "mass_Lc_wKs0MassPVConst"; //mass of Lc (with mass and PV const. of Ks0)
+    fVarNames[20] = "ldl_Lc_wKs0MassPVConst"; //l/dl of Lc (with mass and PV const. of Ks0)
 
-  fVarNames[21] = "chi2topo_Lc_wKs0MassPVConst"; //chi2_topo of Lc (with mass and PV const. of Ks0)
-  // -------------------------------------------------------------------
+    fVarNames[21] = "chi2topo_Lc_wKs0MassPVConst"; //chi2_topo of Lc (with mass and PV const. of Ks0)
+    // -------------------------------------------------------------------
 
-  // flags for signal and background
-  fVarNames[22] = "Source_Ks0"; //flag for Ks0 MC truth (“>=0” signal, “<0” background)
-  fVarNames[23] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-  fVarNames[24] = "mass_Lc_AODRecoCascadeHF"; //mass of Lc (from AliAODRecoCascadeHF)
-  fVarNames[25] = "pt_Lc_AODRecoCascadeHF"; //pt of Lc (from AliAODRecoCascadeHF)
+    // flags for signal and background
+    fVarNames[22] = "Source_Ks0"; //flag for Ks0 MC truth (“>=0” signal, “<0” background)
+    fVarNames[23] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+    fVarNames[24] = "mass_Lc_AODRecoCascadeHF"; //mass of Lc (from AliAODRecoCascadeHF)
+    fVarNames[25] = "pt_Lc_AODRecoCascadeHF"; //pt of Lc (from AliAODRecoCascadeHF)
+  }
+  if (fIsAnaLc2Lpi) {
+    // check pt, rapidity and mass with and without mass constraint
+    // pt and mass without mass constraint in analysis tree
+    fVarNames[0] = "rap_Lam_woMassConst"; //rapidity of Lam (without mass const.)
+    fVarNames[1] = "pt_Lam_wMassConst"; //pt of Lam (with mass const.)
+    fVarNames[2] = "rap_Lam_wMassConst"; //rapidity of Lam (with mass const.)
+    fVarNames[3] = "mass_Lam_wMassConst"; //mass of Lam (with mass const.)
+    fVarNames[4] = "chi2mass_Lam"; //chi2_MassConst. of Lam
+
+    // check chi2_topo of Lam pointing to PV without Lam mass const.
+    fVarNames[5] = "chi2topo_LamwoMassConst_PV"; //chi2_topo of Lam (without mass const.) to PV
+
+    // check Lc reconstruction without Lam mass const.
+    fVarNames[6] = "chi2geo_Lc_woLamMassConst"; //chi2_geometry of Lc (without mass constraint of Lam)
+    fVarNames[7] = "pt_Lc_woLamMassConst"; //pt of Lc reconstructed without Lam mass const.
+    fVarNames[8] = "rap_Lc_woLamMassConst"; //rap of Lc reconstructed without Lam mass const.
+    fVarNames[9] = "mass_Lc_woLamMassConst"; //mass of Lc reconstructed without Lam mass const. (case 1 requested by Silvia)
+
+    // check Lc reconstruction with Lam mass const. and without PV const.
+    fVarNames[10] = "pt_Lc_woPV"; //pt of Lc (with mass const. of Lam and without PV const.)
+    fVarNames[11] = "rap_Lc_woPV"; //rap of Lc (with mass const. of Lam and without PV const.)
+    fVarNames[12] = "mass_Lc_woPV"; //mass of Lc (with mass const. of Lam and without PV const.) (case 2 requested by Silvia)
+
+    // --- reconstruction logic 2 (set production vertex of Lam to PV) ---
+    fVarNames[13] = "pt_Lam_PV"; //pt of Lam (with mass and PV const.)
+    fVarNames[14] = "rap_Lam_PV"; //rapidity of Lam (with mass and PV const.)
+    fVarNames[15] = "mass_Lam_PV"; //mass of Lam (with mass and PV const.)
+
+    fVarNames[16] = "chi2geo_Lc_wLamMassPVConst"; //chi2_geo of Lc (with mass and PV const. of Lam)
+    fVarNames[17] = "pt_Lc_wLamMassPVConst"; //pt of Lc (with mass and PV const. of Lam)
+    fVarNames[18] = "rap_Lc_wLamMassPVConst"; //rapidity of Lc (with mass and PV const. of Lam)
+    fVarNames[19] = "mass_Lc_wLamMassPVConst"; //mass of Lc (with mass and PV const. of Lam)
+    fVarNames[20] = "ldl_Lc_wLamMassPVConst"; //l/dl of Lc (with mass and PV const. of Lam)
+
+    fVarNames[21] = "chi2topo_Lc_wLamMassPVConst"; //chi2_topo of Lc (with mass and PV const. of Lam)
+    // -------------------------------------------------------------------
+
+    // flags for signal and background
+    fVarNames[22] = "Source_Lam"; //flag for Lam MC truth (“>=0” signal, “<0” background)
+    fVarNames[23] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+    fVarNames[24] = "mass_Lc_AODRecoCascadeHF"; //mass of Lc (from AliAODRecoCascadeHF)
+    fVarNames[25] = "pt_Lc_AODRecoCascadeHF"; //pt of Lc (from AliAODRecoCascadeHF)
+  }
 
 //  fVarNames[] = "CosThetaStar_Pr"; //cosine angle between the proton momentum in the Lc rest frame and the boost direction
 
@@ -1114,7 +1450,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0, KFParticle kfpLc, AliAODTrack *trackPr, KFParticle kfpPr, KFParticle kfpKs0, KFParticle kfpKs0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_Ks0, Int_t lab_Lc, KFParticle kfpLc_woKs0MassConst)
+void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst)
 {
   
   for (Int_t i=0; i<29; i++) {
@@ -1139,30 +1475,66 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if ( fabs(massLc_rec-massLc_PDG) > fAnaCuts->GetProdMassTolLc() ) return;
   fVar_Lc[22] = massLc_rec; //mass of Lc (with mass const. of Ks0 and with PV const.)
 
-  Float_t nSigmaTPC_PiPlus  = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
-  Float_t nSigmaTPC_PiMinus = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
-  Float_t nSigmaTPC_Pr      = fPID->NumberOfSigmasTPC(trackPr, AliPID::kProton);
+  Float_t nSigmaTPC_v0Pos = 0.;
+  Float_t nSigmaTPC_v0Neg = 0.;
+  Float_t nSigmaTPC_bach  = 0.;
+  Float_t nSigmaTOF_v0Pos = 0.;
+  Float_t nSigmaTOF_v0Neg = 0.;
+  Float_t nSigmaTOF_bach  = 0.;
 
-  Float_t nSigmaTOF_PiPlus  = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
-  Float_t nSigmaTOF_PiMinus = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
-  Float_t nSigmaTOF_Pr      = fPID->NumberOfSigmasTOF(trackPr, AliPID::kProton);
+  if (!fIsAnaLc2Lpi) {
+    nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
+    nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
+    nSigmaTPC_bach  = fPID->NumberOfSigmasTPC(trackBach, AliPID::kProton);
 
-  if ( fabs(nSigmaTPC_Pr)>=4. || fabs(nSigmaTPC_PiPlus)>=4. || fabs(nSigmaTPC_PiMinus)>=4. ) return;
+    nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
+    nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
+    nSigmaTOF_bach  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kProton);
+  }
+  if (fIsAnaLc2Lpi) {
+    nSigmaTPC_bach  = fPID->NumberOfSigmasTPC(trackBach, AliPID::kPion);
+    nSigmaTOF_bach  = fPID->NumberOfSigmasTOF(trackBach, AliPID::kPion);
+    if (trackBach->Charge()>0) {
+      nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kProton);
+      nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kPion);
 
-  fVar_Lc[0]  = nSigmaTPC_PiPlus;
-  fVar_Lc[1]  = nSigmaTPC_PiMinus;
-  fVar_Lc[2]  = nSigmaTPC_Pr;
-  fVar_Lc[3]  = nSigmaTOF_PiPlus;
-  fVar_Lc[4]  = nSigmaTOF_PiMinus;
-  fVar_Lc[5]  = nSigmaTOF_Pr;
+      nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kProton);
+      nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
+    }
+    if (trackBach->Charge()<0) {
+      nSigmaTPC_v0Pos = fPID->NumberOfSigmasTPC(v0Pos, AliPID::kPion);
+      nSigmaTPC_v0Neg = fPID->NumberOfSigmasTPC(v0Neg, AliPID::kProton);
+
+      nSigmaTOF_v0Pos = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kPion);
+      nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kProton);
+    }
+  }
+
+  if ( fabs(nSigmaTPC_v0Pos)>=4. || fabs(nSigmaTPC_v0Neg)>=4. || fabs(nSigmaTPC_bach)>=4. ) return;
+
+
+
+  fVar_Lc[0]  = nSigmaTPC_v0Pos;
+  fVar_Lc[1]  = nSigmaTPC_v0Neg;
+  fVar_Lc[2]  = nSigmaTPC_bach;
+  fVar_Lc[3]  = nSigmaTOF_v0Pos;
+  fVar_Lc[4]  = nSigmaTOF_v0Neg;
+  fVar_Lc[5]  = nSigmaTOF_bach;
+
+  if (fIsAnaLc2Lpi && trackBach->Charge()<0) {
+    fVar_Lc[0]  = nSigmaTPC_v0Neg; // Anti-Proton
+    fVar_Lc[1]  = nSigmaTPC_v0Pos; // Pion+
+    fVar_Lc[3]  = nSigmaTOF_v0Neg; // Anti-Proton
+    fVar_Lc[4]  = nSigmaTOF_v0Pos; // Pion+
+  }
   
-  KFParticle kfpKs0_Lc = kfpKs0_massConstraint;
-  kfpKs0_Lc.SetProductionVertex(kfpLc);
-//  if ( kfpKs0_Lc.GetChi2()/kfpKs0_Lc.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
+  KFParticle kfpV0_Lc = kfpV0_massConstraint;
+  kfpV0_Lc.SetProductionVertex(kfpLc);
+//  if ( kfpV0_Lc.GetChi2()/kfpV0_Lc.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
 
-  KFParticle kfpKs0_PV = kfpKs0_massConstraint;
-  kfpKs0_PV.SetProductionVertex(PV);
-//  if ( kfpKs0_PV.GetChi2()/kfpKs0_PV.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
+  KFParticle kfpV0_PV = kfpV0_massConstraint;
+  kfpV0_PV.SetProductionVertex(PV);
+//  if ( kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
 
   /*
   // === mass of Lam ===
@@ -1193,33 +1565,31 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpGamma.GetMass(massGamma_rec, err_massGamma);
   */
 
-  KFParticle kfpPr_Lc = kfpPr;
-  kfpPr_Lc.SetProductionVertex(kfpLc);
-
+  KFParticle kfpBach_Lc = kfpBach;
+  kfpBach_Lc.SetProductionVertex(kfpLc);
 
   // calculate CosPointingAngle
-  Double_t cosPA_Ks0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpKs0_massConstraint, kfpLc);
+  Double_t cosPA_V0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpV0_massConstraint, kfpLc);
   Double_t cosPA_Lc  = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLc, PV);
 
-  AliAODv0 *v0 = dynamic_cast<AliAODv0*>(Lc2pKs0->Getv0());
-  fVar_Lc[6]  = v0->GetDCA(); // DCA_Ks0Dau
-  fVar_Lc[7]  = kfpKs0.GetChi2()/kfpKs0.GetNDF(); //chi2_geometry of K0s (without mass constraint)
-  fVar_Lc[8]  = kfpKs0_PV.GetChi2()/kfpKs0_PV.GetNDF(); //chi2_topological of K0s (with mass constraint) to PV
-  fVar_Lc[9]  = AliVertexingHFUtils::ldlFromKF(kfpKs0, PV); // ldl_Ks0
-
+  AliAODv0 *v0 = dynamic_cast<AliAODv0*>(Lc2pKs0orLpi->Getv0());
+  fVar_Lc[6]  = v0->GetDCA(); // DCA_V0Dau
+  fVar_Lc[7]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
+  fVar_Lc[8]  = kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF(); //chi2_topological of V0 (with mass constraint) to PV
+  fVar_Lc[9]  = AliVertexingHFUtils::ldlFromKF(kfpV0, PV); // ldl_V0
   fVar_Lc[10] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
   fVar_Lc[11] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF(); // chi2topo_Lc
   fVar_Lc[12] = AliVertexingHFUtils::ldlFromKF(kfpLc, PV); // ldl_Lc
 
 //  Float_t DecayL_Ks0=0., err_DecayL_Ks0=0.;
-//  kfpKs0_Lc.GetDecayLength(DecayL_Ks0, err_DecayL_Ks0);
+//  kfpV0_Lc.GetDecayLength(DecayL_Ks0, err_DecayL_Ks0);
 //  fVar_Lc[13] = DecayL_Ks0;
-  Float_t DecayLxy_Ks0=0., err_DecayLxy_Ks0=0.;
-  kfpKs0_Lc.GetDecayLengthXY(DecayLxy_Ks0, err_DecayLxy_Ks0);
-  fVar_Lc[13] = DecayLxy_Ks0;
-  Float_t ct_Ks0=0., err_ct_Ks0=0.;
-  kfpKs0_Lc.GetLifeTime(ct_Ks0, err_ct_Ks0);
-  fVar_Lc[14] = ct_Ks0;
+  Float_t DecayLxy_V0=0., err_DecayLxy_V0=0.;
+  kfpV0_Lc.GetDecayLengthXY(DecayLxy_V0, err_DecayLxy_V0);
+  fVar_Lc[13] = DecayLxy_V0;
+  Float_t ct_V0=0., err_ct_V0=0.;
+  kfpV0_Lc.GetLifeTime(ct_V0, err_ct_V0);
+  fVar_Lc[14] = ct_V0;
 
 //  Float_t DecayL_Lc=0., err_DecayL_Lc=0.;
 //  kfpLc_PV.GetDecayLength(DecayL_Lc, err_DecayL_Lc);
@@ -1228,70 +1598,105 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpLc_PV.GetDecayLengthXY(DecayLxy_Lc, err_DecayLxy_Lc);
   fVar_Lc[15] = DecayLxy_Lc;
 
-  fVar_Lc[16] = TMath::ACos(cosPA_Ks0); // PA_Ks0
+  fVar_Lc[16] = TMath::ACos(cosPA_V0); // PA_V0
   fVar_Lc[17] = TMath::ACos(cosPA_Lc);  // PA_Lc
 
-  fVar_Lc[18] = kfpKs0.GetPt();
-  Float_t mass_Ks0_rec=0., err_mass_Ks0_rec=0.;
-  kfpKs0.GetMass(mass_Ks0_rec, err_mass_Ks0_rec);
-  fVar_Lc[19] = mass_Ks0_rec;
+  fVar_Lc[18] = kfpV0.GetPt();
+  Float_t mass_V0_rec=0., err_mass_V0_rec=0.;
+  kfpV0.GetMass(mass_V0_rec, err_mass_V0_rec);
+  fVar_Lc[19] = mass_V0_rec;
 
   if ( TMath::Abs(kfpLc_PV.GetE())>TMath::Abs(kfpLc_PV.GetPz()) ) {
     fVar_Lc[21] = kfpLc_PV.GetRapidity();
   }
 
-  fVar_Lc[23] = kfpPr.GetPt();
+  fVar_Lc[23] = kfpBach.GetPt();
 
-  fVar_Lc[24] = v0Pos->Pt();
-  fVar_Lc[25] = v0Neg->Pt();
-  fVar_Lc[26] = Lc2pKs0->Getd0Prong(0); //rphi impact params of proton w.r.t. Primary Vtx [cm]
-  fVar_Lc[27] = Lc2pKs0->Getd0Prong(1); ////rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
+  fVar_Lc[24] = v0Pos->Pt(); // proton
+  fVar_Lc[25] = v0Neg->Pt(); // pion-
+
+  if (fIsAnaLc2Lpi && trackBach->Charge()<0) {
+    fVar_Lc[24] = v0Neg->Pt(); // anti-proton
+    fVar_Lc[25] = v0Pos->Pt(); // pion+
+  }
+
+  fVar_Lc[26] = Lc2pKs0orLpi->Getd0Prong(0); //rphi impact params of bachlor w.r.t. Primary Vtx [cm]
+  fVar_Lc[27] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
   fVar_Lc[28] = lab_Lc;
 
-  fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpPr_Lc, kfpKs0_Lc);  ///cos theta-star
-//  fVar_Lc[] = kfpPr.GetDistanceFromVertex(PV); //DCA of proton to PV from KF in 3D
-// Combined PID response (Bayesian probability) [30]
-  Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
-  UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackPr, fPID, probTPCTOF);
-  Double_t probProton = -1.;
-  if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
-      probProton = probTPCTOF[AliPID::kProton];
+  if (!fIsAnaLc2Lpi) {
+    fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
   }
-  else {   // if TOF information not available, try only TPC
+  if (fIsAnaLc2Lpi) {
+    fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 211, 3122, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
+  }
+
+//  fVar_Lc[] = kfpPr.GetDistanceFromVertex(PV); //DCA of proton to PV from KF in 3D
+
+  if (!fIsAnaLc2Lpi) {
+    // Combined PID response (Bayesian probability) [30]
+    Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+    UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPCTOF);
+    Double_t probProton = -1.;
+    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
+      probProton = probTPCTOF[AliPID::kProton];
+    }
+    else {   // if TOF information not available, try only TPC
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-      detUsed = fPIDCombined->ComputeProbabilities(trackPr, fPID, probTPCTOF);
+      detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPCTOF);
       if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { // Check that TPC-only worked. If not, then return -1 as probability
          probProton = probTPCTOF[AliPID::kProton];
       }
       //Reset detector mask for PIDCombined object to TPC+TOF
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+    }
+    fVar_Lc[30] = probProton;
   }
-  fVar_Lc[30] = probProton;
-  
+  if (fIsAnaLc2Lpi) {
+    // Combined PID response (Bayesian probability) [30]
+    Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+    UInt_t detUsed = 0;
+    if (trackBach->Charge()>0) fPIDCombined->ComputeProbabilities(v0Pos, fPID, probTPCTOF);
+    if (trackBach->Charge()<0) fPIDCombined->ComputeProbabilities(v0Neg, fPID, probTPCTOF);
+    Double_t probProton = -1.;
+    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
+      probProton = probTPCTOF[AliPID::kProton];
+    }
+    else {   // if TOF information not available, try only TPC
+      fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+      if (trackBach->Charge()>0) detUsed = fPIDCombined->ComputeProbabilities(v0Pos, fPID, probTPCTOF);
+      if (trackBach->Charge()<0) detUsed = fPIDCombined->ComputeProbabilities(v0Neg, fPID, probTPCTOF);
+      if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { // Check that TPC-only worked. If not, then return -1 as probability
+         probProton = probTPCTOF[AliPID::kProton];
+      }
+      //Reset detector mask for PIDCombined object to TPC+TOF
+      fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+    }
+    fVar_Lc[30] = probProton;
+  }
   
   //armenteros qT/|alpha|: [31]
   fVar_Lc[31] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0());
 
+  // === QA tree ===
+  fVar_Lc_QA[0]  = kfpV0.GetRapidity(); //rapidity of v0 (without mass const.)
+  fVar_Lc_QA[1]  = kfpV0_massConstraint.GetPt(); //pt of V0 (with mass const.)
+  fVar_Lc_QA[2]  = kfpV0_massConstraint.GetRapidity(); //rapidity of V0 (with mass const.)
+  Float_t mass_V0_massConst_rec=0., err_mass_V0_massConst_rec=0.;
+  kfpV0_massConstraint.GetMass(mass_V0_massConst_rec, err_mass_V0_massConst_rec);
+  fVar_Lc_QA[3]  = mass_V0_massConst_rec; //mass of V0 (with mass const.)
+  fVar_Lc_QA[4]  = kfpV0_massConstraint.GetChi2()/kfpV0_massConstraint.GetNDF(); //chi2_MassConst. of V0
 
+  KFParticle kfpV0_woMassConst_PV = kfpV0;
+  kfpV0_woMassConst_PV.SetProductionVertex(PV);
+  fVar_Lc_QA[5]  = kfpV0_woMassConst_PV.GetChi2()/kfpV0_woMassConst_PV.GetNDF();
 
-  fVar_Lc_QA[0]  = kfpKs0.GetRapidity(); //rapidity of Ks0 (without mass const.)
-  fVar_Lc_QA[1]  = kfpKs0_massConstraint.GetPt(); //pt of Ks0 (with mass const.)
-  fVar_Lc_QA[2]  = kfpKs0_massConstraint.GetRapidity(); //rapidity of Ks0 (with mass const.)
-  Float_t mass_Ks0_massConst_rec=0., err_mass_Ks0_massConst_rec=0.;
-  kfpKs0_massConstraint.GetMass(mass_Ks0_massConst_rec, err_mass_Ks0_massConst_rec);
-  fVar_Lc_QA[3]  = mass_Ks0_massConst_rec; //mass of Ks0 (with mass const.)
-  fVar_Lc_QA[4]  = kfpKs0_massConstraint.GetChi2()/kfpKs0_massConstraint.GetNDF(); //chi2_MassConst. of Ks0
-
-  KFParticle kfpKs0_woMassConst_PV = kfpKs0;
-  kfpKs0_woMassConst_PV.SetProductionVertex(PV);
-  fVar_Lc_QA[5]  = kfpKs0_woMassConst_PV.GetChi2()/kfpKs0_woMassConst_PV.GetNDF();
-
-  fVar_Lc_QA[6]  = kfpLc_woKs0MassConst.GetChi2()/kfpLc_woKs0MassConst.GetNDF();
-  fVar_Lc_QA[7]  = kfpLc_woKs0MassConst.GetPt();
-  fVar_Lc_QA[8]  = kfpLc_woKs0MassConst.GetRapidity();
-  Float_t mass_Lc_woKs0MassConst_rec=0., err_mass_Lc_woKs0MassConst_rec=0.;
-  kfpLc_woKs0MassConst.GetMass(mass_Lc_woKs0MassConst_rec, err_mass_Lc_woKs0MassConst_rec);
-  fVar_Lc_QA[9]  = mass_Lc_woKs0MassConst_rec;
+  fVar_Lc_QA[6]  = kfpLc_woV0MassConst.GetChi2()/kfpLc_woV0MassConst.GetNDF();
+  fVar_Lc_QA[7]  = kfpLc_woV0MassConst.GetPt();
+  fVar_Lc_QA[8]  = kfpLc_woV0MassConst.GetRapidity();
+  Float_t mass_Lc_woV0MassConst_rec=0., err_mass_Lc_woV0MassConst_rec=0.;
+  kfpLc_woV0MassConst.GetMass(mass_Lc_woV0MassConst_rec, err_mass_Lc_woV0MassConst_rec);
+  fVar_Lc_QA[9]  = mass_Lc_woV0MassConst_rec;
 
   fVar_Lc_QA[10] = kfpLc.GetPt();
   fVar_Lc_QA[11] = kfpLc.GetRapidity();
@@ -1299,35 +1704,35 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpLc.GetMass(mass_Lc_woPV_rec, err_mass_Lc_woPV_rec);
   fVar_Lc_QA[12] = mass_Lc_woPV_rec;
 
-  // --- reconstruction logic 2 (set production vertex of Ks0 to PV) ---
+  // --- reconstruction logic 2 (set production vertex of V0 to PV) ---
   //
-  // reconstruct Lc (with mass and PV const. of Ks0)
-  fVar_Lc_QA[13] = kfpKs0_PV.GetPt();
-  fVar_Lc_QA[14] = kfpKs0_PV.GetRapidity();
-  Float_t mass_Ks0_wMassPVConst_rec=0., err_mass_Ks0_wMassPVConst_rec=0.;
-  kfpKs0_PV.GetMass(mass_Ks0_wMassPVConst_rec, err_mass_Ks0_wMassPVConst_rec);
-  fVar_Lc_QA[15] = mass_Ks0_wMassPVConst_rec;
+  // reconstruct Lc (with mass and PV const. of V0)
+  fVar_Lc_QA[13] = kfpV0_PV.GetPt();
+  fVar_Lc_QA[14] = kfpV0_PV.GetRapidity();
+  Float_t mass_V0_wMassPVConst_rec=0., err_mass_V0_wMassPVConst_rec=0.;
+  kfpV0_PV.GetMass(mass_V0_wMassPVConst_rec, err_mass_V0_wMassPVConst_rec);
+  fVar_Lc_QA[15] = mass_V0_wMassPVConst_rec;
 
-  KFParticle kfpLc_wKs0PV;
-  const KFParticle *LcDaughters_wKs0PV[2] = {&kfpPr, &kfpKs0_PV};
-  kfpLc_wKs0PV.Construct(LcDaughters_wKs0PV, 2);
-  fVar_Lc_QA[16] = kfpLc_wKs0PV.GetChi2()/kfpLc_wKs0PV.GetNDF();
-  fVar_Lc_QA[17] = kfpLc_wKs0PV.GetPt();
-  fVar_Lc_QA[18] = kfpLc_wKs0PV.GetRapidity();
-  Float_t mass_Lc_wKs0PV_rec=0., err_mass_Lc_wKs0PV_rec=0.;
-  kfpLc_wKs0PV.GetMass(mass_Lc_wKs0PV_rec, err_mass_Lc_wKs0PV_rec);
-  fVar_Lc_QA[19] = mass_Lc_wKs0PV_rec;
-  fVar_Lc_QA[20] = AliVertexingHFUtils::ldlFromKF(kfpLc_wKs0PV, PV);
+  KFParticle kfpLc_wV0PV;
+  const KFParticle *LcDaughters_wV0PV[2] = {&kfpBach, &kfpV0_PV};
+  kfpLc_wV0PV.Construct(LcDaughters_wV0PV, 2);
+  fVar_Lc_QA[16] = kfpLc_wV0PV.GetChi2()/kfpLc_wV0PV.GetNDF();
+  fVar_Lc_QA[17] = kfpLc_wV0PV.GetPt();
+  fVar_Lc_QA[18] = kfpLc_wV0PV.GetRapidity();
+  Float_t mass_Lc_wV0PV_rec=0., err_mass_Lc_wV0PV_rec=0.;
+  kfpLc_wV0PV.GetMass(mass_Lc_wV0PV_rec, err_mass_Lc_wV0PV_rec);
+  fVar_Lc_QA[19] = mass_Lc_wV0PV_rec;
+  fVar_Lc_QA[20] = AliVertexingHFUtils::ldlFromKF(kfpLc_wV0PV, PV);
 
-  KFParticle kfpLc_PV_wKs0PV = kfpLc_wKs0PV;
-  kfpLc_PV_wKs0PV.SetProductionVertex(PV);
-  fVar_Lc_QA[21] = kfpLc_PV_wKs0PV.GetChi2()/kfpLc_PV_wKs0PV.GetNDF();
+  KFParticle kfpLc_PV_wV0PV = kfpLc_wV0PV;
+  kfpLc_PV_wV0PV.SetProductionVertex(PV);
+  fVar_Lc_QA[21] = kfpLc_PV_wV0PV.GetChi2()/kfpLc_PV_wV0PV.GetNDF();
 
-  fVar_Lc_QA[22] = lab_Ks0;
+  fVar_Lc_QA[22] = lab_V0;
   fVar_Lc_QA[23] = lab_Lc;
 
-  fVar_Lc_QA[24] = Lc2pKs0->InvMassLctoK0sP();
-  fVar_Lc_QA[25] = Lc2pKs0->Pt();
+  fVar_Lc_QA[24] = Lc2pKs0orLpi->InvMassLctoLambdaPi();
+  fVar_Lc_QA[25] = Lc2pKs0orLpi->Pt();
 
   /*
   //Method to get tracklet multiplicity from event
@@ -1340,17 +1745,16 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   fVar_Lc[43] = countTreta1corr; // NtrkCorr
   */
 
-//  if (fIsMC && lab_Lc>=0) fTree_Lc->Fill();
-  if (fIsMC)  fTree_Lc->Fill();
+  if (fIsMC) fTree_Lc->Fill();
   if (!fIsMC) fTree_Lc->Fill();
 
   if (fWriteLcQATree) {fTree_Lc_QA->Fill();}
 
   /*
   cout << "==========" << endl;
-  cout << "kfpKs0: " << kfpKs0 << endl;
-  cout << "kfpKs0_massConstraint: " << kfpKs0_massConstraint << endl;
-  cout << "kfpKs0_PV: " << kfpKs0_PV << endl;
+  cout << "kfpV0: " << kfpV0 << endl;
+  cout << "kfpV0_massConstraint: " << kfpV0_massConstraint << endl;
+  cout << "kfpV0_PV: " << kfpV0_PV << endl;
   cout << "PV: " << PV << endl;
   cout << "==========" << endl;
   */
@@ -1360,19 +1764,22 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
 }
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLc(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray)
+Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLc2pKs0(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray)
 {
   // Check if all of the tracks is matched to a MC signal
   // If no, return -1;
   // If yes, return label (>=0) of the AliAODMCParticle
 
   Int_t labelPionPlus = fabs(v0Pos->GetLabel());
+  if (labelPionPlus<=0) return -1;
   AliAODMCParticle *mcPionPlus = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus));
 
   Int_t labelPionMinus = fabs(v0Neg->GetLabel());
+  if (labelPionMinus<=0) return -1;
   AliAODMCParticle *mcPionMinus = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus));
 
   Int_t labelProton = fabs(bachPart->GetLabel());
+  if (labelProton<=0) return -1;
   AliAODMCParticle *mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
 
   if ( mcPionPlus->GetPdgCode()!=211 || mcPionMinus->GetPdgCode()!=-211 || fabs(mcProton->GetPdgCode())!=2212 ) return -1;
@@ -1417,9 +1824,11 @@ Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCKs0(AliAODTrack *v0Pos, AliAODTr
   // If yes, return label (>=0) of the AliAODMCParticle
 
   Int_t labelPionPlus = fabs(v0Pos->GetLabel());
+  if (labelPionPlus<=0) return -1;
   AliAODMCParticle *mcPionPlus = static_cast<AliAODMCParticle*>(mcArray->At(labelPionPlus));
 
   Int_t labelPionMinus = fabs(v0Neg->GetLabel());
+  if (labelPionMinus<=0) return -1;
   AliAODMCParticle *mcPionMinus = static_cast<AliAODMCParticle*>(mcArray->At(labelPionMinus));
 
   if ( mcPionPlus->GetPdgCode()!=211 || mcPionMinus->GetPdgCode()!=-211 ) return -1;
@@ -1435,5 +1844,88 @@ Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCKs0(AliAODTrack *v0Pos, AliAODTr
   if ( fabs(mcMother->GetPdgCode()) != 310 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Ks0 and have two daughters
 
   return 1;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLam(AliAODTrack *v0Pos, AliAODTrack *v0Neg, TClonesArray *mcArray, Bool_t IsParticle)
+{
+  // Check if all of the tracks is matched to a MC signal
+  // If no, return -1;
+  // If yes, return label (>=0) of the AliAODMCParticle
+  
+  Int_t labelPos = fabs(v0Pos->GetLabel());
+  if (labelPos<=0) return -1;
+  AliAODMCParticle *mcPos = static_cast<AliAODMCParticle*>(mcArray->At(labelPos));
+
+  Int_t labelNeg = fabs(v0Neg->GetLabel());
+  if (labelNeg<=0) return -1;
+  AliAODMCParticle *mcNeg = static_cast<AliAODMCParticle*>(mcArray->At(labelNeg));
+
+  if (IsParticle) {
+    if ( mcPos->GetPdgCode()!=2212 || mcNeg->GetPdgCode()!=-211 ) return -1;
+  }
+  if (!IsParticle) {
+    if ( mcPos->GetPdgCode()!=211 || mcNeg->GetPdgCode()!=-2212 ) return -1;
+  }
+
+  Int_t IndexMother[2] = {-9999, -9999};
+
+  IndexMother[0] = mcPos->GetMother();
+  IndexMother[1] = mcNeg->GetMother();
+
+  if ( IndexMother[0]<0 || IndexMother[1]<0 ) return -1; // check mother exist
+  if ( IndexMother[0] != IndexMother[1] ) return -1; // check the same mother
+  AliAODMCParticle* mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
+  if ( fabs(mcMother->GetPdgCode()) != 3122 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Ks0 and have two daughters
+
+  return 1;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLc2Lpi(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray, Bool_t IsParticle)
+{
+  // Check if all of the tracks is matched to a MC signal
+  // If no, return -1;
+  // If yes, return label (>=0) of the AliAODMCParticle
+
+  Int_t labelPos = fabs(v0Pos->GetLabel());
+  if (labelPos<=0) return -1;
+  AliAODMCParticle *mcPos = static_cast<AliAODMCParticle*>(mcArray->At(labelPos));
+
+  Int_t labelNeg = fabs(v0Neg->GetLabel());
+  if (labelNeg<=0) return -1;
+  AliAODMCParticle *mcNeg = static_cast<AliAODMCParticle*>(mcArray->At(labelNeg));
+
+  Int_t labelBach = fabs(bachPart->GetLabel());
+  if (labelBach<=0) return -1;
+  AliAODMCParticle *mcBach = static_cast<AliAODMCParticle*>(mcArray->At(labelBach));
+
+  if (IsParticle) {
+    if ( mcPos->GetPdgCode()!=2212 || mcNeg->GetPdgCode()!=-211 || mcBach->GetPdgCode()!=211 ) return -1;
+  }
+  if (!IsParticle) {
+    if ( mcPos->GetPdgCode()!=211 || mcNeg->GetPdgCode()!=-2212 || mcBach->GetPdgCode()!=-211 ) return -1;
+  }
+
+  Int_t IndexMother[2] = {-9999, -9999};
+
+  IndexMother[0] = mcPos->GetMother();
+  IndexMother[1] = mcNeg->GetMother();
+  if ( IndexMother[0]<0 || IndexMother[1]<0 ) return -1; // check mother exist
+  if ( IndexMother[0] != IndexMother[1] ) return -1; // check the same mother
+  AliAODMCParticle* mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
+  if ( fabs(mcMother->GetPdgCode()) != 3122 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is K0 and have only one daughter
+
+  IndexMother[0] = mcMother->GetMother(); // mother of Lam
+  IndexMother[1] = mcBach->GetMother(); // mother of bachlor
+  if ( IndexMother[0]<0 || IndexMother[1]<0 ) return -1; // check mother exist
+  if ( IndexMother[0] != IndexMother[1] ) return -1; // check the same mother
+  mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
+  if ( fabs(mcMother->GetPdgCode()) != 4122 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Lc and have two daughters
+
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  return CheckOrigin;
 
 }
