@@ -1325,11 +1325,16 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
             h3Invmass_19[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
             h3Invmass_1029[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_1029",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
             h3Invmass_3059[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_3059",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_19999[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19999",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_6099[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_6099",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+
             //h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
             fListBDTResp->Add(h3Invmass[jj]);
             fListBDTResp->Add(h3Invmass_19[jj]);
             fListBDTResp->Add(h3Invmass_1029[jj]);
             fListBDTResp->Add(h3Invmass_3059[jj]);
+                fListBDTResp->Add(h3Invmass_19999[jj]);
+                fListBDTResp->Add(h3Invmass_6099[jj]);
         }
 	}
   }
