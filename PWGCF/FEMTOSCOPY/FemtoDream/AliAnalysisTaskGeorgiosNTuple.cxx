@@ -737,8 +737,8 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 
   }
   //fill Tree
-  //if(fTnv0>0&&fTnCascade>0) fGeorgiosTree->Fill(); //Select here events with at least on Xi and one Lambda
-  if(fTnv0>1) fGeorgiosTree->Fill();
+  if(fTnv0>0&&fTnCascade>0) fGeorgiosTree->Fill(); //Select here events with at least on Xi and one Lambda
+  //if(fTnv0>1) fGeorgiosTree->Fill();
 
   //pair cleaner
   fPairCleaner->ResetArray();
