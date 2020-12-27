@@ -459,7 +459,7 @@ class AliAnalysisTaskSED0BDT : public AliAnalysisTaskSE
   TString		fBDTClassifierVarString;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0BDT,25); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0BDT,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 
