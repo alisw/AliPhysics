@@ -129,11 +129,22 @@ ClassImp(AliAnalysisTaskSigmaPlToProtonPiZeroAOD) // classimp: necessary for roo
 	fHistTrackDCAXYTruewCuts(0),
 	fHistTrackDCAZTruewCuts(0),
 	fHistDEDx(0),
+	fHistTOFBeta(0),
 	fHistTPCSignal(0),
+	fHistTPCCluster(0),
+    fHistTPCClusterTrue(0),
+    fHistTPCchi2(0),
+    fHistTPCchi2True(0),
+    fHistITSCluster(0),
+    fHistITSClusterTrue(0),
+    fHistITSchi2(0),
+    fHistITSchi2True(0),
 	fHistRotationWGammaGamma(0),
 	fHistRotationWProtonPion(0),
 	fHistSigmaMassPtWoPodCut(0),
 	fHistSigmaMassPtWoPodCutMC(0),
+	fHistNLoopsProton(0),
+	fHistNLoopsGamma(0),
 	fGenPhaseSpace(),
 	fV0Reader(NULL),
 	fV0ReaderName("V0ReaderV1"),
@@ -219,11 +230,22 @@ AliAnalysisTaskSigmaPlToProtonPiZeroAOD::AliAnalysisTaskSigmaPlToProtonPiZeroAOD
 	fHistTrackDCAXYTruewCuts(0),
 	fHistTrackDCAZTruewCuts(0),
 	fHistDEDx(0),
+	fHistTOFBeta(0),
 	fHistTPCSignal(0),
+	fHistTPCCluster(0),
+    fHistTPCClusterTrue(0),
+    fHistTPCchi2(0),
+    fHistTPCchi2True(0),
+    fHistITSCluster(0),
+    fHistITSClusterTrue(0),
+    fHistITSchi2(0),
+    fHistITSchi2True(0),
 	fHistRotationWGammaGamma(0),
 	fHistRotationWProtonPion(0),
 	fHistSigmaMassPtWoPodCut(0),
 	fHistSigmaMassPtWoPodCutMC(0),
+	fHistNLoopsProton(0),
+	fHistNLoopsGamma(0),
 	fGenPhaseSpace(),
 	fV0Reader(NULL),
 	fV0ReaderName("V0ReaderV1"),
@@ -299,19 +321,26 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 	fHistNClusWoCuts = new TH1F*[fnCuts];
 	fHistNClusWCuts = new TH1F*[fnCuts];
 	fHistNProtonsPerEvent = new TH1F*[fnCuts];
-	fHistTrackDCAXY = new TH2F*[fnCuts];
-	fHistTrackDCAZ = new TH2F*[fnCuts];
-	fHistTrackDCAXYwCuts = new TH2F*[fnCuts];
-	fHistTrackDCAZwCuts = new TH2F*[fnCuts];
+	fHistTrackDCAXY = new TH1F*[fnCuts];
+	fHistTrackDCAZ = new TH1F*[fnCuts];
+	fHistTrackDCAXYwCuts = new TH1F*[fnCuts];
+	fHistTrackDCAZwCuts = new TH1F*[fnCuts];
 	fHistDecayangle = new TH2F*[fnCuts];
 	fHistDecayanglewCut = new TH2F*[fnCuts];
 	fHistDEDx = new TH2F*[fnCuts];
+	fHistTOFBeta = new TH2F*[fnCuts];
 	fHistTPCSignal = new TH2F*[fnCuts];
+	fHistTPCCluster = new TH1F*[fnCuts];
+	fHistTPCchi2 = new TH1F*[fnCuts];
+	fHistITSCluster = new TH1F*[fnCuts];
+	fHistITSchi2 = new TH1F*[fnCuts];
 	fHistRotationWProtonPion = new TH2F*[fnCuts];
 	fHistRotationWGammaGamma = new TH2F*[fnCuts];
 	fHistSigmaMassPtWoPodCut = new TH2F*[fnCuts];
 	fHistNEvents = new TH1F*[fnCuts];
 	fHistNEventsWOWeight = new TH1F*[fnCuts];
+	fHistNLoopsProton = new TH1F*[fnCuts];
+	fHistNLoopsGamma = new TH1F*[fnCuts];
 	
 	if(fIsMC > 0){
 		fHistSigmaPlusMC = new TH2F*[fnCuts];
@@ -322,24 +351,27 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fHistReconstructedMassPi0MC = new TH2F*[fnCuts];
 		fHistReconstructedMassPi0MCwCut = new TH2F*[fnCuts];
 		fHistSigmaMassPtWoPodCutMC = new TH2F*[fnCuts];
-		fHistTrackDCAXYTrue = new TH2F*[fnCuts];
-		fHistTrackDCAZTrue = new TH2F*[fnCuts];
-		fHistTrackDCAXYTruewCuts = new TH2F*[fnCuts];
-		fHistTrackDCAZTruewCuts = new TH2F*[fnCuts];
+		fHistTrackDCAXYTrue = new TH1F*[fnCuts];
+		fHistTrackDCAZTrue = new TH1F*[fnCuts];
+		fHistTrackDCAXYTruewCuts = new TH1F*[fnCuts];
+		fHistTrackDCAZTruewCuts = new TH1F*[fnCuts];
 		fHistDecayangleTrue = new TH2F*[fnCuts];
 		fHistDecayangleTruewCut = new TH2F*[fnCuts];
+		fHistTPCClusterTrue = new TH1F*[fnCuts];
+		fHistTPCchi2True = new TH1F*[fnCuts];
+		fHistITSClusterTrue = new TH1F*[fnCuts];
+		fHistITSchi2True = new TH1F*[fnCuts];
 	
-		fHistThetaPhiTrueSigmaPl = new TH2F("fHistThetaPhiTrueSigmaPl", "fHistThetaPhiTrueSigmaPl;#theta ; #phi", 50, -1., 4. ,100, 0., 2*TMath::Pi());
-		fHistGenSigmaPt = new TH1F("fHistGenSigmaPt", "fHistGenSigmaPt;#it{p}_{T,Sigma} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistGenSigmaPerEvent = new TH1F("fHistGenSigmaPerEvent", "fHistGenSigmaPerEvent;N;Yield", 11, -0.5, 10.5);
-		fHistGenSigmaPerEvent -> Sumw2();
-		fHistGenProtonPt = new TH1F("fHistGenProtonPt", "fHistGenProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistGenPiZeroPt = new TH1F("fHistGenPiZeroPt", "fHistGenPiZeroPt;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30);
-		fHistSigmaPtEta = new TH2F("fHistSigmaPtEta", "fHistSigmaPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
-		fHistProtonPtEta = new TH2F("fHistProtonPtEta", "fHistProtonPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
-		fHistPi0PtEta = new TH2F("fHistPi0PtEta", "fHistPi0PtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10, 50, -5, 5);
-		fHistGenAngleProtonPiZero = new TH1F("fHistGenAngleProtonPiZero", "fHistGenAngleProtonPiZero;#it{beta}_{Proton,Pion} (rad);Yield", 10, 0, TMath::Pi());
-		fHistPodolanskiGenTrue = new TH2F("fHistPodolanskiGenTrue","", 100, 0., 1., 100, 0., 1.);
+		fHistThetaPhiTrueSigmaPl = new TH2F*[fnCuts];
+		fHistGenSigmaPt = new TH1F*[fnCuts];
+		fHistGenSigmaPerEvent = new TH1F*[fnCuts];
+		fHistGenProtonPt = new TH1F*[fnCuts];
+		fHistGenPiZeroPt = new TH1F*[fnCuts];
+		fHistSigmaPtEta = new TH2F*[fnCuts];
+		fHistProtonPtEta = new TH2F*[fnCuts];
+		fHistPi0PtEta = new TH2F*[fnCuts];
+		fHistGenAngleProtonPiZero = new TH1F*[fnCuts];
+		fHistPodolanskiGenTrue = new TH2F*[fnCuts];
 	}
 
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -386,18 +418,28 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistNClusWCuts[iCut]);
 		fHistNProtonsPerEvent[iCut] = new TH1F("fHistNProtonsPerEvent", "fHistNProtonsPerEvent;#it{N}_{Protons per Event};Yield", 10, -0.5, 9.5);
 		fAODList[iCut]->Add(fHistNProtonsPerEvent[iCut]);
-		fHistTrackDCAXY[iCut] = new TH2F("fHistTrackDCAXY", "fHistTrackDCAXY;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
+		fHistTrackDCAXY[iCut] = new TH1F("fHistTrackDCAXY", "fHistTrackDCAXY;#it{N}_{Protons per Event};", 400, 0., 0.5);
 		fAODList[iCut]->Add(fHistTrackDCAXY[iCut]);
-		fHistTrackDCAZ[iCut] = new TH2F("fHistTrackDCAZ", "fHistTrackDCAZ;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
+		fHistTrackDCAZ[iCut] = new TH1F("fHistTrackDCAZ", "fHistTrackDCAZ;#it{N}_{Protons per Event};", 400, 0., 0.5);
 		fAODList[iCut]->Add(fHistTrackDCAZ[iCut]);
-		fHistTrackDCAXYwCuts[iCut] = new TH2F("fHistTrackDCAXYwCuts", "fHistTrackDCAXYwCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
+		fHistTrackDCAXYwCuts[iCut] = new TH1F("fHistTrackDCAXYwCuts", "fHistTrackDCAXYwCuts;#it{N}_{Protons per Event};", 400, 0., 0.5);
 		fAODList[iCut]->Add(fHistTrackDCAXYwCuts[iCut]);
-		fHistTrackDCAZwCuts[iCut] = new TH2F("fHistTrackDCAZwCuts", "fHistTrackDCAZwCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,20, 0., 10.);
+		fHistTrackDCAZwCuts[iCut] = new TH1F("fHistTrackDCAZwCuts", "fHistTrackDCAZwCuts;#it{N}_{Protons per Event};", 400, 0., 0.5);
 		fAODList[iCut]->Add(fHistTrackDCAZwCuts[iCut]);
-		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 100,0.01,10.,100,1.,200.);
+		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 200,0.,10.,200,1.,201.);
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
-		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 100, 0.01, 10., 20, -3., 3.);
+		fHistTOFBeta[iCut] = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 200,0.,10.,130,0.1,1.3);
+		fAODList[iCut]->Add(fHistTOFBeta[iCut]);
+		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 200, 0., 10., 60, -3., 3.);
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
+		fHistTPCCluster[iCut] = new TH1F("fHistTPCCluster", "fHistTPCCluster;#it{N}_{Cluster TPC};", 50, 50., 100.);
+		fAODList[iCut]->Add(fHistTPCCluster[iCut]);
+		fHistTPCchi2[iCut] = new TH1F("fHistTPCchi2", "fHistTPCchi2;#chi^{2};", 100, 0., 10.);
+		fAODList[iCut]->Add(fHistTPCchi2[iCut]);
+		fHistITSCluster[iCut] = new TH1F("fHistITSCluster", "fHistITSCluster;#it{N}_{Cluster TPC};", 10, 0., 10.);
+		fAODList[iCut]->Add(fHistITSCluster[iCut]);
+		fHistITSchi2[iCut] = new TH1F("fHistITSchi2", "fHistITSchi2;#chi^{2};", 100, 0., 10.);
+		fAODList[iCut]->Add(fHistITSchi2[iCut]);
 		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 		fAODList[iCut]->Add(fHistSigmaMassPtWoPodCut[iCut]);
 		fHistRotationWGammaGamma[iCut] = new TH2F("fHistRotationWGammaGamma", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
@@ -406,6 +448,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fHistRotationWProtonPion[iCut] = new TH2F("fHistRotationWProtonPion", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 		fHistRotationWProtonPion[iCut]->Sumw2();
 		fAODList[iCut]->Add(fHistRotationWProtonPion[iCut]);
+		fHistNLoopsProton[iCut] = new TH1F("fHistNLoopsProton", "fHistNLoopsProton;#chi^{2};", 100, 0., 100.);
+		fAODList[iCut]->Add(fHistNLoopsProton[iCut]);
+		fHistNLoopsGamma[iCut] = new TH1F("fHistNLoopsGamma", "fHistNLoopsGamma;#chi^{2};", 100, 0., 100.);
+		fAODList[iCut]->Add(fHistNLoopsGamma[iCut]);
 		if(fIsMC > 1) {
 			fHistSigmaPlus[iCut]->Sumw2();
 			fHistReconstructedMassPi0[iCut]->Sumw2();
@@ -428,8 +474,15 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistTrackDCAXYwCuts[iCut]->Sumw2();
 			fHistTrackDCAZwCuts[iCut]->Sumw2();
 			fHistDEDx[iCut]->Sumw2();
+			fHistTOFBeta[iCut]->Sumw2();
 			fHistTPCSignal[iCut]->Sumw2();
+			fHistTPCCluster[iCut]->Sumw2();
+			fHistTPCchi2[iCut]->Sumw2();
+			fHistITSCluster[iCut]->Sumw2();
+			fHistITSchi2[iCut]->Sumw2();
 			fHistSigmaMassPtWoPodCut[iCut]->Sumw2();
+			fHistNLoopsProton[iCut]->Sumw2();
+			fHistNLoopsGamma[iCut]->Sumw2();
 		}
 
 
@@ -489,10 +542,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistPodolanskiWCutTrue[iCut] = new TH2F("fHistPodolanskiWCutTrue","", 100, 0., 1., 100, 0., 1.);
 			fHistTrueProtonPt[iCut] = new TH1F("fHistTrueProtonPt", "fHistTrueProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 10);
 			fHistSigmaMassPtWoPodCutMC[iCut] = new TH2F("fHistSigmaMassPtWoPodCutMC", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
-			fHistTrackDCAXYTrue[iCut] = new TH2F("fHistTrackDCAXYTrue", "fHistTrackDCAXYTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAZTrue[iCut] = new TH2F("fHistTrackDCAZTrue", "fHistTrackDCAZTrue;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAXYTruewCuts[iCut] = new TH2F("fHistTrackDCAXYTruewCuts", "fHistTrackDCAXYTruewCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
-			fHistTrackDCAZTruewCuts[iCut] = new TH2F("fHistTrackDCAZTruewCuts", "fHistTrackDCAZTruewCuts;#it{N}_{Protons per Event};#it{p}_{T} (GeV/#it{c})", 400, 0., 10.,50, 0., 10.);
+			fHistTrackDCAXYTrue[iCut] = new TH1F("fHistTrackDCAXYTrue", "fHistTrackDCAXYTrue;#it{N}_{Protons per Event};", 400, 0., 0.5);
+			fHistTrackDCAZTrue[iCut] = new TH1F("fHistTrackDCAZTrue", "fHistTrackDCAZTrue;#it{N}_{Protons per Event};", 400, 0., 0.5);
+			fHistTrackDCAXYTruewCuts[iCut] = new TH1F("fHistTrackDCAXYTruewCuts", "fHistTrackDCAXYTruewCuts;#it{N}_{Protons per Event};", 400, 0., 0.5);
+			fHistTrackDCAZTruewCuts[iCut] = new TH1F("fHistTrackDCAZTruewCuts", "fHistTrackDCAZTruewCuts;#it{N}_{Protons per Event};", 400, 0., 0.5);
 			fHistDecayangleTrue[iCut] = new TH2F("fHistDecayangleTrue", ";#vartheta (rad);#it{p}_{T,Proton} (GeV/#it{c})", 100, 0, TMath::Pi(), 40, 0., 10.);
 			fHistDecayangleTruewCut[iCut] = new TH2F("fHistDecayangleTruewCut", ";#vartheta (rad);#it{p}_{T,Proton} (GeV/#it{c})", 100, 0, TMath::Pi(), 40, 0., 10.);
 		
@@ -503,7 +556,22 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistDoubleCountTrueSigmaInvMassPt[iCut] = new TH2F("fHistDoubleCountTrueSigmaInvMassPt", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 			fHistReconstructedMassPi0MC[iCut] = new TH2F("fHistReconstructedMassPi0MC",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
 			fHistReconstructedMassPi0MCwCut[iCut] = new TH2F("fHistReconstructedMassPi0MCwCut",";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 0., 0.3, 30, 0., 15.);
-			
+			fHistTPCClusterTrue[iCut] = new TH1F("fHistTPCClusterTrue", "fHistTPCClusterTrue;#it{N}_{Cluster TPC};", 50, 50., 100.);
+			fHistTPCchi2True[iCut] = new TH1F("fHistTPCchi2True", "fHistTPCchi2True;#chi^{2};", 100, 0., 10.);
+			fHistITSClusterTrue[iCut] = new TH1F("fHistITSClusterTrue", "fHistITSClusterTrue;#it{N}_{Cluster TPC};", 10, 0., 10.);
+			fHistITSchi2True[iCut] = new TH1F("fHistITSchi2True", "fHistITSchi2True;#chi^{2};", 100, 0., 10.);
+			fHistThetaPhiTrueSigmaPl[iCut] = new TH2F("fHistThetaPhiTrueSigmaPl", "fHistThetaPhiTrueSigmaPl;#theta ; #phi", 50, -1., 4. ,100, 0., 2*TMath::Pi());
+			fHistGenSigmaPt[iCut] = new TH1F("fHistGenSigmaPt", "fHistGenSigmaPt;#it{p}_{T,Sigma} (GeV/#it{c});Yield", 100, 0, 30);
+			fHistGenSigmaPerEvent[iCut] = new TH1F("fHistGenSigmaPerEvent", "fHistGenSigmaPerEvent;N;Yield", 11, -0.5, 10.5);
+			fHistGenSigmaPerEvent[iCut] -> Sumw2();
+			fHistGenProtonPt[iCut] = new TH1F("fHistGenProtonPt", "fHistGenProtonPt;#it{p}_{T,Proton} (GeV/#it{c});Yield", 100, 0, 30);
+			fHistGenPiZeroPt[iCut] = new TH1F("fHistGenPiZeroPt", "fHistGenPiZeroPt;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30);
+			fHistSigmaPtEta[iCut] = new TH2F("fHistSigmaPtEta", "fHistSigmaPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
+			fHistProtonPtEta[iCut] = new TH2F("fHistProtonPtEta", "fHistProtonPtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 30, 50, -5, 5);
+			fHistPi0PtEta[iCut] = new TH2F("fHistPi0PtEta", "fHistPi0PtEta;#it{p}_{T,Pion} (GeV/#it{c});Yield", 100, 0, 10, 50, -5, 5);
+			fHistGenAngleProtonPiZero[iCut] = new TH1F("fHistGenAngleProtonPiZero", "fHistGenAngleProtonPiZero;#it{beta}_{Proton,Pion} (rad);Yield", 100, 0, TMath::Pi());
+			fHistPodolanskiGenTrue[iCut] = new TH2F("fHistPodolanskiGenTrue","", 100, 0., 1., 100, 0., 1.);
+
 			if(fIsMC > 1){
 				fHistPodolanskiWCutTrue[iCut]->Sumw2();
 				fHistTrueProtonPt[iCut]->Sumw2();
@@ -521,6 +589,19 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 				fHistSigmaPlusMCTrueProton[iCut]->Sumw2();
 				fHistSigmaPlusMCTrueProtonGamma[iCut]->Sumw2();
 				fHistSigmaPlusMC[iCut]->Sumw2();
+				fHistThetaPhiTrueSigmaPl[iCut]->Sumw2();
+				fHistGenSigmaPt[iCut]->Sumw2();
+				fHistGenProtonPt[iCut]->Sumw2();
+				fHistGenPiZeroPt[iCut]->Sumw2();
+				fHistSigmaPtEta[iCut]->Sumw2();
+				fHistProtonPtEta[iCut]->Sumw2();
+				fHistPi0PtEta[iCut]->Sumw2();
+				fHistGenAngleProtonPiZero[iCut]->Sumw2();
+				fHistPodolanskiGenTrue[iCut]->Sumw2();
+				fHistTPCClusterTrue[iCut]->Sumw2();
+				fHistTPCchi2True[iCut]->Sumw2();
+				fHistITSClusterTrue[iCut]->Sumw2();
+				fHistITSchi2True[iCut]->Sumw2();
 			}
 			
 			fAODList[iCut]->Add(fHistSigmaPlusMC[iCut]);
@@ -528,7 +609,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fAODList[iCut]->Add(fHistSigmaPlusMCTrueProton[iCut]);
 			fAODList[iCut]->Add(fHistSigmaPlusMCTruePion[iCut]);
 			fAODList[iCut]->Add(fHistDoubleCountTrueSigmaInvMassPt[iCut]);
-			fAODList[iCut]->Add(fHistPodolanskiGenTrue);
+			fAODList[iCut]->Add(fHistPodolanskiGenTrue[iCut]);
 			fAODList[iCut]->Add(fHistPodolanskiWCutTrue[iCut]);
 			fAODList[iCut]->Add(fHistTrueProtonPt[iCut]);
 			fAODList[iCut]->Add(fHistTrackDCAXYTrue[iCut]);
@@ -537,15 +618,19 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fAODList[iCut]->Add(fHistTrackDCAZTruewCuts[iCut]);
 			fAODList[iCut]->Add(fHistDecayangleTrue[iCut]);
 			fAODList[iCut]->Add(fHistDecayangleTruewCut[iCut]);
-			fAODList[iCut]->Add(fHistThetaPhiTrueSigmaPl);
-			fAODList[iCut]->Add(fHistGenSigmaPerEvent);
-			fAODList[iCut]->Add(fHistGenSigmaPt);
-			fAODList[iCut]->Add(fHistGenProtonPt);
-			fAODList[iCut]->Add(fHistGenPiZeroPt);
-			fAODList[iCut]->Add(fHistSigmaPtEta);
-			fAODList[iCut]->Add(fHistProtonPtEta);
-			fAODList[iCut]->Add(fHistPi0PtEta);
-			fAODList[iCut]->Add(fHistGenAngleProtonPiZero);
+			fAODList[iCut]->Add(fHistTPCClusterTrue[iCut]);
+			fAODList[iCut]->Add(fHistTPCchi2True[iCut]);
+			fAODList[iCut]->Add(fHistITSClusterTrue[iCut]);
+			fAODList[iCut]->Add(fHistITSchi2True[iCut]);
+			fAODList[iCut]->Add(fHistThetaPhiTrueSigmaPl[iCut]);
+			fAODList[iCut]->Add(fHistGenSigmaPerEvent[iCut]);
+			fAODList[iCut]->Add(fHistGenSigmaPt[iCut]);
+			fAODList[iCut]->Add(fHistGenProtonPt[iCut]);
+			fAODList[iCut]->Add(fHistGenPiZeroPt[iCut]);
+			fAODList[iCut]->Add(fHistSigmaPtEta[iCut]);
+			fAODList[iCut]->Add(fHistProtonPtEta[iCut]);
+			fAODList[iCut]->Add(fHistPi0PtEta[iCut]);
+			fAODList[iCut]->Add(fHistGenAngleProtonPiZero[iCut]);
 			fAODList[iCut]->Add(fHistReconstructedMassPi0MC[iCut]);
 			fAODList[iCut]->Add(fHistReconstructedMassPi0MCwCut[iCut]);
 			fAODList[iCut]->Add(fHistSigmaMassPtWoPodCutMC[iCut]);
@@ -689,7 +774,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 					continue;
 				}
 				if(sigma->GetPdgCode() == 3222){
-					if(fHistThetaPhiTrueSigmaPl) fHistThetaPhiTrueSigmaPl->Fill(sigma->Theta(), sigma->Phi(),fWeightJetJetMC);
+					if(fHistThetaPhiTrueSigmaPl[iCut]) fHistThetaPhiTrueSigmaPl[iCut]->Fill(sigma->Theta(), sigma->Phi(),fWeightJetJetMC);
 					Int_t nDaughters = sigma->GetNDaughters();
 					TLorentzVector protonTrueVec;
 					TLorentzVector pionTrueVec;
@@ -704,33 +789,33 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						if((daughter1->GetPdgCode() == 2212) && (daughter2->GetPdgCode() == 111)){
 							protonTrueVec.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
 							pionTrueVec.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
-							if(fHistGenSigmaPt) fHistGenSigmaPt->Fill(sigma->Pt(),fWeightJetJetMC);
-							if(fHistGenProtonPt) fHistGenProtonPt->Fill(protonTrueVec.Pt(),fWeightJetJetMC);
-							if(fHistGenPiZeroPt) fHistGenPiZeroPt->Fill(pionTrueVec.Pt(),fWeightJetJetMC);
-							if(fHistSigmaPtEta) fHistSigmaPtEta->Fill(sigma->Pt(), sigma->Eta(),fWeightJetJetMC);
-							if(fHistProtonPtEta) fHistProtonPtEta->Fill(protonTrueVec.Pt(), protonTrueVec.Eta(),fWeightJetJetMC);
-							if(fHistPi0PtEta) fHistPi0PtEta->Fill(pionTrueVec.Pt(), pionTrueVec.Eta(),fWeightJetJetMC);
-							if(fHistGenAngleProtonPiZero) fHistGenAngleProtonPiZero->Fill(pionTrueVec.Angle(protonTrueVec.Vect()),fWeightJetJetMC);
-							if(fHistPodolanskiGenTrue) fHistPodolanskiGenTrue->Fill(GetPodAlpha(sigmaTrueVec, protonTrueVec, pionTrueVec),GetQT(sigmaTrueVec, pionTrueVec),fWeightJetJetMC);
+							if(fHistGenSigmaPt[iCut]) fHistGenSigmaPt[iCut]->Fill(sigma->Pt(),fWeightJetJetMC);
+							if(fHistGenProtonPt[iCut]) fHistGenProtonPt[iCut]->Fill(protonTrueVec.Pt(),fWeightJetJetMC);
+							if(fHistGenPiZeroPt[iCut]) fHistGenPiZeroPt[iCut]->Fill(pionTrueVec.Pt(),fWeightJetJetMC);
+							if(fHistSigmaPtEta[iCut]) fHistSigmaPtEta[iCut]->Fill(sigma->Pt(), sigma->Eta(),fWeightJetJetMC);
+							if(fHistProtonPtEta[iCut]) fHistProtonPtEta[iCut]->Fill(protonTrueVec.Pt(), protonTrueVec.Eta(),fWeightJetJetMC);
+							if(fHistPi0PtEta[iCut]) fHistPi0PtEta[iCut]->Fill(pionTrueVec.Pt(), pionTrueVec.Eta(),fWeightJetJetMC);
+							if(fHistGenAngleProtonPiZero[iCut]) fHistGenAngleProtonPiZero[iCut]->Fill(pionTrueVec.Angle(protonTrueVec.Vect()),fWeightJetJetMC);
+							if(fHistPodolanskiGenTrue[iCut]) fHistPodolanskiGenTrue[iCut]->Fill(GetPodAlpha(sigmaTrueVec, protonTrueVec, pionTrueVec),GetQT(sigmaTrueVec, pionTrueVec),fWeightJetJetMC);
 							nSigmaperEvent = nSigmaperEvent+1;
 						}
 						if((daughter1->GetPdgCode() == 111) && (daughter2->GetPdgCode() == 2212)){
 							pionTrueVec.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
 							protonTrueVec.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
-							if(fHistGenSigmaPt) fHistGenSigmaPt->Fill(sigma->Pt(),fWeightJetJetMC);
-							if(fHistGenProtonPt) fHistGenProtonPt->Fill(protonTrueVec.Pt(),fWeightJetJetMC);
-							if(fHistGenPiZeroPt) fHistGenPiZeroPt->Fill(pionTrueVec.Pt(),fWeightJetJetMC);
-							if(fHistSigmaPtEta) fHistSigmaPtEta->Fill(sigma->Pt(), sigma->Eta(),fWeightJetJetMC);
-							if(fHistProtonPtEta) fHistProtonPtEta->Fill(protonTrueVec.Pt(), protonTrueVec.Eta(),fWeightJetJetMC);
-							if(fHistPi0PtEta) fHistPi0PtEta->Fill(pionTrueVec.Pt(), pionTrueVec.Eta(),fWeightJetJetMC);
-							if(fHistGenAngleProtonPiZero) fHistGenAngleProtonPiZero->Fill(pionTrueVec.Angle(protonTrueVec.Vect()),fWeightJetJetMC);
-							if(fHistPodolanskiGenTrue) fHistPodolanskiGenTrue->Fill(GetPodAlpha(sigmaTrueVec, protonTrueVec, pionTrueVec),GetQT(sigmaTrueVec, pionTrueVec),fWeightJetJetMC);
+							if(fHistGenSigmaPt[iCut]) fHistGenSigmaPt[iCut]->Fill(sigma->Pt(),fWeightJetJetMC);
+							if(fHistGenProtonPt[iCut]) fHistGenProtonPt[iCut]->Fill(protonTrueVec.Pt(),fWeightJetJetMC);
+							if(fHistGenPiZeroPt[iCut]) fHistGenPiZeroPt[iCut]->Fill(pionTrueVec.Pt(),fWeightJetJetMC);
+							if(fHistSigmaPtEta[iCut]) fHistSigmaPtEta[iCut]->Fill(sigma->Pt(), sigma->Eta(),fWeightJetJetMC);
+							if(fHistProtonPtEta[iCut]) fHistProtonPtEta[iCut]->Fill(protonTrueVec.Pt(), protonTrueVec.Eta(),fWeightJetJetMC);
+							if(fHistPi0PtEta[iCut]) fHistPi0PtEta[iCut]->Fill(pionTrueVec.Pt(), pionTrueVec.Eta(),fWeightJetJetMC);
+							if(fHistGenAngleProtonPiZero[iCut]) fHistGenAngleProtonPiZero[iCut]->Fill(pionTrueVec.Angle(protonTrueVec.Vect()),fWeightJetJetMC);
+							if(fHistPodolanskiGenTrue[iCut]) fHistPodolanskiGenTrue[iCut]->Fill(GetPodAlpha(sigmaTrueVec, protonTrueVec, pionTrueVec),GetQT(sigmaTrueVec, pionTrueVec),fWeightJetJetMC);
 							nSigmaperEvent = nSigmaperEvent+1;
 						}
 					}
 				}
 			}
-			if(fHistGenSigmaPerEvent) fHistGenSigmaPerEvent->Fill(nSigmaperEvent,fWeightJetJetMC);
+			if(fHistGenSigmaPerEvent[iCut]) fHistGenSigmaPerEvent[iCut]->Fill(nSigmaperEvent,fWeightJetJetMC);
 		}
 
 		AliAODTrack* track;
@@ -745,24 +830,33 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			if(!track) continue;
 			Float_t trackDCAXY = 0.0, trackDCAZ = 0.0;
 			track->GetImpactParameters(trackDCAXY,trackDCAZ);
-			if(fHistTrackDCAXY[iCut])fHistTrackDCAXY[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt(),fWeightJetJetMC);
-			if(fHistTrackDCAZ[iCut])fHistTrackDCAZ[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt(),fWeightJetJetMC);
+			if(fHistTrackDCAXY[iCut])fHistTrackDCAXY[iCut]->Fill(TMath::Abs(trackDCAXY),fWeightJetJetMC);
+			if(fHistTrackDCAZ[iCut])fHistTrackDCAZ[iCut]->Fill(TMath::Abs(trackDCAZ),fWeightJetJetMC);
+			if(fHistTPCCluster[iCut] && track->GetTPCNcls())fHistTPCCluster[iCut]->Fill(track->GetTPCNcls(),fWeightJetJetMC);
+			if(fHistTPCchi2[iCut] && track->GetTPCchi2perCluster())fHistTPCchi2[iCut]->Fill(track->GetTPCchi2perCluster(),fWeightJetJetMC);
+			if(fHistITSCluster[iCut] && track->GetITSNcls())fHistITSCluster[iCut]->Fill(track->GetITSNcls(),fWeightJetJetMC);
+			if(fHistITSchi2[iCut] && track->GetITSchi2())fHistITSchi2[iCut]->Fill(track->GetITSchi2(),fWeightJetJetMC);
+			
 			if(fIsMC > 0){
-				if((IsRealProton(track, fAODMCTrackArray)) > 0){
-					if(fHistTrackDCAXYTrue[iCut])fHistTrackDCAXYTrue[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt(),fWeightJetJetMC);
-					if(fHistTrackDCAZTrue[iCut])fHistTrackDCAZTrue[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt(),fWeightJetJetMC);
+				if((IsRealProton(track, fAODMCTrackArray, iCut, fWeightJetJetMC, 0)) > 0){
+					if(fHistTrackDCAXYTrue[iCut])fHistTrackDCAXYTrue[iCut]->Fill(TMath::Abs(trackDCAXY),fWeightJetJetMC);
+					if(fHistTrackDCAZTrue[iCut])fHistTrackDCAZTrue[iCut]->Fill(TMath::Abs(trackDCAZ),fWeightJetJetMC);
+					if(fHistTPCClusterTrue[iCut] && track->GetTPCNcls())fHistTPCClusterTrue[iCut]->Fill(track->GetTPCNcls(),fWeightJetJetMC);
+					if(fHistTPCchi2True[iCut] && track->GetTPCchi2perCluster())fHistTPCchi2True[iCut]->Fill(track->GetTPCchi2perCluster(),fWeightJetJetMC);
+					if(fHistITSClusterTrue[iCut] && track->GetITSNcls())fHistITSClusterTrue[iCut]->Fill(track->GetITSNcls(),fWeightJetJetMC);
+					if(fHistITSchi2True[iCut] && track->GetITSchi2())fHistITSchi2True[iCut]->Fill(track->GetITSchi2(),fWeightJetJetMC);
 				}	
 			}	
 			if(((((AliCaloSigmaCuts*)fSigmaCutArray->At(iCut))->TrackIsSelected(track, fPIDResponse)) == kTRUE)){
 				if(fHistProtonPt[iCut]) fHistProtonPt[iCut]->Fill(track->Pt(),fWeightJetJetMC);
 				if(fHistThetaPhiProton[iCut]) fHistThetaPhiProton[iCut]->Fill(track->Theta(), track->Phi(),fWeightJetJetMC);
 				if(fHistTPCSignal[iCut]) fHistTPCSignal[iCut]->Fill(track->P(), fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton),fWeightJetJetMC);
-				if(fHistTrackDCAXYwCuts[iCut])fHistTrackDCAXYwCuts[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt(),fWeightJetJetMC);
-				if(fHistTrackDCAZwCuts[iCut])fHistTrackDCAZwCuts[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt(),fWeightJetJetMC);
+				if(fHistTrackDCAXYwCuts[iCut])fHistTrackDCAXYwCuts[iCut]->Fill(TMath::Abs(trackDCAXY),fWeightJetJetMC);
+				if(fHistTrackDCAZwCuts[iCut])fHistTrackDCAZwCuts[iCut]->Fill(TMath::Abs(trackDCAZ),fWeightJetJetMC);
 				if(fIsMC > 0){
-					if((IsRealProton(track, fAODMCTrackArray)) > 0){
-						if(fHistTrackDCAXYTruewCuts[iCut])fHistTrackDCAXYTruewCuts[iCut]->Fill(TMath::Abs(trackDCAXY),track->Pt(),fWeightJetJetMC);
-						if(fHistTrackDCAZTruewCuts[iCut])fHistTrackDCAZTruewCuts[iCut]->Fill(TMath::Abs(trackDCAZ),track->Pt(),fWeightJetJetMC);
+					if((IsRealProton(track, fAODMCTrackArray, iCut, fWeightJetJetMC, 0)) > 0){
+						if(fHistTrackDCAXYTruewCuts[iCut])fHistTrackDCAXYTruewCuts[iCut]->Fill(TMath::Abs(trackDCAXY),fWeightJetJetMC);
+						if(fHistTrackDCAZTruewCuts[iCut])fHistTrackDCAZTruewCuts[iCut]->Fill(TMath::Abs(trackDCAZ),fWeightJetJetMC);
 					}	
 				}
 				proton.push_back(track);
@@ -776,6 +870,13 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			Double_t ptot = track->P();
 			Double_t tpcSignal = track->GetTPCsignal();
 			if(fHistDEDx[iCut]) fHistDEDx[iCut]->Fill(ptot, tpcSignal,fWeightJetJetMC);
+			if (track->GetTOFsignal()){
+  				const float len = track->GetIntegratedLength();
+				const float tim = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+				const float beta = len / (tim * (2.99792457999999984e-02));
+				if(fHistTOFBeta[iCut]) fHistTOFBeta[iCut]->Fill(ptot, beta,fWeightJetJetMC);
+			}
+
 		}
 		fHistNProtonsPerEvent[iCut]->Fill(proton.size(),fWeightJetJetMC);
 		if(proton.size() > 0){
@@ -838,7 +939,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 					AliAODTrack* protonCandidate = proton[iProton];
 					protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
 					if(fIsMC > 0){
-						trueProtonMotherID = IsRealProton(protonCandidate, fAODMCTrackArray);
+						trueProtonMotherID = IsRealProton(protonCandidate, fAODMCTrackArray, iCut, fWeightJetJetMC, 1);
 						if(trueProtonMotherID > 0){
 							if(fHistTrueProtonPt[iCut]) fHistTrueProtonPt[iCut]->Fill(protonCandidate->Pt(),fWeightJetJetMC);
 						}
@@ -869,7 +970,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 								}
 							}
-							truePhotonMotherID1 = IsRealPhoton(&PhotonCandidate1, fAODMCTrackArray);
+							truePhotonMotherID1 = IsRealPhoton(&PhotonCandidate1, fAODMCTrackArray, iCut, fWeightJetJetMC);
 						}
 						for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
 							if( iPhoton2 > iPhoton1){
@@ -898,7 +999,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 											// cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 										}
 									}
-									truePhotonMotherID2 = IsRealPhoton(&PhotonCandidate2, fAODMCTrackArray);
+									truePhotonMotherID2 = IsRealPhoton(&PhotonCandidate2, fAODMCTrackArray, iCut, fWeightJetJetMC);
 								}
 								AliAODConversionMother pi0cand = AliAODConversionMother(&PhotonCandidate1,&PhotonCandidate2);
 								pi0cand.SetLabels(iPhoton1,iPhoton2);
@@ -1013,7 +1114,7 @@ Double_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::GetQT(TLorentzVector sigmaVekt
 	return  sin(sigmaVektor.Angle(rekombinatedPi0.Vect())) * rekombinatedPi0.P();
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealProton(AliAODTrack* track, TClonesArray* fAODMCTrackArray)
+Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealProton(AliAODTrack* track, TClonesArray* fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC, Int_t fill)
 {//Check if proton comes frome a sigma+
 	Int_t mcID = track->GetLabel();
 	AliAODMCParticle* mcTrack = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TMath::Abs(mcID)));
@@ -1025,13 +1126,29 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealProton(AliAODTrack* track, 
 	Int_t codeMother = TrackMother->GetPdgCode();
 	if( (codeTrack==2212) && (codeMother==3222) ){
 		return (TrackMother->GetLabel());
+	} else if((codeTrack==2212) && (codeMother==2212) ){
+		Int_t codeGrandMother = codeMother;
+		Int_t labelGrandMother = mcTrack->GetMother();
+		Int_t counter = 0;
+		while(codeGrandMother == 2212 && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntriesFast()){
+			AliAODMCParticle *TrackGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelGrandMother)); //mother MC particle object
+			if(!TrackGrandMother) return -1;
+			codeGrandMother = TrackGrandMother->GetPdgCode();
+			if(codeGrandMother == 3222){
+				if(fill == 1) fHistNLoopsProton[iCut]->Fill(counter, fWeightJetJetMC);
+				return TrackGrandMother->GetLabel();
+			}	
+			labelGrandMother = TrackGrandMother->GetMother();
+			counter += 1;
+		}
+		return -1;
 	} else {
 		return -1;
 	}
 	return -1;
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray* fAODMCTrackArray)
+Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray* fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC)
 { //checks if a reconstructed photon from sigma plus
 	AliAODMCParticle *Photon = NULL;
 	if (PhotonCandidate->GetNCaloPhotonMCLabels() > 0){
@@ -1045,8 +1162,26 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhot
 				if (motherPart2->GetMother() < 0) return -1;
 				AliAODMCParticle* grandmotherPart2 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(motherPart2->GetMother()));
 				if(motherPart2->GetPdgCode() == 111 && grandmotherPart2->GetPdgCode() == 3222){
-					return (grandmotherPart2->GetLabel());			
-				} else {
+					return (grandmotherPart2->GetLabel());	
+				} else if(motherPart2->GetPdgCode() == 11 || motherPart2->GetPdgCode() == -11 || motherPart2->GetPdgCode() == 22){
+					Int_t codeGrandMother = motherPart2->GetPdgCode();
+					Int_t codePotentialMother = motherPart2->GetPdgCode();
+					Int_t labelGrandMother = Photon->GetMother();
+					Int_t counter = 0;
+					while((codeGrandMother == 11 || codeGrandMother == -11 || codeGrandMother == 22 || codeGrandMother == 111) && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntriesFast()){
+						AliAODMCParticle *TrackGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelGrandMother)); //mother MC particle object
+						if(!TrackGrandMother) return -1;
+						codeGrandMother = TrackGrandMother->GetPdgCode();
+						if(codePotentialMother == 111 && codeGrandMother == 3222){
+							fHistNLoopsGamma[iCut]->Fill(counter, fWeightJetJetMC);
+							return TrackGrandMother->GetLabel();
+						}
+						labelGrandMother = TrackGrandMother->GetMother();
+						codePotentialMother = codeGrandMother;
+						counter += 1;
+					}
+					return -1;
+				}else {
 					return -1;
 				}
 			} else if(Photon->GetPdgCode() == 11 || Photon->GetPdgCode() == -11){
@@ -1057,8 +1192,26 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhot
 				if (grandmotherPart2->GetMother() < 0) return -1;
 				AliAODMCParticle* grandgrandmotherPart2 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(grandmotherPart2->GetMother()));
 				if(motherPart2->GetPdgCode() == 22 && grandmotherPart2->GetPdgCode() == 111  && grandgrandmotherPart2->GetPdgCode() == 3222){
-					return (grandmotherPart2->GetLabel());
-				} else {
+					return (grandgrandmotherPart2->GetLabel());
+				} else if((motherPart2->GetPdgCode() == 11 || motherPart2->GetPdgCode() == -11 || motherPart2->GetPdgCode() == 22) && (grandmotherPart2->GetPdgCode() == 11 || grandmotherPart2->GetPdgCode() == -11 || grandmotherPart2->GetPdgCode() == 22)){
+					Int_t codeGrandMother = motherPart2->GetPdgCode();
+					Int_t codePotentialMother = motherPart2->GetPdgCode();
+					Int_t labelGrandMother = Photon->GetMother();
+					Int_t counter = 0;
+					while((codeGrandMother == 11 || codeGrandMother == -11 || codeGrandMother == 22 || codeGrandMother == 111) && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntries()){
+						AliAODMCParticle *TrackGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelGrandMother)); //mother MC particle object
+						if(!TrackGrandMother) return -1;
+						codeGrandMother = TrackGrandMother->GetPdgCode();
+						if(codePotentialMother == 111 && codeGrandMother == 3222){
+							fHistNLoopsGamma[iCut]->Fill(counter, fWeightJetJetMC);
+							return TrackGrandMother->GetLabel();
+						}
+						labelGrandMother = TrackGrandMother->GetMother();
+						codePotentialMother = codeGrandMother;
+						counter += 1;
+					}
+					return -1;
+				}else {
 					return -1;
 				}
 			} else {
@@ -1330,7 +1483,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPio
         }
     }
 }
-
 //_____________________________________________________________________________
 void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::Terminate(Option_t *)
 {
