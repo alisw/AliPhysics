@@ -1068,6 +1068,7 @@ Double_t AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, co
     Int_t iLabel=-99;
     Bool_t bDebug=kFALSE;
     Double_t fMaxIP=-999;
+    Int_t iInVectorInx=-999;
 
     //if((nDaughters<2)&&(iCount==0)) printf("FindAllV0Daughters:: strange daughters %i\n",nDaughters);
 
@@ -1076,6 +1077,7 @@ Double_t AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, co
 
     for(int iDaugh=0;iDaugh<nDaughters;iDaugh++){
       iLabel=iFirstLabel+iDaugh;
+      iInVectorInx=-999;
       pDaugh=dynamic_cast<AliAODMCParticle*>(GetMCTrack(iLabel));
       if(!pDaugh){
         AliError(Form("FindAllV0Daughters:: iDaugh=%i, iCount=%i not available!\n", iDaugh, iCount));
@@ -1088,11 +1090,10 @@ Double_t AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, co
 
       std::string spaces;
       spaces.resize(2*iLevel,'  ');
-      if(bDebug)printf("%s pdg=%i, iDaugh=%i,  nstatus=%llu, ndaughdaughters=%i\n",spaces.c_str(),pDaugh->GetPdgCode(), iDaugh,nstatus,nDaughDaughters    );
+      if(bDebug)printf("%s pdg=%i, iDaugh=%i,  nstatus=%llu, ndaughdaughters=%i, label=%i\n",spaces.c_str(),pDaugh->GetPdgCode(), iDaugh,nstatus,nDaughDaughters    ,iLabel);
 
-      if(nDaughDaughters==0){
-        Int_t iInVectorInx=-999;
-        iInVectorInx=IsInVector(iTrackLabels, iLabel,__FUNCTION__);
+      iInVectorInx=IsInVector(iTrackLabels, iLabel,__FUNCTION__);
+      if((nDaughDaughters==0)||!(iInVectorInx<0)){
         if(!(iInVectorInx<0)){
           //vecDaughLabels.push_back(iLabel);
           if(fTrackRecIPs[iInVectorInx]>fMaxIP) fMaxIP=fTrackRecIPs[iInVectorInx];
@@ -1129,7 +1130,7 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
 
     Bool_t bV0MCIsPrimaryDist = pAOD->IsPhysicalPrimary();
     if(!bV0MCIsPrimaryDist){
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as not primari: bV0MCIsPrimaryDist=%i\n",bV0MCIsPrimaryDist);
+      //if(bDebug)printf("GetGeneratedV0:: Rejecting as not primari: bV0MCIsPrimaryDist=%i\n",bV0MCIsPrimaryDist);
       return ipsig;
     }
 
@@ -1138,7 +1139,7 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
     Bool_t bV0 = ((id==3122) || (id==-3122) || (id==310));
     if (!bV0) {
       pAOD=0;
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as wrong ID=%i\n",id);
+      //if(bDebug)printf("GetGeneratedV0:: Rejecting as wrong ID=%i\n",id);
       return ipsig;
     }
 
@@ -1160,7 +1161,7 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
     if (pAOD->Pt() <0.15) return ipsig;
     if ((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta]))return ipsig;
     if ((fPosPt < fV0Cuts[DaughMinPt])||(fNegPt < fV0Cuts[DaughMinPt]))return ipsig;
-    if(bDebug) printf("GetGeneratedV0:: Passed acceptance cuts: V0y=%f, V0pt=%f, poseta=%f, negeta=%f, pospt%f, negpt=%f, id=%i, bV0MCIsPrimaryDist=%i\n", pAOD->Y(), pAOD->Pt(), fPosEta,fNegEta,fPosPt, fNegPt,id, bV0MCIsPrimaryDist);
+    if(bDebug)printf("GetGeneratedV0:: Passed acceptance cuts: V0y=%f, V0pt=%f, poseta=%f, negeta=%f, pospt%f, negpt=%f, id=%i, bV0MCIsPrimaryDist=%i\n", pAOD->Y(), pAOD->Pt(), fPosEta,fNegEta,fPosPt, fNegPt,id, bV0MCIsPrimaryDist);
 
     //asking whether v0 within jet cone !
     //vector<Int_t> vecDaughLabels;
@@ -1169,6 +1170,7 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
     //Double_t fV0IP=-999;
     //GetMCIP(pAOD, event,jetgen,fV0IP);
     if(bDebug)printf("GetGeneratedV0:: fV0DaughMaxIP=%f\n",ipsig);
+
     //iDaughInCone=NDaughterInCone(vecDaughLabels, jetgen,event, fJetRadius, ipsig, );
 
     return ipsig;
@@ -1257,7 +1259,7 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
       }
       //Get V0 IP
       Double_t fIPV0=GetGenV0DaughterIP(pAOD, jetgen,  event, iTrackLabels,fTrackRecIPs);
-      //if(TMath::Abs(fIPV0)>0)printf("%s: Receiving V0 with ip=%f\n",__FUNCTION__,fIPV0);
+      //if(!(TMath::Abs(fIPV0+999)<0.00001))printf("%s: Receiving V0 with ip=%f\n",__FUNCTION__,fIPV0);
 
       if(fIPV0>fMaxIP){
         Double_t fOldMaxIP=fMaxIP;
@@ -1687,9 +1689,13 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v
 
   AliAODMCParticle* particleMCDaughterPos=(AliAODMCParticle*) GetMCTrack(iposLabel);
   AliAODMCParticle* particleMCDaughterNeg=(AliAODMCParticle*) GetMCTrack(inegLabel);
+  AliAODMCParticle* particleMCDaughterTrack=(AliAODMCParticle*) GetMCTrack(tracklabel);
   if(!particleMCDaughterNeg || !particleMCDaughterPos) return V0Untagged;
   Int_t iPdgCodeDaughterPos = particleMCDaughterPos->GetPdgCode();
   Int_t iPdgCodeDaughterNeg = particleMCDaughterNeg->GetPdgCode();
+  Double_t fEta=particleMCDaughterTrack->Eta();
+  Double_t fPt=particleMCDaughterTrack->Pt();
+
 
   //************************
   //Get mother of daughters
@@ -1705,6 +1711,14 @@ int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v
     return V0Untagged;
   }
   fV0ptData=v0->Pt();
+  //printf("%s: Before acceptance cuts! iposlabel=%i, ineglabel=%i,mother=%i\n",__FUNCTION__, iposLabel,inegLabel,iIndexMotherPos);
+
+  if (TMath::Abs(particleMCMother->Y()) > fV0Cuts[MaxV0Rap]) { particleMCMother=0; return V0Untagged; }
+  if (particleMCMother->Pt() <0.15) return V0Untagged;
+  if ((TMath::Abs(fEta) > fV0Cuts[DaughMaxEta])) return V0Untagged;
+  if ((fPt < fV0Cuts[DaughMinPt])) return V0Untagged;
+
+  //printf("%s: mothery=%f, motherpt=%f, abseta=%f, fPt=%f\n", __FUNCTION__, particleMCMother->Y(), particleMCMother->Pt(),fEta,fPt);
 
   // Check identity of the MC mother particle and the decay channel
   Bool_t bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
@@ -2338,6 +2352,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {//start trackloop
           isV0=V0No;
           Double_t xyzatcda[3];
+          dca[0]=-99999; dca[1]=-99999;
+          cov[0]=-99999; cov[1]=-99999; cov[2]=-99999;
+          sign=0;
 
           vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
           if (!vp){
@@ -2354,16 +2371,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           if (!trackV || !jetrec)            continue;
           if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
           if(!GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign, fJetFlavour)) continue;
+          if(fEventVertex) {
+           delete fEventVertex;
+           fEventVertex =nullptr;
+          }
 
           iTrackLabels.push_back(trackV->GetLabel());
 
           //printf("dca[0] =%f, dca[1]=%f\n",dca[0], dca[1]);
           isV0=IsV0Daughter(ev,trackV, NJetParticles);
 
-          if(fEventVertex) {
-           delete fEventVertex;
-           fEventVertex =nullptr;
-          }
           TrackWeight=1;
           corridx=-1;ppt=-1;
           fIPValue=999;
@@ -2389,7 +2406,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           Double_t cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
           //printf("cursImParXY=%f, cursImParXYSig=%f, cursImParXYZ=%f, cursImParXYZSig=%f\n", cursImParXY,cursImParXYSig, cursImParXYZ, cursImParXYZSig);
           fTrackRecIPs.push_back(cursImParXY);
-      //    printf("%s: Track with label %i, IP=%f\n",__FUNCTION__, trackV->GetLabel(), cursImParXY);
+          //printf("%s: Track with label %i, IP=%f\n",__FUNCTION__, trackV->GetLabel(), cursImParXY);
 
           fTrackIPs[NJetParticles]=cursImParXY;
           fTrackIPSigs[NJetParticles]=cursImParXYSig;
@@ -4400,7 +4417,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::getJetVtxMass(AliEmcalJet *jet,double &value ){
 }
 
 
-Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour)
+Bool_t AliAnalysisTaskHFJetIPQA:: GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour)
 {
     if(!track || !event || !jet)return kFALSE;
     if(dca==0 || cov ==0 ||XYZatDCA ==0 ) return kFALSE;
@@ -4433,7 +4450,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
     etp_jet.GetDCA(&etp_track, event->GetMagneticField(), xa, xb);
     etp_jet.GetXYZAt(xa, event->GetMagneticField(),xyz_jet_global);
     etp_track.GetXYZAt(xb, event->GetMagneticField(),xyz_track_global);
-    etp_track.PropagateTo(xb,event->GetMagneticField());
+    if(!etp_track.PropagateTo(xb,event->GetMagneticField())) return kFALSE;
 
     if(fEventVertex) {
         delete fEventVertex;
