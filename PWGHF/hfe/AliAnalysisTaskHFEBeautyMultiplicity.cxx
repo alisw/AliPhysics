@@ -738,13 +738,18 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     
 //************************************ MC data ************************************//
   //Number of D,B
-    fNDB = new TH1F("fNDB","Number of D,B event",5,-0.5,4.5);
+    fNDB = new TH1F("fNDB","Number of D,B event",9,-0.5,8.5);
     fOutputList->Add(fNDB);
     fNDB->GetYaxis()->SetTitle("counts");
     fNDB->GetXaxis()->SetBinLabel(1,"B->e");
     fNDB->GetXaxis()->SetBinLabel(2,"B->e & B->D->e");
-    fNDB->GetXaxis()->SetBinLabel(4,"D->e & B->D->e");
-    fNDB->GetXaxis()->SetBinLabel(5,"D->e");
+    fNDB->GetXaxis()->SetBinLabel(3,"B after TrackCut");
+    fNDB->GetXaxis()->SetBinLabel(4,"B after PID");
+
+    fNDB->GetXaxis()->SetBinLabel(6,"D->e & B->D->e");
+    fNDB->GetXaxis()->SetBinLabel(7,"D->e");
+    fNDB->GetXaxis()->SetBinLabel(8,"D after TrackCut");
+    fNDB->GetXaxis()->SetBinLabel(9,"D after PID ");
 
 
   //Total photonic electron(MC)
@@ -1136,7 +1141,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             pid_eleP = IsPdecay(pidM);  // photon -> e
 
 	    if(pid_eleB) fNDB -> Fill(0);
-	    if(pid_eleD) fNDB -> Fill(3);
+	    if(pid_eleD) fNDB -> Fill(5);
             
 
             if(pid_eleD && iBevt)    // mother is D-meson, but GM is B-meson&baryon
@@ -1151,7 +1156,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             }
             
 	    if(pid_eleB) fNDB -> Fill(1);
-	    if(pid_eleD) fNDB -> Fill(4);
+	    if(pid_eleD) fNDB -> Fill(6);
 
             
             if(pidM==111)   //pi0
@@ -1273,7 +1278,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             //if(track->GetTPCNcls() < CutTPCNCls) continue;
             //fNtracks->Fill(3);
 
-	    //---- 4.TPC CrossedRow cut ----
+	    //---- 3.TPC CrossedRow cut ----
             if(TPCCrossedRows < CutTPCNCrossedRow) continue;
             fNtracks->Fill(3);
 
@@ -1308,6 +1313,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fHistEMCTrkMatch_Eta -> Fill(fEtaDiff);         //delta Eta
             fHistEMCTrkMatch_Phi -> Fill(fPhiDiff);         //delta Phi
             fEMCTrkMatch_EtaPhi  -> Fill(fEtaDiff,fPhiDiff);//delta Eta vs delta Phi
+
+
+	    if(pid_eleB) fNDB -> Fill(2);
+	    if(pid_eleD) fNDB -> Fill(7);
 
 
 
@@ -1420,6 +1429,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                            		fHistPho_Reco2->Fill(TrkPt); // Non-Reconstructed by EMCal & TPC & InvMass
                         	}
                     	}
+
+	    		if(pid_eleB) fNDB -> Fill(3);
+	    		if(pid_eleD) fNDB -> Fill(8);
 
 
 		    	//-------- Heavy Flavour electron --------//
