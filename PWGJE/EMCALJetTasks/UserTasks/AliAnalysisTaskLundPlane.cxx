@@ -62,7 +62,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5)
+  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -86,7 +86,7 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
     fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5)
+    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
     
 {
  
@@ -116,7 +116,7 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
   if (!fMatch)
     {
       fTreeSplittings = new TTree(nameoutput, nameoutput);
-      TString *fShapesVarNames_Splittings=new TString[18];
+      TString *fShapesVarNames_Splittings=new TString[19];
 
       fShapesVarNames_Splittings[0] = "angle";
       fShapesVarNames_Splittings[1] = "kt";
@@ -136,7 +136,7 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
       fShapesVarNames_Splittings[15] = "phi2_part";
       fShapesVarNames_Splittings[16] = "ptjet";
       fShapesVarNames_Splittings[17] = "ptjet_part"; 
-  
+      fShapesVarNames_Splittings[18] = "mytrig";
       fTreeSplittings->Branch(fShapesVarNames_Splittings[0].Data(), &fShapesVar_Splittings_angle, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[1].Data(), &fShapesVar_Splittings_kt, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[2].Data(), &fShapesVar_Splittings_z, 0,1);
@@ -155,13 +155,13 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
       fTreeSplittings->Branch(fShapesVarNames_Splittings[15].Data(), &fShapesVar_Splittings_phi2_part, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[16].Data(), &fShapesVar_Splittings_ptjet, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[17].Data(), &fShapesVar_Splittings_ptjet_part, 0,1);
-
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[18].Data(), &fShapesVar_Splittings_mytrig, 0,1);
     }
   else {
     fTreeMatching = new TTree(nameoutput, nameoutput);
     int N = 0;
-    if (!fDoSubJet) N = 6;
-    else N = 8;
+    if (!fDoSubJet) N = 7;
+    else N = 9;
     TString *fShapesVarNames_Matching = new TString[N];
     fShapesVarNames_Matching[0] = "ptjet";
     fShapesVarNames_Matching[1] = "lnkt";
@@ -169,19 +169,20 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
     fShapesVarNames_Matching[3] = "ptjet_part";
     fShapesVarNames_Matching[4] = "lnkt_part";
     fShapesVarNames_Matching[5] = "lnR_part";
-
+    fShapesVarNames_Matching[6] = "mytrig";
     fTreeMatching->Branch(fShapesVarNames_Matching[0].Data(), &fShapesVar_Matching_ptjet, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[1].Data(), &fShapesVar_Matching_lnkt, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[2].Data(), &fShapesVar_Matching_lnR, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[3].Data(), &fShapesVar_Matching_ptjet_part, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[4].Data(), &fShapesVar_Matching_lnkt_part, 0,1);
     fTreeMatching->Branch(fShapesVarNames_Matching[5].Data(), &fShapesVar_Matching_lnR_part, 0,1);
+     fTreeMatching->Branch(fShapesVarNames_Matching[6].Data(), &fShapesVar_Matching_mytrig, 0,1);
 
     if (fDoSubJet) {
-      fShapesVarNames_Matching[6] = "sub1";
-      fShapesVarNames_Matching[7] = "sub2";
-      fTreeMatching->Branch(fShapesVarNames_Matching[6].Data(), &fShapesVar_Matching_sub1, 0,1);
-      fTreeMatching->Branch(fShapesVarNames_Matching[7].Data(), &fShapesVar_Matching_sub2, 0,1);
+      fShapesVarNames_Matching[7] = "sub1";
+      fShapesVarNames_Matching[8] = "sub2";
+      fTreeMatching->Branch(fShapesVarNames_Matching[7].Data(), &fShapesVar_Matching_sub1, 0,1);
+      fTreeMatching->Branch(fShapesVarNames_Matching[8].Data(), &fShapesVar_Matching_sub2, 0,1);
     }
 
     const Double_t ptbins_true[7] = {0, 20, 40, 60, 80, 120, 160};
@@ -344,6 +345,16 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1))
         continue;
 
+
+      Int_t mytrig=0;
+      if(fStoreTrig==kTRUE){
+        
+        if(fInputEvent->GetFiredTriggerClasses().Contains("INT7")) mytrig=0;
+        if(fInputEvent->GetFiredTriggerClasses().Contains("EJ1")) mytrig=1;
+	if(fInputEvent->GetFiredTriggerClasses().Contains("EJ2")) mytrig=2;
+	
+      }
+	
       std::vector<std::vector<fastjet::PseudoJet>* >* constPart = new std::vector<std::vector<fastjet::PseudoJet>* >();
       std::vector<std::vector<fastjet::PseudoJet>* >* constDet = new std::vector<std::vector<fastjet::PseudoJet>* >();
       std::vector<fastjet::PseudoJet>* const1Part = new std::vector<fastjet::PseudoJet>();
@@ -372,6 +383,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       
       fShapesVar_Splittings_ptjet=ptSubtracted;
       fShapesVar_Splittings_ptjet_part=ptMatch;
+      fShapesVar_Splittings_mytrig=mytrig;
       if (fMatch) {
 	Bool_t matched = SubjetMatching(const1Part,  constPart,  const1Det,  constDet);
       }
@@ -701,6 +713,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet
       fHtrueMatch->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet);
 
       fShapesVar_Matching_ptjet = fShapesVar_Splittings_ptjet;
+      fShapesVar_Matching_mytrig = fShapesVar_Splittings_mytrig;
       fShapesVar_Matching_lnR = lnr_det;
       fShapesVar_Matching_lnkt =	lnkt_det;
       fShapesVar_Matching_ptjet_part	= fShapesVar_Splittings_ptjet_part;

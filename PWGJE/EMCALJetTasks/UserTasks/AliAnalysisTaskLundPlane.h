@@ -70,7 +70,7 @@ public:
   void SetDoMatching(Bool_t t) { fMatch = t; }
   void SetMatchRadius(Float_t t) { fMatchR = t; }
   void SetSubjetMomFrac(Float_t t) { fMomFrac = t; }
-
+  void SetStoreTrig(Bool_t t) {fStoreTrig = t;}
   
 protected:
   Bool_t RetrieveEventObjects();
@@ -120,7 +120,7 @@ protected:
   Bool_t fMatch; ///< do the matching in the task
   Float_t fMatchR; ///<the matching radius
   Float_t fMomFrac; ///<the amount of shared momentum for the subjets 
-
+  Bool_t fStoreTrig; ///<storing the trigger class
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_angle;
  
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_kt;
@@ -145,9 +145,12 @@ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_eta2_part;
 std::vector<std::vector<Double_t>>            fShapesVar_Splittings_phi2_part;
  
  Double_t                                      fShapesVar_Splittings_ptjet;
+  Double_t                                      fShapesVar_Splittings_mytrig;
  Double_t                                      fShapesVar_Splittings_ptjet_part;
 
   Double_t                                      fShapesVar_Matching_ptjet;
+
+   Double_t                                      fShapesVar_Matching_mytrig;
   Double_t                                      fShapesVar_Matching_lnkt;
   Double_t                                      fShapesVar_Matching_lnR;
   Double_t                                      fShapesVar_Matching_ptjet_part;
