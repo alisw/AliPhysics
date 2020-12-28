@@ -711,6 +711,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("86883103","111110105fg32230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("86083103","111110105fg32230000","01631031000000d0"); // EG1
     cuts.AddCutCalo("88083103","111110105fg32230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 266){ //
+    cuts.AddCutCalo("80010103","111116105fg32230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80085103","111116105fg32230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083103","111116105fg32230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 267){ //
+    cuts.AddCutCalo("80010103","111116205fg32230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80085103","111116205fg32230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083103","111116205fg32230000","01631031000000d0"); // EG1
 
   } else if (trainConfig == 270) { // CALO variations
     cuts.AddCutCalo("80010113","411793205f03h230000","01631031000000d0"); // NCell cut effi MC (param 1)
