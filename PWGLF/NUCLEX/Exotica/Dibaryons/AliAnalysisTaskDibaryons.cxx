@@ -171,11 +171,11 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
 
   // Define QA plots for topological observables
   TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Proton DCAxy vs DCAz;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
-  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","DCA between #Lambda daughters;DCA (cm);Counts",100,0,10);
+  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","DCA between #Lambda daughters;DCA (cm);Counts",200,0,10);
   TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","DCA of proton to PV;DCA (cm);Counts",500,0,100);
   TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","DCA of pion to PV;DCA (cm);Counts",500,0,100);
   TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse radius of #Lambda decay vertex;r_{xy} (cm);Counts;",400,0,200);
-  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of #Lambda pointing angle;cos(PA);Counts",100,0.9,1);
+  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of #Lambda pointing angle;cos(PA);Counts",200,0.95,1);
   TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","DCA between #Xi daughters;DCA (cm);Counts",100,0,10);
   TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Xi;DCA (cm);Counts",100,0,10);
   TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
@@ -184,18 +184,18 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
   TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse radius of #Xi decay vertex;r_{xy} (cm);Counts",400,0,200);
   TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Xi;r_{xy} (cm);Counts",400,0,200);
-  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of #Xi pointing angle;cos(PA);Counts",100,0.9,1);
-  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Xi;cos(PA);Counts",100,0.9,1);
-  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","DCA between #Omega daughters;DCA (cm);Counts",100,0,10);
-  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Omega;DCA (cm);Counts",100,0,10);
+  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of #Xi pointing angle;cos(PA);Counts",200,0.95,1);
+  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Xi;cos(PA);Counts",200,0.95,1);
+  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","DCA between #Omega daughters;DCA (cm);Counts",200,0,10);
+  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Omega;DCA (cm);Counts",200,0,10);
   TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","DCA of bachelor kaon to PV;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","DCA of daughter proton to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse radius of #Omega decay vertex;r_{xy} (cm);Counts",400,0,200);
   TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Omega;r_{xy} (cm);Counts",400,0,200);
-  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of #Omega pointing angle;cos(PA);Counts",100,0.9,1);
-  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Omega;cos(PA);Counts",100,0.9,1);
+  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of #Omega pointing angle;cos(PA);Counts",200,0.95,1);
+  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Omega;cos(PA);Counts",200,0.95,1);
 
   fOutput->Add(hProtonDCAxyDCAz);
   fOutput->Add(hLambdaDCADaughterTracks);
@@ -299,15 +299,21 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   // Define PID related histograms
   TH2F *hdEdxVsP = new TH2F("hdEdxVsP","TPC dE/dx vs momentum;p (GeV/c);TPC #frac{dE}{dx} (a.u.)",1000,0,10,1000,0,1000);
   TH2F *hBetaVsP = new TH2F("hBetaVsP","TOF #beta vs momentum;p (GeV/c);TOF #beta",1000,0,5,1000,0.1,1.1);
-  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","PID for protons using TPC;p (GeV/c);n_{#sigma,TPC}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","PID for protons using TOF;p (GeV/c);n_{#sigma,TOF}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaTPCvsTOF = new TH2F("hProtonNsigmaTPCvsTOF","Nsigma TPC vs TOF;n_{#sigma,TPC};n_{#sigma,TOF};",1000,-10,10,1000,-10,10);
+  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","Nsigma TPC vs momentum;p (GeV/c);n_{#sigma,TPC}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","Nsigma TOF vs momentum;p (GeV/c);n_{#sigma,TOF}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaTPCvsTOF = new TH2F("hProtonNsigmaTPCvsTOF","Nsigma TPC vs TOF;n_{#sigma,TPC};n_{#sigma,TOF};",200,-10,10,200,-10,10);
+  TH2F *hProtonNsigmaTPCwPID = new TH2F("hProtonNsigmaTPCwPID","Nsimga TPC vs momentum after PID selection;p (GeV/c);n_{#sigma,TPC}",500,0,5,100,-5,5);
+  TH2F *hProtonNsigmaTOFwPID = new TH2F("hProtonNsigmaTOFwPID","Nsimga TOF vs momentum after PID selection;p (GeV/c);n_{#sigma,TOF}",500,0,5,100,-5,5);
+  TH2F *hProtonNsigmaTPCvsTOFwCuts = new TH2F("hProtonNsigmaTPCvsTOFwCuts","Nsigma TPC vs TOF with hypothesis cuts;n_{#sigma,TPC};n_{#sigma,TOF};",200,-10,10,200,-10,10);
 
   fOutput->Add(hdEdxVsP);
   fOutput->Add(hBetaVsP);
   fOutput->Add(hProtonNsigmaTPC);
   fOutput->Add(hProtonNsigmaTOF);
   fOutput->Add(hProtonNsigmaTPCvsTOF);
+  fOutput->Add(hProtonNsigmaTPCwPID);
+  fOutput->Add(hProtonNsigmaTOFwPID);
+  fOutput->Add(hProtonNsigmaTPCvsTOFwCuts);
 
   // Define histograms related to pair analysis
   TH1F *hNPairStatistics = new TH1F("hNPairStatistics","Number of pairs under certain condition",10,0.5,10.5);
@@ -516,8 +522,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     Bool_t isthereTOF = kFALSE;
 
     Float_t nSigmaTPCproton      = -10.;
+    Float_t nSigmaTPCkaon        = -10.;
+    Float_t nSigmaTPCpion        = -10.;
+    Float_t nSigmaTPCelectron    = -10.;
     Float_t nSigmaTOFproton      = -10.;
-    Float_t nSigmaTPCTOFcombined = -10.;
+    Float_t nSigmaTOFkaon        = -10.;
+    Float_t nSigmaTOFpion        = -10.;
+    Float_t nSigmaTOFelectron    = -10.;
+    Float_t nSigmaTPCTOFproton   = -10.;
+    Float_t nSigmaTPCTOFkaon     = -10.;
+    Float_t nSigmaTPCTOFpion     = -10.;
+    Float_t nSigmaTPCTOFelectron = -10.;
 
     Float_t DCAxy = -999., DCAz = -999.;
 
@@ -552,8 +567,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
 
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
+      nSigmaTPCkaon        = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
+      nSigmaTPCpion        = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
+      nSigmaTPCelectron    = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
-      nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTOFkaon        = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon);
+      nSigmaTOFpion        = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
+      nSigmaTOFelectron    = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron);
+      nSigmaTPCTOFproton   = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTPCTOFkaon     = TMath::Sqrt(pow(nSigmaTPCkaon,2.) + pow(nSigmaTOFkaon,2.));
+      nSigmaTPCTOFpion     = TMath::Sqrt(pow(nSigmaTPCpion,2.) + pow(nSigmaTOFpion,2.));
+      nSigmaTPCTOFelectron = TMath::Sqrt(pow(nSigmaTPCelectron,2.) + pow(nSigmaTOFelectron,2.));
 
       esdTrack->GetImpactParameters(DCAxy,DCAz);
 
@@ -601,8 +625,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
 
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kProton);
+      nSigmaTPCkaon        = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kKaon);
+      nSigmaTPCpion        = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kPion);
+      nSigmaTPCelectron    = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kElectron);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kProton);
-      nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTOFkaon        = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kKaon);
+      nSigmaTOFpion        = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kPion);
+      nSigmaTOFelectron    = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kElectron);
+      nSigmaTPCTOFproton   = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTPCTOFkaon     = TMath::Sqrt(pow(nSigmaTPCkaon,2.) + pow(nSigmaTOFkaon,2.));
+      nSigmaTPCTOFpion     = TMath::Sqrt(pow(nSigmaTPCpion,2.) + pow(nSigmaTOFpion,2.));
+      nSigmaTPCTOFelectron = TMath::Sqrt(pow(nSigmaTPCelectron,2.) + pow(nSigmaTOFelectron,2.));
 
       globalTrack->GetImpactParameters(DCAxy,DCAz);
 
@@ -638,10 +671,21 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     else if(p > 0.75) { // for p > 0.75 use TPC & TOF
       if(!isthereTPC || !isthereTOF) continue;
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCvsTOF"))->Fill(nSigmaTPCproton,nSigmaTOFproton);
-      if(nSigmaTPCTOFcombined > 3.) continue;
+
+      // Reject if the other hypotheis fits better
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFkaon) continue;
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFpion) continue;
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFelectron) continue;
+
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCvsTOFwCuts"))->Fill(nSigmaTPCproton,nSigmaTOFproton);
+      if(nSigmaTPCTOFproton > 3.) continue;
     }
 
-    if(charge > 0.) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))->Fill(DCAxy,DCAz);
+    if(charge > 0.) {
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))->Fill(DCAxy,DCAz);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))->Fill(p,nSigmaTPCproton);
+      if(isthereTOF) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOFwPID"))->Fill(p,nSigmaTOFproton);
+    }
 
     // proton selection
     if(TMath::Abs(eta) > 0.8) continue;
