@@ -6926,27 +6926,27 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
         }
       } else if ( fClusterType == 2 ){
-          // Nonlin from PHOS group only MC part
-          if(isMC != 0) {
-              if( fCurrentMC==k14j4 ){
-                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
-                  // for LHC13bc
-              } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC==kPPb5T13P4DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd || fCurrentMC == kPPb5T13P4JJhigh || fCurrentMC == kPPb5T13P4JJlow){
-                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
-              } else if(  // pp 5 TeV 2015
-                  fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 || fCurrentMC == k18j3 ||
-                  // PbPb 5 TeV 2015
-                  fCurrentMC == k16k3b ||
-                  // pPb 5 TeV 2016
-                  fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
-                  // pPb 8 TeV 2016
-                  fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
-                  // XeXe 5.44 TeV 2017
-                  fCurrentMC == kXeXe5T17HIJING
-              ){
-                  energy *= FunctionNL_PHOSOnlyMC(energy, 1.012, -0.06, 0.7);
-              }
+        // Nonlin from PHOS group only MC part
+        if(isMC != 0) {
+          if( fCurrentMC==k14j4 ){
+              energy *= FunctionNL_PHOSOnlyMC(energy, 1.008, 0.015, 0.4);
+              // for LHC13bc
+          } else if( fCurrentMC==kPPb5T13P2DPMJet || fCurrentMC==kPPb5T13P4DPMJet || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c || fCurrentMC == kPPb5T13P2HIJAdd || fCurrentMC == kPPb5T13P4JJhigh || fCurrentMC == kPPb5T13P4JJlow){
+              energy *= FunctionNL_PHOSOnlyMC(energy, 1.0135, 0.018, 1.9);
+          } else if(  // pp 5 TeV 2015
+            fCurrentMC == k16h3  || fCurrentMC == k16h8a || fCurrentMC == k16h8b || fCurrentMC == k16k3a  || fCurrentMC == k16k5a ||  fCurrentMC == k16k5b || fCurrentMC == k17e2 || fCurrentMC == k18j3 ||
+            // PbPb 5 TeV 2015
+            fCurrentMC == k16k3b ||
+            // pPb 5 TeV 2016
+            fCurrentMC == kPPb5T16EPOS || fCurrentMC == kPPb5T16DPMJet ||
+            // pPb 8 TeV 2016
+            fCurrentMC == k17f3a || fCurrentMC == k17f3b || fCurrentMC == k17f4a || fCurrentMC == k17f4b ||
+            // XeXe 5.44 TeV 2017
+            fCurrentMC == kXeXe5T17HIJING
+          ){
+            energy *= FunctionNL_PHOSOnlyMC(energy, 1.012, -0.06, 0.7);
           }
+        }
       }
       break;
 
@@ -6954,9 +6954,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
-            energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-            energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
-            energy /= 1.00349;
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          energy /= 1.00349;
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
         }
@@ -6978,7 +6978,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
-            energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
@@ -8128,20 +8128,39 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 // *************** 60 + x **** modified tender Settings 2 - pPb
 // PCM-EDC based nonlinearity kSDM
     case 61:
-      // apply testbeam nonlinearity (same as case 1) but with resolution uncertainy
-      if(isMC){
-        energy /= FunctionNL_OfficialTB_100MeV_MC(energy);
-      } else {
-        energy /= FunctionNL_OfficialTB_100MeV_Data(energy);
+      // apply testbeam nonlinearity (same as case 1) but with fix for pPb Run1
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) 
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          if(cluster->GetNCells() == 1){ // additional fine tuning for 1 cell clusters
+            energy /= FunctionNL_kSDM(energy,0, -0.002069903, -0.00669839);
+            energy /= 0.995;
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
+          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
+          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+        }
       }
+      
       break;
     // EDC based nonlinearity kSDM
     case 62:
-      // apply testbeam nonlinearity (same as case 2) but with resolution uncertainy
-      if(isMC){
-        energy /= FunctionNL_OfficialTB_50MeV_MC(energy);
-      } else {
-        energy /= FunctionNL_OfficialTB_50MeV_Data(energy);
+      // apply testbeam nonlinearity (same as case 1) but with fix for pPb Run1
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+          energy /= 1.00349;
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
+          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
+          if (fCurrentMC == k13pPb5023GeV)  energy *= 0.978;
+        }
       }
       break;
     // PCM-EDC based nonlinearity DExp or DPow
