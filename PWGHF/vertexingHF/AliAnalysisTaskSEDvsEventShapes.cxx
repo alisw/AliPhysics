@@ -1421,14 +1421,14 @@ TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent
     if(runNo>=285978 && runNo<=286350)period = 1;//18d
     if(runNo>=286380 && runNo<=286937)period = 2;//18e
     if(runNo>=287000  && runNo<=287977)period = 3;//18f
-    if(runNo>=288750  && runNo<=288619)period = 4;//18g
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
     if(runNo>=288804  && runNo<=288806)period = 5;//18h
-    if(runNo>=288909  && runNo<=288897 )period = 6;//18i
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
     if(runNo==288943)period = 7;//18j
-    if(runNo>=289201   && runNo<=289165)period = 8;//18k
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
     if(runNo>=289240  && runNo<=289971)period = 9;//18l
     if(runNo>=290323  && runNo<=292839)period = 10;//18m
-    if(runNo>=293359   && runNo<=293357)period = 11;//18n
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
     if(runNo>=293368   && runNo<=293898)period = 12;//18o
     if(runNo>=294009  && runNo<=294925)period = 13;//18p
   }
