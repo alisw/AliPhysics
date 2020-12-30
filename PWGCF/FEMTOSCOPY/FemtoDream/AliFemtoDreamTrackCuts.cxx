@@ -596,7 +596,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             }else if (fCutTOFInvMassSidebands) {
               if(PDGcode[fParticleID] == 1000010020){
                 float MeanMass= MeanTOFMassSqdDeuteron(Track);
-                float WidthMass = 1.5 * WidthTOFMassSqdDeuteron(Track);
+                float WidthMass = fTOFInvMassCutWidth * WidthTOFMassSqdDeuteron(Track);
                 if(fCutLSB){
                   if ((mass2sq < (MeanMass-WidthMass-fTOFInvMassCutSBdown))||((MeanMass-WidthMass -fTOFInvMassCutSBup) < mass2sq)) {
                     pass = false;
