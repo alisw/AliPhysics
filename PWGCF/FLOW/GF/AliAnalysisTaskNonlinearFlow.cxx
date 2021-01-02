@@ -1035,7 +1035,7 @@ const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies speci
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics()
 {
 	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
-        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i",fAOD->GetRunNumber(), fCurrSystFlag));
+        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
         if(!fWeightsSystematics)
         {
             printf("Weights could not be found in list!\n");
