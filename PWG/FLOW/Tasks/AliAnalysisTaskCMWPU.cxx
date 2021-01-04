@@ -442,7 +442,7 @@ void AliAnalysisTaskCMWPU::UserCreateOutputObjects()
 
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90};
 
-  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,50,-0.5,0.5);
+  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,1000,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
 
 		 
@@ -1113,6 +1113,9 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
   //stepCount++;
 
   
+  if(fHCorrectEVNTWGTChrg){
+    fWgtEvent=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
+  }
   
   Float_t fAchrgNet = (fNumOfPos - fNumOfNeg)/(fNumOfPos + fNumOfNeg); // Efficiency & NUA Corrected!
 
