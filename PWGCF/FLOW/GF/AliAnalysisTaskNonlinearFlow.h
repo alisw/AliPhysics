@@ -265,6 +265,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t			fSample;				// number of sample
 		Short_t			fCentFlag;				// centrality flag
 		Int_t			fTrigger;				// flag for trigger
+		Int_t			fAliTrigger;				// name for trigger
 		Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
 		Bool_t			fNUE;					// flag for NUE correction
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
