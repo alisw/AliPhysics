@@ -84,6 +84,9 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fKeepOnlyInjected{false},
   fKeepOnlyUE{false},
   fUseImpPar{false},
+  fUseLocDen{false},
+  fDeltaRcut{0.2},
+  fMaxTracksInCone{-1.},
   fSelectPtHardRange{false},
   fMinPtHard{0.},
   fMaxPtHard{99999.},
@@ -184,12 +187,27 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     multBins[10]=7500.;
   }
   xmax[3]=multBins[nMultBins];
-  if(fUseImpPar){
+  if(fUseImpPar && !fUseLocDen){
     // use impact parameter instead of multiplicity
     axTit[3]="b (fm)";
     nbins[3]=15;
     xmin[3]=0.;
     xmax[3]=15.;
+  }
+  if(fUseLocDen){
+    // use local track density instead of multiplicity
+    axTit[3]="tracks in cone";
+    if(fIsAA){
+      nbins[3]=25;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=150.;
+    }else{
+      nbins[3]=15;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=45.;
+    }
   }
   
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
@@ -217,7 +235,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       fReconstructedTOF[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fReconstructedPID[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
 
-      if(!fUseImpPar){
+      if(!fUseImpPar && !fUseLocDen){
 	fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
 	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
 	fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
@@ -417,6 +435,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     fHistNParticles->Fill(4);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparse[3]=imppar;
+    if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(part->Eta(),part->Phi());
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -495,6 +514,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
     double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparseData[3]=imppar;
+    if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(eta,phi);
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
@@ -590,4 +610,19 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
   }
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
   else return kTRUE;
+}
+//______________________________________________________________________________
+double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(double eta, double phi){
+  /// count tracks in a cone around selected particle
+  double nTracksInCone=0.;
+  for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
+    AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
+    const double etatr = track->Eta();
+    const double phitr = track->Phi();
+    double deltaEta=track->Eta()-eta;
+    double deltaPhi=track->Phi()-phi;
+    double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
+    if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
+  }
+  return nTracksInCone;
 }
