@@ -1684,10 +1684,10 @@ Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeight(AliVTrack* track, Par
 
   if(fFlowUse3Dweights) {
 
-    Int_t iBin = fh3Weights[species]->FindFixBin(track->Eta(),track->Phi(),fPVz);
+    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fPVz);
     dWeight = fh3Weights[species]->GetBinContent(iBin);
   } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(track->Eta(),fPVz);
+    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
     dWeight = fh2Weights[species]->GetBinContent(iBin);
   }
 
