@@ -965,7 +965,7 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
       {
         if (std::abs(part->PdgCode()) == fHyperPDG)
         {
-          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+          fSHyperTriton[mcMap[ilab]].fRecoIndex = fMaxInfo ? (fRHyperTritonFull.size()) : (fRHyperTriton.size());
           fSHyperTriton[mcMap[ilab]].fFake = false;
           fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
           isFake = false;
