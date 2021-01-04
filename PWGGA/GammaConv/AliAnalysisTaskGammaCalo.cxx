@@ -4476,7 +4476,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       Double_t pi0Pt = thisLabel.PtMeson;
       Double_t pi0Eta = thisLabel.EtaMeson;
 
-      Double_t angle = thisLabel.OpeningAngle;
+      // Double_t angle = thisLabel.OpeningAngle;
 
       TLorentzVector thisClus = thisLabel.clusVec;
       Int_t pdg = 0;

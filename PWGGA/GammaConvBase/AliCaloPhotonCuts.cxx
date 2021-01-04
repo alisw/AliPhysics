@@ -3126,10 +3126,9 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     //cluster quality cuts
     if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(cluster.get())){continue;}
     if (fUseMinEnergy && (cluster->E() < fMinEnergy)){continue;}
-    if (fUseNCells == 2)
+    if (fUseNCells == 2){
         if(cluster->GetNCells() < fMinNCells && cluster->E() > fMinENCell){continue;}
-    else
-        if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
+    } else if (fUseNCells && (cluster->GetNCells() < fMinNCells)){continue;}
     if (fUseNLM && (nLM < fMinNLM || nLM > fMaxNLM)){continue;}
     if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
       // no cut to be applied in this case on M20
@@ -3170,8 +3169,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
         else if (fClusterType ==2 )
           cells                 = event->GetPHOSCells();
 
-        Float_t eMax            = 0.;
-        Int_t idMax             = -1;
 
         for (Int_t iCell = 0;iCell < nCells;iCell++){
           Int_t cellAbsID       = cluster->GetCellsAbsId()[iCell];
@@ -3218,10 +3215,9 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       //cluster quality cuts
       if (fVectorMatchedClusterIDs.size()>0 && CheckClusterForTrackMatch(clusterMatched.get())){continue;}
       if (fUseMinEnergy && (clusterMatched->E() < fMinEnergy)){continue;}
-      if (fUseNCells == 2)
+      if (fUseNCells == 2){
         if(clusterMatched->GetNCells() < fMinNCells && clusterMatched->E() > fMinENCell){continue;}
-      else
-        if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
+      } else if (fUseNCells && (clusterMatched->GetNCells() < fMinNCells)){continue;}
       if (fUseNLM && (nLMMatched < fMinNLM || nLMMatched > fMaxNLM)){continue;}
       if(!fUseNCells && cluster->GetNCells()<2 && cluster->E()<4){
         // no cut to be applied in this case on M20
@@ -8130,7 +8126,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 61:
       // apply testbeam nonlinearity (same as case 1) but with fix for pPb Run1
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) 
+        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning)
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
@@ -8145,7 +8141,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       }
-      
+
       break;
     // EDC based nonlinearity kSDM
     case 62:
