@@ -6,7 +6,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anamode         ="TPCFMDA",//TPCTPC, TPCTPCFMDA, TPCTPCFMDC, FMDAFMDC, TPCFMDA, TPCFMDC
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
@@ -15,12 +15,12 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
                                                                        Bool_t fprim            =kFALSE,
                                                                        Bool_t fcentcalib       =kFALSE,
                                                                        Double_t fReduceDphi    =-1., // 1.5707, 0.9, -1
-                                                                       Bool_t Is2Dfit          =kTRUE,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
                                                                        Bool_t IsLikeSign       =kTRUE,
 								       Float_t fminpt          =0.5,
-								       Float_t fmaxpt          =5.0,
-								       Int_t fMinNTracksInPool =5000,
+								       Float_t fmaxpt          =20.0,
+								       Float_t fAsscoptCut     =0.5,
+                                                                       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
 								       Double_t dCenMin = 0.,
 								       Double_t dCenMax = 10.
@@ -80,9 +80,9 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetLikeSign(IsLikeSign);
   myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
+  myTask->SetAssoCut(fAsscoptCut);
   myTask->SetCentrality(dCenMin,dCenMax);
 //  myTask->SetTPCTPCList(TPCTPC_Fit);
-  myTask->Set2Dfit(Is2Dfit);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
