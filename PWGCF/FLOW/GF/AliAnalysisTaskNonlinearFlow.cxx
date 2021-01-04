@@ -196,6 +196,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fSample(1),
 	fCentFlag(0),
 	fTrigger(0),
+	fAliTrigger(0),
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
@@ -395,8 +396,10 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	Bool_t isTrigselected = false;
         if (fTrigger == 0) {
 	    isTrigselected = fSelectMask&AliVEvent::kINT7;
+	    fAliTrigger = AliVEvent::kINT7;
         } else if (fTrigger == 1) {
 	    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+	    fAliTrigger = AliVEvent::kHighMultV0;
         }
 	if(isTrigselected == false) return;
 
@@ -1588,7 +1591,7 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const
 {
   Bool_t isHM = kFALSE;
-  if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
+  if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
 
   if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
     if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d
