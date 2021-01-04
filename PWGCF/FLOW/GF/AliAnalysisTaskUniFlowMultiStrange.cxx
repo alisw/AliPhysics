@@ -4625,8 +4625,6 @@ void AliAnalysisTaskUniFlowMultiStrange::UserCreateOutputObjects()
 void AliAnalysisTaskUniFlowMultiStrange::FilterCascades() const
 
 {
-
-
    Double_t bestPrimaryVtxPos[3] = {0.};
    Double_t b = fEventAOD->GetMagneticField();
    int nCascades=fEventAOD->GetNumberOfCascades();
@@ -4931,7 +4929,7 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::FillFlowWeightCascade(const AliAODcas
   }
 
   if(fFlowUseWeights) {
-    Double_t weight = GetFlowWeightCascade(xi, species);
+    Double_t weight = GetFlowWeight(xi, species);
 
     if(fFlowUse3Dweights) {
       fh3AfterWeights[species]->Fill(XiPhi,XiEta,fPVz,weight);
@@ -4941,57 +4939,6 @@ Bool_t AliAnalysisTaskUniFlowMultiStrange::FillFlowWeightCascade(const AliAODcas
  }
 
   return kTRUE;
-}
-
-Double_t AliAnalysisTaskUniFlowMultiStrange::GetFlowWeightCascade(const AliAODcascade* xi, PartSpecies species) const
-
-{
-
- if(!xi) { AliError("Track not exists!"); return kFALSE; }
-  if(species == kUnknown) { AliError("Invalid species 'Unknown'!"); return kFALSE; }
-
-   Double_t bestPrimaryVtxPos[3] = {-100., -100., -100.};
-   Double_t b = fEventAOD->GetMagneticField();
-   int nCascades=fEventAOD->GetNumberOfCascades();
-   const AliAODVertex *primaryBestAODVtx = fEventAOD->GetPrimaryVertex();
-   primaryBestAODVtx->GetXYZ(bestPrimaryVtxPos);
-
-   Double_t XiP[3] = {-999., -999., -999.};
-
-   Double_t XiPx = xi->MomXiX();
-   Double_t XiPy = xi->MomXiY();
-   Double_t XiPz = xi->MomXiZ();
-   Double_t XiPt = TMath::Sqrt(XiPx*XiPx + XiPy*XiPy); //Pt
-   Double_t XiPtot= TMath::Sqrt(XiPx*XiPx + XiPy*XiPy + XiPz*XiPz);
-   Double_t XiEta =xi->Eta();
-   Double_t posXi[3] = {-1000., -1000., -1000.};
-
-   posXi[0] = xi->DecayVertexXiX();
-   posXi[1] = xi->DecayVertexXiY();
-   posXi[2] = xi->DecayVertexXiZ();
-
-   XiP[0] = XiPx;
-   XiP[1] = XiPy;
-   XiP[2] = XiPz;
-
-   Propagate(bestPrimaryVtxPos, posXi, XiP, b, xi->ChargeXi());
-
-   Double_t XiPhi = TMath::Pi() + TMath::ATan2(-XiP[1],-XiP[0]);//phi   
-
-
-  Double_t dWeight = 1.0;
-
-  if(fFlowUse3Dweights) {
-
-    Int_t iBin = fh3Weights[species]->FindFixBin(XiEta,XiPhi,fPVz);
-    dWeight = fh3Weights[species]->GetBinContent(iBin);
-  } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(XiEta,XiPhi);
-    dWeight = fh2Weights[species]->GetBinContent(iBin);
-  }
-
-  if(dWeight <= 0.0) { dWeight = 1.0; }
-  return dWeight;
 }
 
 Double_t AliAnalysisTaskUniFlowMultiStrange::PIDCorrectionHF(const AliAODTrack *track, const Int_t ispecies) const

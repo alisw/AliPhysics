@@ -256,7 +256,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Bool_t                  FillFlowWeight(AliVTrack* track, PartSpecies species) const; // fill distribution for per-particle flow weight
       Double_t                GetFlowWeight(AliVTrack* track, PartSpecies species) const; // extract per-particle flow weight from input file
       Bool_t                  FillFlowWeightCascade(const AliAODcascade* xi, PartSpecies species) const; // fill distribution for per-particle flow weight
-      Double_t                GetFlowWeightCascade(const AliAODcascade* xi, PartSpecies species) const; // extract per-particle flow weight from input file
 
       void                    ListParameters() const; // list all task parameters
       void                    ClearVectors(); // properly clear all particle vectors
