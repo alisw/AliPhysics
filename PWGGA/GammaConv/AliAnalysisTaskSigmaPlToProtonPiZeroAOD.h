@@ -156,6 +156,14 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH1F**                  fHistITSClusterTrue; //!
         TH1F**                  fHistITSchi2; //!
         TH1F**                  fHistITSchi2True; //!
+        TH1F**                  fHistTPCClusterwCut; //!
+        TH1F**                  fHistTPCClusterTruewCut; //!
+        TH1F**                  fHistTPCchi2wCut; //!
+        TH1F**                  fHistTPCchi2TruewCut; //!
+        TH1F**                  fHistITSClusterwCut; //!
+        TH1F**                  fHistITSClusterTruewCut; //!
+        TH1F**                  fHistITSchi2wCut; //!
+        TH1F**                  fHistITSchi2TruewCut; //!
         TH2F**                  fHistRotationWGammaGamma; //!
         TH2F**                  fHistRotationWProtonPion; //!
         TH2F**                  fHistSigmaMassPtWoPodCut; //!
