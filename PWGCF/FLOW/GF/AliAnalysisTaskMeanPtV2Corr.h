@@ -7,6 +7,7 @@
 #include "AliGFW.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
+#include "AliGFWCuts.h"
 
 class TList;
 class TH1D;
@@ -37,6 +38,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="");
   virtual ~AliAnalysisTaskMeanPtV2Corr();
   virtual void UserCreateOutputObjects();
+  virtual void NotifyRun();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
@@ -76,8 +78,9 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
-  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
+  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; }; //Ambiguous naming here. this is to keep track of the subwagon number
+  void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
  protected:
   AliEventCuts fEventCuts;
  private:

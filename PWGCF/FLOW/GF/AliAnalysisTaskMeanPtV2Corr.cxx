@@ -179,6 +179,8 @@ AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
+  if(!fGFWSelection) SetSystFlag(0);
+  fGFWSelection->PrintSetup();
   OpenFile(1);
   // const Int_t nMultiBins = 300;
   // Double_t lMultiBins[nMultiBins+1];
@@ -298,6 +300,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(fSystSwitch) fcname.Append(Form("_%i",fSystSwitch));
+    fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
     fFC->Initialize(oba,fNMultiBins,fMultiBins);
     delete oba;
@@ -433,8 +436,6 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.SetCentralityEstimators("V0M","CL0");
     fEventCuts.SetCentralityRange(0.f,101.f);
   }
-  fGFWSelection = new AliGFWCuts();
-  fGFWSelection->SetupCuts(0);
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
@@ -457,6 +458,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
+  fGFWSelection->AcceptVertex(fAOD);
   if(fStageSwitch==1)
     FillWeights(fAOD, vz,l_Cent);
   if(fStageSwitch==2)
@@ -472,11 +474,21 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   if(fStageSwitch==7)
     ProduceEfficiencies(fAOD,vz,l_Cent);
 };
+void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  //Reinitialize AliEventCuts (done automatically on check):
+  Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+  //Then override PU cut if required:
+  if(fGFWSelection->GetSystFlagIndex()==15)
+    fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+}
 void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // fSpectraList->ls();
   // delete fSpectraList;
   // delete fSpectra;
   // delete fV0MMulti;
+  // fGFWSelection->PrintSetup();
+  printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   fTriggerType = AliVEvent::kCentral;
@@ -505,14 +517,15 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxX
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, const Int_t &FilterBit) {
-  if(TMath::Abs(mtr->Eta())>0.8) return kFALSE; //0.8 is ALICE acceptance, so it's fine here if its hardcoded. Need to check explicitly in other places though
+  // if(TMath::Abs(mtr->Eta())>0.8) return kFALSE; //0.8 is ALICE acceptance, so it's fine here if its hardcoded. Need to check explicitly in other places though
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
-  if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
-  if(mtr->GetTPCNclsF()<70) return kFALSE;
+  // if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
+  // if(mtr->GetTPCNclsF()<70) return kFALSE;
   if(ltrackXYZ)
     mtr->GetXYZ(ltrackXYZ);
-  return kTRUE;
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kTRUE);
+  // return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;

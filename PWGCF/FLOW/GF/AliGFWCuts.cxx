@@ -28,6 +28,7 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &B
     if ((status&AliESDtrack::kITSrefit)==0) return 0;
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
   };
+  if(!l_DCA) return 1<<BitShift;
   if(l_DCA[0]>fDCAzCut) return 0;
   if(lDisableDCAxyCheck) return 1<<BitShift;
   Double_t DCAxycut;
