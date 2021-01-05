@@ -2055,6 +2055,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
+  std::vector<TString> datasetsPthard06Pythia = {"lhc17h6e2", "lhc17h6f2"};
   std::vector<TString> datasetsMBPythia = {
     "lhc17c3a", "lhc17h8a","lhc18l4a", "lhc18l4b",                                                                                // D-Mesons pp 13 TeV, 2016-18
     "lhc15h1", "lhc15h2",                                                                                                         // MB pp 8 TeV, 2012
@@ -2098,6 +2099,17 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   }
 
   if(!foundDataset) {
+    for(auto dset : datasetsPthard06Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning06;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
     for(auto dset : datasetsPthard20HepMC) {
       if(namedataset.Contains(dset)) {
         binningtype = PtHardBinning_t::kBinning20;
@@ -2129,6 +2141,13 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
 TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtype) {
   TArrayI binning;
   switch(binningtype) {
+    case PtHardBinning_t::kBinning06: {
+      const Int_t kNBinLimits = 8;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 11, 21, 36, 57, 84, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break; 
+    }
     case PtHardBinning_t::kBinning10: {
       const Int_t kNBinLimits = 12;
       binning.Set(kNBinLimits);
