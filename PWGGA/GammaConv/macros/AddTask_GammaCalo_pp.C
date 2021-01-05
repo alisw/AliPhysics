@@ -3188,15 +3188,15 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fl3o220000","0r631031000000d0"); // Exotics > 6 GeV
 
   // 3x3 clusterizer
-  } else if (trainConfig == 2520) { // 3x3 clusterizer (same cuts as 2502)
+  } else if (trainConfig == 2520) { // 3x3 clusterizer
     cuts.AddCutCalo("00010113","411792106fe3q220003","0r631031000000d0"); // TB var1
     cuts.AddCutCalo("00010113","411792106fe3r220003","0r631031000000d0"); // TB var2
-  } else if (trainConfig == 2521) { // 3x3 clusterizer (same cuts as 2511)
+  } else if (trainConfig == 2521) { // 3x3 clusterizer
     cuts.AddCutCalo("00010113","411792106fe3u220003","0r631031000000d0"); // TB correction
     cuts.AddCutCalo("00010113","411792106fe3v220003","0r631031000000d0"); // P2 correction
-  } else if (trainConfig == 2522){  // EMCAL+DCAL without NCell cut (same cuts as 2069)
+  } else if (trainConfig == 2522){  // EMCAL+DCAL without NCell cut
     cuts.AddCutCalo("00010113","411792106fe30220003","0r631031000000d0"); // No NCell cut
-  } else if (trainConfig == 2523){  // EMCAL+DCAL without NCell cut (same cuts as 2069)
+  } else if (trainConfig == 2523){  // EMCAL+DCAL without NCell cut NLM var
     cuts.AddCutCalo("00010113","411792106fe30220001","0r631031000000d0"); // No NCell cut, 1NLM
     cuts.AddCutCalo("00010113","411792106fe30220002","0r631031000000d0"); // No NCell cut, 2NLM
 
