@@ -75,8 +75,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fNUAList(0),
   fNUAHist(0),
   fRunNo(0),
-  fMidSelection(0),
-  fFWSelection(0),
+  fGFWSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -128,8 +127,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fNUAList(0),
   fNUAHist(0),
   fRunNo(0),
-  fMidSelection(0),
-  fFWSelection(0),
+  fGFWSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -435,8 +433,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.SetCentralityEstimators("V0M","CL0");
     fEventCuts.SetCentralityRange(0.f,101.f);
   }
-  fMidSelection = new AliGFWCuts();
-  fMidSelection->SetupCuts(0);
+  fGFWSelection = new AliGFWCuts();
+  fGFWSelection->SetupCuts(0);
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
@@ -546,7 +544,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
   for(Int_t i=0;i<tca->GetEntries();i++) {
     lPart = (AliAODMCParticle*)tca->At(i);
     if(!AcceptParticle(lPart)) continue;
-    if(!fMidSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
+    if(!fGFWSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
     Int_t pdgCode = TMath::Abs(lPart->PdgCode());
     if(pdgCode==211) fWeights[1]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
@@ -560,7 +558,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax)) continue;
     if(TMath::Abs(lTrack->Eta())>fEta) continue;
-    if(!fMidSelection->AcceptTrack(lTrack,dummyDouble)) continue;
+    if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
     if(fDisablePID) continue;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;

@@ -18,7 +18,7 @@ class AliGFWCuts {
   ~AliGFWCuts();
   Int_t AcceptParticle(AliVParticle*, Int_t BitShift=0, Double_t ptLow=-1, Double_t ptHigh=-1);
   Int_t AcceptVertex(AliAODEvent*, Int_t BitShift=0);
-  Int_t AcceptTrack(AliAODTrack*, Double_t*, Int_t BitShift=0);
+  Int_t AcceptTrack(AliAODTrack*, Double_t*, const Int_t &BitShift=0, const Bool_t &lDisableDCAxyCheck=kFALSE);
   void ResetCuts();
   void PrintSetup();
   void SetupCuts(Int_t);

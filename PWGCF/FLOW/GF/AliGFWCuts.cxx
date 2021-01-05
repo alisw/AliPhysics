@@ -18,7 +18,7 @@ AliGFWCuts::AliGFWCuts():
 };
 AliGFWCuts::~AliGFWCuts() {
 };
-Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift) {
+Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
@@ -29,6 +29,7 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
   };
   if(l_DCA[0]>fDCAzCut) return 0;
+  if(lDisableDCAxyCheck) return 1<<BitShift;
   Double_t DCAxycut;
   if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
   else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);

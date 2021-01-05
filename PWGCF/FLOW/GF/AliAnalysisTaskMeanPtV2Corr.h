@@ -118,8 +118,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
-  AliGFWCuts *fMidSelection; //!
-  AliGFWCuts *fFWSelection; //!
+  AliGFWCuts *fGFWSelection;
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
