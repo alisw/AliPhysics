@@ -117,6 +117,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fTPCNCrossRElec(70),
   fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
+  fEtaCutEleMin(-0.6),
+  fEtaCutEleMax(0.6),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -306,6 +308,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fTPCNCrossRElec(70),
   fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
+  fEtaCutEleMin(-0.6),
+  fEtaCutEleMax(0.6),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -1233,7 +1237,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       }
     }
 
-    if(TMath::Abs(TrkEta) > 0.6 ) continue;
+   // if(TMath::Abs(TrkEta) > 0.6 ) continue;
+      if(track->Eta()< fEtaCutEleMin || track->Eta()> fEtaCutEleMax) continue;
 
     ///////////////////////////
     //Track matching to EMCAL//
