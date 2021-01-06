@@ -907,6 +907,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 					if((IsRealProton(track, fAODMCTrackArray, iCut, fWeightJetJetMC, 0)) > 0){
 						if(fHistTrackDCAXYTruewCuts[iCut])fHistTrackDCAXYTruewCuts[iCut]->Fill(TMath::Abs(trackDCAXY),fWeightJetJetMC);
 						if(fHistTrackDCAZTruewCuts[iCut])fHistTrackDCAZTruewCuts[iCut]->Fill(TMath::Abs(trackDCAZ),fWeightJetJetMC);
+						if(fHistTPCClusterTruewCut[iCut] && track->GetTPCNcls())fHistTPCClusterTruewCut[iCut]->Fill(track->GetTPCNcls(),fWeightJetJetMC);
+						if(fHistTPCchi2TruewCut[iCut] && track->GetTPCchi2perCluster())fHistTPCchi2TruewCut[iCut]->Fill(track->GetTPCchi2perCluster(),fWeightJetJetMC);
+						if(fHistITSClusterTruewCut[iCut] && track->GetITSNcls())fHistITSClusterTruewCut[iCut]->Fill(track->GetITSNcls(),fWeightJetJetMC);
+						if(fHistITSchi2TruewCut[iCut] && track->GetITSchi2())fHistITSchi2TruewCut[iCut]->Fill(track->GetITSchi2(),fWeightJetJetMC);
 					}	
 				}
 				proton.push_back(track);
