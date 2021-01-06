@@ -69,6 +69,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
 
     void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
+    void    SetEleEtaCuts(Double_t Min, Double_t Max) {fEtaCutEleMin = Min; fEtaCutEleMax = Max;};
     void    SetMinTPCNCrossRElec(Int_t MinNCrossRE) {fTPCNCrossRElec = MinNCrossRE;};
     void    SetMinRatioTPCNCrossRElec(Double_t MinRatioNCrossRE) {fRatioTPCNCrossRElec = MinRatioNCrossRE;};
     void    SetMinITSNClsElec(Int_t MinNClsE) {fITSNClsElec = MinNClsE;};
@@ -154,6 +155,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fTPCNCrossRElec;// track TPC NClusters
     Double_t            fRatioTPCNCrossRElec;//    
     Bool_t              fFlagEleSPDkFirst;//
+    Double_t            fEtaCutEleMin;// Electron track Eta cut min
+    Double_t            fEtaCutEleMax;// Electron track Eta cut max
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
