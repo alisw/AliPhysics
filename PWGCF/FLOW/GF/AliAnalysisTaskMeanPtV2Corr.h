@@ -8,6 +8,7 @@
 #include "AliPID.h"
 #include "AliMCEvent.h"
 #include "AliGFWCuts.h"
+#include "TString.h"
 
 class TList;
 class TH1D;
@@ -88,6 +89,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Int_t fSystSwitch;
+  TString *fCentEst;
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event

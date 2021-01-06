@@ -42,6 +42,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fSystSwitch(0),
+  fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
   fMCEvent(0),
@@ -94,6 +95,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fSystSwitch(0),
+  fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
   fMCEvent(0),
@@ -181,6 +183,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
+  if(fGFWSelection->GetSystFlagIndex() == 13) fCentEst = new TString("CL0");
+  else if(fGFWSelection->GetSystFlagIndex() == 14) fCentEst = new TString("CL1");
+  else fCentEst = new TString("V0M");
   OpenFile(1);
   // const Int_t nMultiBins = 300;
   // Double_t lMultiBins[nMultiBins+1];
@@ -453,7 +458,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     if (!fMCEvent) return;
   }
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
+  Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
   if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
@@ -488,7 +493,7 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // delete fSpectra;
   // delete fV0MMulti;
   // fGFWSelection->PrintSetup();
-  printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
+  // printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   fTriggerType = AliVEvent::kCentral;
@@ -745,6 +750,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
   Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
+  //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
+  if(fUseNch && l_Multi<1) return;
   for(Int_t i=0;i<1;i++) {
     if(!wp[i][0]) continue;
     outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi));
@@ -768,7 +775,10 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   PostData(3,fCovList);
   if(outVals[0][0]==0) return;
   Int_t indx =   fV2dPtMulti->FindBin(l_Multi);
+  //To avoid filling out of boundaries -- aparently, important for MC
+  if(indx<1 || indx>fV2dPtMulti->GetNbinsX()) return;
   fV2dPtMulti->Fill(l_Multi);
+  // printf("Will use dpt v2 profile index %i (out of %i-1), multiplicity is %f\n",indx,fV2dPtList->GetEntries(),l_Multi);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }

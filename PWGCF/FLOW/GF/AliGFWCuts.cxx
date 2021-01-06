@@ -72,7 +72,7 @@ void AliGFWCuts::PrintSetup() {
   printf("Rest of the flags are global per event. Total flag = %i + vtx/ev flag\n",fNTrackFlags);
   printf("(Flag 1-3) Vertex selection: |z|<%2.1f\n",fVtxZ);
   printf("(Flag 4-5) CL1, CL2 multi. estimator (no weights)\n");
-  printf("(Flag 6) pile-up 1500 cut\n");
+  printf("(Flag 6) pile-up 15000 (-> 1500) cut\n");
   //printf("(Flag 12, disabled) ITS tracks (filter bit %i, TPC Ncls = %i)\n",fFilterBit,fTPCNcls);
   printf("**********\n");
 };
