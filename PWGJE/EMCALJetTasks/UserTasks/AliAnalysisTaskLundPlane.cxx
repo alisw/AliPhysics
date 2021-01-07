@@ -267,6 +267,8 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
         rhoMassVal = rhomParam->GetVal();
     }
 
+
+    UInt_t runnew=InputEvent()->GetRunNumber();
      Int_t mytrig=-1; 
       Bool_t mytrigmb=kFALSE;
       Bool_t mytrigej1=kFALSE;
@@ -295,7 +297,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
    
   if(fStoreTrig==kTRUE) {
 
-
+    RunChanged(newrun); 
 
     if(mytrig==3){
       weightmb = 1./GetDownscaleWeight("INT7");
@@ -876,7 +878,15 @@ Double_t AliAnalysisTaskLundPlane::GetDownscaleWeight(string trigString)
   if(triggerclass.Length()) weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerclass);
   return weight;
 }
-
+//////////_________________________________________________________________
+void AliAnalysisTaskLundPlane::RunChanged(Int_t newrun){
+  if(fUseDownscaleWeight) {
+    auto downscalehandler = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
+    if(downscalehandler->GetCurrentRun() != newrun){
+      downscalehandler->SetRun(newrun);
+    }
+  }
+}
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskLundPlane::RetrieveEventObjects() {

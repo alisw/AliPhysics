@@ -87,6 +87,7 @@ protected:
   Bool_t CompareSubjets(float pT_det, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb, bool matchTag);
   int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
   Double_t GetDownscaleWeight(string tstring);
+  void RunChanged(Int_t nr);
   Int_t fContainer; ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; ///< only fill histos for jets if shared fraction
                               // larger than X
