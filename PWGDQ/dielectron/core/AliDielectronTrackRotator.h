@@ -90,6 +90,7 @@ public:
   Double_t GetRotatedTrackWeightN(Int_t track) { return fRotatedTracksWeightN[track]; }
   Double_t GetWeightFromRotation(AliKFParticle* part);
   Double_t GetWeightFromRotation2(Double_t rotAng);
+  Double_t GetOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg);
   Double_t GetWeightFromOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg);
   Double_t GetWeightForPair(){return fWeight;};
   //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, TVector3 *axis, const AliVEvent * const ev=0x0);
