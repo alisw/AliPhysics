@@ -64,7 +64,8 @@ fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),  fFillCellsEnergyHisto(0),
 fFillControlClusterContentHisto(0),
 fSeparateConvertedDistributions(0),
-fUseNxNShowerShape(0),        fNxNShowerShapeColRowDiffNumber(2), 
+fUseNxNShowerShape(0),        fFillNxNShowerShapeAllHisto(0),  
+fNxNShowerShapeColRowDiffNumber(2), 
 fNxNShowerShapeOnlyNeigbours(1), fNxNShowerShapeMinEnCell(0.1),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
@@ -2498,7 +2499,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
   {
     if ( !IsHighMultiplicityAnalysisOn() )
     {
-      fhLam0NxNNLM->Fill(pt, l0NxN, nlmNxN, GetEventWeight()*weightPt);
+      if ( fFillNxNShowerShapeAllHisto )
+        fhLam0NxNNLM->Fill(pt, l0NxN, nlmNxN, GetEventWeight()*weightPt);
 
       fhLam0NxNOrLam0[0]->Fill(pt, l0NxN, GetEventWeight()*weightPt);
 
@@ -2508,34 +2510,43 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
       if ( fFillSSEtaHistograms && cluster->IsEMCAL() )
         fhLam0NxNEta[isector]->Fill(pt, l0NxN, eta, GetEventWeight()*weightPt);
 
-      for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+      if ( fFillNxNShowerShapeAllHisto )
       {
-        if ( nlmNxN > icase+1 || nlmNxN == 1 )
-          fhLam0NxNOrLam0[icase]->Fill(pt, lambda0, GetEventWeight()*weightPt);
-        else
-          fhLam0NxNOrLam0[icase]->Fill(pt, l0NxN  , GetEventWeight()*weightPt);
+        for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+        {
+          if ( nlmNxN > icase+1 || nlmNxN == 1 )
+            fhLam0NxNOrLam0[icase]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+          else
+            fhLam0NxNOrLam0[icase]->Fill(pt, l0NxN  , GetEventWeight()*weightPt);
+        }
       }
-
+      
       if ( IsDataMC() && mcIndex >= 0 )
       {
         fhMCLam0NxNOrLam0[0][mcIndex]->Fill(pt, l0NxN, GetEventWeight()*weightPt);
 
-        for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+        if ( fFillNxNShowerShapeAllHisto )
         {
-          if ( nlmNxN > icase+1 || nlmNxN == 1 )
-            fhMCLam0NxNOrLam0[icase][mcIndex]->Fill(pt, lambda0, GetEventWeight()*weightPt);
-          else
-            fhMCLam0NxNOrLam0[icase][mcIndex]->Fill(pt, l0NxN  , GetEventWeight()*weightPt);
+          for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+          {
+            if ( nlmNxN > icase+1 || nlmNxN == 1 )
+              fhMCLam0NxNOrLam0[icase][mcIndex]->Fill(pt, lambda0, GetEventWeight()*weightPt);
+            else
+              fhMCLam0NxNOrLam0[icase][mcIndex]->Fill(pt, l0NxN  , GetEventWeight()*weightPt);
+          }
         }
       }
 
-      if ( nlmNxN <= fgkNxNcases-1 )
+      if ( fFillNxNShowerShapeAllHisto )
       {
-        fhLam0NxNLam0PerNLM[nlmNxN-1]     ->Fill(pt, lambda0, l0NxN, GetEventWeight()*weightPt);
-      }
-      else
-      {
-        fhLam0NxNLam0PerNLM[fgkNxNcases-1]->Fill(pt, lambda0, l0NxN, GetEventWeight()*weightPt);
+        if ( nlmNxN <= fgkNxNcases-1 )
+        {
+          fhLam0NxNLam0PerNLM[nlmNxN-1]     ->Fill(pt, lambda0, l0NxN, GetEventWeight()*weightPt);
+        }
+        else
+        {
+          fhLam0NxNLam0PerNLM[fgkNxNcases-1]->Fill(pt, lambda0, l0NxN, GetEventWeight()*weightPt);
+        }
       }
     }
     else
@@ -2549,28 +2560,34 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
            icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         fhLam0NxNEtaPerCen[isector*GetNCentrBin()+icent]->Fill(pt, l0NxN, eta, GetEventWeight()*weightPt);
 
-      for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+      if ( fFillNxNShowerShapeAllHisto )
       {
-        if ( nlmNxN > icase+1 || nlmNxN == 1 )
-          fhLam0NxNOrLam0Cen[icase]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
-        else
-          fhLam0NxNOrLam0Cen[icase]->Fill(pt, l0NxN  , cen, GetEventWeight()*weightPt);
+        for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+        {
+          if ( nlmNxN > icase+1 || nlmNxN == 1 )
+            fhLam0NxNOrLam0Cen[icase]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
+          else
+            fhLam0NxNOrLam0Cen[icase]->Fill(pt, l0NxN  , cen, GetEventWeight()*weightPt);
+        }
       }
 
       if ( IsDataMC() && mcIndex >= 0 )
       {
         fhMCLam0NxNOrLam0Cen[0][mcIndex]->Fill(pt, l0NxN, cen, GetEventWeight()*weightPt);
 
-        for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+        if ( fFillNxNShowerShapeAllHisto )
         {
-          if ( nlmNxN > icase+1 || nlmNxN == 1 )
-            fhMCLam0NxNOrLam0Cen[icase][mcIndex]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
-          else
-            fhMCLam0NxNOrLam0Cen[icase][mcIndex]->Fill(pt, l0NxN  , cen, GetEventWeight()*weightPt);
+          for (Int_t icase = 1; icase < fgkNxNcases; icase++)
+          {
+            if ( nlmNxN > icase+1 || nlmNxN == 1 )
+              fhMCLam0NxNOrLam0Cen[icase][mcIndex]->Fill(pt, lambda0, cen, GetEventWeight()*weightPt);
+            else
+              fhMCLam0NxNOrLam0Cen[icase][mcIndex]->Fill(pt, l0NxN  , cen, GetEventWeight()*weightPt);
+          }
         }
       }
 
-      if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+      if ( fFillNxNShowerShapeAllHisto && icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
       {
         fhLam0NxNNLMPerCen[icent]->Fill(pt, l0NxN, nlmNxN, GetEventWeight()*weightPt);
 
@@ -4381,28 +4398,31 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       TString nxnString = Form("%dx%d",2*fNxNShowerShapeColRowDiffNumber+1,2*fNxNShowerShapeColRowDiffNumber+1);
       if ( !IsHighMultiplicityAnalysisOn() )
       {
-        fhLam0NxNNLM  = new TH3F
-        (Form("hLam0%sNLM",nxnString.Data()),
-         "Restricted #sigma^{2}_{long} vs #it{p}_{T} vs #it{n}_{LM}",
-         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
-         nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
-        fhLam0NxNNLM->SetZTitle("#it{n}_{LM}");
-        fhLam0NxNNLM->SetYTitle("#sigma^{2}_{long}");
-        fhLam0NxNNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhLam0NxNNLM);
-
-        fhEnNxNFracNLM  = new TH3F
-         (Form("hEn%sFracNLM",nxnString.Data()),
-          "#it{E}_{std}/#it{E}_{NxN} vs #it{p}_{T} vs #it{n}_{LM}",
+        if ( fFillNxNShowerShapeAllHisto )
+        {
+          fhLam0NxNNLM  = new TH3F
+          (Form("hLam0%sNLM",nxnString.Data()),
+           "Restricted #sigma^{2}_{long} vs #it{p}_{T} vs #it{n}_{LM}",
            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-          ratBinsArray.GetSize() - 1, ratBinsArray.GetArray(),
-          nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
-         fhEnNxNFracNLM->SetZTitle("#it{n}_{LM}");
-         fhEnNxNFracNLM->SetYTitle("#it{E}_{std}/#it{E}_{NxN}");
-         fhEnNxNFracNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-         outputContainer->Add(fhEnNxNFracNLM);
-
+           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+          fhLam0NxNNLM->SetZTitle("#it{n}_{LM}");
+          fhLam0NxNNLM->SetYTitle("#sigma^{2}_{long}");
+          fhLam0NxNNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhLam0NxNNLM);
+          
+          fhEnNxNFracNLM  = new TH3F
+          (Form("hEn%sFracNLM",nxnString.Data()),
+           "#it{E}_{std}/#it{E}_{NxN} vs #it{p}_{T} vs #it{n}_{LM}",
+           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ratBinsArray.GetSize() - 1, ratBinsArray.GetArray(),
+           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+          fhEnNxNFracNLM->SetZTitle("#it{n}_{LM}");
+          fhEnNxNFracNLM->SetYTitle("#it{E}_{std}/#it{E}_{NxN}");
+          fhEnNxNFracNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhEnNxNFracNLM);
+        }
+        
         if ( fFillSSPerSMHistograms )
         {
           for(Int_t ism = 0; ism < fNModules; ism++)
@@ -4440,33 +4460,36 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
       else
       {
-        fhLam0NxNNLMPerCen = new TH3F*[GetNCentrBin()] ;
-        fhEnNxNFracNLMPerCen = new TH3F*[GetNCentrBin()] ;
-        for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+        if ( fFillNxNShowerShapeAllHisto )
         {
-          fhLam0NxNNLMPerCen[icent] = new TH3F
-          (Form("hLam0%sNLM_Cen%d",nxnString.Data(),icent),
-           Form("Restricted #sigma^{2}_{long} vs #it{p}_{T} vs #it{n}_{LM}, cen [%d,%d]",
-                (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
-           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
-          fhLam0NxNNLMPerCen[icent]->SetZTitle("#it{n}_{LM}");
-          fhLam0NxNNLMPerCen[icent]->SetYTitle("#sigma^{2}_{long}");
-          fhLam0NxNNLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhLam0NxNNLMPerCen[icent]);
-
-          fhEnNxNFracNLMPerCen[icent] = new TH3F
-          (Form("hEn%sFracNLM_Cen%d",nxnString.Data(),icent),
-           Form("#it{E}_{std}/#it{E}_{NxN} vs #it{p}_{T} vs #it{n}_{LM}, cen [%d,%d]",
-                (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
-            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
-           nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
-          fhEnNxNFracNLMPerCen[icent]->SetZTitle("#it{n}_{LM}");
-          fhEnNxNFracNLMPerCen[icent]->SetYTitle("#it{E}_{std}/#it{E}_{NxN}");
-          fhEnNxNFracNLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhEnNxNFracNLMPerCen[icent]);
+          fhLam0NxNNLMPerCen = new TH3F*[GetNCentrBin()] ;
+          fhEnNxNFracNLMPerCen = new TH3F*[GetNCentrBin()] ;
+          for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+          {
+            fhLam0NxNNLMPerCen[icent] = new TH3F
+            (Form("hLam0%sNLM_Cen%d",nxnString.Data(),icent),
+             Form("Restricted #sigma^{2}_{long} vs #it{p}_{T} vs #it{n}_{LM}, cen [%d,%d]",
+                  (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
+             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+            fhLam0NxNNLMPerCen[icent]->SetZTitle("#it{n}_{LM}");
+            fhLam0NxNNLMPerCen[icent]->SetYTitle("#sigma^{2}_{long}");
+            fhLam0NxNNLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhLam0NxNNLMPerCen[icent]);
+            
+            fhEnNxNFracNLMPerCen[icent] = new TH3F
+            (Form("hEn%sFracNLM_Cen%d",nxnString.Data(),icent),
+             Form("#it{E}_{std}/#it{E}_{NxN} vs #it{p}_{T} vs #it{n}_{LM}, cen [%d,%d]",
+                  (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
+             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             nlmBinsArray.GetSize() - 1, nlmBinsArray.GetArray());
+            fhEnNxNFracNLMPerCen[icent]->SetZTitle("#it{n}_{LM}");
+            fhEnNxNFracNLMPerCen[icent]->SetYTitle("#it{E}_{std}/#it{E}_{NxN}");
+            fhEnNxNFracNLMPerCen[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhEnNxNFracNLMPerCen[icent]);
+          }
         }
 
         if ( fFillSSPerSMHistograms )
@@ -4513,10 +4536,11 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         }
       }
 
+      Int_t nNxNcases = fgkNxNcases;
+      if  ( !fFillNxNShowerShapeAllHisto ) nNxNcases = 1;
       TString nxnCases[] = {"All","ExceptNLM2","ExceptNLM3","ExceptNLM4"};
-      fhLam0NxNLam0PerNLMPerCen = new TH3F*[GetNCentrBin()*fgkNxNcases] ;
-
-      for(Int_t icase = 0; icase < fgkNxNcases; icase++)
+      fhLam0NxNLam0PerNLMPerCen = new TH3F*[GetNCentrBin()*nNxNcases] ;
+      for(Int_t icase = 0; icase < nNxNcases; icase++)
       {
         if ( !IsHighMultiplicityAnalysisOn() )
         {
@@ -4542,17 +4566,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
               outputContainer->Add(fhMCLam0NxNOrLam0[icase][imc]);
             }
           }
-
-          fhLam0NxNLam0PerNLM[icase]  = new TH3F
-          (Form("hLam0%sLam0_NLM%d",nxnString.Data(),icase),
-           Form("#sigma^{2}_{long} NxN vs std #sigma^{2}_{long}, #it{n}_{LM}= %d",icase+1),
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
-           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
-          fhLam0NxNLam0PerNLM[icase]->SetZTitle("#sigma^{2}_{long} - NxN");
-          fhLam0NxNLam0PerNLM[icase]->SetYTitle("#sigma^{2}_{long} - Std");
-          fhLam0NxNLam0PerNLM[icase]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          outputContainer->Add(fhLam0NxNLam0PerNLM[icase]);
+          
+          if ( fFillNxNShowerShapeAllHisto )
+          {
+            fhLam0NxNLam0PerNLM[icase]  = new TH3F
+            (Form("hLam0%sLam0_NLM%d",nxnString.Data(),icase),
+             Form("#sigma^{2}_{long} NxN vs std #sigma^{2}_{long}, #it{n}_{LM}= %d",icase+1),
+             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
+            fhLam0NxNLam0PerNLM[icase]->SetZTitle("#sigma^{2}_{long} - NxN");
+            fhLam0NxNLam0PerNLM[icase]->SetYTitle("#sigma^{2}_{long} - Std");
+            fhLam0NxNLam0PerNLM[icase]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            outputContainer->Add(fhLam0NxNLam0PerNLM[icase]);
+          }
         } // low mult
         else // high mult
         {
@@ -4585,20 +4612,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             }
           }
 
-          for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+          if ( fFillNxNShowerShapeAllHisto )
           {
-            Int_t index = icent*fgkNxNcases + icase;
-            fhLam0NxNLam0PerNLMPerCen[index]  = new TH3F
-            (Form("hLam0%sLam0_NLM%d_Cen%d",nxnString.Data(),icase,icent),
-             Form("#sigma^{2}_{long} restricted vs Std, #it{n}_{LM}=%d, cen [%d,%d]",
-                  icase+1, (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
-             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
-             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
-            fhLam0NxNLam0PerNLMPerCen[index]->SetZTitle("Centrality (%)");
-            fhLam0NxNLam0PerNLMPerCen[index]->SetYTitle("#sigma^{2}_{long}");
-            fhLam0NxNLam0PerNLMPerCen[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-            outputContainer->Add(fhLam0NxNLam0PerNLMPerCen[index]);
+            for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
+            {
+              Int_t index = icent*nNxNcases + icase;
+              fhLam0NxNLam0PerNLMPerCen[index]  = new TH3F
+              (Form("hLam0%sLam0_NLM%d_Cen%d",nxnString.Data(),icase,icent),
+               Form("#sigma^{2}_{long} restricted vs Std, #it{n}_{LM}=%d, cen [%d,%d]",
+                    icase+1, (Int_t) cenBinsArray.At(icent),(Int_t) cenBinsArray.At(icent+1)),
+               ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+               ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+               ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray());
+              fhLam0NxNLam0PerNLMPerCen[index]->SetZTitle("Centrality (%)");
+              fhLam0NxNLam0PerNLMPerCen[index]->SetYTitle("#sigma^{2}_{long}");
+              fhLam0NxNLam0PerNLMPerCen[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhLam0NxNLam0PerNLMPerCen[index]);
+            }
           }
         }
       }
@@ -7140,19 +7170,19 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // before PID is applied
     //--------------------------------------------------------
     Int_t   nMaximaNxN = 0;
-    Float_t l0NxN = 0;
+    Float_t l0NxN = 0,  l1NxN = 0;
     if ( fUseNxNShowerShape )
     {
       Float_t dispp= 0., dEta = 0., dPhi    = 0.;
       Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
-      Float_t energyNxN = 0, l1 = 0;
+      Float_t energyNxN = 0;
 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
       (GetEMCALGeometry(), cells, calo,
        fNxNShowerShapeOnlyNeigbours, fNxNShowerShapeColRowDiffNumber, fNxNShowerShapeMinEnCell, 1000000,
-       energyNxN, nMaximaNxN, l0NxN, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+       energyNxN, nMaximaNxN, l0NxN, l1NxN, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
 
-      if ( fFillSSHistograms && energyNxN > 0 )
+      if ( fFillSSHistograms && energyNxN > 0 && fFillNxNShowerShapeAllHisto)
       {
         if ( !IsHighMultiplicityAnalysisOn() )
         {
@@ -7180,8 +7210,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
     //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
-    aodph.SetM02(calo->GetM02());
-    aodph.SetM20(calo->GetM20());
+    if ( fUseNxNShowerShape )
+    {
+      aodph.SetM02(l0NxN);
+      aodph.SetM20(l1NxN);
+    }
+    else
+    {
+      aodph.SetM02(calo->GetM02());
+      aodph.SetM20(calo->GetM20());
+    }
+
     aodph.SetNLM(nMaxima);
     
     Float_t time = calo->GetTOF()*1e9;
@@ -7723,8 +7762,9 @@ void AliAnaPhoton::Print(const Option_t * opt) const
          "only simple %d, per NLM %d, conversion separation %d\n",
          fFillSSHistograms, fFillSSPerSMHistograms, fFillSSEtaHistograms, fFillEMCALRegionSSHistograms,
          fFillOnlySimpleSSHisto, fFillSSNLocMaxHisto, fSeparateConvertedDistributions);
-  printf("Shower shape use NxN %d, col-row number %d, only neighbours %d, e cell > %2.2f\n",
-         fUseNxNShowerShape, fNxNShowerShapeColRowDiffNumber,fNxNShowerShapeOnlyNeigbours,fNxNShowerShapeMinEnCell);
+  printf("Shower shape use NxN %d, col-row number %d, only neighbours %d, e cell > %2.2f, fill all histo %d\n",
+         fUseNxNShowerShape, fNxNShowerShapeColRowDiffNumber,fNxNShowerShapeOnlyNeigbours,
+         fNxNShowerShapeMinEnCell, fFillNxNShowerShapeAllHisto);
   printf("Fill histo: conv vertex %d, track mult %d, control cluster content %d, cells energy %d \n",
          fFillConversionVertexHisto,fFillTrackMultHistograms, fFillControlClusterContentHisto,fFillCellsEnergyHisto);  
   printf("Local cluster activity switch %d  \n",fStudyActivityNearCluster);  
