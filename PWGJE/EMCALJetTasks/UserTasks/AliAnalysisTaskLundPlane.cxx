@@ -12,6 +12,7 @@
 #include "AliEmcalPythiaInfo.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliJetContainer.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliParticleContainer.h"
@@ -60,11 +61,11 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane()
   fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
   fStoreDetLevelJets(0), fDoSubJet(0),fTreeSplittings(0), fShapesVar_Splittings_angle(0),
-    fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
+    fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_eta1(0),
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
-    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
+    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_eta1_part(0),
+  fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fShapesVar_Splittings_weightmb(0), fShapesVar_Splittings_weightej1(0), fShapesVar_Splittings_weightej2(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -84,11 +85,11 @@ AliAnalysisTaskLundPlane::AliAnalysisTaskLundPlane(
     fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
     fStoreDetLevelJets(0),fDoSubJet(0),fTreeSplittings(0), fShapesVar_Splittings_angle(0),
-    fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_energy(0),fShapesVar_Splittings_eta1(0),
+    fShapesVar_Splittings_kt(0),fShapesVar_Splittings_z(0),fShapesVar_Splittings_eta1(0),
     fShapesVar_Splittings_eta2(0),fShapesVar_Splittings_phi1(0),fShapesVar_Splittings_phi2(0),
     fShapesVar_Splittings_angle_part(0),
-    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_energy_part(0),fShapesVar_Splittings_eta1_part(0),
-    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
+    fShapesVar_Splittings_kt_part(0),fShapesVar_Splittings_z_part(0),fShapesVar_Splittings_eta1_part(0),
+    fShapesVar_Splittings_eta2_part(0),fShapesVar_Splittings_phi1_part(0),fShapesVar_Splittings_phi2_part(0),fShapesVar_Splittings_ptjet(0),fShapesVar_Splittings_ptjet_part(0), fShapesVar_Splittings_mytrig(0), fShapesVar_Splittings_weightmb(0), fShapesVar_Splittings_weightej1(0), fShapesVar_Splittings_weightej2(0),fMatch(kFALSE), fTreeMatching(0), fHtrueMatch(0x0), fHtrueAll(0x0), fHrecoMatch(0x0), fHrecoAll(0x0), fHtrueMatch1D(0x0), fHtrueAll1D(0x0), fMatchR(0.1), fMomFrac(0.5), fStoreTrig(kFALSE)
     
 {
  
@@ -118,46 +119,53 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
   if (!fMatch)
     {
       fTreeSplittings = new TTree(nameoutput, nameoutput);
-      TString *fShapesVarNames_Splittings=new TString[19];
+      TString *fShapesVarNames_Splittings=new TString[20];
 
       fShapesVarNames_Splittings[0] = "angle";
       fShapesVarNames_Splittings[1] = "kt";
       fShapesVarNames_Splittings[2] = "z";
-      fShapesVarNames_Splittings[3] = "energy";
-      fShapesVarNames_Splittings[4] = "eta1";
-      fShapesVarNames_Splittings[5] = "phi1";
-      fShapesVarNames_Splittings[6] = "eta2";
-      fShapesVarNames_Splittings[7] = "phi2";
-      fShapesVarNames_Splittings[8] = "angle_part";
-      fShapesVarNames_Splittings[9] = "kt_part";
-      fShapesVarNames_Splittings[10] = "z_part";
-      fShapesVarNames_Splittings[11] = "energy_part";
-      fShapesVarNames_Splittings[12] = "eta1_part";
-      fShapesVarNames_Splittings[13] = "phi1_part";
-      fShapesVarNames_Splittings[14] = "eta2_part";
-      fShapesVarNames_Splittings[15] = "phi2_part";
-      fShapesVarNames_Splittings[16] = "ptjet";
-      fShapesVarNames_Splittings[17] = "ptjet_part"; 
-      fShapesVarNames_Splittings[18] = "mytrig";
+    
+      fShapesVarNames_Splittings[3] = "eta1";
+      fShapesVarNames_Splittings[4] = "phi1";
+      fShapesVarNames_Splittings[5] = "eta2";
+      fShapesVarNames_Splittings[6] = "phi2";
+      fShapesVarNames_Splittings[7] = "angle_part";
+      fShapesVarNames_Splittings[8] = "kt_part";
+      fShapesVarNames_Splittings[9] = "z_part";
+   
+      fShapesVarNames_Splittings[10] = "eta1_part";
+      fShapesVarNames_Splittings[11] = "phi1_part";
+      fShapesVarNames_Splittings[12] = "eta2_part";
+      fShapesVarNames_Splittings[13] = "phi2_part";
+      fShapesVarNames_Splittings[14] = "ptjet";
+      fShapesVarNames_Splittings[15] = "ptjet_part"; 
+      fShapesVarNames_Splittings[16] = "mytrig";
+      fShapesVarNames_Splittings[17] = "weightmb";
+       fShapesVarNames_Splittings[18] = "weightej1";
+        fShapesVarNames_Splittings[19] = "weightej2";
+	
       fTreeSplittings->Branch(fShapesVarNames_Splittings[0].Data(), &fShapesVar_Splittings_angle, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[1].Data(), &fShapesVar_Splittings_kt, 0,1);
       fTreeSplittings->Branch(fShapesVarNames_Splittings[2].Data(), &fShapesVar_Splittings_z, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[3].Data(), &fShapesVar_Splittings_energy, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[4].Data(), &fShapesVar_Splittings_eta1, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[5].Data(), &fShapesVar_Splittings_phi1, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[6].Data(), &fShapesVar_Splittings_eta2, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[7].Data(), &fShapesVar_Splittings_phi2, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[8].Data(), &fShapesVar_Splittings_angle_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[9].Data(), &fShapesVar_Splittings_kt_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[10].Data(), &fShapesVar_Splittings_z_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[11].Data(), &fShapesVar_Splittings_energy_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[12].Data(), &fShapesVar_Splittings_eta1_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[13].Data(), &fShapesVar_Splittings_phi1_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[14].Data(), &fShapesVar_Splittings_eta2_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[15].Data(), &fShapesVar_Splittings_phi2_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[16].Data(), &fShapesVar_Splittings_ptjet, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[17].Data(), &fShapesVar_Splittings_ptjet_part, 0,1);
-      fTreeSplittings->Branch(fShapesVarNames_Splittings[18].Data(), &fShapesVar_Splittings_mytrig, 0,1);
+      
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[3].Data(), &fShapesVar_Splittings_eta1, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[4].Data(), &fShapesVar_Splittings_phi1, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[5].Data(), &fShapesVar_Splittings_eta2, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[6].Data(), &fShapesVar_Splittings_phi2, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[7].Data(), &fShapesVar_Splittings_angle_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[8].Data(), &fShapesVar_Splittings_kt_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[9].Data(), &fShapesVar_Splittings_z_part, 0,1);
+      
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[10].Data(), &fShapesVar_Splittings_eta1_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[11].Data(), &fShapesVar_Splittings_phi1_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[12].Data(), &fShapesVar_Splittings_eta2_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[13].Data(), &fShapesVar_Splittings_phi2_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[14].Data(), &fShapesVar_Splittings_ptjet, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[15].Data(), &fShapesVar_Splittings_ptjet_part, 0,1);
+      fTreeSplittings->Branch(fShapesVarNames_Splittings[16].Data(), &fShapesVar_Splittings_mytrig, 0,1);
+       fTreeSplittings->Branch(fShapesVarNames_Splittings[17].Data(), &fShapesVar_Splittings_weightmb, 0,1);
+        fTreeSplittings->Branch(fShapesVarNames_Splittings[18].Data(), &fShapesVar_Splittings_weightej1, 0,1);
+	 fTreeSplittings->Branch(fShapesVarNames_Splittings[19].Data(), &fShapesVar_Splittings_weightej2, 0,1);
     }
   else {
     fTreeMatching = new TTree(nameoutput, nameoutput);
@@ -263,6 +271,9 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       Bool_t mytrigmb=kFALSE;
       Bool_t mytrigej1=kFALSE;
       Bool_t mytrigej2=kFALSE;
+      Double_t weightmb=-1;
+      Double_t weightej1=-1;
+      Double_t weightej2=-1;
       if(fStoreTrig==kTRUE){
         
         if(fInputHandler->IsEventSelected() & AliVEvent::kINT7 && fInputEvent->GetFiredTriggerClasses().Contains("INT7")) mytrigmb=kTRUE;
@@ -279,6 +290,44 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       }
 
       if(mytrig==-1) return 0;
+
+
+   
+  if(fStoreTrig==kTRUE) {
+
+
+
+    if(mytrig==3){
+      weightmb = 1./GetDownscaleWeight("INT7");
+        weightej1 = 1./GetDownscaleWeight("EJ1");
+	  weightej2 = 1./GetDownscaleWeight("EJ2");}
+
+ if(mytrig==0){
+   weightmb = 1./GetDownscaleWeight("INT7");}
+    
+  if(mytrig==1){
+          weightej1 = 1./GetDownscaleWeight("EJ1");}
+
+ if(mytrig==2){
+          weightej2 = 1./GetDownscaleWeight("EJ2");}
+
+if(mytrig==4){
+       weightmb = 1./GetDownscaleWeight("INT7");
+      weightej1 = 1./GetDownscaleWeight("EJ1");}         
+
+
+if(mytrig==5){
+       weightmb = 1./GetDownscaleWeight("INT7");
+      weightej2 = 1./GetDownscaleWeight("EJ2");}  
+
+
+
+ if(mytrig==6){
+       weightej1 = 1./GetDownscaleWeight("EJ1");
+      weightej2 = 1./GetDownscaleWeight("EJ2");}  
+
+  }
+      
       
     while ((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1)
@@ -399,6 +448,10 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       fShapesVar_Splittings_ptjet=ptSubtracted;
       fShapesVar_Splittings_ptjet_part=ptMatch;
       fShapesVar_Splittings_mytrig=mytrig;
+      fShapesVar_Splittings_weightmb=weightmb;
+       fShapesVar_Splittings_weightej1=weightej1;
+        fShapesVar_Splittings_weightej2=weightej2;
+      
       if (fMatch) {
 	Bool_t matched = SubjetMatching(const1Part,  constPart,  const1Det,  constDet);
       }
@@ -409,7 +462,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       fShapesVar_Splittings_angle.clear();
       fShapesVar_Splittings_kt.clear(); 
       fShapesVar_Splittings_z.clear();
-      fShapesVar_Splittings_energy.clear();
+    
       fShapesVar_Splittings_eta1.clear();
       fShapesVar_Splittings_phi1.clear();
       fShapesVar_Splittings_eta2.clear();
@@ -418,7 +471,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       fShapesVar_Splittings_angle_part.clear();
       fShapesVar_Splittings_kt_part.clear(); 
       fShapesVar_Splittings_z_part.clear();
-      fShapesVar_Splittings_energy_part.clear();
+    
       fShapesVar_Splittings_eta1_part.clear();
       fShapesVar_Splittings_phi1_part.clear();
       fShapesVar_Splittings_eta2_part.clear();
@@ -490,7 +543,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
      std::vector<Double_t> delta_R_vec;
      std::vector<Double_t> xkt_vec;
      std::vector<Double_t> z_vec;
-     std::vector<Double_t> rad_vec;
+    
      std::vector<Double_t> eta1_vec;
      std::vector<Double_t> phi1_vec;
      std::vector<Double_t> eta2_vec;
@@ -505,7 +558,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
       
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
-      double rad = j1.e()+j2.e();
+      //double rad = j1.e()+j2.e();
       double z = j2.perp() /jj.perp();
       double eta1=j1.eta();
       double eta2=j2.eta();
@@ -515,7 +568,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
       delta_R_vec.push_back(delta_R);
       xkt_vec.push_back(xkt);
       z_vec.push_back(z);
-      rad_vec.push_back(rad);
+   
       eta1_vec.push_back(eta1);
       phi1_vec.push_back(phi1);
       eta2_vec.push_back(eta2);
@@ -534,7 +587,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
           fShapesVar_Splittings_angle.push_back(delta_R_vec);
 	  fShapesVar_Splittings_kt.push_back(xkt_vec); 
 	  fShapesVar_Splittings_z.push_back(z_vec);
-	  fShapesVar_Splittings_energy.push_back(rad_vec);
+
 	  fShapesVar_Splittings_eta1.push_back(eta1_vec);
 	  fShapesVar_Splittings_phi1.push_back(phi1_vec);
           fShapesVar_Splittings_eta2.push_back(eta2_vec);
@@ -545,7 +598,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclustering(AliEmcalJet *fJet, AliJetCo
 	   xkt_vec.clear();
 	    z_vec.clear();
 
-            rad_vec.clear();
+          
 	    eta1_vec.clear();
 	    eta2_vec.clear();
             phi1_vec.clear();
@@ -593,7 +646,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
      std::vector<Double_t> delta_R_vec;
      std::vector<Double_t> xkt_vec;
      std::vector<Double_t> z_vec;
-     std::vector<Double_t> rad_vec;
+    
      std::vector<Double_t> eta1_vec;
      std::vector<Double_t> phi1_vec;
      std::vector<Double_t> eta2_vec;
@@ -608,7 +661,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
       
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
-      double rad = j1.e()+j2.e();
+      //double rad = j1.e()+j2.e();
       double z = j2.perp() /jj.perp();
       double eta1=j1.eta();
       double eta2=j2.eta();
@@ -618,7 +671,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
       delta_R_vec.push_back(delta_R);
       xkt_vec.push_back(xkt);
       z_vec.push_back(z);
-      rad_vec.push_back(rad);
+    
       eta1_vec.push_back(eta1);
       phi1_vec.push_back(phi1);
       eta2_vec.push_back(eta2);
@@ -638,7 +691,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
           fShapesVar_Splittings_angle_part.push_back(delta_R_vec);
 	  fShapesVar_Splittings_kt_part.push_back(xkt_vec); 
 	  fShapesVar_Splittings_z_part.push_back(z_vec);
-	  fShapesVar_Splittings_energy_part.push_back(rad_vec);
+	 
 	  fShapesVar_Splittings_eta1_part.push_back(eta1_vec);
 	  fShapesVar_Splittings_phi1_part.push_back(phi1_vec);
           fShapesVar_Splittings_eta2_part.push_back(eta2_vec);
@@ -648,7 +701,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
 	   xkt_vec.clear();
 	    z_vec.clear();
 
-            rad_vec.clear();
+           
 	    eta1_vec.clear();
 	    eta2_vec.clear();
             phi1_vec.clear();
@@ -811,6 +864,17 @@ int AliAnalysisTaskLundPlane::GetConstituentID(int constituentIndex, const AliVP
   //       depend on that task, so we just define it here locally.
   int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
   return id;
+}
+///_______________________________________________________________________
+Double_t AliAnalysisTaskLundPlane::GetDownscaleWeight(string trigString)
+{ 
+  Double_t weight = 1.;
+  TString triggerclass;
+  if(trigString == "INT7") triggerclass = "CINT7-B-NOPF-CENT";
+  else if(trigString == "EJ1") triggerclass = "CEMC7EJ1-B-NOPF-CENTNOTRD";
+  else if(trigString == "EJ2") triggerclass = "CEMC7EJ2-B-NOPF-CENT";
+  if(triggerclass.Length()) weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerclass);
+  return weight;
 }
 
 
