@@ -7170,17 +7170,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // before PID is applied
     //--------------------------------------------------------
     Int_t   nMaximaNxN = 0;
-    Float_t l0NxN = 0;
+    Float_t l0NxN = 0,  l1NxN = 0;
     if ( fUseNxNShowerShape )
     {
       Float_t dispp= 0., dEta = 0., dPhi    = 0.;
       Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
-      Float_t energyNxN = 0, l1 = 0;
+      Float_t energyNxN = 0;
 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
       (GetEMCALGeometry(), cells, calo,
        fNxNShowerShapeOnlyNeigbours, fNxNShowerShapeColRowDiffNumber, fNxNShowerShapeMinEnCell, 1000000,
-       energyNxN, nMaximaNxN, l0NxN, l1, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+       energyNxN, nMaximaNxN, l0NxN, l1NxN, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
 
       if ( fFillSSHistograms && energyNxN > 0 && fFillNxNShowerShapeAllHisto)
       {
@@ -7210,8 +7210,17 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetFiducialArea(largeTimeInCellCluster); // Temporary use of this container, FIXME
     //if(largeTimeInCellCluster > 1) printf("Set n cells large time %d, pt %2.2f\n",aodph.GetFiducialArea(),aodph.Pt());
     
-    aodph.SetM02(calo->GetM02());
-    aodph.SetM20(calo->GetM20());
+    if ( fUseNxNShowerShape )
+    {
+      aodph.SetM02(l0NxN);
+      aodph.SetM20(l1NxN);
+    }
+    else
+    {
+      aodph.SetM02(calo->GetM02());
+      aodph.SetM20(calo->GetM20());
+    }
+
     aodph.SetNLM(nMaxima);
     
     Float_t time = calo->GetTOF()*1e9;
