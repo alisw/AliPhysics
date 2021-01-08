@@ -1,5 +1,5 @@
 //
-//  AliAnalysisTaskTPCCalBeauty.cxx
+//  AliAnalysisTaskTPCCalBeautyCurrent.cxx
 //
 //
 //  Created by Erin Gauger
@@ -18,7 +18,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskTPCCalBeauty.h"
+#include "AliAnalysisTaskTPCCalBeautyCurrent.h"
 #include "AliKFParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
@@ -28,13 +28,13 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 
-class AliAnalysisTaskTPCCalBeauty;
+class AliAnalysisTaskTPCCalBeautyCurrent;
 
 using namespace std;
 
-ClassImp(AliAnalysisTaskTPCCalBeauty)
+ClassImp(AliAnalysisTaskTPCCalBeautyCurrent)
 
-AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty() :
+AliAnalysisTaskTPCCalBeautyCurrent::AliAnalysisTaskTPCCalBeautyCurrent() :
 AliAnalysisTaskSE(),
 fAOD(0),
 fMCHeader(0),
@@ -294,7 +294,7 @@ fElectronSprs(0)
     //Root IO constructor, don't allocate memory here
 }
 //_____________________________________________________________________
-AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty(const char *name) :
+AliAnalysisTaskTPCCalBeautyCurrent::AliAnalysisTaskTPCCalBeautyCurrent(const char *name) :
 AliAnalysisTaskSE(name),
 fAOD(0),
 fMCHeader(0),
@@ -552,7 +552,7 @@ fElectronSprs(0)
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
+AliAnalysisTaskTPCCalBeautyCurrent::~AliAnalysisTaskTPCCalBeautyCurrent()
 {
     // destructor
     if(fOutputList) {
@@ -565,7 +565,7 @@ AliAnalysisTaskTPCCalBeauty::~AliAnalysisTaskTPCCalBeauty()
     }
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
+void AliAnalysisTaskTPCCalBeautyCurrent::UserCreateOutputObjects()
 {
     /////////////////
     // Output List //
@@ -1423,7 +1423,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     PostData(1, fOutputList);
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
+void AliAnalysisTaskTPCCalBeautyCurrent::UserExec(Option_t*)
 {
     // Get AOD event from the analysis manager
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -2868,7 +2868,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     PostData(1,fOutputList);
 }
 //___________________________________________
-Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
+Double_t AliAnalysisTaskTPCCalBeautyCurrent::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
 {
     //check centrality, Run 2
     if(fAOD)fMultSelection = (AliMultSelection * ) fAOD->FindListObject("MultSelection");
@@ -2896,7 +2896,7 @@ Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t 
     return fCentrality;
 }
 //_________________________________________________________________
-Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
+Bool_t AliAnalysisTaskTPCCalBeautyCurrent::GetNMCPartProduced()
 {
     //Get number of MC particles produced by generators.
     
@@ -2941,7 +2941,7 @@ Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
     return kTRUE;
 }
 //_________________________________________
-void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
+void AliAnalysisTaskTPCCalBeautyCurrent::GetPi0EtaWeight(THnSparse *SparseWeight)
 {
     //Get pi0 and eta information for weight calculation
     Double_t fvalue[4] = {-999,-999,-999,-999};
@@ -2979,7 +2979,7 @@ void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
+void AliAnalysisTaskTPCCalBeautyCurrent::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
     // Calculate phi and eta difference between a track and a cluster. The position of the track is obtained on the EMCAL surface
     
@@ -3000,7 +3000,7 @@ void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster 
     phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma,Double_t &momTime)
+void AliAnalysisTaskTPCCalBeautyCurrent::FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma,Double_t &momTime)
 {
     //gets the pid of mother track
     
@@ -3274,7 +3274,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Double_t fWeight)
+void AliAnalysisTaskTPCCalBeautyCurrent::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Double_t fWeight)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -3357,7 +3357,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
     //fPhotonicElecYield->Fill(track->Pt(),Nuls-Nls);
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius)
+void AliAnalysisTaskTPCCalBeautyCurrent::InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -3446,14 +3446,14 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
     
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
+void AliAnalysisTaskTPCCalBeautyCurrent::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
 {
     fBPlusTauWeight = (TF2 *)BPlus->Clone();
     fB0TauWeight = (TF2 *)B0->Clone();
     fBsTauWeight = (TF2 *)Bs->Clone();
 }
 //_____________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::Terminate(Option_t *)
+void AliAnalysisTaskTPCCalBeautyCurrent::Terminate(Option_t *)
 {
     // terminate
 }
