@@ -127,6 +127,8 @@ fInvmassULS(0),
 //fInvmassULSEnhPhoton(0),
 fULSdcaBelow(0),
 fLSdcaBelow(0),
+fULSdcaBelowWeight(0),
+fLSdcaBelowWeight(0),
 fLSWeightEnhEta(0),
 fULSWeightEnhEta(0),
 fLSWeightEnhPi0(0),
@@ -233,6 +235,7 @@ fSprsTemplatesWeight(0),
 fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
 fSprsClosureTest(0),
+fSprsClosureTestWeight(0),
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -384,6 +387,8 @@ fInvmassULS(0),
 //fInvmassULSEnhPhoton(0),
 fULSdcaBelow(0),
 fLSdcaBelow(0),
+fULSdcaBelowWeight(0),
+fLSdcaBelowWeight(0),
 fLSWeightEnhEta(0),
 fULSWeightEnhEta(0),
 fLSWeightEnhPi0(0),
@@ -490,6 +495,7 @@ fSprsTemplatesWeight(0),
 fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
 fSprsClosureTest(0),
+fSprsClosureTestWeight(0),
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -742,10 +748,22 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     }
     
     fULSdcaBelow = new TH2F("fULSdcaBelow","ULS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fULSdcaBelow->Sumw2();
     fOutputList->Add(fULSdcaBelow);
     
     fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+    fLSdcaBelow->Sumw2();
     fOutputList->Add(fLSdcaBelow);
+    
+    if (fFlagFillMCHistos) {
+        fULSdcaBelowWeight = new TH2F("fULSdcaBelowWeight","ULS Elec DCA m<0.1GeV/c^{2} w/ pi0+eta weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fULSdcaBelowWeight->Sumw2();
+        fOutputList->Add(fULSdcaBelowWeight);
+        
+        fLSdcaBelowWeight = new TH2F("fLSdcaBelowWeight","LS Elec DCA m<0.1GeV/c^{2} w/ pi0+eta weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
+        fLSdcaBelowWeight->Sumw2();
+        fOutputList->Add(fLSdcaBelowWeight);
+    }
     
     if (fFlagFillMCHistos) {
         fLSWeightEnhEta = new TH1F("fLSWeightEnhEta","Weighted Enh Eta LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); counts;", 60,0,30.);
@@ -1234,6 +1252,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
         fOutputList->Add(fSprsClosureTest);
         fSprsClosureTest->Sumw2();
+        
+        fSprsClosureTestWeight = new THnSparseD("fSprsClosureTestWeight","Sparse for Closure Test w/ pi0+eta weight;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
+        fOutputList->Add(fSprsClosureTestWeight);
+        fSprsClosureTestWeight->Sumw2();
     
         /*fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fDTemplateWeight);
@@ -2175,6 +2197,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Bool_t kEmbPi0 = kFALSE;
             Bool_t kHijing = kFALSE;
             Bool_t kFlagReco = kFALSE;
+            Bool_t kFlagULS = kFALSE;
+            Bool_t kFlagLS = kFALSE;
             Int_t fMomGen = 99;
             Double_t momPt = -99;
             Double_t momGamma = -99;
@@ -2681,10 +2705,58 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             //fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]);
             
             //if(!fFlagFillMCHistos){
-                InvMassCheckData(i, track, d0z0, MagSign);
+            //fWeight = 1;
+            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
             //}
             
-            //Fill DCA for closure test
+            //Apply weights to inv mass histos for closure test
+            if(fFlagFillMCHistos){
+                if(ilabel>0 && fMCarray)
+                {
+                    //cout<<"BIG TEST__________________________________________________________"<<endl;
+                    //if mom is Pi0--------------------------------
+                    if(fpidSort==3) {
+                        //cout<<"Test 2"<<endl;
+                        if(kEmbPi0) {
+                            //cout<<"Test 3"<<endl;
+                            fWeight = fPi0Weight->Eval(momPt);
+                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                        }
+                        if(kEmbEta) {
+                            fWeight = fEtaWeight->Eval(momPt);
+                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                        }
+                        
+                    }
+                    //if Eta--------------------------------
+                    if(fpidSort==4){
+                        //cout<<"Test 2a"<<endl;
+                        if(kEmbEta) {
+                            //cout<<"Test 3a"<<endl;
+                            fWeight = fEtaWeight->Eval(momPt);
+                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                        }
+                    }
+                    //if photon--------------------------------
+                    if(fpidSort==5){
+                        //cout<<"Test 2b"<<endl;
+                        if(kEmbPi0) {
+                            //cout<<"Test 3b"<<endl;
+                            fWeight = fPi0Weight->Eval(momPt);
+                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                        }
+                        if(kEmbEta) {
+                            fWeight = fEtaWeight->Eval(momPt);
+                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                        }
+                    }
+                }
+            }else{
+                fWeight = 1;
+                InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+            }
+            
+            //Fill DCA true for closure test
             if (fFlagFillMCHistos) {
                 if(ilabel>0 && fMCarray)
                 {
@@ -2694,8 +2766,38 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         closValue[0] = track->Pt();
                         closValue[1] = DCA;
                         closValue[2] = fpidSort;
-                    
                         fSprsClosureTest->Fill(closValue);
+                    
+                        //if mom is Pi0--------------------------------
+                        if(fpidSort==3) {
+                            if(kEmbPi0) {
+                                fWeight = fPi0Weight->Eval(momPt);
+                                fSprsClosureTestWeight->Fill(closValue,fWeight);
+                            }
+                            if(kEmbEta) {
+                                fWeight = fEtaWeight->Eval(momPt);
+                                fSprsClosureTestWeight->Fill(closValue,fWeight);
+                            }
+                        
+                        }
+                        //if Eta--------------------------------
+                        if(fpidSort==4){
+                            if(kEmbEta) {
+                                fWeight = fEtaWeight->Eval(momPt);
+                                fSprsClosureTestWeight->Fill(closValue,fWeight);
+                            }
+                        }
+                        //if photon--------------------------------
+                        if(fpidSort==5){
+                            if(kEmbPi0) {
+                                fWeight = fPi0Weight->Eval(momPt);
+                                fSprsClosureTestWeight->Fill(closValue,fWeight);
+                            }
+                            if(kEmbEta) {
+                                fWeight = fEtaWeight->Eval(momPt);
+                                fSprsClosureTestWeight->Fill(closValue,fWeight);
+                            }
+                        }
                     }
                 }
             }
@@ -3172,7 +3274,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign)
+void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Double_t fWeight)
 {
     // Flags photonic electrons with inv mass cut
     
@@ -3187,7 +3289,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
     Int_t charge=track->Charge();
     Double_t mass=-999., width = -999;
     Int_t MassCorrect;
-    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    //Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
     Int_t Nuls=0, Nls=0;
     
     Int_t ntracks = fAOD->GetNumberOfTracks();
@@ -3243,9 +3345,11 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         
         if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
             fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
-            
+            fULSdcaBelowWeight->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,fWeight);
+                
         }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
             fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
+            fLSdcaBelowWeight->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign,fWeight);
         }
         
     }
