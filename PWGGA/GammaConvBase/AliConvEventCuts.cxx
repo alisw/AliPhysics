@@ -5250,10 +5250,10 @@ Int_t AliConvEventCuts::GetPtHardBinFromPath(const char* currFile,AliVEvent *eve
   if(!binfound) {
     AliErrorStream() << "Could not extract file number from path " << strPthard << std::endl;
   } else {
-    AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
+    AliDebugStream(1) << "Auto-detecting pt-hard bin " << pthard << std::endl;
   }
 
-  AliInfoStream() << "File: " << file << std::endl;
+  AliDebugStream(1) << "File: " << file << std::endl;
 
   return pthard;
 }
