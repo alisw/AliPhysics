@@ -511,6 +511,8 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   if(fApplyElectronEffi){
     TString elecEffiFileName;
+      
+      if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
 
     if(!fIsPbPb && !fIspp){
       elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
@@ -527,14 +529,20 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Double_t pi = TMath::Pi();
   fPi0Weight = new TF1("fPi0Weight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
   fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
-  fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
-  fEtaWeight->SetParameters(3.34121e+02,-1.09185e-02,4.04493e-03,1.59842e+00,5.43861e+00);
+    
+  if(fIspp){
+        fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
+        fEtaWeight->SetParameters(3.34121e+02,-1.09185e-02,4.04493e-03,1.59842e+00,5.43861e+00);
+  }
+    
+    if(fIspPb){
+        fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
+        fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
+    }
 
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-
-  if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
 
   Int_t trackDepth = 0;
   Int_t poolsize = 0;
