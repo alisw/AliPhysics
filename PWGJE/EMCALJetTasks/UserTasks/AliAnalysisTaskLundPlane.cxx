@@ -268,7 +268,7 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
     }
 
 
-    UInt_t runnew=InputEvent()->GetRunNumber();
+   
      Int_t mytrig=-1; 
       Bool_t mytrigmb=kFALSE;
       Bool_t mytrigej1=kFALSE;
@@ -294,9 +294,9 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
       if(mytrig==-1) return 0;
 
 
-   
+    UInt_t newrun=InputEvent()->GetRunNumber();  
   if(fStoreTrig==kTRUE) {
-
+    
     RunChanged(newrun); 
 
     if(mytrig==3){
@@ -880,7 +880,7 @@ Double_t AliAnalysisTaskLundPlane::GetDownscaleWeight(string trigString)
 }
 //////////_________________________________________________________________
 void AliAnalysisTaskLundPlane::RunChanged(Int_t newrun){
-  if(fUseDownscaleWeight) {
+  if(fStoreTrig) {
     auto downscalehandler = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     if(downscalehandler->GetCurrentRun() != newrun){
       downscalehandler->SetRun(newrun);
