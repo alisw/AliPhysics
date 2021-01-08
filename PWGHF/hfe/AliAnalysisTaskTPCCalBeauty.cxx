@@ -3289,7 +3289,7 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
     Int_t charge=track->Charge();
     Double_t mass=-999., width = -999;
     Int_t MassCorrect;
-    //Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
     Int_t Nuls=0, Nls=0;
     
     Int_t ntracks = fAOD->GetNumberOfTracks();
