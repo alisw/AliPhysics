@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE, Bool_t ispp=kTRUE,
     Double_t centMin=0, Double_t centMax=20,
     Bool_t EleSPDkFirst=kFALSE, Bool_t trigElePtcut=kTRUE,
-    Bool_t MEBinChange=kFALSE,
+    Bool_t FillME=kTRUE, Bool_t MEBinChange=kFALSE,
     Int_t MinNClsPE=70, Double_t PtPE=0.1, Double_t invmasscut=0.14,
     Int_t MinNCrossRHad=60,Double_t MinRatioNCrossRHad=0.6, Bool_t HadSPDkAny=kFALSE, Bool_t HadLargITSNCls=kFALSE,
     Double_t HadEtaMin = -0.8, Double_t HadEtaMax = 0.8,
@@ -69,6 +69,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     //taskHFEeh->SetHadFiducialCut(HadFiducialCut);
     //taskHFEeh->SetHadPosEtaOnly(HadPosEtaOnly);
     //taskHFEeh->SetHadNegEtaOnly(HadNegEtaOnly);
+    taskHFEeh->SwitchMECorrec(FillME);
     taskHFEeh->SetMEBinChange(MEBinChange);
     taskHFEeh->SetElecSPDkFirst(EleSPDkFirst);
     taskHFEeh->SetTenderSwitch(useTender);
