@@ -6920,6 +6920,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
+          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
+          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       } else if ( fClusterType == 2 ){
         // Nonlin from PHOS group only MC part
@@ -6955,6 +6957,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= 1.00349;
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
+          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
+          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       }
       break;
@@ -8124,7 +8128,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 // *************** 60 + x **** modified tender Settings 2 - pPb
 // PCM-EDC based nonlinearity kSDM
     case 61:
-      // apply testbeam nonlinearity (same as case 1) but with fix for pPb Run1
+      // apply testbeam nonlinearity (same as case 1) but without fix for pPb Run1
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning)
         if(isMC){
@@ -8137,15 +8141,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
-          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
-          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       }
 
       break;
     // EDC based nonlinearity kSDM
     case 62:
-      // apply testbeam nonlinearity (same as case 1) but with fix for pPb Run1
+      // apply testbeam nonlinearity (same as case 1) but without fix for pPb Run1
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
         if(isMC){
@@ -8154,8 +8156,6 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= 1.00349;
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
-          // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
-          if (fCurrentMC == k13pPb5023GeV)  energy *= 0.978;
         }
       }
       break;
