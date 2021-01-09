@@ -102,6 +102,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
     void    SetHadEtaCuts(Double_t Min, Double_t Max) {fEtaCutHadMin = Min; fEtaCutHadMax = Max;};
 
+    void    SwitchMECorrec(Bool_t FillMECorr){fFlagFillMECorr = FillMECorr;};
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
 
@@ -187,6 +188,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
+    Bool_t              fFlagFillMECorr;//
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
     Bool_t              fIspp;//
