@@ -1398,7 +1398,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   /////////////////////////
   //Fill Mixed event pool//
   /////////////////////////
-  if(fFlagFillMECorr)){
+  if(fFlagFillMECorr){
       Double_t pVtxZ = fpVtx->GetZ();
       AliEventPool *fPool;
       fPool = fPoolMgr->GetEventPool(fCentrality, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
