@@ -22,10 +22,7 @@
 #include "AliAnalysisTaskSpectraINEL0.h"
 class AliAnalysisTaskSpectraINEL0;
 
-namespace {
-using namespace Hist;
-using namespace std;
-} // namespace
+// namespace
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSpectraINEL0)
@@ -34,11 +31,6 @@ ClassImp(AliAnalysisTaskSpectraINEL0)
 
 AliAnalysisTaskSpectraINEL0::AliAnalysisTaskSpectraINEL0()
     : AliAnalysisTaskMKBase()
-    , fHistEffCont{}
-    , fHistTrack{}
-    , fHistEvent{}
-    , fHistVtxInfo{}
-    , fHistTrackINEL0{}
 {
     // default contructor
     AliAnalysisTaskMKBase::fUseBaseOutput = kTRUE;
@@ -50,11 +42,6 @@ AliAnalysisTaskSpectraINEL0::AliAnalysisTaskSpectraINEL0()
 
 AliAnalysisTaskSpectraINEL0::AliAnalysisTaskSpectraINEL0(const char* name)
     : AliAnalysisTaskMKBase(name)
-    , fHistEffCont{}
-    , fHistTrack{}
-    , fHistEvent{}
-    , fHistVtxInfo{}
-    , fHistTrackINEL0{}
 {
     // constructor
     AliAnalysisTaskMKBase::fUseBaseOutput = kTRUE;
@@ -73,7 +60,7 @@ AliAnalysisTaskSpectraINEL0::~AliAnalysisTaskSpectraINEL0()
 
 void AliAnalysisTaskSpectraINEL0::AddOutput()
 {
-    std::vector<double> ptbins = { 0.0,  0.05,  0.1,   0.15,  0.2,   0.25,  0.3,   0.35,  0.4,   0.45, 0.5,  0.55,
+    std::vector<double> ptbins = {0.15,  0.2,   0.25,  0.3,   0.35,  0.4,   0.45, 0.5,  0.55,
                                 0.6,  0.65,  0.7,   0.75,  0.8,   0.85,  0.9,   0.95,  1.0,   1.1,  1.2,  1.3,
                                 1.4,  1.5,   1.6,   1.7,   1.8,   1.9,   2.0,   2.2,   2.4,   2.6,  2.8,  3.0,
                                 3.2,  3.4,   3.6,   3.8,   4.0,   4.5,   5.0,   5.5,   6.0,   6.5,  7.0,  8.0,
@@ -81,7 +68,6 @@ void AliAnalysisTaskSpectraINEL0::AddOutput()
                                 26.0, 28.0,  30.0,  32.0,  34.0,  36.0,  40.0,  45.0,  50.0,  60.0, 70.0, 80.0,
                                 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0 };
     std::vector<double> inverseptbins;
-    inverseptbins.push_back(0.0);
     for(int i = ptbins.size() - 1; i > 0 ; i--){
       inverseptbins.push_back(1./ptbins[i]);
     }
@@ -105,27 +91,25 @@ void AliAnalysisTaskSpectraINEL0::AddOutput()
         }
     }
 
-    Axis centAxis = {"cent", "centrality", centBins};
-    Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
-    Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
-    Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptbins};
-    Axis QAxis = {"Q", "Q", {-1.5,1.5}, 3};
-    Axis relResoAxis = {"rel. Reso", "#sigma(#it{p}_{T}) / #it{p}_{T}", {0.0,0.3}, 300};
-    Axis Sigma1ptAxis = {"Sigma1ptAxis", "#sigma(1/#it{p}_{T})", {0.0,0.3}, 300};
-    Axis inverseptAxis = {"1/pt", "1/#it{p}_{T} (GeV/c)", inverseptbins};
-    Axis MCpidAxis = {"MCpid", "MCpid", {-0.5, 9.5}, 10}; // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
-    Axis MCinfoAxis = {"MCinfo", "MCinfo", {-0.5,3.5}, 4}; // 0=prim, 1=decay 2=material, 3=genprim
-    Axis MCQAxis = {"MCQ", "MCQ", {-1.5,1.5}, 3};
-    Axis MCptAxis = {"MCpt", "#it{p}_{T} (GeV/c)", ptbins};
-    Axis EvtSelectionAxis = {"EvtSele", "EvtSele", {-0.5,1.5}, 2}; // 0 == No Selection; 1 == with selection
-    Axis VtxInfoAxis = {"VtxInfo", "VtxInfo", {-0.5,1.5}, 2}; // 0 == with Vertex; 1== without Vertex
+    Hist::Axis centAxis = {"cent", "centrality", centBins};
+    Hist::Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
+    Hist::Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
+    Hist::Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptbins};
+    Hist::Axis QAxis = {"Q", "Q", {-1.5,1.5}, 3};
+    Hist::Axis relResoAxis = {"rel. Reso", "#sigma(#it{p}_{T}) / #it{p}_{T}", {0.0,0.3}, 300};
+    Hist::Axis Sigma1ptAxis = {"Sigma1ptAxis", "#sigma(1/#it{p}_{T})", {0.0,0.3}, 300};
+    Hist::Axis inverseptAxis = {"1/pt", "1/#it{p}_{T} (GeV/c)", {0.005, 6.677}, 60};
+    //Hist::Axis MCpidAxis = {"MCpid", "MCpid", {-0.5, 9.5}, 10}; // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
+    Hist::Axis MCinfoAxis = {"MCinfo", "MCinfo", {-0.5,3.5}, 4}; // 0=prim, 1=decay 2=material, 3=genprim
+    //Hist::Axis MCQAxis = {"MCQ", "MCQ", {-1.5,1.5}, 3};
+    Hist::Axis MCptAxis = {"MCpt", "#it{p}_{T} (GeV/c)", ptbins};
+    Hist::Axis EvtSelectionAxis = {"EvtSele", "EvtSele", {-0.5,1.5}, 2}; // 0 == No Selection; 1 == with selection
+    Hist::Axis VtxInfoAxis = {"VtxInfo", "VtxInfo", {-0.5,1.5}, 2}; // 0 == with Vertex; 1== without Vertex
 
 
     fHistEffCont.AddAxis(centAxis);
     fHistEffCont.AddAxis(multAxis);
     fHistEffCont.AddAxis(MCptAxis);
-    fHistEffCont.AddAxis(MCQAxis);
-    fHistEffCont.AddAxis(MCpidAxis); // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
     fHistEffCont.AddAxis(MCinfoAxis); // 0=prim, 1=decay 2=material, 3=genprim
     fOutputList->Add(fHistEffCont.GenerateHist("fHistEffCont"));
 
@@ -214,7 +198,7 @@ void AliAnalysisTaskSpectraINEL0::AnaTrackMC(Int_t flag)
 
     } else if (flag == 1) {
 
-        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType);
+        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, fMCProdcutionType);
     } else {
         Err("AliAnalysisTaskMKBase::FillDefaultHistograms:InvalidStep");
     }
@@ -238,7 +222,7 @@ void AliAnalysisTaskSpectraINEL0::AnaParticleMC(Int_t flag)
     } else if (flag == 1) {
         fHistTrackINEL0.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, 1);
 
-        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3);
+        fHistEffCont.Fill(fMultPercentileV0M, fNTracksAcc, fMCPt, 3);
     } else {
         Err("AliAnalysisTaskMKBase::FillDefaultHistograms:InvalidStep");
     }
