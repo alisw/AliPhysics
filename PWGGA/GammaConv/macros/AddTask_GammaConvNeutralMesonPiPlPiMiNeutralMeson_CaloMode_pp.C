@@ -889,6 +889,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 832)  { // EDC 13 TeV EG1
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070a","0103103100000000","0d53503000000000"); // EG1, Sideband, both sides
 
+  } else if(trainConfig == 833)  { // EDC 13 TeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","0b53503000000000"); // INT7, Sideband, right side
+  } else if(trainConfig == 834)  { // EDC 13 TeV
+    cuts.AddCutHeavyMesonCalo("00010113","411792109fe32220000","32c51070a","0103103100000000","0c53503000000000"); // INT7, Sideband, left side
+
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
