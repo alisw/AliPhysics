@@ -11,19 +11,19 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     Double_t m02Min=0.02,  Double_t m02Max=0.9, Double_t eovpMin=0.8, Double_t eovpMax=1.2,
     Bool_t useTender = kTRUE, Bool_t EMCtimeCut = kFALSE,
     Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
-    Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,  Bool_t FillEHCorrel=kTRUE,
+    Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,  Bool_t FillEHCorrel=kTRUE,
     Bool_t  CalcHadronTrackEffi=kFALSE, Bool_t CalculateNonHFEEffi=kFALSE, Bool_t CalPi0EtaWeight=kFALSE,
     Bool_t applyEleEffi=kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskHFEElecHadronCorrlPbPb", "No analysis manager found.");
+    Error("AddTaskHFEElecHadronCorrl", "No analysis manager found.");
     return 0;
   }
 
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskHFEElecHadronCorrlPbPb", "This task requires an input event handler");
+    ::Error("AddTaskHFEElecHadronCorrl", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -40,9 +40,12 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
   if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
   if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
+    
+  Int_t PhysSel = AliVEvent::kINT7;
 
   if(PhysSel == AliVEvent::kINT7){
     AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
+    mgr->AddTask(taskHFEeh);
     taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
     taskHFEeh->IsPbPb(isPbPb);
     taskHFEeh->Ispp(ispp);
@@ -85,15 +88,15 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     TString SubcontainerName = ContNameExt;
     SubcontainerName += "_EHPbPb_INT7";
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(SubcontainerName,TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
-
-    mgr->ConnectInput(taskHFEeh,0,mgr->GetCommonInputContainer());
+      AliAnalysisDataContainer *cinput3  = mgr->GetCommonInputContainer();
+    mgr->ConnectInput(taskHFEeh,0,cinput3);
     mgr->ConnectOutput(taskHFEeh,1,coutput3);
-    //mgr->AddTask(taskHFEeh);
   }
 
   if(PhysSel == AliVEvent::kEMCEGA){
     // EMCal EGA EG1
     AliAnalysisTaskEHCorrel *taskHFEehGA01 = new AliAnalysisTaskEHCorrel("ehGA");
+    mgr->AddTask(taskHFEehGA01);
     taskHFEehGA01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
     taskHFEehGA01->IsPbPb(isPbPb);
     taskHFEehGA01->Ispp(ispp);
@@ -112,8 +115,6 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
     mgr->ConnectInput(taskHFEehGA01, 0, cinput);
     mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
-    ///mgr->AddTask(taskHFEehGA01);
-
   }
-  return taskHFEeh;
+    return NULL;
 }
