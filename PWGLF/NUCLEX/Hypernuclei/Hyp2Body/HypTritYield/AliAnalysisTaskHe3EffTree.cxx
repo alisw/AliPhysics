@@ -531,17 +531,17 @@ Float_t AliAnalysisTaskHe3EffTree::GetTOFSignalHe3(AliESDtrack& trackHe, Float_t
 //_____________________________________________________________________________
 void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 264347 ) { // 2016 pp
+	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
 		if(!fMCtrue) { // Data
 			// LHC16 + LHC18
-			// He3
+			// Triton
 			fBetheParamsT[0] = 0.427978;
 			fBetheParamsT[1] = 105.46;
 			fBetheParamsT[2] =-7.08642e-07;
 			fBetheParamsT[3] = 2.23332;
 			fBetheParamsT[4] = 18.8231;
 			fBetheParamsT[5] = 0.06;
-			// Triton
+			// He3
 			fBetheParamsHe[0] = 1.81085;
 			fBetheParamsHe[1] = 29.4656;
 			fBetheParamsHe[2] = 0.0458225;
@@ -550,61 +550,61 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsHe[5] = 0.06;
 		} else { // MC
 			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC18a2b (->LHC16)
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 3.05245;
-				fBetheParamsHe[1] = 15.7252;
-				fBetheParamsHe[2] = -0.00453331;
-				fBetheParamsHe[3] = 2.17241;
-				fBetheParamsHe[4] = 2.88422;
-				fBetheParamsHe[5] = 0.0834274;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 2.74259;
-				fBetheParamsT[1] = 18.3295;
-				fBetheParamsT[2] = 5.91594;
-				fBetheParamsT[3] = 1.93471;
-				fBetheParamsT[4] = 0.292147;
-				fBetheParamsT[5] = 0.0728241;
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
 			}
 			if (runNumber >= 256941 && runNumber <= 258537 ) { 
-				// LHC18a2b2 (LHC16k)
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 2.80527;
-				fBetheParamsHe[1] = 14.2379;
-				fBetheParamsHe[2] = 0.0232811;
-				fBetheParamsHe[3] = 2.11464;
-				fBetheParamsHe[4] = 1.615;
-				fBetheParamsHe[5] = 0.0815227;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 1.31603;
-				fBetheParamsT[1] = 36.1798;
-				fBetheParamsT[2] = 493.036;
-				fBetheParamsT[3] = 2.10841;
-				fBetheParamsT[4] = 7.43391;
-				fBetheParamsT[5] = 0.0769041;
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
 			}
 			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC18a2b3 (->LHC16l)
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 2.80121;
-				fBetheParamsHe[1] = 14.2397;
-				fBetheParamsHe[2] = 0.0100894;
-				fBetheParamsHe[3] = 2.10396;
-				fBetheParamsHe[4] = 1.41608;
-				fBetheParamsHe[5] = 0.0817429;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 4.80597;
-				fBetheParamsT[1] = 13.8813;
-				fBetheParamsT[2] = 189.651;
-				fBetheParamsT[3] = 2.05969;
-				fBetheParamsT[4] = 4.38013;
-				fBetheParamsT[5] = 0.077593;
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
 			} 
 		}
 	}
 	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
 		if(!fMCtrue) {
-			//LHC17
+			//LHC17 Data
 			// He3
 			fBetheParamsHe[0] = 3.20025;
 			fBetheParamsHe[1] = 16.4971;
@@ -620,21 +620,21 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsT[4] = 21.3439;
 			fBetheParamsT[5] = 0.06;	
 		} else {
-			// LHC18a2a (->LHC17)
+			//LHC20l7b (-> LHC17)
 			// He3
-			fBetheParamsHe[0] = 3.12796;
-			fBetheParamsHe[1] = 16.1359;
-			fBetheParamsHe[2] = -0.00682978;
-			fBetheParamsHe[3] = 2.26624;
-			fBetheParamsHe[4] = 2.58652;
-			fBetheParamsHe[5] = 0.0847009;
+			fBetheParamsHe[0] = 3.14546;
+			fBetheParamsHe[1] = 16.2277;
+			fBetheParamsHe[2] = -0.000523081;
+			fBetheParamsHe[3] = 2.28248;
+			fBetheParamsHe[4] = 2.60465;
+			fBetheParamsHe[5] = 0.06;
 			// Triton
-			fBetheParamsT[0] = 2.8303;
-			fBetheParamsT[1] = 15.4337;
-			fBetheParamsT[2] = 3.18352;
-			fBetheParamsT[3] = 2.20975;
-			fBetheParamsT[4] = 0.218244;
-			fBetheParamsT[5] = 0.0780191;	
+			fBetheParamsT[0] = 2.88676;
+			fBetheParamsT[1] = 15.3823;
+			fBetheParamsT[2] = 0.580675;
+			fBetheParamsT[3] = 2.28551;
+			fBetheParamsT[4] = 2.47351;
+			fBetheParamsT[5] = 0.06;
 		}
 	}
 	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
@@ -655,25 +655,24 @@ void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsHe[4] = 2.28772;
 			fBetheParamsHe[5] = 0.06;
 		} else {
-			//LHC18a2d (->LHC18)
+			//LHC20l7a (-> LHC18)
 			// He3
-			fBetheParamsHe[0] = 3.07104;
-			fBetheParamsHe[1] = 15.8085;
-			fBetheParamsHe[2] = 0.0150992;
-			fBetheParamsHe[3] = 2.13909;
-			fBetheParamsHe[4] = 2.59495;
-			fBetheParamsHe[5] = 0.0865179;
+			fBetheParamsHe[0] = 3.07067;
+			fBetheParamsHe[1] = 15.8069;
+			fBetheParamsHe[2] = -0.0142383;
+			fBetheParamsHe[3] = 2.15513;
+			fBetheParamsHe[4] = 2.5192;
+			fBetheParamsHe[5] = 0.06;
 			// Triton
-			fBetheParamsT[0] = 2.54486;
-			fBetheParamsT[1] = 17.1203;
-			fBetheParamsT[2] = -0.0452007;
-			fBetheParamsT[3] = 2.00988;
-			fBetheParamsT[4] = 0.849292;
-			fBetheParamsT[5] = 0.0768715;		
+			fBetheParamsT[0] = 2.95171;
+			fBetheParamsT[1] = 17.7223;
+			fBetheParamsT[2] = 37.7979;
+			fBetheParamsT[3] = 2.03313;
+			fBetheParamsT[4] = 0.730268;
+			fBetheParamsT[5] = 0.06;
 		}
 	}
-}	
-
+}
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 //_____________________________________________________________________________
