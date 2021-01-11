@@ -1255,7 +1255,25 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
       fBetheParamsT[5] = 0.06;
     } else { // MC
       if (runNumber >= 262424 || runNumber <= 256418 ) {
-	//LHC18a2b (->LHC16)
+
+
+	//LHC20l7c (-> LHC16)
+	// He3
+	fBetheParamsHe[0] = 2.74996;
+	fBetheParamsHe[1] = 13.98;
+	fBetheParamsHe[2] = 0.0251843;
+	fBetheParamsHe[3] = 2.04678;
+	fBetheParamsHe[4] = 1.37379;
+	fBetheParamsHe[5] = 0.06;
+	// Triton
+	fBetheParamsT[0] = 1.80227;
+	fBetheParamsT[1] = 16.8019;
+	fBetheParamsT[2] = 2.22419;
+	fBetheParamsT[3] = 2.30938;
+	fBetheParamsT[4] = 3.52324;
+	fBetheParamsT[5] = 0.06;
+
+	/*//LHC18a2b (->LHC16)
 	// He3
 	fBetheParamsHe[0] = 3.05245;
 	fBetheParamsHe[1] = 15.7252;
@@ -1269,10 +1287,27 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
 	fBetheParamsT[2] = 5.91594;
 	fBetheParamsT[3] = 1.93471;
 	fBetheParamsT[4] = 0.292147;
-	fBetheParamsT[5] = 0.0728241;
+	fBetheParamsT[5] = 0.0728241;*/
       }
       if (runNumber >= 256941 && runNumber <= 258537 ) {
-	// LHC18a2b2 (LHC16k)
+
+	//LHC20l7c (-> LHC16)
+	// He3
+	fBetheParamsHe[0] = 2.74996;
+	fBetheParamsHe[1] = 13.98;
+	fBetheParamsHe[2] = 0.0251843;
+	fBetheParamsHe[3] = 2.04678;
+	fBetheParamsHe[4] = 1.37379;
+	fBetheParamsHe[5] = 0.06;
+	// Triton
+	fBetheParamsT[0] = 1.80227;
+	fBetheParamsT[1] = 16.8019;
+	fBetheParamsT[2] = 2.22419;
+	fBetheParamsT[3] = 2.30938;
+	fBetheParamsT[4] = 3.52324;
+	fBetheParamsT[5] = 0.06;
+
+	/*// LHC18a2b2 (LHC16k)
 	// He3
 	fBetheParamsHe[0] = 2.80527;
 	fBetheParamsHe[1] = 14.2379;
@@ -1286,10 +1321,27 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
 	fBetheParamsT[2] = 493.036;
 	fBetheParamsT[3] = 2.10841;
 	fBetheParamsT[4] = 7.43391;
-	fBetheParamsT[5] = 0.0769041;
+	fBetheParamsT[5] = 0.0769041;*/
       }
       if (runNumber >= 258962 && runNumber <= 259888 ) {
-	//LHC18a2b3 (->LHC16l)
+
+	//LHC20l7c (-> LHC16)
+	// He3
+	fBetheParamsHe[0] = 2.74996;
+	fBetheParamsHe[1] = 13.98;
+	fBetheParamsHe[2] = 0.0251843;
+	fBetheParamsHe[3] = 2.04678;
+	fBetheParamsHe[4] = 1.37379;
+	fBetheParamsHe[5] = 0.06;
+	// Triton
+	fBetheParamsT[0] = 1.80227;
+	fBetheParamsT[1] = 16.8019;
+	fBetheParamsT[2] = 2.22419;
+	fBetheParamsT[3] = 2.30938;
+	fBetheParamsT[4] = 3.52324;
+	fBetheParamsT[5] = 0.06;
+	
+	/*//LHC18a2b3 (->LHC16l)
 	// He3
 	fBetheParamsHe[0] = 2.80121;
 	fBetheParamsHe[1] = 14.2397;
@@ -1303,7 +1355,7 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
 	fBetheParamsT[2] = 189.651;
 	fBetheParamsT[3] = 2.05969;
 	fBetheParamsT[4] = 4.38013;
-	fBetheParamsT[5] = 0.077593;
+	fBetheParamsT[5] = 0.077593;*/
       }
     }
   }
@@ -1325,7 +1377,24 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
       fBetheParamsT[4] = -1.25037;
       fBetheParamsT[5] = 0.06;
     } else {
-      // LHC18a2a (->LHC17)
+
+      //LHC20l7b (-> LHC17)
+      // He3
+      fBetheParamsHe[0] = 3.14546;
+      fBetheParamsHe[1] = 16.2277;
+      fBetheParamsHe[2] = -0.000523081;
+      fBetheParamsHe[3] = 2.28248;
+      fBetheParamsHe[4] = 2.60465;
+      fBetheParamsHe[5] = 0.06;
+      // Triton
+      fBetheParamsT[0] = 2.88676;
+      fBetheParamsT[1] = 15.3823;
+      fBetheParamsT[2] = 0.580675;
+      fBetheParamsT[3] = 2.28551;
+      fBetheParamsT[4] = 2.47351;
+      fBetheParamsT[5] = 0.06;
+      
+      /* // LHC18a2a (->LHC17)
       // He3
       fBetheParamsHe[0] = 3.12796;
       fBetheParamsHe[1] = 16.1359;
@@ -1339,7 +1408,7 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
       fBetheParamsT[2] = 3.18352;
       fBetheParamsT[3] = 2.20975;
       fBetheParamsT[4] = 0.218244;
-      fBetheParamsT[5] = 0.0780191;
+      fBetheParamsT[5] = 0.0780191;*/
     }
   }
   if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
@@ -1360,7 +1429,24 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
       fBetheParamsT[4] = 2.87755;
       fBetheParamsT[5] = 0.06;
     } else {
-      //LHC18a2d (->LHC18)
+
+      //LHC20l7a (-> LHC18)
+      // He3
+      fBetheParamsHe[0] = 3.07067;
+      fBetheParamsHe[1] = 15.8069;
+      fBetheParamsHe[2] = -0.0142383;
+      fBetheParamsHe[3] = 2.15513;
+      fBetheParamsHe[4] = 2.5192;
+      fBetheParamsHe[5] = 0.06;
+      // Triton
+      fBetheParamsT[0] = 2.95171;
+      fBetheParamsT[1] = 17.7223;
+      fBetheParamsT[2] = 37.7979;
+      fBetheParamsT[3] = 2.03313;
+      fBetheParamsT[4] = 0.730268;
+      fBetheParamsT[5] = 0.06;
+      
+      /*//LHC18a2d (->LHC18)
       // He3
       fBetheParamsHe[0] = 3.07104;
       fBetheParamsHe[1] = 15.8085;
@@ -1374,7 +1460,7 @@ void AliAnalysisTaskS3ParticleYields::SetBetheBlochParams(Int_t runNumber) {
       fBetheParamsT[2] = -0.0452007;
       fBetheParamsT[3] = 2.00988;
       fBetheParamsT[4] = 0.849292;
-      fBetheParamsT[5] = 0.0768715;
+      fBetheParamsT[5] = 0.0768715;*/
     }
   }
 }
