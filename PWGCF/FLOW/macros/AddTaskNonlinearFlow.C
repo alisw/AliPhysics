@@ -118,13 +118,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
-			if (fSystFlag == 0) {
-				inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
-				taskFlowEp->SetUseWeigthsRunByRun(true);
-                        } else {
-				inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/WeightsPbPb15o.root");
-				taskFlowEp->SetUseWeigthsRunByRun(true);
-                        }
+			// inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/WeightsPbPb15o.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC17")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
                     if (trigger == 0) {
