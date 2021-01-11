@@ -21,7 +21,6 @@
 #include "AliAnalysisDataContainer.h"
 
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-#include "PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -30,39 +29,45 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// The parameters for the analysis are:
 /// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
 /// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
-/// \param recalE    : Bool, recalibrate EMCal energy
-/// \param recalT    : Bool, recalibrate EMCal time
-/// \param rmBad     : Bool, remove bad channels
-/// \param nonLin    : Int, correct cluster non linearity
+/// \param recalE    : Bool, recalibrate EMCal energy all other settings for clusterization & EMCal calibration are handled by correction frame work and correspodning yaml file
 /// \param simu      : Bool, simulation or data.
+/// \param minClusterEnergy : Double, minimum cluster energy used for pairing (GeV)
+/// \param maxClusterEnergy : Double, maximum cluster energy used for pairing (GeV)
+/// \param minNCells : Int, minimum number of cells for clusters
+/// \param minClusterTime : Float, minimum cluster time (ns)
+/// \param maxClusterTime : Float, maximum cluster time (ns)
+/// \param maxDiffTimeClusterPair : Float, maximum cluster time difference between paired clusters (ns)
+/// \param bSameSM : Bool, switch on/off paring only in same SM
 /// \param outputFile: TString with name of output file (AnalysisResults.root).
 /// \param trigSuffix :  A string with the trigger class, abbreviated, to run multiple triggers in same train
 ///
-AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
-(TString calibPath = "", // "alienpath/RecalibrationFactors.root"
- TString trigger   = "",
- Bool_t  recalE    = kFALSE, 
- Bool_t  recalT    = kFALSE,
- Bool_t  rmBad     = kFALSE,
- Int_t   nonlin    = 0,
- Bool_t  simu      = kFALSE,
- TString outputFile = "", // AnalysisResults.root
- const char *trigSuffix = ""
+AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
+  TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
+  TString trigger                = "",
+  Bool_t  recalE                 = kFALSE, 
+  Bool_t  simu                   = kFALSE,
+  Double_t minClusterEnergy      = 0.7,
+  Double_t maxClusterEnergy      = 10,
+  Int_t minNCells                = 2,
+  Float_t minClusterTime         = 300,  // 560 ns in Run1
+  Float_t maxClusterTime         = 800,  // 610 ns in Run1
+  Float_t maxDiffTimeClusterPair = 100,  //  20 ns in Run1  
+  Bool_t bSameSM                 = kTRUE,
+  TString outputFile             = "", // AnalysisResults.root
+  const char *trigSuffix         = ""
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
-  {
+  if (!mgr) {
     ::Error("AddTaskEMCALTriggerQA", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler()) 
-  {
+  if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskEMCALPi0Calibration", "This task requires an input event handler");
     return NULL;
   }
@@ -73,62 +78,31 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
   AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection(Form("EMCALPi0Calibration_%s",trigger.Data()));
   //pi0calib->SetDebugLevel(10); 
   //pi0calib->UseFilteredEventAsInput();
-  pi0calib->SetClusterMinEnergy(0.7);
-  pi0calib->SetClusterMaxEnergy(10.);
+  pi0calib->SetClusterMinEnergy(minClusterEnergy);
+  pi0calib->SetClusterMaxEnergy(maxClusterEnergy);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
   
   pi0calib->SetAsymmetryCut(1.);
-  pi0calib->SetClusterMinNCells(1);
+  pi0calib->SetClusterMinNCells(minNCells);
   pi0calib->SetNCellsGroup(0);
-  pi0calib->SwitchOnSameSM();
+  if (bSameSM) pi0calib->SwitchOnSameSM();
+    else pi0calib->SwitchOffSameSM();
   
   // Timing cuts
-  pi0calib->SetPairDTimeCut(100);   //  20 ns in Run1  
-  pi0calib->SetClusterMinTime(300); // 560 ns in Run1
-  pi0calib->SetClusterMaxTime(800); // 610 ns in Run1
+  pi0calib->SetPairDTimeCut(maxDiffTimeClusterPair);   
+  pi0calib->SetClusterMinTime(minClusterTime); 
+  pi0calib->SetClusterMaxTime(maxClusterTime); 
 
   pi0calib->SetTriggerName(trigger);
   
-  // Centrality selection
-//  pi0calib->SwitchOnCentrality();
-//  pi0calib->SetCentralityRange(50.,90.);
-//  pi0calib->SetCentralityClass("V0M");
-  
-  //
-  // Cluster recalculation, Reco Utils configuration
-  //
-  AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
-  
-  // Root5
-#if defined(__CINT__)
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-
-#endif
-  
-  ConfigureEMCALRecoUtils(reco,
-                          simu,                             
-                          kTRUE, // exotic
-                          nonlin,
-                          recalE, 
-                          rmBad,
-                          recalT); 
-  
-  reco->SetNumberOfCellsFromEMCALBorder(0); // Do not remove clusters in borders!
-  
   // recalibrate energy and do corrections because of Temperature corrections 
   pi0calib->SwitchOnClusterCorrection();
-  reco->SwitchOnRecalibration();
-  reco->SwitchOnRunDepCorrection();
-  
-  //reco->Print("");
-  
+    
   //---------------------
   // Geometry alignment
   //---------------------
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
-
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
   
   //---------------------
@@ -139,18 +113,15 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
   
   pi0calib->SetCalibrationFilePath(calibPath);
   
-  if(calibPath != "" && recalE)
-  {
+  if(calibPath != "" && recalE){
     printf("AddTaskEMCALPi0Calibration - Get the energy calibration factors from: \n %s \n",calibPath.Data());
+    printf("OVERWRITING original factors from OADB");
     pi0calib->InitEnergyCalibrationFactors();
   }
    
-  if(!recalE)
-  {
+  if(!recalE){
     // Do not calibrate anything
     // First iteration, just fill histograms, switch off recalculation
-    reco->SwitchOffRecalibration();
-    reco->SwitchOffRunDepCorrection(); // Careful!!!, activate when T corrections are available.
     pi0calib->SwitchOffLoadOwnGeometryMatrices();
     pi0calib->SwitchOffRecalculatePosition();
     printf("AddTaskEMCALPi0Calibration - Pi0 Calibration: Do not recalculate the clusters! First iteration. \n");
@@ -167,13 +138,10 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
                                                                                                 
                                                                                                 
   AliAnalysisDataContainer *coutput = 0; 
-  if( wagon.Length()==0 )
-  {
+  if( wagon.Length()==0 ){
     coutput = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,outputFile.Data());
-  }
-  else
-  {
+  } else {
     TString containerName = "Pi0Calibration";
     coutput = mgr->CreateContainer(wagon, TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
