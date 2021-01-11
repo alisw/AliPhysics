@@ -2055,25 +2055,26 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           if (fIsMC>1) fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContamination_multipel_InvMassPt[iCut]);
 
-          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Pos",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
+          //,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->Sumw2();
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2})", NameNDMLatex.Data()));
           fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM[iCut]);
 
-          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_FixedPzNDM_Neg",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->Sumw2();
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2})", NameNDMLatex.Data()));
           fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM[iCut]);
 
-          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Pos",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->Sumw2();
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2})", NameNDMLatex.Data()));
           fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM[iCut]);
 
-          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg",HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz,HistoNMassBins,HistoMassRange[0],HistoMassRangeDalitz);
+          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]    = new TH2F("ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg","ESD_TrueMotherPiPlPiMiNDM_DalitzPlot_SubNDM_Neg",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->Sumw2();
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
           fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2})", NameNDMLatex.Data()));
