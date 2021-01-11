@@ -324,8 +324,9 @@ public:
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
     Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
-    Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
     void IdentifyRecV0PDG(Double_t fMassK0, Double_t fMassLambda, Double_t fMassAntiLambda, Bool_t& isK0, Bool_t& IsLambda, Bool_t& IsAntiLambda);
+    Bool_t PerformV0AcceptanceCuts(Double_t V0pt, Double_t V0y, Double_t V0PosDaughpt, Double_t V0PosDaughEta,Double_t V0NegDaughpt, Double_t V0NegDaughEta);
+    Bool_t PerformV0MCAcceptanceCuts(const AliAODMCParticle* pAODMother, AliAODMCParticle* pAODPosDaugh,AliAODMCParticle* pAODNegDaugh,Bool_t& bV0MCIsK0s,Bool_t& bV0MCIsLambda,Bool_t& bV0MCIsALambda);
     //void GetGeneratedV0();
     void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP);
     Double_t FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs,Int_t iCount, Int_t iLevel);
@@ -707,7 +708,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 74)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 75)
 };
 
 #endif
