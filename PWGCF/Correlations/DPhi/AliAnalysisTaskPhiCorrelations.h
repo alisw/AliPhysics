@@ -133,7 +133,7 @@ public:
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void SetFillpT(Bool_t flag) { fFillpT = flag; }
-  void SetStepsFillSkip(Bool_t step0, Bool_t step6) { fFillOnlyStep0 = step0; fSkipStep6 = step6; }
+  void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step9) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep9 = step9 }
   void SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
   void SetRejectZeroTrackEvents(Bool_t flag) { fRejectZeroTrackEvents = flag; }
   void SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
@@ -304,6 +304,7 @@ private:
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Bool_t fFillOnlyStep0;         // fill only step 0
   Bool_t fSkipStep6;             // skip step 6 when filling
+  Bool_t fSkipStep9;             // skip step 9 when filling
   Bool_t fRejectCentralityOutliers; // enable rejection of outliers in centrality vs no track correlation. Interferes with the event plane dependence code
   Bool_t fRejectZeroTrackEvents; // reject events which have no tracks (using the eta, pT cuts defined)
   Bool_t fRemoveWeakDecays;      // remove secondaries from weak decays from tracks and particles
@@ -341,7 +342,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 62); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 63); // Analysis task for delta phi correlations
 };
 
 #endif
