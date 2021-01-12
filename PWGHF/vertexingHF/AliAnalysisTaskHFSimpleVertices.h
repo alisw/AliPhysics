@@ -53,22 +53,26 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
-  Int_t SelectInvMassAndPtDzero(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
+  Int_t SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
 
 
   Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t DplusSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t DsSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t LcSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand,AliESDtrack* trk_p,AliESDtrack* trk_n,AliESDVertex* primvtx,float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
   
+  enum ESelBits2prong {kbitDzero = 0,kbitDzerobar,kbitJpsi};
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBins = 100, kNCutVarsDzero=11};
+  enum {kMaxNPtBinsJpsi = 9, kNCutVarsJpsi=4};
   enum { kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
 
   TList*  fOutput;                   //!<!  list of output histos
@@ -116,7 +120,24 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistD0SignalVertZ;          //!<!  histo of D0 (MC truth) vertex z
   TH1F* fHistInvMassD0Signal;        //!<!  histo with D0 (MC truth) inv mass
   TH1F* fHistInvMassD0Refl;          //!<!  histo with D0 (reflection) inv mass
-  
+ 
+  TH1F* fHistInvMassJpsi;              //!<!  histo with Jpsi inv mass
+  TH1F* fHistPtJpsi;                   //!<!  histo with Jpsi pt
+  TH1F* fHistPtJpsiDau0;               //!<!  histo with Jpsi prong pt
+  TH1F* fHistPtJpsiDau1;
+  TH1F* fHistImpParJpsiDau0;           //!<!  histo with Jpsi prong d0
+  TH1F* fHistImpParJpsiDau1;
+  TH1F* fHistd0Timesd0Jpsi;              //!<!  histo with d0xd0
+  TH1F* fHistCosPointJpsi;             //!<!  histo with Jpsi cosine of pointing angle
+  TH1F* fHistDecLenJpsi;               //!<!  histo with Jpsi decay length
+  TH1F* fHistDecLenXYJpsi;             //!<!  histo with Jpsi decay length XY
+  TH1F* fHistDecLenErrJpsi;            //!<!  histo with Jpsi decay length err
+  TH1F* fHistDecLenXYErrJpsi;          //!<!  histo with Jpsi decay length XY err
+  TH1F* fHistJpsiSignalVertX;          //!<!  histo of Jpsi (MC truth) vertex x
+  TH1F* fHistJpsiSignalVertY;          //!<!  histo of Jpsi (MC truth) vertex y
+  TH1F* fHistJpsiSignalVertZ;          //!<!  histo of Jpsi (MC truth) vertex z
+  TH1F* fHistInvMassJpsiSignal;        //!<!  histo with Jpsi (MC truth) inv mass
+
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
   TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
   TH1F* fHistPtDplusDau0;            //!<!  histo with D+ prong pt
@@ -165,6 +186,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
   
   Double_t fMassDzero;         // D0 mass from PDG
+  Double_t fMassJpsi;          // Jpsi mass from PDG
   Double_t fMassDplus;         // D+ mass from PDG
   Double_t fMassDs;            // D_s mass from PDG
   Double_t fMassLambdaC;       // Lc mass from PDG
@@ -184,18 +206,25 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLims[kMaxNPtBins];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
+  Double_t fMinPtJpsi;                // Jpsi min pt
+  Double_t fMaxPtJpsi;                // Jpsi max pt
   Int_t    fCandidateCutLevel;        // Cuts: 0 = no, 1 = skim, 2 = analysis
   Double_t fDzeroSkimCuts[5];         // D0 skimming cuts
+  Double_t fJpsiSkimCuts[5];          // Jpsi skimming cuts
   Double_t fDplusSkimCuts[5];         // D0 skimming cuts
   Double_t fDsSkimCuts[5];            // D0 skimming cuts
   Double_t fLcSkimCuts[5];            // D0 skimming cuts
   Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
+  Double_t fJpsiCuts[kMaxNPtBinsJpsi][kNCutVarsJpsi]; // Jpsi cuts
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
 
+  Int_t fNPtBinsJpsi;
   Int_t fNPtBinsLc;                             // Number of pt bins
+  Int_t fSelectJpsi;
   Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBins+1] limits of pt bins
+  Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
