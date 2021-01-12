@@ -62,6 +62,8 @@ protected:
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
    Bool_t      TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
+   Bool_t      TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
+   Bool_t      AODTrackAccepted(AliAODTrack* t);
    
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Int_t            fpT_Tolerance=0;     // Switch to set pT dependent Mass Tolerance
