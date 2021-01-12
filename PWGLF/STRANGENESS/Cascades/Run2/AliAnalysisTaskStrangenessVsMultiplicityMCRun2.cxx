@@ -113,6 +113,17 @@ class AliAODv0;
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityMCRun2.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
+
+#include "AliESDInputHandlerRP.h"
+#include "AliITSRecPoint.h"
+#include "AliTrackPointArray.h"
+#include "AliITSgeomTGeo.h"
+#include <TGeoManager.h>
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
+#include "AliGRPManager.h"
+#include <TGeoGlobalMagField.h>
 
 using std::cout;
 using std::endl;
@@ -177,6 +188,13 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkDoStrangenessTracking (kFALSE),
+fkAddPVToRecPointFinder( kTRUE ),
+fkUseLayer1(kTRUE),
+fkUseLayer2(kTRUE),
+fkDistanceLayer1(0.5),
+fkDistanceLayer2(0.5),
+fWDV (0x0),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -357,6 +375,8 @@ fTreeCascVarDCANegToPrimVtx(0),
 fTreeCascVarCascCosPointingAngle(0),
 fTreeCascVarCascDCAtoPVxy(0),
 fTreeCascVarCascDCAtoPVz(0),
+fTreeCascVarCascDCAtoPVxyTracked(0),
+fTreeCascVarCascDCAtoPVzTracked(0),
 fTreeCascVarCascRadius(0),
 fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
@@ -613,6 +633,10 @@ fTreeCascVarV0AntiLambdaMassError(0),
 fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
+fTreeCascVarIsValidAddedITSPointLayer1(kFALSE),
+fTreeCascVarIsValidAddedITSPointLayer2(kFALSE),
+fTreeCascVarAddedHitLayer1(kFALSE),
+fTreeCascVarAddedHitLayer2(kFALSE),
 
 fTreeCascVarIsCowboy(kFALSE),
 fTreeCascVarCowboyness(-2),
@@ -632,6 +656,37 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
+fRecPointRadii(0),
+
+fRecPointDz(0),
+fRecPointDxy(0),
+fRecPointD(0),
+fRecPoint2D(0),
+fRecPointDzAssoc(0),
+fRecPointDxyAssoc(0),
+fRecPointDAssoc(0),
+fRecPoint2DAssoc(0),
+
+fRecPointOuterDz(0),
+fRecPointOuterDxy(0),
+fRecPointOuterD(0),
+fRecPointOuter2D(0),
+fRecPointOuterDzAssoc(0),
+fRecPointOuterDxyAssoc(0),
+fRecPointOuterDAssoc(0),
+fRecPointOuter2DAssoc(0),
+
+fRecPointPosition(0),
+fRecPointNz(0),
+fRecPointNy(0),
+fRecPointQ(0),
+fRecPointNpixels(0),
+fRecPointNzAssoc(0),
+fRecPointNyAssoc(0),
+fRecPointQAssoc(0),
+fRecPointNpixelsAssoc(0),
+fHitMapLayer1(0),
+fHitMapLayer2(0),
 //V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
@@ -668,7 +723,7 @@ fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkAlwaysKeepTrue( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
-fkDoImprovedCascadeVertexFinding(kFALSE),
+fkDoImprovedCascadeVertexFinding(kTRUE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
 fkIfImprovedExtraPrecisionFactor ( 1.0 ),
 fkDebugWrongPIDForTracking ( kFALSE ),
@@ -707,6 +762,13 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkDoStrangenessTracking (kFALSE),
+fkAddPVToRecPointFinder( kTRUE),
+fkUseLayer1(kTRUE),
+fkUseLayer2(kTRUE),
+fkDistanceLayer1(0.5),
+fkDistanceLayer2(0.5),
+fWDV (0x0),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -887,6 +949,12 @@ fTreeCascVarDCANegToPrimVtx(0),
 fTreeCascVarCascCosPointingAngle(0),
 fTreeCascVarCascDCAtoPVxy(0),
 fTreeCascVarCascDCAtoPVz(0),
+fTreeCascVarCascDCAtoPVxyTracked(0),
+fTreeCascVarCascDCAtoPVzTracked(0),
+fTreeCascVarLayer1_AddedHitD(0),
+fTreeCascVarLayer1_TrueHitD(0),
+fTreeCascVarLayer2_AddedHitD(0),
+fTreeCascVarLayer2_TrueHitD(0),
 fTreeCascVarCascRadius(0),
 fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
@@ -1143,6 +1211,10 @@ fTreeCascVarV0AntiLambdaMassError(0),
 fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
+fTreeCascVarIsValidAddedITSPointLayer1(0),
+fTreeCascVarIsValidAddedITSPointLayer2(0),
+fTreeCascVarAddedHitLayer1(0),
+fTreeCascVarAddedHitLayer2(0),
 
 fTreeCascVarIsCowboy(kFALSE),
 fTreeCascVarCowboyness(-2),
@@ -1162,6 +1234,38 @@ fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
+fRecPointRadii(0),
+fRecPointDz(0),
+fRecPointDxy(0),
+fRecPointD(0),
+fRecPoint2D(0),
+fRecPointDzAssoc(0),
+fRecPointDxyAssoc(0),
+fRecPointDAssoc(0),
+fRecPoint2DAssoc(0),
+
+fRecPointOuterDz(0),
+fRecPointOuterDxy(0),
+fRecPointOuterD(0),
+fRecPointOuter2D(0),
+fRecPointOuterDzAssoc(0),
+fRecPointOuterDxyAssoc(0),
+fRecPointOuterDAssoc(0),
+fRecPointOuter2DAssoc(0),
+
+fRecPointPosition(0),
+fRecPointNz(0),
+fRecPointNy(0),
+fRecPointQ(0),
+fRecPointNpixels(0),
+fRecPointNzAssoc(0),
+fRecPointNyAssoc(0),
+fRecPointQAssoc(0),
+fRecPointNpixelsAssoc(0),
+fRecPointNyNz(0),
+fRecPointNyNzAssoc(0),
+fHitMapLayer1(0),
+fHitMapLayer2(0),
 //V0s
 fHistGeneratedPtVsYVsCentralityK0Short(0),
 fHistGeneratedPtVsYVsCentralityLambda(0),
@@ -1509,7 +1613,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarCascCosPointingAngle",&fTreeCascVarCascCosPointingAngle,"fTreeCascVarCascCosPointingAngle/F");
         fTreeCascade->Branch("fTreeCascVarCascDCAtoPVxy",&fTreeCascVarCascDCAtoPVxy,"fTreeCascVarCascDCAtoPVxy/F");
         fTreeCascade->Branch("fTreeCascVarCascDCAtoPVz",&fTreeCascVarCascDCAtoPVz,"fTreeCascVarCascDCAtoPVz/F");
-        
+      fTreeCascade->Branch("fTreeCascVarCascDCAtoPVxyTracked",&fTreeCascVarCascDCAtoPVxyTracked,"fTreeCascVarCascDCAtoPVxyTracked/F");
+      fTreeCascade->Branch("fTreeCascVarCascDCAtoPVzTracked",&fTreeCascVarCascDCAtoPVzTracked,"fTreeCascVarCascDCAtoPVzTracked/F");
+      fTreeCascade->Branch("fTreeCascVarIsValidAddedITSPointLayer1",&fTreeCascVarIsValidAddedITSPointLayer1,"fTreeCascVarIsValidAddedITSPointLayer1/O");
+      fTreeCascade->Branch("fTreeCascVarIsValidAddedITSPointLayer2",&fTreeCascVarIsValidAddedITSPointLayer2,"fTreeCascVarIsValidAddedITSPointLayer2/O");
+      
+      fTreeCascade->Branch("fTreeCascVarLayer1_AddedHitD",&fTreeCascVarLayer1_AddedHitD,"fTreeCascVarLayer1_AddedHitD/F");
+      fTreeCascade->Branch("fTreeCascVarLayer1_TrueHitD",&fTreeCascVarLayer1_TrueHitD,"fTreeCascVarLayer1_TrueHitD/F");
+      fTreeCascade->Branch("fTreeCascVarLayer2_AddedHitD",&fTreeCascVarLayer2_AddedHitD,"fTreeCascVarLayer2_AddedHitD/F");
+      fTreeCascade->Branch("fTreeCascVarLayer2_TrueHitD",&fTreeCascVarLayer2_TrueHitD,"fTreeCascVarLayer2_TrueHitD/F");
+      
+      fTreeCascade->Branch("fTreeCascVarAddedHitLayer1",&fTreeCascVarAddedHitLayer1,"fTreeCascVarAddedHitLayer1/O");
+      fTreeCascade->Branch("fTreeCascVarAddedHitLayer2",&fTreeCascVarAddedHitLayer2,"fTreeCascVarAddedHitLayer2/O");
         fTreeCascade->Branch("fTreeCascVarCascRadius",&fTreeCascVarCascRadius,"fTreeCascVarCascRadius/F");
         fTreeCascade->Branch("fTreeCascVarV0Mass",&fTreeCascVarV0Mass,"fTreeCascVarV0Mass/F");
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngle",&fTreeCascVarV0CosPointingAngle,"fTreeCascVarV0CosPointingAngle/F");
@@ -1849,6 +1964,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     if( !fESDtrackCutsITSsa2010 && fkDebugOOBPileup ) {
         fESDtrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     }
+  
+  if( !fWDV ){
+    fWDV = new AliAnalysisTaskWeakDecayVertexer();
+    fWDV->SetUseImprovedFinding();
+  }
     
     //------------------------------------------------
     // V0 Multiplicity Histograms
@@ -1930,6 +2050,137 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fListHist->Add(fHistGeneratedPtVsYVsCentralityAntihypertriton);
     }
     
+  if(!fRecPointRadii){
+    fRecPointRadii = new TH1D( "fRecPointRadii", "",500,0,50);
+    fListHist->Add(fRecPointRadii);
+  }
+  
+  //Layer 1 Information
+  if(!fRecPointDz){
+    fRecPointDz = new TH1D( "fRecPointDz", "",2000,0,50);
+    fListHist->Add(fRecPointDz);
+  }
+  if(!fRecPointDxy){
+    fRecPointDxy = new TH1D( "fRecPointDxy", "",2000,0,50);
+    fListHist->Add(fRecPointDxy);
+  }
+  if(!fRecPointD){
+    fRecPointD = new TH1D( "fRecPointD", "",2000,0,50);
+    fListHist->Add(fRecPointD);
+  }
+  if(!fRecPoint2D){
+    fRecPoint2D = new TH2D("fRecPoint2D", "", 200,0,20, 200,0,20);
+    fListHist->Add(fRecPointOuter2D);
+  }
+  if(!fRecPointDzAssoc){
+    fRecPointDzAssoc = new TH1D( "fRecPointDzAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointDzAssoc);
+  }
+  if(!fRecPointDxyAssoc){
+    fRecPointDxyAssoc = new TH1D( "fRecPointDxyAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointDxyAssoc);
+  }
+  if(!fRecPointDAssoc){
+    fRecPointDAssoc = new TH1D( "fRecPointDAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointDAssoc);
+  }
+  if(!fRecPoint2DAssoc){
+    fRecPoint2DAssoc = new TH2D("fRecPoint2DAssoc", "", 200,0,20, 200,0,20);
+    fListHist->Add(fRecPoint2DAssoc);
+  }
+  
+
+  //Layer 2 Information
+  if(!fRecPointOuterDz){
+    fRecPointOuterDz = new TH1D( "fRecPointOuterDz", "",2000,0,50);
+    fListHist->Add(fRecPointOuterDz);
+  }
+  if(!fRecPointOuterDxy){
+    fRecPointOuterDxy = new TH1D( "fRecPointOuterDxy", "",2000,0,50);
+    fListHist->Add(fRecPointOuterDxy);
+  }
+  if(!fRecPointOuterD){
+    fRecPointOuterD = new TH1D( "fRecPointOuterD", "",2000,0,50);
+    fListHist->Add(fRecPointOuterD);
+  }
+  if(!fRecPointOuter2D){
+    fRecPointOuter2D = new TH2D("fRecPointOuter2D", "", 200,0,20, 200,0,20);
+    fListHist->Add(fRecPointOuter2D);
+  }
+  if(!fRecPointOuterDzAssoc){
+    fRecPointOuterDzAssoc = new TH1D( "fRecPointOuterDzAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointOuterDzAssoc);
+  }
+  if(!fRecPointOuterDxyAssoc){
+    fRecPointOuterDxyAssoc = new TH1D( "fRecPointOuterDxyAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointOuterDxyAssoc);
+  }
+  if(!fRecPointOuterDAssoc){
+    fRecPointOuterDAssoc = new TH1D( "fRecPointOuterDAssoc", "",2000,0,50);
+    fListHist->Add(fRecPointOuterDAssoc);
+  }
+  if(!fRecPointOuter2DAssoc){
+    fRecPointOuter2DAssoc = new TH2D("fRecPointOuter2DAssoc", "", 200,0,20, 200,0,20);
+    fListHist->Add(fRecPointOuter2DAssoc);
+  }
+  
+    if(!fRecPointPosition){
+    fRecPointPosition = new TH2D("fRecPointPosition", "", 800,-20,20, 800,-20,20);
+    fListHist->Add(fRecPointPosition);
+  }
+
+
+  if(!fRecPointNy){
+    fRecPointNy = new TH1D("fRecPointNy", "", 15,0,15);
+    fListHist->Add(fRecPointNy);
+  }
+  if(!fRecPointNz){
+    fRecPointNz = new TH1D("fRecPointNz", "", 15,0,15);
+    fListHist->Add(fRecPointNz);
+  }
+  if(!fRecPointNpixels){
+    fRecPointNpixels = new TH1D("fRecPointNpixels", "", 15,0,15);
+    fListHist->Add(fRecPointNpixels);
+  }
+  if(!fRecPointQ){
+    fRecPointQ = new TH1D("fRecPointQ", "", 30,-15,15);
+    fListHist->Add(fRecPointQ);
+  }
+  if(!fRecPointNyAssoc){
+    fRecPointNyAssoc = new TH1D("fRecPointNyAssoc", "", 15,0,15);
+    fListHist->Add(fRecPointNyAssoc);
+  }
+  if(!fRecPointNzAssoc){
+    fRecPointNzAssoc = new TH1D("fRecPointNzAssoc", "", 15,0,15);
+    fListHist->Add(fRecPointNzAssoc);
+  }
+  if(!fRecPointNpixelsAssoc){
+    fRecPointNpixelsAssoc = new TH1D("fRecPointNpixelsAssoc", "", 15,0,15);
+    fListHist->Add(fRecPointNpixelsAssoc);
+  }
+  if(!fRecPointQAssoc){
+    fRecPointQAssoc = new TH1D("fRecPointQAssoc", "", 30,-15,15);
+    fListHist->Add(fRecPointQAssoc);
+  }
+  
+  if(!fRecPointNyNz){
+    fRecPointNyNz = new TH2D("fRecPointNyNz", "", 10,0,10, 10,0,10);
+    fListHist->Add(fRecPointNyNz);
+  }
+  if(!fRecPointNyNzAssoc){
+    fRecPointNyNzAssoc = new TH2D("fRecPointNyNzAssoc", "", 10,0,10, 10,0,10);
+    fListHist->Add(fRecPointNyNzAssoc);
+  }
+  
+  if(!fHitMapLayer1){
+    fHitMapLayer1 = new TH2D("fHitMapLayer1", "", 200,-TMath::Pi(),+TMath::Pi(), 200, -100,100);
+    fListHist->Add(fHitMapLayer1);
+  }
+  if(!fHitMapLayer2){
+    fHitMapLayer2 = new TH2D("fHitMapLayer2", "", 200,-TMath::Pi(),+TMath::Pi(), 200, -100,100);
+    fListHist->Add(fHitMapLayer2);
+  }
+  
     //Superlight mode output
     if ( !fListK0Short    ){ fListK0Short    = new TList();    fListK0Short->SetOwner();    }
     if ( !fListLambda     ){ fListLambda     = new TList();    fListLambda->SetOwner();     }
@@ -3573,7 +3824,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             //V0 re-estimated, proceed to calculating cascade decay vertex
             AliESDv0 *pv0=&vertex;
             AliExternalTrackParam bt(*bachTrackXi), *pbt=&bt;
-            Double_t dcaCascade=PropagateToDCA(pv0,pbt,lESDevent, lMagneticField); //propagate call
+            Double_t dcaCascade=PropagateToDCA(pv0,pbt,lMagneticField); //propagate call
             fTreeCascVarDCADaughters_Test = dcaCascade;
             
             //_____________________________________________________________________________
@@ -3935,32 +4186,67 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //lAlphaXi  = xi->AlphaXi();
         //lPtArmXi  = xi->PtArmXi();
         
-        //----------------------------------------
-        // Calculate Cascade DCA to PV, please
-        //----------------------------------------
-        
-        Int_t lChargeCascade = fTreeCascVarCharge;
-        
-        //cascade properties to get started
-        Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
-        for(Int_t ii=0;ii<21;ii++) cvCascade[ii]=0.0; //something small
-        
-        xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
-        xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
-        
-        AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
-        
-        Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
-                                                             lBestPrimaryVtxPos[1],
-                                                             lMagneticField) );
-        Float_t dzcascade[2];
-        hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
-        Double_t lCascDCAtoPVz = dzcascade[1];
-        
-        //assign TTree values
-        fTreeCascVarCascDCAtoPVxy = lCascDCAtoPVxy;
-        fTreeCascVarCascDCAtoPVz  = lCascDCAtoPVz;
-        
+      //----------------------------------------
+      // Calculate Cascade DCA to PV, please
+      //----------------------------------------
+      
+      Int_t lChargeCascade = fTreeCascVarCharge;
+      
+      //Acquire cascade covariance matrix, please
+      Double_t xyzCascade[3], pxpypzCascade[3], cvCascade[21];
+    for(Int_t ii=0; ii<21; ii++) cvCascade[ii]=0;
+    
+      xi->GetXYZcascade( xyzCascade[0],  xyzCascade[1], xyzCascade[2] );
+      xi->GetPxPyPz( pxpypzCascade[0], pxpypzCascade[1], pxpypzCascade[2] );
+    
+    Double_t posCovXi[6];
+    xi->GetPosCovXi(posCovXi);
+    for(Int_t ii=0; ii<6; ii++) cvCascade[ii]=posCovXi[ii]; //position information
+    
+    //Will need to extract momentum information -> propagate tracks to minima again and sum
+    AliExternalTrackParam nt(*nTrackXi), pt(*pTrackXi), bt(*bachTrackXi);
+    AliExternalTrackParam *ntp=&nt, *ptp=&pt, *btp=&bt;
+    Double_t xn, xp, xb;
+    
+    fWDV->GetDCAV0Dau(ptp, ntp, xp, xn, lMagneticField, 0.139, 0.139);
+    nt.PropagateTo(xn,lMagneticField);
+    pt.PropagateTo(xp,lMagneticField);
+    
+    Double_t pCovMat[21], nCovMat[21], bCovMat[21];
+    pt.GetCovarianceXYZPxPyPz(pCovMat);
+    nt.GetCovarianceXYZPxPyPz(nCovMat);
+    
+    //use these tracks to create a V0
+    AliESDv0 v0vertex(nt,0,pt,1), *v0vertexptr = &v0vertex;
+    v0vertex.Refit();
+    Double_t dcacasctest=PropagateToDCA(v0vertexptr,btp,lMagneticField);
+    
+    //if(!btp){ printf("Problem with bachelor covariance! Abort.\n"); return; }
+    Bool_t getCov = btp->GetCovarianceXYZPxPyPz(bCovMat);
+    //if(!getCov){ printf("Problem with bachelor covariance, not calculated! Abort.\n"); return; }
+    
+    const int momInd[6] = {9, 13, 14, 18, 19, 20}; // cov matrix elements for momentum component
+    for (int i = 0; i < 6; i++) {
+      int j = momInd[i];
+      cvCascade[j] = pCovMat[j]+pCovMat[j]+bCovMat[j];
+    }
+    
+    AliExternalTrackParam lCascTrajObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTraj = &lCascTrajObject;
+    AliExternalTrackParam lCascTrajRPFinderObject(xyzCascade,pxpypzCascade,cvCascade,lChargeCascade), *hCascTrajRPFinder = &lCascTrajObject;
+    
+    Double_t lCascDCAtoPVxy = TMath::Abs(hCascTraj->GetD(lBestPrimaryVtxPos[0],
+                                                         lBestPrimaryVtxPos[1],
+                                                         lMagneticField) );
+    Float_t dzcascade[2];
+    hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+    Double_t lCascDCAtoPVz = dzcascade[1];
+    
+    //assign TTree values
+    fTreeCascVarCascDCAtoPVxy = dzcascade[0];
+    fTreeCascVarCascDCAtoPVz  = dzcascade[1];
+    
+  
+  
         //------------------------------------------------
         // Associate Cascade Candidates to Monte Carlo!
         //------------------------------------------------
@@ -4060,7 +4346,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarDCABachToBaryon = -100;
         
         Double_t bMag = lESDevent->GetMagneticField();
-        Double_t xn, xp;
+        //Double_t xn, xp;
         
         //Care has to be taken here
         if ( lBaryonTrack && lBachelorTrack ){
@@ -4838,7 +5124,246 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //----------------------------------------
         // Swapped MC ASSOCIATION ENDS HERE
         //----------------------------------------
+            
+      //Experimental: loop over ITS recpoints, attempt to find matching hit
+      //Start out with standard values
+      fTreeCascVarCascDCAtoPVxyTracked=fTreeCascVarCascDCAtoPVxy;
+      fTreeCascVarCascDCAtoPVzTracked=fTreeCascVarCascDCAtoPVz;
+      fTreeCascVarIsValidAddedITSPointLayer1 = kFALSE;
+      fTreeCascVarIsValidAddedITSPointLayer2 = kFALSE;
+      fTreeCascVarAddedHitLayer1 = kFALSE;
+      fTreeCascVarAddedHitLayer2 = kFALSE;
+      if(fkDoStrangenessTracking){
+        if( fkAddPVToRecPointFinder ){
+          // add primary vertex information to hCascTrajRPFinder
+          //classical Proton-proton like selection
+          //declared at top of task
+          //const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
+          //Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
+          Double_t pvcovmat[6];
+          lPrimaryBestESDVtx->GetCovMatrix(pvcovmat);
+          //Double32_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
+          double alpha = hCascTrajRPFinder->GetAlpha();
+          double xyz1[3]={ TMath::Cos(alpha)*lBestPrimaryVtxPos[0]+TMath::Sin(alpha)*lBestPrimaryVtxPos[1],
+            -TMath::Sin(alpha)*lBestPrimaryVtxPos[0]+TMath::Cos(alpha)*lBestPrimaryVtxPos[1],
+            lBestPrimaryVtxPos[2]};
+          Double_t covxyz1[3]={ std::hypot(pvcovmat[0],pvcovmat[2]), pvcovmat[4], pvcovmat[5]};
+          Double_t addpoint[2] = {xyz1[1], xyz1[2]};
+          //Propagate to PV, please
+          if(hCascTrajRPFinder->PropagateTo(xyz1[0],lMagneticField)){
+            hCascTrajRPFinder->Update(addpoint,pvcovmat);
+          }
+        }
+                
+        if (!gGeoManager) {
+          AliCDBManager::Instance()->SetRaw(1);
+          AliCDBManager::Instance()->SetRun(lESDevent->GetRunNumber());
+          AliGeomManager::LoadGeometry();
+          AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD");
+        }
+        if (!TGeoGlobalMagField::Instance()->GetField()) {
+          AliGRPManager gm;
+          if(!gm.ReadGRPEntry()) {
+            AliError("Cannot get GRP entry");
+          }
+          if( !gm.SetMagField() ) {
+            AliError("Problem with magnetic field setup");
+          }
+        }
         
+        AliESDInputHandlerRP *handRP = 0;
+        handRP = (AliESDInputHandlerRP*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+        if (!handRP) { printf("Strangeness tracking enabled, but no recpoint handler found! Quitting.\n"); return; }
+        
+        TTree*       fRPTree = 0x0;
+        fRPTree = handRP->GetTreeR("ITS");
+        if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
+        
+        TClonesArray statITSrec("AliITSRecPoint");
+        TClonesArray *ITSCluster = &statITSrec;
+        TBranch* branch=fRPTree->GetBranch("ITSRecPoints");
+        if(!branch) {
+          printf("NO treeRP branch available. Exiting...\n");
+          return;
+        }
+        
+        branch->SetAddress(&ITSCluster);
+        
+        fTreeCascVarLayer1_AddedHitD = 100;
+        fTreeCascVarLayer1_TrueHitD = 100;
+        fTreeCascVarLayer2_AddedHitD = 100;
+        fTreeCascVarLayer2_TrueHitD = 100;
+        
+        for (Int_t modId=0; modId<2198; modId++){
+          Int_t lay,lad,det;
+          AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
+          branch->GetEvent(modId);
+          Int_t nrecp = ITSCluster->GetEntries();
+          //First layer information
+          Int_t lClosestRecPoint = -1;
+          Double_t lClosestRecPointDistance = fkDistanceLayer1;
+          //Second layer information
+          Int_t lClosestRecPoint2 = -1;
+          Double_t lClosestRecPointDistance2 = fkDistanceLayer2;
+          
+          //loop over recpoints, please
+          for(Int_t irec=0;irec<nrecp;irec++) {
+            AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(irec);
+            Float_t xyz[3] = {0., 0., 0.};
+            Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
+            recp->GetGlobalXYZ(xyz);
+            recp->GetGlobalCov(covxyz);
+                        
+            //Check if this is a valid hit for this cascade
+            Bool_t lValid = kFALSE;
+            for(Int_t jj=0; jj<3; jj++) if ( fTreeCascVarBachLabelMother == abs(recp->GetLabel(jj)) &&
+                                            lPDGCodeCascade == 3312 &&
+                                            fTreeCascVarIsPhysicalPrimary &&
+                                            fTreeCascVarPIDBachelor == -211 &&
+                                            fTreeCascVarPIDNegative == -211 &&
+                                            fTreeCascVarPIDPositive == 2212 
+                                            ) lValid = kTRUE;
+            
+            //Look for hits to add in SPD layer 2
+            if(lXiRadius>8.0&&lay==2){
+              fHitMapLayer2->Fill(std::atan2(-xyz[1], -xyz[0]),xyz[2]);
+              //Determine associated hit in fist layer
+              if(lPosXi[0]*xyz[0]+lPosXi[1]*xyz[1]>0){
+                //Same hemisphere selection. Disregard others
+                hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
+                fRecPointOuterDxy->Fill(dzcascade[0]);
+                fRecPointOuterDz->Fill(dzcascade[1]);
+                fRecPointOuterD->Fill(std::hypot(dzcascade[0],dzcascade[1]));
+                fRecPointOuter2D->Fill(dzcascade[0], dzcascade[1]);
+                
+                if( lValid ){
+                  fRecPointOuterDxyAssoc->Fill(dzcascade[0]);
+                  fRecPointOuterDzAssoc->Fill(dzcascade[1]);
+                  fRecPointOuterDAssoc->Fill(std::hypot(dzcascade[0],dzcascade[1]));
+                  fRecPointOuter2DAssoc->Fill(dzcascade[0], dzcascade[1]);
+                }
+                
+                fRecPointPosition->Fill(xyz[0],xyz[1]);
+                hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
+                if(std::hypot(dzcascade[0],dzcascade[1])<lClosestRecPointDistance2 ){
+                  lClosestRecPoint2 = irec;
+                  lClosestRecPointDistance2 = std::hypot(dzcascade[0],dzcascade[1]);
+                  fTreeCascVarIsValidAddedITSPointLayer2 = lValid;
+                  if(lValid) fTreeCascVarLayer2_TrueHitD = std::hypot(dzcascade[0],dzcascade[1]);
+                  fTreeCascVarLayer2_AddedHitD = std::hypot(dzcascade[0],dzcascade[1]);
+                } //end good hit association check
+              } //end same-hemisphere check
+            } //end SPD layer 2 finding
+          } //end recpoint loop
+          
+          //Add hit in layer 2, if found
+          if( lClosestRecPointDistance2 < fkDistanceLayer2 && fkUseLayer2 ){
+            AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(lClosestRecPoint2);
+            Float_t xyz[3] = {0., 0., 0.};
+            Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
+            recp->GetGlobalXYZ(xyz);
+            recp->GetGlobalCov(covxyz);
+            double alpha = hCascTraj->GetAlpha();
+            double xyz1[3]={ TMath::Cos(alpha)*xyz[0]+TMath::Sin(alpha)*xyz[1],
+              -TMath::Sin(alpha)*xyz[0]+TMath::Cos(alpha)*xyz[1],
+              xyz[2]};
+            Double_t covxyz1[3]={ std::hypot(covxyz[0],covxyz[2]), 0, covxyz[5]};
+            Double_t addpoint[2] = {xyz1[1], xyz1[2]};
+            
+            if(hCascTraj->PropagateTo(xyz1[0],lMagneticField)){
+              fTreeCascVarAddedHitLayer2 = kTRUE;
+              hCascTraj->Update(addpoint,covxyz1);
+              hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+              
+              //assign TTree values
+              fTreeCascVarCascDCAtoPVxyTracked = dzcascade[0];
+              fTreeCascVarCascDCAtoPVzTracked  = dzcascade[1];
+            }
+          } //end add hit
+          
+          for(Int_t irec=0;irec<nrecp;irec++) {
+            AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(irec);
+            Float_t xyz[3] = {0., 0., 0.};
+            Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
+            recp->GetGlobalXYZ(xyz);
+            recp->GetGlobalCov(covxyz);
+            fRecPointRadii->Fill(std::hypot(xyz[0],xyz[1]));
+            
+            //Check if this is a valid hit for this cascade
+            Bool_t lValid = kFALSE;
+            for(Int_t jj=0; jj<3; jj++) if ( fTreeCascVarBachLabelMother == abs(recp->GetLabel(jj)) ) lValid = kTRUE;
+            
+            //Look for hits to add in SPD layer 1
+            if(lXiRadius>4.5&&lay==1){
+              fHitMapLayer1->Fill(std::atan2(-xyz[1], -xyz[0]),xyz[2]);
+              //Determine associated hit in fist layer
+              if(lPosXi[0]*xyz[0]+lPosXi[1]*xyz[1]>0){
+                //Same hemisphere selection. Disregard others
+                hCascTrajRPFinder->GetDZ(xyz[0], xyz[1], xyz[2], lMagneticField, dzcascade);
+                fRecPointDxy->Fill(dzcascade[0]);
+                fRecPointDz->Fill(dzcascade[1]);
+                fRecPointD->Fill(std::hypot(dzcascade[0],dzcascade[1]));
+                fRecPoint2D->Fill(dzcascade[0], dzcascade[1]);
+                
+                fRecPointPosition->Fill(xyz[0],xyz[1]);
+                fRecPointNz -> Fill( recp->GetNz() );
+                fRecPointNy -> Fill( recp->GetNy() );
+                fRecPointQ -> Fill( recp->IsUsed() );
+                fRecPointNpixels -> Fill( recp->GetNpixels() );
+                fRecPointNyNz -> Fill (recp->GetNy(), recp->GetNz());
+                //Check if correct particle
+                if( lValid ){
+                  fRecPointDxyAssoc->Fill(dzcascade[0]);
+                  fRecPointDzAssoc->Fill(dzcascade[1]);
+                  fRecPointDAssoc->Fill(std::hypot(dzcascade[0],dzcascade[1]));
+                  fRecPoint2DAssoc->Fill(dzcascade[0], dzcascade[1]);
+                  
+                  fRecPointNzAssoc -> Fill( recp->GetNz() );
+                  fRecPointNyAssoc -> Fill( recp->GetNy() );
+                  fRecPointQAssoc -> Fill( recp->IsUsed() );
+                  fRecPointNpixelsAssoc -> Fill( recp->GetNpixels() );
+                  fRecPointNyNzAssoc -> Fill (recp->GetNy(), recp->GetNz());
+                }
+                //Early test for strangeness tracking
+                
+                if(std::hypot(dzcascade[0],dzcascade[1])<lClosestRecPointDistance){
+                  lClosestRecPoint = irec;
+                  lClosestRecPointDistance = std::hypot(dzcascade[0],dzcascade[1]);
+                  fTreeCascVarIsValidAddedITSPointLayer1 = lValid;
+                  fTreeCascVarLayer1_AddedHitD = std::hypot(dzcascade[0],dzcascade[1]);
+                  if(lValid) fTreeCascVarLayer1_TrueHitD = std::hypot(dzcascade[0],dzcascade[1]);
+                }
+              }
+            } //end layer 1 finding
+          } //end recpoint loop
+          
+          //Add hit in layer 1, if found
+          if( lClosestRecPointDistance < fkDistanceLayer1 && fkUseLayer1 ){
+            AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->At(lClosestRecPoint);
+            Float_t xyz[3] = {0., 0., 0.};
+            Float_t covxyz[6] = {0., 0., 0., 0., 0., 0.};
+            recp->GetGlobalXYZ(xyz);
+            recp->GetGlobalCov(covxyz);
+            double alpha = hCascTraj->GetAlpha();
+            double xyz1[3]={ TMath::Cos(alpha)*xyz[0]+TMath::Sin(alpha)*xyz[1],
+              -TMath::Sin(alpha)*xyz[0]+TMath::Cos(alpha)*xyz[1],
+              xyz[2]};
+            Double_t covxyz1[3]={ std::hypot(covxyz[0],covxyz[2]), 0, covxyz[5]};
+            Double_t addpoint[2] = {xyz1[1], xyz1[2]};
+            
+            if(hCascTraj->PropagateTo(xyz1[0],lMagneticField)){
+              hCascTraj->Update(addpoint,covxyz1);
+              fTreeCascVarAddedHitLayer1 = kTRUE;
+              hCascTraj->GetDZ(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2], lMagneticField, dzcascade );
+              
+              //assign TTree values
+              fTreeCascVarCascDCAtoPVxyTracked = dzcascade[0];
+              fTreeCascVarCascDCAtoPVzTracked  = dzcascade[1];
+            }
+          } //end add hit
+
+        } //end modid loop
+      } //end strangeness tracking if
         
         //------------------------------------------------
         // Set Variables for adding to tree
@@ -8429,173 +8954,154 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::Det(Double_t a00,Double
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b) {
-    //--------------------------------------------------------------------
-    // This function returns the DCA between the V0 and the track
-    //--------------------------------------------------------------------
-    Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
-    Double_t r[3]; t->GetXYZ(r);
-    Double_t x1=r[0], y1=r[1], z1=r[2];
-    Double_t p[3]; t->GetPxPyPz(p);
-    Double_t px1=p[0], py1=p[1], pz1=p[2];
+Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b) {
+  //--------------------------------------------------------------------
+  // This function returns the DCA between the V0 and the track
+  //--------------------------------------------------------------------
+  
+  
+  Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
+  Double_t r[3]; t->GetXYZ(r);
+  Double_t x1=r[0], y1=r[1], z1=r[2];
+  Double_t p[3]; t->GetPxPyPz(p);
+  Double_t px1=p[0], py1=p[1], pz1=p[2];
+  
+  Double_t x2,y2,z2;     // position and momentum of V0
+  Double_t px2,py2,pz2;
+  
+  v->GetXYZ(x2,y2,z2);
+  v->GetPxPyPz(px2,py2,pz2);
+  
+  Double_t dca = 1e+33;
+
+  //DCA Calculation improved -> non-linear propagation
+  //Preparatory step 1: get two tracks corresponding to V0
+  
+  Double_t dy2=1e-10;
+  Double_t dz2=1e-10;
+  Double_t dx2=1e-10;
+  
+  //Create dummy V0 track
+  //V0 properties to get started
+  Double_t xyz[3], pxpypz[3], cv[21];
+  for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
+  
+  v->GetXYZ(xyz[0],xyz[1],xyz[2]);
+  v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
+  
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  //EXPERIMENTAL: Improve initial position guess based on (neutral!) cowboy/sailor
+  //Check bachelor trajectory properties
+  Double_t p1[8]; t->GetHelixParameters(p1,b);
+  p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+  
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  //Mockup track for V0 trajectory (no covariance)
+  //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
+  AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
+  hV0Traj->ResetCovariance(1); //won't use
+  
+  //Re-acquire helix parameters for bachelor (necessary!)
+  t->GetHelixParameters(p1,b);
+  p1[6]=TMath::Sin(p1[2]);
+  p1[7]=TMath::Cos(p1[2]);
+  
+  Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
+  p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+  
+  Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+  Evaluate(p1,t1,r1,g1,gg1);
+  Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+  Evaluate(p2,t2,r2,g2,gg2);
+  
+  Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+  Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+  
+  Int_t max=27;
+  while (max--) {
+    Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+    Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+    Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
+    (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+    (g1[2]*g1[2] - dz*gg1[2])/dz2;
+    Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
+    (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+    (g2[2]*g2[2] + dz*gg2[2])/dz2;
+    Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
     
-    Double_t x2,y2,z2;     // position and momentum of V0
-    Double_t px2,py2,pz2;
+    Double_t det=h11*h22-h12*h12;
     
-    v->GetXYZ(x2,y2,z2);
-    v->GetPxPyPz(px2,py2,pz2);
-    
-    Double_t dca = 1e+33;
-    if ( !fkDoImprovedCascadeVertexFinding || fkIfImprovedPerformInitialLinearPropag ){
-        // calculation dca
-        Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
-        Double_t ax= Det(py1,pz1,py2,pz2);
-        Double_t ay=-Det(px1,pz1,px2,pz2);
-        Double_t az= Det(px1,py1,px2,py2);
-        
-        dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
-        
-        //points of the DCA
-        Double_t t1 = Det(x2-x1,y2-y1,z2-z1,px2,py2,pz2,ax,ay,az)/
-        Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
-        
-        x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-        
-        //propagate track to the points of DCA
-        
-        x1=x1*cs1 + y1*sn1;
-        if (!t->PropagateTo(x1,b)) {
-            Error("PropagateToDCA","Propagation failed !");
-            return 1.e+33;
-        }
+    Double_t dt1,dt2;
+    if (TMath::Abs(det)<1.e-33) {
+      //(quasi)singular Hessian
+      dt1=-gt1; dt2=-gt2;
+    } else {
+      dt1=-(gt1*h22 - gt2*h12)/det;
+      dt2=-(h11*gt2 - h12*gt1)/det;
     }
     
-    if( fkDoImprovedCascadeVertexFinding ){
-        //DCA Calculation improved -> non-linear propagation
-        //Preparatory step 1: get two tracks corresponding to V0
-        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
-        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
-        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
-        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
-        
-        //Uncertainties: bachelor track as well as V0
-        Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
-        Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
-        Double_t dx2=dy2;
-        
-        if( TMath::Abs(fkIfImprovedExtraPrecisionFactor-1.0)>1e-4 ){
-            //For testing purposes: override uncertainties, please
-            dx2 = fkIfImprovedExtraPrecisionFactor;
-            dy2 = fkIfImprovedExtraPrecisionFactor;
-            dz2 = fkIfImprovedExtraPrecisionFactor;
-        }
-        
-        //Create dummy V0 track
-        //V0 properties to get started
-        Double_t xyz[3], pxpypz[3], cv[21];
-        for(Int_t ii=0;ii<21;ii++) cv[ii]=0.0; //something small
-        
-        v->GetXYZ(xyz[0],xyz[1],xyz[2]);
-        v->GetPxPyPz( pxpypz[0],pxpypz[1],pxpypz[2] );
-        
-        //Mockup track for V0 trajectory (no covariance)
-        //AliExternalTrackParam *hV0Traj = new AliExternalTrackParam(xyz,pxpypz,cv,+1);
-        AliExternalTrackParam lV0TrajObject(xyz,pxpypz,cv,+1), *hV0Traj = &lV0TrajObject;
-        hV0Traj->ResetCovariance(1); //won't use
-        
-        Double_t p1[8]; t->GetHelixParameters(p1,b);
-        p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
-        Double_t p2[8]; hV0Traj->GetHelixParameters(p2,0.0); //p2[4]=0 -> no curvature (fine, predicted in Evaluate)
-        p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
-        
-        Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
-        Evaluate(p1,t1,r1,g1,gg1);
-        Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
-        Evaluate(p2,t2,r2,g2,gg2);
-        
-        Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
-        Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
-        
-        Int_t max=27;
-        while (max--) {
-            Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
-            Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
-            Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 +
-            (g1[1]*g1[1] - dy*gg1[1])/dy2 +
-            (g1[2]*g1[2] - dz*gg1[2])/dz2;
-            Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 +
-            (g2[1]*g2[1] + dy*gg2[1])/dy2 +
-            (g2[2]*g2[2] + dz*gg2[2])/dz2;
-            Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
-            
-            Double_t det=h11*h22-h12*h12;
-            
-            Double_t dt1,dt2;
-            if (TMath::Abs(det)<1.e-33) {
-                //(quasi)singular Hessian
-                dt1=-gt1; dt2=-gt2;
-            } else {
-                dt1=-(gt1*h22 - gt2*h12)/det;
-                dt2=-(h11*gt2 - h12*gt1)/det;
-            }
-            
-            if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
-            
-            //check delta(phase1) ?
-            //check delta(phase2) ?
-            
-            if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
-                if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
-                    if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2)
-                        AliDebug(1," stopped at not a stationary point !");
-                    Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
-                    if (lmb < 0.)
-                        AliDebug(1," stopped at not a minimum !");
-                    break;
-                }
-            
-            Double_t dd=dm;
-            for (Int_t div=1 ; ; div*=2) {
-                Evaluate(p1,t1+dt1,r1,g1,gg1);
-                Evaluate(p2,t2+dt2,r2,g2,gg2);
-                dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
-                dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
-                if (dd<dm) break;
-                dt1*=0.5; dt2*=0.5;
-                if (div>512) {
-                    AliDebug(1," overshoot !"); break;
-                }
-            }
-            dm=dd;
-            
-            t1+=dt1;
-            t2+=dt2;
-            
-        }
-        
-        if (max<=0) AliDebug(1," too many iterations !");
-        
-        Double_t cs=TMath::Cos(t->GetAlpha());
-        Double_t sn=TMath::Sin(t->GetAlpha());
-        Double_t xthis=r1[0]*cs + r1[1]*sn;
-        
-        //Memory cleanup
-        hV0Traj->Delete();
-        hV0Traj=0x0;
-        
-        //Propagate bachelor to the point of DCA
-        if (!t->PropagateTo(xthis,b)) {
-            //AliWarning(" propagation failed !";
-            return 1e+33;
-        }
-        
-        
-        //V0 distance to bachelor: the desired distance
-        Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
-        dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
-    }
+    if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
     
-    return dca;
+    //check delta(phase1) ?
+    //check delta(phase2) ?
+    
+    if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+      if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+        if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2){
+          AliDebug(1," stopped at not a stationary point !");
+          //Count not stationary point
+        }
+        Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+        if (lmb < 0.){
+          //Count stopped at not a minimum
+          AliDebug(1," stopped at not a minimum !");
+        }
+        break;
+      }
+    
+    Double_t dd=dm;
+    for (Int_t div=1 ; ; div*=2) {
+      Evaluate(p1,t1+dt1,r1,g1,gg1);
+      Evaluate(p2,t2+dt2,r2,g2,gg2);
+      dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+      dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+      if (dd<dm) break;
+      dt1*=0.5; dt2*=0.5;
+      if (div>512) {
+        AliDebug(1," overshoot !"); break;
+        //Count overshoots
+      }
+    }
+    dm=dd;
+    
+    t1+=dt1;
+    t2+=dt2;
+    
+  }
+  
+  if (max<=0){
+    AliDebug(1," too many iterations !");
+  }
+  
+  Double_t cs=TMath::Cos(t->GetAlpha());
+  Double_t sn=TMath::Sin(t->GetAlpha());
+  Double_t xthis=r1[0]*cs + r1[1]*sn;
+  
+  //Propagate bachelor to the point of DCA
+  
+  if (!t->PropagateTo(xthis,b)) {
+    //AliWarning(" propagation failed !";
+    //Count curved propagation failures
+    
+    return 1e+33;
+  }
+  
+  //V0 distance to bachelor: the desired distance
+  Double_t rBachDCAPt[3]; t->GetXYZ(rBachDCAPt);
+  dca = v->GetD(rBachDCAPt[0],rBachDCAPt[1],rBachDCAPt[2]);
+  
+  
+  return dca;
 }
 
 //________________________________________________________________________
