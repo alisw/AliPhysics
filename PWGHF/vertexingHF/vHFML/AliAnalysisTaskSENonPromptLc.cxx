@@ -161,7 +161,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 {
-    if (fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
+    if (fCreateMLtree && fEnableEvtSampling && ((fOptionSampling == 0 && gRandom->Rndm() > fFracEvtToKeep) || (fOptionSampling == 1 && gRandom->Rndm() < 1-fFracEvtToKeep)))
     {
         PostData(1, fOutput);
         return;
