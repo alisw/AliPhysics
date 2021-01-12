@@ -188,7 +188,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
-    Bool_t              fFlagFillMECorr;//
+    Bool_t              fFlagFillMECorr;// Switch for doing the ME correction
     Bool_t              fFlagMEBinChange;//
     Bool_t              fIsPbPb;//
     Bool_t              fIspp;//
