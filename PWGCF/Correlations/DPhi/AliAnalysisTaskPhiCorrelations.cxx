@@ -980,15 +980,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (fTwoTrackEfficiencyCut > 0)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
-      // all two track cuts disabled, STEP 9
-      if (!fSkipStep9)
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, bSign, fTwoTrackEfficiencyCut, kFALSE, kFALSE);
-
-      // apply correction efficiency, STEP 10
+      // apply correction efficiency, STEP 9 and 10
       if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+
+        // all two track cuts disabled, STEP 9
+        if (!fSkipStep9)
+          fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE, kFALSE);
+
         // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
         Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
 
+        // STEP 10
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, twoTrackCut, bSign, fTwoTrackEfficiencyCut, kTRUE);
       }
 
@@ -1008,12 +1010,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
               if (fTwoTrackEfficiencyCut > 0)
                 fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
 
-              // all two track cuts disabled, STEP 9
-              if (!fSkipStep9)
-                fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, bSign, fTwoTrackEfficiencyCut, kFALSE, kFALSE);
-
-              // apply correction efficiency, STEP 10
+              // apply correction efficiency, STEP 9 and 10
               if (fEfficiencyCorrectionTriggers || fEfficiencyCorrectionAssociated) {
+
+                // all two track cuts disabled, STEP 9
+                if (!fSkipStep9)
+                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE, kFALSE);
+
                 // with or without two track efficiency depending on if fTwoTrackEfficiencyCut is set
                 Bool_t twoTrackCut = (fTwoTrackEfficiencyCut > 0);
 
