@@ -4,50 +4,24 @@
 // Basic analysis task template for analysis jets storing information in both tree
 // branches and histograms
 
+
 #include <TH1F.h>
-#include <TH2F.h>
-#include <TH3F.h>
-#include <TF1.h>
-#include <TCanvas.h>
-#include <THnSparse.h>
-#include <TLorentzVector.h>
 #include <TTree.h>
 #include <TList.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TKey.h>
-#include <TClonesArray.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include <TProfile.h>
 #include <TChain.h>
-#include <TParticlePDG.h>
-#include "TMatrixD.h"
-#include "TMatrixDSym.h"
-#include "TMatrixDSymEigen.h"
-#include "TVector3.h"
-#include "TVector2.h"
-#include "TRandom3.h"
-#include "AliVCluster.h"
-#include "AliVTrack.h"
-#include "AliEmcalJet.h"
-#include "AliRhoParameter.h"
-#include "AliLog.h"
-#include "AliEmcalParticle.h"
-#include "AliMCEvent.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
-#include "AliJetContainer.h"
+
+// aliroot Headers
 #include "AliAODEvent.h"
-#include "FJ_includes.h"
 #include "AliParticleContainer.h"
-//#include "AliPythiaInfo.h"
-#include "AliPicoTrack.h"
-#include "AliEmcalJetFinder.h"
+#include "AliJetContainer.h"
+#include "AliMCEvent.h"
+#include "AliEmcalJet.h"
+
+//My Header
 #include "AliAnalysisTaskJetChargeFlavourTemplates.h"
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/SharedPtr.hh>
 
 //Globals
 using std::cout;
@@ -62,7 +36,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetChargeFlavourTemplates", kTRUE),
   fContainer(0),
   pChain(0),
-  fJetShapeSub(kNoSub),
   fPtThreshold(-9999.),
   fCentSelectOn(kTRUE),
   fCentMin(0),
@@ -116,7 +89,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fContainer(0),
   pChain(0),
-  fJetShapeSub(kNoSub),
   fPtThreshold(-9999.),
   fCentSelectOn(kTRUE),
   fCentMin(0),
@@ -163,7 +135,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   fTreeJets(0)
 {
   // Standard constructor.
-  for(Int_t i=0;i<nBranchesJetChargeFlavourTemplates;i++){
+  for(Int_t i=0;i<nBranchesJetChargeTemplates;i++){
     fTreeBranch[i]=0;
   }
   SetMakeGeneralHistograms(kTRUE);
@@ -192,7 +164,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeJets = new TTree(nameoutput, nameoutput);
   // Names for the branches
-  TString *fTreeBranchName = new TString [nBranchesJetChargeFlavourTemplates];
+  TString *fTreeBranchName = new TString [nBranchesJetChargeTemplates];
 
   // Name the branches of your TTree here
   fTreeBranchName[0]  = "Pt";
@@ -229,7 +201,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fTreeBranchName[22] = "High_JCOther";
 
   // Associate the branches
-  for(Int_t iBranch=0; iBranch < nBranchesJetChargeFlavourTemplates; iBranch++){
+  for(Int_t iBranch=0; iBranch < nBranchesJetChargeTemplates; iBranch++){
     cout<<"looping over variables"<<endl;
     fTreeJets->Branch(fTreeBranchName[iBranch].Data(), &fTreeBranch[iBranch], Form("%s/D", fTreeBranchName[iBranch].Data()));
   }
@@ -313,7 +285,6 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
 Bool_t AliAnalysisTaskJetChargeFlavourTemplates::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
-  //fTotalJets = 0;
 
 
 
@@ -339,8 +310,6 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
   //TClonesArray *trackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("HybridTracks"));
   Double_t JetPhi=0;
   Double_t JetPt_ForThreshold=0;
-
-  //fhEventCounter->Fill(1);
 
   if(JetCont) {
     // Technical detail; fix possibly corrupted jet container ID
@@ -383,22 +352,12 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
       // Must have at least two constituents
       if( nJetConstituents < 2 )
       {
-        fFailedJets++;
         continue;
       }
 
 
-      fTotalJets++;
+      JetPt_ForThreshold = Jet1->Pt();
 
-      if(fJetShapeSub==kNoSub)
-      {
-        // This correction only makes sense for jet Pt
-        JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-      }
-      else
-      {
-        JetPt_ForThreshold = Jet1->Pt();
-      }
       if(JetPt_ForThreshold<fPtThreshold)
       {
 
@@ -406,27 +365,20 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
       }
       else {
       	// Filling the histograms here
-        	fhJetPt->Fill(Jet1->Pt());
-        	JetPhi=Jet1->Phi();
-        	if(JetPhi < -1*TMath::Pi())
-        	  JetPhi += (2*TMath::Pi());
-        	else if (JetPhi > TMath::Pi())
-        	  JetPhi -= (2*TMath::Pi());
-        	fhJetPhi->Fill(JetPhi);
-        	fhJetEta->Fill(Jet1->Eta());
-        	// Filling the TTree branch(es) here
-          Double_t JetPt;
-        	if(fJetShapeSub==kNoSub)
-        	  // This correction only makes sense for jet Pt
-            {
-              JetPt = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-              fTreeBranch[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
-            }
-          else
-            {
-              JetPt = Jet1->Pt();
-              fTreeBranch[0]=Jet1->Pt();
-            };
+      	fhJetPt->Fill(Jet1->Pt());
+      	JetPhi=Jet1->Phi();
+      	if(JetPhi < -1*TMath::Pi())
+      	  JetPhi += (2*TMath::Pi());
+      	else if (JetPhi > TMath::Pi())
+      	  JetPhi -= (2*TMath::Pi());
+      	fhJetPhi->Fill(JetPhi);
+      	fhJetEta->Fill(Jet1->Eta());
+      	// Filling the TTree branch(es) here
+        Double_t JetPt;
+
+        JetPt = Jet1->Pt();
+        fTreeBranch[0]=Jet1->Pt();
+
       	fTreeBranch[1]=JetPhi;
       	fTreeBranch[2]=Jet1->Eta();
 
@@ -483,119 +435,69 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             }
           }
 
-          //End PDG Finding
 
-          /*
-          AliMCParticle* leadingParticle = (AliMCParticle*) TruthJet->GetLeadingTrack();
-          //cout << "Is Leading" << endl;
-          //cout << "Mother: " << leadingParticle->GetMother() << endl;
-          //cout << "Number of Tracks: " << nTruthConstituents << endl;
-          AliMCParticle *MotherParticle = (AliMCParticle*)  MCParticleContainer->GetParticle(leadingParticle->GetMother());
+            // New Techniqe for determing Jet PDG Code
 
-          while(MotherParticle->GetMother() > 0)
-          {
-            MotherParticle = (AliMCParticle*) MCParticleContainer->GetParticle(MotherParticle->GetMother());
-            //cout <<"Mother Get Result: " << MotherParticle->GetMother() << endl;
-            //cout << "Particle Label: " << MotherParticle->Label() << endl;
-            //cout << "MParticle Pdg: " << MotherParticle->PdgCode() << endl;
+            Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
+            Double_t UniquePdgFrequency[20] = {};
+            Int_t nUniques = 0;
 
-          }
+            //Loop of PDG code found
+            for(int i = 0; i < nMothers; i++)
+            {
+              // consider one pdgCode at the time.
+              fCurrentPdg = fPdgCodes[i];
+              // Loop over unique arry to be filled
+              for(int j = 0; j < nMothers; j++)
+              {
+                // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
+                if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
+                {
+                  UniquePdgCodes[j] = fCurrentPdg;
+                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                  nUniques ++;
+                  break;
+                }
+                //Check if the PDG is already lsited if it matched increase the frequency counter by 1
+                else if(UniquePdgCodes[j] == fCurrentPdg)
+                {
+                  UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
+                  break;
+                }
 
-          cout <<"Mother Get Result: " << MotherParticle->GetMother() << endl;
-          cout << "MParticle Pdg: " << MotherParticle->PdgCode() << endl;
+                // Otherwise the PDG hasnt matched and the value isnt zero check the next value
 
-          SetCurrentPdg = MotherParticle->PdgCode();
-          */
+              }
+            }
 
+            // Setting Final Pdg Code
+            // normalising frequency array
 
+            for(unsigned int i = 0; i < nUniques; i++)
+            {
+              UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
+            }
 
-                  //Old technique for determing Jet PDG code,  Simply discarding jets with diffrent values
-                  /*
-                  // Sets current PDG to 0 if no correct jet parton can be identified.
-                  //Outputs Pdg of partons found
-                  //cout << "PdgCodes : [" ;
-                  for(unsigned int i = 1; i < nMothers; i++)
-                  {
-                    //cout << fPdgCodes[i] << ",";
-                    if(fPdgCodes[i-1] != fPdgCodes[i])
-                    {
-                      fCurrentPdg = 0;
-                    }
-                  }
-                  //cout << "]" << endl;
+            //Find the index of the max
+            int IndexOfMaximum = -1;
 
+            // assigens index of maximum if the over limit factation of mother particles agree
+            Double_t limitFraction = 0.66;
+            for(unsigned int i = 0; i < nUniques; i++)
+            {
+              if(UniquePdgFrequency[i] > limitFraction)
+              {
+                IndexOfMaximum = i;
+              }
+            }
 
-                  // Handling if no Pdg were found.
-                  if(fCurrentPdg == 0)
-                  {
-                    //cout << "No initial parton found" << endl;
-                    continue;
-                  }
+            // Set final PDG Code to be used
+            fCurrentPdg = fPdgCodes[IndexOfMaximum];
 
-                  */
-
-                  // New Techniqe for determing Jet PDG Code
-
-                  Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
-                  Double_t UniquePdgFrequency[20] = {};
-                  Int_t nUniques = 0;
-
-                  //Loop of PDG code found
-                  for(int i = 0; i < nMothers; i++)
-                  {
-                    // consider one pdgCode at the time.
-                    fCurrentPdg = fPdgCodes[i];
-                    // Loop over unique arry to be filled
-                    for(int j = 0; j < nMothers; j++)
-                    {
-                      // If it hasnt matched and the current unique value is empty list the new value and increment frequncy by 1 and then break
-                      if(UniquePdgCodes[j] != fCurrentPdg && UniquePdgCodes[j] == 0)
-                      {
-                        UniquePdgCodes[j] = fCurrentPdg;
-                        UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                        nUniques ++;
-                        break;
-                      }
-                      //Check if the PDG is already lsited if it matched increase the frequency counter by 1
-                      else if(UniquePdgCodes[j] == fCurrentPdg)
-                      {
-                        UniquePdgFrequency[j] = UniquePdgFrequency[j] + 1.;
-                        break;
-                      }
-
-                      // Otherwise the PDG hasnt matched and the value isnt zero check the next value
-
-                    }
-                  }
-
-                  // Setting Final Pdg Code
-                  // normalising frequency array
-
-                  for(unsigned int i = 0; i < nUniques; i++)
-                  {
-                    UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
-                  }
-
-                  //Find the index of the max
-                  int IndexOfMaximum = -1;
-
-                  // assigens index of maximum if the over limit factation of mother particles agree
-                  Double_t limitFraction = 0.66;
-                  for(unsigned int i = 0; i < nUniques; i++)
-                  {
-                    if(UniquePdgFrequency[i] > limitFraction)
-                    {
-                      IndexOfMaximum = i;
-                    }
-                  }
-
-                  // Set final PDG Code to be used
-                  fCurrentPdg = fPdgCodes[IndexOfMaximum];
-
-                  if(IndexOfMaximum < 0)
-                  {
-                    fCurrentPdg = 0;
-                  }
+            if(IndexOfMaximum < 0)
+            {
+              fCurrentPdg = 0;
+            }
 
                   //Outputs for Checking
           /*
@@ -807,11 +709,6 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::RetrieveEventObjects() {
 void AliAnalysisTaskJetChargeFlavourTemplates::Terminate(Option_t *)
 {
   // Called once at the end of the analysis.
-
-
-  //std::cout << "Failed Jets:  " << fFailedJets << std::endl;
-  //std::cout << "Total Jets:   " << fTotalJets << std::endl;
-  //std::cout <<  std::endl << "This was the fraction of failed Jets :" << fFailedJets/fTotalJets << std::endl;
 
 
   // Normalise historgrams over number of Jets considered

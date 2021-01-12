@@ -6,10 +6,10 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
 							 	    const char *type,
 								    const char *CentEst,
 								    Int_t       pSel,
-										AliAnalysisTaskJetChargeFlavourTemplates::JetShapeSub jetShapeSub,
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
-								    TString     tag            = ""
+								    TString     tag            = "",
+										const char* suffix = ""
 								    ) {
 
 
@@ -34,22 +34,20 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
   TString wagonName1 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
   TString wagonName2 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
 
+	TString combinedName1;
+	combinedName1.Form(wagonName1.Data(), suffix);
+
+	TString combinedName2;
+	combinedName2.Form(wagonName2.Data(), suffix);
   //Configure jet tagger task
-  AliAnalysisTaskJetChargeFlavourTemplates *task = new AliAnalysisTaskJetChargeFlavourTemplates(wagonName1.Data());
+  AliAnalysisTaskJetChargeFlavourTemplates *task = new AliAnalysisTaskJetChargeFlavourTemplates(combinedName1.Data());
 
-  task->SetJetShapeSub(jetShapeSub);
   task->SetJetRadius(R);
-
 
 	// This creates the Particle continer which i later collect in AliAnalysis Task Jet
   AliParticleContainer *trackContData=0x0;
   trackContData = task->AddParticleContainer(ntracksData);
 
-
-	// This is me attempted to create a particle container to contain the MC particles
-	//AliParticleContainer *MCContData=0x0;
-	//MCcontData->SetIsPythia(kTrue);
-	//MCContData = task->AddParticleContainer("mcparticles");
 
 	//Initialising the Jet Container
   AliJetContainer *JetContData=0x0;
@@ -57,16 +55,15 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
   TString strType(type);
 
 
+
 	// Adds the Jet container to the Task, njetsData seems to be refering to the name of the Jet Branch.
     JetContData = task->AddJetContainer(njetsData,strType,R); //Data
     if(JetContData) {
       JetContData->SetRhoName(nrhoBase);
-			//Connects the prevous Particle container to the Jet COntainer
       JetContData->ConnectParticleContainer(trackContData);
       JetContData->SetPercAreaCut(0.6);
       JetContData->SetJetRadius(R);
       JetContData->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
-      if(jetShapeSub==AliAnalysisTaskJetChargeFlavourTemplates::kConstSub) JetContData->SetAreaEmcCut(-2);
     }
 
 
@@ -84,8 +81,8 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
-  TString contName1(wagonName1);
-  TString contName2(wagonName2);
+  TString contName1(combinedName1);
+  TString contName2(combinedName2);
 
 
 
