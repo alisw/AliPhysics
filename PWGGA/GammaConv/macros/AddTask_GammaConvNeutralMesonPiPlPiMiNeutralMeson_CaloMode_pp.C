@@ -705,13 +705,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","4117911065032220000","32c51070a","0103603600000000","0153503000000000");
     cuts.AddCutHeavyMesonCalo("00010113","4117911066032220000","32c51070a","0103603600000000","0153503000000000");
 
-    //Standard Cuts of Pi0 Analysis
+    //Standard Cuts of Pi0 Analysis: ("00010113","411792106fe32220000","0r631031000000d0")
+    //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored
   } else if(trainConfig == 454)  { // EDC 13 TeV
-    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","01031031000000d0","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","0103103100000000","0453503000000000"); // INT7
   } else if(trainConfig == 455)  { // EDC 13 TeV EG2
-    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","01031031000000d0","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","0103103100000000","0453503000000000"); // EG2
   } else if(trainConfig == 456)  { // EDC 13 TeV EG1
-    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","01031031000000d0","0453503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","0103103100000000","0453503000000000"); // EG1
 
     // Variations on 13 TeV for 7 TeV systematics
     // PHOS (without nonlin)
@@ -834,13 +835,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 648)  { // EDC 13 TeV EG1
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070b","0103103100000000","0153503000000000"); // EG1
 
-    //Standard Cuts of Pi0 Analysis
+    //Standard Cuts of Pi0 Analysis: ("00010113","411792106fe32220000","0r631031000000d0")
+    //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored
   } else if(trainConfig == 654)  { // EDC 13 TeV
-    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","01031031000000d0","0153503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","0103103100000000","0153503000000000"); // INT7
   } else if(trainConfig == 655)  { // EDC 13 TeV EG2
-    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","01031031000000d0","0153503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","0103103100000000","0153503000000000"); // EG2
   } else if(trainConfig == 656)  { // EDC 13 TeV EG1
-    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","01031031000000d0","0153503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","0103103100000000","0153503000000000"); // EG1
 
   } else if(trainConfig == 700)  { //Standard PHOS 13TeV MB
     cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103300000000","0a53503000000000"); // INT7
@@ -918,13 +920,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 748)  { // EDC 13 TeV EG1
     cuts.AddCutHeavyMesonCalo("0008d113","411792109fe32220000","32c51070b","0103103100000000","0a53503000000000"); // EG1
 
-    //Standard Cuts of Pi0 Analysis
+    //Standard Cuts of Pi0 Analysis: ("00010113","411792106fe32220000","0r631031000000d0")
+    //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored
   } else if(trainConfig == 754)  { // EDC 13 TeV
-    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","01031031000000d0","0a53503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411792106fe32220000","32c51070a","0103103100000000","0a53503000000000"); // INT7
   } else if(trainConfig == 755)  { // EDC 13 TeV EG2
-    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","01031031000000d0","0a53503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("0008e113","411792106fe32220000","32c51070a","0103103100000000","0a53503000000000"); // EG2
   } else if(trainConfig == 756)  { // EDC 13 TeV EG1
-    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","01031031000000d0","0a53503000000000"); // EG1
+    cuts.AddCutHeavyMesonCalo("0008d113","411792106fe32220000","32c51070a","0103103100000000","0a53503000000000"); // EG1
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // EMC pp 13 TeV Sideband Mixing
