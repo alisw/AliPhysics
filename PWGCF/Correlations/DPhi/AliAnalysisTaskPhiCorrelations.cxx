@@ -1339,6 +1339,10 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
     if (fTwoTrackEfficiencyCut > 0)
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+
+    if (!fSkipStep9)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE, kFALSE);
+
   }
 
   // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
@@ -1390,6 +1394,10 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
           if (fTwoTrackEfficiencyCut > 0)
             fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+
+          if (!fSkipStep9)
+            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE, kFALSE);
+
         }
       }
 
