@@ -566,7 +566,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency, Bool_t twoTrackCuts)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency, Bool_t pairCuts)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -802,7 +802,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 
 	// conversions
-	if (twoTrackCuts && fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
@@ -818,7 +818,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 	
 	// K0s
-	if (twoTrackCuts && fCutK0sV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutK0sV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
@@ -836,7 +836,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
 	// Lambda
-	if (twoTrackCuts && fCutLambdaV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutLambdaV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass1 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 	  Float_t mass2 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
@@ -864,7 +864,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
         // Phi
-	if (twoTrackCuts && fCutPhiV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutPhiV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
 	  
@@ -882,7 +882,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}	
 
         // Rho
-	if (twoTrackCuts && fCutRhoV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutRhoV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
         {
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
@@ -900,7 +900,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
         // User-defined cut
-	if (twoTrackCuts && fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (pairCuts && fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
         {
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
 	  
@@ -915,7 +915,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 	}
 
-	if (twoTrackCuts && twoTrackEfficiencyCut)
+	if (pairCuts && twoTrackEfficiencyCut)
 	{
 	  // the variables & cuthave been developed by the HBT group 
 	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
