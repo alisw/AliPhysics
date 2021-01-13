@@ -1395,27 +1395,32 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
 			fDoMassCut = kTRUE;
 			fMassCut = 0.5;
 			break;
-    case 6: // cut at 0.65 GeV/c^2
-        fDoMassCut = kTRUE;
-        fMassCut = 0.65;
-        break;
-    case 7: // cut at 0.7 GeV/c^2
-        fDoMassCut = kTRUE;
-        fMassCut = 0.7;
-        break;
-    case 8: // cut at 0.85 GeV/c^2
-         fDoMassCut = kTRUE;
-         fMassCut = 0.85;
-         break;
-    case 9: // cut at 1.5 GeV/c^2
-         fDoMassCut = kTRUE;
-         fMassCut = 1.5;
-         break;
-		case 10: // overload mass cut for chi2 of vParticle
-		     fUse4VecForMass = kTRUE;
-				 fDoMassCut = kTRUE;
-         fMassCut = 0.85;
-         break;
+        case 6: // cut at 0.65 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.65;
+            break;
+        case 7: // cut at 0.7 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.7;
+            break;
+        case 8: // cut at 0.85 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 0.85;
+            break;
+        case 9: // cut at 1.5 GeV/c^2
+            fDoMassCut = kTRUE;
+            fMassCut = 1.5;
+            break;
+        case 10: //a overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.85;
+            break;
+        case 11: //b overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 0.600;
+            break;
 
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
