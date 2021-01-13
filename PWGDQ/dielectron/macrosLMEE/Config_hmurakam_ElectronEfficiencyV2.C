@@ -1,10 +1,11 @@
-TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid;cutTPC3sigma_itss;cutTPChr_itss;cutTOF_itss;cutpid_itss");
+//TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid;cutTPC3sigma_itss;cutTPChr_itss;cutTOF_itss;cutpid_itss");
+TString names("pt200_TPCTOFcombITSshared;TPCTOFreq;TPCHadRejTOFif");
 bool DoPairing = kTRUE;
 bool DoULSLS = kTRUE;
 
 bool GetResolutionFromAlien = kTRUE;
-std::string resoFilename = "pp_resolution_deltaXvsX_Oton.root";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/r/rbailhac/supportFiles/pp_resolution_deltaXvsX_Oton.root";
+std::string resoFilename = ""
+std::string resoFilenameFromAlien = "";
 
 bool GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
@@ -34,11 +35,16 @@ const double maxEtaCut = 0.8;
 
 // binning of single leg histograms
 bool usePtVector = true;
+/* const Double_t ptBins[] = { */
+/*   0.00,0.10,0.11,0.12,0.13,0.14,0.15,0.155,0.16,0.165,0.17,0.175,0.18,0.185,0.19,0.195,0.20,0.205,0.21,0.215,0.22,0.225,0.23,0.235,0.24,0.245,0.25,0.255, */
+/*   0.26,0.265,0.27,0.275,0.28,0.285,0.29,0.295,0.30,0.32,0.34,0.36,0.38,0.40,0.43,0.46, */
+/*   0.49,0.52,0.55,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20, */
+/*   1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,12.0 */
+/* }; */
 const Double_t ptBins[] = {
-  0.00,0.10,0.11,0.12,0.13,0.14,0.15,0.155,0.16,0.165,0.17,0.175,0.18,0.185,0.19,0.195,0.20,0.205,0.21,0.215,0.22,0.225,0.23,0.235,0.24,0.245,0.25,0.255,
-  0.26,0.265,0.27,0.275,0.28,0.285,0.29,0.295,0.30,0.32,0.34,0.36,0.38,0.40,0.43,0.46,
-  0.49,0.52,0.55,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20,
-  1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,12.0
+  0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
+  1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
+  4.00,5.0,6.0,7.0,10.0,20.0
 };
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
@@ -59,8 +65,8 @@ const double maxThetaBin =  TMath::TwoPi();
 const int    stepsThetaBin = 60;
 
 const double minMassBin = 0;
-const double maxMassBin =  4;
-const int    stepsMassBin = 400;
+const double maxMassBin =  5;
+const int    stepsMassBin = 500;
 const double minPairPtBin = 0;
 const double maxPairPtBin =  10;
 const int    stepsPairPtBin = 400;
@@ -90,7 +96,7 @@ void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
 void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
 void SetEtaCorrectionTOFMean(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim);
 void SetEtaCorrectionTOFRMS(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim); 
-
+void SetResolutionFile(TString year);
 // #########################################################
 // #########################################################
 
@@ -138,40 +144,35 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
   //AliAnalysisCuts* trackCuts=0x0;
 
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // 1<<4
+  trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);
   trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
   trackCutsDiel->SetRequireITSRefit(kTRUE);
   trackCutsDiel->SetRequireTPCRefit(kTRUE);
 
-
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-  if(cutDefinition!=0 && cutDefinition!=4) {  
-    trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -0.8,   0.8);
-    trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.2,   15.);
-  }
-  else {
-    trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -1.1,   1.1);
-    trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.1,   100.);
-  }
-  if(cutDefinition > 3) {
-    printf("Add shared cluster cut\n");
-    trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);
-  }
-  trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 999.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 999.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    -999.,   4.5);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    -999.,   4.0); 
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 999.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 999.);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,     -999., 0.4);
-  
+
+  // pT and eta
+  trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.2,   1e30);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -0.8,   0.8);
+  //primary selection
+  trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,   1.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,   3.0);
+  //TPC
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,       0.0,   4.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,  0.8,   1.5);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,    0.0,   0.4);
+  //ITS
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,         3.0, 100.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,       0.0,   4.5);
+
+  /* printf("Add shared cluster cut\n"); */
+  /* trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE); */
 
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("Trackcuts","Trackcuts",AliDielectronCutGroup::kCompAND);
   trackCuts->AddCut(trackCutsAOD);
   trackCuts->AddCut(trackCutsDiel);
-  
 
   return trackCuts;
 
@@ -180,7 +181,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
 //________________________________________________________________
 AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
 {
-  
+
   std::cout << "SetupPIDcuts()" <<std::endl;
 
   AliDielectronPID *mastermind_TPC_3sigma = new AliDielectronPID("mastermind_TPC_3sigma","mastermind_TPC_3sigma");
@@ -189,50 +190,54 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
 
   // Simple PID
   mastermind_TPC_3sigma->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  
+
   //TPC electrons: includes electrons and exclude all possible other contributions using the TPC
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4.,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kProton,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  
+
   //TOF electrons: includes all electrons, exlcludes Pions using the TPC
   mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3., 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4. , 0.0 ,100., kTRUE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   mastermind_TOF->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  
-  
+
+  AliDielectronPID *pidTPCTOFreq = new AliDielectronPID("pidTPCTOFreq","pidTPCTOFreq");
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100.,  4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3.,  3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kP);
+
+  AliDielectronPID *pidTPCHadRejTOFif = new AliDielectronPID("pidTPCHadRejTOFif","pidTPCHadRejTOFif");
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,       -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kProton,     -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kIfAvailable, AliDielectronVarManager::kP);
 
   AliAnalysisCuts* fancyCut=0x0;
 
-  if(cutDefinition==0 || cutDefinition==4){
-    printf("Simple 3 sigma in TPC\n");
-    AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg_1","mastermind_cg_1",AliDielectronCutGroup::kCompOR);
-    mastermind_cg->AddCut(mastermind_TPC_3sigma);
-    fancyCut = mastermind_cg;
+  if(cutDefinition==0){
+    printf("cutDefinition==0 pt200_TPCTOFcombITSshared\n");
+    // combine 2 cut sets with OR option
+    AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
+    combinedPIDcuts->AddCut(pidTPCTOFreq);
+    combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
+    fancyCut = combinedPIDcuts;
+  }else if(cutDefinition==1){
+    printf("cutDefinition==1 TPCTOFreq\n");
+    AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
+    combinedPIDcuts->AddCut(pidTPCTOFreq);
+    fancyCut = combinedPIDcuts;
+  }else if(cutDefinition==2){
+    printf("cutDefinition==2 TPCHadRejTOFif\n");
+    AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
+    combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
+    fancyCut = combinedPIDcuts;
+  }else{
+    printf("no cutDefinition.");
   }
-  if(cutDefinition==1 || cutDefinition==5){
-    printf("TPC hardon rejection\n");
-    AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg_1","mastermind_cg_1",AliDielectronCutGroup::kCompOR);
-    mastermind_cg->AddCut(mastermind_TPC);
-    fancyCut = mastermind_cg;
-  }
-  if(cutDefinition==2 || cutDefinition==6){
-    printf("TPC and TOF\n");
-    AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg_1","mastermind_cg_1",AliDielectronCutGroup::kCompOR);
-    mastermind_cg->AddCut(mastermind_TOF);
-    fancyCut = mastermind_cg;
-  }
-  if(cutDefinition==3 || cutDefinition==7){
-    printf("Combined\n");
-    AliDielectronCutGroup* mastermind_cg = new AliDielectronCutGroup("mastermind_cg_1","mastermind_cg_1",AliDielectronCutGroup::kCompOR);
-    mastermind_cg->AddCut(mastermind_TPC);
-    mastermind_cg->AddCut(mastermind_TOF);
-    fancyCut = mastermind_cg;
-  }
-    
-    return fancyCut;
+  return fancyCut;
 }
 
 // #########################################################
@@ -401,4 +406,74 @@ void SetEtaCorrectionTOFRMS(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t cor
     task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, width, corrXdim, corrYdim);
   }
 
+}
+//______________________________________________________________________________________
+void SetTOFSigmaEleCorrection(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim, TString year) {
+  //
+  // eta correction for the centroid and width of electron sigmas in the TOF
+  //
+
+  //
+  printf("starting SetTOFSigmaEleCorrection() MC\n");
+  printf(" correction Xdim = %s\n", AliDielectronVarManager::GetValueName(corrXdim));
+  printf(" correction Ydim = %s\n", AliDielectronVarManager::GetValueName(corrYdim));
+
+  if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
+
+  if (corrXdim!=AliDielectronVarManager::kP)
+    {
+      printf(" no correction available for Xdim = %s!\n", AliDielectronVarManager::GetValueName(corrXdim));
+      printf(" no correction applied!\n");
+      return;
+    }
+
+  TH2F* histMean2DTOF;
+  TH2F* histWidth2DTOF;
+
+  TString rootFile = "alien://alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/calibLMEE/calMaps_TOF_mc.root";
+  TGrid::Connect("alien://");
+  gSystem->Exec(Form("alien_cp %s .",rootFile.Data()));
+  TString fileName= "calMaps_TOF_mc.root";
+  TFile* f = TFile::Open(fileName.Data());
+  //  printf("Load correction map:%s mean:%s and width:%s",fileName.Data(),Form("m%s",year.Data(), Form("w%s",year.Data());
+  TString meanName =Form("m%s",year.Data());
+  TString widthName =Form("w%s",year.Data());
+  f->GetObject(meanName.Data(),histMean2DTOF);
+  f->GetObject(widthName.Data(),histWidth2DTOF);
+  printf("%s and %s\n",meanName.Data(),widthName.Data());
+
+  for (Int_t i = 0; i <= histMean2DTOF->GetNbinsX()+1; i++){
+    for (Int_t k = 0; k <= histMean2DTOF->GetNbinsY()+1; k++){
+      if ( (i == 0) || (k == 0) || (i > histMean2DTOF->GetNbinsX()) || (k > histMean2DTOF->GetNbinsY())) { // under/overflows
+	histMean2DTOF->SetBinContent(i, k, 0.0 );
+	histWidth2DTOF->SetBinContent(i, k, 1.0 );
+      }
+    }
+  }
+
+  /* die->SetCentroidCorrFunctionTOF(histMean2DTOF, corrXdim, corrYdim); */
+  /* die->SetWidthCorrFunctionTOF(histWidth2DTOF, corrXdim, corrYdim); */
+  //    printf("no default TOF PID correction! Corrections were not applied!\n");
+
+  task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histWidth2DTOF, corrXdim, corrYdim);
+  task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histMean2DTOF,  corrXdim, corrYdim);
+
+}
+//______________________________________________________________________________________
+void SetResolutionFile(TString year){
+  if(year == "16"){
+    resoFilename = "resolution_16.root";
+    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/resolution_16.root";
+    printf("resolution_16.root\n");
+  }else if(year == "17"){
+    resoFilename = "resolution_17.root";
+    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/resolution_17.root";
+    printf("resolution_17.root\n");
+  }else if(year == "18"){
+    resoFilename = "resolution_18.root";
+    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/resolution_18.root";
+    printf("resolution_18.root\n");
+  }else{
+    printf("year is not selected\n");
+  }
 }

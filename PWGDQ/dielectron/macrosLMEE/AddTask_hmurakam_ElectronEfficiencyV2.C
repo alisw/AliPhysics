@@ -2,7 +2,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
 									   Bool_t isAOD = kFALSE,
 									   Bool_t getFromAlien = kFALSE,
 									   TString configFile="./Config_hmurakam_ElectronEfficiencyV2.C",
-									   Bool_t tofcor = kFALSE)
+									   Bool_t tofcor = kFALSE,
+									   TString year = "16")
 
 {
 
@@ -36,8 +37,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
 
   // Set TOF correction
   if(tofcor){
-    SetEtaCorrectionTOFRMS(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta);
-    SetEtaCorrectionTOFMean(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta); 
+    SetTOFSigmaEleCorrection(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, year.Data());
+    /* SetEtaCorrectionTOFRMS(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta); */
+    /* SetEtaCorrectionTOFMean(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta);  */
   }
 
   // Event selection. Is the same for all the different cutsettings
@@ -72,6 +74,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
 
   // Resolution File, If resoFilename = "" no correction is applied
+  SetResolutionFile(year);
+  cout << resoFilename << endl;
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
