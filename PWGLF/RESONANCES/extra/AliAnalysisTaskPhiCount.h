@@ -219,16 +219,10 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> TODO: TBD WIP
     //
-    /*
-        void                    fSetZero                    ();
-        Bool_t                    fSetKaonPID                 ( AliAODTrack *     track );
-        Bool_t                    fIsPhiCandidate             ( TLorentzVector    fPhi );
-        Bool_t                    fIsPhiGen                   ( AliAODMCParticle* particle );
-        Bool_t                    fIsPhiRec                   ( AliAODMCParticle* particle );
-        Bool_t                    fIsPhi                      ( AliAODMCParticle* particle );
-        Bool_t                    fIsKaonTruPhi               ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon );
-        void                    fFillPIDHist                ( AliAODTrack *     track, Int_t iIndex );
-    */
+    Bool_t                    fIsPhiGen                   ( AliAODMCParticle* particle );
+    Bool_t                    fIsPhiRec                   ( AliAODMCParticle* particle );
+    Bool_t                    fIsPhi                      ( AliAODMCParticle* particle );
+    Bool_t                    fIsKaonTruPhi               ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon );
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> Class Definition
     //

@@ -301,7 +301,6 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
         }
     }
     
-    /*
     // Loop over all primary MC particle
     if ( kMCbool )
     {
@@ -325,7 +324,7 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
             fnPhiTru++;
         }
     }
-*/
+    
     // Saving output
     fFillTrees();
     fPostData();
@@ -724,77 +723,13 @@ bool        AliAnalysisTaskPhiCount::fIsPhiCandidate ( TLorentzVector fPhi )    
 
 
 
-/*
+
 //
 //
 //_____________________________________________________________________________
 //
+//  TO BE REVISED
 //
-
-//_____________________________________________________________________________
-
-void    AliAnalysisTaskPhiCount::fSetZero()
-{
-    //Setting all counters and global variables to zero
-    fMultiplicity   =   0;
-    fnPhi           =   0;
-    fnPhiTru        =   0;
-    fnKaon          =   0;
-    fnPhiTru        =   0;
-}
-
-//_____________________________________________________________________________
-
-void    AliAnalysisTaskPhiCount::fPostData( Bool_t fEventEfficiency, Int_t nPhi, Int_t nPhiTru,Int_t nKaon, Int_t nKaonTru)
-{
-    // Post-data for TLists
-    PostData(1, fAnalysisOutputList);
-    PostData(2, fQCOutputList);
-    
-    if ( !fEventEfficiency )
-    {
-        // Filling data for TTrees
-        if ( nPhi !=0       && nPhi < 153)      fPhiCandidate   ->  Fill();
-        if ( nPhiTru !=0    && nPhiTru < 153)   fKaonCandidate  ->  Fill();
-        if ( nKaon !=0      && nKaon < 153)     fPhiEfficiency  ->  Fill();
-        if ( nKaonTru !=0   && nKaonTru < 153)  fKaonEfficiency ->  Fill();
-
-        // Filling event counts
-        if ( nPhi ==0 )         fHistEvntEff->Fill(6);
-        if ( nPhiTru ==0 )      fHistEvntEff->Fill(8);
-        if ( nKaon ==0 )        fHistEvntEff->Fill(10);
-        if ( nKaonTru ==0 )     fHistEvntEff->Fill(12);
-        if ( nPhi >= 153 )      fHistEvntEff->Fill(7);
-        if ( nPhiTru >= 153 )   fHistEvntEff->Fill(9);
-        if ( nKaon >= 153 )     fHistEvntEff->Fill(11);
-        if ( nKaonTru >= 153 )  fHistEvntEff->Fill(13);
-
-    }
-
-    // Post-data for TTrees
-    if ( kPhibool )                 PostData(3, fPhiCandidate);
-    if ( kKaonbool )                PostData(4, fKaonCandidate);
-    if ( kPhibool   &&  kMCbool )   PostData(5, fPhiEfficiency);
-    if ( kKaonbool  &&  kMCbool )   PostData(6, fKaonEfficiency);
-}
-
-//_____________________________________________________________________________
-
-bool    AliAnalysisTaskPhiCount::fSetKaonPID ( AliAODTrack* track )
-{
-    auto fbTPC       = (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
-    auto fbTOF       = (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
-    auto ffSigTOF    = (fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon));
-    auto ffSigTPC    = (fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
-    
-    if ( fabs(ffSigTOF) <= 10 && fbTOF )    fTOFSigma[fnKaon]= static_cast<Char_t>(ffSigTOF*10);
-    else                                    fTOFSigma[fnKaon]= static_cast<Char_t>(-127);
-    if ( fabs(ffSigTPC) <= 10 && fbTPC )    fTPCSigma[fnKaon]= static_cast<Char_t>(ffSigTPC*10);
-    else                                    fTPCSigma[fnKaon]= static_cast<Char_t>(-127);
-    
-    return  fIsKaonCandidate(track);
-}
-
 //_____________________________________________________________________________
 
 bool    AliAnalysisTaskPhiCount::fIsKaonTruPhi ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon )
@@ -802,14 +737,6 @@ bool    AliAnalysisTaskPhiCount::fIsKaonTruPhi ( AliAODMCParticle* piKaon, AliAO
     if ( !piKaon || !pjKaon ) return false;
     if ( piKaon->GetMother() == pjKaon->GetMother() && (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(pjKaon->GetMother()))->GetPdgCode() == 333 ) ) return true;
     else return false;
-}
-
-//_____________________________________________________________________________
-
-bool    AliAnalysisTaskPhiCount::fIsPhiCandidate ( TLorentzVector fPhi )
-{
-    if ( fPhi.Mag() < 0.75 || fPhi.Mag() > 1.25 ) return false;
-    return true;
 }
 
 //_____________________________________________________________________________
@@ -862,38 +789,3 @@ bool    AliAnalysisTaskPhiCount::fIsPhi ( AliAODMCParticle* particle )
 }
 
 //_____________________________________________________________________________
-
-void    AliAnalysisTaskPhiCount::fFillPIDHist ( AliAODTrack * track , Int_t iIndex )
-{
-    if ( !track ) return;
-    if ( (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) )
-    {
-        auto ffSigTPC    = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
-        if ( iIndex == 0 ) fHistTPCPID0->Fill(track->P(), track->GetTPCsignal());
-        if ( iIndex == 1 ) fHistTPCPID1->Fill(track->P(), track->GetTPCsignal());
-        if ( iIndex == 2 ) fHistTPCPID2->Fill(track->P(), track->GetTPCsignal());
-        if ( iIndex == 3 ) fHistTPCPID3->Fill(track->Pt(), ffSigTPC);
-    }
-    if ( (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) )
-    {
-        auto ffSigTOF    = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
-        
-        Float_t fTrackLength(track->GetIntegratedLength()*1e-2);   // Track Length in cm
-        if ( fTrackLength < 0. ) return;
-        
-        Float_t fTrackTime(track->GetTOFsignal()*1e-12);           // Track Time in s
-        if ( fTrackTime < 0. ) return;
-        
-        // Track Beta
-        Float_t fTrackBeta = fTrackLength/(fTrackTime*TMath::C());
-        
-        if ( iIndex == 0 ) fHistTOFPID0->Fill(track->P(), fTrackBeta);
-        if ( iIndex == 1 ) fHistTOFPID1->Fill(track->P(), fTrackBeta);
-        if ( iIndex == 2 ) fHistTOFPID2->Fill(track->P(), fTrackBeta);
-        if ( iIndex == 3 ) fHistTOFPID3->Fill(track->Pt(), ffSigTOF);
-    }
-    return;
-}
-
-//_____________________________________________________________________________
-*/
