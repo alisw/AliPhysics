@@ -1,51 +1,57 @@
 // TODO LIST
 // TODO: You're all set!
 
-AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString name = "name" )
+AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, Int_t fAnalysisOption = 0, TString fName = "name" )
 {
     // Analysis Manager
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliAnalysisManager         *fAliAnlManager      =   AliAnalysisManager::GetAnalysisManager();
     
     // Filename
-    TString fileName = AliAnalysisManager::GetCommonFileName();
+    TString fileName                                =   AliAnalysisManager::GetCommonFileName();
     
     // Task initialisation
-    AliAnalysisTaskPhiCount* task = new AliAnalysisTaskPhiCount(name.Data());
+    AliAnalysisTaskPhiCount    *fAliAnlTask         =   new AliAnalysisTaskPhiCount(fName.Data());
     
     // Checks
-    if (!mgr)                           return 0x0;
-    if (!mgr->GetInputEventHandler())   return 0x0;
-    if (!task)                          return 0x0;
+    if (!fAliAnlManager)                            return 0x0;
+    if (!fAliAnlManager->GetInputEventHandler())    return 0x0;
+    if (!fAliAnlTask)                               return 0x0;
     
     // task Selection
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAnyINT);
     
-    // MC option
-    task-> fSetMCFlag(MCFlag);
-    task-> fSetPhiFlag(PhiFlag);
-    task-> fSetKaonFlag(KaonFlag);
+    // Task options
+    fAliAnlTask ->  SetMCFlag(MCFlag);
+    fAliAnlTask ->  SetPhiFlag(PhiFlag);
+    fAliAnlTask ->  SetKaonFlag(KaonFlag);
+    
+    switch ( fAnalysisOption ) {
+        case 1:
+            fAliAnlTask -> SetFilterBit(0);
+            break;
+            
+        default:
+            fAliAnlTask -> SetFilterBit(5);
+            break;
+    }
     
     // Input
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+    fAliAnlManager->ConnectInput(fAliAnlTask,0,fAliAnlManager->GetCommonInputContainer());
     
     // Output
     // - // TLists
     
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("fAnalysisOutputList",   TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("fQCOutputList",         TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    fAliAnlManager->ConnectOutput(fAliAnlTask,1,fAliAnlManager->CreateContainer(Form("fAnalysisOutputList_%i_%s",fAnalysisOption,fName.Data()),     TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    fAliAnlManager->ConnectOutput(fAliAnlTask,2,fAliAnlManager->CreateContainer(Form("fQCOutputList"),                                              TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     
     // - // TTrees
-    
-    if ( PhiFlag )  mgr->ConnectOutput(task,3,mgr->CreateContainer("OutContainer3", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    if ( KaonFlag ) mgr->ConnectOutput(task,4,mgr->CreateContainer("OutContainer4", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    if ( MCFlag )
-    {
-        if ( PhiFlag )  mgr->ConnectOutput(task,5,mgr->CreateContainer("OutContainer5", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-        if ( KaonFlag ) mgr->ConnectOutput(task,6,mgr->CreateContainer("OutContainer6", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    }
+    if ( PhiFlag )              fAliAnlManager->ConnectOutput(fAliAnlTask,3,fAliAnlManager->CreateContainer("OutContainer3", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if ( KaonFlag )             fAliAnlManager->ConnectOutput(fAliAnlTask,4,fAliAnlManager->CreateContainer("OutContainer4", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if ( MCFlag && PhiFlag )    fAliAnlManager->ConnectOutput(fAliAnlTask,5,fAliAnlManager->CreateContainer("OutContainer5", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if ( MCFlag && KaonFlag )   fAliAnlManager->ConnectOutput(fAliAnlTask,6,fAliAnlManager->CreateContainer("OutContainer6", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     
     // Add task
-    mgr->AddTask(task);
+    fAliAnlManager->AddTask(fAliAnlTask);
     
-    return task;
+    return fAliAnlTask;
 }
