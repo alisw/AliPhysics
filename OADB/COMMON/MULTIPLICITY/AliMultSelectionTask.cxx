@@ -206,6 +206,7 @@ fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
 fMC_SpherocityTracks(0),
+fMC_IsPileup(kFALSE), 
 
 //Histos
 fHistEventCounter(0),
@@ -369,6 +370,7 @@ fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
 fMC_SpherocityTracks(0),
+fMC_IsPileup(kFALSE),
 
 //Histos
 fHistEventCounter(0),
@@ -702,6 +704,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //A.T. FIXME change into AliMultVariable
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
+        fTreeEvent->Branch("fMC_IsPileup", &fMC_IsPileup, "fMC_IsPileup/O");
         
         //Automatic Loop for linking directly to AliMultInput
         for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
@@ -1190,6 +1193,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 AliGenDPMjetEventHeader* dpmHeader=0;
                 AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
                 
+                //Check pileup
+                fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, "Hijing");
+              
                 //DPMJet/HIJING info if available
                 if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
                     hHijing = (AliGenHijingEventHeader*)mcGenH;
