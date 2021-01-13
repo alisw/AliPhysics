@@ -149,7 +149,7 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
     }
     fOutputList.Add(fEventStatT0);
     
-	TString selectionCases[21] = {
+	TString selectionCases[25] = {
 		"no_selection",
 		"physics_selected",
 		"V0_timing_cut",
@@ -170,7 +170,11 @@ void AliAnalysisTaskVdmStability::UserCreateOutputObjects()
 		"V0_timing_cut_pileup_rejection_z-vertex_10nContCut1",
 		"V0_timing_cut_pileup_rejection_z-vertex_30nContCut2",
 		"V0_timing_cut_pileup_rejection_z-vertex_10nContCut2",
-		"V0_timing_cut_z-vertex_30nContCut1"
+		"V0_timing_cut_z-vertex_30nContCut1",
+		"TIME",
+		"TIME_PS",
+		"TIME_PU",
+		"TIME_PS_PU"
 	};
 	
     for (Int_t iCase = 0; iCase < fNSelectionCases; iCase++){
@@ -244,7 +248,7 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
     fGoodTime = CheckTime(fTV0A,fTV0C);
     
     //set pileup
-    fPileupEvent = fEvent->IsPileupFromSPD(3,0.8,3.,2.,5.);
+    fPileupEvent = fEvent->IsPileupFromSPD(5,0.8,3.,2.,5.);
     
     //Fill event statistics histograms
     //-----------------------------------------------------
@@ -492,13 +496,53 @@ void AliAnalysisTaskVdmStability::UserExec(Option_t *)
 		}
 	}
 	
-	//V0 timing cut+ z-vertex cut (+/-30) + nCont > 0
+	//V0 timing cut + z-vertex cut (+/-30) + nCont > 0
 	if (fSelectPhysics && fGoodTime && zCut30nCont0){
 		v0_H[20]->Fill(binLabel.Data(),1);
 		if (!badTimeRun) v0_Timing[20]->Fill(tV0diff,tV0sum);
 		if (fIsT0fired){
 			t0_H[20]->Fill(binLabel.Data(),1);
 			if (!badTimeRun) t0_Timing[20]->Fill(tV0diff,tV0sum);
+		}
+	}
+	
+	//V0 timing cut
+	if (fGoodTime){
+		v0_H[21]->Fill(binLabel.Data(),1);
+		if (!badTimeRun) v0_Timing[21]->Fill(tV0diff,tV0sum);
+		if (fIsT0fired){
+			t0_H[21]->Fill(binLabel.Data(),1);
+			if (!badTimeRun) t0_Timing[21]->Fill(tV0diff,tV0sum);
+		}
+	}
+	
+	//V0 timing cut + PS
+	if (fSelectPhysics && fGoodTime){
+		v0_H[22]->Fill(binLabel.Data(),1);
+		if (!badTimeRun) v0_Timing[22]->Fill(tV0diff,tV0sum);
+		if (fIsT0fired){
+			t0_H[22]->Fill(binLabel.Data(),1);
+			if (!badTimeRun) t0_Timing[22]->Fill(tV0diff,tV0sum);
+		}
+	}
+	
+	//V0 timing cut + PU
+	if (fGoodTime && !fPileupEvent){
+		v0_H[23]->Fill(binLabel.Data(),1);
+		if (!badTimeRun) v0_Timing[23]->Fill(tV0diff,tV0sum);
+		if (fIsT0fired){
+			t0_H[23]->Fill(binLabel.Data(),1);
+			if (!badTimeRun) t0_Timing[23]->Fill(tV0diff,tV0sum);
+		}
+	}
+	
+	//V0 timing cut + PU + PS
+	if (fSelectPhysics && fGoodTime && !fPileupEvent){
+		v0_H[24]->Fill(binLabel.Data(),1);
+		if (!badTimeRun) v0_Timing[24]->Fill(tV0diff,tV0sum);
+		if (fIsT0fired){
+			t0_H[24]->Fill(binLabel.Data(),1);
+			if (!badTimeRun) t0_Timing[24]->Fill(tV0diff,tV0sum);
 		}
 	}
     
@@ -536,7 +580,7 @@ void AliAnalysisTaskVdmStability::Terminate(Option_t *)
 Bool_t AliAnalysisTaskVdmStability::CheckTime(Float_t timeA, Float_t timeC){
     Float_t tV0sum = timeA + timeC;
     Float_t tV0diff = timeA - timeC;
-    return (((4 < tV0diff) && (tV0diff < 12)) && ((10 < tV0sum) && (tV0sum < 18)));
+    return (((5. < tV0diff) && (tV0diff < 11.5)) && ((11. < tV0sum) && (tV0sum < 17.5)));
 }
 
 //Timing Run
