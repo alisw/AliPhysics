@@ -1242,17 +1242,25 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     calotrigger.fBCsID = eventID;
     int col, row, fastorID;
     calotriggers->GetPosition(col, row);
+    // filter null entries: they usually have negative entries and no trigger bits
+    // in case of trigger bits the energy can be 0 or negative but the trigger position is marked
+    int l1timesum, triggerbits;
+    calotriggers->GetTriggerBits(triggerbits);
+    calotriggers->GetL1TimeSum(l1timesum);
+    if(!triggerbits && l1timesum <= 0) continue;
+    // store trigger
     geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
     calotrigger.fFastOrAbsID = fastorID;
     calotriggers->GetAmplitude(calotrigger.fL0Amplitude);
     calotrigger.fL0Amplitude = AliMathBase::TruncateFloatFraction(calotrigger.fL0Amplitude, mCaloAmp);
+    calotrigger.fL1TimeSum = AliMathBase::TruncateFloatFraction(l1timesum, mCaloAmp);
     calotriggers->GetTime(calotrigger.fL0Time);
     calotrigger.fL0Time = AliMathBase::TruncateFloatFraction(calotrigger.fL0Time, mCaloTime);
     calotriggers->GetTriggerBits(calotrigger.fTriggerBits);
     Int_t nL0times;
     calotriggers->GetNL0Times(nL0times);
     calotrigger.fNL0Times = nL0times;
-    calotriggers->GetL1TimeSum(calotrigger.fTriggerBits);
+    calotrigger.fTriggerBits = triggerbits;
     calotrigger.fCaloType = 1;
     FillTree(kCaloTrigger);
     if (fTreeStatus[kCaloTrigger]) ncalotriggers_filled++;
