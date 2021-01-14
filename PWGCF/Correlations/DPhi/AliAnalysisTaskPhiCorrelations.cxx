@@ -1328,7 +1328,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0) {
     if (!fSkipStep6)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight, kTRUE, kTRUE, 0, .0, kTRUE);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight, kTRUE, kTRUE, 0, -1, kTRUE);
 
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
 
@@ -1385,7 +1385,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
           TObjArray* bgTracks = pool->GetEvent(jMix);
 
           if (!fSkipStep6)
-            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, 0, .0, kTRUE);
+            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, 0, -1, kTRUE);
 
           if (fTwoTrackEfficiencyCut > 0)
             fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
