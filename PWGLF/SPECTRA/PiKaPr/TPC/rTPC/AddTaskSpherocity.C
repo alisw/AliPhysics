@@ -23,7 +23,8 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		float IsotrValue = 0.7,
 		float IsotrValue_0 = 0.7,
 		float IsotrValue_1 = 0.7,
-		float IsotrValue_2 = 0.7
+		float IsotrValue_2 = 0.7,
+		int TrkCutMode = 0
 		)   
 {
 
@@ -65,6 +66,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 	task->SetAnalysisTask(PostCalib);
+	task->SetTrackCutsSystVars(TrkCutMode);
 
 	std::string buf("MyOutputContainer");
 
@@ -79,7 +81,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_%s",buf.c_str(),multClass), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_%s_TrkCutMode_%d",buf.c_str(),multClass,TrkCutMode), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;
