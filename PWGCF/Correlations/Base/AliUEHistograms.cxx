@@ -579,7 +579,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   if (weight < 0)
     fillpT = kTRUE;
   
-  if ((twoTrackEfficiencyCutValue > 0) && !fTwoTrackDistancePt[0])
+  if (twoTrackCuts && (twoTrackEfficiencyCutValue > 0) && !fTwoTrackDistancePt[0])
   {
     // do not add this hists to the directory
     Bool_t oldStatus = TH1::AddDirectoryStatus();
