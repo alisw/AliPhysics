@@ -1247,7 +1247,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     int l1timesum, triggerbits;
     calotriggers->GetTriggerBits(triggerbits);
     calotriggers->GetL1TimeSum(l1timesum);
-    if(!triggerbits || l1timesum <= 0) continue;
+    if(!triggerbits && l1timesum <= 0) continue;
     // store trigger
     geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
     calotrigger.fFastOrAbsID = fastorID;
