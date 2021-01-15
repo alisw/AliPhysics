@@ -425,7 +425,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp, NoTracks)
 /// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms and cuts
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
@@ -437,7 +437,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, TString calorimeter, 
                                      TString cutsString,    
-                                     Bool_t  nonLinOn,      Bool_t calibrate,
+                                     Int_t   nonLinOn,      Bool_t calibrate,
                                      Int_t   year,          
                                      TString trigger,       Int_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
@@ -498,14 +498,14 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 /// \param simulation : A bool identifying the data as simulation
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts (FullCalo)
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation, 
-                                        TString calorimeter, TString cutsString, Bool_t nonLinOn,      
+                                        TString calorimeter, TString cutsString, Int_t nonLinOn,      
                                         Bool_t calibrate,    Int_t   year,        
                                         Bool_t printSettings, Int_t   debug)
 {
@@ -637,7 +637,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
@@ -682,7 +682,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
  TString  clustersArray = "",
  TString  cutsString    = "", 
  Bool_t   calibrate     = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = kFALSE,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  Bool_t   mixOn         = kTRUE,
