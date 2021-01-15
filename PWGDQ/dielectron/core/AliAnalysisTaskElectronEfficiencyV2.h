@@ -210,6 +210,7 @@ private:
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
   double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
+  Double_t CalculateNbins();
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -312,6 +313,8 @@ private:
   TFile* fCentralityFile;
   std::string fCentralityFilename;
   TH1F* fHistCentralityCorrection;
+  Double_t fNBinsCentralityCorr;
+  Double_t fEntriesCentralityCorr;
   TList* fOutputListSupportHistos;
 
   std::vector<TH3D*> fHistGenPosPart;
@@ -378,7 +381,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 4);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 5);
 };
 
 
