@@ -49,7 +49,7 @@ AliAnaRandomTrigger::AliAnaRandomTrigger() :
 //_________________________________________________________________________
 Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 {
-  if ( fTriggerDetector!=kEMCAL || fTriggerDetector!=kDCAL ) return kFALSE;
+  if ( fTriggerDetector != kEMCAL && fTriggerDetector != kDCAL ) return kFALSE;
   
   //-------------------------------------
   // Get the corresponding cell in EMCAL, check if it exists in acceptance (phi gaps, borders)

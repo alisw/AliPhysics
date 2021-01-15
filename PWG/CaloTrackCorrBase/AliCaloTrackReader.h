@@ -852,6 +852,13 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
+  void   SwitchOnMCPromptPhotonsSelection()         { fAcceptMCPromptPhotonOnly    = kTRUE ; }
+  void   SwitchOffMCPromptPhotonsSelection()        { fAcceptMCPromptPhotonOnly    = kFALSE; }
+  Bool_t AreMCPromptPhotonsSelected()         const { return fAcceptMCPromptPhotonOnly     ; }
+  void   SwitchOnMCFragmentationPhotonsRejection()  { fRejectMCFragmentationPhoton = kTRUE ; }
+  void   SwitchOffMCFragmentationPhotonsRejection() { fRejectMCFragmentationPhoton = kFALSE; }
+  Bool_t AreMCFragmentationPhotonsRejected()  const { return fRejectMCFragmentationPhoton  ; }
+
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -1227,12 +1234,14 @@ public:
   Int_t            fMCGenerIndexToAccept[5];       ///<  List with index of generators that should not be included
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
-  
-  
+
   AliGenEventHeader       * fGenEventHeader;       //!<! Event header
   AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
   Bool_t                    fCheckPythiaEventHeader; ///< Switch on/off recovery of the Pythia event header
   
+  Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
+  Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1240,7 +1249,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,94) ;
+  ClassDef(AliCaloTrackReader,95) ;
   /// \endcond
 
 } ;

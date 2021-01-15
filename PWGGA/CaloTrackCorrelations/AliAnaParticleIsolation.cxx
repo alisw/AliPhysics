@@ -64,7 +64,7 @@ fFillOverlapHistograms(0),
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),             fFillTrackOriginHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fFillNLMHistograms(0),                   
-fFillOnlyTH3Histo(0),             
+fFillOnlyTH3Histo(0),             fFillIsolationControlHistograms(0),
 fLeadingOnly(0),                  fCheckLeadingWithNeutralClusters(0),
 fSelectPrimariesInCone(0),        fMakePrimaryPi0DecayStudy(0),
 fMinCellsAngleOverlap(0),         fNumberMCParticleCases(fgkNmcTypes),
@@ -86,7 +86,6 @@ fIsExoticTrigger(0),              fClusterExoticity(1),
 fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
 fhPtTrackInConeOtherBCPileUpSPD(0), fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
-fhPtInConeCent(0),
 fhPerpConeSumPtTOFBC0(0),         fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInPerpConeTOFBC0(0),
 fhPtM02SumPtCone(0),             fhPtM02SumPtConeCharged(0),
@@ -548,7 +547,7 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
       fhPtDecay    [isolated][ibit]->Fill(pt,       GetEventWeight()*weightTrig);
       fhEtaPhiDecay[isolated][ibit]->Fill(eta, phi, GetEventWeight()*weightTrig);
       
-      if ( IsDataMC() && mcIndex < fNumberMCParticleCases )
+      if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
       {
         fhPtDecayMC[isolated][ibit][mcIndex]->Fill(pt, GetEventWeight()*weightTrig);
         
@@ -556,7 +555,7 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
           fhPtDecayMC[isolated][ibit][kmcPhoton]->Fill(pt, GetEventWeight()*weightTrig);
         
         if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
-             fNumberMCParticleCases > kmcPi0DecayLostPair)
+            fNumberMCParticleCases > kmcPi0DecayLostPair)
         {
           if     ( mcIndex == kmcPi0Decay ) fhPtDecayMC[isolated][ibit][kmcPi0DecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
           else if( mcIndex == kmcEtaDecay ) fhPtDecayMC[isolated][ibit][kmcEtaDecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
@@ -601,7 +600,7 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
     //
     // MC
     //
-    if ( IsDataMC() && mcIndex < fNumberMCParticleCases )
+    if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
       {
@@ -617,7 +616,7 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
           fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
         else if( mcIndex == kmcEtaDecay ) 
           fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
-       
+
         if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
         {
           if     ( mcIndex == kmcPi0Decay ) 
@@ -808,7 +807,7 @@ void AliAnaParticleIsolation::FillTrackMatchingControlHistograms
     if ( pt > 0.5 ) 
       fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
    
-    if ( IsDataMC() && mcIndex < fNumberMCParticleCases )
+    if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(pt, dZ, GetEventWeight()*weightTrig);
       fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(pt, dR, GetEventWeight()*weightTrig);
@@ -819,7 +818,7 @@ void AliAnaParticleIsolation::FillTrackMatchingControlHistograms
   
   // Check dEdx and E/p of matched clusters
   
-  if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+  if ( TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05 )
   {
     AliVTrack *track = GetCaloUtils()->GetMatchedTrack(fCluster, GetReader()->GetInputEvent());
     
@@ -834,7 +833,7 @@ void AliAnaParticleIsolation::FillTrackMatchingControlHistograms
     //else
     //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
     
-    if(IsDataMC())
+    if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
       {
@@ -847,7 +846,6 @@ void AliAnaParticleIsolation::FillTrackMatchingControlHistograms
           fhTrackMatchedMCParticle[isolated]->Fill(pt, 1.5, GetEventWeight()*weightTrig);
         else                                                                                   
           fhTrackMatchedMCParticle[isolated]->Fill(pt, 3.5, GetEventWeight()*weightTrig);
-        
       }
       else
       {
@@ -1138,12 +1136,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtEtaPhi[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtEtaPhi[iso][ishsh]) ;
       
-      if ( IsDataMC() )
+      if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected())
       {
         // For histograms in arrays, index in the array, corresponding to any particle origin
         
         for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
         {
+          if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+          {
+            if ( mcPartName[imc].Contains("Prompt") ) continue;
+            if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+            if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+          }
+          
           fhPtMC[imc][iso][ishsh]  = new TH1F
           (Form("hPt%s%sMC%s",isoName[iso].Data(),m02Name[ishsh].Data(),mcPartName[imc].Data()),
            Form("%s%s, %s %s",
@@ -1216,10 +1221,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhPtLambda0Decay[iso][ibit]) ;
         }
         
-        if(IsDataMC())
+        if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
         {
           for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
           {
+            if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+            {
+              if ( mcPartName[imc].Contains("Prompt") ) continue;
+              if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+              if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+            }
+            
             fhPtDecayMC[iso][ibit][imc]  =
             new TH1F(Form("hPtDecay%s_bit%d_MC%s",isoName[iso].Data(),fDecayBits[ibit],mcPartName[imc].Data()),
                      Form("#it{p}_{T} of %s, decay bit %d,  %s, %s",
@@ -1303,10 +1315,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       } // high mult
     }
     
-    if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() )
+    if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
       {
+        if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+        {
+          if ( mcPartName[imc].Contains("Prompt") ) continue;
+          if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+          if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+        }
+        
         fhPtM02SumPtConeMC[imc] = new TH3F
         (Form("hPtM02SumPtCone_MC%s",mcPartName[imc].Data()),
          Form("%s, MC %s", parTitleR.Data(), mcPartType[imc].Data()),
@@ -1335,7 +1354,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     } // MC, not high mult
     
     // Centrality dependent MC
-    if ( IsDataMC() && IsHighMultiplicityAnalysisOn() )
+    if ( IsDataMC() && IsHighMultiplicityAnalysisOn() && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       //printf("INIT, ncent %d, mc cases %d\n",GetNCentrBin(),fNumberMCParticleCases);
       fhPtM02SumPtConeCentMC = new TH3F*[GetNCentrBin()*fNumberMCParticleCases] ;
@@ -1347,6 +1366,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
         {
           Int_t index = icent*fNumberMCParticleCases+imc;
+          
+          if ( GetReader()->AreMCFragmentationPhotonsRejected() )
+          {
+            if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+            if ( mcPartName[imc].Contains("Prompt") ) continue;
+            if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+          }
           
           //printf("\t icent %d, imc %d, index %d\n",icent,imc,index);
 
@@ -1406,10 +1432,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhConeSumPtCentM02Cut[ishsh]) ;
       }
       
-      if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() )
+      if ( IsDataMC() && !IsHighMultiplicityAnalysisOn() && !GetReader()->AreMCPromptPhotonsSelected())
       {
         for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
         {
+          if ( GetReader()->AreMCFragmentationPhotonsRejected() )
+          {
+            if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+            if ( mcPartName[imc].Contains("Prompt") ) continue;
+            if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+          }
+
           fhConeSumPtM02CutMC[imc][ishsh] = new TH2F
           (Form("hConeSumPtM02%s_MC%s",m02Name[ishsh].Data(),mcPartName[imc].Data()),
            Form("%s%s, MC %s",parTitleR.Data(), m02Title[ishsh].Data(), mcPartType[imc].Data()),
@@ -1458,17 +1491,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhPtEventPlane[iso][ishsh]) ;
       }
     }
-  }
-  
-  if ( IsHighMultiplicityAnalysisOn() )
-  {
-    fhPtInConeCent  = new TH2F
-    ("hPtInConeCent",
-     Form("%s",parTitleR.Data()),
-      ncenbin,cenmin,cenmax, nptinconebins,ptinconemin,ptinconemax);
-    fhPtInConeCent->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
-    fhPtInConeCent->SetXTitle("Centrality (%)");
-    outputContainer->Add(fhPtInConeCent) ;
   }
   
   if ( fFillPerSMHistograms )
@@ -1995,6 +2017,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       TString mcChPartName[] = {"Pion","Kaon","Proton","Other"};
       for(Int_t imc = 0; imc < 4; imc++)
       {
+        if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+        {
+          if ( mcPartName[imc].Contains("Prompt") ) continue;
+          if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+          if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+        }
+        
         fhPtTrackInConeMCPrimary[imc]  = new TH2F
         (Form("hPtTrackInCone_Primary_%s",mcChPartName[imc].Data()),
          Form("Track cone reco #it{p}_{T} for %s, primary MC %s",parTitleR.Data(),mcChPartName[imc].Data()),
@@ -3056,10 +3085,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEOverP[iso]->SetYTitle("#it{E}/#it{p}");
       outputContainer->Add(fhEOverP[iso]);
       
-      if ( IsDataMC() )
+      if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
       {
         for(int imc = 0; imc < fNumberMCParticleCases; imc++)
         {
+          if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+          {
+            if ( mcPartName[imc].Contains("Prompt") ) continue;
+            if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+            if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+          }
+          
           fhTrackMatchedDEtaMC[imc][iso] = new TH2F
           (Form("hTrackMatchedDEta%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
            Form("%s - d#eta of cluster-track vs cluster energy, %s",isoTitle[iso].Data(),parTitle[iso].Data()),
@@ -3215,10 +3251,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         }
       }
       
-      if ( IsDataMC() )
+      if ( IsDataMC() && !GetReader()->AreMCPromptPhotonsSelected() )
       {
         for(Int_t imc = 0; imc < fNumberMCParticleCases; imc++)
         {
+          if ( GetReader()->AreMCFragmentationPhotonsRejected() )
+          {
+            if ( mcPartName[imc].Contains("Frag"  ) ) continue;
+            if ( mcPartName[imc].Contains("Prompt") ) continue;
+            if ( mcPartName[imc].Contains("ISR"   ) ) continue;
+          }
+
           fhPtLambda0MC[imc][iso]  = new TH2F
           (Form("hPtLambda0%s_MC%s",isoName[iso].Data(),mcPartName[imc].Data()),
            Form("%s cluster : #it{p}_{T} vs #sigma_{long}^{2}: %s %s",
@@ -3237,7 +3280,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
           outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
           
-          if (  fStudyNCellsCut )
+          if ( fStudyNCellsCut )
           {
             fhPtLambda0MCNCellCut[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%sNCellCut",isoName[iso].Data(),mcPartName[imc].Data()),
@@ -3249,7 +3292,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add( fhPtLambda0MCNCellCut[imc][iso]) ;
           }
           
-          if(fFillOverlapHistograms)
+          if ( fFillOverlapHistograms )
           {
             fhPtLambda0MCWith1Overlap[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
@@ -3428,7 +3471,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
     } // regions in EMCal
     
-    if (IsDataMC() && fStudyMCConversionRadius )
+    if (IsDataMC() && fStudyMCConversionRadius && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       fhMCConversionVertex[iso] = new TH2F
       (Form("hMCPhotonConversionVertex%s",isoName[iso].Data()),
@@ -3439,7 +3482,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhMCConversionVertex[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhMCConversionVertex[iso]) ;
       
-      if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0)
+      if ( GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 )
       {
         fhMCConversionVertexTRD[iso] = new TH2F
         (Form("hMCPhotonConversionVertexTRD%s",isoName[iso].Data()),
@@ -3518,6 +3561,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     for(Int_t i = 0; i < fgkNmcPrimTypes; i++)
     {
+      if ( GetReader()->AreMCPromptPhotonsSelected() && !ppname[i].Contains("Prompt") ) continue;
+      
+      if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+      {
+        if ( ppname[i].Contains("Prompt") ) continue;
+        if ( ppname[i].Contains("Frag"  ) ) continue;
+        if ( ppname[i].Contains("ISR"   ) ) continue;
+      }
+
       if ( !fFillOnlyTH3Histo )
       {
         fhPtPrimMC[i]  = new TH1F
@@ -4019,14 +4071,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   
   // Get histograms created and filled in AliIsolationCut and put them in the output list
   //
-  GetIsolationCut()->SetHistogramRanges(GetHistogramRanges()); // important, not initialized inside AliIsolationCut
-  GetIsolationCut()->SetNCentrBins(GetNCentrBin()); 
-  TList * isoHistos = GetIsolationCut()->GetCreateOutputObjects() ;
-  
-  for(Int_t iIso = 0; iIso < isoHistos->GetEntries(); iIso++) 
-    outputContainer->Add(isoHistos->At(iIso)) ;
-  
-  delete isoHistos;
+  if ( fFillIsolationControlHistograms )
+  {
+    GetIsolationCut()->SetHistogramRanges(GetHistogramRanges()); // important, not initialized inside AliIsolationCut
+    GetIsolationCut()->SetNCentrBins(GetNCentrBin()); 
+    TList * isoHistos = GetIsolationCut()->GetCreateOutputObjects() ;
+    
+    for(Int_t iIso = 0; iIso < isoHistos->GetEntries(); iIso++) 
+    { 
+      TH1 * obj = (TH1*) isoHistos->At(iIso);
+      obj->SetName(Form("IsoCut_%s",obj->GetName()));
+      outputContainer->Add(obj) ;
+    }
+    
+    delete isoHistos;
+  }
   
   // Return full list
   //
@@ -4138,6 +4197,8 @@ void AliAnaParticleIsolation::InitParameters()
 
   fNExoCutInCandidate = 20;
   for(Int_t i = 0; i < 20; i++) fExoCutInCandidate[i] = 0.61+0.02*i;
+  
+  fFillIsolationControlHistograms = kTRUE;
 }
 
 //_________________________________________________________________________________________
@@ -4363,8 +4424,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 {
   // In case of simulated data, fill acceptance histograms
   // Not ready for multiple case analysis.
-  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
-    FillAcceptanceHistograms();
+
+  if ( (IsDataMC() || GetReader()->AreMCPromptPhotonsSelected()) && 
+      IsGeneratedParticlesAnalysisOn() ) FillAcceptanceHistograms();
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -4455,65 +4517,67 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhConeSumPtCentM02Cut[narrow]->Fill(pt, coneptsum, GetEventCentrality(), GetEventWeight()*weightTrig);
       }
 
-      if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !IsHighMultiplicityAnalysisOn() )
+      if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
       {
-        fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-
-        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-
-        if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+        if ( !IsHighMultiplicityAnalysisOn() )
         {
-          fhPtM02SumPtConeChargedMC[mcIndex]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           
           if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtM02SumPtConeChargedMC[kmcPhoton]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
-        }
-        
-        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
-             fNumberMCParticleCases > kmcPi0DecayLostPair )
-         {
-           if      ( mcIndex == kmcPi0Decay )
-             fhPtM02SumPtConeMC[kmcPi0DecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-           else if ( mcIndex == kmcEtaDecay )
-             fhPtM02SumPtConeMC[kmcEtaDecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-         }
-         
-        if ( inM02Windows  && !fFillOnlyTH3Histo )
-        {
-          fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
-
-          if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-              fhConeSumPtM02CutMC[kmcPhoton][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+            fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+          
+          if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhPtM02SumPtConeChargedMC[mcIndex]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+            
+            if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+              fhPtM02SumPtConeChargedMC[kmcPhoton]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          }
           
           if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
-               fNumberMCParticleCases > kmcPi0DecayLostPair )
+              fNumberMCParticleCases > kmcPi0DecayLostPair )
           {
             if      ( mcIndex == kmcPi0Decay )
-              fhConeSumPtM02CutMC[kmcPi0DecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+              fhPtM02SumPtConeMC[kmcPi0DecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
             else if ( mcIndex == kmcEtaDecay )
-              fhConeSumPtM02CutMC[kmcEtaDecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+              fhPtM02SumPtConeMC[kmcEtaDecayLostPair]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           }
-        } // in m02 window
-      } // MC, not high mult
-      else if ( IsDataMC() && mcIndex < fNumberMCParticleCases && 
-               icent < GetNCentrBin() && icent >=0  && GetNCentrBin() > 0 )
-      {
-        Int_t index   = icent*fNumberMCParticleCases+mcIndex;
-        Int_t indexPh = icent*fNumberMCParticleCases+kmcPhoton;
-        fhPtM02SumPtConeCentMC[index]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-        
-        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtM02SumPtConeCentMC[indexPh]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
-        
-        if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+
+          if ( inM02Windows  && !fFillOnlyTH3Histo )
+          {
+            fhConeSumPtM02CutMC[mcIndex][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+
+            if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+              fhConeSumPtM02CutMC[kmcPhoton][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+            
+            if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
+                fNumberMCParticleCases > kmcPi0DecayLostPair )
+            {
+              if      ( mcIndex == kmcPi0Decay )
+                fhConeSumPtM02CutMC[kmcPi0DecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+              else if ( mcIndex == kmcEtaDecay )
+                fhConeSumPtM02CutMC[kmcEtaDecayLostPair][narrow]->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
+            }
+          } // in m02 window          
+        } // MC, not high mult
+        else if ( icent < GetNCentrBin() && icent >=0  && GetNCentrBin() > 0 )
         {
-          fhPtM02SumPtConeChargedCentMC[index]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          Int_t index   = icent*fNumberMCParticleCases+mcIndex;
+          Int_t indexPh = icent*fNumberMCParticleCases+kmcPhoton;
+          fhPtM02SumPtConeCentMC[index]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           
           if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtM02SumPtConeChargedCentMC[indexPh]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
-        }
-      } // MC, high mult
+            fhPtM02SumPtConeCentMC[indexPh]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+          
+          if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhPtM02SumPtConeChargedCentMC[index]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+            
+            if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+              fhPtM02SumPtConeChargedCentMC[indexPh]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          }
+        } // MC, high mult
+      }
     } // TH3 histo and TH2 pT iso
 
     //---------------------------------------------------------------
@@ -4664,10 +4728,10 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     }
     
     //---------------------------------------------------------------
-     // Fill Shower shape  histograms
-     //---------------------------------------------------------------
-     
-     FillShowerShapeControlHistograms(aod, mcIndex, noverlaps);
+    // Fill Shower shape  histograms
+    //---------------------------------------------------------------
+    
+    FillShowerShapeControlHistograms(aod, mcIndex, noverlaps);
     
     //---------------------------------------------------------------
     // Fill track matching histograms
@@ -4715,7 +4779,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     fhPtEtaPhi[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
     
-    if ( IsDataMC() && mcIndex < fNumberMCParticleCases )
+    if ( IsDataMC() && mcIndex < fNumberMCParticleCases && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       // For histograms in arrays, index in the array, corresponding to any particle origin
       if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
@@ -4725,7 +4789,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       }
       
       if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) && 
-           fNumberMCParticleCases > kmcPi0DecayLostPair )
+          fNumberMCParticleCases > kmcPi0DecayLostPair )
       {
         if      ( mcIndex == kmcPi0Decay )
         {
@@ -4751,7 +4815,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPtCentrality[isolated][narrow]->Fill(pt, GetEventCentrality(), GetEventWeight()*weightTrig) ;
       fhPtEventPlane[isolated][narrow]->Fill(pt, GetEventPlaneAngle(), GetEventWeight()*weightTrig) ;
     }
-    
   }// aod loop
 }
 
@@ -4889,6 +4952,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
                                             GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
                                             photonE); // Not used, should be cluster
+    
+    if ( GetReader()->AreMCPromptPhotonsSelected() && 
+        !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) ) continue;
+
+    if ( GetReader()->AreMCFragmentationPhotonsRejected() ) 
+    {
+      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) ) continue;
+      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) ) continue;
+      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) ) continue;
+    }
     
     if ( pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
     {
@@ -5394,68 +5467,81 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if ( !IsHighMultiplicityAnalysisOn() )
     {
       fhConeSumPtPrimMC[mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
-      fhConeSumPtPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+      if ( !GetReader()->AreMCPromptPhotonsSelected() )
+        fhConeSumPtPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
 
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
         fhConeSumPtChargedPrimMC[mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
-        fhConeSumPtChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
       }
 
       if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
       {
         fhConeSumPtUESubPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
-        fhConeSumPtUESubPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtUESubPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
 
         if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
         {
           fhConeSumPtUESubChargedPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
-          fhConeSumPtUESubChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtUESubChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
         }
       }
 
       if ( perpConePtSumCh > 0 && perpConePtSumNe > 0 )
       {
         fhConeSumPtPerpConeNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
-        fhConeSumPtPerpConeNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtPerpConeNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, perpConePtSumNe/perpConePtSumCh, GetEventWeight()*weightPt) ;
       }
 
       if ( sumPtInConeCh > 0 && sumPtInConeNe > 0 )
       {
         fhConeSumPtNeutralChargedRatioPrimMC[mcIndex]      ->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
-        fhConeSumPtNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
       }
     }
     else
     {
       fhConeSumPtCenPrimMC [mcIndex]      ->Fill(photonPt, sumPtInCone, centrality, GetEventWeight()*weightPt) ;
-      fhConeSumPtCenPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, centrality, GetEventWeight()*weightPt) ;
+      if ( !GetReader()->AreMCPromptPhotonsSelected() )
+        fhConeSumPtCenPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInCone, centrality, GetEventWeight()*weightPt) ;
 
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
         fhConeSumPtCenChargedPrimMC [mcIndex]      ->Fill(photonPt, sumPtInConeCh, centrality, GetEventWeight()*weightPt) ;
-        fhConeSumPtCenChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, centrality, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtCenChargedPrimMC [kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, centrality, GetEventWeight()*weightPt) ;
       }
 
       if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
       {
         fhConeSumPtUESubCenPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESub, centrality, GetEventWeight()*weightPt) ;
-        fhConeSumPtUESubCenPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, centrality, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtUESubCenPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, centrality, GetEventWeight()*weightPt) ;
 
         if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
         {
           fhConeSumPtUESubCenChargedPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
-          fhConeSumPtUESubCenChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtUESubCenChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
         }
       }
     }
     
     if ( !fFillOnlyTH3Histo )
     {
-      fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
-      fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
-      fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
-
+      if ( !GetReader()->AreMCPromptPhotonsSelected() )
+      {
+        fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
+        fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
+        fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
+      }
+      
       fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()*weightPt) ;
       fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
       fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
@@ -5624,7 +5710,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if ( !fFillOnlyTH3Histo )
       {
         fhPtPrimMCiso [mcIndex]      ->Fill(photonPt, GetEventWeight()*weightPt) ;
-        fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
       }
       
       if ( fMakePrimaryPi0DecayStudy )
@@ -5724,9 +5811,9 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
          fFillTaggedDecayHistograms,fNDecayBits);
   
   printf("Active histogram filled: TM %d, SS %d, per SM %d, per TCard %d,\n"
-         "EMCal region %d, NLM %d, TH3 only %d\n",
+         "EMCal region %d, NLM %d, TH3 only %d, AliIsolationCut histo %d\n",
          fFillTMHisto, fFillSSHisto, fFillPerSMHistograms, fFillPerTCardIndexHistograms, 
-         fFillEMCALRegionHistograms, fFillNLMHistograms, fFillOnlyTH3Histo);
+         fFillEMCALRegionHistograms, fFillNLMHistograms, fFillOnlyTH3Histo, fFillIsolationControlHistograms);
   
   printf("Studies: Tracks in cone %d, Conversion radius %d;\n"
          " pt in cone cuts %d (n=%d); eta cuts %d (n=%d);\n"
@@ -6030,9 +6117,6 @@ void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelatio
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
     }
-    
-    if ( IsHighMultiplicityAnalysisOn() ) 
-      fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight()*weightTrig);
     
     if ( fStudyPtCutInCone )
     {
@@ -6576,8 +6660,6 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
       fhPtInConeExoTrigger      ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
       fhPtTrackInConeExoTrigger ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
     }
-    
-    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight()*weightTrig);
     
     if(fStudyPtCutInCone)
     {
