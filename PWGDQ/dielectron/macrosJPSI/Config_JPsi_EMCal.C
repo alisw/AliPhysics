@@ -1,7 +1,8 @@
 ///*******************************************************
 ///Config Description
-/// August 23, 2020 - Cristiane Jahnke
+/// January 15, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
+/// fixed order of parameters!
 ///*******************************************************
 
 AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
@@ -14,13 +15,11 @@ Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
 Bool_t is_ESparseTPC,
-Bool_t is_MSparse,
 Bool_t is_EventsEG1,
 Bool_t is_EventsEG2,
-Bool_t isMultiAnalysis
-
+Bool_t isMultiAnalysis,
+Bool_t is_MSparse  //changed on January 08, 2021... bug on the order of the parameters...
                                             
-                                              
 )
 
 {

@@ -308,6 +308,11 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fHist_InvMass_pt_ULS_KF(0)
 ,fHist_InvMass_pt_LS_KF(0)
 
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
+
+
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_2(0)
@@ -667,6 +672,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
 ,fHist_InvMass_pt_LS_KF(0)
+
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
 
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
@@ -1146,6 +1155,17 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
 	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
+    
+    //Correlation btween leg1 and leg2
+    fHist_Correlation_leg1_emcal_leg2_not = new TH2F("fHist_Correlation_leg1_emcal_leg2_not","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    fHist_Correlation_leg1_not_leg2_emcal = new TH2F("fHist_Correlation_leg1_not_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    fHist_Correlation_leg1_emcal_leg2_emcal = new TH2F("fHist_Correlation_leg1_emcal_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    
+    fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_not);
+    fOutputList->Add(fHist_Correlation_leg1_not_leg2_emcal);
+    fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_emcal);
+    
+    
     
     //multiplicity histos
     
@@ -3135,6 +3155,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					//Filling the invariant mass spectrum
 					
 					if(fIsTrack1Emcal && (!fIsTrack2Emcal)){
+                        
 						
                         //tpc electrons but at least one leg with track-matching
                         if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
@@ -3148,6 +3169,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
+                                  
+                                 //correlation between leg1 and leg2
+                                  fHist_Correlation_leg1_emcal_leg2_not->Fill(fPt, fPt2);
+                                  
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                               
@@ -3327,6 +3352,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                   if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                 
+                                 //correlation between leg1 and leg2
+                                 fHist_Correlation_leg1_not_leg2_emcal->Fill(fPt, fPt2);
+                                 
+                                 
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -3518,6 +3548,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                           
+                                //correlation between leg1 and leg2
+                                fHist_Correlation_leg1_emcal_leg2_emcal->Fill(fPt, fPt2);//not both above the threshold, at least one above the threshold
+                            
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
