@@ -6,6 +6,7 @@
 #include "AliESDtrack.h"
 #include "AliPIDtools.h"
 #include "TLeaf.h"
+#include "TSystem.h"
 
 std::map<Int_t, AliTPCPIDResponse *> AliPIDtools::pidTPC;     /// we should use better hash map
 std::map<Int_t, AliPIDResponse *> AliPIDtools::pidAll;        /// we should use better hash map
@@ -88,7 +89,9 @@ Int_t AliPIDtools::LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t
   pid->SetUseTPCMultiplicityCorrection(kTRUE);
   pid->SetUseTPCEtaCorrection(kTRUE);
   pid->SetUseTPCPileupCorrection(kTRUE);
-  pid->SetOADBPath("$ALICE_PHYSICS/OADB");
+  const char * aodbPath = gSystem->ExpandPathName("$ALICE_PHYSICS/OADB");
+  ::Info("AliPIDtools::LoadPID","form :%s",aodbPath);
+  pid->SetOADBPath(aodbPath);
   pid->InitialiseEvent(&ev,passNumber, recoPass, run);
   AliTPCPIDResponse &tpcpid=pid->GetTPCResponse();
   // pid.InitFromOADB(246751,1,"pass1");
