@@ -110,6 +110,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TList *fCovList;
   TList *fV2dPtList;
   TProfile **fCovariance; //!
+  TList* fQAList;
+  TH2D* fhCentvsNch; //!
   Bool_t fmptSet;
   UInt_t fTriggerType; //! No need to store
   TList *fWeightList; //!

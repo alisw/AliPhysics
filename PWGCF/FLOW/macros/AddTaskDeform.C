@@ -114,6 +114,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name = "name", Bool_t IsMC=kFALSE, 
     mgr->ConnectOutput(task,3,cOutputCov);
     AliAnalysisDataContainer *cOutputV2dPt  = mgr->CreateContainer(Form("V2vsdPt%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(task,4,cOutputV2dPt);
+    AliAnalysisDataContainer *cOutputQA = mgr->CreateContainer(Form("QA%s",l_ContName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    mgr->ConnectOutput(task,5,cOutputQA);
     return task;
   };
   if(StageSwitch==4) {

@@ -70,6 +70,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
+  fQAList(0),
+  fhCentvsNch(0),
   fmptSet(kFALSE),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
@@ -123,6 +125,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
+  fQAList(0),
+  fhCentvsNch(0),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
   fWeights(0),
@@ -160,6 +164,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
     DefineOutput(4,TList::Class());
+    DefineOutput(5,TList::Class());
   }
   if(fStageSwitch==4) {
     DefineOutput(1,TList::Class());
@@ -356,6 +361,13 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     };
     delete oba;
     PostData(4,fV2dPtList);
+
+    fQAList = new TList();
+    fQAList->SetOwner(kTRUE);
+    fhCentvsNch = new TH2D("hCentVsCharged","Charged tracks vs Centrality",100,0,100,100,0,3000);
+    fQAList->Add(fhCentvsNch);
+    PostData(5,fQAList);
+
   }
   if(fStageSwitch==4) {
     fRequireReloadOnRunChange = kFALSE;
@@ -729,6 +741,7 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Ce
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT varianve
   Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
+  fhCentvsNch->Fill(l_Cent,nTotNoTracks);
   for(Int_t i=0;i<1;i++) {
     if(!wp[i][0]) continue;
     outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi));
@@ -756,6 +769,7 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Ce
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
   //Assuming outArr[0] is preset to meanPt; outArr[1] = variance; outArr[2] = norm; outArr[3] = mpt in this event
+  PostData(5,fQAList);
 }
 void AliAnalysisTaskDeform::ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
   AliAODTrack *lTrack;
