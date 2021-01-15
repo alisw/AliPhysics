@@ -302,6 +302,7 @@ private:
 
   TH1F* fHistEvents;
   TH1F* fHistEventStat;
+  TH1F* fHistCentralityRaw;
   TH1F* fHistCentrality;
   TH1F* fHistVertex;
   TH1F* fHistVertexContibutors;
@@ -381,7 +382,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 5);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 6);
 };
 
 

@@ -150,6 +150,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),									    
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -299,6 +300,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -553,12 +555,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   // Initialize all histograms
     fHistEvents             = new TH1F("events", "events", 1, 0., 1.);
     fHistEventStat          = new TH1F("eventStats", "eventStats", kLastBin, -0.5, kLastBin-0.5);
+    fHistCentralityRaw      = new TH1F("centralityraw", "centralityraw", 100, 0., 100.);
     fHistCentrality         = new TH1F("centrality", "centrality", 100, 0., 100.);
     fHistVertex             = new TH1F("zVertex", "zVertex", 300, -15.0, 15.0);
     fHistVertexContibutors  = new TH1F("vtxContributor", "vtxContributor",5000,-0.5,4999.5);
     fHistNTracks            = new TH1F("nTracks", "nTracks", 4000, 0., 40000.);
     fOutputList->Add(fHistEvents);
     fOutputList->Add(fHistEventStat);
+    fOutputList->Add(fHistCentralityRaw);
     fOutputList->Add(fHistCentrality);
     fOutputList->Add(fHistVertex);
     // fOutputList->Add(fHistVertexContibutors);
@@ -1069,7 +1073,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
-
+  fHistCentralityRaw->Fill(centralityF);
 
   // Calculating the weight when centrality correction is applied
   double centralityWeight = 1.;
