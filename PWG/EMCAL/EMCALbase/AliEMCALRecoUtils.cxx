@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 
 // ROOT includes
 #include <TH2F.h>
@@ -480,17 +481,16 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 //_____________________________________________________________________________
 Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
                                                   const AliVCluster* cluster,
-                                                  AliVCaloCells* cells)
-{
-  if (!cluster)
-  {
+                                                  AliVCaloCells* cells) {
+
+  if (!cluster){
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
 
   // If the distance to the border is 0 or negative just exit accept all clusters
-  if (cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 )
-    return kTRUE;
+  // if (cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
+  if (cells->GetType()==AliVCaloCells::kEMCALCell ) return kTRUE;
 
   Int_t absIdMax  = -1, iSM =-1, ieta = -1, iphi = -1;
   Bool_t shared = kFALSE;
@@ -505,12 +505,12 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   Bool_t okrow = kFALSE;
   Bool_t okcol = kFALSE;
 
-  if (iSM < 0 || iphi < 0 || ieta < 0 )
-  {
+  if (iSM < 0 || iphi < 0 || ieta < 0 ) {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
     return kFALSE; // trick coverity
   }
+
 
   // Check rows/phi
   Int_t iPhiLast = 24;
@@ -522,36 +522,26 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
 
   // Check columns/eta
   Int_t iEtaLast = 48;
-  if ( !fNoEMCALBorderAtEta0 || geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard )
-  {
+  if ( !fNoEMCALBorderAtEta0 || geom->GetSMType(iSM) == AliEMCALGeometry::kDCAL_Standard ) {
     // consider inner border
     if ( geom->IsDCALSM(iSM) ) iEtaLast = iEtaLast*2/3;
 
     if ( ieta  > fNCellsFromEMCALBorder && ieta < iEtaLast-fNCellsFromEMCALBorder ) okcol = kTRUE;
-  }
-  else
-  {
-    if (iSM%2==0)
-    {
+  } else {
+    if (iSM%2==0) {
      if (ieta >= fNCellsFromEMCALBorder)           okcol = kTRUE;
-    }
-    else
-    {
+    } else {
      if (ieta <  iEtaLast-fNCellsFromEMCALBorder)  okcol = kTRUE;
     }
   }//eta 0 not checked
-
+  
   AliDebug(2,Form("EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d:  column? %d, row? %d\nq",
                   fNCellsFromEMCALBorder, ieta, iphi, iSM, okcol, okrow));
 
-  if (okcol && okrow)
-  {
+  if (okcol && okrow) {
     return kTRUE;
-  }
-  else
-  {
+  } else {
     AliDebug(2,Form("Reject cluster in border, max cell : ieta %d, iphi %d, SM %d\n",ieta, iphi, iSM));
-
     return kFALSE;
   }
 }
@@ -1681,8 +1671,7 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
                                          Int_t  & iSupMod,
                                          Int_t  & ieta,
                                          Int_t  & iphi,
-                                         Bool_t & shared)
-{
+                                         Bool_t & shared) {
   Double_t eMax        = -1.;
   Double_t eCell       = -1.;
   Float_t  fraction    = 1.;
@@ -1693,15 +1682,13 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
   Int_t iIeta   = -1;
   Int_t iSupMod0= -1;
 
-  if (!clu)
-  {
+  if (!clu) {
     AliInfo("Cluster pointer null!");
     absId=-1; iSupMod0=-1, ieta = -1; iphi = -1; shared = -1;
     return;
   }
 
-  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++)
-  {
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
     cellAbsId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     //printf("a Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,cells->GetCellAmplitude(cellAbsId),fraction);
@@ -1710,8 +1697,7 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
     geom->GetCellIndex(cellAbsId,iSupMod,iTower,iIphi,iIeta);
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
 
-    if (iDig==0)
-    {
+    if (iDig==0) {
       iSupMod0=iSupMod;
     } else if (iSupMod0!=iSupMod)
     {
@@ -1721,8 +1707,7 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(const AliEMCALGeometry *geom,
 
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction;
     //printf("b Cell %d, id, %d, amp %f, fraction %f\n",iDig,cellAbsId,eCell,fraction);
-    if (eCell > eMax)
-    {
+    if (eCell > eMax) {
       eMax  = eCell;
       absId = cellAbsId;
       //printf("\t new max: cell %d, e %f, ecell %f\n",maxId, eMax,eCell);

@@ -16,7 +16,7 @@
 #include <TSystem.h>
 
 #include "AliLog.h"
-#include "AliAnalysisTaskEMCALPi0CalibSelection.h"
+#include "AliAnalysisTaskEMCALPi0CalibSelectionV2.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 
@@ -41,7 +41,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param outputFile: TString with name of output file (AnalysisResults.root).
 /// \param trigSuffix :  A string with the trigger class, abbreviated, to run multiple triggers in same train
 ///
-AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
+AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
   TString trigger                = "",
   Bool_t  recalE                 = kFALSE, 
@@ -75,9 +75,8 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
   TString wagon = trigSuffix;
   if ( wagon.Length() > 0 ) trigger = wagon;
   
-  AliAnalysisTaskEMCALPi0CalibSelection * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelection(Form("EMCALPi0Calibration_%s",trigger.Data()));
+  AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s",trigger.Data()));
   //pi0calib->SetDebugLevel(10); 
-  //pi0calib->UseFilteredEventAsInput();
   pi0calib->SetClusterMinEnergy(minClusterEnergy);
   pi0calib->SetClusterMaxEnergy(maxClusterEnergy);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
@@ -94,9 +93,6 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
   pi0calib->SetClusterMaxTime(maxClusterTime); 
 
   pi0calib->SetTriggerName(trigger);
-  
-  // recalibrate energy and do corrections because of Temperature corrections 
-  pi0calib->SwitchOnClusterCorrection();
     
   //---------------------
   // Geometry alignment
@@ -106,27 +102,8 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
   
   //---------------------
-  // Pass recalibration factors
-  // Do it here or inside the task
-  // If previous pass not available (first) avoid recalculate clusters
+  // Print info
   //---------------------
-  
-  pi0calib->SetCalibrationFilePath(calibPath);
-  
-  if(calibPath != "" && recalE){
-    printf("AddTaskEMCALPi0Calibration - Get the energy calibration factors from: \n %s \n",calibPath.Data());
-    printf("OVERWRITING original factors from OADB");
-    pi0calib->InitEnergyCalibrationFactors();
-  }
-   
-  if(!recalE){
-    // Do not calibrate anything
-    // First iteration, just fill histograms, switch off recalculation
-    pi0calib->SwitchOffLoadOwnGeometryMatrices();
-    pi0calib->SwitchOffRecalculatePosition();
-    printf("AddTaskEMCALPi0Calibration - Pi0 Calibration: Do not recalculate the clusters! First iteration. \n");
-    // check if time is corrected in case of calibration available!!!
-  }
   
   pi0calib->PrintInfo();
   
@@ -146,16 +123,11 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0CalibrationV2(
     coutput = mgr->CreateContainer(wagon, TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
   }  
-    
-//  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
-//                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
-//                                                             "AnalysisParameters.root");
   
   mgr->AddTask(pi0calib);
                                                              
   mgr->ConnectInput  (pi0calib, 0, cinput1);
   mgr->ConnectOutput (pi0calib, 1, coutput);
-//  mgr->ConnectOutput (pi0calib, 2, cout_cuts);
 
   return pi0calib;
 }

@@ -25,9 +25,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                    )
 
 # Sources in alphabetical order
@@ -37,6 +39,7 @@ set(SRCS
     AliAnalysisTaskEMCALAlig.cxx
     AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
+    AliAnalysisTaskEMCALPi0CalibSelectionV2.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
     AliAnalysisTaskEMCALTimeCalib.cxx
     BadChannelAna.cxx
@@ -52,10 +55,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core Geom RIO)
 set(ALIROOT_DEPENDENCIES PWGEMCALbase ANALYSIS ANALYSISalice ESDfilter AOD EMCALUtils ESD STEERBase PWGCaloTrackCorrBase)
+set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGCaloTrackCorrBase OADB)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS PWGEMCALbase PWGEMCALtrigger PWGTools ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS PWGTools ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
