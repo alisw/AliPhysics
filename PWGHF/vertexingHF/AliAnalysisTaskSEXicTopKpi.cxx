@@ -176,6 +176,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   fmaxpT_treeFill(36.),
   fCompute_dist12_dist23(kFALSE),
   fExplore_PIDstdCuts(kFALSE),
+  fExplPID_BayesOnlyProt(kFALSE),
   fOnlyBayesPIDbin(kFALSE),
   fLcMassWindowForSigmaC(0.030),
   fSigmaCDeltaMassWindow(0.230),
@@ -297,6 +298,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   fmaxpT_treeFill(36.),
   fCompute_dist12_dist23(kFALSE),
   fExplore_PIDstdCuts(kFALSE),
+  fExplPID_BayesOnlyProt(kFALSE),
   fOnlyBayesPIDbin(kFALSE),
   fLcMassWindowForSigmaC(0.030),
   fSigmaCDeltaMassWindow(0.230),
@@ -721,6 +723,12 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparse[7]=1;
     upEdges[7]=0.5;
   }
+  if(fExplore_PIDstdCuts && fExplPID_BayesOnlyProt){  // add the bin for the Bayes PID case only for proton hypothesis
+    printf("\n#################################################################################\n");
+    printf("ATTENTION: bins for PID axis in reco THnSparse for Lc (Xic) increased from 11 to 12\n");
+    printf("#################################################################################\n");
+    upEdges[7]=11.5;
+  }
   if(fIsXicUpgradeAnalysis){
     // bins of 0.002
     nbinsSparse[4] = 50;  // finer bins for cosThPoint
@@ -739,6 +747,12 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     // only Bayes PID
     nbinsSparseSigma[7]=1;
     upEdgesSigma[7]=0.5;
+  }
+  if(fExplore_PIDstdCuts && fExplPID_BayesOnlyProt){  // add the bin for the Bayes PID case only for proton hypothesis
+    printf("\n#################################################################################\n");
+    printf("ATTENTION: bins for PID axis in reco THnSparse for Lc (Xic) increased from 11 to 12\n");
+    printf("#################################################################################\n");
+    upEdgesSigma[7]=11.5;
   }
   if(fReadMC){
     // save the generated pT for reco particles with finer binning
@@ -1663,11 +1677,14 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	Double_t point[9]={candPt,0,io3Prong->DecayLengthXY(),io3Prong->NormalizedDecayLengthXY(),io3Prong->CosPointingAngle(),maxIP,(Double_t)converted_isTrueLcXic,0,(Double_t) decay_channel};
   
 	Double_t mass1=0,mass2=0;
-	Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];
+  int nCasesExplPID = 10;
+  if(fExplPID_BayesOnlyProt)  nCasesExplPID = 11;
+  const int arr_dim_PID = nCasesExplPID+1;
+	Bool_t arrayPIDpkpi[arr_dim_PID],arrayPIDpikp[arr_dim_PID];
 	if(massHypothesis>0 && fExplore_PIDstdCuts){
 	  arrayPIDpkpi[0]=((massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
 	  arrayPIDpikp[0]=( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
-	    for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
+	    for(UInt_t i=1; i<=nCasesExplPID; i++){  // loop on PID cut combinations to be tested
 	      arrayPIDpkpi[i]=kFALSE;
 	      arrayPIDpikp[i]=kFALSE;
 	      point[7] = i;
@@ -1691,7 +1708,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
-	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
+	      for(UInt_t i=0; i<=nCasesExplPID; i++){  // loop on PID cut combinations to be tested
 		      point[7] = i;
 		      if(arrayPIDpkpi[i]){
 			if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17)) {
@@ -1720,7 +1737,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
-	      for(UInt_t i=0; i<=10; i++){  // loop on PID cut combinations to be tested
+	      for(UInt_t i=0; i<=nCasesExplPID; i++){  // loop on PID cut combinations to be tested
 	        point[7] = i;
 		if(arrayPIDpikp[i]){
 		  if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18))  {
@@ -2012,7 +2029,9 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	    }
 	  }
 	  if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
-	    for(Int_t k=0;k<=10;k++){
+      int nCasesExplPID = 10;
+      if(fExplPID_BayesOnlyProt)  nCasesExplPID = 11;
+	    for(Int_t k=0;k<=nCasesExplPID;k++){
 	      pointSigma[7]=k;
 	      if(arrayPIDselPkPi[k]){
 		if(!pSigmaC){
@@ -2219,7 +2238,9 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	    }
 	  }
 	  if(fhSparseAnalysisSigma && fExplore_PIDstdCuts){
-	    for(Int_t k=0;k<=10;k++){
+      int nCasesExplPID = 10;
+      if(fExplPID_BayesOnlyProt)  nCasesExplPID = 11;
+	    for(Int_t k=0;k<=nCasesExplPID;k++){
 	      pointSigma[7]=k;
 	      if(arrayPIDselPikP[k]){
 		if(!pSigmaC){
@@ -3764,11 +3785,14 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	   }
 	 }
 	 massHypothesis=resp_onlyCuts & iSelPID;
-	 if(fExplore_PIDstdCuts && massHypothesis>0){	   
-	   Bool_t arrayPIDpkpi[11],arrayPIDpikp[11];	   
+	 if(fExplore_PIDstdCuts && massHypothesis>0){
+     int nCasesExplPID = 10;
+     if(fExplPID_BayesOnlyProt)  nCasesExplPID = 11;
+     const int arr_dim_PID = nCasesExplPID+1;	   
+	   Bool_t arrayPIDpkpi[arr_dim_PID],arrayPIDpikp[arr_dim_PID];	   
 	   arrayPIDpkpi[0]=((massHypothesis&resp_onlyPID)==1 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
 	   arrayPIDpikp[0]=( (massHypothesis&resp_onlyPID)==2 || (massHypothesis&resp_onlyPID)==3 ) ? kTRUE : kFALSE;
-	   for(UInt_t i=1; i<=10; i++){  // loop on PID cut combinations to be tested
+	   for(UInt_t i=1; i<=nCasesExplPID; i++){  // loop on PID cut combinations to be tested
 	     arrayPIDpkpi[i]=kFALSE;
 	     arrayPIDpikp[i]=kFALSE;	       
 	     fCutsXic->ExplorePID(fPidResponse,d,i,arrayPIDpkpi[i],arrayPIDpikp[i]);
