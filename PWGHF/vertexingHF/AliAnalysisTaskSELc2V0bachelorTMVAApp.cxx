@@ -2249,8 +2249,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	inputVars[4] = part->CosV0PointingAngle();
 	inputVars[5] = cts;
 	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTOFpr;
-	inputVars[8] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTOFpi;
+	inputVars[8] = nSigmaTOFka;
 	inputVars[9] = nSigmaTPCpr;
 	inputVars[10] = nSigmaTPCpi;
 	inputVars[11] = nSigmaTPCka;
