@@ -2881,7 +2881,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 					Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
 					if((TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221)){
 					if(/*TMath::Abs(motherpdg) == 321 && */fType == 4){ // electrons from Dalitz 
-      					cout<<"Dalitz:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
+      					//cout<<"Dalitz:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
 					fDCAxy_pt_Dalitz2->Fill(fPt, DCAxy*track->Charge()*signB, fKPicorr->Eval(fMCparticleMother->Pt()));
       					}
 					if(/*(TMath::Abs(motherpdg) != 321 && fType == 4) || */fType == 0 || fType == 1 || fType == 2 || fType == 3){
@@ -2890,7 +2890,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
           				}
 					if(TMath::Abs(pdg_mother) == 22){
       					if(/*TMath::Abs(motherpdg) == 321 && */fType == 4){ // electrons from photon conversions
-      					cout<<"Gamma:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
+      					//cout<<"Gamma:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
 					fDCAxy_pt_Conversions2->Fill(fPt, DCAxy*track->Charge()*signB, fKPicorr->Eval(fMCparticleMother->Pt()));
       					}
 					if(/*(TMath::Abs(motherpdg) != 321 && fType == 4) ||*/ fType == 0 || fType == 1 || fType == 2 || fType == 3){
