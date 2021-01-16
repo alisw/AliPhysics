@@ -81,14 +81,14 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     //cout<<minNClustersITS<<endl;
     
     //TPC Cuts
-    hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
-    hfecuts->SetMinNClustersTPC(minNClustersTPC);							                //Minimum number of clusters on TPC
-    hfecuts->SetMinNClustersTPCPID(minNClustersTPCPID);										//Minimum number of clusters for dE/dx
-    hfecuts->SetMinRatioTPCclusters(minRatioTPCclusters);						                    //Number of clusters (Found/Findable)
+    //hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+    //hfecuts->SetMinNClustersTPC(minNClustersTPC);	//Minimum number of clusters on TPC
+    hfecuts->SetMinNClustersTPCPID(minNClustersTPCPID);	//Minimum number of clusters for dE/dx
+    //hfecuts->SetMinRatioTPCclusters(minRatioTPCclusters);   //Number of clusters (Found/Findable)
     //ITS
     hfecuts->SetCutITSpixel(pixel);  //Require cluster in at least two layers of SPD: to reduce backg of conversion electrons.
     hfecuts->SetCheckITSLayerStatus(kFALSE);
-    hfecuts->SetMinNClustersITS(minNClustersITS);								            //Minimum number of clusters on ITS
+    hfecuts->SetMinNClustersITS(minNClustersITS);  //Minimum number of clusters on ITS
     //Additional Cuts
     hfecuts->SetPtRange(0.3, 20); //Transversal momentum range in GeV/c
     //testing this line for the DCA cut
@@ -138,7 +138,7 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     
     if(isMCc){
     //D correction
-    
+   
    // TFile *f = new TFile("DMesonWeight_pp5TeV_Aug30.root");
     
      TString filenameDweight = "DMesonWeight_pp5TeV_Aug30.root";
@@ -211,8 +211,11 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
  
     // Default
     if(IsDcorr == 0){
-    		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.44336e-03/(TMath::Power(TMath::Exp( - 6.08651e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50784e+00, 4.40766e+00)))/(1.60027e-02 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.51198e+00)))",0.0,36);  
-		task->SetDcorrFunction(fDmeson);
+    		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.0/0.09019477)*(1.44336e-03/(TMath::Power(TMath::Exp( - 6.08651e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50784e+00, 4.40766e+00)))/(1.60027e-02 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.51198e+00)))",0.0,36);  
+		/*
+ 		TF1 *fDmesonShape = new TF1("fDmesonShape","(1/0.404311)*(1.42911e-03/(TMath::Power(TMath::Exp( - 6.08657e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50791e+00, 4.40766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);
+		*/
+		task->SetDcorrFunction(fDmesonShape);
     		/*TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.296109)*(1.42911e-03/(TMath::Power(TMath::Exp( - 6.08657e-01*x[0] + 9.8566e-03 * x[0] * x[0] ) + x[0] / 3.50791e+00, 4.40766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",1.0,36);
     
 		task->SetDcorrFunction22(fDmesonShape22);
