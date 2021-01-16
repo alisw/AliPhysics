@@ -249,7 +249,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fMultiplicityCutMax(99999.),
   fUseXmlFileFromCVMFS(kFALSE),
   fXmlFileFromCVMFS(""),
-  ffraction(-1)
+  ffraction(-1),
+  fPtLimForDownscaling(0)
 {
   /// Default ctor
   //
@@ -419,7 +420,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fMultiplicityCutMax(99999.),
   fUseXmlFileFromCVMFS(kFALSE),
   fXmlFileFromCVMFS(""),
-  ffraction(-1)
+  ffraction(-1),
+  fPtLimForDownscaling(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -1730,7 +1732,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   */
 
   //Downscaling for Pb-Pb data tree at low pt
-  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt()<4 && fCurrentEvent%ffraction != 0) return;
+  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) return;
   
   Double_t invmassLc = part->InvMassLctoK0sP();
 

@@ -21,7 +21,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
 								    Float_t multMax = 99999., // Maximum is excluded
 								    Bool_t useXmlFileFromCVMFS = kFALSE,
 								    TString xmlFileFromCVMFS = "",
-								    Int_t ffraction = -1
+								    Int_t ffraction = -1,
+								    Float_t fPtLimForDownscaling = 4
 								    ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -108,6 +109,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetDebugLevel(0);
   task->SetDebugHistograms(debugFlag);
   task->SetFraction(ffraction);
+  task->SetDownScaling(fPtLimForDownscaling);
   // TMVA reader
   task->SetNVarsSpectators(nvarsSpectators);
   task->SetNamesTMVAVariablesSpectators(namesTMVAvarsSpectators);

@@ -150,6 +150,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   }
 
   void SetFraction(Int_t a) {ffraction = a;}	
+
+  void SetDownScaling(Float_t a) {fPtLimForDownscaling = a;}
   
   void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
   Bool_t GetDebugHistograms() const {return fDebugHistograms;}
@@ -594,8 +596,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
   Int_t fNVars;  /// Number of training variables
-  Int_t ffraction;  /// Number for downscaling at low pt
-
+  Int_t ffraction;  /// Number for tree downscaling at low pt
+  Float_t fPtLimForDownscaling;  /// Lc pt threshold for tree downscaling
+  
   UInt_t fTimestampCut; // cut on timestamp
 
   Bool_t fUseXmlWeightsFile;                   // flag to decide whether to use or not the xml file
