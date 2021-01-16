@@ -167,6 +167,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
   task->SetCentralityFile(centralityFilename);
+  task->SetCentralityFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
+  
 
   // #########################################################
   // #########################################################
