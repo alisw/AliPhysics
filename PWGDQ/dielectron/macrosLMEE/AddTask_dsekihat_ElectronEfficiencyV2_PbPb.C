@@ -165,6 +165,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   // e.g. secondaries and primaries. or primaries from charm and resonances
   gROOT->ProcessLine(Form("AddSingleLegMCSignal(%s)",task->GetName()));//not task itself, task name
   gROOT->ProcessLine(Form("AddPairMCSignal(%s)"     ,task->GetName()));//not task itself, task name
+  gROOT->ProcessLine(Form("SetPIDMC(%s)"            ,task->GetName()));//not task itself, task name
 
 	TString outlistname = Form("Efficiency_dsekihat%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data());
 
