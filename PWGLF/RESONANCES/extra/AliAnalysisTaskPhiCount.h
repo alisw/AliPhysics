@@ -120,7 +120,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     //>->->     Event
     //
-    TH1F                       *fQC_Event_Enumerate;        //! Analysis output list
+    TH1D                       *fQC_Event_Enumerate;        //! Analysis output list
     TH1F                       *fQC_Event_Vertex_Fll;       //! Analysis output list
     TH1F                       *fQC_Event_Vertex_Cut;       //! Analysis output list
     TH1F                       *fQC_Event_Enum_Mult;        //! Event vs Multiplicity
