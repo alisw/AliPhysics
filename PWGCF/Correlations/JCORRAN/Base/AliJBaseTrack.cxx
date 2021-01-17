@@ -40,7 +40,7 @@ AliJBaseTrack::AliJBaseTrack():
     fFlags(0),
     fTriggID(-1),
     fAssocID(-1),
-    fTracEff(-1),
+    fTracEff(1.0),
     fMCIndex(-9999),
     fWeight(1.0)
 {
@@ -58,7 +58,7 @@ AliJBaseTrack::AliJBaseTrack(float px,float py, float pz, float e, Int_t id, Sho
     fFlags(0),
     fTriggID(-1),
     fAssocID(-1),
-    fTracEff(-1),
+    fTracEff(1.0),
     fMCIndex(-9999),
     fWeight(1.0)
 {
