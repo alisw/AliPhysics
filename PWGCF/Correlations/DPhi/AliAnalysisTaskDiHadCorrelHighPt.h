@@ -136,6 +136,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetPercentileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
         void                    SetEventQAPlots(Bool_t pl) { fEventCutsQAPlots = pl; }
         void                    SetppAnalysis(Bool_t pp) { fpp = pp; }
+        void                    SetNMultiplicityBins(Int_t nBins) { fNMultiplicityBins = nBins; }
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -290,12 +291,13 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
         Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
         Bool_t                  fpp; // flag pp / PbPb
+        Int_t                   fNMultiplicityBins; // number of multiplicity bins
 
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 33);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 34);
 };
 
 class AliV0ChParticle : public AliVParticle

@@ -20,6 +20,8 @@
 #include <TH1F.h>
 #include <TDatabasePDG.h>
 #include <TObjArray.h>
+#include <Math/GenVector/LorentzVector.h>
+#include <Math/Vector4D.h>
 
 #include "AliAnalysisTaskSECharmTriggerStudy.h"
 #include "AliAnalysisManager.h"
@@ -826,11 +828,11 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         double massD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
                         double massPiPDG = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
-                        std::vector<double> px = {d->Px(), track->Px()};
-                        std::vector<double> py = {d->Py(), track->Py()};
-                        std::vector<double> pz = {d->Pz(), track->Pz()};
-                        std::vector<double> M  = {massD0PDG, massPiPDG};
-                        double invMassNoPropB = ComputeInvMass(px, py, pz, M);
+                        ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double> > vecPi, vecD, vecB;
+                        vecPi.SetCoordinates(track->Px(), track->Py(), track->Pz(), massPiPDG);
+                        vecD.SetCoordinates(d->Px(), d->Py(), d->Pz(), massD0PDG);
+                        vecB = vecPi + vecD;
+                        double invMassNoVtxB = vecB.M();
 
                         AliExternalTrackParam piTrackParams;
                         piTrackParams.CopyFromVTrack(track);
@@ -878,7 +880,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
                             Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             Bplus.SetProngIDs(2, id);
-                            FillBeauty3Prong(&Bplus, d, true, invMassNoPropB);
+                            FillBeauty3Prong(&Bplus, d, true, invMassNoVtxB);
 
                             delete vertexBplus;
                             vertexBplus = nullptr;
@@ -1011,15 +1013,17 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         double massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
                         double massPiPDG = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
-                        std::vector<double> px = {d->Px(), track->Px()};
-                        std::vector<double> py = {d->Py(), track->Py()};
-                        std::vector<double> pz = {d->Pz(), track->Pz()};
-                        std::vector<double> MDplus  = {massDplusPDG, massPiPDG};
-                        std::vector<double> MDs  = {massDsPDG, massPiPDG};
-                        std::vector<double> MLc  = {massLcPDG, massPiPDG};
-                        double invMassNoPropBzero = ComputeInvMass(px, py, pz, MDplus);
-                        double invMassNoPropBs = ComputeInvMass(px, py, pz, MDs);
-                        double invMassNoPropLb = ComputeInvMass(px, py, pz, MLc);
+                        ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double> > vecPi, vecDplus, vecDs, vecLc, vecBzero, vecBs, vecLb;
+                        vecPi.SetCoordinates(track->Px(), track->Py(), track->Pz(), massPiPDG);
+                        vecDplus.SetCoordinates(d->Px(), d->Py(), d->Pz(), massDplusPDG);
+                        vecDs.SetCoordinates(d->Px(), d->Py(), d->Pz(), massDsPDG);
+                        vecLc.SetCoordinates(d->Px(), d->Py(), d->Pz(), massLcPDG);
+                        vecBzero = vecPi + vecDplus;
+                        vecBs = vecPi + vecDs;
+                        vecLb = vecPi + vecLc;
+                        double invMassNoVtxBzero = vecBzero.M();
+                        double invMassNoVtxBs = vecBs.M();
+                        double invMassNoPropLb = vecLb.M();
 
                         AliExternalTrackParam piTrackParams;
                         piTrackParams.CopyFromVTrack(track);
@@ -1068,7 +1072,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             B.SetProngIDs(2, id);
 
-                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc, invMassNoPropBzero, invMassNoPropBs, invMassNoPropLb);
+                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc, invMassNoVtxBzero, invMassNoVtxBs, invMassNoPropLb);
 
                             delete vertexB;
                             vertexB = nullptr;
@@ -1610,7 +1614,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharmCascade(AliAODRecoCascadeHF *c
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, double massNoProp)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, double massNoVtxB)
 {
     Beauty3Prong b3Prong;
     unsigned int pdgDgBplustoD0pi[2] = {211, 421};
@@ -1621,7 +1625,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
         return;
 
     b3Prong.fInvMassBplustoD0pi = invmassBplus;
-    b3Prong.fInvMassNoPropBplustoD0pi = massNoProp;
+    b3Prong.fInvMassNoPropBplustoD0pi = massNoVtxB;
     b3Prong.fPt = cand->Pt();
     b3Prong.fY = cand->Y(521);
     b3Prong.fDecayLength = cand->DecayLength();
@@ -1690,7 +1694,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, double massNoPropB0, double massNoPropBs, double massNoPropLb)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, double massNoVtxB0, double massNoVtxBs, double massNoVtxLb)
 {
     Beauty4Prong b4Prong;
     unsigned int pdgDgB0toDminuspi[2] = {211, 411};
@@ -1710,7 +1714,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassB0 = cand->InvMass(2, pdgDgB0toDminuspi);
         b4Prong.fInvMassB0toDminuspi = invmassB0;
-        b4Prong.fInvMassNoPropB0toDminuspi = massNoPropB0;
+        b4Prong.fInvMassNoPropB0toDminuspi = massNoVtxB0;
         if (TMath::Abs(massB0PDG - invmassB0) > 0.4) //check mass
             isselB0 = false;
     }
@@ -1718,7 +1722,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassBs = cand->InvMass(2, pdgDgBstoDsminuspi);
         b4Prong.fInvMassBstoDsminuspi = invmassBs;
-        b4Prong.fInvMassNoPropBstoDsminuspi = massNoPropBs;
+        b4Prong.fInvMassNoPropBstoDsminuspi = massNoVtxBs;
         if (TMath::Abs(massBsPDG - invmassBs) > 0.4) //check mass
             isselBs = false;
     }
@@ -1726,7 +1730,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassLb = cand->InvMass(2, pdgDgLbtoLcpi);
         b4Prong.fInvMassLbtoLcpluspi = invmassLb;
-        b4Prong.fInvMassNoPropLbtoLcpluspi = massNoPropLb;
+        b4Prong.fInvMassNoPropLbtoLcpluspi = massNoVtxLb;
         if (TMath::Abs(massLbPDG - invmassLb) > 0.4) //check mass
             isselLb = false;
     }
@@ -2124,23 +2128,4 @@ unsigned short AliAnalysisTaskSECharmTriggerStudy::CheckCandTypeCharm3Prong(AliA
     }
 
     return candType;
-}
-
-//________________________________________________________________
-double AliAnalysisTaskSECharmTriggerStudy::ComputeInvMass(std::vector<double> px, std::vector<double> py, std::vector<double> pz, std::vector<double> M)
-{
-    double E2 = 0.;
-    double Px = 0., Py = 0., Pz = 0.;
-
-    for(size_t iPart=0; iPart<px.size(); iPart++)
-    {
-        Px += px[iPart];
-        Py += pz[iPart];
-        Pz += px[iPart];
-        E2 += M[iPart]*M[iPart] + px[iPart]*px[iPart] + py[iPart]*py[iPart] + pz[iPart]*pz[iPart];
-    }
-
-    double P2 = Px*Px + Py*Py + Pz*Pz;
-
-    return TMath::Sqrt(E2-P2);
 }

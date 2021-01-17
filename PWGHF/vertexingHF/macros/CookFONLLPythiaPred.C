@@ -10,6 +10,7 @@
 #include <string>
 #include <array>
 #include <iostream>
+#include <numeric>
 
 #include "TFile.h"
 #include "TH1D.h"
@@ -17,14 +18,14 @@
 
 enum { // options for branching ratios
   kBROriginal, // keep the values used in the input files
-  kBRPDG, // use hard coded values from PDG (2018)
-  kBRPDGmix // use hard coded values from PDG (2018) and the B0/B+- admixture
+  kBRPDG, // use hard coded values from PDG (2020)
+  kBRPDGmix // use hard coded values from PDG (2020) and the B0/B+- admixture
 };
 
 enum { // options for fragmentation fractions
-  kFFOriginal, // keep the values used in the input files
-  kFFppbar, // use hard coded values from ppbar, PDG (2018)
-  kFFee  // use hard coded values from e+e-, PDG (2018)
+  kFFOriginal, // keep the values used in the input files (mandatory for simulations produced with LHCb pT-dependent FF)
+  kFFppbar, // use hard coded values from ppbar, PDG (2020)
+  kFFee  // use hard coded values from e+e-, PDG (2020)
 };
 
 enum { // options for re-weight
@@ -32,12 +33,12 @@ enum { // options for re-weight
   kAccurate // correct each b-hadron contribution indipendently (modify also the pT dependence)
 };
 
-void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFppbar_yDcut_pp502TeV.root", // min FONLL predictions
-                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFppbar_yDcut_pp502TeV.root", // central FONLL predictions
-                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFppbar_yDcut_pp502TeV.root",  // max FONLL predictions
-                         std::string outFileName = "DmesonLcPredictions_502TeV_y05_FFppbar_BRPDGmix_SepContr.root",
+void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFptDepmin_yDcut_pp13TeV_PDG2020.root", // min FONLL predictions
+                         std::string inFileNameCent = "DfromB_FONLLcentPythia8_FFptDepcent_yDcut_pp13TeV_PDG2020.root", // central FONLL predictions
+                         std::string inFileNameMax = "DfromB_FONLLmaxPythia8_FFptDepmax_yDcut_pp13TeV_PDG2020.root",  // max FONLL predictions
+                         std::string outFileName = "DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root",
                          int brOpt = kBROriginal,
-                         int ffOpt = kFFee,
+                         int ffOpt = kFFOriginal,
                          int wOpt = kAccurate) {
 
   std::array<std::string, 3> inFileNames = {inFileNameMin, inFileNameCent, inFileNameMax};
@@ -54,24 +55,24 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
   std::array<std::string, numDaughters - 1> partTag = {"D0", "Dplus", "Ds", "Lc", "Dstar"};
   std::array<std::string, numDaughters - 1> partTitle = {"D^{0}", "D^{+}", "D_{s}^{+}", "#Lambda_{c}^{+}", "D^{*+}"};
   std::array<std::string, numDaughters - 1> partBTitle = {"B^{0}", "B^{+}", "B_{s}^{0}", "#Lambda_{b}^{0}"};
-  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromB = {{{0.555, 0.876, 0.008, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2018)
+  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromB = {{{0.555, 0.876, 0.002, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2020)
                                                                           {0.392, 0.124, 0., 0.},      // D+
                                                                           {0.117, 0.09, 0.93, 0.011},  // Ds
-                                                                          {0.066, 0.049, 0., 0.333},   // Lc
-                                                                          {0.23, 0.061, 0.003, 0.},    // D*+
-                                                                          {0.066, 0.049, 0., 0.333}    // Lc
+                                                                          {0.066, 0.049, 0., 0.352},   // Lc
+                                                                          {0.233, 0.055, 0.003, 0.},    // D*+
+                                                                          {0.066, 0.049, 0., 0.352}    // Lc
                                                                           }};
   // B0 and B+ BR from B0/B+- admixture
-  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromBmix = {{{0.624, 0.624, 0.008, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2018) and B0/B+- admixture
+  std::array<std::array<double, numMothers>, numDaughters> pdgBRfromBmix = {{{0.624, 0.624, 0.002, 0.},   // D0 and (BRfromB0, BRfromB+, BRfromBs, BRfromLb) from PDG (2020) and B0/B+- admixture (2020)
                                                                              {0.241, 0.241, 0., 0.},      // D+
                                                                              {0.083, 0.083, 0.93, 0.011}, // Ds
-                                                                             {0.036, 0.036, 0., 0.333},   // Lc
+                                                                             {0.036, 0.036, 0., 0.352},   // Lc
                                                                              {0.225, 0.225, 0.003, 0.},   // D*+
-                                                                             {0.036, 0.036, 0., 0.333}    // Lc
+                                                                             {0.036, 0.036, 0., 0.352}    // Lc
                                                                              }};
-  std::array<double, numMothers> ppbarBFF = {0.34, 0.34, 0.101, 0.219}; // (B0, B+, Bs, Lb) from PDG (2018)
-  std::array<double, numMothers> eeBFF = {0.412, 0.412, 0.088, 0.089}; // (B0, B+, Bs, Lb) from PDG (2018)
-  std::array<double, numDaughters> decayBR = {0.0389, 0.0898, 0.0227, 0.0623, 0.0263, 0.0158}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2018)
+  std::array<double, numMothers> ppbarBFF = {0.344, 0.344, 0.115, 0.198}; // (B0, B+, Bs, Lb) from PDG (2020)
+  std::array<double, numMothers> eeBFF = {0.408, 0.408, 0.100, 0.084}; // (B0, B+, Bs, Lb) from PDG (2020)
+  std::array<double, numDaughters> decayBR = {0.03950, 0.0938, 0.0224, 0.0628, 0.03950*0.677, 0.0159}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2020)
   std::array<std::array<double, numMothers>, numDaughters> origBR = {};
   std::array<double, numMothers> origBFF = {};
 
@@ -84,6 +85,13 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
     TH1D *hFFBeauty = (TH1D *)inFile->Get("hbFragmFrac");
     for(int iMother = 0; iMother < numMothers; iMother++) {
       origBFF[iMother] = hFFBeauty->GetBinContent(iMother + 1);
+    }
+
+    double origBFFsum = 0.;
+    std::accumulate(origBFF.begin(), origBFF.end(), origBFFsum);
+    if(ffOpt != kFFOriginal && origBFFsum == 0) {
+      std::cerr << "ERROR: only original FF can be set if pT-dependent LHCb parametrisation used in the simulation! Exit" << std::endl;
+      return;
     }
 
     // get the original BR
@@ -185,13 +193,19 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
           else if(brOpt == kBRPDGmix)
             BRfromB = pdgBRfromBmix[iDau][iMother];
 
-          newFrac += motherFF * BRfromB;
-          oldFrac += origBFF[iMother] * origBR[iDau][iMother];
+          if(origBFF[iMother] > 0) {
+            newFrac += motherFF * BRfromB;
+            oldFrac += origBFF[iMother] * origBR[iDau][iMother];
+          }
+          else {// pt-dependent FF in original file --> always unmodified
+            newFrac += BRfromB;
+            oldFrac += origBR[iDau][iMother];
+          }
         }
 
         double corr = 0.;
         if(oldFrac > 0)
-            corr = newFrac / oldFrac;
+          corr = newFrac / oldFrac;
 
         hDauFDPred = (TH1D *)inFile->Get(predFDHistos[iDau].data());
         hDauFDPred->SetDirectory(0);
@@ -239,9 +253,11 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
             BRfromB = pdgBRfromBmix[iDau][iMother];
 
           double corr = 0.;
-          if(origBR[iDau][iMother] > 0)
+          if(origBR[iDau][iMother] > 0 && origBFF[iMother] > 0)
             corr = motherFF * BRfromB / origBFF[iMother] / origBR[iDau][iMother];
-
+          else if(origBR[iDau][iMother] > 0) // pt-dependent FF in original file --> always unmodified
+            corr = BRfromB / origBR[iDau][iMother];
+        
           hDauFDPred->Add(hTemp, corr);
           if(iMother < 2)
             hDauFDPredFromNonStrangeB->Add(hTemp, corr);

@@ -479,25 +479,25 @@ void AliAnalysisTaskCMWPUeqAch::UserCreateOutputObjects()
   
   // Acharge Binning with Equal Event per bin:
   //Cent 0-5
-  Double_t fAchBinCent0[11] = {-0.144, -0.038, -0.028, -0.02, -0.014, -0.008, -0.002, 0.004, 0.012, 0.022, 1 };
+  Double_t fAchBinCent0[11] = {-0.128, -0.02, -0.012, -0.008, -0.002, 0.002, -0.006, 0.01, 0.016, 0.024, 1 };
   //Cent 5-10
-  Double_t fAchBinCent1[11] = {-0.18, -0.042, -0.03, -0.022, -0.014, -0.008, -0.002, 0.006, 0.014, 0.026,  1 };
+  Double_t fAchBinCent1[11] = {-0.126, -0.022, -0.014, -0.008, -0.002, 0.002, 0.006, 0.012, 0.018, 0.026,  1 };
   //Cent 10-20 
-  Double_t fAchBinCent2[11] = {-0.192, -0.048, -0.034, -0.024, -0.016, -0.008, 0, 0.008, 0.018, 0.032,  1 };
+  Double_t fAchBinCent2[11] = {-0.142, -0.026, -0.016, -0.01, -0.004, 0.002, 0.008, 0.012, 0.02, 0.028,  1 };
   //Cent 20-30 
-  Double_t fAchBinCent3[11] = {-0.214, -0.056, -0.04, -0.028, -0.018, -0.008, 0.002, 0.012, 0.024, 0.04,  1 };
+  Double_t fAchBinCent3[11] = {-0.202, -0.032, -0.02, -0.012, -0.006, 0.002, 0.008, 0.016, 0.024, 0.036,  1 };
   //Cent 30-40 
-  Double_t fAchBinCent4[11] = {-0.284, -0.068, -0.046, -0.032, -0.02, -0.008, 0.004, 0.016, 0.03, 0.052, 1 };
+  Double_t fAchBinCent4[11] = {-0.192, -0.04, -0.026, -0.016, -0.006, 0.002, 0.01, 0.018, 0.028, 0.044, 1 };
   //Cent 40-50 
-  Double_t fAchBinCent5[11] = {-0.344, -0.082, -0.056, -0.038, -0.022, -0.008, 0.006, 0.022, 0.042, 0.068, 1 };
+  Double_t fAchBinCent5[11] = {-0.24, -0.054, -0.034, -0.02, -0.01, 0.002, 0.012, 0.024, 0.038, 0.056, 1 };
   //Cent 50-60 
-  Double_t fAchBinCent6[11] = {-0.476, -0.106, -0.072, -0.046, -0.026, -0.008, 0.012, 0.032, 0.056, 0.09, 1 };
+  Double_t fAchBinCent6[11] = {-0.328, -0.072, -0.046, -0.028, -0.014, 0.002, 0.016, 0.032, 0.05, 0.076, 1 };
   //Cent 60-70 
-  Double_t fAchBinCent7[11] = {-0.632, -0.134, -0.088, -0.058, -0.03, -0.004, 0.02, 0.048, 0.08, 0.128, 1 };
+  Double_t fAchBinCent7[11] = {-0.526, -0.104, -0.066, -0.042, -0.018, 0.002, 0.022, 0.044, 0.07, 0.106, 1 };
   //Cent 70-80 
-  Double_t fAchBinCent8[11] = {-0.732, -0.166, -0.106, -0.064, -0.028, -0.006, 0.038, 0.076, 0.12, 0.186, 1 };
+  Double_t fAchBinCent8[11] = {-0.818, -0.16, -0.102, -0.062, -0.03, 0.002, 0.032, 0.066, 0.106, 0.162, 1 };
   //Cent 80-90 
-  Double_t fAchBinCent9[11] = {-0.732, -0.166, -0.106, -0.064, -0.028, -0.006, 0.038, 0.076, 0.12, 0.186, 1 };
+  Double_t fAchBinCent9[11] = {-0.818, -0.16, -0.102, -0.062, -0.03, 0.002, 0.032, 0.066, 0.106, 0.162, 1 };
 
   
 
@@ -1142,10 +1142,12 @@ void AliAnalysisTaskCMWPUeqAch::UserExec(Option_t*) {
 	if ((trkEta < fMaxEtaAchCut) && (trkEta > fMinEtaAchCut))
 	  {
 	if(trkChrg > 0){	  
-	  fNumOfPos += trkWgt;
+	  //fNumOfPos += trkWgt;
+	  fNumOfPos += 1;
 	}
 	else{
-	  fNumOfNeg += trkWgt;
+	  //fNumOfNeg += trkWgt;
+	  fNumOfNeg += 1;
 	}
 	  }
 
@@ -1252,6 +1254,10 @@ void AliAnalysisTaskCMWPUeqAch::UserExec(Option_t*) {
   //fHistEventCount->Fill(stepCount); //7
   //stepCount++;
 
+
+  if(fHCorrectEVNTWGTChrg){
+    fWgtEvent=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
+  }
   
   fHistNumChrgPos[iCent]->Fill(fNumOfPos, fWgtEvent);
   fHistNumChrgNeg[iCent]->Fill(fNumOfNeg, fWgtEvent);

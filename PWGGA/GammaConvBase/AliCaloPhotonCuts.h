@@ -448,6 +448,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
+    Bool_t      IsCellNextToCluster( Int_t absID, Double_t Ethresh, AliVCaloCells* cells );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     Bool_t      IsAbsIDsFromTCard(Int_t absId1, Int_t absId2) const;
     void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
@@ -717,6 +718,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
     TH2F*     fHistTrueElectronPositronClusterMatchEoverP;  // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
+    TH2F*     fHistElectronClusterNCellsVsE;            // Electron/Positron cluster number of cells vs. cluster energy
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -727,7 +729,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,118)
+    ClassDef(AliCaloPhotonCuts,119)
 };
 
 #endif

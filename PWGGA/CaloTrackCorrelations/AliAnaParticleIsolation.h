@@ -130,6 +130,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnOnlyTH3HistoFill()            { fFillOnlyTH3Histo = kTRUE ; }
   void         SwitchOffOnlyTH3HistoFill()           { fFillOnlyTH3Histo = kFALSE; }
   
+  void         SwitchOnIsolationControlHistoFill()   { fFillIsolationControlHistograms = kTRUE ; }
+  void         SwitchOffIsolationControlHistoFill()  { fFillIsolationControlHistograms = kFALSE; }
+  
   void         SwitchOnDecayTaggedHistoFill()        { fFillTaggedDecayHistograms = kTRUE ; }
   void         SwitchOffDecayTaggedHistoFill()       { fFillTaggedDecayHistograms = kFALSE; }
   void         SetNDecayBits(Int_t n)                { fNDecayBits = n               ; }
@@ -228,6 +231,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillNLMHistograms;                        ///<  Fill NLM histograms.
   Bool_t   fFillOnlyTH3Histo;                         ///< Fill only TH3 histograms when duplication
+  Bool_t   fFillIsolationControlHistograms;           ///< Fill control histograms from AliIsolationCut
   
   Bool_t   fLeadingOnly;                              ///<  Do isolation with leading particle.
   Bool_t   fCheckLeadingWithNeutralClusters;          ///<  Compare the trigger candidate to Leading pT with the clusters pT, by default only charged.
@@ -334,7 +338,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeVtxBC0 ;                     //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtTrackInConeBC0PileUpSPD ;               //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtInConePileUp[7] ;                       //!<! Particle Pt in the cone, if event is from pile-up (SPD method).
-  TH2F *   fhPtInConeCent ;                            //!<! Particle Pt in the cone versus centrality.
   TH2F *   fhPerpConeSumPtTOFBC0 ;                     //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90), TOF BC=0
   TH2F *   fhPtInPerpConeTOFBC0 ;                      //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), TOF BC=0
   TH2F *   fhEtaPhiInPerpConeTOFBC0 ;                  //!<! Eta vs. phi of tracks in perpendicular cone, with TOF BC=0.
@@ -681,7 +684,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,49) ;
+  ClassDef(AliAnaParticleIsolation,50) ;
   /// \endcond
 
 } ;

@@ -5239,7 +5239,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   if ( l_Xi/dl_Xi <= fAnaCuts->GetKFPXi_lDeltalMin() ) return;
 
   const Float_t PDGmassXic0 = TDatabasePDG::Instance()->GetParticle(4132)->Mass();
-  const Float_t PDGmassOmegac0 = TDatabasePDG::Instance()->GetParticle(4332)->Mass();
+//  const Float_t PDGmassOmegac0 = TDatabasePDG::Instance()->GetParticle(4332)->Mass();
+  const Float_t PDGmassOmegac0 = 2.6952;
   Float_t mass_Xic0_PV, err_mass_Xic0_PV;
   kfpXic0_PV.GetMass(mass_Xic0_PV, err_mass_Xic0_PV);
   fVar_Xic0[25] = mass_Xic0_PV; // mass of Xic0

@@ -15,7 +15,6 @@ AliAnalysisTask *AddTask_jditzel_S3ParticleYields() {
   if(!task) return 0x0;
 
   task->SelectPIDcheckOnly(kFALSE);
-  task->SetTriggerMask(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
   task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
 
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

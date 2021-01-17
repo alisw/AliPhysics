@@ -131,6 +131,7 @@ AliAnalysisTaskCMWPUuncAch::AliAnalysisTaskCMWPUuncAch(const char *name): AliAna
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),      
   fHistAChrgVsCent(NULL),
+  fHistAChrgVsCentunc(NULL),
 
   fHistTPConlyVsCL1Before(NULL),
   fHistTPConlyVsV0MBefore(NULL),
@@ -201,6 +202,11 @@ AliAnalysisTaskCMWPUuncAch::AliAnalysisTaskCMWPUuncAch(const char *name): AliAna
   for(int i=0; i<10; i++){
     fHistv2cumAchChrgAll[i] = NULL;
   }
+
+  for(int i=0; i<10; i++){
+    fHistAch[i] = NULL;
+  }
+
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -260,6 +266,7 @@ AliAnalysisTaskCMWPUuncAch::AliAnalysisTaskCMWPUuncAch():
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),    
   fHistAChrgVsCent(NULL),
+  fHistAChrgVsCentunc(NULL),
 
   fHistTPConlyVsCL1Before(NULL),
   fHistTPConlyVsV0MBefore(NULL),
@@ -329,6 +336,10 @@ AliAnalysisTaskCMWPUuncAch::AliAnalysisTaskCMWPUuncAch():
   }
 
   
+  for(int i=0; i<10; i++){
+    fHistAch[i] = NULL;
+  }
+
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -446,6 +457,8 @@ void AliAnalysisTaskCMWPUuncAch::UserCreateOutputObjects()
 
   fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",10,0,90,1000,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
+  fHistAChrgVsCentunc = new TH2F("fHistAChrgVsCentunc","Achunc vs Cent;Cent;Achunc",10,0,90,1000,-1.0,1.0);
+  fListHist->Add(fHistAChrgVsCentunc);
 
 		 
   // v2 vs Ach
@@ -613,6 +626,15 @@ void AliAnalysisTaskCMWPUuncAch::UserCreateOutputObjects()
   }
 
 
+  for(int i=0;i<10;i++){
+    ////Charge:                                                                                                                                
+    sprintf(name,"fHistAch_Cent%d",i);
+    sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",i,i+1);
+    fHistAch[i] = new TProfile(name,title,100,-1,1,"");
+    fHistAch[i]->Sumw2();
+    fListHist->Add(fHistAch[i]);
+
+  }
 
   
 
@@ -887,8 +909,10 @@ void AliAnalysisTaskCMWPUuncAch::UserExec(Option_t*) {
   Double_t fSumWgtEtaNeg=0, fSumWgtEtaPos=0;
   Double_t fSumWgtEtaNegWhole=0, fSumWgtEtaPosWhole=0;
   Double_t fSumWgtEtaNegChNeg=0, fSumWgtEtaPosChNeg=0;
-  Double_t fNumOfPos = 0;
-  Double_t fNumOfNeg = 0;
+  Double_t fNumOfPos = 0.;
+  Double_t fNumOfNeg = 0.;
+  Double_t fNumOfPosunc = 0.;
+  Double_t fNumOfNegunc = 0.;
   Double_t ptWgtMC = 1.0, WgtNUA = 1.0;
   Int_t ptBinMC = 1, iBinNUA = 1;
   Double_t binCont = 1.0;
@@ -1007,12 +1031,14 @@ void AliAnalysisTaskCMWPUuncAch::UserExec(Option_t*) {
 	if(trkChrg > 0){
 	  //if (usecorrectedach)	  
 	    fNumOfPos += trkWgt;
+	    fNumOfPosunc += 1;
 	    //else
 	    //fNumOfPos += 1;
 	}
 	  else{
 	    //if (usecorrectedach)	  
 	    fNumOfNeg += trkWgt;
+	    fNumOfNegunc += 1;
 	    //else
 	    //fNumOfNeg += 1;
 	  }
@@ -1119,9 +1145,15 @@ void AliAnalysisTaskCMWPUuncAch::UserExec(Option_t*) {
     }
   
   Float_t fAchrgNet = (fNumOfPos - fNumOfNeg)/(fNumOfPos + fNumOfNeg); // Efficiency & NUA Corrected!
+  Float_t fAchrgNetunc = (fNumOfPosunc - fNumOfNegunc)/(fNumOfPosunc + fNumOfNegunc); // Efficiency & NUA Corrected!
 
   fHistAChrgVsCent->Fill(centrality, fAchrgNet, fWgtEvent);
+  fHistAChrgVsCentunc->Fill(centrality, fAchrgNetunc, fWgtEvent);
   
+  fHistAch[iCent]->Fill(fAchrgNetunc,fAchrgNet,fWgtEvent);
+
+
+
   // Do Event plane defination, Fill Resolution Etc.
   // Double_t Psi2EtaPos =  Formula for PsiN:
   

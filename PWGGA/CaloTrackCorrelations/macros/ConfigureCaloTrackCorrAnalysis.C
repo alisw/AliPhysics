@@ -386,6 +386,26 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     ana->SwitchOnFillEmbededSignalHistograms() ;
   }
   
+  // Track matching parameters
+  AliCaloPID* caloPID = ana->GetCaloPID();
+
+  // EMCAL
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.7") ) caloPID->SetEOverP(0,1.7);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+
+  // if tm = 1, fixed cuts
+  caloPID->SetEMCALDEtaCut(0.020);
+  caloPID->SetEMCALDPhiCut(0.030);
+
+  // PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+
   //
   // Histograms ranges
   //
@@ -508,13 +528,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     histoRanges->SetHistoPtSumRangeAndNBins   (   0, 200, 200);
     histoRanges->SetHistoPtSumSubRangeAndNBins(-150, 150, 300);
   }
+
   //
   // MC histograms?
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
   
- 
   //
   // Specialized histograms on multiplicity
   //
@@ -616,37 +636,18 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetNLMCut(1, 2) ;
   }
   
-  //PID cuts (shower shape)
+  // PID cuts (shower shape and track matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
-  //Not used in bayesian
   
   // EMCAL
-  
   //caloPID->SetEMCALLambda0CutMax(0.27);
   caloPID->SetEMCALLambda0CutMax(10); // open, full shower shape needed for isolation studies
   caloPID->SetEMCALLambda0CutMin(0.10);
   
-  // Track matching
-  
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
-  
-  // pT track dependent cuts
+  // Track matching, pT track dependent cuts
+  // E/p cuts and residual cuts for tm=1 set on SetAnalysisCommonParameters()
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  // PHOS
-  caloPID->SetPHOSDispersionCut(2.5);
-  caloPID->SetPHOSRCut(2.);
-  //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
@@ -893,20 +894,6 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     ana->SetTimeCut(-1e10,1e10); // Open time cut
     
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // Track matching
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    // tm = 1, fixed cuts
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
-    
     // pT track dependent cuts
     if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
     
@@ -1361,26 +1348,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if ( partInCone == AliIsolationCut::kNeutralAndCharged )
   {
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    if ( tm == 1 )
-    {
-      // tm = 1, fixed cuts
-      
-      caloPID->SetEMCALDEtaCut(0.020);
-      caloPID->SetEMCALDPhiCut(0.030);
-    }
-    else
-    {
-      // pT track dependent cuts
+
+    if ( tm > 1 )
       caloPID->SwitchOnEMCTrackPtDepResMatching();
-    }
   }
   
   // Set Histograms name tag, bins and ranges
@@ -1578,17 +1548,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //
   AliCaloPID* caloPID = ana->GetCaloPID();
   
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
-  
   // pT track dependent cuts
   if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
@@ -1711,13 +1670,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
   if(tm > 1)
   {
     // track pT dependent cut
@@ -1730,8 +1682,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   {
     // Fix
     caloPID->SwitchOffEMCTrackPtDepResMatching();
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
     
     // Begining of histograms name
     ana->AddToHistogramsName("Shape_TMFix_"); 
@@ -2040,7 +1990,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
 ///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
-///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.5"
+///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
 ///
 void ConfigureCaloTrackCorrAnalysis

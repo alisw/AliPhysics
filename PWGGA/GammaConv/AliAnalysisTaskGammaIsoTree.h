@@ -14,6 +14,7 @@
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TList.h"
 #include "AliMCEvent.h"
 #include "TClonesArray.h"
@@ -537,6 +538,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTruePtTaggedCaloIsoFull[5][5]; //!
     TH1F*                       fCaloTruePtTaggedCaloIsoCell[5][5]; //!
     TH1F*                       fCaloTruePtIsoChargedFromDirect[5][5]; //! R , Emin
+    TH1F*                       fCaloTruePtIsoChargedAndMCIsoChargedFromDirect[5][5]; //! R , Emin
     TH1F*                       fCaloTruePtIsoNeutralFromDirect[5][5]; //!
     TH1F*                       fCaloTruePtIsoFullFromDirect[5][5]; //!
     TH1F*                       fCaloTruePtIsoCellFromDirect[5][5]; //!
@@ -550,6 +552,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloTrueRecPtIsoFull[5][5]; //!
     TH1F*                       fCaloTrueRecPtIsoCell[5][5]; //!
     TH1F*                       fCaloTrueRecPtIsoChargedFromDirect[5][5]; //! R , Emin
+    TH1F*                       fCaloTrueRecPtIsoChargedAndMCIsoChargedFromDirect[5][5]; //! R , Emin
     TH1F*                       fCaloTrueRecPtIsoNeutralFromDirect[5][5]; //!
     TH1F*                       fCaloTrueRecPtIsoFullFromDirect[5][5]; //!
     TH1F*                       fCaloTrueRecPtIsoCellFromDirect[5][5]; //!
@@ -602,6 +605,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     THnSparseF*                       fCaloM02AntiCellIsolated[5];//!
     THnSparseF*                       fCaloM02FullIsolated[5][5]; //!
     THnSparseF*                       fCaloM02AntiFullIsolated[5];//!
+    THnSparseF*                       fCaloM02vsIsoVsPt[5];//!
     THnSparseF*                       fCaloTrueM02; //! inv mass of true photon EMC-EMC
     THnSparseF*                       fCaloTrueM02_FromDecay;//!
     THnSparseF*                       fCaloTrueM02_FromDirect;//!
@@ -645,6 +649,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fExclusionRadius;//
 
     Int_t                       fDebug;// debug flag
+
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     // MC cluster & headers 
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
@@ -711,7 +717,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 28);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 29);
 
 };
 

@@ -102,24 +102,24 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   const Int_t nBeautyHadSpecies=4;
   Int_t pdgArrB[nBeautyHadSpecies]={511,521,531,5122};
   TString bhadrname[nBeautyHadSpecies]={"B0","Bplus","Bs","Lb"};
-  Double_t fracB[4]={0.401,0.401,0.105,0.093};
+  Double_t fracB[4]={0.408,0.408,0.100,0.084};
   TF1 *fracU[15];
   TF1 *fracBs[15];
   TF1 *fracLb[15];
   TF1 *enScal = nullptr;
 
   if(opt4ff==kppbar){
-    // ppbar fractions from Phys. Rev. D 98, 030001
-    fracB[0]=0.340;
-    fracB[1]=0.340;
-    fracB[2]=0.101;
-    fracB[3]=0.219;
+    // ppbar fractions from PDG 2020 https://pdg.lbl.gov/2020/tables/contents_tables.html
+    fracB[0]=0.344;
+    fracB[1]=0.344;
+    fracB[2]=0.115;
+    fracB[3]=0.198;
   }else if(opt4ff==kee){
-    // e+e- fractions from Phys. Rev. D 98, 030001
-    fracB[0]=0.412;
-    fracB[1]=0.412;
-    fracB[2]=0.088;
-    fracB[3]=0.088;
+    // e+e- fractions from PDG 2020 https://pdg.lbl.gov/2020/tables/contents_tables.html
+    fracB[0]=0.408;
+    fracB[1]=0.408;
+    fracB[2]=0.100;
+    fracB[3]=0.084;
   }
   else if(opt4ff>=kLHCbCent){
     // pt-dependent fractions - evaluate when b hadron pt is calculated in the gen. loop

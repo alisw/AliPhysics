@@ -33,16 +33,18 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
 
     THashList              *fOutput;                  //! User output
     AliAODTrack           **fTrackArray;              //! global track info
-    const UShort_t          fTrackBuffSize;           //! size fo the above array
-    std::vector<UInt_t>     fProtonCandIdx;           //! track index of proton candidate
-    std::vector<UInt_t>     fLambdaCandIdx;           //! V0 index of Lambda candidate
-    std::vector<UInt_t>     fXiCnadIdx;               //! cascade index of Xi candidate
-    std::vector<UInt_t>     fOmegaCnadIdx;            //! cascade index of Omega candidate
+    TClonesArray           *fProtonArray;             //! proton candidates
+    TClonesArray           *fLambdaArray;             //! Lambda candidates
+    TClonesArray           *fXiArray;                 //! Xi candidates
+    TClonesArray           *fOmegaArray;              //! Omega candidates
+    const Int_t             fTrackBuffSize;           // size of the track array
+    const Int_t             fV0BuffSize;              // size of the V0 array
+    const Int_t             fCascadeBuffSize;         // size of the cascade array
 
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 5);
+    ClassDef(AliAnalysisTaskDibaryons, 6);
 };
 
 #endif

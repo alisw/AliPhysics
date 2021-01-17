@@ -166,7 +166,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserCreateOutputObjects() {
   }
 
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(3, 1, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(13, 1, fConfig->GetMinimalBookingME());
 
   fOutput->Add(fPairCleaner->GetHistList());
 
@@ -233,6 +233,10 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   PhiTRUEinvmass.clear();
   static std::vector<AliFemtoDreamBasePart> PhiFAKEinvmass;
   PhiFAKEinvmass.clear();
+  static std::vector<AliFemtoDreamBasePart> Kaonsinvmass;
+  Kaonsinvmass.clear();
+  static std::vector<AliFemtoDreamBasePart> AntiKaonsinvmass;
+  AntiKaonsinvmass.clear();
 
   static float massKaon =
       TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
@@ -452,6 +456,9 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
         fPhiParticle->SetCPA(
             gRandom->Uniform());  // cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
+        Kaonsinvmass.push_back(posK);
+        AntiKaonsinvmass.push_back(negK);
+
       }
     }
   }
@@ -459,6 +466,18 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiProtons, 0);
   fPairCleaner->CleanTrackAndDecay(&Protons, &V0Particles, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &V0Particles, 2);
+
+  fPairCleaner->CleanTrackAndDecay(&Particles, &AntiParticles, 3);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Particles, 4);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiParticles, 5);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiParticles, 6);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Particles, 7);
+
+  fPairCleaner->CleanTrackAndDecay(&Kaonsinvmass, &AntiKaonsinvmass, 8);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Kaonsinvmass, 9);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiKaonsinvmass, 10);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiKaonsinvmass, 11);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &Kaonsinvmass, 12);
 
   fPairCleaner->CleanDecay(&V0Particles, 0);
 
@@ -471,6 +490,10 @@ void AliAnalysisTaskNanoAODFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->StoreParticle(AProtonTRUE);     // 4
   fPairCleaner->StoreParticle(PhiTRUEinvmass);  // 5
   fPairCleaner->StoreParticle(PhiFAKEinvmass);  // 6
+  fPairCleaner->StoreParticle(Particles);  // 7
+  fPairCleaner->StoreParticle(AntiParticles);  // 8
+  fPairCleaner->StoreParticle(Kaonsinvmass);  // 9
+  fPairCleaner->StoreParticle(AntiKaonsinvmass);  // 10
 
   if (fPairCleaner->GetCounter() > 0) {
     if (fConfig->GetUseEventMixing()) {

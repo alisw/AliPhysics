@@ -73,10 +73,10 @@ private:
     Int_t fNRuns;						//
     Int_t fNSelectionCases;				//
     Bool_t fFillTTree;					//
-    TH1D* v0_H[21];						//!
-	TH1D* t0_H[21];						//!
-	TH2D* v0_Timing[21];					//!
-	TH2D* t0_Timing[21];					//!
+    TH1D* v0_H[25];						//!
+	TH1D* t0_H[25];						//!
+	TH2D* v0_Timing[25];					//!
+	TH2D* t0_Timing[25];					//!
     
     void AddEventTreeVariables(TTree* &tree);
 	Bool_t CheckTime(Float_t timeA, Float_t timeC);

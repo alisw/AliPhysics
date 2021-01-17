@@ -31,7 +31,7 @@ Bool_t ConfigPhiPbPb5TeVRun2
                 Float_t                nsigmaKa=2.,
                 Bool_t                 enableMonitor=kTRUE,
                 Bool_t                 IsMcTrueOnly=kFALSE,
-                TString                monitorOpt="",
+                TString                monitorOpt="NoSIGN",
                 Bool_t                 useMixLS=0
         )
 {
@@ -75,7 +75,7 @@ Bool_t ConfigPhiPbPb5TeVRun2
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 #endif
         AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
-        AddMonitorOutput(isMC, cutSetK->GetMonitorOutput()), monitorOpt.Data();
+        AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
     }
 
     // -- Values ------------------------------------------------------------------------------------
@@ -212,6 +212,8 @@ Bool_t ConfigPhiPbPb5TeVRun2
             outps->AddAxis(cosThSIDAbs, thetaBin, thetaMin , thetaMax);
         else
             outps->AddAxis(cosThSIDAbs, thetaBin, thetaMin , thetaMax);
+
+	outps->AddAxis(etaID, etaBin, etaMin, etaMax);
 
 
         AliRsnMiniOutput* outpsf=task->CreateOutput(Form("phi_phaseSpaceFine"),"HIST","TRUE");

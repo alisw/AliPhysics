@@ -3025,7 +3025,7 @@ Bool_t Config_XiPi(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
     
-    Double_t mass=0.139571+1.32171;
+    Double_t mass=0.139571+1.67243;//1.32171;
     
     // set cuts for pions
     if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
@@ -3067,7 +3067,7 @@ Bool_t Config_XiPi(
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     
-    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
+    AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kOmegaMinus);//kXiMinus);
     cutXi->SetPIDCutV0Proton(XiPIDcut);
     cutXi->SetPIDCutV0Pion(XiPIDcut);
     cutXi->SetPIDCutBachelor(XiPIDcut);
@@ -3090,7 +3090,7 @@ Bool_t Config_XiPi(
     cutXi->SetMaxPseudorapidity(0.8);
     cutXi->SetMinTPCcluster(-1);
     
-    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar);
+    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kOmegaPlusBar);//kXiPlusBar);
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
@@ -3256,7 +3256,7 @@ Bool_t Config_XiPi(
         ipdg=(i==0)?3324:-3324;
         
         out=task->CreateOutput(Form("Xipi_%s%s",name.Data(),suffix),"HIST",comp.Data());
-        out->SetDaughter(0,AliRsnDaughter::kXi);
+        out->SetDaughter(0,AliRsnDaughter::kOmega);//kXi);
         out->SetCutID(0,cut1);
         out->SetCharge(0,charge1);
         
@@ -3270,7 +3270,7 @@ Bool_t Config_XiPi(
         out->SetMotherMass(mass);
         
         if(k<=6){
-            if(xID==imID || xID==mmID) out->AddAxis(xID,200,1.4,1.8);// axis X: invmass or resolution
+            if(xID==imID || xID==mmID) out->AddAxis(xID,300,1.8,3);//200,1.4,1.8);// axis X: invmass or resolution
             else out->AddAxis(diffID,200,-0.02,0.02);
             out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -3375,7 +3375,7 @@ Bool_t Config_Xikx(
     esdTrackCuts->SetMinDCAToVertexXY(0.06);
     
     // selections for Xi
-    Float_t XiPIDcut=3.;
+    Float_t XiPIDcut=5.;
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.6;
     Float_t XiMinDCA=0.07;
@@ -3670,7 +3670,7 @@ Bool_t Config_Xik0(
     Double_t mass= 0.497611+1.32171;
     
     Bool_t CheckOOBP=false;//true;
-    //if(TrackCutsXi==1) CheckOOBP=false;
+    if(TrackCutsXi==1) CheckOOBP=true;
     
     // selections for V0 daughters
     
@@ -3693,7 +3693,7 @@ Bool_t Config_Xik0(
     Float_t k0sDaughDCA=1.;
     Float_t k0sDCA=0.3;
     Float_t k0s_pLife=20.;
-    Float_t k0s_radiuslow=0.5;
+    Float_t k0s_radiuslow=0.9; // 0.5;
     Float_t k0s_radiushigh=200.;
     Float_t k0s_massTolSigma=4;
     Int_t   k0s_massTolID=0;
@@ -3727,12 +3727,13 @@ Bool_t Config_Xik0(
     Int_t iCutK0s=task->AddTrackCuts(cutSetK0s);
     
     // selections for Xi
-    Float_t XiPIDcut=3.;
+    Float_t XiPIDcut=3.; // 5.;
     Float_t V0dDCA=1.6;
-    Float_t XidDCA=1.6;
+    Float_t XidDCA=1.4; // 1.6;
     Float_t XiMinDCA=0.07;
     Float_t Xi_massTol=0.015;
     Float_t Xi_massTolVeto=0.007;
+    Float_t Xi_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     
@@ -3747,12 +3748,14 @@ Bool_t Config_Xik0(
     cutXi->SetV0MinDCAVertex(XiMinDCA);
     cutXi->SetCascadeMaxDCAVertex(1e5); // not using
     cutXi->SetCascadeMinDCAVertex(-1e5); // not using
-    cutXi->SetV0LowRadius(0); // not using
+    cutXi->SetV0LowRadius(0.9); // 0
     cutXi->SetV0HighRadius(1e5); // not using
-    cutXi->SetCascadeLowRadius(0); // not using
+    cutXi->SetCascadeLowRadius(0.5); // 0
     cutXi->SetCascadeHighRadius(1e5); // not using
+    cutXi->SetV0Life(20);
     cutXi->SetMassTolerance(Xi_massTol);
     cutXi->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
+    cutXi->SetV0MassTolerance(Xi_V0massTol);
     cutXi->SetSwitch(kFALSE); // not using
     cutXi->SetV0MinCosPointingAngle(V0CosPoinAn);
     cutXi->SetCascadeMinCosPointingAngle(XiCosPoinAn);
@@ -3770,12 +3773,14 @@ Bool_t Config_Xik0(
     cutXibar->SetV0MinDCAVertex(XiMinDCA);
     cutXibar->SetCascadeMaxDCAVertex(1e5); // not using
     cutXibar->SetCascadeMinDCAVertex(-1e5); // not using
-    cutXibar->SetV0LowRadius(0); // not using
+    cutXibar->SetV0LowRadius(0.9); // 0
     cutXibar->SetV0HighRadius(1e5); // not using
-    cutXibar->SetCascadeLowRadius(0); // not using
+    cutXibar->SetCascadeLowRadius(0.5); // 0
     cutXibar->SetCascadeHighRadius(1e5); // not using
+    cutXibar->SetV0Life(20);
     cutXibar->SetMassTolerance(Xi_massTol);
     cutXibar->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
+    cutXibar->SetV0MassTolerance(Xi_V0massTol);
     cutXibar->SetSwitch(kFALSE); // not using
     cutXibar->SetV0MinCosPointingAngle(V0CosPoinAn);
     cutXibar->SetCascadeMinCosPointingAngle(XiCosPoinAn);
@@ -3864,6 +3869,8 @@ Bool_t Config_Xik0(
     /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
     /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
     /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
+    /* 1st daughter pt  */ Int_t fdptmc = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kTRUE);
+    /* 2nd daughter pt  */ Int_t sdptmc = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kTRUE);
     
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
@@ -3945,7 +3952,11 @@ Bool_t Config_Xik0(
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
             out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
-        }else{//Phase-space histograms
+        }else if(j==7){//Phase-space histograms
+            out->AddAxis(fdptmc,100,0.,10.);
+            out->AddAxis(sdptmc,100,0.,10.);
+            out->AddAxis(ptID,40,0.,20.);
+        }else{
             out->AddAxis(fdpt,100,0.,10.);
             out->AddAxis(sdpt,100,0.,10.);
             out->AddAxis(ptID,40,0.,20.);

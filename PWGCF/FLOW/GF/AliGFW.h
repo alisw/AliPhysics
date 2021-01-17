@@ -38,12 +38,15 @@ class AliGFW {
     void PrintStructure() {printf("%s: eta [%f.. %f].",rName.Data(),EtaMin,EtaMax); };
   };
   struct CorrConfig {
-    vector<Int_t> Regs {};
+    vector<vector<Int_t>> Regs {};
+    vector<vector<Int_t>> Hars {};
+    vector<Int_t> Overlap;
+    /*vector<Int_t> Regs {};
     vector<Int_t> Hars {};
     vector<Int_t> Regs2 {};
     vector<Int_t> Hars2 {};
     Int_t Overlap1=-1;
-    Int_t Overlap2=-1;
+    Int_t Overlap2=-1;*/
     Bool_t pTDif=kFALSE;
     TString Head="";
   };
@@ -66,7 +69,8 @@ class AliGFW {
   void SplitRegions();
   AliGFWCumulant fEmptyCumulant;
   TComplex TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant*, AliGFWCumulant*, AliGFWCumulant*);
-  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> hars, vector<Int_t> pows={}); //POI, Ref. flow, overlapping region
+  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars, vector<Int_t> &pows); //POI, Ref. flow, overlapping region
+  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars); //POI, Ref. flow, overlapping region
   //Deprecated and not used (for now):
   void AddRegion(Region inreg) { fRegions.push_back(inreg); };
   Region GetRegion(Int_t index) { return fRegions.at(index); };

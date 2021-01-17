@@ -91,9 +91,8 @@ public:
     void            GetPi0EtaWeight(THnSparse *SparseWeight);
     
     void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-    //void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt);
     void            FindMother(AliAODMCParticle* part, Int_t &fpidSort, Bool_t &kEmbEta, Bool_t &kEmbPi0, Bool_t &kHijing, Double_t &momPt, Double_t &momGamma, Double_t &momTime);
-    void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+    void            InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Double_t fWeight);
     void            InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Bool_t kHijing, Bool_t kEmbEta, Bool_t kEmbPi0, Bool_t &kFlagReco, Double_t fWeight, Int_t fpidSort, Double_t prodRadius);
     void            SetHadronEoPCut(Bool_t hadronEopCut) {fApplyHadEoPCut = hadronEopCut;};
     void            SetVtxZCut(Double_t zVertexCut) {fVtxZCut = zVertexCut;};
@@ -211,6 +210,8 @@ private:
     
     TH2F                *fULSdcaBelow;   //! ULS electron DCA vs. pT, m<0.1
     TH2F                *fLSdcaBelow;    //! LS electron DCA vs. pT, m<0.1
+    TH2F                *fULSdcaBelowWeight;   //! ULS electron DCA vs. pT, m<0.1
+    TH2F                *fLSdcaBelowWeight;    //! LS electron DCA vs. pT, m<0.1
     
     TH1F                *fLSWeightEnhEta;     //! LS for Weighted enhanced eta
     TH1F                *fULSWeightEnhEta; //! ULS for Weighted enhanced eta
@@ -336,6 +337,7 @@ private:
     THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
     THnSparse           *fSprsClosureTest;  //! Sparse for templates
+    THnSparse           *fSprsClosureTestWeight;  //! Sparse for templates
     
     //TH2F                *fDTemplateWeight; //!
     //TH2F                *fDTemplateNoWeight; //!

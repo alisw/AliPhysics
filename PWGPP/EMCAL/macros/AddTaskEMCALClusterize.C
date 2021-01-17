@@ -66,7 +66,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
                                                        const Bool_t  bRecalE    = kTRUE,
                                                        const Bool_t  bBad       = kTRUE,
                                                        const Bool_t  bRecalT    = kTRUE,
-                                                       const Bool_t  bNonLine   = kFALSE,
+                                                       const Int_t   iNonLine   = 0,
                                                        const Int_t   minCen     = -1,
                                                        const Int_t   maxCen     = -1,
                                                        const Float_t clusterEnergyCutEvent = -1,
@@ -237,9 +237,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
 //  
 //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
 //  
-//  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
-
-  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
+  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,iNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
   // Do track matching after clusterization

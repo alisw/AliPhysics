@@ -63,6 +63,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetDoClusterQA(Int_t flag)                       { fDoClusterQA                = flag                                                            ; }
     void SetPlotHistsExtQA(Bool_t flag)                   { fSetPlotHistsExtQA          = flag                                                            ; }
 
+    // switch for overlap criterium
+    void SetOverlapFromCluster(Bool_t flag)               { fMesonOLFromCluster = flag                                                                    ; }
       // Setting the cut lists for the conversion photons
     void SetEventCutList(Int_t nCuts, TList *CutArray)    {
                                                             fnCuts                      = nCuts                                                           ;
@@ -140,6 +142,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     TClonesArray*           fAODMCTrackArray;                                   // MC track array
     TClonesArray*           farrClustersProcess;                                // Cluster array
+    std::map<Int_t, Int_t>* fMapNeutralPionOverlap;                             // map with number of neutral pion overlaps for current pion
+    Bool_t                  fMesonOLFromCluster;                                // flag to switch between event and cluster classification of overlaps
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -338,7 +342,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 39);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 40);
 };
 
 #endif

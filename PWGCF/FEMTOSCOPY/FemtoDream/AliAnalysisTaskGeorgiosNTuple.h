@@ -22,7 +22,7 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "TTree.h"
 
-#define MONTECARLO
+//#define MONTECARLO
 
 class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
  public:
@@ -150,10 +150,11 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   //Float_t fTTrackv0Eta[300][2];
   Short_t fTTrackv0Charge[300][2];
   Float_t fTTrackv0DCA[300][2];
-/* 
   Float_t fTTrackv0TPCsigma[300][2];
-  Float_t fTTrackv0TOFsigma[300][2];
+  //Float_t fTTrackv0TOFsigma[300][2];
+
   Int_t fTTrackv0Ncl[300][2];
+/* 
   Float_t fTTrackv0CrR[300][2];
   Float_t fTTrackv0CrF[300][2];
   Int_t fTTrackv0Shared[300][2];
@@ -225,11 +226,11 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   //Float_t fTTrackEta[300][3];
   Short_t fTTrackCharge[300][3];
   Float_t fTTrackDCA[300][3];
+  Float_t fTTrackTPCsigma[300][3];
+//  Float_t fTTrackTOFsigma[300][3];
+  Int_t fTTrackNcl[300][3];
 /*
  *
-  Float_t fTTrackTPCsigma[300][3];
-  Float_t fTTrackTOFsigma[300][3];
-  Int_t fTTrackNcl[300][3];
   Float_t fTTrackCrR[300][3];
   Float_t fTTrackCrF[300][3];
   Int_t fTTrackShared[300][3];

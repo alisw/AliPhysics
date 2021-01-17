@@ -42,6 +42,7 @@
 #pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
+#pragma link C++ class AliAnalysisTaskSpectraINEL0+;
 #endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;

@@ -380,7 +380,11 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				*fHist_InvMass_pt_ULS_KF;
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
-   TH2F                *fHist_InvMass_pt_ULS_KF_weight;
+    TH2F                *fHist_Correlation_leg1_emcal_leg2_not;
+    TH2F                *fHist_Correlation_leg1_not_leg2_emcal;
+    TH2F                *fHist_Correlation_leg1_emcal_leg2_emcal;
+    
+    TH2F                *fHist_InvMass_pt_ULS_KF_weight;
     
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1;

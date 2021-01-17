@@ -80,6 +80,9 @@ public:
   void SetUseMVPileup(bool flag) {fEventCut.fPileUpCutMV=flag;}
 
   void SetUseImpactParameter(bool flag) {fUseImpPar=flag;}
+  void SetUseLocalTrackDensity(bool flag, double deltaRcut=0.2, double maxNtracks=-1.) {
+    fUseLocDen=flag; fDeltaRcut=deltaRcut; fMaxTracksInCone=maxNtracks;
+  }
   void SetPtHardRange(double pmin, double pmax){
     fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
   }
@@ -91,6 +94,7 @@ public:
   void KeepOnlyUnderlyingEventParticles(bool opt){fKeepOnlyUE=opt;}
   TString GetGenerator(int label, TList *lh);
   bool IsInjectedParticle(int lab, TList *lh);
+  double GetLocalTrackDens(double eta, double phi);
   AliEventCuts  fEventCut;
 
 
@@ -113,6 +117,9 @@ private:
   bool fKeepOnlyInjected;        /// flag to keep only injected particles
   bool fKeepOnlyUE;              /// flag to keep only underlying event
   bool fUseImpPar;               /// flag to enable plots vs. impact parameter
+  bool fUseLocDen;               /// flag to enable plots vs. local track density
+  double fDeltaRcut;             /// radius cut to count local track density
+  double fMaxTracksInCone;       /// upper limit for track density axis
   bool fSelectPtHardRange;       /// flag to enable the cut on pthard
   double fMinPtHard;             /// min pthard
   double fMaxPtHard;             /// max pthard
@@ -131,7 +138,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 10);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 11);
   /// \endcond
 };
 
