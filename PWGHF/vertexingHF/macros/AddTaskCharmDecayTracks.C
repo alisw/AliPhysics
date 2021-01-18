@@ -1,4 +1,5 @@
 AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
+							 Bool_t decayV0bachelor=kFALSE,
 							 TString optMeth="kine",
 							 Int_t filterMask = 16){
   
@@ -14,7 +15,7 @@ AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
   optMeth.ToLower();
   if(optMeth.Contains("cand") || optMeth.Contains("delta")) dTask->SetUseCandidatesFromDeltaAOD();
   else dTask->SetUseCharmedHadronsFromKine();
-
+  if(pdgCode==4122 && decayV0bachelor) dTask->SelectLcpK0s();
 
   // Create containers for input/output
   TString baseName="CharmDecayTracks";
@@ -23,7 +24,8 @@ AliAnalysisTaskCharmDecayTracks* AddTaskCharmDecayTracks(Int_t pdgCode=421,
   if(pdgCode==421) containerStr="Dzero";
   else if(pdgCode==411) containerStr="Dplus";
   else if(pdgCode==431) containerStr="Ds";
-  else if(pdgCode==4122) containerStr="Lc";
+  else if(pdgCode==4122 && !decayV0bachelor) containerStr="LcpKpi";
+  else if(pdgCode==4122 && decayV0bachelor) containerStr="LcpK0s";
   TString inname = Form("cinput%s%s",baseName.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",baseName.Data(),containerStr.Data());
   TString treename = Form("coutput%sTree%s",baseName.Data(),containerStr.Data());
