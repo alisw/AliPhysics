@@ -5,6 +5,7 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TNtuple.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -386,12 +387,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   int nContrib = vtTrc->GetNContributors();;
 
   int nTracksTPCITS = 0;
+  TNtuple* trEtaPhiMap = new TNtuple("trEtaPhiMap", "tracks", "eta:phi");
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// count tracks passing ITS TPC selections
     AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
+    trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
@@ -435,7 +438,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     fHistNParticles->Fill(4);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparse[3]=imppar;
-    if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(part->Eta(),part->Phi());
+    if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(trEtaPhiMap,part->Eta(),part->Phi());
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -514,7 +517,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
     double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparseData[3]=imppar;
-    if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(eta,phi);
+    if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(trEtaPhiMap,eta,phi);
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
@@ -524,6 +527,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     if(TPCpid && TOFpid) fReconstructedPID[iSpecies][iCharge]->Fill(arrayForSparseData);
 
   } // End track loop
+  delete trEtaPhiMap;
 
   //  Post output data.
   PostData(1,fOutputList);
@@ -612,15 +616,16 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
   else return kTRUE;
 }
 //______________________________________________________________________________
-double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(double eta, double phi){
+double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi){
   /// count tracks in a cone around selected particle
   double nTracksInCone=0.;
-  for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
-    AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
-    const double etatr = track->Eta();
-    const double phitr = track->Phi();
-    double deltaEta=track->Eta()-eta;
-    double deltaPhi=track->Phi()-phi;
+  float etatr,phitr;
+  trEtaPhiMap->SetBranchAddress("eta",&etatr);
+  trEtaPhiMap->SetBranchAddress("phi",&phitr);
+  for (int iT = 0; iT < trEtaPhiMap->GetEntriesFast(); ++iT) {
+    trEtaPhiMap->GetEvent(iT);
+    double deltaEta=etatr-eta;
+    double deltaPhi=phitr-phi;
     double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
     if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
   }

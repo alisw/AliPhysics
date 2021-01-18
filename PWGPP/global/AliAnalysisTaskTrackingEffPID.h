@@ -94,7 +94,7 @@ public:
   void KeepOnlyUnderlyingEventParticles(bool opt){fKeepOnlyUE=opt;}
   TString GetGenerator(int label, TList *lh);
   bool IsInjectedParticle(int lab, TList *lh);
-  double GetLocalTrackDens(double eta, double phi);
+  double GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi);
   AliEventCuts  fEventCut;
 
 
