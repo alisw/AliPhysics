@@ -476,6 +476,15 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 
   ConfigureEMCALClusterCuts(reader, calorimeter, cutsString, clustersArray, year, simulation);
 
+  // Select only prompt photons from gamma-jet events
+  // or reject fragmentation photons from jet-jet events
+  reader->SwitchOffMCPromptPhotonsSelection();
+  reader->SwitchOffMCFragmentationPhotonsRejection();
+  if ( cutsString.Contains("SelectPrompt") )
+    reader->SwitchOnMCPromptPhotonsSelection();
+  if ( cutsString.Contains("RejectFragment") )
+    reader->SwitchOnMCFragmentationPhotonsRejection();
+
   // Extra calorimeter stuff:
   //
   // In case no external calibrated cluster/cell list or EMCal correction framework applied before
@@ -670,6 +679,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///       *Do not reject MB events from EMC_L0, L1, L2; 
 ///       *Do not reject EMC_L0 events from EMC_L1, L2; 
 ///       *Do not reject EMC_L2 from EMC_L1
+///    * SelectPrompt: Accept only prompt photon clusters in gamma-jet simulations
+///    * RejectFragment: Reject fragmentation photon clusters from jet-jet simulations
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
