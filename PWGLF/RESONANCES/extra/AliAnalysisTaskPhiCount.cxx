@@ -89,7 +89,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     // TODO: Acc Tracks in mult bins
     //
-    fQC_Event_Enumerate     = new TH1F("fQC_Event_Enumerate",   "Event Selection",                  17, 0.5, 17.5);
+    fQC_Event_Enumerate     = new TH1D("fQC_Event_Enumerate",   "Event Selection",                  17, 0.5, 17.5);
     fQC_Event_Vertex_Fll    = new TH1F("fQC_Event_Vertex_Fll",  "Collision Vertex (FULL)",          300, -15, 15);
     fQC_Event_Vertex_Cut    = new TH1F("fQC_Event_Vertex_Cut",  "Collision Vertex (CUTS)",          300, -15, 15);
     fQC_Event_Enum_Mult     = new TH1F("fQC_Event_Enum_Mult",   "Collision Vertex (CUTS)",          202, -1., 201.);
@@ -186,7 +186,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     OpenFile(3);
     // PhiCandidate Tree Set-Up
     fPhiCandidate = new TTree   ("PhiCandidate",    "Data Tree for Phi Candidates");
-    fPhiCandidate->Branch       ("fMultiplicity",   &fMultiplicity,     "fMultiplicity/b");
+    fPhiCandidate->Branch       ("Multiplicity",    &fMultiplicity,     "fMultiplicity/b");
     fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/b");
     fPhiCandidate->Branch       ("Px",              &fPhiPx,            "fPhiPx[fnPhi]/F");
     fPhiCandidate->Branch       ("Py",              &fPhiPy,            "fPhiPy[fnPhi]/F");
@@ -199,7 +199,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     // KaonCandidate Tree Set-Up
     fKaonCandidate = new TTree ("KaonCandidate",    "Data Tree for Kaon Candidates");
-    fKaonCandidate->Branch     ("fMultiplicity",    &fMultiplicity,     "fMultiplicity/b");
+    fKaonCandidate->Branch     ("Multiplicity",     &fMultiplicity,     "fMultiplicity/b");
     fKaonCandidate->Branch     ("fnKaon",           &fnKaon,            "fnKaon/b");
     fKaonCandidate->Branch     ("Px",               &fKaonPx,           "fKaonPx[fnKaon]/F");
     fKaonCandidate->Branch     ("Py",               &fKaonPy,           "fKaonPy[fnKaon]/F");
@@ -211,6 +211,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     if ( kKaonbool )                PostData(4, fKaonCandidate);
 
     fPhiEfficiency = new TTree  ("PhiEfficiency",   "MC Tree for Phi Efficiency");
+    fPhiEfficiency->Branch      ("Multiplicity",    &fMultiplicity,     "fMultiplicity/b");
     fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/b");
     fPhiEfficiency->Branch      ("Px",              &fPhiTruPx,         "fPhiTruPx[fnPhiTru]/F");
     fPhiEfficiency->Branch      ("Py",              &fPhiTruPy,         "fPhiTruPy[fnPhiTru]/F");
@@ -219,7 +220,8 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     if ( kPhibool   &&  kMCbool )   PostData(5, fPhiEfficiency);
     
-    fKaonEfficiency = new TTree ("KaonEfficiency",   "MC Tree for Kaon Efficiency");
+    fKaonEfficiency = new TTree ("KaonEfficiency",  "MC Tree for Kaon Efficiency");
+    fKaonEfficiency->Branch     ("Multiplicity",    &fMultiplicity,     "fMultiplicity/b");
     
     if ( kKaonbool  &&  kMCbool )   PostData(6, fKaonEfficiency);
 }
@@ -700,13 +702,15 @@ Double_t    AliAnalysisTaskPhiCount::fTOFBeta( )                                
 //_____________________________________________________________________________
 
 bool        AliAnalysisTaskPhiCount::fIsKaonCandidate ( )                       {
-    auto fSigma_TOF    = std::fabs(fPIDResponse->NumberOfSigmasTOF(fCurrent_Track,AliPID::kKaon));
-    auto fSigma_TPC    = std::fabs(fPIDResponse->NumberOfSigmasTPC(fCurrent_Track,AliPID::kKaon));
+    auto fSigma_TOF     = std::fabs(fPIDResponse->NumberOfSigmasTOF(fCurrent_Track,AliPID::kKaon));
+    auto fSigma_TPC     = std::fabs(fPIDResponse->NumberOfSigmasTPC(fCurrent_Track,AliPID::kKaon));
     
     //  CUSTOM
     if ( !fIsTPCAvailable || ( fIsTOFAvailable && fSigma_TOF >= 3 ) )       return false;
     if (  fIsTOFAvailable && fSigma_TPC > 5. )                              return false;
     if ( !fIsTOFAvailable && fSigma_TPC > 3. )                              return false;
+    fTOFSigma[fnKaon]   =   (Char_t)(fSigma_TOF*10.);
+    fTPCSigma[fnKaon]   =   (Char_t)(fSigma_TPC*10.);
     return true;
 }
 

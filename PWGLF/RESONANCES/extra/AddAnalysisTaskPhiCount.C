@@ -27,7 +27,7 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     
     switch ( fAnalysisOption ) {
         case 1:
-            fAliAnlTask -> SetFilterBit(0);
+            fAliAnlTask -> SetFilterBit(7);
             break;
             
         default:
