@@ -133,7 +133,7 @@ public:
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void SetFillpT(Bool_t flag) { fFillpT = flag; }
-  void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step9) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep9 = step9 }
+  void SetStepsFillSkip(Bool_t step0, Bool_t step6, Bool_t step9) { fFillOnlyStep0 = step0; fSkipStep6 = step6; fSkipStep9 = step9; }
   void SetRejectCentralityOutliers(Bool_t flag = kTRUE) { fRejectCentralityOutliers = flag; }
   void SetRejectZeroTrackEvents(Bool_t flag) { fRejectZeroTrackEvents = flag; }
   void SetRemoveWeakDecays(Bool_t flag = kTRUE) { fRemoveWeakDecays = flag; }
