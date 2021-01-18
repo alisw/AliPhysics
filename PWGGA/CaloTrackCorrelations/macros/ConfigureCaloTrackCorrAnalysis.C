@@ -1206,10 +1206,16 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   else                                         
     ic->SwitchOffConeExcessCorrection();
   
-  if ( kAnaCutsString.Contains("IsoBandUERecGap") ) 
+  if ( kAnaCutsString.Contains("IsoBandUERecGap") && thresType > AliIsolationCut::kSumBkgSubIC)
   {
+    // do not count UE particles near the cone limit > R+0.05
     ic->SetBandExclusionRectangular(kTRUE);
-    ic->SetConeSizeBandGap(0.05); // do not count UE particles near the cone limit > R+0.05
+    if ( cone >= 0.25 )
+      ic->SetConeSizeBandGap(0.10);
+    else
+      ic->SetConeSizeBandGap(0.15);
+
+    printf("\t Add isolation UE gap %1.2f\n",ic->GetConeSizeBandGap());
   }
   else    
   {
@@ -1354,28 +1360,27 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   }
   
   // Set Histograms name tag, bins and ranges
-  if ( kAnaCutsString.Contains("MultiIsoUESubMethods"))
+  TString histoStringTag = Form("AnaIsol%s_",particle.Data());
+  if ( kAnaCutsString.Contains("MultiIso") )
   {
-    if      ( partInCone == AliIsolationCut::kNeutralAndCharged )
+    if ( kAnaCutsString.Contains("UESubMethods") )
     {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolPhiBand%s_" ,particle.Data()));
+      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        histoStringTag += Form("PerpCone_");
+      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) histoStringTag += Form("EtaBand_" );
+      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) histoStringTag += Form("PhiBand_" );
       else printf("--- Isolation method for method %d not added\n",thresType); 
+
+//      if ( partInCone == AliIsolationCut::kOnlyCharged )
+//      {
+//        histoStringTag += Form("OnlyCharged_");
+//      }
     }
-    else if ( partInCone == AliIsolationCut::kOnlyCharged )
-    {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPhiBand%s_" ,particle.Data()));
-      else printf("--- Isolation method for method %d not added\n",thresType); 
-    }
-    else printf("--- Isolation method for particles in cone %d not added\n",partInCone); 
+
+    if ( kAnaCutsString.Contains("IsoR"))
+      histoStringTag += Form("R%0.2f_",cone);
   }
-  else if ( kAnaCutsString.Contains("MultiIsoR"))
-    ana->AddToHistogramsName(Form("AnaIsol%s_R%0.2f_",particle.Data(),cone));
-  else 
-    ana->AddToHistogramsName(Form("AnaIsol%s_"       ,particle.Data()));
+
+  ana->AddToHistogramsName(histoStringTag);
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1988,7 +1993,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
-///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
@@ -2118,6 +2123,33 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
                         isoCone,isoConeMin,isoPtTh, 
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+      }
+      else if (analysisString.Contains("MultiIsoRUESubMethods"))
+      {
+        //printf("**** MultiIsoRUESub ****\n");
+        Int_t nsizes = 2;
+        Float_t conesize[] = {0.15,0.3};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,//isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          isoContent = AliIsolationCut::kNeutralAndCharged;
+          if ( calorimeter == "DCAL" )
+            isoContent = AliIsolationCut::kOnlyCharged;
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       else if (analysisString.Contains("MultiIsoR"))
       {

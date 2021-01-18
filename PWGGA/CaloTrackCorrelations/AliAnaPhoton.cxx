@@ -3106,7 +3106,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   {
     if ( cut[i] == "PID"      && !IsCaloPIDOn()         ) continue;
     if ( cut[i] == "Embed"    && !SelectEmbededSignal() ) continue;
-    if ( cut[i] == "Embed"    && SelectEmbededSignal() && !GetReader()->AreMCPromptPhotonsSelected() ) continue;
+    if ( cut[i] == "Embed"    && SelectEmbededSignal() && GetReader()->AreMCPromptPhotonsSelected() ) continue;
     if ( cut[i] == "Time"     && (fTimeCutMin < -1200 || fTimeCutMax > 1200) ) continue;
     if ( cut[i] == "NLM"      && fNLMCutMax > 10        ) continue;
     if ( cut[i] == "Fidutial" && !IsFiducialCutOn()     ) continue;
@@ -7145,10 +7145,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     // Select only clusters with MC signal and data background
     //
-    if ( SelectEmbededSignal() && IsDataMC() )
+    if ( SelectEmbededSignal() && !GetReader()->AreMCPromptPhotonsSelected() )
     {
       if ( nlabels == 0 || mcLabel < 0 ) continue;
-      //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
+      //else printf("Embedded cluster,  %d, n label %d label %d  \n",icalo,calo->GetNLabels(),calo->GetLabel());
       
       if ( !IsHighMultiplicityAnalysisOn () )
       {
