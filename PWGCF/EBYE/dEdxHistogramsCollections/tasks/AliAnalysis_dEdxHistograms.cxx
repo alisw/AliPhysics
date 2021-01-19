@@ -26,7 +26,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTaskTestRequest_vsandul.h"
+#include "AliAnalysisTask_dEdxHistograms.h"
 
 class AliAnalysisTaskMyTask;    // your analysis class
 
@@ -35,14 +35,14 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMyTask) // classimp: necessary for root
 
 AliAnalysisTaskMyTask::AliAnalysisTaskMyTask() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), fHistPt(0)
+    fAOD(0), fOutputList(0), fHistPt(0), fHistTPCSignPLog(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMyTask::AliAnalysisTaskMyTask(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), fHistPt(0)
+    fAOD(0), fOutputList(0), fHistPt(0), fHistTPCSignPLog(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -79,9 +79,27 @@ void AliAnalysisTaskMyTask::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
 
     // example of a histogram
-    fHistPt = new TH1F("fHistPt", "fHistPt", 100, 0, 10);       // create your histogra
+    fHistPt = new TH1F("fHistPt", "fHistPt", 100, 0, 10);       // create your histogram
     fOutputList->Add(fHistPt);          // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
+    
+    int LogBinsX = 431;
+    double StartValueX = 0.1;//
+    double StopValueX = 20;//
+    double LogWidthX[LogBinsX+1];
+
+    int LogBinsY = 431;
+    double StartValueY = 20;//
+    double StopValueY = 2000;//
+    double LogWidthY[LogBinsY+1];
+
+    //calculate bins
+    for(int i = 0; i <= LogBinsX; i++) LogWidthX[i] = pow(10,log10(StartValueX)+(log10(StopValueX)-log10(StartValueX))/double(LogBinsX)*double(i));
+    for(int i = 0; i <= LogBinsY; i++) LogWidthY[i] = pow(10,log10(StartValueY)+(log10(StopValueY)-log10(StartValueY))/double(LogBinsY)*double(i));
+
+    //definition of histogram
+    fHistTPCSignPLog = new TH2F("fHistTPCSignPLog","fHistTPCSignPLog", LogBinsX, LogWidthX,LogBinsY, LogWidthY);
+    fOutputList->Add(fHistTPCSignPLog);
     
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -104,8 +122,12 @@ void AliAnalysisTaskMyTask::UserExec(Option_t *)
     Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     for(Int_t i(0); i < iTracks; i++) {                 // loop ove rall these tracks
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track || !track->TestFilterBit(1)) continue;                            // if we failed, skip this track
-        fHistPt->Fill(track->Pt());                     // plot the pt value of the track in a histogram
+        if(!track || !track->TestFilterBit(128)) continue;                            // if we failed, skip this track
+        if(track->Pt()<0.2) continue;                  //pt track cut
+        if(fabs(track->Eta())>0.8) continue;            //eta track cut                           // if we failed, skip this track
+        fHistPt->Fill(track->Pt());  
+        fHistTPCSignPLog->Fill(track->GetTPCmomentum()/track->Charge(), track->GetTPCsignal() );  
+                                                        // plot the pt value of the track in a histogram
     }                                                   // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
