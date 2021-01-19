@@ -91,6 +91,7 @@ set(SRCS
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
+  Ratios/AliAnalysisTaskStrangenessRatios.cxx
   )
 
 # Headers from sources
