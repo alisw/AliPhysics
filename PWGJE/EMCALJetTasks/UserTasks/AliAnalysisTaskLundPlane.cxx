@@ -289,9 +289,11 @@ Bool_t AliAnalysisTaskLundPlane::FillHistograms() {
 			if(mytrigmb==kTRUE && mytrigej1==kTRUE && mytrigej2==kFALSE) mytrig=4;
                  	if(mytrigmb==kTRUE && mytrigej1==kFALSE && mytrigej2==kTRUE) mytrig=5;
 				if(mytrigmb==kFALSE && mytrigej1==kTRUE && mytrigej2==kTRUE) mytrig=6;
+       if(mytrig==-1) return 0;
+
       }
 
-      if(mytrig==-1) return 0;
+     
 
 
     UInt_t newrun=InputEvent()->GetRunNumber();  
