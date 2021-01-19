@@ -249,6 +249,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetExclusionRadius(Double_t r){
       fExclusionRadius = r;
     }
+    void SetRecPtCut(Double_t pt){
+      fRecPtCut = pt;
+    }
+    void SetGenPtCut(Double_t pt){
+      fGenPtCut = pt;
+    }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -327,7 +333,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t                      fSaveTracks; //
 
     Bool_t                      fUseHistograms; // if activated, histograms will be used instead of a tree
-    Int_t                       fUseTree; // 0 no tree, 1, light tree, 2 full tree
+    Int_t                       fUseTree; // 0 no tree, 1, light tree, 2 full tree (OBSOLETE)
+
+    Double_t                    fRecPtCut; //
+    Double_t                    fGenPtCut; //
     // histos
     TH1F*                       fHistoNEvents;   //! 
     TH1F*                       fHistoNEventsWOWeight;   //! 
@@ -680,26 +689,36 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterPy;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPz;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterM02; 
+    std::vector<Float_t> fBuffer_ClusterM20; 
+    std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
     std::vector<Float_t> fBuffer_ClusterEFrac; 
-    std::vector<Float_t> fBuffer_ClusterIsoCharged; 
+    std::vector<Float_t> fBuffer_ClusterIsoCharged1; // isolation for three different radii 
+    std::vector<Float_t> fBuffer_ClusterIsoCharged2; 
+    std::vector<Float_t> fBuffer_ClusterIsoCharged3; 
     std::vector<Float_t> fBuffer_ClusterIsoBckLeft; 
     std::vector<Float_t> fBuffer_TrueClusterE; 
     std::vector<Float_t> fBuffer_TrueClusterPx; 
     std::vector<Float_t> fBuffer_TrueClusterPy; 
     std::vector<Float_t> fBuffer_TrueClusterPz; 
-    std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged; 
+    std::vector<Float_t> fBuffer_TrueClusterLeadingEFrac; // energy fraction of leading contribution 
+    std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged1; 
+    std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged2; 
+    std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged3; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoBckLeft; 
-    std::vector<Int_t> fBuffer_TrueClusterIsSignal; 
+    std::vector<Int_t> fBuffer_TrueClusterMCTag; 
     std::vector<Bool_t> fBuffer_TrueClusterIsConv;
     
     std::vector<Float_t> fBuffer_GenPhotonE;
     std::vector<Float_t> fBuffer_GenPhotonPx;
     std::vector<Float_t> fBuffer_GenPhotonPy;
     std::vector<Float_t> fBuffer_GenPhotonPz;
-    std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged;
+    std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged1;
+    std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged2;
+    std::vector<Float_t> fBuffer_GenPhotonMCIsoCharged3;
     std::vector<Float_t> fBuffer_GenPhotonMCIsoBckLeft;
     std::vector<Bool_t> fBuffer_GenPhotonIsConv;
+    std::vector<Int_t> fBuffer_GenPhotonMCTag;
 
 
 
@@ -753,7 +772,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 33);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 30);
 
 };
 
