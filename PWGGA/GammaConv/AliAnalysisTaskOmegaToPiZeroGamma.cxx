@@ -4743,7 +4743,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
 
       // rotate both photons around the momentum vector of their hypothetical mother particle
       if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
-        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) {
+          rotationAngle = 90. + fRandom.Uniform(-5., 5.); // rotate by 90+-5 degree
+          rotationAngle = rotationAngle*TMath::Pi()/180.;
+        }
         else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
           Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
           rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
@@ -5056,7 +5059,10 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
 
           // rotate both photons around the momentum vector of their hypothetical mother particle
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0 || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1)){
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0) rotationAngle = TMath::Pi()/2.0; // rotate by 90 degree
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 0){
+              rotationAngle = 90. + fRandom.Uniform(-5., 5.); // rotate by 90+-5 degree
+              rotationAngle = rotationAngle*TMath::Pi()/180.;
+            }
             else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GammaSwappMethodBg() == 1){  // rotate by random angle between
                Double_t temp = (fRandom.Rndm() < 0.5) ? 0 : TMath::Pi();
                rotationAngle = temp + TMath::Pi()/3.0 + fRandom.Rndm()*TMath::Pi()/3.0;
