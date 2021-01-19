@@ -150,6 +150,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -159,6 +160,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
   fNBinsCentralityCorr(0.),
   fEntriesCentralityCorr(0.),
@@ -299,6 +301,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -308,6 +311,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
   fNBinsCentralityCorr(0.),
   fEntriesCentralityCorr(0.),
@@ -490,8 +494,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
 
   if (fCentralityFilename != ""){
     fCentralityFile = TFile::Open(fCentralityFilename.c_str());
-    if (!fCentralityFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fCentralityFilename.c_str()));
+    if (fCentralityFile == 0x0){
+      std::cout << "Location in AliEN: " <<  fCentralityFilenameFromAlien << std::endl;
+      gSystem->Exec(Form("alien_cp alien://%s .", fCentralityFilenameFromAlien.c_str()));
+      std::cout << "Copy centrality weighting from Alien" << std::endl;
+      fCentralityFile = TFile::Open(fCentralityFilename.c_str());
+    }
+    if (!fCentralityFile) {
+      AliFatal(Form("Could not open file %s", fCentralityFilename.c_str()));
     }
     TList* list_temp = (TList*)fCentralityFile->Get("efficiency");
     fHistCentralityCorrection = (TH1F*) list_temp->FindObject("centrality");
@@ -553,12 +563,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   // Initialize all histograms
     fHistEvents             = new TH1F("events", "events", 1, 0., 1.);
     fHistEventStat          = new TH1F("eventStats", "eventStats", kLastBin, -0.5, kLastBin-0.5);
+    fHistCentralityRaw      = new TH1F("centralityRaw", "centralityRaw", 100, 0., 100.);
     fHistCentrality         = new TH1F("centrality", "centrality", 100, 0., 100.);
     fHistVertex             = new TH1F("zVertex", "zVertex", 300, -15.0, 15.0);
     fHistVertexContibutors  = new TH1F("vtxContributor", "vtxContributor",5000,-0.5,4999.5);
     fHistNTracks            = new TH1F("nTracks", "nTracks", 4000, 0., 40000.);
     fOutputList->Add(fHistEvents);
     fOutputList->Add(fHistEventStat);
+    fOutputList->Add(fHistCentralityRaw);
     fOutputList->Add(fHistCentrality);
     fOutputList->Add(fHistVertex);
     // fOutputList->Add(fHistVertexContibutors);
@@ -1069,6 +1081,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
+  fHistCentralityRaw->Fill(centralityF);
 
 
   // Calculating the weight when centrality correction is applied

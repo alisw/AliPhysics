@@ -86,6 +86,8 @@ public:
 
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
+  void   SetCentralityFileFromAlien(std::string filename) {fCentralityFilenameFromAlien = filename; }
+
    // Support Histos
    void   SetSupportHistoMCSignalAndCutsetting(int nMCSignal, int nCutsetting) {fSupportMCSignal = nMCSignal; fSupportCutsetting = nCutsetting;}
 
@@ -302,6 +304,7 @@ private:
 
   TH1F* fHistEvents;
   TH1F* fHistEventStat;
+  TH1F* fHistCentralityRaw;
   TH1F* fHistCentrality;
   TH1F* fHistVertex;
   TH1F* fHistVertexContibutors;
@@ -312,6 +315,7 @@ private:
 
   TFile* fCentralityFile;
   std::string fCentralityFilename;
+  std::string fCentralityFilenameFromAlien;
   TH1F* fHistCentralityCorrection;
   Double_t fNBinsCentralityCorr;
   Double_t fEntriesCentralityCorr;
@@ -381,7 +385,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 5);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 6);
 };
 
 
