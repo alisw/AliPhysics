@@ -1,5 +1,6 @@
 AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
 										const char * njetsData, //data jets
+										const char * njetsTruth, //Truth Jets
 								    const Double_t R,
 								    const char * nrhoBase,
 								    const char * ntracksData,
@@ -46,17 +47,20 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
 
 	// This creates the Particle continer which i later collect in AliAnalysis Task Jet
   AliParticleContainer *trackContData=0x0;
+	AliParticleContainer *trackContTruth=0x0;
   trackContData = task->AddParticleContainer(ntracksData);
+	trackContTruth = task->AddParticleContainer("mcparticles");
 
-
-	//Initialising the Jet Container
+	//Initialising the Jet Containers
   AliJetContainer *JetContData=0x0;
+	AliJetContainer *JetContTruth=0x0;
+
 
   TString strType(type);
 
 
 
-	// Adds the Jet container to the Task, njetsData seems to be refering to the name of the Jet Branch.
+	// Adds the Jet container to the Task.
     JetContData = task->AddJetContainer(njetsData,strType,R); //Data
     if(JetContData) {
       JetContData->SetRhoName(nrhoBase);
@@ -66,7 +70,15 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
       JetContData->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
 
-
+		// Adds the Truth jet container to the Task.
+	    JetContTruth = task->AddJetContainer(njetsTruth,strType,R); //Data
+	    if(JetContTruth) {
+	      JetContTruth->SetRhoName(nrhoBase);
+	      JetContTruth->ConnectParticleContainer(trackContTruth);
+	      JetContTruth->SetPercAreaCut(0.6);
+	      JetContTruth->SetJetRadius(R);
+	      JetContTruth->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+	    }
 
 
 	//Setting up jet cuts stuff
