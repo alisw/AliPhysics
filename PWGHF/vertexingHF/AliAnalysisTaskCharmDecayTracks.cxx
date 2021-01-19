@@ -343,106 +343,106 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
       else if(fSelSpecies==431) retCode=AliVertexingHFUtils::CheckDsDecay(arrayMC,mcPart,arrayDauLabels);
       else if(fSelSpecies==4122 && fDecayMode==0) retCode=AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC,mcPart,arrayDauLabels);
       else if(fSelSpecies==4122 && fDecayMode==1){
-	retCode=AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC,mcPart,arrayDauLabels);
-	if(retCode!=1) continue; // reject lambda+pion decays
-	Int_t labK0s=-1;
-	Int_t labbachelor=-1;
-	for(Int_t jd=0; jd<3; jd++){
-	  Int_t labTr=arrayDauLabels[jd];
-	  AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
-	  if(mcDauPart){
-	    Int_t labMoth=mcDauPart->GetMother();
-	    if(labMoth>=0){
-	      AliAODMCParticle* mcMothPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labMoth));
-	      if(mcMothPart){
-		Int_t pdgMoth=TMath::Abs(mcMothPart->GetPdgCode());
-		if(pdgMoth==310){
-		  labK0s=labMoth;
-		}else if(pdgMoth==4122){
-		  // bachelor
-		  labbachelor=labTr;
-		}
-	      }
-	    }
-	  }
-	}
-	if(labbachelor<0) continue;
-	arrayDauLabels[0]=labbachelor;
-	arrayDauLabels[1]=labK0s;
-	arrayDauLabels[2]=-1;
-	arrayDauLabels[3]=-1;
-	nDauTr=1;
+        retCode=AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC,mcPart,arrayDauLabels);
+        if(retCode!=1) continue; // reject lambda+pion decays
+        Int_t labK0s=-1;
+        Int_t labbachelor=-1;
+        for(Int_t jd=0; jd<3; jd++){
+          Int_t labTr=arrayDauLabels[jd];
+          AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+          if(mcDauPart){
+            Int_t labMoth=mcDauPart->GetMother();
+            if(labMoth>=0){
+              AliAODMCParticle* mcMothPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labMoth));
+              if(mcMothPart){
+                Int_t pdgMoth=TMath::Abs(mcMothPart->GetPdgCode());
+                if(pdgMoth==310){
+                  labK0s=labMoth;
+                }else if(pdgMoth==4122){
+                  // bachelor
+                  labbachelor=labTr;
+                }
+              }
+            }
+          }
+        }
+        if(labbachelor<0) continue;
+        arrayDauLabels[0]=labbachelor;
+        arrayDauLabels[1]=labK0s;
+        arrayDauLabels[2]=-1;
+        arrayDauLabels[3]=-1;
+        nDauTr=1;
       }
       if(retCode<0 || arrayDauLabels[0]==-1) continue;
       fHistNCand->Fill(3);
       Bool_t fillTree=PrepareTreeVars(mcPart,arrayMC,mcHeader);
       if(fillTree) fHistNCand->Fill(4);
       for(Int_t jd=0; jd<nDauTr; jd++){
-	Int_t labTr=arrayDauLabels[jd];
-	Int_t idTr=fMapTrLabel[labTr];
-	if(idTr<0 || idTr>=aod->GetNumberOfTracks()){
-	  if(fillTree) fHistNCand->Fill(5);
-	  fillTree=kFALSE;
-	  continue;
-	}
-	AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(idTr));
-	if(!track){
-	  if(fillTree) fHistNCand->Fill(6);
-	  fillTree=kFALSE;
-	  continue;
-	}
-	if(TMath::Abs(track->GetLabel())!=labTr){
-	  if(fillTree) fHistNCand->Fill(7);
- 	  fillTree=kFALSE;
-	  continue;
-	}
-	if(!IsTrackSelected(track)){
-	  if(fillTree) fHistNCand->Fill(8);
-	  fillTree=kFALSE;
-	}
-	AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
-	if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
-	if(jd==0) fTrPar1.CopyFromVTrack(track);
-	else if(jd==1) fTrPar2.CopyFromVTrack(track);
-	else if(jd==2) fTrPar3.CopyFromVTrack(track);
+        Int_t labTr=arrayDauLabels[jd];
+        Int_t idTr=fMapTrLabel[labTr];
+        if(idTr<0 || idTr>=aod->GetNumberOfTracks()){
+          if(fillTree) fHistNCand->Fill(5);
+          fillTree=kFALSE;
+          continue;
+        }
+        AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(idTr));
+        if(!track){
+          if(fillTree) fHistNCand->Fill(6);
+          fillTree=kFALSE;
+          continue;
+        }
+        if(TMath::Abs(track->GetLabel())!=labTr){
+          if(fillTree) fHistNCand->Fill(7);
+          fillTree=kFALSE;
+          continue;
+        }
+        if(!IsTrackSelected(track)){
+          if(fillTree) fHistNCand->Fill(8);
+          fillTree=kFALSE;
+        }
+        AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+        if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
+        if(jd==0) fTrPar1.CopyFromVTrack(track);
+        else if(jd==1) fTrPar2.CopyFromVTrack(track);
+        else if(jd==2) fTrPar3.CopyFromVTrack(track);
       }
       if(fSelSpecies==4122 && fDecayMode==1){
-	Int_t labK0=arrayDauLabels[1];
-	Int_t idK0=fMapV0Label[labK0];
-	if(idK0<0 || idK0>=aod->GetNumberOfV0s()){
-	  if(fillTree) fHistNCand->Fill(5);
-	  fillTree=kFALSE;
-	  continue;
-	}
-	AliAODv0 *v0 = aod->GetV0(idK0);
-	if(!v0){
-	  if(fillTree) fHistNCand->Fill(6);
-	  fillTree=kFALSE;
-	  continue;
-	}
-	Int_t labV0=v0->MatchToMC(310,arrayMC);
-	if(labV0!=labK0){
-	  if(fillTree) fHistNCand->Fill(7);
- 	  fillTree=kFALSE;
-	  continue;
-	}
-	if(!IsV0Selected(v0)){
-	  if(fillTree) fHistNCand->Fill(8);
-	  fillTree=kFALSE;
-	}
-	AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labK0));
-	if(mcDauPart) fTreeVarInt[3]=mcDauPart->GetPdgCode();
-	Double_t xyz[3],pxpypz[3],cv[21];
-	v0->GetXYZ(xyz);
-	pxpypz[0]=v0->Px();
-	pxpypz[1]=v0->Py();
-	pxpypz[2]=v0->Pz();
-	v0->GetCovarianceXYZPxPyPz(cv);
-	fTrParV0=AliNeutralTrackParam(xyz,pxpypz,cv,0);
+        Int_t labK0=arrayDauLabels[1];
+        Int_t idK0=fMapV0Label[labK0];
+        if(idK0<0 || idK0>=aod->GetNumberOfV0s()){
+          if(fillTree) fHistNCand->Fill(5);
+          fillTree=kFALSE;
+          continue;
+        }
+        AliAODv0 *v0 = aod->GetV0(idK0);
+        if(!v0){
+          if(fillTree) fHistNCand->Fill(6);
+          fillTree=kFALSE;
+          continue;
+        }
+        Int_t labV0=v0->MatchToMC(310,arrayMC);
+        if(labV0!=labK0){
+          if(fillTree) fHistNCand->Fill(7);
+          fillTree=kFALSE;
+          continue;
+        }
+        if(!IsV0Selected(v0)){
+          if(fillTree) fHistNCand->Fill(8);
+          fillTree=kFALSE;
+        }
+        AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labK0));
+        if(mcDauPart) fTreeVarInt[3]=mcDauPart->GetPdgCode();
+        Double_t xyz[3],pxpypz[3],cv[21];
+        v0->GetXYZ(xyz);
+        pxpypz[0]=v0->Px();
+        pxpypz[1]=v0->Py();
+        pxpypz[2]=v0->Pz();
+        v0->GetCovarianceXYZPxPyPz(cv);
+        fTrParV0=AliNeutralTrackParam(xyz,pxpypz,cv,0);
       }
       if(fillTree){
-	fTrackTree->Fill();
-	fHistNCand->Fill(9);
+        fTrackTree->Fill();
+        fHistNCand->Fill(9);
       }
     }
   }else{
@@ -473,83 +473,83 @@ void AliAnalysisTaskCharmDecayTracks::UserExec(Option_t */*option*/){
       fTrPar3.Reset();
       fTrParV0.Reset();
       if(fSelSpecies==421){
-	if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
-	labD = d->MatchToMC(421,arrayMC,2,pdg0);
+        if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+        labD = d->MatchToMC(421,arrayMC,2,pdg0);
       }else if(fSelSpecies==411 || fSelSpecies==431 ||  fSelSpecies==4122){
-	nDauTr=3;
-	if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
-	if(fSelSpecies==411){
-	  if(!d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue;
-	  labD=d->MatchToMC(411,arrayMC,3,pdgp);
-	}else if(fSelSpecies==431){
-	  if(!d->HasSelectionBit(AliRDHFCuts::kDsCuts)) continue;
-	  labD = d->MatchToMC(431,arrayMC,3,pdgs);
-	}else if(fSelSpecies==4122 && fDecayMode==0){
-	  if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)) continue;
-	  labD = d->MatchToMC(4122,arrayMC,3,pdgl);
-	}else if(fSelSpecies==4122 && fDecayMode==1){
-	  AliAODRecoCascadeHF* dcasc = dynamic_cast<AliAODRecoCascadeHF*>(arrayDcand->UncheckedAt(iCand));
-	  if(!dcasc) continue;
-	  if(!dcasc->CheckCascadeFlags()) continue;
-	  labD = dcasc->MatchToMC(4122,pdglvb[1],pdglvb,pdgv0,arrayMC,kTRUE);
-	  nDauTr=1;
-	}
+        nDauTr=3;
+        if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
+        if(fSelSpecies==411){
+          if(!d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue;
+          labD=d->MatchToMC(411,arrayMC,3,pdgp);
+        }else if(fSelSpecies==431){
+          if(!d->HasSelectionBit(AliRDHFCuts::kDsCuts)) continue;
+          labD = d->MatchToMC(431,arrayMC,3,pdgs);
+        }else if(fSelSpecies==4122 && fDecayMode==0){
+          if(!d->HasSelectionBit(AliRDHFCuts::kLcCuts)) continue;
+          labD = d->MatchToMC(4122,arrayMC,3,pdgl);
+        }else if(fSelSpecies==4122 && fDecayMode==1){
+          AliAODRecoCascadeHF* dcasc = dynamic_cast<AliAODRecoCascadeHF*>(arrayDcand->UncheckedAt(iCand));
+          if(!dcasc) continue;
+          if(!dcasc->CheckCascadeFlags()) continue;
+          labD = dcasc->MatchToMC(4122,pdglvb[1],pdglvb,pdgv0,arrayMC,kTRUE);
+          nDauTr=1;
+        }
       }
       if(labD>=0){ 
-	fHistNCand->Fill(10);
-	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
-	if(!partD) continue;
-	Bool_t fillTree=PrepareTreeVars(partD,arrayMC,mcHeader);
-	if(fillTree) fHistNCand->Fill(11);
-	for(Int_t jd=0; jd<nDauTr; jd++){
-	  AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
-	  if(!track){
-	    if(fillTree) fHistNCand->Fill(12);
-	    fillTree=kFALSE;
-	  }else{
-	    if(!IsTrackSelected(track)){
-	      if(fillTree) fHistNCand->Fill(13);
-	      fillTree=kFALSE;
-	    }
-	    Int_t labTr=TMath::Abs(track->GetLabel());
-	    AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
-	    if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
-	    if(jd==0) fTrPar1.CopyFromVTrack(track);
-	    else if(jd==1) fTrPar2.CopyFromVTrack(track);
-	    else if(jd==2) fTrPar3.CopyFromVTrack(track);
-	  }
-	}
-	if(fSelSpecies==4122 && fDecayMode==1){
-	  AliAODv0* v0=dynamic_cast<AliAODv0*>(((AliAODRecoCascadeHF*)d)->Getv0());
-	  if(!v0){
-	    if(fillTree) fHistNCand->Fill(12);
-	    fillTree=kFALSE;
-	  }else{
-	    if(!IsV0Selected(v0)){
-	      if(fillTree) fHistNCand->Fill(13);
-	      fillTree=kFALSE;
-	    }
-	    Int_t labV0=v0->MatchToMC(310,arrayMC,2,pdgv0);
-	    if(labV0>=0){
-	      AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labV0));
-	      if(mcDauPart) fTreeVarInt[3]=mcDauPart->GetPdgCode();
-	    }else{
-	      fTreeVarInt[3]=-1;
-	      fillTree=kFALSE;
-	    }
-	    Double_t xyz[3],pxpypz[3],cv[21];
-	    v0->GetXYZ(xyz);
-	    pxpypz[0]=v0->Px();
-	    pxpypz[1]=v0->Py();
-	    pxpypz[2]=v0->Pz();
-	    v0->GetCovarianceXYZPxPyPz(cv);
-	    fTrParV0=AliNeutralTrackParam(xyz,pxpypz,cv,0);
-	  }
-	}
-	if(fillTree){
-	  fTrackTree->Fill();
-	  fHistNCand->Fill(14);
-	}
+        fHistNCand->Fill(10);
+        AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+        if(!partD) continue;
+        Bool_t fillTree=PrepareTreeVars(partD,arrayMC,mcHeader);
+        if(fillTree) fHistNCand->Fill(11);
+        for(Int_t jd=0; jd<nDauTr; jd++){
+          AliAODTrack* track = (AliAODTrack*)d->GetDaughter(jd);
+          if(!track){
+            if(fillTree) fHistNCand->Fill(12);
+            fillTree=kFALSE;
+          }else{
+            if(!IsTrackSelected(track)){
+              if(fillTree) fHistNCand->Fill(13);
+              fillTree=kFALSE;
+            }
+            Int_t labTr=TMath::Abs(track->GetLabel());
+            AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labTr));
+            if(mcDauPart) fTreeVarInt[2+jd]=mcDauPart->GetPdgCode();
+            if(jd==0) fTrPar1.CopyFromVTrack(track);
+            else if(jd==1) fTrPar2.CopyFromVTrack(track);
+            else if(jd==2) fTrPar3.CopyFromVTrack(track);
+          }
+        }
+        if(fSelSpecies==4122 && fDecayMode==1){
+          AliAODv0* v0=dynamic_cast<AliAODv0*>(((AliAODRecoCascadeHF*)d)->Getv0());
+          if(!v0){
+            if(fillTree) fHistNCand->Fill(12);
+            fillTree=kFALSE;
+          }else{
+            if(!IsV0Selected(v0)){
+              if(fillTree) fHistNCand->Fill(13);
+              fillTree=kFALSE;
+            }
+            Int_t labV0=v0->MatchToMC(310,arrayMC,2,pdgv0);
+            if(labV0>=0){
+              AliAODMCParticle* mcDauPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labV0));
+              if(mcDauPart) fTreeVarInt[3]=mcDauPart->GetPdgCode();
+            }else{
+              fTreeVarInt[3]=-1;
+              fillTree=kFALSE;
+            }
+            Double_t xyz[3],pxpypz[3],cv[21];
+            v0->GetXYZ(xyz);
+            pxpypz[0]=v0->Px();
+            pxpypz[1]=v0->Py();
+            pxpypz[2]=v0->Pz();
+            v0->GetCovarianceXYZPxPyPz(cv);
+            fTrParV0=AliNeutralTrackParam(xyz,pxpypz,cv,0);
+          }
+        }
+        if(fillTree){
+          fTrackTree->Fill();
+          fHistNCand->Fill(14);
+        }
       }
     } 
     delete vHF;
@@ -632,32 +632,32 @@ void AliAnalysisTaskCharmDecayTracks::MapTrackLabels(AliAODEvent* aod){
       Int_t itBest=it;
       Double_t mom=tr->P();
       for(Int_t it2=it+1; it2<nTracks; it2++) {
-	AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(aod->GetTrack(it2));
-	if(!tr2) continue;
-	if(tr2->GetID()<0) continue;
-	if(tr2->GetStatus()&AliESDtrack::kITSpureSA) continue;
-	if(!(tr2->GetStatus()&AliESDtrack::kITSin)) continue;
-	Int_t lab2=TMath::Abs(tr2->GetLabel());
-	Int_t ntpclu2=tr2->GetTPCncls();
-	Int_t nitsclu2=tr2->GetITSNcls();
-	if(lab2==lab){
-	  if(countSplit==1){
-	    fHistMomDupLab->Fill(countSplit,tr->P());
-	    fHistCluTPCDupLab->Fill(countSplit,tr->GetTPCncls());
-	  }
-	  countSplit++;
-	  fHistCluTPCDupLab->Fill(countSplit,ntpclu2);
-	  fHistMomDupLab->Fill(countSplit,tr2->P());
-	  fHistCluTPCDupLabCorrel->Fill(ntpclu,ntpclu2);
-	  if(ntpclu2>=ntpclu) fHistCluITSDupLabCorrel->Fill(nitsclu,nitsclu2);
-	  else fHistCluITSDupLabCorrel->Fill(nitsclu2,nitsclu);
-	  // cases of two tracks with same label and similar number of TPC and ITS clusters are mainly loopers
-	  // we keep the leg wit higher total momentum, which should be the primary leg
-	  if(tr2->P()>mom){
-	    mom=tr2->P();
-	    itBest=it2;
-	  }
-	}
+        AliAODTrack *tr2=dynamic_cast<AliAODTrack*>(aod->GetTrack(it2));
+        if(!tr2) continue;
+        if(tr2->GetID()<0) continue;
+        if(tr2->GetStatus()&AliESDtrack::kITSpureSA) continue;
+        if(!(tr2->GetStatus()&AliESDtrack::kITSin)) continue;
+        Int_t lab2=TMath::Abs(tr2->GetLabel());
+        Int_t ntpclu2=tr2->GetTPCncls();
+        Int_t nitsclu2=tr2->GetITSNcls();
+        if(lab2==lab){
+          if(countSplit==1){
+            fHistMomDupLab->Fill(countSplit,tr->P());
+            fHistCluTPCDupLab->Fill(countSplit,tr->GetTPCncls());
+          }
+          countSplit++;
+          fHistCluTPCDupLab->Fill(countSplit,ntpclu2);
+          fHistMomDupLab->Fill(countSplit,tr2->P());
+          fHistCluTPCDupLabCorrel->Fill(ntpclu,ntpclu2);
+          if(ntpclu2>=ntpclu) fHistCluITSDupLabCorrel->Fill(nitsclu,nitsclu2);
+          else fHistCluITSDupLabCorrel->Fill(nitsclu2,nitsclu);
+          // cases of two tracks with same label and similar number of TPC and ITS clusters are mainly loopers
+          // we keep the leg wit higher total momentum, which should be the primary leg
+          if(tr2->P()>mom){
+            mom=tr2->P();
+            itBest=it2;
+          }
+        }
       }
       fHistTrLab->Fill(countSplit);
       fMapTrLabel[lab]=itBest;
