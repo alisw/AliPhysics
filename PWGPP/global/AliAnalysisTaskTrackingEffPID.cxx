@@ -394,7 +394,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
-    if(track->GetStatus()&AliESDtrack::kTPCin) trEtaPhiMap->Fill(track->Eta(),track->Phi());
+    if(track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
@@ -618,6 +618,8 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
 //______________________________________________________________________________
 double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi) const {
   /// count tracks in a cone around selected particle
+
+  if(TMath::Abs(eta)>1) return -1;
   double nTracksInCone=0.;
   float etatr,phitr;
   trEtaPhiMap->SetBranchAddress("eta",&etatr);
