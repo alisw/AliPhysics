@@ -202,7 +202,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       nbins[3]=25;
       xmin[3]=0.;
       if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
-      else xmax[3]=150.;
+      else xmax[3]=125.;
     }else{
       nbins[3]=15;
       xmin[3]=0.;
@@ -394,7 +394,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
-    trEtaPhiMap->Fill(track->Eta(),track->Phi());
+    if(track->GetStatus()&AliESDtrack::kTPCin) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
@@ -616,18 +616,35 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
   else return kTRUE;
 }
 //______________________________________________________________________________
-double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi){
+double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi) const {
   /// count tracks in a cone around selected particle
   double nTracksInCone=0.;
   float etatr,phitr;
   trEtaPhiMap->SetBranchAddress("eta",&etatr);
   trEtaPhiMap->SetBranchAddress("phi",&phitr);
+  double etamin=eta-fDeltaRcut;
+  double etamax=eta+fDeltaRcut;
+  double scalFac=1;
+  if(fDeltaRcut<0.8){
+    if(etamax>0.8){
+      etamax=eta;
+      scalFac=2.;
+    }
+    if(etamin<-0.8){
+      etamin=eta;
+      scalFac=2.;
+    }
+  }
   for (int iT = 0; iT < trEtaPhiMap->GetEntriesFast(); ++iT) {
     trEtaPhiMap->GetEvent(iT);
-    double deltaEta=etatr-eta;
-    double deltaPhi=phitr-phi;
-    double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
-    if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
+    if(etatr>etamin && etatr<etamax){
+      double deltaEta=etatr-eta;
+      double deltaPhi=phitr-phi;
+      if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
+      else if(deltaPhi>TMath::Pi()) deltaPhi-=2*TMath::Pi();
+      double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
+      if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
+    }
   }
-  return nTracksInCone;
+  return nTracksInCone*scalFac;
 }
