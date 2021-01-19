@@ -262,14 +262,18 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL( AliVEvent *event 
       if( emcalCorrComponent ){
         fRecoUtils        = emcalCorrComponent->GetRecoUtils();
       } else {
-        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionClusterExotics");
+        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel");
         if( emcalCorrComponent ){
           fRecoUtils        = emcalCorrComponent->GetRecoUtils();
         }
       }
     }
-
-    if (fRecoUtils) fEMCALInitialized = kTRUE;
+    
+    if (fRecoUtils) {
+      fEMCALInitialized = kTRUE;
+      fRecoUtils->SetNumberOfCellsFromEMCALBorder(0);
+      return;
+    }
 }
 
 ///
@@ -305,7 +309,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
     
     // Check if cluster is in fidutial region, not too close to borders
     if(fEMCALGeo == NULL || fEMCALCells == NULL) continue;
-    Bool_t in1 = fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c1, fEMCALCells); //RECOUTILS
+    Bool_t in1 = kTRUE;
+    // fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c1, fEMCALCells); //RECOUTILS
     
     // Clusters not facing frame structures
     Bool_t mask1 = MaskFrameCluster(iSupMod1, ieta1);
@@ -346,7 +351,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
       
       if(invmass < fMaxBin && invmass > fMinBin ) {
         //Check if cluster is in fidutial region, not too close to borders
-        Bool_t in2 = fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c2, fEMCALCells); //RECOUTILS
+        Bool_t in2 = kTRUE;
+        // fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c2, fEMCALCells); //RECOUTILS
         
         // Clusters not facing frame structures
         Bool_t mask2 = MaskFrameCluster(iSupMod2, ieta2);         
@@ -783,6 +789,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
 void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   // Get the input event
+
     
   AliVEvent* event = 0;
   event = InputEvent();
@@ -790,6 +797,11 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   if(!event) {
     AliWarning("Input event not available!");
     return;
+  }
+
+  // Acccess once the geometry matrix and temperature corrections and calibration coefficients
+  if(fhNEvents->GetEntries() == 1) {
+    InitGeometryMatrices();
   }
 
   // Event selection
@@ -800,7 +812,10 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   if( !IsTriggerSelected(event) ) return;
   if( !(isEMC) && !(isDMC) ) return;
 
-  if( !fEMCALInitialized ) InitializeEMCAL( event );
+  if( !fEMCALInitialized ) {
+    InitializeEMCAL( event );
+    // if( !fEMCALInitialized ) return;
+  }
   
   // Centrality selection
   
@@ -828,11 +843,6 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   AliDebug(1,Form("Vertex: (%.3f,%.3f,%.3f)",fVertex[0],fVertex[1],fVertex[2]));
   
   fhNEvents->Fill(0); //Count the events to be analyzed
-
-  // Acccess once the geometry matrix and temperature corrections and calibration coefficients
-  if(fhNEvents->GetEntries() == 1) {
-    InitGeometryMatrices();
-  }
 
   //Get the list of clusters and cells
   fEMCALCells       = event->GetEMCALCells();
