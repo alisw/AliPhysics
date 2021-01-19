@@ -454,10 +454,23 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
     Double_t dcatoprimxymin2 = GetJsonFloat(filename.Data(), "dcatoprimxymin_2prong");
     printf("dcatoprimxymin  (2 prong) = %f\n", dcatoprimxymin2);
-    if(dcatoprimxymin2>0) fTrackCuts2pr->SetMinDCAToVertexXY(dcatoprimxymin2);
+    Double_t dcatoprimxymin2ptmax = GetJsonFloat(filename.Data(), "dcatoprimxy_2prong_maxpt");
+    printf("dcatoprimxymin_ptmax  (2 prong) = %f\n",dcatoprimxymin2ptmax);
+    if(dcatoprimxymin2>0 && dcatoprimxymin2ptmax<0) fTrackCuts2pr->SetMinDCAToVertexXY(dcatoprimxymin2);
+    else if(dcatoprimxymin2>0 && dcatoprimxymin2ptmax>0) fTrackCuts2pr->SetMinDCAToVertexXYPtDep(Form("%f*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/%f)))",dcatoprimxymin2,dcatoprimxymin2ptmax));
+    Double_t dcatoprimxymax2 = GetJsonFloat(filename.Data(), "dcatoprimxymax_2prong");
+    printf("dcatoprimxymax  (2 prong) = %f\n", dcatoprimxymax2);
+    if(dcatoprimxymax2>0) fTrackCuts2pr->SetMaxDCAToVertexXY(dcatoprimxymax2);
     Double_t dcatoprimxymin3 = GetJsonFloat(filename.Data(), "dcatoprimxymin_3prong");
     printf("dcatoprimxymin  (3 prong) = %f\n", dcatoprimxymin3);
-    if(dcatoprimxymin3>0) fTrackCuts3pr->SetMinDCAToVertexXY(dcatoprimxymin3);
+    Double_t dcatoprimxymin3ptmax = GetJsonFloat(filename.Data(), "dcatoprimxy_3prong_maxpt");
+    printf("dcatoprimxymin_ptmax  (3 prong) = %f\n",dcatoprimxymin3ptmax);
+    if(dcatoprimxymin3>0 && dcatoprimxymin3ptmax<0) fTrackCuts3pr->SetMinDCAToVertexXY(dcatoprimxymin3);
+    else if(dcatoprimxymin3>0 && dcatoprimxymin3ptmax>0) fTrackCuts3pr->SetMinDCAToVertexXYPtDep(Form("%f*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/%f)))",dcatoprimxymin3,dcatoprimxymin3ptmax));
+    Double_t dcatoprimxymax3 = GetJsonFloat(filename.Data(), "dcatoprimxymax_3prong");
+    printf("dcatoprimxymax  (3 prong) = %f\n", dcatoprimxymax3);
+    if(dcatoprimxymax3>0) fTrackCuts3pr->SetMaxDCAToVertexXY(dcatoprimxymax3);
+ 
     Double_t etamax2 = GetJsonFloat(filename.Data(), "etamax_2prong");
     printf("Max eta  (2 prong) = %f\n", etamax2);
     if(etamax2>0) fTrackCuts2pr->SetEtaRange(-etamax2, +etamax2);
