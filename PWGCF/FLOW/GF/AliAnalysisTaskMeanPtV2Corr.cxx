@@ -48,6 +48,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
+  fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -101,6 +102,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
+  fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -187,11 +189,12 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   else if(fGFWSelection->GetSystFlagIndex() == 14) fCentEst = new TString("CL1");
   else fCentEst = new TString("V0M");
   OpenFile(1);
-  // const Int_t nMultiBins = 300;
-  // Double_t lMultiBins[nMultiBins+1];
-  // for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
-  const Int_t l_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
-  Double_t l_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
+  const Int_t temp_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
+  Double_t temp_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
+  if(!fV0MMultiAxis) SetV0MBins(temp_NV0MBinsDefault,temp_V0MBinsDefault);
+  Double_t *l_V0MBinsDefault=GetBinsFromAxis(fV0MMultiAxis);
+  Int_t l_NV0MBinsDefault=fV0MMultiAxis->GetNbins();
+  if(l_V0MBinsDefault[l_NV0MBinsDefault]>90) fExtendV0MAcceptance = kTRUE; //If V0M is beyond 90, then we need to extend the V0M acceptance!
   if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
   fMultiBins = GetBinsFromAxis(fMultiAxis);
   fNMultiBins = fMultiAxis->GetNbins();
@@ -230,7 +233,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
         fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
-        if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
+        if(!fEfficiencies[i]) {
+          if(!i) AliFatal("Could not fetch efficiency!\n");
+          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+        };
       }
     };
     fMPTList = new TList();
@@ -260,7 +267,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
         fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
-        if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
+        if(!fEfficiencies[i]) {
+          if(!i) AliFatal("Could not fetch efficiency!\n");
+          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+        };
       }
       fWeightList = (TList*)GetInputData(3);
       fWeights = new AliGFWWeights*[1];
@@ -1049,6 +1060,10 @@ void AliAnalysisTaskMeanPtV2Corr::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
 void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fMultiAxis) delete fMultiAxis;
   fMultiAxis = new TAxis(nMultiBins, multibins);
+}
+void AliAnalysisTaskMeanPtV2Corr::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
+  if(fV0MMultiAxis) delete fV0MMultiAxis;
+  fV0MMultiAxis = new TAxis(nMultiBins, multibins);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetV2dPtMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV2dPtMulti) delete fV2dPtMulti;

@@ -73,6 +73,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetV0MBins(Int_t nBins, Double_t *multibins);
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
@@ -95,6 +96,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
+  TAxis *fV0MMultiAxis;
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
