@@ -479,7 +479,7 @@ void AliAnalysisTaskCMWPUeqAch::UserCreateOutputObjects()
   
   // Acharge Binning with Equal Event per bin:
   //Cent 0-5
-  Double_t fAchBinCent0[11] = {-0.128, -0.02, -0.012, -0.008, -0.002, 0.002, -0.006, 0.01, 0.016, 0.024, 1 };
+  Double_t fAchBinCent0[11] = {-0.128, -0.02, -0.012, -0.008, -0.002, 0.002, 0.006, 0.01, 0.016, 0.024, 1 };
   //Cent 5-10
   Double_t fAchBinCent1[11] = {-0.126, -0.022, -0.014, -0.008, -0.002, 0.002, 0.006, 0.012, 0.018, 0.026,  1 };
   //Cent 10-20 
