@@ -248,7 +248,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(30);
 //  config->SetPhiEtaBinnign(true);
   //config->SetMomentumResolution(true);
 
@@ -279,6 +279,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //    config->SetAncestors(true);
 //    config->GetDoAncestorsPlots();
 //  }
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  } else {
+    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
 
   /*
   //This is just to show off what would be possible in case you are interested,
