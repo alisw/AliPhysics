@@ -511,12 +511,12 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   // Called once
   AliDebug(3, "Creating Output Objects");
 
+  if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
+
   if(fApplyElectronEffi){
     TString elecEffiFileName;
       
-      if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
-
-    if(!fIsPbPb && !fIspp){
+    if(fIspPb){
       elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
     }
     if(fIsPbPb){
@@ -537,10 +537,10 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         fEtaWeight->SetParameters(3.34121e+02,-1.09185e-02,4.04493e-03,1.59842e+00,5.43861e+00);
   }
     
-    if(fIspPb){
+  if(fIspPb){
         fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
         fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
-    }
+  }
 
   ////////////////////////
   //Initiale mixed event//

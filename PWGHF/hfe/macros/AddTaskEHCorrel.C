@@ -86,7 +86,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
     TString containerName = mgr->GetCommonFileName();
     TString SubcontainerName = ContNameExt;
-    SubcontainerName += "_EHPbPb_INT7";
+    SubcontainerName += "_EH_INT7";
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(SubcontainerName,TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
       AliAnalysisDataContainer *cinput3  = mgr->GetCommonInputContainer();
     mgr->ConnectInput(taskHFEeh,0,cinput3);
@@ -109,7 +109,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
 
     TString containerName01 = mgr->GetCommonFileName();
     TString SubcontainerName01 = ContNameExt;
-    SubcontainerName01 += "_EH_PbPb_GA1";
+    SubcontainerName01 += "_EH_GA1";
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
 
