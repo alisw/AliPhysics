@@ -1218,6 +1218,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     
     cells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
     calo.fCellNumber = cellNumber;
+    // Mimic run3 compression: Store only cells with energy larger than the threshold
+    if(amplitude < fEMCALAmplitudeThreshold) continue;
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
     calo.fTime = AliMathBase::TruncateFloatFraction(time * kSecToNanoSec, mCaloAmp);
     calo.fCaloType = cells->GetType(); // common for all cells
