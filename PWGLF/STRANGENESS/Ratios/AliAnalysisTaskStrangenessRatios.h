@@ -86,6 +86,7 @@ public:
   void SetCtV0Cut(float cut = 30 /*cm*/) {fCutCtV0=cut;}
   void SetCompetingMassCut(float cut = 0.008 /*GeV/c^2*/) {fCutCompetingMass=cut;}
   void SetTPCcluCut(float cut = 70) {fCutTPCclu=cut;}
+  void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
@@ -99,6 +100,7 @@ private:
   MiniCascadeMC fGenCascade;
   AliPIDResponse* fPID;              //!<! ALICE PID framework
   bool fMC;
+  bool fOnlyTrueCandidates;
 
   //configurable cuts
   float fCutRadiusXi;
