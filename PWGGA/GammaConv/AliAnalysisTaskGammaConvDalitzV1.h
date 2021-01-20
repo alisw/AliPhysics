@@ -298,6 +298,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH2F                              **fHistoSPDClusterTrackletBackground;        //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1I                              **hNV0Tracks;
     //TH3F                              **hESDEposEnegPsiPairpTleptonsDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTPionDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTEtaDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTPhotonDPhi;
     TProfile                          **hEtaShift;
     TH2F                              **fHistoDoubleCountTruePi0InvMassPt;      //! array of histos with double counted pi0s, invMass, pT
     TH2F                              **fHistoDoubleCountTrueEtaInvMassPt;      //! array of histos with double counted etas, invMass, pT
