@@ -82,6 +82,13 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       fPrec[0] = daughter->GetRef()->Px();
       fPrec[1] = daughter->GetRef()->Py();
       fPrec[2] = daughter->GetRef()->Pz();
+
+      AliAODcascade *xi = daughter->Ref2AODcascade();
+      if(xi){ // special treatment for cascade AODs
+         fPrec[0] = xi->MomXiX();
+         fPrec[1] = xi->MomXiY();
+         fPrec[2] = xi->MomXiZ();
+      }
    }
 
    // MC info
@@ -93,7 +100,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       fMother = daughter->GetMother();
       fMotherPDG = daughter->GetMotherPDG();
    }
-   
+
    AliRsnEvent *event = (AliRsnEvent *) daughter->GetOwnerEvent();
    if (!event) {
       AliWarning("Invalid reference event: cannot copy DCA nor Nsisters.");

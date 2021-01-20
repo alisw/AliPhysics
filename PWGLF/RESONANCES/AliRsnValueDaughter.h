@@ -65,11 +65,14 @@ public:
       kAntiLambdaMass,        //V0 - mass for anti-Lambda hypothesis
       kXiMass,                //Cascade - mass for Xi hypothesis
       kOmegaMass,             //Cascade - mass for Omega hypothesis
+      kCascadeP,              //Cascade - momentum
+      kCascadePt,             //Cascade - pT
       kCascadeDCA,            //Cascade - DCA to primary vertex
       kCascadeRadius,         //Cascade - radius (cylindrical coordinates)
       kCascadeDaughterDCA,    //Cascade - DCA of daughters
       kCascadeCosPointAng,    //Cascade - Cosine of Pointing Angle of Cascade to pimary vertex
       kCascadeV0CosPointAng,  //Cascade - Cosine of Pointing Angle of V0 to Cascade vertex
+      kCascadeV0Lifetime,     //Cascade - Lifetime of the V0 from the Cascade
       kCascadeV0Pt,           //Cascade - pT of V0
       kBachelorPt,            //Cascade - pT of bachelor track
       kBachelorPionTPCnsigma, //Cascade - TPC nsigma of bachelor track for pion hypothesis

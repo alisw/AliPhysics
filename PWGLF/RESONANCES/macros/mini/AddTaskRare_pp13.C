@@ -3727,7 +3727,8 @@ Bool_t Config_Xik0(
     Int_t iCutK0s=task->AddTrackCuts(cutSetK0s);
     
     // selections for Xi
-    Float_t XiPIDcut=3.; // 5.;
+    Float_t XiPPIDcut=3.;
+    Float_t XiPiPIDcut=5.;
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.4; // 1.6;
     Float_t XiMinDCA=0.07;
@@ -3738,9 +3739,9 @@ Bool_t Config_Xik0(
     Float_t XiCosPoinAn=0.97;
     
     AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
-    cutXi->SetPIDCutV0Proton(XiPIDcut);
-    cutXi->SetPIDCutV0Pion(XiPIDcut);
-    cutXi->SetPIDCutBachelor(XiPIDcut);
+    cutXi->SetPIDCutV0Proton(XiPPIDcut);
+    cutXi->SetPIDCutV0Pion(XiPiPIDcut);
+    cutXi->SetPIDCutBachelor(XiPiPIDcut);
     cutXi->SetESDtrackCuts(esdTrackCuts);
     cutXi->SetV0MaxDaughtersDCA(V0dDCA);
     cutXi->SetCascadeMaxDaughtersDCA(XidDCA);
@@ -3752,7 +3753,7 @@ Bool_t Config_Xik0(
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0.5); // 0
     cutXi->SetCascadeHighRadius(1e5); // not using
-    cutXi->SetV0Life(20);
+    //cutXi->SetV0Life(20);
     cutXi->SetMassTolerance(Xi_massTol);
     cutXi->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXi->SetV0MassTolerance(Xi_V0massTol);
@@ -3763,9 +3764,9 @@ Bool_t Config_Xik0(
     cutXi->SetMinTPCcluster(-1);
     
     AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar);
-    cutXibar->SetPIDCutV0Proton(XiPIDcut);
-    cutXibar->SetPIDCutV0Pion(XiPIDcut);
-    cutXibar->SetPIDCutBachelor(XiPIDcut);
+    cutXibar->SetPIDCutV0Proton(XiPPIDcut);
+    cutXibar->SetPIDCutV0Pion(XiPiPIDcut);
+    cutXibar->SetPIDCutBachelor(XiPiPIDcut);
     cutXibar->SetESDtrackCuts(esdTrackCuts);
     cutXibar->SetV0MaxDaughtersDCA(V0dDCA);
     cutXibar->SetCascadeMaxDaughtersDCA(XidDCA);
@@ -3777,7 +3778,7 @@ Bool_t Config_Xik0(
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0.5); // 0
     cutXibar->SetCascadeHighRadius(1e5); // not using
-    cutXibar->SetV0Life(20);
+    //cutXibar->SetV0Life(20);
     cutXibar->SetMassTolerance(Xi_massTol);
     cutXibar->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXibar->SetV0MassTolerance(Xi_V0massTol);
