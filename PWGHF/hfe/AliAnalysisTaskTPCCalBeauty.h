@@ -268,7 +268,7 @@ private:
     TF1                 *fDPlusTauWeight; //!
     TF1                 *fD0TauWeight; //!
     TF1                 *fDsTauWeight; //!
-    Bool_t              *fUseTauWeight; //Switch to apply delay length weight
+    Bool_t              fUseTauWeight; //Switch to apply delay length weight
     
     
     Double_t            fWeight;        //!
