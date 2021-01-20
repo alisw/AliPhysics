@@ -170,9 +170,9 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   double xmax[5]={1.,2*TMath::Pi(),30.,200.,10.};
   TString charge[2] = {"pos","neg"};
   double ptBins[nPtBins+1] = {0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.50,
-			      0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
-			      3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
-			      16.0,20.0,30.0};
+                              0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
+                              3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
+                              16.0,20.0,30.0};
   double multBins[nMultBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,80.,100.,200.};
   if(fIsAA){
     multBins[0]=0.;
@@ -214,21 +214,21 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       fGenerated[iSpecies][iCharge] = new THnSparseF(Form("hGen_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-						     "Generated particles",5,nbins,xmin,xmax);
+                                                     "Generated particles",5,nbins,xmin,xmax);
       fGeneratedEvSel[iSpecies][iCharge] = new THnSparseF(Form("hGenEvSel_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							  "Generated particles in selected events",5,nbins,xmin,xmax);
+                                                          "Generated particles in selected events",5,nbins,xmin,xmax);
       fReconstructed[iSpecies][iCharge] = new THnSparseF(Form("hReconstructed_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							  "Reconstructed tracks",5,nbins,xmin,xmax);
+                                                          "Reconstructed tracks",5,nbins,xmin,xmax);
       fReconstructedTOF[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedTOF_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							    "Reconstructed tracks with TOF",5,nbins,xmin,xmax);
+                                                            "Reconstructed tracks with TOF",5,nbins,xmin,xmax);
       fReconstructedPID[iSpecies][iCharge] = new THnSparseF(Form("hReconstructedPID_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
-							    "Reconstructed tracks with PID",5,nbins,xmin,xmax);
+                                                            "Reconstructed tracks with PID",5,nbins,xmin,xmax);
       for(int iax=0; iax<5; iax++){
-	fGenerated[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructed[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructedTOF[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-	fReconstructedPID[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fGenerated[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fGeneratedEvSel[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructed[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructedTOF[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+        fReconstructedPID[iSpecies][iCharge]->GetAxis(iax)->SetTitle(axTit[iax].Data());
       }
       fGenerated[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fGeneratedEvSel[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
@@ -237,11 +237,11 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       fReconstructedPID[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
 
       if(!fUseImpPar && !fUseLocDen){
-	fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-	fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+        fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
       }
       
       fOutputList->Add(fGenerated[iSpecies][iCharge]);
@@ -303,33 +303,33 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }else{
       TString genname=fMCEvent->GenEventHeader()->ClassName();
       if(genname.Contains("CocktailEventHeader")){
-	AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
-	lh=cockhead->GetHeaders();
+        AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
+        lh=cockhead->GetHeaders();
       }
     }
     if(fSelectPtHardRange && lh){
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(genname.Contains("ythia") || genname.Contains("YTHIA")){
-	  AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
-	  double ptha=pyth->GetPtHard();
-	  double xsec=pyth->GetXsection();
-	  if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
-	  hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
-	}
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+          AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+          double ptha=pyth->GetPtHard();
+          double xsec=pyth->GetXsection();
+          if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+          hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+        }
       }
     }
     if(fUseImpPar && lh){
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(genname.Contains("hijing") || genname.Contains("Hijing")){
-	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lh->At(i);
-	  imppar=hijh->ImpactParameter();
-	}
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(genname.Contains("hijing") || genname.Contains("Hijing")){
+          AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lh->At(i);
+          imppar=hijh->ImpactParameter();
+        }
       }
     }
     if(fSelectOnGenerator && lh){
@@ -337,10 +337,10 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fGenerToExclude.Length()==0) keep=kFALSE;
       Int_t nh=lh->GetEntries();
       for(Int_t i=0;i<nh;i++){
-	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	TString genname=gh->GetName();
-	if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
-	if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
+        if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
       }
       if(!keep) return;
     }
@@ -442,8 +442,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     Int_t jPDG=-1;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
       if (pdg == AliPID::ParticleCode(iSpecies)) {
-	jPDG=iSpecies;
-	break;
+        jPDG=iSpecies;
+        break;
       }
     }
     if(jPDG>0){
@@ -474,8 +474,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(fFilterBit<0 && aodtrack->GetID() < 0) continue;
       if(fFilterBit>=0 && !aodtrack->TestFilterBit(BIT(fFilterBit))) continue;
       if(fTrackCuts && fUseTrackCutsForAOD){
-	bool accept=ConvertAndSelectAODTrack(aodtrack,vESD,magField);
-	if(!accept) continue;
+        bool accept=ConvertAndSelectAODTrack(aodtrack,vESD,magField);
+        if(!accept) continue;
       }
     }
     fHistNTracks->Fill(1);
