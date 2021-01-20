@@ -51,7 +51,28 @@ AliAnalysisTaskStrangenessRatios::AliAnalysisTaskStrangenessRatios(bool isMC, TS
                                                                                                   fTreeXi{nullptr},
                                                                                                   fTreeOmega{nullptr},
                                                                                                   fPID{nullptr},
-                                                                                                  fMC{isMC}
+                                                                                                  fMC{isMC},
+                                                                                                  fCutRadiusXi{1.2},
+                                                                                                  fCutRadiusOmega{1.0},
+                                                                                                  fCutRadiusV0{3.0},
+                                                                                                  fCutDCABachToPV{0.1},
+                                                                                                  fCutDCAV0toPV{0.1},
+                                                                                                  fCutDCAV0piToPV{0.2},
+                                                                                                  fCutDCAV0prToPV{0.2},
+                                                                                                  fCutDCAV0tracks{1.0},
+                                                                                                  fCutDCABachToV0Xi{1.0},
+                                                                                                  fCutDCABachToV0Omega{0.6},
+                                                                                                  fCutCosPA{0.95},
+                                                                                                  fCutCosPAV0{0.95},
+                                                                                                  fCutV0MassWindow{0.005},
+                                                                                                  fCutY{0.5},
+                                                                                                  fCutYDaught{0.8},
+                                                                                                  fCutNsigmaTPC{4.0},
+                                                                                                  fCutCtXi{15},
+                                                                                                  fCutCtOmega{12},
+                                                                                                  fCutCtV0{30},
+                                                                                                  fCutCompetingMass{0.008},
+                                                                                                  fCutTPCclu{70}
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -166,7 +187,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       continue;
     }
 
-    fRecCascade->matter = casc->AlphaV0() > 0; 
+    fRecCascade->matter = casc->AlphaV0() > 0;
 
     fRecCascade->tpcNsigmaV0Pi = fPID->NumberOfSigmasTPC(fRecCascade->matter ? nTrackCasc : pTrackCasc, AliPID::kPion);
     fRecCascade->tpcNsigmaV0Pr = fPID->NumberOfSigmasTPC(fRecCascade->matter ? pTrackCasc : nTrackCasc, AliPID::kProton);
@@ -174,7 +195,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     fRecCascade->tpcClBach = bTrackCasc->GetTPCsignalN();
     fRecCascade->tpcClV0Pi = (fRecCascade->matter ? nTrackCasc : pTrackCasc)->GetTPCsignalN();
     fRecCascade->tpcClV0Pr = (fRecCascade->matter ? pTrackCasc : nTrackCasc)->GetTPCsignalN();
-  
+
     //DCA info
     fRecCascade->dcaBachV0 = casc->DcaXiDaughters();
     fRecCascade->dcaBachPV = casc->DcaBachToPrimVertex();
@@ -203,23 +224,30 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
     //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
     fRecCascade->bachBarCosPA = casc->BachBaryonCosPA();
-    double p = std::sqrt(casc->Ptot2Xi()); 
+    double p = std::sqrt(casc->Ptot2Xi());
     fRecCascade->eta = 0.5 * std::log((p + casc->MomXiZ()) / (p - casc->MomXiZ() + 1.e-16));
 
     //distance over total momentum
     double lOverP = std::sqrt((Sq(vtxCasc[0] - pv[0]) + Sq(vtxCasc[1] - pv[1]) + Sq(vtxCasc[2] - pv[2])) / (casc->Ptot2Xi() + 1e-10));
 
+    bool isTopolPassed = false;
     if (std::abs(casc->MassOmega() - kOmegaMass) * 1000 < 30) {
       fRecCascade->mass = casc->MassOmega();
       fRecCascade->ct = lOverP * kOmegaMass;
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
       fRecCascade->competingMass = std::abs(casc->MassXi() - kXiMass);
+      isTopolPassed = IsTopolSelected(0);
+      if(!fMC && !isTopolPassed) continue;
+      else if(fMC && isTopolPassed) fGenCascade.isReconstructed = true;
       fTreeOmega->Fill();
     } else if (std::abs(casc->MassXi() - kXiMass) * 1000 < 30) {
       fRecCascade->mass = casc->MassXi();
       fRecCascade->ct = lOverP * kXiMass;
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
       fRecCascade->competingMass = std::abs(casc->MassOmega() - kOmegaMass);
+      isTopolPassed = IsTopolSelected(1);
+      if(!fMC && !isTopolPassed) continue;
+      else if(fMC && isTopolPassed) fGenCascade.isReconstructed = true;
       fTreeXi->Fill();
     }
 
@@ -292,4 +320,39 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
   return task;
+}
+
+//
+//____________________________________________________________________________________________
+bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isXi)
+{
+  return (fRecCascade->radius > (isXi) ? fCutRadiusXi : fCutRadiusOmega) &&
+      fRecCascade->radiusV0 > fCutRadiusV0 &&
+      fRecCascade->dcaBachPV > fCutDCABachToPV &&
+      fRecCascade->dcaV0PV > fCutDCAV0toPV &&
+      fRecCascade->dcaV0piPV > fCutDCAV0piToPV &&
+      fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
+      fRecCascade->dcaV0tracks > fCutDCAV0tracks &&
+      (fRecCascade->dcaBachV0 > (isXi) ? fCutDCABachToV0Xi : fCutDCABachToV0Omega) &&
+      fRecCascade->cosPA > fCutCosPA &&
+      fRecCascade->cosPAV0 > fCutCosPAV0 &&
+      fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
+      std::abs(Eta2y(fRecCascade->pt, isXi ? kXiMass : kOmegaMass, fRecCascade->eta)) < fCutY &&
+      fRecCascade->tpcNsigmaBach < fCutNsigmaTPC &&
+      fRecCascade->tpcNsigmaV0Pr < fCutNsigmaTPC &&
+      fRecCascade->tpcNsigmaV0Pi < fCutNsigmaTPC &&
+      (fRecCascade->ct < (isXi) ? fCutCtXi : fCutCtOmega) &&
+      fRecCascade->competingMass > fCutCompetingMass &&
+      fRecCascade->tpcClBach > fCutTPCclu &&
+      fRecCascade->tpcClV0Pi > fCutTPCclu &&
+      fRecCascade->tpcClV0Pr > fCutTPCclu;
+}
+
+//
+//____________________________________________________________________________________________
+float AliAnalysisTaskStrangenessRatios::Eta2y(float pt, float m, float eta) const
+{
+  // convert eta to y
+  double mt = std::sqrt(m * m + pt * pt);
+  return std::asinh(pt / mt * TMath::SinH(eta));
 }
