@@ -160,7 +160,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     mgr->ConnectInput(taskBFEdc,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskBFEdc,1,coutput3dc);
    
-    if (isMC) {
+    /*if (isMC) {
         if (UseTauWeight) {
             TString BMesonTauWeights = "alien:///alice/cern.ch/user/e/egauger/BMesonWeights/BMesonTauWeight.root";
             TFile *file = TFile::Open(BMesonTauWeights.Data());
@@ -182,7 +182,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
             taskBFEemc->SetBmesonTauWeight(unity1,unity2,unity3);
             taskBFEdc->SetBmesonTauWeight(unity1,unity2,unity3);
         }
-    }
+    }*/
     
     /*
     //////////
