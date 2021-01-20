@@ -98,6 +98,7 @@ public:
     void            SetVtxZCut(Double_t zVertexCut) {fVtxZCut = zVertexCut;};
     void            SetDCAxyCut(Double_t dcaXYCut) {fDCAxyCut = dcaXYCut;};
     //void            SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs);
+    void            SetTauWeight(Bool_t useDLWeight) {fUseTauWeight = useDLWeight;};
     
 private:
     AliAODEvent         *fAOD;           //! input event
@@ -267,6 +268,7 @@ private:
     TF1                 *fDPlusTauWeight; //!
     TF1                 *fD0TauWeight; //!
     TF1                 *fDsTauWeight; //!
+    Bool_t              *fUseTauWeight; //Switch to apply delay length weight
     
     
     Double_t            fWeight;        //!

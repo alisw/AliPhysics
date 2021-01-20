@@ -99,6 +99,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEemc->SetHadronEoPCut(hadEoPCut);
     taskBFEemc->SetVtxZCut(zVtxCut);
     taskBFEemc->SetDCAxyCut(xyDCA);
+    taskBFEemc->SetTauWeight(UseTauWeight);
     
     // Get the filename and make subfolders
     TString fileNameemc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -149,6 +150,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
     taskBFEdc->SetHadronEoPCut(hadEoPCut);
     taskBFEdc->SetVtxZCut(zVtxCut);
     taskBFEdc->SetDCAxyCut(xyDCA);
+    taskBFEdc->SetTauWeight(UseTauWeight);
     
     // Get the filename and make subfolders
     TString fileNamedc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -256,6 +258,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEeg01emc->SetHadronEoPCut(hadEoPCut);
         taskBFEeg01emc->SetVtxZCut(zVtxCut);
         taskBFEeg01emc->SetDCAxyCut(xyDCA);
+        taskBFEeg01emc->SetTauWeight(UseTauWeight);
         
         // Get the filename and make subfolders
         TString fileNameEG01emc = mgr->AliAnalysisManager::GetCommonFileName();
@@ -352,6 +355,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(
         taskBFEdg01dc->SetHadronEoPCut(hadEoPCut);
         taskBFEdg01dc->SetVtxZCut(zVtxCut);
         taskBFEdg01dc->SetDCAxyCut(xyDCA);
+        taskBFEdg01dc->SetTauWeight(UseTauWeight);
         
         // Get the filename and make subfolders
         TString fileNameDG01dc = mgr->AliAnalysisManager::GetCommonFileName();

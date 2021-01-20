@@ -1071,35 +1071,55 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         Double_t tau_DPlusPy8 = 311.8;
         Double_t tau_DsPy8 = 149.9;
         
-        fBPlusTauWeight = new TF1("fBPlusTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fBPlusTauWeight->FixParameter(0,tau_BPlusPy8);
-        fBPlusTauWeight->FixParameter(1,tau_BPlusPy6);
-        fOutputList->Add(fBPlusTauWeight);
-        
-        fB0TauWeight = new TF1("fB0TauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fB0TauWeight->FixParameter(0,tau_B0Py8);
-        fB0TauWeight->FixParameter(1,tau_B0Py6);
-        fOutputList->Add(fB0TauWeight);
-        
-        fBsTauWeight = new TF1("fBsTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fBsTauWeight->FixParameter(0,tau_BsPy8);
-        fBsTauWeight->FixParameter(1,tau_BsPy6);
-        fOutputList->Add(fBsTauWeight);
-        
-        fDPlusTauWeight = new TF1("fDPlusTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fDPlusTauWeight->FixParameter(0,tau_DPlusPy8);
-        fDPlusTauWeight->FixParameter(1,tau_DPlusPy6);
-        fOutputList->Add(fDPlusTauWeight);
-        
-        fD0TauWeight = new TF1("fD0TauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fD0TauWeight->FixParameter(0,tau_D0Py8);
-        fD0TauWeight->FixParameter(1,tau_D0Py6);
-        fOutputList->Add(fD0TauWeight);
-        
-        fDsTauWeight = new TF1("fDsTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
-        fDsTauWeight->FixParameter(0,tau_DsPy8);
-        fDsTauWeight->FixParameter(1,tau_DsPy6);
-        fOutputList->Add(fDsTauWeight);
+        if (fUseTauWeight) {
+            fBPlusTauWeight = new TF1("fBPlusTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fBPlusTauWeight->FixParameter(0,tau_BPlusPy8);
+            fBPlusTauWeight->FixParameter(1,tau_BPlusPy6);
+            fOutputList->Add(fBPlusTauWeight);
+            
+            fB0TauWeight = new TF1("fB0TauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fB0TauWeight->FixParameter(0,tau_B0Py8);
+            fB0TauWeight->FixParameter(1,tau_B0Py6);
+            fOutputList->Add(fB0TauWeight);
+            
+            fBsTauWeight = new TF1("fBsTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fBsTauWeight->FixParameter(0,tau_BsPy8);
+            fBsTauWeight->FixParameter(1,tau_BsPy6);
+            fOutputList->Add(fBsTauWeight);
+            
+            fDPlusTauWeight = new TF1("fDPlusTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fDPlusTauWeight->FixParameter(0,tau_DPlusPy8);
+            fDPlusTauWeight->FixParameter(1,tau_DPlusPy6);
+            fOutputList->Add(fDPlusTauWeight);
+            
+            fD0TauWeight = new TF1("fD0TauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fD0TauWeight->FixParameter(0,tau_D0Py8);
+            fD0TauWeight->FixParameter(1,tau_D0Py6);
+            fOutputList->Add(fD0TauWeight);
+            
+            fDsTauWeight = new TF1("fDsTauWeight","exp(-x/[0])/exp(-x/[1])",0,10000);
+            fDsTauWeight->FixParameter(0,tau_DsPy8);
+            fDsTauWeight->FixParameter(1,tau_DsPy6);
+            fOutputList->Add(fDsTauWeight);
+        }else{
+            fBPlusTauWeight = new TF1("fBPlusTauWeight","1",0,10000);
+            fOutputList->Add(fBPlusTauWeight);
+            
+            fB0TauWeight = new TF1("fB0TauWeight","1",0,10000);
+            fOutputList->Add(fB0TauWeight);
+            
+            fBsTauWeight = new TF1("fBsTauWeight","1",0,10000);
+            fOutputList->Add(fBsTauWeight);
+            
+            fDPlusTauWeight = new TF1("fDPlusTauWeight","1",0,10000);
+            fOutputList->Add(fDPlusTauWeight);
+            
+            fD0TauWeight = new TF1("fD0TauWeight","1",0,10000);
+            fOutputList->Add(fD0TauWeight);
+            
+            fDsTauWeight = new TF1("fDsTauWeight","1",0,10000);
+            fOutputList->Add(fDsTauWeight);
+        }
         
         fEnhEtaDCA = new TH2F("fEnhEtaDCA","Enh Eta DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
         fEnhEtaDCA->Sumw2();
