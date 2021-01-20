@@ -394,7 +394,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
-    if(track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
+    if(fUseLocDen && track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
@@ -438,15 +438,19 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     fHistNParticles->Fill(4);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparse[3]=imppar;
-    if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(trEtaPhiMap,part->Eta(),part->Phi());
     const int pdg = std::abs(part->PdgCode());
-    const int iCharge = part->Charge() > 0 ? 1 : 0;
+    Int_t jPDG=-1;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
       if (pdg == AliPID::ParticleCode(iSpecies)) {
-        fGenerated[iSpecies][iCharge]->Fill(arrayForSparse);
-	if(eventAccepted) fGeneratedEvSel[iSpecies][iCharge]->Fill(arrayForSparse);
-        break;
+	jPDG=iSpecies;
+	break;
       }
+    }
+    if(jPDG>0){
+      if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(trEtaPhiMap,part->Eta(),part->Phi());
+      const int iCharge = part->Charge() > 0 ? 1 : 0;
+      fGenerated[jPDG][iCharge]->Fill(arrayForSparse);
+      if(eventAccepted) fGeneratedEvSel[jPDG][iCharge]->Fill(arrayForSparse);
     }
   }
 
