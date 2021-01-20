@@ -1178,7 +1178,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Lc = new TTree(nameoutput, "Lc variables tree");
-  Int_t nVar = 32;
+  Int_t nVar = 35;
   fVar_Lc = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1220,6 +1220,9 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
     fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
     fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+    fVarNames[32] = "nSigmaCombined_Pr"; // nSigma-combined for proton
+    fVarNames[33] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
+    fVarNames[34] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
   }
   if (fIsAnaLc2Lpi) {
     fVarNames[0]  = "nSigmaTPC_V0Pr"; //TPC nsigma for proton coming from Lam
@@ -1259,6 +1262,11 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
     fVarNames[30] = "CombinedPIDProb_V0Pr"; // Bayesian PID probability of proton from Lam decay
     fVarNames[31] = "armenteros_Lam"; // armenteros qT/|alpha| for cascade
+    fVarNames[32] = "nSigmaCombined_V0Pr"; // nSigma-combined for proton from Lam decay
+    fVarNames[33] = "cos_p_Lam"; // cosine pointing angle of cascade
+    fVarNames[34] = "d_len_Lam"; // dlen of cascade 
+
+
   }
   
 //  fVarNames[]  = "chi2geo_Ks0_wMassConst"; //chi2_geometry of K0s (with mass constraint)
@@ -1677,7 +1685,19 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   
   //armenteros qT/|alpha|: [31]
   fVar_Lc[31] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0());
+  
+  if (!fIsAnaLc2Lpi) {
+  // nsigma_combined for proton bachelor from Lc
+   fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach,nSigmaTOF_bach);
+  } else {  // combined nsigma for proton from Lam decay 
+   if( trackBach->Charge()>0) fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos, nSigmaTOF_v0Pos);
+   if (trackBach->Charge()<0) fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg, nSigmaTOF_v0Neg);
+  }
 
+  fVar_Lc[33] = cosPA_V0;
+  fVar_Lc[34] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+
+  
   // === QA tree ===
   fVar_Lc_QA[0]  = kfpV0.GetRapidity(); //rapidity of v0 (without mass const.)
   fVar_Lc_QA[1]  = kfpV0_massConstraint.GetPt(); //pt of V0 (with mass const.)
