@@ -326,31 +326,26 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
 //____________________________________________________________________________________________
 bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isXi)
 {
-  if( fRecCascade->radius > (isXi) ? fCutRadiusXi : fCutRadiusOmega &&
+  return (fRecCascade->radius > (isXi) ? fCutRadiusXi : fCutRadiusOmega) &&
       fRecCascade->radiusV0 > fCutRadiusV0 &&
       fRecCascade->dcaBachPV > fCutDCABachToPV &&
       fRecCascade->dcaV0PV > fCutDCAV0toPV &&
       fRecCascade->dcaV0piPV > fCutDCAV0piToPV &&
       fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
       fRecCascade->dcaV0tracks > fCutDCAV0tracks &&
-      fRecCascade->dcaBachV0 > (isXi) ? fCutDCABachToV0Xi : fCutDCABachToV0Omega &&
+      (fRecCascade->dcaBachV0 > (isXi) ? fCutDCABachToV0Xi : fCutDCABachToV0Omega) &&
       fRecCascade->cosPA > fCutCosPA &&
       fRecCascade->cosPAV0 > fCutCosPAV0 &&
       fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
-      std::abs(Eta2y(fRecCascade->pt, fRecCascade->mass, fRecCascade->eta)) < fCutY &&
+      std::abs(Eta2y(fRecCascade->pt, isXi ? kXiMass : kOmegaMass, fRecCascade->eta)) < fCutY &&
       fRecCascade->tpcNsigmaBach < fCutNsigmaTPC &&
       fRecCascade->tpcNsigmaV0Pr < fCutNsigmaTPC &&
       fRecCascade->tpcNsigmaV0Pi < fCutNsigmaTPC &&
-      fRecCascade->ct < (isXi) ? fCutCtXi : fCutCtOmega &&
+      (fRecCascade->ct < (isXi) ? fCutCtXi : fCutCtOmega) &&
       fRecCascade->competingMass > fCutCompetingMass &&
       fRecCascade->tpcClBach > fCutTPCclu &&
-      fRecCascade->tpcClPi > fCutTPCclu &&
-      fRecCascade->tpcClPr > fCutTPCclu &&
-  )
-  {
-    return true;
-  }
-  return false;
+      fRecCascade->tpcClV0Pi > fCutTPCclu &&
+      fRecCascade->tpcClV0Pr > fCutTPCclu;
 }
 
 //

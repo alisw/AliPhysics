@@ -85,7 +85,7 @@ public:
   void SetCtCutOmega(float cut = 12 /*cm*/) {fCutCtOmega=cut;}
   void SetCtV0Cut(float cut = 30 /*cm*/) {fCutCtV0=cut;}
   void SetCompetingMassCut(float cut = 0.008 /*GeV/c^2*/) {fCutCompetingMass=cut;}
-  void SetTPCcluCut(float cut = 70) {fCutTPCclu=cut};
+  void SetTPCcluCut(float cut = 70) {fCutTPCclu=cut;}
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
