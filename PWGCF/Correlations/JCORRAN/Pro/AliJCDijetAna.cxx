@@ -252,10 +252,12 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
     noTracks = inList->GetEntriesFast();
     //cout << "Number of tracks: " << noTracks << endl;
     
+    //Initialize random cone variables for delta-pt study
     fDeltaPt = -9999.0;
-    double randConePhi = randomGenerator->Uniform(-TMath::Pi(),TMath::Pi());
-    double randConeEta = randomGenerator->Uniform(-etaMaxCutForJet,etaMaxCutForJet);
-    double randConePt = 0.0;
+    randConePhi = randomGenerator->Uniform(-TMath::Pi(),TMath::Pi());
+    randConeEta = randomGenerator->Uniform(-etaMaxCutForJet,etaMaxCutForJet);
+    randConePt = 0.0;
+
 
     //cout << "Number of tracks in Ana code: " << noTracks << endl;
     for (utrack = 0; utrack < noTracks; ++utrack) {//loop over all the particles in the event
@@ -556,6 +558,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPair[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(0).at(0), dijets.at(udijet).at(0).at(1));
                 fhistos->fh_dijetDeltaPhi[lCBin][udijet]->Fill(dPhi);
@@ -569,6 +572,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 mjj = dijet.m();
                 ptpair = dijet.pt();
                 fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
+                fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetPtPairDeltaPhiCut[lCBin][udijet]->Fill(ptpair);
                 dPhi = GetDeltaPhi(dijets.at(udijet).at(1).at(0), dijets.at(udijet).at(1).at(1));
                 fhistos->fh_dijetDeltaPhiWithCut[lCBin][udijet]->Fill(dPhi);
@@ -721,6 +725,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
             dijetDetMC = dijetsDetMC.at(iAcc).at(0).at(0) + dijetsDetMC.at(iAcc).at(0).at(1);
             if(bLeadingMatch && bSubleadingMatch) {
                 fhistos->fh_dijetResponse->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseTrunc->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet not match",1.0);
@@ -778,6 +783,7 @@ void AliJCDijetAna::CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos 
 
             if(bLeadingMatch && bSubleadingMatchDeltaPhi) {
                 fhistos->fh_dijetResponseDeltaPhiCut->Fill(dijetDetMC.m(), dijet.m());
+                fhistos->fh_dijetResponseDeltaPhiCutTrunc->Fill(dijetDetMC.m(), dijet.m());
                 fhistos->fh_responseInfo->Fill("Dijet DPhi match",1.0);
             } else {
                 fhistos->fh_responseInfo->Fill("Dijet DPhi not match",1.0);
