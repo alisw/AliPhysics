@@ -198,7 +198,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     } else
         centaxisbin = {
             -1, 0,  0.01, 0.03, 0.05, 0.07, 0.1, 1, 5,
-            10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100};  // for kINT7 study
+            10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100};   // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
