@@ -163,6 +163,8 @@ class AliIsolationCut : public TObject {
   Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
   Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
   Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
+  Float_t    GetEMCPhiMin ()          const { return fEMCPhiMin ; }
+  Float_t    GetEMCPhiMax ()          const { return fEMCPhiMax ; }
   
   void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
@@ -194,6 +196,9 @@ class AliIsolationCut : public TObject {
   void       SwitchOnConeExcessCorrection ()                   { fMakeConeExcessCorr = kTRUE  ; }
   void       SwitchOffConeExcessCorrection()                   { fMakeConeExcessCorr = kFALSE ; }
   
+  void       SwitchOnConeFillExcessCorrHisto ()                { fFillFractionExcessHistograms = kTRUE  ; }
+  void       SwitchOffConeFillExcessCorrHisto()                { fFillFractionExcessHistograms = kFALSE ; }
+
  private:
 
   Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
@@ -204,6 +209,8 @@ class AliIsolationCut : public TObject {
   
   Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
   
+  Bool_t     fFillFractionExcessHistograms;            ///< Fill histograms checking the correction excess
+
   Float_t    fConeSize ;                               ///< Size of the isolation cone
  
   Float_t    fConeSizeBandGap ;                        ///< Gap to add to size of the isolation cone when filling eta/phi bands for UE estimation
@@ -323,13 +330,13 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPtUEBandNormTrack;                 //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger.
   
   TH2F *   fhFractionTrackOutConeEta;                  //!<! Fraction of cone out of tracks acceptance in eta.
-  TH2F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEta;                //!<! Fraction of cone out of clusters acceptance in eta.
-  TH2F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConePhi;                //!<! Fraction of cone out of clusters acceptance in phi.
-  TH2F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
-  TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
   TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt in the cone, after subtraction in eta or phi band.
   
@@ -383,7 +390,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,16) ;
+  ClassDef(AliIsolationCut,17) ;
   /// \endcond
 
 } ;
