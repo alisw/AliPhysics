@@ -963,26 +963,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDsWeightVar1->SetBinContent(idata,wDsVar1[idata-1]);
         }
     }else{
-        Double_t ratio[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t err[13];
-        Double_t ratioNew[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t ratioVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t ratioVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t wLcVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t wLcVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t wDPlusVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        Double_t wDsVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
-        
         for (int idata=1; idata<14; idata++) {
             //fDWeight->SetBinContent(idata,ratio[idata-1]);
             //fDWeight->SetBinError(idata,err[idata-1]);
-            fDWeightNew->SetBinContent(idata,ratioNew[idata-1]);
-            fDWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
-            fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
-            fLcWeightVar1->SetBinContent(idata,wLcVar1[idata-1]);
-            fLcWeightVar2->SetBinContent(idata,wLcVar2[idata-1]);
-            fDPlusWeightVar1->SetBinContent(idata,wDPlusVar1[idata-1]);
-            fDsWeightVar1->SetBinContent(idata,wDsVar1[idata-1]);
+            fDWeightNew->SetBinContent(idata,1);
+            fDWeightVar1->SetBinContent(idata,1);
+            fDWeightVar2->SetBinContent(idata,1);
+            fLcWeightVar1->SetBinContent(idata,1);
+            fLcWeightVar2->SetBinContent(idata,1);
+            fDPlusWeightVar1->SetBinContent(idata,1);
+            fDsWeightVar1->SetBinContent(idata,1);
         }
     }
     
@@ -1032,15 +1022,11 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fBWeightVar2->SetBinContent(idata,ratioBVar2[idata-1]);
         }
     }else{
-        Double_t ratioB[250];
-        Double_t ratioBNew[250];
-        Double_t ratioBVar1[250];
-        Double_t ratioBVar2[250];
         for (int idata=1; idata<251; idata++) {
             //fBWeight->SetBinContent(idata,ratioB[idata-1]);
-            fBWeightNew->SetBinContent(idata,ratioBNew[idata-1]);
-            fBWeightVar1->SetBinContent(idata,ratioBVar1[idata-1]);
-            fBWeightVar2->SetBinContent(idata,ratioBVar2[idata-1]);
+            fBWeightNew->SetBinContent(idata,1);
+            fBWeightVar1->SetBinContent(idata,1);
+            fBWeightVar2->SetBinContent(idata,1);
         }
     }
 
