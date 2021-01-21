@@ -40,7 +40,7 @@
 /// \param bRecalE: Bool, recalibrate EMCal energy
 /// \param bBad: Bool, remove bad channels
 /// \param bRecalT: Bool, recalibrate EMCal time
-/// \param bNonLine: Bool, correct cluster non linearity
+/// \param iNonLine: Int, correct cluster non linearity
 /// \param minCen: Integer, minimum centrality, -1 no selection
 /// \param maxCen: Integer, maximum centrality, -1 no selection
 /// \param clusterEnergyCutEvent: Float, in case of event filtering, select events with at least one EMCal cluster with this energy
@@ -100,7 +100,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
   printf("\t Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",
          minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
   printf("\t recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
-         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
+         bRecalE,bBad,bRecalT,iNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
   TString arrayName = clusArrTit;
