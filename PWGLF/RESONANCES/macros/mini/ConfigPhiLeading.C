@@ -1,4 +1,5 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task,
+Bool_t ConfigPhiLeading(
+ AliRsnMiniAnalysisTask *task,
  Bool_t isMC = kFALSE, 
  Bool_t isPP = kFALSE, 
  Double_t nSigmaPart1TPC = -1, 
@@ -7,7 +8,6 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task,
  Double_t nSigmaPart2TOF = -1
  )
 {
-
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
     /* transv. momentum */ Int_t ptID = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
@@ -15,24 +15,18 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task,
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
 
-    //Printf("%f", nSigmaKaon);
-
             AliRsnCutSet           *cutsPair;
 			Int_t                  Strcut = 2011;
 			Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom;
-			AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s;
+			AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015;
   // set daughter cuts
   AliRsnCutSetDaughterParticle* cutSetK;
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(!trkQualityCut) return kFALSE;
 
-  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
+
     cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nSigmaPart1TPC),trkQualityCut,cutKaCandidate,AliPID::kKaon,nSigmaPart1TPC,nSigmaPart1TOF);
-  }
-  else{
-    printf("Doughter Track cuts has been selected =================\n");
-    return kFALSE;
-  }
+
   Int_t iTrackCutK  = task->AddTrackCuts(cutSetK);
  
     // Cuts
@@ -99,3 +93,4 @@ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaug
     }
     return kTRUE;
 }
+

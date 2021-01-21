@@ -148,6 +148,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fEopElectron2;        // electron pT (tight)
         TH1F* fEopElectron3;        // Except photonic (invariant mass)
         TH1F* fEopHadron2;          // hadron pT (tight)
+
+	TH2F* fHistConv_R;
         
     
     
@@ -169,7 +171,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Int_t               NpureMC;
         Int_t               Nch;
 	Bool_t		    iBevt;
-	TH1F*		    fNDB;
+	TH1F*		    fNoB;
+	TH1F*		    fNoD;
     
         TH1F*               fCheckEtaMC;
         TH2F*               fHistMCorg_Pi0;
@@ -189,7 +192,31 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*		    fDCAxy_MC_D0;
 	TH2F*		    fDCAxy_MC_Ds;
 	TH2F*		    fDCAxy_MC_Lc;
-    
+
+	TH2F*		    fDCAxy_MC_ele;
+	TH2F*		    fDCAxy_MC_Phot;
+    	
+	TH1F*		    fHistPt_B_TrkCut0;
+	TH1F*		    fHistPt_B_TrkCut1;
+	TH1F*		    fHistPt_B_TrkCut2;
+	TH1F*		    fHistPt_B_TrkCut3;
+	TH1F*		    fHistPt_B_TrkCut4;
+	TH1F*		    fHistPt_B_TrkCut5;
+	TH1F*		    fHistPt_B_TrkCut6;
+	TH1F*		    fHistPt_B_TrkCut7;
+	TH1F*		    fHistPt_B_TrkCut8;
+	TH1F*		    fHistPt_B_TrkCut9;
+
+	TH1F*		    fHistPt_D_TrkCut0;
+	TH1F*		    fHistPt_D_TrkCut1;
+	TH1F*		    fHistPt_D_TrkCut2;
+	TH1F*		    fHistPt_D_TrkCut3;
+	TH1F*		    fHistPt_D_TrkCut4;
+	TH1F*		    fHistPt_D_TrkCut5;
+	TH1F*		    fHistPt_D_TrkCut6;
+	TH1F*		    fHistPt_D_TrkCut7;
+	TH1F*		    fHistPt_D_TrkCut8;
+	TH1F*		    fHistPt_D_TrkCut9;
     
     
     

@@ -380,8 +380,8 @@ private:
     void FillCharm3Prong(AliAODRecoDecayHF3Prong *cand, bool isselDplus, int isselDs, int isselLc);
     void FillDstar(AliAODRecoCascadeHF *cand, AliAODRecoDecayHF2Prong *dau, bool issel);
     void FillCharmCascade(AliAODRecoCascadeHF *cand, AliAODv0 *dau, int issel);
-    void FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, double massNoProp);
-    void FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, double massNoPropB0, double massNoPropBs, double massNoPropLb);
+    void FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, double massNoVtxB);
+    void FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, double massNoVtxB0, double massNoVtxBs, double massNoVtxLb);
     void FillGenerated(AliAODMCParticle *part, int origin, int decay, bool aredauinacc);
     bool RecalcOwnPrimaryVertex(AliAODRecoDecayHF *cand);
     void CleanOwnPrimaryVertex(AliAODRecoDecayHF *cand, AliAODVertex *origvtx);
@@ -390,7 +390,6 @@ private:
     AliAODVertex *ReconstructDisplVertex(const AliVVertex *primary, TObjArray *tracks, double bField, double dispersion);
     unsigned short CheckCandTypeCharm2Prong(AliAODRecoDecayHF2Prong *cand, int &genlabel, unsigned short &decay);
     unsigned short CheckCandTypeCharm3Prong(AliAODRecoDecayHF3Prong *cand, int &genlabel, unsigned short &decay);
-    double ComputeInvMass(std::vector<double> px, std::vector<double> py, std::vector<double> pz, std::vector<double> M);
 
     TList *fOutput;                                     //!<! List of output histograms
     TH1F *fHistNEvents;                                 //!<! Histogram for event info
@@ -398,6 +397,8 @@ private:
     TTree *fGenTree;                                    //!<! Output tree with generated particles
     std::map<std::string, TH2F*> fHistGenPromptVsPtVsY; //!<! Output histos with generated particles
     std::map<std::string, TH2F*> fHistGenFDVsPtVsY;     //!<! Output histos with generated particles
+    std::map<std::string, TH2F*> fHistTrakNsigmaTPCVsP; //!<! Output histos with TPC Nsigma for pion, kaon, proton, and electron vs p
+    std::map<std::string, TH2F*> fHistTrakNsigmaTOFVsP; //!<! Output histos with TOF Nsigma for pion, kaon, proton, and electron vs p
 
     AliEventCuts fEventCuts;                            /// object for event selection
     int fSystem;                                        /// system (pp or PbPb)
@@ -443,7 +444,7 @@ private:
     bool fApplyCuts;  /// flag to enable cuts application
     TList *fListCuts; /// list of cut objects
 
-    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 2);
+    ClassDef(AliAnalysisTaskSECharmTriggerStudy, 3);
 };
 
 #endif

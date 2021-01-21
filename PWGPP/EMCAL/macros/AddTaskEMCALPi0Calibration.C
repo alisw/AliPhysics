@@ -33,7 +33,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param recalE    : Bool, recalibrate EMCal energy
 /// \param recalT    : Bool, recalibrate EMCal time
 /// \param rmBad     : Bool, remove bad channels
-/// \param nonLin    : Bool, correct cluster non linearity
+/// \param nonLin    : Int, correct cluster non linearity
 /// \param simu      : Bool, simulation or data.
 /// \param outputFile: TString with name of output file (AnalysisResults.root).
 /// \param trigSuffix :  A string with the trigger class, abbreviated, to run multiple triggers in same train
@@ -44,7 +44,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
  Bool_t  recalE    = kFALSE, 
  Bool_t  recalT    = kFALSE,
  Bool_t  rmBad     = kFALSE,
- Bool_t  nonlin    = kTRUE,
+ Int_t   nonlin    = 0,
  Bool_t  simu      = kFALSE,
  TString outputFile = "", // AnalysisResults.root
  const char *trigSuffix = ""

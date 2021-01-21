@@ -74,6 +74,9 @@
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
+#pragma link C++ class AliAnalysisTaskStrangenessRatios+;
+#pragma link C++ class MiniCascade+;
+#pragma link C++ class MiniCascadeMC+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

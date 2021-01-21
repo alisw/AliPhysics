@@ -78,6 +78,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fUpperMassSelection(999.),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
+      fUseTrueDOnly(false),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -146,6 +147,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fUpperMassSelection(999.),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
+      fUseTrueDOnly(false),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -410,7 +412,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           if (gRandom->Uniform() > fMCBeautyScalingFactor)
             continue;
         }
-
+        if (fIsMC && fUseTrueDOnly
+            && std::abs(dplusCand.GetMCPDGCode()) != absPdgMom) {
+          continue;
+        }
         dplus.push_back(dplusCand);
         if (!fIsLightweight) {
           fHistDplusEta->Fill(dMeson->Eta());
@@ -446,6 +451,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                 == AliFemtoDreamBasePart::kBeauty) {
           if (gRandom->Uniform() > fMCBeautyScalingFactor)
             continue;
+        }
+        if (fIsMC && fUseTrueDOnly
+            && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
+          continue;
         }
         dminus.push_back(dminusCand);
         if (!fIsLightweight) {

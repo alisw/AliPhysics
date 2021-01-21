@@ -7,6 +7,8 @@
 #include "AliGFW.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
+#include "AliGFWCuts.h"
+#include "TString.h"
 
 class TList;
 class TH1D;
@@ -37,6 +39,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="");
   virtual ~AliAnalysisTaskMeanPtV2Corr();
   virtual void UserCreateOutputObjects();
+  virtual void NotifyRun();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
@@ -47,6 +50,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPt(AliAODEvent*, Double_t vz, Double_t l_Cent);
+  void FillMeanPtMC(AliAODEvent*, Double_t vz, Double_t l_Cent);
   void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
@@ -69,12 +73,16 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetV0MBins(Int_t nBins, Double_t *multibins);
+  void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
+  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
-  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
+  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; }; //Ambiguous naming here. this is to keep track of the subwagon number
+  void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -82,11 +90,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Int_t fSystSwitch;
+  TString *fCentEst;
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
+  TAxis *fV0MMultiAxis;
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
@@ -95,6 +105,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fUseWeightsOne;
   Double_t fEta;
   Double_t fEtaNch;
+  Double_t fEtaV2Sep; //Please don't add multiple wagons with dif. values; implement subevents in the code instead. This would save TONS of CPU time.
   AliPIDResponse *fPIDResponse; //!
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
@@ -105,6 +116,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fptVarList;
   TProfile **fptvar; //!
   TList *fCovList;
+  TList *fV2dPtList;
   TProfile **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType; //! No need to store
@@ -113,8 +125,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
-  AliGFWCuts *fMidSelection; //!
-  AliGFWCuts *fFWSelection; //!
+  AliGFWCuts *fGFWSelection;
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
@@ -124,7 +135,9 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1D *fV0MMulti;
+  TH1D *fV2dPtMulti;
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn);
+  Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, const Int_t &FilterBit=96);
   Int_t fFilterBit;

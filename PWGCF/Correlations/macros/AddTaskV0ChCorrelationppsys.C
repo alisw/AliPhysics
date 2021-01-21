@@ -3,7 +3,7 @@
 AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", float cenMin, float cenMax, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
 
 // Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
-
+  
  //==============================================================================
  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,14 +18,12 @@ if (!mgr->GetInputEventHandler()) {
 
  TString fileName = AliAnalysisManager::GetCommonFileName();
 
-
   fileName += ":AliAnalysisTaskV0ChCorrelationppsys";      // create a subfolder in the file
   fileName += fileName_extension.Data();
-
     
   // create task
   AliAnalysisTaskV0ChCorrelationppsys* task  = new AliAnalysisTaskV0ChCorrelationppsys(taskName.Data(), cenMin,cenMax,effCorr); 
-
+  
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(5000);
@@ -90,16 +88,14 @@ if (!mgr->GetInputEventHandler()) {
         TString eff_container_name = "Efficiencypp";
         eff_container_name+=container_name_extension.Data();
 
-
     cinput1 = mgr->CreateContainer(Form("%s", eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
 
     TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/m/manaam/Efficiencypp/%s.root",EffFileNameWithPath.Data())); 
-
-  
 if(!file) {
-      printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());
+    
+  printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());
 
     }
     
@@ -111,14 +107,12 @@ if(!file) {
     }
   }
 
-
 // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     if(effCorr){
         cinput1->SetData(effList);
         mgr->ConnectInput(task, 1, cinput1);  
     }
-
 
  TString container_name = "MyOutputContainer";
    container_name += container_name_extension.Data();

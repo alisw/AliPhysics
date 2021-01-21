@@ -1,5 +1,5 @@
 configurationName: "EMCAL electron configuration for Pb-Pb MC"   # Optional - Simply for user convenience
-pass: "pass#"                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
+pass: "default"                                     # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
 inputObjects:                                       # Define all of the input objects for the corrections
     clusterContainers:                              # Configure clusters
         defaultClusterContainer:                    # Name of a cluster input

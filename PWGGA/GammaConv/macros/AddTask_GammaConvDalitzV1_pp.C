@@ -367,6 +367,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863202223710", "0152103500000000");//Standard with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863002223710", "0152103500000000");//No PsiPair cut with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//Standard
+//     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263502223710", "0152103500000000");//Standard a 0.06
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263002223710", "0152103500000000");//No PsiPair on electrons
   } else if (trainConfig == 417) {//Systematic for TPC cluster and pion energy
     cuts.AddCutPCMDalitz("00010113", "0dm00008f9730000dge0404000", "204c6400263202223710", "0152103500000000"); // TPC cluster 35%
@@ -673,7 +674,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     ////////////////////////////////////
     /////////// QA Meson task //////////
     ////////////////////////////////////
-  if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+  if (enableQAMesonTask) task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   //if (enableQAMesonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
   //connect containers

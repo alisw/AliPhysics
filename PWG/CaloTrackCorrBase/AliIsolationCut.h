@@ -255,6 +255,10 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
   
+  TH3F *   fhPtInConeCent ;                            //!<! Cluster/track Pt in the cone vs centrality.
+  TH3F *   fhPtClusterInConeCent ;                     //!<! Cluster Pt in the cone vs centrality.
+  TH3F *   fhPtTrackInConeCent ;                       //!<! Track Pt in the cone vs centrality.
+
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
@@ -351,6 +355,7 @@ class AliIsolationCut : public TObject {
 
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
+  TH3F *   fhPtInPerpConeCent ;                        //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   
   // UE bands
   TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
@@ -366,6 +371,11 @@ class AliIsolationCut : public TObject {
   TH3F *   fhEtaBandTrackPtCent   ;                    //!<! pT in Eta band to estimate UE in cone vs centrality, only tracks.
   TH3F *   fhPhiBandTrackPtCent   ;                    //!<! pT in Phi band to estimate UE in cone vs centrality, only tracks.
   
+  TH3F *   fhConeSumPtUEBandSubClustervsTrackCent ;    //!<! Cluster vs tracks Sum Pt in the cone vs centrality, after subtraction in eta or phi band.
+
+  TH3F *   fhBandClustervsTrackCent ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, clusters vs tracks.
+  TH3F *   fhBandNormClustervsTrackCent ;              //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, normalized to cone size, clusters vs tracks.
+
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
 
@@ -373,7 +383,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,15) ;
+  ClassDef(AliIsolationCut,16) ;
   /// \endcond
 
 } ;

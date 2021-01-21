@@ -61,6 +61,7 @@
 #include "AliAODZDC.h"
 #include "AliTriggerAnalysis.h"
 #include "AliVMultiplicity.h"
+#include "AliAODTracklets.h"
 
 // STL includes
 #include <iostream>
@@ -1257,7 +1258,7 @@ Double_t PhiHE_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
     printf("Can not compute phiHE with EBeam=%f\n",EBeam);
     return -999999999;
   }
-  Double_t mp = 0.93827231;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0 -> Py();
@@ -1384,7 +1385,7 @@ Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
     printf("Can not compute phiCS with EBeam=%f\n",EBeam);
     return -999999999;
   }
-  Double_t mp = 0.93827231;
+  Double_t mp = 195.323567174;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
   Double_t pla10 = Mu0 -> Px();
   Double_t pla11 = Mu0->Py();
@@ -1442,7 +1443,7 @@ Double_t PhiCS_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1){
 }
 //________________________________________________________________________
 Double_t CostEPnB_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
-  printf("CosTheta in the Event-Plane reference frame --> No Boost of the Event-Plane vector in the J/psi rest frame \n");
+  //printf("CosTheta in the Event-Plane reference frame --> No Boost of the Event-Plane vector in the J/psi rest frame \n");
   Double_t PxMu0      = Mu0 -> Px();
   Double_t PyMu0      = Mu0 -> Py();
   Double_t PzMu0      = Mu0 -> Pz();
@@ -1466,11 +1467,11 @@ Double_t CostEPnB_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
   // --- Calculation of the Q-vector and its orthogonal
   //
   TVector3 Qtr2vect(TMath::Cos(Psi),TMath::Sin(Psi),0.);
-  printf("Event Plane vector : \n");
-  Qtr2vect.Print();
+  //printf("Event Plane vector : \n");
+  //Qtr2vect.Print();
   TVector3 Qtr2vectOrtLab = Qtr2vect.Orthogonal();
-  printf("Event Plane vector orthogonal : \n");
-  Qtr2vectOrtLab.Print();
+  //printf("Event Plane vector orthogonal : \n");
+  //Qtr2vectOrtLab.Print();
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
@@ -1480,27 +1481,27 @@ Double_t CostEPnB_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
   TVector3 beta = (-1./pDimuCM.E())*pDimuCM.Vect();
-  printf("Beta : \n");
-  beta.Print();
+  //printf("Beta : \n");
+  //beta.Print();
   TLorentzVector pMu1Dimu = pMu1CM;
-  printf("4-vector mu1 : \n");
-  pMu1Dimu.Print();
+  //printf("4-vector mu1 : \n");
+  //pMu1Dimu.Print();
   TLorentzVector pMu2Dimu = pMu2CM;
-  printf("4-vector mu2 : \n");
-  pMu2Dimu.Print();
+  //printf("4-vector mu2 : \n");
+  //pMu2Dimu.Print();
   pMu1Dimu.Boost(beta);
-  printf("4-vector mu1 boosted : \n");
-  pMu1Dimu.Print();
+  //printf("4-vector mu1 boosted : \n");
+  //pMu1Dimu.Print();
   pMu2Dimu.Boost(beta);
-  printf("4-vector mu2 boosted : \n");
-  pMu2Dimu.Print();
+  //printf("4-vector mu2 boosted : \n");
+  //pMu2Dimu.Print();
 
   //
   // --- Determine the z axis for the EP angle
   //
   TVector3 zaxisEP = Qtr2vectOrtLab.Unit();
-  printf("zaxis Event Plane unitary \n");
-  zaxisEP.Print();
+  //printf("zaxis Event Plane unitary \n");
+  //zaxisEP.Print();
 
   //
   // --- Determine the EP angle (angle between mu+ and the z axis defined above)
@@ -1511,7 +1512,7 @@ Double_t CostEPnB_PbPb(AliAODTrack* Mu0, AliAODTrack* Mu1, Double_t Psi){
   } else {
     CosTheta_EP = zaxisEP.Dot((pMu2Dimu.Vect()).Unit());
   }
-  printf("CosTheta Event Plane = %f\n",CosTheta_EP);
+  //printf("CosTheta Event Plane = %f\n",CosTheta_EP);
   return CosTheta_EP;
 }
 //________________________________________________________________________

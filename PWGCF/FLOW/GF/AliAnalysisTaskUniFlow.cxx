@@ -179,11 +179,14 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
+  fPool{nullptr},
+  fSelectedTracks{nullptr},
   fCorrUsingGF{kFALSE},
   fCorrFill{kFALSE},
   fFillMixed{kTRUE},
+  fUsePtBinnedEventPool{kTRUE},
   fPoolSize{-1},
-  fMixingTracks{50000},
+  fMixingTracks{5000},
   fMinEventsToMix{5},
   fCorrDEtaBinNum{32},
   fCorrDPhiBinNum{72},
@@ -472,11 +475,14 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
+  fPool{nullptr},
+  fSelectedTracks{nullptr},
   fCorrUsingGF{kFALSE},
   fCorrFill{kFALSE},
   fFillMixed{kTRUE},
+  fUsePtBinnedEventPool{kTRUE},
   fPoolSize{-1},
-  fMixingTracks{50000},
+  fMixingTracks{5000},
   fMinEventsToMix{5},
   fCorrDEtaBinNum{32},
   fCorrDPhiBinNum{72},
@@ -749,6 +755,11 @@ AliAnalysisTaskUniFlow::~AliAnalysisTaskUniFlow()
   if(fQAPID) delete fQAPID;
   if(fQAPhi) delete fQAPhi;
   if(fQAV0s) delete fQAV0s;
+
+  //deleting event mixing variables
+  if(fEventPoolMgr) delete fEventPoolMgr;
+  if(fPool) delete fPool;
+  if(fSelectedTracks) delete fSelectedTracks;
 
   DumpTObjTable("Destructor: end");
 
@@ -1269,8 +1280,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   DumpTObjTable("UserExec: after filtering");
 
-  // Bool_t bCorrelations = FillCorrelations();
-  // DumpTObjTable("UserExec: after FillCorrelations");
+  Bool_t bCorrelations = FillCorrelations();
+  DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -1360,7 +1371,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
 
       if(fIndexCentrality < 0) { return kFALSE; }
       if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
-      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
+      if(fCentMax > 0 && fIndexCentrality >= fCentMax) { return kFALSE; }
   }
   fhEventCounter->Fill("Centrality OK",1);
 
@@ -3174,7 +3185,9 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 {
-  if(!fCorrFill) { fEventCounter++; return kTRUE; }
+  if(!fCorrFill) { return kTRUE; }
+
+  fSelectedTracks = new TObjArray();
 
   Double_t fillingCorr[4];
   fillingCorr[3] = fIndexCentrality;
@@ -3185,9 +3198,27 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
     if(!track) AliError("Track was not dynamically recasted.");
     Double_t etaTrig = track->Eta();
     Double_t phiTrig = track->Phi();
-    Double_t ptTrig = track->Pt();
+    // Double_t ptTrig = track->Pt();
     Int_t dTrigID = track->GetID();
 
+    fSelectedTracks->Add(track);
+
+    for (auto part2 = fVector[kRefs]->begin(); part2 != fVector[kRefs]->end(); part2++)
+    {
+      AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(*part2);
+      if(!track2) AliError("Track was not dynamically recasted.");
+      if(track2->GetID() == dTrigID) continue;
+
+      Double_t etaAs = track2->Eta();
+      Double_t phiAs = track2->Phi();
+
+      fillingCorr[0] = etaTrig - etaAs;
+      fillingCorr[1] = RangePhi(phiTrig - phiAs);
+      fillingCorr[2] = 1.0;
+
+      fh4CorrelationsSE[kRefs]->Fill(fillingCorr);
+    }
+    /*
     for(Int_t iSpec(1); iSpec < kUnknown; iSpec++){
       if(!fProcessSpec[iSpec]) continue;
       if(!fh4CorrelationsSE[iSpec]) {AliError("Sparse (same event) doesn't exist."); return kFALSE; }
@@ -3214,19 +3245,48 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
         AliWarning("Not implemented yet!"); return kFALSE;
       } //end reconstructed species
     }
+    */
   } // end loop reference particles (triggers)
 
   if(!fFillMixed) return kTRUE;
 
-  AliEventPool *pool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
-  if(!pool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
-  if(!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kFALSE;
+  fPool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
+  if(!fPool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
 
-  for(Int_t iMix(0); iMix < pool->GetCurrentNEvents(); iMix++){
-    TObjArray *mixedEvent = pool->GetEvent(iMix);
-    if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
-  }
+  //mixed events
+  Int_t nMixEvents = fPool->GetCurrentNEvents();
+  if(fPool->IsReady() || fPool->NTracksInPool() > 0.1*fMixingTracks ||  nMixEvents >= fMinEventsToMix){
+    for(Int_t iMix(0); iMix < nMixEvents; iMix++){
+      TObjArray *mixedEvent = fPool->GetEvent(iMix);
+      if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
 
+      for(auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
+      {
+        AliAODTrack* track = dynamic_cast<AliAODTrack*>(*part);
+        if(!track) AliError("Track was not dynamically recasted.");
+        Double_t etaTrig = track->Eta();
+        Double_t phiTrig = track->Phi();
+
+        for(Int_t mixTrack(0); mixTrack < mixedEvent->GetEntriesFast(); mixTrack++){
+          AliAODTrack* track2 = (AliAODTrack*) mixedEvent->At(mixTrack);
+          if(!track2) AliError("Mixed track not here!");
+
+          Double_t etaAs = track2->Eta();
+          Double_t phiAs = track2->Phi();
+
+          fillingCorr[0] = etaTrig - etaAs;
+          fillingCorr[1] = RangePhi(phiTrig - phiAs);
+          fillingCorr[2] = 1.0;
+
+          fh4CorrelationsME[kRefs]->Fill(fillingCorr);
+        } //end mixed tracks
+      } // end refs (current event)
+    } // end loop mixed events
+  } // end pool is ready (etc.)
+
+  TObjArray* cloneArray = (TObjArray *)fSelectedTracks->Clone();
+  cloneArray->SetOwner(kTRUE);
+  fPool->UpdatePool(cloneArray);
 
   return kTRUE;
 }
@@ -7080,10 +7140,10 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fEventPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
     if(!fEventPoolMgr){ AliError("AliEventPoolManager doesn't exist!"); }
 
-    fEventPoolMgr->Validate();
+    // fEventPoolMgr->Validate();
 
     const Int_t binsForCor[4] = {fCorrDEtaBinNum, fCorrDPhiBinNum, sizePt, fCentBinNum};
-    for(Int_t iSpec(1); iSpec < kUnknown; iSpec++)
+    for(Int_t iSpec(0); iSpec < kUnknown; iSpec++)
     {
       if(!fProcessSpec[iSpec]) continue;
 

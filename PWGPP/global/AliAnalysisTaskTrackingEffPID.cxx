@@ -5,6 +5,7 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
+#include <TNtuple.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -84,6 +85,9 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fKeepOnlyInjected{false},
   fKeepOnlyUE{false},
   fUseImpPar{false},
+  fUseLocDen{false},
+  fDeltaRcut{0.2},
+  fMaxTracksInCone{-1.},
   fSelectPtHardRange{false},
   fMinPtHard{0.},
   fMaxPtHard{99999.},
@@ -184,12 +188,27 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     multBins[10]=7500.;
   }
   xmax[3]=multBins[nMultBins];
-  if(fUseImpPar){
+  if(fUseImpPar && !fUseLocDen){
     // use impact parameter instead of multiplicity
     axTit[3]="b (fm)";
     nbins[3]=15;
     xmin[3]=0.;
     xmax[3]=15.;
+  }
+  if(fUseLocDen){
+    // use local track density instead of multiplicity
+    axTit[3]="tracks in cone";
+    if(fIsAA){
+      nbins[3]=25;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=125.;
+    }else{
+      nbins[3]=15;
+      xmin[3]=0.;
+      if(fMaxTracksInCone>0) xmax[3]=fMaxTracksInCone;
+      else xmax[3]=45.;
+    }
   }
   
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
@@ -217,7 +236,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       fReconstructedTOF[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fReconstructedPID[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
 
-      if(!fUseImpPar){
+      if(!fUseImpPar && !fUseLocDen){
 	fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
 	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
 	fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
@@ -368,12 +387,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   int nContrib = vtTrc->GetNContributors();;
 
   int nTracksTPCITS = 0;
+  TNtuple* trEtaPhiMap = new TNtuple("trEtaPhiMap", "tracks", "eta:phi");
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// count tracks passing ITS TPC selections
     AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
+    if(track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
 
   double multEstim=nTracklets;
@@ -417,6 +438,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     fHistNParticles->Fill(4);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparse[3]=imppar;
+    if(fUseLocDen) arrayForSparse[3]=GetLocalTrackDens(trEtaPhiMap,part->Eta(),part->Phi());
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -495,6 +517,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
     double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
     if(fUseImpPar) arrayForSparseData[3]=imppar;
+    if(fUseLocDen) arrayForSparseData[3]=GetLocalTrackDens(trEtaPhiMap,eta,phi);
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
@@ -504,6 +527,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     if(TPCpid && TOFpid) fReconstructedPID[iSpecies][iCharge]->Fill(arrayForSparseData);
 
   } // End track loop
+  delete trEtaPhiMap;
 
   //  Post output data.
   PostData(1,fOutputList);
@@ -590,4 +614,39 @@ bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
   }
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
   else return kTRUE;
+}
+//______________________________________________________________________________
+double AliAnalysisTaskTrackingEffPID::GetLocalTrackDens(TNtuple* trEtaPhiMap, double eta, double phi) const {
+  /// count tracks in a cone around selected particle
+
+  if(TMath::Abs(eta)>1) return -1;
+  double nTracksInCone=0.;
+  float etatr,phitr;
+  trEtaPhiMap->SetBranchAddress("eta",&etatr);
+  trEtaPhiMap->SetBranchAddress("phi",&phitr);
+  double etamin=eta-fDeltaRcut;
+  double etamax=eta+fDeltaRcut;
+  double scalFac=1;
+  if(fDeltaRcut<0.8){
+    if(etamax>0.8){
+      etamax=eta;
+      scalFac=2.;
+    }
+    if(etamin<-0.8){
+      etamin=eta;
+      scalFac=2.;
+    }
+  }
+  for (int iT = 0; iT < trEtaPhiMap->GetEntriesFast(); ++iT) {
+    trEtaPhiMap->GetEvent(iT);
+    if(etatr>etamin && etatr<etamax){
+      double deltaEta=etatr-eta;
+      double deltaPhi=phitr-phi;
+      if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
+      else if(deltaPhi>TMath::Pi()) deltaPhi-=2*TMath::Pi();
+      double deltaR2=deltaEta*deltaEta+deltaPhi*deltaPhi;
+      if(deltaR2<fDeltaRcut*fDeltaRcut) nTracksInCone+=1.;
+    }
+  }
+  return nTracksInCone*scalFac;
 }

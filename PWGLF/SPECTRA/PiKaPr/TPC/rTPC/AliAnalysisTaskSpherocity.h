@@ -54,9 +54,10 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		virtual void  SetTrackCutsSpherocity(AliAnalysisFilter* fTrackFilter);
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
-		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
+		virtual void  SetNcl(const int ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
+		virtual void  SetTrackCutsSystVars(const int TrackCutVar) { fTrackCuts = TrackCutVar; }
 		virtual void  SetPeriod(const char* period) { fPeriod = period; }
 		virtual void  SetEstimator(const Bool_t isV0M) { fisV0Mestimator = isV0M; }
 		virtual void  SetJettyCutOff(float JettyCutOff) { fJettyCutOff = JettyCutOff; }
@@ -147,7 +148,8 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		//
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
-		Bool_t       fdEdxCalibrated;
+		bool       fdEdxCalibrated;
+		int fTrackCuts;
 		TString fPeriod;
 
 		// Histograms for Spherocity

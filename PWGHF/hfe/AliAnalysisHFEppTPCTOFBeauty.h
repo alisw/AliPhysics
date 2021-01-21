@@ -6,13 +6,13 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in p-p collisions   				  //
-//      															  //
-//																	  //
-//		v1.0														  //
+//      Task for Beauty analysis in p-p collisions   		      //
+//            							      //
+//								      //
+//    								      //
 //                                                                    //
-//	    Authors 							                          //
-//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch)				      //
+//	    Author			                              //
+//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch) //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -115,8 +115,8 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
-    void SetDcorrFunction(TGraphErrors* DcorrF) {fDcorr = DcorrF;};
-    //void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
+    //void SetDcorrFunction(TGraphErrors* DcorrF) {fDcorr = DcorrF;};
+    void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
    // void SetHCFunction(TF1* HC) {fHC = HC;};
    // void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
     //void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
@@ -434,7 +434,8 @@ private:
     TGraphErrors				*HistWeightDpD0;
     TGraphErrors				*HistWeightD0;
     TGraphErrors			*fBcorr;
-    TGraphErrors			*fDcorr;
+    //TGraphErrors			*fDcorr;
+    TF1	                                *fDcorr;
     TF1					*fKPicorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;

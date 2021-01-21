@@ -386,6 +386,26 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     ana->SwitchOnFillEmbededSignalHistograms() ;
   }
   
+  // Track matching parameters
+  AliCaloPID* caloPID = ana->GetCaloPID();
+
+  // EMCAL
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.7") ) caloPID->SetEOverP(0,1.7);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+
+  // if tm = 1, fixed cuts
+  caloPID->SetEMCALDEtaCut(0.020);
+  caloPID->SetEMCALDPhiCut(0.030);
+
+  // PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+
   //
   // Histograms ranges
   //
@@ -508,13 +528,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
     histoRanges->SetHistoPtSumRangeAndNBins   (   0, 200, 200);
     histoRanges->SetHistoPtSumSubRangeAndNBins(-150, 150, 300);
   }
+
   //
   // MC histograms?
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
   
- 
   //
   // Specialized histograms on multiplicity
   //
@@ -616,37 +636,18 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetNLMCut(1, 2) ;
   }
   
-  //PID cuts (shower shape)
+  // PID cuts (shower shape and track matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
-  //Not used in bayesian
   
   // EMCAL
-  
   //caloPID->SetEMCALLambda0CutMax(0.27);
   caloPID->SetEMCALLambda0CutMax(10); // open, full shower shape needed for isolation studies
   caloPID->SetEMCALLambda0CutMin(0.10);
   
-  // Track matching
-  
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
-  
-  // pT track dependent cuts
+  // Track matching, pT track dependent cuts
+  // E/p cuts and residual cuts for tm=1 set on SetAnalysisCommonParameters()
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  // PHOS
-  caloPID->SetPHOSDispersionCut(2.5);
-  caloPID->SetPHOSRCut(2.);
-  //if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
@@ -893,20 +894,6 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     ana->SetTimeCut(-1e10,1e10); // Open time cut
     
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // Track matching
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    // tm = 1, fixed cuts
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
-    
     // pT track dependent cuts
     if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
     
@@ -1219,10 +1206,16 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   else                                         
     ic->SwitchOffConeExcessCorrection();
   
-  if ( kAnaCutsString.Contains("IsoBandUERecGap") ) 
+  if ( kAnaCutsString.Contains("IsoBandUERecGap") && thresType > AliIsolationCut::kSumBkgSubIC)
   {
+    // do not count UE particles near the cone limit > R+0.05
     ic->SetBandExclusionRectangular(kTRUE);
-    ic->SetConeSizeBandGap(0.05); // do not count UE particles near the cone limit > R+0.05
+    if ( cone >= 0.25 )
+      ic->SetConeSizeBandGap(0.10);
+    else
+      ic->SetConeSizeBandGap(0.15);
+
+    printf("\t Add isolation UE gap %1.2f\n",ic->GetConeSizeBandGap());
   }
   else    
   {
@@ -1361,51 +1354,33 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if ( partInCone == AliIsolationCut::kNeutralAndCharged )
   {
     AliCaloPID* caloPID = ana->GetCaloPID();
-    
-    // E/p
-    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-    
-    if ( tm == 1 )
-    {
-      // tm = 1, fixed cuts
-      
-      caloPID->SetEMCALDEtaCut(0.020);
-      caloPID->SetEMCALDPhiCut(0.030);
-    }
-    else
-    {
-      // pT track dependent cuts
+
+    if ( tm > 1 )
       caloPID->SwitchOnEMCTrackPtDepResMatching();
-    }
   }
   
   // Set Histograms name tag, bins and ranges
-  if ( kAnaCutsString.Contains("MultiIsoUESubMethods"))
+  TString histoStringTag = Form("AnaIsol%s_",particle.Data());
+  if ( kAnaCutsString.Contains("MultiIso") )
   {
-    if      ( partInCone == AliIsolationCut::kNeutralAndCharged )
+    if ( kAnaCutsString.Contains("UESubMethods") )
     {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolPhiBand%s_" ,particle.Data()));
+      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        histoStringTag += Form("PerpCone_");
+      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) histoStringTag += Form("EtaBand_" );
+      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) histoStringTag += Form("PhiBand_" );
       else printf("--- Isolation method for method %d not added\n",thresType); 
+
+//      if ( partInCone == AliIsolationCut::kOnlyCharged )
+//      {
+//        histoStringTag += Form("OnlyCharged_");
+//      }
     }
-    else if ( partInCone == AliIsolationCut::kOnlyCharged )
-    {
-      if      ( thresType == AliIsolationCut::kSumBkgSubIC)        ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPerpCone%s_",particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedEtaBand%s_" ,particle.Data()));
-      else if ( thresType == AliIsolationCut::kSumBkgSubPhiBandIC) ana->AddToHistogramsName(Form("AnaIsolOnlyChargedPhiBand%s_" ,particle.Data()));
-      else printf("--- Isolation method for method %d not added\n",thresType); 
-    }
-    else printf("--- Isolation method for particles in cone %d not added\n",partInCone); 
+
+    if ( kAnaCutsString.Contains("IsoR"))
+      histoStringTag += Form("R%0.2f_",cone);
   }
-  else if ( kAnaCutsString.Contains("MultiIsoR"))
-    ana->AddToHistogramsName(Form("AnaIsol%s_R%0.2f_",particle.Data(),cone));
-  else 
-    ana->AddToHistogramsName(Form("AnaIsol%s_"       ,particle.Data()));
+
+  ana->AddToHistogramsName(histoStringTag);
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1578,17 +1553,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //
   AliCaloPID* caloPID = ana->GetCaloPID();
   
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.020);
-  caloPID->SetEMCALDPhiCut(0.030);
-  
   // pT track dependent cuts
   if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
@@ -1711,13 +1675,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   
-  // E/p
-  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
-  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
-  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
-  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
-  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
-  
   if(tm > 1)
   {
     // track pT dependent cut
@@ -1730,8 +1687,6 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   {
     // Fix
     caloPID->SwitchOffEMCTrackPtDepResMatching();
-    caloPID->SetEMCALDEtaCut(0.020);
-    caloPID->SetEMCALDPhiCut(0.030);
     
     // Begining of histograms name
     ana->AddToHistogramsName("Shape_TMFix_"); 
@@ -2038,9 +1993,9 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
-///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
-///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.5"
+///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
 ///
 void ConfigureCaloTrackCorrAnalysis
@@ -2168,6 +2123,33 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubPhiBandIC,
                         isoCone,isoConeMin,isoPtTh, 
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+      }
+      else if (analysisString.Contains("MultiIsoRUESubMethods"))
+      {
+        //printf("**** MultiIsoRUESub ****\n");
+        Int_t nsizes = 2;
+        Float_t conesize[] = {0.15,0.3};
+        for(Int_t isize = 0; isize < nsizes; isize++)
+        {
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,//isoContent,isoMethod,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          isoContent = AliIsolationCut::kNeutralAndCharged;
+          if ( calorimeter == "DCAL" )
+            isoContent = AliIsolationCut::kOnlyCharged;
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubPhiBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          anaList->AddAt(ConfigureIsolationAnalysis
+                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubEtaBandIC,
+                          conesize[isize],isoConeMin,isoPtTh,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       else if (analysisString.Contains("MultiIsoR"))
       {

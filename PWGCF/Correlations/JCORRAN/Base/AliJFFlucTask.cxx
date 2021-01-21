@@ -122,6 +122,7 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
+	delete fEfficiency;
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -130,6 +131,13 @@ AliJFFlucTask::~AliJFFlucTask()
 //________________________________________________________________________
 void AliJFFlucTask::UserCreateOutputObjects()
 {
+	fEfficiency = new AliJEfficiency();
+	cout << "********" << endl;
+	cout << fEffMode << endl ;
+	cout << "********" << endl;
+	fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
+	fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
+	
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
 	fFFlucAna->SetBinning((AliJFFlucAnalysis::BINNING)binning);
 	fFFlucAna->SelectSubevents(subeventMask);
@@ -150,7 +158,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	OpenFile(1);
 	fOutput = gDirectory;
 	fOutput->cd();
-	fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
+	//fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
 	fFFlucAna->UserCreateOutputObjects();
 
 	PostData(1, fOutput);
@@ -196,8 +204,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			}
 		}
 		if( fEvtNum == 1 ){
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber (1234);
-			fFFlucAna->GetAliJEfficiency()->Load();
+			fEfficiency->SetRunNumber (1234);
+			fEfficiency->Load();
 		}
 		ReadKineTracks( mcEvent, fInputList ) ; // read tracklist
 		AliGenEventHeader *header = mcEvent->GenEventHeader();
@@ -223,8 +231,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
 		fRunNum = currentEvent->GetRunNumber();
 		if( fEvtNum == 1 ){
-			fFFlucAna->GetAliJEfficiency()->SetRunNumber(fRunNum);
-			fFFlucAna->GetAliJEfficiency()->Load();
+			fEfficiency->SetRunNumber(fRunNum);
+			fEfficiency->Load();
 		}
 
 		if(!IsGoodEvent( currentEvent ))
@@ -365,9 +373,9 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
 			if(track->TestFilterBit( fFilterBit )){ //
+				Double_t pt = track->Pt();
 				if( fPt_min > 0){
-					double Pt = track->Pt();
-					if( Pt < fPt_min || Pt > fPt_max )
+					if( pt < fPt_min || pt > fPt_max )
 						continue ; // pt cut
 				}
 
@@ -387,6 +395,10 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetParticleType(kJHadron);
 				itrack->SetCharge(track->Charge() );
 				itrack->SetStatus(track->GetStatus() );
+				//
+				double fCent = ReadCentrality(aod,fCentDetName);
+				Double_t effCorr = fEfficiency->GetCorrection(pt,fEffFilterBit,fCent);
+				itrack->SetTrackEff(effCorr);
 			}
 		}
 	} //read aod reco track done.

@@ -27,6 +27,7 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
 
 //=====================================  
   // create task
+
   AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
 
   task->SetAnalysisMC(isMC);
@@ -77,7 +78,6 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   
-
   AliAnalysisDataContainer *cinput1 = 0x0;
 
   TList *effList = 0x0;
@@ -85,22 +85,16 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   if(effCorr){
 
 
+
        TString eff_container_name = "Efficiency";
        eff_container_name+=container_name_extension.Data();
-
 
     cinput1 = mgr->CreateContainer(Form("%s", eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
-   
-
 //call eff  
-
-
      TGrid::Connect("alien://");
     TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/m/manaam/Efficiency/%s.root",EffFileNameWithPath.Data()));
-
-
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());

@@ -87,6 +87,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fOutlierJetReader(NULL),
   fAODMCTrackArray(NULL),
   farrClustersProcess(NULL),
+  fMapNeutralPionOverlap(NULL),
+  fMesonOLFromCluster(0),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherPtY(NULL),
   fHistoMotherPtAlpha(NULL),
@@ -290,6 +292,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fOutlierJetReader(NULL),
   fAODMCTrackArray(NULL),
   farrClustersProcess(NULL),
+  fMapNeutralPionOverlap(NULL),
+  fMesonOLFromCluster(0),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherPtY(NULL),
   fHistoMotherPtAlpha(NULL),
@@ -484,6 +488,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // GetV0Reader
     else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
   }
+
+  fMapNeutralPionOverlap = new std::map<Int_t, Int_t>[fnCuts];
 
   Int_t invMassBins                           = 800;
   Float_t startMass                           = 0;
@@ -1869,6 +1875,18 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
         for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
           if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCEvent, fInputEvent) == 0) fIsOverlappingWithOtherHeader = kTRUE;
         }
+      }
+    }
+
+    // test whether neutral pion overlaps with other neutral pions
+    if (fIsMC>0 && fMesonOLFromCluster){
+      AliAODMCParticle* dummyPart        = (AliAODMCParticle*) fAODMCTrackArray->At(clus->GetLabelAt(0));
+      AliAODMCParticle* dummyMother        = (AliAODMCParticle*) fAODMCTrackArray->At(dummyPart->GetMother());
+      if( ( (fMinAllowedPi0OverlapsMC>-1) ? (fMapNeutralPionOverlap[fiCut][dummyMother->GetLabel()] < fMinAllowedPi0OverlapsMC ) : kFALSE ) || ( (fMaxAllowedPi0OverlapsMC>-1) ? (fMapNeutralPionOverlap[fiCut][dummyMother->GetLabel()] > fMaxAllowedPi0OverlapsMC ) : kFALSE ) ){
+        delete clus;
+        delete tmpvec;
+        delete PhotonCandidate;
+        continue;
       }
     }
 
@@ -3512,6 +3530,7 @@ Int_t AliAnalysisTaskGammaCaloMerged::GetSourceClassification(Int_t daughter, In
 
 Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent){
   if (mcEvent && (fMaxAllowedPi0OverlapsMC>-1 || fMinAllowedPi0OverlapsMC > -1)){
+    fMapNeutralPionOverlap[fiCut].clear();
     Bool_t failedOverlapCriterium = kFALSE;
     for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
       AliMCParticle* particle1 = (AliMCParticle*) mcEvent->GetTrack(i);
@@ -3540,11 +3559,15 @@ Bool_t AliAnalysisTaskGammaCaloMerged::NumberOfMCEventNeutralPionOverlapInEMCal(
             }
           }
         }
-        if( (fMinAllowedPi0OverlapsMC>-1 ? nOverlapsFound<fMinAllowedPi0OverlapsMC : kFALSE) || (fMaxAllowedPi0OverlapsMC>-1 ? nOverlapsFound>fMaxAllowedPi0OverlapsMC : kFALSE)){
-          // returns kTRUE as soon as one pi0 with enough overlaps is found
-          // if QA is running, then it will loop first over all generated particles and then return failedOverlapCriterium
-          if(fDoClusterQA==0) return kTRUE;
-          else failedOverlapCriterium = kTRUE;
+        if(!fMesonOLFromCluster){
+          if( (fMinAllowedPi0OverlapsMC>-1 ? nOverlapsFound<fMinAllowedPi0OverlapsMC : kFALSE) || (fMaxAllowedPi0OverlapsMC>-1 ? nOverlapsFound>fMaxAllowedPi0OverlapsMC : kFALSE)){
+            // returns kTRUE as soon as one pi0 with enough overlaps is found
+            // if QA is running, then it will loop first over all generated particles and then return failedOverlapCriterium
+            if(fDoClusterQA==0) return kTRUE;
+            else failedOverlapCriterium = kTRUE;
+          }
+        } else {
+          fMapNeutralPionOverlap[fiCut].insert({particle1->GetLabel(), nOverlapsFound});
         }
         if(fDoClusterQA > 0){
           fHistoOverlapsPi0All[fiCut]->Fill(nOverlapsFound,particle1->Pt(),fWeightJetJetMC);

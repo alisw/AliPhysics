@@ -184,6 +184,7 @@ class AliAnalysisTaskCMWPUuncAch : public AliAnalysisTaskSE {
   
   //QA and Stepcount 
   TH2F            *fHistAChrgVsCent;  //!
+  TH2F            *fHistAChrgVsCentunc;  //!
 
   TH2F            *fHistTPConlyVsCL1Before;   //!  
   TH2F            *fHistTPConlyVsV0MBefore;   //!    
@@ -244,7 +245,7 @@ class AliAnalysisTaskCMWPUuncAch : public AliAnalysisTaskSE {
   TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
   TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
   TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
-
+  TProfile      *fHistAch[10];
 
   
   

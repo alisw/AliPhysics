@@ -58,11 +58,12 @@ public:
                 AliError("fReadMC has to be true");
         }
     }
-    void EnableMLTreeEvtSampling(float fractokeep, unsigned long long seed)
+    void EnableMLTreeEvtSampling(float fractokeep, unsigned long long seed, int option=0)
     {
         fEnableEvtSampling = true;
         fFracEvtToKeep = fractokeep;
         fSeedSampling = seed;
+        fOptionSampling = option;
     }
     void EnableMLTreeCandSampling(float fractokeep, float maxptsampling)
     {
@@ -120,14 +121,15 @@ private:
     bool fFillOnlySignal = true;                           /// option to store only signal when using MC
     bool fEnableEvtSampling = true;                        /// flag to apply event sampling
     float fFracEvtToKeep = 1.1;                            /// fraction of events to be kept by event sampling
-    unsigned long fSeedSampling = 0;                       /// seed for sampling
+    unsigned long fSeedSampling = 0;                       /// seed for event sampling
+    int fOptionSampling = 0;                               /// option for event sampling (0: keeps events with random < fracToKeep, 1: keep events with random > 1-fracToKeep)
     bool fEnableCandSampling = true;                       /// flag to apply candidate sampling
     float fFracCandToKeep = 1.1;                           /// fraction of candidates to be kept by sampling
     float fMaxCandPtSampling = 0.;                         /// maximun candidate pt to apply sampling
     bool fUseKFRecoForV0bachelor = true;                   /// flag to enable KFParticle reconstruction for Lc->V0bachelor in tree
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSENonPromptLc, 1); /// AliAnalysisTaskSE for non-prompt Lc tree
+    ClassDef(AliAnalysisTaskSENonPromptLc, 2); /// AliAnalysisTaskSE for non-prompt Lc tree
                                                /// \endcond
 };
 

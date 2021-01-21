@@ -105,6 +105,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
+  fHistNtrCorrEvSel(0),
   fSelectTrueD0(kFALSE),
   fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
@@ -145,10 +146,12 @@ fYearNumber(16)
 {
   /// Default constructor
     for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
-    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_19[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_1029[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
@@ -183,6 +186,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fFillVarHists(kTRUE),
   fSys(0),
   fIsRejectSDDClusters(0),
+  fHistNtrCorrEvSel(0),
   fFillPtHist(kTRUE),
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
@@ -234,10 +238,12 @@ fYearNumber(16)
 {
   /// Default constructor
     for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
-    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_19[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_1029[i]=0x0;
-    for(Int_t i=0; i<5; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
@@ -307,17 +313,24 @@ AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
     delete fVariablesTree;
     fVariablesTree = 0;
   }
-    for(Int_t i=0; i<5; i++){
+    for(Int_t i=0; i<8; i++){
       if(h3Invmass[i]) delete h3Invmass[i];
     }
-    for(Int_t i=0; i<5; i++){
+    for(Int_t i=0; i<8; i++){
       if(h3Invmass_19[i]) delete h3Invmass_19[i];
     }
-    for(Int_t i=0; i<5; i++){
+    for(Int_t i=0; i<8; i++){
       if(h3Invmass_1029[i]) delete h3Invmass_1029[i];
     }
-    for(Int_t i=0; i<5; i++){
+    for(Int_t i=0; i<8; i++){
       if(h3Invmass_3059[i]) delete h3Invmass_3059[i];
+    }
+    //pxy_new
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_19999[i]) delete h3Invmass_19999[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_6099[i]) delete h3Invmass_6099[i];
     }
   if (fDetSignal) {
     delete fDetSignal;
@@ -1285,6 +1298,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   if(fFillSparses){
 	//"ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"
 	// MC !NOT TESTED YET!
+      fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel",Form("Corrected  multiplicity for selected events ; Entries"),200,0,200);
+      fOutputMass->Add(fHistNtrCorrEvSel);
 	if(fReadMC){
 		TNtuple *NtupleD0C = new TNtuple("NtupleD0C", "MC Prompt D0", fBDTFullVarString);
 		TNtuple *NtupleD0B = new TNtuple("NtupleD0B", "MC Non-prompt D0", fBDTFullVarString);
@@ -1310,11 +1325,16 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
             h3Invmass_19[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
             h3Invmass_1029[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_1029",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
             h3Invmass_3059[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_3059",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_19999[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19999",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_6099[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_6099",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+
             //h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
             fListBDTResp->Add(h3Invmass[jj]);
             fListBDTResp->Add(h3Invmass_19[jj]);
             fListBDTResp->Add(h3Invmass_1029[jj]);
             fListBDTResp->Add(h3Invmass_3059[jj]);
+                fListBDTResp->Add(h3Invmass_19999[jj]);
+                fListBDTResp->Add(h3Invmass_6099[jj]);
         }
 	}
   }
@@ -1486,6 +1506,7 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
     }
     fCounterC->StoreEvent(aod,fCuts,fReadMC,countCorr);
     Float_t multForCand = countCorr;
+    fHistNtrCorrEvSel->Fill(countCorr,1);
     
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
@@ -3496,7 +3517,8 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 		if(!fIsSelectedCandidate) return;
 
 		std::vector<Double_t> BDTClsVar;// BDT cls input
-		BDTClsVar.resize(11);
+        if(fSys == 0)    BDTClsVar.resize(11);
+        if(fSys == 1)    BDTClsVar.resize(10);
  
         if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
@@ -3504,8 +3526,10 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             
             // Link variables to be used as classifier
             // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[4];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3529,10 +3553,14 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
                     TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     thish3->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
 					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
@@ -3547,8 +3575,10 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             
             // Link variables to be used as classifier
             // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[4];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3572,10 +3602,14 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
                     TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
                     thish3->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
                     if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
 
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;

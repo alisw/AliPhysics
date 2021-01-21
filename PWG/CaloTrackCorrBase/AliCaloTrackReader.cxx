@@ -179,7 +179,8 @@ fhPtHardPtJetPtRatio(0),     fhPtHardPromptPhotonPtRatio(0),
 fhPtHardEnClusterRatio(0),   fhPtHardEnClusterCenRatio(0),
 fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
-fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1)
+fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
+fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
@@ -1163,7 +1164,8 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
           fhEMCALClusterCutsE[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fOutputContainer->Add(fhEMCALClusterCutsE[i]);
         
-        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] )//&&
+           // !fSelectEmbeddedClusters && !fAcceptMCPromptPhotonOnly )
         {
           fhEMCALClusterCutsESignal[i] = new TH1F
           (Form("hEMCALReaderClusterCutsSignal_%d_%s",i,names[i].Data()),
@@ -1190,7 +1192,8 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
         fhEMCALClusterCutsECen[i]->SetYTitle("Centrality (%)");
         fOutputContainer->Add(fhEMCALClusterCutsECen[i]);
         
-        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters )
+        if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] ) //&&
+            //!fSelectEmbeddedClusters && !fAcceptMCPromptPhotonOnly )
         {
           fhEMCALClusterCutsECenSignal[i] = new TH2F
           (Form("hEMCALReaderClusterCutsCenSignal_%d_%s",i,names[i].Data()),
@@ -1643,6 +1646,9 @@ void AliCaloTrackReader::Init()
   (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
   
   //printf("Debug levels: Reader %d, Neutral Sel %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),fWeightUtils->GetDebug());
+
+  if ( fAcceptMCPromptPhotonOnly && fRejectMCFragmentationPhoton )
+    AliFatal("Prompt and Frag photon filtering cannot be activated at the same time!");
 }
 
 //_______________________________________
@@ -2134,6 +2140,12 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
                                                  pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
 
+    if ( pyProcessName != "Gamma-Jet" && fAcceptMCPromptPhotonOnly    ) 
+      AliFatal("Not a pythia gamma-jet process, set reader->SwitchOffMCPromptPhotonsSelection()");
+    
+    if ( pyProcessName != "Jet-Jet"   && fRejectMCFragmentationPhoton ) 
+      AliFatal("Not a pythia jet-jet process, set reader->SwitchOffMCFragmentationPhotonsRejection()");
+    
     if ( fGenPythiaEventHeader )
     {
       AliDebug(2,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d",
@@ -2708,11 +2720,33 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
 void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t iclus)
 {
   // Accept clusters with the proper label, only applicable for MC
-  if ( clus->GetLabel() >= 0 )  // -1 corresponds to noisy MC
+  //
+  Int_t mclabel = clus->GetLabel();
+  if ( mclabel >= 0 )  // -1 corresponds to noisy MC
   { 
     if ( !AcceptParticleMCLabel(clus->GetLabel()) ) return ;
   }
   
+//  // If requested, accept only prompt photon clusters or
+//  // reject fragmentation photon clusters
+//  //
+//  if ( fMC && (fAcceptMCPromptPhotonOnly || fRejectMCFragmentationPhoton) )
+//  {
+//    if ( mclabel < 0 && fAcceptMCPromptPhotonOnly ) return ;
+//
+//    Int_t tag = 0;
+//    if ( mclabel >= 0 )
+//      tag = GetMCAnalysisUtils()->CheckOrigin(mclabel, GetMC(),
+//                                              GetNameOfMCEventHederGeneratorToAccept(),
+//                                              clus->E());
+//    if ( fAcceptMCPromptPhotonOnly &&
+//        !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt       ) ) return ;
+//
+//    if ( fRejectMCFragmentationPhoton &&
+//         (GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation) ||
+//          GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCISR)) ) return ;
+//  }
+
   // TODO, not sure if needed anymore
   Int_t vindex = 0 ;
   if (fMixedEvent)
@@ -2724,14 +2758,14 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   
   Int_t cen = GetEventCentrality();
   Bool_t fillEmbedSignalCluster = kFALSE;
-  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters &&  clus->GetNLabels() > 0 && clus->GetLabel() >=0 )
+  if ( fEmbeddedEvent[0] && !fEmbeddedEvent[1] && !fSelectEmbeddedClusters && // && !fAcceptMCPromptPhotonOnly
+       clus->GetNLabels() > 0 && clus->GetLabel() >=0 )
     fillEmbedSignalCluster = kTRUE;
   
   // No correction/cut applied yet
   if ( !fHistoCentDependent ) fhEMCALClusterCutsE   [0]->Fill(energyOrMom);
   else                        fhEMCALClusterCutsECen[0]->Fill(energyOrMom,cen);
   
-   
   if ( fillEmbedSignalCluster )
   {
     if ( !fHistoCentDependent ) fhEMCALClusterCutsESignal   [0]->Fill(energyOrMom);
@@ -4133,7 +4167,18 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   }
   
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
-  printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
+  printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n",
+         fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
+
+  printf("Accept only prompt photon clusters %d; Reject fragmentation photon clusters %d\n",
+         fAcceptMCPromptPhotonOnly,fRejectMCFragmentationPhoton);
+
+  printf("Accept clusters from N=%d generators\n",fNMCGenerToAccept);
+  for(Int_t igen = 0; igen <= fNMCGenerToAccept; igen++ )
+  printf("\t igen %d %s, index %d\n",
+         igen, fMCGenerToAccept[igen].Data(),fMCGenerIndexToAccept[igen]);
+  printf("Accept event header %s, Check Pythia event header %d\n",
+         fMCGenerEventHeaderToAccept.Data(),fCheckPythiaEventHeader);
 
   //printf("    \n") ;
 }

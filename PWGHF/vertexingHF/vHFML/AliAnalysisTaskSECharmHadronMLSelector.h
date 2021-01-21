@@ -13,6 +13,10 @@
 
 #include <vector>
 
+#include <TH2F.h>
+#include <TList.h>
+#include <TString.h>
+
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAODVertex.h"
@@ -65,7 +69,8 @@ private:
     TH1F *fHistNEvents = nullptr;                          //!<! hist. for No. of events
     TH1F *fHistNallCand = nullptr;                         //!<! hist. for No. of all candidates
     TH1F *fHistNselCand = nullptr;                         //!<! hist. for No. of selected candidates
-    TH1F *fHistBDTOutput[3] = {};                          //!<! hist. for distributions of BDT output scores (max 3)
+    TH2F *fHistMassVsPt = nullptr;                         //!<! hist. with invariant mass vs pT
+    TH2F *fHistBDTOutputVsPt[3] = {};                      //!<! hist. with BDT output scores vs pT (max 3)
 
     int fDecChannel = kDplustoKpipi;                       /// channel to analyse
     int fAODProtection = 0;                                /// flag to activate protection against AOD-dAOD mismatch.
@@ -81,7 +86,7 @@ private:
     std::vector<std::vector<double> > fMLScores = {};      /// vector of vectors of ML output scores for each selected charm hadron
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 1); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
+    ClassDef(AliAnalysisTaskSECharmHadronMLSelector, 2); /// AliAnalysisTaskSE for charm-hadron candidate selection with ML
                                                          /// \endcond
 };
 

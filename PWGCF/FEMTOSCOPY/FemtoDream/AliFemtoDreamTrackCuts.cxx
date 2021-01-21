@@ -574,7 +574,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
       int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
       // Hold on everybody is safe except for the users who switch on fCutTOFInMass == true!
       if(fTOFInvMassCut){
-        if (!(nSigTPC < fNSigValue)) {
+        if (!(TMath::Abs(nSigTPC)< fNSigValue)) {
           pass = false;// Here we prior TPC selection is done!
           } else {
             float mass2sq = CalculateTOFMassSquared(Track);
@@ -596,7 +596,7 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
             }else if (fCutTOFInvMassSidebands) {
               if(PDGcode[fParticleID] == 1000010020){
                 float MeanMass= MeanTOFMassSqdDeuteron(Track);
-                float WidthMass = 1.5 * WidthTOFMassSqdDeuteron(Track);
+                float WidthMass = fTOFInvMassCutWidth * WidthTOFMassSqdDeuteron(Track);
                 if(fCutLSB){
                   if ((mass2sq < (MeanMass-WidthMass-fTOFInvMassCutSBdown))||((MeanMass-WidthMass -fTOFInvMassCutSBup) < mass2sq)) {
                     pass = false;

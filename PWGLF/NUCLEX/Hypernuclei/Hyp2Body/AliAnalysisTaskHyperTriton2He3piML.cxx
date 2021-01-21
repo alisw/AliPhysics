@@ -375,6 +375,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+    tgr |= kHighMultV0;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   
@@ -963,7 +965,7 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
       {
         if (std::abs(part->PdgCode()) == fHyperPDG)
         {
-          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+          fSHyperTriton[mcMap[ilab]].fRecoIndex = fMaxInfo ? (fRHyperTritonFull.size()) : (fRHyperTriton.size());
           fSHyperTriton[mcMap[ilab]].fFake = false;
           fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
           isFake = false;

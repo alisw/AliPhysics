@@ -36,15 +36,18 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fAnalysisType("ESD"),
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
-  fPIDResponse(0),
+  fPIDResponse(0x0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fOutput(0),
-  fTrackArray(0),
-  fProtonCandIdx(),
-  fLambdaCandIdx(),
-  fXiCnadIdx(),
-  fOmegaCnadIdx()
+  fOutput(0x0),
+  fTrackArray(0x0),
+  fProtonArray(0x0),
+  fLambdaArray(0x0),
+  fXiArray(0x0),
+  fOmegaArray(0x0),
+  fTrackBuffSize(2500),
+  fV0BuffSize(100),
+  fCascadeBuffSize(100)
 {
   // default constructor
 }
@@ -55,15 +58,18 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fAnalysisType("ESD"),
   fCollidingSystem(0),
   fkTriggerClass(AliVEvent::kINT7),
-  fPIDResponse(0),
+  fPIDResponse(0x0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fOutput(0),
-  fTrackArray(0),
-  fProtonCandIdx(),
-  fLambdaCandIdx(),
-  fXiCnadIdx(),
-  fOmegaCnadIdx()
+  fOutput(0x0),
+  fTrackArray(0x0),
+  fProtonArray(0x0),
+  fLambdaArray(0x0),
+  fXiArray(0x0),
+  fOmegaArray(0x0),
+  fTrackBuffSize(2500),
+  fV0BuffSize(100),
+  fCascadeBuffSize(100)
 {
   // constructor
 
@@ -75,7 +81,13 @@ AliAnalysisTaskDibaryons::~AliAnalysisTaskDibaryons()
 {
   // destructor
 
+  delete fPIDResponse;
   delete fOutput;
+  delete fTrackArray;
+  delete fProtonArray;
+  delete fLambdaArray;
+  delete fXiArray;
+  delete fOmegaArray;
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
@@ -93,8 +105,21 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   }
   fAliEventCuts.AddQAplotsToList(fOutput);
 
-  fTrackArray = new AliAODTrack*[2000];
+  if(fAnalysisType == "ESD") {
+    fProtonArray = new TClonesArray("AliESDtrack",fTrackBuffSize);
+    fLambdaArray = new TClonesArray("AliESDv0",fV0BuffSize);
+    fXiArray     = new TClonesArray("AliESDcascade",fCascadeBuffSize);
+    fOmegaArray  = new TClonesArray("AliESDcascade",fCascadeBuffSize);
+  }
+  else if(fAnalysisType == "AOD") {
+    fTrackArray  = new AliAODTrack*[fTrackBuffSize];
+    fProtonArray = new TClonesArray("AliAODTrack",fTrackBuffSize);
+    fLambdaArray = new TClonesArray("AliAODv0",fV0BuffSize);
+    fXiArray     = new TClonesArray("AliAODcascade",fCascadeBuffSize);
+    fOmegaArray  = new TClonesArray("AliAODcascade",fCascadeBuffSize);
+  }
 
+  TH1F *hRefMultiplicity08 = new TH1F("hRefMultiplicity08","Reference multiplicity;Multipicity;Counts",600,0,600);
   TH1F *hNPartStatistics = new TH1F("hNPartStatistics","Number of candidates under certain condition",10,0.5,10.5);
   hNPartStatistics->GetXaxis()->SetBinLabel(1,"p");
   hNPartStatistics->GetXaxis()->SetBinLabel(2,"#bar{p}");
@@ -106,50 +131,51 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   hNPartStatistics->GetXaxis()->SetBinLabel(8,"#Omega^{+}");
   hNPartStatistics->GetYaxis()->SetTitle("Counts");
 
+  fOutput->Add(hRefMultiplicity08);
   fOutput->Add(hNPartStatistics);
 
   // Define histograms related to invariant mass for V0 and Cascade
-  TH1F *hInvMassLambdawoCuts = new TH1F("hInvMassLambdawoCuts","Invariant mass of p#pi^{-} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
-  TH1F *hInvMassLambdawCuts = new TH1F("hInvMassLambdawCuts","Invariant mass of p#pi^{-} with topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
-  TH1F *hInvMassAntiLambdawoCuts = new TH1F("hInvMassAntiLambdawoCuts","Invariant mass of #bar{p}#pi^{+} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
-  TH1F *hInvMassAntiLambdawCuts = new TH1F("hInvMassAntiLambdawCuts","Invariant mass of #bar{p}#pi^{+} with topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH2F *hInvMassLambda = new TH2F("hInvMassLambda","Invariant mass of p#pi^{-};M_{p#pi} (GeV/c^{2});p_{T} (GeV/c)",400,1.0,1.2,100,0,10);
+  TH2F *hInvMassAntiLambda = new TH2F("hInvMassAntiLambda","Invariant mass of #bar{p}#pi^{+};M_{p#pi} (GeV/c^{2});p_{T} (GeV/c)",400,1.0,1.2,100,0,10);
+  TH2F *hInvMassXim = new TH2F("hInvMassXim","Invariant mass of #pi^{-}#Lambda;M_{#pi#Lambda} (GeV/c^{2});p_{T} (GeV/c)",300,1.2,1.5,100,0,10);
+  TH2F *hInvMassXip = new TH2F("hInvMassXip","Invariant mass of #pi^{+}#bar{#Lambda};M_{#pi#Lambda} (GeV/c^{2});p_{T} (GeV/c)",300,1.2,1.5,100,0,10);
+  TH2F *hInvMassOmegam = new TH2F("hInvMassOmegam","Invariant mass of K^{-}#Lambda;M_{K#Lambda} (GeV/c^{2});p_{T} (GeV/c)",300,1.5,1.8,100,0,10);
+  TH2F *hInvMassOmegap = new TH2F("hInvMassOmegap","Invariant mass of K^{+}#bar{#Lambda};M_{K#Lambda} (GeV/c^{2});p_{T} (GeV/c)",300,1.5,1.8,100,0,10);
   TH1F *hInvMassLambdaAsCascDghter = new TH1F("hInvMassLambdaAsCascDghter","Invariant mass of p#pi stemming from cascade;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
-  TH1F *hInvMassXimwoCuts = new TH1F("hInvMassXimwoCuts","Invariant mass of p#pi^{-}#pi^{-} without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
-  TH1F *hInvMassXimwCuts = new TH1F("hInvMassXimwCuts","Invariant mass of p#pi^{-}#pi^{-} with topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
-  TH1F *hInvMassXipwoCuts = new TH1F("hInvMassXipwoCuts","Invariant mass of #bar{p}#pi^{+}#pi^{+} without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
-  TH1F *hInvMassXipwCuts = new TH1F("hInvMassXipwCuts","Invariant mass of #bar{p}#pi^{+}#pi^{+} with topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
-  TH1F *hInvMassOmegamwoCuts = new TH1F("hInvMassOmegamwoCuts","Invariant mass of p#pi^{-}K^{-} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
-  TH1F *hInvMassOmegamwCuts = new TH1F("hInvMassOmegamwCuts","Invariant mass of p#pi^{-}K^{-} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
-  TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of #bar{p}#pi^{+}K^{+} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
-  TH1F *hInvMassOmegapwCuts = new TH1F("hInvMassOmegapwCuts","Invariant mass of #bar{p}#pi^{+}K^{+} with topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassLambdawoCuts = new TH1F("hInvMassLambdawoCuts","Invariant mass of p#pi^{-} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassAntiLambdawoCuts = new TH1F("hInvMassAntiLambdawoCuts","Invariant mass of #bar{p}#pi^{+} without topological cuts;M_{p#pi} (GeV/c^{2});Counts",400,1.0,1.2);
+  TH1F *hInvMassXimwoCuts = new TH1F("hInvMassXimwoCuts","Invariant mass of #pi^{-}#Lambda without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassXipwoCuts = new TH1F("hInvMassXipwoCuts","Invariant mass of #pi^{+}#bar{#Lambda} without topological cuts;M_{#pi#Lambda} (GeV/c^{2});Counts",300,1.2,1.5);
+  TH1F *hInvMassOmegamwoCuts = new TH1F("hInvMassOmegamwoCuts","Invariant mass of K^{-}#Lambda without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
+  TH1F *hInvMassOmegapwoCuts = new TH1F("hInvMassOmegapwoCuts","Invariant mass of K^{+}#bar{#Lambda} without topological cuts;M_{K#Lambda} (GeV/c^{2});Counts",300,1.5,1.8);
   TH1F *hInvMassMissIDK0S = new TH1F("hInvMassMissIDK0S","Invariant mass of #pi^{+}#pi^{-} under assumption of selected #Lambda;M_{#pi#pi} (GeV/c^{2})",400,0.4,0.6);
-  TH1F *hInvMassMissIDOmegam = new TH1F("hInvMassMissIDOmegam","Invariant mass of p#pi^{-}K^{-} under assumption of selected #Xi^{-};M_{K#Lambda} (GeV/c^{2})",300,1.5,1.8);
-  TH1F *hInvMassMissIDXim = new TH1F("hInvMassMissIDXim","Invariant mass of p#pi^{-}#pi^{-} under assumption of selected #Omega^{-};M_{#pi#Lambda} (GeV/c^{2})",300,1.2,1.5);
+  TH1F *hInvMassMissIDOmegam = new TH1F("hInvMassMissIDOmegam","Invariant mass of K^{-}#Lambda under assumption of selected #Xi^{-};M_{K#Lambda} (GeV/c^{2})",300,1.5,1.8);
+  TH1F *hInvMassMissIDXim = new TH1F("hInvMassMissIDXim","Invariant mass of #pi^{-}#Lambda under assumption of selected #Omega^{-};M_{#pi#Lambda} (GeV/c^{2})",300,1.2,1.5);
 
-  fOutput->Add(hInvMassLambdawoCuts);
-  fOutput->Add(hInvMassLambdawCuts);
-  fOutput->Add(hInvMassAntiLambdawoCuts);
-  fOutput->Add(hInvMassAntiLambdawCuts);
+  fOutput->Add(hInvMassLambda);
+  fOutput->Add(hInvMassAntiLambda);
+  fOutput->Add(hInvMassXim);
+  fOutput->Add(hInvMassXip);
+  fOutput->Add(hInvMassOmegam);
+  fOutput->Add(hInvMassOmegap);
   fOutput->Add(hInvMassLambdaAsCascDghter);
+  fOutput->Add(hInvMassLambdawoCuts);
+  fOutput->Add(hInvMassAntiLambdawoCuts);
   fOutput->Add(hInvMassXimwoCuts);
-  fOutput->Add(hInvMassXimwCuts);
   fOutput->Add(hInvMassXipwoCuts);
-  fOutput->Add(hInvMassXipwCuts);
   fOutput->Add(hInvMassOmegamwoCuts);
-  fOutput->Add(hInvMassOmegamwCuts);
   fOutput->Add(hInvMassOmegapwoCuts);
-  fOutput->Add(hInvMassOmegapwCuts);
   fOutput->Add(hInvMassMissIDK0S);
   fOutput->Add(hInvMassMissIDOmegam);
   fOutput->Add(hInvMassMissIDXim);
 
   // Define QA plots for topological observables
   TH2F *hProtonDCAxyDCAz = new TH2F("hProtonDCAxyDCAz","Proton DCAxy vs DCAz;DCA_{xy} (cm);DCA_{z} (cm)",500,-5,5,1000,-20,20);
-  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","DCA between #Lambda daughters;DCA (cm);Counts",100,0,10);
+  TH1F *hLambdaDCADaughterTracks = new TH1F("hLambdaDCADaughterTracks","DCA between #Lambda daughters;DCA (cm);Counts",200,0,10);
   TH1F *hLambdaDCAPosDaughPrimVertex = new TH1F("hLambdaDCAPosDaughPrimVertex","DCA of proton to PV;DCA (cm);Counts",500,0,100);
   TH1F *hLambdaDCANegDaughPrimVertex = new TH1F("hLambdaDCANegDaughPrimVertex","DCA of pion to PV;DCA (cm);Counts",500,0,100);
   TH1F *hLambdaTransverseRadius = new TH1F("hLambdaTransverseRadius","Transverse radius of #Lambda decay vertex;r_{xy} (cm);Counts;",400,0,200);
-  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of #Lambda pointing angle;cos(PA);Counts",100,0.9,1);
+  TH1F *hLambdaCosPointingAngle = new TH1F("hLambdaCosPointingAngle","Cosine of #Lambda pointing angle;cos(PA);Counts",200,0.95,1);
   TH1F *hXiDCADaughterTracks = new TH1F("hXiDCADaughterTracks","DCA between #Xi daughters;DCA (cm);Counts",100,0,10);
   TH1F *hXiDCAV0DaughterTracks = new TH1F("hXiDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Xi;DCA (cm);Counts",100,0,10);
   TH1F *hXiDCAV0PrimVertex = new TH1F("hXiDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
@@ -158,18 +184,18 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   TH1F *hXiDCANegDaughPrimVertex = new TH1F("hXiDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Xi;DCA (cm);Counts",500,0,100);
   TH1F *hXiTransverseRadius = new TH1F("hXiTransverseRadius","Transverse radius of #Xi decay vertex;r_{xy} (cm);Counts",400,0,200);
   TH1F *hXiV0TransverseRadius = new TH1F("hXiV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Xi;r_{xy} (cm);Counts",400,0,200);
-  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of #Xi pointing angle;cos(PA);Counts",100,0.9,1);
-  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Xi;cos(PA);Counts",100,0.9,1);
-  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","DCA between #Omega daughters;DCA (cm);Counts",100,0,10);
-  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Omega;DCA (cm);Counts",100,0,10);
+  TH1F *hXiCosPointingAngle = new TH1F("hXiCosPointingAngle","Cosine of #Xi pointing angle;cos(PA);Counts",200,0.95,1);
+  TH1F *hXiV0CosPointingAngle = new TH1F("hXiV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Xi;cos(PA);Counts",200,0.95,1);
+  TH1F *hOmegaDCADaughterTracks = new TH1F("hOmegaDCADaughterTracks","DCA between #Omega daughters;DCA (cm);Counts",200,0,10);
+  TH1F *hOmegaDCAV0DaughterTracks = new TH1F("hOmegaDCAV0DaughterTracks","DCA between #Lambda daughters, stemming from #Omega;DCA (cm);Counts",200,0,10);
   TH1F *hOmegaDCAV0PrimVertex = new TH1F("hOmegaDCAV0PrimVertex","DCA of #Lambda to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCABachPrimVertex = new TH1F("hOmegaDCABachPrimVertex","DCA of bachelor kaon to PV;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCAPosDaughPrimVertex = new TH1F("hOmegaDCAPosDaughPrimVertex","DCA of daughter proton to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaDCANegDaughPrimVertex = new TH1F("hOmegaDCANegDaughPrimVertex","DCA of daughter pion to PV, stemming from #Omega;DCA (cm);Counts",500,0,100);
   TH1F *hOmegaTransverseRadius = new TH1F("hOmegaTransverseRadius","Transverse radius of #Omega decay vertex;r_{xy} (cm);Counts",400,0,200);
   TH1F *hOmegaV0TransverseRadius = new TH1F("hOmegaV0TransverseRadius","Transverse rsdius of #Lambda decay vertex, stemming form #Omega;r_{xy} (cm);Counts",400,0,200);
-  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of #Omega pointing angle;cos(PA);Counts",100,0.9,1);
-  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Omega;cos(PA);Counts",100,0.9,1);
+  TH1F *hOmegaCosPointingAngle = new TH1F("hOmegaCosPointingAngle","Cosine of #Omega pointing angle;cos(PA);Counts",200,0.95,1);
+  TH1F *hOmegaV0CosPointingAngle = new TH1F("hOmegaV0CosPointingAngle","Cosine of #Lambda pointing angle, stemming from #Omega;cos(PA);Counts",200,0.95,1);
 
   fOutput->Add(hProtonDCAxyDCAz);
   fOutput->Add(hLambdaDCADaughterTracks);
@@ -200,53 +226,61 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
 
   // Define QA plots for kinematic observables
   TH1F *hProtonPt = new TH1F("hProtonPt","Transverse momentum of proton;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hProtonPhi = new TH1F("hProtonPhi","Phi angle of proton;#varphi (rad);Counts",200,0,TMath::TwoPi());
-  TH1F *hProtonEta = new TH1F("hProtonEta","Pseudorapidity of proton;#eta;Counts",20,-1,+1);
+  TH2F *hProtonEtaPhi = new TH2F("hProtonEtaPhi","Pseudorapidity vs azimuthal angle of proton;#eta;#varphi (rad)",200,-1,+1,200,0,TMath::TwoPi());
   TH1F *hAntiProtonPt = new TH1F("hAntiProtonPt","Transverse momentum of Anti-proton;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hLambdaPt = new TH1F("hLambdaPt","Transverse momentum of #Lambda;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of daughter proton;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of daughter pion;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hLambdaPhi = new TH1F("hLambdaPhi","Phi angle of #Lambda;#varphi (rad);Counts",200,0,TMath::TwoPi());
-  TH1F *hLambdaEta = new TH1F("hLambdaEta","Pseudorapidity of #Lambda;#eta;Counts",20,-1,1);
+  TH1F *hLambdaPosDaughPt = new TH1F("hLambdaPosDaughPt","Transverse momentum of #Lambda daughter proton;p_{T} (GeV/c);Counts",200,0,10);
+  TH1F *hLambdaNegDaughPt = new TH1F("hLambdaNegDaughPt","Transverse momentum of #Lambda daughter pion;p_{T} (GeV/c);Counts",200,0,10);
+  TH2F *hLambdaEtaPhi = new TH2F("hLambdaEtaPhi","Pseudorapidity vs azimuthal angle of #Lambda;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hLambdaPosDaughEtaPhi = new TH2F("hLambdaPosDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Lambda daughter proton;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hLambdaNegDaughEtaPhi = new TH2F("hLambdaNegDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Lambda daughter pion;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
   TH1F *hAntiLambdaPt = new TH1F("hAntiLambdaPt","Transverse momentum of #bar{#Lambda};p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hXimPt = new TH1F("hXimPt","Transverse momentum of #Xi^{-};p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hXimBachPt = new TH1F("hXimBachPt","Transverse momentum of bachelor pion;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hXimPosDaughPt = new TH1F("hXimPosDaughPt","Transverse momentum of daughter proton from #Xi;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hXimNegDaughPt = new TH1F("hXimNegDaughPt","Transverse momentum of daughter pion from #Xi;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hXimPhi = new TH1F("hXimPhi","Phi angle of #Xi^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
-  TH1F *hXimEta = new TH1F("hXimEta","Pseudorapidity of #Xi^{-};#eta;Counts",20,-1,1);
+  TH2F *hXimEtaPhi = new TH2F("hXimEtaPhi","Pseudorapidity vs azimuthal angle of #Xi^{-};#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hXimBachEtaPhi = new TH2F("hXimBachEtaPhi","Pseudorapidity vs azimuthal angle of #Xi^{-} bachelor pion;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hXimPosDaughEtaPhi = new TH2F("hXimPosDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Xi^{-} daughter proton;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hXimNegDaughEtaPhi = new TH2F("hXimNegDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Xi^{-} daughter pion;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
   TH1F *hXipPt = new TH1F("hXipPt","Transverse momentum of #Xi^{+};p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hOmegamPt = new TH1F("hOmegamPt","Transverse momentum of #Omega^{-};p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hOmegamBachPt = new TH1F("hOmegamBachPt","Transverse momentum of bachelor kaon;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hOmegamPosDaughPt = new TH1F("hOmegamPosDaughPt","Transverse momentum of daughter proton from #Omega;p_{T} (GeV/c);Counts",200,0,10);
   TH1F *hOmegamNegDaughPt = new TH1F("hOmegamNegDaughPt","Transverse momentum of daughter pion from #Omega;p_{T} (GeV/c);Counts",200,0,10);
-  TH1F *hOmegamPhi = new TH1F("hOmegamPhi","Phi angle of #Omega^{-};#varphi (rad);Counts",200,0,TMath::TwoPi());
-  TH1F *hOmegamEta = new TH1F("hOmegamEta","Pseudorapidity of #Omega^{-};#eta;Counts",20,-1,1);
+  TH2F *hOmegamEtaPhi = new TH2F("hOmegamEtaPhi","Pseudorapidity vs azimuthal angle of #Omega^{-};#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hOmegamBachEtaPhi = new TH2F("hOmegamBachEtaPhi","Pseudorapidity vs azimuthal angle of #Omega^{-} bachelor kaon;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hOmegamPosDaughEtaPhi = new TH2F("hOmegamPosDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Omega^{-} daughter proton;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
+  TH2F *hOmegamNegDaughEtaPhi = new TH2F("hOmegamNegDaughEtaPhi","Pseudorapidity vs azimuthal angle of #Omega^{-} daughter pion;#eta;#varphi (rad)",200,-1,1,200,0,TMath::TwoPi());
   TH1F *hOmegapPt = new TH1F("hOmegapPt","Transverse momentum of #Omega^{+};p_{T} (GeV/c);Counts",200,0,10);
 
   fOutput->Add(hProtonPt);
-  fOutput->Add(hProtonPhi);
-  fOutput->Add(hProtonEta);
+  fOutput->Add(hProtonEtaPhi);
   fOutput->Add(hAntiProtonPt);
   fOutput->Add(hLambdaPt);
   fOutput->Add(hLambdaPosDaughPt);
   fOutput->Add(hLambdaNegDaughPt);
-  fOutput->Add(hLambdaPhi);
-  fOutput->Add(hLambdaEta);
+  fOutput->Add(hLambdaEtaPhi);
+  fOutput->Add(hLambdaPosDaughEtaPhi);
+  fOutput->Add(hLambdaNegDaughEtaPhi);
   fOutput->Add(hAntiLambdaPt);
   fOutput->Add(hXimPt);
   fOutput->Add(hXimBachPt);
   fOutput->Add(hXimPosDaughPt);
   fOutput->Add(hXimNegDaughPt);
-  fOutput->Add(hXimPhi);
-  fOutput->Add(hXimEta);
+  fOutput->Add(hXimEtaPhi);
+  fOutput->Add(hXimBachEtaPhi);
+  fOutput->Add(hXimPosDaughEtaPhi);
+  fOutput->Add(hXimNegDaughEtaPhi);
   fOutput->Add(hXipPt);
   fOutput->Add(hOmegamPt);
   fOutput->Add(hOmegamBachPt);
   fOutput->Add(hOmegamPosDaughPt);
   fOutput->Add(hOmegamNegDaughPt);
-  fOutput->Add(hOmegamPhi);
-  fOutput->Add(hOmegamEta);
+  fOutput->Add(hOmegamEtaPhi);
+  fOutput->Add(hOmegamBachEtaPhi);
+  fOutput->Add(hOmegamPosDaughEtaPhi);
+  fOutput->Add(hOmegamNegDaughEtaPhi);
   fOutput->Add(hOmegapPt);
 
   // Define histogrms related to TPC track info
@@ -263,15 +297,23 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hRatioFindableCrossed);
 
   // Define PID related histograms
-  TH2F *hdEdxVsP = new TH2F("hdEdxVsP","dE/dx of all particles vs momentum;p (GeV/c);#frac{dE}{dx} (a.u.)",1000,0,10,200,0,200);
-  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","PID for protons using TPC;p (GeV/c);n#sigma_{TPC}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","PID for protons using TOF;p (GeV/c);n#sigma_{TOF}",1000,0,10,200,-10,10);
-  TH2F *hProtonNsigmaCombined = new TH2F("hProtonNsigmaCombined","PID for proton using both TPC and TOF;p (GeV/c);n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}};",1000,0,10,100,0,10);
+  TH2F *hdEdxVsP = new TH2F("hdEdxVsP","TPC dE/dx vs momentum;p (GeV/c);TPC #frac{dE}{dx} (a.u.)",1000,0,10,1000,0,1000);
+  TH2F *hBetaVsP = new TH2F("hBetaVsP","TOF #beta vs momentum;p (GeV/c);TOF #beta",1000,0,5,1000,0.1,1.1);
+  TH2F *hProtonNsigmaTPC = new TH2F("hProtonNsigmaTPC","Nsigma TPC vs momentum;p (GeV/c);n_{#sigma,TPC}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaTOF = new TH2F("hProtonNsigmaTOF","Nsigma TOF vs momentum;p (GeV/c);n_{#sigma,TOF}",1000,0,10,200,-10,10);
+  TH2F *hProtonNsigmaTPCvsTOF = new TH2F("hProtonNsigmaTPCvsTOF","Nsigma TPC vs TOF;n_{#sigma,TPC};n_{#sigma,TOF};",200,-10,10,200,-10,10);
+  TH2F *hProtonNsigmaTPCwPID = new TH2F("hProtonNsigmaTPCwPID","Nsimga TPC vs momentum after PID selection;p (GeV/c);n_{#sigma,TPC}",500,0,5,100,-5,5);
+  TH2F *hProtonNsigmaTOFwPID = new TH2F("hProtonNsigmaTOFwPID","Nsimga TOF vs momentum after PID selection;p (GeV/c);n_{#sigma,TOF}",500,0,5,100,-5,5);
+  TH2F *hProtonNsigmaTPCvsTOFwCuts = new TH2F("hProtonNsigmaTPCvsTOFwCuts","Nsigma TPC vs TOF with hypothesis cuts;n_{#sigma,TPC};n_{#sigma,TOF};",200,-10,10,200,-10,10);
 
   fOutput->Add(hdEdxVsP);
+  fOutput->Add(hBetaVsP);
   fOutput->Add(hProtonNsigmaTPC);
   fOutput->Add(hProtonNsigmaTOF);
-  fOutput->Add(hProtonNsigmaCombined);
+  fOutput->Add(hProtonNsigmaTPCvsTOF);
+  fOutput->Add(hProtonNsigmaTPCwPID);
+  fOutput->Add(hProtonNsigmaTOFwPID);
+  fOutput->Add(hProtonNsigmaTPCvsTOFwCuts);
 
   // Define histograms related to pair analysis
   TH1F *hNPairStatistics = new TH1F("hNPairStatistics","Number of pairs under certain condition",10,0.5,10.5);
@@ -287,16 +329,40 @@ void AliAnalysisTaskDibaryons::UserCreateOutputObjects()
   fOutput->Add(hNPairStatistics);
 
   // Define histograms related to invariant mass for dibaryons
-  TH2F *hInvMassRelKLambdaLambda = new TH2F("hInvMassRelKLambdaLambda","Invariant mass vs relative momentum of #Lambda-#Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});k^{*} (MeV/c)",1000,2,3,100,0,1000);
+  TH1F *hInvMassProtonLambda = new TH1F("hInvMassProtonLambda","Invariant mass of p-#Lambda pair;M_{p#Lambda} (GeV/c^{2});Counts",1000,2,2.4);
+  TH1F *hInvMassLambdaLambda = new TH1F("hInvMassLambdaLambda","Invariant mass of #Lambda-#Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});Counts",1000,2.2,2.3);
+  TH1F *hInvMassProtonXi = new TH1F("hInvMassProtonXi","Invariant mass of p-#Xi pair;M_{p#Xi} (GeV/c^{2});Counts",1000,2.25,2.35);
+  TH1F *hInvMassProtonOmega = new TH1F("hInvMassProtonOmega","Invariant mass of p-#Omega pair;M_{p#Omega} (GeV/c^{2});Counts",1000,2.6,2.7);
+  TH1F *hInvMassLambdaXi = new TH1F("hInvMassLambdaXi","Invariant mass of #Lambda-#Xi pair;M_{#Lambda#Xi} (GeV/c^{2});Counts",1000,2.55,2.65);
+  TH2F *hInvMassPtProtonLambda = new TH2F("hInvMassPtProtonLambda","Invariant mass vs transverse momentum of p-#Lambda pair;M_{p#Lambda} (GeV/c^{2});p_{T} (GeV/c)",1000,2,3,100,0,10);
+  TH2F *hInvMassPtLambdaLambda = new TH2F("hInvMassPtLambdaLambda","Invariant mass vs transverse momentum of #Lambda-#Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});p_{T} (GeV/c)",1000,2.2,3.2,100,0,10);
+  TH2F *hInvMassPtProtonXi = new TH2F("hInvMassPtProtonXi","Invariant mass vs transverse momentum of p-#Xi pair;M_{p#Xi} (GeV/c^{2});p_{T} (GeV/c)",1000,2.2,3.2,100,0,10);
+  TH2F *hInvMassPtProtonOmega = new TH2F("hInvMassPtProtonOmega","Invariant mass vs transverse momentum of p-#Omega pair;M_{p#Omega} (GeV/c^{2});p_{T} (GeV/c)",1000,2.6,3.6,100,0,10);
+  TH2F *hInvMassPtLambdaXi = new TH2F("hInvMassPtLambdaXi","Invariant mass vs transverse momentum of #Lambda-#Xi pair;M_{#Lambda#Xi} (GeV/c^{2});p_{T} (GeV/c)",1000,2.4,3.4,100,0,10);
+  TH2F *hInvMassPtXiOmega = new TH2F("hInvMassPtXiOmega","Invariant mass vs transverse momentum of #Xi-#Omega pair;M_{#Xi#Omega} (GeV/c^{2});p_{T} (GeV/c)",1000,2.9,3.9,100,0,10);
+  TH2F *hInvMassPtOmegaOmega = new TH2F("hInvMassPtOmegaOmega","Invariant mass vs transverse momentum of #Omega-#Omega pair;M_{#Omega#Omega} (GeV/c^{2});p_{T} (GeV/c)",1000,3.3,4.3,100,0,10);
   TH2F *hInvMassRelKProtonLambda = new TH2F("hInvMassRelKProtonLambda","Invariant mass vs relative momentum of p-#Lambda pair;M_{p#Lambda} (GeV/c^{2});k^{*} (MeV/c)",1000,2,3,100,0,1000);
+  TH2F *hInvMassRelKLambdaLambda = new TH2F("hInvMassRelKLambdaLambda","Invariant mass vs relative momentum of #Lambda-#Lambda pair;M_{#Lambda#Lambda} (GeV/c^{2});k^{*} (MeV/c)",1000,2.2,3.2,100,0,1000);
   TH2F *hInvMassRelKProtonXi = new TH2F("hInvMassRelKProtonXi","Invariant mass vs relative momentum of p-#Xi pair;M_{p#Xi} (GeV/c^{2});k^{*} (MeV/c)",1000,2,3,100,0,1000);
   TH2F *hInvMassRelKProtonOmega = new TH2F("hInvMassRelKProtonOmega","Invariant mass vs relative momentum of p-#Omega pair;M_{p#Omega} (GeV/c^{2});k^{*} (MeV/c)",1000,2.6,3.6,100,0,1000);
   TH2F *hInvMassRelKLambdaXi = new TH2F("hInvMassRelKLambdaXi","Invariant mass vs relative momentum of #Lambda-#Xi pair;M_{#Lambda#Xi} (GeV/c^{2});k^{*} (MeV/c)",1000,2.4,3.4,100,0,1000);
-  TH2F *hInvMassRelKXiOmega = new TH2F("hInvMassRelKXiOmega","Invariant mass vs relative momentum of #Xi-#Omega pair;M_{#Xi#Omega} (GeV/c^{2});k^{*} (MeV/c)",1000,2.8,3.8,100,0,1000);
-  TH2F *hInvMassRelKOmegaOmega = new TH2F("hInvMassRelKOmegaOmega","Invariant mass vs relative momentum of #Omega-#Omega pair;M_{#Omega#Omega} (GeV/c^{2});k^{*} (MeV/c)",1000,3,4,100,0,1000);
+  TH2F *hInvMassRelKXiOmega = new TH2F("hInvMassRelKXiOmega","Invariant mass vs relative momentum of #Xi-#Omega pair;M_{#Xi#Omega} (GeV/c^{2});k^{*} (MeV/c)",1000,2.9,3.9,100,0,1000);
+  TH2F *hInvMassRelKOmegaOmega = new TH2F("hInvMassRelKOmegaOmega","Invariant mass vs relative momentum of #Omega-#Omega pair;M_{#Omega#Omega} (GeV/c^{2});k^{*} (MeV/c)",1000,3.3,4.3,100,0,1000);
 
-  fOutput->Add(hInvMassRelKLambdaLambda);
+  fOutput->Add(hInvMassProtonLambda);
+  fOutput->Add(hInvMassLambdaLambda);
+  fOutput->Add(hInvMassProtonXi);
+  fOutput->Add(hInvMassProtonOmega);
+  fOutput->Add(hInvMassLambdaXi);
+  fOutput->Add(hInvMassPtProtonLambda);
+  fOutput->Add(hInvMassPtLambdaLambda);
+  fOutput->Add(hInvMassPtProtonXi);
+  fOutput->Add(hInvMassPtProtonOmega);
+  fOutput->Add(hInvMassPtLambdaXi);
+  fOutput->Add(hInvMassPtXiOmega);
+  fOutput->Add(hInvMassPtOmegaOmega);
   fOutput->Add(hInvMassRelKProtonLambda);
+  fOutput->Add(hInvMassRelKLambdaLambda);
   fOutput->Add(hInvMassRelKProtonXi);
   fOutput->Add(hInvMassRelKProtonOmega);
   fOutput->Add(hInvMassRelKLambdaXi);
@@ -363,6 +429,20 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     aodVtx->GetXYZ(primaryVtxPos);
   }
 
+  // Reference multiplicity
+  Int_t refMult08 = 0;
+  if(fAnalysisType == "ESD") {
+    refMult08 = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent,AliESDtrackCuts::kTrackletsITSTPC,0.8,0);
+  } else if(fAnalysisType == "AOD") {
+    AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+    if(!header) {
+      AliWarning("Could not get AOD header... return!");
+      return;
+    }
+    refMult08 = header->GetRefMultiplicityComb08();
+  }
+  dynamic_cast<TH1F*>(fOutput->FindObject("hRefMultiplicity08"))->Fill(refMult08);
+
   // Magnetic field
   Double_t bz = -10.;
   if     (fAnalysisType == "ESD") bz = esdEvent->GetMagneticField();
@@ -374,22 +454,25 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   const Double_t massXi     = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   const Double_t massOmega  = TDatabasePDG::Instance()->GetParticle(3334)->Mass();
 
+  // Speed of light
+  const Double_t c = 2.99792457999999984e-02; // cm/ps
 
   //______________________________________________________________________________
   // Loop over the reconstructed candidates
 
-  // - Track loop
+  // - Track loop for proton and anti-proton selecton
 
   Int_t nTrack = 0;
   if     (fAnalysisType == "ESD") nTrack = esdEvent->GetNumberOfTracks();
   else if(fAnalysisType == "AOD") nTrack = aodEvent->GetNumberOfTracks();
 
-  fProtonCandIdx.clear();
+  fProtonArray->Clear("C");
+  Int_t countProton = 0;
 
-  if(fAnalysisType == "AOD") {
+  if(fAnalysisType == "AOD") { // set global track
 
     // Reset global track reference
-    for(Int_t i=0; i < 2000; i++) fTrackArray[i] = 0;
+    for(Int_t i=0; i < fTrackBuffSize; i++) fTrackArray[i] = 0;
 
     // Store global track reference
     for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {
@@ -402,6 +485,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
       const Int_t trackID = track->GetID();
       if(trackID < 0) continue;
+      if(trackID >= fTrackBuffSize) {
+        AliWarning(Form("Track ID too big for buffer: ID: %d, buffer %d",trackID,fTrackBuffSize));
+        continue;
+      }
 
       if (fTrackArray[trackID]) {
         if ((!track->GetFilterMap()) && (!track->GetTPCNcls())) continue;
@@ -411,18 +498,19 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     }
   }
 
-  for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {// This is the beginning of the track loop
+  for(Int_t iTrack=0; iTrack < nTrack; iTrack++) {
 
-    // Initialisation of the local variables that will be needed for ESD/AOD
-    Double_t charge    = 0.;
-    Double_t momX      = 0.;
-    Double_t momY      = 0.;
-    Double_t momZ      = 0.;
-    Double_t transvMom = 0.;
-    Double_t totMom    = 0.;
-    Double_t eta       = 0.;
-    Double_t phi       = 0.;
-    Double_t dEdx      = 0.;
+    AliESDtrack *esdTrack = 0x0;
+    AliAODTrack *aodTrack = 0x0;
+
+    // Initialisation of the local variables
+    Double_t charge = 0.;
+    Double_t pt     = 0.;
+    Double_t eta    = 0.;
+    Double_t phi    = 0.;
+    Double_t p      = 0.;
+    Double_t dEdx   = 0.;
+    Double_t beta   = 0.;
 
     Float_t nTPCCrossedRows  = -1.;
     UShort_t nTPCClusters    = -1;
@@ -434,28 +522,38 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     Bool_t isthereTOF = kFALSE;
 
     Float_t nSigmaTPCproton      = -10.;
+    Float_t nSigmaTPCkaon        = -10.;
+    Float_t nSigmaTPCpion        = -10.;
+    Float_t nSigmaTPCelectron    = -10.;
     Float_t nSigmaTOFproton      = -10.;
-    Float_t nSigmaTPCTOFcombined = -10.;
+    Float_t nSigmaTOFkaon        = -10.;
+    Float_t nSigmaTOFpion        = -10.;
+    Float_t nSigmaTOFelectron    = -10.;
+    Float_t nSigmaTPCTOFproton   = -10.;
+    Float_t nSigmaTPCTOFkaon     = -10.;
+    Float_t nSigmaTPCTOFpion     = -10.;
+    Float_t nSigmaTPCTOFelectron = -10.;
 
     Float_t DCAxy = -999., DCAz = -999.;
 
     if(fAnalysisType == "ESD") {
 
-      AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(esdEvent->GetTrack(iTrack));
+      esdTrack = (AliESDtrack*)esdEvent->GetTrack(iTrack);
       if(!esdTrack) {
         AliFatal("Not a standard ESD");
         continue;
       }
 
-      charge    = esdTrack->Charge();
-      momX      = esdTrack->Px();
-      momY      = esdTrack->Py();
-      momZ      = esdTrack->Pz();
-      transvMom = esdTrack->Pt();
-      eta       = esdTrack->Eta();
-      phi       = esdTrack->Phi();
-      dEdx      = esdTrack->GetTPCsignal();
-      totMom    = esdTrack->GetTPCmomentum();
+      charge = esdTrack->Charge();
+      pt     = esdTrack->Pt();
+      eta    = esdTrack->Eta();
+      phi    = esdTrack->Phi();
+      dEdx   = esdTrack->GetTPCsignal();
+      p      = esdTrack->GetTPCmomentum();
+
+      const Double_t len = esdTrack->GetIntegratedLength();
+      const Double_t tim = esdTrack->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->GetTPCmomentum());
+      if(tim != 0.) beta = len / (tim * c);
 
       nTPCCrossedRows = esdTrack->GetTPCCrossedRows();
       nTPCClusters    = esdTrack->GetTPCNcls();
@@ -469,8 +567,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
 
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
+      nSigmaTPCkaon        = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
+      nSigmaTPCpion        = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
+      nSigmaTPCelectron    = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
-      nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTOFkaon        = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kKaon);
+      nSigmaTOFpion        = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
+      nSigmaTOFelectron    = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron);
+      nSigmaTPCTOFproton   = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTPCTOFkaon     = TMath::Sqrt(pow(nSigmaTPCkaon,2.) + pow(nSigmaTOFkaon,2.));
+      nSigmaTPCTOFpion     = TMath::Sqrt(pow(nSigmaTPCpion,2.) + pow(nSigmaTOFpion,2.));
+      nSigmaTPCTOFelectron = TMath::Sqrt(pow(nSigmaTPCelectron,2.) + pow(nSigmaTOFelectron,2.));
 
       esdTrack->GetImpactParameters(DCAxy,DCAz);
 
@@ -478,27 +585,33 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
     else if(fAnalysisType == "AOD") {
 
-      AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+      aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+      if(!aodTrack) {
+        AliFatal("Not a standard AOD");
+        continue;
+      }
 
       if(!((AliAODTrack*)aodTrack)->TestFilterBit(fFilterBit)) continue;
 
+      const Int_t trackID = aodTrack->GetID();
       AliAODTrack *globalTrack;
-      if(aodTrack->GetID() < 0) {
-        if(!fTrackArray[-aodTrack->GetID()-1]) continue; // check if a global track exists for the TPC-only track
-        globalTrack = fTrackArray[-aodTrack->GetID()-1];
+      if(trackID < 0) {
+        if(!fTrackArray[-trackID-1]) continue; // check if a global track exists for the TPC-only track
+        globalTrack = fTrackArray[-trackID-1];
       } else {
         globalTrack = aodTrack;
       }
 
-      charge    = aodTrack->Charge();
-      momX      = aodTrack->Px();
-      momY      = aodTrack->Py();
-      momZ      = aodTrack->Pz();
-      transvMom = aodTrack->Pt();
-      eta       = aodTrack->Eta();
-      phi       = aodTrack->Phi();
-      totMom    = globalTrack->GetTPCmomentum();
-      dEdx      = globalTrack->GetTPCsignal();
+      charge = aodTrack->Charge();
+      pt     = aodTrack->Pt();
+      eta    = aodTrack->Eta();
+      phi    = aodTrack->Phi();
+      p      = globalTrack->GetTPCmomentum();
+      dEdx   = globalTrack->GetTPCsignal();
+
+      const Double_t len = globalTrack->GetIntegratedLength();
+      const Double_t tim = globalTrack->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(globalTrack->GetTPCmomentum());
+      if(tim != 0.) beta = len / (tim * c);
 
       nTPCCrossedRows = aodTrack->GetTPCCrossedRows();
       nTPCClusters    = aodTrack->GetTPCNcls();
@@ -512,13 +625,23 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusTOF == AliPIDResponse::kDetPidOk) isthereTOF = kTRUE;
 
       nSigmaTPCproton      = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kProton);
+      nSigmaTPCkaon        = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kKaon);
+      nSigmaTPCpion        = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kPion);
+      nSigmaTPCelectron    = fPIDResponse->NumberOfSigmasTPC(globalTrack,AliPID::kElectron);
       nSigmaTOFproton      = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kProton);
-      nSigmaTPCTOFcombined = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTOFkaon        = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kKaon);
+      nSigmaTOFpion        = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kPion);
+      nSigmaTOFelectron    = fPIDResponse->NumberOfSigmasTOF(globalTrack,AliPID::kElectron);
+      nSigmaTPCTOFproton   = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
+      nSigmaTPCTOFkaon     = TMath::Sqrt(pow(nSigmaTPCkaon,2.) + pow(nSigmaTOFkaon,2.));
+      nSigmaTPCTOFpion     = TMath::Sqrt(pow(nSigmaTPCpion,2.) + pow(nSigmaTOFpion,2.));
+      nSigmaTPCTOFelectron = TMath::Sqrt(pow(nSigmaTPCelectron,2.) + pow(nSigmaTOFelectron,2.));
 
       globalTrack->GetImpactParameters(DCAxy,DCAz);
 
     } // end of AOD treatment
 
+    // Check track quality
     dynamic_cast<TH1F*>(fOutput->FindObject("hNCrossedRows"))        ->Fill(nTPCCrossedRows);
     dynamic_cast<TH1F*>(fOutput->FindObject("hNCluster"))            ->Fill(nTPCClusters);
     dynamic_cast<TH1F*>(fOutput->FindObject("hNSharedCluster"))      ->Fill(nTPCSharedCls);
@@ -530,75 +653,97 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(ratio           < 0.83) continue;
     if(nTPCSharedCls   > 0)    continue;
 
-    if(!isthereTPC) continue; // TPC signal must be there
-    dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsP"))->Fill(totMom, dEdx);
+    // Fill histos related to PID
+    if(isthereTPC) {
+      dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsP"))->Fill(p,dEdx);
+      if(charge > 0.) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))->Fill(p,nSigmaTPCproton);
+    }
+    if(isthereTOF) {
+      dynamic_cast<TH2F*>(fOutput->FindObject("hBetaVsP"))->Fill(p,beta);
+      if(charge > 0.) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))->Fill(p,nSigmaTOFproton);
+    }
 
-    // Proton PID
-    if(totMom < 0.75) { // for p < 0.75 use TPC only
-
-      if(charge > 0.) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))->Fill(totMom, nSigmaTPCproton);
-
+    // proton PID
+    if(p < 0.75) { // for p < 0.75 use TPC only
+      if(!isthereTPC) continue;
       if(TMath::Abs(nSigmaTPCproton) > 3.) continue;
+    }
+    else if(p > 0.75) { // for p > 0.75 use TPC & TOF
+      if(!isthereTPC || !isthereTOF) continue;
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCvsTOF"))->Fill(nSigmaTPCproton,nSigmaTOFproton);
 
-    } else if(totMom > 0.75) { // for p > 0.75 use TPC & TOF
+      // Reject if the other hypotheis fits better
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFkaon) continue;
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFpion) continue;
+      if(nSigmaTPCTOFproton > nSigmaTPCTOFelectron) continue;
 
-      if(!isthereTOF) continue; // TOF signal must be there
-
-      if(charge > 0.) {
-        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPC"))     ->Fill(totMom, nSigmaTPCproton);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOF"))     ->Fill(totMom, nSigmaTOFproton);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaCombined"))->Fill(totMom, nSigmaTPCTOFcombined);
-      }
-
-      if(nSigmaTPCTOFcombined > 3.) continue;
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCvsTOFwCuts"))->Fill(nSigmaTPCproton,nSigmaTOFproton);
+      if(nSigmaTPCTOFproton > 3.) continue;
     }
 
     if(charge > 0.) {
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonDCAxyDCAz"))->Fill(DCAxy,DCAz);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCwPID"))->Fill(p,nSigmaTPCproton);
+      if(isthereTOF) dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTOFwPID"))->Fill(p,nSigmaTOFproton);
     }
 
+    // proton selection
     if(TMath::Abs(eta) > 0.8) continue;
-    if(transvMom < 0.5 || 4.05 < transvMom) continue;
+    if(pt < 0.5 || 4.05 < pt) continue;
     if(TMath::Abs(DCAz)  > 0.2) continue; 
     if(TMath::Abs(DCAxy) > 0.1) continue;
 
-    // proton
-    if(charge > 0.) {
+    // Store candidates after selection
+    if(charge > 0.) { // for proton
 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonPt")) ->Fill(transvMom);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonPhi"))->Fill(phi);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonEta"))->Fill(eta);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hProtonPt")) ->Fill(pt);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hProtonEtaPhi"))->Fill(eta,phi);
+
       dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(1);
 
-      fProtonCandIdx.push_back(iTrack);
-    }
-    // Anti-proton
-    else if(charge < 0.) {
+      if(fAnalysisType == "ESD") {
 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonPt"))->Fill(transvMom);
+        AliESDtrack *track = (AliESDtrack*)fProtonArray->ConstructedAt(iTrack);
+        esdTrack->Copy(*track);
+        countProton++;
+      }
+      else if(fAnalysisType == "AOD") {
+
+        AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(countProton);
+        *track = *aodTrack;
+        countProton++;
+      }
+    }
+    else if(charge < 0.) { // for anti-proton
+
+      dynamic_cast<TH1F*>(fOutput->FindObject("hAntiProtonPt"))->Fill(pt);
+
       dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(2);
     }
 
   }// end of track loop
 
 
-  // - V0 loop
+  // - V0 loop for Lambda selection
 
   Int_t nV0 = 0;
   if     (fAnalysisType == "ESD") nV0 = esdEvent->GetNumberOfV0s();
   else if(fAnalysisType == "AOD") nV0 = aodEvent->GetNumberOfV0s();
 
-  fLambdaCandIdx.clear();
+  fLambdaArray->Clear("C");
+  Int_t countLambda = 0;
   
-  for(Int_t iV0=0; iV0<nV0; iV0++) {// This is the beginning of the V0 loop
+  for(Int_t iV0=0; iV0<nV0; iV0++) {
 
-    // Initialisation of the local variables that will be needed for ESD/AOD
+    AliESDv0 *esdV0 = 0x0;
+    AliAODv0 *aodV0 = 0x0;
+
+    // Initialisation of the local variables
     Double_t invMassLambda     = 0.;
     Double_t invMassAntiLambda = 0.;
     Double_t invMassK0S        = 0.;
 
     Double_t dcaV0Dghters    = -1.; 
-    Double_t dcaV0ToPrimVtx  = -1.;
     Double_t cosPointAngle   = -1.;
     Double_t vtxPosV0[3]     = {-999., -999., -999.};
     Double_t radius          = -999.;
@@ -610,29 +755,22 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     Bool_t isNegProton = kFALSE;
     Bool_t isNegPion   = kFALSE;
 
-    Double_t etaV0        = -20.;
-    Double_t phiV0        = 720.;
-    Double_t momV0X       = 0.;
-    Double_t momV0Y       = 0.;
-    Double_t momV0Z       = 0.;
-    Double_t transvMomV0  = 0.;
-    Double_t etaPos       = -20.;
-    Double_t momPosX      = 0.;
-    Double_t momPosY      = 0.;
-    Double_t momPosZ      = 0.;
-    Double_t transvMomPos = 0.;
-    Double_t etaNeg       = -20.;
-    Double_t momNegX      = 0.;
-    Double_t momNegY      = 0.;
-    Double_t momNegZ      = 0.;
-    Double_t transvMomNeg = 0.;
+    Double_t ptV0   = 0.;
+    Double_t ptPos  = 0.;
+    Double_t ptNeg  = 0.;
+    Double_t etaV0  = -20.;
+    Double_t etaPos = -20.;
+    Double_t etaNeg = -20.;
+    Double_t phiV0  = 720.;
+    Double_t phiPos = 720.;
+    Double_t phiNeg = 720.;
 
     if(fAnalysisType == "ESD") {
       
-      AliESDv0 *esdV0 = esdEvent->GetV0(iV0);
+      esdV0 = (AliESDv0*)esdEvent->GetV0(iV0);
       if(!esdV0) continue;
 
-      if(esdV0->GetOnFlyStatus()) continue; // select offline v0
+      if(esdV0->GetOnFlyStatus()) continue; // select offline V0
 
       // Get the tracks for the daughters
       AliESDtrack *pTrack = esdEvent->GetTrack(esdV0->GetPindex());
@@ -646,10 +784,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
-      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
-      if(esdV0->Pt() < 0.3) continue;
 
+      // Check TPC PID status
       AliPIDResponse::EDetPidStatus statusPosTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
       AliPIDResponse::EDetPidStatus statusNegTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
       if(statusPosTPC != AliPIDResponse::kDetPidOk) continue;
@@ -670,29 +806,29 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassK0S        = esdV0->GetEffMass();
 
       // Get topological values
-      dcaV0Dghters    = esdV0->GetDcaV0Daughters();
+      dcaV0Dghters    = TMath::Abs(esdV0->GetDcaV0Daughters());
       dcaPosToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       dcaNegToPrimVtx = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       cosPointAngle   = esdV0->GetV0CosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       esdV0->GetXYZ(vtxPosV0[0], vtxPosV0[1], vtxPosV0[2]);
       radius = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
 
-      esdV0->GetPxPyPz(momV0X, momV0Y, momV0Z);
-      esdV0->GetPPxPyPz(momPosX, momPosY, momPosZ);
-      esdV0->GetNPxPyPz(momNegX, momNegY, momNegZ);
-      transvMomV0  = TMath::Sqrt(momV0X*momV0X + momV0Y*momV0Y);
-      transvMomPos = TMath::Sqrt(momPosX*momPosX + momPosY*momPosY);
-      transvMomNeg = TMath::Sqrt(momNegX*momNegX + momNegY*momNegY);
+      // Get kinematic values
+      ptV0   = esdV0->Pt();
+      ptPos  = pTrack->Pt();
+      ptNeg  = nTrack->Pt();
       etaV0  = esdV0->Eta();
       etaPos = pTrack->Eta();
       etaNeg = nTrack->Eta();
       phiV0  = esdV0->Phi();
+      phiPos = pTrack->Phi();
+      phiNeg = nTrack->Phi();
 
     } // end of ESD treatment
 
     else if(fAnalysisType == "AOD") {
 
-      AliAODv0 *aodV0 = aodEvent->GetV0(iV0);
+      aodV0 = (AliAODv0*)aodEvent->GetV0(iV0);
       if(!aodV0) continue;
 
       if(aodV0->GetNDaughters() != 2)                 continue;
@@ -714,9 +850,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Rejection of a poor quality tracks
       if(pTrack->GetTPCNcls() < 70) continue;
       if(nTrack->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(pTrack->Eta()) > 0.8) continue;
-      if(TMath::Abs(nTrack->Eta()) > 0.8) continue;
-      if(aodV0->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
@@ -728,6 +861,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
            !(nTrack->GetTOFBunchCrossing() == 0)) continue;
       }
 
+      // Check TPC PID status
       AliPIDResponse::EDetPidStatus statusPosTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
       AliPIDResponse::EDetPidStatus statusNegTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
       if(statusPosTPC != AliPIDResponse::kDetPidOk) continue;
@@ -745,34 +879,28 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       invMassK0S        = aodV0->MassK0Short();
 
       // Get topological values
-      dcaV0Dghters    = aodV0->DcaV0Daughters();
-      dcaPosToPrimVtx = aodV0->DcaPosToPrimVertex();
-      dcaNegToPrimVtx = aodV0->DcaNegToPrimVertex();
+      dcaV0Dghters    = TMath::Abs(aodV0->DcaV0Daughters());
+      dcaPosToPrimVtx = TMath::Abs(aodV0->DcaPosToPrimVertex());
+      dcaNegToPrimVtx = TMath::Abs(aodV0->DcaNegToPrimVertex());
       cosPointAngle   = aodV0->CosPointingAngle(primaryVtxPos);
       aodV0->GetXYZ(vtxPosV0);
       radius = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
 
-      momV0X  = aodV0->MomV0X();
-      momV0Y  = aodV0->MomV0Y();
-      momV0Z  = aodV0->MomV0Z();
-      momPosX = aodV0->MomPosX();
-      momPosY = aodV0->MomPosY();
-      momPosZ = aodV0->MomPosZ();
-      momNegX = aodV0->MomNegX();
-      momNegY = aodV0->MomNegY();
-      momNegZ = aodV0->MomNegZ();
-      transvMomV0  = TMath::Sqrt(momV0X*momV0X + momV0Y*momV0Y);
-      transvMomPos = TMath::Sqrt(momPosX*momPosX + momPosY*momPosY);
-      transvMomNeg = TMath::Sqrt(momNegX*momNegX + momNegY*momNegY);
-      phiV0   = aodV0->Phi();
-      etaV0   = aodV0->Eta();
-      etaPos  = pTrack->Eta();
-      etaNeg  = nTrack->Eta();
+      // Get kinematic values
+      ptV0   = aodV0->Pt();
+      ptPos  = pTrack->Pt();
+      ptNeg  = nTrack->Pt();
+      etaV0  = aodV0->Eta();
+      etaPos = pTrack->Eta();
+      etaNeg = nTrack->Eta();
+      phiV0  = aodV0->Phi();
+      phiPos = pTrack->Phi();
+      phiNeg = nTrack->Phi();
 
     } // end of AOD treatment
 
     if(isPosProton && isNegPion) {
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawoCuts"))        ->Fill(invMassLambda);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawoCuts"))->Fill(invMassLambda);
     }
     else if(isNegProton && isPosPion) {
       dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawoCuts"))->Fill(invMassAntiLambda);
@@ -780,7 +908,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDK0S"))->Fill(invMassK0S);
     if(0.48 < invMassK0S && invMassK0S < 0.515) continue; // reject K0Short
 
-    // Topological cuts
+    // Lambda selection
+    if(TMath::Abs(etaPos) > 0.8) continue;
+    if(TMath::Abs(etaNeg) > 0.8) continue;
+    if(ptV0 < 0.3) continue;
     if(TMath::Abs(vtxPosV0[0]) > 100) continue;
     if(TMath::Abs(vtxPosV0[1]) > 100) continue;
     if(TMath::Abs(vtxPosV0[2]) > 100) continue;
@@ -790,12 +921,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     if(dcaNegToPrimVtx < 0.05) continue;
     if(radius < 0.2 || 100 < radius) continue;
 
-    // Lambda
-    if(isPosProton && isNegPion) {
+    // Store candidates after selection
+    if(isPosProton && isNegPion) { // for Lambda
 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdawCuts"))->Fill(invMassLambda);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassLambda"))->Fill(invMassLambda,ptV0);
 
-      if(TMath::Abs(invMassLambda - massLambda) < 0.004) {
+      if(TMath::Abs(invMassLambda - massLambda) < 0.004) { // mass window selection
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCADaughterTracks"))    ->Fill(dcaV0Dghters);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaDCAPosDaughPrimVertex"))->Fill(dcaPosToPrimVtx);
@@ -803,24 +934,37 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaCosPointingAngle"))     ->Fill(cosPointAngle);
         dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaTransverseRadius"))     ->Fill(radius);
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPt"))        ->Fill(transvMomV0);
-        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPosDaughPt"))->Fill(transvMomPos);
-        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaNegDaughPt"))->Fill(transvMomNeg);
-        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPhi"))       ->Fill(phiV0);
-        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaEta"))       ->Fill(etaV0);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPt"))            ->Fill(ptV0);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaPosDaughPt"))    ->Fill(ptPos);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hLambdaNegDaughPt"))    ->Fill(ptNeg);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hLambdaEtaPhi"))        ->Fill(etaV0,phiV0);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hLambdaPosDaughEtaPhi"))->Fill(etaPos,phiPos);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hLambdaNegDaughEtaPhi"))->Fill(etaNeg,phiNeg);
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics")) ->Fill(3);
 
-        fLambdaCandIdx.push_back(iV0);
+        if(fAnalysisType == "ESD") {
+
+          AliESDv0 *v0 = (AliESDv0*)fLambdaArray->ConstructedAt(countLambda);
+          esdV0->Copy(*v0);
+          countLambda++;
+        }
+        else if (fAnalysisType == "AOD") {
+
+          AliAODv0 *v0 = (AliAODv0*)fLambdaArray->ConstructedAt(countLambda);
+          *v0 = *aodV0;
+          countLambda++;
+        }
       }
     }
-    // AntiLambda
-    if(isNegProton && isPosPion) {
+    if(isNegProton && isPosPion) { // for Anti-Lambda
 
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassAntiLambdawCuts"))->Fill(invMassAntiLambda);
+      dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassAntiLambda"))->Fill(invMassAntiLambda,ptV0);
 
-      if(TMath::Abs(invMassAntiLambda - massLambda) < 0.004) {
+      if(TMath::Abs(invMassAntiLambda - massLambda) < 0.004) { // mass window selection
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hAntiLambdaPt"))->Fill(transvMomV0);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hAntiLambdaPt"))->Fill(ptV0);
+
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(4);
       }
     }
@@ -828,23 +972,28 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   }// end of V0 loop
 
 
-  // - Cascade loop
+  // - Cascade loop for Xi and Omega selection
 
   Int_t nCascade = 0;
   if     (fAnalysisType == "ESD") nCascade = esdEvent->GetNumberOfCascades();
   else if(fAnalysisType == "AOD") nCascade = aodEvent->GetNumberOfCascades();
 
-  fXiCnadIdx.clear();
-  fOmegaCnadIdx.clear();
+  fXiArray->Clear("C");
+  fOmegaArray->Clear("C");
+  Int_t countXi = 0;
+  Int_t countOmega = 0;
 
-  for(Int_t iXi = 0; iXi < nCascade; iXi++) {// This is the beginning of the Cascade loop
+  for(Int_t iXi = 0; iXi < nCascade; iXi++) {
 
-    // Initialisation of the local variables that will be needed for ESD/AOD
+    AliESDcascade *esdXi = 0x0;
+    AliAODcascade *aodXi = 0x0;
+
+    // Initialisation of the local variables
     Double_t invMassXiMinus    = 0.;
     Double_t invMassXiPlus     = 0.;
     Double_t invMassOmegaMinus = 0.;
     Double_t invMassOmegaPlus  = 0.;
-    Double_t invMassLambdaAsCascDghter     = 0.;
+    Double_t invMassLambdaAsCascDghter = 0.;
 
     Double_t dcaXiDghters     = -1.; 
     Double_t cosPointAngleXi  = -1.;
@@ -860,40 +1009,34 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     Double_t dcaPosToPrimVtx  = -1.;
     Double_t dcaNegToPrimVtx  = -1.;
 
-    Bool_t isBachelorKaon   = kFALSE;
-    Bool_t isBachelorPion   = kFALSE;
-    Bool_t isPosProton      = kFALSE;
-    Bool_t isPosPion        = kFALSE;
-    Bool_t isNegProton      = kFALSE;
-    Bool_t isNegPion        = kFALSE;
+    Bool_t isBachelorKaon = kFALSE;
+    Bool_t isBachelorPion = kFALSE;
+    Bool_t isPosProton    = kFALSE;
+    Bool_t isPosPion      = kFALSE;
+    Bool_t isNegProton    = kFALSE;
+    Bool_t isNegPion      = kFALSE;
 
-    Double_t etaXi         = -20.;
-    Double_t phiXi         = 720.;
-    Double_t momXiX        = 0.;
-    Double_t momXiY        = 0.;
-    Double_t momXiZ        = 0.;
-    Double_t transvMomXi   = 0.;
-    Double_t etaBach       = -20.;
-    Double_t momBachX      = 0.;
-    Double_t momBachY      = 0.;
-    Double_t momBachZ      = 0.;
-    Double_t transvMomBach = 0.;
-    Double_t etaPos        = -20.;
-    Double_t momPosX       = 0.;
-    Double_t momPosY       = 0.;
-    Double_t momPosZ       = 0.;
-    Double_t transvMomPos  = 0.;
-    Double_t etaNeg        = -20.;
-    Double_t momNegX       = 0.;
-    Double_t momNegY       = 0.;
-    Double_t momNegZ       = 0.;
-    Double_t transvMomNeg  = 0.;
+    Double_t ptXi    = 0.;
+    Double_t ptBach  = 0.;
+    Double_t ptPos   = 0.;
+    Double_t ptNeg   = 0.;
+    Double_t etaXi   = -20.;
+    Double_t etaBach = -20.;
+    Double_t etaPos  = -20.;
+    Double_t etaNeg  = -20.;
+    Double_t phiXi   = 720.;
+    Double_t phiBach = 720.;
+    Double_t phiPos  = 720.;
+    Double_t phiNeg  = 720.;
 
     Short_t chargeXi = -2;
 
+    Bool_t standerdXi    = kTRUE;
+    Bool_t standerdOmega = kTRUE;
+
     if(fAnalysisType == "ESD") {
       
-      AliESDcascade *esdXi = esdEvent->GetCascade(iXi);
+      esdXi = (AliESDcascade*)esdEvent->GetCascade(iXi);
       if(!esdXi) continue;
 
       chargeXi = esdXi->Charge();
@@ -912,13 +1055,8 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(bachTrack->GetTPCNcls() < 70) continue;
       if(pTrack   ->GetTPCNcls() < 70) continue;
       if(nTrack   ->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
-      if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(bachTrack->Pt() < 0.3) continue;
-      if(pTrack   ->Pt() < 0.3) continue;
-      if(nTrack   ->Pt() < 0.3) continue;
 
+      // Check TPC PID status
       AliPIDResponse::EDetPidStatus statusBachTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,bachTrack);
       AliPIDResponse::EDetPidStatus statusPosTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
       AliPIDResponse::EDetPidStatus statusNegTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
@@ -952,36 +1090,36 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       // Get topological values
       esdXi->GetXYZcascade(vtxPosXi[0], vtxPosXi[1], vtxPosXi[2]);
       esdXi->GetXYZ(vtxPosV0[0], vtxPosV0[1], vtxPosV0[2]);
-      dcaXiDghters     = esdXi->GetDcaXiDaughters();
+      dcaXiDghters     = TMath::Abs(esdXi->GetDcaXiDaughters());
       cosPointAngleXi  = esdXi->GetCascadeCosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusXi         = TMath::Sqrt(vtxPosXi[0]*vtxPosXi[0] + vtxPosXi[1]*vtxPosXi[1]);
-      dcaV0Dghters     = esdXi->GetDcaV0Daughters();
-      dcaV0ToPrimVtx   = esdXi->GetD(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
+      dcaV0Dghters     = TMath::Abs(esdXi->GetDcaV0Daughters());
+      dcaV0ToPrimVtx   = TMath::Abs(esdXi->GetD(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]));
       cosPointAngleV0  = esdXi->GetV0CosineOfPointingAngle(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusV0         = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
       dcaBachToPrimVtx = TMath::Abs(bachTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       dcaPosToPrimVtx  = TMath::Abs(pTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
       dcaNegToPrimVtx  = TMath::Abs(nTrack->GetD(primaryVtxPos[0], primaryVtxPos[1], bz));
 
-      esdXi->GetPxPyPz(momXiX, momXiY, momXiZ);
-      esdXi->GetBPxPyPz(momBachX, momBachY, momBachZ);
-      esdXi->GetPPxPyPz(momPosX, momPosY, momPosZ);
-      esdXi->GetNPxPyPz(momNegX, momNegY, momNegZ);
-      transvMomXi   = TMath::Sqrt(momXiX*momXiX + momXiY*momXiY);
-      transvMomBach = TMath::Sqrt(momBachX*momBachX + momBachY*momBachY);
-      transvMomPos  = TMath::Sqrt(momPosX*momPosX + momPosY*momPosY);
-      transvMomNeg  = TMath::Sqrt(momNegX*momNegX + momNegY*momNegY);
-      phiXi   = esdXi->Phi();
+      // Get kinematic values
+      ptXi    = esdXi->Pt();
+      ptBach  = bachTrack->Pt();
+      ptPos   = pTrack->Pt();
+      ptNeg   = nTrack->Pt();
       etaXi   = esdXi->Eta();
       etaBach = bachTrack->Eta();
       etaPos  = pTrack->Eta();
       etaNeg  = nTrack->Eta();
+      phiXi   = esdXi->Phi();
+      phiBach = bachTrack->Phi();
+      phiPos  = pTrack->Phi();
+      phiNeg  = nTrack->Phi();
 
     } // end of ESD treatment
     
     else if(fAnalysisType == "AOD") {
 
-      AliAODcascade *aodXi = aodEvent->GetCascade(iXi);
+      aodXi = (AliAODcascade*)aodEvent->GetCascade(iXi);
       if(!aodXi) continue;
 
       chargeXi = aodXi->ChargeXi();
@@ -1000,12 +1138,6 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(bachTrack->GetTPCNcls() < 70) continue;
       if(pTrack   ->GetTPCNcls() < 70) continue;
       if(nTrack   ->GetTPCNcls() < 70) continue;
-      if(TMath::Abs(bachTrack->Eta()) > 0.8) continue;
-      if(TMath::Abs(pTrack   ->Eta()) > 0.8) continue;
-      if(TMath::Abs(nTrack   ->Eta()) > 0.8) continue;
-      if(bachTrack->Pt() < 0.3) continue;
-      if(pTrack   ->Pt() < 0.3) continue;
-      if(nTrack   ->Pt() < 0.3) continue;
 
       // Out-of-bunch pile-up removal: require either a hit in the ITS SPD or ITS SDD, or TOF in-bunch timing
       if(fPileupCut) {
@@ -1020,6 +1152,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
            !(nTrack->GetTOFBunchCrossing() == 0)) continue;
       }
 
+      // Check TPC PID status
       AliPIDResponse::EDetPidStatus statusBachTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,bachTrack);
       AliPIDResponse::EDetPidStatus statusPosTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,pTrack);
       AliPIDResponse::EDetPidStatus statusNegTPC  = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,nTrack);
@@ -1054,79 +1187,98 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       vtxPosV0[0] = aodXi->DecayVertexV0X();
       vtxPosV0[1] = aodXi->DecayVertexV0Y();
       vtxPosV0[2] = aodXi->DecayVertexV0Z();
-      dcaXiDghters     = aodXi->DcaXiDaughters();
+      dcaXiDghters     = TMath::Abs(aodXi->DcaXiDaughters());
       cosPointAngleXi  = aodXi->CosPointingAngleXi(primaryVtxPos[0], primaryVtxPos[1], primaryVtxPos[2]);
       radiusXi         = TMath::Sqrt(vtxPosXi[0]*vtxPosXi[0] + vtxPosXi[1]*vtxPosXi[1]);
-      dcaV0Dghters     = aodXi->DcaV0Daughters();
-      dcaV0ToPrimVtx   = aodXi->DcaV0ToPrimVertex();
+      dcaV0Dghters     = TMath::Abs(aodXi->DcaV0Daughters());
+      dcaV0ToPrimVtx   = TMath::Abs(aodXi->DcaV0ToPrimVertex());
       cosPointAngleV0  = aodXi->CosPointingAngle(primaryVtxPos);
       radiusV0         = TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0] + vtxPosV0[1]*vtxPosV0[1]);
-      dcaBachToPrimVtx = aodXi->DcaBachToPrimVertex();
-      dcaPosToPrimVtx  = aodXi->DcaPosToPrimVertex();
-      dcaNegToPrimVtx  = aodXi->DcaNegToPrimVertex();
+      dcaBachToPrimVtx = TMath::Abs(aodXi->DcaBachToPrimVertex());
+      dcaPosToPrimVtx  = TMath::Abs(aodXi->DcaPosToPrimVertex());
+      dcaNegToPrimVtx  = TMath::Abs(aodXi->DcaNegToPrimVertex());
 
-      momXiX = aodXi->MomXiX();
-      momXiY = aodXi->MomXiY();
-      momXiZ = aodXi->MomXiZ();
-      momBachX = aodXi->MomBachX();
-      momBachY = aodXi->MomBachY();
-      momBachZ = aodXi->MomBachZ();
-      momPosX = aodXi->MomPosX();
-      momPosY = aodXi->MomPosY();
-      momPosZ = aodXi->MomPosZ();
-      momNegX = aodXi->MomNegX();
-      momNegY = aodXi->MomNegY();
-      momNegZ = aodXi->MomNegZ();
-      transvMomXi   = TMath::Sqrt(momXiX*momXiX + momXiY*momXiY);
-      transvMomBach = TMath::Sqrt(momBachX*momBachX + momBachY*momBachY);
-      transvMomPos  = TMath::Sqrt(momPosX*momPosX + momPosY*momPosY);
-      transvMomNeg  = TMath::Sqrt(momNegX*momNegX + momNegY*momNegY);
-      phiXi   = aodXi->Phi();
+      // Get kinematic values
+      ptXi    = aodXi->Pt();
+      ptBach  = bachTrack->Pt();
+      ptPos   = pTrack->Pt();
+      ptNeg   = nTrack->Pt();
       etaXi   = aodXi->Eta();
       etaBach = bachTrack->Eta();
       etaPos  = pTrack->Eta();
       etaNeg  = nTrack->Eta();
+      phiXi   = aodXi->Phi();
+      phiBach = bachTrack->Phi();
+      phiPos  = pTrack->Phi();
+      phiNeg  = nTrack->Phi();
 
     } // end of AOD treatment
 
     if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion) {
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwoCuts"))          ->Fill(invMassXiMinus);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDOmegam"))       ->Fill(invMassOmegaMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwoCuts"))   ->Fill(invMassXiMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDOmegam"))->Fill(invMassOmegaMinus);
     }
     if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion) {
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwoCuts"))          ->Fill(invMassXiPlus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwoCuts"))   ->Fill(invMassXiPlus);
     }
     if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion) {
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwoCuts"))       ->Fill(invMassOmegaMinus);
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDXim"))          ->Fill(invMassXiMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwoCuts"))->Fill(invMassOmegaMinus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassMissIDXim"))   ->Fill(invMassXiMinus);
     }
     if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion) {
-      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwoCuts"))       ->Fill(invMassOmegaPlus);
+      dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwoCuts"))->Fill(invMassOmegaPlus);
     }
 
-    // Topological cuts
-    if(dcaXiDghters > 1.6) continue;
-    if(dcaV0Dghters > 1.6) continue;
-    if(dcaV0ToPrimVtx < 0.07) continue;
-    if(dcaBachToPrimVtx < 0.05) continue;
-    if(dcaPosToPrimVtx < 0.05) continue;
-    if(dcaNegToPrimVtx < 0.05) continue;
-    if(cosPointAngleXi < 0.98) continue;
-    if(cosPointAngleV0 < 0.97) continue;
-    if(radiusXi < 0.8 || 200 < radiusXi) continue;
-    if(radiusV0 < 1.4 || 200 < radiusV0) continue;
+    // Kinematic cuts for Xi and Omega
+    if(TMath::Abs(etaBach) > 0.8) continue;
+    if(TMath::Abs(etaPos)  > 0.8) continue;
+    if(TMath::Abs(etaNeg) > 0.8) continue;
+    if(ptBach < 0.3) continue;
+    if(ptPos  < 0.3) continue;
+    if(ptNeg  < 0.3) continue;
+
+    // Topological cuts for Xi
+    if(dcaXiDghters > 1.6)      standerdXi = kFALSE;
+    if(dcaV0Dghters > 1.6)      standerdXi = kFALSE;
+    if(dcaV0ToPrimVtx < 0.07)   standerdXi = kFALSE;
+    if(dcaBachToPrimVtx < 0.05) standerdXi = kFALSE;
+    if(dcaPosToPrimVtx < 0.05)  standerdXi = kFALSE;
+    if(dcaNegToPrimVtx < 0.05)  standerdXi = kFALSE;
+    if(cosPointAngleXi < 0.98)  standerdXi = kFALSE;
+    if(cosPointAngleV0 < 0.97)  standerdXi = kFALSE;
+    if(radiusXi < 0.8 || 200 < radiusXi) standerdXi = kFALSE;
+    if(radiusV0 < 1.4 || 200 < radiusV0) standerdXi = kFALSE;
+
+    // Topological cuts for Omega
+    if(dcaXiDghters > 0.8)      standerdOmega = kFALSE;
+    if(dcaV0Dghters > 1.2)      standerdOmega = kFALSE;
+    if(dcaV0ToPrimVtx < 0.06)   standerdOmega = kFALSE;
+    if(dcaBachToPrimVtx < 0.05) standerdOmega = kFALSE;
+    if(dcaPosToPrimVtx < 0.05)  standerdOmega = kFALSE;
+    if(dcaNegToPrimVtx < 0.05)  standerdOmega = kFALSE;
+    if(cosPointAngleXi < 0.995) standerdOmega = kFALSE;
+    if(cosPointAngleV0 < 0.97)  standerdOmega = kFALSE;
+    if(radiusXi < 0.2 || 200 < radiusXi) standerdOmega = kFALSE;
+    if(radiusV0 < 1.0 || 200 < radiusV0) standerdOmega = kFALSE;
 
     dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaAsCascDghter"))->Fill(invMassLambdaAsCascDghter);
 
-    if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) < 0.006) {
+    // Mass window cut for V0
+    if(TMath::Abs(invMassLambdaAsCascDghter - massLambda) > 0.006) {
+      standerdXi    = kFALSE;
+      standerdOmega = kFALSE;
+    }
 
-      // Xi Minus
-      if((chargeXi<0) && isBachelorPion && isPosProton && isNegPion
-         && (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
+    // Store candidates after selection
+    if(standerdXi) {
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXimwCuts"))->Fill(invMassXiMinus);
+      if((chargeXi<0) && // for Xi-
+         (isBachelorPion && isPosProton && isNegPion) && // TPC PID info
+         (invMassOmegaMinus < 1.667 || 1.677 < invMassOmegaMinus)) { // reject Omega-
 
-        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) {
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassXim"))->Fill(invMassXiMinus,ptXi);
+
+        if(TMath::Abs(invMassXiMinus - massXi) < 0.005) { // mass window selection
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCADaughterTracks"))    ->Fill(dcaXiDghters);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
@@ -1139,36 +1291,55 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiTransverseRadius"))     ->Fill(radiusXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hXiV0TransverseRadius"))   ->Fill(radiusV0);
 
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimPt"))        ->Fill(transvMomXi);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimBachPt"))    ->Fill(transvMomBach);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimPosDaughPt"))->Fill(transvMomPos);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimNegDaughPt"))->Fill(transvMomNeg);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimPhi"))       ->Fill(phiXi);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXimEta"))       ->Fill(etaXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXimPt"))            ->Fill(ptXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXimBachPt"))        ->Fill(ptBach);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXimPosDaughPt"))    ->Fill(ptPos);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXimNegDaughPt"))    ->Fill(ptNeg);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hXimEtaPhi"))        ->Fill(etaXi,phiXi);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hXimBachEtaPhi"))    ->Fill(etaBach,phiBach);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hXimPosDaughEtaPhi"))->Fill(etaPos,phiPos);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hXimNegDaughEtaPhi"))->Fill(etaNeg,phiNeg);
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(5);
 
-          fXiCnadIdx.push_back(iXi);
+          if(fAnalysisType == "ESD") {
+
+            AliESDcascade *xi = (AliESDcascade*)fXiArray->ConstructedAt(countXi);
+            esdXi->Copy(*xi);
+            countXi++;
+          }
+          else if (fAnalysisType == "AOD") {
+
+            AliAODcascade *xi = (AliAODcascade*)fXiArray->ConstructedAt(countXi);
+            *xi = *aodXi;
+            countXi++;
+          }
         }
       }
-      // Xi Plus
-      if((chargeXi>0) && isBachelorPion && isNegProton && isPosPion
-         && (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
+      if((chargeXi>0) && // for Xi+
+         (isBachelorPion && isNegProton && isPosPion) && // TOC PID info
+         (invMassOmegaPlus < 1.667 || 1.677 < invMassOmegaPlus)) { // reject Omega+
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassXipwCuts"))->Fill(invMassXiPlus);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassXip"))->Fill(invMassXiPlus,ptXi);
 
-        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) {
+        if(TMath::Abs(invMassXiPlus - massXi) < 0.005) { // mass window selection
 
-          dynamic_cast<TH1F*>(fOutput->FindObject("hXipPt"))->Fill(transvMomXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hXipPt"))->Fill(ptXi);
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(6);
         }
       }
-      // Omega Minus
-      if((chargeXi<0) && isBachelorKaon && isPosProton && isNegPion
-         && (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
+    }
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegamwCuts"))->Fill(invMassOmegaMinus);
+    if(standerdOmega) {
 
-        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) {
+      if((chargeXi<0) && // for Omega-
+         (isBachelorKaon && isPosProton && isNegPion) && // TPC PID info
+         (invMassXiMinus < 1.317 || 1.327 < invMassXiMinus)) { // reject Xi-
+
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassOmegam"))->Fill(invMassOmegaMinus,ptXi);
+
+        if(TMath::Abs(invMassOmegaMinus - massOmega) < 0.005) { // mass window selection
 
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCADaughterTracks"))    ->Fill(dcaXiDghters);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaDCAV0DaughterTracks"))  ->Fill(dcaV0Dghters);
@@ -1181,26 +1352,41 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaTransverseRadius"))     ->Fill(radiusXi);
           dynamic_cast<TH1F*>(fOutput->FindObject("hOmegaV0TransverseRadius"))   ->Fill(radiusV0);
 
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPt"))        ->Fill(transvMomXi);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamBachPt"))    ->Fill(transvMomBach);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPosDaughPt"))->Fill(transvMomPos);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamNegDaughPt"))->Fill(transvMomNeg);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPhi"))       ->Fill(phiXi);
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamEta"))       ->Fill(etaXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPt"))            ->Fill(ptXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamBachPt"))        ->Fill(ptBach);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamPosDaughPt"))    ->Fill(ptPos);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegamNegDaughPt"))    ->Fill(ptNeg);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hOmegamEtaPhi"))        ->Fill(etaXi,phiXi);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hOmegamBachEtaPhi"))    ->Fill(etaBach,phiBach);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hOmegamPosDaughEtaPhi"))->Fill(etaPos,phiPos);
+          dynamic_cast<TH2F*>(fOutput->FindObject("hOmegamNegDaughEtaPhi"))->Fill(etaNeg,phiNeg);
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(7);
 
-          fOmegaCnadIdx.push_back(iXi);
+          if(fAnalysisType == "ESD") {
+
+            AliESDcascade *xi = (AliESDcascade*)fOmegaArray->ConstructedAt(countOmega);
+            esdXi->Copy(*xi);
+            countOmega++;
+          }
+          else if (fAnalysisType == "AOD") {
+
+            AliAODcascade *xi = (AliAODcascade*)fOmegaArray->ConstructedAt(countOmega);
+            *xi = *aodXi;
+            countOmega++;
+          }
         }
       }
-      // Omega Plus
-      if((chargeXi>0) && isBachelorKaon && isNegProton && isPosPion
-         && (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
+      if((chargeXi>0) && // for Omega+
+         (isBachelorKaon && isNegProton && isPosPion) && // TPC PID info
+         (invMassXiPlus < 1.317 || 1.327 < invMassXiPlus)) { // reject Xi+
 
-        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassOmegapwCuts"))->Fill(invMassOmegaPlus);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassOmegap"))->Fill(invMassOmegaPlus,ptXi);
 
-        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) {
+        if(TMath::Abs(invMassOmegaPlus - massOmega) < 0.005) { // mass window selection
 
-          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegapPt"))->Fill(transvMomXi);
+          dynamic_cast<TH1F*>(fOutput->FindObject("hOmegapPt"))->Fill(ptXi);
+
           dynamic_cast<TH1F*>(fOutput->FindObject("hNPartStatistics"))->Fill(8);
         }
       }
@@ -1212,68 +1398,85 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   //______________________________________________________________________________
   // Calculate invariant mass for dibaryons 
 
+  const Int_t nProton = fProtonArray->GetEntriesFast();
+  const Int_t nLambda = fLambdaArray->GetEntriesFast();
+  const Int_t nXi     = fXiArray->GetEntriesFast();
+  const Int_t nOmega  = fOmegaArray->GetEntriesFast();
+
   if(fAnalysisType == "ESD") {
 
     // ppK- -> proton + Lambda
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliESDtrack *track = esdEvent->GetTrack(fProtonCandIdx[i]);
+      AliESDtrack *track = (AliESDtrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fLambdaCandIdx.size(); j++) {
+      for(Int_t j=0; j<nLambda; j++) {
 
-        AliESDv0 *v0 = esdEvent->GetV0(fLambdaCandIdx[j]);
+        AliESDv0 *v0 = (AliESDv0*)fLambdaArray->ConstructedAt(j);
+        if(!v0) continue;
 
         if(track->GetID() == v0->GetPindex()) continue;
         if(track->GetID() == v0->GetNindex()) continue;
 
         TLorentzVector trackProton, trackLambda, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackLambda.SetXYZM(v0->Px(), v0->Py(), v0->Pz(), massLambda);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackLambda.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),massLambda);
         trackSum = trackProton + trackLambda;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackLambda); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton,trackLambda);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(1);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonLambda"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonLambda"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonLambda"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonLambda"))->Fill(mass,relK);
       }
     }
 
     // H-Dibaryon -> Lambda + Lambda
-    for(UInt_t i=0; i<fLambdaCandIdx.size(); i++) {
+    for(Int_t i=0; i<nLambda; i++) {
 
-      AliESDv0 *v01 = esdEvent->GetV0(fLambdaCandIdx[i]);
+      AliESDv0 *v01 = (AliESDv0*)fLambdaArray->ConstructedAt(i);
+      if(!v01) continue;
 
-      for(UInt_t j=i+1; j<fLambdaCandIdx.size(); j++) {
+      for(Int_t j=i+1; j<nLambda; j++) {
 
-        AliESDv0 *v02 = esdEvent->GetV0(fLambdaCandIdx[j]);
+        AliESDv0 *v02 = (AliESDv0*)fLambdaArray->ConstructedAt(j);
+        if(!v02) continue;
 
         if(v01->GetPindex() == v02->GetPindex()) continue;
         if(v01->GetNindex() == v02->GetNindex()) continue;
 
         TLorentzVector trackLambda1, trackLambda2, trackSum;
 
-        trackLambda1.SetXYZM(v01->Px(), v01->Py(), v01->Pz(), massLambda);
-        trackLambda2.SetXYZM(v02->Px(), v02->Py(), v02->Pz(), massLambda);
+        trackLambda1.SetXYZM(v01->Px(),v01->Py(),v01->Pz(),massLambda);
+        trackLambda2.SetXYZM(v02->Px(),v02->Py(),v02->Pz(),massLambda);
         trackSum = trackLambda1 + trackLambda2;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackLambda1, trackLambda2); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackLambda1,trackLambda2);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(2);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaLambda"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaLambda"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtLambdaLambda"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaLambda"))->Fill(mass,relK);
       }
     }
 
     // H-Dibaryon -> proton + Xi-
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliESDtrack *track = esdEvent->GetTrack(fProtonCandIdx[i]);
+      AliESDtrack *track = (AliESDtrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fXiCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nXi; j++) {
 
-        AliESDcascade *xi = esdEvent->GetCascade(fXiCnadIdx[j]);
+        AliESDcascade *xi = (AliESDcascade*)fXiArray->ConstructedAt(j);
+        if(!xi) continue;
 
         if(track->GetID() == xi->GetBindex()) continue;
         if(track->GetID() == xi->GetPindex()) continue;
@@ -1281,26 +1484,31 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackProton, trackXi, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackXi.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackXi.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massXi);
         trackSum = trackProton + trackXi;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackXi); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton,trackXi);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(3);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonXi"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonXi"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonXi"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonXi"))->Fill(mass,relK);
       }
     }
 
     // pOmega -> proton + Omega-
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliESDtrack *track = esdEvent->GetTrack(fProtonCandIdx[i]);
+      AliESDtrack *track = (AliESDtrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fOmegaCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nOmega; j++) {
 
-        AliESDcascade *xi = esdEvent->GetCascade(fOmegaCnadIdx[j]);
+        AliESDcascade *xi = (AliESDcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi) continue;
 
         if(track->GetID() == xi->GetBindex()) continue;
         if(track->GetID() == xi->GetPindex()) continue;
@@ -1308,26 +1516,31 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackProton, trackOmega, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackOmega.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massOmega);
         trackSum = trackProton + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackOmega); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton, trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(4);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonOmega"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass,relK);
       }
     }
 
     // nOmega- -> Lambda + Xi-
-    for(UInt_t i=0; i<fLambdaCandIdx.size(); i++) {
+    for(Int_t i=0; i<nLambda; i++) {
 
-      AliESDv0 *v0 = esdEvent->GetV0(fLambdaCandIdx[i]);
+      AliESDv0 *v0 = (AliESDv0*)fLambdaArray->ConstructedAt(i);
+      if(!v0) continue;
 
-      for(UInt_t j=0; j<fXiCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nXi; j++) {
 
-        AliESDcascade *xi = esdEvent->GetCascade(fXiCnadIdx[j]);
+        AliESDcascade *xi = (AliESDcascade*)fXiArray->ConstructedAt(j);
+        if(!xi) continue;
 
         if(v0->GetPindex() == xi->GetPindex()) continue;
         if(v0->GetNindex() == xi->GetNindex()) continue;
@@ -1335,28 +1548,32 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackLambda, trackXi, trackSum;
 
-        trackLambda.SetXYZM(v0->Px(), v0->Py(), v0->Pz(), massLambda);
-        trackXi.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackLambda.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),massLambda);
+        trackXi.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massXi);
         trackSum = trackLambda + trackXi;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackLambda, trackXi); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackLambda,trackXi);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(5);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaXi"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaXi"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtLambdaXi"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaXi"))->Fill(mass,relK);
       }
     }
 
     // Di-Omega -> Xi- + Omega-
-    for(UInt_t i=0; i<fXiCnadIdx.size(); i++) {
+    for(Int_t i=0; i<nXi; i++) {
 
-      AliESDcascade *xi1 = esdEvent->GetCascade(fXiCnadIdx[i]);
+      AliESDcascade *xi1 = (AliESDcascade*)fXiArray->ConstructedAt(i);
+      if(!xi1) continue;
 
-      for(UInt_t j=0; j<fOmegaCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nOmega; j++) {
 
-        AliESDcascade *xi2 = esdEvent->GetCascade(fOmegaCnadIdx[j]);
+        AliESDcascade *xi2 = (AliESDcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi2) continue;
 
-        if(fXiCnadIdx[i] == fOmegaCnadIdx[j]) continue;
         if(xi1->GetPindex() == xi2->GetPindex()) continue;
         if(xi1->GetNindex() == xi2->GetNindex()) continue;
         if(xi1->GetNindex() == xi2->GetBindex()) continue;
@@ -1364,26 +1581,30 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackXi, trackOmega, trackSum;
 
-        trackXi.SetXYZM(xi1->Px(), xi1->Py(), xi1->Pz(), massXi);
-        trackOmega.SetXYZM(xi2->Px(), xi2->Py(), xi2->Pz(), massOmega);
+        trackXi.SetXYZM(xi1->Px(),xi1->Py(),xi1->Pz(),massXi);
+        trackOmega.SetXYZM(xi2->Px(),xi2->Py(),xi2->Pz(),massOmega);
         trackSum = trackXi + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackXi, trackOmega); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackXi,trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(6);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKXiOmega"))->Fill(mass, relK);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtXiOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKXiOmega"))->Fill(mass,relK);
       }
     }
 
     // Di-Omega -> Omega- + Omega-
-    for(UInt_t i=0; i<fOmegaCnadIdx.size(); i++) {
+    for(Int_t i=0; i<nOmega; i++) {
 
-      AliESDcascade *xi1 = esdEvent->GetCascade(fOmegaCnadIdx[i]);
+      AliESDcascade *xi1 = (AliESDcascade*)fOmegaArray->ConstructedAt(i);
+      if(!xi1) continue;
 
-      for(UInt_t j=i+1; j<fOmegaCnadIdx.size(); j++) {
+      for(Int_t j=i+1; j<nOmega; j++) {
 
-        AliESDcascade *xi2 = esdEvent->GetCascade(fOmegaCnadIdx[j]);
+        AliESDcascade *xi2 = (AliESDcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi2) continue;
 
         if(xi1->GetPindex() == xi2->GetPindex()) continue;
         if(xi1->GetNindex() == xi2->GetNindex()) continue;
@@ -1392,15 +1613,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackOmega1, trackOmega2, trackSum;
 
-        trackOmega1.SetXYZM(xi1->Px(), xi1->Py(), xi1->Pz(), massOmega);
-        trackOmega2.SetXYZM(xi2->Px(), xi2->Py(), xi2->Pz(), massOmega);
+        trackOmega1.SetXYZM(xi1->Px(),xi1->Py(),xi1->Pz(),massOmega);
+        trackOmega2.SetXYZM(xi2->Px(),xi2->Py(),xi2->Pz(),massOmega);
         trackSum = trackOmega1 + trackOmega2;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackOmega1, trackOmega2); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackOmega1,trackOmega2);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(7);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKOmegaOmega"))->Fill(mass, relK);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtOmegaOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKOmegaOmega"))->Fill(mass,relK);
       }
     }
 
@@ -1409,119 +1632,150 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
   else if(fAnalysisType == "AOD") {
 
     // ppK- -> proton + Lambda
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(fProtonCandIdx[i]));
+      AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fLambdaCandIdx.size(); j++) {
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
 
-        AliAODv0 *v0 = aodEvent->GetV0(fLambdaCandIdx[j]);
+      for(Int_t j=0; j<nLambda; j++) {
 
-        if(track->GetID() == v0->GetPosID()) continue;
-        if(track->GetID() == v0->GetNegID()) continue;
+        AliAODv0 *v0 = (AliAODv0*)fLambdaArray->ConstructedAt(j);
+        if(!v0) continue;
+
+        if(trackID == v0->GetPosID()) continue;
+        if(trackID == v0->GetNegID()) continue;
 
         TLorentzVector trackProton, trackLambda, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackLambda.SetXYZM(v0->Px(), v0->Py(), v0->Pz(), massLambda);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackLambda.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),massLambda);
         trackSum = trackProton + trackLambda;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackLambda); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton, trackLambda);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(1);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonLambda"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonLambda"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonLambda"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonLambda"))->Fill(mass,relK);
       }
     }
 
     // H-Dibaryon -> Lambda + Lambda
-    for(UInt_t i=0; i<fLambdaCandIdx.size(); i++) {
+    for(Int_t i=0; i<nLambda; i++) {
 
-      AliAODv0 *v01 = aodEvent->GetV0(fLambdaCandIdx[i]);
+      AliAODv0 *v01 = (AliAODv0*)fLambdaArray->ConstructedAt(i);
+      if(!v01) continue;
 
-      for(UInt_t j=i+1; j<fLambdaCandIdx.size(); j++) {
+      for(Int_t j=i+1; j<nLambda; j++) {
 
-        AliAODv0 *v02 = aodEvent->GetV0(fLambdaCandIdx[j]);
+        AliAODv0 *v02 = (AliAODv0*)fLambdaArray->ConstructedAt(j);
+        if(!v02) continue;
 
         if(v01->GetPosID() == v02->GetPosID()) continue;
         if(v01->GetNegID() == v02->GetNegID()) continue;
 
         TLorentzVector trackLambda1, trackLambda2, trackSum;
 
-        trackLambda1.SetXYZM(v01->Px(), v01->Py(), v01->Pz(), massLambda);
-        trackLambda2.SetXYZM(v02->Px(), v02->Py(), v02->Pz(), massLambda);
+        trackLambda1.SetXYZM(v01->Px(),v01->Py(),v01->Pz(),massLambda);
+        trackLambda2.SetXYZM(v02->Px(),v02->Py(),v02->Pz(),massLambda);
         trackSum = trackLambda1 + trackLambda2;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackLambda1, trackLambda2); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackLambda1,trackLambda2);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(2);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaLambda"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaLambda"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtLambdaLambda"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaLambda"))->Fill(mass,relK);
       }
     }
 
     // H-Dibaryon -> proton + Xi-
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(fProtonCandIdx[i]));
+      AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fXiCnadIdx.size(); j++) {
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
 
-        AliAODcascade *xi = aodEvent->GetCascade(fXiCnadIdx[j]);
+      for(Int_t j=0; j<nXi; j++) {
 
-        if(track->GetID() == xi->GetBachID()) continue;
-        if(track->GetID() == xi->GetPosID()) continue;
-        if(track->GetID() == xi->GetNegID()) continue;
+        AliAODcascade *xi = (AliAODcascade*)fXiArray->ConstructedAt(j);
+        if(!xi) continue;
+
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
 
         TLorentzVector trackProton, trackXi, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackXi.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackXi.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massXi);
         trackSum = trackProton + trackXi;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackXi); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton,trackXi);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(3);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonXi"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonXi"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonXi"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonXi"))->Fill(mass,relK);
       }
     }
 
     // pOmega -> proton + Omega-
-    for(UInt_t i=0; i<fProtonCandIdx.size(); i++) {
+    for(Int_t i=0; i<nProton; i++) {
 
-      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(fProtonCandIdx[i]));
+      AliAODTrack *track = (AliAODTrack*)fProtonArray->ConstructedAt(i);
+      if(!track) continue;
 
-      for(UInt_t j=0; j<fOmegaCnadIdx.size(); j++) {
+      Int_t trackID = track->GetID();
+      if(trackID < 0) trackID = -trackID - 1;
 
-        AliAODcascade *xi = aodEvent->GetCascade(fOmegaCnadIdx[j]);
+      for(Int_t j=0; j<nOmega; j++) {
 
-        if(track->GetID() == xi->GetBachID()) continue;
-        if(track->GetID() == xi->GetPosID()) continue;
-        if(track->GetID() == xi->GetNegID()) continue;
+        AliAODcascade *xi = (AliAODcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi) continue;
+
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
 
         TLorentzVector trackProton, trackOmega, trackSum;
 
-        trackProton.SetXYZM(track->Px(), track->Py(), track->Pz(), massProton);
-        trackOmega.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
+        trackOmega.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massOmega);
         trackSum = trackProton + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackProton, trackOmega); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackProton,trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(4);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassProtonOmega"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtProtonOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKProtonOmega"))->Fill(mass,relK);
       }
     }
 
     // nOmega- -> Lambda + Xi-
-    for(UInt_t i=0; i<fLambdaCandIdx.size(); i++) {
+    for(Int_t i=0; i<nLambda; i++) {
 
-      AliAODv0 *v0 = aodEvent->GetV0(fLambdaCandIdx[i]);
+      AliAODv0 *v0 = (AliAODv0*)fLambdaArray->ConstructedAt(i);
+      if(!v0) continue;
 
-      for(UInt_t j=0; j<fXiCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nXi; j++) {
 
-        AliAODcascade *xi = aodEvent->GetCascade(fXiCnadIdx[j]);
+        AliAODcascade *xi = (AliAODcascade*)fXiArray->ConstructedAt(j);
+        if(!xi) continue;
 
         if(v0->GetPosID() == xi->GetPosID()) continue;
         if(v0->GetNegID() == xi->GetNegID()) continue;
@@ -1529,28 +1783,32 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackLambda, trackXi, trackSum;
 
-        trackLambda.SetXYZM(v0->Px(), v0->Py(), v0->Pz(), massLambda);
-        trackXi.SetXYZM(xi->Px(), xi->Py(), xi->Pz(), massXi);
+        trackLambda.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),massLambda);
+        trackXi.SetXYZM(xi->Px(),xi->Py(),xi->Pz(),massXi);
         trackSum = trackLambda + trackXi;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackLambda, trackXi); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackLambda,trackXi);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(5);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaXi"))->Fill(mass, relK);
+        dynamic_cast<TH1F*>(fOutput->FindObject("hInvMassLambdaXi"))->Fill(mass);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtLambdaXi"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKLambdaXi"))->Fill(mass,relK);
       }
     }
 
     // Di-Omega -> Xi- + Omega-
-    for(UInt_t i=0; i<fXiCnadIdx.size(); i++) {
+    for(Int_t i=0; i<nXi; i++) {
 
-      AliAODcascade *xi1 = aodEvent->GetCascade(fXiCnadIdx[i]);
+      AliAODcascade *xi1 = (AliAODcascade*)fXiArray->ConstructedAt(i);
+      if(!xi1) continue;
 
-      for(UInt_t j=0; j<fOmegaCnadIdx.size(); j++) {
+      for(Int_t j=0; j<nOmega; j++) {
 
-        AliAODcascade *xi2 = aodEvent->GetCascade(fOmegaCnadIdx[j]);
+        AliAODcascade *xi2 = (AliAODcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi2) continue;
 
-        if(fXiCnadIdx[i] == fOmegaCnadIdx[j]) continue;
         if(xi1->GetPosID() == xi2->GetPosID()) continue;
         if(xi1->GetNegID() == xi2->GetNegID()) continue;
         if(xi1->GetNegID() == xi2->GetBachID()) continue;
@@ -1558,26 +1816,30 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackXi, trackOmega, trackSum;
 
-        trackXi.SetXYZM(xi1->Px(), xi1->Py(), xi1->Pz(), massXi);
-        trackOmega.SetXYZM(xi2->Px(), xi2->Py(), xi2->Pz(), massOmega);
+        trackXi.SetXYZM(xi1->Px(),xi1->Py(),xi1->Pz(),massXi);
+        trackOmega.SetXYZM(xi2->Px(),xi2->Py(),xi2->Pz(),massOmega);
         trackSum = trackXi + trackOmega;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackXi, trackOmega); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackXi,trackOmega);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(6);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKXiOmega"))->Fill(mass, relK);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtXiOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKXiOmega"))->Fill(mass,relK);
       }
     }
 
     // Di-Omega -> Omega- + Omega-
-    for(UInt_t i=0; i<fOmegaCnadIdx.size(); i++) {
+    for(Int_t i=0; i<nOmega; i++) {
 
-      AliAODcascade *xi1 = aodEvent->GetCascade(fOmegaCnadIdx[i]);
+      AliAODcascade *xi1 = (AliAODcascade*)fOmegaArray->ConstructedAt(i);
+      if(!xi1) continue;
 
-      for(UInt_t j=i+1; j<fOmegaCnadIdx.size(); j++) {
+      for(Int_t j=i+1; j<nOmega; j++) {
 
-        AliAODcascade *xi2 = aodEvent->GetCascade(fOmegaCnadIdx[j]);
+        AliAODcascade *xi2 = (AliAODcascade*)fOmegaArray->ConstructedAt(j);
+        if(!xi2) continue;
 
         if(xi1->GetPosID() == xi2->GetPosID()) continue;
         if(xi1->GetNegID() == xi2->GetNegID()) continue;
@@ -1586,15 +1848,17 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         TLorentzVector trackOmega1, trackOmega2, trackSum;
 
-        trackOmega1.SetXYZM(xi1->Px(), xi1->Py(), xi1->Pz(), massOmega);
-        trackOmega2.SetXYZM(xi2->Px(), xi2->Py(), xi2->Pz(), massOmega);
+        trackOmega1.SetXYZM(xi1->Px(),xi1->Py(),xi1->Pz(),massOmega);
+        trackOmega2.SetXYZM(xi2->Px(),xi2->Py(),xi2->Pz(),massOmega);
         trackSum = trackOmega1 + trackOmega2;
 
         Double_t mass = trackSum.M();
-        Double_t relK = 1000*relKcalc(trackOmega1, trackOmega2); 
+        Double_t pt   = trackSum.Pt();
+        Double_t relK = 1000*relKcalc(trackOmega1,trackOmega2);
 
         dynamic_cast<TH1F*>(fOutput->FindObject("hNPairStatistics"))->Fill(7);
-        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKOmegaOmega"))->Fill(mass, relK);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassPtOmegaOmega"))->Fill(mass,pt);
+        dynamic_cast<TH2F*>(fOutput->FindObject("hInvMassRelKOmegaOmega"))->Fill(mass,relK);
       }
     }
 

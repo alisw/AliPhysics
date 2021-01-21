@@ -54,6 +54,7 @@ public:
     kTPCRejPtDepTOFNsigma,
     kTPCNsigmaTOFVetoPtDep,
     kTPCTOFpidLstar,         //cuts for L* in pPb
+    kTPCTOFpidLstar_test1,         //cuts for L* in pPb
     kTPCTOFpidLstar13ppTeV, // cuts for L* pp 13 tev
     kTPCTOFpidLstar13ppTeV_test, // cuts for L* pp 13 tev
     kTPCTOFpidLstar13ppTeV_test1, // cuts for L* pp 13 tev with 3 sigma TOF veto

@@ -50,12 +50,15 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         void                    SetMC(Bool_t IsMC) {fIsMC=IsMC;}
+        void                    SetAnaLc2Lpi(Bool_t IsAnaLc2Lpi) {fIsAnaLc2Lpi=IsAnaLc2Lpi;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
-        void                    MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV);
+        void                    MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0orLpi, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
         Int_t                   MatchToMCKs0(AliAODTrack *v0Pos, AliAODTrack *v0Neg, TClonesArray *mcArray);
-        Int_t                   MatchToMCLc(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray);
+        Int_t                   MatchToMCLam(AliAODTrack *v0Pos, AliAODTrack *v0Neg, TClonesArray *mcArray, Bool_t IsParticle);
+        Int_t                   MatchToMCLc2pKs0(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray);
+        Int_t                   MatchToMCLc2Lpi(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray, Bool_t IsParticle);
 
         /// set MC usage
         void SetWriteLcMCGenTree(Bool_t a) {fWriteLcMCGenTree = a;}
@@ -68,7 +71,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
         void FillEventROOTObjects();
         void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin);
-        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0, KFParticle kfpLc, AliAODTrack *trackPr, KFParticle kfpPr, KFParticle kfpKs0, KFParticle kfpKs0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_Ks0, Int_t lab_Lc, KFParticle kfpLc_woKs0MassConst);
+        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
     private:
@@ -99,6 +102,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
+        Bool_t                  fIsAnaLc2Lpi; ///< Flag of Lc->Lpi analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
 
@@ -114,7 +118,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 4);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 5);
 };
 
 #endif

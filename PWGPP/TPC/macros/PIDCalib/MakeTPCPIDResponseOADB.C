@@ -6,6 +6,7 @@
 #include "TROOT.h"
 #include "TPRegexp.h"
 #include "TClass.h"
+#include "TKey.h"
 
 #include "AliNDLocalRegression.h"
 #include "AliOADBContainer.h"
@@ -276,9 +277,9 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
 
   // ---| pass2 |---------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18q.pass3/TPCPIDResponseOADB_2020_08_13_18q_pass3_It3.root", 295243, 296630, "3", "",
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18q.pass3/TPCPIDResponseOADB_2020_08_13_18q_pass3_It3_withDeuteron.root", 295243, 296630, "3", "",
       "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18q
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18r.pass3/TPCPIDResponseOADB_2020_07_22_LHC18r_pass3_woPileupcor.root", 296631, 999999, "3", "",
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18r.pass3/TPCPIDResponseOADB_2020_07_22_18r_pass3_It8_withDeuteron.root", 296631, 999999, "3", "",
       "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18r
 
 /*
@@ -420,7 +421,7 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   }
 
   // ---| resolution parametrisation |------------------------------------------
-  if (!resolution.IsNull()) {
+  if (!resolution.IsNull() && !resolution.EndsWith(".root")) {
     TNamed *resolutionParam = new TNamed("dEdxResolution", resolution.Data());
     arrTPCPIDResponse->Add(resolutionParam);
   }
@@ -451,6 +452,42 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
       TObject* multEst = GetObjectFromContainer(contFromFile, "MultiplicityEstimator");
       if (multEst) {
         arrTPCPIDResponse->Add(multEst);
+      }
+    }
+  }
+
+  // ---| TF1 sigma parametrization |-------------------------------------------
+  if (resolution.EndsWith(".root")) {
+    TFile* f = TFile::Open(resolution);
+    if (!f->IsOpen() || f->IsZombie()) {
+      Error("AddOADBObjectFromSplineFile", "Could not open '%s' to extract the TF1 sigma parametrization", resolution.Data());
+    } else {
+      TObject* tf1Sigma = f->Get("SigmaParametrization");
+      if (!tf1Sigma) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get TF1 function with name 'SigmaParametrization' from file '%s'", resolution.Data());
+      } else {
+        arrTPCPIDResponse->Add(tf1Sigma);
+      }
+
+      TObject* multEstimator = f->Get("MultiplicityNormalization");
+      if (!multEstimator) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get 'MultiplicityNormalization' from file '%s'", resolution.Data());
+      } else {
+        arrTPCPIDResponse->Add(multEstimator);
+      }
+    }
+  } else {
+    if (contFromFile) {
+      TObject* tf1Sigma = GetObjectFromContainer(contFromFile, "SigmaParametrization");
+      if (tf1Sigma) {
+        arrTPCPIDResponse->Add(tf1Sigma);
+
+        TObject* multEstimator = GetObjectFromContainer(contFromFile, "MultiplicityNormalization");
+        if (!multEstimator) {
+          Fatal("AddOADBObjectFromSplineFile", "'MultiplicityNormalization' missing in OADB container, always must be provided together with 'SigmaParametrization'");
+        } else {
+          arrTPCPIDResponse->Add(multEstimator);
+        }
       }
     }
   }

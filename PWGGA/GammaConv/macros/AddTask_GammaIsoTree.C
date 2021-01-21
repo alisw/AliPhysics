@@ -18,6 +18,8 @@ void AddTask_GammaIsoTree(
   Bool_t    doOwnTrackMatching            = kFALSE,
   // subwagon config
   TString   fileNameExternalInputs        = "",
+  Double_t  genPtCut                      = 0, // only save particles from stack with gen pt > genPtCut
+  Double_t  recPtCut                      = 0, // only save clusters with rec pt > recPtCut
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
 
@@ -36,9 +38,9 @@ void AddTask_GammaIsoTree(
   TString   TaskConvCutnumber                 = "0dm0000922700000dge0404000";
 
 
-  vector<Float_t> trackIsoR = {0.2,0.4};
+  vector<Float_t> trackIsoR = {0.2,0.3,0.4};
   vector<Double_t> trackIsoE = {0.5,1.5,2.5};
-  vector<Float_t> neutralIsoR = {0.2,0.4};
+  vector<Float_t> neutralIsoR = {0.2,0.3,0.4};
   vector<Double_t> neutralIsoE = {0.5,1.5,2.5};
   Double_t minSignalM02 = 0.1;
   Double_t maxSignalM02 = 0.5;
@@ -510,6 +512,8 @@ void AddTask_GammaIsoTree(
   fQA->SetIsMC(isMC);
   fQA->SetYCutMC(0.9);
   fQA->SetAntiIsolationE(fAntiIsolation[0],fAntiIsolation[1]);
+  fQA->SetRecPtCut(recPtCut);
+  fQA->SetGenPtCut(genPtCut);
   
   // fQA->SetSaveClusterCells(doSaveClusterCells);
   // fQA->SetSaveEventProperties(doSaveEventProp);

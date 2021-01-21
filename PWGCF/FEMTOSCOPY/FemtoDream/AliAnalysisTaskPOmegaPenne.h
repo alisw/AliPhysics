@@ -243,7 +243,6 @@ public:
     
     // CPA stuffs
     TH2F                              **h2_CPA_pt;                                               //!<!       // CPA for Paircleaning but with pT binning
-    
 // for femtodream paircleaner
     TH2F                               *CPAPtBinningPrim_lambda;                                 //!<!
     TH2F                               *CPAPtBinningMat_lambda;                                  //!<!
@@ -270,7 +269,7 @@ public:
     TH2F                               *CPAPtBinningSec_antixi;                                  //!<!
     TH2F                               *CPAPtBinningCont_antixi;                                 //!<!
 // for InvMass Paircleaning
-    TH2F                              **h2_CPA_pt_invMass;                                       //!<!
+    TH2F                              **h2_pt_invMass;                                       //!<!
     //////////////////////
     // weird stuff   /////
     //////////////////////

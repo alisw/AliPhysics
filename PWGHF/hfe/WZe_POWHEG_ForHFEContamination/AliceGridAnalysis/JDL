@@ -1,0 +1,34 @@
+Packages = {
+	"VO_ALICE@AliRoot::v5-05-Rev-24",
+	"VO_ALICE@GEANT3::v1-15a-1",
+	"VO_ALICE@ROOT::v5-34-08-6",
+	"VO_ALICE@APISCONFIG::V1.1x"
+};
+Price = 1;
+JDLArguments = "170040 1 20";
+Executable = "/alice/bin/aliroot_new";
+InputFile = {
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/simrun.sh",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/GenW_Pythia6_POWHEG.C",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/runPowheg.sh",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/lhapdf-config",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/POWHEG-BOX.tgz",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/base_powheg.input",
+	"LF:/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/fastPOWHEG.C"
+};
+OutputArchive = {
+	"log_archive.zip:stderr,stdout,*.log@disk=1",
+	"root_archive.zip:Kinematics.root,galice.root@disk=2"
+};
+Split = "production:1-20";
+Splitarguments = "--run 170040";
+OutputDir = "/alice/cern.ch/user/s/sacharya/WZppDecay/pp_kCT10nlo_20200504_Wplus/Output/#alien_counter_03i#";
+Workdirectorysize = "5000MB";
+JDLVariables = {
+	"Packages",
+	"OutputDir"
+};
+TTL = "72000";
+
+Requirements = member(other.GridPartitions,"PDC08_2");
+

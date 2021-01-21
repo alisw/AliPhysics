@@ -69,7 +69,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Protons
-  TrackCuts1->SetPlotDCADist(false);			// plot DCA_xy vs. pT
+  TrackCuts1->SetPlotDCADist(true);			// plot DCA_xy vs. pT
   TrackCuts1->SetPlotCombSigma(false);			// plot combined sigma: nSigmaTOF vs. nSigmaTPC vs. momentum
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
@@ -105,7 +105,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antiprotons
-  TrackCuts2->SetPlotDCADist(false);
+  TrackCuts2->SetPlotDCADist(true);
   TrackCuts2->SetPlotCombSigma(false);
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
@@ -135,7 +135,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Deuterons
-  TrackCuts3->SetPlotDCADist(false);
+  TrackCuts3->SetPlotDCADist(true);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
@@ -167,7 +167,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antideuterons
-  TrackCuts4->SetPlotDCADist(false);
+  TrackCuts4->SetPlotDCADist(true);
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
