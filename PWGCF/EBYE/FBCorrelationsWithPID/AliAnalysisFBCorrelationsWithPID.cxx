@@ -26,22 +26,22 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisTask_dEdxHistograms.h"
+#include "AliAnalysisFBCorrelationsWithPID.h"
 
-class AliAnalysisTaskMyTask;    // your analysis class
+class AliAnalysisFBCorrelationsWithPID;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskMyTask) // classimp: necessary for root
+ClassImp(AliAnalysisFBCorrelationsWithPID) // classimp: necessary for root
 
-AliAnalysisTaskMyTask::AliAnalysisTaskMyTask() : AliAnalysisTaskSE(), 
+AliAnalysisFBCorrelationsWithPID::AliAnalysisFBCorrelationsWithPID() : AliAnalysisTaskSE(), 
     fAOD(0), fOutputList(0), fHistPt(0), fHistTPCSignPLog(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskMyTask::AliAnalysisTaskMyTask(const char* name) : AliAnalysisTaskSE(name),
+AliAnalysisFBCorrelationsWithPID::AliAnalysisFBCorrelationsWithPID(const char* name) : AliAnalysisTaskSE(name),
     fAOD(0), fOutputList(0), fHistPt(0), fHistTPCSignPLog(0)
 {
     // constructor
@@ -54,7 +54,7 @@ AliAnalysisTaskMyTask::AliAnalysisTaskMyTask(const char* name) : AliAnalysisTask
                                         // make changes to your AddTask macro!
 }
 //_____________________________________________________________________________
-AliAnalysisTaskMyTask::~AliAnalysisTaskMyTask()
+AliAnalysisFBCorrelationsWithPID::~AliAnalysisFBCorrelationsWithPID()
 {
     // destructor
     if(fOutputList) {
@@ -62,7 +62,7 @@ AliAnalysisTaskMyTask::~AliAnalysisTaskMyTask()
     }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::UserCreateOutputObjects()
+void AliAnalysisFBCorrelationsWithPID::UserCreateOutputObjects()
 {
     // create output objects
     //
@@ -106,7 +106,7 @@ void AliAnalysisTaskMyTask::UserCreateOutputObjects()
                                         // so it needs to know what's in the output
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::UserExec(Option_t *)
+void AliAnalysisFBCorrelationsWithPID::UserExec(Option_t *)
 {
     // user exec
     // this function is called once for each event
@@ -122,7 +122,7 @@ void AliAnalysisTaskMyTask::UserExec(Option_t *)
     Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     for(Int_t i(0); i < iTracks; i++) {                 // loop ove rall these tracks
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track || !track->TestFilterBit(128)) continue;                            // if we failed, skip this track
+        if(!track || !track->TestFilterBit(1)) continue;                            // if we failed, skip this track
         if(track->Pt()<0.2) continue;                  //pt track cut
         if(fabs(track->Eta())>0.8) continue;            //eta track cut                           // if we failed, skip this track
         fHistPt->Fill(track->Pt());  
@@ -134,7 +134,7 @@ void AliAnalysisTaskMyTask::UserExec(Option_t *)
                                                         // it to a file
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskMyTask::Terminate(Option_t *)
+void AliAnalysisFBCorrelationsWithPID::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)

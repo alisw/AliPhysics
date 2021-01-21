@@ -1,4 +1,4 @@
-AliAnalysisTaskMyTask* AddTaskTestRequest(TString name = "name")
+AliAnalysisFBCorrelationsWithPID* AddTaskFBCorrelationsWithPID(TString name = "name")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -16,7 +16,7 @@ AliAnalysisTaskMyTask* AddTaskTestRequest(TString name = "name")
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskMyTask* task = new AliAnalysisTaskMyTask(name.Data());   
+    AliAnalysisFBCorrelationsWithPID* task = new AliAnalysisFBCorrelationsWithPID(name.Data());   
     if(!task) return 0x0;
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     // add your task to the manager
