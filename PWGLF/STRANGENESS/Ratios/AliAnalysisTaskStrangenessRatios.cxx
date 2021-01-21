@@ -36,8 +36,11 @@ double Sq(double x) {
   return x * x;
 }
 
+constexpr int kLambdaPdg{3122};
 constexpr double kLambdaMass{1.115683};
+constexpr int kXiPdg{3312};
 constexpr double kXiMass{1.32171};
+constexpr int kOmegaPdg{3334};
 constexpr double kOmegaMass{1.67245};
 
 }
@@ -158,6 +161,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   fRecCascade->centrality = fEventCut.GetCentrality();
 
+  std::vector<int> checkedLabel;
   for (int iCasc = 0; iCasc < ev->GetNumberOfCascades(); iCasc++)
   {
     AliAODcascade *casc = ev->GetCascade(iCasc);
@@ -202,11 +206,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       int labMothNeg = negPart->GetMother();
       int labMothBac = bacPart->GetMother();
       auto lambda = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(labMothNeg));
-      if (labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == 3122) {
+      if (labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg) {
         int labMothLam = lambda->GetMother();
-        auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(labMothBac));
+        auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(labMothBac);
         int pdgCascade = std::abs(cascade->GetPdgCode());
-        if (labMothLam == labMothBac && (pdgCascade == 3312 || pdgCascade == 3334)) {
+        if (labMothLam == labMothBac && (pdgCascade == kXiPdg || pdgCascade == kOmegaPdg)) {
           fGenCascade.pdg = cascade->GetPdgCode();
           fGenCascade.ptMC = cascade->Pt();
           fGenCascade.etaMC = cascade->Eta();
@@ -215,6 +219,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           cascade->XvYvZv(pv);
           bacPart->XvYvZv(sv);
           fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * cascade->M() / cascade->P();
+          checkedLabel.push_back(labMothBac);
         }
       }
       if (fOnlyTrueCandidates && fGenCascade.pdg == 0)
@@ -280,6 +285,34 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       if (IsTopolSelected(1)) {
         fTreeXi->Fill();
       }
+    }
+  }
+
+  if (fMC) {
+    fGenCascade.isReconstructed = false;
+    for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT) {
+      auto track = (AliAODMCParticle*)fMCEvent->GetTrack(iT);
+      int pdg = std::abs(track->GetPdgCode());
+      if (pdg != kXiPdg && pdg != kOmegaPdg) {
+        continue;
+      }
+      if (std::find(checkedLabel.begin(), checkedLabel.end(), iT) != checkedLabel.end()) {
+        continue;
+      }
+      fGenCascade.ptMC = track->Pt();
+      fGenCascade.etaMC = track->Eta();
+      fGenCascade.yMC = track->Y();
+      fGenCascade.pdg = track->GetPdgCode();
+      double pv[3], sv[3];
+      track->XvYvZv(pv);
+      for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++) {
+        auto daugh = (AliAODMCParticle*)fMCEvent->GetTrack(iD);
+        if (std::abs(daugh->GetPdgCode()) == kLambdaPdg) {
+          daugh->XvYvZv(sv);    
+        }
+      }
+      fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
+      (pdg == kXiPdg ? fTreeXi : fTreeOmega)->Fill();
     }
   }
 
