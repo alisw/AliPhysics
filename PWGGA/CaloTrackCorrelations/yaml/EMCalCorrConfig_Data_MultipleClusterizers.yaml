@@ -1,6 +1,4 @@
 configurationName: "EMCal correction framework configuration for Run2 data using multiple clusterizers"
-pass: "pass1"
-
 inputObjects:
     cells:
         defaultCells:
