@@ -7220,11 +7220,15 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       // reject fragmentation photon clusters
       //
       if ( GetReader()->AreMCPromptPhotonsSelected() &&
-          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt      ) ) continue ;
+          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) ) continue ;
 
       if ( GetReader()->AreMCFragmentationPhotonsRejected() &&
           (GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation) ||
-           GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCISR)) ) continue ;
+           GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCISR)) )
+      {
+        AliInfo(Form("Cluster with En %2.2f tagged as FSR or ISR rejected\n",calo->E()));
+        continue ;
+      }
 
       conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
 
