@@ -455,6 +455,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   }
 
   if (!eventAccepted) {
+    delete trEtaPhiMap;
     PostData(1, fOutputList);
     return;
   }
