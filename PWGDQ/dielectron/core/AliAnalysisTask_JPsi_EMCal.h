@@ -14,6 +14,7 @@
 //        Authors                                                     //
 //                                                                    //
 //        Cristiane Jahnke        (cristiane.jahnke@cern.ch)          //
+//        22 January, 2021 -> TPC calibrations for 2017 and 2018 data //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -78,6 +79,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
     
+    void Set_TPCCalibration(){fIs_TPC_calibration=kTRUE;};
+    
     //to select events with high energy cluster (to mimic the trigger)
     void Set_Select_trigger_events2() {fSelect_trigger_events2=kTRUE;};
     void Set_Select_trigger_events1() {fSelect_trigger_events1=kTRUE;};
@@ -112,6 +115,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
         //}
     }
     Double_t         GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t run_number); /*const*/
+    
+    Double_t GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0);/*const*/
     
     //V0 correction
     void SetMultiProfileV0(TProfile2D * hprofV0){
@@ -155,6 +160,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t              fFill_ESparse;
     Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
+    Bool_t              fIs_TPC_calibration;
     Bool_t              fSelect_trigger_events1;
     Bool_t              fSelect_trigger_events2;
     
@@ -291,11 +297,16 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
 	TH2F				**fEoverP_pt;
 	TH2F				**fTPC_p;
+    
 	TH2F				**fTPCnsigma_p;
+    TH2F                *fTPCnsigma_p_beforeCalibration;
+    TH2F                *fTPCnsigma_p_afterCalibration;
+    
     TH2F                **fTOF_p;
     TH2F                **fTOFnsigma_p;
 	
-		
+   
+    
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;

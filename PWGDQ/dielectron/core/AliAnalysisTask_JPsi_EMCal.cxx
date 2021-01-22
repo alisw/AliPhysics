@@ -22,7 +22,8 @@
 //                                                                    //
 //	    Authors 							                          //
 //		                                                              //
-//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
+//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)            //
+//      22 January, 2021 -> TPC calibrations for 2017 and 2018 data   //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +114,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
@@ -222,6 +224,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
@@ -484,6 +488,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
@@ -595,6 +600,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
 ,fTOF_p(0)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
@@ -1009,6 +1016,14 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	  fOutputList->Add(fdEta_dPhi[i]);
 
 	}
+    
+    fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",400,0,40,1000,-15,10);
+    fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",400,0,40,1000,-15,10);
+    
+    fOutputList->Add(fTPCnsigma_p_beforeCalibration);
+    fOutputList->Add(fTPCnsigma_p_afterCalibration);
+    
+    
     
     for(Int_t i = 0; i < 4; i++)
     {
@@ -1443,23 +1458,23 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	
    
 	
-	fvalueElectron = new Double_t[9];
-    fvalueElectronTPC = new Double_t[5];
+	fvalueElectron = new Double_t[8];
+    fvalueElectronTPC = new Double_t[6];
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
-	Int_t bins[9]={58,40,40,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
-	Double_t xmin[9]={2,-15,0,0,0,0,0,0,0};
-	Double_t xmax[9]={60,5,2,2,2,40,6, 450, 90};
-	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
+	Int_t bins[8]={58,40,40,20,20, 40, 6, 40}; // pt, TPCnsig, E/p, M20, M02, E,phi, TPCnsig_old
+	Double_t xmin[8]={2,-15,0,0,0,0,0,-15};
+	Double_t xmax[8]={60,5,2,2,2,40,6, 5};
+	fSparseElectron = new THnSparseD ("Electron","Electron",8,bins,xmin,xmax);
 	fOutputList->Add(fSparseElectron);
     
     //electron Sparse TPC
     //electron Sparse
-    Int_t binse[5]={40, 40, 40, 18, 6}; // p, pt, TPCnsigma, eta, phi
-    Double_t xmine[5]={1, 1,-15,-0.9,0};
-    Double_t xmaxe[5]={41,41,5,0.9,6};
-    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",5,binse,xmine,xmaxe);
+    Int_t binse[6]={40, 40, 40, 18, 6, 40}; // p, pt, TPCnsigma, eta, phi
+    Double_t xmine[6]={1, 1,-15,-0.9,0, -15};
+    Double_t xmaxe[6]={41,41,5,0.9,6, 5};
+    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",6,binse,xmine,xmaxe);
     fOutputList->Add(fSparseElectronTPC);
     
     
@@ -2377,7 +2392,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(eta > fEtaCutMax || eta < fEtaCutMin) continue;
 		
 		
-		
+		Double_t fTPCnSigma_old = -999;
 		Double_t fTPCnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
@@ -2404,10 +2419,18 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
 		
 		fTPCsignal = track->GetTPCsignal();
-		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+		fTPCnSigma_old = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+        
+        //Apply TPC calibration here!
+        fTPCnsigma_p_beforeCalibration->Fill(fP,fTPCnSigma_old);
+        
+        if(fIs_TPC_calibration) fTPCnSigma = GetTPCCalibration(fAOD->GetRunNumber(), fTPCnSigma_old);
+        if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
+        
+        fTPCnsigma_p_afterCalibration->Fill(fP,fTPCnSigma);
         
         //TOF
         fTOFsignal = track->GetTOFsignal();
@@ -2604,6 +2627,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
             fvalueElectronTPC[2] = fTPCnSigma;
             fvalueElectronTPC[3] = track->Eta();
             fvalueElectronTPC[4] = track->Phi();
+            fvalueElectronTPC[5] = fTPCnSigma_old;
             
             if(fFill_ESparseTPC)fSparseElectronTPC->Fill(fvalueElectronTPC);
         }
@@ -2761,6 +2785,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				fvalueElectron[4] = fClus->GetM02();
 				fvalueElectron[5] = fClus->E(); // to check rejection factor for electrons
                 fvalueElectron[6] = cphi; //to separate emcal and dcal
+                fvalueElectron[7] = fTPCnSigma_old; //to separate emcal and dcal
                 //fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
                // fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
@@ -4380,6 +4405,83 @@ Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
     if(x>= 49.800 &&  x < 50.000 ) weight=0.000000;
     
     return weight;
+}
+//______________________________________________________________________________
+Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
+{
+   
+    Double_t mean_shift=0.00;
+    Double_t sigma_norm=1.00;
+    
+    
+    if(runNo == 258454){//16k test
+        mean_shift = 0.2;
+        sigma_norm = 1;
+     
+    }
+    
+    if (runNo>271839 && runNo<273103){//17h
+        mean_shift = 0.08;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=273486 && runNo< 274442){//17i
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=274690 && runNo< 276508){//17k
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=276551 && runNo< 278729){//17l
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=278818 && runNo< 280140){//17m
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=280282 && runNo< 281961){//17o
+        mean_shift = 0.25;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=282504 && runNo< 282704){//17r
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    
+    //2018 periods
+    if (runNo>=286982 && runNo< 287977){//18f
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=288804 && runNo< 288806){//18h
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289165 && runNo< 289201){//18k
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289240 && runNo< 289971){//18l
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=293368 && runNo< 293898){//18o
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=294009 && runNo< 295232){//18p
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    
+    
+    //corrected TPCnsigma
+    Double_t TPCnsigma_corr = (TPCnsigma0 - mean_shift)/sigma_norm;
+    
+   
+    return TPCnsigma_corr;
+    
 }
 
 
