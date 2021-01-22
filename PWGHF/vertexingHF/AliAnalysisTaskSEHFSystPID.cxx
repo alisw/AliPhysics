@@ -636,6 +636,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
 
     //PID
+    track->SetTOFsignalTunedOnData(100000); // force tune-on-data to have latest development of tail parametrisation in old AODs
     bool isDetOk[kNMaxDet] = {false,false,false};
     if (fPIDresp->CheckPIDStatus(AliPIDResponse::kITS,track) == AliPIDResponse::kDetPidOk) {
       fTrackInfoMap &= ~kHasNoITS;
