@@ -54,7 +54,7 @@ struct MiniCascadeMC : public MiniCascade {
 
 class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
-  AliAnalysisTaskStrangenessRatios(bool isMC, TString taskname = "StrangenessRatios");
+  AliAnalysisTaskStrangenessRatios(bool isMC = false, TString taskname = "StrangenessRatios");
   static AliAnalysisTaskStrangenessRatios* AddTask(bool isMC, TString tskname, TString suffix);
   virtual ~AliAnalysisTaskStrangenessRatios();
 
