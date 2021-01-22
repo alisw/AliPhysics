@@ -1227,7 +1227,7 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
       Int_t nDaughters=pAOD->GetNDaughters();
 
       //Get Large IP tracks which are not V0 daughters
-      if(nDaughters==0){
+      //if(nDaughters==0){
           //if(bDebug) printf("GetGeneratedV0:: Part with status %i, nDaughters=%i\n",status,nDaughters);
           iPartIsInJet=IsInVector(iTrackLabels,i,__FUNCTION__);
 
@@ -1243,12 +1243,13 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
             iMaxIPTrack=i;
             fMaxIP=fIPSigPart;
             if(bDebug)printf("GetGeneratedV0:: Accepting Part as OldMaxIP=%f, NewMaxIP=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, bPartIsInJet=%i, pt=%f, rap=%f, \n",fOldMaxIP,fMaxIP, bMaxIPIsV0, iMaxIPTrack,iPartIsInJet, pAOD->Pt(), pAOD->Eta());
+            //if(nDaughters!=0)printf("GetGeneratedV0:: Accepting Part with nDaughters=%i as OldMaxIP=%f, NewMaxIP=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, bPartIsInJet=%i, pt=%f, rap=%f, \n",nDaughters,fOldMaxIP,fMaxIP, bMaxIPIsV0, iMaxIPTrack,iPartIsInJet, pAOD->Pt(), pAOD->Eta());
           }
           else{
             //if(bDebug)printf("GetGeneratedV0:: Returning Part as fIPSigPart %f<fMaxIP %f, bPartIsInJet=%i\n",fIPSigPart, fMaxIP, bPartIsInJet);
             continue;
           }
-      }
+      //}
       //Get V0 IP
       Double_t fIPV0=GetGenV0DaughterIP(pAOD, jetgen,  event, iTrackLabels,fTrackRecIPs);
       //if(!(TMath::Abs(fIPV0+999)<0.00001))printf("%s: Receiving V0 with ip=%f\n",__FUNCTION__,fIPV0);
@@ -2601,9 +2602,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
       Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
       Double_t xminKInJC[iNDimInJC] = {0, 0., 0., 0.,0,-0.5};
       Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 40., 200.,2,0.5};
-      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2,200};
+      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2,300};
       Double_t xminLInJC[iNDimInJC] = {0, 0., 0, 0.,0,-0.5};
-      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 40., 200.,2,0.5};
+      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 40., 200.,2,1};
 
       fh2dKshortMassVsPt=(TH2D*)AddHistogramm("fh2dKshortMassVsPt","KShort Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,0.35, 0.65);
       fh2dLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dLamdaMassVsPt","Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
