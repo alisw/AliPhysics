@@ -92,27 +92,31 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_maxJetptOverPtHard; //! // for jet pt / pt_hard bin
         AliJTH1D fh_ptHard; //! // for pt_hard
 
-        AliJTH1D fh_dijetInvM;                //! // for dijet invariant mass
-        AliJTH1D fh_dijetPtPair;              //! // for dijet pt
-        AliJTH1D fh_dijetDeltaPhi;            //! // for dijet deltaPhi
-        AliJTH1D fh_dijetPtPairDeltaPhiCut;   //! // for dijet pt after deltaPhi cut
-        AliJTH1D fh_dijetInvMDeltaPhiCut;     //! // for dijet invariant mass after deltaPhi cut
-        AliJTH1D fh_dijetDeltaPhiWithCut;     //! // for dijet delta phi after deltaPhi cut
+        AliJTH1D fh_dijetInvM;                     //! // for dijet invariant mass
+        AliJTH1D fh_dijetInvMTrunc;                //! // for dijet invariant mass truncated above and below
+        AliJTH1D fh_dijetPtPair;                   //! // for dijet pt
+        AliJTH1D fh_dijetDeltaPhi;                 //! // for dijet deltaPhi
+        AliJTH1D fh_dijetPtPairDeltaPhiCut;        //! // for dijet pt after deltaPhi cut
+        AliJTH1D fh_dijetInvMDeltaPhiCut;          //! // for dijet invariant mass after deltaPhi cut
+        AliJTH1D fh_dijetInvMDeltaPhiCutTrunc;     //! // for dijet invariant mass after deltaPhi cut truncated above and below
+        AliJTH1D fh_dijetDeltaPhiWithCut;          //! // for dijet delta phi after deltaPhi cut
 
-        AliJTH1D fh_responseInfo;             //! // for counting response related things.
-        AliJTH1D fh_jetResponseDeltaR;        //! // true jet vs. detector jet deltaR
-        AliJTH1D fh_jetResponseDeltaRClosest; //! // true jet vs. detector jet deltaR no limits
-        AliJTH1D fh_jetResponseDeltaPt;       //! // true jet vs. detector jet pt normed with true jet pt
-        AliJTH1D fh_jetDeltaRMin;             //! // Minimum deltaR between jets
-        AliJTH1D fh_jetBGSubtrDeltaR;         //! // DeltaR between BG subtr jet and raw jet.
-        AliJTH2D fh_jetResponse;              //! // Jet response matrix
-        AliJTH2D fh_jetResponse_ALICE;        //! // Jet response matrix with ALICE bins
-        AliJTH2D fh_deltaPtResponse;          //! // delta-pt response matrix 
-        AliJTH2D fh_deltaPtResponse_ALICE;    //! // delta-pt response matrix with ALICE bins
-        AliJTH2D fh_deltaPtResponseEvery;     //! // delta-pt response matrix, filled for every true bin
-        AliJTH2D fh_deltaPtResponseEvery_ALICE;//! // delta-pt response matrix with ALICE bin, filled for every true bin
-        AliJTH2D fh_dijetResponse;            //! // Dijet response matrix
-        AliJTH2D fh_dijetResponseDeltaPhiCut; //! // Dijet response matrix with deltaPhi cut
+        AliJTH1D fh_responseInfo;                  //! // for counting response related things.
+        AliJTH1D fh_jetResponseDeltaR;             //! // true jet vs. detector jet deltaR
+        AliJTH1D fh_jetResponseDeltaRClosest;      //! // true jet vs. detector jet deltaR no limits
+        AliJTH1D fh_jetResponseDeltaPt;            //! // true jet vs. detector jet pt normed with true jet pt
+        AliJTH1D fh_jetDeltaRMin;                  //! // Minimum deltaR between jets
+        AliJTH1D fh_jetBGSubtrDeltaR;              //! // DeltaR between BG subtr jet and raw jet.
+        AliJTH2D fh_jetResponse;                   //! // Jet response matrix
+        AliJTH2D fh_jetResponse_ALICE;             //! // Jet response matrix with ALICE bins
+        AliJTH2D fh_deltaPtResponse;               //! // delta-pt response matrix 
+        AliJTH2D fh_deltaPtResponse_ALICE;         //! // delta-pt response matrix with ALICE bins
+        AliJTH2D fh_deltaPtResponseEvery;          //! // delta-pt response matrix, filled for every true bin
+        AliJTH2D fh_deltaPtResponseEvery_ALICE;    //! // delta-pt response matrix with ALICE bin, filled for every true bin
+        AliJTH2D fh_dijetResponse;                 //! // Dijet response matrix
+        AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below
+        AliJTH2D fh_dijetResponseDeltaPhiCut;      //! // Dijet response matrix with deltaPhi cut
+        AliJTH2D fh_dijetResponseDeltaPhiCutTrunc; //! // Dijet response matrix with deltaPhi cut truncated from above and below
 };
 
 #endif //ALIJCDIJETHISTOS_H

@@ -103,6 +103,9 @@ class AliJCDijetAna : public TObject
         TRandom3 *randomGenerator;
         double fDeltaPt;
         double fptHardBin;
+        double randConePhi;
+        double randConeEta;
+        double randConePt;
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;
