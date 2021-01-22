@@ -192,13 +192,13 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                            60, 70, 80, 90, 100};  // for AA study
         else if (!IsHighMult)
             centaxisbin = {-1, 0,  1,  5,  10, 15, 20,
-                           30, 40, 50, 70, 100};  // for kINT7 study
+                           30, 40, 50, 60, 70, 80, 90, 100};  // for kINT7 study
         else
             centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
         centaxisbin = {
-            -1, 0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
-            10, 15,   20,   30,   40,   50,  70, 100};  // for kINT7 study
+            -1, 0,  0.01, 0.03, 0.05, 0.07, 0.1, 1, 5,
+            10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100};   // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
