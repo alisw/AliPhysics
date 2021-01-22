@@ -8,6 +8,7 @@
 #define AliAnalysisTaskLongFluctuations_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 #define PI 3.1415927
 
@@ -26,7 +27,7 @@ class AliAnalysisTaskLongFluctuations : public AliAnalysisTaskSE
         void            SetNclTPC(Int_t ncl);
         void            SetPtLimits(Double_t ptmin, Double_t ptmax);
         void            SetEtaLimit(Double_t etalimit);
-
+        void            SetPileUpRead(Bool_t ps);
 
     private:
         AliAODEvent*            fAOD;           //! input event
@@ -39,6 +40,8 @@ class AliAnalysisTaskLongFluctuations : public AliAnalysisTaskSE
         Double_t fPtmin;
         Double_t fPtmax;
         Double_t fEta;
+        Bool_t fIsPileUpCuts;
+        AliEventCuts fEventCuts;
 
         Float_t mCentV0M;
         Float_t mCentCL0;
