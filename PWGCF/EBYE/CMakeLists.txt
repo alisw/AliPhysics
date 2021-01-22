@@ -118,6 +118,7 @@ set(SRCS
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
   LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
   StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
+  FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   )
 
 # Headers from sources
