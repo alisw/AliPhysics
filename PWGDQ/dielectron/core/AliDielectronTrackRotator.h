@@ -20,6 +20,7 @@
 
 #include <TNamed.h>
 
+
 #include <AliKFParticle.h>
 #include <AliLog.h>
 
@@ -90,29 +91,33 @@ public:
   Double_t GetRotatedTrackWeightN(Int_t track) { return fRotatedTracksWeightN[track]; }
   Double_t GetWeightFromRotation(AliKFParticle* part);
   Double_t GetWeightFromRotation2(Double_t rotAng);
-  Double_t GetOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg);
   Double_t GetWeightFromOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg);
   Double_t GetWeightForPair(){return fWeight;};
   //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, TVector3 *axis, const AliVEvent * const ev=0x0);
   void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, AliKFParticle * kfMother, const AliVEvent * const ev=0x0);
   Int_t fRotWeight_minPtBin;
   Int_t fRotWeight_maxPtBin;
-
+  
 
   class KFClass{
   public:
     KFClass (AliKFParticle kf1, AliKFParticle kf2, Int_t index1, Int_t index2, Short_t charged_tracks, Double_t weight) :
-            kf1(kf1), kf2(kf2), index1(index1), index2(index2), charged_tracks(charged_tracks), weight(weight) {}
-    KFClass() : kf1(), kf2(), index1(-1), index2(-1), charged_tracks(0), weight(0.) {}
+            kf1(kf1), kf2(kf2), index1(index1), index2(index2), charged_tracks(charged_tracks), weight(weight), rotAng(0.){}
+    KFClass() : kf1(), kf2(), index1(-1), index2(-1), charged_tracks(0), weight(0.), rotAng(0.){}
     AliKFParticle kf1;
     AliKFParticle kf2;
     Int_t index1;
     Int_t index2;
     Short_t charged_tracks; //0: ULS, 1: LS_PP, 2: LS_MM
     Double_t weight;
+    Double_t rotAng;
   };
   // std::vector<AliAODTrack> fRotatedTracks;
-
+ 
+  KFClass* GetRotatedPair(Int_t pair) { return &fArrTrackPairs[pair]; } 
+  KFClass* GetRotatedPairPM(Int_t pair) { return &fArrTrackPairsPM[pair]; }
+  KFClass* GetRotatedPairPP(Int_t pair) { return &fArrTrackPairsPP[pair]; } 
+  KFClass* GetRotatedPairMM(Int_t pair) { return &fArrTrackPairsMM[pair]; } 
 
 private:
   UInt_t   fIterations;             // number of iterations
@@ -158,6 +163,9 @@ private:
   std::vector<Double_t> fRotatedTracksWeightN;
 
   std::vector<KFClass> fArrTrackPairs;
+  std::vector<KFClass> fArrTrackPairsPM;
+  std::vector<KFClass> fArrTrackPairsPP;
+  std::vector<KFClass> fArrTrackPairsMM;
   Double_t fMinimalPtCut;
   Double_t fMaximalPtCut;
   Double_t fMinimalEtaCut;
