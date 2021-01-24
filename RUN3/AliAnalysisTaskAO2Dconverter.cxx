@@ -951,7 +951,61 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     toWrite.Set(nMCtracks);
     kineIndex.Reset();
     kineIndex.Set(nMCtracks);
-    // First loop: define which particles pass kinematic selection and update toWrite index
+
+    // For each reconstructed track keep the corresponding MC particle
+    Int_t ntracks = fESD->GetNumberOfTracks();
+
+    for (Int_t itrack=0; itrack < ntracks; ++itrack) {
+      AliESDtrack *track = fESD->GetTrack(itrack);
+      Int_t alabel = track->GetLabel();
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // For each calo cluster keep the corresponding MC particle
+    AliESDCaloCells *emcalCells = fESD->GetEMCALCells();
+    Short_t nEmcalCells = emcalCells->GetNumberOfCells();
+    for (Short_t ice = 0; ice < nEmcalCells; ++ice) {
+      Short_t cellNumber;
+      Double_t amplitude;
+      Double_t time;
+      Int_t mclabel;
+      Double_t efrac;
+
+      emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+      toWrite[TMath::Abs(mclabel)] = 1;
+    }
+    AliESDCaloCells *phosCells = fESD->GetPHOSCells();
+    Short_t nPhosCells = phosCells->GetNumberOfCells();
+    for (Short_t ice = 0; ice < nPhosCells; ++ice) {
+      Short_t cellNumber;
+      Double_t amplitude;
+      Double_t time;
+      Int_t mclabel;
+      Double_t efrac;
+
+      phosCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+      toWrite[TMath::Abs(mclabel)] = 1;
+    }
+
+    // For each tracklet keep the corresponding MC particle
+    AliMultiplicity *mult = fESD->GetMultiplicity();
+    Int_t ntracklets = mult->GetNumberOfTracklets();
+
+    for (Int_t itr = ntracklets; itr--;) {
+      Int_t alabel = mult->GetLabel(itr, 0); // Take the label of the first layer
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // For each MUON track keep the corresponding MC particle
+    Int_t nmuons = fESD->GetNumberOfMuonTracks();
+
+    for (Int_t imu=0; imu<nmuons; ++imu) {
+      AliESDMuonTrack* mutrk = fESD->GetMuonTrack(imu);
+      Int_t alabel = mutrk->GetLabel();
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // Define which MC particles pass kinematic selection and update toWrite index
     for (Int_t i = 0; i < nMCtracks; ++i) {
       AliVParticle* vpt = MCEvt->GetTrack(i);
       particle = vpt->Particle();
@@ -997,7 +1051,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	    write = kTRUE;
 	}
       }
-      if (write) {
+      if (toWrite[i] > 0 || write) {
 	toWrite[i] = 1;
 	kineIndex[i] = nkine_filled;
 	nkine_filled++;
