@@ -13,7 +13,7 @@
 AliAnalysisTaskSE *AddTaskCharmingFemto(
     bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
-    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
+    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts", TString cutHFsuffix = "",
     bool applyML = false, TString configML = "config_ML.yml",
     int useAODProtection = 0, const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
@@ -212,6 +212,9 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     addon += "MB_CharmFemto_";
   } else if (trigger == "kHighMultV0") {
     addon += "HM_CharmFemto_";
+  }
+  if(cutHFsuffix != "") {
+    addon += Form("%s_", cutHFsuffix.Data());
   }
 
   TString file = AliAnalysisManager::GetCommonFileName();
