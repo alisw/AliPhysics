@@ -225,18 +225,22 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+    //All Dalitz
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<! 
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM;                         //!<!
     TH2F**                            fHistoDalitzPlotNegSubNDM;                         //!<!
+    //Dalitz Low Pt
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM_LowPt;                //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM_LowPt;                //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM_LowPt;                    //!<!
     TH2F**                            fHistoDalitzPlotNegSubNDM_LowPt;                    //!<!
+    //Dalitz Mid Pt
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM_MidPt;                //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM_MidPt;                //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM_MidPt;                    //!<!
     TH2F**                            fHistoDalitzPlotNegSubNDM_MidPt;                    //!<!
+    //Dalitz High Pt
     TH2F**                            fHistoDalitzPlotPosFixedPzNDM_HighPt;               //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM_HighPt;               //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM_HighPt;                   //!<!
@@ -335,10 +339,27 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated eta or omega, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
+    //Dalitz All Pt
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM;   //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM;   //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM;       //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM;       //!<!
+    //Dalitz Low Pt
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM_LowPt;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_LowPt;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_LowPt;       //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_LowPt;       //!<!
+    //Dalitz Mid Pt
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM_MidPt;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_MidPt;   //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_MidPt;       //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_MidPt;       //!<!
+    //Dalitz High Pt
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM_HighPt;  //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_HighPt;  //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_HighPt;      //!<!
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt;      //!<!
+
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated pi0, inv mass, pT
     TH1F**                          fHistoTrueConvGammaPt;                                //!<! histos with reconstructed validated conv gamma, pT
