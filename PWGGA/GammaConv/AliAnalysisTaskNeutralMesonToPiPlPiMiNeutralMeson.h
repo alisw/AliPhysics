@@ -196,6 +196,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
+    Double_t                          HistoDalitzPtRangeMin_LowPt;
+    Double_t                          HistoDalitzPtRangeMax_LowPt;
+    Double_t                          HistoDalitzPtRangeMin_MidPt;
+    Double_t                          HistoDalitzPtRangeMax_MidPt;
+    Double_t                          HistoDalitzPtRangeMin_HighPt;
+    Double_t                          HistoDalitzPtRangeMax_HighPt;
     // reconstructed particles
     TH1F**                            fHistoConvGammaPt;                                  //!<! array of histos of conversion photon, pt
     TH1F**                            fHistoConvGammaEta;                                 //!<! array of histos of conversion photon, eta
@@ -223,6 +229,19 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM;                         //!<!
     TH2F**                            fHistoDalitzPlotNegSubNDM;                         //!<!
+    TH2F**                            fHistoDalitzPlotPosFixedPzNDM_LowPt;                //!<!
+    TH2F**                            fHistoDalitzPlotNegFixedPzNDM_LowPt;                //!<!
+    TH2F**                            fHistoDalitzPlotPosSubNDM_LowPt;                    //!<!
+    TH2F**                            fHistoDalitzPlotNegSubNDM_LowPt;                    //!<!
+    TH2F**                            fHistoDalitzPlotPosFixedPzNDM_MidPt;                //!<!
+    TH2F**                            fHistoDalitzPlotNegFixedPzNDM_MidPt;                //!<!
+    TH2F**                            fHistoDalitzPlotPosSubNDM_MidPt;                    //!<!
+    TH2F**                            fHistoDalitzPlotNegSubNDM_MidPt;                    //!<!
+    TH2F**                            fHistoDalitzPlotPosFixedPzNDM_HighPt;               //!<!
+    TH2F**                            fHistoDalitzPlotNegFixedPzNDM_HighPt;               //!<!
+    TH2F**                            fHistoDalitzPlotPosSubNDM_HighPt;                   //!<!
+    TH2F**                            fHistoDalitzPlotNegSubNDM_HighPt;                   //!<!
+
     TH2F**                            fHistoBackInvMassPt      ;                          //!<! Event mixing background group 1 (pi+ and pi- from same event)
     TH2F**                            fHistoMotherLikeSignBackInvMassPt;                  //!<! array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi-pi0}
 

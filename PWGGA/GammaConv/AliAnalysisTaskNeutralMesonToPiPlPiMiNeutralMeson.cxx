@@ -109,6 +109,12 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  HistoDalitzPtRangeMin_LowPt(0.),
+  HistoDalitzPtRangeMax_LowPt(0.),
+  HistoDalitzPtRangeMin_MidPt(0.),
+  HistoDalitzPtRangeMax_MidPt(0.),
+  HistoDalitzPtRangeMin_HighPt(0.),
+  HistoDalitzPtRangeMax_HighPt(0.),
   fHistoConvGammaPt(nullptr),
   fHistoConvGammaEta(nullptr),
   fHistoClusterGammaPt(nullptr),
@@ -135,6 +141,18 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoDalitzPlotNegFixedPzNDM(nullptr),
   fHistoDalitzPlotPosSubNDM(nullptr),
   fHistoDalitzPlotNegSubNDM(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_LowPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_LowPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_LowPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_LowPt(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_MidPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_MidPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_MidPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_MidPt(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_HighPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_HighPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_HighPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_HighPt(nullptr),
   fHistoBackInvMassPt(nullptr),
   fHistoMotherLikeSignBackInvMassPt(nullptr),
   fHistoAngleHNMesonPiPlPiMi(nullptr),
@@ -360,6 +378,12 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fPDGMassChargedPion(-1),
   fPDGCodeNDM(-1),
   fPDGCodeAnalyzedMeson(-1),
+  HistoDalitzPtRangeMin_LowPt(0.),
+  HistoDalitzPtRangeMax_LowPt(0.),
+  HistoDalitzPtRangeMin_MidPt(0.),
+  HistoDalitzPtRangeMax_MidPt(0.),
+  HistoDalitzPtRangeMin_HighPt(0.),
+  HistoDalitzPtRangeMax_HighPt(0.),
   fHistoConvGammaPt(nullptr),
   fHistoConvGammaEta(nullptr),
   fHistoClusterGammaPt(nullptr),
@@ -386,6 +410,18 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoDalitzPlotNegFixedPzNDM(nullptr),
   fHistoDalitzPlotPosSubNDM(nullptr),
   fHistoDalitzPlotNegSubNDM(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_LowPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_LowPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_LowPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_LowPt(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_MidPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_MidPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_MidPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_MidPt(nullptr),
+  fHistoDalitzPlotPosFixedPzNDM_HighPt(nullptr),
+  fHistoDalitzPlotNegFixedPzNDM_HighPt(nullptr),
+  fHistoDalitzPlotPosSubNDM_HighPt(nullptr),
+  fHistoDalitzPlotNegSubNDM_HighPt(nullptr),
   fHistoBackInvMassPt(nullptr),
   fHistoMotherLikeSignBackInvMassPt(nullptr),
   fHistoAngleHNMesonPiPlPiMi(nullptr),
@@ -681,6 +717,48 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   TString NameNDMLatex                                = "not set";
   Double_t HistoMassRangeDalitzMin                    = 0.0;
   Double_t HistoMassRangeDalitz                       = 3.0;
+  //fNDMRecoMode: 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
+  //fClusterCutArray->At(iCut))->GetClusterType(): 1=EMCAL, 2=PHOS, 3=DCAL, 4=EMCAL+DCAL, 0=All
+  if (fNDMRecoMode == 0){ //PCM-PCM
+    HistoDalitzPtRangeMin_LowPt                         = 1.6;
+    HistoDalitzPtRangeMax_LowPt                         = 2.0;
+    HistoDalitzPtRangeMin_MidPt                         = 5.0;
+    HistoDalitzPtRangeMax_MidPt                         = 6.0;
+    HistoDalitzPtRangeMin_HighPt                        = 10.0;
+    HistoDalitzPtRangeMax_HighPt                        = 12.0;
+  } else if (fNDMRecoMode == 1){ //PCM-Calo
+    if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){ //PCM-PHOS
+      HistoDalitzPtRangeMin_LowPt                         = 2.5;
+      HistoDalitzPtRangeMax_LowPt                         = 3.0;
+      HistoDalitzPtRangeMin_MidPt                         = 5.0;
+      HistoDalitzPtRangeMax_MidPt                         = 6.0;
+      HistoDalitzPtRangeMin_HighPt                        = 10.0;
+      HistoDalitzPtRangeMax_HighPt                        = 12.0;
+    } else { //PCM-EMC
+      HistoDalitzPtRangeMin_LowPt                         = 2.5;
+      HistoDalitzPtRangeMax_LowPt                         = 3.0;
+      HistoDalitzPtRangeMin_MidPt                         = 5.0;
+      HistoDalitzPtRangeMax_MidPt                         = 6.0;
+      HistoDalitzPtRangeMin_HighPt                        = 10.0;
+      HistoDalitzPtRangeMax_HighPt                        = 12.0;
+    }
+  } else { //Calo-Calo
+    if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){ //PHOS-PHOS
+      HistoDalitzPtRangeMin_LowPt                         = 3.5;
+      HistoDalitzPtRangeMax_LowPt                         = 4.0;
+      HistoDalitzPtRangeMin_MidPt                         = 5.0;
+      HistoDalitzPtRangeMax_MidPt                         = 6.0;
+      HistoDalitzPtRangeMin_HighPt                        = 8.0;
+      HistoDalitzPtRangeMax_HighPt                        = 10.0;
+    } else { //EMC-EMC
+      HistoDalitzPtRangeMin_LowPt                         = 3.0;
+      HistoDalitzPtRangeMax_LowPt                         = 4.0;
+      HistoDalitzPtRangeMin_MidPt                         = 8.0;
+      HistoDalitzPtRangeMax_MidPt                         = 10.0;
+      HistoDalitzPtRangeMin_HighPt                        = 16.0;
+      HistoDalitzPtRangeMax_HighPt                        = 20.0;
+    }
+  }
 
   switch( fSelectedHeavyNeutralMeson ) {
   case 0: // ETA MESON
@@ -841,6 +919,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoDalitzPlotNegFixedPzNDM          = new TH2F*[fnCuts];
       fHistoDalitzPlotPosSubNDM              = new TH2F*[fnCuts];
       fHistoDalitzPlotNegSubNDM              = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosFixedPzNDM_LowPt       = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegFixedPzNDM_LowPt       = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosSubNDM_LowPt           = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegSubNDM_LowPt           = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosFixedPzNDM_MidPt       = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegFixedPzNDM_MidPt       = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosSubNDM_MidPt           = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegSubNDM_MidPt           = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosFixedPzNDM_HighPt      = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegFixedPzNDM_HighPt      = new TH2F*[fnCuts];
+      fHistoDalitzPlotPosSubNDM_HighPt          = new TH2F*[fnCuts];
+      fHistoDalitzPlotNegSubNDM_HighPt          = new TH2F*[fnCuts];
     }
 
 
@@ -1124,27 +1214,96 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoPionTPCdEdx[iCut]->GetYaxis()->SetTitle("dE/dx signal (au)");
         fHistoPionTPCdEdx[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
-
-        fHistoDalitzPlotPosFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz","ESD_DalitzPlotPos_FixedPz",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
+        //---------------------------------------
+        //Dalitz All Pt
+        fHistoDalitzPlotPosFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz","ESD_DalitzPlotPos_FixedPz", HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
         fHistoDalitzPlotPosFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
         fHistoDalitzPlotPosFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
         fHistoDalitzPlotPosFixedPzNDM[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoDalitzPlotPosFixedPzNDM[iCut]);
-        fHistoDalitzPlotNegFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz","ESD_DalitzPlotNeg_FixedPz",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
+        fHistoDalitzPlotNegFixedPzNDM[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz","ESD_DalitzPlotNeg_FixedPz", HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
         fHistoDalitzPlotNegFixedPzNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
         fHistoDalitzPlotNegFixedPzNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
         fHistoDalitzPlotNegFixedPzNDM[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoDalitzPlotNegFixedPzNDM[iCut]);
-        fHistoDalitzPlotPosSubNDM[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub","ESD_DalitzPlotPos_Sub",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
+        fHistoDalitzPlotPosSubNDM[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub","ESD_DalitzPlotPos_Sub", HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
         fHistoDalitzPlotPosSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
         fHistoDalitzPlotPosSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
         fHistoDalitzPlotPosSubNDM[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoDalitzPlotPosSubNDM[iCut]);
-        fHistoDalitzPlotNegSubNDM[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub","ESD_DalitzPlotNeg_Sub",HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz,HistoNMassBins,HistoMassRangeDalitzMin,HistoMassRangeDalitz);
+        fHistoDalitzPlotNegSubNDM[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub","ESD_DalitzPlotNeg_Sub", HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
         fHistoDalitzPlotNegSubNDM[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
         fHistoDalitzPlotNegSubNDM[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
         fHistoDalitzPlotNegSubNDM[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoDalitzPlotNegSubNDM[iCut]);
+        //---------------------------------------
+        //Dalitz Low Pt
+        fHistoDalitzPlotPosFixedPzNDM_LowPt[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz_LowPt", Form("ESD_DalitzPlotPos_FixedPz_LowPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_LowPt, HistoDalitzPtRangeMax_LowPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosFixedPzNDM_LowPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosFixedPzNDM_LowPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosFixedPzNDM_LowPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosFixedPzNDM_LowPt[iCut]);
+        fHistoDalitzPlotNegFixedPzNDM_LowPt[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz_LowPt", Form("ESD_DalitzPlotNeg_FixedPz_LowPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_LowPt, HistoDalitzPtRangeMax_LowPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegFixedPzNDM_LowPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegFixedPzNDM_LowPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegFixedPzNDM_LowPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegFixedPzNDM_LowPt[iCut]);
+        fHistoDalitzPlotPosSubNDM_LowPt[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub_LowPt", Form("ESD_DalitzPlotPos_Sub_LowPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_LowPt, HistoDalitzPtRangeMax_LowPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosSubNDM_LowPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosSubNDM_LowPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosSubNDM_LowPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosSubNDM_LowPt[iCut]);
+        fHistoDalitzPlotNegSubNDM_LowPt[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub_LowPt", Form("ESD_DalitzPlotNeg_Sub_LowPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_LowPt, HistoDalitzPtRangeMax_LowPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegSubNDM_LowPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegSubNDM_LowPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegSubNDM_LowPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegSubNDM_LowPt[iCut]);
+        //---------------------------------------
+        //Dalitz Mid Pt
+        fHistoDalitzPlotPosFixedPzNDM_MidPt[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz_MidPt", Form("ESD_DalitzPlotPos_FixedPz_MidPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_MidPt, HistoDalitzPtRangeMax_MidPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosFixedPzNDM_MidPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosFixedPzNDM_MidPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosFixedPzNDM_MidPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosFixedPzNDM_MidPt[iCut]);
+        fHistoDalitzPlotNegFixedPzNDM_MidPt[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz_MidPt", Form("ESD_DalitzPlotNeg_FixedPz_MidPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_MidPt, HistoDalitzPtRangeMax_MidPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegFixedPzNDM_MidPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegFixedPzNDM_MidPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegFixedPzNDM_MidPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegFixedPzNDM_MidPt[iCut]);
+        fHistoDalitzPlotPosSubNDM_MidPt[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub_MidPt", Form("ESD_DalitzPlotPos_Sub_MidPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_MidPt, HistoDalitzPtRangeMax_MidPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosSubNDM_MidPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosSubNDM_MidPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosSubNDM_MidPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosSubNDM_MidPt[iCut]);
+        fHistoDalitzPlotNegSubNDM_MidPt[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub_MidPt", Form("ESD_DalitzPlotNeg_Sub_MidPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_MidPt, HistoDalitzPtRangeMax_MidPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegSubNDM_MidPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegSubNDM_MidPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegSubNDM_MidPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegSubNDM_MidPt[iCut]);
+        //---------------------------------------
+        //Dalitz High Pt
+        fHistoDalitzPlotPosFixedPzNDM_HighPt[iCut]          = new TH2F("ESD_DalitzPlotPos_FixedPz_HighPt", Form("ESD_DalitzPlotPos_FixedPz_HighPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_HighPt, HistoDalitzPtRangeMax_HighPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosFixedPzNDM_HighPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosFixedPzNDM_HighPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosFixedPzNDM_HighPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosFixedPzNDM_HighPt[iCut]);
+        fHistoDalitzPlotNegFixedPzNDM_HighPt[iCut]          = new TH2F("ESD_DalitzPlotNeg_FixedPz_HighPt", Form("ESD_DalitzPlotNeg_FixedPz_HighPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_HighPt, HistoDalitzPtRangeMax_HighPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegFixedPzNDM_HighPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegFixedPzNDM_HighPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegFixedPzNDM_HighPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegFixedPzNDM_HighPt[iCut]);
+        fHistoDalitzPlotPosSubNDM_HighPt[iCut]              = new TH2F("ESD_DalitzPlotPos_Sub_HighPt", Form("ESD_DalitzPlotPos_Sub_HighPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_HighPt, HistoDalitzPtRangeMax_HighPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotPosSubNDM_HighPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotPosSubNDM_HighPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{+} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotPosSubNDM_HighPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotPosSubNDM_HighPt[iCut]);
+        fHistoDalitzPlotNegSubNDM_HighPt[iCut]              = new TH2F("ESD_DalitzPlotNeg_Sub_HighPt", Form("ESD_DalitzPlotNeg_Sub_HighPt (%3.1f to %3.1f)Gev/c", HistoDalitzPtRangeMin_HighPt, HistoDalitzPtRangeMax_HighPt), HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz, HistoNMassBins, HistoMassRangeDalitzMin, HistoMassRangeDalitz);
+        fHistoDalitzPlotNegSubNDM_HighPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-}} (GeV/c^{2})");
+        fHistoDalitzPlotNegSubNDM_HighPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2}",NameNDMLatex.Data()));
+        fHistoDalitzPlotNegSubNDM_HighPt[iCut]->Sumw2();
+        fESDList[iCut]->Add(fHistoDalitzPlotNegSubNDM_HighPt[iCut]);
+        //---------------------------------------
+        //End of Dalitz
       }
       fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
@@ -5136,6 +5295,27 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
               fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
               fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
               fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+
+              if ((mesoncand->Pt()>HistoDalitzPtRangeMin_LowPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_LowPt)){
+                fHistoDalitzPlotPosFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+                fHistoDalitzPlotNegFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+                fHistoDalitzPlotPosSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                fHistoDalitzPlotNegSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              }
+
+              if ((mesoncand->Pt()>HistoDalitzPtRangeMin_MidPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_MidPt)){
+              fHistoDalitzPlotPosFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+              fHistoDalitzPlotNegFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+              fHistoDalitzPlotPosSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              fHistoDalitzPlotNegSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              }
+
+              if ((mesoncand->Pt()>HistoDalitzPtRangeMin_HighPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_HighPt)){
+              fHistoDalitzPlotPosFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+              fHistoDalitzPlotNegFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+              fHistoDalitzPlotPosSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              fHistoDalitzPlotNegSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+              }
             }
             if(fMCEvent){
               if(fInputEvent->IsA()==AliESDEvent::Class())
