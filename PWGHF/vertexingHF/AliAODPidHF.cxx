@@ -966,7 +966,6 @@ Int_t AliAODPidHF::GetnSigmaTOF(AliAODTrack *track,Int_t species, Double_t &nsig
   if(!CheckTOFPIDStatus(track)) return -1;
   
   if(fPidResponse){
-    track->SetTOFsignalTunedOnData(100000); // force tune-on-data to have latest development of tail parametrisation in old AODs
     nsigma = fPidResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)species);
     return 1;
   }else{
