@@ -196,12 +196,16 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
-    Double_t                          HistoDalitzPtRangeMin_LowPt;
-    Double_t                          HistoDalitzPtRangeMax_LowPt;
-    Double_t                          HistoDalitzPtRangeMin_MidPt;
-    Double_t                          HistoDalitzPtRangeMax_MidPt;
-    Double_t                          HistoDalitzPtRangeMin_HighPt;
-    Double_t                          HistoDalitzPtRangeMax_HighPt;
+    Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
+    Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
+    Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
+    Bool_t                            enableDalitzHighPt;                                 ///< Turn On or Off if Histograms are created and used
+    Double_t                          HistoDalitzPtRangeMin_LowPt;                        ///< Min Range of Dalitz Plots for LowPt
+    Double_t                          HistoDalitzPtRangeMax_LowPt;                        ///< Max Range of Dalitz Plots for LowPt
+    Double_t                          HistoDalitzPtRangeMin_MidPt;                        ///< Min Range of Dalitz Plots for MidPt
+    Double_t                          HistoDalitzPtRangeMax_MidPt;                        ///< Max Range of Dalitz Plots for MidPt
+    Double_t                          HistoDalitzPtRangeMin_HighPt;                       ///< Min Range of Dalitz Plots for HighPt
+    Double_t                          HistoDalitzPtRangeMax_HighPt;                       ///< Max Range of Dalitz Plots for HighPt
     // reconstructed particles
     TH1F**                            fHistoConvGammaPt;                                  //!<! array of histos of conversion photon, pt
     TH1F**                            fHistoConvGammaEta;                                 //!<! array of histos of conversion photon, eta
