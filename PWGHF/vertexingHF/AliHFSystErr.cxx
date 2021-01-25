@@ -9931,17 +9931,17 @@ void AliHFSystErr::InitDstoKKpi2018PbPb010BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",50,0,50);
   for(Int_t i=1;i<=3;i++) fRawYield->SetBinContent(i,0.10);
-  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.08);
-  for(Int_t i=5;i<=5;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=6;i<=24;i++) fRawYield->SetBinContent(i,0.03);
-  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=37;i<=50;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=4;i<=5;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=24;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=37;i<=50;i++) fRawYield->SetBinContent(i,0.08);
 
   // Cuts efficiency (from cuts variation + phi selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
-  for(Int_t i=1;i<=4;i++) fCutsEff->SetBinContent(i,0.08);
-  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
-  for(Int_t i=7;i<=50;i++) fCutsEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.08);
+  for(Int_t i=4;i<=5;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=6;i<=50;i++) fCutsEff->SetBinContent(i,0.04);
 
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
@@ -10040,16 +10040,18 @@ void AliHFSystErr::InitDstoKKpi2018PbPb3050BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   for(Int_t i=1;i<=3;i++) fRawYield->SetBinContent(i,0.09);
-  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.04);
-  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.03);
-  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=5;i<=5;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=6;i<=8;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=9;i<=16;i++) fRawYield->SetBinContent(i,0.01);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.10);
 
 
   // Cuts efficiency (from cuts variation + phi selection cuts)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
-  for(Int_t i=7;i<=36;i++) fCutsEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.04);
 
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
