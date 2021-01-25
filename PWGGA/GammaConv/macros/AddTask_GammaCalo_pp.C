@@ -2091,6 +2091,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446611044012300000","2163103100000010"); // ConvCalo TB NL
     cuts.AddCutCalo("00010113","2446612044012300000","2163103100000010"); // Calo TB NL
     cuts.AddCutCalo("00010113","2446619044012300000","2163103100000010"); // Std NL
+ } else if (trainConfig == 917){ //PHOS+JETS NL + new mixing
+    cuts.AddCutCalo("00010113","2446600044012300000","2r63103100000010"); // PHOS No NL
+    cuts.AddCutCalo("00010113","2446606044012300000","2r63103100000010"); // TB NL
+    cuts.AddCutCalo("00010113","2446611044012300000","2r63103100000010"); // ConvCalo TB NL
+    cuts.AddCutCalo("00010113","2446612044012300000","2r63103100000010"); // Calo TB NL
+    cuts.AddCutCalo("00010113","2446619044012300000","2r63103100000010"); // Std NL
  } else if (trainConfig == 917){ //MB - EMCal+JETS
     cuts.AddCutCalo("00010113","411790607l032230000","0l631031000000d0"); // MB - INT7 - TB NL
  } else if (trainConfig == 918){ //PHOS+JETS NL + new mixing
