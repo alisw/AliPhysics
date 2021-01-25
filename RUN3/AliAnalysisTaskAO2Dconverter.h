@@ -18,6 +18,7 @@
 class AliESDEvent;
 class TFile;
 class TDirectory;
+class TParticle;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -118,6 +119,7 @@ public:
   void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
   void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
   AliEventCuts& GetEventCuts() { return fEventCuts; }
+  Bool_t Select(TParticle* part, Float_t rv, Float_t zv);
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:

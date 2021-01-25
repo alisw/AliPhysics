@@ -933,6 +933,174 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if (firedClasses.Contains("CMSH7-B-NOPF-MUFAST"))    bc.fTriggerMask |= 1ull << 59;
   
   FillTree(kBC);
+  //---------------------------------------------------------------------------
+  // MC kinematic tree
+  // It has to be done before the reconstructed tracks,
+  // since the cleaning requires reasignment of the labels
+  Int_t nkine_filled = 0; // Number of kine tracks filled
+
+  TArrayC toWrite;
+  TArrayI kineIndex;
+  if (MCEvt) {
+    // Kinematics
+    TParticle* particle = nullptr;
+    Int_t nMCtracks = MCEvt->GetNumberOfTracks();
+    Int_t nMCprim = MCEvt->GetNumberOfPrimaries();
+
+    toWrite.Reset();
+    toWrite.Set(nMCtracks);
+    kineIndex.Reset();
+    kineIndex.Set(nMCtracks);
+
+    // For each reconstructed track keep the corresponding MC particle
+    Int_t ntracks = fESD->GetNumberOfTracks();
+
+    for (Int_t itrack=0; itrack < ntracks; ++itrack) {
+      AliESDtrack *track = fESD->GetTrack(itrack);
+      Int_t alabel = track->GetLabel();
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // For each calo cluster keep the corresponding MC particle
+    AliESDCaloCells *emcalCells = fESD->GetEMCALCells();
+    Short_t nEmcalCells = emcalCells->GetNumberOfCells();
+    for (Short_t ice = 0; ice < nEmcalCells; ++ice) {
+      Short_t cellNumber;
+      Double_t amplitude;
+      Double_t time;
+      Int_t mclabel;
+      Double_t efrac;
+
+      emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+      toWrite[TMath::Abs(mclabel)] = 1;
+    }
+    AliESDCaloCells *phosCells = fESD->GetPHOSCells();
+    Short_t nPhosCells = phosCells->GetNumberOfCells();
+    for (Short_t ice = 0; ice < nPhosCells; ++ice) {
+      Short_t cellNumber;
+      Double_t amplitude;
+      Double_t time;
+      Int_t mclabel;
+      Double_t efrac;
+
+      phosCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+      toWrite[TMath::Abs(mclabel)] = 1;
+    }
+
+    // For each tracklet keep the corresponding MC particle
+    AliMultiplicity *mult = fESD->GetMultiplicity();
+    Int_t ntracklets = mult->GetNumberOfTracklets();
+
+    for (Int_t itr = ntracklets; itr--;) {
+      Int_t alabel = mult->GetLabel(itr, 0); // Take the label of the first layer
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // For each MUON track keep the corresponding MC particle
+    Int_t nmuons = fESD->GetNumberOfMuonTracks();
+
+    for (Int_t imu=0; imu<nmuons; ++imu) {
+      AliESDMuonTrack* mutrk = fESD->GetMuonTrack(imu);
+      Int_t alabel = mutrk->GetLabel();
+      toWrite[TMath::Abs(alabel)] = 1;
+    }
+
+    // Define which MC particles pass kinematic selection and update toWrite index
+    for (Int_t i = 0; i < nMCtracks; ++i) {
+      AliVParticle* vpt = MCEvt->GetTrack(i);
+      particle = vpt->Particle();
+
+      Float_t xv = particle->Vx();
+      Float_t yv = particle->Vy();
+      Float_t zv = particle->Vz();
+      Float_t rv = TMath::Sqrt(xv * xv + yv * yv);
+
+      // This part is taken from AliAnalysisTaskMCParticleFilter
+      Bool_t write = kFALSE;
+
+      if (i < nMCprim) {
+	// Select all primary particles
+	write = kTRUE;
+      } else if (particle->GetUniqueID() == kPDecay) {
+	// Particles from decay
+	// Check that the decay chain ends at a primary particle
+	AliVParticle* mother = vpt;
+	Int_t imo = vpt->GetMother();
+	while((imo >= nMCprim) && (mother->Particle()->GetUniqueID() == kPDecay)) {
+	  mother =  (AliMCParticle*) MCEvt->GetTrack(imo);
+	  imo =  mother->GetMother();
+	}
+	// Select according to pseudorapidity and production point of primary ancestor
+	if (imo < nMCprim) write = kTRUE;
+      } else if (particle->GetUniqueID() == kPPair) {
+	// Now look for pair production
+	Int_t imo = vpt->GetMother();
+	if (imo < nMCprim) {
+	  // Select, if the gamma is a primary
+	  write = kTRUE;
+	} else {
+	  // Check if the gamma comes from the decay chain of a primary particle
+	  AliMCParticle* mother =  (AliMCParticle*) MCEvt->GetTrack(imo);
+	  imo = mother->GetMother();
+	  while((imo >= nMCprim) && (mother->Particle()->GetUniqueID() == kPDecay)) {
+	    mother =   (AliMCParticle*) MCEvt->GetTrack(imo);
+	    imo =  mother->GetMother();
+	  }
+	  // Select according to pseudorapidity and production point
+	  if (imo < nMCprim && Select(mother->Particle(), rv, zv))
+	    write = kTRUE;
+	}
+      }
+      if (toWrite[i] > 0 || write) {
+	toWrite[i] = 1;
+	kineIndex[i] = nkine_filled;
+	nkine_filled++;
+      }
+      else {
+	kineIndex[i] = -1;
+      }
+    }
+
+    for (Int_t i = 0; i < nMCtracks; ++i) { //loop on primary MC tracks Before Event Selection
+      AliVParticle* vpt = MCEvt->GetTrack(i);
+      particle = vpt->Particle();
+
+      mcparticle.fMcCollisionsID = eventID;
+
+      //Get the kinematic values of the particles
+      mcparticle.fPdgCode = particle->GetPdgCode();
+      mcparticle.fStatusCode = particle->GetStatusCode();
+      mcparticle.fFlags = 0;
+      if (i >= MCEvt->Stack()->GetNprimary())
+        mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
+      mcparticle.fMother0 = vpt->GetMother();
+      if (mcparticle.fMother0 > -1)
+	mcparticle.fMother0 = kineIndex[mcparticle.fMother0] > -1 ? kineIndex[mcparticle.fMother0]+fOffsetLabel : -1;
+      mcparticle.fMother1 = -1;
+      mcparticle.fDaughter0 = particle->GetFirstDaughter();
+      if (mcparticle.fDaughter0 > -1)
+	mcparticle.fDaughter0 = kineIndex[mcparticle.fDaughter0] > -1 ? kineIndex[mcparticle.fDaughter0]+fOffsetLabel : -1;
+      mcparticle.fDaughter1 = particle->GetLastDaughter();
+      if (mcparticle.fDaughter1 > -1)
+	mcparticle.fDaughter1 = kineIndex[mcparticle.fDaughter1] > -1 ? kineIndex[mcparticle.fDaughter1]+fOffsetLabel : -1;
+      mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle->GetWeight(), mMcParticleW);
+
+      mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle->Px(), mMcParticleMom);
+      mcparticle.fPy = AliMathBase::TruncateFloatFraction(particle->Py(), mMcParticleMom);
+      mcparticle.fPz = AliMathBase::TruncateFloatFraction(particle->Pz(), mMcParticleMom);
+      mcparticle.fE  = AliMathBase::TruncateFloatFraction(particle->Energy(), mMcParticleMom);
+
+      mcparticle.fVx = AliMathBase::TruncateFloatFraction(particle->Vx(), mMcParticlePos);
+      mcparticle.fVy = AliMathBase::TruncateFloatFraction(particle->Vy(), mMcParticlePos);
+      mcparticle.fVz = AliMathBase::TruncateFloatFraction(particle->Vz(), mMcParticlePos);
+      mcparticle.fVt = AliMathBase::TruncateFloatFraction(particle->T(), mMcParticlePos);
+
+      if (toWrite[i]>0) {
+	FillTree(kMcParticle);
+      }
+    }
+  }
+  eventextra.fNentries[kMcParticle] = nkine_filled;
   
   //---------------------------------------------------------------------------
   // Track data
@@ -1045,7 +1213,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fTaskMode == kMC) {
       // Separate tables (trees) for the MC labels
       Int_t alabel = track->GetLabel();
-      mctracklabel.fLabel = TMath::Abs(alabel) + fOffsetLabel;
+      // Find the modified label
+      Int_t klabel = kineIndex[TMath::Abs(alabel)];
+      mctracklabel.fLabel = TMath::Abs(klabel) + fOffsetLabel;
       mctracklabel.fLabelMask = 0;
       // Use the ITS shared clusters to set the corresponding bits 0-6
       UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
@@ -1074,7 +1244,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 	     || TMath::Abs(alabel)==TMath::Abs(tofLabel[2])))
 	mctracklabel.fLabelMask |= (0x1 << 11);
 
-      if (alabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
+      if (alabel<0 || klabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
 
       FillTree(kMcTrackLabel);
     }
@@ -1184,10 +1354,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (fTaskMode == kMC) {
 	// Separate tables (trees) for the MC labels: tracklets
 	Int_t alabel = mlt->GetLabel(itr, 0); // Take the label of the first layer
-	mctracklabel.fLabel = TMath::Abs(alabel) + fOffsetLabel;
+	// Find the modified label
+	Int_t klabel = kineIndex[TMath::Abs(alabel)];
+	mctracklabel.fLabel = TMath::Abs(klabel) + fOffsetLabel;
 	mctracklabel.fLabelMask = 0;
 	// Mask fake tracklets
-	if (alabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
+	if (alabel<0 || klabel<0) mctracklabel.fLabelMask |= (0x1 << 15);
 	if (mlt->GetLabel(itr, 0) != mlt->GetLabel(itr, 1)) mctracklabel.fLabelMask |= (0x1 << 15);
 
 	FillTree(kMcTrackLabel);
@@ -1227,9 +1399,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) ncalocells_filled++;
     if (fTaskMode == kMC) {
-      mccalolabel.fLabel = TMath::Abs(mclabel) + fOffsetLabel;
+      // Find the modified label
+      Int_t klabel = kineIndex[TMath::Abs(mclabel)];
+      mccalolabel.fLabel = TMath::Abs(klabel) + fOffsetLabel;
       mccalolabel.fLabelMask = 0;
-      if (mclabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
+      if (mclabel<0 || klabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
 
       FillTree(kMcCaloLabel);
     }
@@ -1292,9 +1466,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     FillTree(kCalo);
     if (fTreeStatus[kCalo]) nphoscells_filled++;
     if (fTaskMode == kMC) {
-      mccalolabel.fLabel = TMath::Abs(mclabel) + fOffsetLabel;
+      // Find the modified label
+      Int_t klabel = kineIndex[TMath::Abs(mclabel)];
+      mccalolabel.fLabel = TMath::Abs(klabel) + fOffsetLabel;
       mccalolabel.fLabelMask = 0;
-      if (mclabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
+      if (mclabel<0 || klabel<0) mccalolabel.fLabelMask |= (0x1 << 15);
 
       FillTree(kMcCaloLabel);
     }
@@ -1515,48 +1691,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // MC data (to be modified)
 
-  Int_t nkine_filled = 0; // Number of kine tracks filled
-  if (MCEvt) {
-    // Kinematics
-    TParticle* particle = nullptr;
-    Int_t nMCtracks = MCEvt->GetNumberOfTracks();
-    for (Int_t i = 0; i < nMCtracks; ++i) { //loop on primary MC tracks Before Event Selection
-      AliVParticle* vpt = MCEvt->GetTrack(i);
-      particle = vpt->Particle();
-
-      mcparticle.fMcCollisionsID = eventID;
-      
-      //Get the kinematic values of the particles
-      mcparticle.fPdgCode = particle->GetPdgCode();
-      mcparticle.fStatusCode = particle->GetStatusCode();
-      mcparticle.fFlags = 0;
-      if (i >= MCEvt->Stack()->GetNprimary())
-        mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
-      mcparticle.fMother0 = vpt->GetMother();
-      if (mcparticle.fMother0 > -1) mcparticle.fMother0+=fOffsetLabel;
-      mcparticle.fMother1 = -1;
-      mcparticle.fDaughter0 = particle->GetFirstDaughter();
-      if (mcparticle.fDaughter0 > -1) mcparticle.fDaughter0+=fOffsetLabel;
-      mcparticle.fDaughter1 = particle->GetLastDaughter();
-      if (mcparticle.fDaughter1 > -1) mcparticle.fDaughter1+=fOffsetLabel;
-      mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle->GetWeight(), mMcParticleW);
-
-      mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle->Px(), mMcParticleMom);
-      mcparticle.fPy = AliMathBase::TruncateFloatFraction(particle->Py(), mMcParticleMom);
-      mcparticle.fPz = AliMathBase::TruncateFloatFraction(particle->Pz(), mMcParticleMom);
-      mcparticle.fE  = AliMathBase::TruncateFloatFraction(particle->Energy(), mMcParticleMom);
-
-      mcparticle.fVx = AliMathBase::TruncateFloatFraction(particle->Vx(), mMcParticlePos);
-      mcparticle.fVy = AliMathBase::TruncateFloatFraction(particle->Vy(), mMcParticlePos);
-      mcparticle.fVz = AliMathBase::TruncateFloatFraction(particle->Vz(), mMcParticlePos);
-      mcparticle.fVt = AliMathBase::TruncateFloatFraction(particle->T(), mMcParticlePos);
-
-      FillTree(kMcParticle);
-      if (fTreeStatus[kMcParticle]) nkine_filled++;
-    }
-    fOffsetLabel += nMCtracks; // Offset for the labels of the next event
-  }
-  eventextra.fNentries[kMcParticle] = nkine_filled;
 
   if (MCEvt) {
     // MC vertex
@@ -1620,6 +1754,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision    
+  fOffsetLabel += nkine_filled; // Offset for the labels of the next event
   fOffsetTrackID += ntrk_filled + ntracklet_filled;
   fOffsetMuTrackID += nmu_filled;
   fOffsetV0ID += nv0_filled;
@@ -1637,4 +1772,37 @@ void AliAnalysisTaskAO2Dconverter::FinishTF()
       fTree[i] = 0x0;
     }
 } // AliAnalysisTaskAO2Dconverter::FinishTF()
+
+Bool_t AliAnalysisTaskAO2Dconverter::Select(TParticle* part, Float_t rv, Float_t zv)
+{
+  /// Selection accoring to eta of the mother and production point
+  /// This has to be refined !!!!!!
+
+  // Esp if we don't have collisison in the central barrel but e.g. beam gas
+  //  return kTRUE;
+
+  Float_t eta = part->Eta();
+
+  // central barrel consider everything in the ITS...
+  // large eta window for smeared vertex and SPD acceptance (2 at z = 0)
+  // larger for V0s in the TPC
+  //  if (TMath::Abs(eta) < 2.5 && rv < 250. && TMath::Abs(zv)<255)return kTRUE;
+
+  if (TMath::Abs(eta) < 2.5 && rv < 170)return kTRUE;
+
+  // Andreas' Cuts
+  //  if (TMath::Abs(eta) < 1. && rv < 170)return kTRUE;
+
+
+
+  // Muon arm
+  if(eta > -4.2 && eta < -2.3 && zv > -500.)return kTRUE; // Muon arms
+
+  // PMD acceptance 2.3 <= eta < = 3.5
+  //  if(eta>2.0&&eta<3.7)return kTRUE;
+
+  return kFALSE;
+
+} // AliAnalysisTaskAO2Dconverter::Select(TParticle* part, Float_t rv, Float_t zv)
+
 ////////////////////////////////////////////////////////////
