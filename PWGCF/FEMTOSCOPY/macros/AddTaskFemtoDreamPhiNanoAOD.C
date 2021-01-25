@@ -239,7 +239,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 //  config->SetMassQA(true);
 //  config->SetmTBinning(true);
 //  config->SetdPhidEtaPlots(true);
-//  config->SetExtendedQAPairs(pairQA);
+  config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
