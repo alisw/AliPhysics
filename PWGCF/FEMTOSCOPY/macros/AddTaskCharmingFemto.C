@@ -113,14 +113,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   pairQA[5] = 13;   // barp Dplus
   pairQA[6] = 13;   // barp Dminus
 
-  // test close-pair rejection for all pairs involved!
-  if (suffix == "11") {
-    closeRejection[2] = true;   // pDplus
-    closeRejection[3] = true;   // pDminus
-    closeRejection[5] = true;   // barp Dplus
-    closeRejection[6] = true;   // barp Dminus	  
-  }
-
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
   if (trigger == "kHighMultV0") {
@@ -178,31 +170,26 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
+  if (isMC) {
+    task->ScaleMCBeautyFraction(0.5, 0.05);
+  }
+
   if (suffix == "1") {
     task->SetMassWindow(1.9, 1.95);  // upper sideband, 5 sigma away from the peak - far off the D*
   } else if (suffix == "2") {
-    task->SetMassWindow(1.95, 1.98);  // upper sideband
+    task->SetMassWindow(1.9, 1.98);  // upper sideband width 100
   } else if (suffix == "3") {
-    task->SetMassWindow(1.98, 2.05);  // around D*
+    task->SetMassWindow(1.9, 2.1);  // upper sideband width 200
   } else if (suffix == "4") {
-    task->SetMassWindow(2.05, 2.1);  // upper sideband
+    task->SetNSigmaSidebandSelection(AliAnalysisTaskCharmingFemto::kRight);  // default: 5 sigma off, 2sigma width
   } else if (suffix == "5") {
     task->SetMassWindow(1.79, 1.84);  // lower sideband, 5 sigma away from the peak
   } else if (suffix == "6") {
-    task->SetMassWindow(1.74, 1.79);  // lower sideband
+    task->SetMassWindow(1.74, 1.84);  // lower sideband width 100
   } else if (suffix == "7") {
-    task->SetMassWindow(1.69, 1.74);  // lower sideband
+    task->SetMassWindow(1.64, 1.84);  // lower sideband width 200
   } else if (suffix == "8") {
-    task->SetMassWindow(1.64, 1.69);  // lower sideband
-  }
-
-  if (isMC) {
-    task->ScaleMCBeautyFraction(0.5, 0.05);
-    if (suffix == "9") {
-      task->ScaleMCBeautyFraction(0.5, 0.);
-    } else if (suffix == "10") {
-      task->ScaleMCBeautyFraction(0.5, 0.5);
-    }
+    task->SetNSigmaSidebandSelection(AliAnalysisTaskCharmingFemto::kLeft);  // default: 5 sigma off, 2sigma width
   }
 
   mgr->AddTask(task);
