@@ -167,3 +167,5 @@ install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
 install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
+install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
+
