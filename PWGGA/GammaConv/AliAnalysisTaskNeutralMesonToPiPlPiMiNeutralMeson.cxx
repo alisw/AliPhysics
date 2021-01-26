@@ -5636,6 +5636,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                   continue;
                 }
               }
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+                TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+                Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
 
               // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5721,6 +5733,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                   continue;
                 }
               }
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+                TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+                Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
 
               // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5791,6 +5815,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                 continue;
               }
             }
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+              TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+              Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
+                continue;
+              }
+            }
 
             // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5855,6 +5891,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
               if (vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                continue;
+              }
+            }
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+              TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+              Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
                 continue;
               }
             }
