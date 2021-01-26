@@ -5965,8 +5965,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut (pi0pi+-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
               AliAODConversionMother PiPlNDMBackgroundCandidate2(&EventPiPlGoodMeson2, EventNDMGoodMeson);
-              Double_t  Mass_PiPlus_PiZero_Sub           = PiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson.M() - fPDGMassNDM);
-              Double_t  Mass_PiPlus2_PiZero_Sub           = PiPlNDMBackgroundCandidate2.M() - (EventNDMGoodMeson.M() - fPDGMassNDM);
+              Double_t  Mass_PiPlus_PiZero_Sub           = PiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              Double_t  Mass_PiPlus2_PiZero_Sub           = PiPlNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
               if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
                    (Mass_PiPlus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
                    ) {
@@ -6024,8 +6024,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut (pi0pi+-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
               AliAODConversionMother PiMiNDMBackgroundCandidate2(&EventPiMiGoodMeson2, EventNDMGoodMeson);
-              Double_t  Mass_PiMinus_PiZero_Sub           = PiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson.M() - fPDGMassNDM);
-              Double_t  Mass_PiMinus2_PiZero_Sub           = PiMiNDMBackgroundCandidate2.M() - (EventNDMGoodMeson.M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus_PiZero_Sub           = PiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus2_PiZero_Sub           = PiMiNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
               if ((Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
                    (Mass_PiMinus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
                    ) {
