@@ -547,7 +547,7 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     if(isMC) {
       for(Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
         AliVTrack* track=dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
-        if(!track) continue;
+        if(!track || track->GetTOFsignalTunedOnData() > 99999) continue;
         track->SetTOFsignalTunedOnData(100000);
       }
     }
