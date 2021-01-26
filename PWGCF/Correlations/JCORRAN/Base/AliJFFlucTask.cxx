@@ -48,6 +48,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fFFlucAna(0),
 	fCentDetName("V0M"),
 	fEvtNum(0),
+	fcBin(0),
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
@@ -78,6 +79,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fTaskName(name),
 	fCentDetName("V0M"),
 	fEvtNum(0),
+	fcBin(0),
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
@@ -174,7 +176,6 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 	float fCent = -1.0f;
 	float fImpactParameter = -1.0f;
-	double fvertex[3];
 
 	fEvtNum++;
 	if(fEvtNum % 100 == 0)
@@ -214,12 +215,12 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		TArrayF gVertexArray;
 		header->PrimaryVertex(gVertexArray);
 		for(int i = 0; i < 3; i++)
-			fvertex[i] = gVertexArray.At(i);
+			fVertex[i] = gVertexArray.At(i);
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputList );
 		fFFlucAna->SetEventCentrality( fCent );
 		fFFlucAna->SetEventImpactParameter( fImpactParameter );
-		fFFlucAna->SetEventVertex( fvertex );
+		fFFlucAna->SetEventVertex( fVertex );
 		fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
 
 		fFFlucAna->UserExec("");
@@ -238,31 +239,20 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(!IsGoodEvent( currentEvent ))
 			return;
 		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
-		ReadVertexInfo( currentEvent, fvertex); // read vertex info
+		ReadVertexInfo( currentEvent, fVertex); // read vertex info
 		// Analysis Part
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputList );
 		fFFlucAna->SetEventCentrality( fCent );
 		fFFlucAna->SetEventImpactParameter( fImpactParameter); // need this??
-		fFFlucAna->SetEventVertex( fvertex );
+		fFFlucAna->SetEventVertex( fVertex );
 		fFFlucAna->SetEtaRange( fEta_min, fEta_max );
 		fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
 		fFFlucAna->SetEventFB32TracksQA( FB32Tracks, FB32TOFTracks );
 
-		fFFlucAna->SetPhiWeights((TH1*)0);
-		fFFlucAna->SetPhiWeights((TF3*)0);
-		if(flags & FLUC_PHI_CORRECTION){
-			//int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
-			int cbin = (binning != BINNING_CENT_PbPb)?
+		fcBin = (binning != BINNING_CENT_PbPb)?
 				AliJFFlucAnalysis::GetBin((double)fInputList->GetEntriesFast(),(AliJFFlucAnalysis::BINNING)binning):
 				AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
-			//int cbin = AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
-			if(cbin != -1){
-				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
-				if(pweightMap)
-					fFFlucAna->SetPhiWeights(pweightMap);
-			}
-		}
 
 		fFFlucAna->UserExec("");
 		//
@@ -359,6 +349,8 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetParticleType( pdg);
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetCharge(ch) ;
+				itrack->SetTrackEff(1.0);
+				itrack->SetWeight(1.0); // phi weight
 			}
 		}
 	}else{
@@ -399,6 +391,22 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				double fCent = ReadCentrality(aod,fCentDetName);
 				Double_t effCorr = fEfficiency->GetCorrection(pt,fEffFilterBit,fCent);
 				itrack->SetTrackEff(effCorr);
+				// Adding phi weight for a track
+				Double_t phi_module_corr = 1.0;
+				if(flags & FLUC_PHI_CORRECTION){
+					Double_t w;
+					
+					TH1 *pPhiWeights = GetCorrectionMap(fRunNum,fcBin);
+					if(pPhiWeights) {
+						Double_t phi = itrack->Phi();
+						Double_t eta = itrack->Eta();
+						w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fVertex[2]));
+					} else {
+						w = 1.0;
+					}
+					if(w > 1e-6) phi_module_corr = w;
+				}
+				itrack->SetWeight(phi_module_corr);
 			}
 		}
 	} //read aod reco track done.
