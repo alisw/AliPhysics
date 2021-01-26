@@ -2952,7 +2952,7 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
     while(iV0 < event->GetNumberOfV0s() ) //extra-crazy test
     {   // This is the begining of the V0 loop
         AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
-        if (!v0) continue;
+        if (!v0) {iV0++ ; continue;}
         if ( v0->GetOnFlyStatus() == lType ){
             event->RemoveV0(iV0);
         } else {
