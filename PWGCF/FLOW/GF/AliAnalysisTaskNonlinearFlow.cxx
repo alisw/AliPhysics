@@ -651,6 +651,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..Gap > 1.0
 		if(aodTrk->Eta() < -0.5)
 		{
+			NtrksAfterGap10M++;
 			for(int iharm=0; iharm<20; iharm++)
 			{
 				for(int ipow=0; ipow<20; ipow++)

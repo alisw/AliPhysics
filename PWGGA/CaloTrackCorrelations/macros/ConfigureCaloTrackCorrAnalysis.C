@@ -2141,12 +2141,12 @@ void ConfigureCaloTrackCorrAnalysis
             isoContent = AliIsolationCut::kOnlyCharged;
 
           anaList->AddAt(ConfigureIsolationAnalysis
-                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubPhiBandIC,
+                         ("Photon",leading,isoContent, AliIsolationCut::kSumBkgSubPhiBandIC,
                           conesize[isize],isoConeMin,isoPtTh,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
           anaList->AddAt(ConfigureIsolationAnalysis
-                         ("Photon",leading,isoCone, AliIsolationCut::kSumBkgSubEtaBandIC,
+                         ("Photon",leading,isoContent, AliIsolationCut::kSumBkgSubEtaBandIC,
                           conesize[isize],isoConeMin,isoPtTh,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
         }
