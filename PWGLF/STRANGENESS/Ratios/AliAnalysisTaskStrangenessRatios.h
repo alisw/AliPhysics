@@ -93,10 +93,10 @@ private:
   AliAnalysisTaskStrangenessRatios &operator=(const AliAnalysisTaskStrangenessRatios &source);
 
   TList*          fList;             //!<! List of the output histograms
-  TTree*          fTreeXi;           //!<! List of the output histograms
-  TTree*          fTreeOmega;         //!<! List of the output histograms
+  TTree*          fTreeXi;           //!<! Tree for Xi
+  TTree*          fTreeOmega;        //!<! Tree for Omegas
 
-  MiniCascade* fRecCascade;
+  MiniCascade* fRecCascade;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
   AliPIDResponse* fPID;              //!<! ALICE PID framework
   bool fMC;
