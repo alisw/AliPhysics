@@ -18,6 +18,7 @@
 class AliESDEvent;
 class TFile;
 class TDirectory;
+class TParticle;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -43,6 +44,7 @@ public:
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
+  void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -117,6 +119,7 @@ public:
   void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
   void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
   AliEventCuts& GetEventCuts() { return fEventCuts; }
+  Bool_t Select(TParticle* part, Float_t rv, Float_t zv);
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -492,6 +495,7 @@ private:
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
+  Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
@@ -501,7 +505,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 13);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 14);
 };
 
 #endif

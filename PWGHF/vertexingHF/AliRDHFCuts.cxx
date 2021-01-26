@@ -24,6 +24,7 @@
 #include <Riostream.h>
 
 #include "AliVEvent.h"
+#include "AliVTrack.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
@@ -540,6 +541,14 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     }else{
       // check that AliPIDResponse object was properly set in case of using OADB
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
+    }
+
+    // force recomputation of TOF Nsigma with tune-on-data to have latest development of tail parametrisation in old AODs
+    for(int iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++)
+    {
+        AliVTrack* track=dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+        if(!track) continue;
+        track->SetTOFsignalTunedOnData(100000);
     }
 
     if(fEnableNsigmaTPCDataCorr && !isMC) {

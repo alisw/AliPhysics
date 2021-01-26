@@ -1,3 +1,10 @@
+///*******************************************************
+/// AddTask
+/// January 22, 2021 - Cristiane Jahnke
+/// cristiane.jahnke@cern.ch
+/// TPC calibrations for 2017 and 2018 data
+///*******************************************************
+
 AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
 			Bool_t 	isMC 			= kFALSE, 
@@ -18,7 +25,8 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
             Bool_t is_EventsEG1 = kFALSE,
             Bool_t is_EventsEG2 = kTRUE,
             Bool_t isMultiAnalysis = kFALSE,
-            Bool_t is_MSparse = kFALSE
+            Bool_t is_MSparse = kFALSE,
+            Bool_t is_TPCcalibration = kFALSE
 			
 )
 {
@@ -79,7 +87,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration);
 	
 	//_______________________
 	//Trigger

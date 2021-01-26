@@ -71,7 +71,7 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
       if(meanPtPath.Contains("alien:") && !gridConnected) { TGrid::Connect("alien:"); gridConnected = kTRUE; }; //Only connect if not connected yet
       TFile *tfMPT = TFile::Open(meanPtPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MeanPts_05_20.root"
       TList *fMPTList = (TList*)tfMPT->Get(Form("MPTProfileList%s",l_ContName.Data()));
-      if(!fMPTList) { printf("fMPT list from file not fetcehd!"); return 0; };
+      if(!fMPTList) { printf("fMPT list from file not fetched! I was looking for MPTProfileList%s; contents: \n",l_ContName.Data()); tfMPT->ls(); return 0; };
       AliAnalysisDataContainer *cInMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kInputContainer);
       cInMPT->SetData(fMPTList);
       mgr->ConnectInput(task,1,cInMPT);

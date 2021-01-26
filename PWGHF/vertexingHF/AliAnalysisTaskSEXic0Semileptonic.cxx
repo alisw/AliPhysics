@@ -232,6 +232,13 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fHistos->CreateTH1("NumOfe","",         (295000-252000),252000,295000,"s"); //kimc
 	fHistos->CreateTH1("NumOfXi","",        (295000-252000),252000,295000,"s"); //kimc
 
+    //kimc updated at Dec. 18 (2020) trigger: all (0), kINT7 (1), kHMV0 (2), kHMSPD (3), and 'kHMV0 || kHMSPD' (4)
+    if (IsMC == false)
+    {
+        fHistos->CreateTH2("hNorm_multV0",  ";Mult;Trig", 1000,0,100, 5,0,5, "s"); //At least one trigger is fired
+        fHistos->CreateTH2("hNorm_multSPD", ";Mult;Trig", 1000,0,100, 5,0,5, "s");
+    }
+
 	fHistos->CreateTH1("hNonPromptXicRap","",500,-5,5,"s");
 	fHistos->CreateTH1("hPromptXicRap","",500,-5,5,"s");
 	fHistos->CreateTH1("hXicRap","",500,-5,5,"s");
@@ -498,6 +505,34 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	if (!(fabs(Vtx->GetZ())<10.)) return;
 	fHistos->FillTH1("hEventNumbers", "Goodzcut", 1);
 	fVtxZ = Vtx->GetZ(); //kimc
+
+    //kimc, updated at Dec. 18 (2020)
+    if (IsMC == false)
+    {
+        fHistos->FillTH2("hNorm_multV0",  fCentrality, 0); 
+        fHistos->FillTH2("hNorm_multSPD", fCentralSPD, 0);
+        if (inputHandler->IsEventSelected() & AliVEvent::kINT7)
+        {
+            fHistos->FillTH2("hNorm_multV0",  fCentrality, 1);
+            fHistos->FillTH2("hNorm_multSPD", fCentralSPD, 1);
+        }
+        if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+        {
+            fHistos->FillTH2("hNorm_multV0",  fCentrality, 2);
+            fHistos->FillTH2("hNorm_multSPD", fCentralSPD, 2);
+        }
+        if (inputHandler->IsEventSelected() & AliVEvent::kHighMultSPD)
+        {
+            fHistos->FillTH2("hNorm_multV0",  fCentrality, 3);
+            fHistos->FillTH2("hNorm_multSPD", fCentralSPD, 3);
+        }
+        if ( (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0) ||
+			 (inputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) )
+        {
+            fHistos->FillTH2("hNorm_multV0",  fCentrality, 4);
+            fHistos->FillTH2("hNorm_multSPD", fCentralSPD, 4);
+        }
+    }
 
 	if (IsHighMul)
 	{
@@ -1340,8 +1375,8 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 					fMCTreeVariable[ 4] = mcXic0->Pt();
 					fMCTreeVariable[ 5] = mcPt;
 
-					if(In_Mass<=2.5 && cosoa>0 && StandardCutFlag(trk,casc,1,1,1,1))
-					{
+					//if(In_Mass<=2.5 && cosoa>0 && StandardCutFlag(trk,casc,1,1,1,1))
+					//{
 						fHistos->FillTH2("hXic0vseXiRPM",mcXic0_Pt,eXi);
 						//fHistos->FillTH2("hXic0vseXiRPM_2",mcXic0_Pt,eXi);
 						fHistos->FillTH1("hGenXic0Pt",mcXic0_Pt); //MC Pt of Xic0
@@ -1363,9 +1398,9 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 							c_flag = 1;
 						}
 						
-						fMCTreeVariable[ 6] = c_flag;
-						fMCTreeVariable[ 7] = b_flag;
-					}//fill histo
+						fMCTreeVariable[ 7] = c_flag;
+						fMCTreeVariable[ 8] = b_flag;
+					//}//fill histo
 				}//e_flag && Xi_flag
 			}//Xic0
 			fPaireXiTree->Fill();

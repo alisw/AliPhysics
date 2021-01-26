@@ -91,6 +91,7 @@ set(SRCS
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
+  Ratios/AliAnalysisTaskStrangenessRatios.cxx
   )
 
 # Headers from sources
@@ -169,6 +170,8 @@ install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY HeavyIonsRun1Run2/macros DESTINATION PWGLF/STRANGENESS/HeavyIonsRun1Run2)
+install(DIRECTORY Ratios DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
+
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
   install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
 endif()

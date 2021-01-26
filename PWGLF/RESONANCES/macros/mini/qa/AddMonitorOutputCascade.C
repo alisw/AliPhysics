@@ -36,15 +36,15 @@ void AddMonitorOutputCascade(Bool_t useMCMon, TObjArray *mon=0, TString caname="
   AliRsnValueEvent* multi = new AliRsnValueEvent("multi",AliRsnValueEvent::kMult);
   multi->SetBins(0.0, 100.0, 1);
   //Momentum
-  AliRsnValueDaughter* axisMomP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kP);
+  AliRsnValueDaughter* axisMomP = new AliRsnValueDaughter("p", AliRsnValueDaughter::kCascadeP);
   axisMomP->SetBins(0.0, 10.0, 0.02);
   //pT
-  AliRsnValueDaughter* axisMomPt = new AliRsnValueDaughter("pt", AliRsnValueDaughter::kPt);
+  AliRsnValueDaughter* axisMomPt = new AliRsnValueDaughter("pt", AliRsnValueDaughter::kCascadePt);
   axisMomPt->SetBins(0.0,10.0,0.02);
-  //Eta
+  //Eta (for AODs: this gives the V0 eta)
   AliRsnValueDaughter* axisMomEta = new AliRsnValueDaughter("eta", AliRsnValueDaughter::kEta);
   axisMomEta->SetBins(-2.0, 2.0, 0.1);
-  //Phi
+  //Phi (for AODs: this gives the V0 phi)
   AliRsnValueDaughter* axisPhi = new AliRsnValueDaughter("phi", AliRsnValueDaughter::kPhi);
   axisPhi->SetBins(0.0, 360.0, 1.0);
 
@@ -71,6 +71,9 @@ void AddMonitorOutputCascade(Bool_t useMCMon, TObjArray *mon=0, TString caname="
   //Cosine of V0 Pointing Angle to Cascade Vertex
   AliRsnValueDaughter* axisV0CPA = new AliRsnValueDaughter("CascadeV0CosPointAng",AliRsnValueDaughter::kCascadeV0CosPointAng);
   axisV0CPA->SetBins(0.96,1.,0.001);
+  //V0 Lifetime
+  AliRsnValueDaughter* axisV0Lifetime = new AliRsnValueDaughter("CascadeV0Lifetime",AliRsnValueDaughter::kCascadeV0Lifetime);
+  axisV0Lifetime->SetBins(0.0,200,0.1);
 
   //V0 pT
   AliRsnValueDaughter* axisV0pt = new AliRsnValueDaughter("CascadeV0Pt",AliRsnValueDaughter::kCascadeV0Pt);
@@ -170,6 +173,13 @@ void AddMonitorOutputCascade(Bool_t useMCMon, TObjArray *mon=0, TString caname="
   outMonitorV0CPA->AddValue(axisV0CPA);
   if (mon) mon->Add(outMonitorV0CPA);
   if (lm) lm->AddOutput(outMonitorV0CPA);
+
+  // output: 2D histogram of V0 lifetime vs p
+  AliRsnListOutput* outMonitorV0Lifetime = new AliRsnListOutput("CascadeV0LifetimeVsP", AliRsnListOutput::kHistoDefault);
+  if (!useTH1) outMonitorV0Lifetime->AddValue(axisMomP);
+  outMonitorV0Lifetime->AddValue(axisV0Lifetime);
+  if (mon) mon->Add(outMonitorV0Lifetime);
+  if (lm) lm->AddOutput(outMonitorV0Lifetime);
 
   /****************************************************************/
   /***************          DAUGHTERS          ********************/

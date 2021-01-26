@@ -134,6 +134,7 @@ ClassImp(AliAnalysisTaskSpherocity)
 		fListOfObjects(0),
 		fEvents(0x0),
 		fdEdxCalibrated(kFALSE),
+		fTrackCuts(0),
 		fPeriod("16l"),
 		hphiso(0x0),
 		hetaso(0x0),
@@ -279,6 +280,7 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fListOfObjects(0), 
 	fEvents(0x0),
 	fdEdxCalibrated(kFALSE),
+	fTrackCuts(0),
 	fPeriod("16l"),
 	hphiso(0x0),
 	hetaso(0x0),
@@ -410,24 +412,51 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		SetTrackCutsSpherocity(fTrackFilter);
 	}
 
+	printf("fNcl - %d\n",fNcl);
+	printf("fTrackCuts_Mode - %d\n",fTrackCuts);
 	if(!fTrackFilterGolden){
 
 		fTrackFilterGolden = new AliESDtrackCuts("fTrackFilterGolden");
-                fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
-                fTrackFilterGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-                fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
-                fTrackFilterGolden->SetAcceptKinkDaughters(kFALSE);
-                fTrackFilterGolden->SetRequireTPCRefit(kTRUE);
-                fTrackFilterGolden->SetRequireITSRefit(kTRUE);
-                fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-                fTrackFilterGolden->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-//                fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
-                fTrackFilterGolden->SetMaxDCAToVertexZ(2);
-                fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
-                fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
-                fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
+		//fTrackFilterGolden->SetMinNCrossedRowsTPC(70); // Varied for track selection
+		fTrackFilterGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		//fTrackFilterGolden->SetMaxChi2PerClusterTPC(4); // Varied for track selection
+		fTrackFilterGolden->SetAcceptKinkDaughters(kFALSE);
+		fTrackFilterGolden->SetRequireTPCRefit(kTRUE);
+		fTrackFilterGolden->SetRequireITSRefit(kTRUE);
+		fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+		fTrackFilterGolden->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+		//                fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
+		//fTrackFilterGolden->SetMaxDCAToVertexZ(2); // Varied for track selection
+		fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
+		fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
+		fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
 		fTrackFilterGolden->SetEtaRange(-0.8,0.8);
 
+		if(fTrackCuts==0){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==1){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(80);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==2){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(5);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==3){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(3);
+		}else if(fTrackCuts==4){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(60);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else{
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(1);
+		}
 	}
 
 	/*if(!fSpheroUtils){
@@ -2247,9 +2276,9 @@ double AliAnalysisTaskSpherocity::EtaCalibration(const double &eta){
 		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
 		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
 	}else if(strcmp(fPeriod,"17data")==0){
-                aPos = 49.6097; bPos = 0.922856; cPos = -6.57484; dPos = 65.3117; ePos = -372.142; fPos = 950.451; gPos = -1085.27; hPos = 458.144;
-                aNeg = 49.6555; bNeg = 6.98696; cNeg = 102.734;  dNeg = 566.424; eNeg = 1513.64;  fNeg = 2092.01; gNeg = 1429.32;  hNeg = 375.642;
-        }else{
+		aPos = 49.6097; bPos = 0.922856; cPos = -6.57484; dPos = 65.3117; ePos = -372.142; fPos = 950.451; gPos = -1085.27; hPos = 458.144;
+		aNeg = 49.6555; bNeg = 6.98696; cNeg = 102.734;  dNeg = 566.424; eNeg = 1513.64;  fNeg = 2092.01; gNeg = 1429.32;  hNeg = 375.642;
+	}else{
 		aPos = 49.6975; bPos = 2.32535; cPos = -42.6516; dPos = 283.058; ePos = -1009.58; fPos = 1945.89; gPos = -1871.23; hPos = 698.552;
 		aNeg = 49.8071; bNeg = 9.78466; cNeg = 120.018;  dNeg = 603.325; eNeg = 1470.92;  fNeg = 1819.63; gNeg = 1073.82;  hNeg = 230.142;
 	}

@@ -2529,6 +2529,14 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 0;
       break;
+    case 33: // x // EMC-EMC - 2 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = 2.;
+      fMassParamFunction   = 0;
+      break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -4497,10 +4505,27 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           break;
       }
 
-      if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
-        return kTRUE;
-      else
-        return kFALSE;
+      if (nominalRange == 0){
+        if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 1){
+        if (meson->M() > fSidebandMixingLow && meson->M() < fSidebandMixingHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 2){
+        if (meson->M() > fSidebandMixingLeftLow && meson->M() < fSidebandMixingLeftHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 3){
+        if (meson->M() > fSidebandMixingRightLow && meson->M() < fSidebandMixingRightHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      }
   } else {
     if (!(meson->M() > fSelectionLow && meson->M() < fSelectionHigh))
       return kTRUE;

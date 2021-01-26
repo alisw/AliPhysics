@@ -71,7 +71,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fAddQA(kFALSE),
   fQAList(0),
   fBypassCalculations(kFALSE),
-  fMultiDist(0)
+  fMultiDist(0),
+  fCollisionsSystem(2)
 {
 };
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t IsTrain, Bool_t AddQA):
@@ -102,7 +103,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fAddQA(AddQA),
   fQAList(0),
   fBypassCalculations(kFALSE),
-  fMultiDist(0)
+  fMultiDist(0),
+  fCollisionsSystem(2)
 {
   if(!fProduceWeights) {
     if(fIsTrain) DefineInput(1,TH1D::Class());
@@ -386,8 +388,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t cent = lMultSel->GetMultiplicityPercentile("V0M");
-  if(!CheckTriggerVsCentrality(cent)) return;
+  Double_t cent = lMultSel->GetMultiplicityPercentile(fCollisionsSystem==1?"V0A":"V0M");
+  if(fCollisionsSystem==2) if(!CheckTriggerVsCentrality(cent)) return;
   if(!fProduceWeights)
     if(!InitRun()) return;
   if(!AcceptEvent()) return;
@@ -400,8 +402,10 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   };
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
-  if(cent<5) return; //Do not consider 0-5%
-  if(cent>70) return; //Also, peripheral cutoff
+  if(fCollisionsSystem==2) { //only for Pb-Pb, because of the PU
+    if(cent<5) return; //Do not consider 0-5%
+    if(cent>70) return; //Also, peripheral cutoff
+  };
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
@@ -433,6 +437,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     AliAODTrack *lTrack;
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+      if(lTrack->Pt() < fRFpTMin || lTrack->Pt() > fRFpTMax) continue;
       Double_t POStrk[] = {0.,0.,0.};
       lTrack->GetXYZ(POStrk);
       Double_t DCA[] = {0.,0.,0.};
@@ -659,6 +664,17 @@ Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when 
 
   return kTRUE;
 };
+void AliAnalysisTaskGFWFlow::NotifyRun() {
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  //Reinitialize AliEventCuts (done automatically on check):
+  Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+  dummy = fEventCutsForPU.AcceptEvent(fAOD);
+  //Then override PU cut if required:
+  fEventCuts.fUseVariablesCorrelationCuts = kTRUE; //By default this is not used (for some reason?)
+  //Also for the PU systematics:
+  fEventCutsForPU.fUseVariablesCorrelationCuts = kTRUE;
+  fEventCutsForPU.fESDvsTPConlyLinearCut[0] = 1500; //Cut for systematic (nominal is 15 000)
+}
 Bool_t AliAnalysisTaskGFWFlow::InitRun() {
   if(!fInputEvent) return kFALSE;
   Int_t runno = fInputEvent->GetRunNumber();

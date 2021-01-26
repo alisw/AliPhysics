@@ -181,8 +181,8 @@ Bool_t AliDielectronTrackRotator::NextCombination()
   if (fRotateAroundMother == kTRUE){
     if (fLastPairSent == kTRUE){
       fLastPairSent = kFALSE;
-      AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationMultiplicity, 0);
-      AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, 0);
+      //AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationMultiplicity, 1.);
+      //AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, 0);
       fArrTrackPairs.clear();
       return kFALSE;
     }
@@ -201,8 +201,6 @@ Bool_t AliDielectronTrackRotator::NextCombination()
     fTrack1  = fArrTrackPairs[fCurrentIteration].kf1;
     fTrack2  = fArrTrackPairs[fCurrentIteration].kf2;
 
-    AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fArrTrackPairs[fCurrentIteration].weight);
-
 
     // code to make stuff readable for AliDielectron::FillPairArrayTR()
     if (fArrTrackPairs[fCurrentIteration].charged_tracks == 1){
@@ -216,12 +214,14 @@ Bool_t AliDielectronTrackRotator::NextCombination()
       fVTrackN = dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fArrTrackPairs[fCurrentIteration].index2));
       fChargeTrack1 = -1;
       fChargeTrack2 = -1;
+
     }
     else if (fArrTrackPairs[fCurrentIteration].charged_tracks == 0){
       fVTrackP = dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fArrTrackPairs[fCurrentIteration].index1));
       fVTrackN = dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fArrTrackPairs[fCurrentIteration].index2));
       fChargeTrack1 = +1;
       fChargeTrack2 = -1;
+
     }
 
 
@@ -352,13 +352,13 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
   int ULSpair_counter_PP = 0;
   int ULSpair_counter_MM = 0;
   double rotated_pairs = 0;  
+
     for (Int_t iPos = 0; iPos < nPos; ++iPos){
       // Loop over all positive particles
       AliVTrack *trackP = dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(iPos));
       AliKFParticle KFpos_orig;
       KFpos_orig.Initialize();
       KFpos_orig += AliKFParticle(*trackP, fPdgLeg1);
-
 
       for (Int_t iNeg = 0; iNeg < nNeg; ++iNeg){
         // Loop over all negative particles and rotate them by rotation_angle
@@ -369,7 +369,11 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
 
         // calculate axis to rotate from momentum components of virtual mother
         AliKFParticle KFmother(KFpos_orig,KFneg_orig); 
-        
+
+        if(KFmother.GetMass() < 0.05){
+	  KFmother = AliKFParticle(KFpos_orig,KFneg_orig, kTRUE);
+        }
+
         bool rotatedLS_PP = false;
         bool rotatedLS_MM = false; 
         unsigned int rotated_count = 0;
@@ -387,25 +391,27 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
           AliKFParticle KFpos = KFpos_orig;
           AliKFParticle KFneg = KFneg_orig;
 
-
-          RotateKFParticle(&KFneg, rotation_angle, &KFmother);
-          RotateKFParticle(&KFpos, rotation_angle, &KFmother);
-
+          RotateKFParticle(&KFneg, rotation_angle, &KFmother, fEvent);
+          RotateKFParticle(&KFpos, rotation_angle, &KFmother, fEvent);
 
           if ((KFpos.GetPt()  > fMinimalPtCut  && KFpos.GetPt()  < fMaximalPtCut  &&
                KFpos.GetEta() > fMinimalEtaCut && KFpos.GetEta() < fMaximalEtaCut) &&
               (KFneg.GetPt()  > fMinimalPtCut  && KFneg.GetPt()  < fMaximalPtCut  &&
                KFneg.GetEta() > fMinimalEtaCut && KFneg.GetEta() < fMaximalEtaCut) ){
-        
+       
+	    
             loop_count++;
             rotated_count++;
- 
+
             Double_t weight_rotAng = 1.;
             //Double_t weight_rotAng = GetWeightFromRotation2(rotation_angle);
-            
+
+	    //has to be moved in the future?
             AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationAngle, weight_rotAng);
-            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, rotation_angle);
-            fArrTrackPairs.emplace_back(KFpos, KFneg, iPos, iNeg, 0, weight_rotAng); 
+            
+            fArrTrackPairs.emplace_back(KFpos, KFneg, iPos, iNeg, 0, weight_rotAng);
+            fArrTrackPairsPM.emplace_back(KFpos, KFneg, iPos, iNeg, 0, weight_rotAng);
+            fArrTrackPairsPM.back().rotAng = rotation_angle;
 
 
             //if ((KFpos.GetPt()  > fMinimalPtCut  && KFpos.GetPt()  < fMaximalPtCut  &&
@@ -438,7 +444,6 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   AliKFParticle KFpos2;
                   KFpos2.Initialize();
                   KFpos2 += AliKFParticle(*trackPToPair, fPdgLeg1);
-
                   if ((KFpos2.GetPt()  < fMinimalPtCut  || KFpos2.GetPt()  > fMaximalPtCut ||
                        KFpos2.GetEta() < fMinimalEtaCut || KFpos2.GetEta() > fMaximalEtaCut) ){
                     nPosPt--;
@@ -446,11 +451,10 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   }
                   else rotatedLS_PP = true;
           
-
                   double weight = 1.; 
                   //double weight = GetWeightFromOpeningAngle(&KFpos, &KFpos2); 
-                  if(weight > RotWeightP)
-                    RotWeightP = weight;
+                  //if(weight > RotWeightP)
+                  //  RotWeightP = weight;
                   //weight = weight_pos * weight_neg * (1. /( nPos-1 ));  
                   //weight = weight_pos;// * weight_rotAng * GetWeightFromOpeningAngle(&KFpos, &KFpos2); 
                   weight *= weight_pos; 
@@ -458,7 +462,9 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   //const double weight = weight_pos * GetWeightFromRotation(&KFpos2)* nPos / (fIterations * (nPos * nNeg));
                   //const double weight = weight_pos * GetWeightFromRotation(&KFpos2) * numberLS_PP / (fIterations * (nPos * nNeg) * (nPos-1));
                   fArrTrackPairs.emplace_back(KFpos, KFpos2, iPos, iPos2, 1, weight);
+                  fArrTrackPairsPP.emplace_back(KFpos, KFpos2, iPos, iPos2, 1, weight);
                   posWeightSum += weight;
+                  fArrTrackPairsPP.back().rotAng = rotation_angle;
                 }
               //}
             //}
@@ -478,6 +484,8 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   KFneg2.Initialize();
                   KFneg2 += AliKFParticle(*trackNToPair, fPdgLeg2);
 
+                  
+
                   if ((KFneg2.GetPt()  < fMinimalPtCut  || KFneg2.GetPt()  > fMaximalPtCut ||
                        KFneg2.GetEta() < fMinimalEtaCut || KFneg2.GetEta() > fMaximalEtaCut) ){
                     nNegPt--;
@@ -485,10 +493,11 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   }
                   else rotatedLS_MM = true;
 
+		  
                   double weight = 1.;
                   //double weight = GetWeightFromOpeningAngle(&KFneg, &KFneg2);
-                   if(weight > RotWeightN)
-                    RotWeightN = weight;
+                  // if(weight > RotWeightN)
+                  //  RotWeightN = weight;
                   //weight = weight_neg * weight_pos * (1. /( nNeg-1 ));
                   //weight = weight_neg;// * weight_rotAng * GetWeightFromOpeningAngle(&KFneg, &KFneg2);
                   weight *= weight_neg;// * GetWeightFromOpeningAngle(&KFneg, &KFneg2);
@@ -496,7 +505,10 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
                   //const double weight = weight_neg * GetWeightFromRotation(&KFneg2) * nNeg / (fIterations * (nPos * nNeg));
                   //const double weight = weight_neg * GetWeightFromRotation(&KFneg2) * numberLS_MM / (fIterations * (nPos * nNeg) * (nNeg-1));
                   fArrTrackPairs.emplace_back(KFneg, KFneg2, iNeg, iNeg2, 2, weight);
+                  fArrTrackPairsMM.emplace_back(KFneg, KFneg2, iNeg, iNeg2, 2, weight);
                   negWeightSum += weight;
+                  fArrTrackPairsMM.back().rotAng = rotation_angle;
+
                 }
 
                 fRotatedTracksWeightP.push_back(RotWeightP);
@@ -578,9 +590,9 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
   //}
  
 
-   const double numberLSPairsPt = (nPosPt*(nPosPt-1) + nNegPt*(nNegPt-1));
-   const double numberLSpt_PP = nPosPt*(nPosPt-1);
-   const double numberLSpt_MM = nNegPt*(nNegPt-1);
+   //const double numberLSPairsPt = (nPosPt*(nPosPt-1) + nNegPt*(nNegPt-1));
+   //const double numberLSpt_PP = nPosPt*(nPosPt-1);
+   //const double numberLSpt_MM = nNegPt*(nNegPt-1);
    
    //const double numberRotatedPairs_PP = (fIterations * (nPos * nNeg)) * (nPos-1);
    //const double numberRotatedPairs_MM = (fIterations * (nPos * nNeg)) * (nNeg-1);
@@ -598,7 +610,7 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
   double numberRMPairs_PP = 0;
   double numberRMPairs_MM = 0;
   for (size_t i = 0; i < fArrTrackPairs.size(); ++i){
-    if (fArrTrackPairs[i].charged_tracks == 1 && numberLSpt_PP!=0){
+    if (fArrTrackPairs[i].charged_tracks == 1){
       //fArrTrackPairs[i].weight /= (ULSpair_counter_PP * ( nPosPt-1 ) );
       //fArrTrackPairs[i].weight /= (ULSpair_counter * ( nPosPt-1 ) )/numberLSpt_PP;
         fArrTrackPairs[i].weight /= ((ULSpair_counter * ( nPos-1 )*fIterations ))/numberLS_PP;
@@ -607,22 +619,22 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
 
       numberRMPairs_PP++;
     }
-    if (fArrTrackPairs[i].charged_tracks == 2 && numberLSpt_MM!=0){
+    if (fArrTrackPairs[i].charged_tracks == 2){
       //fArrTrackPairs[i].weight /= (ULSpair_counter_MM * ( nNegPt-1 ) );
       //fArrTrackPairs[i].weight /= (ULSpair_counter * ( nNegPt-1 ) )/numberLSpt_MM;
       fArrTrackPairs[i].weight /= ((ULSpair_counter * ( nNeg-1 )*fIterations ))/numberLS_MM;
       //fArrTrackPairs[i].weight /= ((nPos * fIterations ));
       numberRMPairs_MM++; 
     }
-    if (fArrTrackPairs[i].charged_tracks != 0 && (numberLSpt_PP!=0 || numberLSpt_MM!=0) ){
+    if (fArrTrackPairs[i].charged_tracks != 0 ){
       fWeight += fArrTrackPairs[i].weight;
       numberRMPairs++;
     }
   }
   for (size_t i = 0; i < fArrTrackPairs.size(); ++i){
-    if (fArrTrackPairs[i].charged_tracks == 1 && numberLSpt_PP!=0)
+    if (fArrTrackPairs[i].charged_tracks == 1)
       fArrTrackPairs[i].weight /= fWeight/numberLSPairs;
-    if (fArrTrackPairs[i].charged_tracks == 2 && numberLSpt_MM!=0)
+    if (fArrTrackPairs[i].charged_tracks == 2)
       fArrTrackPairs[i].weight /= fWeight/numberLSPairs;
   }
   fWeight = 0 ;
@@ -645,7 +657,7 @@ void AliDielectronTrackRotator::CalculatePairsFromRotationAroundMother()
   //  //std::cout << "weight MM: " << fArrTrackPairs[i].weight << std::endl; 
   //}
 
- 
+
   double weight_LS_pairs = 0;
   if(numberRMPairs != 0) weight_LS_pairs = numberLSPairs / numberRMPairs;
   double weight_LS_pairs_PP = 0;
@@ -802,12 +814,13 @@ void AliDielectronTrackRotator::SetRotatedPairWeightMap(TString filename, TStrin
 }
 
 
-
 //______________________________________________
 Double_t AliDielectronTrackRotator::GetWeightFromOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg){
   if(!fUseAccMap){
     return 1;
   }
+
+  //needs to be changed to KF baseline
   else{
     // calculate axis to rotate from momentum components of virtual mother
     static const double electron_mass = AliPID::ParticleMass(AliPID::kElectron);
@@ -1007,44 +1020,37 @@ Double_t AliDielectronTrackRotator::PhivPair(Double_t MagField, Int_t charge1, I
 }
 
 void AliDielectronTrackRotator::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, AliKFParticle * kfMother, const AliVEvent * const ev){
-  // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
- 
-  TLorentzVector LvecMother2;
-  LvecMother2.SetPtEtaPhiM(kfMother->GetPt(), kfMother->GetEta(), kfMother->GetPhi(), kfMother->GetMass());
-  TVector3 vec3Axis = (LvecMother2).Vect();
-
- 
-  TRotation trans;
-  trans.Rotate(angle,vec3Axis);
-  
-
-  //if (!kfParticle) return;
-  // Double_t dx = 0.;
-  // Double_t dy = 0.;
-  // Double_t dz = 0.;
-
-  //if (kTRUE){
-  //  dx = kfParticle->GetX()-0.;
-  //  dy = kfParticle->GetY()-0.;
-  //  dz = kfParticle->GetZ()-0.;
-  //}
+  // Before rotate needs to be moved to the vertex position; move back after rotation
 
   Double_t dx = kfMother->GetX();
   Double_t dy = kfMother->GetY();
   Double_t dz = kfMother->GetZ();
 
-  //if (ev){
-  //  dx = ev->GetPrimaryVertex()->GetX()-0.;
-  //  dy = ev->GetPrimaryVertex()->GetY()-0.;
-  //  dz = ev->GetPrimaryVertex()->GetZ()-0.;
-  //}
+  if (ev){
+    dx = ev->GetPrimaryVertex()->GetX()-0.;
+    dy = ev->GetPrimaryVertex()->GetY()-0.;
+    dz = ev->GetPrimaryVertex()->GetZ()-0.;
+  }
 
 
   kfParticle->X() = kfParticle->GetX() - dx;
   kfParticle->Y() = kfParticle->GetY() - dy;
   kfParticle->Z() = kfParticle->GetZ() - dz;
 
+
+  kfMother->X() = kfMother->GetX() - dx;
+  kfMother->Y() = kfMother->GetY() - dy;
+  kfMother->Z() = kfMother->GetZ() - dz;
+ 
+
+  TLorentzVector LvecMother;
+  LvecMother.SetPtEtaPhiM(kfMother->GetPt(), kfMother->GetEta(), kfMother->GetPhi(), kfMother->GetMass());
+  TVector3 vec3Axis = (LvecMother).Vect();
+
+  TRotation trans;
+  trans.Rotate(angle,vec3Axis);
   
+
   // Rotate the kf particle
   //Double_t c = cos(angle);
   //Double_t s = sin(angle);
@@ -1107,4 +1113,13 @@ void AliDielectronTrackRotator::RotateKFParticle(AliKFParticle * kfParticle,Doub
   kfParticle->Y() = kfParticle->GetY() + dy;
   kfParticle->Z() = kfParticle->GetZ() + dz;
 
+  kfMother->X() = kfMother->GetX() + dx;
+  kfMother->Y() = kfMother->GetY() + dy;
+  kfMother->Z() = kfMother->GetZ() + dz;
+
 }
+
+
+
+
+

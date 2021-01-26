@@ -59,13 +59,21 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
-  fQnCorrEventPlaneAngle(0.0),
+  fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
   fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
-  fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
+  fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
+  fEP3AngleV0M(0),fEP3AngleTPCA(0),fEP3AngleTPCC(0),
+  fEP4AngleV0M(0),fEP4AngleTPCA(0),fEP4AngleTPCC(0),
+  fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
+  fEP3R_CosD1(0),fEP3R_CosD2(0),fEP3R_CosD3(0),
+  fEP4R_CosD1(0),fEP4R_CosD2(0),fEP4R_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),fEtaPhiMCPion(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
-  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),fHistTrackPsiEPPtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),
+  fPtEP3AnglePionAcc(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),
+  fPtEP4AnglePionAcc(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
+  fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -99,13 +107,19 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
-  fQnCorrEventPlaneAngle(0.0),
+  fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
   fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
-  fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
+  fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
+  fEP3AngleV0M(0),fEP3AngleTPCA(0),fEP3AngleTPCC(0),
+  fEP4AngleV0M(0),fEP4AngleTPCA(0),fEP4AngleTPCC(0),
+  fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
+  fEP3R_CosD1(0),fEP3R_CosD2(0),fEP3R_CosD3(0),
+  fEP4R_CosD1(0),fEP4R_CosD2(0),fEP4R_CosD3(0),
   fHistMCPi0_PtEtaMult(0),fHistMCPi0_PtEtaEP(0),fEtaPhiMCPion(0),
   fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),
-  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),fHistTrackPsiEPPtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
+  fPtEPAnglePionAcc(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),fPtEP3AnglePionAcc(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),fPtEP4AnglePionAcc(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
+  fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -1446,6 +1460,16 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   Double_t fEventPlaneBinArray[nEventPlaneBins+1];
   GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,fEventPlaneBinArray);
 
+  Double_t fEventPlane3Max = TMath::Pi()/3.;
+  Double_t fEventPlane3BinArray[nEventPlaneBins+1];
+  GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlane3Max,fEventPlane3BinArray);
+
+  Double_t fEventPlane4Max = TMath::Pi()/4.;
+  Double_t fEventPlane4BinArray[nEventPlaneBins+1];
+  GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,fEventPlane4BinArray);
+
+
+
   // pt bins for tracks
   Int_t nTrackPtBins = 200-1; // Bin Size = 150 MeV/c
   Double_t fTrackPtMin = 0.15; // Min Pt Cut
@@ -1455,9 +1479,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
   fHistTrackPsiEPPtCent = new TH3F("fHistTrackPsiEPPtCent","Track #Delta#Psi_{EP};#Delta#Psi_{EP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiEPPtCent);
+
+  fHistTrackPsiEP3PtCent = new TH3F("fHistTrackPsiEP3PtCent","Track #Delta#Psi_{EP,3};#Delta#Psi_{EP,3};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlane3BinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackPsiEP3PtCent);
+
+  fHistTrackPsiEP4PtCent = new TH3F("fHistTrackPsiEP4PtCent","Track #Delta#Psi_{EP,4};#Delta#Psi_{EP,4};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlane4BinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackPsiEP4PtCent);
+
   fHistTrackPsiRPPtCent = new TH3F("fHistTrackPsiRPPtCent","Track #Delta#Psi_{RP};#Delta#Psi_{RP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiRPPtCent);
-
 
   int nClusEtaBins = 2;
   int nClusPhiBins = 18;
@@ -1487,6 +1517,21 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     fOutput->Add(fPtEPAngleMCPion);
     fPtEPAngleTrueRecMCPion = new TH2F("PtEPAngleTrueRecMCPion","PtEPAngleTrueRecMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
     fOutput->Add(fPtEPAngleTrueRecMCPion);
+
+    fPtEP3AnglePionAcc = new TH2F("PtEP3AnglePionAcc","PtEP3AnglePionAcc;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane3Max,60,0,30);
+    fOutput->Add(fPtEP3AnglePionAcc);
+    fPtEP3AngleMCPion = new TH2F("PtEP3AngleMCPion","PtEP3AngleMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane3Max,60,0,30);
+    fOutput->Add(fPtEP3AngleMCPion);
+    fPtEP3AngleTrueRecMCPion = new TH2F("PtEP3AngleTrueRecMCPion","PtEP3AngleTrueRecMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane3Max,60,0,30);
+    fOutput->Add(fPtEP3AngleTrueRecMCPion);
+
+    fPtEP4AnglePionAcc = new TH2F("PtEP4AnglePionAcc","PtEP4AnglePionAcc;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,60,0,30);
+    fOutput->Add(fPtEP4AnglePionAcc);
+    fPtEP4AngleMCPion = new TH2F("PtEP4AngleMCPion","PtEP4AngleMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,60,0,30);
+    fOutput->Add(fPtEP4AngleMCPion);
+    fPtEP4AngleTrueRecMCPion = new TH2F("PtEP4AngleTrueRecMCPion","PtEP4AngleTrueRecMCPion;#Delta#Psi_{EP}",nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,60,0,30);
+    fOutput->Add(fPtEP4AngleTrueRecMCPion);
+
     fMCReactionPlane = new TH1F("MCReactionPlane","Reaction Plane (MC Truth)",256,-TMath::Pi(),TMath::Pi());
     fOutput->Add(fMCReactionPlane);
     fPtRPAnglePionAcc = new TH2F("PtRPAnglePionAcc","Accepted Pion vs Reaction Plane;#Delta#Psi_{RP}",nEventPlaneBins,fEventPlaneMin,fEventPlaneMax,60,0,30);
@@ -1539,19 +1584,35 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   }
 
   // Profiles for calculating Event Plane Resolution
+  // 2nd Order Event Plane
   fEPAngleV0M = new TH1F("EPAngleV0M","EPAngleV0M;#psi_{2}^{V0M}",270,-TMath::Pi(),2*TMath::Pi());
   fEPAngleTPCA = new TH1F("EPAngleTPCA","EPAngleTPCA;#psi_{2}^{TPCA}",270,-TMath::Pi(),2*TMath::Pi());
   fEPAngleTPCC = new TH1F("EPAngleTPCC","EPAngleTPCC;#psi_{2}^{TPCC}",270,-TMath::Pi(),2*TMath::Pi());
   fOutput->Add(fEPAngleV0M);
   fOutput->Add(fEPAngleTPCA);
   fOutput->Add(fEPAngleTPCC);
+  // 3rd Order Event Plane
+  fEP3AngleV0M = new TH1F("EP3AngleV0M","EP3AngleV0M;#psi_{3}^{V0M}",270,-TMath::Pi(),2*TMath::Pi());
+  fEP3AngleTPCA = new TH1F("EP3AngleTPCA","EP3AngleTPCA;#psi_{3}^{TPCA}",270,-TMath::Pi(),2*TMath::Pi());
+  fEP3AngleTPCC = new TH1F("EP3AngleTPCC","EP3AngleTPCC;#psi_{3}^{TPCC}",270,-TMath::Pi(),2*TMath::Pi());
+  fOutput->Add(fEP3AngleV0M);
+  fOutput->Add(fEP3AngleTPCA);
+  fOutput->Add(fEP3AngleTPCC);
+  // 4th Order Event Plane
+  fEP4AngleV0M = new TH1F("EP4AngleV0M","EP4AngleV0M;#psi_{4}^{V0M}",270,-TMath::Pi(),2*TMath::Pi());
+  fEP4AngleTPCA = new TH1F("EP4AngleTPCA","EP4AngleTPCA;#psi_{4}^{TPCA}",270,-TMath::Pi(),2*TMath::Pi());
+  fEP4AngleTPCC = new TH1F("EP4AngleTPCC","EP4AngleTPCC;#psi_{4}^{TPCC}",270,-TMath::Pi(),2*TMath::Pi());
+  fOutput->Add(fEP4AngleV0M);
+  fOutput->Add(fEP4AngleTPCA);
+  fOutput->Add(fEP4AngleTPCC);
 
 
   fEPR_CosD1 = new TProfile2D*[kNumEPROrders];
   fEPR_CosD2 = new TProfile2D*[kNumEPROrders];
   fEPR_CosD3 = new TProfile2D*[kNumEPROrders];
   TString sEPRName = "EPR_CosD%d_N%d";
-  TString sEPRTitle = "<Cos(%d[#Delta#Psi_{%d}])>;z_{vtx} (cm);Cent";
+  TString sEPRTitle = "<Cos(%d[#Delta#Psi_{%d,2}])>;z_{vtx} (cm);Cent";
+
   for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
     fEPR_CosD1[iOrder] = new TProfile2D(Form(sEPRName.Data(),1,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,1),kNvertBins,fArrayNVertBins,4,centBinArray);
     fEPR_CosD2[iOrder] = new TProfile2D(Form(sEPRName.Data(),2,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,2),kNvertBins,fArrayNVertBins,4,centBinArray);
@@ -1561,6 +1622,39 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     fOutput->Add(fEPR_CosD2[iOrder]);
     fOutput->Add(fEPR_CosD3[iOrder]);
   }
+
+  fEP3R_CosD1 = new TProfile2D*[kNumEPROrders];
+  fEP3R_CosD2 = new TProfile2D*[kNumEPROrders];
+  fEP3R_CosD3 = new TProfile2D*[kNumEPROrders];
+  sEPRName = "EP3R_CosD%d_N%d";
+  sEPRTitle = "<Cos(%d[#Delta#Psi_{%d,3}])>;z_{vtx} (cm);Cent";
+
+  for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
+    fEP3R_CosD1[iOrder] = new TProfile2D(Form(sEPRName.Data(),1,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,1),kNvertBins,fArrayNVertBins,4,centBinArray);
+    fEP3R_CosD2[iOrder] = new TProfile2D(Form(sEPRName.Data(),2,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,2),kNvertBins,fArrayNVertBins,4,centBinArray);
+    fEP3R_CosD3[iOrder] = new TProfile2D(Form(sEPRName.Data(),3,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,3),kNvertBins,fArrayNVertBins,4,centBinArray);
+
+    fOutput->Add(fEP3R_CosD1[iOrder]);
+    fOutput->Add(fEP3R_CosD2[iOrder]);
+    fOutput->Add(fEP3R_CosD3[iOrder]);
+  }
+
+  fEP4R_CosD1 = new TProfile2D*[kNumEPROrders];
+  fEP4R_CosD2 = new TProfile2D*[kNumEPROrders];
+  fEP4R_CosD3 = new TProfile2D*[kNumEPROrders];
+  sEPRName = "EP4R_CosD%d_N%d";
+  sEPRTitle = "<Cos(%d[#Delta#Psi_{%d,4}])>;z_{vtx} (cm);Cent";
+
+  for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
+    fEP4R_CosD1[iOrder] = new TProfile2D(Form(sEPRName.Data(),1,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,1),kNvertBins,fArrayNVertBins,4,centBinArray);
+    fEP4R_CosD2[iOrder] = new TProfile2D(Form(sEPRName.Data(),2,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,2),kNvertBins,fArrayNVertBins,4,centBinArray);
+    fEP4R_CosD3[iOrder] = new TProfile2D(Form(sEPRName.Data(),3,iOrder+1),Form(sEPRTitle.Data(),iOrder+1,3),kNvertBins,fArrayNVertBins,4,centBinArray);
+
+    fOutput->Add(fEP4R_CosD1[iOrder]);
+    fOutput->Add(fEP4R_CosD2[iOrder]);
+    fOutput->Add(fEP4R_CosD3[iOrder]);
+  }
+
 
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2122,6 +2216,7 @@ TObjArray* AliAnalysisTaskGammaHadron::CloneToCreateTObjArray(AliParticleContain
 	return tracksClone;
 }
 void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* tracks) {
+  double pi = TMath::Pi();
 
   // fHistTrackPsiRPPtCent fHistTrackPsiEPPtCent
 	Int_t NoOfTracksInEvent =tracks->GetNParticles();
@@ -2141,6 +2236,19 @@ void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* track
     Double_t fDeltaPsiEP = abs(DeltaPhi(fLocalVector,fQnCorrEventPlaneAngle)); // DeltaPhi in [-pi,pi]
     if ((TMath::Pi() - fDeltaPsiEP) < fDeltaPsiEP) fDeltaPsiEP = TMath::Pi() - fDeltaPsiEP; //DeltaPsi in [0,pi/2]
     fHistTrackPsiEPPtCent->Fill(fDeltaPsiEP,track->Pt(),fCent);
+
+    // Angles w.r.t. 3rd order EP
+    Double_t fDeltaPsiEP3 = abs(DeltaPhi(fLocalVector,fQnCorrEventPlane3Angle));
+    fDeltaPsiEP3 = fmod(fDeltaPsiEP3,2.*pi/3.);
+    if (pi/3. <= fDeltaPsiEP3) fDeltaPsiEP3 = 2.*pi/3. - fDeltaPsiEP3;
+    fHistTrackPsiEP3PtCent->Fill(fDeltaPsiEP3,track->Pt(),fCent);
+
+    // Angles w.r.t. 4th order EP
+    Double_t fDeltaPsiEP4 = abs(DeltaPhi(fLocalVector,fQnCorrEventPlane4Angle));
+    fDeltaPsiEP4 = fmod(fDeltaPsiEP4,pi/2.);
+    if (pi/4. <= fDeltaPsiEP4) fDeltaPsiEP4 = pi/2. - fDeltaPsiEP4;
+    fHistTrackPsiEP4PtCent->Fill(fDeltaPsiEP4,track->Pt(),fCent);
+
     // MC True ReactionPlaneAngle
     Double_t fDeltaPsiRP = abs(DeltaPhi(fLocalVector,fMCReactionPlaneAngle));
     if ((TMath::Pi() - fDeltaPsiRP) < fDeltaPsiRP) fDeltaPsiRP = TMath::Pi() - fDeltaPsiRP;
@@ -2880,10 +2988,26 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
 			{
         Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
+        // Angle relative to 2nd order event plane
         if (fLocalPhi < 0) fLocalPhi += 2*pi;
         Double_t evtPlaneAngle=abs(DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlaneAngle));
         if ((pi - evtPlaneAngle) < evtPlaneAngle) evtPlaneAngle = pi - evtPlaneAngle;
         fPtEPAnglePionAcc->Fill(evtPlaneAngle,aliCaloClusterVecpi0.Pt());
+
+        // Angle relative to 3rd order event plane
+
+        Double_t evtPlane3Angle=abs(DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlane3Angle));
+        evtPlane3Angle  = fmod(evtPlane3Angle,2.*pi/3); // now in range [0,2pi/3]
+        if (pi/3. <= evtPlane3Angle) evtPlane3Angle = 2.*pi/3. - evtPlane3Angle;
+        fPtEP3AnglePionAcc->Fill(evtPlane3Angle,aliCaloClusterVecpi0.Pt());
+
+        // Angle relative to 4th order event plane
+
+        Double_t evtPlane4Angle=abs(DeltaPhi(aliCaloClusterVecpi0,fQnCorrEventPlane4Angle));
+        evtPlane4Angle = fmod(evtPlane4Angle,pi/2.); // now in range [0,pi/2.]
+        if (pi/4. <= evtPlane4Angle) evtPlane4Angle = pi/2. - evtPlane4Angle;
+        fPtEP4AnglePionAcc->Fill(evtPlane4Angle,aliCaloClusterVecpi0.Pt());
+
 
         Double_t reactionPlaneAngle=abs(DeltaPhi(aliCaloClusterVecpi0,fMCReactionPlaneAngle));
         if ((pi - reactionPlaneAngle) < reactionPlaneAngle) reactionPlaneAngle = pi - reactionPlaneAngle;
@@ -4218,6 +4342,8 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   //..This function is called at the beginning of FillHistograms
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane()"<<endl;
 
+  Double_t fZVertex = fVertex[2];
+
   fQnCorrEventPlaneAngle = fEPV0; // Default to uncorrected V0M if QnVectors are not set up correctly
 
   if (fIsMC && fUseMCReactionPlane && fMCHeader) {
@@ -4230,6 +4356,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   // Want to set fQnCorrEventPlaneAngle
 
   Int_t iHarmonic = 2;
+
   const AliQnCorrectionsQnVector * fV0MQnVector;
   const AliQnCorrectionsQnVector * fTPCAQnVector;
   const AliQnCorrectionsQnVector * fTPCCQnVector;
@@ -4245,6 +4372,8 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
   if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
 
+  // Second Order Event Plane
+
   Double_t fDPsi1 = fV0MQnEP - fTPCAQnEP;
   Double_t fDPsi2 = fV0MQnEP - fTPCCQnEP;
   Double_t fDPsi3 = fTPCAQnEP - fTPCCQnEP; // A-side is probably eta > 0
@@ -4253,8 +4382,6 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   fEPAngleTPCA->Fill(fTPCAQnEP);
   fEPAngleTPCC->Fill(fTPCCQnEP);
 
-  Double_t fZVertex = fVertex[2];
-
   for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
     fEPR_CosD1[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi1));
     fEPR_CosD2[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi2));
@@ -4262,6 +4389,52 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   }
 
   fQnCorrEventPlaneAngle = fV0MQnEP; // We use V0 Combination
+
+  // Third Order Event Plane
+  iHarmonic = 3;
+  fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
+  fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
+  fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+
+  fEP3AngleV0M->Fill(fV0MQnEP);
+  fEP3AngleTPCA->Fill(fTPCAQnEP);
+  fEP3AngleTPCC->Fill(fTPCCQnEP);
+
+  fDPsi1 = fV0MQnEP - fTPCAQnEP;
+  fDPsi2 = fV0MQnEP - fTPCCQnEP;
+  fDPsi3 = fTPCAQnEP - fTPCCQnEP;
+
+  for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
+    fEP3R_CosD1[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi1));
+    fEP3R_CosD2[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi2));
+    fEP3R_CosD3[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi3));
+  }
+
+  fQnCorrEventPlane3Angle = fV0MQnEP; // We use V0 Combination
+
+  // Fourth Order Event Plane
+  iHarmonic = 4;
+  fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
+  fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic);
+  fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic);
+
+  fEP4AngleV0M->Fill(fV0MQnEP);
+  fEP4AngleTPCA->Fill(fTPCAQnEP);
+  fEP4AngleTPCC->Fill(fTPCCQnEP);
+
+  fDPsi1 = fV0MQnEP - fTPCAQnEP;
+  fDPsi2 = fV0MQnEP - fTPCCQnEP;
+  fDPsi3 = fTPCAQnEP - fTPCCQnEP;
+
+  for (Int_t iOrder = 0; iOrder < kNumEPROrders; iOrder++) {
+    fEP4R_CosD1[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi1));
+    fEP4R_CosD2[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi2));
+    fEP4R_CosD3[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi3));
+  }
+
+  fQnCorrEventPlane4Angle = fV0MQnEP; // We use V0 Combination
+
+
 }
 
 /**

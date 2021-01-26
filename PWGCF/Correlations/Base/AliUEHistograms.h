@@ -29,7 +29,7 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackEfficiencyCut = kFALSE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = 0.02, Bool_t applyEfficiency = kFALSE);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackCuts = kTRUE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = -1, Bool_t applyEfficiency = kFALSE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);

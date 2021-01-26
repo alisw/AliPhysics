@@ -1,4 +1,5 @@
 #include "AliAnalysisTaskNonlinearFlow.h"
+#include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 
 #include <TList.h>
@@ -66,12 +67,15 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
 AliAnalysisTaskSE(),
 fAOD(0),
 fitssatrackcuts(0),
-fFilterbit(768),
+fFilterbit(96),
+fFilterbitDefault(96),
 fEtaCut(0.8),
 fVtxCut(10.0),
+fVtxCutDefault(10.0),
 fMinPt(0.2),
 fMaxPt(3.0),
 fTPCclusters(70),
+fChi2PerTPCcluster(10000),
 fMinITSClus(0),
 fMaxChi2(0),
 fUseDCAzCut(0),
@@ -166,60 +170,8 @@ hDCAxy(0),
 hDCAz(0),
 hITSclusters(0),
 hChi2(0),
-
-hNtrksPt0530Pt0230(0),
-hNtrksPt0730Pt0230(0),
-hNtrksEta09Eta10(0),
-hNtrksEta08Eta10(0),
-hNtrksAllNtrksLS(0),
-hNtrksNoGapGap0(0),
-hNtrksNoGapGap2(0),
-hNtrksNoGapGap4(0),
-hNtrksNoGapGap6(0),
-hNtrksNoGapGap8(0),
-hNtrksNoGapGap(0),
-hNtrksNoGapGap14(0),
-hNtrksNoGapGap16(0),
-hNtrksNoGapGap18(0),
-hNtrksNoGap3sub(0),
-hNtrksNoGap3subGap(0),
-
-hReco(0),
-hRecoPion(0),
-hRecoKaon(0),
-hRecoProton(0),
-hRecoElectron(0),
-hRecoMuon(0),
-hRecoLSplus(0),
-hRecoLSminus(0),
-hPtRecoNtrks(0),
-hEtaRecoNtrks(0),
-hVzRecoNtrks(0),
-hPtRecoNtrksReco(0),
-hEtaRecoNtrksReco(0),
-hVzRecoNtrksReco(0),
-hTruth(0),
-hTruthPion(0),
-hTruthKaon(0),
-hTruthProton(0),
-hTruthElectron(0),
-hTruthMuon(0),
-hTruthLSplus(0),
-hTruthLSminus(0),
-hPtTruthNtrks(0),
-hEtaTruthNtrks(0),
-hVzTruthNtrks(0),
-hPtTruthNtrksReco(0),
-hEtaTruthNtrksReco(0),
-hVzTruthNtrksReco(0),
-hNtrksRecoNtrksTruth(0),
-hNtrksRecoCorrNtrksTruth(0),
-
-hPrimary(0),
-hPions(0),
-hDCAptMC(0),
-hDCAptMC_material(0),
-hDCAptMC_weak(0) {
+rand(32213) 
+ {
 
 }
 //______________________________________________________________________________
@@ -237,11 +189,14 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fMaxChi2(0),
 	fUseDCAzCut(0),
 	fDCAz(0),
+	fDCAzDefault(0),
 	fUseDCAxyCut(0),
 	fDCAxy(0),
+	fDCAxyDefault(0),
 	fSample(1),
 	fCentFlag(0),
 	fTrigger(0),
+	fAliTrigger(0),
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
@@ -327,66 +282,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	hDCAz(0),
 	hITSclusters(0),
 	hChi2(0),
-
-	hNtrksPt0530Pt0230(0),
-	hNtrksPt0730Pt0230(0),
-	hNtrksEta09Eta10(0),
-	hNtrksEta08Eta10(0),
-	hNtrksAllNtrksLS(0),
-	hNtrksNoGapGap0(0),
-	hNtrksNoGapGap2(0),
-	hNtrksNoGapGap4(0),
-	hNtrksNoGapGap6(0),
-	hNtrksNoGapGap8(0),
-	hNtrksNoGapGap(0),
-	hNtrksNoGapGap14(0),
-	hNtrksNoGapGap16(0),
-	hNtrksNoGapGap18(0),
-	hNtrksNoGap3sub(0),
-	hNtrksNoGap3subGap(0),
-
-	//..MC
-	hMultMC(0),
-	fPhiDisTruth(0),
-	fEtaDisTruth(0),
-	fPtDisTruth(0),
-
-	hReco(0),
-	hRecoPion(0),
-	hRecoKaon(0),
-	hRecoProton(0),
-	hRecoElectron(0),
-	hRecoMuon(0),
-	hRecoLSplus(0),
-	hRecoLSminus(0),
-	hPtRecoNtrks(0),
-	hEtaRecoNtrks(0),
-	hVzRecoNtrks(0),
-	hPtRecoNtrksReco(0),
-	hEtaRecoNtrksReco(0),
-	hVzRecoNtrksReco(0),
-	hTruth(0),
-	hTruthPion(0),
-	hTruthKaon(0),
-	hTruthProton(0),
-	hTruthElectron(0),
-	hTruthMuon(0),
-	hTruthLSplus(0),
-	hTruthLSminus(0),
-	hPtTruthNtrks(0),
-	hEtaTruthNtrks(0),
-	hVzTruthNtrks(0),
-	hPtTruthNtrksReco(0),
-	hEtaTruthNtrksReco(0),
-	hVzTruthNtrksReco(0),
-	hNtrksRecoNtrksTruth(0),
-	hNtrksRecoCorrNtrksTruth(0),
-
-	hPrimary(0),
-	hPions(0),
-	hDCAptMC(0),
-	hDCAptMC_material(0),
-	hDCAptMC_weak(0), rand(32213) {
+	rand(32213) {
 
 		// Output slot #1 writes into a TList
 		DefineOutput(1, TList::Class());
@@ -428,14 +324,14 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fEventCuts.fPileUpCutMV = true;
 
 	// range on Xaxis:
-	double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
-		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
+	// double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
+        // 		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
        
 
         if (fNtrksName == "Mult") {
-	    nn = 32;
-            for (int i = 0; i <= nn; i++) {
-                xbins[i] = xbins_tmp[i];
+	    nn = 3000;
+            for (int i = 0; i <= 3000; i++) {
+                xbins[i] = i;
             }
         } else {
             nn = 10;
@@ -500,8 +396,10 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	Bool_t isTrigselected = false;
         if (fTrigger == 0) {
 	    isTrigselected = fSelectMask&AliVEvent::kINT7;
+	    fAliTrigger = AliVEvent::kINT7;
         } else if (fTrigger == 1) {
 	    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+	    fAliTrigger = AliVEvent::kHighMultV0;
         }
 	if(isTrigselected == false) return;
 
@@ -528,13 +426,14 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
 		if(nTracksPrim < 0.5) { return; }
 	}
-
 	hEventCount->Fill("after fEventCuts", 1.);
 
 	//..filling Vz distribution
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
 	float fVtxZ = vtx->GetZ();
 	if(TMath::Abs(fVtxZ) > fVtxCut) return;
+        NTracksCalculation(fInputEvent);
+	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
 	fVtxAfterCuts->Fill(fVtxZ);
 
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
@@ -557,7 +456,13 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
 
         // checking the run number for aplying weights & loading TList with weights
-        if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+        //
+        // if (fCurrSystFlag == 0) {
+        if ( !fPeriod.EqualTo("LHC15o") ) {
+		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+        } else {
+		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+        }
 
 
 
@@ -571,6 +476,57 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	PostData(1, fListOfObjects);
 }
 
+void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
+	const int nAODTracks = aod->GetNumberOfTracks();
+	NtrksCounter = 0;
+
+	//..for DCA
+	double pos[3], vz, vx, vy;
+	vz = aod->GetPrimaryVertex()->GetZ();
+	vx = aod->GetPrimaryVertex()->GetX();
+	vy = aod->GetPrimaryVertex()->GetY();
+
+	//..LOOP OVER TRACKS........
+	//........................................
+	for(Int_t nt = 0; nt < nAODTracks; nt++)
+	{
+		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+		if (!aodTrk){
+			delete aodTrk;
+			continue;
+		}
+
+		double pos[3];
+		aodTrk->GetXYZ(pos);
+		double dcaZ = 100;
+		double dcaX = 100;
+		double dcaY = 100;
+		double dcaXY = 100;
+		dcaZ = pos[2] - vz;
+		dcaX = pos[0] - vx;
+		dcaY = pos[1] - vy;
+		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+
+		int nClustersITS = 0;
+		nClustersITS = aodTrk->GetITSNcls();
+		float chi2PerClusterITS = -1;
+		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+
+		if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
+		if (fFilterbitDefault == 96) {
+			if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
+		}
+
+		if(aodTrk->Pt() < fMinPt) continue;
+		if(aodTrk->Pt() > fMaxPt) continue;
+
+		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+
+		NtrksCounter += 1;
+	} // end loop of all track
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus)
 {
@@ -579,7 +535,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	// Init the number of tracks
 	double NtrksBefore = 0;
-	NtrksAfter = 0;
+        NtrksAfter = 0;
 	NtrksAfterGap10M = 0;
 	NtrksAfterGap10P = 0;
 	NtrksAfterGap14M = 0;
@@ -587,6 +543,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	NtrksAfter3subL = 0;
 	NtrksAfter3subM = 0;
 	NtrksAfter3subR = 0;
+
 
 	//..for DCA
 	double pos[3], vz, vx, vy;
@@ -638,15 +595,26 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		dcaY = pos[1] - vy;
 		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
+                // nClustersITS cut
 		int nClustersITS = 0;
 		nClustersITS = aodTrk->GetITSNcls();
 		float chi2PerClusterITS = -1;
 		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
+                // nClustersTPC cut
+                int nClustersTPC = 0;
+		nClustersTPC = aodTrk->GetTPCNcls();
+		if (nClustersTPC < fTPCclusters) { continue; }
+		float chi2PerClusterTPC = -1;
+		if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
+		if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
+
 		if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
 		if (fFilterbit == 96) {
 			if (TMath::Abs(dcaZ) > fDCAz) continue;
 		}
+                if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
+                if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
 
 		if(aodTrk->Pt() < fMinPt) continue;
 		if(aodTrk->Pt() > fMaxPt) continue;
@@ -658,7 +626,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
-			weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
+                        // if (fCurrSystFlag == 0) {
+			if ( !fPeriod.EqualTo("LHC15o") ) {
+				weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
+			} else {
+				weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+			}
 		}
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
@@ -781,12 +754,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
         correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight); 
         correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle); 
 
-	hMult->Fill(NtrksAfter);
+	hMult->Fill(NtrksCounter);
 
 	// CalculateProfile(centProfile, cent);
 	if (fNtrksName == "Mult") {
-	    CalculateProfile(multProfile, NtrksAfter);
-	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+	    CalculateProfile(multProfile, NtrksCounter);
+	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
         } else {
 	    CalculateProfile(multProfile, cent);
 	    CalculateProfile(multProfile_bin[bootstrap_value], cent);
@@ -1064,6 +1037,30 @@ const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies speci
   }
 
   return name;
+}
+
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics()
+{
+	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+        if(!fWeightsSystematics)
+        {
+            printf("Weights could not be found in list!\n");
+            return kFALSE;
+        }
+        fWeightsSystematics->CreateNUA();
+        return kTRUE;
+}
+
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species)
+{
+
+    double dPhi = track->Phi();
+    double dEta = track->Eta();
+    double dVz = fVtxZ;
+    double dWeight = 1.0;
+    dWeight = fWeightsSystematics->GetNUA(dPhi, dEta, dVz);
+    return dWeight;
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights()
@@ -1598,7 +1595,7 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const
 {
   Bool_t isHM = kFALSE;
-  if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
+  if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
 
   if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
     if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d

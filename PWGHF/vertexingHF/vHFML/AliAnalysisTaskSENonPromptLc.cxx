@@ -161,7 +161,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 {
-    if (fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
+    if (fCreateMLtree && fEnableEvtSampling && ((fOptionSampling == 0 && gRandom->Rndm() > fFracEvtToKeep) || (fOptionSampling == 1 && gRandom->Rndm() < 1-fFracEvtToKeep)))
     {
         PostData(1, fOutput);
         return;
@@ -362,15 +362,15 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         {
             if (fDecChannel == kLctopKpi) // Lc->pKpi
             {
-               if (fReadMC){
-               int labD[3] = {-1, -1, -1};
-               //check if resonant decay
-               int  decay=0;
-               if(labLc && partLc){
-                 decay= AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
-               }
-               (dynamic_cast<AliHFMLVarHandlerLctopKpi *>(fMLhandler))->SetIsLcpKpiRes(decay);
-               }
+                if (fReadMC)
+                {
+                    int labD[3] = {-1, -1, -1};
+                    //check if resonant decay
+                    int  decay = 0;
+                    if(labLc && partLc)
+                        decay = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
+                    (dynamic_cast<AliHFMLVarHandlerLctopKpi *>(fMLhandler))->SetIsLcpKpiRes(decay);
+                }
                 if (isSelected == 1 || isSelected == 3) // pKpi
                 {
                     bool isSignal = false;

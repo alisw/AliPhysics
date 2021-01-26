@@ -163,6 +163,8 @@ class AliIsolationCut : public TObject {
   Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
   Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
   Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
+  Float_t    GetEMCPhiMin ()          const { return fEMCPhiMin ; }
+  Float_t    GetEMCPhiMax ()          const { return fEMCPhiMax ; }
   
   void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
@@ -194,6 +196,9 @@ class AliIsolationCut : public TObject {
   void       SwitchOnConeExcessCorrection ()                   { fMakeConeExcessCorr = kTRUE  ; }
   void       SwitchOffConeExcessCorrection()                   { fMakeConeExcessCorr = kFALSE ; }
   
+  void       SwitchOnConeFillExcessCorrHisto ()                { fFillFractionExcessHistograms = kTRUE  ; }
+  void       SwitchOffConeFillExcessCorrHisto()                { fFillFractionExcessHistograms = kFALSE ; }
+
  private:
 
   Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
@@ -204,6 +209,8 @@ class AliIsolationCut : public TObject {
   
   Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
   
+  Bool_t     fFillFractionExcessHistograms;            ///< Fill histograms checking the correction excess
+
   Float_t    fConeSize ;                               ///< Size of the isolation cone
  
   Float_t    fConeSizeBandGap ;                        ///< Gap to add to size of the isolation cone when filling eta/phi bands for UE estimation
@@ -255,6 +262,10 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
   
+  TH3F *   fhPtInConeCent ;                            //!<! Cluster/track Pt in the cone vs centrality.
+  TH3F *   fhPtClusterInConeCent ;                     //!<! Cluster Pt in the cone vs centrality.
+  TH3F *   fhPtTrackInConeCent ;                       //!<! Track Pt in the cone vs centrality.
+
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
@@ -319,13 +330,13 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPtUEBandNormTrack;                 //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger.
   
   TH2F *   fhFractionTrackOutConeEta;                  //!<! Fraction of cone out of tracks acceptance in eta.
-  TH2F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEta;                //!<! Fraction of cone out of clusters acceptance in eta.
-  TH2F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConePhi;                //!<! Fraction of cone out of clusters acceptance in phi.
-  TH2F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
-  TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
   TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt in the cone, after subtraction in eta or phi band.
   
@@ -351,6 +362,7 @@ class AliIsolationCut : public TObject {
 
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
+  TH3F *   fhPtInPerpConeCent ;                        //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   
   // UE bands
   TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
@@ -366,6 +378,11 @@ class AliIsolationCut : public TObject {
   TH3F *   fhEtaBandTrackPtCent   ;                    //!<! pT in Eta band to estimate UE in cone vs centrality, only tracks.
   TH3F *   fhPhiBandTrackPtCent   ;                    //!<! pT in Phi band to estimate UE in cone vs centrality, only tracks.
   
+  TH3F *   fhConeSumPtUEBandSubClustervsTrackCent ;    //!<! Cluster vs tracks Sum Pt in the cone vs centrality, after subtraction in eta or phi band.
+
+  TH3F *   fhBandClustervsTrackCent ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, clusters vs tracks.
+  TH3F *   fhBandNormClustervsTrackCent ;              //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, normalized to cone size, clusters vs tracks.
+
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
 
@@ -373,7 +390,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,15) ;
+  ClassDef(AliIsolationCut,17) ;
   /// \endcond
 
 } ;

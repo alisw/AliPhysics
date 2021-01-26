@@ -155,6 +155,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
         fIsoArray(0),
+        fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -325,6 +326,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
         fIsoArray(0),
+        fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -483,11 +485,14 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[10]=   { 85, 100, 200, 500, 100, 100, 100, 20, 500, 20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[10]={ 15,  -5,   0,   0,   0,   0,   0,  0,   0,  0};
+        Int_t bins[10]=   { 90, 100, 200, 500, 100, 100, 100, 20, 500, 20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[10]={ 10,  -5,   0,   0,   0,   0,   0,  0,   0,  0};
         Double_t xmax[10]={100,   5,   2, 0.5, 100,   1,   1, 20, 0.5, 20};
         fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont",10,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
+
+        fHFArray = new THnSparseD ("fHFArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont",10,bins,xmin,xmax);
+        fOutputList->Add(fHFArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
@@ -514,7 +519,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
 	fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
 	fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
-	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",100,0,100);
+	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",90,10,100);
 
 
 
@@ -1295,7 +1300,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
 
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
-                        if(TrkPt>15.0 && icaliso)
+                        if(TrkPt>10.0 && icaliso)
                            {
                             Double_t isoarray[10];
                             isoarray[0] = TrkPt;
@@ -1310,6 +1315,23 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[9] = (Double_t)NtrackCone;
                             //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
+                           }
+
+                        if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
+                           {
+                            Double_t isoarray[10];
+                            isoarray[0] = TrkPt;
+                            isoarray[1] = fTPCnSigma;
+                            isoarray[2] = eop;
+                            isoarray[3] = IsoEnergy;
+                            isoarray[4] = pTpart;
+                            isoarray[5] = m20;
+                            isoarray[6] = m02;
+                            isoarray[7] = (Double_t)NcontCone;
+                            isoarray[8] = IsoEnergyTrack;
+                            isoarray[9] = (Double_t)NtrackCone;
+                            //cout <<"isoarray = " << isoarray[7] << endl;
+                            fHFArray->Fill(isoarray);
                            }
 
                         if(fFlagIsolation && TrkPt>10.0)

@@ -53,6 +53,7 @@ void AddTask_GammaCaloMerged_PbPb(
   // subwagon config
   Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
+  Bool_t    doOverlapsFromCluster         = kFALSE, // overlaps as event criteria (false) or from single clusters (true)
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
 
@@ -440,6 +441,7 @@ void AddTask_GammaCaloMerged_PbPb(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  task->SetOverlapFromCluster(doOverlapsFromCluster);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
 

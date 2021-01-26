@@ -7,6 +7,8 @@
 #include "AliGFW.h"
 #include "AliPID.h"
 #include "AliMCEvent.h"
+#include "AliGFWCuts.h"
+#include "TString.h"
 
 class TList;
 class TH1D;
@@ -37,6 +39,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="");
   virtual ~AliAnalysisTaskMeanPtV2Corr();
   virtual void UserCreateOutputObjects();
+  virtual void NotifyRun();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
@@ -70,14 +73,16 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetV0MBins(Int_t nBins, Double_t *multibins);
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
-  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
+  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; }; //Ambiguous naming here. this is to keep track of the subwagon number
+  void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -85,11 +90,13 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
   Int_t fSystSwitch;
+  TString *fCentEst;
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
+  TAxis *fV0MMultiAxis;
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Double_t *fMultiBins; //!
@@ -118,8 +125,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
-  AliGFWCuts *fMidSelection; //!
-  AliGFWCuts *fFWSelection; //!
+  AliGFWCuts *fGFWSelection;
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store

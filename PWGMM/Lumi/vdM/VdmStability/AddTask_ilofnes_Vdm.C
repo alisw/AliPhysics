@@ -12,7 +12,7 @@ AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *ye
     if (year == "17") task->SetNRuns(864);//max
     if (year == "18") task->SetNRuns(1000);//790 CB
     if (nRuns > 0) task->SetNRuns(nRuns);
-    task->SetNCases(21);
+    task->SetNCases(25);
     task->SetFillTTree(fillTTree);
 
     // add your task to the manager

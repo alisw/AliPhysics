@@ -24,6 +24,7 @@
 #include "AliJHistManager.h"
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
+#include "AliJEfficiency.h"
 
 //==============================================================
 
@@ -44,6 +45,7 @@ class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
 class TParticle;
+class AliJEfficiency;
 
 class AliJFFlucTask : public AliAnalysisTaskSE {
 public:
@@ -152,6 +154,7 @@ public:
 private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
+	AliJEfficiency *fEfficiency; //!
 	AliJFFlucAnalysis *fFFlucAna; // analysis code
 	std::map<UInt_t, TH1 *> PhiWeightMap[96];
 

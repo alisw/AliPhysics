@@ -48,6 +48,7 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityMCRun2 : public AliAnalysisTaskSE {
 public:
@@ -94,7 +95,26 @@ public:
         //Highly experimental, use with care!
         fkIfImprovedExtraPrecisionFactor = lOpt;
     }
-    
+  void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
+    fkDoStrangenessTracking = lOpt;
+  }
+  void SetAddPVToRecPointFinder ( Bool_t lOpt = kTRUE) {
+    fkAddPVToRecPointFinder = lOpt;
+  }
+  void SetUseLayer1 ( Bool_t lOpt = kTRUE) {
+    fkUseLayer1 = lOpt;
+  }
+  void SetUseLayer2 ( Bool_t lOpt = kTRUE) {
+    fkUseLayer2 = lOpt;
+  }
+  void SetDistanceLayer1 ( Float_t lOpt ) {
+    fkDistanceLayer1 = lOpt;
+  }
+  void SetDistanceLayer2 ( Float_t lOpt ) {
+    fkDistanceLayer2 = lOpt;
+  }
+  
+  
     //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -270,7 +290,7 @@ public:
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
     //---------------------------------------------------------------------------------------
     
-    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b);
+    Double_t PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b);
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
@@ -365,7 +385,14 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+  Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
+  Bool_t fkAddPVToRecPointFinder;
+  Bool_t    fkUseLayer1; //if true, use layer 1
+  Bool_t    fkUseLayer2; //if true, use layer 2
+  Float_t   fkDistanceLayer1;
+  Float_t   fkDistanceLayer2;
+  AliAnalysisTaskWeakDecayVertexer *fWDV; //helper
+      
     Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
     Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
     Bool_t fkSandboxV0Prongs; //if true, sandbox mode will save the V0 prongs and not ESD track parametrizations
@@ -574,8 +601,14 @@ private:
     Float_t fTreeCascVarCascCosPointingAngle;         //!
     Float_t fTreeCascVarCascDCAtoPVxy;         //!
     Float_t fTreeCascVarCascDCAtoPVz;         //!
-    Float_t fTreeCascVarCascRadius;                   //!
-    Float_t fTreeCascVarV0Mass;                       //!
+  Float_t fTreeCascVarCascDCAtoPVxyTracked;         //!
+  Float_t fTreeCascVarCascDCAtoPVzTracked;         //!
+  Float_t fTreeCascVarCascRadius;                   //!
+  Float_t fTreeCascVarLayer1_AddedHitD;
+  Float_t fTreeCascVarLayer1_TrueHitD;
+  Float_t fTreeCascVarLayer2_AddedHitD;
+  Float_t fTreeCascVarLayer2_TrueHitD;
+  Float_t fTreeCascVarV0Mass;                       //!
     Float_t fTreeCascVarV0CosPointingAngle;           //!
     Float_t fTreeCascVarV0CosPointingAngleSpecial;    //!
     Float_t fTreeCascVarV0Radius;                     //!
@@ -856,7 +889,12 @@ private:
     Bool_t fTreeCascVarBachIsKink;
     Bool_t fTreeCascVarPosIsKink;
     Bool_t fTreeCascVarNegIsKink;
-    
+  
+  Bool_t fTreeCascVarIsValidAddedITSPointLayer1;
+  Bool_t fTreeCascVarIsValidAddedITSPointLayer2;
+  Bool_t fTreeCascVarAddedHitLayer1;
+  Bool_t fTreeCascVarAddedHitLayer2;
+
     //Cowboy/sailor studies
     Bool_t  fTreeCascVarIsCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
     Float_t fTreeCascVarCowboyness; //negative -> cowboy, positive -> sailor
@@ -881,7 +919,42 @@ private:
     
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
-    
+  TH1D *fRecPointRadii;
+  
+  TH1D *fRecPointDz;
+  TH1D *fRecPointDxy;
+  TH1D *fRecPointD;
+  TH2D *fRecPoint2D;
+  TH1D *fRecPointDzAssoc;
+  TH1D *fRecPointDxyAssoc;
+  TH1D *fRecPointDAssoc;
+  TH2D *fRecPoint2DAssoc;
+  
+  TH1D *fRecPointOuterDz;
+  TH1D *fRecPointOuterDxy;
+  TH1D *fRecPointOuterD;
+  TH2D *fRecPointOuter2D;
+  TH1D *fRecPointOuterDzAssoc;
+  TH1D *fRecPointOuterDxyAssoc;
+  TH1D *fRecPointOuterDAssoc;
+  TH2D *fRecPointOuter2DAssoc;
+  
+  TH2D *fRecPointPosition;
+  TH1D *fRecPointNz;
+  TH1D *fRecPointNy;
+  TH1D *fRecPointQ;
+  TH1D *fRecPointNpixels;
+  TH1D *fRecPointNzAssoc;
+  TH1D *fRecPointNyAssoc;
+  TH1D *fRecPointQAssoc;
+  TH1D *fRecPointNpixelsAssoc;
+  TH2D *fRecPointNyNz;
+  TH2D *fRecPointNyNzAssoc;
+  
+  TH2D *fHitMapLayer1;
+  TH2D *fHitMapLayer2;
+  
+  
     //Histograms for efficiency denominators (at final analysis level selections)
     //V0s
     TH3D *fHistGeneratedPtVsYVsCentralityK0Short;

@@ -87,9 +87,11 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert, Bool_t anaOmegaZero);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1);
   Bool_t PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0);
+  Bool_t PreSelForLc2Lpi(AliAODRecoCascadeHF *Lc2Lpi);
 
   void SetPtMinLc(Double_t a){fPtMinLc=a;}
   void SetPtMinPrFromLc(Double_t a){fPtMinPrFromLc=a;}
+  void SetPtMinPiFromLc(Double_t a){fPtMinPiFromLc=a;}
   void SetPtMinXic0(Double_t a){fPtMinXic0=a;}
   void SetPtMinPiFromXic0(Double_t a){fPtMinPiFromXic0=a;}
   void SetPtMinPiFromXi(Double_t a){fPtMinPiFromXi=a;}
@@ -97,7 +99,9 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdMassTolLc(Double_t a){fProdMassTolLc=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
+  void SetProdMassRejLambda(Double_t a){fProdMassRejLambda=a;}
   void SetProdMassTolKs0(Double_t a){fProdMassTolKs0=a;}
+  void SetProdMassRejKs0(Double_t a){fProdMassRejKs0=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
   void SetProdMassTolXic0(Double_t a){fProdMassTolXic0=a;}
   void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
@@ -138,6 +142,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
   Double_t GetPtMinLc(){return fPtMinLc;}
   Double_t GetPtMinPrFromLc(){return fPtMinPrFromLc;}
+  Double_t GetPtMinPiFromLc(){return fPtMinPiFromLc;}
   Double_t GetPtMinXic0(){return fPtMinXic0;}
   Double_t GetPtMinPiFromXic0(){return fPtMinPiFromXic0;}
   Double_t GetPtMinPiFromXi(){return fPtMinPiFromXi;}
@@ -145,7 +150,9 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Double_t GetProdMassTolLc(){return fProdMassTolLc;}
   Double_t GetProdMassTolLambda(){return fProdMassTolLambda;}
+  Double_t GetProdMassRejLambda(){return fProdMassRejLambda;}
   Double_t GetProdMassTolKs0(){return fProdMassTolKs0;}
+  Double_t GetProdMassRejKs0(){return fProdMassRejKs0;}
   Double_t GetProdMassTolXi(){return fProdMassTolXi;}
   Double_t GetProdMassTolXic0(){return fProdMassTolXic0;}
   Double_t GetProdRfidMinV0(){return fProdRfidMinV0;}
@@ -201,6 +208,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
   Double_t fPtMinLc;                 /// Minimum pT of Lc
   Double_t fPtMinPrFromLc;           /// Minimum pT of proton from Lc decay
+  Double_t fPtMinPiFromLc;           /// Minimum pT of pion from Lc decay
   Double_t fPtMinXic0;               /// Minimum pT of Xic0
   Double_t fPtMinPiFromXic0;         /// Minimum Bachelor pT of pion from Xic0 decay
   Double_t fPtMinPiFromXi;         /// Minimum Bachelor pT of pion from Xi decay
@@ -208,7 +216,9 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
   Double_t fProdMassTolLc;          /// Tolerance of Lc mass from PDG value
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
+  Double_t fProdMassRejLambda;      /// Rejection of Lambda mass from PDG value
   Double_t fProdMassTolKs0;         /// Tolerance of Ks0 mass from PDG value
+  Double_t fProdMassRejKs0;         /// Rejection of Ks0 mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassTolXic0;          /// Tolerance of Xic0 mass from PDG value
   Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
@@ -250,7 +260,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
 
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 5);
+  ClassDef(AliRDHFCutsKFP, 6);
   /// \endcond
 };
 

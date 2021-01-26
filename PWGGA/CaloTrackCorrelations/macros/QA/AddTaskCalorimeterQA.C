@@ -134,7 +134,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   cu->SwitchOnCorrectClusterLinearity();
   
   Bool_t bExotic  = kTRUE;
-  Bool_t bNonLin  = kTRUE;
+  Int_t  bNonLin  = 2;
   Bool_t bBadMap  = kTRUE;
   
   Bool_t bEnCalib = kFALSE;

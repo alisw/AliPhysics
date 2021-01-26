@@ -42,11 +42,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
   fSystSwitch(0),
+  fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
+  fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -75,8 +77,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fNUAList(0),
   fNUAHist(0),
   fRunNo(0),
-  fMidSelection(0),
-  fFWSelection(0),
+  fGFWSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -95,11 +96,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fSystSwitch(0),
+  fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
   fMCEvent(0),
   fPtAxis(0),
   fMultiAxis(0),
+  fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
   fMultiBins(0),
@@ -128,8 +131,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fNUAList(0),
   fNUAHist(0),
   fRunNo(0),
-  fMidSelection(0),
-  fFWSelection(0),
+  fGFWSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -181,12 +183,18 @@ AliAnalysisTaskMeanPtV2Corr::~AliAnalysisTaskMeanPtV2Corr() {
 };
 void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
+  if(!fGFWSelection) SetSystFlag(0);
+  fGFWSelection->PrintSetup();
+  if(fGFWSelection->GetSystFlagIndex() == 13) fCentEst = new TString("CL0");
+  else if(fGFWSelection->GetSystFlagIndex() == 14) fCentEst = new TString("CL1");
+  else fCentEst = new TString("V0M");
   OpenFile(1);
-  // const Int_t nMultiBins = 300;
-  // Double_t lMultiBins[nMultiBins+1];
-  // for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
-  const Int_t l_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
-  Double_t l_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
+  const Int_t temp_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
+  Double_t temp_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
+  if(!fV0MMultiAxis) SetV0MBins(temp_NV0MBinsDefault,temp_V0MBinsDefault);
+  Double_t *l_V0MBinsDefault=GetBinsFromAxis(fV0MMultiAxis);
+  Int_t l_NV0MBinsDefault=fV0MMultiAxis->GetNbins();
+  if(l_V0MBinsDefault[l_NV0MBinsDefault]>90) fExtendV0MAcceptance = kTRUE; //If V0M is beyond 90, then we need to extend the V0M acceptance!
   if(!fMultiAxis) SetMultiBins(l_NV0MBinsDefault,l_V0MBinsDefault);
   fMultiBins = GetBinsFromAxis(fMultiAxis);
   fNMultiBins = fMultiAxis->GetNbins();
@@ -225,7 +233,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
         fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
-        if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
+        if(!fEfficiencies[i]) {
+          if(!i) AliFatal("Could not fetch efficiency!\n");
+          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+        };
       }
     };
     fMPTList = new TList();
@@ -255,7 +267,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
         fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
-        if(!fEfficiencies[i]) AliFatal("Could not fetch efficiency!\n");
+        if(!fEfficiencies[i]) {
+          if(!i) AliFatal("Could not fetch efficiency!\n");
+          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+        };
       }
       fWeightList = (TList*)GetInputData(3);
       fWeights = new AliGFWWeights*[1];
@@ -300,6 +316,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(fSystSwitch) fcname.Append(Form("_%i",fSystSwitch));
+    fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
     fFC->Initialize(oba,fNMultiBins,fMultiBins);
     delete oba;
@@ -435,8 +452,6 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.SetCentralityEstimators("V0M","CL0");
     fEventCuts.SetCentralityRange(0.f,101.f);
   }
-  fMidSelection = new AliGFWCuts();
-  fMidSelection->SetupCuts(0);
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
@@ -454,11 +469,12 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
     if (!fMCEvent) return;
   }
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t l_Cent = lMultSel->GetMultiplicityPercentile("V0M");
+  Double_t l_Cent = lMultSel->GetMultiplicityPercentile(fCentEst->Data());
   if(!CheckTrigger(l_Cent)) return;
   Double_t vtxXYZ[] = {0.,0.,0.};
   if(!AcceptAOD(fAOD, vtxXYZ)) return;
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
+  fGFWSelection->AcceptVertex(fAOD);
   if(fStageSwitch==1)
     FillWeights(fAOD, vz,l_Cent);
   if(fStageSwitch==2)
@@ -474,11 +490,21 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   if(fStageSwitch==7)
     ProduceEfficiencies(fAOD,vz,l_Cent);
 };
+void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  //Reinitialize AliEventCuts (done automatically on check):
+  Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+  //Then override PU cut if required:
+  if(fGFWSelection->GetSystFlagIndex()==15)
+    fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+}
 void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // fSpectraList->ls();
   // delete fSpectraList;
   // delete fSpectra;
   // delete fV0MMulti;
+  // fGFWSelection->PrintSetup();
+  // printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   fTriggerType = AliVEvent::kCentral;
@@ -507,14 +533,15 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxX
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, const Int_t &FilterBit) {
-  if(TMath::Abs(mtr->Eta())>0.8) return kFALSE; //0.8 is ALICE acceptance, so it's fine here if its hardcoded. Need to check explicitly in other places though
+  // if(TMath::Abs(mtr->Eta())>0.8) return kFALSE; //0.8 is ALICE acceptance, so it's fine here if its hardcoded. Need to check explicitly in other places though
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
-  if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
-  if(mtr->GetTPCNclsF()<70) return kFALSE;
+  // if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
+  // if(mtr->GetTPCNclsF()<70) return kFALSE;
   if(ltrackXYZ)
     mtr->GetXYZ(ltrackXYZ);
-  return kTRUE;
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kTRUE);
+  // return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
@@ -546,7 +573,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
   for(Int_t i=0;i<tca->GetEntries();i++) {
     lPart = (AliAODMCParticle*)tca->At(i);
     if(!AcceptParticle(lPart)) continue;
-    if(!fMidSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
+    if(!fGFWSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
     Int_t pdgCode = TMath::Abs(lPart->PdgCode());
     if(pdgCode==211) fWeights[1]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
@@ -560,7 +587,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax)) continue;
     if(TMath::Abs(lTrack->Eta())>fEta) continue;
-    if(!fMidSelection->AcceptTrack(lTrack,dummyDouble)) continue;
+    if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
     if(fDisablePID) continue;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
@@ -734,6 +761,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
   Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
+  //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
+  if(fUseNch && l_Multi<1) return;
   for(Int_t i=0;i<1;i++) {
     if(!wp[i][0]) continue;
     outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi));
@@ -757,7 +786,10 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   PostData(3,fCovList);
   if(outVals[0][0]==0) return;
   Int_t indx =   fV2dPtMulti->FindBin(l_Multi);
+  //To avoid filling out of boundaries -- aparently, important for MC
+  if(indx<1 || indx>fV2dPtMulti->GetNbinsX()) return;
   fV2dPtMulti->Fill(l_Multi);
+  // printf("Will use dpt v2 profile index %i (out of %i-1), multiplicity is %f\n",indx,fV2dPtList->GetEntries(),l_Multi);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }
@@ -1028,6 +1060,10 @@ void AliAnalysisTaskMeanPtV2Corr::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
 void AliAnalysisTaskMeanPtV2Corr::SetMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fMultiAxis) delete fMultiAxis;
   fMultiAxis = new TAxis(nMultiBins, multibins);
+}
+void AliAnalysisTaskMeanPtV2Corr::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
+  if(fV0MMultiAxis) delete fV0MMultiAxis;
+  fV0MMultiAxis = new TAxis(nMultiBins, multibins);
 }
 void AliAnalysisTaskMeanPtV2Corr::SetV2dPtMultiBins(Int_t nMultiBins, Double_t *multibins) {
   if(fV2dPtMulti) delete fV2dPtMulti;

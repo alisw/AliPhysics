@@ -176,7 +176,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     NpureMC(0),
     Nch(0),
     iBevt(kFALSE),
-    fNDB(0),
+    fNoB(0),
+    fNoD(0),
 
     fCheckEtaMC(0),
     fHistMCorg_Pi0(0),
@@ -198,8 +199,29 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fDCAxy_MC_Lc(0),	// DCA from Lambda
 
     fDCAxy_MC_ele(0),
-    fDCAxy_MC_Phot(0)
+    fDCAxy_MC_Phot(0),
 
+    fHistPt_B_TrkCut0(0),
+    fHistPt_B_TrkCut1(0),
+    fHistPt_B_TrkCut2(0),
+    fHistPt_B_TrkCut3(0),
+    fHistPt_B_TrkCut4(0),
+    fHistPt_B_TrkCut5(0),
+    fHistPt_B_TrkCut6(0),
+    fHistPt_B_TrkCut7(0),
+    fHistPt_B_TrkCut8(0),
+    fHistPt_B_TrkCut9(0),
+
+    fHistPt_D_TrkCut0(0),
+    fHistPt_D_TrkCut1(0),
+    fHistPt_D_TrkCut2(0),
+    fHistPt_D_TrkCut3(0),
+    fHistPt_D_TrkCut4(0),
+    fHistPt_D_TrkCut5(0),
+    fHistPt_D_TrkCut6(0),
+    fHistPt_D_TrkCut7(0),
+    fHistPt_D_TrkCut8(0),
+    fHistPt_D_TrkCut9(0)
 
 
 
@@ -327,7 +349,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     NpureMC(0),
     Nch(0),
     iBevt(kFALSE),
-    fNDB(0),
+    fNoB(0),
+    fNoD(0),
 
     fCheckEtaMC(0),
     fHistMCorg_Pi0(0),
@@ -349,7 +372,29 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fDCAxy_MC_Lc(0),	// DCA from Lambda
 
     fDCAxy_MC_ele(0),
-    fDCAxy_MC_Phot(0)
+    fDCAxy_MC_Phot(0),    
+
+    fHistPt_B_TrkCut0(0),
+    fHistPt_B_TrkCut1(0),
+    fHistPt_B_TrkCut2(0),
+    fHistPt_B_TrkCut3(0),
+    fHistPt_B_TrkCut4(0),
+    fHistPt_B_TrkCut5(0),
+    fHistPt_B_TrkCut6(0),
+    fHistPt_B_TrkCut7(0),
+    fHistPt_B_TrkCut8(0),
+    fHistPt_B_TrkCut9(0),
+
+    fHistPt_D_TrkCut0(0),
+    fHistPt_D_TrkCut1(0),
+    fHistPt_D_TrkCut2(0),
+    fHistPt_D_TrkCut3(0),
+    fHistPt_D_TrkCut4(0),
+    fHistPt_D_TrkCut5(0),
+    fHistPt_D_TrkCut6(0),
+    fHistPt_D_TrkCut7(0),
+    fHistPt_D_TrkCut8(0),
+    fHistPt_D_TrkCut9(0)
 
 
 
@@ -623,20 +668,20 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fHistEopAll);
 
   //Ntracks
-    fNtracks = new TH1F("fNtracks","Number of tracks",11, -0.5, 10.5);
+    fNtracks = new TH1F("fNtracks","Number of tracks",10, -0.5, 9.5);
     fOutputList->Add(fNtracks);
     fNtracks->GetYaxis()->SetTitle("counts");
     fNtracks->GetXaxis()->SetBinLabel(1,"matching tracks");
     fNtracks->GetXaxis()->SetBinLabel(2,"AOD standard");
     fNtracks->GetXaxis()->SetBinLabel(3,"TPC and ITS refit");
-    fNtracks->GetXaxis()->SetBinLabel(4,"TPC cluster cut");
+    fNtracks->GetXaxis()->SetBinLabel(4,"TPCCrossedRow cut");
+    //fNtracks->GetXaxis()->SetBinLabel(4,"TPC cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(5,"ITS cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(6,"dE/dx calculation");
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
     fNtracks->GetXaxis()->SetBinLabel(8,"DCA cut");
     fNtracks->GetXaxis()->SetBinLabel(9,"chi2 cut");
-    fNtracks->GetXaxis()->SetBinLabel(10,"TPCCrossedRow cut");
-    fNtracks->GetXaxis()->SetBinLabel(11,"Eta cut");
+    fNtracks->GetXaxis()->SetBinLabel(10,"Eta cut");
     
   //pT vs E/p (electron)
     fEopElectron1 = new TH2F("fEopElectron1","Electron;p_{T} [GeV/c];E/p",600,0,30,150,0,3.0);
@@ -737,14 +782,41 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
     
 //************************************ MC data ************************************//
-  //Number of D,B
-    fNDB = new TH1F("fNDB","Number of D,B event",5,-0.5,4.5);
-    fOutputList->Add(fNDB);
-    fNDB->GetYaxis()->SetTitle("counts");
-    fNDB->GetXaxis()->SetBinLabel(1,"B->e");
-    fNDB->GetXaxis()->SetBinLabel(2,"B->e & B->D->e");
-    fNDB->GetXaxis()->SetBinLabel(4,"D->e & B->D->e");
-    fNDB->GetXaxis()->SetBinLabel(5,"D->e");
+  //Number of B
+    fNoB = new TH1F("fNoB","Number of B event",13,-0.5,12.5);
+    fOutputList->Add(fNoB);
+    fNoB->GetYaxis()->SetTitle("counts");
+    fNoB->GetXaxis()->SetBinLabel(1,"B->e");
+    fNoB->GetXaxis()->SetBinLabel(2,"correct");
+    fNoB->GetXaxis()->SetBinLabel(3,"Track mutch");
+    fNoB->GetXaxis()->SetBinLabel(4,"AOD standard");
+    fNoB->GetXaxis()->SetBinLabel(5,"TPC & ITS refit");
+    fNoB->GetXaxis()->SetBinLabel(6,"TPC CrossedRow");
+    fNoB->GetXaxis()->SetBinLabel(7,"ITS cluster");
+    fNoB->GetXaxis()->SetBinLabel(8,"dE/dx calculation");
+    fNoB->GetXaxis()->SetBinLabel(9,"SPD hit");
+    fNoB->GetXaxis()->SetBinLabel(10,"DCA cut");
+    fNoB->GetXaxis()->SetBinLabel(11,"chi2 cut");
+    fNoB->GetXaxis()->SetBinLabel(12,"eta cut");
+    fNoB->GetXaxis()->SetBinLabel(13,"after PID ");
+  
+  //Number of D
+    fNoD = new TH1F("fNoD","Number of D event",13,-0.5,12.5);
+    fOutputList->Add(fNoD);
+    fNoD->GetYaxis()->SetTitle("counts");
+    fNoD->GetXaxis()->SetBinLabel(1,"D->e & B->D->e");
+    fNoD->GetXaxis()->SetBinLabel(2,"correct");
+    fNoD->GetXaxis()->SetBinLabel(3,"Track mutch");
+    fNoD->GetXaxis()->SetBinLabel(4,"AOD standard");
+    fNoD->GetXaxis()->SetBinLabel(5,"TPC & ITS refit");
+    fNoD->GetXaxis()->SetBinLabel(6,"TPC CrossedRow");
+    fNoD->GetXaxis()->SetBinLabel(7,"ITS cluster");
+    fNoD->GetXaxis()->SetBinLabel(8,"dE/dx calculation");
+    fNoD->GetXaxis()->SetBinLabel(9,"SPD hit");
+    fNoD->GetXaxis()->SetBinLabel(10,"DCA cut");
+    fNoD->GetXaxis()->SetBinLabel(11,"chi2 cut");
+    fNoD->GetXaxis()->SetBinLabel(12,"eta cut");
+    fNoD->GetXaxis()->SetBinLabel(13,"after PID");
 
 
   //Total photonic electron(MC)
@@ -834,7 +906,30 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //DCAxy photonic elrctron
     fDCAxy_MC_Phot = new TH2F("fDCAxy_MC_Phot","p_{T} vs DCA_{xy} (MC : photonic electron);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_MC_Phot);
+
+  //B Hist
+    fHistPt_B_TrkCut0 = new TH1F("fHistPt_B_TrkCut0","B (matching track);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut0);
+    fHistPt_B_TrkCut1 = new TH1F("fHistPt_B_TrkCut1","B (AOD standard);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut1);
+    fHistPt_B_TrkCut2 = new TH1F("fHistPt_B_TrkCut2","B (TPC & ITS refit);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut2);
+    fHistPt_B_TrkCut3 = new TH1F("fHistPt_B_TrkCut3","B (TPCCrossedRow);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut3);
+    fHistPt_B_TrkCut4 = new TH1F("fHistPt_B_TrkCut4","B (ITS cluster cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut4);
+    fHistPt_B_TrkCut5 = new TH1F("fHistPt_B_TrkCut5","B (dE/dx calculation);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut5);
+    fHistPt_B_TrkCut6 = new TH1F("fHistPt_B_TrkCut6","B (SPD hit cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut6);
+    fHistPt_B_TrkCut7 = new TH1F("fHistPt_B_TrkCut7","B (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut7);
+    fHistPt_B_TrkCut8 = new TH1F("fHistPt_B_TrkCut8","B (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut8);
+    fHistPt_B_TrkCut9 = new TH1F("fHistPt_B_TrkCut9","B (eta cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut9);
     
+  //D Hist
+    fHistPt_D_TrkCut0 = new TH1F("fHistPt_D_TrkCut0","D (matching track);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut0);
+    fHistPt_D_TrkCut1 = new TH1F("fHistPt_D_TrkCut1","D (AOD standard);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut1);
+    fHistPt_D_TrkCut2 = new TH1F("fHistPt_D_TrkCut2","D (TPC & ITS refit);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut2);
+    fHistPt_D_TrkCut3 = new TH1F("fHistPt_D_TrkCut3","D (TPCCrossedRow);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut3);
+    fHistPt_D_TrkCut4 = new TH1F("fHistPt_D_TrkCut4","D (ITS cluster cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut4);
+    fHistPt_D_TrkCut5 = new TH1F("fHistPt_D_TrkCut5","D (dE/dx calculation);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut5);
+    fHistPt_D_TrkCut6 = new TH1F("fHistPt_D_TrkCut6","D (SPD hit cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut6);
+    fHistPt_D_TrkCut7 = new TH1F("fHistPt_D_TrkCut7","D (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut7);
+    fHistPt_D_TrkCut8 = new TH1F("fHistPt_D_TrkCut8","D (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut8);
+    fHistPt_D_TrkCut9 = new TH1F("fHistPt_D_TrkCut9","D (eta cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut9);
 
     
 
@@ -1135,8 +1230,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             pid_eleB = IsBdecay(pidM);  // B->e
             pid_eleP = IsPdecay(pidM);  // photon -> e
 
-	    if(pid_eleB) fNDB -> Fill(0);
-	    if(pid_eleD) fNDB -> Fill(3);
+	    if(pid_eleB) fNoB -> Fill(0);
+	    if(pid_eleD) fNoD -> Fill(0);
             
 
             if(pid_eleD && iBevt)    // mother is D-meson, but GM is B-meson&baryon
@@ -1150,8 +1245,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 		pTMom = pTGMom;
             }
             
-	    if(pid_eleB) fNDB -> Fill(1);
-	    if(pid_eleD) fNDB -> Fill(4);
+	    if(pid_eleB) fNoB -> Fill(1);
+	    if(pid_eleD) fNoD -> Fill(1);
 
             
             if(pidM==111)   //pi0
@@ -1258,54 +1353,76 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         if(clustMatch && clustMatch->IsEMCAL())
         {
         //___________________________  track selection ___________________________
-            //---- 0.matching tracks ----
+          //---- 0.matching tracks ----
             fNtracks->Fill(0);
+	    	if(pid_eleB){ fNoB -> Fill(2); fHistPt_B_TrkCut0 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(2); fHistPt_D_TrkCut0 -> Fill(TrkPt);}
             
-            //---- 1.AOD standard track cut ----
+          //---- 1.AOD standard track cut ----
             if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
             fNtracks->Fill(1);
+	    	if(pid_eleB){ fNoB -> Fill(3); fHistPt_B_TrkCut1 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(3); fHistPt_D_TrkCut1 -> Fill(TrkPt);}
             
-            //---- 2.TPC and ITS refit cut ----
+          //---- 2.TPC and ITS refit cut ----
             if((!(track->GetStatus()&AliESDtrack::kITSrefit) || (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             fNtracks->Fill(2);
+	    	if(pid_eleB){ fNoB -> Fill(4); fHistPt_B_TrkCut2 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(4); fHistPt_D_TrkCut2 -> Fill(TrkPt);}
             
-            //---- 3.TPC cluster cut ----
-            if(track->GetTPCNcls() < CutTPCNCls) continue;
+          //---- 3.TPC cluster cut ----
+            //if(track->GetTPCNcls() < CutTPCNCls) continue;
+            //fNtracks->Fill(3);
+
+	  //---- 3.TPC CrossedRow cut ----
+            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
             fNtracks->Fill(3);
+	    	if(pid_eleB){ fNoB -> Fill(5); fHistPt_B_TrkCut3 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(5); fHistPt_D_TrkCut3 -> Fill(TrkPt);}
             
-            //---- 4.ITS cluster cut ----
+          //---- 4.ITS cluster cut ----
             if(track->GetITSNcls() < CutITSNCls) continue;
             fNtracks->Fill(4);
+	    	if(pid_eleB){ fNoB -> Fill(6); fHistPt_B_TrkCut4 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(6); fHistPt_D_TrkCut4 -> Fill(TrkPt);}
             
-            //---- 5.TPC cluster cut for dE/dx calculation ----
+          //---- 5.TPC cluster cut for dE/dx calculation ----
             if(track->GetTPCsignalN() < CutTPCdEdx) continue;
             fNtracks->Fill(5);
+	    	if(pid_eleB){ fNoB -> Fill(7); fHistPt_B_TrkCut5 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(7); fHistPt_D_TrkCut5 -> Fill(TrkPt);}
             
-            //---- 6.SPD hit cut ----
+          //---- 6.SPD hit cut ----
             if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
             fNtracks->Fill(6);
+	    	if(pid_eleB){ fNoB -> Fill(8); fHistPt_B_TrkCut6 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(8); fHistPt_D_TrkCut6 -> Fill(TrkPt);}
             
-            //---- 7.DCA cut ----
+          //---- 7.DCA cut ----
             Double_t DCA[2], cov[3];
             if(track->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., DCA, cov))
             if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
             fNtracks->Fill(7);
-
-	    //---- 8.chi2 cut ----
+	    	if(pid_eleB){ fNoB -> Fill(9); fHistPt_B_TrkCut7 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(9); fHistPt_D_TrkCut7 -> Fill(TrkPt);}
+            
+	  //---- 8.chi2 cut ----
 	    if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
             fNtracks->Fill(8);
+	    	if(pid_eleB){ fNoB -> Fill(10); fHistPt_B_TrkCut8 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(10); fHistPt_D_TrkCut8 -> Fill(TrkPt);}
+            
 
-	    //---- 9.TPC CrossedRow cut ----
-            if(TPCCrossedRows < CutTPCNCrossedRow) continue;
-            fNtracks->Fill(9);
 
 
-            // calculate phi and eta difference between a track and a cluster // 
+            // calculate phi and eta difference between a track and a cluster
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fHistEMCTrkMatch_Eta -> Fill(fEtaDiff);         //delta Eta
             fHistEMCTrkMatch_Phi -> Fill(fPhiDiff);         //delta Phi
             fEMCTrkMatch_EtaPhi  -> Fill(fEtaDiff,fPhiDiff);//delta Eta vs delta Phi
+
+
 
 
 
@@ -1366,9 +1483,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
-            //---- 10.Eta cut ----
+            //---- 9.Eta cut ----
             if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
-            fNtracks->Fill(10);
+            fNtracks->Fill(9);
+	    	if(pid_eleB){ fNoB -> Fill(11); fHistPt_B_TrkCut9 -> Fill(TrkPt);}
+	    	if(pid_eleD){ fNoD -> Fill(11); fHistPt_D_TrkCut9 -> Fill(TrkPt);}
 
             fHistEopAll -> Fill(eop);
             
@@ -1422,13 +1541,15 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 		    	//-------- Heavy Flavour electron --------//
                     	if(pid_eleB)
-			{
+			{	
+				fNoB -> Fill(12);
 			    	fHistPt_HFE_MC_B -> Fill(track->Pt()); // HFE from B meson&baryon (MC)
 			    	fDCAxy_MC_B -> Fill(TrkPt, DCA[0]*charge*Bsign);
 		    	}
 
-                    	if(pid_eleD || TMath::Abs(pidM)==4122)
+                    	if(pid_eleD)
 			{
+				fNoD -> Fill(12);
 			    	fHistPt_HFE_MC_D -> Fill(track->Pt()); // HFE from D meson (MC)
 			    	fDCAxy_MC_D -> Fill(TrkPt, DCA[0]*charge*Bsign);
 
@@ -1574,10 +1695,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         }
         
         //-----loose cut on partner electron
-        if(ptAsso < 0.2) continue;
+        if(ptAsso < 0.1) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(AssoTrackNsigma < -3 || AssoTrackNsigma > 3) continue;
-        if(AssoTPCchi2perNDF >= 4) continue;
+        //if(AssoTPCchi2perNDF >= 4) continue;
         
         
         //----define KFParticle to get mass
@@ -1646,8 +1767,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::FindMother(AliAODMCParticle *part, in
 Bool_t AliAnalysisTaskHFEBeautyMultiplicity::IsDdecay(int mpid)      // D mason
 {
     int abmpid = TMath::Abs(mpid);
-    // D+ : 411,        D0 : 421,        D*+ : 413,       D*0 : 423,       Ds+ : 431,       Ds*+ : 433
-    if(abmpid == 411 || abmpid == 421 || abmpid == 413 || abmpid == 423 || abmpid == 431 || abmpid == 433)
+    // D+ : 411,        D0 : 421,        D*+ : 413,       D*0 : 423,       Ds+ : 431,       Ds*+ : 433       Lc : 4122
+    if(abmpid == 411 || abmpid == 421 || abmpid == 413 || abmpid == 423 || abmpid == 431 || abmpid == 433 || abmpid == 4122)
       {
           return kTRUE;
       }
@@ -1792,10 +1913,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
                 fPt_Btoe->Fill(fMCparticle->Pt(), pTMom);
             }
 
-	   if(TMath::Abs(pdgMom)==4122)			   	    // Lambda_c -> e
-	   {
+	    if(TMath::Abs(pdgMom)==4122)			   	    // Lambda_c -> e
+	    {
 		fHistMCorg_Lc -> Fill(fMCparticle->Pt());
-	   }
+	    }
 	   
             
         }

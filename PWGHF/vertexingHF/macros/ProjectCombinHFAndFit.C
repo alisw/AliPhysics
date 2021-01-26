@@ -81,13 +81,15 @@ Double_t minMass=1.72;
 Double_t maxMass=2.04;
 Double_t massD;
 
+
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo);
 void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin);
 TH1F* FitMCInvMassSpectra(TList* lMC, TString var);
 Bool_t ReadConfig(TString configName);
 void PrintConfig();
+void CheckMCLineShapes();
 
-AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, Bool_t isDirect=kFALSE){
+AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit, TCanvas* crf, Bool_t isDirect=kFALSE){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
 
 
@@ -122,8 +124,14 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
     TH1F* hrfl=fitter->SetTemplateReflections(hReflModif,reflopt,-1.,-1.);
     cTest->cd(2);
     hReflModif->Draw();
+    hrfl->SetLineColor(kBlue+1);
     hrfl->Draw("same");
     cTest->SaveAs(Form("figures/ReflectionConfig_PtBin%d.eps",iPtBin));
+    if(crf){
+      crf->cd(iPtBin+1);
+      hReflModif->DrawCopy();
+      hrfl->DrawCopy("same");
+    }
     if(!hrfl){
       Printf("SOMETHING WENT WRONG WHILE SETTINGS REFLECTIONS TEMPLATE");
       delete hReflModif;
@@ -402,7 +410,55 @@ Double_t GetBackgroundNormalizationFactor(TH1D* hRatio, Int_t reb=1){
   return norm;
 }
 
-void ProjectCombinHFAndFit(){
+void CheckMCLineShapes(){
+  
+  if(configFileName.Length()>0){
+    if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
+      printf("Read configuration from file %s\n",configFileName.Data());
+      Bool_t readOK=ReadConfig(configFileName);
+      if(!readOK){
+	printf("Error in reading configuration file\n");
+	return;
+      }
+    }
+  }
+  printf("***************************************************\n");
+  printf("*** This is the configuration that will be used ***\n");
+  PrintConfig();
+  printf("***                                             ***\n");
+  printf("***************************************************\n");
+  
+  TString dirNameMC=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffixMC.Data());
+  TString lstNameMC=Form("coutput%s%s",meson.Data(),suffixMC.Data());
+  TFile* filMC=new TFile(fileNameMC.Data());
+  if(filMC && filMC->IsOpen()){
+    TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
+    if(!dfMC){
+      printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
+      filMC->ls();
+      return;
+    }
+    TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
+    TH1F* hSigmaMC=FitMCInvMassSpectra(lMC,"Y");
+    TCanvas* csigma=new TCanvas("csigma","",800,700);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetRightMargin(0.05);
+    gPad->SetBottomMargin(0.12);
+    gPad->SetTopMargin(0.05);
+    hSigmaMC->SetMarkerStyle(24);
+    hSigmaMC->SetLineWidth(2);
+    hSigmaMC->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hSigmaMC->GetYaxis()->SetTitle("Gaussian #sigma (GeV/c^{2})");
+    hSigmaMC->GetYaxis()->SetTitleOffset(1.85);
+    hSigmaMC->GetXaxis()->SetTitleOffset(1.2);
+    hSigmaMC->Draw();
+  }
+}
+
+
+void ProjectCombinHFAndFit(TString configInput=""){
+
+  if(configInput!="") configFileName=configInput.Data();
 
   if(configFileName.Length()>0){
     if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
@@ -425,7 +481,11 @@ void ProjectCombinHFAndFit(){
   TString dirNameMC=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffixMC.Data());
   TString lstNameMC=Form("coutput%s%s",meson.Data(),suffixMC.Data());
 
-  if(correctForRefl) suffix.Prepend("Refl_");
+  if(correctForRefl){
+    if(reflopt=="template") suffix.Prepend("TemplRefl_");
+    else suffix.Prepend("Refl_");
+    if(TMath::Abs(rOverSmodif-1)>0.01) suffix.ReplaceAll("Refl_",Form("Refl%02d_",(Int_t)(rOverSmodif*10)));
+  }
   if(fileName.Contains("FAST") && !fileName.Contains("wSDD")){
     suffix.Prepend("FAST_");
   }else if(!fileName.Contains("FAST") && fileName.Contains("wSDD")){
@@ -571,6 +631,9 @@ void ProjectCombinHFAndFit(){
   hpoolEv->GetYaxis()->SetTitleOffset(1.4);
 
 
+  TCanvas* crf=new TCanvas("crf","Reflections",1200,800);
+  DivideCanvas(crf,nPtBins);
+
   TCanvas* c1=new TCanvas("c1","Mass",1200,800);
   DivideCanvas(c1,nPtBins);
 
@@ -710,7 +773,6 @@ void ProjectCombinHFAndFit(){
 
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
-
     printf("\n---------- pt interval %d (%.1f-%.1f)\n",iPtBin,binLims[iPtBin],binLims[iPtBin+1]);
     minMass=minMass4Fit[iPtBin];
     maxMass=maxMass4Fit[iPtBin];
@@ -727,7 +789,9 @@ void ProjectCombinHFAndFit(){
       Int_t bin1MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin]);
       Int_t bin2MC=h3drefl->GetYaxis()->FindBin(binLims[iPtBin+1]-0.0001);
       hMCReflPtBin=h3drefl->ProjectionX(Form("hMCReflPtBin%d",iPtBin),bin1MC,bin2MC,zbin1,zbin2);
+      hMCReflPtBin->SetTitle(Form("%.1f<p_{T}<%.1f GeV/c",binLims[iPtBin],binLims[iPtBin+1]));
       hMCSigPtBin=h3dmcsig->ProjectionX(Form("hMCSigPtBin%d",iPtBin),bin1MC,bin2MC,zbin1,zbin2);
+      hMCSigPtBin->SetTitle(Form("%.1f<p_{T}<%.1f GeV/c",binLims[iPtBin],binLims[iPtBin+1]));
     }
 
     TH1D* hMassPtBinlsp=0x0;
@@ -905,9 +969,9 @@ void ProjectCombinHFAndFit(){
     hBkgFitFunc->SetBinContent(iPtBin+1,bkgToFill);
     hBkgFitFuncSB->SetBinContent(iPtBin+1,bkgToFillSB);
 
-    fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin,typeb,minMass,maxMass);
-    if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin,typeb,minMass,maxMass);
-    fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin,typeb,minMass,maxMass);
+    fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin,typeb,minMass,maxMass,0x0);
+    if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin,typeb,minMass,maxMass,0x0);
+    fitterME[iPtBin]=ConfigureFitter(hMassSubME,iPtBin,typeb,minMass,maxMass,crf);
 
     Bool_t out1=fitterRot[iPtBin]->MassFitter(0);
     Bool_t out2=kFALSE;
@@ -919,7 +983,7 @@ void ProjectCombinHFAndFit(){
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
       hMassDirectFit=AliVertexingHFUtils::RebinHisto(hMassDirectFit,rebin[iPtBin]);
-      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin],kTRUE);
+      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin],0x0,kTRUE);
       out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSB);
 
       Double_t background,ebkg;
@@ -1235,6 +1299,7 @@ void ProjectCombinHFAndFit(){
   }
 
   if(saveCanvasAsEps>0){
+    crf->SaveAs(Form("figures/ReflTemplates_%s_%s.eps",sigConf.Data(),suffix.Data()));
     c1->SaveAs(Form("figures/InvMassSpectra_%s_%s_NoBkgSub.eps",sigConf.Data(),suffix.Data()));
     c2->SaveAs(Form("figures/InvMassSpectra_%s_%s_Rot.eps",sigConf.Data(),suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_%s_LS.eps",sigConf.Data(),suffix.Data()));
@@ -1465,7 +1530,7 @@ void ProjectCombinHFAndFit(){
   gPad->SetRightMargin(0.05);    
   hRelStatRot->SetStats(0);
   hRelStatRot->SetMinimum(0.04);
-  hRelStatRot->SetMaximum(0.4);
+  hRelStatRot->SetMaximum(0.48);
   hRelStatRot->Draw();
   hRelStatLS->Draw("same");
   hRelStatME->Draw("same");
@@ -1735,6 +1800,7 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
   }
   return hSigmaMC;
 }
+
 void PrintConfig(){
   printf("Meson: %s\n",meson.Data());
   printf("Data file: %s\n", fileName.Data());

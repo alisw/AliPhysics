@@ -1,8 +1,11 @@
 ///*******************************************************
-///Config Description
-/// August 23, 2020 - Cristiane Jahnke
+/// Config Description
+/// January 22, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
+/// TPC calibrations for 2017 and 2018 data
 ///*******************************************************
+
+//isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration
 
 AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
 											
@@ -14,13 +17,12 @@ Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
 Bool_t is_ESparseTPC,
-Bool_t is_MSparse,
 Bool_t is_EventsEG1,
 Bool_t is_EventsEG2,
-Bool_t isMultiAnalysis
-
+Bool_t isMultiAnalysis,
+Bool_t is_MSparse,
+Bool_t is_TPCcalibration
                                             
-                                              
 )
 
 {
@@ -41,6 +43,8 @@ Bool_t isMultiAnalysis
     if(is_ESparse)task->Set_Fill_ESparse();
     if(is_ESparseTPC)task->Set_Fill_ESparseTPC();
     if(is_MSparse)task->Set_Fill_MSparse();
+    
+    if(is_TPCcalibration)task->Set_TPCCalibration();
     
     if(is_EventsEG1)task->Set_Select_trigger_events1();
     if(is_EventsEG2)task->Set_Select_trigger_events2();

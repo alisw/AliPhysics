@@ -51,7 +51,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPbPb5TeVRun2
          Bool_t      isESD = kFALSE,
          Bool_t      enableMonitor = kTRUE,
          Bool_t      IsMcTrueOnly = kFALSE,
-         TString     monitorOpt = "PbPb",
+         TString     monitorOpt = "NoSIGN",
          Bool_t      useMixLS = 0,
          Bool_t      checkReflex = 0,
          UInt_t      triggerMask = AliVEvent::kINT7,

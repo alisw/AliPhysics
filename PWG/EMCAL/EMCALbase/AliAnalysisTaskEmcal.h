@@ -308,6 +308,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   enum PtHardBinning_t {
+    kBinning06,
     kBinning10,
     kBinning13,
     kBinning20,

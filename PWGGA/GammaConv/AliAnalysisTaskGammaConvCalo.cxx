@@ -1207,14 +1207,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       }
       //--------------------------------------------------
       //Only MB
-      if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
+      //if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
         if (fHistoClusGammaE_BothBM==NULL){
           fHistoClusGammaE_BothBM = new TH1F*[fnCuts];
         }
         if (fHistoClusGammaE_AnaBM_highestE==NULL){
           fHistoClusGammaE_AnaBM_highestE = new TH1F*[fnCuts];
         }
-      }
+      //}
       //--------------------------------------------------
       //Only PHI7
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
@@ -1644,7 +1644,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fESDList[iCut]->Add(fHistoClusGammaE_BothBM_highestE[iCut]);
       //--------------------------------------------------
       //Only MB
-      if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
+      //if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
         fHistoClusGammaE_BothBM[iCut] = new TH1F("HistoClusGammaE_BothBM", "HistoClusGammaE_BothBM", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaE_BothBM[iCut]->SetXTitle("E_{clus} (GeV/c)");
         fESDList[iCut]->Add(fHistoClusGammaE_BothBM[iCut]);
@@ -1652,7 +1652,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoClusGammaE_AnaBM_highestE[iCut] = new TH1F("HistoClusGammaE_AnaBM_highestE", "HistoClusGammaE_AnaBM_highestE", nBinsClusterPt, arrClusPtBinning);
         fHistoClusGammaE_AnaBM_highestE[iCut]->SetXTitle("E_{clus} (GeV/c)");
         fESDList[iCut]->Add(fHistoClusGammaE_AnaBM_highestE[iCut]);
-      }
+      //}
       //--------------------------------------------------
       //Only PHI7
       if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
@@ -1725,10 +1725,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       }
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType()==2){
         fHistoClusGammaE_BothBM_highestE[iCut]->Sumw2();
-        if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
+        //if ( (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==0) ){
           fHistoClusGammaE_BothBM[iCut]->Sumw2();
           fHistoClusGammaE_AnaBM_highestE[iCut]->Sumw2();
-        }
+        //}
         if ( ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger()==6 ){
           fHistoClusGammaE_onlyTriggered[iCut]->Sumw2();
         }
@@ -3762,11 +3762,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
       }
     }
     //Only MB
-    if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
+    //if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
       if (highestClusterE_Iter_AnaBM!=-1){
         fHistoClusGammaE_AnaBM_highestE[fiCut]->Fill(vectorCurrentClusters.at(highestClusterE_Iter_AnaBM)->E(), vectorPhotonWeight.at(highestClusterE_Iter_AnaBM));
       }
-    }
+    //}
   }
 
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
@@ -3778,7 +3778,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2){
         //--------------------------------------------------
         //Only MB
-        if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
+        //if ( (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==1)||(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==0) ){
           if (fCaloTriggerMimicHelper[fiCut]){
             if ((vectorCurrentClusters.at(iter)->E())>0){//Analysis bad map protection; Energy of bad clusters set to 0
               if ((fCaloTriggerMimicHelper[fiCut]->IsClusterIDBadMapTrigger(vectorCurrentClusters.at(iter)->GetCaloClusterRef()))>0){//Good cluster by bad trigger map decision
@@ -3786,7 +3786,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
               }
             }
           }
-        }
+        //}
         //--------------------------------------------------
         //Only PHI7
         if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){

@@ -116,6 +116,12 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetExplorePIDstd(Bool_t flag){ fExplore_PIDstdCuts=flag; }
   // dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
   void SetOnlyBayesPIDbin_recoSparse(Bool_t flag) {fOnlyBayesPIDbin=flag;}
+  /// include the PID selection with Bayes approach only for proton
+  void SetExplPID_BayesOnlyProt(Bool_t flag, Bool_t rejectStdPIDcases=kFALSE){
+    if(!fExplore_PIDstdCuts)  SetExplorePIDstd(flag);
+    fExplPID_BayesOnlyProt = flag;
+    fNoStdPIDcases = rejectStdPIDcases;
+  }
 
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
@@ -347,8 +353,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
    Float_t fmaxpT_treeFill;   /// max. pT
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
-  Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
-  Bool_t fOnlyBayesPIDbin;  /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplore_PIDstdCuts;     /// flag to switch on the exporation of PID cuts with standard strategy
+  Bool_t fOnlyBayesPIDbin;        /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplPID_BayesOnlyProt;  /// flag to include the PID selection with Bayes approach only for proton
 
   Double_t fLcMassWindowForSigmaC; /// lc mass window for used in sigma_C loop
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
@@ -390,8 +397,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
   Bool_t fApplyEvSel;
 
+  // bool to keep only the Bayes PID- based PID selections
+  Bool_t fNoStdPIDcases;
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,17); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,18); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

@@ -53,6 +53,17 @@ void AddTask_GammaCalo_pp(
 
   AliCutHandlerPCM cuts(13);
 
+  Int_t TriggerMimickingDDLEffiFlag = 2;
+  if (enableTriggerMimicking >= 10) {
+      if (enableTriggerMimicking >= 20) {
+          TriggerMimickingDDLEffiFlag = 0;
+          enableTriggerMimicking -= 20;
+      } else {
+          TriggerMimickingDDLEffiFlag = 1;
+          enableTriggerMimicking -= 10;
+      }
+  }
+
 
   TString addTaskName                 = "AddTask_GammaCalo_pp";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -3176,6 +3187,19 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fk3o220000","0r631031000000d0"); // Exotics > 5 GeV
     cuts.AddCutCalo("00010113","411792106fl3o220000","0r631031000000d0"); // Exotics > 6 GeV
 
+  // 3x3 clusterizer
+  } else if (trainConfig == 2520) { // 3x3 clusterizer
+    cuts.AddCutCalo("00010113","411792106fe3q220003","0r631031000000d0"); // TB var1
+    cuts.AddCutCalo("00010113","411792106fe3r220003","0r631031000000d0"); // TB var2
+  } else if (trainConfig == 2521) { // 3x3 clusterizer
+    cuts.AddCutCalo("00010113","411792106fe3u220003","0r631031000000d0"); // TB correction
+    cuts.AddCutCalo("00010113","411792106fe3v220003","0r631031000000d0"); // P2 correction
+  } else if (trainConfig == 2522){  // EMCAL+DCAL without NCell cut
+    cuts.AddCutCalo("00010113","411792106fe30220003","0r631031000000d0"); // No NCell cut
+  } else if (trainConfig == 2523){  // EMCAL+DCAL without NCell cut NLM var
+    cuts.AddCutCalo("00010113","411792106fe30220001","0r631031000000d0"); // No NCell cut, 1NLM
+    cuts.AddCutCalo("00010113","411792106fe30220002","0r631031000000d0"); // No NCell cut, 2NLM
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
@@ -3421,12 +3445,12 @@ void AddTask_GammaCalo_pp(
     TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
-      if (enableTriggerMimicking==3){
+      if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSL0) ;
       }
-      fMimickHelper->SetEfficiencyChoiceOption_TriggerHelper(2);
+      fMimickHelper->SetEfficiencyChoiceOption_TriggerHelper(TriggerMimickingDDLEffiFlag);
       mgr->AddTask(fMimickHelper);
       mgr->ConnectInput(fMimickHelper,0,cinput);
       if (enableLightOutput>=1){

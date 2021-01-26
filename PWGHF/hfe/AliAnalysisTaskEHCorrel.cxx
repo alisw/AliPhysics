@@ -117,6 +117,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fTPCNCrossRElec(70),
   fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
+  fEtaCutEleMin(-0.6),
+  fEtaCutEleMax(0.6),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -147,6 +149,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fNEle(0),
   fVtxZBin(-999),
   fCentBin(-999),
+  fFlagFillMECorr(kFALSE),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kFALSE),
   fIspp(kTRUE),
@@ -306,6 +309,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fTPCNCrossRElec(70),
   fRatioTPCNCrossRElec(0.8),
   fFlagEleSPDkFirst(kFALSE),
+  fEtaCutEleMin(-0.6),
+  fEtaCutEleMax(0.6),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -336,6 +341,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fNEle(0),
   fVtxZBin(-999),
   fCentBin(-999),
+  fFlagFillMECorr(kFALSE),
   fFlagMEBinChange(kFALSE),
   fIsPbPb(kFALSE),
   fIspp(kTRUE),
@@ -505,10 +511,12 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   // Called once
   AliDebug(3, "Creating Output Objects");
 
+  if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
+
   if(fApplyElectronEffi){
     TString elecEffiFileName;
-
-    if(!fIsPbPb && !fIspp){
+      
+    if(fIspPb){
       elecEffiFileName = "alien:///alice/cern.ch/user/d/dthomas/HFElecEffi_pPb/HFElectronTrackEffi.root";
     }
     if(fIsPbPb){
@@ -523,14 +531,20 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   Double_t pi = TMath::Pi();
   fPi0Weight = new TF1("fPi0Weight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
   fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
-  fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
-  fEtaWeight->SetParameters(3.34121e+02,-1.09185e-02,4.04493e-03,1.59842e+00,5.43861e+00);
+    
+  if(fIspp){
+        fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
+        fEtaWeight->SetParameters(3.34121e+02,-1.09185e-02,4.04493e-03,1.59842e+00,5.43861e+00);
+  }
+    
+  if(fIspPb){
+        fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
+        fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
+  }
 
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-
-  if(!fIsPbPb && !fIspp) fIspPb = kTRUE;
 
   Int_t trackDepth = 0;
   Int_t poolsize = 0;
@@ -692,6 +706,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
     }
   }
 
+if(fFlagFillMECorr){
   if(fIsPbPb)
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
 
@@ -700,6 +715,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   if(fIspp)
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspp, (Double_t*) CentralityBinspp, nZvtxBins, (Double_t*) vertexBinspp);
+}
 
   ///////////////
   //Output list//
@@ -1229,11 +1245,12 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     if(fFillEHCorrel){
       if(TrkPt > 2){
         ElectronHadCorrel(iTracks, track, fSprsAllHadHCorrl);
-        MixedEvent(track, fSprsMixAllHadHCorrl);
+        if(fFlagFillMECorr) MixedEvent(track, fSprsMixAllHadHCorrl);
       }
     }
 
-    if(TMath::Abs(TrkEta) > 0.6 ) continue;
+   // if(TMath::Abs(TrkEta) > 0.6 ) continue;
+      if(track->Eta()< fEtaCutEleMin || track->Eta()> fEtaCutEleMax) continue;
 
     ///////////////////////////
     //Track matching to EMCAL//
@@ -1316,7 +1333,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
         //ElectronHadCorrel(iTracks, track, fSprsHadHCorrl, fHisHadDphi);
         if(fFillEHCorrel){
           ElectronHadCorrel(iTracks, track, fSprsHadHCorrl);
-          MixedEvent(track, fSprsMixHadHCorrl);
+            if(fFlagFillMECorr) MixedEvent(track, fSprsMixHadHCorrl);
         }
       }
 
@@ -1334,7 +1351,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       //ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl, fHisIncEDphi);
       if(fFillEHCorrel){
         ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl);
-        MixedEvent(track, fSprsMixInclusiveEHCorrl);
+          if(fFlagFillMECorr) MixedEvent(track, fSprsMixInclusiveEHCorrl);
       }
 
       ////////////////////
@@ -1347,7 +1364,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       {
         if(fFillEHCorrel){
           ElectronHadCorrel(iTracks, track, fSprsTagULSEHCorrl);
-          MixedEvent(track, fSprsMixTagULSEHCorrl);
+            if(fFlagFillMECorr) MixedEvent(track, fSprsMixTagULSEHCorrl);
         }
         fTagULSElecPt->Fill(TrkPt,fWeight);
       }
@@ -1355,7 +1372,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       {
         if(fFillEHCorrel){
           ElectronHadCorrel(iTracks, track, fSprsTagLSEHCorrl);
-          MixedEvent(track, fSprsMixTagLSEHCorrl);
+            if(fFlagFillMECorr) MixedEvent(track, fSprsMixTagLSEHCorrl);
         }
         fTagLSElecPt->Fill(TrkPt,fWeight);
       }
@@ -1381,17 +1398,19 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   /////////////////////////
   //Fill Mixed event pool//
   /////////////////////////
-  Double_t pVtxZ = fpVtx->GetZ();
-  AliEventPool *fPool;
-  fPool = fPoolMgr->GetEventPool(fCentrality, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
-  if (!fPool)
-  {
-    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, pVtxZ));
-    return;
+  if(fFlagFillMECorr){
+      Double_t pVtxZ = fpVtx->GetZ();
+      AliEventPool *fPool;
+      fPool = fPoolMgr->GetEventPool(fCentrality, pVtxZ); // Get the buffer associated with the current centrality and z-vtx
+      if (!fPool)
+        {
+            AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality, pVtxZ));
+            return;
+        }
+      TObjArray * fArrayTracksMix = CloneAndReduceTrackList();
+      fArrayTracksMix->SetOwner(kTRUE);
+      fPool->UpdatePool(fArrayTracksMix);
   }
-  TObjArray * fArrayTracksMix = CloneAndReduceTrackList();
-  fArrayTracksMix->SetOwner(kTRUE);
-  fPool->UpdatePool(fArrayTracksMix);
 
   PostData(1, fOutputList);
 }
@@ -2137,7 +2156,7 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
       if(fFillEHCorrel){
         ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
         ElectronHadCorrelNoPartner(itrack, jTracks, track, fSprsLSNoPartnerEHCorrl);
-        MixedEvent(track, fSprsMixLSEHCorrl);
+          if(fFlagFillMECorr) MixedEvent(track, fSprsMixLSEHCorrl);
       }
       fLSElecPt->Fill(track->Pt(),fWeight);
     }
@@ -2146,7 +2165,7 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
       if(fFillEHCorrel){
         ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
         ElectronHadCorrelNoPartner(itrack, jTracks, track, fSprsULSNoPartnerEHCorrl);
-        MixedEvent(track, fSprsMixULSEHCorrl);
+          if(fFlagFillMECorr) MixedEvent(track, fSprsMixULSEHCorrl);
       }
       fULSElecPt->Fill(track->Pt(),fWeight);
     }

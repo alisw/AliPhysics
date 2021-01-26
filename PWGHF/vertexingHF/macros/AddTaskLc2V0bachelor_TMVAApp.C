@@ -1,27 +1,29 @@
 class AliAnalysisTaskSELc2V0bachelorTMVAAppMine;
 
-AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
-									Float_t ptMin=0, Float_t ptMax=24,
-									Bool_t theMCon=kTRUE,
-									Bool_t fillTree=kFALSE,
-									Bool_t onTheFly=kFALSE,
-									Bool_t keepingOnlyHIJINGbkd=kFALSE,
-									TString suffixName="",
-									Bool_t debugFlag = kFALSE,
-									Bool_t useXmlWeightsFile = kTRUE,
-									Bool_t useWeightsLibrary = kFALSE,
-									TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml",
-                  Bool_t useMultCorrection = kFALSE,
-                  TString estimatorFilename="",       //  Multicity estimator file
-                  Double_t refMult=9.26,              // refrence multiplcity (period b)
-                  Int_t year = 16,                    // Production year 
-                  Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
-                  Bool_t useMultCut = kFALSE,
-                  Float_t multMin = 0.,    // Minimum is included
-                  Float_t multMax = 99999., // Maximum is excluded
-                  Bool_t useXmlFileFromCVMFS = kFALSE,
-                  TString xmlFileFromCVMFS = ""
-                  ){
+AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname = "Lc2V0bachelorCuts.root",
+								    Float_t ptMin = 0, Float_t ptMax = 24,
+								    Bool_t theMCon = kTRUE,
+								    Bool_t fillTree = kFALSE,
+								    Bool_t onTheFly = kFALSE,
+								    Bool_t keepingOnlyHIJINGbkd = kFALSE,
+								    TString suffixName = "",
+								    Bool_t debugFlag = kFALSE,
+								    Bool_t useXmlWeightsFile = kTRUE,
+								    Bool_t useWeightsLibrary = kFALSE,
+								    TString xmlWeightsFile = "$ALICE_PHYSICS/PWGHF/vertexingHF/TMVA/LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml",
+								    Bool_t useMultCorrection = kFALSE,
+								    TString estimatorFilename = "",       //  Multicity estimator file
+								    Double_t refMult = 9.26,              // refrence multiplcity (period b)
+								    Int_t year = 16,                    // Production year 
+								    Int_t recoEstimator = AliAnalysisTaskSELc2V0bachelorTMVAApp::kNtrk10, // fMultiplicityEstimator
+								    Bool_t useMultCut = kFALSE,
+								    Float_t multMin = 0.,    // Minimum is included
+								    Float_t multMax = 99999., // Maximum is excluded
+								    Bool_t useXmlFileFromCVMFS = kFALSE,
+								    TString xmlFileFromCVMFS = "",
+								    Int_t ffraction = -1,
+								    Float_t fPtLimForDownscaling = 4
+								    ){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -73,6 +75,11 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   Int_t nvarsSpectators = 0;
   TString namesTMVAvars, namesTMVAvarsSpectators;
   if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
+  else if (nvars == 12) {
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,nSigmaTOFpr,nSigmaTOFpi,nSigmaTOFka,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+    nvarsSpectators = 12;
+    namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,massLambda,massLambdaBar,V0positivePt,dcaV0pos,dcaV0neg,v0Pt,dcaV0,V0positiveEta,bachelorEta,centrality";
+    }
   else if (nvars == 11) {
     namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
     nvarsSpectators = 12;
@@ -101,6 +108,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   task->SetK0sAnalysis(kTRUE);
   task->SetDebugLevel(0);
   task->SetDebugHistograms(debugFlag);
+  task->SetFraction(ffraction);
+  task->SetDownScaling(fPtLimForDownscaling);
   // TMVA reader
   task->SetNVarsSpectators(nvarsSpectators);
   task->SetNamesTMVAVariablesSpectators(namesTMVAvarsSpectators);
