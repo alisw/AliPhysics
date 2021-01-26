@@ -121,7 +121,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t SetMassCut(Int_t massCut);
 	void SetPeriodName(TString periodName){fPeriodName = periodName;}
 	Double_t GetMassCut(){return fMassCut;}
-    Double_t GetMassCut(){return fMassCut_WithNDM;}
+    Double_t GetMassCut_WithNDM(){return fMassCut_WithNDM;}
 	void SetPrefilterRunFlag(Int_t runflag){fRunFlag = runflag;}
 	
 	// Request Flags
