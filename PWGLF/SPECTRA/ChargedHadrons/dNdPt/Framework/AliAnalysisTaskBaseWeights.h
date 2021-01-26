@@ -63,7 +63,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         Double_t                MCScalingFactor();
         virtual void            FillDefaultHistograms(Int_t step=0);
     
-        static AliAnalysisTaskBaseWeights* AddTaskBaseWeights(const char* name = "TaskBaseWeights", const char* outfile = 0, const char* collisionSystem = 0, Int_t sysFlag = 0, const char* prevTrainOutputPath = 0);
+        static AliAnalysisTaskBaseWeights* AddTaskBaseWeights(const char* name = "TaskBaseWeights", const char* outfile = 0, const char* collisionSystem = 0, Int_t sysFlag = 0, const char* prevTrainOutputPath = 0, bool doSystematics=false, bool useMBfractions=false);
     protected:
         virtual UInt_t          GetSeed();
         

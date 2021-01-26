@@ -115,7 +115,9 @@ void AliAnalysisTaskBaseWeights::AnaEvent()
 {
    fNch=0;  fNchWeighted=0;     fNchWeightedRandom=0;
    fNacc=0; fNaccWeighted=0;    fNaccWeightedRandom=0;
-    
+
+   fMCSpectraWeights->StartNewEvent();
+
    LoopOverAllTracks();
    if (fIsMC) LoopOverAllParticles();
     
@@ -123,7 +125,7 @@ void AliAnalysisTaskBaseWeights::AnaEvent()
     FillHistWeighted(fHistMultCorrelation, {fNchWeighted, fNaccWeighted, 1}, 1);
     FillHistWeighted(fHistMultCorrelation, {fNchWeightedRandom, fNaccWeightedRandom, 2}, 1);
     
-    std::cout << "multiplicities:\t N_ch\t weighted\t weightedRandom\n";
+    std::cout << "\tmultiplicities:\t N_ch\t weighted\t weightedRandom\n";
     std::cout << "\t " << fNch << "\t " << fNchWeighted << "\t " << fNchWeightedRandom << "\n";
     std::cout << "\t " << fNacc << "\t " << fNaccWeighted << "\t " << fNaccWeightedRandom << "\n";
 }
@@ -294,7 +296,7 @@ void AliAnalysisTaskBaseWeights::FillDefaultHistograms(Int_t step) {
 
 AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(
     const char* name, const char* outfile, const char* collisionSystem,
-    Int_t sysFlag, const char* prevTrainOutputPath) {
+    Int_t sysFlag, const char* prevTrainOutputPath, bool doSystematics, bool useMBfractions) {
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         ::Error("AddTaskBaseWeights", "No analysis manager to connect to.");
@@ -352,6 +354,8 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(
 
         if (prevTrainOutputPath) {
             weights->SetMCSpectraFile(prevTrainOutputPath);
+            weights->SetDoSystematics(doSystematics);
+            weights->SetUseMBFractions(useMBfractions);
         } // path to previous train output
         weights->Init();
         task->fMCSpectraWeights = weights;
