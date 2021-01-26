@@ -44,7 +44,7 @@
 #include "AliVertexerTracks.h"
 
 
-#include "AliAnalysisTaskTesting.h"
+#include "AliAnalysisTaskIPResolBeautyppCal.h"
 #include "TGeoGlobalMagField.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
@@ -90,9 +90,9 @@
 #include "TVector3.h"
 #include "TRandom2.h"
 
-ClassImp(AliAnalysisTaskTesting)
+ClassImp(AliAnalysisTaskIPResolBeautyppCal)
   //________________________________________________________________________
-  AliAnalysisTaskTesting::AliAnalysisTaskTesting(const char *name)
+  AliAnalysisTaskIPResolBeautyppCal::AliAnalysisTaskIPResolBeautyppCal(const char *name)
 : AliAnalysisTaskSE(name),
   fVevent(0),
   fAOD(0),
@@ -154,8 +154,8 @@ fImpParSprs_DalitzE(0)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskTesting::AliAnalysisTaskTesting()
-  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskTesting"),
+AliAnalysisTaskIPResolBeautyppCal::AliAnalysisTaskIPResolBeautyppCal()
+  : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskIPResolBeautyppCal"),
 fVevent(0),
 fAOD(0),
 fpVtx(0),
@@ -215,13 +215,13 @@ fImpParSprs_DalitzE(0)
   //DefineOutput(3, TTree::Class());
 }
 //_________________________________________
-AliAnalysisTaskTesting::~AliAnalysisTaskTesting()
+AliAnalysisTaskIPResolBeautyppCal::~AliAnalysisTaskIPResolBeautyppCal()
 {
   //Destructor
   delete fOutputList;
 }
 //_________________________________________
-void AliAnalysisTaskTesting::UserCreateOutputObjects()
+void AliAnalysisTaskIPResolBeautyppCal::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -338,7 +338,7 @@ void AliAnalysisTaskTesting::UserCreateOutputObjects()
   PostData(1,fOutputList);
 }
 //_________________________________________
-void AliAnalysisTaskTesting::UserExec(Option_t*)
+void AliAnalysisTaskIPResolBeautyppCal::UserExec(Option_t*)
 {
   // Main loop
   // Called for each event
@@ -486,7 +486,7 @@ void AliAnalysisTaskTesting::UserExec(Option_t*)
   PostData(1, fOutputList);
 }
 //___________________________________________
-Bool_t  AliAnalysisTaskTesting::IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMCmom, Int_t &MomPDG, Double_t &MomPt)
+Bool_t  AliAnalysisTaskIPResolBeautyppCal::IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromHijing, Int_t &type, Int_t &iMCmom, Int_t &MomPDG, Double_t &MomPt)
 {
   //Is electron from pi0, eta and gamma
 
@@ -503,7 +503,7 @@ Bool_t  AliAnalysisTaskTesting::IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFrom
   else return kFALSE;
 }
 //_________________________________________
-Bool_t AliAnalysisTaskTesting::GetNMCPartProduced()
+Bool_t AliAnalysisTaskIPResolBeautyppCal::GetNMCPartProduced()
 {
   //Get number of MC particles produced by generators.
 
@@ -542,7 +542,7 @@ Bool_t AliAnalysisTaskTesting::GetNMCPartProduced()
   return kTRUE;
 }
 //_________________________________________
-Int_t AliAnalysisTaskTesting::GetPi0EtaType(AliAODMCParticle *part)
+Int_t AliAnalysisTaskIPResolBeautyppCal::GetPi0EtaType(AliAODMCParticle *part)
 {
   // Return the type of particle
 
@@ -567,7 +567,7 @@ Int_t AliAnalysisTaskTesting::GetPi0EtaType(AliAODMCParticle *part)
   }
 }
 //_________________________________________
-Int_t AliAnalysisTaskTesting::GetPrimary(Int_t id)
+Int_t AliAnalysisTaskIPResolBeautyppCal::GetPrimary(Int_t id)
 {
   // Return the label of the primary that generated the given track
 
@@ -581,7 +581,7 @@ Int_t AliAnalysisTaskTesting::GetPrimary(Int_t id)
   }
 }
 //_________________________________________
-Bool_t AliAnalysisTaskTesting::PassEventSelect(AliVEvent *fVevent)
+Bool_t AliAnalysisTaskIPResolBeautyppCal::PassEventSelect(AliVEvent *fVevent)
 {
   //event selection cuts
 
@@ -625,7 +625,7 @@ Bool_t AliAnalysisTaskTesting::PassEventSelect(AliVEvent *fVevent)
   return kTRUE;
 }
 //_________________________________________
-/*void AliAnalysisTaskTesting::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
+/*void AliAnalysisTaskIPResolBeautyppCal::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
 {
   //check centrality, Run 2
 
@@ -659,7 +659,7 @@ Bool_t AliAnalysisTaskTesting::PassEventSelect(AliVEvent *fVevent)
 }
 */
 //___________________________________________
-Bool_t AliAnalysisTaskTesting::PassTrackCuts(AliAODTrack *atrack)
+Bool_t AliAnalysisTaskIPResolBeautyppCal::PassTrackCuts(AliAODTrack *atrack)
 {
   //apply track cuts
 
@@ -746,7 +746,7 @@ Bool_t AliAnalysisTaskTesting::PassTrackCuts(AliAODTrack *atrack)
   return kTRUE;
 }
 //----------------------------------------------------------------------------
-void AliAnalysisTaskTesting::RecalImpactParam(const AliAODTrack * const track, Double_t dcaD[2], Double_t covD[3])
+void AliAnalysisTaskIPResolBeautyppCal::RecalImpactParam(const AliAODTrack * const track, Double_t dcaD[2], Double_t covD[3])
 {
     //Recalculate impact parameter by recalculating primary vertex
     
@@ -778,7 +778,7 @@ void AliAnalysisTaskTesting::RecalImpactParam(const AliAODTrack * const track, D
     }
 }
 //________________________________________________________________________
-AliAODVertex* AliAnalysisTaskTesting::RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track)
+AliAODVertex* AliAnalysisTaskIPResolBeautyppCal::RemoveDaughtersFromPrimaryVtx(const AliAODTrack * const track)
 {
     // This method returns a primary vertex without the daughter tracks of the
     // candidate and it recalculates the impact parameters and errors for AOD tracks.
@@ -828,7 +828,7 @@ AliAODVertex* AliAnalysisTaskTesting::RemoveDaughtersFromPrimaryVtx(const AliAOD
 }
 
 //___________________________________________
-Int_t AliAnalysisTaskTesting::PhiBin(Double_t phi) const {
+Int_t AliAnalysisTaskIPResolBeautyppCal::PhiBin(Double_t phi) const {
     //phi bin
     
     Double_t pi=TMath::Pi();
@@ -840,7 +840,7 @@ Int_t AliAnalysisTaskTesting::PhiBin(Double_t phi) const {
     return -1;
 }
 //___________________________________________
-void AliAnalysisTaskTesting::Terminate(Option_t *)
+void AliAnalysisTaskIPResolBeautyppCal::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query

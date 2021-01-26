@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskTesting_h
-#define AliAnalysisTaskTesting_h
+#ifndef AliAnalysisTaskIPResolBeautyppCal_h
+#define AliAnalysisTaskIPResolBeautyppCal_h
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -34,14 +34,14 @@ class AliMultSelection;
 #include "AliSelectNonHFE.h"
 #include "AliAODMCParticle.h"
 
-class AliAnalysisTaskTesting : public AliAnalysisTaskSE {
+class AliAnalysisTaskIPResolBeautyppCal : public AliAnalysisTaskSE {
   public:
     enum HijingOrNot {kHijing,kElse};
     enum pi0etaType {kNotIsPrimary, kNoMother, kLightMesons, kBeauty, kCharm, kNoFeedDown};
 
-    AliAnalysisTaskTesting();
-    AliAnalysisTaskTesting(const char *name);
-    virtual ~AliAnalysisTaskTesting();
+    AliAnalysisTaskIPResolBeautyppCal();
+    AliAnalysisTaskIPResolBeautyppCal(const char *name);
+    virtual ~AliAnalysisTaskIPResolBeautyppCal();
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -117,9 +117,9 @@ class AliAnalysisTaskTesting : public AliAnalysisTaskSE {
     THnSparseF          *fImpParSprs_DalitzE; //!<! sparse
 
 
-    AliAnalysisTaskTesting(const AliAnalysisTaskTesting&); // not implemented
-    AliAnalysisTaskTesting& operator=(const AliAnalysisTaskTesting&); // not implemented
+    AliAnalysisTaskIPResolBeautyppCal(const AliAnalysisTaskIPResolBeautyppCal&); // not implemented
+    AliAnalysisTaskIPResolBeautyppCal& operator=(const AliAnalysisTaskIPResolBeautyppCal&); // not implemented
 
-    ClassDef(AliAnalysisTaskTesting, 1); //!example of analysis
+    ClassDef(AliAnalysisTaskIPResolBeautyppCal, 1); //!example of analysis
 };
 #endif

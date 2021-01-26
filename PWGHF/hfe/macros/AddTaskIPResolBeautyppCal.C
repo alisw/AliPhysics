@@ -7,12 +7,12 @@
 //          Vivek Kumar Singh (VECC)                      //
 ////////////////////////////////////////////////////////////
 
-AliAnalysisTask *AddTaskTesting(const TString ContNameExt = "", Bool_t fSwitchRIP=kTRUE)
+AliAnalysisTask *AddTaskIPResolBeautyppCal(const TString ContNameExt = "", Bool_t fSwitchRIP=kTRUE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AliAnalysisTaskTesting", "No analysis manager found.");
+    Error("AliAnalysisTaskIPResolBeautyppCal", "No analysis manager found.");
     return 0;
   }
 
@@ -29,7 +29,7 @@ AliAnalysisTask *AddTaskTesting(const TString ContNameExt = "", Bool_t fSwitchRI
   }
     
   TString name("ehEffiTask");
-  AliAnalysisTaskTesting *task = new AliAnalysisTaskTesting(name);
+  AliAnalysisTaskIPResolBeautyppCal *task = new AliAnalysisTaskIPResolBeautyppCal(name);
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SwitchRecalImpPar(fSwitchRIP);
     
