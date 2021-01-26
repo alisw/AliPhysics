@@ -487,12 +487,12 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);
   } else if( fModCentralityClass == 21){// high mult 0.01%
-    const Int_t centBins = 245;
+    const Int_t centBins = 235;
     Double_t arrCent[centBins + 1];
     for(Int_t i = 0; i < centBins + 1; i++){
       if(i < 100) arrCent[i] = i*0.01;
-      else if(i < 150) arrCent[i] = 1 + 0.1*(i-100);
-      else if( i < centBins) arrCent[i] = 5 + (i-150);
+      else if(i < 140) arrCent[i] = 1 + 0.1*(i-100);
+      else if( i < centBins) arrCent[i] = 5 + (i-140);
       else arrCent[i] = 100;
     }
     hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",centBins,arrCent);

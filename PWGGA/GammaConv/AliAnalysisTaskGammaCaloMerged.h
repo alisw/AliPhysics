@@ -11,6 +11,7 @@
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
+#include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
@@ -48,6 +49,10 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     void ProcessMCParticles();
     void ProcessAODMCParticles();
+
+    // Jet functions
+    void ProcessJets();
+
     // determine source according to pdg code of mother
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
 
@@ -140,6 +145,10 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TList*                  fMesonCutArray;                                     // List with Meson Cuts
     AliConversionMesonCuts* fMesonCuts;                                         // MesonCutObject
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
+    AliAnalysisTaskConvJet* fConvJetReader;                                     // JetReader
+    Bool_t                  fDoJetAnalysis;                                     // Switch for Jet Analysis
+    Bool_t                  fDoJetQA;                                           // Switch for Jet QA
+    TList**                 fJetHistograms;                                     // List for Jet histograms
     TClonesArray*           fAODMCTrackArray;                                   // MC track array
     TClonesArray*           farrClustersProcess;                                // Cluster array
     std::map<Int_t, Int_t>* fMapNeutralPionOverlap;                             // map with number of neutral pion overlaps for current pion
@@ -166,6 +175,18 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoClusMergedNCellsAroundPt;                     //! array of histos with number of cells surrounding merged cluster vs merged cluster Pt
     TH2F**                  fHistoClusMergedNCellsAroundAndInPt;                //! array of histos with number of cells surrounding merged cluster + Ncells in clus vs merged cluster Pt
     TH2F**                  fHistoClusMergedEAroundE;                           //! array of histos with E surrounding merged cluster vs merged cluster E
+
+    // Jet ESD histograms
+    TH1F**                  fHistoPtJet;                                        //! array of histos with Jet pT
+    TH1F**                  fHistoJetEta;                                       //! array of histos with Jet eta
+    TH1F**                  fHistoJetPhi;                                       //! array of histos with Jet phi
+    TH1F**                  fHistoJetArea;                                      //! array of histos with Jet area
+    TH2F**                  fClusterEtaPhiJets;                                 //! array of histos with hitmap of clusters in Jet
+    TH1F**                  fHistoNJets;                                        //! array of histos with events with Jets
+    TH1F**                  fHistoEventwJets;                                   //! array of histos with events with Jets > 0
+    TH2F**                  fHistoTruevsRecJetPt;                               //! array of histos Jet rec. vs true pT
+    TH2F**                  fHistoClusMergedPtvsRJetAccepted;                   //! array of histos with clusters in Jets vs distance between cluster and Jet axis
+    TH2F**                  fHistoJetFragmFunc;                                 //! array of histos with clusters in Jets vs z (z = pJet*pPi0 / |pJet|)
 
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
@@ -259,6 +280,10 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 //    TH2F**                  fHistoTrueClusElectronPtvsConvPhotonTopMotherID;    //!
     TH1F**                  fHistoTrueMergedMissedPDG;                          //!
 
+    TH2F**                  fHistoTrueClusMergedPtvsRJet;                       //! array of histos with clusters from vs distance to Jet axis
+    TH2F**                  fHistoTrueClusPi0PtvsRJet;                          //! array of histos with clusters from true pi0s vs distance to Jet axis
+    TH2F**                  fHistoTrueClusEtaPtvsRJet;                          //! array of histos with clusters from true etas vs distance to Jet axis
+
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
     TH2F**                  fHistoTrueEtaPtY;                                   //! array of histos with validated eta, pt, Y
@@ -315,6 +340,21 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
     TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
+    // Jet
+    vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
+    vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
+    vector<Double_t>      fVectorJetPy;                                         // Vector of JetPy
+    vector<Double_t>      fVectorJetPz;                                         // Vector of JetPz
+    vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
+    vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
+    vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
+    vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
+    vector<Double_t>      fTrueVectorJetPx;                                     // Vector of True JetPx
+    vector<Double_t>      fTrueVectorJetPy;                                     // Vector of True JetPy
+    vector<Double_t>      fTrueVectorJetPz;                                     // Vector of True JetPz
+    vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
+    vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
+
     // additional variables
     TRandom3                fRandom;                                            // random
     Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
@@ -342,7 +382,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 40);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 41);
 };
 
 #endif
