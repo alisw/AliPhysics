@@ -121,28 +121,28 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     inducedEnergyLossFraction:                      # Fraction of energy lost by max energy cell in one of T-Card cells
         enabled: true                               # Enable setting these values
        #values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
-        values: {0 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+        values: {0 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
                  1 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  2 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
                  3 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 4 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 5 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 6 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 4 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
+                 5 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
+                 6 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
                  7 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],  
                  9 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  10: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 11: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 12: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 13: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 11: [1.15e-02, 1.15e-02, 1.15e-02, 0], 
+                 12: [1.15e-02, 1.15e-02, 1.15e-02, 0], 
+                 13: [1.15e-02, 1.15e-02, 1.15e-02, 0], 
                  14: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  15: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 16: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 16: [1.15e-02, 1.15e-02, 1.15e-02, 0], 
                  17: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  18: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  19: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  20: [0.80e-02, 0.80e-02, 0.80e-02, 0],
-                 21: [0.80e-02, 0.80e-02, 0.80e-02, 0]} 
+                 21: [0.80e-02, 0.80e-02, 0.80e-02, 0]}
     inducedEnergyLossFractionP1:                    # Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells
         enabled: true                               # Enable setting these values
         values: {"all" : [-1.1e-03, -1.1e-03, -1.1e-03, 0]}  # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
