@@ -6058,6 +6058,65 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
 
         } // end of iCurrentPiMi2
       }   // end of iCurrenPiMi
+    } else if (mode == 6){
+        // Loops for Pi0Pi+Pi+ LikeSign mixing
+        for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++) {
+
+          AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl));
+
+          for (Int_t iCurrentPiMi = iCurrentPiPl; iCurrentPiMi < fPosPionCandidates->GetEntries(); iCurrentPiMi++) {
+
+              AliAODConversionMother EventPiMiGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiMi));
+
+              // Mass cut on pi+pi+
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+                AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
+                if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                  continue;
+                }
+              }
+
+              // Combine Pi+ and Pi0
+              AliAODConversionMother PiPlNDMBackgroundCandidate(&EventPiPlGoodMeson, EventNDMGoodMeson);
+
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                AliAODConversionMother PiPlNDMBackgroundCandidate2(&EventPiMiGoodMeson, EventNDMGoodMeson);
+                Double_t  Mass_PiPlus_PiZero_Sub           = PiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+                Double_t  Mass_PiPlus2_PiZero_Sub           = PiPlNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiPlus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
+
+              // Create (final) Candidate
+              AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiMiGoodMeson);
+
+              // Check if candidate survives meson cut
+              if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
+
+                // Check if candidate survives kinematic cut
+                if (KinematicCut(&EventPiPlGoodMeson, &EventPiMiGoodMeson, EventNDMGoodMeson, &PiPlPiPlNDMBackgroundCandidate)) {
+
+                  // Create temporary mesons to be able to fix pz
+                  AliAODConversionMother NDMtmp;
+                  NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                  FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                  AliAODConversionMother PiPlNDMtmp(&EventPiPlGoodMeson, &NDMtmp);
+                  AliAODConversionMother PiPlPiPlNDMtmp(&EventPiMiGoodMeson, &PiPlNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
+
+                  // Fill histograms (likesign)
+                  fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M(), PiPlPiPlNDMBackgroundCandidate.Pt(), fWeightJetJetMC);
+                  fHistoMotherLikeSignBackInvMassSubNDMPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiPlNDMBackgroundCandidate.Pt(), fWeightJetJetMC);
+                  fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiPlPiPlNDMtmp.M(), PiPlPiPlNDMtmp.Pt(), fWeightJetJetMC);
+                }
+              }
+
+          } // end of iCurrentPiMi
+        }   // end of iCurrenPiPl
+
     } // end of mode if
   } // end of NDM from current event loop
 }
