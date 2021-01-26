@@ -2326,7 +2326,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 //fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
                                 //fDTemplateNoWeight->Fill(track->Pt(), DCA);
                                 
-                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt)*fD0TauWeight->Eval(momTime));
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt))*fD0TauWeight->Eval(momTime);
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
@@ -2347,7 +2347,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 //fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
                                 //fDTemplateNoWeight->Fill(track->Pt(), DCA);
                                 
-                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt)*fDPlusTauWeight->Eval(momTime));
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt))*fDPlusTauWeight->Eval(momTime);
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
@@ -2367,7 +2367,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 //fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
                                 //fDTemplateNoWeight->Fill(track->Pt(), DCA);
                                 
-                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt)*fDsTauWeight->Eval(momTime));
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt))*fDsTauWeight->Eval(momTime);
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
                                 //fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
                                 
@@ -2415,7 +2415,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         }else if (fpidSort==20) {//if from B+ meson
                             //cout<<"TESTING5"<<endl;
                             if (momPt>0. && momPt<50.) { //in proper pt range
-                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt)*fBPlusTauWeight->Eval(momTime));
+                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt))*fBPlusTauWeight->Eval(momTime);
                                 //fBTemplateWeightNew->Fill(track->Pt(), DCA, bWeight);
                                 fSprsTemplatesWeight->Fill(tempValue,bWeight);
                                 
@@ -2431,7 +2431,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         else if (fpidSort==21) {//if from B0 meson
                             //cout<<"TESTING5"<<endl;
                             if (momPt>0. && momPt<50.) { //in proper pt range
-                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt)*fB0TauWeight->Eval(momTime));
+                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt))*fB0TauWeight->Eval(momTime);
                                 //fBTemplateWeightNew->Fill(track->Pt(), DCA, bWeight);
                                 fSprsTemplatesWeight->Fill(tempValue,bWeight);
                                 
@@ -2447,7 +2447,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         else if (fpidSort==22) {//if from Bs meson
                             //cout<<"TESTING5"<<endl;
                             if (momPt>0. && momPt<50.) { //in proper pt range
-                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt)*fBsTauWeight->Eval(momTime));
+                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt))*fBsTauWeight->Eval(momTime);
                                 //fBTemplateWeightNew->Fill(track->Pt(), DCA, bWeight);
                                 fSprsTemplatesWeight->Fill(tempValue,bWeight);
                                 
