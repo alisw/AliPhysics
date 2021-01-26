@@ -204,6 +204,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fCandCounter_onTheFly(0x0)
   ,fNSigmaPreFilterPID(3.)
   ,fApplyEvSel(kTRUE)
+  ,fNoStdPIDcases(kFALSE)
 {
   /// Default constructor
 
@@ -326,6 +327,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fCandCounter_onTheFly(0x0)
   ,fNSigmaPreFilterPID(3.)
   ,fApplyEvSel(kTRUE)
+  ,fNoStdPIDcases(kFALSE)
 {
   /// Default constructor
 
@@ -1713,9 +1715,17 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		      if(arrayPIDpkpi[i]){
 			if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17)) {
 			  point[0]=part->Pt();
-			  fhSparseAnalysis->Fill(point);
+        if(fNoStdPIDcases){
+          if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+        }
+        else  fhSparseAnalysis->Fill(point);
 			}
-			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
+			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
+        if(fNoStdPIDcases){
+          if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+        }
+        else  fhSparseAnalysis->Fill(point);
+      }
 		      }
 	      }
 	    }	    	   
@@ -1742,9 +1752,17 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		if(arrayPIDpikp[i]){
 		  if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18))  {
 		    point[0]=part->Pt();
-		    fhSparseAnalysis->Fill(point);
+		    if(fNoStdPIDcases){
+          if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+        }
+        else  fhSparseAnalysis->Fill(point);
 		  }
-		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
+		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
+        if(fNoStdPIDcases){
+          if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+        }
+        else  fhSparseAnalysis->Fill(point);
+      }
 		}
 	      }
 	    }	  
