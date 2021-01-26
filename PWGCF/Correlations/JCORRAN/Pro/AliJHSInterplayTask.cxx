@@ -250,13 +250,6 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		fFFlucAna->SetEventCentrality( fcent );
 		fFFlucAna->SetEventVertex ( vertex );
 		fFFlucAna->SetEtaRange( Eta_min, Eta_max);
-		if(flags & HSINT_PHI_CORRECTION){
-			int bin1 = AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
-			int fRunNum = fJCatalystTask->GetRunNumber();
-			TH1 *pweightMap = fJCatalystTask->GetCorrectionMap(fRunNum,bin1);
-			if(pweightMap)
-				fFFlucAna->SetPhiWeights(pweightMap);
-		}
 		fFFlucAna->UserExec("");
 	}
 

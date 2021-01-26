@@ -161,6 +161,8 @@ private:
 	TString fTaskName;
 	TString fCentDetName;
 	UInt_t fEvtNum;
+	int fcBin;
+	Double_t fVertex[3];
 	UInt_t fFilterBit;
 	UInt_t fNumTPCClusters;
 	UInt_t fEffMode;
