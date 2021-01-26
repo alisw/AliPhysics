@@ -544,22 +544,24 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     }
 
     // force recomputation of TOF Nsigma with tune-on-data to have latest development of tail parametrisation in old AODs
-    for(int iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++)
-    {
+    if(isMC) {
+      for(Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
         AliVTrack* track=dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
-        if(!track) continue;
+        if(!track || track->GetTOFsignalTunedOnData() > 99999) continue;
         track->SetTOFsignalTunedOnData(100000);
+      }
     }
+    else { // apply TPC postcalibration
+      if(fEnableNsigmaTPCDataCorr) {
 
-    if(fEnableNsigmaTPCDataCorr && !isMC) {
+        Bool_t isPass1 = kFALSE;
+        TTree *treeAOD = inputHandler->GetTree();
+        TString currentFile = treeAOD->GetCurrentFile()->GetName();
+        if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+          isPass1 = kTRUE;
 
-      Bool_t isPass1 = kFALSE;
-      TTree *treeAOD = inputHandler->GetTree();
-      TString currentFile = treeAOD->GetCurrentFile()->GetName();
-      if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
-        isPass1 = kTRUE;
-
-      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
+        fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
+      }
     }
   }
 }
