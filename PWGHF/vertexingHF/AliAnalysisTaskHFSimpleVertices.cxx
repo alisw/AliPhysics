@@ -854,7 +854,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   AliAODVertex *vertexAODp = ConvertToAODVertex(primVtxTrk);
   Double_t bzkG = (Double_t)esd->GetMagneticField();
   Int_t totTracks = TMath::Min(fMaxTracksToProcess, esd->GetNumberOfTracks());
-  Double_t d0track[2],covd0track[2];
+  Double_t d0track[2],covd0track[3];
 
 
   if(!fVertexerTracks){
