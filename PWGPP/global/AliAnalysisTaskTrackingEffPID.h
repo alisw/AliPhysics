@@ -49,6 +49,8 @@ public:
   void SetTrackletMultiplicityEstimator(){ fMultEstimator=0;}
   void SetVertexContribMultiplicityEstimator(){ fMultEstimator=1;}
   void SetTracksMultiplicityEstimator(){ fMultEstimator=2;}
+  void SetTPCTracksMultiplicityEstimator(){ fMultEstimator=3;}
+  void SetTPCClustersMultiplicityEstimator(){ fMultEstimator=4;}
 
   void SetCollisionSystem(TString collsy){
     collsy.ToLower();
