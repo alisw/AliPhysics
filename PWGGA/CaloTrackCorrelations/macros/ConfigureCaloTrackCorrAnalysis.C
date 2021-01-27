@@ -2127,8 +2127,8 @@ void ConfigureCaloTrackCorrAnalysis
       else if (analysisString.Contains("MultiIsoRUESubMethods"))
       {
         //printf("**** MultiIsoRUESub ****\n");
-        Int_t nsizes = 2;
-        Float_t conesize[] = {0.15,0.3};
+        Int_t nsizes = 4;
+        Float_t conesize[] = {0.15,0.2,0.3,0.4};
         for(Int_t isize = 0; isize < nsizes; isize++)
         {
           anaList->AddAt(ConfigureIsolationAnalysis
