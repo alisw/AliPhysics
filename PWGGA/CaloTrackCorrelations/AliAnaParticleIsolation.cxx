@@ -5635,6 +5635,17 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         //printf("Track %d pT %f\n",itrack, partInConePt);
 
       }
+
+      // Add generated particles to embedded
+      sumPtInConeChEmb+=sumPtInConeCh;
+      sumPtInConeNeEmb+=sumPtInConeNe;
+
+      etaBandPtSumChEmb+=etaBandPtSumCh;
+      phiBandPtSumChEmb+=phiBandPtSumCh;
+      etaBandPtSumNeEmb+=etaBandPtSumNe;
+      phiBandPtSumNeEmb+=phiBandPtSumNe;
+
+      perpConePtSumChEmb+=perpConePtSumCh;
     }
     ///////END ISO EMBED DATA/////////////////////////
 
@@ -5671,7 +5682,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // Total energy in cone
     //
     sumPtInCone = sumPtInConeNe + sumPtInConeCh  ;
-    sumPtInConeEmb = sumPtInCone + sumPtInConeNeEmb + sumPtInConeChEmb  ;
+    sumPtInConeEmb = sumPtInConeNeEmb + sumPtInConeChEmb  ;
 
     // Normalize estimated UE to cone size
     //
@@ -5927,28 +5938,28 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       if ( IsEmbedingAnalysisOn() )
       {
-        fhConeSumPtPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+        fhConeSumPtPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInConeEmb, GetEventWeight()*weightPt) ;
         if ( !GetReader()->AreMCPromptPhotonsSelected() )
-          fhConeSumPtPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInCone, GetEventWeight()*weightPt) ;
+          fhConeSumPtPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInConeEmb, GetEventWeight()*weightPt) ;
 
         if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
         {
-          fhConeSumPtChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+          fhConeSumPtChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInConeChEmb, GetEventWeight()*weightPt) ;
           if ( !GetReader()->AreMCPromptPhotonsSelected() )
-            fhConeSumPtChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInConeCh, GetEventWeight()*weightPt) ;
+            fhConeSumPtChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInConeChEmb, GetEventWeight()*weightPt) ;
         }
 
         if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
         {
-          fhConeSumPtUESubPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
+          fhConeSumPtUESubPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubEmb, GetEventWeight()*weightPt) ;
           if ( !GetReader()->AreMCPromptPhotonsSelected() )
-            fhConeSumPtUESubPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESub, GetEventWeight()*weightPt) ;
+            fhConeSumPtUESubPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubEmb, GetEventWeight()*weightPt) ;
 
           if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
           {
-            fhConeSumPtUESubChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
+            fhConeSumPtUESubChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubChEmb, GetEventWeight()*weightPt) ;
             if ( !GetReader()->AreMCPromptPhotonsSelected() )
-              fhConeSumPtUESubChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, GetEventWeight()*weightPt) ;
+              fhConeSumPtUESubChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubChEmb, GetEventWeight()*weightPt) ;
           }
         }
       }
