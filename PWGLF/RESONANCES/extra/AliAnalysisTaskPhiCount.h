@@ -180,6 +180,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     UChar_t                     fMultiplicity;              //! Event Multiplicity
     Int_t                       fKaonLabels     [1024];     //! Kaon Labels
+    Int_t                       fnPhiRec;                   //! Recordable Phi Number
+    AliAODMCParticle*           fPhiRecParticles[1024];     //! Recordable Phi Labels
     //
     // Trees
     //
