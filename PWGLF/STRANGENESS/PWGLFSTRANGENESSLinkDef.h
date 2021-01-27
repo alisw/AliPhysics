@@ -74,9 +74,6 @@
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
-#pragma link C++ class AliAnalysisTaskStrangenessRatios+;
-#pragma link C++ class MiniCascade+;
-#pragma link C++ class MiniCascadeMC+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
@@ -84,6 +81,9 @@
 #ifdef __CLING__
 #pragma link C++ class Event+;
 #pragma link C++ class std::vector<AliESDtrack>+;
+#pragma link C++ class AliAnalysisTaskStrangenessRatios+;
+#pragma link C++ class MiniCascade+;
+#pragma link C++ class MiniCascadeMC+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif
