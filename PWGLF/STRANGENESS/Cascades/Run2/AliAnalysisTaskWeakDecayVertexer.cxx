@@ -529,8 +529,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
         
         //reset on-the-fly, job is done
-        if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
-            SelectiveResetV0s(lESDevent, 1);
+        //if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
+        //    SelectiveResetV0s(lESDevent, 1);
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
@@ -559,8 +559,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
     }
     //reset on-the-fly, job is done
-    if(fkUseOptimalTrackParamsBachelor)
-        SelectiveResetV0s(lESDevent, 1);
+    //if(fkUseOptimalTrackParamsBachelor)
+    //    SelectiveResetV0s(lESDevent, 1);
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
