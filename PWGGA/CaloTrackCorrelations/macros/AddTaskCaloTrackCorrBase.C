@@ -150,14 +150,14 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   
   // If EMCal trigger decission task was active
   //
-  if ( rejectEMCTrig == 3 && trigger.Contains("CAL_L") )
+  if ( rejectEMCTrig == 3 && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA")) )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers from Trigger Maker === \n");
     reader->SwitchOnBadTriggerEventsFromTriggerMakerRemoval();
   }
   // Old handmade trigger recalculation
   //
-  else if ( rejectEMCTrig > 0 && !simulation && trigger.Contains("CAL_L") )
+  else if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA"))  )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers (old procedure) === \n");
     reader->SwitchOnTriggerPatchMatching();

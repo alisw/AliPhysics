@@ -391,6 +391,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtNeutralChargedRatioPrimMC        [fgkNmcPrimTypes]; //!<!  photon pT vs ratio of sum of primaries pT in cone neutral over charged.
   TH2F *   fhConeSumPtPerpConeNeutralChargedRatioPrimMC[fgkNmcPrimTypes]; //!<!  photon pT vs ratio of sum of primaries pT in perpendicular cone neutral over charged.
   
+  TH2F *   fhConeSumPtPrimMCEmb          [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries and embedded data pT in cone.
+  TH2F *   fhConeSumPtChargedPrimMCEmb   [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries  and embedded data tracks pT in cone.
+  TH3F *   fhConeSumPtCenPrimMCEmb       [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries  and embedded data pT in cone vs centrality.
+  TH3F *   fhConeSumPtCenChargedPrimMCEmb[fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged primaries  and embedded data  pT in cone vs centrality.
+
+  TH2F *   fhConeSumPtUESubPrimMCEmb          [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries  and embedded data pT in cone UE subtracted.
+  TH2F *   fhConeSumPtUESubChargedPrimMCEmb   [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged  and embedded data primaries pT in cone  UE subtracted.
+  TH3F *   fhConeSumPtUESubCenPrimMCEmb       [fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of primaries  and embedded data pT in cone  UE subtracted vs centrality.
+  TH3F *   fhConeSumPtUESubCenChargedPrimMCEmb[fgkNmcPrimTypes]; //!<! Number of generated isolated photon vs photon pT vs sum of charged  and embedded data primaries pT in cone  UE subtracted vs centrality.
+
   TH1F *   fhPtPrimMCPi0DecayPairOutOfCone;            //!<! Pi0 decay photons, with decay pair out of isolation cone.
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptance;      //!<! Pi0 decay photons, with decay pair out of detector acceptance.
   TH1F *   fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap;   //!<! Pi0 decay photons, with decay pair out of detector acceptance.
@@ -684,7 +694,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,50) ;
+  ClassDef(AliAnaParticleIsolation,51) ;
   /// \endcond
 
 } ;
