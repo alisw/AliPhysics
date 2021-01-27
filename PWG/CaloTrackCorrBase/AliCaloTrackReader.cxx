@@ -1211,7 +1211,7 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
     
     fhEMCALClusterTimeE  = new TH2F 
-    ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 250,0,250,1201,-1201,1201);
+    ("hEMCALReaderTimeE","#it{time}_{cluster} vs #it{E}_{cluster} after cuts", 125,0,250,1001,-1001,2002);
     fhEMCALClusterTimeE->SetXTitle("#it{E}_{cluster} (GeV)");
     if ( fHistoPtDependent )
        fhEMCALClusterTimeE->SetXTitle("#it{p}_{T} (GeV/#it{c})");
