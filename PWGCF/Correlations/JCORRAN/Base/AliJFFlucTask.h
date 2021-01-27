@@ -21,10 +21,10 @@
 
 #include <AliAnalysisTaskSE.h>
 #include <AliAODMCParticle.h>
+#include <TGraphErrors.h>
 #include "AliJHistManager.h"
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliJEfficiency.h"
 
 //==============================================================
 
@@ -34,6 +34,7 @@ using namespace std;
 class TH1D;
 class TH2D;
 class TH3D;
+class TAxis;
 class TList;
 class TTree;
 class TRandom;
@@ -45,7 +46,7 @@ class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
 class TParticle;
-class AliJEfficiency;
+class TGraphErrors;
 
 class AliJFFlucTask : public AliAnalysisTaskSE {
 public:
@@ -92,8 +93,11 @@ public:
 	UInt_t ConnectInputContainer(const TString, const TString);
 	void EnablePhiCorrection(const TString);
 	void EnableCentFlattening(const TString);
+	void EnableEffCorrection(const TString);
 	TH1 * GetCorrectionMap(UInt_t, UInt_t);
 	TH1 * GetCentCorrection();
+	TGraphErrors * GetEffCorrectionMap(UInt_t run, Double_t cent);
+	double GetEffCorrection(TGraphErrors *gCor, double pt ) const ;
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -154,10 +158,12 @@ public:
 private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
-	AliJEfficiency *fEfficiency; //!
 	AliJFFlucAnalysis *fFFlucAna; // analysis code
-	std::map<UInt_t, TH1 *> PhiWeightMap[96];
-
+	std::map<UInt_t, TH1 *> PhiWeightMap[96]; // per runs
+	std::map<UInt_t,TGraphErrors *> EffWeightMap[96]; //
+	TH1 *pPhiWeights;
+	TGraphErrors *grEffCor; // for one cent
+	TAxis *fCentBinEff; // for different cent bin for MC eff
 	TString fTaskName;
 	TString fCentDetName;
 	UInt_t fEvtNum;
@@ -188,6 +194,7 @@ private:
 	UInt_t inputIndex;
 	UInt_t phiInputIndex;
 	UInt_t centInputIndex;
+	UInt_t effInputIndex;
 
 	ClassDef(AliJFFlucTask, 1);
 
