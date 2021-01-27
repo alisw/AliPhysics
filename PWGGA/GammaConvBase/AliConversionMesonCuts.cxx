@@ -3455,10 +3455,10 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
-  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay (around Pi0 for the omega analyses)
+  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kTRUE;
-    fGammaSwappMethodBg         = 11;
+    fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
