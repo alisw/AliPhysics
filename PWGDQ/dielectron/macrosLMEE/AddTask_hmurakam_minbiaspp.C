@@ -5,8 +5,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
 					    Char_t* outputFileName="LMEE.root",
 					    ULong64_t triggerMask = AliVEvent::kINT7,
 					    Bool_t rejectPileup = kTRUE,
-					    Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins,
-					    Int_t wagonnr=0
+					    Int_t pileuprej = AliDielectronEventCuts::kSPDInMultBins
                                             )
 {
     
@@ -38,7 +37,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     if(hasMC) kMixing = 0;
     
     //=== Create the main dielectron task =============================
-    AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%d",wagonnr));
+    AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDielectron_mb");
     if (!hasMC) task->UsePhysicsSelection();
     task->SetTriggerMask(triggerMask);
     task->SetTriggerOnV0AND(kTRUE); // only for cross-check
@@ -67,37 +66,30 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     mgr->AddTask(task);
     
     //=== create output containers ===========================
-    AliAnalysisDataContainer *coutput1 =0x0;
-    AliAnalysisDataContainer *cOutputHist1 =0x0;
-    AliAnalysisDataContainer *cOutputHist2 =0x0;
-    AliAnalysisDataContainer *coutput1 =0x0;
-
-    if(wagonnr == 0){
-      coutput1 = mgr->CreateContainer("tree_lowmass",TTree::Class(),
-				      AliAnalysisManager::kExchangeContainer,outputFileName);
-
-      cOutputHist1 = mgr->CreateContainer("Output_Histos",TList::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-
-      cOutputHist2 = mgr->CreateContainer("Output_CF",TList::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-
-      cOutputHist3 = mgr->CreateContainer("Output_EventStat", TH1D::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-    }else{
-      coutput1 = mgr->CreateContainer(Form("tree_lowmass_%d",wagonnr),TTree::Class(),
-				      AliAnalysisManager::kExchangeContainer,outputFileName);
-
-      cOutputHist1 = mgr->CreateContainer(Form("Output_Histos_%d",wagonnr),TList::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-
-      cOutputHist2 = mgr->CreateContainer(Form("Output_CF_%d",wagonnr),TList::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-
-      cOutputHist3 = mgr->CreateContainer(Form("Output_EventStat_%d",wagonnr),TH1D::Class(),
-					  AliAnalysisManager::kOutputContainer,outputFileName);
-    }
+    AliAnalysisDataContainer *coutput1 =
+    mgr->CreateContainer("tree_lowmass",
+                         TTree::Class(),
+                         AliAnalysisManager::kExchangeContainer,
+                         outputFileName);
     
+    AliAnalysisDataContainer *cOutputHist1 =
+    mgr->CreateContainer("Output_Histos",
+                         TList::Class(),
+                         AliAnalysisManager::kOutputContainer,
+                         outputFileName);
+    
+    AliAnalysisDataContainer *cOutputHist2 =
+    mgr->CreateContainer("Output_CF",
+                         TList::Class(),
+                         AliAnalysisManager::kOutputContainer,
+                         outputFileName);
+    
+    AliAnalysisDataContainer *cOutputHist3 =
+    mgr->CreateContainer("Output_EventStat",
+                         TH1D::Class(),
+                         AliAnalysisManager::kOutputContainer,
+                         outputFileName);
+
     mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 0, coutput1 );
     mgr->ConnectOutput(task, 1, cOutputHist1);
