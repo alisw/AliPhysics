@@ -2272,7 +2272,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           if (fIsMC>1) fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]);
-          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_InvMassPt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           if (fIsMC>1) fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->Sumw2();
