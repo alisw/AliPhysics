@@ -3826,7 +3826,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
             fBuffer_GenPhotonMCIsoCharged1.push_back(mcIso.isolationCone.at(0));
             if(mcIso.isolationCone.size()>1) fBuffer_GenPhotonMCIsoCharged2.push_back(mcIso.isolationCone.at(1));
             if(mcIso.isolationCone.size()>2) fBuffer_GenPhotonMCIsoCharged3.push_back(mcIso.isolationCone.at(2));
-            fBuffer_GenPhotonMCIsoBckLeft.push_back(mcIso.backgroundLeft.at(0));
+            fBuffer_GenPhotonMCIsoBckLeft.push_back(mcIso.backgroundLeft.at(2));
             Bool_t isConv = kFALSE;
             
             Int_t nDaughters = particle->GetNDaughters();
@@ -5303,7 +5303,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Double_t clusM20 = m20;
   Double_t clusV1SplitMass = mass;
   Double_t clusterIsoCharged = isoCharged.isolationCone.at(0);
-  Double_t clusterIsoChargedLeft = isoCharged.backgroundLeft.at(0);
+  Double_t clusterIsoChargedLeft = isoCharged.backgroundLeft.at(2);
 
   //cout << "IsoCharged =" << isoCharged.isolationCone.at(0) << endl;
   
@@ -5344,7 +5344,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
       trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
       if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
       if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
-      trueClusterMCIsoBckLeft = mcIso.backgroundLeft.at(0);
+      trueClusterMCIsoBckLeft = mcIso.backgroundLeft.at(2);
 
       TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
       if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
