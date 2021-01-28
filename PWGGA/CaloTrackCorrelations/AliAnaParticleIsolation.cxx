@@ -7531,6 +7531,14 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, etaTrack, phiTrack);
 
+    // Angles between trigger and track
+    Double_t dEta = etaTrig - etaTrack;
+    Double_t dPhi = phiTrig - phiTrack;
+
+    // Shift phi angle when trigger is close to 0 or 360
+    if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+    if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+    
     if ( rad > conesize )
     {
       // Phi band
@@ -7542,7 +7550,7 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
            phiTrack > (phiTrig-conesize-conesizegap)    ) takeIt = kFALSE;
       
       // Look only half TPC with respect candidate, avoid opposite side jet 
-      if ( TMath::Abs(phiTrig-phiTrack) > TMath::PiOver2() )  takeIt = kFALSE;
+      if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
       
       // Within eta cone size
       if ( etaTrack > (etaTrig-conesize) && etaTrack < (etaTrig+conesize) &&  takeIt ) 
@@ -7593,11 +7601,9 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Fill the histograms at +-45 degrees in phi from trigger particle, 
     // perpedicular to trigger axis in phi
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    Double_t dEta    = etaTrig - etaTrack;
-    
-    Double_t dPhiPlu = phiTrig - phiTrack + TMath::PiOver2();
-    Double_t dPhiMin = phiTrig - phiTrack - TMath::PiOver2();
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+    Double_t dPhiPlu = dPhi + TMath::PiOver2();
+    Double_t dPhiMin = dPhi - TMath::PiOver2();
     
     Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
     Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
