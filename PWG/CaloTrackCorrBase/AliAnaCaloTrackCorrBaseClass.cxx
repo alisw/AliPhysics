@@ -1082,21 +1082,28 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
   {
     Float_t max = GetHistogramRanges()->GetHistoShowerShapeMax();
     Float_t min = GetHistogramRanges()->GetHistoShowerShapeMin();
-      
+
     TCustomBinning ssBinning;
     if (min <= 0 ) ssBinning.SetMinimum(-0.01);
     else           ssBinning.SetMinimum(min);
     
-    if ( min < 0.5 && max > 0.5 ) ssBinning.AddStep(0.50,0.01);  // 51 
-    if ( min < 1.0 && max > 1.0 ) ssBinning.AddStep(1.00,0.05);  // 10
-    if ( min < 3.0 && max > 3.0 ) ssBinning.AddStep(3.00,0.10);  // 20
-    if ( min < 5.0 && max > 5.0 ) ssBinning.AddStep(5.00,0.25);  // 20
-    
-    if      ( max <= 0.5 ) ssBinning.AddStep(max,0.01);  // 51 
-    else if ( max <= 1.0 ) ssBinning.AddStep(max,0.05);  // 10
-    else if ( max <= 3.0 ) ssBinning.AddStep(max,0.10);  // 20
-    else if ( max <= 5.0 ) ssBinning.AddStep(max,0.25);  // 20
-    else                   ssBinning.AddStep(max,0.50);
+    if ( fHistoPtBinNonConstantInArray )
+    {
+      if ( min < 0.5 && max > 0.5 ) ssBinning.AddStep(0.50,0.01);  // 51
+      if ( min < 1.0 && max > 1.0 ) ssBinning.AddStep(1.00,0.05);  // 10
+      if ( min < 3.0 && max > 3.0 ) ssBinning.AddStep(3.00,0.10);  // 20
+      if ( min < 5.0 && max > 5.0 ) ssBinning.AddStep(5.00,0.25);  // 20
+
+      if      ( max <= 0.5 ) ssBinning.AddStep(max,0.01);  // 51
+      else if ( max <= 1.0 ) ssBinning.AddStep(max,0.05);  // 10
+      else if ( max <= 3.0 ) ssBinning.AddStep(max,0.10);  // 20
+      else if ( max <= 5.0 ) ssBinning.AddStep(max,0.25);  // 20
+      else                   ssBinning.AddStep(max,0.50);
+    }
+    else
+    {
+      ssBinning.AddStep(max, (max-min) / GetHistogramRanges()->GetHistoShowerShapeBins());
+    }
     
     TArrayD ssBinsArray;
     ssBinning.CreateBinEdges(ssBinsArray);

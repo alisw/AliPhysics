@@ -117,6 +117,12 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
   }
+  else if(trigger.Contains("EMDCAL_GA"))
+  {
+    triggerString = "G";
+    mask = ( AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
+  }
   else if(trigger.Contains("EMCAL_GA"))
   {
     triggerString = "EG";
@@ -126,12 +132,6 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   else if(trigger.Contains("DCAL_GA"))
   {
     triggerString = "DG";
-    mask = ( AliVEvent::kEMCEGA );
-    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
-  }
-  else if(trigger.Contains("EMDCAL_GA"))
-  {
-    triggerString = "G";
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
   }
