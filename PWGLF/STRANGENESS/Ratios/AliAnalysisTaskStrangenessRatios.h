@@ -65,67 +65,60 @@ public:
   AliEventCuts  fEventCut; ///<
 
   //Setters for topological cuts
-  void SetRadiusXiCut(float cut = 1.2) {fCutRadiusXi=cut;}
-  void SetRadiusOmegaCut(float cut = 1.0) {fCutRadiusOmega=cut;}
+  void SetRadiusCut(float xi = 1.2, float omega = 1.) {fCutRadius[0]=xi; fCutRadius[1]=omega;}
   void SetRadiusV0Cut(float cut = 3.0) {fCutRadiusV0=cut;}
   void SetDCABachToPVCut(float cut = 0.1) {fCutDCABachToPV=cut;}
   void SetDCAV0toPVCut(float cut = 0.1) {fCutDCAV0toPV=cut;}
   void SetDCAV0piToPVCut(float cut = 0.2) {fCutDCAV0piToPV=cut;}
   void SetDCAV0prToPVCut(float cut = 0.2) {fCutDCAV0prToPV=cut;}
   void SetDCAV0tracksCut(float cut = 1.0) {fCutDCAV0tracks=cut;}
-  void SetCutDCABachToV0XiCut(float cut = 1.0) {fCutDCABachToV0Xi=cut;}
-  void SetCutDCABachToV0OmegaCut(float cut = 0.6) {fCutDCABachToV0Omega=cut;}
+  void SetCutDCABachToV0XiCut(float xi = 1.0, float omega = 0.6) {fCutDCABachToV0[0]=xi; fCutDCABachToV0[0]=omega;}
   void SetCosPACut(float cut = 0.95) {fCutCosPA=cut;}
   void SetCosPAV0Cut(float cut = 0.95) {fCutCosPAV0=cut;}
   void SetV0MassWindowCut(float cut = 0.005) {fCutV0MassWindow=cut;}
   void SetYCut(float cut = 0.5) {fCutY=cut;}
   void SetYDaughtCut(float cut = 0.8) {fCutYDaught=cut;}
   void SetNsigmaTPCCut(float cut = 4.0) {fCutNsigmaTPC=cut;}
-  void SetCtCutXi(float cut = 15 /*cm*/) {fCutCtXi=cut;}
-  void SetCtCutOmega(float cut = 12 /*cm*/) {fCutCtOmega=cut;}
+  void SetCtCut(float cut = 4 /*cm*/) {fCutCt=cut;}
   void SetCtV0Cut(float cut = 30 /*cm*/) {fCutCtV0=cut;}
   void SetCompetingMassCut(float cut = 0.008 /*GeV/c^2*/) {fCutCompetingMass=cut;}
-  void SetTPCcluCut(float cut = 70) {fCutTPCclu=cut;}
+  void SetTPCcluCut(int cut = 70) {fCutTPCclu=cut;}
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
 
 private:
   AliAnalysisTaskStrangenessRatios (const AliAnalysisTaskStrangenessRatios &source);
   AliAnalysisTaskStrangenessRatios &operator=(const AliAnalysisTaskStrangenessRatios &source);
 
-  TList*          fList;             //!<! List of the output histograms
-  TTree*          fTreeXi;           //!<! Tree for Xi
-  TTree*          fTreeOmega;        //!<! Tree for Omegas
+  TList*          fList = nullptr;             //!<! List of the output histograms
+  TTree*          fTreeXi = nullptr;           //!<! Tree for Xis
+  TTree*          fTreeOmega = nullptr;        //!<! Tree for Omegas
 
-  MiniCascade* fRecCascade;          //!<! Transient fRecCascade
+  MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
-  AliPIDResponse* fPID;              //!<! ALICE PID framework
+  AliPIDResponse* fPID = nullptr;              //!<! ALICE PID framework
   bool fMC;
-  bool fOnlyTrueCandidates;
+  bool fOnlyTrueCandidates = false;  ///< Save only true Xi and Omegas in MC
 
   //configurable cuts
-  float fCutRadiusXi;
-  float fCutRadiusOmega;
-  float fCutRadiusV0;
-  float fCutDCABachToPV;
-  float fCutDCAV0toPV;
-  float fCutDCAV0piToPV;
-  float fCutDCAV0prToPV;
-  float fCutDCAV0tracks;
-  float fCutDCABachToV0Xi;
-  float fCutDCABachToV0Omega;
-  float fCutCosPA;
-  float fCutCosPAV0;
-  float fCutV0MassWindow;
-  float fCutY;
-  float fCutYDaught;
-  float fCutNsigmaTPC;
-  float fCutCtXi;
-  float fCutCtOmega;
-  float fCutCtV0;
-  float fCutCompetingMass;
-  float fCutTPCclu;
+  float fCutRadius[2] = {1.2, 1.0};
+  float fCutRadiusV0 = 3.0;
+  float fCutDCABachToPV = 0.1;
+  float fCutDCAV0toPV = 0.1;
+  float fCutDCAV0piToPV = 0.2;
+  float fCutDCAV0prToPV = 0.2;
+  float fCutDCAV0tracks = 1.0;
+  float fCutDCABachToV0[2]{1.0, 0.6};
+  float fCutCosPA = 0.95;
+  float fCutCosPAV0 = 0.95;
+  float fCutV0MassWindow = 0.005;
+  float fCutY = 0.5;
+  float fCutYDaught = 0.8;
+  float fCutNsigmaTPC = 4.0;
+  float fCutCt = 4;
+  float fCutCtV0 = 30;
+  float fCutCompetingMass = 0.;
+  int fCutTPCclu = 70;
 
-protected:
   bool IsTopolSelected(bool isXi = true);
   float Eta2y(float pt, float m, float eta) const;
 

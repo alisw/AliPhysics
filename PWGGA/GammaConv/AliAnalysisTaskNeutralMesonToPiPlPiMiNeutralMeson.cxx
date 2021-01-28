@@ -5416,103 +5416,118 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
           NegPiontmp.SetPxPyPzE(negPionCandidatetmp->Px(), negPionCandidatetmp->Py(), negPionCandidatetmp->Pz(), negPionCandidatetmp->E());
           PosPiontmp.SetPxPyPzE(posPionCandidatetmp->Px(), posPionCandidatetmp->Py(), posPionCandidatetmp->Pz(), posPionCandidatetmp->E());
 
-          if(KinematicCut(&NegPiontmp, &PosPiontmp, neutralDecayMeson, mesoncand)){
-            if(!fDoLightOutput){
-              fHistoAngleHNMesonNDM[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Angle(mesoncand->Vect()), fWeightJetJetMC);
-              fHistoAngleHNMesonPiPl[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
-              fHistoAngleHNMesonPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
-              fHistoAngleNDMPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
-              fHistoAnglePiPlPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(PosPiontmp.Vect()), fWeightJetJetMC);
-              fHistoAnglePiPlNDM[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
-              fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
-              fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
-            }
 
-            // Subtract mass of used pi0 candidate and then add PDG mass to get to right range again
-            fHistoMotherInvMassSubNDM[fiCut]->Fill(mesoncand->M()-(neutralDecayMeson->M()-fPDGMassNDM),mesoncand->Pt(), fWeightJetJetMC);
+          // Fix Pz of pi0 candidate to match pi0 PDG mass
+          AliAODConversionMother NDMtmp;
+          NDMtmp.SetPxPyPzE(neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
+          FixPzToMatchPDGInvMassNDM(&NDMtmp);
 
-            // Fix Pz of pi0 candidate to match pi0 PDG mass
-            AliAODConversionMother NDMtmp;
-            NDMtmp.SetPxPyPzE(neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
-            FixPzToMatchPDGInvMassNDM(&NDMtmp);
-            AliAODConversionMother mesontmp(&NDMtmp,vParticle);
-            fHistoMotherInvMassFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(), fWeightJetJetMC);
-            fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+          //Variables for Dalitz plot and Pi0 Pi+- Mass Cut
+          AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
+          AliKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
 
-            if(fDoMesonQA>0){
-              //Dalitz plot
-              AliKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
-              AliKFParticle NegPionKFtmp( *negPionCandidatetmp, 211 );
+          TLorentzVector PosPionTLVtmp;
+          TLorentzVector NegPionTLVtmp;
+          TLorentzVector PosNegPionTLVtmp;
 
-              TLorentzVector PosPionTLVtmp;
-              TLorentzVector NegPionTLVtmp;
-              TLorentzVector PosNegPionTLVtmp;
+          PosPionTLVtmp.SetPxPyPzE (PosPionKFtmp.Px(), PosPionKFtmp.Py(), PosPionKFtmp.Pz(), PosPionKFtmp.E() );
+          NegPionTLVtmp.SetPxPyPzE (NegPionKFtmp.Px(), NegPionKFtmp.Py(), NegPionKFtmp.Pz(), NegPionKFtmp.E() );
+          PosNegPionTLVtmp = PosPionTLVtmp + NegPionTLVtmp;
 
-              PosPionTLVtmp.SetPxPyPzE (PosPionKFtmp.Px(), PosPionKFtmp.Py(), PosPionKFtmp.Pz(), PosPionKFtmp.E() );
-              NegPionTLVtmp.SetPxPyPzE (NegPionKFtmp.Px(), NegPionKFtmp.Py(), NegPionKFtmp.Pz(), NegPionKFtmp.E() );
-              PosNegPionTLVtmp = PosPionTLVtmp + NegPionTLVtmp;
+          TLorentzVector NDMTLVtmp;
+          TLorentzVector NDMSubTLVtmp;
+          TLorentzVector PosPionNDMTLVtmp;
+          TLorentzVector NegPionNDMTLVtmp;
+          TLorentzVector PosPionNDMSubTLVtmp;
+          TLorentzVector NegPionNDMSubTLVtmp;
 
-              TLorentzVector NDMTLVtmp;
-              TLorentzVector NDMSubTLVtmp;
-              TLorentzVector PosPionNDMTLVtmp;
-              TLorentzVector NegPionNDMTLVtmp;
-              TLorentzVector PosPionNDMSubTLVtmp;
-              TLorentzVector NegPionNDMSubTLVtmp;
+          NDMTLVtmp.SetPxPyPzE( NDMtmp.Px(), NDMtmp.Py(), NDMtmp.Pz(), NDMtmp.E() ); //Fixed Pz
+          NDMSubTLVtmp.SetPxPyPzE (neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
+          PosPionNDMTLVtmp = PosPionTLVtmp + NDMTLVtmp;
+          NegPionNDMTLVtmp = NegPionTLVtmp + NDMTLVtmp;
+          PosPionNDMSubTLVtmp = PosPionTLVtmp + NDMSubTLVtmp;
+          NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
 
-              NDMTLVtmp.SetPxPyPzE( NDMtmp.Px(), NDMtmp.Py(), NDMtmp.Pz(), NDMtmp.E() );
-              NDMSubTLVtmp.SetPxPyPzE (neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
-              PosPionNDMTLVtmp = PosPionTLVtmp + NDMTLVtmp;
-              NegPionNDMTLVtmp = NegPionTLVtmp + NDMTLVtmp;
-              PosPionNDMSubTLVtmp = PosPionTLVtmp + NDMSubTLVtmp;
-              NegPionNDMSubTLVtmp = NegPionTLVtmp + NDMSubTLVtmp;
+          //Double_t  Mass_PiPl_NDM_FixPz         = PosPionNDMTLVtmp.M(); //Outcommented as currently not needed
+          //Double_t  Mass_PiMi_NDM_FixPz         = NegPionNDMTLVtmp.M(); //Outcommented as currently not needed
+          Double_t  Mass_PiPl_NDM_Sub           = PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM);
+          Double_t  Mass_PiMi_NDM_Sub           = NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM);
 
-              //Dalitz All Pt
-              if (enableDalitzAllPt){
-                fHistoDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
-                fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
-                fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
-                fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+          Double_t  MassCutValue_PiPlMi_NDM     = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut_WithNDM();
+          Bool_t    useMassCut_WithNDM          = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_WithNDM();
+          if ((!useMassCut_WithNDM)||
+                  ((useMassCut_WithNDM)
+                   &&(Mass_PiPl_NDM_Sub<MassCutValue_PiPlMi_NDM)
+                   &&(Mass_PiMi_NDM_Sub<MassCutValue_PiPlMi_NDM)
+                   )){
+            if(KinematicCut(&NegPiontmp, &PosPiontmp, neutralDecayMeson, mesoncand)){
+              if(!fDoLightOutput){
+                fHistoAngleHNMesonNDM[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Angle(mesoncand->Vect()), fWeightJetJetMC);
+                fHistoAngleHNMesonPiPl[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
+                fHistoAngleHNMesonPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(mesoncand->Vect()), fWeightJetJetMC);
+                fHistoAngleNDMPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
+                fHistoAnglePiPlPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp.Angle(PosPiontmp.Vect()), fWeightJetJetMC);
+                fHistoAnglePiPlNDM[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
+                fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
+                fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
               }
-              //Dalitz Low Pt
-              if (enableDalitzLowPt){
-                if ((mesoncand->Pt()>HistoDalitzPtRangeMin_LowPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_LowPt)){
-                  fHistoDalitzPlotPosFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
-                  fHistoDalitzPlotNegFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
-                  fHistoDalitzPlotPosSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
-                  fHistoDalitzPlotNegSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+
+              // Subtract mass of used pi0 candidate and then add PDG mass to get to right range again
+              fHistoMotherInvMassSubNDM[fiCut]->Fill(mesoncand->M()-(neutralDecayMeson->M()-fPDGMassNDM),mesoncand->Pt(), fWeightJetJetMC);
+
+              AliAODConversionMother mesontmp(&NDMtmp,vParticle);
+              fHistoMotherInvMassFixedPzNDM[fiCut]->Fill(mesontmp.M(),mesontmp.Pt(), fWeightJetJetMC);
+              fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+
+              if(fDoMesonQA>0){
+                //Dalitz All Pt
+                if (enableDalitzAllPt){
+                  fHistoDalitzPlotPosFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+                  fHistoDalitzPlotNegFixedPzNDM[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+                  fHistoDalitzPlotPosSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                  fHistoDalitzPlotNegSubNDM[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
                 }
-              }
-              //Dalitz Mid Pt
-              if (enableDalitzMidPt){
-                if ((mesoncand->Pt()>HistoDalitzPtRangeMin_MidPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_MidPt)){
-                fHistoDalitzPlotPosFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
-                fHistoDalitzPlotNegFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
-                fHistoDalitzPlotPosSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
-                fHistoDalitzPlotNegSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                //Dalitz Low Pt
+                if (enableDalitzLowPt){
+                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_LowPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_LowPt)){
+                    fHistoDalitzPlotPosFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotNegFixedPzNDM_LowPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotPosSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                    fHistoDalitzPlotNegSubNDM_LowPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                  }
                 }
-              }
-              //Dalitz High Pt
-              if (enableDalitzHighPt){
-                if ((mesoncand->Pt()>HistoDalitzPtRangeMin_HighPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_HighPt)){
-                fHistoDalitzPlotPosFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
-                fHistoDalitzPlotNegFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
-                fHistoDalitzPlotPosSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
-                fHistoDalitzPlotNegSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                //Dalitz Mid Pt
+                if (enableDalitzMidPt){
+                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_MidPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_MidPt)){
+                    fHistoDalitzPlotPosFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotNegFixedPzNDM_MidPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotPosSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                    fHistoDalitzPlotNegSubNDM_MidPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                  }
                 }
+                //Dalitz High Pt
+                if (enableDalitzHighPt){
+                  if ((mesoncand->Pt()>HistoDalitzPtRangeMin_HighPt)&&(mesoncand->Pt()<HistoDalitzPtRangeMax_HighPt)){
+                    fHistoDalitzPlotPosFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), PosPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotNegFixedPzNDM_HighPt[fiCut]->Fill(PosNegPionTLVtmp.M(), NegPionNDMTLVtmp.M() );
+                    fHistoDalitzPlotPosSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), PosPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                    fHistoDalitzPlotNegSubNDM_HighPt[fiCut]->Fill( PosNegPionTLVtmp.M(), NegPionNDMSubTLVtmp.M() - (NDMSubTLVtmp.M() - fPDGMassNDM));
+                  }
+                }
+              } //end fDoMesonQA>0
+              if(fMCEvent){
+                if(fInputEvent->IsA()==AliESDEvent::Class())
+                  ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle);
+                if(fInputEvent->IsA()==AliAODEvent::Class())
+                  ProcessTrueMesonCandidatesAOD(mesoncand,neutralDecayMeson,vParticle);
               }
-            }
-            if(fMCEvent){
-              if(fInputEvent->IsA()==AliESDEvent::Class())
-                ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle);
-              if(fInputEvent->IsA()==AliAODEvent::Class())
-                ProcessTrueMesonCandidatesAOD(mesoncand,neutralDecayMeson,vParticle);
-            }
-          }else{
-            if(!fDoLightOutput){
-              fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
-            }
+            }else{ //else KinematicCut
+              if(!fDoLightOutput){
+                fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(), fWeightJetJetMC);
+              }
+            } //end KinematicCut
           }
-        }
+        } //end MesonIsSelected
        delete mesoncand;
        mesoncand=0x0;
     }
@@ -5621,6 +5636,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                   continue;
                 }
               }
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+                TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+                Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
 
               // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5706,6 +5733,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                   continue;
                 }
               }
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+                TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+                Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
 
               // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
               AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5776,6 +5815,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                 continue;
               }
             }
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+              TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+              Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
+                continue;
+              }
+            }
 
             // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5843,6 +5894,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
                 continue;
               }
             }
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              TLorentzVector vec4PiPlusPiZero = vec4PiPlus + vec4NDM;
+              TLorentzVector vec4PiMinusPiZero = vec4PiMinus + vec4NDM;
+              Double_t  Mass_PiPlus_PiZero_Sub           = vec4PiPlusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus_PiZero_Sub           = vec4PiMinusPiZero.M() - (vec4NDM.M() - fPDGMassNDM);
+              if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
+                continue;
+              }
+            }
 
             // Create Pi+Pi- pair (only at this stage after cuts were applied to save time, before only vectors)
             AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
@@ -5895,8 +5958,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               }
             }
 
+
             // Combine Pi+ and Pi0
             AliAODConversionMother PiPlNDMBackgroundCandidate(&EventPiPlGoodMeson, EventNDMGoodMeson);
+
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              AliAODConversionMother PiPlNDMBackgroundCandidate2(&EventPiPlGoodMeson2, EventNDMGoodMeson);
+              Double_t  Mass_PiPlus_PiZero_Sub           = PiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              Double_t  Mass_PiPlus2_PiZero_Sub           = PiPlNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiPlus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
+                continue;
+              }
+            }
 
             // Create (final) Candidate
             AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiPlGoodMeson2);
@@ -5945,11 +6021,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Combine Pi- and Pi0
             AliAODConversionMother PiMiNDMBackgroundCandidate(&EventPiMiGoodMeson, EventNDMGoodMeson);
 
+            // Mass cut (pi0pi+-)
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+              AliAODConversionMother PiMiNDMBackgroundCandidate2(&EventPiMiGoodMeson2, EventNDMGoodMeson);
+              Double_t  Mass_PiMinus_PiZero_Sub           = PiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              Double_t  Mass_PiMinus2_PiZero_Sub           = PiMiNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+              if ((Mass_PiMinus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                   (Mass_PiMinus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                   ) {
+                continue;
+              }
+            }
+
             // Create (final) Candidate
             AliAODConversionMother PiMiPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate, &EventPiMiGoodMeson2);
 
             // Check if candidate survives meson cut
-            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
+            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
               // Check if candidate survives kinematic cut
               if (KinematicCut(&EventPiMiGoodMeson, &EventPiMiGoodMeson2, EventNDMGoodMeson, &PiMiPiMiNDMBackgroundCandidate)) {
@@ -5970,6 +6058,65 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
 
         } // end of iCurrentPiMi2
       }   // end of iCurrenPiMi
+    } else if (mode == 6){
+        // Loops for Pi0Pi+Pi- Sideband mixing
+        for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++) {
+
+          AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl));
+
+          for (Int_t iCurrentPiMi = 0; iCurrentPiMi < fNegPionCandidates->GetEntries(); iCurrentPiMi++) {
+
+              AliAODConversionMother EventPiMiGoodMeson = *(AliAODConversionMother *)(fNegPionCandidates->At(iCurrentPiMi));
+
+              // Mass cut on pi+pi-
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+                AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
+                if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                  continue;
+                }
+              }
+
+              // Combine Pi+ and Pi0
+              AliAODConversionMother PiPlNDMBackgroundCandidate(&EventPiPlGoodMeson, EventNDMGoodMeson);
+
+              // Mass cut (pi0pi+-)
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut_WithNDM()) {
+                AliAODConversionMother PiPlNDMBackgroundCandidate2(&EventPiMiGoodMeson, EventNDMGoodMeson);
+                Double_t  Mass_PiPlus_PiZero_Sub           = PiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+                Double_t  Mass_PiPlus2_PiZero_Sub           = PiPlNDMBackgroundCandidate2.M() - (EventNDMGoodMeson->M() - fPDGMassNDM);
+                if ((Mass_PiPlus_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())||
+                     (Mass_PiPlus2_PiZero_Sub >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut_WithNDM())
+                     ) {
+                  continue;
+                }
+              }
+
+              // Create (final) Candidate
+              AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiMiGoodMeson);
+
+              // Check if candidate survives meson cut
+              if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
+
+                // Check if candidate survives kinematic cut
+                if (KinematicCut(&EventPiPlGoodMeson, &EventPiMiGoodMeson, EventNDMGoodMeson, &PiPlPiMiNDMBackgroundCandidate)) {
+
+                  // Create temporary mesons to be able to fix pz
+                  AliAODConversionMother NDMtmp;
+                  NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                  FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                  AliAODConversionMother PiPlNDMtmp(&EventPiPlGoodMeson, &NDMtmp);
+                  AliAODConversionMother PiPlPiMiNDMtmp(&EventPiMiGoodMeson, &PiPlNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
+
+                  // Fill histograms
+                  fHistoBackInvMassPt[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(), PiPlPiMiNDMBackgroundCandidate.Pt(), fWeightJetJetMC);
+                  fHistoBackInvMassPtSubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiMiNDMBackgroundCandidate.Pt(), fWeightJetJetMC);
+                  fHistoBackInvMassPtFixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(), PiPlPiMiNDMtmp.Pt(), fWeightJetJetMC);
+                }
+              }
+
+          } // end of iCurrentPiMi
+        }   // end of iCurrenPiPl
+
     } // end of mode if
   } // end of NDM from current event loop
 }

@@ -1636,6 +1636,13 @@ void AddTask_GammaCaloMerged_pp(
 } else if (trainConfig == 1599){  // clusterization settings
   cuts.AddCutMergedCalo("0008d113","411790106fe32200000","411790106fe22700001","0163300000000000"); // EG1 Eagg = 75MeV
 
+
+} else if (trainConfig == 1700){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+  cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe22700001","2163300000000000"); // INT7
+} else if (trainConfig == 1701){
+  cuts.AddCutMergedCalo("0008e113","411790106fe32200000","411790106fe22700001","2163300000000000"); // EG2+DG2
+  cuts.AddCutMergedCalo("0008d113","411790106fe32200000","411790106fe22700001","2163300000000000"); // EG1+DG1
+
   // systematics pp 8 TeV no TM
   // MB configs
   } else if (trainConfig == 3900){ // std
