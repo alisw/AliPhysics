@@ -399,12 +399,15 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fAllowOverlapHeaders(kTRUE),
   fBuffer_EventRho(0),
   fBuffer_EventWeight(0),
+  fBuffer_EventXsection(0),
+  fBuffer_EventNtrials(0),
   fBuffer_EventIsTriggered(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
   fBuffer_ClusterPz(0), 
   fBuffer_ClusterM02(0), 
+  fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
@@ -818,12 +821,15 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fAllowOverlapHeaders(kTRUE),
   fBuffer_EventRho(0),
   fBuffer_EventWeight(0),
+  fBuffer_EventXsection(0),
+  fBuffer_EventNtrials(0),
   fBuffer_EventIsTriggered(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
   fBuffer_ClusterPz(0), 
   fBuffer_ClusterM02(0), 
+  fBuffer_ClusterM02Recalc(0), 
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
@@ -2411,14 +2417,17 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fAnalysisTree = new TTree(treename,treename);
   if(!fUseHistograms){  // full tree
 
-    fAnalysisTree->Branch("Event_Rho", &fBuffer_EventRho,"Event_NPrimaryTracks/F");
+    fAnalysisTree->Branch("Event_Rho", &fBuffer_EventRho,"Event_Rho/F");
     if(fIsMC>0) fAnalysisTree->Branch("Event_Weight", &fBuffer_EventWeight,"Event_Weight/D");
+    if(fIsMC>0) fAnalysisTree->Branch("Event_Xsection", &fBuffer_EventXsection,"Event_Xsection/F");
+    if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/F");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
     fAnalysisTree->Branch("Cluster_Px","std::vector<Float_t>",&fBuffer_ClusterPx);
     fAnalysisTree->Branch("Cluster_Py","std::vector<Float_t>",&fBuffer_ClusterPy);
     fAnalysisTree->Branch("Cluster_Pz","std::vector<Float_t>",&fBuffer_ClusterPz);
     fAnalysisTree->Branch("Cluster_M02","std::vector<Float_t>",&fBuffer_ClusterM02);
+    fAnalysisTree->Branch("Cluster_M02Recalc","std::vector<Float_t>",&fBuffer_ClusterM02Recalc);
     fAnalysisTree->Branch("Cluster_M20","std::vector<Float_t>",&fBuffer_ClusterM20);
     fAnalysisTree->Branch("Cluster_V1SplitMass","std::vector<Float_t>",&fBuffer_ClusterV1SplitMass);
     fAnalysisTree->Branch("Cluster_NLM","std::vector<UShort_t>",&fBuffer_ClusterNLM);
@@ -2498,6 +2507,8 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   if(!outrho) AliInfo("could not find rho container!");
 
 
+  Float_t xsection = 0;
+  Float_t ntrials = 0;
   if (fIsMC > 0){
       fWeightJetJetMC       = 1;
       Float_t maxjetpt      = -1.;
@@ -2505,6 +2516,8 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
       
       if(fEventCuts->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
       Bool_t isMCJet        = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      fEventCuts->GetXSectionAndNTrials(fMCEvent,xsection,ntrials,fInputEvent);
+      
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCuts)->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
@@ -2515,6 +2528,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
         if (fIsMC>1) fHistoNEventsWOWeight->Fill(10);
         return;
       }
+
   }
 
   Bool_t triggered = kTRUE;
@@ -2575,6 +2589,8 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   if(fIsMC>0) ProcessMCParticles();
   if(!fUseHistograms){
     fBuffer_EventWeight = fWeightJetJetMC;
+    fBuffer_EventXsection = xsection;
+    fBuffer_EventNtrials = ntrials;
     fBuffer_EventIsTriggered = kFALSE;
   }
   if (triggered==kFALSE){
@@ -2673,6 +2689,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterPy.clear(); 
   fBuffer_ClusterPz.clear(); 
   fBuffer_ClusterM02.clear(); 
+  fBuffer_ClusterM02Recalc.clear(); 
   fBuffer_ClusterM20.clear(); 
   fBuffer_ClusterV1SplitMass.clear(); 
   fBuffer_ClusterNLM.clear(); 
@@ -5173,6 +5190,48 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Double_t m02 = clus->GetM02();
   Double_t m20 = clus->GetM20();
 
+  // Recalculate M02 (should only be used when using V2 clusterizer!)
+  Int_t   nMaxima5x5 = 0; // output: number of local maxima on NxN region
+  Float_t m02_5x5 = 0; // output: main shower shape eigenvalue
+  Float_t m20_5x5 = 0; // output: second shower shape eigenvalue
+  Float_t dispp= 0.; // output: dispersion
+  Float_t dEta = 0.; // output: dispersion in eta (cols) direction
+  Float_t dPhi = 0.; // output: dispersion in phi (cols) direction
+  Float_t sEta = 0.; // output: shower shape in eta  (cols) direction
+  Float_t sPhi = 0.; // output: shower shape in phi (rows) direction
+  Float_t sEtaPhi = 0.; // output: shower shape on phi / eta directions term
+  Float_t energy5x5 = 0; // output: sum of energy in NxN region
+ 
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells(); // input
+
+  Bool_t onlyNeighbours = kTRUE; // input: Make sure all cells are adjacent to another cell in the cluster centred in absIdMax.
+                                 // very important to have this option on true!
+
+  Int_t cellDiff = 2; // input: NxN window to consider! 1 =3x3 2=5x5 3=7x7 
+  Float_t cellEcut =0.1;// minimum cell energy to be considered in the shower shape recalculation
+                        // should correspond to min cell cut of clusterizer
+                      
+
+  // Do recalculation for V2 clusterizer in 5x5 window
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
+      (fGeomEMCAL, cells, clus,
+       onlyNeighbours, cellDiff, cellEcut, 1000000,
+       energy5x5, nMaxima5x5, m02_5x5, m20_5x5, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+
+  cellDiff = 3;
+  Int_t   nMaxima7x7 = 0; // output: number of local maxima on NxN region
+  Float_t m02_7x7 = 0; // output: main shower shape eigenvalue
+  Float_t m20_7x7 = 0; // output: second shower shape eigenvalue
+  Float_t energy7x7 = 0; // output: sum of energy in NxN region
+  
+  // Do recalculation for V2 clusterizer in 7x7 window
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParametersNxNCells
+      (fGeomEMCAL, cells, clus,
+       onlyNeighbours, cellDiff, cellEcut, 1000000,
+       energy7x7, nMaxima7x7, m02_7x7, m20_7x7, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
+
+  // ────────────────────────────────────────────────────────────────────────────────
+
   const Int_t   nc = clus->GetNCells();
   Int_t   absCellIdList[nc];
   Float_t   maxEList[nc];
@@ -5265,6 +5324,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterPy.push_back(clusPy);
   fBuffer_ClusterPz.push_back(clusPz);
   fBuffer_ClusterM02.push_back(clusM02);
+  fBuffer_ClusterM02Recalc.push_back(m02_5x5);
   fBuffer_ClusterM20.push_back(clusM20);
   fBuffer_ClusterV1SplitMass.push_back(clusV1SplitMass);
   fBuffer_ClusterNLM.push_back(nlm);

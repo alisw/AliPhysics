@@ -681,14 +681,17 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
     // //
 
-    Float_t fBuffer_EventRho; // if true, some conversion ran into limits
-    Double_t fBuffer_EventWeight; // if true, some conversion ran into limits
-    Bool_t fBuffer_EventIsTriggered; // if true, some conversion ran into limits
+    Float_t fBuffer_EventRho; //
+    Double_t fBuffer_EventWeight; //
+    Float_t fBuffer_EventXsection; //
+    Float_t fBuffer_EventNtrials; //
+    Bool_t fBuffer_EventIsTriggered; //
     std::vector<Float_t> fBuffer_ClusterE;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPx;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPy;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPz;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterM02; 
+    std::vector<Float_t> fBuffer_ClusterM02Recalc; 
     std::vector<Float_t> fBuffer_ClusterM20; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
@@ -772,7 +775,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 30);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 31);
 
 };
 
