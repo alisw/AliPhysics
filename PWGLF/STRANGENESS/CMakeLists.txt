@@ -91,8 +91,14 @@ set(SRCS
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
-  Ratios/AliAnalysisTaskStrangenessRatios.cxx
   )
+
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(SRCS
+    ${SRCS}
+    Ratios/AliAnalysisTaskStrangenessRatios.cxx
+  )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
