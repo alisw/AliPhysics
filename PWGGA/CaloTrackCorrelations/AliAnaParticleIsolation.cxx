@@ -4529,7 +4529,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                         0x0, 0x0,
                                         GetCalorimeter(), GetCaloPID(),
                                         n, nfrac, coneptsum, coneptlead, isolated,
-                                        GetEventWeight()*aodinput->GetWeight(),GetEventCentrality());
+                                        GetEventWeight()*aodinput->GetWeight(),
+                                        GetEventCentrality(), GetEventCentralityBin());
 
     aodinput->SetIsolated(isolated);
     
