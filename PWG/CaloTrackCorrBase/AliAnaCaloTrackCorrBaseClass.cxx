@@ -1333,6 +1333,7 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     TCustomBinning sumBinning;
     sumBinning.SetMinimum(0);
     
+    if ( max >   2 ) sumBinning.AddStep(  2, 0.10); // 20
     if ( max >   4 ) sumBinning.AddStep(  4, 0.20); // 20
     if ( max >  10 ) sumBinning.AddStep( 10, 0.50); // 12
     if ( max >  25 ) sumBinning.AddStep( 25, 1.00); // 15
@@ -1340,7 +1341,8 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     if ( max > 100 ) sumBinning.AddStep(100, 5.00); // 10
     if ( max > 200 ) sumBinning.AddStep(200,10.00); // 10
  
-    if      ( max <=   4 ) sumBinning.AddStep(max, 0.20); 
+    if      ( max <=   2 ) sumBinning.AddStep(max, 0.10); 
+    else if ( max <=   4 ) sumBinning.AddStep(max, 0.20); 
     else if ( max <=  10 ) sumBinning.AddStep(max, 0.50); 
     else if ( max <=  25 ) sumBinning.AddStep(max, 1.00); 
     else if ( max <=  50 ) sumBinning.AddStep(max, 2.50); 
@@ -1368,6 +1370,8 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     if (min < -25 && max > -25 ) sueBinning.AddStep(-25, 2.5); // 10
     if (min < -10 && max > -10 ) sueBinning.AddStep(-10, 1.0); // 15
     if (min < -4  && max > -4  ) sueBinning.AddStep(-4 , 0.5); // 12
+    if (min < -2  && max > -2  ) sueBinning.AddStep(-2 , 0.2); // 10
+    if (min <  2  && max >  2  ) sueBinning.AddStep( 2 , 0.1); // 10
     if (min <  4  && max >  4  ) sueBinning.AddStep( 4 , 0.2); // 20
     if (min < 10  && max >  10 ) sueBinning.AddStep( 10, 0.5); // 12
     if (min < 25  && max >  25 ) sueBinning.AddStep( 25, 1.0); // 15
@@ -1381,6 +1385,8 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     else if ( max <= -25 ) sueBinning.AddStep(max, 2.5); 
     else if ( max <= -10 ) sueBinning.AddStep(max, 1.0); 
     else if ( max <= -4  ) sueBinning.AddStep(max, 0.5); 
+    else if ( max <= -2  ) sueBinning.AddStep(max, 0.2); 
+    else if ( max <=  2  ) sueBinning.AddStep(max, 0.1); 
     else if ( max <=  4  ) sueBinning.AddStep(max, 0.2); 
     else if ( max <=  10 ) sueBinning.AddStep(max, 0.5); 
     else if ( max <=  25 ) sueBinning.AddStep(max, 1.0); 
