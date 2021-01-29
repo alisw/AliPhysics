@@ -143,6 +143,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
                                                                                             fClusterCutsEMC=clusterCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
+    void SetClusterCutsEMCTrackMatching      ( AliCaloPhotonCuts* clusterCuts,
+                                              Bool_t IsHeavyIon )                         {
+                                                                                            fClusterCutsEMCTrackMatching=clusterCuts           ;
+                                                                                            fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }
     void SetClusterCutsIsolationEMC             ( AliCaloPhotonCuts* clusterCuts,
                                               Bool_t IsHeavyIon )                         {
                                                                                            fClusterCutsIsolationEMC=clusterCuts           ;
@@ -292,6 +297,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
+    AliCaloPhotonCuts*          fClusterCutsEMCTrackMatching; // used to handle track matching (workaround)
     AliCaloPhotonCuts*          fClusterCutsIsolationEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
     AliCaloPhotonCuts*          fClusterCutsTaggingEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
     AliCaloPhotonCuts*          fClusterCutsPHOS;           // phos cluster cuts
@@ -700,6 +706,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterIsoCharged2; 
     std::vector<Float_t> fBuffer_ClusterIsoCharged3; 
     std::vector<Float_t> fBuffer_ClusterIsoBckLeft; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackdEta; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackdPhi; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackP; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackPt; 
+    std::vector<Bool_t>  fBuffer_ClusterMatchTrackIsConv; 
     std::vector<Float_t> fBuffer_TrueClusterE; 
     std::vector<Float_t> fBuffer_TrueClusterPx; 
     std::vector<Float_t> fBuffer_TrueClusterPy; 
@@ -775,7 +786,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 31);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 32);
 
 };
 
