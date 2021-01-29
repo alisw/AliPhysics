@@ -6425,7 +6425,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified pi-
       }
     } else {
-      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified multiple
+      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(9);} //Wrongly identified multiple
     }
   }
 
@@ -6731,7 +6731,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
         if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified pi-
       }
     } else {
-      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified multiple
+      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(9);} //Wrongly identified multiple
     }
   }
 
