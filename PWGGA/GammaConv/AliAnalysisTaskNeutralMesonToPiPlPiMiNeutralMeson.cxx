@@ -6321,7 +6321,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     if((fDoMesonQA>0 ) && (!fDoLightOutput)){
      fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     }
-    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(6);} //Wrongly identified pi0
     isPiZeroWronglyIdentified   = kTRUE;
     isContaminationMeson        = kTRUE;
   }
@@ -6353,7 +6352,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       if(virtualParticleMotherLabel==NDMMotherLabel){
         // all pions from same mother
         isSameMotherPiPlPiMiNDM  = kTRUE;
-        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(2);} //Same mother
       } else{
         // only pi+ pi- from same mother
         isCombinatoricsMeson = kTRUE;
@@ -6407,6 +6405,28 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if (isContaminationMeson){iNumberOfDeclarationFlags++;}
   if (iNumberOfDeclarationFlags!=1){
     if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(11);} //Problem with meson declaration flag
+  }
+
+  if(areAllPionsCorrectlyIdentified&&isSameMotherPiPlPiMiNDM){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(2);} //Same mother
+    if (isTrueMeson){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(3);} //True
+    }
+  } else if (areAllPionsCorrectlyIdentified){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(4);} //Not same mother
+  } else if (isContaminationMeson){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(5);} //Wrongly identified pions
+    if (!isMultipleWronglyIdentified){
+      if (isPiZeroWronglyIdentified){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(6);} //Wrongly identified pi0
+      } else if (isPiPlWronglyIdentified){
+          if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(7);} //Wrongly identified pi+
+      } else if (isPiMiWronglyIdentified){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified pi-
+      }
+    } else {
+      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified multiple
+    }
   }
 
   // Do things for each case
@@ -6599,7 +6619,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     if((fDoMesonQA>0 ) && (!fDoLightOutput)){
       fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     }
-    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(6);} //Wrongly identified pi0
     isPiZeroWronglyIdentified   = kTRUE;
     isContaminationMeson        = kTRUE;
     //return;
@@ -6639,7 +6658,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       if(virtualParticleMotherLabel==NDMMotherLabel){
         // all pions from same mother
         isSameMotherPiPlPiMiNDM  = kTRUE;
-        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(2);} //Same mother
       } else{
         // only pi+ pi- from same mother -> Combinatorics
         isCombinatoricsMeson = kTRUE;
@@ -6693,6 +6711,28 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   if (isContaminationMeson){iNumberOfDeclarationFlags++;}
   if (iNumberOfDeclarationFlags!=1){
       if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(11);} //Problem with meson declaration flag
+  }
+
+  if(areAllPionsCorrectlyIdentified&&isSameMotherPiPlPiMiNDM){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(2);} //Same mother
+    if (isTrueMeson){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(3);} //True
+    }
+  } else if (areAllPionsCorrectlyIdentified){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(4);} //Not same mother
+  } else if (isContaminationMeson){
+    if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(5);} //Wrongly identified pions
+    if (!isMultipleWronglyIdentified){
+      if (isPiZeroWronglyIdentified){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(6);} //Wrongly identified pi0
+      } else if (isPiPlWronglyIdentified){
+          if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(7);} //Wrongly identified pi+
+      } else if (isPiMiWronglyIdentified){
+        if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified pi-
+      }
+    } else {
+      if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(8);} //Wrongly identified multiple
+    }
   }
 
   // Do things for each case
