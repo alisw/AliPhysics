@@ -68,6 +68,7 @@ endif(FASTJET_FOUND)
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice CORRFW ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils PWGGAGammaConvBase STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface JETAN PWGTools PWGflowTasks PWGTRD)
