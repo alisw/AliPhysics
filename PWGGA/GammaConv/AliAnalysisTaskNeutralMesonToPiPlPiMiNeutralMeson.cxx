@@ -6301,6 +6301,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Bool_t isCombinatoricsMeson               = kFALSE;   //Combinatorics candidate
   Bool_t isContaminationMeson               = kFALSE;   //Contamination candidate
 
+  Bool_t NDMMC_PDGCheck                     = kFALSE;
+
   Int_t virtualParticleMCLabel = -1;
   virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
   Int_t virtualParticleMotherLabel = -1;
@@ -6323,18 +6325,25 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     isPiZeroWronglyIdentified   = kTRUE;
     isContaminationMeson        = kTRUE;
   }
-  Int_t NDMMotherLabel =  fMCEvent->Particle(NDMMCLabel)->GetMother(0);
+  Int_t NDMMotherLabel =  0;
   TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(fMCEvent);
   TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(fMCEvent);
+
+  if (NDMMCLabel == -1){
+    NDMMC_PDGCheck = kFALSE;
+  } else {
+    NDMMotherLabel =  fMCEvent->Particle(NDMMCLabel)->GetMother(0);
+    NDMMC_PDGCheck=fMCEvent->Particle(NDMMCLabel)->GetPdgCode()==fPDGCodeNDM;
+  }
 
   Int_t posMotherLabelMC = positiveMC->GetMother(0);
   Int_t negMotherLabelMC = negativeMC->GetMother(0);
 
-  if ( (isPiZeroWronglyIdentified)&&(fMCEvent->Particle(NDMMCLabel)->GetPdgCode()==fPDGCodeNDM) ){
+  if ( (isPiZeroWronglyIdentified)&&(NDMMC_PDGCheck) ){
     if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(10);} //Problem with pi0 flag
   }
   // Check case present
-  if((TMath::Abs(negativeMC->GetPdgCode())==211) && (TMath::Abs(positiveMC->GetPdgCode())==211) && (fMCEvent->Particle(NDMMCLabel)->GetPdgCode()==fPDGCodeNDM)){
+  if((TMath::Abs(negativeMC->GetPdgCode())==211) && (TMath::Abs(positiveMC->GetPdgCode())==211) && (NDMMC_PDGCheck)){
     // three pion decay
     areAllPionsCorrectlyIdentified = kTRUE;
     if(virtualParticleMCLabel!=-1){
@@ -6375,7 +6384,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
             isMultipleWronglyIdentified = kTRUE;
         }
     }
-    if (!(fMCEvent->Particle(NDMMCLabel)->GetPdgCode()==fPDGCodeNDM)){
+    if (!(NDMMC_PDGCheck)){
         isPiZeroWronglyIdentified     = kTRUE;
         if ((isPiMiWronglyIdentified)||(isPiPlWronglyIdentified)){
             isMultipleWronglyIdentified = kTRUE;
@@ -6569,6 +6578,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Bool_t isCombinatoricsMeson               = kFALSE;   //Combinatorics candidate
   Bool_t isContaminationMeson               = kFALSE;   //Contamination candidate
 
+  Bool_t NDMMC_PDGCheck                     = kFALSE;
+
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   Int_t virtualParticleMCLabel = -1;
@@ -6596,7 +6607,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Int_t NDMMotherLabel = (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)))->GetMother();
   AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueVirtualParticleCandidate->GetMCLabelNegative())); // pi-
   AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueVirtualParticleCandidate->GetMCLabelPositive())); // pi+
-  AliAODMCParticle *NDMMC      = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)); // pi0
+  if (NDMMCLabel == -1){
+    NDMMC_PDGCheck = kFALSE;
+  } else {
+    AliAODMCParticle *NDMMC      = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)); // pi0
+    NDMMC_PDGCheck=NDMMC->GetPdgCode()==fPDGCodeNDM;
+  }
+
 
   if(positiveMC->GetMother()>-1&&(negativeMC->GetMother() == positiveMC->GetMother())){
     virtualParticleMCLabel = positiveMC->GetMother();
@@ -6606,11 +6623,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   Int_t posMotherLabelMC = positiveMC->GetMother();
   Int_t negMotherLabelMC = negativeMC->GetMother();
 
-  if ( (isPiZeroWronglyIdentified)&&((NDMMC->GetPdgCode()==fPDGCodeNDM)) ){
+  if ( (isPiZeroWronglyIdentified)&&((NDMMC_PDGCheck)) ){
     if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(10);} //Problem with pi0 flag
   }
   // Check case present
-  if((TMath::Abs(negativeMC->GetPdgCode())==211) && (TMath::Abs(positiveMC->GetPdgCode())==211) && (NDMMC->GetPdgCode()==fPDGCodeNDM)){
+  if((TMath::Abs(negativeMC->GetPdgCode())==211) && (TMath::Abs(positiveMC->GetPdgCode())==211) && (NDMMC_PDGCheck)){
     // three pion decay, Combinatorics and trues
     areAllPionsCorrectlyIdentified = kTRUE;
     if(virtualParticleMCLabel!=-1){
@@ -6651,7 +6668,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
             isMultipleWronglyIdentified = kTRUE;
         }
     }
-    if (!(NDMMC->GetPdgCode()==fPDGCodeNDM)){
+    if (!(NDMMC_PDGCheck)){
         isPiZeroWronglyIdentified     = kTRUE;
         if ((isPiMiWronglyIdentified)||(isPiPlWronglyIdentified)){
             isMultipleWronglyIdentified = kTRUE;
