@@ -83,6 +83,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystSwitch(Int_t newval) { fSystSwitch = newval; }; //Ambiguous naming here. this is to keep track of the subwagon number
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
+  void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -119,7 +120,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fV2dPtList;
   TProfile **fCovariance; //!
   Bool_t fmptSet;
-  UInt_t fTriggerType; //! No need to store
+  UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
   TList *fNUAList; //!
@@ -142,6 +143,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, const Int_t &FilterBit=96);
   Int_t fFilterBit;
   Bool_t fDisablePID;
+  UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);

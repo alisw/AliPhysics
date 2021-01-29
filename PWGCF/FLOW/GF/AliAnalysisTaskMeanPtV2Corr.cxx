@@ -89,6 +89,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fV2dPtMulti(0),
   fFilterBit(96),
   fDisablePID(kFALSE),
+  fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
 {
 };
@@ -143,6 +144,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fV2dPtMulti(0),
   fFilterBit(96),
   fDisablePID(kFALSE),
+  fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
@@ -507,13 +509,12 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
-  fTriggerType = AliVEvent::kCentral;
+  // fTriggerType = AliVEvent::kCentral;
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(fSelMask&AliVEvent::kMB) return kTRUE;
-  if(fSelMask&AliVEvent::kINT7) return kTRUE;
-  if((fSelMask&AliVEvent::kCentral) && lCent<10) return kTRUE;
-  if((fSelMask&AliVEvent::kSemiCentral) && lCent<50 && lCent>30) return kTRUE;
-  return kFALSE;
+  if(!(fTriggerType&fSelMask)) return kFALSE;
+  if((fSelMask&AliVEvent::kCentral) && lCent>10) return kFALSE;
+  if((fSelMask&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+  return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
   if(!fEventCuts.AcceptEvent(inEv)) return 0;
@@ -614,6 +615,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
   Double_t trackXYZ[3];
   Double_t nTotNoTracks=0;
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
+  Int_t lPosCount=0, lNegCount=0;
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
@@ -622,6 +624,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
     if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
     Double_t leta = lTrack->Eta();
     if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+    if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
     if(TMath::Abs(leta)>fEta) continue; //<pt> calculated in fEta region
     // if(TMath::Abs(lTrack->Eta())<0.8 && lTrack->Pt()>0.2 && lTrack->Pt()<3)  nTotNoTracks++;
     Double_t lpt = lTrack->Pt();
@@ -632,6 +635,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
     if(PIDIndex) FillMeanPtCounter(lpt,l_ptsum[PIDIndex],l_ptCount[PIDIndex],fWeights[PIDIndex]);
   };
   if(l_ptCount[0]==0) return;
+  if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
+  if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
+  if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
   Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<4;i++) {
     if(!l_ptCount[i]) continue;
@@ -649,6 +655,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, Double_t vz, D
   Double_t nTotNoTracks=0;
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
+  Int_t lPosCount=0, lNegCount=0;
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
   Int_t nPrim = tca->GetEntries();
   AliAODMCParticle *lPart;
@@ -662,11 +669,15 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, Double_t vz, D
     Double_t pt = lPart->Pt();
     if (pt<0.2 || pt>3.) continue;
     if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+    if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
     if(TMath::Abs(leta)>fEta) continue; //<pt> calculated in fEta region
     Double_t lpt = lPart->Pt();
     FillMeanPtCounterWW(lpt,l_ptsum[0],l_ptCount[0],1); //MC truth, so weight = 1
   };
   if(l_ptCount[0]==0) return;
+  if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
+  if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
+  if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
   Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<1;i++) { //No PID = index is only 1
     if(!l_ptCount[i]) continue;
@@ -717,6 +728,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
+  Int_t lPosCount=0, lNegCount=0;
   if(fIsMC) {
     TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
     Int_t nPrim = tca->GetEntries();
@@ -747,6 +759,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
       Double_t trackXYZ[] = {0.,0.,0.};
       if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
+      if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
       Double_t p1 = lTrack->Pt();
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(p1));
       if(weff==0) continue;
@@ -758,6 +771,10 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mas 2)
     };
   };
+  //here in principle one could use the GFW output to check if the values are calculated, but this is more efficient
+  if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
+  if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
+  if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
   Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
