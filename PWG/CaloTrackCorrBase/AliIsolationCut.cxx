@@ -2128,7 +2128,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       }
     }
   } // charged
-    
+
   // UE subtraction
   
   if ( fPartInCone == kNeutralAndCharged && fICMethod >= kSumBkgSubEtaBandIC && !fFillHighMultHistograms )
@@ -2159,7 +2159,6 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     outputContainer->Add(fhBandNormClustervsTrack) ;
   } // UE, neutral + charged
 
-  
   if ( fMakeConeExcessCorr && fFillFractionExcessHistograms )
   {
     if ( fPartInCone != kOnlyCharged )
@@ -2307,7 +2306,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       
       if ( fFillEtaPhiHistograms )
       {
-        fhConeSumPtTrackTrigEtaPhiCent = new TH3F*[fNCentBins] ;
+        fhConeSumPtTrackTrigEtaPhiCent   = new TH3F*[fNCentBins] ;
+        fhConeSumPtClusterTrigEtaPhiCent = new TH3F*[fNCentBins] ;
         for(Int_t icen = 0; icen < fNCentBins; icen++)
         {
           fhConeSumPtTrackTrigEtaPhiCent[icen]  = new TH3F
