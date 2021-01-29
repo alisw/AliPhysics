@@ -307,7 +307,7 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
 	return true;
   else{// p dependent mass cut 
-       // The default setting of sigmaMass (= -1) should provides similar 
+       // The default setting of sigmaMass (= -1) should provide similar 
        // resluts to the case with fNsigmaTPCTOF=true and fNsigma=2
 
       double l1, l2;

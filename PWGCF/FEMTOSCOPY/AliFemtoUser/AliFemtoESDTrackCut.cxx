@@ -832,12 +832,12 @@ bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
     if (dEdx < a4*mom+b4) return false;
   }
   
-  if (fNsigmaTPConly && fNsigmaMass==-1) {
+  if (fNsigmaTPConly && fNsigmaMass == -1) {
     // for selection with only the TPC detector
     // cutting the tip of the signal (~1.5 GeV/c) 
-    // that is dominated by missidentified particles
+    // that is dominated by wrongly identified particles
 
-    // to avoid this constrain, set fNsigmaMass i.e. on 0, SetNsigmaMass(0)  
+    // to avoid this constraint, set fNsigmaMass i.e. on 0, SetNsigmaMass(0)  
     if (dEdx < a5*mom+b5) return false;
   }
 
