@@ -392,7 +392,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
-  config->SetPtQA(true);
+  config->SetPtQA(false);
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");

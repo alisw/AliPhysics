@@ -3525,10 +3525,10 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
             if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
                 BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
-            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[4];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
                 BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
@@ -3574,10 +3574,10 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
             if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
                 BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
-            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[4];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
                 BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling

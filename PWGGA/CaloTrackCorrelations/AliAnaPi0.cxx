@@ -4458,7 +4458,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             fhReMod[module1]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
           }
-          else if ( GetCalorimeter() == kEMCAL )
+          else if ( GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL )
           {
             // Same sector
             Int_t isector1 = module1/2;
@@ -4482,7 +4482,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 fhReSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
             } // side
           } // EMCAL
-          else
+          else if ( GetCalorimeter() == kPHOS )
           { // PHOS
             if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()*weightPt) ;
@@ -4898,7 +4898,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
                 if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
               }
-              else if ( GetCalorimeter()==kEMCAL )
+              else if ( GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL )
               {
                 // Same sector
                 Int_t isector1 = module1/2;
@@ -4922,7 +4922,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
                 }
               } // EMCAL
-              else
+              else if ( GetCalorimeter() == kPHOS )
               { // PHOS
                 if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
                 if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
