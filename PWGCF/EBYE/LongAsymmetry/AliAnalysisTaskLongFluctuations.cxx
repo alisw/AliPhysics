@@ -18,11 +18,14 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisTaskLongFluctuations.h"
 #include "AliAODMCParticle.h"
+#include "AliEventCuts.h"
+#include "AliAODMCHeader.h"
+
 
 ClassImp(AliAnalysisTaskLongFluctuations)
 
 AliAnalysisTaskLongFluctuations::AliAnalysisTaskLongFluctuations() : AliAnalysisTaskSE(),
-fAOD(0), fOutputList(0), fNt(0), fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8)
+fAOD(0), fOutputList(0), fNt(0), fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fEventCuts(0)
 
 {
     mCentV0M = 0.;
@@ -49,7 +52,7 @@ fAOD(0), fOutputList(0), fNt(0), fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLongFluctuations::AliAnalysisTaskLongFluctuations(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), fNt(0), fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8)
+    fAOD(0), fOutputList(0), fNt(0), fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fEventCuts(0)
 {
     mCentV0M = 0.;
     mCentCL0 = 0.;
@@ -91,6 +94,7 @@ void AliAnalysisTaskLongFluctuations::SetChi2DoF(Double_t Chi2DoF){fChi2DoF = Ch
 void AliAnalysisTaskLongFluctuations::SetNclTPC(Int_t ncl){fTPCNcls = ncl;}
 void AliAnalysisTaskLongFluctuations::SetPtLimits(Double_t ptmin, Double_t ptmax){fPtmin = ptmin; fPtmax = ptmax;}
 void AliAnalysisTaskLongFluctuations::SetEtaLimit(Double_t etalimit){fEta = etalimit;}
+void AliAnalysisTaskLongFluctuations::SetPileUpRead(Bool_t ps){fIsPileUpCuts=ps; }
 
 void AliAnalysisTaskLongFluctuations::UserCreateOutputObjects()
 {
@@ -127,6 +131,11 @@ void AliAnalysisTaskLongFluctuations::UserExec(Option_t *)
         
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
+
+    if(!fIsMC && fIsPileUpCuts){
+        fEventCuts.fUseITSTPCCluCorrelationCut = true;
+        if (!fEventCuts.AcceptEvent(fAOD)) return;
+    }
 
     //making a cut in pvz -8 to 8cm
     const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
@@ -191,6 +200,20 @@ void AliAnalysisTaskLongFluctuations::UserExec(Option_t *)
         if (!stack) nMCTracks = 0;
         else nMCTracks = stack->GetEntries();
         
+        if(fIsPileUpCuts){
+            AliAODMCHeader *mcHeader = 0;
+            mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+            if(!mcHeader) {
+                printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+                return;
+            }
+            Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
+            isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
+            if(isParticleFromOutOfBunchPileUpEvent) return;
+        }
+
+
+
         mNMC  = 0;
         mSpTMC = 0;
         for(int i=0;i<16;i++){
