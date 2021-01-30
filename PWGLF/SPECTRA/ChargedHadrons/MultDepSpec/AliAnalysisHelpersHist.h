@@ -15,16 +15,20 @@ namespace Hist
 {
 struct Axis
 {
-  std::string name;
-  std::string title;
-  std::vector<double> binEdges;
-  int nBins; // 0 when bin edges are specified directly
+  Axis() = default;
+  Axis(const std::string& name_, const std::string& title_, std::vector<double> binEdges_, int nBins_ = 0)
+  : name{name_}, title{title_}, binEdges{binEdges_}, nBins{nBins_}
+  {}
+  std::string name{};
+  std::string title{};
+  std::vector<double> binEdges{};
+  int nBins{}; // 0 when bin edges are specified directly
 };
 
 template <typename RootHist_t>
 class Hist
 {
- public:
+public:
   Hist() : fAxes{}, fRawHist{ nullptr } {}
   Hist(const Hist&) = delete;            // non construction-copyable
   Hist& operator=(const Hist&) = delete; // non copyable
@@ -34,7 +38,7 @@ class Hist
   {
     fAxes.insert(fAxes.end(), axes.begin(), axes.end());
   }
-  void AddAxis(const std::string& name, const std::string& title, const int& nBins,
+  void AddAxis(const std::string& name, const std::string& title, const int nBins,
                const double& lowerEdge, const double& upperEdge)
   {
     fAxes.push_back({ name, title, { lowerEdge, upperEdge }, nBins });
@@ -254,7 +258,7 @@ class Hist
               + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
   }
 
- private:
+private:
   std::vector<Axis> fAxes;
   RootHist_t* fRawHist;
 };
@@ -263,7 +267,7 @@ class Hist
 template <typename RootHist1d_t>
 class Log
 {
- public:
+public:
   Log() : fRawHist{ nullptr } {}
   //~Log() { if(fRawHist) fRawHist->LabelsDeflate(); } // TODO: where to put this in AliPhysics
   Log(const Log&) = delete;            // non construction-copyable
@@ -278,7 +282,7 @@ class Log
     return fRawHist;
   }
 
- private:
+private:
   RootHist1d_t* fRawHist;
 };
 
