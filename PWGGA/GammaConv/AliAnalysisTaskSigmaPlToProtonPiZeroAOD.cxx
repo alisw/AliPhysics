@@ -811,7 +811,6 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 
 		// Generiertes Spektrum der Sigma+
 		if(fIsMC > 0){
-
 			fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 			if (fAODMCTrackArray == NULL) return;
 			Int_t nSigmaperEvent =0;
@@ -921,6 +920,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						}
 					}	
 					proton.push_back(track);
+				}
+				else {
+					
+					tracks.push_back(track);
 				}			
 			}
 			else {
