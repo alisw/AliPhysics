@@ -560,22 +560,23 @@ Double_t AliAnalysisTasJetPull::RelativePhi(Double_t mphi,
 Double_t AliAnalysisJetPull::CalculatePull(fastjet::PseudoJet j1, fastjet:PseudoJet j2){
    vector < fastjet::PseudoJet > constit1 = sorted_by_pt(j1.constituents());
     vector < fastjet::PseudoJet > constit2 = sorted_by_pt(j2.constituents()); 
-
-    for(Int_t i=0;i<constit1.size();i++0{
-	deltarap=constit1[i].rap()-j1.rap();
-	deltaphi=RelativePhi(constit1[i].phi()-j1.phi());
-	  deltar=TMath::Sqrt(deltarap*deltarap+deltaphi*deltaphi);
+    double tx=0;
+    double ty=0;
+    for(Int_t i=0;i<constit1.size();i++){
+	double deltarap=constit1[i].rap()-j1.rap();
+	double deltaphi=RelativePhi(constit1[i].phi()-j1.phi());
+	  double deltar=TMath::Sqrt(deltarap*deltarap+deltaphi*deltaphi);
 	   tx=tx+constit1[i].perp()*deltar*deltarap;
 	   ty=ty+constit1[i].perp()*deltar*deltaphi; }
 
 	tx=tx/j1.perp();
 	ty=ty/j1.perp();
 
-	deltajetrap=j1.rap()-j2.rap();
-	deltajetphi=RelativePhi(j1.phi()-j2.phi());
+	double deltajetrap=j1.rap()-j2.rap();
+	double deltajetphi=RelativePhi(j1.phi()-j2.phi());
 
-      cosangle=(deltajetrap*tx+deltajetphi*ty)/2*(TMath:Sqrt(deltajetrap*deltajetrap+deltajetphi*deltajetphi)*TMath:Sqrt(tx*tx+ty*ty));
-      pullangle=TMath::acosin(cosangle);	       
+	double cosangle=(deltajetrap*tx+deltajetphi*ty)/2*(TMath::Sqrt(deltajetrap*deltajetrap+deltajetphi*deltajetphi)*TMath::Sqrt(tx*tx+ty*ty));
+      double pullangle=TMath::ACos(cosangle);	       
       return pullangle;
 
 
