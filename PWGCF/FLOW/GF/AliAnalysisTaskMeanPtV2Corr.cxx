@@ -449,6 +449,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEfficiencyList->Add(fV0MMulti);
     PostData(1,fEfficiencyList);
   }
+  fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
   if(fExtendV0MAcceptance) {
     fEventCuts.OverrideCentralityFramework(1);
     fEventCuts.SetCentralityEstimators("V0M","CL0");
