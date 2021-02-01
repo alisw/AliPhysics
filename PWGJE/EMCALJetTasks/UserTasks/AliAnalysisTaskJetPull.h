@@ -74,7 +74,7 @@ protected:
   Bool_t Run();
   Bool_t FillHistograms();
 
-  Double_t CalculatePull(fastjet::PseudoJet jet1,fastjet::PseudoJet jet2)
+  Double_t CalculatePull(fastjet::PseudoJet jet1,fastjet::PseudoJet jet2);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
   void IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont);
