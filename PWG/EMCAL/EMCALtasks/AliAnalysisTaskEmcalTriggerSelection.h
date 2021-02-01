@@ -881,10 +881,20 @@ protected:
   AliEmcalTriggerSelectionCuts::PatchType_t       DecodePatchTypeString(const std::string &patchtypestring);
   AliEmcalTriggerSelectionCuts::SelectionMethod_t DecodeEnergyDefinition(const std::string &energydefstring);
 
+  /**
+   * @brief Calculate rho value from reconstructed trigger patches
+   * @param patches Input patch container
+   * @param recalc If true the rho is calculated from recalc patches (as ADC), otherwise from offline patches
+   * @param isEmcal  If true the rho is calculated from EMCAL patches, otherwise from DCAL patches
+   * @return rho value for the given combination
+   */
+  double CalculateRho(const TClonesArray *const patches, Bool_t recalc, Bool_t isEmcal);
+
   AliEmcalTriggerDecisionContainer          *fTriggerDecisionContainer;        ///< Trigger decision container objects
   TString                                    fGlobalDecisionContainerName;     ///< Name of the global trigger selection
   TList                                      fTriggerSelections;               ///< List of trigger selections
   TList                                      fSelectionQA;                     ///< Trigger selection QA
+  Bool_t                                     fUseRho;                          //!<! Check if any of teh trigger selections is requiring rho calculation
 
 private:
 
@@ -894,9 +904,7 @@ private:
    */
   void PrintStream(std::ostream &stream) const;
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerSelection, 1);    // Task running different EMCAL trigger selections
-  /// \endcond
 };
 
 

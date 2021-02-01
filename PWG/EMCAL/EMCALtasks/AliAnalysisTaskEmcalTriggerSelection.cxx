@@ -37,9 +37,7 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliYAMLConfiguration.h"
 
-/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection)
-/// \endcond
 
 namespace PWG {
 namespace EMCAL {
@@ -49,9 +47,11 @@ AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection():
   fTriggerDecisionContainer(nullptr),
   fGlobalDecisionContainerName("EmcalTriggerDecision"),
   fTriggerSelections(),
-  fSelectionQA()
+  fSelectionQA(),
+  fUseRho(false)
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetCaloTriggersName("usedefault");
   fTriggerSelections.SetOwner(kTRUE);
 }
 
@@ -63,6 +63,7 @@ AliAnalysisTaskEmcalTriggerSelection::AliAnalysisTaskEmcalTriggerSelection(const
   fSelectionQA()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
+  SetCaloTriggersName("usedefault");
   SetMakeGeneralHistograms(true);
   fTriggerSelections.SetOwner(kTRUE);
 }
@@ -77,6 +78,16 @@ void AliAnalysisTaskEmcalTriggerSelection::UserCreateOutputObjects() {
 void AliAnalysisTaskEmcalTriggerSelection::UserExecOnce(){
   if(!fTriggerDecisionContainer) fTriggerDecisionContainer = new AliEmcalTriggerDecisionContainer(fGlobalDecisionContainerName.Data());
   fInputEvent->AddObject(fTriggerDecisionContainer);
+
+  // check whether any of the cuts is using rho subtraction
+  fUseRho = false;
+  for(auto selectionMethod : fTriggerSelections) {
+    AliEmcalTriggerSelection *selection = static_cast<AliEmcalTriggerSelection *>(selectionMethod);
+    if(selection->GetSelectionCuts()->IsSubtractRho()){
+      fUseRho = true;
+      break;
+    }
+  }
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AddTriggerSelection(AliEmcalTriggerSelection * const selection){
@@ -89,8 +100,19 @@ Bool_t AliAnalysisTaskEmcalTriggerSelection::Run(){
   fTriggerDecisionContainer->Reset();
   AliEmcalTriggerSelection *selection(NULL);
   TIter selectionIter(&fTriggerSelections);
+  // Build rho object
+  AliEmcalTriggerSelectionCuts::RhoForTrigger rhocontainer {0., 0.,0.,0.,0.,0.};
+  if(fUseRho) {
+    // Assumpution: Rho in data stored for detector:
+    rhocontainer.fRhoForEmcalOnline = fCaloTriggers->GetMedian(0);
+    rhocontainer.fRhoForDCALOnline = fCaloTriggers->GetMedian(1);
+    rhocontainer.fRhoForEmcalRecalc = CalculateRho(fTriggerPatchInfo, true, false);
+    rhocontainer.fRhoForDCALRecalc = CalculateRho(fTriggerPatchInfo, true, true);
+    rhocontainer.fRhoForEmcalRecalc = CalculateRho(fTriggerPatchInfo, false, false);
+    rhocontainer.fRhoForDCALRecalc = CalculateRho(fTriggerPatchInfo, false, true);
+  }
   while((selection = dynamic_cast<AliEmcalTriggerSelection *>(selectionIter()))){
-    fTriggerDecisionContainer->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo));
+    fTriggerDecisionContainer->AddTriggerDecision(selection->MakeDecison(fTriggerPatchInfo, rhocontainer));
   }
   return kTRUE;
 }
@@ -110,6 +132,19 @@ void AliAnalysisTaskEmcalTriggerSelection::MakeQA(const AliEmcalTriggerDecisionC
     AliEmcalTriggerDecision *myd = static_cast<AliEmcalTriggerDecision *>(d);
     static_cast<AliEmcalTriggerSelectionQA *>(fSelectionQA.FindObject(myd->GetName()))->Fill(myd);
   }
+}
+
+double AliAnalysisTaskEmcalTriggerSelection::CalculateRho(const TClonesArray *const patches, Bool_t recalc, Bool_t isEmcal) {
+  std::vector<double> patchenergies;
+  for(auto patchobject : *patches) {
+    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchobject);
+    if(!(patch->IsBkgSimple() || patch->IsBkgRecalc())) continue;
+    if((isEmcal && !patch->IsEMCal()) || (!isEmcal && patch->IsEMCal())) continue;
+    if(recalc && patch->IsBkgRecalc()) patchenergies.push_back(patch->GetADCAmp());
+    else patchenergies.push_back(patch->GetPatchE());
+  }
+  std::sort(patchenergies.begin(), patchenergies.end(), std::less<double>());
+  return TMath::Median(patchenergies.size(), patchenergies.data());
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
