@@ -47,8 +47,8 @@ using std::endl;
 ClassImp(AliAnalysisTaskNewJetSubstructure)
 
     //________________________________________________________________________
-AliAnalysisTasJetPull::AliAnalysisTasJetPull()
-: AliAnalysisTaskEmcalJet("AliAnalysisTasJetPull", kTRUE),
+AliAnalysisTaskJetPull::AliAnalysisTaskJetPull()
+: AliAnalysisTaskEmcalJet("AliAnalysisTaskJetPull", kTRUE),
   fContainer(0), fMinFractionShared(0), fJetShapeType(kData),
   fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.),
   fRMatching(0.2), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
@@ -72,7 +72,7 @@ AliAnalysisTasJetPull::AliAnalysisTasJetPull()
 }
 
 //________________________________________________________________________
-AliAnalysisTasJetPull::AliAnalysisTasJetPull(
+AliAnalysisTaskJetPull::AliAnalysisTaskJetPull(
 								     const char *name)
   : AliAnalysisTaskEmcalJet(name, kTRUE), fContainer(0),
     fMinFractionShared(0), fJetShapeType(kData), fJetShapeSub(kNoSub),
@@ -100,12 +100,12 @@ AliAnalysisTasJetPull::AliAnalysisTasJetPull(
 }
 
 //________________________________________________________________________
-AliAnalysisTasJetPull::~AliAnalysisTasJetPull() {
+AliAnalysisTaskJetPull::~AliAnalysisTaskJetPull() {
   // Destructor.
 }
 
 //________________________________________________________________________
-void AliAnalysisTasJetPull::UserCreateOutputObjects() {
+void AliAnalysisTaskJetPull::UserCreateOutputObjects() {
   // Create user output.
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
@@ -223,7 +223,7 @@ void AliAnalysisTasJetPull::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTasJetPull::Run() {
+Bool_t AliAnalysisTaskJetPull::Run() {
   // Run analysis code here, if needed. It will be executed before
   // FillHistograms().
 
@@ -231,7 +231,7 @@ Bool_t AliAnalysisTasJetPull::Run() {
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTasJetPull::FillHistograms() {
+Bool_t AliAnalysisTaskJetPull::FillHistograms() {
 
   AliEmcalJet *jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
@@ -538,7 +538,7 @@ Bool_t AliAnalysisTasJetPull::FillHistograms() {
 
 
 //__________________________________________________________________________________
-Double_t AliAnalysisTasJetPull::RelativePhi(Double_t mphi,
+Double_t AliAnalysisTaskJetPull::RelativePhi(Double_t mphi,
                                                         Double_t vphi) {
 
   if (vphi < -1 * TMath::Pi())
@@ -586,7 +586,7 @@ Double_t AliAnalysisJetPull::CalculatePull(fastjet::PseudoJet j1, fastjet:Pseudo
 }
   
 //_________________________________________________________________________                                                                               
-Bool_t AliAnalysisTasJetPull::CompareSubjets(fastjet::PseudoJet *subDet,  fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb)
+Bool_t AliAnalysisTaskJetPull::CompareSubjets(fastjet::PseudoJet *subDet,  fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, std::vector<fastjet::PseudoJet>* constHyb)
 {
   double pT_det = subDet->pt();
   double sumpT = 0;
@@ -614,7 +614,7 @@ Bool_t AliAnalysisTasJetPull::CompareSubjets(fastjet::PseudoJet *subDet,  fastje
 }
 
 //_________________________________________________________________________
-void AliAnalysisTasJetPull::IterativeParentsAreaBased(
+void AliAnalysisTaskJetPull::IterativeParentsAreaBased(
     AliEmcalJet *fJet, AliJetContainer *fJetCont) {
   // to still change and implement the 4 vector bkg subtraction to the subjets
   std::vector<fastjet::PseudoJet> fInputVectors;
@@ -725,7 +725,7 @@ void AliAnalysisTasJetPull::IterativeParentsAreaBased(
   return;
 }
 //_________________________________________________________________________
-void AliAnalysisTasJetPull::IterativeParents(
+void AliAnalysisTaskJetPull::IterativeParents(
 							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
@@ -835,7 +835,7 @@ void AliAnalysisTasJetPull::IterativeParents(
   return;
 }
 
-void AliAnalysisTasJetPull::IterativeParentsPP(
+void AliAnalysisTaskJetPull::IterativeParentsPP(
 							 AliEmcalJet *fJet, AliJetContainer *fJetCont) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
@@ -943,7 +943,7 @@ void AliAnalysisTasJetPull::IterativeParentsPP(
 }
 
 //_________________________________________________________________________
-void AliAnalysisTasJetPull::IterativeParentsMCAverage(
+void AliAnalysisTaskJetPull::IterativeParentsMCAverage(
     AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2,
     Double_t &average3) {
   AliJetContainer *jetCont = GetJetContainer(km);
@@ -1063,7 +1063,7 @@ void AliAnalysisTasJetPull::IterativeParentsMCAverage(
 }
 
 //_________________________________________________________________________
-void AliAnalysisTasJetPull::IterativeParentsMCAveragePP(
+void AliAnalysisTaskJetPull::IterativeParentsMCAveragePP(
     AliEmcalJet *fJet, Int_t km, Double_t &average1, Double_t &average2,
     Double_t &average3) {
   AliJetContainer *jetCont = GetJetContainer(km);
@@ -1171,7 +1171,7 @@ void AliAnalysisTasJetPull::IterativeParentsMCAveragePP(
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTasJetPull::RetrieveEventObjects() {
+Bool_t AliAnalysisTaskJetPull::RetrieveEventObjects() {
   //
   // retrieve event objects
   //
@@ -1182,7 +1182,7 @@ Bool_t AliAnalysisTasJetPull::RetrieveEventObjects() {
 }
 
 //_______________________________________________________________________
-void AliAnalysisTasJetPull::Terminate(Option_t *) {
+void AliAnalysisTaskJetPull::Terminate(Option_t *) {
   // Called once at the end of the analysis.
 
   // fTreeObservableTagging = dynamic_cast<TTree*>(GetOutputData(1));
