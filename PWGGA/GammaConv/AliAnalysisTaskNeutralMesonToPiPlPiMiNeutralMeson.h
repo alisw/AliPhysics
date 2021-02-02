@@ -136,7 +136,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega);
     void RelabelAODPhotonCandidates(Bool_t mode);
     AliExternalTrackParam* GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz);
-    Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]); 
+    Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]);
 
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
@@ -230,7 +230,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     //All Dalitz
-    TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<! 
+    TH2F**                            fHistoDalitzPlotPosFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotNegFixedPzNDM;                     //!<!
     TH2F**                            fHistoDalitzPlotPosSubNDM;                         //!<!
     TH2F**                            fHistoDalitzPlotNegSubNDM;                         //!<!
@@ -271,8 +271,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     TH2F**                            fHistoMotherInvMassFixedPzNDM;                      // invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
     /** background group 1 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value */
-    TH2F**                            fHistoBackInvMassPtFixedPzNDM;                      //!<! 
-    /** array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi+pi0}, the Pz of the pi0 was fixed such that 
+    TH2F**                            fHistoBackInvMassPtFixedPzNDM;                      //!<!
+    /** array of histos of pi+pi+pi0 likesign mixed event, invMass, pT_{pi+pi+pi0}, the Pz of the pi0 was fixed such that
      *  its invMass matches the PDG value
      */
     TH2F**                            fHistoMotherLikeSignBackInvMassFixedPzNDMPt;        //!<!
@@ -323,7 +323,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistMCChannelNDMPtHeavyPt;                         //!<! array of histos of pt correlation ndm - heavy meson
     TH2F**                            fHistMCChannelPiPlusPtHeavyPt;                      //!<! array of histos of pt correlation piplus - heavy meson
     TH2F**                            fHistMCChannelPiMinusPtHeavyPt;                     //!<! array of histos of pt correlation piminus - heavy meson
-    TH1F**                            fHistoMCHeavyReconstructiblePt;                     //!<! array of histos with pt of reconstructible heavy mesons 
+    TH1F**                            fHistoMCHeavyReconstructiblePt;                     //!<! array of histos with pt of reconstructible heavy mesons
     TH1F**                            fHistoMCHeavyReconstructibleEta;                    //!<! array of histos with eta of reconstructible heavy mesons
     TH1F**                            fHistoMCHeavyReconstructiblePhi;                    //!<! array of histos with phi of reconstructible heavy mesons
     TH1F**                            fHistMCReconstructibleNDMFromHeavyPt;               //!<! array if histos with pt of the ndm of the reconstructible heavy meson
@@ -340,9 +340,19 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistMCReconstructiblePiMinusPtHeavyPt;             //!<! array of histos of pt correlation piminus - reconstructible heavy meson
 
     // reconstructed particles MC validated
+    TH1F**                          fHistoTrueMesonFlags;                                 //!<! histo for event counting
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated eta or omega, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
+    // reconstructed particles MC validated different mesons
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent;   //!<! histos with all reconstructed validated mesons which are not analyzed (eta or omega), inv mass, pT
+    // reconstructed particles MC validated different mesons
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaOmega;    //!<! histos with reconstructed validated eta or omega mesons from  which are not analyzed, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromRho;         //!<! histos with reconstructed validated rho mesons from  which are not analyzed, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromK0s;         //!<! histos with reconstructed validated K0s mesons from  which are not analyzed, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromK0l;         //!<! histos with reconstructed validated K0l mesons from  which are not analyzed, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromEtaPrime;    //!<! histos with reconstructed validated EtaPrime mesons from  which are not analyzed, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromOther;       //!<! histos with reconstructed validated EtaPrime mesons from  which are not analyzed, inv mass, pT
     //Dalitz All Pt
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosFixedPzNDM;   //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM;   //!<!
@@ -384,17 +394,23 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt;    //!<! histos with reconstructed validated pi+ pi-  from etaprime, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt;         //!<! histos with reconstructed validated pi+ pi-  from K0s, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt;         //!<! histos with reconstructed validated pi+ pi-  from K0s, invariant mass, pT
+    TH2F**                          fHistoTruePiPlPiMiSameMotherFromOtherlInvMassPt;         //!<! histos with reconstructed validated pi+ pi-  from K0s, invariant mass, pT
 
     TH2F**                          fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt;       //!<! histos with reconstructed validated pi0 pi-  from omega, invariant mass, pT
     TH2F**                          fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt;     //!<! histos with reconstructed validated pi0 pi-  from eta, invariant mass, pT
     TH2F**                          fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt;       //!<! histos with reconstructed validated pi0 pi-  from rho0, invariant mass, pT
     TH2F**                          fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt;       //!<! histos with reconstructed validated pi0 pi-  from rho0, invariant mass, pT
+    TH2F**                          fHistoTruePiMiPiZeroSameMotherFromOtherlInvMassPt;    //!<! histos with reconstructed validated pi0 pi-  from rho0, invariant mass, pT
 
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt;       //!<! histos with reconstructed validated pi0 pi+  from omega, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt;     //!<! histos with reconstructed validated pi0 pi+  from eta, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt;       //!<! histos with reconstructed validated pi0 pi+  from rho0, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt;       //!<! histos with reconstructed validated pi0 pi+  from K0l, invariant mass, pT
+    TH2F**                          fHistoTruePiPlPiZeroSameMotherFromOtherInvMassPt;       //!<! histos with reconstructed validated pi0 pi+  from K0l, invariant mass, pT
+
     TH2F**                          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt;     //!<! histos with reconstructed validated pi+pi-pi0 that are pure combinatorical (do not share a mother)
+    TH2F**                          fHistoTruePiPlPiMiNDMCombinatoricalInvMassPt;         //!<! histos with all reconstructed validated pi+pi-pi0 that are combinatorical
+
     TH2F**                          fHistoTruePiPlPiMiNDMContaminationInvMassPt;          //!<! histos with reconstructed pi0 that are not actually pions
     TH2F**                          fHistoTruePiPlPiMiNDMContamination_Pi0_InvMassPt;     //!<! histos with reconstructed pi+ that are not actually pions
     TH2F**                          fHistoTruePiPlPiMiNDMContamination_PiPl_InvMassPt;    //!<! histos with reconstructed pi- that are not actually pions
@@ -455,7 +471,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
     Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
 
-    TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling) 
+    TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling)
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
     TArrayI                         fESDArrayPos;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
     TArrayI                         fESDArrayNeg;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
@@ -464,7 +480,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 18);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 19);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
