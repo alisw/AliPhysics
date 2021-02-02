@@ -167,6 +167,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
   task->SetCentralityFile(centralityFilename);
+  task->SetCentralityFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
 
   // #########################################################
   // #########################################################
@@ -207,7 +208,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
 
   // #########################################################
   // #########################################################
-  // PID postcalibration
+  // PID postcalibration 
   TH3D *hs_mean_ITS_El  = 0x0;
   TH3D *hs_width_ITS_El = 0x0;
   TH3D *hs_mean_TOF_El  = 0x0;
@@ -215,8 +216,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
 
   // PID post-calibration
   TFile *rootfile = 0x0;
-  if(calibFileName.Contains("MC")){
-    printf("reading : %s for PID calibration\n",calibFileName.Data());
+  if(calibFileName.Contains("LHC18qr")){
+    printf("2018 reading : %s for PID calibration\n",calibFileName.Data());
     rootfile = TFile::Open(calibFileName,"READ");
     hs_mean_ITS_El  = (TH3D*)rootfile->Get("h3mean_ITS");
     hs_width_ITS_El = (TH3D*)rootfile->Get("h3width_ITS");
@@ -241,6 +242,34 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
     }
     
   }
+
+
+  if(calibFileName.Contains("LHC15o_old")){
+    printf("2015 reading : %s for PID calibration\n",calibFileName.Data());
+    rootfile = TFile::Open(calibFileName,"READ");
+    hs_mean_ITS_El  = (TH3D*)rootfile->Get("sum_mean_correction_its");
+    hs_width_ITS_El = (TH3D*)rootfile->Get("sum_width_correction_its");
+    hs_mean_TOF_El  = (TH3D*)rootfile->Get("sum_mean_correction_tof");
+    hs_width_TOF_El = (TH3D*)rootfile->Get("sum_width_correction_tof");
+    
+    if(hs_mean_ITS_El) {
+      cout<<"Adding mean ITS PID correction" <<endl;
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_mean_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    }
+    if(hs_mean_TOF_El) {
+      cout<<"Adding mean TOF PID correction" <<endl;
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_mean_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    }
+    if(hs_width_ITS_El) {
+      cout<<"Adding width ITS PID correction" <<endl;
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_width_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    }
+    if(hs_width_TOF_El) {
+      cout<<"Adding width TOF PID correction" <<endl;
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_width_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    } 
+  }
+  
 
 
   // #########################################################
