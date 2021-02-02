@@ -636,6 +636,22 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetNLMCut(1, 2) ;
   }
   
+  if ( kAnaCutsString.Contains("ShSh") )
+  {
+    printf("ConfigurePhotonAnalysis() >>> Recalculate shower shape within NxN \n");
+    // Open it although it should not matter for V3-V2 clusterizers
+    ana->SetNLMCut(0,100);
+
+    // Make sure isolated cells are not clusterized, only neighbours
+    ana->SwitchOnNxNShowerShapeOnlyNeighbours();
+
+    // Set the size of the recalculation window
+    if      ( kAnaCutsString.Contains("ShSh5x5") )
+      ana->SwitchOnUse5x5ShowerShapeHisto();
+    else if ( kAnaCutsString.Contains("ShSh7x7") )
+      ana->SwitchOnUse7x7ShowerShapeHisto();
+  }
+
   // PID cuts (shower shape and track matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
@@ -2015,6 +2031,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
+///    * Photon: Recalculation of shower shape in NxN window: "ShSh5x5", "ShSh7x7"
 ///
 void ConfigureCaloTrackCorrAnalysis
 (
