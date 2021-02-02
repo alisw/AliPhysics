@@ -2671,7 +2671,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
                 else weight = fHistEffCorrectionPosXi->GetBinContent(idbintrigg);
                 if(weight==0) continue;   
             }
-            Double_t triggers[6]={triggPt,fPV[2],triggEta,trig->WhichCandidate()-2.5,massTrig,perc};
+            Double_t triggers[5]={triggPt,fPV[2],trig->WhichCandidate()-2.5,massTrig,perc};
             if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers); 
             else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
             else fHistNumberOfTriggers->Fill(triggers,1./weight);
@@ -2680,7 +2680,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
                 weight = fHistEffCorrectionHadron->GetBinContent(idbintrigg)/(1. - fHistSecondaryCont->Interpolate(triggPt));
                 if(weight==0) continue;
             }
-            Double_t triggers[6]={triggPt,fPV[2],triggEta,4.5,massTrig,perc};
+            Double_t triggers[5]={triggPt,fPV[2],4.5,massTrig,perc};
             if(fCorrelationsGen&&fAnalysisMC) fHistNumberOfTriggersGen->Fill(triggers); 
             else if(fAnalysisMC&&fCorrelations) fHistNumberOfTriggersRec->Fill(triggers,1./weight);
             else fHistNumberOfTriggers->Fill(triggers,1./weight);
@@ -2726,7 +2726,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorrelationsXi(TObjArray *triggers,TObjAr
                 bachID = assoc->GetIDBach();
                 atrID = trig->GetIDCh();
             }
-                
+
             if ((TMath::Abs(negID))==(TMath::Abs(atrID))) continue;
             if ((TMath::Abs(posID))==(TMath::Abs(atrID))) continue;
             if ((TMath::Abs(bachID))==(TMath::Abs(atrID))) continue;
@@ -3168,9 +3168,9 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiCandidate(AliESDcascade * cas
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,18.5);
 
     par[1] = massXi;
-    par[2] = 0;//ids[0]; 
-    par[3] = 1;//ids[1];
-    par[4] = 2;//ids[2];
+    par[2] = ids[0]; 
+    par[3] = ids[1];
+    par[4] = ids[2];
 
     return kTRUE;               
 
