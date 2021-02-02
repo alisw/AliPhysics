@@ -25,6 +25,7 @@
 #include "AliJHistManager.h"
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
+#include "AliJCorrectionMapTask.h"
 
 //==============================================================
 
@@ -90,14 +91,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetEffConfig( UInt_t effMode, UInt_t FilterBit );
-	UInt_t ConnectInputContainer(const TString, const TString);
-	void EnablePhiCorrection(const TString);
-	void EnableCentFlattening(const TString);
-	void EnableEffCorrection(const TString);
-	TH1 * GetCorrectionMap(UInt_t, UInt_t);
-	TH1 * GetCentCorrection();
-	TGraphErrors * GetEffCorrectionMap(UInt_t run, Double_t cent);
-	double GetEffCorrection(TGraphErrors *gCor, double pt ) const ;
+	void SetPhiCorrectionIndex(UInt_t id){phiMapIndex = id;} // need for subwagon
+	
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -159,8 +154,8 @@ private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
 	AliJFFlucAnalysis *fFFlucAna; // analysis code
-	std::map<UInt_t, TH1 *> PhiWeightMap[96]; // per runs
-	std::map<UInt_t,TGraphErrors *> EffWeightMap[96]; //
+	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
+	TString fJCorMapTaskName;
 	TH1 *pPhiWeights;
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
@@ -173,6 +168,7 @@ private:
 	UInt_t fNumTPCClusters;
 	UInt_t fEffMode;
 	UInt_t fEffFilterBit;
+	UInt_t phiMapIndex;
 	int fPcharge;
 	int fRunNum;
 	UInt_t GlobTracks;
@@ -191,10 +187,7 @@ private:
 	BINNING binning;
 
 	UInt_t flags;
-	UInt_t inputIndex;
-	UInt_t phiInputIndex;
-	UInt_t centInputIndex;
-	UInt_t effInputIndex;
+	
 
 	ClassDef(AliJFFlucTask, 1);
 
