@@ -145,6 +145,7 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211342011"); // on left side tighter
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211333011"); // looser mass cut
   } else if (trainConfig == 6){   // PHOS Opening angle-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311021"); // wider cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311031"); // tighter cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311041"); // tightest cut
   } else if (trainConfig == 7){   // Background describtion

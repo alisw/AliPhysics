@@ -153,6 +153,7 @@ ClassImp(AliAnalysisTaskSigmaPlToProtonPiZeroAOD) // classimp: necessary for roo
 	fHistSigmaMassPtWoPodCutMC(0),
 	fHistNLoopsProton(0),
 	fHistNLoopsGamma(0),
+	fHistXi0MC(0),
 	fGenPhaseSpace(),
 	fV0Reader(NULL),
 	fV0ReaderName("V0ReaderV1"),
@@ -262,6 +263,7 @@ AliAnalysisTaskSigmaPlToProtonPiZeroAOD::AliAnalysisTaskSigmaPlToProtonPiZeroAOD
 	fHistSigmaMassPtWoPodCutMC(0),
 	fHistNLoopsProton(0),
 	fHistNLoopsGamma(0),
+	fHistXi0MC(0),
 	fGenPhaseSpace(),
 	fV0Reader(NULL),
 	fV0ReaderName("V0ReaderV1"),
@@ -396,6 +398,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fHistPodolanskiGenTrue = new TH2F*[fnCuts];
 		fHistNLoopsProton = new TH1F*[fnCuts];
 		fHistNLoopsGamma = new TH1F*[fnCuts];
+		fHistXi0MC = new TH2F*[fnCuts];
 	}
 
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -610,6 +613,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistPodolanskiGenTrue[iCut] = new TH2F("fHistPodolanskiGenTrue","", 100, 0., 1., 100, 0., 1.);
 			fHistNLoopsProton[iCut] = new TH1F("fHistNLoopsProton", "fHistNLoopsProton;#chi^{2};", 100, 0., 100.);
 			fHistNLoopsGamma[iCut] = new TH1F("fHistNLoopsGamma", "fHistNLoopsGamma;#chi^{2};", 100, 0., 100.);
+			fHistXi0MC[iCut] = new TH2F("fHistXi0MC", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 			if(fIsMC > 1){
 				fHistPodolanskiWCutTrue[iCut]->Sumw2();
 				fHistTrueProtonPt[iCut]->Sumw2();
@@ -646,6 +650,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 				fHistITSchi2TruewCut[iCut]->Sumw2();
 				fHistNLoopsProton[iCut]->Sumw2();
 				fHistNLoopsGamma[iCut]->Sumw2();
+				fHistXi0MC[iCut]->Sumw2();
 			}
 			
 			fAODList[iCut]->Add(fHistSigmaPlusMC[iCut]);
@@ -684,6 +689,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fAODList[iCut]->Add(fHistSigmaMassPtWoPodCutMC[iCut]);
 			fAODList[iCut]->Add(fHistNLoopsProton[iCut]);
 			fAODList[iCut]->Add(fHistNLoopsGamma[iCut]);
+			fAODList[iCut]->Add(fHistXi0MC[iCut]);
 		}
 	}
 	if(fV0Reader)
@@ -993,6 +999,10 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 			Int_t truePhotonMotherID1 = -1;
 			Int_t truePhotonMotherID2 = -1;
 
+			Int_t trueProtonFromXi0ID = -1;
+			Int_t truePhotonFromXi0ID1 = -1;
+			Int_t truePhotonFromXi0ID2 = -1;
+
 			if( photon.size() > 1){
 				for(unsigned int iProton = 0; iProton < proton.size(); ++iProton){
 					if(!proton[iProton]) {
@@ -1000,11 +1010,13 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 						continue;
 					}
 					vector<Int_t>         fVectorDoubleCountTrueSigmas;
+					trueProtonFromXi0ID = -1;
 					trueProtonMotherID = -1;
 					AliAODTrack* protonCandidate = proton[iProton];
 					protonVektor.SetPtEtaPhiM(protonCandidate->Pt(),protonCandidate->Eta(),protonCandidate->Phi(), 0.938272);
 					if(fIsMC > 0){
 						trueProtonMotherID = IsRealProton(protonCandidate, fAODMCTrackArray, iCut, fWeightJetJetMC, 1);
+						trueProtonFromXi0ID = IsProtonFromXi0(protonCandidate, fAODMCTrackArray, iCut, fWeightJetJetMC, 1);
 						if(trueProtonMotherID > 0){
 							if(fHistTrueProtonPt[iCut]) fHistTrueProtonPt[iCut]->Fill(protonCandidate->Pt(),fWeightJetJetMC);
 						}
@@ -1014,6 +1026,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 							Printf("ERROR: Could not find photon[%i][%i]",iCut,iPhoton1);
 							continue;
 						}
+						truePhotonFromXi0ID1 = -1;
 						truePhotonMotherID1 = -1;
 						AliVCluster* gamma1 = photon[iPhoton1];
 						TLorentzVector clusterVector1;
@@ -1036,6 +1049,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 								}
 							}
 							truePhotonMotherID1 = IsRealPhoton(&PhotonCandidate1, fAODMCTrackArray, iCut, fWeightJetJetMC);
+							truePhotonFromXi0ID1 = IsPhotonFromXi0(&PhotonCandidate1, fAODMCTrackArray, iCut, fWeightJetJetMC);
 						}
 						for(unsigned int iPhoton2 = 0; iPhoton2 < photon.size(); ++iPhoton2) {
 							if( iPhoton2 > iPhoton1){
@@ -1044,6 +1058,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 									continue;
 								}
 								truePhotonMotherID2 = -1;
+								truePhotonFromXi0ID2 = -1;
 								AliVCluster* gamma2 = photon[iPhoton2];
 								TLorentzVector clusterVector2;
 								gamma2->GetMomentum(clusterVector2,vpos);
@@ -1065,6 +1080,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 										}
 									}
 									truePhotonMotherID2 = IsRealPhoton(&PhotonCandidate2, fAODMCTrackArray, iCut, fWeightJetJetMC);
+									truePhotonFromXi0ID2 = IsPhotonFromXi0(&PhotonCandidate2, fAODMCTrackArray, iCut, fWeightJetJetMC);
 								}
 								AliAODConversionMother pi0cand = AliAODConversionMother(&PhotonCandidate1,&PhotonCandidate2);
 								pi0cand.SetLabels(iPhoton1,iPhoton2);
@@ -1112,6 +1128,9 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserExec(Option_t *)
 										}
 										if( (truePhotonMotherID1 == truePhotonMotherID2) && truePhotonMotherID1 > 0 && fIsMC > 0 && (trueProtonMotherID != truePhotonMotherID2)){
 											if(fHistSigmaPlusMCTruePion[iCut]) fHistSigmaPlusMCTruePion [iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt(),fWeightJetJetMC);
+										}
+										if(trueProtonFromXi0ID == truePhotonFromXi0ID1 && trueProtonFromXi0ID == truePhotonFromXi0ID2 && trueProtonFromXi0ID > 0 && (fIsMC > 0)) {
+											if(fHistXi0MC[iCut]) fHistXi0MC [iCut]-> Fill(sigmaVektor.M(), sigmaVektor.Pt(),fWeightJetJetMC);
 										}
 									}
 								}
@@ -1230,7 +1249,7 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhot
 					return (grandmotherPart2->GetLabel());	
 				} else if(motherPart2->GetPdgCode() == 11 || motherPart2->GetPdgCode() == -11 || motherPart2->GetPdgCode() == 22){
 					Int_t codeGrandMother = motherPart2->GetPdgCode();
-					Int_t codePotentialMother = motherPart2->GetPdgCode();
+					Int_t codePotentialMother = Photon->GetPdgCode();
 					Int_t labelGrandMother = Photon->GetMother();
 					Int_t counter = 0;
 					while((codeGrandMother == 11 || codeGrandMother == -11 || codeGrandMother == 22 || codeGrandMother == 111) && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntriesFast()){
@@ -1260,7 +1279,7 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsRealPhoton(AliAODConversionPhot
 					return (grandgrandmotherPart2->GetLabel());
 				} else if((motherPart2->GetPdgCode() == 11 || motherPart2->GetPdgCode() == -11 || motherPart2->GetPdgCode() == 22) && (grandmotherPart2->GetPdgCode() == 11 || grandmotherPart2->GetPdgCode() == -11 || grandmotherPart2->GetPdgCode() == 22)){
 					Int_t codeGrandMother = motherPart2->GetPdgCode();
-					Int_t codePotentialMother = motherPart2->GetPdgCode();
+					Int_t codePotentialMother = Photon->GetPdgCode();
 					Int_t labelGrandMother = Photon->GetMother();
 					Int_t counter = 0;
 					while((codeGrandMother == 11 || codeGrandMother == -11 || codeGrandMother == 22 || codeGrandMother == 111) && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntries()){
@@ -1547,6 +1566,119 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::CalculateBackgroundSwappWProtonPio
         	fHistRotationWProtonPion[iCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping*fWeightJetJetMC);
         }
     }
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsProtonFromXi0(AliAODTrack* track, TClonesArray* fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC, Int_t fill)
+{//Check if proton comes frome a sigma+
+	Int_t mcIDProtonCandidate = track->GetLabel();
+	AliAODMCParticle* mcTrackProtonFromXi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TMath::Abs(mcIDProtonCandidate)));
+	if(!mcTrackProtonFromXi0Candidate) return -1;
+	if (mcTrackProtonFromXi0Candidate->GetMother() < 0) return -1;
+	AliAODMCParticle *TrackLamdaCandidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(mcTrackProtonFromXi0Candidate->GetMother())); //mother MC particle object
+	if(!TrackLamdaCandidate) return -1;
+	AliAODMCParticle *TrackXi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrackLamdaCandidate->GetMother())); //mother MC particle object
+	if(!TrackXi0Candidate) return -1;
+	Int_t codeProtonCandidate = mcTrackProtonFromXi0Candidate->GetPdgCode();
+	Int_t codeLamdaCandidate = TrackLamdaCandidate->GetPdgCode();
+	Int_t codeXi0Candidate = TrackXi0Candidate->GetPdgCode();
+	if( (codeProtonCandidate==2212) && (codeLamdaCandidate==3122) && (codeXi0Candidate==3322) ){
+		return (TrackXi0Candidate->GetLabel());
+	} else if((codeProtonCandidate==2212) && (codeLamdaCandidate==2212) ){
+		Int_t codePotentialGrandMother = codeLamdaCandidate;
+		Int_t labelPotentialGrandMother = mcTrackProtonFromXi0Candidate->GetMother();
+		Int_t codePotentialGrandGrandMother = TrackXi0Candidate->GetLabel();
+		Int_t counter = 0;
+		while(codePotentialGrandMother == 2212 && counter < 10 && labelPotentialGrandMother < fAODMCTrackArray->GetEntriesFast()){
+			AliAODMCParticle *TrackPotentialGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelPotentialGrandMother)); //mother MC particle object
+			if(!TrackPotentialGrandMother) return -1;
+			codePotentialGrandMother = TrackPotentialGrandMother->GetPdgCode();
+			AliAODMCParticle *TrackPotentialGrandGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(TrackPotentialGrandMother->GetMother())); //mother MC particle object
+			if(!TrackPotentialGrandGrandMother) return -1;
+			codePotentialGrandGrandMother = TrackPotentialGrandGrandMother->GetPdgCode();
+			if(codePotentialGrandMother == 3122 && codePotentialGrandGrandMother == 3322){
+				return TrackPotentialGrandMother->GetLabel();
+			}	
+			labelPotentialGrandMother = TrackPotentialGrandMother->GetMother();
+			counter += 1;
+		}
+		return -1;
+	} else {
+		return -1;
+	}
+	return -1;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsPhotonFromXi0(AliAODConversionPhoton *PhotonFromXi0Candidate, TClonesArray* fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC)
+{ //checks if a reconstructed photon from sigma plus
+	AliAODMCParticle *PhotonFromXi0 = NULL;
+	if (PhotonFromXi0Candidate->GetNCaloPhotonMCLabels() > 0){
+		// PhotonFromXi0 = PhotonFromXi0Candidate->GetMCParticle(fMCEvent);
+		if (PhotonFromXi0Candidate->GetCaloPhotonMCLabel(0) < 0) return -1;
+		PhotonFromXi0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(PhotonFromXi0Candidate->GetCaloPhotonMCLabel(0)));
+		if (PhotonFromXi0) {
+			if(PhotonFromXi0->GetPdgCode() == 22){
+				if (PhotonFromXi0->GetMother() < 0) return -1;
+				AliAODMCParticle* pi0nFromXi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(PhotonFromXi0->GetMother()));
+				if (pi0nFromXi0Candidate->GetMother() < 0) return -1;
+				AliAODMCParticle* Xi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(pi0nFromXi0Candidate->GetMother()));
+				if(pi0nFromXi0Candidate->GetPdgCode() == 111 && Xi0Candidate->GetPdgCode() == 3322){
+					return (Xi0Candidate->GetLabel());	
+				} else if(pi0nFromXi0Candidate->GetPdgCode() == 11 || pi0nFromXi0Candidate->GetPdgCode() == -11 || pi0nFromXi0Candidate->GetPdgCode() == 22){
+					Int_t codeXi0 = pi0nFromXi0Candidate->GetPdgCode();
+					Int_t codepionFromXi0 = PhotonFromXi0->GetPdgCode();
+					Int_t labelXi0 = PhotonFromXi0->GetMother();
+					Int_t counter = 0;
+					while((codeXi0 == 11 || codeXi0 == -11 || codeXi0 == 22 || codeXi0 == 111) && counter < 10 && labelXi0 < fAODMCTrackArray->GetEntriesFast()){
+						AliAODMCParticle *TrackGrandMotherXi0 = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelXi0)); //mother MC particle object
+						if(!TrackGrandMotherXi0) return -1;
+						codeXi0 = TrackGrandMotherXi0->GetPdgCode();
+						if(codepionFromXi0 == 111 && codeXi0 == 3322){
+							return TrackGrandMotherXi0->GetLabel();
+						}
+						labelXi0 = TrackGrandMotherXi0->GetMother();
+						codepionFromXi0 = codeXi0;
+						counter += 1;
+					}
+					return -1;
+				}else {
+					return -1;
+				}	
+			} else if(PhotonFromXi0->GetPdgCode() == 11 || PhotonFromXi0->GetPdgCode() == -11){
+				if (PhotonFromXi0->GetMother() < 0) return -1;
+				AliAODMCParticle* photonFromXi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(PhotonFromXi0->GetMother()));
+				if (photonFromXi0Candidate->GetMother() < 0) return -1;
+				AliAODMCParticle* pi0nFromXi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(photonFromXi0Candidate->GetMother()));
+				if (pi0nFromXi0Candidate->GetMother() < 0) return -1;
+				AliAODMCParticle* Xi0Candidate = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(pi0nFromXi0Candidate->GetMother()));
+				if(photonFromXi0Candidate->GetPdgCode() == 22 && pi0nFromXi0Candidate->GetPdgCode() == 111  && Xi0Candidate->GetPdgCode() == 3322){
+					return (Xi0Candidate->GetLabel());
+				} else if((photonFromXi0Candidate->GetPdgCode() == 11 || photonFromXi0Candidate->GetPdgCode() == -11 || photonFromXi0Candidate->GetPdgCode() == 22) && (pi0nFromXi0Candidate->GetPdgCode() == 11 || pi0nFromXi0Candidate->GetPdgCode() == -11 || pi0nFromXi0Candidate->GetPdgCode() == 22)){
+					Int_t codeGrandMother = photonFromXi0Candidate->GetPdgCode();
+					Int_t codePotentialMother = PhotonFromXi0->GetPdgCode();
+					Int_t labelGrandMother = PhotonFromXi0->GetMother();
+					Int_t counter = 0;
+					while((codeGrandMother == 11 || codeGrandMother == -11 || codeGrandMother == 22 || codeGrandMother == 111) && counter < 10 && labelGrandMother < fAODMCTrackArray->GetEntries()){
+						AliAODMCParticle *TrackGrandMother = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelGrandMother)); //mother MC particle object
+						if(!TrackGrandMother) return -1;
+						codeGrandMother = TrackGrandMother->GetPdgCode();
+						if(codePotentialMother == 111 && codeGrandMother == 3322){
+							return TrackGrandMother->GetLabel();
+						}
+						labelGrandMother = TrackGrandMother->GetMother();
+						codePotentialMother = codeGrandMother;
+						counter += 1;
+					}
+					return -1;
+				}else {
+					return -1;
+				}
+			} else {
+				return -1;
+			}
+		}
+	}
+	return -1;
+
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::Terminate(Option_t *)
