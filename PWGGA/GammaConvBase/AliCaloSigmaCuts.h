@@ -179,7 +179,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliCaloSigmaCuts,6)
+    ClassDef(AliCaloSigmaCuts,5)
     /// \endcond
 };
 

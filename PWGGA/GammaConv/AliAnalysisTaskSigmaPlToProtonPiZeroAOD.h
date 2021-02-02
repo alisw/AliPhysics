@@ -203,7 +203,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in, Double_t fWeightJetJetMC) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in, fWeightJetJetMC); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 26);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 27);
 };
 
 #endif

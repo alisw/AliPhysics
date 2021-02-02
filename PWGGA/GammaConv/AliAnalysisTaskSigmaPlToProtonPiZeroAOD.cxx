@@ -1596,7 +1596,7 @@ Int_t AliAnalysisTaskSigmaPlToProtonPiZeroAOD::IsProtonFromXi0(AliAODTrack* trac
 			if(!TrackPotentialGrandGrandMother) return -1;
 			codePotentialGrandGrandMother = TrackPotentialGrandGrandMother->GetPdgCode();
 			if(codePotentialGrandMother == 3122 && codePotentialGrandGrandMother == 3322){
-				return TrackPotentialGrandMother->GetLabel();
+				return TrackPotentialGrandGrandMother->GetLabel();
 			}	
 			labelPotentialGrandMother = TrackPotentialGrandMother->GetMother();
 			counter += 1;
