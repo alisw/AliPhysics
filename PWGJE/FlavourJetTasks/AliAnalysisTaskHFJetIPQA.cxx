@@ -87,6 +87,7 @@ fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
 bMatched(kFALSE),
+bIsTrueGenV0Jet(kFALSE),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
@@ -237,6 +238,7 @@ fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
 bMatched(kFALSE),
+bIsTrueGenV0Jet(kFALSE),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
@@ -419,6 +421,7 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_MinJetArea] =0.6*TMath::Pi()*0.4*0.4;
     fAnalysisCuts[bAnalysisCut_SDz]=  0.1;
     fAnalysisCuts[bAnalysisCut_SDbeta]=0;
+    fAnalysisCuts[bAnalysisCut_MaxIPLNJP]=25;
 
     //Events
     fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor] =3;
@@ -1191,11 +1194,11 @@ Int_t AliAnalysisTaskHFJetIPQA::IsInVector(const vector<Int_t>& vec, Int_t iLabe
  * - stores id, pt and eta of V0 mother if one of their daughter has the maximum IP within the jet
  * - fills thnsparse object if largest IP track within jet is V0 daughter and if jetflavour is not b
  */
-void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts,Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP){
+Bool_t AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts,Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP){
     Bool_t bDebug=kFALSE;
     if(fGenJetFlavour==B){
       if(bDebug)printf("GetGenV0Jets:: Returning as B jet jetflavour=%i\n",fGenJetFlavour);
-      return;
+      return kFALSE;
     }
     if(iTrackLabels.size()!=fTrackRecIPs.size()) AliError(Form("%s: size of iTrackLabels (%lu) and fTrackRecIPs (%lu) not matching!\n",__FUNCTION__, iTrackLabels.size(), fTrackRecIPs.size()));
     if(iTrackLabels.size()!=fTrackRecPts.size()) AliError(Form("%s: size of iTrackLabels (%lu) and fTrackRecPts (%lu) not matching!\n",__FUNCTION__, iTrackLabels.size(), fTrackRecIPs.size()));
@@ -1282,10 +1285,10 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
     double thnentries[6]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fLNJP, fJetPt, static_cast<double>(kTagDec[1][Double]),fMaxIP};
     if(bMaxIPIsV0==0){
       if(bDebug)printf("GetGeneratedV0:: Returning as no V0 jet\n");
-      return;
+      return kFALSE;
     }
     if(fMaxV0ID==310) {
-        fhnV0InJetK0s->Fill(thnentries);
+        fhnV0InJetK0s->Fill(thnentries); //
         if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
     }
     if(fMaxV0ID==3122) {
@@ -1298,6 +1301,8 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
     }
 
       pAOD=NULL;
+    if((!bMaxIPIsV0)||((fMaxV0ID!=310)&&(fMaxV0ID!=3122)&&(fMaxV0ID!=-3122))) AliError(Form("%s: Inconsistent decision of V0 jets: MaxIPIsV0=%i, fMaxV0ID=%i\n",__FUNCTION__, bMaxIPIsV0,fMaxV0ID));
+    return kTRUE;
 }
 
 
@@ -1968,6 +1973,7 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
   fMeanLNKtSD=-99;
   fMeanThetaSD=-99;
   bMatched=kFALSE;
+  bIsTrueGenV0Jet=kFALSE;
   std::fill( std::begin( fTrackIPs ), std::end( fTrackIPs ), -99 );
   std::fill( std::begin( fTrackIPSigs ), std::end( fTrackIPSigs ), -99 );
   std::fill( std::begin( fTrackProb ), std::end( fTrackProb ), -99 );
@@ -2031,6 +2037,7 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   printf("fMatchedJetPt %f\n", fMatchedJetPt);
   printf("fJetProb=%f\n",fJetProb);
   printf("bMatched %i\n",bMatched);
+  printf("bIsTrueGenV0Jet=%i\n", bIsTrueGenV0Jet);
   printf("Tagging Results:\n");
   /*for(int iThresh=0;iThresh<fNThresholds;iThresh++){
      printf("    Thresh %i,\n     bFull=%i,\n     bSingle1st=%i,\n     bSingle2nd=%i,\n     bSingle3rd=%i,\n     bDouble=%i\n    bTriple=%i\n",
@@ -2363,7 +2370,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
        Double_t fLNJP=-999;
        if(fJetProb>0)fLNJP=-TMath::Log(fJetProb);
-       if(fIsPythia)GetGenV0Jets(jetrec, ev, iTrackLabels,fTrackRecIPs,fTrackRecPt,fJetFlavour, kTagDec, fLNJP);
+       if((fIsPythia)&&(fJetProb>0))bIsTrueGenV0Jet=GetGenV0Jets(jetrec, ev, iTrackLabels,fTrackRecIPs,fTrackRecPt,fJetFlavour, kTagDec, fLNJP);
+       //if(bIsTrueGenV0Jet) printf("%s: Found true V0 jet!\n",__FUNCTION__);
 
 
        //PrintAllTreeVars();
@@ -2697,6 +2705,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fMeanLNKtSD",&fMeanLNKtSD,"fMeanLNKtSD/F");
     tJetTree->Branch("fMeanThetaSD",&fMeanThetaSD,"fMeanThetaSD/F");
     //tJetTree->Branch("bMatched",&bMatched, "bMatched/O");
+    tJetTree->Branch("bIsTrueGenV0Jet",&bIsTrueGenV0Jet, "bIsTrueGenV0Jet/O");
     tJetTree->Branch("fTrackIPs",&fTrackIPs,"fTracksIPs[nTracks]/F");
     tJetTree->Branch("fTrackIPSigs",&fTrackIPSigs,"fTrackIPSigs[nTracks]/F");
     tJetTree->Branch("fTrackProb",&fTrackProb,"fTrackProb[nTracks]/F");
@@ -2732,7 +2741,7 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
 
     printf("--------------------------------------------------------------------------------\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-    printf("XXXXXXXXXX Code version 01.02.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 03.02.21 XXXXXXXXXX\n");
     printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
@@ -2796,6 +2805,8 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     jetcuts+=Form("%0.1f", fAnalysisCuts[bAnalysisCut_SDz]);
     jetcuts+="+";
     jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_SDbeta]);
+    jetcuts+="+";
+    jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_MaxIPLNJP]);
 
     printf("Cut Jet Settings: %s\n",jetcuts.Data());
 
@@ -4725,7 +4736,9 @@ Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGood
 
   for(long unsigned iN=0;iN<ipval.size();iN++){
     if(ipval[iN]<0) continue;
-    if(ipval[iN]>25) continue;
+    if(ipval[iN]>fAnalysisCuts[bAnalysisCut_MaxIPLNJP]){
+      continue;
+    }
     probval=-999;
     if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
     else{probval=IntegrateIP(jetpt,ipval[iN], iN);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
