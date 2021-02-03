@@ -3037,7 +3037,8 @@ void  AliIsolationCut::MakeIsolationCut
     if ( fICMethod == kSumBkgSubIC )
     {
       coneptsumBkgTrk = perpPtSumTrack;
-      coneptsumBkgCls = perpPtSumTrack*GetNeutralOverChargedRatio(centrality); 
+      if ( fPartInCone == kNeutralAndCharged || fPartInCone == kOnlyNeutral )
+        coneptsumBkgCls = perpPtSumTrack*GetNeutralOverChargedRatio(centrality);
       //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
       
       // Add to candidate object
