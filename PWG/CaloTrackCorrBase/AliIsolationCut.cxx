@@ -3285,7 +3285,7 @@ void  AliIsolationCut::MakeIsolationCut
     {
       fhConeSumPtUESubCent->Fill(ptC, coneptsumUESub, centrality, histoWeight);
       if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
-        fhConeSumPtUESubTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsum, histoWeight);
+        fhConeSumPtUESubTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsumUESub, histoWeight);
     }
     else
     {
