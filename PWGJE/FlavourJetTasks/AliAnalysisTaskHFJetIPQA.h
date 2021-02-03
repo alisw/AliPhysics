@@ -93,7 +93,8 @@ public:
         bAnalysisCut_PtHardAndJetPtFactor=28,
         bAnalysisCut_MinNewVertexContrib=29,
         bAnalysisCut_SDz=30,
-        bAnalysisCut_SDbeta=31
+        bAnalysisCut_SDbeta=31,
+        bAnalysisCut_MaxIPLNJP=32
     };
 
     enum V0Cuts{
@@ -328,7 +329,7 @@ public:
     Bool_t PerformV0AcceptanceCuts(Double_t V0pt, Double_t V0y, Double_t V0PosDaughpt, Double_t V0PosDaughEta,Double_t V0NegDaughpt, Double_t V0NegDaughEta);
     Bool_t PerformV0MCAcceptanceCuts(const AliAODMCParticle* pAODMother, AliAODMCParticle* pAODPosDaugh,AliAODMCParticle* pAODNegDaugh,Bool_t& bV0MCIsK0s,Bool_t& bV0MCIsLambda,Bool_t& bV0MCIsALambda);
     //void GetGeneratedV0();
-    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts, Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP);
+    Bool_t GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts, Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP);
     Int_t FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs,Int_t iCount, Int_t iLevel);
     void GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs, Int_t& iInVectorInxMaxIP);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
@@ -463,6 +464,7 @@ private:
     Int_t nTracks;
     Int_t fNEvent;
     bool bMatched;
+    Bool_t bIsTrueGenV0Jet;
     Float_t fTrackIPs[40];
     Float_t fTrackIPSigs[40];
     Float_t fTrackProb[40];
@@ -639,7 +641,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[32]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[33]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     Double_t fV0Cuts[26];
 
     AliPIDCombined *fCombined ;//!
@@ -708,7 +710,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 76)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 77)
 };
 
 #endif
