@@ -70,11 +70,13 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fOutputList->Add(fHist_runStatistics.GenerateHist("runStatistics"));
   }
 
+  BookHistogram(fHist_zVtx_meas, "zVtx_meas", {zv});
   BookHistogram(fHist_multDist_meas, "multDist_meas", {mult_meas});
   BookHistogram(fHist_multPtSpec, "multPtSpec", {mult_meas, pt_meas});
   BookHistogram(fHist_ptReso, "ptReso", {pt_meas, sigma_pt});
 
   if (fIsMC) {
+    BookHistogram(fHist_zVtx_gen, "zVtx_gen", {zv});
     BookHistogram(fHist_multDist_gen, "multDist_gen", {mult_true});
     BookHistogram(fHist_ptResoMC, "ptResoMC", {pt_meas, delta_pt});
     BookHistogram(fHist_multCorrel, "multCorrel", {mult_meas, mult_true});
@@ -139,10 +141,14 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
   if (!InitEvent()) return;  // event objects were not found
   if (!fIsTriggered) return; // dont consider any events that dont fulfill trigger condition
 
-  if (fIsMC && std::abs(fMCVtxZ) < 10.) {
-    FillEventHistosTrue();
-    LoopTrue(); // MC truth info must be obtained independent of vertex quality, etc. but only for true z vertex positions in range
+  if (fIsMC) {
+    fHist_zVtx_gen.Fill(fMCVtxZ);
+    if (fAcceptEventMC) {
+      FillEventHistosTrue();
+      LoopTrue();
+    }
   }
+  fHist_zVtx_meas.Fill(fVtxZ);
   if (!fAcceptEvent) return; // measured histograms are only filled if event is good
 
   FillEventHistos();
@@ -194,6 +200,9 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     AliError("fEvent not available\n");
     return false;
   }
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  fIsTriggered = handl->IsEventSelected() & fTriggerMask;
 
   if (fIsMC) {
     fMCEvent = MCEvent();
@@ -202,11 +211,8 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       return false;
     }
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
+    fAcceptEventMC = fIsTriggered && std::abs(fMCVtxZ) <= 10.;
   }
-
-  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  fIsTriggered = handl->IsEventSelected() & fTriggerMask;
 
   // v0-mult: fEvent->GetVZEROData()->GetMTotV0A() + fEvent->GetVZEROData()->GetMTotV0C();
 
@@ -301,6 +307,10 @@ void AliMultDepSpecAnalysisTask::FillEventHistos()
   fHist_multDist_meas.Fill(fMultMeas);
   if (fIsMC) {
     fHist_multCorrel.Fill(fMultMeas, fMultTrue);
+
+    if (!fAcceptEventMC) { // contamination from events that dont fulfill mc truth vertex requirement
+      fHist_multDist_bkg.Fill(fMultMeas);
+    }
   }
 }
 
@@ -341,7 +351,9 @@ void AliMultDepSpecAnalysisTask::FillMeasParticleHistos()
 //**************************************************************************************************
 void AliMultDepSpecAnalysisTask::FillTrueParticleHistos()
 {
-  if (fMCIsChargedPrimary) fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+  if (fMCIsChargedPrimary) {
+    fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
+  }
 }
 
 //**************************************************************************************************
@@ -587,8 +599,7 @@ bool AliMultDepSpecAnalysisTask::InitCentrality()
  * Function to set variable binning for multiplicity.
  */
 //**************************************************************************************************
-std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(vector<int> multSteps,
-                                                                vector<int> multBinWidth)
+std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(vector<int> multSteps, vector<int> multBinWidth)
 {
   if (multSteps.size() != multBinWidth.size()) {
     AliFatal("Vectors need to have same size!");
@@ -649,8 +660,7 @@ std::vector<double> AliMultDepSpecAnalysisTask::GetMultBinEdges(int maxMult)
  * Function to add this task to a train.
  */
 //**************************************************************************************************
-AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(
-  const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
+AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -804,8 +814,7 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   }
 
   // in MC we always apply data driven corrections to account for wrong particle composition in the
-  // generator cutMode 99 is for crosschecks without any data driven corrections (not part of
-  // systematics)
+  // generator cutMode 99 is for crosschecks without any data driven corrections (not part of systematics)
   if (isMC && cutMode != 99) {
     // TODO: use enums for this once they are available
     int pccMode = 0;        // 0 = default

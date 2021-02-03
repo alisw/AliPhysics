@@ -124,8 +124,7 @@ protected:
   virtual void FillMeasParticleHistos();
   virtual void FillTrueParticleHistos();
 
-  // this must be defined in header so it can be generated for types that are only present in
-  // derived classes
+  // this must be defined in header so it can be generated for types that are only present in derived classes
   template <typename T>
   void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName,
                      const std::vector<unsigned int>& dimensions, bool isFillWeigths = false)
@@ -179,12 +178,16 @@ protected:
   Hist::Log<TH1I> fHist_trainInfo{};          //!<! train metadata string as bin lable and number of jobs as fill
   Hist::Log<TH1I> fHist_runStatistics{};      //!<! number of reconstructed events per run
 
+  Hist::Hist<TH1D> fHist_zVtx_gen{};  //!<! generated z vertex position
+  Hist::Hist<TH1D> fHist_zVtx_meas{}; //!<! measured z vertex position
+
   Hist::Hist<TH1D> fHist_multDist_meas{}; //!<! measured event distribution
   Hist::Hist<TH2D> fHist_multPtSpec{};    //!<! measured tracks
   Hist::Hist<TH2D> fHist_ptReso{};        //!<! relatvie pT resolution from covariance matrix
 
   // MC-only histograms
   Hist::Hist<TH1D> fHist_multDist_gen{}; //!<! multiplicity distribution of generated (triggered, z<10) events
+  Hist::Hist<TH1D> fHist_multDist_bkg{}; //!<! multiplicity distribution of measured events that are not contained in generated mult dist because zTrue>10
   Hist::Hist<TH2D> fHist_ptResoMC{};     //!<! relative pt resolution from mc
 
   Hist::Hist<THnSparseD> fHist_multCorrel{};      //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
@@ -211,6 +214,7 @@ protected:
   float fCent{};                     //!<! event centrality
   bool fIsAcceptedPeripheralEvent{}; //!<! event with centrality > 90% that passes the selection criteria
   bool fAcceptEvent{};               //!<! decision if current event is selected
+  bool fAcceptEventMC{};             //!<! decision if current event is selected in mc truth
 
   // track related properties
   double fPt{};      //!<! track pt
