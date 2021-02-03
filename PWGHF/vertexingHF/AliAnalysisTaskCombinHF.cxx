@@ -1452,7 +1452,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
             }
             if(isEvSel && isInAcc){
               fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
-              fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,ptbmoth);
+              fPtVsYVsPtBGenAccEvSelFeeddw->Fill(ptgen,ygen,ptbmoth);
             }
           }
         }
