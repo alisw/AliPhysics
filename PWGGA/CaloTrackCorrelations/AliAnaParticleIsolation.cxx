@@ -4605,13 +4605,25 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t coneptLeadTrack   = aod->GetChargedLeadPtInCone();
     Float_t coneptsumTrack    = aod->GetChargedPtSumInCone();
     Float_t coneptsum         = coneptsumTrack + coneptsumCluster;
+
+    if ( partInCone == AliIsolationCut::kOnlyCharged )
+      coneptsum  = coneptsumTrack;
+    if ( partInCone == AliIsolationCut::kOnlyNeutral)
+      coneptsum  = coneptsumCluster;
     
     Float_t coneptLead = coneptLeadTrack;
-    if ( coneptLeadCluster > coneptLeadTrack ) 
+    if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+    {
+      if ( coneptLeadCluster > coneptLeadTrack )
+        coneptLead = coneptLeadCluster;
+    }
+    else if ( partInCone == AliIsolationCut::kOnlyNeutral )
+    {
       coneptLead = coneptLeadCluster;
+    }
     
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
-                    iaod, coneptsumTrack+coneptsumCluster, coneptLead));
+                    iaod, coneptsum, coneptLead));
      
     Bool_t narrow       = kFALSE;
     Bool_t inM02Windows = kTRUE;
