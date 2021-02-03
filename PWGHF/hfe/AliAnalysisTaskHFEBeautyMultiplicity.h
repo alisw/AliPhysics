@@ -71,6 +71,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fVtxX;                  // Xvertex position
         TH1F* fVtxY;                  // Yvertex position
         TH2F* fVtxCorrelation;        // Primary Zvertex vs. SPD Zvertex
+	
+    	TH2F* fZvtx_Ntrklet;
 
         TH2F* fEMCClsEtaPhi;          // EMCal Clusters (Eta and Phi)
         TH2F* fHistNCells;            // No of EMCal Cells in a cluster

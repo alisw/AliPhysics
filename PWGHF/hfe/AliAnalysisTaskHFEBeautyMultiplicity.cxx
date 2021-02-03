@@ -82,6 +82,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fVtxY(0),               // Yvertex
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
 
+    fZvtx_Ntrklet(0),	    // Z vertex vs N tracklets
+
     fEMCClsEtaPhi(0),       // EMCal Cluster Eta vs. Phi
     fHistNCells(0),         // No. of EMCal Cells in a cluster
     fHistCalCells(0),       // EMCal cells in a cluster
@@ -253,6 +255,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fVtxX(0),               // Xvertex
     fVtxY(0),               // Yvertex
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
+    
+    fZvtx_Ntrklet(0),	    // Z vertex vs N tracklets
 
     fEMCClsEtaPhi(0),       // EMCal Cluster Eta vs. Phi
     fHistNCells(0),         // No. of EMCal Cells in a cluster
@@ -493,6 +497,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
   //Yvertex  
     fVtxY = new TH1F("fVtxY","Y vertex position; Vtx_{y} [cm]; counts", 500, -25, 25);
     fOutputList->Add(fVtxY);
+
+  //Z vertex vs N tracklets
+    fZvtx_Ntrklet = new TH2F("fZvtx_Ntrklet","Zvertex vs N tracklet;Z_{vertex} [cm];N^{SPD}_{tracklet}",400,-20,20,4001,-0.5,4000.5);
+    fOutputList->Add(fZvtx_Ntrklet);
 
   //EMCal Cluster Eta and Phi
     fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCal&DCal Cluster #eta and #phi distribution; #eta; #phi",150,-0.75,0.75,63,0,6.3);
@@ -1091,18 +1099,25 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 
     //---------- SPD tracklets ----------//
-/*    Int_t nTracklets = 0;
+    Int_t nTracklets = 0;
     Int_t nAcc = 0;
     Double_t etaRange = 1.0;
 
     AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
     nTracklets = tracklets->GetNumberOfTracklets();
-    for (Int_t nn = 0; nn < nTracklets; nn++) {
-	    Double_t theta = tracklets->GetTheta(nn);
-	    Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
-	    if (TMath::Abs(eta) < etaRange) nAcc++;
-	    }
-*/
+    for(Int_t nn=0; nn<nTracklets; nn++)
+    {
+	//Double_t theta = tracklets->GetTheta(nn);
+	//Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+	Double_t eta = tracklets->GetEta(nn);
+	if(TMath::Abs(eta) < etaRange) nAcc++;	// No. of tracklet in |eta|<1.0 (TPC coverage)
+    }
+    fZvtx_Ntrklet->Fill(Zvertex, nAcc);
+
+
+    //-------- Tracklet correction --------//
+
+
 
 
     
@@ -1196,7 +1211,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     {                                                                            // loop overall these tracks
         //AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));     // get a track (type AliAODTrack) from the event
         
-        AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));     // EMCal correction framework
+        AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));  // EMCal correction framework
 
         if(!track) continue;                                                     // if we failed, skip this track
         
@@ -1228,7 +1243,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             
             pid_eleD = IsDdecay(pidM);  // D->e, B->D->e
             pid_eleB = IsBdecay(pidM);  // B->e
-            pid_eleP = IsPdecay(pidM);  // photon -> e
+            pid_eleP = IsPdecay(pidM);  // photon->e
 
 	    if(pid_eleB) fNoB -> Fill(0);
 	    if(pid_eleD) fNoD -> Fill(0);
@@ -1913,7 +1928,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
                 fPt_Btoe->Fill(fMCparticle->Pt(), pTMom);
             }
 
-	    if(TMath::Abs(pdgMom)==4122)			   	    // Lambda_c -> e
+	    if(TMath::Abs(pdgMom)==4122)			     // Lambda_c -> e
 	    {
 		fHistMCorg_Lc -> Fill(fMCparticle->Pt());
 	    }
