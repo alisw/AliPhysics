@@ -209,6 +209,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     
     void SetDoCellIso(Bool_t p0){ fDoCellIsolation = p0;}
     void SetRhoOutName(TString s){fRhoOutName = s;}
+    void SetRhoOutNameMC(TString s){fRhoOutNameMC = s;}
     void SetBuffSize(Long64_t buff){fTreeBuffSize = buff;}
     void SetDoTagging(Bool_t p0){ fDoTagging = p0;}
     void SetPi0TaggingWindow(Double_t min,Double_t max=0.){
@@ -661,6 +662,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInClusters;//!
 
     TString                     fRhoOutName; // 
+    TString                     fRhoOutNameMC; // 
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
@@ -672,6 +674,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fMaxM02; // max m02 for signal clusters (separate from normal cuts to allow purity estimation)
     
     Double_t                    fChargedRho; // event density
+    Double_t                    fChargedRhoMC; // event density
     Double_t                    fChargedRhoTimesArea[5]; // rho times are for up to five radii 
     
     Double_t                    fExclusionRadius;//
@@ -688,9 +691,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // //
 
     Float_t fBuffer_EventRho; //
+    Float_t fBuffer_EventRhoMC; //
     Double_t fBuffer_EventWeight; //
     Float_t fBuffer_EventXsection; //
-    Float_t fBuffer_EventNtrials; //
+    UShort_t fBuffer_EventNtrials; //
     Bool_t fBuffer_EventIsTriggered; //
     std::vector<Float_t> fBuffer_ClusterE;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPx;     //!<! array buffer
@@ -701,6 +705,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterM20; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
+    std::vector<UShort_t> fBuffer_ClusterSM; // super module 
     std::vector<Float_t> fBuffer_ClusterEFrac; 
     std::vector<Float_t> fBuffer_ClusterIsoCharged1; // isolation for three different radii 
     std::vector<Float_t> fBuffer_ClusterIsoCharged2; 
@@ -786,7 +791,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 32);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 33);
 
 };
 

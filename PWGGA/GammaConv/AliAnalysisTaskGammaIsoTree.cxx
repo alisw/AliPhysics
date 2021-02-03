@@ -384,6 +384,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fGenPi0PtInEMCalAcc_BothGammaInEMCal(NULL),
   fGenPi0PtInEMCalAcc_BothGammaInClusters(NULL),
   fRhoOutName("Rho"),
+  fRhoOutNameMC("RhoMC"),
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
@@ -391,6 +392,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fMinM02(0),
   fMaxM02(9999),
   fChargedRho(0),
+  fChargedRhoMC(0),
   fChargedRhoTimesArea(),
   fExclusionRadius(0.4),
   fDebug(0),
@@ -399,6 +401,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fIsOverlappingWithOtherHeader(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fBuffer_EventRho(0),
+  fBuffer_EventRhoMC(0),
   fBuffer_EventWeight(0),
   fBuffer_EventXsection(0),
   fBuffer_EventNtrials(0),
@@ -412,6 +415,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
+  fBuffer_ClusterSM(0), 
   fBuffer_ClusterEFrac(0), 
   fBuffer_ClusterIsoCharged1(0), 
   fBuffer_ClusterIsoCharged2(0), 
@@ -812,6 +816,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fGenPi0PtInEMCalAcc_BothGammaInEMCal(NULL),
   fGenPi0PtInEMCalAcc_BothGammaInClusters(NULL),
   fRhoOutName("Rho"),
+  fRhoOutNameMC("RhoMC"),
   fTreeBuffSize(60*1024*1024),
   fMemCountAOD(0),
   fTrackMatcherRunningMode(0),
@@ -819,6 +824,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fMinM02(0),
   fMaxM02(9999),
   fChargedRho(0),
+  fChargedRhoMC(0),
   fChargedRhoTimesArea(),
   fExclusionRadius(0.4),
   fDebug(0),
@@ -827,6 +833,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fIsOverlappingWithOtherHeader(kFALSE),
   fAllowOverlapHeaders(kTRUE),
   fBuffer_EventRho(0),
+  fBuffer_EventRhoMC(0),
   fBuffer_EventWeight(0),
   fBuffer_EventXsection(0),
   fBuffer_EventNtrials(0),
@@ -840,6 +847,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterV1SplitMass(0), 
   fBuffer_ClusterNLM(0), 
+  fBuffer_ClusterSM(0), 
   fBuffer_ClusterEFrac(0), 
   fBuffer_ClusterIsoCharged1(0), 
   fBuffer_ClusterIsoCharged2(0), 
@@ -983,6 +991,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     for(Int_t i =0; i < tasks->GetEntriesFast();i++){
       auto task = tasks->At(i);
       TString name = task->GetName();
+      cout << "NAME OF TASK = " << name.Data() << endl;
       if(name.Contains("CaloTrackMatcher_Signal")){
           fOutputList->Add(((AliCaloTrackMatcher*) AliAnalysisManager::GetAnalysisManager()->GetTask(name.Data()))->GetCaloTrackMatcherHistograms());
       }
@@ -2434,9 +2443,10 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   if(!fUseHistograms){  // full tree
 
     fAnalysisTree->Branch("Event_Rho", &fBuffer_EventRho,"Event_Rho/F");
+    fAnalysisTree->Branch("Event_RhoMC", &fBuffer_EventRhoMC,"Event_RhoMC/F");
     if(fIsMC>0) fAnalysisTree->Branch("Event_Weight", &fBuffer_EventWeight,"Event_Weight/D");
     if(fIsMC>0) fAnalysisTree->Branch("Event_Xsection", &fBuffer_EventXsection,"Event_Xsection/F");
-    if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/F");
+    if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/s");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
     fAnalysisTree->Branch("Cluster_Px","std::vector<Float_t>",&fBuffer_ClusterPx);
@@ -2447,6 +2457,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_M20","std::vector<Float_t>",&fBuffer_ClusterM20);
     fAnalysisTree->Branch("Cluster_V1SplitMass","std::vector<Float_t>",&fBuffer_ClusterV1SplitMass);
     fAnalysisTree->Branch("Cluster_NLM","std::vector<UShort_t>",&fBuffer_ClusterNLM);
+    fAnalysisTree->Branch("Cluster_SM","std::vector<UShort_t>",&fBuffer_ClusterSM);
     fAnalysisTree->Branch("Cluster_EFrac","std::vector<Float_t>",&fBuffer_ClusterEFrac);
     fAnalysisTree->Branch("Cluster_IsoCharged1","std::vector<Float_t>",&fBuffer_ClusterIsoCharged1);
     fAnalysisTree->Branch("Cluster_IsoCharged2","std::vector<Float_t>",&fBuffer_ClusterIsoCharged2);
@@ -2527,6 +2538,11 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   AliRhoParameter* outrho= (AliRhoParameter*) InputEvent()->FindListObject(fRhoOutName.Data());
   if(!outrho) AliInfo("could not find rho container!");
 
+  AliRhoParameter* outrhoMC = NULL;
+  if(fIsMC>0){
+    outrhoMC= (AliRhoParameter*) InputEvent()->FindListObject(fRhoOutNameMC.Data());
+    if(!outrhoMC) AliInfo("could not find rho MC container!");
+  }
 
   Float_t xsection = 0;
   Float_t ntrials = 0;
@@ -2607,6 +2623,22 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   //
   // ─── MAIN PROCESSING ────────────────────────────────────────────────────────────
   //
+  if(outrho){ // ugly workaround until problem is fixed
+    fChargedRho = outrho->GetVal();
+  } else{
+    fChargedRho = 0.;
+  }
+
+  fChargedRhoMC = 0;
+  if(outrhoMC){ // ugly workaround until problem is fixed
+    fChargedRhoMC = outrhoMC->GetVal();
+  } else{
+    fChargedRhoMC = 0.;
+  }
+  for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
+  {
+    fChargedRhoTimesArea[r] = fChargedRho * TMath::Pi() * pow(fTrackIsolationR.at(r),2);
+  }
   if(fIsMC>0) ProcessMCParticles();
   if(!fUseHistograms){
     fBuffer_EventWeight = fWeightJetJetMC;
@@ -2618,6 +2650,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
     // fill output from MC
     if(!fUseHistograms){
       fBuffer_EventRho = fChargedRho;
+      fBuffer_EventRhoMC = fChargedRhoMC;
       fAnalysisTree->Fill();
       PostData(2, fAnalysisTree);
     }
@@ -2630,15 +2663,6 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  if(outrho){ // ugly workaround until problem is fixed
-    fChargedRho = outrho->GetVal();
-  } else{
-    fChargedRho = 0.;
-  }
-  for (UInt_t r = 0; r < fTrackIsolationR.size(); r++)
-  {
-    fChargedRhoTimesArea[r] = fChargedRho * TMath::Pi() * pow(fTrackIsolationR.at(r),2);
-  }
 
   ProcessTracks(); // always run ProcessTracks before calo photons! (even if save tracks is false)
     if(fSaveConversions)
@@ -2660,6 +2684,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // fill output
   if(!fUseHistograms){
     fBuffer_EventRho = fChargedRho;
+    fBuffer_EventRhoMC = fChargedRhoMC;
     fAnalysisTree->Fill();
     PostData(2, fAnalysisTree);
   }
@@ -2714,6 +2739,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterM20.clear(); 
   fBuffer_ClusterV1SplitMass.clear(); 
   fBuffer_ClusterNLM.clear(); 
+  fBuffer_ClusterSM.clear(); 
   fBuffer_ClusterEFrac.clear(); 
   fBuffer_ClusterIsoCharged1.clear(); 
   fBuffer_ClusterIsoCharged2.clear(); 
@@ -5158,11 +5184,12 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   // ────────────────────────────────────────────────────────────────────────────────
   // Process track matching info
 
-  Bool_t isConvMatch = kFALSE; // kTrue if from primary sample, else from conv sample
+  Bool_t isConvMatch = kFALSE; // kTrue if from conv sampe, else from primary sample
   Float_t trackdEta = 0;
   Float_t trackdPhi = 0;
   Float_t trackP = -1;
   Float_t trackPt = -1;
+  
   AliAODTrack* aodt = NULL;
   if(fClusterCutsEMCTrackMatching->CheckClusterForTrackMatch(clus)){
     Int_t labelTrackClosest = -1;
@@ -5216,8 +5243,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
       } // end daughter loop
     } // end conv photon loop 
   } // end conv matching case
-
-
+  
   // ────────────────────────────────────────────────────────────────────────────────
 
   if(fIsMC>0){
@@ -5324,6 +5350,11 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
        energy7x7, nMaxima7x7, m02_7x7, m20_7x7, dispp, dEta, dPhi, sEta, sPhi, sEtaPhi);
 
   // ────────────────────────────────────────────────────────────────────────────────
+   // get Max cell ID to get SM number
+  Int_t absid    = ((AliCaloPhotonCuts*)fClusterCutsEMC)->FindLargestCellInCluster(clus, fInputEvent);
+  UShort_t SMNumber = fGeomEMCAL->GetSuperModuleNumber(absid);
+
+  // ────────────────────────────────────────────────────────────────────────────────
 
   const Int_t   nc = clus->GetNCells();
   Int_t   absCellIdList[nc];
@@ -5421,6 +5452,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterM20.push_back(clusM20);
   fBuffer_ClusterV1SplitMass.push_back(clusV1SplitMass);
   fBuffer_ClusterNLM.push_back(nlm);
+  fBuffer_ClusterSM.push_back(SMNumber);
   fBuffer_ClusterEFrac.push_back(eFrac);
   fBuffer_ClusterIsoCharged1.push_back(isoCharged.isolationCone.at(0));
   if(isoCharged.isolationCone.size()>1) fBuffer_ClusterIsoCharged2.push_back(isoCharged.isolationCone.at(1));
