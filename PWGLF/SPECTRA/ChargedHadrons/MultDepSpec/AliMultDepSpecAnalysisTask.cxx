@@ -78,6 +78,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   if (fIsMC) {
     BookHistogram(fHist_zVtx_gen, "zVtx_gen", {zv});
     BookHistogram(fHist_multDist_gen, "multDist_gen", {mult_true});
+    BookHistogram(fHist_multDist_bkg, "multDist_bkg", {mult_true});
     BookHistogram(fHist_ptResoMC, "ptResoMC", {pt_meas, delta_pt});
     BookHistogram(fHist_multCorrel, "multCorrel", {mult_meas, mult_true});
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
@@ -90,7 +91,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
 
   // check required memory
   if (true) {
-    double requiredMemory = fHist_multDist_meas.GetSize() + fHist_ptCorrel_prim.GetSize() + fHist_multPtSpec.GetSize() + fHist_ptReso.GetSize() + fHist_multDist_gen.GetSize() + fHist_ptResoMC.GetSize() + fHist_multCorrel.GetSize() + fHist_multCorrel_prim.GetSize() + fHist_multPtSpec_prim_gen.GetSize() + fHist_multPtSpec_prim_rec.GetSize() + fHist_multPtSpec_prim_meas.GetSize() + fHist_multPtSpec_sec_meas.GetSize();
+    double requiredMemory = fHist_multDist_meas.GetSize() + fHist_ptCorrel_prim.GetSize() + fHist_multPtSpec.GetSize() + fHist_ptReso.GetSize() + fHist_multDist_gen.GetSize() + fHist_ptResoMC.GetSize() + fHist_multCorrel.GetSize() + fHist_multCorrel_prim.GetSize() + fHist_multPtSpec_prim_gen.GetSize() + fHist_multPtSpec_prim_rec.GetSize() + fHist_multPtSpec_prim_meas.GetSize() + fHist_multPtSpec_sec_meas.GetSize() + fHist_multDist_bkg.GetSize();
 
     AliError(Form("Estimated memory usage of histograms: %.2f MiB. For all 23 systematic variations: %.2f MiB", requiredMemory / 1048576, 23 * requiredMemory / 1048576));
     // Max allowed Memory per train job: 8 GiB
