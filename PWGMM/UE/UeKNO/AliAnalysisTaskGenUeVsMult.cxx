@@ -105,8 +105,6 @@ using std::endl;
 const Char_t * Nameofregions[3]={"NS","AS","TS"};
 const Char_t * NameOfEstimtr[4] = {"Eta08","V0M","V0A","Eta10"};
 
-const Char_t * Pidname[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "Charged" };
-Bool_t IsPrimaRY[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE };
 
 const Int_t NchNBins = 100;
 Double_t nchbiNs[NchNBins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
@@ -126,7 +124,7 @@ Double_t PtNBinS1L[PtNBinSL+1] = {
 
 const Int_t nTSBins=700;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
-class AliAnalysisTaskGenUeVsMult;    // your analysis class
+class AliAnalysisTaskGenUeVsMultTest;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -158,14 +156,14 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
 
     }
     for(Int_t i_est=0; i_est<4; ++i_est){
-        for(Int_t i_pid=0; i_pid<12; ++i_pid){
+       // for(Int_t i_pid=0; i_pid<12; ++i_pid){
 
-            fHistPtLeadingVsNchNS[i_pid][i_est] = 0;
-            fHistPtLeadingVsNchAS[i_pid][i_est] = 0;
-            fHistPtLeadingVsNchTS[i_pid][i_est] = 0;
+            fHistPtLeadingVsNchNS[i_est] = 0;
+            fHistPtLeadingVsNchAS[i_est] = 0;
+            fHistPtLeadingVsNchTS[i_est] = 0;
 
 
-        }
+       // }
     }
    
 
@@ -198,14 +196,14 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult(const char* name) : AliAn
 
     }
     for(Int_t i_est=0; i_est<4; ++i_est){
-        for(Int_t i_pid=0; i_pid<12; ++i_pid){
+        //for(Int_t i_pid=0; i_pid<12; ++i_pid){
 
-            fHistPtLeadingVsNchNS[i_pid][i_est] = 0;
-            fHistPtLeadingVsNchAS[i_pid][i_est] = 0;
-            fHistPtLeadingVsNchTS[i_pid][i_est] = 0;
+            fHistPtLeadingVsNchNS[i_est] = 0;
+            fHistPtLeadingVsNchAS[i_est] = 0;
+            fHistPtLeadingVsNchTS[i_est] = 0;
 
 
-        }
+       // }
     }
     
 	
@@ -314,23 +312,23 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
     }
     TSBins[nTSBins]=1.0*nTSBins-0.5;
 
-    for(Int_t i_est=0; i_est<5; ++i_est){
-        for(Int_t i_pid=0; i_pid<12; ++i_pid){
+    for(Int_t i_est=0; i_est<4; ++i_est){
+      //  for(Int_t i_pid=0; i_pid<12; ++i_pid){
 
-            fHistPtLeadingVsNchNS[i_pid][i_est]=0;
-            fHistPtLeadingVsNchNS[i_pid][i_est]=new TH2D(Form("fHistPtLeadingVsNchNS%s_%s",NameOfEstimtr[i_est],Pidname[i_pid]), "Generated #it{p}_{T} distribution NS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
-            fOutputList->Add(fHistPtLeadingVsNchNS[i_pid][i_est]);
+            fHistPtLeadingVsNchNS[i_est]=0;
+            fHistPtLeadingVsNchNS[i_est]=new TH2D(Form("fHistPtLeadingVsNchNS_%s",NameOfEstimtr[i_est]), "Generated #it{p}_{T} distribution NS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
+            fOutputList->Add(fHistPtLeadingVsNchNS[i_est]);
 
-            fHistPtLeadingVsNchAS[i_pid][i_est]=0;
-            fHistPtLeadingVsNchAS[i_pid][i_est]=new TH2D(Form("fHistPtLeadingVsNchAS%s_%s",NameOfEstimtr[i_est],Pidname[i_pid]), "Generated #it{p}_{T} distribution NS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
-            fOutputList->Add(fHistPtLeadingVsNchAS[i_pid][i_est]);
+            fHistPtLeadingVsNchAS[i_est]=0;
+            fHistPtLeadingVsNchAS[i_est]=new TH2D(Form("fHistPtLeadingVsNchAS_%s",NameOfEstimtr[i_est]), "Generated #it{p}_{T} distribution NS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
+            fOutputList->Add(fHistPtLeadingVsNchAS[i_est]);
 
-            fHistPtLeadingVsNchTS[i_pid][i_est]=0;
-            fHistPtLeadingVsNchTS[i_pid][i_est]=new TH2D(Form("fHistPtLeadingVsNchTS%s_%s",NameOfEstimtr[i_est],Pidname[i_pid]), "Generated #it{p}_{T} distribution TS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
-            fOutputList->Add(fHistPtLeadingVsNchTS[i_pid][i_est]);
+            fHistPtLeadingVsNchTS[i_est]=0;
+            fHistPtLeadingVsNchTS[i_est]=new TH2D(Form("fHistPtLeadingVsNchTS_%s",NameOfEstimtr[i_est]), "Generated #it{p}_{T} distribution TS",PtNBinSL,PtNBinS1L,nTSBins,TSBins);
+            fOutputList->Add(fHistPtLeadingVsNchTS[i_est]);
 
 
-        }
+       // }
     }
    
    
@@ -404,14 +402,15 @@ void AliAnalysisTaskGenUeVsMult::UserExec(Option_t *)
     
     vector<Int_t> mult_estimators;
     vector<Int_t> region_multi;
-    GetMultipliciy( mult_estimators,region_multi );
+    vector<Int_t> Nch_mul;
+    GetMultipliciy( mult_estimators,region_multi,Nch_mul);
     
     Bool_t fIsInel0 = kFALSE;
     if(mult_estimators[4]>0)
         fIsInel0 = kTRUE;// is INEL>0
 
     if(fIsInel0){
-        for(Int_t i=0;i<5;++i)
+        for(Int_t i=0;i<4;++i)
             fMult[i]->Fill(mult_estimators[i]);
     }
 	for(Int_t i=0;i<3;++i){
@@ -430,7 +429,7 @@ void AliAnalysisTaskGenUeVsMult::UserExec(Option_t *)
 			if(isGoodVtxPosMC){
 				// UE analysis
 				if(fGenLeadPt>=fPtMin){
-				GetMultiVsUEObservables(mult_estimators,region_multi);
+				GetMultiVsUEObservables(mult_estimators,region_multi,Nch_mul);
 			}
 
 		}
@@ -563,7 +562,7 @@ void AliAnalysisTaskGenUeVsMult::GetMultLeadingObject() {
         cout <<"Lead pt = %f  \n"<< fGenLeadPt;
 }
 //.......................
-Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector<Int_t> &regionArray){
+Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector<Int_t> &regionArray,vector<Int_t> &NchArray){
 
     // Properties leading particle
   //  TParticle* particle         = 0x0;
@@ -581,6 +580,12 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     Int_t mult_NS   = 0;
     Int_t mult_AS   = 0;
     Int_t mult_TS   = 0;
+    Int_t mult_VZEROMNS   = 0;
+    Int_t mult_VZEROMAS   = 0;
+    Int_t mult_VZEROMTS   = 0;
+    Int_t mult_VZEROANS   = 0;
+    Int_t mult_VZEROAAS   = 0;
+    Int_t mult_VZEROATS   = 0;
     Int_t mult_Eta8   = 0;
     Int_t mult_Eta1   = 0;
     Int_t mult_VZEROM = 0;
@@ -630,9 +635,57 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
 
             }
         }
-        if( (2.8 < etaPart && etaPart < 5.1) || (-3.7 < etaPart && etaPart <-1.7) ) mult_VZEROM++;
-        if( 2.8 < etaPart && etaPart < 5.1 ) mult_VZEROA++;
+        if( (2.8 < etaPart && etaPart < 5.1) || (-3.7 < etaPart && etaPart <-1.7) ){
+            mult_VZEROM++;
+        
+        if(fGenLeadIn>=0){
+               // phiPart = mcPart -> Phi();
+                Double_t DPhi = DeltaPhi(particle->Phi(),fGenLeadPhi);
 
+                if(TMath::Abs(DPhi)<pi/3.0){
+                   // if(ipart!=fIndexLeading)
+                    mult_VZEROMNS++;
+                      //  fDeltaphiNS->Fill(DPhi);
+                }
+                // away side
+                else if(TMath::Abs(DPhi-pi)<pi/3.0){
+                    mult_VZEROMAS++;
+                   // fDeltaphiAS->Fill(DPhi);
+                }
+                // transverse side
+                else{
+                   // if(mcPart -> Pt()>=0.5)
+                        mult_VZEROMTS++;
+                  //  fDeltaphiTS->Fill(DPhi);
+                }
+
+            }
+        }
+        if( 2.8 < etaPart && etaPart < 5.1 ){ mult_VZEROA++;
+
+        if(fGenLeadIn>=0){
+               // phiPart = mcPart -> Phi();
+                Double_t DPhi = DeltaPhi(particle->Phi(),fGenLeadPhi);
+
+                if(TMath::Abs(DPhi)<pi/3.0){
+                   // if(ipart!=fIndexLeading)
+                    mult_VZEROANS++;
+                      //  fDeltaphiNS->Fill(DPhi);
+                }
+                // away side
+                else if(TMath::Abs(DPhi-pi)<pi/3.0){
+                    mult_VZEROAAS++;
+                   // fDeltaphiAS->Fill(DPhi);
+                }
+                // transverse side
+                else{
+                   // if(mcPart -> Pt()>=0.5)
+                        mult_VZEROATS++;
+                  //  fDeltaphiTS->Fill(DPhi);
+                }
+
+            }
+        }
         if( TMath::Abs(etaPart) < 1 )
             if(particle -> Pt()>0)
                 mult_Eta1++;// for INEL>0n
@@ -641,6 +694,15 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     regionArray.push_back(mult_NS);
     regionArray.push_back(mult_AS);
     regionArray.push_back(mult_TS);
+    
+    NchArray.push_back(mult_VZEROMNS);
+    NchArray.push_back(mult_VZEROMAS);
+    NchArray.push_back(mult_VZEROMTS);
+    
+    NchArray.push_back(mult_VZEROANS);
+    NchArray.push_back(mult_VZEROAAS);
+    NchArray.push_back(mult_VZEROATS);
+    
     multArray.push_back(mult_Eta8);
     multArray.push_back(mult_VZEROM);
     multArray.push_back(mult_VZEROA);
@@ -649,7 +711,7 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     return 1;
 }
 //----------------------
-void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vector<Int_t> &region){
+void AliAnalysisTaskGenUeVsMultTest::GetMultiVsUEObservables(vector<Int_t> &mult,vector<Int_t> &region,vector<Int_t> &Nch){
 
     Int_t nch_top[3];
     Double_t sumpt_top[3];
@@ -658,7 +720,7 @@ void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vec
         sumpt_top[i]=0;
     }
     
-    Int_t pidCodeMC = 0;
+   // Int_t pidCodeMC = 0;
     //Double_t ipt = 0.;
    // Double_t phiPart = -10.0;
     Bool_t isPhysPrim = kFALSE;
@@ -682,58 +744,42 @@ void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vec
         if (!fMC->IsPhysicalPrimary(ipart)) continue;
         //if (particle->Charge() == 0) continue;
         qPart = particle->GetPDG()->Charge()/3.;
-        pPDG = TMath::Abs(particle->GetPdgCode());
-        pidCodeMC = GetPidCode(pPDG);
+       // pPDG = TMath::Abs(particle->GetPdgCode());
+       // pidCodeMC = GetPidCode(pPDG);
         if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
         if( particle->Pt() < fPtMin)continue;
 
         Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
-        for(Int_t j=0; j<5; ++j){// mult estimators
-        for(Int_t i=0; i<11; ++i)// loop over particle species
-        {
-            if( pidCodeMC == i )
-            {
-                if( IsPrimaRY[i] == kTRUE && isPhysPrim == kFALSE )
-                    continue;
+     
 
         // definition of the topological regions
         if(TMath::Abs(DPhi)<pi/3.0){// near side
             nch_top[0]++; sumpt_top[0]+=particle->Pt();
             hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt());
-            fHistPtLeadingVsNchNS[i][j]->Fill(fGenLeadPt,1.0*mult[j]);
+            fHistPtLeadingVsNchNS[0]->Fill(fGenLeadPt,region[0]);
+            fHistPtLeadingVsNchNS[1]->Fill(fGenLeadPt,Nch[0]);
+            fHistPtLeadingVsNchNS[2]->Fill(fGenLeadPt,Nch[3]);
+            fHistPtLeadingVsNchNS[3]->Fill(fGenLeadPt,mult[3]);
         }
         else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
             nch_top[1]++; sumpt_top[1]+=particle->Pt();
             hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt());
-            fHistPtLeadingVsNchAS[i][j]->Fill(fGenLeadPt,1.0*mult[j]);
+            fHistPtLeadingVsNchAS[0]->Fill(fGenLeadPt,region[1]);
+            fHistPtLeadingVsNchAS[1]->Fill(fGenLeadPt,Nch[1]);
+            fHistPtLeadingVsNchAS[2]->Fill(fGenLeadPt,Nch[4]);
+            fHistPtLeadingVsNchAS[3]->Fill(fGenLeadPt,mult[3]);
             
         }
         else{// transverse side
             nch_top[2]++; sumpt_top[2]+=particle->Pt();
             hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt());
-            fHistPtLeadingVsNchTS[i][j]->Fill(fGenLeadPt,1.0*mult[j]);
+            fHistPtLeadingVsNchTS[0]->Fill(fGenLeadPt,region[2]);
+            fHistPtLeadingVsNchTS[1]->Fill(fGenLeadPt,Nch[2]);
+            fHistPtLeadingVsNchTS[2]->Fill(fGenLeadPt,Nch[5]);
+            fHistPtLeadingVsNchTS[3]->Fill(fGenLeadPt,mult[3]);
         }
-            }
-        }
-        if(isPhysPrim){// primary
-            if(TMath::Abs(qPart)>0.001){// charged
-                if(TMath::Abs(DPhi)<pi/3.0){// near side
-            
-                    fHistPtLeadingVsNchNS[11][j]->Fill(fGenLeadPt,1.0*mult[j]);
-                        }
-        
-            else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-            
-            fHistPtLeadingVsNchAS[11][j]->Fill(fGenLeadPt,1.0*mult[j]);
-                        }
-        else{// transverse side
-        
-            fHistPtLeadingVsNchTS[11][j]->Fill(fGenLeadPt,1.0*mult[j]);
-                        }
-                   }
-                }
-            }
+     
     }
     for(Int_t l=0;l<3;++l){
         
@@ -746,53 +792,6 @@ void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vec
 
 }
 //------------------------------------------------
-Int_t AliAnalysisTaskGenUeVsMult::GetPidCode(Int_t pdgCode) const  {
-
-    Int_t pidCode = 999;
-
-    switch (TMath::Abs(pdgCode)) {
-        case 211:
-            pidCode = 0; // pion
-            break;
-        case 321:
-            pidCode = 1; // kaon
-            break;
-        case 2212:
-            pidCode = 2; // proton
-            break;
-        case 310:
-            pidCode = 3; // K0s
-            break;
-        case 3122:
-            pidCode = 4; // Lambda
-            break;
-        case 3312:
-            pidCode = 5; // Xi-
-            break;
-        case 3334:
-            pidCode = 6; // Omega-
-            break;
-        case 333:
-            pidCode = 7; // phi(1020)
-            break;
-        case 313:
-            pidCode = 8; // K*(892)0
-            break;
-        case 323:
-            pidCode = 9; // K*(892) +-
-            break;
-        case 3212:
-            pidCode = 10; // Sigma 0
-            break;
-        default:
-            break;
-    };
-
-    return pidCode;
-}
-
-
-//____________________________________________________________
 
 Double_t AliAnalysisTaskGenUeVsMult::DeltaPhi(Double_t phia, Double_t phib,
 		Double_t rangeMin, Double_t rangeMax)
