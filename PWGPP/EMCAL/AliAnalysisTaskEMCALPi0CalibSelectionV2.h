@@ -121,6 +121,8 @@ public:
   void    SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m         ; }
 
   void    SetOADBFilePath(TString path)                  { fOADBFilePath = path      ; }
+
+  void    SetIsMC()                                      { isMC = kTRUE; }
   
   // Cluster recalculation
 
@@ -161,6 +163,8 @@ private:
   TGeoHMatrix       * fMatrix[AliEMCALGeoParams::fgkEMCALModules];
     
   Bool_t              fLoadMatrices;     ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
+
+  Bool_t              isMC;              ///< 
     
   
   TString             fEMCALGeoName;     ///<  Name of geometry to use.
