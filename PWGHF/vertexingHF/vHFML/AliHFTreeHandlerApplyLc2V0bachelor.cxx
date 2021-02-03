@@ -14,6 +14,7 @@
 #include <TDatabasePDG.h>
 #include "AliHFTreeHandlerApplyLc2V0bachelor.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliESDtrack.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerApplyLc2V0bachelor);
@@ -32,6 +33,7 @@ AliHFTreeHandlerApplyLc2V0bachelor(kNsigmaPID)
 AliHFTreeHandlerApplyLc2V0bachelor::AliHFTreeHandlerApplyLc2V0bachelor(int PIDopt):
 AliHFTreeHandlerApply(PIDopt),
 fImpParProng{},
+fITSRefitProng{},
 fImpParK0s(-9999.),
 fDecayLengthK0s(-9999.),
 fInvMassK0s(-9999.),
@@ -52,8 +54,10 @@ fReducePbPbBranches(false)
   //
   
   fNProngs = 3; // --> cannot be changed (prong 0 is the bachelor, 1,2 are prongs of the K0s)
-  for(unsigned int iProng=0; iProng<fNProngs; iProng++)
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fImpParProng[iProng] = -9999.;
+    fITSRefitProng[iProng] = -9999;
+  }
 }
 
 //________________________________________________________________
@@ -96,6 +100,8 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d", iProng), &fImpParProng[iProng]);
   }
+  fTreeVar->Branch("its_refit_prong1",&fITSRefitProng[1]);
+  fTreeVar->Branch("its_refit_prong2",&fITSRefitProng[2]);
   
   //set single-track variables
   AddSingleTrackBranches();
@@ -201,6 +207,7 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   for(unsigned int iProng = 0; iProng < fNProngs; iProng++){
     if(iProng==0) prongtracks[iProng] = (AliAODTrack*)cand->GetDaughter(iProng);
     else          prongtracks[iProng] = (AliAODTrack*)v0part->GetDaughter(iProng-1);
+    fITSRefitProng[iProng] = (prongtracks[iProng]->GetStatus()&AliESDtrack::kITSrefit);
   }
   bool setsingletrack = SetSingleTrackVars(prongtracks);
   if(!setsingletrack) return false;

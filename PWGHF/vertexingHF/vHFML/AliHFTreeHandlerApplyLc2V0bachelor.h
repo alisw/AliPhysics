@@ -51,6 +51,7 @@ public:
 private:
   
   float fImpParProng[knMaxProngs];         /// prong impact parameter
+  int   fITSRefitProng[knMaxProngs];       /// prong ITS refit flag
   float fImpParK0s;                        /// impact parameter K0s
   float fDecayLengthK0s;                   /// decay length K0s
   float fInvMassK0s;                       /// invariant mass of K0s
@@ -67,7 +68,7 @@ private:
   bool fReducePbPbBranches;                /// variable to disable unnecessary branches in PbPb
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 2); ///
+  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 3); ///
   /// \endcond
 };
 #endif
