@@ -205,6 +205,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fNSigmaPreFilterPID(3.)
   ,fApplyEvSel(kTRUE)
   ,fNoStdPIDcases(kFALSE)
+  ,fPtSoftPionCand(0)
+  ,fPtSoftPionCand_insideScLoop(0)
 {
   /// Default constructor
 
@@ -328,6 +330,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fNSigmaPreFilterPID(3.)
   ,fApplyEvSel(kTRUE)
   ,fNoStdPIDcases(kFALSE)
+  ,fPtSoftPionCand(0)
+  ,fPtSoftPionCand_insideScLoop(0)
 {
   /// Default constructor
 
@@ -858,6 +862,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   //
 
 
+  // pT distribution of soft pion candidate tracks
+  fPtSoftPionCand = new TH1F("fPtSoftPionCand","soft pion candidates;#it{p}_{T} (GeV/#it{c});",1000,0,0.2);
+  // pT distribution of soft pion candidate tracks before SigmaC loop
+  fPtSoftPionCand_insideScLoop = new TH1F("fPtSoftPionCand_insideScLoop","soft pion candidates inside SigmaC loop;#it{p}_{T} (GeV/#it{c});",1000,0,0.2);
+
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
   fOutput->Add(fDist12All);
@@ -902,6 +911,8 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fKaonID);
   fOutput->Add(fPionID);
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
+  fOutput->Add(fPtSoftPionCand);
+  fOutput->Add(fPtSoftPionCand_insideScLoop);
 
 
   // Post the data
@@ -1877,6 +1888,8 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     if(pSigmaC){
       if(TMath::Abs(tracksoft->GetLabel())!=labelSoftPi)continue;
     }
+
+    fPtSoftPionCand_insideScLoop->Fill(tracksoft->Pt());
     
     if(itrack1==-1){// Lc from filtered candidate --> need to check ID
       Bool_t skip=kFALSE;
@@ -3079,6 +3092,7 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     
     if(iSelSoftPionCuts>=0){
       ftrackArraySelSoftPi->AddAt(itrack,fnSelSoftPi);
+      fPtSoftPionCand->Fill(trackESD->Pt());
       fnSelSoftPi++;
     }    
     
