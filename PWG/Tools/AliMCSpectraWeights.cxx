@@ -14,6 +14,7 @@
 #include "TObjArray.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
+#include "AliAnalysisUtils.h"
 #include <cmath>
 #include <iostream>
 #include <math.h>
@@ -148,15 +149,17 @@ AliMCSpectraWeights::AliMCSpectraWeights(std::string const& collisionSystem,
     // setup systematics
     fAllSystematicFlags = {AliMCSpectraWeights::SysFlag::kNominal,
                            AliMCSpectraWeights::SysFlag::kPionUp,
-                           AliMCSpectraWeights::SysFlag::kPionDown,
+//                           AliMCSpectraWeights::SysFlag::kPionDown,
                            AliMCSpectraWeights::SysFlag::kProtonUp,
-                           AliMCSpectraWeights::SysFlag::kProtonDown,
+//                           AliMCSpectraWeights::SysFlag::kProtonDown,
                            AliMCSpectraWeights::SysFlag::kKaonUp,
-                           AliMCSpectraWeights::SysFlag::kKaonDown,
+//                           AliMCSpectraWeights::SysFlag::kKaonDown,
                            AliMCSpectraWeights::SysFlag::kSigmaPlusUp,
-                           AliMCSpectraWeights::SysFlag::kSigmaPlusDown,
+//                           AliMCSpectraWeights::SysFlag::kSigmaPlusDown,
                            AliMCSpectraWeights::SysFlag::kSigmaMinusUp,
-                           AliMCSpectraWeights::SysFlag::kSigmaMinusDown};
+//                           AliMCSpectraWeights::SysFlag::kSigmaMinusDown
+
+    };
 
     if ("pp" == fstCollisionSystem) {
         fAllSystematicFlags.push_back(
@@ -204,6 +207,7 @@ AliMCSpectraWeights::~AliMCSpectraWeights() {
     if (fMCEvent)
         fMCEvent = 0;
 }
+
 /**
  * @brief Initialisation of object
  *
@@ -788,6 +792,8 @@ void AliMCSpectraWeights::CountEventMult() {
         TParticle* mcGenParticle = fMCStack->Particle(ipart);
         if (!mcGenParticle)
             continue;
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, fMCEvent))
+            continue;
         if (!fMCStack->IsPhysicalPrimary(ipart))
             continue; // secondary rejection
         if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01)
@@ -816,67 +822,100 @@ void AliMCSpectraWeights::SelectRndSysFlagForEvent(){
 /**
  *  @brief
  *  @param[in] mcGenParticle
- *  @param[in] eventMultiplicityOrCentrality
- *  @return
- */
-float const AliMCSpectraWeights::GetMCSpectraWeight(
-    TParticle* mcGenParticle, float const eventMultiplicityOrCentrality) {
-    float weight = 1;
-    if (!mcGenParticle->GetPDG()) {
-        return weight;
-    }
-    if (TMath::Abs(mcGenParticle->GetPDG()->Charge()) < 0.01) {
-        return weight;
-    }
-    int const particleType = AliMCSpectraWeights::IdentifyMCParticle(mcGenParticle);
-    if (particleType == GetPartTypeNumber("Rest")) {
-        return weight;
-    }
-    if (fbTaskStatus == AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
-        // rest particles can not be tuned
-        float const icent =
-            AliMCSpectraWeights::GetCentFromMult(eventMultiplicityOrCentrality);
-        float pt = mcGenParticle->Pt();
-        if (pt < 0.15){
-            return 1;
-        }
-        if (pt >= 20)
-            pt = 19.9;
-        std::array<float, 3> binEntry{
-            pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
-            static_cast<float>(particleType)};
-        auto const _iBin =  GetBinFromTH3(fHistMCWeights, binEntry);
-        
-        weight = fHistMCWeights->GetBinContent(_iBin);
-        if (fDoSystematics) {
-            weight = fHistMCWeightsSys[fFlag]->GetBinContent(_iBin);
-        }
-        if (weight <= 0)
-            weight = 1;
-        DebugPCC("GetMCSpectraWeight: ");
-        DebugPCC(fstPartTypes[particleType] << " ");
-        DebugPCC("pT: " << pt << " ");
-        DebugPCC("weight: " << weight << "\n");
-    }
-    return weight;
-}
-
-/**
- *  @brief
- *  @param[in] mcGenParticle
  *  @param[in] mcEvent
  *  @return
  */
 float const AliMCSpectraWeights::GetMCSpectraWeight(TParticle* mcGenParticle,
                                               AliMCEvent* mcEvent) {
-//    if (mcEvent != fMCEvent) { // does not work
-//    if(mcEvent != fMCEvent){
-//        DebugPCC("new event\n");
-//        fMCEvent = mcEvent;
-//        AliMCSpectraWeights::StartNewEvent();
-//    }
-    return AliMCSpectraWeights::GetMCSpectraWeight(mcGenParticle, fMultOrCent);
+    return AliMCSpectraWeights::GetMCSpectraWeightNominal(mcGenParticle);
 }
+
+int const AliMCSpectraWeights::CheckAndIdentifyParticle(TParticle* part){
+    if (!part->GetPDG()) {
+        DebugPCC("Warning: particle has no PDG; skipped\n");
+        return -2;
+    }
+    if (TMath::Abs(part->GetPDG()->Charge()) < 0.01) {
+        DebugPCC("Warning: particle not charged\n");
+        return -3;
+    }
+    return AliMCSpectraWeights::IdentifyMCParticle(part);
+}
+
+int const AliMCSpectraWeights::FindBinEntry(float pt, int const part){
+    auto const icent =
+    AliMCSpectraWeights::GetCentFromMult(fMultOrCent);
+    if (pt < 0.15){
+        DebugPCC("Warning: pt too low; pt = " << pt << "\n");
+        return -1;
+    }
+    if (pt >= 20){
+        DebugPCC("Info: pt too high; pt = " << pt << "; set to 19.9\n");
+        pt = 19.9;
+    }
+    std::array<float, 3> binEntry{
+        pt, static_cast<float>(AliMCSpectraWeights::GetMultFromCent(icent)),
+        static_cast<float>(part)};
+    auto const _iBin =  GetBinFromTH3(fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal], binEntry);
+    DebugPCC("Found bin at " << _iBin << "\n");
+    return _iBin;
+}
+
+float const
+AliMCSpectraWeights::GetMCSpectraWeightNominal(TParticle* mcGenParticle){
+    if(fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated){
+        DebugPCC("Warning: Status not kMCWeightCalculated\n");
+        return 1;
+    }
+    int const particleType = AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
+    if(particleType < 0){
+        DebugPCC("Can't find particle type\n");
+        return 1;
+    }
+    auto const _iBin = AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
+    if(_iBin < 0){
+        DebugPCC("Can't find bin\n");
+        return 1;
+    }
+    float weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+    if (weight <= 0){
+        DebugPCC("ERROR: negative weight; set to 1\n");
+        weight = 1;
+    }
+    DebugPCC("GetMCSpectraWeight: nominal");
+    DebugPCC(fstPartTypes[particleType] << " ");
+    DebugPCC("pT: " << mcGenParticle->Pt() << " ");
+    DebugPCC("weight: " << weight << "\n");
+    return weight;
+}
+float const
+AliMCSpectraWeights::GetMCSpectraWeightSystematics(TParticle* mcGenParticle){
+    if(fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated){
+        DebugPCC("Warning: Status not kMCWeightCalculated\n");
+        return 1;
+    }
+    int const particleType = AliMCSpectraWeights::CheckAndIdentifyParticle(mcGenParticle);
+    if(particleType < 0){
+        DebugPCC("Can't find particle type\n");
+        return 1;
+    }
+    auto const _iBin = AliMCSpectraWeights::FindBinEntry(mcGenParticle->Pt(), particleType);
+    if(_iBin < 0){
+        DebugPCC("Can't find bin\n");
+        return 1;
+    }
+    float weight = fHistMCWeightsSys[fFlag]->GetBinContent(_iBin);
+    if (weight <= 0){
+        DebugPCC("ERROR: negative weight; set to 1\n");
+        weight = 1;
+    }
+    DebugPCC("GetMCSpectraWeight: with systematics");
+    DebugPCC(fstPartTypes[particleType] << " ");
+    DebugPCC("pT: " << mcGenParticle->Pt() << " ");
+    DebugPCC("weight: " << weight << "\n");
+    return weight;
+}
+
 
 void AliMCSpectraWeights::StartNewEvent(){
     AliMCSpectraWeights::CountEventMult();
@@ -1316,4 +1355,13 @@ std::string const AliMCSpectraWeights::GetSysVarFromSysFlag(SysFlag flag) const 
     }
 
     return "";
+}
+
+
+AliMCSpectraWeightsHandler::AliMCSpectraWeightsHandler() : TNamed() {
+    fMCSpectraWeight = nullptr;
+}
+
+AliMCSpectraWeightsHandler::AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name) : TNamed(name, name) {
+    fMCSpectraWeight = fMCWeight;
 }

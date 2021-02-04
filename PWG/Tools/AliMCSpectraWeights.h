@@ -20,6 +20,9 @@ class TF1;
 #include <map>
 #include <string>
 #include <vector>
+
+
+
 /**
  * @class AliMCSpectraWeights AliMCSpectraWeights.h "AliMCSpectraWeights.h"
  * @brief TODO
@@ -127,6 +130,9 @@ class AliMCSpectraWeights : public TNamed {
     bool CalculateMCWeights();                                 //!
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
+
+    int const CheckAndIdentifyParticle(TParticle* part);
+    int const FindBinEntry(float pt, int const part);
     
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
@@ -137,21 +143,22 @@ class AliMCSpectraWeights : public TNamed {
     AliMCSpectraWeights(
         std::string const &collisionSystem, std::string const &stName,
         AliMCSpectraWeights::SysFlag flag); /*!< constructor to be used.*/
-
+//    AliMCSpectraWeights(const AliMCSpectraWeights& org); // copy constructor
+//    AliMCSpectraWeights(AliMCSpectraWeights* org); // copy constructor
     ~AliMCSpectraWeights();
 
     void Init(); /*!< Function to start initalizing after all setters are made. */
-    float const GetMCSpectraWeight(
-        TParticle* mcGenParticle,
-        float const eventMultiplicityOrCentrality); /*!< main function to use. Will
-                                                 deliver correct weights to
-                                                 re-weight the abundances of
-
-                                                     different particle species */
-    //TODO: implement GetWeight(TParticle, bool doSys)
     float const
     GetMCSpectraWeight(TParticle* mcGenParticle,
-                       AliMCEvent* mcEvent); /*!< preferable to use this */
+                       AliMCEvent* mcEvent); /*!< old; should not be used */
+    float const
+    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+                                                         deliver correct weights to
+                                                         re-weight the abundances of
+                                                         different particle species */
+    float const
+    GetMCSpectraWeightSystematics(TParticle* mcGenParticle);
+
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
                                  calculation of weight factors*/
@@ -185,8 +192,18 @@ class AliMCSpectraWeights : public TNamed {
     std::map<SysFlag, TH3F*> const GetHistMCWeightsSys() const {return fHistMCWeightsSys;}
     SysFlag const GetSysFlag() const { return fFlag; }
     float const GetMultOrCent() const { return fMultOrCent; }
-    
+
     int const IdentifyMCParticle(TParticle* mcParticle);
+};
+
+struct AliMCSpectraWeightsHandler : public TNamed {
+    AliMCSpectraWeightsHandler(); //default for ROOT
+    AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name); // to be used
+    AliMCSpectraWeights* fMCSpectraWeight = 0;
+
+private:
+    AliMCSpectraWeightsHandler(const AliMCSpectraWeightsHandler&);//copy
+    AliMCSpectraWeightsHandler& operator=(const AliMCSpectraWeightsHandler&);//copy assign
 };
 
 #endif /* __AliMCSpectraWeights__ */
