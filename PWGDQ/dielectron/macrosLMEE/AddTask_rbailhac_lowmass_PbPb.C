@@ -21,7 +21,12 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if (!gSystem->AccessPathName(cFileName)) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+    printf("Copy configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
 

@@ -27,9 +27,15 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if (!gSystem->AccessPathName(cFileName)) {
+    printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+    printf("Copy Configfile from alien\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+  
 
   TString configFilePath(configBasePath+cFileName);
 
