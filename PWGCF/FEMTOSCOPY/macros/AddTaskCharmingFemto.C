@@ -58,15 +58,6 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
 
-  const float ProtonPtlow = 0.4;
-  const float ProtonPtup = 0.6;
-  const float ProtonEtaLow = 0.75;
-  const float ProtonEtaUp = 0.85;
-  const float ProtonNsigmaLow = 2.5;
-  const float ProtonNsigmaUp = 3.5;
-  const float ProtonNClsLow = 70;
-  const float ProtonNClsUp = 90;
-
   if (suffix == "1") {
     TrackCuts->SetPtRange(ProtonPtlow, 4.05);
     AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
