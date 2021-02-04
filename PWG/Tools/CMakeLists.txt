@@ -38,7 +38,6 @@ set(SRCS
   AliFigure.cxx
   AliCanvas.cxx
   AliHelperPID.cxx
-  AliMCSpectraWeights.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
   TCustomBinning.cxx
@@ -51,6 +50,10 @@ set(SRCS
   AliAnalysisTaskDummy.cxx
   AliTLorentzVector.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliMCSpectraWeights.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
