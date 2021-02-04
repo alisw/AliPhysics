@@ -149,6 +149,7 @@ fnTracklets(0),
 fnTrackletsCorr(0),
 fnTrackletsCorrSHM(0),
 fnV0A(0),
+fnTPCCls(0),
 fMultGen(0),
 fMultGenV0A(0),
 fMultGenV0C(0),
@@ -379,9 +380,10 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
   fTreeEvChar->Branch("ev_id", &fEventID);
   fTreeEvChar->Branch("ev_id_ext", &fEventIDExt);
   fTreeEvChar->Branch("ev_id_long", &fEventIDLong);
+  fTreeEvChar->Branch("n_tracklets", &fnTracklets);
+  fTreeEvChar->Branch("V0Amult", &fnV0A);
+  fTreeEvChar->Branch("n_tpc_cls", &fnTPCCls);
   if(!fReducePbPbBranches){
-    fTreeEvChar->Branch("n_tracklets", &fnTracklets);
-    fTreeEvChar->Branch("V0Amult", &fnV0A);
     fTreeEvChar->Branch("trigger_bitmap", &fTriggerMask);
     fTreeEvChar->Branch("trigger_online_INT7", &fTriggerOnlineINT7);
     fTreeEvChar->Branch("trigger_online_HighMultSPD", &fTriggerOnlineHighMultSPD);
@@ -699,6 +701,9 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
   
   fEvSelectionCuts->SetTriggerMask(trig_mask_cuts);
     
+  //TPC multiplicities
+  fnTPCCls = aod->GetNumberOfTPCClusters();
+
   //V0 multiplicities
   AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
   Double_t vzeroA = vzeroAOD ? vzeroAOD->GetMTotV0A() : 0.;
