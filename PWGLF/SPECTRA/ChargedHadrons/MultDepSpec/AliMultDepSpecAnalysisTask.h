@@ -1,7 +1,6 @@
 #ifndef AliMultDepSpecAnalysisTask_cxx
 #define AliMultDepSpecAnalysisTask_cxx
 
-#define MAX_ALLOWED_MULT_BINS 5000
 #define PRECISION 1e-6
 
 #include "TSystem.h"
@@ -64,7 +63,7 @@ public:
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t*);
-  virtual void Terminate(Option_t*);
+  virtual void Terminate(Option_t*){};
 
   // Setters
   void SetTriggerMask(unsigned int triggermask) { fTriggerMask = triggermask; }
@@ -124,8 +123,7 @@ protected:
   virtual void FillMeasParticleHistos();
   virtual void FillTrueParticleHistos();
 
-  // this must be defined in header so it can be generated for types that are only present in
-  // derived classes
+  // this must be defined in header so it can be generated for types that are only present in derived classes
   template <typename T>
   void BookHistogram(Hist::Hist<T>& histContainer, const std::string& histName,
                      const std::vector<unsigned int>& dimensions, bool isFillWeigths = false)
@@ -179,21 +177,25 @@ protected:
   Hist::Log<TH1I> fHist_trainInfo{};          //!<! train metadata string as bin lable and number of jobs as fill
   Hist::Log<TH1I> fHist_runStatistics{};      //!<! number of reconstructed events per run
 
-  Hist::Hist<TH1D> fHist_multDist_meas{}; //!<! measured event distribution
-  Hist::Hist<TH2D> fHist_multPtSpec{};    //!<! measured tracks
-  Hist::Hist<TH2D> fHist_ptReso{};        //!<! relatvie pT resolution from covariance matrix
+  Hist::Hist<TH1D> fHist_zVtx_evt_trig_gen{}; //!<! generated z vertex position
+  Hist::Hist<TH1D> fHist_zVtx_evt_trig{};     //!<! measured z vertex position
+
+  Hist::Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks
+  Hist::Hist<TH2D> fHist_ptReso_trk_meas{};     //!<! relatvie pT resolution from covariance matrix
 
   // MC-only histograms
-  Hist::Hist<TH1D> fHist_multDist_gen{}; //!<! multiplicity distribution of generated (triggered, z<10) events
-  Hist::Hist<TH2D> fHist_ptResoMC{};     //!<! relative pt resolution from mc
+  Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! multiplicity distribution of generated (triggered, z<10) events
+  Hist::Hist<TH1D> fHist_multDist_evt_meas_bkg{}; //!<! multiplicity distribution of measured events that are not contained in generated mult dist because zTrue>10
+  Hist::Hist<TH2D> fHist_ptReso_trk_true{};       //!<! relative pt resolution from mc
 
-  Hist::Hist<THnSparseD> fHist_multCorrel{};      //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
-  Hist::Hist<THnSparseD> fHist_multCorrel_prim{}; //!<! multiplicity correlation for reconstructed primary particles
-  Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of reconstructed primary particles
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primaries (that fulfil trigger condition and maybe z vertex cut)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_rec{};   //!<! reconstructed primaries
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primaries
-  Hist::Hist<TH2D> fHist_multPtSpec_sec_meas{};   //!<! measured secondaries
+  Hist::Hist<THnSparseD> fHist_multCorrel_evt{};     //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
+  Hist::Hist<THnSparseD> fHist_multCorrel_prim{};    //!<! multiplicity correlation for reconstructed primary particles
+  Hist::Hist<TH2D> fHist_ptCorrel_prim{};            //!<! pT correlation of measured primary particles
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};      //!<! generated primaries (that fulfil trigger condition and maybe z vertex cut)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};     //!<! reconstructed primaries
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! measured primaries
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! measured secondaries
 
   // event related properties
   AliVEvent* fEvent{};    //!<! Event object
@@ -211,6 +213,7 @@ protected:
   float fCent{};                     //!<! event centrality
   bool fIsAcceptedPeripheralEvent{}; //!<! event with centrality > 90% that passes the selection criteria
   bool fAcceptEvent{};               //!<! decision if current event is selected
+  bool fAcceptEventMC{};             //!<! decision if current event is selected in mc truth
 
   // track related properties
   double fPt{};      //!<! track pt
