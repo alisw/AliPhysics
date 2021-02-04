@@ -9,11 +9,15 @@
 #ifndef AliMCWeightsTask_hpp
 #define AliMCWeightsTask_hpp
 
+#include <stdio.h>
+#include <string>
 #include "AliAnalysisTaskSE.h"
 #include "TList.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliMCSpectraWeights.h"
+
+//#define __AliMCWeightsTask_DebugPCC__
 
 enum MCGeneratorType {
     PP_PYTHIA=0,
@@ -26,14 +30,15 @@ public:
     AliMCWeightsTask();
     AliMCWeightsTask(const char* name);
     virtual ~AliMCWeightsTask();
-
+    AliMCWeightsTask(const AliMCWeightsTask&) = delete; // not implemented
+    AliMCWeightsTask& operator=(const AliMCWeightsTask&) = delete; // not implemented
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t* option);
     virtual void Terminate(Option_t* option) {}
 
     void SetMCSpectraWeightObject (AliMCSpectraWeights* weights) {fMCSpectraWeights=weights;}
-
+    
     static AliMCWeightsTask* AddTaskAliMCWeightsTask ();
 
 private:
@@ -42,10 +47,11 @@ private:
     AliMCEvent* fMCEvent;    //!<! MC event
     AliMCSpectraWeights*    fMCSpectraWeights; //-> object to determine efficiency scaling
 
-    AliMCWeightsTask(const AliMCWeightsTask&); // not implemented
-    AliMCWeightsTask& operator=(const AliMCWeightsTask&); // not implemented
 
-    ClassDef(AliMCWeightsTask, 2);
+
+    /// \cond CLASSIMP
+    ClassDef(AliMCWeightsTask, 1);
+    /// \endcond
 };
 
 

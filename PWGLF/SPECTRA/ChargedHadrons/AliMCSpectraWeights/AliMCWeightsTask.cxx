@@ -19,6 +19,12 @@
 #include "TString.h"
 #include <iostream>
 
+#ifdef __AliMCWeightsTask_DebugPCC__
+#define DebugPCC(x) std::cout << x
+#else
+#define DebugPCC(x)
+#endif
+
 class AliMCWeightsTask;
 
 /// \cond CLASSIMP
@@ -54,7 +60,6 @@ void AliMCWeightsTask::UserCreateOutputObjects() {
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCFraction());
     fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeights());
     //    fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeightsSys());
-    //    //TODO: check if this works
 
     PostData(1, fOutputList);
 }
@@ -75,7 +80,7 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
         return;
     }
 
-    fEvent = dynamic_cast<AliVEvent*>(InputEvent());
+    fEvent = InputEvent();
     if (!fEvent) {
         printf("ERROR: fEvent not available\n");
         return;
@@ -96,9 +101,16 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
 
         TString fStoredObjectName = "fMCSpectraWeights";
         // Add to AliVEvent
-        if ((!(fEvent->FindListObject(fStoredObjectName.Data())))) {
-            fEvent->AddObject(fMCSpectraWeights);
+        auto tmpObject = dynamic_cast<AliMCSpectraWeights*>(fEvent->FindListObject(fStoredObjectName.Data()));
+        if (!tmpObject) {
+            AliMCSpectraWeightsHandler* handler = new AliMCSpectraWeightsHandler(fMCSpectraWeights, fStoredObjectName.Data());
+            fEvent->AddObject(handler);
+            DebugPCC("Added fMCSpectraWeights to event\n");
         }
+        else{
+            DebugPCC("fMCSpectraWeights already in event\n");
+        }
+
     }
 
     PostData(1, fOutputList);
@@ -109,16 +121,16 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask() {
 
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        printf("AddTaskWeights::No analysis manager to connect to.");
-        return 0;
+        printf("AliMCWeightsTask::No analysis manager to connect to.");
+        return nullptr;
     }
 
     // Check the analysis type using the event handlers connected to the
     // analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        printf("AddTaskWeights::This task requires an input event handler");
-        return NULL;
+        printf("AliMCWeightsTask::This task requires an input event handler");
+        return nullptr;
     }
 
     // Setup output file
@@ -133,8 +145,10 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask() {
     std::string collisionSystem;
 //    switch (genType) { // TODO: fill path here
 //        case MCGeneratorType::PP_PYTHIA:
-            stTrainOutputPath = "~/particle-composition-correction/data/train/"
-            "pp_PCC_LHC17l3b_CENT_wSDD.root";
+//            stTrainOutputPath = "~/particle-composition-correction/data/train/"
+//            "pp_PCC_LHC17l3b_CENT_wSDD.root";
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "pp_PCC_LHC17l3b_CENT_wSDD.root";
             collisionSystem = "pp";
 //            break;
 //        case MCGeneratorType::PPB_EPOS:
