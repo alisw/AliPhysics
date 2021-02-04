@@ -81,9 +81,21 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
 
   /// methods for ML application
-  void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
-  void SetMLConfigFile(TString path = "")      {fConfigPath = path;}
-  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
+  void SetDoMLApplication(Bool_t flag = kTRUE, Bool_t isMultiClass = kFALSE) {fApplyML = flag; fMultiClassML = isMultiClass;}
+  void SetMLConfigFile(TString path = "") {fConfigPath = path;}
+  void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.){ fNMLBins[0] = nbins; fMLOutputMin[0] = min; fMLOutputMax[0] = max;}
+  void SetMultiClassMLBinsForSparse(Int_t nbinsBkg = 100,
+                                    Int_t nbinsPrompt = 100,
+                                    Int_t nbinsFD = 100,
+                                    Double_t minBkg = 0., Double_t maxBkg = 1.,
+                                    Double_t minPrompt = 0., Double_t maxPrompt = 1.,
+                                    Double_t minFD = 0., Double_t maxFD = 1.) 
+  {
+    fNMLBins[0] = nbinsBkg; fNMLBins[1] = nbinsPrompt; fNMLBins[2] = nbinsFD;
+    fMLOutputMin[0] = minBkg; fMLOutputMin[1] = minPrompt; fMLOutputMin[2] = minFD;
+    fMLOutputMax[0] = maxBkg; fMLOutputMax[1] = maxPrompt; fMLOutputMax[2] = maxFD;
+  }
+  void SetMinimalVarForMLSparse(Bool_t flag = kTRUE) {fUseMinimalVarForSparse = flag;}
   /// methods for ML tree creation
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
   void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID
@@ -143,7 +155,16 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
-  enum {kVarForSparse=13,kVarForSparseFD=14,kVarForSparseAcc=2,kVarForSparseAccFD=3,kVarForTrackSparse=7,kVarForImpPar=3};
+  enum
+  {
+    kVarForSparse = 13,
+    kVarForSparseFD = 14,
+    knVarForSparseMLMinimal = 3,
+    kVarForSparseAcc = 2,
+    kVarForSparseAccFD = 3,
+    kVarForTrackSparse = 7,
+    kVarForImpPar = 3
+  };
 
   TList* fOutput = nullptr;                                           //!<! list send on output slot 0
   TH1F* fHistNEvents = nullptr;                                       //!<! hist. for No. of events
@@ -230,11 +251,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   /// variables for ML application
   Bool_t fApplyML = kFALSE;                                           /// flag to enable ML application
+  Bool_t fMultiClassML = kFALSE;                                      /// flag to enable multi-class models (bkg, prompt, FD)
   TString fConfigPath = "";                                           /// path to ML config file
   AliHFMLResponseDplustoKpipi* fMLResponse = nullptr;                 //!<! object to handle ML response
-  Int_t fNMLBins = 300;                                               /// number of bins for ML output axis in THnSparse
-  Double_t fMLOutputMin = 0.85;                                       /// min for ML output axis in THnSparse
-  Double_t fMLOutputMax = 1.0;                                        /// max for ML output axis in THnSparse
+  Int_t fNMLBins[3] = {100, 100, 100};                                /// number of bins for ML output axis in THnSparse
+  Double_t fMLOutputMin[3] = {0.0, 0.0, 0.0};                         /// min for ML output axis in THnSparse
+  Double_t fMLOutputMax[3] = {1.0, 1.0, 1.0};                         /// max for ML output axis in THnSparse
 
   /// variables for tree creation
   Bool_t fCreateMLtree = kFALSE;
@@ -244,6 +266,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
   Bool_t fAddImpParProdProngs = kFALSE;                               /// option to store d0K*d0pi1 and d0K*d0pi2 variables
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
+  Bool_t fUseMinimalVarForSparse = kFALSE;                            /// flag to keep only inv. mass, pt and prob. in the sparse
 
   Bool_t fEnableEvtSampling = kFALSE;                                 /// flag to apply event sampling
   Float_t fFracEvtToKeep = 1.1;                                       /// fraction of events to be kept by event sampling
@@ -253,7 +276,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;                                    /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,37); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,38); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
