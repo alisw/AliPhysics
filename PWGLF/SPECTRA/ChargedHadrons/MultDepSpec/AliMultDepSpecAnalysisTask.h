@@ -186,7 +186,6 @@ protected:
 
   // MC-only histograms
   Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! multiplicity distribution of generated (triggered, z<10) events
-  Hist::Hist<TH1D> fHist_multDist_evt_meas_bkg{}; //!<! multiplicity distribution of measured events that are not contained in generated mult dist because zTrue>10
   Hist::Hist<TH2D> fHist_ptReso_trk_true{};       //!<! relative pt resolution from mc
 
   Hist::Hist<THnSparseD> fHist_multCorrel_evt{};     //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]

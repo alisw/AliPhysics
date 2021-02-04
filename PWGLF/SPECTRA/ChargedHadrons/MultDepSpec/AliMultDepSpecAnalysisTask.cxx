@@ -68,7 +68,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
   if (fIsMC) {
     BookHistogram(fHist_zVtx_evt_trig_gen, "zVtx_evt_trig_gen", {zv});
     BookHistogram(fHist_multDist_evt_gen, "multDist_evt_gen", {mult_true});
-    BookHistogram(fHist_multDist_evt_meas_bkg, "multDist_evt_meas_bkg", {mult_meas});
     BookHistogram(fHist_ptReso_trk_true, "ptReso_trk_true", {pt_meas, delta_pt});
     BookHistogram(fHist_multCorrel_evt, "multCorrel_evt", {mult_meas, mult_true});
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
@@ -87,7 +86,6 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_ptReso_trk_meas.GetSize() +
     fHist_zVtx_evt_trig_gen.GetSize() +
     fHist_multDist_evt_gen.GetSize() +
-    fHist_multDist_evt_meas_bkg.GetSize() +
     fHist_ptReso_trk_true.GetSize() +
     fHist_multCorrel_evt.GetSize() +
     fHist_multCorrel_prim.GetSize() +
@@ -287,6 +285,7 @@ void AliMultDepSpecAnalysisTask::FillEventHistos()
         string recoPass;
         recoPass = path.substr(path.find("pass"));
         recoPass = recoPass.substr(0, recoPass.find("/"));
+        recoPass = recoPass.substr(0, recoPass.find("__"));
         recoPass = recoPass.substr(0, recoPass.find("_root_archive_")); // for local testing
         if (!recoPass.empty()) trainInfo += period + "_" + recoPass;
       }
@@ -298,12 +297,8 @@ void AliMultDepSpecAnalysisTask::FillEventHistos()
   }
 
   fHist_multDist_evt_meas.Fill(fMultMeas);
-  if (fIsMC) {
+  if (fIsMC && fAcceptEventMC) {
     fHist_multCorrel_evt.Fill(fMultMeas, fMultTrue);
-
-    if (!fAcceptEventMC) { // contamination from events that dont fulfill mc truth vertex requirement
-      fHist_multDist_evt_meas_bkg.Fill(fMultMeas);
-    }
   }
 }
 
