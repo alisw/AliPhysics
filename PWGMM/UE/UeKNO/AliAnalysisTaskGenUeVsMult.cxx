@@ -124,7 +124,7 @@ Double_t PtNBinS1L[PtNBinSL+1] = {
 
 const Int_t nTSBins=700;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
-class AliAnalysisTaskGenUeVsMultTest;    // your analysis class
+class AliAnalysisTaskGenUeVsMult;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -711,7 +711,7 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
     return 1;
 }
 //----------------------
-void AliAnalysisTaskGenUeVsMultTest::GetMultiVsUEObservables(vector<Int_t> &mult,vector<Int_t> &region,vector<Int_t> &Nch){
+void AliAnalysisTaskGenUeVsMult::GetMultiVsUEObservables(vector<Int_t> &mult,vector<Int_t> &region,vector<Int_t> &Nch){
 
     Int_t nch_top[3];
     Double_t sumpt_top[3];
