@@ -70,7 +70,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		void SetHighMultiplicity(Bool_t IsHM) { IsHighMul = IsHM; };
 		Int_t GetRunOffset() { return fRunOffset; };
 
-		void DefineMCCutTree();
+		void DefineMCXicTree();
 		void DefinePaireXiTree();
 		void DefineMCPaireXiTree();
 		void DefineEventTree();
@@ -95,13 +95,8 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		//Type: 1=loose, 2=standard, 3=tight
 		Bool_t StandardCutFlag(AliAODTrack *track, AliAODcascade *casc,
 				               Bool_t e_reco, Bool_t e_pid, Bool_t Xi_reco, Bool_t Xi_pid);
-		void SetFitParameter1(Double_t par1) { fPar1 = par1; };
-		void SetFitParameter2(Double_t par2) { fPar2 = par2; };
-		Double_t GetFitParameter1() { return fPar1; }
-		Double_t GetFitParameter2() { return fPar2; }
 
 		unsigned int GetEvID();
-		void CheckXic0Info(AliAODTrack *trk, AliAODcascade *casc);
 
 		//kimc
 		//*************************************************
@@ -128,19 +123,15 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 
 		TList        *fOutput = nullptr; //!
 		THistManager *fHistos = nullptr; //!
-		TTree        *fMCCutTree = nullptr; //!
+		TTree        *fMCXicTree = nullptr; //!
 		TTree        *fPaireXiTree = nullptr; //!
 		TTree        *fMCTree = nullptr; //!
 		TTree        *fEventTree = nullptr; //!
 
-		Float_t* fMCCutTreeVariable = nullptr; //!
+		Float_t* fMCXicTreeVariable = nullptr; //!
 		Float_t* fPaireXiTreeVariable = nullptr; //!
 		Float_t* fMCTreeVariable = nullptr; //!
 		Float_t* fEventTreeVariable = nullptr; //!
-
-		TF1* fWeightFit = nullptr;
-		Double_t fPar1 = 0.0;
-		Double_t fPar2 = 0.0;
 
 		//Cut Values
 		//---------------------------------------------
