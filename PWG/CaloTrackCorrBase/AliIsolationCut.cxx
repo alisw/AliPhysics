@@ -492,10 +492,10 @@ void AliIsolationCut::CalculateCaloSignalInCone
         if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
-            fhConeSumPtEtaBandUEClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight); // Check
+            fhConeSumPtEtaBandUEClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight);
 
           if ( fICMethod == kSumBkgSubPhiBandIC )
-            fhConeSumPtPhiBandUEClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, phiBandPtSumCluster, histoWeight); // Check
+            fhConeSumPtPhiBandUEClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, phiBandPtSumCluster, histoWeight);
         }
       }
       else
@@ -511,15 +511,15 @@ void AliIsolationCut::CalculateCaloSignalInCone
           fhConeSumPtPhiBandUECluster->Fill(ptC, phiBandPtSumCluster, histoWeight);
           fhConeSumPtVSUEClusterPhiBand->Fill(coneptsumCluster, phiBandPtSumCluster, histoWeight);
         }
-      }
-      
-      if ( fFillEtaPhiHistograms )
-      {
-        if ( fICMethod == kSumBkgSubEtaBandIC )
-          fhConeSumPtEtaBandUEClusterTrigEtaPhi->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight); // Check
 
-        if ( fICMethod == kSumBkgSubPhiBandIC )
-          fhConeSumPtPhiBandUEClusterTrigEtaPhi->Fill(etaC, phiC, phiBandPtSumCluster, histoWeight); // Check
+        if ( fFillEtaPhiHistograms )
+        {
+          if ( fICMethod == kSumBkgSubEtaBandIC )
+            fhConeSumPtEtaBandUEClusterTrigEtaPhi->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight); // Check
+
+          if ( fICMethod == kSumBkgSubPhiBandIC )
+            fhConeSumPtPhiBandUEClusterTrigEtaPhi->Fill(etaC, phiC, phiBandPtSumCluster, histoWeight); // Check
+        }
       }
     } // UE sub
   } // fill histo
@@ -950,15 +950,15 @@ void AliIsolationCut::CalculateTrackSignalInCone
           fhConeSumPtPhiBandUETrack->Fill(ptTrig, phiBandPtSumTrack , histoWeight);
           fhConeSumPtVSUETracksPhiBand->Fill(coneptsumTrack, phiBandPtSumTrack, histoWeight);
         }
-      }
-      
-      if ( fFillEtaPhiHistograms )
-      {
-        if ( fICMethod == kSumBkgSubEtaBandIC )
-          fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSumTrack, histoWeight);
 
-        if ( fICMethod == kSumBkgSubPhiBandIC )
-          fhConeSumPtPhiBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSumTrack, histoWeight);
+        if ( fFillEtaPhiHistograms )
+        {
+          if ( fICMethod == kSumBkgSubEtaBandIC )
+            fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSumTrack, histoWeight);
+
+          if ( fICMethod == kSumBkgSubPhiBandIC )
+            fhConeSumPtPhiBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSumTrack, histoWeight);
+        }
       }
     } // UE sub
   } // fill histograms
@@ -2092,42 +2092,40 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhConeSumPtVSUETracksPhiBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
           outputContainer->Add(fhConeSumPtVSUETracksPhiBand);
         }
-      }
-      
-      if ( fFillEtaPhiHistograms )
-      {
-        if ( fICMethod == kSumBkgSubEtaBandIC )
+
+        if ( fFillEtaPhiHistograms )
         {
-          fhConeSumPtEtaBandUETrackTrigEtaPhi  = new TH3F
-          ("hConePtSumEtaBandUETrackTrigEtaPhi",
-           "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Eta Band",
-           etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
-           phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
-           sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
-          fhConeSumPtEtaBandUETrackTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-          fhConeSumPtEtaBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
-          fhConeSumPtEtaBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
-          outputContainer->Add(fhConeSumPtEtaBandUETrackTrigEtaPhi) ;
+          if ( fICMethod == kSumBkgSubEtaBandIC )
+          {
+            fhConeSumPtEtaBandUETrackTrigEtaPhi  = new TH3F
+            ("hConePtSumEtaBandUETrackTrigEtaPhi",
+             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Eta Band",
+             etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
+             phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+            fhConeSumPtEtaBandUETrackTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtEtaBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
+            fhConeSumPtEtaBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+            outputContainer->Add(fhConeSumPtEtaBandUETrackTrigEtaPhi) ;
+          }
+
+          if ( fICMethod == kSumBkgSubPhiBandIC )
+          {
+            fhConeSumPtPhiBandUETrackTrigEtaPhi  = new TH3F
+            ("hConePtSumPhiBandUETrackTrigEtaPhi",
+             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Phi Band",
+             etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
+             phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+            fhConeSumPtPhiBandUETrackTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T}");
+            fhConeSumPtPhiBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
+            fhConeSumPtPhiBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+            outputContainer->Add(fhConeSumPtPhiBandUETrackTrigEtaPhi) ;
+          }
         }
-        
-        if ( fICMethod == kSumBkgSubPhiBandIC )
-        {
-          fhConeSumPtPhiBandUETrackTrigEtaPhi  = new TH3F
-          ("hConePtSumPhiBandUETrackTrigEtaPhi",
-           "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Phi Band",
-           etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
-           phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
-           sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
-          fhConeSumPtPhiBandUETrackTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T}");
-          fhConeSumPtPhiBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
-          fhConeSumPtPhiBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
-          outputContainer->Add(fhConeSumPtPhiBandUETrackTrigEtaPhi) ;
-        }
-      }
-      
-      // Subtraction
-      if ( !fFillHighMultHistograms )
-      {
+
+        // Subtraction
+
         fhConeSumPtUEBandNormTrack  = new TH2F
         ("hConeSumPtUEBandNormTrack",
          Form("Tracks #Sigma #it{p}_{T} in normalized #eta or #varphi band, #it{R} =  %2.2f",fConeSize),
@@ -3358,7 +3356,6 @@ void  AliIsolationCut::MakeIsolationCut
     if ( fFillEtaPhiHistograms )
       fhConeSumPtTrigEtaPhi->Fill(etaC, phiC, coneptsum, histoWeight);
   }
-  
   
   if ( fPartInCone == kNeutralAndCharged && fICMethod != kSumBkgSubIC ) // No need for perpendicular or charged/neutral only analysis
   {
