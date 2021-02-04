@@ -85,8 +85,8 @@ class AliMCSpectraWeights : public TNamed {
     std::vector<std::string> fstCentralities;
     std::vector<float> fBinsMultCent; /*!< centrality or multiplicity binning */
     std::vector<float> fBinsPt;       /*!< pT binning */
-    std::vector<SysFlag> fAllSystematicFlags;
-    std::map<SysFlag, TH3F*>
+    std::vector<AliMCSpectraWeights::SysFlag> fAllSystematicFlags;
+    std::map<AliMCSpectraWeights::SysFlagSysFlag, TH3F*>
         fHistMCWeightsSys; /*!< Histograms for systematic variations of weight
                               factors */
     TRandom3 frndGen;
@@ -194,6 +194,8 @@ class AliMCSpectraWeights : public TNamed {
     float const GetMultOrCent() const { return fMultOrCent; }
 
     int const IdentifyMCParticle(TParticle* mcParticle);
+
+    ClassDef(AliMCSpectraWeights, 1);
 };
 
 struct AliMCSpectraWeightsHandler : public TNamed {
@@ -204,6 +206,8 @@ struct AliMCSpectraWeightsHandler : public TNamed {
 private:
     AliMCSpectraWeightsHandler(const AliMCSpectraWeightsHandler&);//copy
     AliMCSpectraWeightsHandler& operator=(const AliMCSpectraWeightsHandler&);//copy assign
+
+    ClassDef(AliMCSpectraWeightsHandler, 1);
 };
 
 #endif /* __AliMCSpectraWeights__ */
