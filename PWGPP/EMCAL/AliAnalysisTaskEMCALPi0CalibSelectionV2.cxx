@@ -49,6 +49,7 @@ fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
 fEMCALInitialized(kFALSE),
+isMC(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
@@ -133,6 +134,7 @@ fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
 fEMCALInitialized(kFALSE),
+isMC(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
@@ -239,7 +241,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::AcceptCluster( AliVCluster* c1){
     return kFALSE;
   if (c1->GetIsExotic())
     return kFALSE;
-  if ( c1->GetTOF()*1.e9 > fTimeMax || c1->GetTOF()*1.e9 < fTimeMin)
+  if ( !isMC && ( c1->GetTOF()*1.e9 > fTimeMax || c1->GetTOF()*1.e9 < fTimeMin))
     return kFALSE;
   if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)
     return kFALSE;
@@ -745,7 +747,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::MaskFrameCluster(Int_t iSM, Int_
 //____________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *event){
 
-  if(fTriggerName!="") {
+  if(fTriggerName!="" && !isMC ) {
       AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
       if (fInputHandler==NULL) return kFALSE;
 
@@ -760,6 +762,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
           if( !(fOfflineTriggerMask ) ) return kFALSE;
 
           TString firedTrigClass = event->GetFiredTriggerClasses();
+          std::cout << "Trigger: " << firedTrigClass << std::endl;
 
           if( firedTrigClass.Contains("CEMC7") ) {
             isEMC = kTRUE;
@@ -773,6 +776,16 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
         return kTRUE;
       }
 
+  } else if (isMC){
+    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
+      if (fInputHandler==NULL) return kFALSE;
+      if( fInputHandler->GetEventSelection() ) {
+        fOfflineTriggerMask = AliVEvent::kAny;
+        if( !(fOfflineTriggerMask) ) return kFALSE;
+        isEMC = kTRUE;
+        isDMC = kTRUE;
+      }
+      return kTRUE;
   } else {
     std::cout << "No trigger selected" << std::endl;
     return kFALSE;
@@ -790,7 +803,6 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   // Get the input event
 
-    
   AliVEvent* event = 0;
   event = InputEvent();
   
@@ -816,7 +828,7 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
     InitializeEMCAL( event );
     // if( !fEMCALInitialized ) return;
   }
-  
+
   // Centrality selection
   
   if ( fCheckCentrality ) {

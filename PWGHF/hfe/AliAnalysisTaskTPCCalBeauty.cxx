@@ -239,6 +239,11 @@ fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
 fSprsClosureTest(0),
 fSprsClosureTestWeight(0),
+fSprsULSdca(0),
+fSprsULSdcaWeight(0),
+fSprsLSdca(0),
+fSprsLSdcaWeight(0),
+
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -502,6 +507,11 @@ fSprsTemplatesWeightVar1(0),
 fSprsTemplatesWeightVar2(0),
 fSprsClosureTest(0),
 fSprsClosureTestWeight(0),
+fSprsULSdca(0),
+fSprsULSdcaWeight(0),
+fSprsLSdca(0),
+fSprsLSdcaWeight(0),
+
 //fDTemplateWeight(0),
 //fDTemplateNoWeight(0),
 //fDTemplateWeightNew(0),
@@ -1043,16 +1053,22 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         //fOutputList->Add(fEtaDCA);
         
         //Decay lengths and weights
-        Double_t tau_B0Py6 = 468;
+        /*Double_t tau_B0Py6 = 468;
         Double_t tau_BPlusPy6 = 462;
-        Double_t tau_BsPy6 = 483;
+        Double_t tau_BsPy6 = 483;*/
+        Double_t tau_B0Py6 = 444;
+        Double_t tau_BPlusPy6 = 446;
+        Double_t tau_BsPy6 = 434;
         Double_t tau_D0Py6 = 124.4;
         Double_t tau_DPlusPy6 = 317;
         Double_t tau_DsPy6 = 140;
         
-        Double_t tau_B0Py8 = 458.7;
+        /*Double_t tau_B0Py8 = 458.7;
         Double_t tau_BPlusPy8 = 491.1;
-        Double_t tau_BsPy8 = 439;
+        Double_t tau_BsPy8 = 439;*/
+        Double_t tau_B0Py8 = 454;
+        Double_t tau_BPlusPy8 = 471;
+        Double_t tau_BsPy8 = 362;
         Double_t tau_D0Py8 = 122.9;
         Double_t tau_DPlusPy8 = 311.8;
         Double_t tau_DsPy8 = 149.9;
@@ -1153,16 +1169,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fEnhPhotonTagDCA->Sumw2();
         fOutputList->Add(fEnhPhotonTagDCA);
         
-        fComboNumWeight = new TH2F("fComboNumWeight","Eff Num with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
+        fComboNumWeight = new TH3F("fComboNumWeight","Eff Num with Weight; p_{T}(GeV/c); prod. radius; mother pid", 60,0,30.,250,0.,50.,3,2.5,5.5);
         fComboNumWeight->Sumw2();
         fOutputList->Add(fComboNumWeight);
-        fComboNumNoWeight = new TH2F("fComboNumNoWeight","Eff Num Without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
+        fComboNumNoWeight = new TH3F("fComboNumNoWeight","Eff Num Without Weight; p_{T}(GeV/c); prod. radius; mother pid", 60,0,30.,250,0.,50.,3,2.5,5.5);
         fComboNumNoWeight->Sumw2();
         fOutputList->Add(fComboNumNoWeight);
-        fComboDenomWeight = new TH2F("fComboDenomWeight","Eff Denom with Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
+        fComboDenomWeight = new TH3F("fComboDenomWeight","Eff Denom with Weight; p_{T}(GeV/c); prod. radius; mother pid", 60,0,30.,250,0.,50.,3,2.5,5.5);
         fComboDenomWeight->Sumw2();
         fOutputList->Add(fComboDenomWeight);
-        fComboDenomNoWeight = new TH2F("fComboDenomNoWeight","Eff Denom without Weight; p_{T}(GeV/c); prod. radius; counts;", 60,0,30.,250,0.,50.);
+        fComboDenomNoWeight = new TH3F("fComboDenomNoWeight","Eff Denom without Weight; p_{T}(GeV/c); prod. radius; mother pid", 60,0,30.,250,0.,50.,3,2.5,5.5);
         fComboDenomNoWeight->Sumw2();
         fOutputList->Add(fComboDenomNoWeight);
     
@@ -1303,16 +1319,35 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsTemplatesWeightVar2);
         fSprsTemplatesWeightVar2->Sumw2();
         
-        Int_t binClos[3] = {60,nDCAbins,22}; //pT, DCA, Mom PID
-        Double_t xminClos[3] = {0.,-0.2,0.5};
-        Double_t xmaxClos[3] = {30.,0.2,22.5};
-        fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
+        Int_t binClos[4] = {60,nDCAbins,22,250}; //pT, DCA, Mom PID, prod. radius
+        Double_t xminClos[4] = {0.,-0.2,0.5,0.};
+        Double_t xmaxClos[4] = {30.,0.2,22.5,50.};
+        fSprsClosureTest = new THnSparseD("fSprsClosureTest","Sparse for Closure Test;p_{T};DCA;MomPID;prod.R",4,binClos,xminClos,xmaxClos);
         fOutputList->Add(fSprsClosureTest);
         fSprsClosureTest->Sumw2();
         
-        fSprsClosureTestWeight = new THnSparseD("fSprsClosureTestWeight","Sparse for Closure Test w/ pi0+eta weight;p_{T};DCA;MomPID;",3,binClos,xminClos,xmaxClos);
+        fSprsClosureTestWeight = new THnSparseD("fSprsClosureTestWeight","Sparse for Closure Test w/ pi0+eta weight;p_{T};DCA;MomPID;prod.R",4,binClos,xminClos,xmaxClos);
         fOutputList->Add(fSprsClosureTestWeight);
         fSprsClosureTestWeight->Sumw2();
+        
+        Int_t binULS[4] = {60,nDCAbins,3,250}; //pT, DCA, Mom PID, prod. radius
+        Double_t xminULS[4] = {0.,-0.2,2.5,0.};
+        Double_t xmaxULS[4] = {30.,0.2,5.5,50.};
+        fSprsULSdca = new THnSparseD("fSprsULSdca","ULS Sparse for Closure Test;p_{T};DCA;MomPID;prod.R",4,binULS,xminULS,xmaxULS);
+        fOutputList->Add(fSprsULSdca);
+        fSprsULSdca->Sumw2();
+        
+        fSprsULSdcaWeight = new THnSparseD("fSprsULSdcaWeight","ULS Sparse for Closure Test w/weight;p_{T};DCA;MomPID;prod.R",4,binULS,xminULS,xmaxULS);
+        fOutputList->Add(fSprsULSdcaWeight);
+        fSprsULSdcaWeight->Sumw2();
+        
+        fSprsLSdca = new THnSparseD("fSprsLSdca","LS Sparse for Closure Test;p_{T};DCA;MomPID;prod.R",4,binULS,xminULS,xmaxULS);
+        fOutputList->Add(fSprsLSdca);
+        fSprsLSdca->Sumw2();
+        
+        fSprsLSdcaWeight = new THnSparseD("fSprsLSdcaWeight","LS Sparse for Closure Test w/weight;p_{T};DCA;MomPID;prod.R",4,binULS,xminULS,xmaxULS);
+        fOutputList->Add(fSprsLSdcaWeight);
+        fSprsLSdcaWeight->Sumw2();
     
         /*fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fDTemplateWeight);
@@ -2264,6 +2299,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             //Int_t ilabel = -99;
             Int_t ilabelM = -99;
             Int_t ilabelGM = -99;
+            Double_t prodR = -99;
             
             //cout<<"TESTING0"<<endl;
             //if MC--------------------------------
@@ -2273,6 +2309,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     //cout<<"TESTING1"<<endl;
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
                     pdg = fMCparticle->GetPdgCode(); //get pid of track
+                    prodR = TMath::Sqrt(fMCparticle->Xv()*fMCparticle->Xv()+fMCparticle->Yv()*fMCparticle->Yv());
                 
                     //cout<<"TESTING1"<<endl;
                 
@@ -2539,15 +2576,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fWeight = fPi0Weight->Eval(momPt);
                                 fEnhPi0DCA->Fill(track->Pt(),DCA);
                                 fEnhPi0WeightedPt->Fill(track->Pt(),fWeight);
-                                fComboDenomWeight->Fill(track->Pt(),prodR,fWeight);
-                                fComboDenomNoWeight->Fill(track->Pt(),prodR);
+                                fComboDenomWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                fComboDenomNoWeight->Fill(track->Pt(),prodR,fpidSort);
                             }
                             if(kEmbEta) {
                                 fWeight = fEtaWeight->Eval(momPt);
                                 fEnhEtaDCA->Fill(track->Pt(),DCA);
                                 fEnhEtaWeightedPt->Fill(track->Pt(),fWeight);
-                                fComboDenomWeight->Fill(track->Pt(),prodR,fWeight);
-                                fComboDenomNoWeight->Fill(track->Pt(),prodR);
+                                fComboDenomWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                fComboDenomNoWeight->Fill(track->Pt(),prodR,fpidSort);
                             }
                         
                         }
@@ -2564,8 +2601,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fWeight = fEtaWeight->Eval(momPt);
                                 fEnhEtaDCA->Fill(track->Pt(),DCA);
                                 fEnhEtaWeightedPt->Fill(track->Pt(),fWeight);
-                                fComboDenomWeight->Fill(track->Pt(),prodR,fWeight);
-                                fComboDenomNoWeight->Fill(track->Pt(),prodR);
+                                fComboDenomWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                fComboDenomNoWeight->Fill(track->Pt(),prodR,fpidSort);
                             }
                         }
                         //if photon--------------------------------
@@ -2580,15 +2617,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 fWeight = fPi0Weight->Eval(momPt);
                                 fEnhPhotonDCA->Fill(track->Pt(),DCA);
                                 fEnhPhotonWeightedPt->Fill(track->Pt(),fWeight);
-                                fComboDenomWeight->Fill(track->Pt(),prodR,fWeight);
-                                fComboDenomNoWeight->Fill(track->Pt(),prodR);
+                                fComboDenomWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                fComboDenomNoWeight->Fill(track->Pt(),prodR,fpidSort);
                             }
                             if(kEmbEta) {
                                 fWeight = fEtaWeight->Eval(momPt);
                                 fEnhPhotonDCA->Fill(track->Pt(),DCA);
                                 fEnhPhotonWeightedPt->Fill(track->Pt(),fWeight);
-                                fComboDenomWeight->Fill(track->Pt(),prodR,fWeight);
-                                fComboDenomNoWeight->Fill(track->Pt(),prodR);
+                                fComboDenomWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                fComboDenomNoWeight->Fill(track->Pt(),prodR,fpidSort);
                             }
                         }
                     
@@ -2609,14 +2646,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 if(kEmbPi0) {
                                     fWeight = fPi0Weight->Eval(momPt);
                                     fULSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
-                                    fComboNumWeight->Fill(track->Pt(),prodR,fWeight);
-                                    fComboNumNoWeight->Fill(track->Pt(),prodR);
+                                    fComboNumWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                    fComboNumNoWeight->Fill(track->Pt(),prodR,fpidSort);
                                 }
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
                                     fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
-                                    fComboNumWeight->Fill(track->Pt(),prodR,fWeight);
-                                    fComboNumNoWeight->Fill(track->Pt(),prodR);
+                                    fComboNumWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                    fComboNumNoWeight->Fill(track->Pt(),prodR,fpidSort);
                                 }
                             
                             }
@@ -2631,8 +2668,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
                                     fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
-                                    fComboNumWeight->Fill(track->Pt(),prodR,fWeight);
-                                    fComboNumNoWeight->Fill(track->Pt(),prodR);
+                                    fComboNumWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                    fComboNumNoWeight->Fill(track->Pt(),prodR,fpidSort);
                                 }
                             }
                             //if photon--------------------------------
@@ -2647,15 +2684,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                     fWeight = fPi0Weight->Eval(momPt);
                                     fEnhPhotonTagDCA->Fill(track->Pt(),DCA);
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                                    fComboNumWeight->Fill(track->Pt(),prodR,fWeight);
-                                    fComboNumNoWeight->Fill(track->Pt(),prodR);
+                                    fComboNumWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                    fComboNumNoWeight->Fill(track->Pt(),prodR,fpidSort);
                                 }
                                 if(kEmbEta) {
                                     fWeight = fEtaWeight->Eval(momPt);
                                     fEnhPhotonTagDCA->Fill(track->Pt(),DCA);
                                     fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                                    fComboNumWeight->Fill(track->Pt(),prodR,fWeight);
-                                    fComboNumNoWeight->Fill(track->Pt(),prodR);
+                                    fComboNumWeight->Fill(track->Pt(),prodR,fpidSort,fWeight);
+                                    fComboNumNoWeight->Fill(track->Pt(),prodR,fpidSort);
                                 }
                             }
                         }
@@ -2846,11 +2883,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         if(kEmbPi0) {
                             //cout<<"Test 3"<<endl;
                             fWeight = fPi0Weight->Eval(momPt);
-                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            FillULSSparse(i, track, d0z0, MagSign, fWeight, prodR, fpidSort);
                         }
                         if(kEmbEta) {
                             fWeight = fEtaWeight->Eval(momPt);
-                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            FillULSSparse(i, track, d0z0, MagSign, fWeight, prodR, fpidSort);
                         }
                         
                     }
@@ -2860,7 +2899,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         if(kEmbEta) {
                             //cout<<"Test 3a"<<endl;
                             fWeight = fEtaWeight->Eval(momPt);
-                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            FillULSSparse(i, track, d0z0, MagSign, fWeight, prodR, fpidSort);
                         }
                     }
                     //if photon--------------------------------
@@ -2869,11 +2909,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         if(kEmbPi0) {
                             //cout<<"Test 3b"<<endl;
                             fWeight = fPi0Weight->Eval(momPt);
-                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            FillULSSparse(i, track, d0z0, MagSign, fWeight, prodR, fpidSort);
                         }
                         if(kEmbEta) {
                             fWeight = fEtaWeight->Eval(momPt);
-                            InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            //InvMassCheckData(i, track, d0z0, MagSign, fWeight);
+                            FillULSSparse(i, track, d0z0, MagSign, fWeight, prodR, fpidSort);
                         }
                     }
                 }
@@ -2888,10 +2930,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 {
                     if(TMath::Abs(pdg)==11){
                         //Fill closure test sparse
-                        Double_t closValue[3] = {-999,-999,-999};
+                        Double_t closValue[4] = {-999,-999,-999,-999};
                         closValue[0] = track->Pt();
                         closValue[1] = DCA;
                         closValue[2] = fpidSort;
+                        closValue[3] = prodR;
                         fSprsClosureTest->Fill(closValue);
                     
                         //if mom is Pi0--------------------------------
@@ -3571,6 +3614,96 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
     }
     
 }
+//________________________________________________________________________
+void AliAnalysisTaskTPCCalBeauty::FillULSSparse(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign, Double_t fWeight,Double_t prodRadius,Int_t pidSort)
+{
+    // Flags photonic electrons with inv mass cut
+    
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+    Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
+    //Double_t DCAxyCut = 0.25, DCAzCut = 1;
+    Int_t fPDGe1 = 11, fPDGe2 = 11;
+    
+    Double_t ptAsso=-999., nsigmaAsso=-999.;
+    Int_t chargeAsso=0;
+    Int_t charge=track->Charge();
+    Double_t mass=-999., width = -999;
+    Int_t MassCorrect;
+    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+    Int_t Nuls=0, Nls=0;
+    
+    Int_t ntracks = fAOD->GetNumberOfTracks();
+    for (int jtrack=0; jtrack<ntracks; jtrack++) {
+        if (jtrack==itrack) {continue;} //asso track != selected track
+        
+        fFlagLS=kFALSE;
+        fFlagULS=kFALSE;
+        
+        AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(jtrack));
+        if(!trackAsso) continue;
+        if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+        if(trackAsso->GetTPCNcls() < fAssoTPCnCls) continue;
+        
+        //Refit
+        if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        
+        nsigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
+        ptAsso = trackAsso->Pt();
+        chargeAsso = trackAsso->Charge();
+        
+        //Some cuts on the associated track
+        //if(ptAsso < 0.3) continue;
+        if(ptAsso < fMinPtAssoCut) continue;
+        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        //if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
+        if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
+        
+        if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
+            if(TMath::Abs(d0z0Asso[0]) > fAssoDCAxy || TMath::Abs(d0z0Asso[1]) > fAssoDCAz) continue;
+        
+        if(charge>0) fPDGe1 = -11; //-11 in PDG is for positron, just to be confusing
+        if(chargeAsso>0) fPDGe2 = -11;
+        if(charge == chargeAsso) fFlagLS = kTRUE;
+        if(charge != chargeAsso) fFlagULS = kTRUE;
+        
+        AliKFParticle::SetField(fAOD->GetMagneticField());
+        
+        AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
+        AliKFParticle ge2 = AliKFParticle(*trackAsso, fPDGe2);
+        AliKFParticle recg(ge1, ge2);
+        
+        if(recg.GetNDF()<1) continue;
+        Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+        
+        MassCorrect = recg.GetMass(mass,width); //returns 1, not the mass
+        if(fFlagLS && track->Pt()>1) fInvmassLS->Fill(mass);
+        if(fFlagULS && track->Pt()>1) fInvmassULS->Fill(mass);
+        
+        if(fFlagLS && mass>fMinMass && mass<fMaxMass) Nls++;
+        if(fFlagULS && mass>fMinMass && mass<fMaxMass) Nuls++;
+        
+        Double_t sprsFillValue[4] = {-999,-999,-999,-999};
+        sprsFillValue[0] = track->Pt();
+        sprsFillValue[1] = d0z0[0]*track->Charge()*MagSign;
+        sprsFillValue[2] = pidSort;
+        sprsFillValue[3] = prodRadius;
+        
+        if (fFlagULS && mass>fMinMass && mass<fMaxMass && track->Pt()>1) {
+            fSprsULSdca->Fill(sprsFillValue);
+            fSprsULSdcaWeight->Fill(sprsFillValue,fWeight);
+                
+        }else if(fFlagLS && mass>fMinMass && mass<fMaxMass && track->Pt()>1){
+            fSprsLSdca->Fill(sprsFillValue);
+            fSprsLSdcaWeight->Fill(sprsFillValue,fWeight);
+        }
+        
+    }
+    
+    //fPhotonicElecYield->Fill(track->Pt(),Nuls-Nls);
+}
+//________________________________________________________________________
 //________________________________________________________________________
 /*void AliAnalysisTaskTPCCalBeauty::SetBmesonTauWeight(TF2 *BPlus, TF2 *B0, TF2 *Bs)
 {

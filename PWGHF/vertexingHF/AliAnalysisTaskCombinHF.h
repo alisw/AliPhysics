@@ -50,6 +50,11 @@ public:
   void SetRejectSignalsFromOOBPileupEvents(Bool_t opt=kTRUE){
     fRejectSignalsFromOOBPileupEvents=opt;
   }
+  void SetTrackletEta1MultiplicityEstimatorForMC(){fMultEstimMC=0;}
+  void SetTrackletFullEtaMultiplicityEstimatorForMC(){fMultEstimMC=1;}
+  void SetCentralityPercMultiplicityEstimatorForMC(){fMultEstimMC=2;}
+  void SetTPCClustersMultiplicityEstimatorForMC(){fMultEstimMC=3;}
+  
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -168,9 +173,14 @@ private:
   TH2F *fHistEventMultCentEvSel;        //!<! hist. for evnt Mult vs. centrality (sel)
   TH2F *fHistEventMultZv;               //!<! hist. of evnt Mult vs. Zv for all events
   TH2F *fHistEventMultZvEvSel;          //!<! hist. of evnt Mult vs. Zv for selected ev
+  TH2F *fHistEventTrackletCent;             //!<! hist. for evnt Tracklet vs. centrality (all)
+  TH2F *fHistEventTrackletCentEvSel;        //!<! hist. for evnt Tracklet vs. centrality (sel)
+  TH2F *fHistEventTrackletZv;               //!<! hist. of evnt Tracklet vs. Zv for all events
+  TH2F *fHistEventTrackletZvEvSel;          //!<! hist. of evnt Tracklet vs. Zv for selected ev
   TH1F *fHistXsecVsPtHard;              //!<! hist. of xsec vs pthard (MC)
   TH1F *fHistTrackStatus;               //!<! hist. of status of tracks
   TH3F *fHistTrackEtaMultZv;            //!<! track distribution vs. eta z vertex and mult
+  TH3F *fHistTrackEtaTrackletZv;            //!<! track distribution vs. eta z vertex and mult
   TH1D* fHistTrackSelSteps;             //!<! track cuts statistics
   TH2F *fHistSelTrackPhiPt;             //!<! track distribution vs. phi and pt
   TH2F *fHistSelTrackChi2ClusPt;        //!<! track chi2 distribution vs. pt
@@ -314,7 +324,9 @@ private:
   TTree** fEventBuffer;            //!<! structure for event mixing
   TObjString* fEventInfo;          /// unique event Id for event mixing checks
   Double_t fVtxZ;                  /// zVertex
-  Double_t fMultiplicity;          /// multiplicity
+  Double_t fMultiplicityEM;        /// multiplicity for ev mix pools
+  Double_t fMultiplicityMC;        /// multiplicity for MC efficiencies
+  Int_t fMultEstimMC;              /// multiplicity estimator (0=tracklets in eta<1)
   Int_t fNumOfMultBins;            /// number of bins for multiplcities in MC histos
   Double_t fMinMultiplicity;       /// lower limit for multiplcities in MC histos
   Double_t fMaxMultiplicity;       /// upper limit for multiplcities in MC histos
@@ -322,7 +334,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,38); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,39); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

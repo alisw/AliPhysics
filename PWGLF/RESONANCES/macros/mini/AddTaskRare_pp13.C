@@ -3737,6 +3737,7 @@ Bool_t Config_Xik0(
     Float_t Xi_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
+    Float_t V0lifetime=40.;
     
     AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
     cutXi->SetPIDCutV0Proton(XiPPIDcut);
@@ -3753,7 +3754,7 @@ Bool_t Config_Xik0(
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0.5); // 0
     cutXi->SetCascadeHighRadius(1e5); // not using
-    //cutXi->SetV0Life(20);
+    cutXi->SetV0Life(V0lifetime);
     cutXi->SetMassTolerance(Xi_massTol);
     cutXi->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXi->SetV0MassTolerance(Xi_V0massTol);
@@ -3778,7 +3779,7 @@ Bool_t Config_Xik0(
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0.5); // 0
     cutXibar->SetCascadeHighRadius(1e5); // not using
-    //cutXibar->SetV0Life(20);
+    cutXibar->SetV0Life(V0lifetime);
     cutXibar->SetMassTolerance(Xi_massTol);
     cutXibar->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXibar->SetV0MassTolerance(Xi_V0massTol);

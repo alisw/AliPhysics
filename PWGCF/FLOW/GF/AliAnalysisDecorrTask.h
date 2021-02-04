@@ -4,6 +4,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliGFWWeights.h"
+#include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "TComplex.h"
 #include "TAxis.h"
@@ -19,7 +20,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisDecorrTask();
-                                AliAnalysisDecorrTask(const char *name);
+                                AliAnalysisDecorrTask(const char *name, Bool_t IsMC);
         virtual                 ~AliAnalysisDecorrTask();
 
         virtual void            UserCreateOutputObjects();
@@ -215,6 +216,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //Array lengths and constants
         Int_t                   fIndexSampling;
         AliAODEvent*            fAOD;                       //! input event
+        Bool_t                  fIsMC;
+        AliMCEvent*             fMCEvent;                   //! MC event
         Bool_t                  fInitTask;                  //Initialization
         
         std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //

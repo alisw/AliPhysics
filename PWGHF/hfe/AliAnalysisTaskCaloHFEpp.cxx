@@ -1672,6 +1672,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 
 	     fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+             if(!fMCparticle)continue;
 	     Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
 	     Double_t pdgEta = fMCparticle->Eta(); 
 	     Double_t pTtrue = fMCparticle->Pt(); 

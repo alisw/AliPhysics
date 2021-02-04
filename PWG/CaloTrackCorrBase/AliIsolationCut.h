@@ -332,6 +332,18 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtEtaBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the eta band for tracks, per eta-phi bin of trigger, before normalization.
   TH3F *   fhConeSumPtPhiBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the phi band for tracks, per eta-phi bin of trigger, before normalization.
 
+  /// Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
+  TH3F **  fhConeSumPtEtaBandUEClusterTrigEtaPhiCent;  //!<!  [fNCentBins]
+
+  /// Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtPhiBandUEClusterTrigEtaPhiCent;  //!<! [fNCentBins]
+
+  /// Track Sum Pt in the eta band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtEtaBandUETrackTrigEtaPhiCent;    //!<! [fNCentBins]
+
+  /// Track Sum Pt in the phi band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtPhiBandUETrackTrigEtaPhiCent;    //!<! [fNCentBins]
+
   TH2F *   fhConeSumPtVSUETracksEtaBand;               //!<! Tracks, eta band: sum pT in cone vs bkg to subtract.
   TH2F *   fhConeSumPtVSUETracksPhiBand;               //!<! Tracks, phi band:  sum pT in cone vs bkg to subtract.
   TH2F *   fhConeSumPtVSUEClusterEtaBand;              //!<! Clusters, eta band: sum pT in cone vs bkg to subtract.
@@ -415,7 +427,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,18) ;
+  ClassDef(AliIsolationCut,19) ;
   /// \endcond
 
 } ;
