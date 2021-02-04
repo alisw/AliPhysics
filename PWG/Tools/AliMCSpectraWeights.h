@@ -86,7 +86,7 @@ class AliMCSpectraWeights : public TNamed {
     std::vector<float> fBinsMultCent; /*!< centrality or multiplicity binning */
     std::vector<float> fBinsPt;       /*!< pT binning */
     std::vector<AliMCSpectraWeights::SysFlag> fAllSystematicFlags;
-    std::map<AliMCSpectraWeights::SysFlagSysFlag, TH3F*>
+    std::map<AliMCSpectraWeights::SysFlag, TH3F*>
         fHistMCWeightsSys; /*!< Histograms for systematic variations of weight
                               factors */
     TRandom3 frndGen;
