@@ -58,7 +58,14 @@ if(Boost_FOUND)
   include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 endif()
 
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_INCLUDE_DIR RooUnfold::RooUnfold INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${ROOUNFOLD_INCLUDE_DIR})
+    add_definitions("-DWITH_ROOUNFOLD")
+endif(RooUnfold_FOUND)
+
 if(FASTJET_FOUND)
+    include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
@@ -71,6 +78,11 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${F
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice CORRFW ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils PWGGAGammaConvBase STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface JETAN PWGTools PWGflowTasks PWGTRD)
+
+
+if(FASTJET_FOUND)
+    set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
+endif(FASTJET_FOUND)
 
 # Generate the ROOT map
 # Dependecies
@@ -86,6 +98,14 @@ if(FASTJET_FOUND)
     fastjet
     )
 endif(FASTJET_FOUND)
+
+set(ROOUNFOLD_DEPENDENCIES)
+if(RooUnfold_FOUND)
+    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
+    set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
+endif(RooUnfold_FOUND)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes (relative paths)
