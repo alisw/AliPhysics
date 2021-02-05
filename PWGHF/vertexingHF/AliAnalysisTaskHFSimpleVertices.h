@@ -81,8 +81,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtSelTracks;            //!<!  histo with pt selected tracks
   TH1F* fHistTglAllTracks;           //!<!  histo with tgl all tracks
   TH1F* fHistTglSelTracks;           //!<!  histo with tgl selected tracks
+  TH1F* fHistEtaAllTracks;           //!<!  histo with eta all tracks
+  TH1F* fHistEtaSelTracks2prong;     //!<!  histo with eta selected tracks
+  TH1F* fHistEtaSelTracks3prong;     //!<!  histo with eta selected tracks
   TH1F* fHistImpParAllTracks;        //!<!  histo with d0 all tracks
-  TH1F* fHistImpParSelTracks;        //!<!  histo with d0 selected tracks
+  TH1F* fHistImpParSelTracks2prong;  //!<!  histo with d0 selected tracks
+  TH1F* fHistImpParSelTracks3prong;  //!<!  histo with d0 selected tracks
   TH1F* fHistITSmapAllTracks;        //!<!  histo with its map all tracks
   TH1F* fHistITSmapSelTracks;        //!<!  histo withits map selected tracks
   
@@ -228,7 +232,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,11);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,12);
 };
 
 
