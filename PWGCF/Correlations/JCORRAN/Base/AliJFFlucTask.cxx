@@ -39,6 +39,8 @@
 #include "AliJHistManager.h"
 //#include "AliJEfficiency.h"
 #include "AliJRunTable.h"
+
+ClassImp(AliJFFlucTask)
 //#pragma GCC diagnostic warning "-Wall"
 //______________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask():
@@ -46,6 +48,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fInputList(0),
 	fOutput(0),
 	fFFlucAna(0),
+	fJCorMapTask(NULL),
+	fJCorMapTaskName("JCorrectionMapTask"),
 	pPhiWeights(0),
 	grEffCor(0),
 	fCentBinEff(0),
@@ -55,8 +59,9 @@ AliJFFlucTask::AliJFFlucTask():
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
-	fRunNum(0),
+	phiMapIndex(0),
 	fPcharge(0),
+	fRunNum(0),
 	fNumTPCClusters(70),
 	fEta_min(-0.8),
 	fEta_max(0.8),
@@ -67,8 +72,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
-	flags(0),
-	inputIndex(1)
+	flags(0)
 {
 	//DefineOutput(1, TDirectory::Class());
 }
@@ -79,6 +83,8 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fInputList(0),
 	fOutput(0),
 	fFFlucAna(0),
+	fJCorMapTask(NULL),
+	fJCorMapTaskName("JCorrectionMapTask"),
 	pPhiWeights(0),
 	grEffCor(0),
 	fCentBinEff(0),
@@ -89,6 +95,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fFilterBit(0),
 	fEffMode(0),
 	fEffFilterBit(0),
+	phiMapIndex(0),
 	fRunNum(0),
 	fPcharge(0),
 	fNumTPCClusters(70),
@@ -101,8 +108,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fzvtxCut(10.0),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
-	flags(0),
-	inputIndex(1)
+	flags(0)
 {
 	DefineOutput(1, TDirectory::Class());
 }
@@ -154,6 +160,10 @@ void AliJFFlucTask::UserCreateOutputObjects()
 
 	fInputList = new TClonesArray("AliJBaseTrack" , 2500);
 	fInputList->SetOwner(kTRUE);
+
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+
+	fJCorMapTask = (AliJCorrectionMapTask*)man->GetTask(fJCorMapTaskName);
 
 	OpenFile(1);
 	fOutput = gDirectory;
@@ -227,12 +237,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
 		fRunNum = currentEvent->GetRunNumber();
 		if( fEvtNum == 1 && fEffMode ) {
-		    TList *plist = (TList*)GetInputData(effInputIndex); 
-  			if(!plist) {
-				AliError("ERROR: mcEvent not available");
-				return;
-  			}
-			fCentBinEff = (TAxis*)plist->FindObject("CentralityBin");
+			fCentBinEff = fJCorMapTask->GetCentBinEff();
 		}
 
 		if(!IsGoodEvent( currentEvent ))
@@ -242,10 +247,10 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 				AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
 
 		// Load correction maps in the event loop
-		if(fEffMode) grEffCor = GetEffCorrectionMap(fRunNum, fCent); 
-		if(flags & FLUC_PHI_CORRECTION){
-			pPhiWeights = GetCorrectionMap(fRunNum,fcBin);
-		}
+		if(fEffMode != 0)
+			grEffCor = fJCorMapTask->GetEffCorrectionMap(fRunNum,fCent,fEffFilterBit); 
+		if(flags & FLUC_PHI_CORRECTION)
+			pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
 
 		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		ReadVertexInfo( currentEvent, fVertex); // read vertex info
@@ -395,10 +400,10 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetCharge(track->Charge() );
 				itrack->SetStatus(track->GetStatus() );
 				//
-				double fCent = ReadCentrality(aod,fCentDetName);
+				//double fCent = ReadCentrality(aod,fCentDetName);
 				Double_t effCorr = 1.0;
-				if(grEffCor && fEffMode) {
-					effCorr = GetEffCorrection(grEffCor, pt);//fEfficiency->GetCorrection(pt,fEffFilterBit,fCent);
+				if(grEffCor && fEffMode != 0) {
+					effCorr = fJCorMapTask->GetEffCorrection(grEffCor,pt);//fEfficiency->GetCorrection(pt,fEffFilterBit,fCent);
 				} 
 				itrack->SetTrackEff(effCorr);
 				
@@ -433,7 +438,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 
 	if(flags & FLUC_CENT_FLATTENING){
 		float fCent = ReadCentrality(event,fCentDetName);
-		TH1 *pweightMap = GetCentCorrection();
+		TH1 *pweightMap = fJCorMapTask->GetCentCorrection();
 		if(gRandom->Uniform(0,1) > pweightMap->GetBinContent(pweightMap->GetXaxis()->FindBin(fCent)))
 			return kFALSE;
 	}
@@ -597,10 +602,10 @@ void AliJFFlucTask::SetEffConfig( UInt_t effMode, UInt_t FilterBit)
 		fEffFilterBit = 0;
 		break;
 	case 96:
-		fEffFilterBit = 4;
+		fEffFilterBit = 4; // Global
 		break;
 	case 768:
-		fEffFilterBit = 5;
+		fEffFilterBit = 5; // Hybrid
 		break;
 	default:
 		fEffFilterBit = 0;
@@ -669,98 +674,4 @@ double AliJFFlucTask::GetCentralityFromImpactPar(double ip) {
 	return 0.0;
 }
 
-UInt_t AliJFFlucTask::ConnectInputContainer(const TString fname, const TString listName){
-	DefineInput(inputIndex,TList::Class());
-
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-		
-	TString containerName = Form("CorrectionMap-%u",fname.Hash());
-	cout<<"Container: "<<containerName<<endl;
-
-	TObjArray *ptaskContainer = mgr->GetContainers();
-	AliAnalysisDataContainer *pCorrMapCont = (AliAnalysisDataContainer*)ptaskContainer->FindObject(containerName);
-	if(!pCorrMapCont){
-		TGrid::Connect("alien:");
-		TFile *pfile = TFile::Open(fname);
-		TList *plist = (TList*)pfile->Get(listName);
-		pCorrMapCont = mgr->CreateContainer(containerName,
-			TList::Class(),AliAnalysisManager::kInputContainer);
-		pCorrMapCont->SetData(plist);
-	}
-	
-	mgr->ConnectInput(this,inputIndex,pCorrMapCont);
-
-	return inputIndex++;
-}
-
-void AliJFFlucTask::EnablePhiCorrection(const TString fname){
-	phiInputIndex = ConnectInputContainer(fname,"PhiWeights");
-	cout<<"Phi correction enabled: "<<fname.Data()<<" (index "<<phiInputIndex<<")"<<endl;
-}
-
-void AliJFFlucTask::EnableCentFlattening(const TString fname){
-	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");//inputIndex++;
-	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
-}
-
-void AliJFFlucTask::EnableEffCorrection(const TString fname){
-	effInputIndex = ConnectInputContainer(fname,"EffCorrections");//inputIndex++;
-	cout<<"Efficiency Correction enabled: "<<fname.Data()<<" (index "<<effInputIndex<<")"<<endl;
-}
-
-TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t bin){
-	auto m = PhiWeightMap[bin].find(run);
-	if(m == PhiWeightMap[bin].end()){
-		TList *plist = (TList*)GetInputData(phiInputIndex);
-		if(!plist)
-			return 0;
-		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,bin));
-		if(!pmap)
-			return 0;
-		PhiWeightMap[bin][run] = pmap;
-		return pmap;
-	}
-	return (*m).second;
-}
-
-TH1 * AliJFFlucTask::GetCentCorrection(){
-	TList *plist = (TList*)GetInputData(centInputIndex);
-	if(!plist)
-		return 0;
-	TH1 *pmap = (TH1*)plist->FindObject("CentCorrection");
-	return pmap;
-}
-
-// Pt dependent efficiency loaded here to improve the CPU time.
-TGraphErrors * AliJFFlucTask::GetEffCorrectionMap(UInt_t run, Double_t cent){ //need to be centrality itself since efficiency is merged in bins
-  int centBin = fCentBinEff->FindBin( cent ) -1 ;
-  auto m = EffWeightMap[centBin].find(run);;
-  if(m == EffWeightMap[centBin].end()){
-  	TList *plist = (TList*)GetInputData(effInputIndex); 
-  	if(!plist)
-			return 0;
-	
-	if( centBin < 0 || centBin > fCentBinEff->GetNbins()-1 ) {
-		cout<<"J_WARNING : Centrality "<<cent<<" is out of CentBinBorder"<<endl;
-		return 0;
-	}
-
-  	TGraphErrors *grmap  
-				  = (TGraphErrors*) plist->FindObject(Form("gCor%02d%02d%02d", 0,centBin,fEffFilterBit));
-
-  	EffWeightMap[centBin][run] = grmap;
-  	return grmap;
-  }
-  return (*m).second;
-}
-
-// Pt dependent efficiency loaded here to improve the CPU time.
-double AliJFFlucTask::GetEffCorrection( TGraphErrors * gr, double pt ) const {
-	// TODO : Function mode
-	//=== TEMPERORY SETTING. IT will be removed soon.
-	if( pt > 30 ) pt = 30; // Getting eff of 30GeV for lager pt
-	double cor = gr->Eval(pt);
-	if ( cor < 0.2 ) cor = 0.2;
-	return cor;
-}
 
