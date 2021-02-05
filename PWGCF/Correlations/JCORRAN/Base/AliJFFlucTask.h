@@ -165,12 +165,12 @@ private:
 	int fcBin;
 	Double_t fVertex[3];
 	UInt_t fFilterBit;
-	UInt_t fNumTPCClusters;
 	UInt_t fEffMode;
 	UInt_t fEffFilterBit;
 	UInt_t phiMapIndex;
 	int fPcharge;
 	int fRunNum;
+	UInt_t fNumTPCClusters;
 	UInt_t GlobTracks;
 	UInt_t TPCTracks;
 	UInt_t FB32Tracks;

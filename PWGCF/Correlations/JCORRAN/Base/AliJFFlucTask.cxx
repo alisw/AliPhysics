@@ -60,8 +60,8 @@ AliJFFlucTask::AliJFFlucTask():
 	fEffMode(0),
 	fEffFilterBit(0),
 	phiMapIndex(0),
-	fRunNum(0),
 	fPcharge(0),
+	fRunNum(0),
 	fNumTPCClusters(70),
 	fEta_min(-0.8),
 	fEta_max(0.8),
@@ -400,7 +400,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetCharge(track->Charge() );
 				itrack->SetStatus(track->GetStatus() );
 				//
-				double fCent = ReadCentrality(aod,fCentDetName);
+				//double fCent = ReadCentrality(aod,fCentDetName);
 				Double_t effCorr = 1.0;
 				if(grEffCor && fEffMode != 0) {
 					effCorr = fJCorMapTask->GetEffCorrection(grEffCor,pt);//fEfficiency->GetCorrection(pt,fEffFilterBit,fCent);

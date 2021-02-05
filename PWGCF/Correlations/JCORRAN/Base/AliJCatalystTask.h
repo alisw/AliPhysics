@@ -26,6 +26,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliVVertex.h"
 #include "AliStack.h"
+#include "AliJCorrectionMapTask.h"
 
 //==============================================================
 
@@ -42,6 +43,7 @@ class AliAODTrack;
 class AliAnalysisFilter;
 class AliJTrack;
 class TParticle;
+class TGraphErrors;
 class AliJCatalystTask : public AliAnalysisTaskSE {
 public:
 	AliJCatalystTask();
@@ -98,6 +100,9 @@ public:
 		cout << "setting particle charge = " << charge << endl;}
 	void SetCentDetName( TString CentName ){ fCentDetName = CentName;
 		cout << "setting : Cenetrality determination =" << fCentDetName.Data() << endl;}
+	void SetPhiCorrectionIndex(UInt_t id){phiMapIndex = id;} // need for subwagon
+	
+
 	enum{
 		FLUC_MC = 0x1,
 		FLUC_EXCLUDEWDECAY = 0x2,
@@ -111,11 +116,7 @@ public:
 	Int_t GetJCatalystEntry(){ return fJCatalystEntry; } // in order to sync event id
 	bool GetIsGoodEvent(){ return fIsGoodEvent; }
 	void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
-	UInt_t ConnectInputContainer(const TString, const TString);
-	void EnablePhiCorrection(const TString);
-	void EnableCentFlattening(const TString);
-	TH1 * GetCorrectionMap(UInt_t, UInt_t);
-	TH1 * GetCentCorrection();
+	AliJCorrectionMapTask *GetAliJCorrectionMapTask() {return fJCorMapTask;}
 
 private:
 	TClonesArray * fInputList;  // tracklist
@@ -124,7 +125,6 @@ private:
 	TString fTaskName; //
 	TString fCentDetName; //
 	AliAODEvent *paodEvent; //
-	std::map<UInt_t, TH1 *> PhiWeightMap[96];
 	float fcent; //
 	double fZvert; //
 	bool fnoCentBin; // no centrality bin => 1
@@ -134,8 +134,8 @@ private:
 	UInt_t fNumTPCClusters;
 	UInt_t fEffMode; //
 	UInt_t fEffFilterBit; //
-	int fPcharge; //
 	int fRunNum; //
+	int fPcharge; //
 	UInt_t GlobTracks; //
 	UInt_t TPCTracks; //
 	UInt_t FB32Tracks; //
@@ -149,10 +149,12 @@ private:
 	UInt_t flags; //
 	Int_t fJCatalystEntry; //
 	bool fIsGoodEvent; //
-
-	UInt_t inputIndex;
-	UInt_t phiInputIndex;
-	UInt_t centInputIndex;
+	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
+	TString fJCorMapTaskName; //
+	TH1 *pPhiWeights;
+	TGraphErrors *grEffCor; // for one cent
+	TAxis *fCentBinEff; // for different cent bin for MC eff
+	UInt_t phiMapIndex;
 
 	ClassDef(AliJCatalystTask, 1);
 
