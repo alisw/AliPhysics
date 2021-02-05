@@ -1147,7 +1147,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     tracks.fRho1PtSnp = (Char_t)(128.*track->GetSigma1PtSnp()/tracks.fSigma1Pt/tracks.fSigmaSnp);
     tracks.fRho1PtTgl = (Char_t)(128.*track->GetSigma1PtTgl()/tracks.fSigma1Pt/tracks.fSigmaTgl);
 
-    const AliExternalTrackParam *intp = track->GetTPCInnerParam();
+    const AliExternalTrackParam *intp = track->GetInnerParam();
     tracks.fTPCinnerP = AliMathBase::TruncateFloatFraction((intp ? intp->GetP() : 0), mTrack1Pt); // Set the momentum to 0 if the track did not reach TPC
 
     // Compressing and reassigned flags. Keeping only the ones we need.
