@@ -142,10 +142,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   } else if(trainConfig == 7){  // trigger
       TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
@@ -160,10 +160,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   } else if(trainConfig == 8){  // trigger
       TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
@@ -178,10 +178,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
    // Anti isolation variation
 
@@ -197,12 +197,12 @@ void AddTask_GammaIsoTree(
 
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
-
+      
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
@@ -220,10 +220,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
@@ -241,10 +241,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
@@ -263,10 +263,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
@@ -284,10 +284,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
@@ -305,10 +305,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
@@ -330,10 +330,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   } else if(trainConfig == 51){  // EG2
       TaskEventCutnumber                = "80085103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
@@ -348,10 +348,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   } else if(trainConfig == 52){  // EG1
       TaskEventCutnumber                = "80083103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
@@ -366,10 +366,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
 // Anti isolation variation
   } else if(trainConfig == 60){  // pPb INT7
@@ -386,10 +386,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
@@ -407,10 +407,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
   } else if(trainConfig == 62){  // EG1
@@ -427,10 +427,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
       fAntiIsolation[0] = 4;
       fAntiIsolation[1] = 10;
 
@@ -448,10 +448,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
@@ -469,10 +469,10 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
   } else if(trainConfig == 65){  // EG1
@@ -489,31 +489,31 @@ void AddTask_GammaIsoTree(
       maxSignalM02 = 0.5;
 
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
       fAntiIsolation[0] = 5;
       fAntiIsolation[1] = 20;
 
   } else if(trainConfig == 70){  // min bias (cuts from PCMEMC 84 + loose iso)
-    TaskEventCutnumber                = "00000000";
-    TaskClusterCutnumberEMC           = "1111132060032000000";
-    TaskTMCut = TaskClusterCutnumberEMC.Data();
-    TaskTMCut.Replace(9,1,"5");
-    TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
-    TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
-    TaskClusterCutnumberPHOS          = "2444411044013300000";
-    TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskEventCutnumber                = "00000000";
+      TaskClusterCutnumberEMC           = "1111132060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
-    minSignalM02 = 0.1;
-    maxSignalM02 = 0.5;
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
 
-    backgroundTrackMatching = kFALSE; // obsolete
-    doNeutralIso = kTRUE;
-    doChargedIso = kTRUE;
-    doTagging = kTRUE;
-    doCellIso = kTRUE;
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
   }
   
 
@@ -640,30 +640,6 @@ void AddTask_GammaIsoTree(
       fTrackMatcherSignal->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcherSignal);
       mgr->ConnectInput(fTrackMatcherSignal,0,cinput);
-    }
-
-    // matching for background clusters
-    if(corrTaskSetting.CompareTo("")){
-      TrackMatcherNameIsolation = TrackMatcherNameIsolation+"_"+corrTaskSetting.Data();
-      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameIsolation.Data() << endl;
-
-      TrackMatcherNameTagging = TrackMatcherNameTagging+"_"+corrTaskSetting.Data();
-      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherNameTagging.Data() << endl;
-    }
-    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameIsolation.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherIsolation = new AliCaloTrackMatcher(TrackMatcherNameIsolation.Data(),clusterTypeSignal,trackMatcherRunningMode);
-      fTrackMatcherIsolation->SetV0ReaderName(V0ReaderName);
-      fTrackMatcherIsolation->SetCorrectionTaskSetting(corrTaskSetting);
-      mgr->AddTask(fTrackMatcherIsolation);
-      mgr->ConnectInput(fTrackMatcherIsolation,0,cinput);
-    }
-
-    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameTagging.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcherTagging = new AliCaloTrackMatcher(TrackMatcherNameTagging.Data(),clusterTypeSignal,trackMatcherRunningMode);
-      fTrackMatcherTagging->SetV0ReaderName(V0ReaderName);
-      fTrackMatcherTagging->SetCorrectionTaskSetting(corrTaskSetting);
-      mgr->AddTask(fTrackMatcherTagging);
-      mgr->ConnectInput(fTrackMatcherTagging,0,cinput);
     }
   }
 
