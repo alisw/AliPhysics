@@ -112,6 +112,7 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     Bool_t SigmaDaughtersOpeningangleCut(Double_t    openingangle);
     Double_t UseRotationmethod(){return fBackgroundestimation;};
     Bool_t TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPIDResponse);
+    Bool_t TrackIsSelectedByDCACut(AliAODTrack* track);
 
 
     // Set Individual Cuts
@@ -132,41 +133,53 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     Bool_t SetAmenterosCut(Int_t AmenterosCut);
     Bool_t SetOpeningAngleCut(Int_t OpeningAngleCut);
     Bool_t SetBackgroundEstimation(Int_t BackgroundEstimation);
+
+    // Cut Histogramms
+    void    InitCutHistograms(  TString name="");
+    TList*  GetCutHistograms() { return fHistograms; }
+    void    SetFillCutHistograms( TString name="")  { if(!fHistograms){ InitCutHistograms(name);} return; }
+ 
     
 
   protected:
-    TObjString* fCutString;                     ///< cut number used for analysis
-    TString     fCutStringRead;
+    TList*      fHistograms;                    
+    TObjString* fCutString;                     // cut number used for analysis
+    TString     fCutStringRead;                 
    
 
-    TF1*        fAmenterosCut;                     ///<
+    TF1*        fAmenterosCut;                 
 
 
-    Int_t       fPIDVariation;                          ///< min N Cluster ITS
-    UInt_t      fFilterBit;                          ///< FilterBit
-    UInt_t      fNClusterTPC;                          ///< min N Cluster TPC
-    Double_t    fChi2TPC;                          ///< max Chi2 TPC
-    Int_t       fNClusterITS;                          ///< min N Cluster ITS
-    Double_t    fChi2ITS;                          ///< max Chi2 ITS
-    Int_t       fInvertChi2ITS;                          ///< max Chi2 ITS
-    Double_t    fDCAXY;                          ///< min DCA in xy-Richtung
-    Double_t    fDCAZ;                          ///< min DCA in z-Richtung
-    Double_t    fLowPNSigmaTPC;                          ///< max n sigma TPC
-    Double_t    fNSigmaTPC;                          ///< max n sigma TPC
-    Double_t    fNSigmaTOF;                          ///< max N sigma ITS
-    Double_t    fMaxPionMass;                          ///< max pion mass
-    Double_t    fMinPionMass;                          ///< min pion mass
-    Double_t    fMaxAlpha;                          ///<  max alpha
-    Double_t    fMinAlpha;                          ///< min alpha
-    Double_t    fQt;                          ///< qT cut
-    Double_t    fMaxOpeningAngle;                          ///< max opneningangle
-    Double_t    fMinOpeningAngle;                          ///< min openingangle
-    Double_t    fBackgroundestimation;                          ///< min openingangle
+    Int_t       fPIDVariation;                  // min N Cluster ITS
+    UInt_t      fFilterBit;                     // FilterBit
+    UInt_t      fNClusterTPC;                   // min N Cluster TPC
+    Double_t    fChi2TPC;                       // max Chi2 TPC
+    Int_t       fNClusterITS;                   // min N Cluster ITS
+    Double_t    fChi2ITS;                       // max Chi2 ITS
+    Int_t       fInvertChi2ITS;                 // max Chi2 ITS
+    Double_t    fDCAXY;                         // min DCA in xy-Richtung
+    Double_t    fDCAZ;                          // min DCA in z-Richtung
+    Double_t    fLowPNSigmaTPC;                 // max n sigma TPC
+    Double_t    fNSigmaTPC;                     // max n sigma TPC
+    Double_t    fNSigmaTOF;                     // max N sigma ITS
+    Double_t    fMaxPionMass;                   // max pion mass
+    Double_t    fMinPionMass;                   // min pion mass
+    Double_t    fMaxAlpha;                      // max alpha
+    Double_t    fMinAlpha;                      // min alpha
+    Double_t    fQt;                            // qT cut
+    Double_t    fMaxOpeningAngle;               // max opneningangle
+    Double_t    fMinOpeningAngle;               // min openingangle
+    Double_t    fBackgroundestimation;          // min openingangle
+
+    //Histogramme
+    TH2F*       fHistDEDx;                     
+    TH2F*       fHistTOFBeta;                   
+    TH2F*       fHistTPCSignal;                 
     
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliCaloSigmaCuts,4)
+    ClassDef(AliCaloSigmaCuts,5)
     /// \endcond
 };
 
