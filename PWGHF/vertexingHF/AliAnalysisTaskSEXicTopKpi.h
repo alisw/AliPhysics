@@ -392,6 +392,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1F* fCandCounter; //!<!
   TH1F* fCandCounter_onTheFly; //!<!
 
+  // pT distribution of candidate soft pion tracks
+  TH1F* fPtSoftPionCand; //!<!
+  // pT distribution of candidate soft pion tracks inside SigmaC loop
+  TH1F* fPtSoftPionCand_insideScLoop; //!<!
+
   Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
   
   // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
