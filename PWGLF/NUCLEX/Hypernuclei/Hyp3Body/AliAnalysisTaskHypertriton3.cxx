@@ -913,7 +913,7 @@ void AliAnalysisTaskHypertriton3::Terminate(Option_t *) {}
 
 int AliAnalysisTaskHypertriton3::FindEventMixingCentBin(const float centrality)
 {
-  if (centrality > 90)
+  if (centrality >= 100.)
     return -999;
   return static_cast<int>(centrality / 10);
 }
