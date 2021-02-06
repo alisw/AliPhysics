@@ -5078,13 +5078,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if ( photonPhi < 0 ) photonPhi+=TMath::TwoPi();
     
     // Check if photons hit the Calorimeter acceptance
-    if(IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS) // defined on base class
+    if ( IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS ) // defined on base class
     {
       if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primary) ) continue ;
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if(!GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector)) continue ;
+    if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
@@ -5141,10 +5141,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //if ( ndaugh !=2 ) printf("PDG: %d, %d\n",d1Pdg,d2Pdg);
       
       // Select decays in 2 photons
-      if( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22)) okpi0 = kFALSE;
+      if ( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22) ) okpi0 = kFALSE;
       
       // Check overlap of decays
-      if( okpi0 && fMakePrimaryPi0DecayStudy)
+      if ( okpi0 && fMakePrimaryPi0DecayStudy )
       {
         Float_t d12Angle = fMomDaugh1.Angle(fMomDaugh2.Vect());
         if(d12Angle > overlapAngle) overlapPi0 = kFALSE;
@@ -5246,7 +5246,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       physPrimary      = mcisop->IsPhysicalPrimary(); 
       mcisop->Momentum(fMomIso);
       
-      if( partInConeMother == i ) continue;
+      if ( partInConeMother == i ) continue;
 
       // Distance to photon candidate
       //
@@ -5340,25 +5340,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       // UE estimation
       //
-      if ( physPrimary && dR > coneSize )
+      if ( physPrimary && dR > coneSize+coneSizeGap )
       {
         if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
         {
           // Phi band
           //
           Bool_t takeIt = kTRUE;
-          // Exclude tracks in rectangle containing isolation cone
-          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-               partInConePhi < (photonPhi+coneSize+coneSizeGap) &&
-               partInConePhi > (photonPhi-coneSize-coneSizeGap)    )
-            takeIt = kFALSE;
 
           // Look only half TPC with respect candidate, avoid opposite side jet
           if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
 
           // Within eta cone size
-          if ( partInConeEta > (photonEta-coneSize) &&
-               partInConeEta < (photonEta+coneSize) &&  takeIt )
+          if ( TMath::Abs(dEta) < coneSize+coneSizeGap && takeIt )
           {
             if ( partInConeCharge > 0 )
               phiBandPtSumCh += partInConePt;
@@ -5368,16 +5362,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
           // Eta band
           //
-          takeIt = kTRUE;
-          // Exclude tracks in rectangle containing isolation cone
-          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-               partInConeEta < (photonEta+coneSize+coneSizeGap) &&
-               partInConeEta > (photonEta-coneSize-coneSizeGap)    )
-            takeIt = kFALSE;
+          //takeIt = kTRUE;
 
           // Within phi cone size
-          if ( partInConePhi > (photonPhi-coneSize) &&
-               partInConePhi < (photonPhi+coneSize) && takeIt )
+          if ( TMath::Abs(dPhi) < coneSize+coneSizeGap )//&& takeIt )
           {
             if ( partInConeCharge > 0 )
               etaBandPtSumCh += partInConePt;
@@ -5493,43 +5481,39 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         //
         dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
 
+        // Angles between trigger and cluster
+        Double_t dEta = photonEta - partInConeEta;
+        Double_t dPhi = photonPhi - partInConePhi;
+
+        // Shift phi angle when trigger is close to 0 or 360
+        if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+        if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+
         // UE estimation
         //
-        if (  dR > coneSize )
+        if (  dR > coneSize+coneSizeGap )
         {
           if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
           {
             // Phi band
             //
             Bool_t takeIt = kTRUE;
-            // Exclude tracks in rectangle containing isolation cone
-            if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-                partInConePhi < (photonPhi+coneSize+coneSizeGap) &&
-                partInConePhi > (photonPhi-coneSize-coneSizeGap)    )
-              takeIt = kFALSE;
 
             // Look only half TPC with respect candidate, avoid opposite side jet
-            if ( TMath::Abs(photonPhi-partInConePhi) > TMath::PiOver2() )  takeIt = kFALSE;
+            if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
 
             // Within eta cone size
-            if ( partInConeEta > (photonEta-coneSize) &&
-                 partInConeEta < (photonEta+coneSize) &&  takeIt )
+            if ( TMath::Abs(dEta) < coneSize+coneSizeGap && takeIt )
             {
               phiBandPtSumNeEmb += partInConePt;
             } // phi band
 
             // Eta band
             //
-            takeIt = kTRUE;
-            // Exclude tracks in rectangle containing isolation cone
-            if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-                 partInConeEta < (photonEta+coneSize+coneSizeGap) &&
-                 partInConeEta > (photonEta-coneSize-coneSizeGap)    )
-              takeIt = kFALSE;
+            //takeIt = kTRUE;
 
             // Within phi cone size
-            if ( partInConePhi > (photonPhi-coneSize) &&
-                 partInConePhi < (photonPhi+coneSize) && takeIt )
+            if ( TMath::Abs(dPhi) < coneSize+coneSizeGap )//  && takeIt )
             {
               etaBandPtSumNeEmb += partInConePt;
             } // eta band
@@ -5540,6 +5524,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         // In cone
         //
+        // Avoid clusters too close to generated photon
         if ( dR < gapCandidate )
           continue;
 
@@ -5577,7 +5562,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         // UE estimation
         //
-        if (  dR > coneSize )
+        if (  dR > coneSize+coneSizeGap )
         {
           //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           // Fill the histograms at +-45 degrees in phi
@@ -5606,34 +5591,22 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
             // Phi band
             //
             Bool_t takeIt = kTRUE;
-            // Exclude tracks in rectangle containing isolation cone
-            if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-                partInConePhi < (photonPhi+coneSize+coneSizeGap) &&
-                partInConePhi > (photonPhi-coneSize-coneSizeGap)    )
-              takeIt = kFALSE;
 
             // Look only half TPC with respect candidate, avoid opposite side jet
             if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
 
             // Within eta cone size
-            if ( partInConeEta > (photonEta-coneSize) &&
-                 partInConeEta < (photonEta+coneSize) &&  takeIt )
+            if ( TMath::Abs(dEta) < coneSize+coneSizeGap  &&  takeIt )
             {
               phiBandPtSumChEmb += partInConePt;
             } // phi band
 
             // Eta band
             //
-            takeIt = kTRUE;
-            // Exclude tracks in rectangle containing isolation cone
-            if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-                 partInConeEta < (photonEta+coneSize+coneSizeGap) &&
-                 partInConeEta > (photonEta-coneSize-coneSizeGap)    )
-              takeIt = kFALSE;
+            //takeIt = kTRUE;
 
             // Within phi cone size
-            if ( partInConePhi > (photonPhi-coneSize) &&
-                 partInConePhi < (photonPhi+coneSize) && takeIt )
+            if ( TMath::Abs(dPhi) < coneSize+coneSizeGap ) // && takeIt )
             {
               etaBandPtSumChEmb += partInConePt;
             } // eta band
@@ -6763,25 +6736,24 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
   
   Float_t conesize    = GetIsolationCut()->GetConeSize();
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
-  Bool_t  excludeRec  = GetIsolationCut()->IsBandExclusionRectangular();
   Float_t emcEtaSize  = GetIsolationCut()->GetEMCEtaSize();
   Float_t emcPhiSize  = GetIsolationCut()->GetEMCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
-  
-  if ( excludeRec )
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone+gap area
+
+  if ( distToTrig > 0 )
   {
-    coneAreaPhi = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
-    coneAreaEta = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
   }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * emcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * emcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * emcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * emcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
   
   if ( fStudyPtCutInCone )
@@ -6834,27 +6806,31 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
      Float_t ptCluster  = fMomentum.Pt();
      Float_t etaCluster = fMomentum.Eta();
      Float_t phiCluster = GetPhi(fMomentum.Phi());
-    
+
+     // Angles between trigger and track
+     Double_t dEta = etaTrig - etaCluster;
+     Double_t dPhi = phiTrig - phiCluster;
+
+     // Shift phi angle when trigger is close to 0 or 360
+     if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+     if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+     
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Eta or phi band with respect the trigger cone
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, etaCluster, phiCluster);
 
-     if ( rad > conesize )
+     if ( rad > conesize+conesizegap )
     {
       // Phi band
       //
       Bool_t takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                  && 
-           phiCluster < (phiTrig+conesize+conesizegap) &&   
-           phiCluster > (phiTrig-conesize-conesizegap)    ) takeIt = kFALSE;
-      
+
       // Look only half TPC with respect candidate, avoid opposite side jet 
       if ( TMath::Abs(phiTrig-phiCluster) > TMath::PiOver2() )  takeIt = kFALSE;
       
       // Within eta cone size
-      if ( etaCluster > (etaTrig-conesize) && etaCluster < (etaTrig+conesize) &&  takeIt ) 
+      if ( TMath::Abs(dEta) < conesize+conesizegap &&  takeIt ) 
       {
         phiBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
@@ -6874,14 +6850,10 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       
       // Eta band
       //
-      takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                  && 
-           etaCluster < (etaTrig+conesize+conesizegap) &&   
-           etaCluster > (etaTrig-conesize-conesizegap)    ) takeIt = kFALSE;
+      //takeIt = kTRUE;
       
       // Within phi cone size
-      if ( phiCluster > (phiTrig-conesize) && phiCluster < (phiTrig+conesize) && takeIt )
+      if ( TMath::Abs(dPhi) < conesize+conesizegap )// && takeIt )
       {
         etaBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
@@ -7467,25 +7439,24 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
   
   Float_t conesize    = GetIsolationCut()->GetConeSize();
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
-  Bool_t  excludeRec  = GetIsolationCut()->IsBandExclusionRectangular();
   Float_t tpcEtaSize  = GetIsolationCut()->GetTPCEtaSize();
   Float_t tpcPhiSize  = GetIsolationCut()->GetTPCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
-  
-  if ( excludeRec )
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone area
+
+  if ( distToTrig > 0 )
   {
-    coneAreaPhi = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
-    coneAreaEta = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
   }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * tpcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * tpcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * tpcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * tpcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
 
   //Double_t sumptPerp = 0. ;
@@ -7565,21 +7536,17 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
     if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
     if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
     
-    if ( rad > conesize )
+    if ( rad > conesize+conesizegap )
     {
       // Phi band
       //
       Bool_t takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                && 
-           phiTrack < (phiTrig+conesize+conesizegap) &&   
-           phiTrack > (phiTrig-conesize-conesizegap)    ) takeIt = kFALSE;
-      
+
       // Look only half TPC with respect candidate, avoid opposite side jet 
       if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
       
       // Within eta cone size
-      if ( etaTrack > (etaTrig-conesize) && etaTrack < (etaTrig+conesize) &&  takeIt ) 
+      if ( TMath::Abs(dEta) < conesize+conesizegap &&  takeIt ) 
       {
         //phiBandPtSumTrack += ptTrack;
         
@@ -7598,14 +7565,10 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
       
       // Eta band
       //
-      takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                && 
-           etaTrack < (etaTrig+conesize+conesizegap) &&   
-           etaTrack > (etaTrig-conesize-conesizegap)    ) takeIt = kFALSE;
+      //takeIt = kTRUE;
       
       // Within phi cone size
-      if ( phiTrack > (phiTrig-conesize) && phiTrack < (phiTrig+conesize) && takeIt )
+      if ( TMath::Abs(dPhi) < conesize+conesizegap ) //&& takeIt )
       {
         //etaBandPtSumTrack += ptTrack;
         if ( fStudyPtCutInCone )

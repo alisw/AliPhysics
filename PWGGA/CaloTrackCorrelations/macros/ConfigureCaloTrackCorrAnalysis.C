@@ -1223,21 +1223,17 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
   else                                         
     ic->SwitchOffConeExcessCorrection();
   
-  if ( kAnaCutsString.Contains("IsoBandUERecGap") && thresType > AliIsolationCut::kSumBkgSubIC)
+  ic->SetConeSizeBandGap(0.0);
+  if ( kAnaCutsString.Contains("IsoBandUEGap") && thresType > AliIsolationCut::kSumBkgSubIC)
   {
     // do not count UE particles near the cone limit > R+0.05
-    ic->SetBandExclusionRectangular(kTRUE);
-    if ( cone >= 0.25 )
-      ic->SetConeSizeBandGap(0.10);
+
+    if ( kAnaCutsString.Contains("IsoBandUEGapFix05") )
+      ic->SetConeSizeBandGap(0.5-cone); // the UE band excludes a cone size of R=0.5
     else
-      ic->SetConeSizeBandGap(0.15);
+      ic->SetConeSizeBandGap(0.1);      // the UE band excludes a cone size with R=cone+0.1
 
     printf("\t Add isolation UE gap %1.2f\n",ic->GetConeSizeBandGap());
-  }
-  else    
-  {
-    ic->SetBandExclusionRectangular(kFALSE);
-    //ic->SetConeSizeBandGap(0.0);
   }
   
   // Set ratio of neutral energy over charged energy
@@ -2027,7 +2023,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
-///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUERecGap"
+///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc", "FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly

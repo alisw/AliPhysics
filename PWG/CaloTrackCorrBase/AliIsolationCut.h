@@ -107,7 +107,7 @@ class AliIsolationCut : public TObject {
 
   void       GetDetectorAngleLimits( AliCaloTrackReader * reader, Int_t calorimeter );
 
-  Float_t    CalculateExcessAreaFraction(Float_t excess) const ;
+  Float_t    CalculateExcessAreaFraction(Float_t excess, Float_t gap = 0) const ;
 
   void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC,
                                                               Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
@@ -134,7 +134,6 @@ class AliIsolationCut : public TObject {
 
   // Parameter setters and getters
 
-  Bool_t     IsBandExclusionRectangular() const { return fUEBandRectangularExclusion ; }
   Bool_t     IsConeExcessCorrected()  const { return fMakeConeExcessCorr ; }
   Float_t    GetConeSize()            const { return fConeSize       ; }
   Float_t    GetConeSizeBandGap()     const { return fConeSizeBandGap; }
@@ -168,7 +167,6 @@ class AliIsolationCut : public TObject {
   Float_t    GetEMCPhiMin ()          const { return fEMCPhiMin ; }
   Float_t    GetEMCPhiMax ()          const { return fEMCPhiMax ; }
   
-  void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
@@ -221,8 +219,6 @@ class AliIsolationCut : public TObject {
   Float_t    fConeSize ;                               ///< Size of the isolation cone
  
   Float_t    fConeSizeBandGap ;                        ///< Gap to add to size of the isolation cone when filling eta/phi bands for UE estimation
-
-  Bool_t     fUEBandRectangularExclusion ;             ///< UE band signal exclusion region is rectangular, not just the isolation cone zone
   
   Float_t    fPtThreshold ;                            ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
 
@@ -427,7 +423,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,19) ;
+  ClassDef(AliIsolationCut,20) ;
   /// \endcond
 
 } ;
