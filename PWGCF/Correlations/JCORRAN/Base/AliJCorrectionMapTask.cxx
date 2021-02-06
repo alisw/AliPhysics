@@ -152,6 +152,7 @@ void AliJCorrectionMapTask::EnableEffCorrection(const TString fname){
 }
 
 TH1 * AliJCorrectionMapTask::GetCorrectionMap(UInt_t it, UInt_t run, UInt_t cbin){ // mapID, run#, cent
+	if(cbin>8) cbin = 8; // Temp fix since >60% centrality is missing in the map
 	auto m = PhiWeightMap[it][cbin].find(run);
 	if(m == PhiWeightMap[it][cbin].end()){
 		TList *plist = (TList*)GetInputData(phiInputIndex[it]);
