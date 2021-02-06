@@ -1245,8 +1245,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
                                                     dlenxy, ndlenxy, dd0max, ptB, modelPred[0], modelPred[1], modelPred[2]};
           if(fUseMinimalVarForSparse)
           {
-            std::vector<Double_t> arrayForSparse = {invMass, ptCand, modelPred[0], modelPred[1], modelPred[2]};
-            std::vector<Double_t> arrayForSparseFD = {invMass, ptCand, ptB, modelPred[0], modelPred[1], modelPred[2]};
+            arrayForSparse = {invMass, ptCand, modelPred[0], modelPred[1], modelPred[2]};
+            arrayForSparseFD = {invMass, ptCand, ptB, modelPred[0], modelPred[1], modelPred[2]};
           }
 
           //for imppar THnSparses
