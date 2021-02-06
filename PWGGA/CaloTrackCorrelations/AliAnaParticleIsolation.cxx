@@ -6738,16 +6738,22 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
   Float_t emcEtaSize  = GetIsolationCut()->GetEMCEtaSize();
   Float_t emcPhiSize  = GetIsolationCut()->GetEMCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone+gap area
+
+  if ( distToTrig > 0 )
+  {
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
+  }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * emcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * emcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * emcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * emcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
   
   if ( fStudyPtCutInCone )
@@ -7435,16 +7441,22 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
   Float_t tpcEtaSize  = GetIsolationCut()->GetTPCEtaSize();
   Float_t tpcPhiSize  = GetIsolationCut()->GetTPCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone area
+
+  if ( distToTrig > 0 )
+  {
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
+  }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * tpcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * tpcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * tpcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * tpcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
 
   //Double_t sumptPerp = 0. ;
