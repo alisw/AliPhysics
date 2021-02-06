@@ -201,12 +201,20 @@ private:
   TH3F *fPtVsYVsMultGenAccPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsPhiVsMultGenPrompt;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccPrompt;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccPrompt;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fPtVsYVsMultGenFeeddw;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsMultGenLargeAccFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAccFeeddw;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
   TH3F *fPtVsYVsMultGenAccFeeddw;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsPhiVsMultGenFeeddw;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccFeeddw;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccFeeddw;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoFeeddw;       //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsPtBGenFeeddw;           //!<! hist. of Y vs. Pt vs. PtB generated (all D)
   TH3F *fPtVsYVsPtBGenLargeAccFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.9)
   TH3F *fPtVsYVsPtBGenLimAccFeeddw;     //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.5)
@@ -334,7 +342,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,39); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,40); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
