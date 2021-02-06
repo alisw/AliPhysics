@@ -1526,13 +1526,13 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
             fPtVsYVsMultGenPrompt->Fill(ptgen,ygen,fMultiplicityMC);
             fPtVsPhiVsMultGenPrompt->Fill(ptgen,phigen,fMultiplicityMC);
             if(TMath::Abs(ygen)<0.5){
-	      fPtVsYVsMultGenLimAccPrompt->Fill(ptgen,ygen,fMultiplicityMC);
-	      fPtVsPhiVsMultGenLimAccPrompt->Fill(ptgen,phigen,fMultiplicityMC);
- 	    }
+              fPtVsYVsMultGenLimAccPrompt->Fill(ptgen,ygen,fMultiplicityMC);
+              fPtVsPhiVsMultGenLimAccPrompt->Fill(ptgen,phigen,fMultiplicityMC);
+            }
             if(isInAcc){
-	      fPtVsYVsMultGenAccPrompt->Fill(ptgen,ygen,fMultiplicityMC);
- 	      fPtVsPhiVsMultGenAccPrompt->Fill(ptgen,phigen,fMultiplicityMC);
-	    }
+              fPtVsYVsMultGenAccPrompt->Fill(ptgen,ygen,fMultiplicityMC);
+              fPtVsPhiVsMultGenAccPrompt->Fill(ptgen,phigen,fMultiplicityMC);
+            }
             if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelPrompt->Fill(ptgen,ygen,fMultiplicityMC);
           }else if(orig==5){
             fPtVsYVsMultGenFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
@@ -1546,7 +1546,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
             }
             if(isInAcc){
               fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
-	      fPtVsPhiVsMultGenAccFeeddw->Fill(ptgen,phigen,fMultiplicityMC);
+              fPtVsPhiVsMultGenAccFeeddw->Fill(ptgen,phigen,fMultiplicityMC);
               fPtVsYVsPtBGenAccFeeddw->Fill(ptgen,ygen,ptbmoth);
             }
             if(isEvSel && isInAcc){
@@ -1618,8 +1618,8 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
                   fHistCheckOriginRecoD->Fill(orig,isInj);
                   if(labD<200000) fHistCheckOriginRecoVsGen->Fill(fOrigContainer[labD],orig);
                   if(orig==4){
-		    fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicityMC);
-		    fPtVsPhiVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Phi(),fMultiplicityMC);
+                    fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicityMC);
+                    fPtVsPhiVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Phi(),fMultiplicityMC);
                   }else if(orig==5){
                     Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,dmes);
                     fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicityMC);
