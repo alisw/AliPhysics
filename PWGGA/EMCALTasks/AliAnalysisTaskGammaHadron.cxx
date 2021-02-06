@@ -445,8 +445,64 @@ void AliAnalysisTaskGammaHadron::SetPi0MassSelection(Int_t input) {
     {  0.005971, 0.006350, 0.006648, 0.008418, 0.011478, 0.005000  ,0.01,0.01,0.01}
   };
 
+// MB Corr4 20210204
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 1.0]     Bins: 1 4
+  // OpeningAngle Range:   [0.023 - 3.142]     Bins: 6 12
+  // Track Cluster Correction: Subtraction
+  // Lambda cuts vary by Centrality
+  // Cent 0 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 1 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 2 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 3 : [0.10 - 0.50]     Bins: 1 5
+
+	Double_t fPi0MassFixedValue_6[kNMainCentBins][kNoGammaBins] = {
+    { 0.138998, 0.139368, 0.141303, 0.148221, 0.117443, 0.15, 0.15, 0.15, 0.15},
+    { 0.137308, 0.137660, 0.139410, 0.144601, 0.107966, 0.15, 0.15, 0.15, 0.15},
+    { 0.136108, 0.135959, 0.137340, 0.141563, 0.111171, 0.15, 0.15, 0.15, 0.15},
+    { 0.135356, 0.135408, 0.135935, 0.141102, 0.115666, 0.15, 0.15, 0.15, 0.15}
+  };
+	Double_t fPi0SigmaFixedValue_6[kNMainCentBins][kNoGammaBins] = {
+    { 0.011146, 0.011566, 0.011338, 0.011077, 0.013047, 0.01, 0.01, 0.01, 0.01},
+    { 0.009240, 0.009207, 0.009374, 0.011105, 0.016010, 0.01, 0.01, 0.01, 0.01},
+    { 0.007751, 0.008359, 0.007867, 0.006892, 0.019000, 0.01, 0.01, 0.01, 0.01},
+    { 0.006977, 0.006724, 0.007251, 0.007834, 0.019000, 0.01, 0.01, 0.01, 0.01}
+  };
+
+// GA Corr4 20210204
+  // Energy Range: [2.00 - 100.00]     Bins: 1 3
+  // Asym Range:   [0.00 - 1.00]     Bins: 1 4
+  // OpeningAngle Range:   [0.017 - 3.142]     Bins: 3 12
+  // Track Cluster Correction: Subtraction
+  // Lambda cuts vary by Centrality
+  // Cent 0 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 1 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 2 : [0.10 - 0.50]     Bins: 1 5
+  // Cent 3 : [0.10 - 0.50]     Bins: 1 5
+
+	Double_t fPi0MassFixedValue_7[kNMainCentBins][kNoGammaBins] = {
+    { 0.135693, 0.132496, 0.139298, 0.147529, 0.158139, 0.15, 0.15, 0.15, 0.15},
+    { 0.135277, 0.132225, 0.137970, 0.144848, 0.153996, 0.15, 0.15, 0.15, 0.15},
+    { 0.133821, 0.132782, 0.136673, 0.142265, 0.151094, 0.15, 0.15, 0.15, 0.15},
+    { 0.133668, 0.132907, 0.135557, 0.140655, 0.150016, 0.15, 0.15, 0.15, 0.15}
+  };
+	Double_t fPi0SigmaFixedValue_7[kNMainCentBins][kNoGammaBins] = {
+    { 0.010231, 0.017349, 0.012613, 0.012747, 0.013998, 0.01, 0.01, 0.01, 0.01},
+    { 0.007734, 0.015694, 0.010948, 0.010878, 0.012375, 0.01, 0.01, 0.01, 0.01},
+    { 0.006950, 0.005000, 0.008406, 0.008908, 0.009553, 0.01, 0.01, 0.01, 0.01},
+    { 0.006978, 0.005000, 0.007047, 0.008444, 0.011205, 0.01, 0.01, 0.01, 0.01}
+  };
+
 
 	switch (input) {
+    case 7:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_7, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_7, sizeof(fPi0SigmaFixed));
+      break;
+    case 6:
+			memcpy (fPi0MassFixed , fPi0MassFixedValue_6, sizeof(fPi0MassFixed));
+			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_6, sizeof(fPi0SigmaFixed));
+      break;
     case 5:
 			memcpy (fPi0MassFixed , fPi0MassFixedValue_5, sizeof(fPi0MassFixed));
 			memcpy (fPi0SigmaFixed, fPi0SigmaFixedValue_5, sizeof(fPi0SigmaFixed));
