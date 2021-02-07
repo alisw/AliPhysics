@@ -1215,7 +1215,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 
         //variables for ML application
         AliAODPidHF *Pid_HF = nullptr;
-        vector<Double_t> modelPred{};
+        std::vector<Double_t> modelPred{};
         bool isMLsel = true;
 
         if (fApplyML)
