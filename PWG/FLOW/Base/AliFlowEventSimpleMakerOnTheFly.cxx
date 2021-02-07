@@ -220,9 +220,15 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   pTrack->SetEta(gRandom->Uniform(-1.,1.));
   pTrack->SetCharge((gRandom->Integer(2)>0.5 ? 1 : -1));
   // Check uniform acceptance:
-  if(!fUniformAcceptance && !this->AcceptPhi(pTrack)){continue;}
+  if(!fUniformAcceptance && !this->AcceptPhi(pTrack)){
+    delete pTrack;
+    continue;
+  }
   // Check pT efficiency:
-  if(!fUniformEfficiency && !this->AcceptPt(pTrack)){continue;}
+  if(!fUniformEfficiency && !this->AcceptPt(pTrack)){
+    delete pTrack;
+    continue;
+  }
   // Checking the RP cuts:  	 
   if(cutsRP->PassesCuts(pTrack))
   {
