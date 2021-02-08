@@ -87,6 +87,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fInputList(0),
 	fInputListALICE(0),
 	fOutput(0),
+	fTaskName(name),
 	fCentDetName("V0M"),
 	paodEvent(0),
 	fcent(-999),
@@ -169,6 +170,10 @@ void AliJCatalystTask::UserCreateOutputObjects()
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 	fJCorMapTask = (AliJCorrectionMapTask*)man->GetTask(fJCorMapTaskName);
 	if(!fJCorMapTask ) AliInfo("----CHECK if AliJCorrectionMapTask Missing ----");
+	if( fJCorMapTask ) {
+		fCentBinEff = fJCorMapTask->GetCentBinEff();
+		fCentBinEff->Print();
+	}
 
 	gRandom->SetSeed();
 
@@ -262,9 +267,8 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 			return;
 		}
 		// Load correction maps in the event loop
-		if( fEvtNum == 1 && fJCorMapTask ) {
-			fCentBinEff = fJCorMapTask->GetCentBinEff();
-		}
+		//if( fEvtNum == 1 && fJCorMapTask ) {
+
 		if(fJCorMapTask) {
 			grEffCor = fJCorMapTask->GetEffCorrectionMap(fRunNum,fcent,fEffFilterBit); 
 			int fcBin = 
