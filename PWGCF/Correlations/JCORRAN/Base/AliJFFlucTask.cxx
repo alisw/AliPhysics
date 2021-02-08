@@ -96,8 +96,8 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fEffMode(0),
 	fEffFilterBit(0),
 	phiMapIndex(0),
-	fRunNum(0),
 	fPcharge(0),
+	fRunNum(0),
 	fNumTPCClusters(70),
 	fEta_min(-0.8),
 	fEta_max(0.8),
@@ -156,7 +156,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	
 	gRandom->SetSeed();
 
-	fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max, 0.5 );
+	//fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max, 0.5 ); not used anymore, checked with JP
 
 	fInputList = new TClonesArray("AliJBaseTrack" , 2500);
 	fInputList->SetOwner(kTRUE);
@@ -164,6 +164,11 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
 	fJCorMapTask = (AliJCorrectionMapTask*)man->GetTask(fJCorMapTaskName);
+	if(!fJCorMapTask ) AliInfo("----CHECK if AliJCorrectionMapTask Missing ----");
+	if( fJCorMapTask ) {
+		fCentBinEff = fJCorMapTask->GetCentBinEff();
+		fCentBinEff->Print();
+	}
 
 	OpenFile(1);
 	fOutput = gDirectory;
@@ -236,9 +241,6 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		//fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ;
 		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
 		fRunNum = currentEvent->GetRunNumber();
-		if( fEvtNum == 1 && fEffMode ) {
-			fCentBinEff = fJCorMapTask->GetCentBinEff();
-		}
 
 		if(!IsGoodEvent( currentEvent ))
 			return;
