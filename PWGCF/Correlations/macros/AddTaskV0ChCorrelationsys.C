@@ -27,7 +27,8 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
 
 //=====================================  
   // create task
-  AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName,  cenMin,cenMax,effCorr);  
+
+  AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
 
   task->SetAnalysisMC(isMC);
   //------------------------------Mixing part------------------------------
@@ -69,66 +70,31 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   task->SetPtArmV0AlphaV0(0.2);
   task->SetTrackPileUpCut(kTRUE);
   task->SetV0PileUpCut(kTRUE);
-   //-------------------------------------PID--------------------------------
   task->SetV0PIDSigma(3);
-  //-------------------------------------------------------------------------
+
   mgr->AddTask(task);
     
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
   
-
-  // create containers for input/output
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput0 
-    = mgr->CreateContainer("Output",AliDirList::Class(),   AliAnalysisManager::kOutputContainer, 
-			                     Form("%s", fileName.Data()));
-
-AliAnalysisDataContainer *coutput2
-    = mgr->CreateContainer("Output2",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-AliAnalysisDataContainer *coutput3
-    = mgr->CreateContainer("Output3",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-AliAnalysisDataContainer *coutput4
-    = mgr->CreateContainer("Output4",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-AliAnalysisDataContainer *coutput5
-    = mgr->CreateContainer("Output5",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-AliAnalysisDataContainer *coutput6
-    = mgr->CreateContainer("Output6",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-AliAnalysisDataContainer *coutput7
-    = mgr->CreateContainer("Output7",AliDirList::Class(), AliAnalysisManager::kOutputContainer,
-                                            Form("%s", fileName.Data()));//
-
-  AliAnalysisDataContainer *cinput1 = NULL;
+  AliAnalysisDataContainer *cinput1 = 0x0;
 
   TList *effList = 0x0;
   
   if(effCorr){
 
 
-       TString eff_container_name = "";
-       eff_container_name+=container_name_extension.Data();
 
+       TString eff_container_name = "Efficiency";
+       eff_container_name+=container_name_extension.Data();
 
     cinput1 = mgr->CreateContainer(Form("%s", eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
-   
-
 //call eff  
-
+     TGrid::Connect("alien://");
     TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/m/manaam/Efficiency/%s.root",EffFileNameWithPath.Data()));
-
-
 
     if(!file) {
       printf("ERROR: efficiency file is not available!\n",EffFileNameWithPath.Data());
@@ -143,21 +109,19 @@ AliAnalysisDataContainer *coutput7
     }
   }
 
-
-  // connect input/output
-  mgr->ConnectInput(task, 0, cinput);
-
-  if(effCorr) mgr->ConnectInput(task, 1, cinput1);
-   mgr->ConnectOutput(task, 1, coutput0);
-   mgr->ConnectOutput(task, 2, coutput2);
-   mgr->ConnectOutput(task, 3, coutput3);
-   mgr->ConnectOutput(task, 4, coutput4);
-   mgr->ConnectOutput(task, 5, coutput5);
-   mgr->ConnectOutput(task, 6, coutput6);
-   mgr->ConnectOutput(task, 7, coutput7);
+// your task needs input: here we connect the manager to your task
+    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+    if(effCorr){
+        cinput1->SetData(effList);
+        mgr->ConnectInput(task, 1, cinput1);  
+    }
 
 
-  if(effCorr) cinput1->SetData(effList);
+// same for the output
+   TString container_name = "MyOutputContainer";
+   container_name += container_name_extension.Data();
+
+   mgr->ConnectOutput(task,8,mgr->CreateContainer(container_name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
 return task;
 

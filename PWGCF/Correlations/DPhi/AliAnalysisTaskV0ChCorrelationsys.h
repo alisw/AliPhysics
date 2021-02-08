@@ -19,7 +19,7 @@ class TH1F;
 class TH1D;
 class TH2F;
 class THnSparse;
-class AliDirList;
+class TList;
 class AliPIDResponse;
 class AliEventPoolManager;
 class TH1I;
@@ -138,16 +138,17 @@ private:
    Double_t        fMixingTracks;  // size of track buffer for event mixing
    Double_t        fPoolSize;
    AliEventPoolManager     *fPoolMgr;  //! event pool manager
-   AliDirList           *fOutput;  //! Output list
-   AliDirList           *fOutput2;
-   AliDirList           *fOutput3;
-   AliDirList           *fOutput4;
-   AliDirList           *fOutput5;
-   AliDirList           *fOutput6;
-   AliDirList           *fOutput7;
+   TList           *fOutput; //! Output list
+   TList           *fOutput2;//! Output list
+   TList           *fOutput3;//! Output list
+   TList           *fOutput4;//! Output list
+   TList           *fOutput5;//! Output list
+   TList           *fOutput6;//! Output list
+   TList           *fOutput7;//! Output list
+   TList           *fOutput8;//! Output list
 
 
-  // AliDirList           tQAEvent;
+  // TList           tQAEvent;
    //TF1             *fMultiplicityV0McorrCut;
    AliPIDResponse  *fPIDResponse;  // PID response
    Double_t        fPrimaryVertexCut;//fNumOfVzBins
