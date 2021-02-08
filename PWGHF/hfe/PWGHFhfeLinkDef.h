@@ -134,6 +134,5 @@
 #pragma link C++ class  AliAnalysisTask_QA_EMCALElectrons+;
 #pragma link C++ class  AliAnalysisTaskHFEmultTPCEMCAL+;
 #pragma link C++ class  AliAnalysisTaskHFEBeautyMultiplicity+;
-#pragma link C++ class  AliAnalysisHFEppEMCalBeauty+;
 #pragma link C++ class  AliAnalysisTaskIPResolBeautyppCal+;
 #endif
