@@ -3669,12 +3669,7 @@ Bool_t Config_Xik0(
     
     Double_t mass= 0.497611+1.32171;
     
-    Bool_t CheckOOBP=false;//true;
-    if(TrackCutsXi==1) CheckOOBP=true;
-    
     // selections for V0 daughters
-    
-    Int_t K0sCuts=TrackCutsK%1000;
     
     Int_t v0d_xrows=70;
     Float_t v0d_rtpc=0.8;
@@ -3702,8 +3697,11 @@ Bool_t Config_Xik0(
     Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
     
-    if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
-    
+    if(TrackCutsK/100000) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+    if((TrackCutsK/10000)%10==1) k0sSwitch=kFALSE;//no competing V0 rejection
+    if((TrackCutsK/100)%100) k0s_pLife=(TrackCutsK/100)%100;
+    if(TrackCutsK%100) k0s_piPIDCut=((float) (TrackCutsK%100))*0.1;
+
     AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
     cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
     cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
@@ -3737,7 +3735,15 @@ Bool_t Config_Xik0(
     Float_t Xi_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
-    
+    Float_t V0lifetime=40.;
+
+    Bool_t CheckOOBP=false;//true;
+    if((TrackCutsXi/1000000)==1) CheckOOBP=true;
+    if((TrackCutsXi/10000)%100) V0lifetime=(TrackCutsXi/10000)%100;
+    if(V0lifetime>98.5) V0lifetime=1e20;//turn off
+    if((TrackCutsXi/100)%100) XiPPIDcut=((float) ((TrackCutsXi/100)%100))*0.1;
+    if(TrackCutsXi%100) XiPiPIDcut=((float) (TrackCutsXi%100))*0.1;
+
     AliRsnCutCascade* cutXi=new AliRsnCutCascade("cutXi",kXiMinus);
     cutXi->SetPIDCutV0Proton(XiPPIDcut);
     cutXi->SetPIDCutV0Pion(XiPiPIDcut);
@@ -3753,7 +3759,7 @@ Bool_t Config_Xik0(
     cutXi->SetV0HighRadius(1e5); // not using
     cutXi->SetCascadeLowRadius(0.5); // 0
     cutXi->SetCascadeHighRadius(1e5); // not using
-    //cutXi->SetV0Life(20);
+    cutXi->SetV0Life(V0lifetime);
     cutXi->SetMassTolerance(Xi_massTol);
     cutXi->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXi->SetV0MassTolerance(Xi_V0massTol);
@@ -3778,7 +3784,7 @@ Bool_t Config_Xik0(
     cutXibar->SetV0HighRadius(1e5); // not using
     cutXibar->SetCascadeLowRadius(0.5); // 0
     cutXibar->SetCascadeHighRadius(1e5); // not using
-    //cutXibar->SetV0Life(20);
+    cutXibar->SetV0Life(V0lifetime);
     cutXibar->SetMassTolerance(Xi_massTol);
     cutXibar->SetMassToleranceVeto(Xi_massTolVeto);//Rejection range for Competing Xi Rejection
     cutXibar->SetV0MassTolerance(Xi_V0massTol);

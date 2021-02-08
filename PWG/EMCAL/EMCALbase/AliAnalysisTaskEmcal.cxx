@@ -1060,17 +1060,45 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   if (!fCaloCellsName.IsNull() && !fCaloCells) {
-    fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
+    TString objectname = fCaloCellsName;
+    if(fCaloCellsName == "usedefault") {
+      TString datatype; 
+      if(fInputHandler->IsA() == AliAODInputHandler::Class()) {
+        objectname = "emcalCells";
+        datatype = "AOD"; 
+      } else {
+        objectname = "EMCALCells";
+        datatype = "ESD";
+      }
+      AliInfoStream() << GetName() << ": [Cell container] usedefault: Using container " << objectname << " for data type " << datatype << std::endl;
+    } else {
+      AliInfoStream() << GetName() << ": [Cell container] user-defined: Using container " << objectname << std::endl;
+    }
+    fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(objectname));
     if (!fCaloCells) {
-      AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
+      AliErrorStream() << GetName() << ": Could not retrieve cells " << objectname << "!" << std::endl; 
       return;
     }
   }
 
   if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
-    fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(InputEvent()->FindListObject(fCaloTriggersName));
+    TString objectname = fCaloTriggersName;
+    if(fCaloTriggersName == "usedefault") {
+      TString datatype; 
+      if(fInputHandler->IsA() == AliAODInputHandler::Class()) {
+        objectname = "emcalTrigger";
+        datatype = "AOD"; 
+      } else {
+        objectname = "EMCALTrigger";
+        datatype = "ESD";
+      }
+      AliInfoStream() << GetName() << ": [Trigger container] usedefault: Using container " << objectname << " for data type " << datatype << std::endl;
+    } else {
+      AliInfoStream() << GetName() << ": [Trigger container] user-defined: Using container " << objectname << std::endl;
+    }
+    fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(InputEvent()->FindListObject(objectname));
     if (!fCaloTriggers) {
-      AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
+      AliErrorStream() << GetName() <<": Could not retrieve calo triggers " << objectname << "!" << std::endl;
       return;
     }
   }

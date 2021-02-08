@@ -141,6 +141,7 @@ void AliJFJTask::UserCreateOutputObjects()
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
     fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
+    if(fDebug > 1) cout << "fJCatalystTaskName = " << fJCatalystTaskName << endl;
 
     OpenFile(1);
     fOutput = gDirectory;

@@ -22,7 +22,7 @@ inputObjects:                                       # Define all of the input ob
             minE: 0.0                               # Cluster min E.
             minPt: 0.0                              # Cluster min pt.
             clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask()
-            exoticsCut: false                       # enables cut on exotics flag                        
+            exoticsCut: false                       # enables cut on exotics flag
         defaultClusterContainer_3:                  # Name of another cluster input which inherits from defaultClusterContainer
             # The branch name is inherited from defaultClusterContainer!
             minE: 0.0                               # Cluster min E.
@@ -86,7 +86,7 @@ CellBadChannel:                                     # Bad channel removal at the
     customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
-    acceptWarm: false                               # Declare warm channels as good  
+    acceptWarm: false                               # Declare warm channels as good
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellTimeCalib:                                      # Cell Time Calibration component
@@ -121,28 +121,28 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     inducedEnergyLossFraction:                      # Fraction of energy lost by max energy cell in one of T-Card cells
         enabled: true                               # Enable setting these values
        #values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
-        values: {0 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 1 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 2 : [1.15e-02, 1.15e-02, 1.15e-02, 0], 
-                 3 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 4 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 5 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 6 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 7 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],  
-                 9 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 10: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 11: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
-                 12: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 13: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 14: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 15: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 16: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 17: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 18: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 19: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+        values: {0 : [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 1 : [1.20e-02, 1.20e-02, 1.20e-02, 0],
+                 2 : [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 3 : [1.20e-02, 1.20e-02, 1.20e-02, 0],
+                 4 : [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 5 : [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 6 : [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 7 : [1.20e-02, 1.20e-02, 1.20e-02, 0],
+                 8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 9 : [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 10: [1.20e-02, 1.20e-02, 1.20e-02, 0],
+                 11: [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 12: [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 13: [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 14: [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 15: [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 16: [1.15e-02, 1.15e-02, 1.15e-02, 0],
+                 17: [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 18: [0.80e-02, 0.80e-02, 0.80e-02, 0],
+                 19: [0.80e-02, 0.80e-02, 0.80e-02, 0],
                  20: [0.80e-02, 0.80e-02, 0.80e-02, 0],
-                 21: [0.80e-02, 0.80e-02, 0.80e-02, 0]} 
+                 21: [0.80e-02, 0.80e-02, 0.80e-02, 0]}
     inducedEnergyLossFractionP1:                    # Slope parameter of fraction of energy lost by max energy cell in one of T-Card cells
         enabled: true                               # Enable setting these values
         values: {"all" : [-1.1e-03, -1.1e-03, -1.1e-03, 0]}  # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
@@ -151,17 +151,17 @@ CellEmulateCrosstalk:                               # Component to emulate cross
         values: {"all" : [5.0e-03,5.0e-03,5.0e-03, 0]}        # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, ??]
     inducedEnergyLossMinimumFraction:               # Minimum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
-        values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 
-                 10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
-                 20: [3.5e-3], 21: [3.5e-3]} 
+        values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3],
+                 10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3],
+                 20: [3.5e-3], 21: [3.5e-3]}
        #values: {"all" : [0.008]}                   # Values are [minimum fraction]
     inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
         values: {"all" : [0.018]}                   # Values are [maximum fraction]
     inducedEnergyLossProbability:                   # Fraction of times max cell energy correlates with cross cells
         enabled: true                               # Enable setting these values
-        values: {"all" : [1.0]} 
-       #values: {0 : [0.30], 1 : [0.60], 2 : [0.50], 3 : [1.00], 4 : [0.35], 5 : [0.25], 6 : [0.35], 7 : [1.00], 8 : [0.25], 9 : [0.25], 
+        values: {"all" : [1.0]}
+       #values: {0 : [0.30], 1 : [0.60], 2 : [0.50], 3 : [1.00], 4 : [0.35], 5 : [0.25], 6 : [0.35], 7 : [1.00], 8 : [0.25], 9 : [0.25],
        #         10: [0.35], 11: [0.35], 12: [0.35], 13: [0.35], 14: [0.35], 15: [0.35], 16: [0.35], 17: [0.35], 18: [0.35], 19: [0.35]}  # Values are [probability per event from 0 to 1]
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
@@ -214,7 +214,7 @@ ClusterExotics:                                     # Cluster exotics identifica
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
     fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
-    fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV 
+    fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV
     fMinCellEnNdiffCut: 0                           # Count cells in different T-Card above this value (GeV), for tests, use 0
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
@@ -232,7 +232,7 @@ ClusterNonLinearity:                                # Cluster non-linearity corr
 ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-linearity afterburner correction component - To be applied after the standard non-linearity correction
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    afterburnerVersion: kNoCorrection               # Sets the version of the correction to be used. kPCM_EMCal=Standard, kEMCal_EMCal, kPCM_EMCalFunctionRatio, kEMCal_EMCalFunctionRatio=systematic variations 
+    afterburnerVersion: kNoCorrection               # Sets the version of the correction to be used. kPCM_EMCal=Standard, kEMCal_EMCal, kPCM_EMCalFunctionRatio, kEMCal_EMCalFunctionRatio=systematic variations
     setMCPeriod: ""                                 # Set here the MC production name. Only specific productions have corrections
     setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
@@ -266,7 +266,7 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     createHistos: false                             # Whether the task should create output histograms
     phiMatch: 0.030                                 # Phi match value
     etaMatch: 0.015                                 # Eta match value
-    doMomDepMatching: false                         # This enables a momentum dependent eta/phi window for track matching 
+    doMomDepMatching: false                         # This enables a momentum dependent eta/phi window for track matching
     hadCorr: 2.                                     # Sets the fraction f of track p to subtract from matched cluster. To subtract all tracks within the eta-phi cut set hadCorr = 1+f. To subtract only one track set 0<hadCorr<1 where hadCorr=f.
     Eexcl: 0                                        # Cell energy that cannot be subtracted
     doTrackClus: true                               # Loop over tracks first
@@ -296,6 +296,7 @@ CellTrackMatcherAndMIPSubtraction:                  # Cell energy shift correcti
     createHistos: false                             # Whether the task should create output histograms
     EmipData: 0.2356                                # Energy to be subtracted, in case of a match, for cells in data
     EmipMC: 0.2824                                  # Energy to be subtracted, in case of a match, for cells in MC
+    DoPropagation: false                            # Whether track propagation should be performed. In case of AODs its not recommended to enable it
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection

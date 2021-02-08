@@ -77,6 +77,7 @@ const char* AliCaloSigmaCuts::fgkCutNames[AliCaloSigmaCuts::kNCuts] = {
 //________________________________________________________________________
 AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
+  fHistograms(NULL),
   fCutString(NULL),
   fCutStringRead(""),
   fAmenterosCut(NULL),
@@ -99,8 +100,10 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
   fQt(0),
   fMaxOpeningAngle(0),
   fMinOpeningAngle(0),
-  fBackgroundestimation(0)
-  
+  fBackgroundestimation(0),
+  fHistDEDx(0),
+  fHistTOFBeta(0),
+  fHistTPCSignal(0)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -108,6 +111,7 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
 //________________________________________________________________________
 AliCaloSigmaCuts::AliCaloSigmaCuts(const AliCaloSigmaCuts &ref) :
   AliAnalysisCuts(ref),
+  fHistograms(NULL),
   fCutString(NULL),
   fCutStringRead(""),
   fAmenterosCut(NULL),
@@ -130,8 +134,10 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const AliCaloSigmaCuts &ref) :
   fQt(ref.fQt),
   fMaxOpeningAngle(ref.fMaxOpeningAngle),
   fMinOpeningAngle(ref.fMinOpeningAngle),
-  fBackgroundestimation(ref.fBackgroundestimation)
-
+  fBackgroundestimation(ref.fBackgroundestimation),
+  fHistDEDx(ref.fHistDEDx),
+  fHistTOFBeta(ref.fHistTOFBeta),
+  fHistTPCSignal(ref.fHistTPCSignal)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -149,6 +155,36 @@ AliCaloSigmaCuts::~AliCaloSigmaCuts() {
     fAmenterosCut = NULL;
   }
 }
+
+
+//________________________________________________________________________
+void AliCaloSigmaCuts::InitCutHistograms(TString name){
+
+  // Initialize Cut Histograms for QA (only initialized and filled if function is called)
+  TH1::AddDirectory(kFALSE);
+
+  if(fHistograms != NULL){
+    delete fHistograms;
+    fHistograms=NULL;
+  }
+
+  if(fHistograms==NULL){
+    fHistograms=new TList();
+    fHistograms->SetOwner(kTRUE);
+    if(name=="")fHistograms->SetName(Form("SigmaPlusCuts_%s",GetCutNumber().Data()));
+    else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+  }
+
+  fHistDEDx = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 200,0.,10.,200,1.,201.);
+  fHistograms->Add(fHistDEDx);
+  fHistTOFBeta = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 200,0.,10.,130,0.1,1.3);
+  fHistograms->Add(fHistTOFBeta);
+  fHistTPCSignal = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 200, 0., 10., 60, -3., 3.);
+  fHistograms->Add(fHistTPCSignal);
+  TH1::AddDirectory(kTRUE);
+  return;
+}
+
 
 //________________________________________________________________________
 //________________________________________________________________________
@@ -745,6 +781,18 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
     if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) < fChi2ITS || (track->GetITSchi2()) > 10.) return kFALSE;
   }
 
+  //dE/dx and TOF Beta Plot
+  Double_t tpcSignal = track->GetTPCsignal();
+  if(fHistDEDx) fHistDEDx->Fill(track->P(), tpcSignal);
+  if(track->GetTOFsignal()){
+    const float len = track->GetIntegratedLength();
+    const float tim = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+    const float beta = len / (tim * (2.99792457999999984e-02));
+    if(fHistTOFBeta) fHistTOFBeta->Fill(track->P(), beta);
+  }
+  
+  if(fHistTPCSignal) fHistTPCSignal->Fill(track->P(), fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+  
   if(!(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton))) return kFALSE;
   if(track->P() <= 0.1) return kFALSE;
   if(track->P() <= 0.8){
@@ -765,10 +813,15 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
         }
       }
     }
-  }  
+  }
+  return kTRUE;  
+}
+//_____________________________________________________________________________
+// Openingangle Cut on sigma daughters
+Bool_t AliCaloSigmaCuts::TrackIsSelectedByDCACut(AliAODTrack* track){
+   
   Float_t dcaXY = 0.0, dcaZ = 0.0;
   track->GetImpactParameters(dcaXY,dcaZ);
-
   if(dcaXY < fDCAXY || dcaZ < fDCAZ) return kFALSE;
 
   return kTRUE;

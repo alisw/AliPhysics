@@ -1215,21 +1215,39 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
 
         //variables for ML application
         AliAODPidHF *Pid_HF = nullptr;
-        Double_t modelPred = -1.;
+        std::vector<Double_t> modelPred{};
         bool isMLsel = true;
 
         if (fApplyML)
         {
           Pid_HF = fRDCutsAnalysis->GetPidHF();
-          isMLsel = fMLResponse->IsSelected(modelPred, d, aod->GetMagneticField(), Pid_HF);
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF);
         }
 
         if(isMLsel)
         {
+          if(modelPred.size() == 0)
+          {
+            modelPred.push_back(-1.);
+            modelPred.push_back(-1.);
+            modelPred.push_back(-1.);
+          }
+          else if(modelPred.size() == 1)
+          {
+            modelPred.push_back(-1.);
+            modelPred.push_back(-1.);
+          }
           //for all THnSparses except for FD
-          Double_t arrayForSparse[kVarForSparse] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, modelPred};
+          std::vector<Double_t> arrayForSparse = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen,
+                                                  dlenxy, ndlenxy, dd0max, modelPred[0], modelPred[1], modelPred[2]};
           //for THnSparses for FD
-          Double_t arrayForSparseFD[kVarForSparseFD] = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen, dlenxy, ndlenxy, dd0max, ptB, modelPred};
+          std::vector<Double_t> arrayForSparseFD = {invMass, ptCand, TMath::Abs(impparXY), resSel, minPtDau, sigvert, cosp, cospxy, dlen,
+                                                    dlenxy, ndlenxy, dd0max, ptB, modelPred[0], modelPred[1], modelPred[2]};
+          if(fUseMinimalVarForSparse)
+          {
+            arrayForSparse = {invMass, ptCand, modelPred[0], modelPred[1], modelPred[2]};
+            arrayForSparseFD = {invMass, ptCand, ptB, modelPred[0], modelPred[1], modelPred[2]};
+          }
 
           //for imppar THnSparses
           Double_t arrayForImpPar[kVarForImpPar] = {invMass, ptCand, impparXY};
@@ -1281,7 +1299,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
           }
           if (fDoSparse && (!fReadMC || !fFillOnlySignalSparses))
           { //fill in case of false fReadMC or false fFillOnlySignalSparses
-            fSparseCutVars[0]->Fill(arrayForSparse);
+            fSparseCutVars[0]->Fill(arrayForSparse.data());
           }
           if (passTopolAndPIDCuts)
           {
@@ -1336,10 +1354,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
               if (fDoSparse)
               {
                 if (isPrimary)
-                  fSparseCutVars[1]->Fill(arrayForSparse);
+                  fSparseCutVars[1]->Fill(arrayForSparse.data());
                 else if (isFeeddown)
                 {
-                  fSparseCutVars[2]->Fill(arrayForSparseFD);
+                  fSparseCutVars[2]->Fill(arrayForSparseFD.data());
                 }
               }
             }
@@ -1630,88 +1648,67 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
   Double_t minsel = 0.5;
   Double_t maxsel = 2.5;
 
-  TString axTit[kVarForSparse] = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})", "cos(#theta_{P}^{xy})", "decL (cm)", "decL XY (cm)", "Norm decL XY", "Norm max d0-d0exp", "ML response"};
-
-  TString axTitFD[kVarForSparseFD] = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})", "cos(#theta_{P}^{xy})", "decL (cm)", "decL XY (cm)", "Norm decL XY", "Norm max d0-d0exp", "p_{T}^{B} (GeV/c)", "ML response"};
-
-  //dimensions for THnSparse which are NOT for BFeed
-  Int_t nbins[kVarForSparse];
-  Double_t xmin[kVarForSparse];
-  Double_t xmax[kVarForSparse];
-  //dimensions for THnSparse for BFeed
-  Int_t nbinsFD[kVarForSparseFD];
-  Double_t xminFD[kVarForSparseFD];
-  Double_t xmaxFD[kVarForSparseFD];
-
-  if (fSystem == kpp)
-  {
-    std::vector<Int_t> nBinsRecoVec = {nmassbins, nptbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40};
-    std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10.};
-    std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10.};
-    std::copy(nBinsRecoVec.begin(), nBinsRecoVec.end(), nbins);
-    std::copy(xminRecoVec.begin(), xminRecoVec.end(), xmin);
-    std::copy(xmaxRecoVec.begin(), xmaxRecoVec.end(), xmax);
-    //ML
-    nbins[kVarForSparse - 1] = fNMLBins;
-    xmin[kVarForSparse - 1] = fMLOutputMin;
-    xmax[kVarForSparse - 1] = fMLOutputMax;
-
-    //feed-down
-    nBinsRecoVec.push_back(nptbins);
-    nBinsRecoVec.push_back(ptmin);
-    nBinsRecoVec.push_back(ptmax);
-    std::copy(nBinsRecoVec.begin(), nBinsRecoVec.end(), nbinsFD);
-    std::copy(xminRecoVec.begin(), xminRecoVec.end(), xminFD);
-    std::copy(xmaxRecoVec.begin(), xmaxRecoVec.end(), xmaxFD);
-    //ML
-    nbinsFD[kVarForSparseFD - 1] = fNMLBins;
-    xminFD[kVarForSparseFD - 1] = fMLOutputMin;
-    xmaxFD[kVarForSparseFD - 1] = fMLOutputMax;
-  }
-  else if (fSystem == kPbPb)
-  {
-    std::vector<Int_t> nBinsRecoVec = {nmassbins, nptbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12};
-    std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0.};
-    std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6.};
-    std::copy(nBinsRecoVec.begin(), nBinsRecoVec.end(), nbins);
-    std::copy(xminRecoVec.begin(), xminRecoVec.end(), xmin);
-    std::copy(xmaxRecoVec.begin(), xmaxRecoVec.end(), xmax);
-    //ML
-    nbins[kVarForSparse - 1] = fNMLBins;
-    xmin[kVarForSparse - 1] = fMLOutputMin;
-    xmax[kVarForSparse - 1] = fMLOutputMax;
-
-    //feed-down
-    nBinsRecoVec.push_back(nptbins);
-    nBinsRecoVec.push_back(ptmin);
-    nBinsRecoVec.push_back(ptmax);
-    std::copy(nBinsRecoVec.begin(), nBinsRecoVec.end(), nbinsFD);
-    std::copy(xminRecoVec.begin(), xminRecoVec.end(), xminFD);
-    std::copy(xmaxRecoVec.begin(), xmaxRecoVec.end(), xmaxFD);
-    //ML
-    nbinsFD[kVarForSparseFD - 1] = fNMLBins;
-    xminFD[kVarForSparseFD - 1] = fMLOutputMin;
-    xmaxFD[kVarForSparseFD - 1] = fMLOutputMax;
-  }
-
   Int_t nVarForSparse = kVarForSparse;
   Int_t nVarForSparseFD = kVarForSparseFD;
-  if (!fApplyML)
+
+  // use pp for default values
+  std::vector<Int_t> nBinsRecoVec = {nmassbins, nptbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+  std::vector<Int_t> nBinsRecoVecFD = {nmassbins, nptbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40, nptbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminRecoVecFD = {fLowmasslimit, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10., ptmin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxRecoVecFD = {fUpmasslimit, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10., ptmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+  std::vector<TString> axTit = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})",
+                                "cos(#theta_{P}^{xy})", "decL (cm)", "decL XY (cm)", "Norm decL XY", "Norm max d0-d0exp", "ML response 0", "ML response 1", "ML response 2"};
+  std::vector<TString> axTitFD = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})",
+                                  "cos(#theta_{P}^{xy})", "decL (cm)", "decL XY (cm)", "Norm decL XY", "Norm max d0-d0exp", "p_{T}^{B} (GeV/c)", "ML response 0", "ML response 1", "ML response 2"};
+
+  if(!fUseMinimalVarForSparse)
   {
-    nVarForSparse--;
-    nVarForSparseFD--;
+    if (fSystem == kPbPb)
+    {
+      nBinsRecoVec = {nmassbins, nptbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+      xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+      xmaxRecoVec = {fUpmasslimit, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+      nBinsRecoVecFD = {nmassbins, nptbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12, nptbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+      xminRecoVecFD = {fLowmasslimit, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0., ptmin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+      xmaxRecoVecFD = {fUpmasslimit, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6., ptmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    }
+
+    if (!fApplyML)
+    {
+      nVarForSparse--;
+      nVarForSparseFD--;
+    }
+  }
+  else if(fApplyML && fUseMinimalVarForSparse)
+  {
+    nBinsRecoVec = {nBinsRecoVec[0], nBinsRecoVec[1], nBinsRecoVec[12], nBinsRecoVec[13], nBinsRecoVec[14]};
+    xminRecoVec = {xminRecoVec[0], xminRecoVec[1], xminRecoVec[12], xminRecoVec[13], xminRecoVec[14]};
+    xmaxRecoVec = {xmaxRecoVec[0], xmaxRecoVec[1], xmaxRecoVec[12], xmaxRecoVec[13], xmaxRecoVec[14]};
+    axTit = {axTit[0], axTit[1], axTit[12], axTit[13], axTit[14]};
+
+    nBinsRecoVecFD = {nBinsRecoVecFD[0], nBinsRecoVecFD[1], nBinsRecoVecFD[12], nBinsRecoVecFD[13], nBinsRecoVecFD[14], nBinsRecoVecFD[15]};
+    xminRecoVecFD = {xminRecoVecFD[0], xminRecoVecFD[1], xminRecoVecFD[12], xminRecoVecFD[13], xminRecoVecFD[14], xminRecoVecFD[15]};
+    xmaxRecoVecFD = {xmaxRecoVecFD[0], xmaxRecoVecFD[1], xmaxRecoVecFD[12], xmaxRecoVecFD[13], xmaxRecoVecFD[14], xmaxRecoVecFD[15]};
+    axTitFD = {axTitFD[0], axTitFD[1], axTitFD[12], axTitFD[13], axTitFD[14], axTitFD[15]};
+
+    nVarForSparse = knVarForSparseMLMinimal;
+    nVarForSparseFD = knVarForSparseMLMinimal+1;
+  }
+
+  if(fApplyML && fMultiClassML)
+  {
+    nVarForSparse += 2;
+    nVarForSparseFD += 2;
   }
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
-  fSparseCutVars[0] = new THnSparseF("hMassPtCutVarsAll",
-                                     "Mass vs. pt vs. cut vars - All",
-                                     nVarForSparse, nbins, xmin, xmax);
-  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt",
-                                     "Mass vs. pt vs. cut vars - promptD",
-                                     nVarForSparse, nbins, xmin, xmax);
-  fSparseCutVars[2] = new THnSparseF("hMassPtCutVarsBfeed",
-                                     "Mass vs. pt vs. cut vars - DfromB",
-                                     nVarForSparseFD, nbinsFD, xminFD, xmaxFD);
+  fSparseCutVars[0] = new THnSparseF("hMassPtCutVarsAll", "Mass vs. pt vs. cut vars - All", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
+  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt", "Mass vs. pt vs. cut vars - promptD", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
+  fSparseCutVars[2] = new THnSparseF("hMassPtCutVarsBfeed", "Mass vs. pt vs. cut vars - DfromB", nVarForSparseFD, nBinsRecoVecFD.data(), xminRecoVecFD.data(), xmaxRecoVecFD.data());
 
   for (Int_t iHisto = 0; iHisto < 2; iHisto++)
   {

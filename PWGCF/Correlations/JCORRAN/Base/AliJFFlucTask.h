@@ -21,10 +21,11 @@
 
 #include <AliAnalysisTaskSE.h>
 #include <AliAODMCParticle.h>
+#include <TGraphErrors.h>
 #include "AliJHistManager.h"
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
-#include "AliJEfficiency.h"
+#include "AliJCorrectionMapTask.h"
 
 //==============================================================
 
@@ -34,6 +35,7 @@ using namespace std;
 class TH1D;
 class TH2D;
 class TH3D;
+class TAxis;
 class TList;
 class TTree;
 class TRandom;
@@ -45,7 +47,7 @@ class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
 class TParticle;
-class AliJEfficiency;
+class TGraphErrors;
 
 class AliJFFlucTask : public AliAnalysisTaskSE {
 public:
@@ -89,11 +91,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetEffConfig( UInt_t effMode, UInt_t FilterBit );
-	UInt_t ConnectInputContainer(const TString, const TString);
-	void EnablePhiCorrection(const TString);
-	void EnableCentFlattening(const TString);
-	TH1 * GetCorrectionMap(UInt_t, UInt_t);
-	TH1 * GetCentCorrection();
+	void SetPhiCorrectionIndex(UInt_t id){phiMapIndex = id;} // need for subwagon
+	
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -154,19 +153,24 @@ public:
 private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
-	AliJEfficiency *fEfficiency; //!
 	AliJFFlucAnalysis *fFFlucAna; // analysis code
-	std::map<UInt_t, TH1 *> PhiWeightMap[96];
-
+	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
+	TString fJCorMapTaskName;
+	TH1 *pPhiWeights;
+	TGraphErrors *grEffCor; // for one cent
+	TAxis *fCentBinEff; // for different cent bin for MC eff
 	TString fTaskName;
 	TString fCentDetName;
 	UInt_t fEvtNum;
+	int fcBin;
+	Double_t fVertex[3];
 	UInt_t fFilterBit;
-	UInt_t fNumTPCClusters;
 	UInt_t fEffMode;
 	UInt_t fEffFilterBit;
+	UInt_t phiMapIndex;
 	int fPcharge;
 	int fRunNum;
+	UInt_t fNumTPCClusters;
 	UInt_t GlobTracks;
 	UInt_t TPCTracks;
 	UInt_t FB32Tracks;
@@ -183,9 +187,7 @@ private:
 	BINNING binning;
 
 	UInt_t flags;
-	UInt_t inputIndex;
-	UInt_t phiInputIndex;
-	UInt_t centInputIndex;
+	
 
 	ClassDef(AliJFFlucTask, 1);
 

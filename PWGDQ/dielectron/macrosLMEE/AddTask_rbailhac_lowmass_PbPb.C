@@ -21,7 +21,12 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if (!gSystem->AccessPathName(cFileName)) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+    printf("Copy configfile from alien\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
@@ -51,7 +56,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   task->UsePhysicsSelection();
   task->SetTriggerMask(trigger);
 
-  // PID postcalibration
+  // PID postcalibration 2018
   THnF *hs_mean_TPC_El  = 0x0;
   THnF *hs_width_TPC_El = 0x0;
   THnF *hs_mean_ITS_El  = 0x0;
@@ -64,8 +69,6 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   THnF *hs_width_TPC_Ka = 0x0;
   THnF *hs_mean_TPC_Pr  = 0x0;
   THnF *hs_width_TPC_Pr = 0x0;
-
-  // PID post-calibration
   TFile *rootfile = 0x0;
   if(calibFileName.Contains("pass3")){
     printf("reading : %s for PID calibration\n",calibFileName.Data());
@@ -84,6 +87,25 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
     hs_width_TPC_Pr = (THnF*)rootfile->Get("hs_width_TPC_Pr");
   }
 
+  // PID postcalibration 2015
+  TH3D *h_mean_TPC_El  = 0x0;
+  TH3D *h_width_TPC_El = 0x0;
+  TH3D *h_mean_ITS_El  = 0x0;
+  TH3D *h_width_ITS_El = 0x0;
+  TH3D *h_mean_TOF_El  = 0x0;
+  TH3D *h_width_TOF_El = 0x0;
+  TFile *rootfile_old = 0x0;
+  if(calibFileName.Contains("LHC15o_old")){
+    printf("reading : %s for PID calibration\n",calibFileName.Data());
+    rootfile_old = TFile::Open(calibFileName,"READ");
+    h_mean_TPC_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_tpc");
+    h_width_TPC_El = (TH3D*)rootfile_old->Get("sum_width_correction_tpc");
+    h_mean_ITS_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_its");
+    h_width_ITS_El = (TH3D*)rootfile_old->Get("sum_width_correction_its");
+    h_mean_TOF_El  = (TH3D*)rootfile_old->Get("sum_mean_correction_tof");
+    h_width_TOF_El = (TH3D*)rootfile_old->Get("sum_width_correction_tof");
+  }
+
   // Number of cuts
   const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
   //add dielectron analysis with different cuts to the task
@@ -91,6 +113,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
     AliDielectron *diel = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_rbailhac_lowmass_PbPb(%d,%d,%d)",i,isMC,isMix)));
     if(!diel) continue;
 
+
+    // Postcalibration 2018
     if(rootfile && rootfile->IsOpen()){
       diel->SetPIDCaibinPU(kTRUE);
       //for electron
@@ -112,6 +136,20 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
       
     }
 
+
+    // Postcalibration 2015
+    if(rootfile_old && rootfile_old->IsOpen()){
+      //for tpc
+      diel->SetCentroidCorrFunction(h_mean_TPC_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      diel->SetWidthCorrFunction(h_width_TPC_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      // for its
+      diel->SetCentroidCorrFunctionITS(h_mean_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      diel->SetWidthCorrFunctionITS(h_width_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      // for tof
+      diel->SetCentroidCorrFunctionTOF(h_mean_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      diel->SetWidthCorrFunctionTOF(h_width_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    }
+    
     if(isMix) {
       printf("Add event mixing handler\n");
       AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;

@@ -163,6 +163,11 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fOutputList->Add(hHistXsecVsPtHard);
   
   TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
+  if(fMultEstimator==0)  axTit[3]="N_{tracklets}";
+  else if(fMultEstimator==1) axTit[3]="N_{contributors}";
+  else if(fMultEstimator==2) axTit[3]="N_{TPCITStracks}";
+  else if(fMultEstimator==3) axTit[3]="N_{TPCtracks}";
+  else if(fMultEstimator==4) axTit[3]="N_{TPCclusters}/1000";
   const int nPtBins=32;
   const int nMultBins=10;
   int nbins[5]={10,18,nPtBins,nMultBins,4};
@@ -186,6 +191,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     multBins[8]=4000.;
     multBins[9]=5000.;
     multBins[10]=7500.;
+    if(fMultEstimator==3) for(Int_t jm=0; jm<=nMultBins; jm++) multBins[jm]*=2.;
   }
   xmax[3]=multBins[nMultBins];
   if(fUseImpPar && !fUseLocDen){
@@ -351,6 +357,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   double zMCVertex =99999;
   int nTracklets = 0;
   TClonesArray *aodMcArray = 0x0;
+  int nTPCclusters=0;
   if(isAOD){
     aodMcArray = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
     aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -361,6 +368,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     zMCVertex = aodMcHeader->GetVtxZ();
     AliAODTracklets *mult=((AliAODEvent*)fInputEvent)->GetTracklets();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
+    nTPCclusters=((AliAODEvent*)fInputEvent)->GetNumberOfTPCClusters();
   }else{
     const AliVVertex* mcVert=fMCEvent->GetPrimaryVertex();
     if(!mcVert){
@@ -370,6 +378,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     zMCVertex=mcVert->GetZ();
     const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
     if(mult) nTracklets=mult->GetNumberOfTracklets();
+    nTPCclusters=((AliESDEvent*)fInputEvent)->GetNumberOfTPCClusters();
   }
 
   if(zMCVertex<fEventCut.fMinVtz || zMCVertex>fEventCut.fMaxVtz){
@@ -387,12 +396,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   int nContrib = vtTrc->GetNContributors();;
 
   int nTracksTPCITS = 0;
+  int nTracksTPC = 0;
   TNtuple* trEtaPhiMap = new TNtuple("trEtaPhiMap", "tracks", "eta:phi");
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// count tracks passing ITS TPC selections
     AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
     int cluITS=track->GetNcls(0);
     int cluTPC=track->GetNcls(1);
+    if(track->GetStatus()&AliESDtrack::kTPCin && cluTPC>70) nTracksTPC++;
     if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
     if(fUseLocDen && track->GetStatus()&AliESDtrack::kTPCin && track->GetID()>=0) trEtaPhiMap->Fill(track->Eta(),track->Phi());
   }
@@ -400,6 +411,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   double multEstim=nTracklets;
   if(fMultEstimator==1) multEstim=nContrib;
   else if(fMultEstimator==2) multEstim=nTracksTPCITS;
+  else if(fMultEstimator==3) multEstim=nTracksTPC;
+  else if(fMultEstimator==4) multEstim=nTPCclusters/1000.;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();

@@ -314,6 +314,16 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fhConeSumPtUESubCenPrimMC       [i] = 0;
     fhConeSumPtUESubCenChargedPrimMC[i] = 0;
 
+    fhConeSumPtPrimMCEmb          [i] = 0;
+    fhConeSumPtChargedPrimMCEmb   [i] = 0;
+    fhConeSumPtCenPrimMCEmb       [i] = 0;
+    fhConeSumPtCenChargedPrimMCEmb[i] = 0;
+
+    fhConeSumPtUESubPrimMCEmb          [i] = 0;
+    fhConeSumPtUESubChargedPrimMCEmb   [i] = 0;
+    fhConeSumPtUESubCenPrimMCEmb       [i] = 0;
+    fhConeSumPtUESubCenChargedPrimMCEmb[i] = 0;
+
     fhConeSumPtNeutralChargedRatioPrimMC        [i] = 0;
     fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i] = 0;
     
@@ -1609,111 +1619,123 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     if ( fStudyPtCutInCone )
     {
-      fhConeNClusterPerMinPtCut = new TH2F
-      ("hConeNClusterPerMinPtCut",
-       Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5, nclbin,nclmin,nclmax);
-      fhConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
-      fhConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeNClusterPerMinPtCut = new TH2F
+        ("hConeNClusterPerMinPtCut",
+         Form("Clusters, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5, nclbin,nclmin,nclmax);
+        fhConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
+        fhConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNClusterPerMinPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNClusterPerMinPtCut) ;
-      
-      fhConeSumPtClusterPerMinPtCut = new TH2F
-      ("hConePtSumClusterPerMinPtCut",
-       Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
-      fhConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNClusterPerMinPtCut) ;
+        
+        fhConeSumPtClusterPerMinPtCut = new TH2F
+        ("hConePtSumClusterPerMinPtCut",
+         Form("Cluster #Sigma #it{p}_{T}, different min #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtClusterPerMinPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtClusterPerMinPtCut) ;
-      
-      // Eta band
-      
-      fhEtaBandConeNClusterPerMinPtCut = new TH2F
-      ("hEtaBandConeNClusterPerMinPtCut",
-       Form("Different track #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
-      fhEtaBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
-      fhEtaBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeSumPtClusterPerMinPtCut) ;
+        
+        // Eta band
+        
+        fhEtaBandConeNClusterPerMinPtCut = new TH2F
+        ("hEtaBandConeNClusterPerMinPtCut",
+         Form("Different track #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
+        fhEtaBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
+        fhEtaBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhEtaBandConeNClusterPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhEtaBandConeNClusterPerMinPtCut) ;
-      
-      fhEtaBandConeSumPtClusterPerMinPtCut = new TH2F
-      ("hEtaBandConePtSumClusterPerMinPtCut",
-       Form("Cluster #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhEtaBandConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhEtaBandConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhEtaBandConeNClusterPerMinPtCut) ;
+        
+        fhEtaBandConeSumPtClusterPerMinPtCut = new TH2F
+        ("hEtaBandConePtSumClusterPerMinPtCut",
+         Form("Cluster #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhEtaBandConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhEtaBandConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhEtaBandConeSumPtClusterPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhEtaBandConeSumPtClusterPerMinPtCut) ;
-      
-      fhConeNClusterSubEtaBandPerMinPtCut = new TH2F
-      ("hConeNClusterSubEtaBandPerMinPtCut",
-       Form("N clusters - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-      fhConeNClusterSubEtaBandPerMinPtCut->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #eta-band}");
-      fhConeNClusterSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhEtaBandConeSumPtClusterPerMinPtCut) ;
+        
+        fhConeNClusterSubEtaBandPerMinPtCut = new TH2F
+        ("hConeNClusterSubEtaBandPerMinPtCut",
+         Form("N clusters - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+        fhConeNClusterSubEtaBandPerMinPtCut->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #eta-band}");
+        fhConeNClusterSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNClusterSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNClusterSubEtaBandPerMinPtCut) ;
-      
-      fhConeSumPtClusterSubEtaBandPerMinPtCut = new TH2F
-      ("hConePtSumClusterSubEtaBandPerMinPtCut",
-       Form("Cluster cone #Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-      fhConeSumPtClusterSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
-      fhConeSumPtClusterSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNClusterSubEtaBandPerMinPtCut) ;
+        
+        fhConeSumPtClusterSubEtaBandPerMinPtCut = new TH2F
+        ("hConePtSumClusterSubEtaBandPerMinPtCut",
+         Form("Cluster cone #Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+        fhConeSumPtClusterSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
+        fhConeSumPtClusterSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtClusterSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtClusterSubEtaBandPerMinPtCut) ;
-      
-      // Phi band
-      
-      fhPhiBandConeNClusterPerMinPtCut = new TH2F
-      ("hPhiBandConeNClusterPerMinPtCut",
-       Form("Different cluster #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
-      fhPhiBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
-      fhPhiBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeSumPtClusterSubEtaBandPerMinPtCut) ;
+        
+        // Phi band
+        
+        fhPhiBandConeNClusterPerMinPtCut = new TH2F
+        ("hPhiBandConeNClusterPerMinPtCut",
+         Form("Different cluster #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5, nclbin,nclmin,nclmax);
+        fhPhiBandConeNClusterPerMinPtCut->SetYTitle("#it{N}^{cluster}");
+        fhPhiBandConeNClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPhiBandConeNClusterPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPhiBandConeNClusterPerMinPtCut) ;
-      
-      fhPhiBandConeSumPtClusterPerMinPtCut = new TH2F
-      ("hPhiBandConePtSumClusterPerMinPtCut",
-       Form("Cluster #Sigma #it{p}_{T}-UE, different #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhPhiBandConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhPhiBandConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPhiBandConeNClusterPerMinPtCut) ;
+        
+        fhPhiBandConeSumPtClusterPerMinPtCut = new TH2F
+        ("hPhiBandConePtSumClusterPerMinPtCut",
+         Form("Cluster #Sigma #it{p}_{T}-UE, different #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhPhiBandConeSumPtClusterPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhPhiBandConeSumPtClusterPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPhiBandConeSumPtClusterPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPhiBandConeSumPtClusterPerMinPtCut) ;
-      
-      fhConeNClusterSubPhiBandPerMinPtCut = new TH2F
-      ("hConeNClusterSubPhiBandPerMinPtCut",
-       Form("N clusters - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-      fhConeNClusterSubPhiBandPerMinPtCut->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #varphi-band}");
-      fhConeNClusterSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPhiBandConeSumPtClusterPerMinPtCut) ;
+        
+        fhConeNClusterSubPhiBandPerMinPtCut = new TH2F
+        ("hConeNClusterSubPhiBandPerMinPtCut",
+         Form("N clusters - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+        fhConeNClusterSubPhiBandPerMinPtCut->SetYTitle("#it{N}^{cluster}-#it{N}^{cluster}_{UE #varphi-band}");
+        fhConeNClusterSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNClusterSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNClusterSubPhiBandPerMinPtCut) ;
-      
-      fhConeSumPtClusterSubPhiBandPerMinPtCut = new TH2F
-      ("hConePtSumClusterSubPhiBandPerMinPtCut",
-       Form("Cluster cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-      fhConeSumPtClusterSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
-      fhConeSumPtClusterSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNClusterSubPhiBandPerMinPtCut) ;
+        
+        fhConeSumPtClusterSubPhiBandPerMinPtCut = new TH2F
+        ("hConePtSumClusterSubPhiBandPerMinPtCut",
+         Form("Cluster cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+        fhConeSumPtClusterSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
+        fhConeSumPtClusterSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtClusterSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtClusterSubPhiBandPerMinPtCut) ;
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+        outputContainer->Add(fhConeSumPtClusterSubPhiBandPerMinPtCut) ;
+        
+        fhConeSumPtClusterPerMaxPtCut = new TH2F
+        ("hConePtSumClusterPerMaxPtCut",
+         Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cut in cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterPerMaxPtCut->SetXTitle("#it{p}_{T, max} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeSumPtClusterPerMaxPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMaxPtCutInCone[i-1]));
+        outputContainer->Add(fhConeSumPtClusterPerMaxPtCut) ;
+      }
+      else
       {
         fhConeNClusterPerMinPtCutCent = new TH3F
         ("hConeNClusterPerMinPtCutCent",
@@ -1850,16 +1872,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhConeSumPtClusterSubPhiBandPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtClusterSubPhiBandPerMinPtCutCent) ;
       }
-      
-      fhConeSumPtClusterPerMaxPtCut = new TH2F
-      ("hConePtSumClusterPerMaxPtCut",
-       Form("Cluster #Sigma #it{p}_{T}, different max #it{p}_{T} cut in cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
-      fhConeSumPtClusterPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtClusterPerMaxPtCut->SetXTitle("#it{p}_{T, max} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
-        fhConeSumPtClusterPerMaxPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMaxPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtClusterPerMaxPtCut) ;
     }
     
     if ( fStudyRCutInCone )
@@ -2060,153 +2072,165 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     
     if ( fStudyPtCutInCone )
     {
-      fhConeNTrackPerMinPtCut = new TH2F
-      ("hConeNTrackPerMinPtCut",
-       Form("N tracks, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
-      fhConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
-      fhConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeNTrackPerMinPtCut = new TH2F
+        ("hConeNTrackPerMinPtCut",
+         Form("N tracks, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+        fhConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNTrackPerMinPtCut) ;
-      
-      fhConeSumPtTrackPerMinPtCut = new TH2F
-      ("hConePtSumTrackPerMinPtCut",
-       Form("Track cone #Sigma #it{p}_{T}, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNTrackPerMinPtCut) ;
+        
+        fhConeSumPtTrackPerMinPtCut = new TH2F
+        ("hConePtSumTrackPerMinPtCut",
+         Form("Track cone #Sigma #it{p}_{T}, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtTrackPerMinPtCut) ;
-      
-      // Perpendicular cones
-      
-      fhPerpConeNTrackPerMinPtCut = new TH2F
-      ("hPerpConeNTrackPerMinPtCut",
-       Form("Different track #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
-      fhPerpConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
-      fhPerpConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeSumPtTrackPerMinPtCut) ;
+        
+        // Perpendicular cones
+        
+        fhPerpConeNTrackPerMinPtCut = new TH2F
+        ("hPerpConeNTrackPerMinPtCut",
+         Form("Different track #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhPerpConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+        fhPerpConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPerpConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPerpConeNTrackPerMinPtCut) ;
-      
-      fhPerpConeSumPtTrackPerMinPtCut = new TH2F
-      ("hPerpConePtSumTrackPerMinPtCut",
-       Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhPerpConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhPerpConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPerpConeNTrackPerMinPtCut) ;
+        
+        fhPerpConeSumPtTrackPerMinPtCut = new TH2F
+        ("hPerpConePtSumTrackPerMinPtCut",
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #perp cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhPerpConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhPerpConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPerpConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCut) ;
-      
-      fhConeNTrackSubPerpPerMinPtCut = new TH2F
-      ("hConeNTrackSubPerpPerMinPtCut",
-       Form("N tracks - UE in #perp cones, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-      fhConeNTrackSubPerpPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #perp}");
-      fhConeNTrackSubPerpPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPerpConeSumPtTrackPerMinPtCut) ;
+        
+        fhConeNTrackSubPerpPerMinPtCut = new TH2F
+        ("hConeNTrackSubPerpPerMinPtCut",
+         Form("N tracks - UE in #perp cones, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+        fhConeNTrackSubPerpPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #perp}");
+        fhConeNTrackSubPerpPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNTrackSubPerpPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNTrackSubPerpPerMinPtCut) ;
-      
-      fhConeSumPtTrackSubPerpPerMinPtCut = new TH2F
-      ("hConePtSumTrackSubPerpPerMinPtCut",
-       Form("Track cone #Sigma #it{p}_{T}- UE in #perp cones, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-      fhConeSumPtTrackSubPerpPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #perp} (GeV/#it{c})");
-      fhConeSumPtTrackSubPerpPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNTrackSubPerpPerMinPtCut) ;
+        
+        fhConeSumPtTrackSubPerpPerMinPtCut = new TH2F
+        ("hConePtSumTrackSubPerpPerMinPtCut",
+         Form("Track cone #Sigma #it{p}_{T}- UE in #perp cones, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+        fhConeSumPtTrackSubPerpPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #perp} (GeV/#it{c})");
+        fhConeSumPtTrackSubPerpPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtTrackSubPerpPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtTrackSubPerpPerMinPtCut) ;
-      
-      // Eta band
-      
-      fhEtaBandConeNTrackPerMinPtCut = new TH2F
-      ("hEtaBandConeNTrackPerMinPtCut",
-       Form("Different track #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
-      fhEtaBandConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
-      fhEtaBandConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeSumPtTrackSubPerpPerMinPtCut) ;
+        
+        // Eta band
+        
+        fhEtaBandConeNTrackPerMinPtCut = new TH2F
+        ("hEtaBandConeNTrackPerMinPtCut",
+         Form("Different track #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhEtaBandConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+        fhEtaBandConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhEtaBandConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhEtaBandConeNTrackPerMinPtCut) ;
-      
-      fhEtaBandConeSumPtTrackPerMinPtCut = new TH2F
-      ("hEtaBandConePtSumTrackPerMinPtCut",
-       Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhEtaBandConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhEtaBandConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhEtaBandConeNTrackPerMinPtCut) ;
+        
+        fhEtaBandConeSumPtTrackPerMinPtCut = new TH2F
+        ("hEtaBandConePtSumTrackPerMinPtCut",
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in #eta-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhEtaBandConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhEtaBandConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhEtaBandConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhEtaBandConeSumPtTrackPerMinPtCut) ;
-      
-      fhConeNTrackSubEtaBandPerMinPtCut = new TH2F
-      ("hConeNTrackSubEtaBandPerMinPtCut",
-       Form("N tracks - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-      fhConeNTrackSubEtaBandPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #eta-band}");
-      fhConeNTrackSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhEtaBandConeSumPtTrackPerMinPtCut) ;
+        
+        fhConeNTrackSubEtaBandPerMinPtCut = new TH2F
+        ("hConeNTrackSubEtaBandPerMinPtCut",
+         Form("N tracks - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+        fhConeNTrackSubEtaBandPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #eta-band}");
+        fhConeNTrackSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNTrackSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNTrackSubEtaBandPerMinPtCut) ;
-      
-      fhConeSumPtTrackSubEtaBandPerMinPtCut = new TH2F
-      ("hConePtSumTrackSubEtaBandPerMinPtCut",
-       Form("Track cone #Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-      fhConeSumPtTrackSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
-      fhConeSumPtTrackSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNTrackSubEtaBandPerMinPtCut) ;
+        
+        fhConeSumPtTrackSubEtaBandPerMinPtCut = new TH2F
+        ("hConePtSumTrackSubEtaBandPerMinPtCut",
+         Form("Track cone #Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+        fhConeSumPtTrackSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
+        fhConeSumPtTrackSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtTrackSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtTrackSubEtaBandPerMinPtCut) ;
-      
-      // Phi band
-      
-      fhPhiBandConeNTrackPerMinPtCut = new TH2F
-      ("hPhiBandConeNTrackPerMinPtCut",
-       Form("Different track #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
-      fhPhiBandConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
-      fhPhiBandConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeSumPtTrackSubEtaBandPerMinPtCut) ;
+        
+        // Phi band
+        
+        fhPhiBandConeNTrackPerMinPtCut = new TH2F
+        ("hPhiBandConeNTrackPerMinPtCut",
+         Form("Different track #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin,multmin,multmax);
+        fhPhiBandConeNTrackPerMinPtCut->SetYTitle("#it{N}^{track}");
+        fhPhiBandConeNTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPhiBandConeNTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPhiBandConeNTrackPerMinPtCut) ;
-      
-      fhPhiBandConeSumPtTrackPerMinPtCut = new TH2F
-      ("hPhiBandConePtSumTrackPerMinPtCut",
-       Form("Track #Sigma #it{p}_{T}-UE, different #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhPhiBandConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhPhiBandConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPhiBandConeNTrackPerMinPtCut) ;
+        
+        fhPhiBandConeSumPtTrackPerMinPtCut = new TH2F
+        ("hPhiBandConePtSumTrackPerMinPtCut",
+         Form("Track #Sigma #it{p}_{T}-UE, different #it{p}_{T} cuts in #varphi-band for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhPhiBandConeSumPtTrackPerMinPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhPhiBandConeSumPtTrackPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhPhiBandConeSumPtTrackPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhPhiBandConeSumPtTrackPerMinPtCut) ;
-      
-      fhConeNTrackSubPhiBandPerMinPtCut = new TH2F
-      ("hConeNTrackSubPhiBandPerMinPtCut",
-       Form("N tracks - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-      fhConeNTrackSubPhiBandPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #varphi-band}");
-      fhConeNTrackSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhPhiBandConeSumPtTrackPerMinPtCut) ;
+        
+        fhConeNTrackSubPhiBandPerMinPtCut = new TH2F
+        ("hConeNTrackSubPhiBandPerMinPtCut",
+         Form("N tracks - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+        fhConeNTrackSubPhiBandPerMinPtCut->SetYTitle("#it{N}^{track}-#it{N}^{track}_{UE #varphi-band}");
+        fhConeNTrackSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeNTrackSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeNTrackSubPhiBandPerMinPtCut) ;
-      
-      fhConeSumPtTrackSubPhiBandPerMinPtCut = new TH2F
-      ("hConePtSumTrackSubPhiBandPerMinPtCut",
-       Form("Track cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-      fhConeSumPtTrackSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
-      fhConeSumPtTrackSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+        outputContainer->Add(fhConeNTrackSubPhiBandPerMinPtCut) ;
+        
+        fhConeSumPtTrackSubPhiBandPerMinPtCut = new TH2F
+        ("hConePtSumTrackSubPhiBandPerMinPtCut",
+         Form("Track cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+        fhConeSumPtTrackSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
+        fhConeSumPtTrackSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
         fhConeSumPtTrackSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtTrackSubPhiBandPerMinPtCut) ;
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+        outputContainer->Add(fhConeSumPtTrackSubPhiBandPerMinPtCut) ;
+        
+        fhConeSumPtTrackPerMaxPtCut = new TH2F
+        ("hConePtSumTrackPerMaxPtCut",
+         Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+         fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtTrackPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtTrackPerMaxPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+        for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+          fhConeSumPtTrackPerMaxPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMaxPtCutInCone[i-1]));
+        outputContainer->Add(fhConeSumPtTrackPerMaxPtCut) ;
+      }      
+      else
       {
         fhConeNTrackPerMinPtCutCent = new TH3F
         ("hConeNTrackPerMinPtCutCent",
@@ -2395,16 +2419,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhConeSumPtTrackSubPhiBandPerMinPtCutCent->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fMinPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtTrackSubPhiBandPerMinPtCutCent) ;
       }
-      
-      fhConeSumPtTrackPerMaxPtCut = new TH2F
-      ("hConePtSumTrackPerMaxPtCut",
-       Form("Track #Sigma #it{p}_{T}, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins,ptsummin,ptsummax);
-      fhConeSumPtTrackPerMaxPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
-      fhConeSumPtTrackPerMaxPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
-        fhConeSumPtTrackPerMaxPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMaxPtCutInCone[i-1]));
-      outputContainer->Add(fhConeSumPtTrackPerMaxPtCut) ;
     }
     
     if ( fStudyEtaCutInCone )
@@ -2935,51 +2949,53 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged &&
       fStudyPtCutInCone )
   {
-    // Eta band  
-    
-    fhConeNSubEtaBandPerMinPtCut = new TH2F
-    ("hConeNSubEtaBandPerMinPtCut",
-     Form("N - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-     fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-    fhConeNSubEtaBandPerMinPtCut->SetYTitle("#it{N}-#it{N}_{UE #eta-band}");
-    fhConeNSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-    for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      // Eta band  
+      
+      fhConeNSubEtaBandPerMinPtCut = new TH2F
+      ("hConeNSubEtaBandPerMinPtCut",
+       Form("N - UE in #eta-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+      fhConeNSubEtaBandPerMinPtCut->SetYTitle("#it{N}-#it{N}_{UE #eta-band}");
+      fhConeNSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
       fhConeNSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-    outputContainer->Add(fhConeNSubEtaBandPerMinPtCut) ;
-    
-    fhConeSumPtSubEtaBandPerMinPtCut = new TH2F
-    ("hConePtSumSubEtaBandPerMinPtCut",
-     Form("#Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-     fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-    fhConeSumPtSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
-    fhConeSumPtSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-    for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+      outputContainer->Add(fhConeNSubEtaBandPerMinPtCut) ;
+      
+      fhConeSumPtSubEtaBandPerMinPtCut = new TH2F
+      ("hConePtSumSubEtaBandPerMinPtCut",
+       Form("#Sigma #it{p}_{T} - UE in #eta-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+      fhConeSumPtSubEtaBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #eta-band} (GeV/#it{c})");
+      fhConeSumPtSubEtaBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
       fhConeSumPtSubEtaBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-    outputContainer->Add(fhConeSumPtSubEtaBandPerMinPtCut) ;
-    
-    // Phi band
-    
-    fhConeNSubPhiBandPerMinPtCut = new TH2F
-    ("hConeNSubPhiBandPerMinPtCut",
-     Form("N - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
-     fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
-    fhConeNSubPhiBandPerMinPtCut->SetYTitle("#it{N}-#it{N}_{UE #varphi-band}");
-    fhConeNSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-    for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+      outputContainer->Add(fhConeSumPtSubEtaBandPerMinPtCut) ;
+      
+      // Phi band
+      
+      fhConeNSubPhiBandPerMinPtCut = new TH2F
+      ("hConeNSubPhiBandPerMinPtCut",
+       Form("N - UE in #varphi-band, different #it{p}_{T} cuts in isolation cone for %s",parTitleR.Data()),
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nmultbin*2,-multmax,multmax);
+      fhConeNSubPhiBandPerMinPtCut->SetYTitle("#it{N}-#it{N}_{UE #varphi-band}");
+      fhConeNSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
       fhConeNSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-    outputContainer->Add(fhConeNSubPhiBandPerMinPtCut) ;
-    
-    fhConeSumPtSubPhiBandPerMinPtCut = new TH2F
-    ("hConePtSumSubPhiBandPerMinPtCut",
-     Form(" cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
-     fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
-    fhConeSumPtSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
-    fhConeSumPtSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
-    for(Int_t i = 1; i <= fNPtCutsInCone; i++)
+      outputContainer->Add(fhConeNSubPhiBandPerMinPtCut) ;
+      
+      fhConeSumPtSubPhiBandPerMinPtCut = new TH2F
+      ("hConePtSumSubPhiBandPerMinPtCut",
+       Form(" cone #Sigma #it{p}_{T} - UE in #varphi-band, different #it{p}_{T} cut for %s",parTitleR.Data()),
+       fNPtCutsInCone,0.5,fNPtCutsInCone+0.5,nptsumbins*2,-ptsummax,ptsummax);
+      fhConeSumPtSubPhiBandPerMinPtCut->SetYTitle("#Sigma #it{p}_{T}-#Sigma #it{p}_{T, UE #varphi-band} (GeV/#it{c})");
+      fhConeSumPtSubPhiBandPerMinPtCut->SetXTitle("#it{p}_{T, min} (GeV/#it{c})");
+      for(Int_t i = 1; i <= fNPtCutsInCone; i++)
       fhConeSumPtSubPhiBandPerMinPtCut->GetXaxis()->SetBinLabel(i, Form("%2.1f",fMinPtCutInCone[i-1]));
-    outputContainer->Add(fhConeSumPtSubPhiBandPerMinPtCut) ;
-    
-    if ( IsHighMultiplicityAnalysisOn() )
+      outputContainer->Add(fhConeSumPtSubPhiBandPerMinPtCut) ;
+    }
+    else 
     {
       // Eta band
       
@@ -3669,6 +3685,57 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]->SetYTitle("#Sigma #it{p}_{T}^{neutral, #perp cone} / #Sigma #it{p}_{T}^{charged, #perp cone}");
         outputContainer->Add(fhConeSumPtPerpConeNeutralChargedRatioPrimMC[i]) ;
+
+       if ( IsEmbedingAnalysisOn() )
+       {
+         fhConeSumPtPrimMCEmb[i] = new TH2F
+         (Form("hConeSumPtPrimEmb_MC%s",ppname[i].Data()),
+          Form("primary #gamma %s: %s",pptype[i].Data(),parTitleR.Data()),
+          //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          sum0BinsArray.GetSize() - 1,sum0BinsArray.GetArray());
+         fhConeSumPtPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+         fhConeSumPtPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+         outputContainer->Add(fhConeSumPtPrimMCEmb[i]) ;
+
+         if ( particle == AliIsolationCut::kNeutralAndCharged )
+         {
+           fhConeSumPtChargedPrimMCEmb[i] = new TH2F
+           (Form("hConeSumPtChargedPrimEmb_MC%s",ppname[i].Data()),
+            Form("primary #gamma %s: %s",pptype[i].Data(),parTitleRCh.Data()),
+            //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+              ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+            sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray());
+           fhConeSumPtChargedPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+           fhConeSumPtChargedPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+           outputContainer->Add(fhConeSumPtChargedPrimMCEmb[i]) ;
+         }
+
+         if (  method >= AliIsolationCut::kSumBkgSubIC )
+         {
+           fhConeSumPtUESubPrimMCEmb[i] = new TH2F
+           (Form("hConeSumPtUESubPrimEmb_MC%s",ppname[i].Data()),
+            Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleR.Data()),
+             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+           fhConeSumPtUESubPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+           fhConeSumPtUESubPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T}-UE (GeV/#it{c})");
+           outputContainer->Add(fhConeSumPtUESubPrimMCEmb[i]) ;
+
+           if ( particle == AliIsolationCut::kNeutralAndCharged )
+           {
+             fhConeSumPtUESubChargedPrimMCEmb[i] = new TH2F
+             (Form("hConeSumPtUESubChargedPrimEmb_MC%s",ppname[i].Data()),
+              Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleRCh.Data()),
+               ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+              sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+             fhConeSumPtUESubChargedPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+             fhConeSumPtUESubChargedPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T}^{ch}-UE (GeV/#it{c})");
+             outputContainer->Add(fhConeSumPtUESubChargedPrimMCEmb[i]) ;
+           }
+         }
+       } // embedded
+
       } // low mult
       else
       {
@@ -3727,6 +3794,65 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             outputContainer->Add(fhConeSumPtUESubCenChargedPrimMC[i]) ;
           }
         }
+
+        if ( IsEmbedingAnalysisOn() )
+        {
+          fhConeSumPtCenPrimMCEmb[i] = new TH3F
+          (Form("hConeSumPtCenPrimEmb_MC%s",ppname[i].Data()),
+           Form("primary #gamma  %s: %s",pptype[i].Data(),parTitleR.Data()),
+           //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+             ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+           sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray(),
+            cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+          fhConeSumPtCenPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtCenPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtCenPrimMCEmb[i]->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtCenPrimMCEmb[i]) ;
+
+          if ( particle == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhConeSumPtCenChargedPrimMCEmb[i] = new TH3F
+            (Form("hConeSumPtCenChargedPrimEmb_MC%s",ppname[i].Data()),
+             Form("primary #gamma  %s: %s",pptype[i].Data(),parTitleRCh.Data()),
+             //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+               ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+             sum0BinsArray.GetSize() - 1, sum0BinsArray.GetArray(),
+              cenBinsArray.GetSize() - 1,  cenBinsArray.GetArray());
+            fhConeSumPtCenChargedPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtCenChargedPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+            fhConeSumPtCenChargedPrimMCEmb[i]->SetZTitle("Centrality (%)");
+            outputContainer->Add(fhConeSumPtCenChargedPrimMCEmb[i]) ;
+          }
+
+          if (  method >= AliIsolationCut::kSumBkgSubIC )
+          {
+            fhConeSumPtUESubCenPrimMCEmb[i] = new TH3F
+            (Form("hConeSumPtUESubCenPrimEmb_MC%s",ppname[i].Data()),
+             Form("primary #gamma %s: %s, UE subtracted",pptype[i].Data(),parTitleR.Data()),
+              ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+             cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+            fhConeSumPtUESubCenPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtUESubCenPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+            fhConeSumPtUESubCenPrimMCEmb[i]->SetZTitle("Centrality (%)");
+            outputContainer->Add(fhConeSumPtUESubCenPrimMCEmb[i]) ;
+
+            if ( particle == AliIsolationCut::kNeutralAndCharged )
+            {
+              fhConeSumPtUESubCenChargedPrimMCEmb[i] = new TH3F
+              (Form("hConeSumPtUESubCenChargedPrimEmb_MC%s",ppname[i].Data()),
+               Form("primary #gamma  %s: %s, UE subtracted",pptype[i].Data(),parTitleRCh.Data()),
+               //nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+                ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+               cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
+              fhConeSumPtUESubCenChargedPrimMCEmb[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhConeSumPtUESubCenChargedPrimMCEmb[i]->SetYTitle("#Sigma #it{p}_{T}^{ch} (GeV/#it{c})");
+              fhConeSumPtUESubCenChargedPrimMCEmb[i]->SetZTitle("Centrality (%)");
+              outputContainer->Add(fhConeSumPtUESubCenChargedPrimMCEmb[i]) ;
+            }
+          }
+        } // embedded
 
       } // high mult
     }
@@ -4409,7 +4535,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
                                         0x0, 0x0,
                                         GetCalorimeter(), GetCaloPID(),
                                         n, nfrac, coneptsum, coneptlead, isolated,
-                                        GetEventWeight()*aodinput->GetWeight(),GetEventCentrality());
+                                        GetEventWeight()*aodinput->GetWeight(),
+                                        GetEventCentrality(), GetEventCentralityBin());
 
     aodinput->SetIsolated(isolated);
     
@@ -4425,8 +4552,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   // In case of simulated data, fill acceptance histograms
   // Not ready for multiple case analysis.
 
-  if ( (IsDataMC() || GetReader()->AreMCPromptPhotonsSelected()) && 
-      IsGeneratedParticlesAnalysisOn() ) FillAcceptanceHistograms();
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() )
+    FillAcceptanceHistograms();
   
   //Loop on stored AOD
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
@@ -4478,13 +4605,25 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t coneptLeadTrack   = aod->GetChargedLeadPtInCone();
     Float_t coneptsumTrack    = aod->GetChargedPtSumInCone();
     Float_t coneptsum         = coneptsumTrack + coneptsumCluster;
+
+    if ( partInCone == AliIsolationCut::kOnlyCharged )
+      coneptsum  = coneptsumTrack;
+    if ( partInCone == AliIsolationCut::kOnlyNeutral)
+      coneptsum  = coneptsumCluster;
     
     Float_t coneptLead = coneptLeadTrack;
-    if ( coneptLeadCluster > coneptLeadTrack ) 
+    if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+    {
+      if ( coneptLeadCluster > coneptLeadTrack )
+        coneptLead = coneptLeadCluster;
+    }
+    else if ( partInCone == AliIsolationCut::kOnlyNeutral )
+    {
       coneptLead = coneptLeadCluster;
+    }
     
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
-                    iaod, coneptsumTrack+coneptsumCluster, coneptLead));
+                    iaod, coneptsum, coneptLead));
      
     Bool_t narrow       = kFALSE;
     Bool_t inM02Windows = kTRUE;
@@ -4939,13 +5078,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if ( photonPhi < 0 ) photonPhi+=TMath::TwoPi();
     
     // Check if photons hit the Calorimeter acceptance
-    if(IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS) // defined on base class
+    if ( IsRealCaloAcceptanceOn() && fIsoDetector!=kCTS ) // defined on base class
     {
       if ( !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(fIsoDetector, primary) ) continue ;
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if(!GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector)) continue ;
+    if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
@@ -5002,10 +5141,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //if ( ndaugh !=2 ) printf("PDG: %d, %d\n",d1Pdg,d2Pdg);
       
       // Select decays in 2 photons
-      if( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22)) okpi0 = kFALSE;
+      if ( ndaugh!=2 || (d2Pdg != d1Pdg && d1Pdg!=22) ) okpi0 = kFALSE;
       
       // Check overlap of decays
-      if( okpi0 && fMakePrimaryPi0DecayStudy)
+      if ( okpi0 && fMakePrimaryPi0DecayStudy )
       {
         Float_t d12Angle = fMomDaugh1.Angle(fMomDaugh2.Vect());
         if(d12Angle > overlapAngle) overlapPi0 = kFALSE;
@@ -5107,11 +5246,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       physPrimary      = mcisop->IsPhysicalPrimary(); 
       mcisop->Momentum(fMomIso);
       
-      if( partInConeMother == i ) continue;
+      if ( partInConeMother == i ) continue;
 
       // Distance to photon candidate
       //
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+
+      // Angles between trigger and track
+      Double_t dEta = photonEta - partInConeEta;
+      Double_t dPhi = photonPhi - partInConePhi;
+
+      // Shift phi angle when trigger is close to 0 or 360
+      if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+      if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
 
       //
       // Apply acceptance and energy/pt cut for particles in cone
@@ -5133,10 +5280,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if ( dR > coneSize && physPrimary &&
                isoMethod == AliIsolationCut::kSumBkgSubIC  )
           {
-            Double_t dEta    = photonEta - partInConeEta;
-
-            Double_t dPhiPlu = photonPhi - partInConePhi + TMath::PiOver2();
-            Double_t dPhiMin = photonPhi - partInConePhi - TMath::PiOver2();
+            Double_t dPhiPlu = dPhi + TMath::PiOver2();
+            Double_t dPhiMin = dPhi - TMath::PiOver2();
 
             Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
             Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
@@ -5166,10 +5311,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                isoMethod == AliIsolationCut::kSumBkgSubIC &&
                GetReader()->GetFiducialCut()->IsInFiducialCut(fMomIso.Eta(),fMomIso.Phi(),kCTS) )
           {
-            Double_t dEta    = photonEta - partInConeEta;
-
-            Double_t dPhiPlu = photonPhi - partInConePhi + TMath::PiOver2();
-            Double_t dPhiMin = photonPhi - partInConePhi - TMath::PiOver2();
+            Double_t dPhiPlu = dPhi + TMath::PiOver2();
+            Double_t dPhiMin = dPhi - TMath::PiOver2();
 
             Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
             Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
@@ -5197,25 +5340,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       // UE estimation
       //
-      if ( physPrimary && dR > coneSize )
+      if ( physPrimary && dR > coneSize+coneSizeGap )
       {
         if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
         {
           // Phi band
           //
           Bool_t takeIt = kTRUE;
-          // Exclude tracks in rectangle containing isolation cone
-          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-               partInConePhi < (photonPhi+coneSize+coneSizeGap) &&
-               partInConePhi > (photonPhi-coneSize-coneSizeGap)    )
-            takeIt = kFALSE;
 
           // Look only half TPC with respect candidate, avoid opposite side jet
-          if ( TMath::Abs(photonPhi-partInConePhi) > TMath::PiOver2() )  takeIt = kFALSE;
+          if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
 
           // Within eta cone size
-          if ( partInConeEta > (photonEta-coneSize) &&
-               partInConeEta < (photonEta+coneSize) &&  takeIt )
+          if ( TMath::Abs(dEta) < coneSize+coneSizeGap && takeIt )
           {
             if ( partInConeCharge > 0 )
               phiBandPtSumCh += partInConePt;
@@ -5225,16 +5362,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
           // Eta band
           //
-          takeIt = kTRUE;
-          // Exclude tracks in rectangle containing isolation cone
-          if ( GetIsolationCut()->IsBandExclusionRectangular()  &&
-               partInConeEta < (photonEta+coneSize+coneSizeGap) &&
-               partInConeEta > (photonEta-coneSize-coneSizeGap)    )
-            takeIt = kFALSE;
+          //takeIt = kTRUE;
 
           // Within phi cone size
-          if ( partInConePhi > (photonPhi-coneSize) &&
-               partInConePhi < (photonPhi+coneSize) && takeIt )
+          if ( TMath::Abs(dPhi) < coneSize+coneSizeGap )//&& takeIt )
           {
             if ( partInConeCharge > 0 )
               etaBandPtSumCh += partInConePt;
@@ -5273,7 +5404,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if ( !physPrimary ) continue ; 
       
       if ( partInConeCharge > 0 )
+      {
         sumPtInConeCh += partInConePt;
+        //printf("Charged %d pT %f\n",ip,partInConePt);
+      }
       else
         sumPtInConeNe += partInConePt;
       
@@ -5287,6 +5421,226 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     ///////END ISO MC/////////////////////////
     
+    // ////////////////////ISO EMBED DATA/////////////////////////
+    Float_t sumPtInConeEmb     = 0. ;
+    Float_t sumPtInConeChEmb   = 0. ;
+    Float_t sumPtInConeNeEmb   = 0. ;
+
+    Float_t etaBandPtSumChEmb  = 0. ;
+    Float_t phiBandPtSumChEmb  = 0. ;
+    Float_t perpConePtSumChEmb = 0. ;
+
+    Float_t etaBandPtSumNeEmb  = 0. ;
+    Float_t phiBandPtSumNeEmb  = 0. ;
+    Float_t gapCandidate = 0.0143*2.5;
+    if ( GetIsolationCut()->GetMinDistToTrigger() > 0 )
+      gapCandidate = GetIsolationCut()->GetMinDistToTrigger();
+
+    if ( IsEmbedingAnalysisOn() )
+    {
+      // Clusters
+      // Recover  clusters
+      TObjArray * plNe = 0x0;
+      if      (GetCalorimeter()==kPHOS )
+        plNe = GetReader()->GetPHOSClusters();
+      else if (GetCalorimeter()==kEMCAL)
+        plNe = GetReader()->GetEMCALClusters();
+
+      // Get vertex for cluster momentum calculation
+      Double_t vertex[] = {0,0,0} ; //vertex ;
+      if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
+        GetReader()->GetVertex(vertex);
+
+      for(Int_t icalo=0; icalo < plNe->GetEntriesFast(); icalo++)
+      {
+        AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(icalo)) ;
+
+        // const Int_t mcLabel = calo->GetLabel();
+        const Int_t nlabels = calo->GetNLabels();
+
+        if ( nlabels != 0  ) continue; // Accept only purely MC clusters
+
+        // Reject track-matched clusters
+        if ( GetIsolationCut()->IsTrackMatchedClusterRejectionInConeOn()  )
+        {
+          Bool_t bRes = kFALSE, bEoP = kFALSE;
+          Bool_t matched = GetCaloPID()->IsTrackMatched(calo, GetReader()->GetCaloUtils(),
+                                                        GetReader()->GetInputEvent(),
+                                                        bEoP,bRes);
+          if ( partInConeType == AliIsolationCut::kNeutralAndCharged && matched ) continue ;
+        }
+
+        calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
+
+        partInConePt     = fMomentum.Pt();
+        partInConeE      = fMomentum.E();
+        partInConeEta    = fMomentum.Eta();
+        partInConePhi    = GetPhi(fMomentum.Phi());
+
+        // Distance to photon candidate
+        //
+        dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+
+        // Angles between trigger and cluster
+        Double_t dEta = photonEta - partInConeEta;
+        Double_t dPhi = photonPhi - partInConePhi;
+
+        // Shift phi angle when trigger is close to 0 or 360
+        if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+        if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+
+        // UE estimation
+        //
+        if (  dR > coneSize+coneSizeGap )
+        {
+          if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+          {
+            // Phi band
+            //
+            Bool_t takeIt = kTRUE;
+
+            // Look only half TPC with respect candidate, avoid opposite side jet
+            if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
+
+            // Within eta cone size
+            if ( TMath::Abs(dEta) < coneSize+coneSizeGap && takeIt )
+            {
+              phiBandPtSumNeEmb += partInConePt;
+            } // phi band
+
+            // Eta band
+            //
+            //takeIt = kTRUE;
+
+            // Within phi cone size
+            if ( TMath::Abs(dPhi) < coneSize+coneSizeGap )//  && takeIt )
+            {
+              etaBandPtSumNeEmb += partInConePt;
+            } // eta band
+
+          } // out of cone
+
+        } // Physical primary, out of cone
+
+        // In cone
+        //
+        // Avoid clusters too close to generated photon
+        if ( dR < gapCandidate )
+          continue;
+
+        if ( dR > GetIsolationCut()->GetConeSize() )
+          continue;
+
+        sumPtInConeNeEmb += partInConePt;
+      }
+
+      // Tracks
+
+      for(Int_t itrack=0; itrack < (GetReader()->GetCTSTracks())->GetEntriesFast(); itrack++)
+      {
+        AliVTrack* track = dynamic_cast<AliVTrack*>((GetReader()->GetCTSTracks())->At(itrack));
+
+        Int_t label  = track->GetLabel();
+
+        if ( label < 0  ) continue; // Accept only purely MC clusters
+
+        partInConePt     = track->Pt();
+        partInConeEta    = track->Eta();
+        partInConePhi    = GetPhi(track->Phi());
+
+        // Distance to photon candidate
+        //
+        dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
+
+        // Angles between trigger and track
+        Double_t dEta = photonEta - partInConeEta;
+        Double_t dPhi = photonPhi - partInConePhi;
+
+        // Shift phi angle when trigger is close to 0 or 360
+        if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+        if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+
+        // UE estimation
+        //
+        if (  dR > coneSize+coneSizeGap )
+        {
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          // Fill the histograms at +-45 degrees in phi
+          // from trigger particle, perpedicular to trigger axis in phi
+          //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          if ( isoMethod == AliIsolationCut::kSumBkgSubIC  )
+          {
+            Double_t dPhiPlu = dPhi + TMath::PiOver2();
+            Double_t dPhiMin = dPhi - TMath::PiOver2();
+
+            Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
+            Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
+
+            Bool_t fillPerp = kFALSE;
+            if ( TMath::Sqrt(argPlu) < coneSize ) fillPerp = kTRUE ;
+            if ( TMath::Sqrt(argMin) < coneSize ) fillPerp = kTRUE ;
+
+            if ( fillPerp )
+              perpConePtSumChEmb += partInConePt;
+          }
+
+          // BANDS
+
+          if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+          {
+            // Phi band
+            //
+            Bool_t takeIt = kTRUE;
+
+            // Look only half TPC with respect candidate, avoid opposite side jet
+            if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
+
+            // Within eta cone size
+            if ( TMath::Abs(dEta) < coneSize+coneSizeGap  &&  takeIt )
+            {
+              phiBandPtSumChEmb += partInConePt;
+            } // phi band
+
+            // Eta band
+            //
+            //takeIt = kTRUE;
+
+            // Within phi cone size
+            if ( TMath::Abs(dPhi) < coneSize+coneSizeGap ) // && takeIt )
+            {
+              etaBandPtSumChEmb += partInConePt;
+            } // eta band
+
+          } // out of cone
+
+        } // Physical primary, out of cone
+
+        // In cone
+        //
+        if ( dR < gapCandidate )
+          continue;
+
+        if ( dR > GetIsolationCut()->GetConeSize() )
+          continue;
+
+        sumPtInConeChEmb += partInConePt;
+        //printf("Track %d pT %f\n",itrack, partInConePt);
+
+      }
+
+      // Add generated particles to embedded
+      sumPtInConeChEmb+=sumPtInConeCh;
+      sumPtInConeNeEmb+=sumPtInConeNe;
+
+      etaBandPtSumChEmb+=etaBandPtSumCh;
+      phiBandPtSumChEmb+=phiBandPtSumCh;
+      etaBandPtSumNeEmb+=etaBandPtSumNe;
+      phiBandPtSumNeEmb+=phiBandPtSumNe;
+
+      perpConePtSumChEmb+=perpConePtSumCh;
+    }
+    ///////END ISO EMBED DATA/////////////////////////
+
     // Get detectors acceptance
     // Do it once, needed for Band UE estimation and excess area determination
     //if ( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )  // comment not needed in all cases, but it does not take much, in case UE study done in AliAnaParticleIsolation
@@ -5308,11 +5662,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                                                                          excessNePhi, excessAreaNePhi);
       sumPtInConeCh *= excessAreaChEta ;
       sumPtInConeNe *= (excessAreaNeEta*excessAreaNePhi) ;
+
+      sumPtInConeChEmb *= excessAreaChEta ;
+      sumPtInConeNeEmb *= (excessAreaNeEta*excessAreaNePhi) ;
     }
+
+    //printf("Centrality %d\n",GetEventCentrality());
+    //printf("SumPt in cone ne %2.2f, ch %2.2f;\n \t emb ne %2.2f, ch %2.2f\n",
+    //       sumPtInConeNe, sumPtInConeCh, sumPtInConeNeEmb, sumPtInConeChEmb);
 
     // Total energy in cone
     //
     sumPtInCone = sumPtInConeNe + sumPtInConeCh  ;
+    sumPtInConeEmb = sumPtInConeNeEmb + sumPtInConeChEmb  ;
 
     // Normalize estimated UE to cone size
     //
@@ -5326,10 +5688,25 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     //Double_t coneptsumBkgChRaw = 0.;
     //Double_t coneptsumBkgNeRaw = 0.;
 
+    Double_t coneptsumUESubEmb   = sumPtInConeEmb;
+    Double_t coneptsumUESubNeEmb = sumPtInConeNeEmb;
+    Double_t coneptsumUESubChEmb = sumPtInConeChEmb;
+
+    Double_t coneptsumBkgChEmb    = 0.;
+    Double_t coneptsumBkgNeEmb    = 0.;
+
+    //printf("SumPt in UE perp %2.2f; phi ne %2.2f; ch %2.2f; eta ne %2.2f, ch %2.2f\n"
+    //       "\t Emb: perp %2.2f; phi ne %2.2f; ch %2.2f; eta ne %2.2f, ch %2.2f\n", 
+    //       perpConePtSumCh, etaBandPtSumNe, etaBandPtSumCh, phiBandPtSumNe, phiBandPtSumCh,
+    //       perpConePtSumChEmb, etaBandPtSumNeEmb, etaBandPtSumChEmb, phiBandPtSumNeEmb, phiBandPtSumChEmb
+    //       );
+
     if ( isoMethod == AliIsolationCut::kSumBkgSubIC )
     {
       coneptsumBkgCh = perpConePtSumCh/2.;
       coneptsumBkgNe = perpConePtSumNe/2.;
+
+      coneptsumBkgChEmb = perpConePtSumChEmb/2.;
       //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
     }
     else if ( isoMethod >= AliIsolationCut::kSumBkgSubEtaBandIC ) // eta or phi band
@@ -5339,7 +5716,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       Float_t  phiBandPtSumChNorm = 0;
       Float_t  etaBandPtSumNeNorm = 0;
       Float_t  phiBandPtSumNeNorm = 0;
-
+      Float_t  etaBandPtSumChNormEmb = 0;
+      Float_t  phiBandPtSumChNormEmb = 0;
+      Float_t  etaBandPtSumNeNormEmb = 0;
+      Float_t  phiBandPtSumNeNormEmb = 0;
       //Float_t  coneptsumChSub     = 0 ;
       //Float_t  coneptsumNeSub     = 0 ;
 
@@ -5373,15 +5753,27 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
          etaBandPtSumNe    , phiBandPtSumCh    ,
          etaBandPtSumNeNorm, phiBandPtSumChNorm);
 
+        if ( IsEmbedingAnalysisOn () )
+        {
+          GetIsolationCut()->CalculateUEBandClusterNormalization
+          (photonEta         , photonPhi         ,
+           excessNeEta       , excessNePhi       ,
+           excessAreaNeEta   , excessAreaNePhi   ,
+           etaBandPtSumNeEmb    , phiBandPtSumChEmb    ,
+           etaBandPtSumNeNormEmb, phiBandPtSumChNormEmb);
+        }
+
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
         {
           //coneptsumBkgNeRaw  = etaBandPtSumNe;
           coneptsumBkgNe     = etaBandPtSumNeNorm;
+          coneptsumBkgNeEmb  = etaBandPtSumNeNormEmb;
         }
         else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
         {
           //coneptsumBkgNeRaw  = phiBandPtSumNe;
           coneptsumBkgNe     = phiBandPtSumNeNorm;
+          coneptsumBkgNeEmb  = phiBandPtSumNeNormEmb;
         }
 
         //coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
@@ -5405,15 +5797,26 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
          etaBandPtSumCh    , phiBandPtSumCh,
          etaBandPtSumChNorm, phiBandPtSumChNorm);
 
+        if ( IsEmbedingAnalysisOn() )
+        {
+          GetIsolationCut()->CalculateUEBandTrackNormalization
+          (photonEta         ,
+           excessChEta       , excessAreaChEta,
+           etaBandPtSumChEmb    , phiBandPtSumChEmb,
+           etaBandPtSumChNormEmb, phiBandPtSumChNormEmb);
+        }
+
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
         {
           //coneptsumBkgChRaw = etaBandPtSumCh;
           coneptsumBkgCh    = etaBandPtSumChNorm;
+          coneptsumBkgChEmb = etaBandPtSumChNormEmb;
         }
         else  if( isoMethod == AliIsolationCut::kSumBkgSubPhiBandIC )
         {
           //coneptsumBkgChRaw = phiBandPtSumCh;
           coneptsumBkgCh    = phiBandPtSumChNorm;
+          coneptsumBkgChEmb = phiBandPtSumChNormEmb;
         }
 
         //coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
@@ -5433,6 +5836,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged && !checkClustersBand )
       {
         coneptsumBkgNe = coneptsumBkgCh*GetIsolationCut()->GetNeutralOverChargedRatio(centrality);
+
+        if ( IsEmbedingAnalysisOn() )
+          coneptsumBkgNeEmb = coneptsumBkgChEmb*GetIsolationCut()->GetNeutralOverChargedRatio(centrality);
+
         //coneptsumNeSub = sumPtInConeNe - coneptsumBkgNe;
       }
 
@@ -5445,6 +5852,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     coneptsumUESubNe -= coneptsumBkgNe;
     coneptsumUESubCh -= coneptsumBkgCh;
+
+    if ( IsEmbedingAnalysisOn() )
+    {
+      coneptsumUESubNeEmb -= coneptsumBkgNeEmb;
+      coneptsumUESubChEmb -= coneptsumBkgChEmb;
+    }
 
     // Calculated in case of fICMethod == kSumBkgSubEtaBandIC,
     // reset excess areas to 1 if not used in final result.
@@ -5461,6 +5874,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       coneptsumUESub  = coneptsumUESubCh * excessAreaChEta;
     else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
       coneptsumUESub  = coneptsumUESubNe * excessAreaNePhi*excessAreaNeEta;
+
+    if ( IsEmbedingAnalysisOn() )
+    {
+      if      ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+        coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi * excessAreaNeEta + coneptsumUESubCh * excessAreaChEta;
+      else if ( partInConeType ==AliIsolationCut::kOnlyCharged        )
+        coneptsumUESubEmb  = coneptsumUESubChEmb * excessAreaChEta;
+      else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
+        coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi*excessAreaNeEta;
+    }
 
     // Fill the histograms
 
@@ -5504,6 +5927,34 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if ( !GetReader()->AreMCPromptPhotonsSelected() )
           fhConeSumPtNeutralChargedRatioPrimMC[kmcPrimPhoton]->Fill(photonPt, sumPtInConeNe/sumPtInConeCh, GetEventWeight()*weightPt) ;
       }
+
+      if ( IsEmbedingAnalysisOn() )
+      {
+        fhConeSumPtPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInConeEmb, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInConeEmb, GetEventWeight()*weightPt) ;
+
+        if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, sumPtInConeChEmb, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, sumPtInConeChEmb, GetEventWeight()*weightPt) ;
+        }
+
+        if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+        {
+          fhConeSumPtUESubPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubEmb, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtUESubPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubEmb, GetEventWeight()*weightPt) ;
+
+          if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhConeSumPtUESubChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubChEmb, GetEventWeight()*weightPt) ;
+            if ( !GetReader()->AreMCPromptPhotonsSelected() )
+              fhConeSumPtUESubChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubChEmb, GetEventWeight()*weightPt) ;
+          }
+        }
+      }
     }
     else
     {
@@ -5529,6 +5980,34 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           fhConeSumPtUESubCenChargedPrimMC[mcIndex]      ->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
           if ( !GetReader()->AreMCPromptPhotonsSelected() )
             fhConeSumPtUESubCenChargedPrimMC[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubCh, centrality, GetEventWeight()*weightPt) ;
+        }
+      }
+
+      if ( IsEmbedingAnalysisOn() )
+      {
+        fhConeSumPtCenPrimMCEmb [mcIndex]      ->Fill(photonPt, sumPtInConeEmb, centrality, GetEventWeight()*weightPt) ;
+        if ( !GetReader()->AreMCPromptPhotonsSelected() )
+          fhConeSumPtCenPrimMCEmb [kmcPrimPhoton]->Fill(photonPt, sumPtInConeEmb, centrality, GetEventWeight()*weightPt) ;
+
+        if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+        {
+          fhConeSumPtCenChargedPrimMCEmb [mcIndex]      ->Fill(photonPt, sumPtInConeChEmb, centrality, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtCenChargedPrimMCEmb [kmcPrimPhoton]->Fill(photonPt, sumPtInConeChEmb, centrality, GetEventWeight()*weightPt) ;
+        }
+
+        if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
+        {
+          fhConeSumPtUESubCenPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubEmb, centrality, GetEventWeight()*weightPt) ;
+          if ( !GetReader()->AreMCPromptPhotonsSelected() )
+            fhConeSumPtUESubCenPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubEmb, centrality, GetEventWeight()*weightPt) ;
+
+          if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
+          {
+            fhConeSumPtUESubCenChargedPrimMCEmb[mcIndex]      ->Fill(photonPt, coneptsumUESubChEmb, centrality, GetEventWeight()*weightPt) ;
+            if ( !GetReader()->AreMCPromptPhotonsSelected() )
+              fhConeSumPtUESubCenChargedPrimMCEmb[kmcPrimPhoton]->Fill(photonPt, coneptsumUESubChEmb, centrality, GetEventWeight()*weightPt) ;
+          }
         }
       }
     }
@@ -6186,11 +6665,13 @@ void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelatio
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeNClusterPerMinPtCut    ->Fill(icut, fConeNClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
-      fhConeSumPtClusterPerMinPtCut->Fill(icut, fConeptsumClusterPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut [icut], GetEventWeight()*weightTrig);
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeNClusterPerMinPtCut    ->Fill(icut, fConeNClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
+        fhConeSumPtClusterPerMinPtCut->Fill(icut, fConeptsumClusterPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut [icut], GetEventWeight()*weightTrig);
+      }
+      else
       {
         fhConeNClusterPerMinPtCutCent    ->Fill(icut, fConeNClusterPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
         fhConeSumPtClusterPerMinPtCutCent->Fill(icut, fConeptsumClusterPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
@@ -6255,25 +6736,24 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
   
   Float_t conesize    = GetIsolationCut()->GetConeSize();
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
-  Bool_t  excludeRec  = GetIsolationCut()->IsBandExclusionRectangular();
   Float_t emcEtaSize  = GetIsolationCut()->GetEMCEtaSize();
   Float_t emcPhiSize  = GetIsolationCut()->GetEMCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
-  
-  if ( excludeRec )
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone+gap area
+
+  if ( distToTrig > 0 )
   {
-    coneAreaPhi = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
-    coneAreaEta = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
   }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * emcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * emcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * emcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * emcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
   
   if ( fStudyPtCutInCone )
@@ -6326,27 +6806,31 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
      Float_t ptCluster  = fMomentum.Pt();
      Float_t etaCluster = fMomentum.Eta();
      Float_t phiCluster = GetPhi(fMomentum.Phi());
-    
+
+     // Angles between trigger and track
+     Double_t dEta = etaTrig - etaCluster;
+     Double_t dPhi = phiTrig - phiCluster;
+
+     // Shift phi angle when trigger is close to 0 or 360
+     if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+     if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+     
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Eta or phi band with respect the trigger cone
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, etaCluster, phiCluster);
 
-     if ( rad > conesize )
+     if ( rad > conesize+conesizegap )
     {
       // Phi band
       //
       Bool_t takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                  && 
-           phiCluster < (phiTrig+conesize+conesizegap) &&   
-           phiCluster > (phiTrig-conesize-conesizegap)    ) takeIt = kFALSE;
-      
+
       // Look only half TPC with respect candidate, avoid opposite side jet 
       if ( TMath::Abs(phiTrig-phiCluster) > TMath::PiOver2() )  takeIt = kFALSE;
       
       // Within eta cone size
-      if ( etaCluster > (etaTrig-conesize) && etaCluster < (etaTrig+conesize) &&  takeIt ) 
+      if ( TMath::Abs(dEta) < conesize+conesizegap &&  takeIt ) 
       {
         phiBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
@@ -6366,14 +6850,10 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       
       // Eta band
       //
-      takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                  && 
-           etaCluster < (etaTrig+conesize+conesizegap) &&   
-           etaCluster > (etaTrig-conesize-conesizegap)    ) takeIt = kFALSE;
+      //takeIt = kTRUE;
       
       // Within phi cone size
-      if ( phiCluster > (phiTrig-conesize) && phiCluster < (phiTrig+conesize) && takeIt )
+      if ( TMath::Abs(dPhi) < conesize+conesizegap )// && takeIt )
       {
         etaBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
@@ -6433,19 +6913,21 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       
       // Fill histograms
       //      
-      fhEtaBandConeSumPtClusterPerMinPtCut->Fill(icut+1, fConeptsumEtaBandClusterPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhEtaBandConeNClusterPerMinPtCut    ->Fill(icut+1, fConeNEtaBandClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhConeSumPtClusterSubEtaBandPerMinPtCut->Fill(icut+1, fConeptsumClusterSubEtaBandPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeNClusterSubEtaBandPerMinPtCut    ->Fill(icut+1, fConeNClusterSubEtaBandPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhPhiBandConeSumPtClusterPerMinPtCut->Fill(icut+1, fConeptsumPhiBandClusterPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhPhiBandConeNClusterPerMinPtCut    ->Fill(icut+1, fConeNPhiBandClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhConeSumPtClusterSubPhiBandPerMinPtCut->Fill(icut+1, fConeptsumClusterSubPhiBandPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeNClusterSubPhiBandPerMinPtCut    ->Fill(icut+1, fConeNClusterSubPhiBandPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhEtaBandConeSumPtClusterPerMinPtCut->Fill(icut+1, fConeptsumEtaBandClusterPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhEtaBandConeNClusterPerMinPtCut    ->Fill(icut+1, fConeNEtaBandClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhConeSumPtClusterSubEtaBandPerMinPtCut->Fill(icut+1, fConeptsumClusterSubEtaBandPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeNClusterSubEtaBandPerMinPtCut    ->Fill(icut+1, fConeNClusterSubEtaBandPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhPhiBandConeSumPtClusterPerMinPtCut->Fill(icut+1, fConeptsumPhiBandClusterPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhPhiBandConeNClusterPerMinPtCut    ->Fill(icut+1, fConeNPhiBandClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhConeSumPtClusterSubPhiBandPerMinPtCut->Fill(icut+1, fConeptsumClusterSubPhiBandPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeNClusterSubPhiBandPerMinPtCut    ->Fill(icut+1, fConeNClusterSubPhiBandPerMinCut    [icut], GetEventWeight()*weightTrig);
+      }
+      else
       {
         fhEtaBandConeNClusterPerMinPtCutCent    ->Fill(icut, fConeNEtaBandClusterPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
         fhEtaBandConeSumPtClusterPerMinPtCutCent->Fill(icut, fConeptsumEtaBandClusterPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
@@ -6464,21 +6946,23 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       // Do here ONLY if StudyClustersUEInCone is called after StudyTracksUEUnCone!!!
       if ( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kNeutralAndCharged )
       {
-        fhConeSumPtSubEtaBandPerMinPtCut->Fill(icut+1, 
-                                               fConeptsumClusterSubEtaBandPerMinCut[icut]+fConeptsumTrackSubEtaBandPerMinCut[icut],
-                                               GetEventWeight()*weightTrig);
-        fhConeNSubEtaBandPerMinPtCut    ->Fill(icut+1, 
-                                               fConeNClusterSubEtaBandPerMinCut    [icut]+fConeNTrackSubEtaBandPerMinCut    [icut],
-                                               GetEventWeight()*weightTrig);
-        
-        fhConeSumPtSubPhiBandPerMinPtCut->Fill(icut+1, 
-                                               fConeptsumClusterSubPhiBandPerMinCut[icut]+fConeptsumTrackSubPhiBandPerMinCut[icut], 
-                                               GetEventWeight()*weightTrig);
-        fhConeNSubPhiBandPerMinPtCut    ->Fill(icut+1, 
-                                               fConeNClusterSubPhiBandPerMinCut    [icut]+fConeNTrackSubPhiBandPerMinCut    [icut], 
-                                               GetEventWeight()*weightTrig);
-        
-        if ( IsHighMultiplicityAnalysisOn() )
+        if ( !IsHighMultiplicityAnalysisOn() )
+        {
+          fhConeSumPtSubEtaBandPerMinPtCut->Fill(icut+1, 
+                                                 fConeptsumClusterSubEtaBandPerMinCut[icut]+fConeptsumTrackSubEtaBandPerMinCut[icut],
+                                                 GetEventWeight()*weightTrig);
+          fhConeNSubEtaBandPerMinPtCut    ->Fill(icut+1, 
+                                                 fConeNClusterSubEtaBandPerMinCut    [icut]+fConeNTrackSubEtaBandPerMinCut    [icut],
+                                                 GetEventWeight()*weightTrig);
+          
+          fhConeSumPtSubPhiBandPerMinPtCut->Fill(icut+1, 
+                                                 fConeptsumClusterSubPhiBandPerMinCut[icut]+fConeptsumTrackSubPhiBandPerMinCut[icut], 
+                                                 GetEventWeight()*weightTrig);
+          fhConeNSubPhiBandPerMinPtCut    ->Fill(icut+1, 
+                                                 fConeNClusterSubPhiBandPerMinCut    [icut]+fConeNTrackSubPhiBandPerMinCut    [icut], 
+                                                 GetEventWeight()*weightTrig);
+        }
+        else
         {
           fhConeSumPtSubEtaBandPerMinPtCutCent->Fill(icut+1, 
                                                  fConeptsumClusterSubEtaBandPerMinCut[icut]+fConeptsumTrackSubEtaBandPerMinCut[icut],
@@ -6895,11 +7379,13 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumTrackPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut [icut], GetEventWeight()*weightTrig);
-      fhConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut [icut], GetEventWeight()*weightTrig);
+        fhConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+      }
+      else
       {
         fhConeNTrackPerMinPtCutCent    ->Fill(icut, fConeNTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
         fhConeSumPtTrackPerMinPtCutCent->Fill(icut, fConeptsumTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);
@@ -6953,25 +7439,24 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
   
   Float_t conesize    = GetIsolationCut()->GetConeSize();
   Float_t conesizegap = GetIsolationCut()->GetConeSizeBandGap();
-  Bool_t  excludeRec  = GetIsolationCut()->IsBandExclusionRectangular();
   Float_t tpcEtaSize  = GetIsolationCut()->GetTPCEtaSize();
   Float_t tpcPhiSize  = GetIsolationCut()->GetTPCPhiSize();
-  
+  Float_t distToTrig  = GetIsolationCut()->GetMinDistToTrigger();
+
   // Bands normalization
   //
   Float_t coneArea = conesize*conesize*TMath::Pi(); // Area = pi R^2, isolation cone area
-  Float_t coneAreaPhi = coneArea; 
-  Float_t coneAreaEta = coneArea; 
-  
-  if ( excludeRec )
+  Float_t coneAreaGap = (conesize+conesizegap)*(conesize+conesizegap)*TMath::Pi(); // Area = pi R^2, isolation cone area
+
+  if ( distToTrig > 0 )
   {
-    coneAreaPhi = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
-    coneAreaEta = 2 * ( conesize + conesizegap ) * ( 2 * conesize ); 
+    coneArea    -= distToTrig*distToTrig*TMath::Pi();
+    coneAreaGap -= distToTrig*distToTrig*TMath::Pi();
   }
   
   // Area of band, rectangle minus isolation region
-  Float_t etaBandArea = 2*conesize * tpcEtaSize - coneAreaEta;
-  Float_t phiBandArea = 2*conesize * tpcPhiSize - coneAreaPhi; 
+  Float_t etaBandArea = 2*(conesize+conesizegap) * tpcEtaSize - coneAreaGap;
+  Float_t phiBandArea = 2*(conesize+conesizegap) * tpcPhiSize - coneAreaGap;
   //printf("Area band eta %f phi %f\n",etaBandArea,phiBandArea);
 
   //Double_t sumptPerp = 0. ;
@@ -7043,21 +7528,25 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, etaTrack, phiTrack);
 
-    if ( rad > conesize )
+    // Angles between trigger and track
+    Double_t dEta = etaTrig - etaTrack;
+    Double_t dPhi = phiTrig - phiTrack;
+
+    // Shift phi angle when trigger is close to 0 or 360
+    if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
+    if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
+    
+    if ( rad > conesize+conesizegap )
     {
       // Phi band
       //
       Bool_t takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                && 
-           phiTrack < (phiTrig+conesize+conesizegap) &&   
-           phiTrack > (phiTrig-conesize-conesizegap)    ) takeIt = kFALSE;
-      
+
       // Look only half TPC with respect candidate, avoid opposite side jet 
-      if ( TMath::Abs(phiTrig-phiTrack) > TMath::PiOver2() )  takeIt = kFALSE;
+      if ( TMath::Abs(dPhi) > TMath::PiOver2() )  takeIt = kFALSE;
       
       // Within eta cone size
-      if ( etaTrack > (etaTrig-conesize) && etaTrack < (etaTrig+conesize) &&  takeIt ) 
+      if ( TMath::Abs(dEta) < conesize+conesizegap &&  takeIt ) 
       {
         //phiBandPtSumTrack += ptTrack;
         
@@ -7076,14 +7565,10 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
       
       // Eta band
       //
-      takeIt = kTRUE;
-      // Exclude tracks in rectangle containing isolation cone
-      if ( excludeRec                                && 
-           etaTrack < (etaTrig+conesize+conesizegap) &&   
-           etaTrack > (etaTrig-conesize-conesizegap)    ) takeIt = kFALSE;
+      //takeIt = kTRUE;
       
       // Within phi cone size
-      if ( phiTrack > (phiTrig-conesize) && phiTrack < (phiTrig+conesize) && takeIt )
+      if ( TMath::Abs(dPhi) < conesize+conesizegap ) //&& takeIt )
       {
         //etaBandPtSumTrack += ptTrack;
         if ( fStudyPtCutInCone )
@@ -7105,11 +7590,9 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // Fill the histograms at +-45 degrees in phi from trigger particle, 
     // perpedicular to trigger axis in phi
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    Double_t dEta    = etaTrig - etaTrack;
-    
-    Double_t dPhiPlu = phiTrig - phiTrack + TMath::PiOver2();
-    Double_t dPhiMin = phiTrig - phiTrack - TMath::PiOver2();
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+    Double_t dPhiPlu = dPhi + TMath::PiOver2();
+    Double_t dPhiMin = dPhi - TMath::PiOver2();
     
     Double_t argPlu  = dPhiPlu*dPhiPlu + dEta*dEta;
     Double_t argMin  = dPhiMin*dPhiMin + dEta*dEta;
@@ -7241,25 +7724,27 @@ void AliAnaParticleIsolation::StudyTracksUEInCone(AliCaloTrackParticleCorrelatio
       
       // Fill histograms
       //
-      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhConeSumPtTrackSubPerpPerMinPtCut->Fill(icut+1, fConeptsumTrackSubPerpPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeNTrackSubPerpPerMinPtCut    ->Fill(icut+1, fConeNTrackSubPerpPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhEtaBandConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumEtaBandTrackPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhEtaBandConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNEtaBandTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhConeSumPtTrackSubEtaBandPerMinPtCut->Fill(icut+1, fConeptsumTrackSubEtaBandPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeNTrackSubEtaBandPerMinPtCut    ->Fill(icut+1, fConeNTrackSubEtaBandPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhPhiBandConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumPhiBandTrackPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhPhiBandConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNPhiBandTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      fhConeSumPtTrackSubPhiBandPerMinPtCut->Fill(icut+1, fConeptsumTrackSubPhiBandPerMinCut[icut], GetEventWeight()*weightTrig);
-      fhConeNTrackSubPhiBandPerMinPtCut    ->Fill(icut+1, fConeNTrackSubPhiBandPerMinCut    [icut], GetEventWeight()*weightTrig);
-      
-      if ( IsHighMultiplicityAnalysisOn() )
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhConeSumPtTrackSubPerpPerMinPtCut->Fill(icut+1, fConeptsumTrackSubPerpPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeNTrackSubPerpPerMinPtCut    ->Fill(icut+1, fConeNTrackSubPerpPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhEtaBandConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumEtaBandTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhEtaBandConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNEtaBandTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhConeSumPtTrackSubEtaBandPerMinPtCut->Fill(icut+1, fConeptsumTrackSubEtaBandPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeNTrackSubEtaBandPerMinPtCut    ->Fill(icut+1, fConeNTrackSubEtaBandPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhPhiBandConeSumPtTrackPerMinPtCut->Fill(icut+1, fConeptsumPhiBandTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhPhiBandConeNTrackPerMinPtCut    ->Fill(icut+1, fConeNPhiBandTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
+        
+        fhConeSumPtTrackSubPhiBandPerMinPtCut->Fill(icut+1, fConeptsumTrackSubPhiBandPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeNTrackSubPhiBandPerMinPtCut    ->Fill(icut+1, fConeNTrackSubPhiBandPerMinCut    [icut], GetEventWeight()*weightTrig);
+      }
+      else 
       {
         fhPerpConeNTrackPerMinPtCutCent    ->Fill(icut, fConeNPerpTrackPerMinCut    [icut], GetEventCentrality(), GetEventWeight()*weightTrig);
         fhPerpConeSumPtTrackPerMinPtCutCent->Fill(icut, fConeptsumPerpTrackPerMinCut[icut], GetEventCentrality(), GetEventWeight()*weightTrig);

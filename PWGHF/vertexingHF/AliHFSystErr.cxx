@@ -493,6 +493,7 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if (fRunNumber==17 || fRunNumber==2017) InitLctopKpi2017pp();
         else if( fRunNumber==18 || fRunNumber==2018) InitLctopKpi20161718pp13TeV();
+        else if( fRunNumber==20161718 ) InitLctopKpi20161718pp13TeVFineBins();
         else{  
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
@@ -8285,6 +8286,62 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeV() {
 
 }
 
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
+  //
+  // Lc->pKpi std. cut method syst errors., fine binning. Responsible: Mattia Faggin
+  //  2016 2017 2018  pp sample
+  //
+  //
+
+  std::cout << std::endl << "### InitLctopKpi20161718pp13TeVFineBins" << std::endl << std::endl;
+
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi20161718pp");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05);
+
+  // Tracking efficiency (+++ Old! From coarser bins analysis +++)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  fTrackingEff->SetBinContent(1,0.045);
+  for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
+  for(Int_t i=3;i<=5;i++) fTrackingEff->SetBinContent(i,0.055); // 2-3
+  for(Int_t i=5;i<=7;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.15);//1-2
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.15); // 1-2
+  for(Int_t i=3;i<=8;i++) fRawYield->SetBinContent(i,0.07); // from 2-3 to 7-8
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.08); // 8-10, 10-12
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10); // 12-24
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.15);//1-2
+  for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.15); // 1-2
+  for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.13); // 2-3
+  for(Int_t i=6;i<=10;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4 to 8-10
+  for(Int_t i=11;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10-12, 12-24
+
+  // PID efficiency (from PID/noPID) (+++ Old! From coarser bins analysis +++)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt (+++ Old! From coarser bins analysis +++)
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  fMCPtShape->SetBinContent(1,0.02);
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 2-24
+
+  // BR
+  fBR= new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i,0.05);
+
+}
+
 //--------------------------------------------------------------------------
 
 void AliHFSystErr::InitLctopKpi2013pPbBDT() {
@@ -10919,10 +10976,10 @@ void AliHFSystErr::InitLctopK0SFromScpp13TeV201620172018BDT() {
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
-  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
-  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
-  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.07);
 
   // PID efficiency - not done for now
   fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
@@ -10978,18 +11035,18 @@ void AliHFSystErr::InitScpp13TeV201620172018BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fRawYield->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.16); 
-  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.11);
-  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.08);
-  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.08);
+  for (Int_t i = 3; i <= 4; i++)  fRawYield->SetBinContent(i, 0.15); 
+  for (Int_t i = 5; i <= 6; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 7; i <= 8; i++)  fRawYield->SetBinContent(i, 0.10);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.10);
   
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.05);
-  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.05);
-  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
-  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.07);
 
   // PID efficiency - not done for now
   fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
@@ -11057,10 +11114,10 @@ void AliHFSystErr::InitLctopK0S20161718pp13TeVBDT() {
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++)  fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
   for (Int_t i = 2; i <= 2; i++)  fCutsEff->SetBinContent(i, 0.06);
-  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.04);
-  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.04);
-  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.08);
-  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.08);
+  for (Int_t i = 3; i <= 4; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 5; i <= 6; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 7; i <= 8; i++)  fCutsEff->SetBinContent(i, 0.03);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.07);
   for (Int_t i = 13; i <= 24; i++) fCutsEff->SetBinContent(i, 0.08);
 
   // PID efficiency - not done for now

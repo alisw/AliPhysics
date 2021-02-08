@@ -49,6 +49,7 @@
 #pragma link C++ class AliJPartLifetime+;
 
 #pragma link C++ class AliJCatalystTask+;
+#pragma link C++ class AliJCorrectionMapTask+;
 #pragma link C++ class AliJJtTask+;
 #pragma link C++ class AliJJtAna+;
 #pragma link C++ class AliJCIaaTask+;

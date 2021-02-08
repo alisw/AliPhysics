@@ -133,12 +133,7 @@ void AliAnalysisAnaTwoMultiCorrelations::UserCreateOutputObjects()
   //TH1::AddDirectory(kFALSE);
 
 // 2. JEfficiency for NUA correction : DongJo
-  if (fUseJEfficiency)
-  {
-    fEfficiency = new AliJEfficiency();
-    fEfficiency->SetMode(1);  // 1: priod should work for you
-    fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data");
-  }
+  //  Now it gets from ALiJCorrectionMap Task a.l.a AliJCatalyst
 
 // 3. Book the lists and their content.
   this->BookAllLists();
@@ -250,9 +245,10 @@ void AliAnalysisAnaTwoMultiCorrelations::AnalyseRecoEvent()
     iParticleWeights[iIndex] = 1.;
     if (fUseJEfficiency)
     {
-      iEffCorr = fEfficiency->GetCorrection(iPt[iIndex], fFilterbitIndex, fCentrality);
+      iEffCorr = aaTrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
       iEffInverse = 1.0/iEffCorr;
-      iParticleWeights[iIndex] = iEffInverse;
+      Double_t phi_module_corr = aaTrack->GetWeight();// doing it in AliJCatalyst while filling track information.
+      iParticleWeights[iIndex] = iEffInverse/phi_module_corr;
     } // End: if (fUseJEfficiency).
 
   // 7.4 Increase the index in the observables' arrays.

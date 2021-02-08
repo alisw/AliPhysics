@@ -47,7 +47,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
-//#include "AliVertexingHFUtils.h"
+#include "AliVertexingHFUtils.h"
 
 
 //using std::cout;
@@ -933,7 +933,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
 	if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
 	if(estimatorAvg){
-		//correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+		correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 		//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
 	} 
 	fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
@@ -1672,6 +1672,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 
 	     fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+             if(!fMCparticle)continue;
 	     Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
 	     Double_t pdgEta = fMCparticle->Eta(); 
 	     Double_t pTtrue = fMCparticle->Pt(); 

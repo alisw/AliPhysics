@@ -22,6 +22,7 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	fInputListSpectra(NULL),
 	fInputListFlow(NULL),
 	fVnMethod(0),
+	jettask_tagging(1),
 	fESMethod(0),
 	cBin(-1),
 	zBin(-1),
@@ -52,6 +53,7 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	fInputListSpectra(0x0),
 	fInputListFlow(0x0),
 	fVnMethod(0),
+	jettask_tagging(1),
 	fESMethod(0),
 	cBin(-1),
 	zBin(-1),
@@ -88,6 +90,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fInputListSpectra(a.fInputListSpectra),
 	fInputListFlow(a.fInputListFlow),
 	fVnMethod(a.fVnMethod),
+	jettask_tagging(a.jettask_tagging),
 	fESMethod(a.fVnMethod),
 	cBin(-1),
 	zBin(-1),
@@ -155,12 +158,15 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	fJFJTask = (AliJFJTask*)(man->GetTask( fJFJTaskName));
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
+	fFFlucAna->SetBinning(AliJFFlucAnalysis::BINNING_CENT_PbPb);
 	if(flags & HSINT_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
-	if(flags & HSINT_EBE_WEIGHTING)
-		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
+	if(flags & HSINT_EBE_WEIGHTING)  // centality
+		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_EBE_WEIGHTING); // only for 18q+r no need for 15o
 	if(flags & HSINT_PHI_CORRECTION)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_PHI_CORRECTION);
+	// fFFlucAna->SetQCEtaCut( -0.8, 0.8, 0.4 ); // not used anymore and need to check with JP
+
 	fOutput->cd();
 	//fFFlucAna->SetEffConfig( fJCatalystTask->GetEffMode(), fJCatalystTask->GetEffFilterBit() );
 	fFFlucAna->UserCreateOutputObjects();
@@ -204,7 +210,7 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 
 	if(fDebugMode) cout << "Spectra Ana fInputListSpectra->GetEntriesFast() = "<< fInputListSpectra->GetEntriesFast() << endl;
 	if(fDebugMode) cout << " fPtHardMin = "<< fPtHardMin <<" , fPtHardMax = "<< fPtHardMax << endl;
-
+	if(fInputListSpectra->GetEntriesFast() < 1) return;
 	// find LP in a event
 	float pT_max = -1.;     //maximal pT in the event
 	for(int i=0;i<fInputListSpectra->GetEntriesFast();i++) {
@@ -250,13 +256,6 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		fFFlucAna->SetEventCentrality( fcent );
 		fFFlucAna->SetEventVertex ( vertex );
 		fFFlucAna->SetEtaRange( Eta_min, Eta_max);
-		if(flags & HSINT_PHI_CORRECTION){
-			int bin1 = AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
-			int fRunNum = fJCatalystTask->GetRunNumber();
-			TH1 *pweightMap = fJCatalystTask->GetCorrectionMap(fRunNum,bin1);
-			if(pweightMap)
-				fFFlucAna->SetPhiWeights(pweightMap);
-		}
 		fFFlucAna->UserExec("");
 	}
 
@@ -291,12 +290,15 @@ void AliJHSInterplayTask::ESETagging(int itask, int iESE, double pT_max) {
 		}
 
 		vector<fastjet::PseudoJet> psjets = jets.at(iBGSubtr); // only selected jet
+		if(psjets.size() == 0) return;
 		fastjet::PseudoJet psLjet = jets.at(iBGSubtr).at(0);
-		fastjet::PseudoJet pssubLjet = jets.at(iBGSubtr).at(1);
 		Ljetpt = psLjet.pt();
-		subLjetpt = pssubLjet.pt();
-		asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
-		InvM = ( psLjet + pssubLjet).m();
+		if(psjets.size()>1) {
+			fastjet::PseudoJet pssubLjet = jets.at(iBGSubtr).at(1);
+			subLjetpt = pssubLjet.pt();
+			asym = (Ljetpt - subLjetpt)/(Ljetpt + subLjetpt);
+			InvM = ( psLjet + pssubLjet).m();
+		}
 		if(fDebugMode) cout << Form("LPpt=%.1f:LPjet=%.1f:subJet=%.1f:DiJetAsym=%.1f",pT_max,Ljetpt,subLjetpt,asym) << endl;
 		switch(iESE) {
 		  case 0: // Leading particle

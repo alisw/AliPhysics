@@ -150,14 +150,14 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   
   // If EMCal trigger decission task was active
   //
-  if ( rejectEMCTrig == 3 && trigger.Contains("CAL_L") )
+  if ( rejectEMCTrig == 3 && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA")) )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers from Trigger Maker === \n");
     reader->SwitchOnBadTriggerEventsFromTriggerMakerRemoval();
   }
   // Old handmade trigger recalculation
   //
-  else if ( rejectEMCTrig > 0 && !simulation && trigger.Contains("CAL_L") )
+  else if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA"))  )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers (old procedure) === \n");
     reader->SwitchOnTriggerPatchMatching();
@@ -523,7 +523,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
   cu->SetDebug(debug);
   
   // Remove clusters close to borders, at least max energy cell is 1 cell away
-  cu->SetNumberOfCellsFromEMCALBorder(0); // temporary! set it back to 1.
+  cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder (2);
   
   cu->SetNumberOfSuperModulesUsed(10);
@@ -612,6 +612,13 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
                               kTRUE,      // bad map
                               calibTime); // time calib
   
+  // Exoticity cut
+  // Default value set in ConfigureEMCALRecoUtils() to 0.97 from 4 GeV cluster energy
+  if ( col == "PbPb" )
+    recou->SetExoticCellFractionCut(0.95);
+  else
+    recou->SetExoticCellFractionCut(0.97);
+
   //if( calibTime ) recou->SetExoticCellDiffTimeCut(50);
   
   //if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity(); // Done in Configure method

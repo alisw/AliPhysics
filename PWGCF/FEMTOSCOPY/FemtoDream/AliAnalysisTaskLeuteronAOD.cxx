@@ -346,13 +346,13 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
 
   // Create and fill the deuteron and antideuteron mass2 histograms
   fDeuteronMassSqTOF = new TH2F("fDeuteronMassSqTOF","Deuterons",50,0.0,5.0,400,0.0,8.0);
-  fDeuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  fDeuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fDeuteronMassSqTOF->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fDeuteronMassSqTOF->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
   fDeuteronList->Add(fDeuteronMassSqTOF);
 
   fAntideuteronMassSqTOF = new TH2F("fAntideuteronMassSqTOF","Antideuterons",50,0.0,5.0,400,0.0,8.0);
-  fAntideuteronMassSqTOF->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  fAntideuteronMassSqTOF->GetYaxis()->SetTitle("m^{2} (GeV^{2}/c^{4})");
+  fAntideuteronMassSqTOF->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fAntideuteronMassSqTOF->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
   fAntideuteronList->Add(fAntideuteronMassSqTOF);
 
   fResultsList = fPartColl->GetHistList();

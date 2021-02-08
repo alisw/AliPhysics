@@ -36,7 +36,7 @@ AliAnaRandomTrigger::AliAnaRandomTrigger() :
     fTriggerDetectorString("EMCAL"),
     fRandom(0),         fNRandom(0),
     fMomentum(),
-    fhE(0),             fhPt(0),
+    fhPt(0),
     fhPhi(0),           fhEta(0), 
     fhEtaPhi(0) 
 {
@@ -56,12 +56,13 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   //-------------------------------------
 
   Int_t absId = -1;
-  if(!GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi, absId)) return kTRUE; // remove if out of EMCAL acceptance, phi gaps
+  if ( !GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi, absId) ) 
+    return kTRUE; // remove if out of EMCAL acceptance, phi gaps
   
   Int_t icol = -1, irow = -1, iRCU = -1;
   Int_t sm = GetCaloUtils()->GetModuleNumberCellIndexes(absId,kEMCAL, icol, irow, iRCU);
   
-  //printf("eta %f, phi %f, ieta %d, iphi %d, sm %d\n",eta,phi,icol,irow,sm);
+  //printf("Exclude? eta %f, phi %f, ieta %d, iphi %d, sm %d\n",eta,phi,icol,irow,sm);
   
   //-------------------------------------
   // Remove in case of close to border, by default always 1 but check what was set in reco utils
@@ -73,7 +74,8 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   if ( nborder < 1 ) nborder = 1;
   
   // Rows
-  if ( sm < 10 )
+  if ( (sm < 10 && sm >=  0) || // EMCal full
+       (sm < 18 && sm >= 12)   )// DCal full
   {
     if(irow >= nborder && irow < 24-nborder) okrow =kTRUE; 
   }
@@ -99,7 +101,7 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
     if ( icol <  48-nborder )  okcol = kTRUE;	
   }
   
-  //printf("okcol %d, okrow %d\n",okcol,okrow);
+  //printf("Exclude: okcol %d, okrow %d\n",okcol,okrow);
   if (!okcol || !okrow) return kTRUE; 
   
   //-------------------------------------
@@ -108,8 +110,11 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
 
   Int_t status = 0;
   if ( GetCaloUtils()->GetEMCALChannelStatus(sm,icol, irow,status) ) 
+  {
+    //printf("Exclude: bad channel\n");
     return kTRUE ; // trigger falls into a bad channel
-
+  }
+  
   // Check if close there was a bad channel
 //  for(Int_t i = -1; i <= 1; i++)
 //  {
@@ -163,10 +168,6 @@ TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
   Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins(); Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
   Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
   Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
-
-  fhE  = new TH1F ("hE","Random E distribution", nptbins,ptmin,ptmax); 
-  fhE->SetXTitle("E (GeV)");
-  outputContainer->Add(fhE);
   
   fhPt  = new TH1F ("hPt","Random p_{T} distribution", nptbins,ptmin,ptmax); 
   fhPt->SetXTitle("p_{T} (GeV/c)");
@@ -236,21 +237,45 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
   for(Int_t irandom = 0; irandom < fNRandom; irandom++)
   {
     // Get the random variables of the trigger
-    Float_t pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
-    Float_t eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
-    Float_t phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
+    Float_t pt  = -1000;
+    Float_t eta = -1000;
+    Float_t phi = -1000;
+    Bool_t  in  = kFALSE;
+    Bool_t  exc = kTRUE; 
     
-    // Check if particle falls into a dead region, if inside, get new
-    Bool_t excluded =  ExcludeDeadBadRegions(eta,phi);
+//    printf("Random generation ranges: pt [%2.2f,%2.2f], eta [%2.2f,%2.2f], phi [%2.2f,%2.2f]\n",
+//           GetMinPt(), GetMaxPt(),
+//           fEtaCut[0], fEtaCut[1],
+//           fPhiCut[0]*TMath::RadToDeg(), fPhiCut[1]*TMath::RadToDeg());
     
     // If excluded, generate a new trigger until accepted
-    while (excluded)
+    while ( exc || !in )
     {
       pt  = fRandom.Uniform(GetMinPt(), GetMaxPt());
       eta = fRandom.Uniform(fEtaCut[0], fEtaCut[1]);
       phi = fRandom.Uniform(fPhiCut[0], fPhiCut[1]);
+      in  = kFALSE;
+      exc = kTRUE; 
       
-      excluded = ExcludeDeadBadRegions(eta,phi);
+      //printf("Generated pt %2.2f, eta %2.2f, phi %2.2f\n",pt,eta,phi*TMath::RadToDeg());
+      
+      // Check if particle falls into a predefined/standard detector region
+      if ( IsFiducialCutOn() )
+      {
+        in  = GetFiducialCut()->IsInFiducialCut(eta,phi,fTriggerDetector) ;
+        //printf("\t in %s acceptance? %d\n",fTriggerDetectorString.Data(), in);
+      }
+      else
+      {
+        in = kTRUE;
+      }
+      
+      // Check if particle falls into a dead region, if inside, get new
+      if ( in )
+      {
+        exc = ExcludeDeadBadRegions(eta,phi);
+        //printf("\t dead area? %d\n",exc);
+      }
     }
     
     // Create the AOD trigger object
@@ -284,7 +309,6 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
     AliCaloTrackParticle* trigger =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     
     fhPt    ->Fill(trigger->Pt (),                 GetEventWeight());
-    fhE     ->Fill(trigger->E  (),                 GetEventWeight());
     fhPhi   ->Fill(trigger->Pt (), trigger->Phi(), GetEventWeight());
     fhEta   ->Fill(trigger->Pt (), trigger->Eta(), GetEventWeight());
     fhEtaPhi->Fill(trigger->Eta(), trigger->Phi(), GetEventWeight());

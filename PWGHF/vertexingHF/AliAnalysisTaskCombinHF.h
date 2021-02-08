@@ -50,6 +50,11 @@ public:
   void SetRejectSignalsFromOOBPileupEvents(Bool_t opt=kTRUE){
     fRejectSignalsFromOOBPileupEvents=opt;
   }
+  void SetTrackletEta1MultiplicityEstimatorForMC(){fMultEstimMC=0;}
+  void SetTrackletFullEtaMultiplicityEstimatorForMC(){fMultEstimMC=1;}
+  void SetCentralityPercMultiplicityEstimatorForMC(){fMultEstimMC=2;}
+  void SetTPCClustersMultiplicityEstimatorForMC(){fMultEstimMC=3;}
+  
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -168,9 +173,14 @@ private:
   TH2F *fHistEventMultCentEvSel;        //!<! hist. for evnt Mult vs. centrality (sel)
   TH2F *fHistEventMultZv;               //!<! hist. of evnt Mult vs. Zv for all events
   TH2F *fHistEventMultZvEvSel;          //!<! hist. of evnt Mult vs. Zv for selected ev
+  TH2F *fHistEventTrackletCent;             //!<! hist. for evnt Tracklet vs. centrality (all)
+  TH2F *fHistEventTrackletCentEvSel;        //!<! hist. for evnt Tracklet vs. centrality (sel)
+  TH2F *fHistEventTrackletZv;               //!<! hist. of evnt Tracklet vs. Zv for all events
+  TH2F *fHistEventTrackletZvEvSel;          //!<! hist. of evnt Tracklet vs. Zv for selected ev
   TH1F *fHistXsecVsPtHard;              //!<! hist. of xsec vs pthard (MC)
   TH1F *fHistTrackStatus;               //!<! hist. of status of tracks
   TH3F *fHistTrackEtaMultZv;            //!<! track distribution vs. eta z vertex and mult
+  TH3F *fHistTrackEtaTrackletZv;            //!<! track distribution vs. eta z vertex and mult
   TH1D* fHistTrackSelSteps;             //!<! track cuts statistics
   TH2F *fHistSelTrackPhiPt;             //!<! track distribution vs. phi and pt
   TH2F *fHistSelTrackChi2ClusPt;        //!<! track chi2 distribution vs. pt
@@ -191,12 +201,20 @@ private:
   TH3F *fPtVsYVsMultGenAccPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsPhiVsMultGenPrompt;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccPrompt;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccPrompt;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fPtVsYVsMultGenFeeddw;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsMultGenLargeAccFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAccFeeddw;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
   TH3F *fPtVsYVsMultGenAccFeeddw;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsPhiVsMultGenFeeddw;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccFeeddw;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccFeeddw;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoFeeddw;       //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsPtBGenFeeddw;           //!<! hist. of Y vs. Pt vs. PtB generated (all D)
   TH3F *fPtVsYVsPtBGenLargeAccFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.9)
   TH3F *fPtVsYVsPtBGenLimAccFeeddw;     //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.5)
@@ -314,7 +332,9 @@ private:
   TTree** fEventBuffer;            //!<! structure for event mixing
   TObjString* fEventInfo;          /// unique event Id for event mixing checks
   Double_t fVtxZ;                  /// zVertex
-  Double_t fMultiplicity;          /// multiplicity
+  Double_t fMultiplicityEM;        /// multiplicity for ev mix pools
+  Double_t fMultiplicityMC;        /// multiplicity for MC efficiencies
+  Int_t fMultEstimMC;              /// multiplicity estimator (0=tracklets in eta<1)
   Int_t fNumOfMultBins;            /// number of bins for multiplcities in MC histos
   Double_t fMinMultiplicity;       /// lower limit for multiplcities in MC histos
   Double_t fMaxMultiplicity;       /// upper limit for multiplcities in MC histos
@@ -322,7 +342,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,38); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,40); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

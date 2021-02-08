@@ -204,11 +204,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     TrackCutsAntiDeuteronDCA->SetPlotTOFMassSq(true);
     TrackCutsDeuteronDCA->SetCutTOFInvMass(true);
     TrackCutsAntiDeuteronDCA->SetCutTOFInvMass(true);
-    TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(2.0);
-    TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(2.0);
+    TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
+    TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
     if (suffix == "0"){
-      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(2.0);
-      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(2.0);
+      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
+      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
     }else if (suffix == "1") {
       TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
@@ -218,29 +218,29 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     }else if (suffix == "3"){//left sideband
       TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
     }else if (suffix == "4") {
       TrackCutsDeuteronDCA->SetPtRange(2.5, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
     }else if (suffix == "5") {/// right side band
       TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
       TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
     }else if (suffix == "6") {
       TrackCutsDeuteronDCA->SetPtRange(2.5, 4.05);
       TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
     }else if (suffix == "7"){///left side band full range
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.35,0.05,true,false);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
     }else if(suffix == "8") {/// right side band full range
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(0.05,0.350,false,true);
+      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
+      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
     }
   }
 

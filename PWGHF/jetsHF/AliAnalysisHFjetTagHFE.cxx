@@ -224,6 +224,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistDs_POWHEG(0),
   fHistLc_POWHEG(0),
   fHistB_POWHEG(0),
+  fHistHFEinJet(0),
+  fHistHadroninJet(0),
   fPi0Weight(0),
   fEtaWeight(0),
   fpythia_b(0),
@@ -432,6 +434,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistDs_POWHEG(0),
   fHistLc_POWHEG(0),
   fHistB_POWHEG(0),
+  fHistHFEinJet(0),
+  fHistHadroninJet(0),
   fPi0Weight(0),
   fEtaWeight(0),
   fpythia_b(0),
@@ -1008,6 +1012,15 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistB_POWHEG = new TH1D("fHistB_POWHEG","B in POWHEG",100,0,100);
   fOutput->Add(fHistB_POWHEG);
+
+  fHistHFEinJet = new TH1D("fHistHFEinJet","HFE in jet in MC",100,0,100);
+  fOutput->Add(fHistHFEinJet);
+
+  fHistHadroninJet = new TH1D("fHistHadoninJet","hadron in jet in MC",100,0,100);
+  fOutput->Add(fHistHadroninJet);
+   // Prior PbPb
+
+
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -2167,6 +2180,34 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
 }
 
 
+void AliAnalysisHFjetTagHFE::MakePriorPbPb(AliEmcalJet* jetC, double *epT)
+{
+
+  for (unsigned j = 0; j< jetC->GetNumberOfTracks(); j++) 
+      {
+       AliVParticle *jetcont;
+       jetcont = static_cast<AliVParticle*>(jetC->TrackAt(j, fTracks));
+       if(!jetcont) continue;
+
+       double Rmom[3];
+       Rmom[0] = epT[0]-jetcont->Pt();
+       Rmom[1] = epT[1]-jetcont->Pz();
+       Rmom[2] = 0.0;
+       double Rmatch = sqrt(pow(Rmom[0],2)+pow(Rmom[1],2)+pow(Rmom[2],2));
+
+       if(Rmatch<1e-8) // electron in jet
+         {
+          fHistHFEinJet->Fill(epT[0]);
+         }
+       else
+         {
+          fHistHadroninJet->Fill(jetcont->Pt());
+         }
+      }
+}
+
+
+
 Double_t AliAnalysisHFjetTagHFE::ReduceJetEnergyScale(AliEmcalJet* jetC, double *epT, double effval)
 {
   Double_t JetpTreduce = 0.0;  
@@ -2546,6 +2587,8 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(Double_t &pthard)
 
                             if(jetPart->Pt()>10.0)cout << "HF jet in MC = " << NjetMC << endl;
                             //pJet->Fill(HFjetVals); 
+
+                            MakePriorPbPb(jetPart, MCpTarray);
 
                             if(NjetMC==0)
                               {

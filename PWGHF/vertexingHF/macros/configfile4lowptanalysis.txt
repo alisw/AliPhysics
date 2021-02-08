@@ -17,6 +17,7 @@ SigmaConfiguration:
     FixSigmaConf: 1
     FixSigmaPerBin: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     TuneSigmaOnData: -1.
+    UseSigmaManual 0
     SigmaManual: [ 0.006,0.006,0.006,0.007,0.008,0.008,0.008,0.008,0.009,0.010,0.011,0.012,0.012,0.012 ]
 
 MeanConfiguration:

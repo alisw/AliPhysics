@@ -237,6 +237,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1D                        *fHistDs_POWHEG;
   TH1D                        *fHistLc_POWHEG;
   TH1D                        *fHistB_POWHEG;
+  TH1D                        *fHistHFEinJet;
+  TH1D                        *fHistHadroninJet;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TF1                         *fpythia_b;
@@ -253,6 +255,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
+  void MakePriorPbPb(AliEmcalJet* jet, double *epT);
   Double_t ReduceJetEnergyScale(AliEmcalJet* jetC, double *epT, double effval);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);

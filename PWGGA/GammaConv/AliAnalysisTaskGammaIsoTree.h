@@ -143,6 +143,11 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
                                                                                             fClusterCutsEMC=clusterCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
+    void SetClusterCutsEMCTrackMatching      ( AliCaloPhotonCuts* clusterCuts,
+                                              Bool_t IsHeavyIon )                         {
+                                                                                            fClusterCutsEMCTrackMatching=clusterCuts           ;
+                                                                                            fIsHeavyIon = IsHeavyIon            ;
+                                                                                          }
     void SetClusterCutsIsolationEMC             ( AliCaloPhotonCuts* clusterCuts,
                                               Bool_t IsHeavyIon )                         {
                                                                                            fClusterCutsIsolationEMC=clusterCuts           ;
@@ -204,6 +209,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     
     void SetDoCellIso(Bool_t p0){ fDoCellIsolation = p0;}
     void SetRhoOutName(TString s){fRhoOutName = s;}
+    void SetRhoOutNameMC(TString s){fRhoOutNameMC = s;}
     void SetBuffSize(Long64_t buff){fTreeBuffSize = buff;}
     void SetDoTagging(Bool_t p0){ fDoTagging = p0;}
     void SetPi0TaggingWindow(Double_t min,Double_t max=0.){
@@ -273,18 +279,14 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     AliV0ReaderV1*              fV0Reader;        //!<! V0Reader for basic conversion photon selection
     TString                     fV0ReaderName;    
     TClonesArray*               fReaderGammas;     //!<! array with photon from fV0Reader                      //
-    TClonesArray* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
-    TClonesArray* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
-    TClonesArray* fClusterEMCalCandidatesIsolation;   //!<! vector containing clusters used for isolation, for internal use only
-    TClonesArray* fClusterEMCalCandidatesTagging;   //!<! vector containing clusters used for tagging, internal use only
-    TClonesArray* fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
-    TClonesArray* fTracks;   //!<!
-    TClonesArray* fMCParticles;   //!<! stores mc particles
+    TList* fConversionCandidates;   //!<! stores conv candidates of event that fulfill cuts
+    TList* fClusterEMCalCandidates;    //!<! stores emcal clusters that fulfill cuts
+    TList* fClusterEMCalCandidatesIsolation;   //!<! vector containing clusters used for isolation, for internal use only
+    TList* fClusterEMCalCandidatesTagging;   //!<! vector containing clusters used for tagging, internal use only
+    TList* fClusterPHOSCandidates;   //!<! stores phos clusters that fulfill cuts
+    TList* fTracks;   //!<!
+    TList* fMCParticles;   //!<! stores mc particles
     TClonesArray* fAODMCTrackArray;    // storage of track array
-    TClonesArray* fExtraClusterInfo;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    TClonesArray* fExtraClusterInfoBackground;  //!<! ID of up to 5 tracks per cluster, where index of vector corresponds to emc candidates index
-    TClonesArray*        fConvIsoInfo;    //!<! storage for isolation info of conv photons, following same ordering as fConversionCandidates
-    TClonesArray*        fCaloIsoInfo;    //!<! storage for isolation of EMC clusters, following same ordering as fConversionCandidates
    
     AliEMCALGeometry*           fGeomEMCAL;    // pointer to EMCAL geometry
     
@@ -292,6 +294,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
+    AliCaloPhotonCuts*          fClusterCutsEMCTrackMatching; // used to handle track matching (workaround)
     AliCaloPhotonCuts*          fClusterCutsIsolationEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
     AliCaloPhotonCuts*          fClusterCutsTaggingEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
     AliCaloPhotonCuts*          fClusterCutsPHOS;           // phos cluster cuts
@@ -655,6 +658,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fGenPi0PtInEMCalAcc_BothGammaInClusters;//!
 
     TString                     fRhoOutName; // 
+    TString                     fRhoOutNameMC; // 
 
     Long64_t                    fTreeBuffSize;           ///< allowed uncompressed buffer size per tree
     Long64_t                    fMemCountAOD;            //!<! accumulated tree size before AutoSave
@@ -666,6 +670,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Double_t                    fMaxM02; // max m02 for signal clusters (separate from normal cuts to allow purity estimation)
     
     Double_t                    fChargedRho; // event density
+    Double_t                    fChargedRhoMC; // event density
     Double_t                    fChargedRhoTimesArea[5]; // rho times are for up to five radii 
     
     Double_t                    fExclusionRadius;//
@@ -681,22 +686,32 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // // ─── FOR LIGHT TREE ──────────────────────────────────────────────
     // //
 
-    Float_t fBuffer_EventRho; // if true, some conversion ran into limits
-    Double_t fBuffer_EventWeight; // if true, some conversion ran into limits
-    Bool_t fBuffer_EventIsTriggered; // if true, some conversion ran into limits
+    Float_t fBuffer_EventRho; //
+    Float_t fBuffer_EventRhoMC; //
+    Double_t fBuffer_EventWeight; //
+    Float_t fBuffer_EventXsection; //
+    UShort_t fBuffer_EventNtrials; //
+    Bool_t fBuffer_EventIsTriggered; //
     std::vector<Float_t> fBuffer_ClusterE;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPx;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPy;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPz;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterM02; 
+    std::vector<Float_t> fBuffer_ClusterM02Recalc; 
     std::vector<Float_t> fBuffer_ClusterM20; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
     std::vector<UShort_t> fBuffer_ClusterNLM; 
+    std::vector<UShort_t> fBuffer_ClusterSM; // super module 
     std::vector<Float_t> fBuffer_ClusterEFrac; 
     std::vector<Float_t> fBuffer_ClusterIsoCharged1; // isolation for three different radii 
     std::vector<Float_t> fBuffer_ClusterIsoCharged2; 
     std::vector<Float_t> fBuffer_ClusterIsoCharged3; 
     std::vector<Float_t> fBuffer_ClusterIsoBckLeft; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackdEta; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackdPhi; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackP; 
+    std::vector<Float_t> fBuffer_ClusterMatchTrackPt; 
+    std::vector<Bool_t>  fBuffer_ClusterMatchTrackIsConv; 
     std::vector<Float_t> fBuffer_TrueClusterE; 
     std::vector<Float_t> fBuffer_TrueClusterPx; 
     std::vector<Float_t> fBuffer_TrueClusterPy; 
@@ -736,7 +751,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
     void ProcessTracks();
     void ProcessMCParticles();
-    Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TClonesArray* tracks);
+    Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TList* tracks);
     vector<Double32_t> ProcessChargedIsolation(AliAODConversionPhoton* photon);
     isoValues ProcessChargedIsolation(AliAODCaloCluster* cluster);
     vector<Double32_t> ProcessNeutralIsolation(AliAODConversionPhoton* photon);
@@ -761,8 +776,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetConvPhotonMCLabel(AliAODConversionPhoton *photon);
     Bool_t IsDecayPhoton(Int_t label);
     Bool_t IsDecayPhoton(AliAODConversionPhoton *photon);
-    Int_t CheckClustersForMCContribution(Int_t mclabel, TClonesArray *vclus);
-    Int_t CheckConvForMCContribution(Int_t mclabel, TClonesArray *vconv);
+    Int_t CheckClustersForMCContribution(Int_t mclabel, TList *vclus);
+    Int_t CheckConvForMCContribution(Int_t mclabel, TList *vconv);
     Bool_t IsPromptPhoton(AliAODConversionPhoton *photon);
     Bool_t IsPromptPhoton(Int_t label);
     Bool_t IsFragPhoton(AliAODConversionPhoton *photon);
@@ -772,7 +787,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 30);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 34);
 
 };
 

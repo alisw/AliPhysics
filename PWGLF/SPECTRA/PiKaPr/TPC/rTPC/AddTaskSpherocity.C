@@ -62,6 +62,7 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 	task->SetIsotrCutOff_0(IsotrValue_0);
 	task->SetIsotrCutOff_1(IsotrValue_1);
 	task->SetIsotrCutOff_2(IsotrValue_2);
+	task->SetMinMult(0);
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);

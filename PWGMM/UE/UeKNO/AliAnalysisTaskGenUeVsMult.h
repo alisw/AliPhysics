@@ -60,10 +60,10 @@ protected:
 
 
 private:
-    Int_t   GetMultipliciy(std::vector<Int_t> &mult,std::vector<Int_t> &regionArray);
+    Int_t   GetMultipliciy(std::vector<Int_t> &mult,std::vector<Int_t> &regionArray,std::vector<Int_t> &NchArray);
     Bool_t IsMCEventSelected(TObject* obj);
 	Int_t    GetPidCode(Int_t pdgCode) const;
-    void GetMultiVsUEObservables(std::vector<Int_t> &mult,std::vector<Int_t> &region);
+    void GetMultiVsUEObservables(std::vector<Int_t> &mult,std::vector<Int_t> &region,std::vector<Int_t> &Nchregion);
    
     AliMCEvent*  fMC;                                               //! MC Event
     AliInputEventHandler*    fMcHandler;  //!<!
@@ -113,9 +113,9 @@ private:
 	TProfile * pSumPtTrue[3];
     
     TH1D * fMult[4];
-    TH2D * fHistPtLeadingVsNchNS[12][4];
-    TH2D * fHistPtLeadingVsNchAS[12][4];
-    TH2D * fHistPtLeadingVsNchTS[12][4];
+    TH2D * fHistPtLeadingVsNchNS[4];
+    TH2D * fHistPtLeadingVsNchAS[4];
+    TH2D * fHistPtLeadingVsNchTS[4];
 	
 
 	AliAnalysisTaskGenUeVsMult(const AliAnalysisTaskGenUeVsMult&);                  // not implemented

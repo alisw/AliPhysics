@@ -127,6 +127,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowWeightsList{nullptr},
   fMC{kFALSE},
   fNeedPIDCorrection{kFALSE},
+  fPIDCorrectionPhi{kFALSE},
   fIs2018data{kFALSE},
   fIsHMpp{kFALSE},
   fInit{kFALSE},
@@ -423,6 +424,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowWeightsList{nullptr},
   fMC{bIsMC},
   fNeedPIDCorrection{kFALSE},
+  fPIDCorrectionPhi{kFALSE},
   fIs2018data{kFALSE},
   fIsHMpp{kFALSE},
   fInit{kFALSE},
@@ -3192,6 +3194,8 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
   Double_t fillingCorr[4];
   fillingCorr[3] = fIndexCentrality;
 
+  Int_t nRefs = fVector[kRefs]->size();
+
   for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
   {
     AliAODTrack* track = dynamic_cast<AliAODTrack*>(*part);
@@ -4114,7 +4118,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endfor {tracks} particle loop
 
     return;
-  }
+  } //end fFlowUsePIDWeights
 
   //if use PID weights
 
@@ -4260,7 +4264,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endif {dEtaGap}
   } // endfor {tracks} particle loop
 
-  for (auto part = fVector[kKaon]->begin(); part != fVector[kKaon]->end(); part++)
+    for (auto part = fVector[kProton]->begin(); part != fVector[kProton]->end(); part++)
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
@@ -4271,7 +4275,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kKaon); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kProton); }
 
     if(!bHasGap) // no eta gap
     {
@@ -4331,7 +4335,9 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endif {dEtaGap}
   } // endfor {tracks} particle loop
 
-  for (auto part = fVector[kProton]->begin(); part != fVector[kProton]->end(); part++)
+  if(fProcessSpec[kPhi] && !fPIDCorrectionPhi) return;
+
+  for (auto part = fVector[kKaon]->begin(); part != fVector[kKaon]->end(); part++)
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
@@ -4342,7 +4348,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kProton); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kKaon); }
 
     if(!bHasGap) // no eta gap
     {

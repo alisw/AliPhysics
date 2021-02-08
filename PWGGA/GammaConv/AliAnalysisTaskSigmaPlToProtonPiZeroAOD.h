@@ -89,6 +89,8 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
     Int_t IsRealProton(AliAODTrack* track, TClonesArray *fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC, Int_t fill);
     Int_t IsRealPhoton(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC);
+    Int_t IsProtonFromXi0(AliAODTrack* track, TClonesArray *fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC, Int_t fill);
+    Int_t IsPhotonFromXi0(AliAODConversionPhoton *PhotonCandidate, TClonesArray *fAODMCTrackArray, Int_t iCut, Double_t fWeightJetJetMC);
     void CalculateBackgroundSwappWGammaGamma(vector < AliVCluster* > photon, vector < AliAODTrack* > proton, Double_t vpos[3], Int_t iCut, Double_t fWeightJetJetMC);
     void CalculateBackgroundSwappWProtonPion(vector < TLorentzVector > pions, vector < AliAODTrack* > proton, Int_t iCut, Double_t fWeightJetJetMC);
 
@@ -170,6 +172,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
         TH2F**                  fHistSigmaMassPtWoPodCutMC; //!
         TH1F**                  fHistNLoopsProton; //!
         TH1F**                  fHistNLoopsGamma; //!
+        TH2F**                  fHistXi0MC; //! 
         TGenPhaseSpace          fGenPhaseSpace;                                       // For generation of decays into two gammas
         AliV0ReaderV1*          fV0Reader;                                            // basic photon Selection Task
         TString                 fV0ReaderName;
@@ -200,7 +203,7 @@ class AliAnalysisTaskSigmaPlToProtonPiZeroAOD : public AliAnalysisTaskSE
 
         void FillfHistNEvents(Int_t icut, Float_t in, Double_t fWeightJetJetMC) { if(fHistNEvents[icut]) fHistNEvents[icut]->Fill(in, fWeightJetJetMC); }
 
-        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 26);
+        ClassDef(AliAnalysisTaskSigmaPlToProtonPiZeroAOD, 27);
 };
 
 #endif

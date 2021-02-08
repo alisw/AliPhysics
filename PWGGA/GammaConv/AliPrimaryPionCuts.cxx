@@ -89,7 +89,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fUseTOFpid(kFALSE),
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
+    fDoMassCut_WithNDM(kFALSE),
 	fMassCut(10),
+    fMassCut_WithNDM(10),
 	fUse4VecForMass(kFALSE),
 	fRequireVertexConstrain(kFALSE),
 	fDoWeights(kFALSE),
@@ -162,7 +164,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fUseTOFpid(ref.fUseTOFpid),
 	fRequireTOF(ref.fRequireTOF),
 	fDoMassCut(ref.fDoMassCut),
+    fDoMassCut_WithNDM(ref.fDoMassCut_WithNDM),
 	fMassCut(ref.fMassCut),
+    fMassCut_WithNDM(ref.fMassCut_WithNDM),
 	fUse4VecForMass(ref.fUse4VecForMass),
 	fRequireVertexConstrain(ref.fRequireVertexConstrain),
 	fDoWeights(ref.fDoWeights),
@@ -1419,7 +1423,30 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
         case 11: //b overload mass cut for chi2 of vParticle
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
             fMassCut = 0.600;
+            fMassCut_WithNDM = 0.600;
+            break;
+        case 12: //c overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.85;
+            fMassCut_WithNDM = 1.0;
+            break;
+        case 13: //d overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.85;
+            fMassCut_WithNDM = 0.85;
+            break;
+        case 14: //e overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_WithNDM= kTRUE;
+            fMassCut = 0.600;
+            fMassCut_WithNDM = 0.600;
             break;
 
 		default:
