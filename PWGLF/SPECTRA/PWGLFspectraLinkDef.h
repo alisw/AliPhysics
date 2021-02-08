@@ -44,6 +44,7 @@
 #pragma link C++ class AliAnalysisTaskSpectraINEL0+;
 #pragma link C++ class AliMCWeightsTask+;
 #pragma link C++ class AliAnalysisTaskBaseWeights+;
+#pragma link C++ class AliMCSpectraWeightsHandler+;
 #endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;
