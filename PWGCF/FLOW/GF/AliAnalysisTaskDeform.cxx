@@ -70,6 +70,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fptvar(0),
   fCovList(0),
   fV2dPtList(0),
+  fNmptBinModifier(1),
   fCovariance(0),
   fQAList(0),
   fhCentvsNch(0),
@@ -128,6 +129,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fptvar(0),
   fCovList(0),
   fV2dPtList(0),
+  fNmptBinModifier(1),
   fCovariance(0),
   fQAList(0),
   fhCentvsNch(0),
@@ -170,6 +172,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
     DefineOutput(2,AliGFWFlowContainer::Class());
     DefineOutput(3,TList::Class());
     DefineOutput(4,TList::Class());
+    DefineOutput(5,TList::Class());
   }
   if(fStageSwitch==4) {
     DefineOutput(1,TList::Class());
@@ -195,6 +198,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   else if(fGFWSelection->GetSystFlagIndex() == 14) fCentEst = new TString("CL1");
   else fCentEst = new TString("V0M");
   OpenFile(1);
+  if(fIsPP) { fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true); }
   // const Int_t nMultiBins = 300;
   // Double_t lMultiBins[nMultiBins+1];
   // for(Int_t i=0;i<=nMultiBins;i++) lMultiBins[i] = i*10;
@@ -363,12 +367,14 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     // delete oba;
     oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22"));
+    if(!(20%fNmptBinModifier==0)) { AliFatal("dmpt bin modifier not divisable by 20"); return; }
+    const int NmptBins = 20/fNmptBinModifier;
     for(Int_t j=0;j<fV2dPtMulti->GetNbinsX();j++) {
       AliGFWFlowContainer *fPV = new AliGFWFlowContainer();
       fPV->SetName(Form("v2dpt_%i",j));
-      Double_t mptbins[21];
-      for(Int_t i=0;i<21;i++) mptbins[i] = (i - 10.)/100;
-      fPV->Initialize(oba,20,mptbins);
+      Double_t mptbins[NmptBins+1];
+      for(Int_t i=0;i<=NmptBins;i++) mptbins[i] = (fNmptBinModifier*i - 10.)/100;
+      fPV->Initialize(oba,NmptBins,mptbins);
       fV2dPtList->Add(fPV);
     };
     delete oba;
@@ -693,7 +699,6 @@ void AliAnalysisTaskDeform::FillMeanPtMC(AliAODEvent *fAOD, Double_t vz, Double_
   fV0MMulti->Fill(l_Cent);
   PostData(1,fMPTList);
 };
-
 void AliAnalysisTaskDeform::FillWPCounter(Double_t inArr[5], Double_t w, Double_t p) {
   inArr[0] += w;       // = w1p0
   inArr[1] += w*p;     // = w1p1

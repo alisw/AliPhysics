@@ -84,6 +84,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetIsPP(Bool_t ispp) { fIsPP = ispp; }
   void SetIsXeXe(Bool_t isXeXe) { fIsXeXe = isXeXe; }
+  void SetBinModifier(Int_t binmod) { fNmptBinModifier = binmod; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -119,6 +120,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TProfile **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
+  Int_t fNmptBinModifier; 
   TProfile **fCovariance; //!
   TList* fQAList;
   TH2D* fhCentvsNch; //!
