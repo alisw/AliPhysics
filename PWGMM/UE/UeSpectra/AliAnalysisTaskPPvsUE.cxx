@@ -86,7 +86,7 @@
 #include <iostream>
 using namespace std;
 
-ClassImp(AliAntlysisTaskPPvsUE)
+ClassImp(AliAnalysisTaskPPvsUE)
 	//_____________________________________________________________________________
 	AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE():
 	AliAnalysisTaskSE(),
