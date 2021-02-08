@@ -72,7 +72,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
                                                                              }};
   std::array<double, numMothers> ppbarBFF = {0.344, 0.344, 0.115, 0.198}; // (B0, B+, Bs, Lb) from PDG (2020)
   std::array<double, numMothers> eeBFF = {0.408, 0.408, 0.100, 0.084}; // (B0, B+, Bs, Lb) from PDG (2020)
-  std::array<double, numDaughters> decayBR = {0.03950, 0.0938, 0.0224, 0.0628, 0.03950*0.677, 0.0159}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2020)
+  std::array<double, numDaughters> decayBR = {0.03950, 0.0938, 0.0224, 0.0628, 0.03950*0.677, 0.0159*0.692}; // (D0, D+, Ds, Lc->pKpi, D*+, LC->K0sp) from PDG (2020)
   std::array<std::array<double, numMothers>, numDaughters> origBR = {};
   std::array<double, numMothers> origBFF = {};
 
@@ -87,8 +87,7 @@ void CookFONLLPythiaPred(std::string inFileNameMin = "DfromB_FONLLminPythia8_FFp
       origBFF[iMother] = hFFBeauty->GetBinContent(iMother + 1);
     }
 
-    double origBFFsum = 0.;
-    std::accumulate(origBFF.begin(), origBFF.end(), origBFFsum);
+    double origBFFsum = std::accumulate(origBFF.begin(), origBFF.end(), 0.f);
     if(ffOpt != kFFOriginal && origBFFsum == 0) {
       std::cerr << "ERROR: only original FF can be set if pT-dependent LHCb parametrisation used in the simulation! Exit" << std::endl;
       return;
