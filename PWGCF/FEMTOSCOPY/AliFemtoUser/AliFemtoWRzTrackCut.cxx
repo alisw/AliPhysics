@@ -280,10 +280,11 @@ bool AliFemtoWRzTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom)
 
   if (mom > maxmom) return false;
   
-  if (fNsigmaTPConly) {
+  if (fNsigmaTPConly && fNsigmaMass<0) {
     // for selection with only the TPC detector
     // cutting out the final part of the signal (~1.5 GeV) 
-    // that is dominated by missidentified particles  
+    // that is dominated by missidentified particles 
+    // this setting will be probably removed  
     if (dEdx < a5*mom+b5) return false;
   }
 
@@ -296,16 +297,36 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
     //Identyfication with only TPC for mom<1.4 and TPC&TOF for mom>1.4
-    if (mom > 1.4) 
+    if (mom > 1.4){
       if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(nsigmaTOFD) < fNsigma))
         return true;
-    else 
+    }
+    else{
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
         return true;
+    } 
   }
-  else if (fNsigmaTPConly)
-      if (TMath::Abs(nsigmaTPCD) < fNsigma)
-	return true;
+  else if (fNsigmaTPConly){
+
+      if (TMath::Abs(nsigmaTPCD) < fNsigma){
+           if(sigmaMass==-1){
+              return true;
+           } 
+           else{
+              //strict nsigma selection. removing visible contamination with TPCnsigma distribution
+              //this setting is for tests (for now)
+              double line1 = -18.41*mom*mom+56.37*mom-43.59;
+              double line2 = 0.235*mom-0.79;
+              if(nsigmaTPCD>0)
+                 return true; 
+              else if (mom<=1.5 && nsigmaTPCD>line1)
+                   return true; 
+              else if(mom>1.5 && nsigmaTPCD>line2)
+                   return true; 
+           }
+      }
+
+  }
   else{// p dependent mass cut 
        // The default setting of sigmaMass (= -1) should provide similar 
        // resluts to the case with fNsigmaTPCTOF=true and fNsigma=2
@@ -384,6 +405,7 @@ bool AliFemtoWRzTrackCut::IsElectronNSigmaRejection(float mom, float nsigmaTPCE)
 
   return false;
 }
+
 
 
 

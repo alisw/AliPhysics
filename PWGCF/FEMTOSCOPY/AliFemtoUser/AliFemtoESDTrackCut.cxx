@@ -1114,9 +1114,10 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG, float ns
         return true;
     }
   }
-  else if (fNsigmaTPConly)
+  else if (fNsigmaTPConly){
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
 	return true;
+  }
   else {
     // p dependent mass cut, TPC & TOF
     // The method should provide similar resluts to the case
@@ -1227,5 +1228,6 @@ bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float n
   else
      return true;
 }
+
 
 
