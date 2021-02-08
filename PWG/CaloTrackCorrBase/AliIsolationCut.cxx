@@ -2295,7 +2295,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
          Form("Trigger #eta vs #varphi, #Sigma #it{p}_{T} tracks in isolation cone for %s, cen bin %d",parTitleR.Data(),icen),
          etaBinsArray.GetSize()  -1, etaBinsArray.GetArray(),
          phiBinsArray.GetSize()  -1, phiBinsArray.GetArray(),
-         sueBinsArray.GetSize() - 1, sueBinsArray.GetArray());
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
         fhConeSumPtTrigEtaPhiCent[icen]->SetZTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtTrigEtaPhiCent[icen]->SetXTitle("#eta_{trigger}");
         fhConeSumPtTrigEtaPhiCent[icen]->SetYTitle("#varphi_{trigger} (rad)");
