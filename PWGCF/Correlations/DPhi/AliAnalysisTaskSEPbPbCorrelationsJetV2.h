@@ -18,9 +18,12 @@
 #include "TSpline.h"
 #include "TGrid.h"
 #include "AliEventPoolManager.h"
+#include "AliTHn.h"
+
 
 class AliEventPoolManager;
 class AliOADBContainer;
+class THnSparse;
 
 //====================================================================================================================================================
 
@@ -100,11 +103,11 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   
  private:
 
-  static const Int_t fNMaxBinsCentrality = 25;
-  static const Int_t fNMaxBinsPt = 50;
-  static const Int_t fNMaxBinsAssocPt = 10;
-  static const Int_t fNMaxBinsEta = 2;
-  static const Int_t fNMaxBinsZvtx = 20;
+  static const Int_t fNMaxBinsCentrality = 25; //!
+  static const Int_t fNMaxBinsPt = 50; //!
+  static const Int_t fNMaxBinsAssocPt = 10; //!
+  static const Int_t fNMaxBinsEta = 2; //!
+  static const Int_t fNMaxBinsZvtx = 20; //!
 
   static AliOADBContainer *cont; //!
   static AliOADBContainer *contQx2am[14]; //!
@@ -145,34 +148,34 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   AliEventPoolManager *fPoolMgr; //! event pool manager
   TClonesArray *ftrk; //!
   
-  Int_t fNbinsCent;
-  Int_t fNbinsPt;
-  Int_t fNbinsPtTrig;
-  Int_t fNbinsAssocPt;
-  Int_t fNbinsZvtx;
+  Int_t fNbinsCent; 
+  Int_t fNbinsPt;     
+  Int_t fNbinsPtTrig; 
+  Int_t fNbinsAssocPt; 
+  Int_t fNbinsZvtx; 
   
-  TAxis *fCentAxis;
-  TAxis *fPtAxis;
-  TAxis *fPtTrigAxis;
-  TAxis *fPtAssocAxis;
-  TAxis *fEtaAxis;
-  TAxis *fZvtxAxis;
+  TAxis *fCentAxis; 
+  TAxis *fPtAxis; 
+  TAxis *fPtTrigAxis; 
+  TAxis *fPtAssocAxis; 
+  TAxis *fEtaAxis; 
+  TAxis *fZvtxAxis; 
 
-  Bool_t fRemovePileup;
-  Bool_t fRemovePileup2;
-  Bool_t fRemovePileup3;
-  Bool_t fUseRes;
-  Bool_t fAverageRes;
-  Double_t fMinHardPt;
+  Bool_t fRemovePileup; 
+  Bool_t fRemovePileup2; 
+  Bool_t fRemovePileup3; 
+  Bool_t fUseRes; 
+  Bool_t fAverageRes; 
+  Double_t fMinHardPt; 
   
-  Int_t fN1;
-  Int_t fN2;
+  Int_t fN1; 
+  Int_t fN2; 
 
-  Double_t fLowESEcut;
-  Double_t fHighESEcut;
-  Int_t    fESEdet;
+  Double_t fLowESEcut; 
+  Double_t fHighESEcut; 
+  Int_t    fESEdet; 
 
-  Bool_t   fEP;
+  Bool_t   fEP; 
   
   TProfile *fHistSP2A[fNMaxBinsCentrality][fNMaxBinsZvtx][3]; //!
   TProfile *fHistSP2C[fNMaxBinsCentrality][fNMaxBinsZvtx][3]; //!
@@ -203,16 +206,20 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   TProfile2D *fHistSP2AdPhidEta[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   TProfile2D *fHistSP2CdPhidEta[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   TProfile2D *fHistSP2TdPhidEta[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
-  TH3D       *fHistdPhidEta[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  //TH3D       *fHistdPhidEta[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  AliTHn     *fHistdPhidEtaPt;
   TProfile2D *fHistSP2AdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   TProfile2D *fHistSP2CdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   TProfile2D *fHistSP2TdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
-  TH3D       *fHistdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  //TH3D       *fHistdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  AliTHn     *fHistdPhidEtaPt_SS; //!
 
   TProfile2D *fHistSP3AdPhidEtaSS[fNMaxBinsCentrality][fNMaxBinsZvtx][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   
-  TH3D       *fHistdPhidEtaMixed[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
-  TH3D       *fHistdPhidEtaSSMixed[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  //TH3D       *fHistdPhidEtaMixed[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  //TH3D       *fHistdPhidEtaSSMixed[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
+  AliTHn     *fHistdPhidEtaPt_Mixed; //!
+  AliTHn     *fHistdPhidEtaPt_Mixed_SS; //!
 
   TProfile *fHistACv2; //!
   TProfile *fHistATv2; //!
@@ -258,7 +265,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   TH2D *fHistCentVsZ; //!
   TH2D *fHistCentVsZMixed; //!
   
-  TString fCentMethod;
+  TString fCentMethod; //!
 
   TList *fOutputList; //!
   TList *fOutputList1; //!
@@ -282,30 +289,30 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   Double_t Qx3trkcut; //!
   Double_t Qy3trkcut; //!
 
-  Double_t sumMa; //!
-  Double_t sumMc; //!
-  Double_t Qxa2; //!
-  Double_t Qya2; //!
-  Double_t Qxc2; //!
-  Double_t Qyc2; //!
-  Double_t Qxa3; //!
-  Double_t Qya3; //!
-  Double_t Qxc3; //!
-  Double_t Qyc3; //!
+  Double_t sumMa; 
+  Double_t sumMc; 
+  Double_t Qxa2; 
+  Double_t Qya2; 
+  Double_t Qxc2; 
+  Double_t Qyc2; 
+  Double_t Qxa3; 
+  Double_t Qya3; 
+  Double_t Qxc3; 
+  Double_t Qyc3; 
    
-  Double_t Qya2Cor; //!
-  Double_t Qxa2Cor; //!
-  Double_t Qya3Cor; //!
-  Double_t Qxa3Cor; //!
-  Double_t Qyc2Cor; //!
-  Double_t Qxc2Cor; //!
-  Double_t Qyc3Cor; //!
-  Double_t Qxc3Cor; //!
+  Double_t Qya2Cor; 
+  Double_t Qxa2Cor; 
+  Double_t Qya3Cor; 
+  Double_t Qxa3Cor; 
+  Double_t Qyc2Cor; 
+  Double_t Qxc2Cor; 
+  Double_t Qyc3Cor; 
+  Double_t Qxc3Cor; 
   
-  Double_t Qytr2Cor; //!
-  Double_t Qxtr2Cor; //!
-  Double_t Qytr3Cor; //!
-  Double_t Qxtr3Cor; //!
+  Double_t Qytr2Cor; 
+  Double_t Qxtr2Cor; 
+  Double_t Qytr3Cor; 
+  Double_t Qxtr3Cor; 
   /*
   Double_t Qytr2CorESE; //!
   Double_t Qxtr2CorESE; //!
@@ -433,10 +440,10 @@ public:
   virtual void SetPhi(Double_t phi) { fPhi = phi; }
 
 private:
-  Float_t fEta;      // eta
-  Float_t fPhi;      // phi
-  Float_t fpT;       // pT
-  Short_t fCharge;   // charge
+  Float_t fEta;      //! eta
+  Float_t fPhi;      //! phi
+  Float_t fpT;       //! pT
+  Short_t fCharge;   //! charge
 
   ClassDef(AliBasicParticleST,1) // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };

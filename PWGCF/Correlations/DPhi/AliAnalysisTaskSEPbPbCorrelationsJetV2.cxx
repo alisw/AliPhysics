@@ -22,6 +22,7 @@
 #include "AliOADBContainer.h"
 
 #include "AliEventPoolManager.h"
+#include "AliTHn.h"
 
 ClassImp(AliAnalysisTaskSEPbPbCorrelationsJetV2)
 ClassImp(AliBasicParticleST)
@@ -119,6 +120,11 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fHistQyT2(0x0),
   fHistQxT3(0x0),
   fHistQyT3(0x0),
+
+  fHistdPhidEtaPt(0x0), 
+  fHistdPhidEtaPt_Mixed(0x0), 
+  fHistdPhidEtaPt_SS(0x0), 
+  fHistdPhidEtaPt_Mixed_SS(0x0), 
 
   fHistv2ESEvsCent(0x0),
   fHistv3ESEvsCent(0x0), 
@@ -255,6 +261,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
     }
   }
 
+/*
   for(Int_t iCent=0; iCent<fNMaxBinsCentrality; iCent++)
   {
    for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt) 
@@ -268,7 +275,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
     }
    }
   }
-
+*/
 
   for(Int_t i = 0; i < 14; ++i) {
     fQx2mV0A[i] = fQy2mV0A[i] = fQx2sV0A[i] = fQy2sV0A[i] = NULL;
@@ -349,7 +356,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fHistQyT2(0x0),
   fHistQxT3(0x0),
   fHistQyT3(0x0),
-  
+ 
+  fHistdPhidEtaPt(0x0),
+  fHistdPhidEtaPt_Mixed(0x0),
+  fHistdPhidEtaPt_SS(0x0),
+  fHistdPhidEtaPt_Mixed_SS(0x0),
+ 
   fHistv2ESEvsCent(0x0),
   fHistv3ESEvsCent(0x0), 
   
@@ -484,7 +496,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
       }
     }
   }
-
+/*
   for(Int_t iCent=0; iCent<fNMaxBinsCentrality; iCent++)
   {
    for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt)
@@ -498,7 +510,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
     }
    }
   }
-
+*/
 
 
   for(Int_t i = 0; i < 14; ++i) {
@@ -856,44 +868,81 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
      }
     }
 
-  for(Int_t iCent=0; iCent<fNbinsCent; iCent++) 
-  {
-   for(Int_t iPt = 0; iPt < fNbinsPtTrig; ++iPt) 
-   {
-    for(Int_t jPt = 0; jPt < fNbinsAssocPt; ++jPt) 
-    {
-     fHistdPhidEta[iCent][iPt][jPt] = new TH3D(Form("fHistdPhidEta_Cent%02d_Pt%02d_%02d",iCent,iPt,jPt), 
-						      Form("%d-%d %%",
-							   Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-							   Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-						      24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6,20,-10,10);
-     fOutputList1 -> Add(fHistdPhidEta[iCent][iPt][jPt]);
-	  
-     fHistdPhidEtaMixed[iCent][iPt][jPt] = new TH3D(Form("fHistdPhidEtaMixed_Cent%02d_Pt%02d_%02d",iCent,iPt,jPt), 
-								Form("%d-%d %%",
-								     Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								     Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-								24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6,20,-10,10);
-     fOutputList1 -> Add(fHistdPhidEtaMixed[iCent][iPt][jPt]);
+ const Int_t nbins_dPhidEtaPt[] = {24, 24, 20, fNbinsPtTrig, fNbinsAssocPt};
+ const Int_t nVar = sizeof(nbins_dPhidEtaPt) / sizeof(Int_t); 
 
-     fHistdPhidEtaSS[iCent][iPt][jPt] = new TH3D(Form("fHistdPhidEtaSS_Cent%02d_Pt%02d_%02d",iCent,iPt,jPt), 
-							Form("%d-%d %%",
-							     Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-							     Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-							24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6,20,-10,10);
-     fOutputList1 -> Add(fHistdPhidEtaSS[iCent][iPt][jPt]);
+ const TArrayD *aBin_Trig(fPtTrigAxis->GetXbins());
+ const Int_t nBin_Trig(aBin_Trig->GetSize() - 1);
+ Double_t dBin_Trig[nBin_Trig+1];
 
-     fHistdPhidEtaSSMixed[iCent][iPt][jPt] = new TH3D(Form("fHistdPhidEtaSSMixed_Cent%02d_Pt%02d_%02d",iCent,iPt,jPt), 
-								  Form("%d-%d %%",
-								       Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								       Int_t(fCentAxis->GetBinUpEdge(iCent+1))),
-								  24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6,20,-10,10);
-     fOutputList1 -> Add(fHistdPhidEtaSSMixed[iCent][iPt][jPt]);
-    }
-   }
-  }
+ const TArrayD *aBin_Asso(fPtAssocAxis->GetXbins());
+ const Int_t nBin_Asso(aBin_Asso->GetSize() - 1);
+ Double_t dBin_Asso[nBin_Asso+1];
+
+ for (Int_t i=0; i<=nBin_Trig; ++i) dBin_Trig[i] = (*aBin_Trig)[i];
+ for (Int_t i=0; i<=nBin_Asso; ++i) dBin_Asso[i] = (*aBin_Asso)[i];
 
 
+ fHistdPhidEtaPt = new AliTHn("fHistdPhidEtaPt", "fHistdPhidEtaPt", 1, nVar, nbins_dPhidEtaPt);
+
+ fHistdPhidEtaPt->SetBinLimits(0, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+ fHistdPhidEtaPt->SetBinLimits(1, -1.6, 1.6);
+ fHistdPhidEtaPt->SetBinLimits(2, -10, 10);
+ fHistdPhidEtaPt->SetBinLimits(3, dBin_Trig);
+ fHistdPhidEtaPt->SetBinLimits(4, dBin_Asso);
+ 
+ fHistdPhidEtaPt->SetVarTitle(0, "#Delta#phi");
+ fHistdPhidEtaPt->SetVarTitle(1, "#Delta#eta");
+ fHistdPhidEtaPt->SetVarTitle(2, "Vz");
+ fHistdPhidEtaPt->SetVarTitle(3, "leading p_{T} GeV/c");
+ fHistdPhidEtaPt->SetVarTitle(4, "asso p_{T} GeV/c");
+
+ fHistdPhidEtaPt_SS = new AliTHn("fHistdPhidEtaPt_SS", "fHistdPhidEtaPt_SS", 1, nVar, nbins_dPhidEtaPt);
+
+ fHistdPhidEtaPt_SS->SetBinLimits(0, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+ fHistdPhidEtaPt_SS->SetBinLimits(1, -1.6, 1.6);
+ fHistdPhidEtaPt_SS->SetBinLimits(2, -10, 10);
+ fHistdPhidEtaPt_SS->SetBinLimits(3, dBin_Trig);
+ fHistdPhidEtaPt_SS->SetBinLimits(4, dBin_Asso);
+
+ fHistdPhidEtaPt_SS->SetVarTitle(0, "#Delta#phi");
+ fHistdPhidEtaPt_SS->SetVarTitle(1, "#Delta#eta");
+ fHistdPhidEtaPt_SS->SetVarTitle(2, "Vz");
+ fHistdPhidEtaPt_SS->SetVarTitle(3, "leading p_{T} GeV/c");
+ fHistdPhidEtaPt_SS->SetVarTitle(4, "asso p_{T} GeV/c");
+ 
+ fHistdPhidEtaPt_Mixed = new AliTHn("fHistdPhidEtaPt_Mixed", "fHistdPhidEtaPt_Mixed", 1, nVar, nbins_dPhidEtaPt);
+
+ fHistdPhidEtaPt_Mixed->SetBinLimits(0, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+ fHistdPhidEtaPt_Mixed->SetBinLimits(1, -1.6, 1.6);
+ fHistdPhidEtaPt_Mixed->SetBinLimits(2, -10, 10);
+ fHistdPhidEtaPt_Mixed->SetBinLimits(3, dBin_Trig);
+ fHistdPhidEtaPt_Mixed->SetBinLimits(4, dBin_Asso);
+
+ fHistdPhidEtaPt_Mixed->SetVarTitle(0, "#Delta#phi");
+ fHistdPhidEtaPt_Mixed->SetVarTitle(1, "#Delta#eta");
+ fHistdPhidEtaPt_Mixed->SetVarTitle(2, "Vz");
+ fHistdPhidEtaPt_Mixed->SetVarTitle(3, "leading p_{T} GeV/c");
+ fHistdPhidEtaPt_Mixed->SetVarTitle(4, "asso p_{T} GeV/c"); 
+
+ fHistdPhidEtaPt_Mixed_SS = new AliTHn("fHistdPhidEtaPt_Mixed_SS", "fHistdPhidEtaPt_Mixed_SS", 1, nVar, nbins_dPhidEtaPt);
+
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(0, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(1, -1.6, 1.6);
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(2, -10, 10);
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(3, dBin_Trig);
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(4, dBin_Asso);
+
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(0, "#Delta#phi");
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(1, "#Delta#eta");
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(2, "Vz");
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(3, "leading p_{T} GeV/c");
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(4, "asso p_{T} GeV/c"); 
+
+ fOutputList1->Add(fHistdPhidEtaPt); 
+ fOutputList1->Add(fHistdPhidEtaPt_SS); 
+ fOutputList1->Add(fHistdPhidEtaPt_Mixed); 
+ fOutputList1->Add(fHistdPhidEtaPt_Mixed_SS); 
 
 
   fHistACv2 = new TProfile("fHistACv2", "; centrality percentile; <Q^{2}_{V0A}.Q*^{2}_{V0C}>", fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray());
@@ -1020,13 +1069,13 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fOutputList->Add(fHistCentVsZ);
   fHistCentVsZMixed = new TH2D("fHistCentVsZMixed","Mixed events",20,-10,10,20,0,100);
   fOutputList->Add(fHistCentVsZMixed);
-  
+ 
   PostData(1, fOutputList); 
   PostData(2, fOutputList1); 
 
   //================================================================
   if (fESEdet == 2) {
-    TFile *fSpl2 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2TrklNoEtaCutRun2.root");
+    TFile *fSpl2 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root");
     if (!fSpl2)
       fSpl2 = TFile::Open("./calibSpq2TrklNoEtaCutRun2.root");
   
@@ -1035,7 +1084,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl2 = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2TrklNoEtaCutRun2.root");
+      fSpl2 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root");
     }
 
     if (!fSpl2){
@@ -1043,7 +1092,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       return;
     }
 
-    TFile *fSpl3 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3TrklNoEtaCutRun2.root");
+    TFile *fSpl3 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3TrklNoEtaCutRun2.root");
     if (!fSpl3)
       fSpl3 = TFile::Open("./calibSpq3TrklNoEtaCutRun2.root");
   
@@ -1052,7 +1101,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
     
-      fSpl3 = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3TrklNoEtaCutRun2.root");
+      fSpl3 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3TrklNoEtaCutRun2.root");
     }
 
     if (!fSpl3){
@@ -1066,7 +1115,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   }
 
   if (fESEdet == 0) {
-    TFile *fSpl2V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0ARun2.root");
+    TFile *fSpl2V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
     if (!fSpl2V0A)
       fSpl2V0A = TFile::Open("./calibSpq2V0ARun2.root");
     
@@ -1075,7 +1124,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0ARun2.root");
+      fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
     }
     
     if (!fSpl2V0A){
@@ -1083,7 +1132,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       return;
     }
     
-    TFile *fSpl3V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0ARun2.root");
+    TFile *fSpl3V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
     if (!fSpl3V0A)
       fSpl3V0A = TFile::Open("./calibSpq3V0ARun2.root");
   
@@ -1092,7 +1141,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0ARun2.root");
+      fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
     }
 
     if (!fSpl3V0A){
@@ -1106,7 +1155,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
   }
   if (fESEdet == 1) {
-    TFile *fSpl2V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0CRun2.root");
+    TFile *fSpl2V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
     if (!fSpl2V0C)
       fSpl2V0C = TFile::Open("./calibSpq2V0CRun2.root");
     
@@ -1115,7 +1164,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl2V0C = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0CRun2.root");
+      fSpl2V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
     }
     
     if (!fSpl2V0C){
@@ -1123,7 +1172,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       return;
     }
     
-    TFile *fSpl3V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0CRun2.root");
+    TFile *fSpl3V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CRun2.root");
     if (!fSpl3V0C)
       fSpl3V0C = TFile::Open("./calibSpq3V0CRun2.root");
   
@@ -1132,7 +1181,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl3V0C = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0CRun2.root");
+      fSpl3V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CRun2.root");
     }
 
     if (!fSpl3V0C){
@@ -1146,7 +1195,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
   }
   if (fESEdet == 3) {
-    TFile *fSpl2V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0CombACRun2New.root");
+    TFile *fSpl2V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
     if (!fSpl2V0AC)
       fSpl2V0AC = TFile::Open("./calibSpq2V0CombACRun2New.root");
     
@@ -1155,7 +1204,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl2V0AC = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq2V0CombACRun2New.root");
+      fSpl2V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
     }
     
     if (!fSpl2V0AC){
@@ -1163,7 +1212,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       return;
     }
     
-    TFile *fSpl3V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0CombACRun2New.root");
+    TFile *fSpl3V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CombACRun2New.root");
     if (!fSpl3V0AC)
       fSpl3V0AC = TFile::Open("./calibSpq3V0CombACRun2New.root");
   
@@ -1172,7 +1221,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
       
-      fSpl3V0AC = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibSpq3V0CombACRun2New.root");
+      fSpl3V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CombACRun2New.root");
     }
 
     if (!fSpl3V0AC){
@@ -1199,7 +1248,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 
     if (fEP) qVectResFN += "_EP";
     
-    TFile *fFileRes = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("alien:///alice/cern.ch/user/c/cheshkov/qVectResMuons_%s.root",qVectResFN.Data()));
+    TFile *fFileRes = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
     if (!fFileRes)
       fFileRes = TFile::Open(Form("./qVectResMuons_%s.root",qVectResFN.Data()));
 
@@ -1208,7 +1257,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 	TGrid::Connect("alien://");
       }
 
-      fFileRes = TFile::Open(Form("alien:///alice/cern.ch/user/c/cheshkov/qVectResMuons_%s.root",qVectResFN.Data()));
+      fFileRes = TFile::Open(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
     }
 
     if (fAverageRes) {
@@ -1261,24 +1310,24 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   
   const Int_t nzvtx = 10;
   Double_t zvtxbins[nzvtx+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
-  
-  fPoolMgr = new AliEventPoolManager(2000, 50000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nzvtx, zvtxbins);
+
+  fPoolMgr = new AliEventPoolManager(1000, 50000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nzvtx, zvtxbins);
   //fPoolMgr = new AliEventPoolManager(500, 30000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nzvtx, zvtxbins);
   if (!fPoolMgr) return;
   fPoolMgr->SetTargetValues(50000, 0.1, 5);
-
 
 }
 
 //====================================================================================================================================================
 
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
+
+  Int_t cutIndex = 0;
   fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) return;  
 
   fRunN = fAOD->GetRunNumber();
   
-  Int_t cutIndex = 0;
   fHistEvStat->Fill(cutIndex++);
   // Trigger selection
   TString trigStr(fAOD->GetFiredTriggerClasses());
@@ -1303,7 +1352,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   if (centBin<0) return;
   fHistEvStat->Fill(cutIndex++);
 
-  Double_t percentile;
+
+    Double_t percentile;
     AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
     percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
     fHistCentrality->Fill(percentile);
@@ -1427,6 +1477,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, I
 
   fHistCentVsZ->Fill(fzvtx,percentile);
   if (poolReady) fHistCentVsZMixed->Fill(fzvtx,percentile,pool->GetCurrentNEvents());
+
   
   for (Int_t iTr=0; iTr<nTracks; iTr++) {
     AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
@@ -1451,6 +1502,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, I
       // end of mixed events
     }
   }
+
+
   // update event mixing pool
   pool->UpdatePool(ftrk);
 
@@ -1477,6 +1530,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, I
 		       resA2, resC2, resT2,
 		       resA2LowESE, resC2LowESE, resT2LowESE,
 		       resA2HighESE, resC2HighESE, resT2HighESE, 0);
+/*
       FillHistogramsV3(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
 		       resA3, resC3, resT3,
 		       resA3LowESE, resC3LowESE, resT3LowESE,
@@ -1518,6 +1572,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, I
 	  }
 	}
       }
+    
       if (acceptV2)
 	FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
 			 resA2, resC2, resT2,
@@ -1538,6 +1593,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, I
 			 resA3, resC3, resT3,
 			 resA3LowESE, resC3LowESE, resT3LowESE,
 			 resA3HighESE, resC3HighESE, resT3HighESE, 2);
+    */
     }
   }
 
@@ -1665,6 +1721,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trInde
   Double_t u3x = TMath::Cos(3.*phi);
   Double_t u3y = TMath::Sin(3.*phi);
 
+  Double_t binscont[5];
+
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   for (Int_t iTr=0; iTr<nTracks; iTr++) {
     AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
@@ -1683,25 +1741,33 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trInde
 	fHistSP2CdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxc2Cor+u2y*Qyc2Cor)/resC2);
 	fHistSP2TdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxtr2Cor+u2y*Qytr2Cor)/resT2);
       }
-      fHistdPhidEta[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+      //fHistdPhidEta[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+      binscont[0] = dphi;
+      binscont[1] = deta;
+      binscont[2] = fzvtx;
+      binscont[3] = pt;
+      binscont[4] = track->Pt();
+      fHistdPhidEtaPt->Fill(binscont,0);
+
       // fill same-sign track pair histos
       if (charge*track->Charge()>0) {
 	fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
 	if (0) { // for output file size reasons
 	  fHistSP2CdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxc2Cor+u2y*Qyc2Cor)/resC2);
 	  fHistSP2TdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxtr2Cor+u2y*Qytr2Cor)/resT2);
-	}
-	fHistdPhidEtaSS[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
-
+	}  
+//	fHistdPhidEtaSS[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+        fHistdPhidEtaPt_SS->Fill(binscont,0);
 	fHistSP3AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u3x*Qxa3Cor+u3y*Qya3Cor)/resA3);
       }
     }
   }
 }
 
-void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
-							TObjArray *mixedTracks)
+void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin, TObjArray *mixedTracks)
 {
+  Double_t binscont[5];
+
   Int_t ptBin = fPtTrigAxis->FindBin(pt);
   if (ptBin<1 || ptBin>fNbinsPtTrig) return;
   for (Int_t iTr=0; iTr<mixedTracks->GetEntriesFast(); iTr++) {
@@ -1714,10 +1780,17 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t t
     if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();
     Double_t deta = eta - track->Eta();
 
-    fHistdPhidEtaMixed[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
-    
+//    fHistdPhidEtaMixed[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+    binscont[0] = dphi;
+    binscont[1] = deta;
+    binscont[2] = fzvtx;
+    binscont[3] = pt;
+    binscont[4] = track->Pt();
+    fHistdPhidEtaPt_Mixed->Fill(binscont,0);  
+  
     if (charge*track->Charge()>0) {
-      fHistdPhidEtaSSMixed[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+      //fHistdPhidEtaSSMixed[centrality][ptBin-1][assocPtBin-1]->Fill(dphi,deta,fzvtx);
+      fHistdPhidEtaPt_Mixed_SS->Fill(binscont,0);  
     }
   }
 }
@@ -1797,6 +1870,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::SetPtBinning(Int_t nBins, Double_t 
 
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::SetTrigPtBinning(Int_t nBins, Double_t *limits) {
 
+/*
   if (nBins>fNMaxBinsPt) {
     AliInfo(Form("WARNING : only %d pt bins (out of the %d proposed) will be considered",fNMaxBinsPt,nBins));
     nBins = fNMaxBinsPt;
@@ -1805,7 +1879,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::SetTrigPtBinning(Int_t nBins, Doubl
     AliInfo("WARNING : at least one pt bin must be considered");
     nBins = 1;
   }
-
+*/
   fNbinsPtTrig = nBins;
   fPtTrigAxis  = new TAxis(fNbinsPtTrig, limits);
 
@@ -2248,7 +2322,7 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
 //_____________________________________________________________________________
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
 {
-  TFile *foadb = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/c/cheshkov/calibV0TrklNoEtaCutRun2.root");
+  TFile *foadb = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
   if (!foadb) {
     foadb = TFile::Open("./calibV0TrklNoEtaCutRun2.root");
   }
@@ -2258,7 +2332,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         TGrid::Connect("alien://");
     }
     
-    foadb = TFile::Open("alien:///alice/cern.ch/user/c/cheshkov/calibV0TrklNoEtaCutRun2.root");
+    foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
   }
     
     if(!foadb){
