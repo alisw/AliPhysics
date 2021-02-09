@@ -1240,14 +1240,14 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
 
   fHistGeneratedV0PtEta=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
-    fHistGeneratedV0PtEta[j]=new TH3F(Form("fHistGeneratedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 450,-1.2,1.2,  100, 0, 100 );
+    fHistGeneratedV0PtEta[j]=new TH3F(Form("fHistGeneratedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 480,-1.2,1.2,  100, 0, 100 );
     fHistGeneratedV0PtEta[j]->GetXaxis()->SetTitle("p_{T}");
     fHistGeneratedV0PtEta[j]->GetYaxis()->SetTitle("#eta");
   }
 
   fHistSelectedV0PtEta=new TH3F*[1];
   for(Int_t j=0; j<1; j++){
-    fHistSelectedV0PtEta[j]=new TH3F(Form("fHistSelectedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 60, 0, 30, 450,-1.2,1.2,  100, 0, 100 );
+    fHistSelectedV0PtEta[j]=new TH3F(Form("fHistSelectedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 60, 0, 30, 480,-1.2,1.2,  100, 0, 100 );
     fHistSelectedV0PtEta[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedV0PtEta[j]->GetYaxis()->SetTitle("#eta");
   }
@@ -1407,7 +1407,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
     } 
   }
 
-  fHistMultiplicityOfMixedEvent=new TH1F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 20, 0.5, 20.5);
+  fHistMultiplicityOfMixedEvent=new TH2F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 100, 0.5, 100.5, 100, 0, 100);
 
   fEventCuts.AddQAplotsToList(fOutputList);
   
@@ -3551,7 +3551,7 @@ void AliAnalysisTaskCorrelationhhK0s::DoPairsh1h2 ( const Float_t lPercentiles, 
   
   //  cout << " I've done the trigger-assoc association " << endl;
   if  (multmixedcounted) 
-    fHistMultiplicityOfMixedEvent->Fill(evmultmixed); //tells me with how many events the mixed-event was done
+    fHistMultiplicityOfMixedEvent->Fill(evmultmixed, lPercentiles); //tells me with how many events the mixed-event was done
   
 }
 

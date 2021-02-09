@@ -162,7 +162,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistMultiplicityVsVertexZ; 	    //!
   TH1F*                   fHistTriggervsMult; 		    //!
   TH1F*                   fHistTriggervsMultMC; 	    //!
-  TH1F*                   fHistMultiplicityOfMixedEvent;    //!
+  TH2F*                   fHistMultiplicityOfMixedEvent;    //!
   TH3F *                  fHistGeneratedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
