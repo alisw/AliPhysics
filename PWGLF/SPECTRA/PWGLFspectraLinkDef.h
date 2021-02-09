@@ -23,7 +23,6 @@
 #pragma link C++ class AlidNdPtTools+;
 #pragma link C++ class AliAnalysisTaskSpectraDPhi+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
-#pragma link C++ class AliAnalysisTaskBaseWeights+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
 #pragma link C++ class AliAnalysisTaskTPCMatchEff+;
 #pragma link C++ class AliAnalysisTaskDCArStudy+;
@@ -43,6 +42,8 @@
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraINEL0+;
+#pragma link C++ class AliMCWeightsTask+;
+#pragma link C++ class AliAnalysisTaskBaseWeights+;
 #endif
 
 #pragma link C++ class AlidNdPtTrackDumpTask+;

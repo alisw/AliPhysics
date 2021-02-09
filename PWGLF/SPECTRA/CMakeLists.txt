@@ -57,7 +57,6 @@ set(SRCS
   ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   ChargedHadrons/dNdPt/Framework/AlidNdPtTools.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
-  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
   ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
@@ -161,6 +160,8 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraINEL0.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx)
+  list(APPEND SRCS ChargedHadrons/AliMCSpectraWeights/AliMCWeightsTask.cxx)
 endif()
 
 # Headers from sources
@@ -250,6 +251,7 @@ install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
 install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_phuhn_MCSpectraWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
+install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_MCWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)

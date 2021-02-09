@@ -12,7 +12,6 @@
 #pragma link C++ class AliLatexTable+;
 #pragma link C++ class AliNamedArrayI+;
 #pragma link C++ class AliNamedString+;
-#pragma link C++ class AliMCSpectraWeights+;
 #pragma link C++ class AliPWGFunc+;
 #pragma link C++ class AliPWGHistoTools+;
 #pragma link C++ typedef AliTHn;
@@ -32,6 +31,8 @@
 #pragma link C++ class AliAnalysisTaskDummy+;
 #pragma link C++ class AliTLorentzVector+;
 #if ROOT_VERSION_CODE > ROOT_VERSION(6,4,0)
+#pragma link C++ class AliMCSpectraWeights+;
+#pragma link C++ class AliMCSpectraWeightsHandler+;
 #pragma link C++ namespace YAML+;
 #pragma link C++ class YAML::Node+;
 #endif

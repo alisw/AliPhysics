@@ -47,7 +47,6 @@ class AliAnalysisTaskSpectraINEL0 : public AliAnalysisTaskMKBase
         Hist::Hist<TH2F>           fHistRelResoFromCov{};      //-> histogram for relative pt resolution (sigma(pt)/pt as function of pt)
         Hist::Hist<TH2F>           fHistSigma1pt{};      //-> vertex reconstruction efficiency histogram (sigma(1/pt) as function of 1/pt)
 
-
     private:
         AliAnalysisTaskSpectraINEL0(const AliAnalysisTaskSpectraINEL0&); // not implemented
         AliAnalysisTaskSpectraINEL0& operator=(const AliAnalysisTaskSpectraINEL0&); // not implemented

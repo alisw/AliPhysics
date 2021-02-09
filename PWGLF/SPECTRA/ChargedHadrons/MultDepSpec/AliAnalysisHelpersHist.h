@@ -189,22 +189,22 @@ public:
     fRawHist->Fill(static_cast<double>(position)...);
   }
 
-  template <typename T = RootHist_t, typename... Ts,
+  template <typename T = RootHist_t, typename... Ts, typename Tw,
             typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
-  inline void FillWeight(const T& weight, const Ts&... position)
+  inline void FillWeight(const Tw& weight, const Ts&... position)
   {
     // if(fRawHist->GetNdimensions() != sizeof...(position)) return;
     double tempArray[] = { static_cast<double>(position)... };
     fRawHist->Fill(tempArray, static_cast<double>(weight));
   }
 
-  template <typename T = RootHist_t, typename... Ts,
+  template <typename T = RootHist_t, typename... Ts, typename Tw,
             typename std::enable_if<(((std::is_base_of<TH3, T>::value) && sizeof...(Ts) == 3)
                                      || ((std::is_base_of<TH2, T>::value) && sizeof...(Ts) == 2)
                                      || ((std::is_base_of<TH1, T>::value)
                                          && sizeof...(Ts) == 1))>::type* dummy
             = nullptr>
-  inline void FillWeight(const T& weight, const Ts&... position)
+  inline void FillWeight(const Tw& weight, const Ts&... position)
   {
     fRawHist->Fill(static_cast<double>(position)..., static_cast<double>(weight));
   }
