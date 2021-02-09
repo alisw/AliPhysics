@@ -35,7 +35,7 @@
 #include "AliFemtoPicoEventCollectionVector.h"
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoAnalysisAzimuthalPbPb)
 #endif
 
@@ -55,7 +55,7 @@ void FillHbtParticleCollection(       AliFemtoParticleCut*         partCut,
 	pParticle = *pIter;
 	bool tmpPassParticle = pCut->Pass(pParticle);
 	pCut->FillCutMonitor(pParticle, tmpPassParticle);
-	if (tmpPassParticle){	
+	if (tmpPassParticle){
 	  AliFemtoParticle* particle = new AliFemtoParticle(pParticle,pCut->Mass());
 	  picoevent->FirstParticleCollection()->push_back(particle);
 	}
@@ -64,17 +64,17 @@ void FillHbtParticleCollection(       AliFemtoParticleCut*         partCut,
 
 //____________________________
 AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(unsigned int binsVertex, double minVertex, double maxVertex,
-						       unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP) 
-  : 
+						       unsigned int binsMult, double minMult, double maxMult, unsigned short binsRP)
+  :
   fFirstParticleCut(0),
   fSecondParticleCut(0),
   fPairCutRD(0),
   fPicoEventRP(0),
-  fVertexZBins(binsVertex), 
-  fOverFlowVertexZ(0), 
+  fVertexZBins(binsVertex),
+  fOverFlowVertexZ(0),
   fUnderFlowVertexZ(0),
   fMultBins(binsMult),
-  fOverFlowMult(0),    
+  fOverFlowMult(0),
   fUnderFlowMult(0),
   fRPBins(binsRP),
   fRP(0),
@@ -95,7 +95,7 @@ AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(unsigned int binsVe
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
 										     fMultBins,fMult[0],fMult[1],
 										     fRPBins,0.0,TMath::Pi());
-  
+
   fphidist = new TH1F("fphidist","fphidist; Phi Distribution",100,-TMath::Pi(),TMath::Pi());
   fpairphi = new TH1F("fpairphi","fpairphi; Pair Phi Distribution",100,0,TMath::TwoPi());
   fRPdist = new TH1F("fRPdist","fRPdist; RP Distribution",100,0,TMath::Pi());
@@ -106,17 +106,17 @@ AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(unsigned int binsVe
 
 //____________________________
 
-AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) : 
+AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnalysisAzimuthalPbPb& a) :
   AliFemtoSimpleAnalysis(),
   fFirstParticleCut(0),
   fSecondParticleCut(0),
   fPairCutRD(0),
   fPicoEventRP(0),
-  fVertexZBins(a.fVertexZBins), 
-  fOverFlowVertexZ(0), 
+  fVertexZBins(a.fVertexZBins),
+  fOverFlowVertexZ(0),
   fUnderFlowVertexZ(0),
   fMultBins(a.fMultBins) ,
-  fOverFlowMult(0),    
+  fOverFlowMult(0),
   fUnderFlowMult(0),
   fRPBins(a.fRPBins),
   fRP(0),
@@ -125,14 +125,14 @@ AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnaly
   fRPdist(0),
   fsubRPdist(0),
   frealpsi(0),
-  fmixedpsi(0) 
+  fmixedpsi(0)
 
 {
   fCorrFctnCollection= 0;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
-  fVertexZ[0] = a.fVertexZ[0]; 
+  fVertexZ[0] = a.fVertexZ[0];
   fVertexZ[1] = a.fVertexZ[1];
-  fMult[0] = a.fMult[0]; 
+  fMult[0] = a.fMult[0];
   fMult[1] = a.fMult[1];
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
@@ -146,7 +146,7 @@ AliFemtoAnalysisAzimuthalPbPb::AliFemtoAnalysisAzimuthalPbPb(const AliFemtoAnaly
   fSecondParticleCut = a.fSecondParticleCut->Clone();
   // find the right pair cut
   fPairCut = a.fPairCut->Clone();
-  
+
   if ( fEventCut ) {
       SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
   }
@@ -176,9 +176,9 @@ AliFemtoAnalysisAzimuthalPbPb& AliFemtoAnalysisAzimuthalPbPb::operator=(const Al
 
   fCorrFctnCollection= 0;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
-  fVertexZ[0] = a.fVertexZ[0]; 
+  fVertexZ[0] = a.fVertexZ[0];
   fVertexZ[1] = a.fVertexZ[1];
-  fMult[0] = a.fMult[0]; 
+  fMult[0] = a.fMult[0];
   fMult[1] = a.fMult[1];
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
@@ -192,7 +192,7 @@ AliFemtoAnalysisAzimuthalPbPb& AliFemtoAnalysisAzimuthalPbPb::operator=(const Al
   fSecondParticleCut = a.fSecondParticleCut->Clone();
   // find the right pair cut
   fPairCut = a.fPairCut->Clone();
-  
+
   if ( fEventCut ) {
       SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
   }
@@ -214,7 +214,7 @@ AliFemtoAnalysisAzimuthalPbPb& AliFemtoAnalysisAzimuthalPbPb::operator=(const Al
   fNumEventsToMix = a.fNumEventsToMix;
 
   return *this;
-  
+
 }
 
 //____________________________
@@ -230,8 +230,8 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   fFirstParticleCut->EventBegin(hbtEvent);
   double vertexZ = hbtEvent->PrimVertPos().z();
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-  double RP = hbtEvent->ReactionPlaneAngle();  
-  fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,RP); 
+  double RP = hbtEvent->ReactionPlaneAngle();
+  fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,RP);
   if (!fMixingBuffer) {
 //     cout << "no mixing buffer!!!" << endl;
     if ( vertexZ < fVertexZ[0] ) fUnderFlowVertexZ++;
@@ -244,12 +244,12 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   // Add event to processed events
   fPicoEventRP=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
   fNeventsProcessed++;
- 
+
   fFirstParticleCut->EventBegin(hbtEvent);
   fSecondParticleCut->EventBegin(hbtEvent);
   fPairCut->EventBegin(hbtEvent);
   fPairCutRD->EventBegin(hbtEvent);
-  
+
   int magsign = 0;
   if(hbtEvent->MagneticField()>0) magsign = 1;
   else if(hbtEvent->MagneticField()<0) magsign = -1;
@@ -258,7 +258,7 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     (*iter)->EventBegin(hbtEvent);
   }
-  
+
   // event cut and event cut monitor
   bool tmpPassEvent = fEventCut->Pass(hbtEvent);
   if (!tmpPassEvent) {
@@ -286,7 +286,7 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
         storedEvent = (AliFemtoPicoEventRP*) *fPicoEventIter;
           MakePairs("mixed",fPicoEventRP,
                             storedEvent );
-        
+
       }
 
       if ( MixingBufferFull() ) {
@@ -311,7 +311,7 @@ void AliFemtoAnalysisAzimuthalPbPb::ProcessEvent(const AliFemtoEvent* hbtEvent) 
   fPairCutRD->EventEnd(hbtEvent);
   for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     (*iter)->EventEnd(hbtEvent);
-  } 
+  }
   }
 }
 
@@ -365,8 +365,8 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
  	  swpart = 1;
 	}
       }
-      
-      
+
+
       //For getting the pair angle wrt EP
   if (type == "real"){
 	Double_t PairAngleEP=0;
@@ -378,7 +378,7 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
 	while (PairAngleEP < 0) PairAngleEP += 180;
 	while (PairAngleEP > 180) PairAngleEP -= 180;
 	tPair->SetPairAngleEP(PairAngleEP);
-	frealpsi->Fill(PairAngleEP);	
+	frealpsi->Fill(PairAngleEP);
 	fphidist->Fill(tPair->Track1()->FourMomentum().Phi());
 	fphidist->Fill(tPair->Track2()->FourMomentum().Phi());
 	fpairphi->Fill(tPair->EmissionAngle()*TMath::DegToRad());
@@ -393,7 +393,7 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
 	q2 = picoevent2->PicoEventplane()->GetQVector();
 	Double_t PairAngleEP=0;
 
-	
+
 	float psi1 = q1->Phi()/2;
 	float psi2 = q2->Phi()/2;
 	PairAngleEP = TMath::RadToDeg()*(TMath::ATan2(((tPair->Track1()->Track()->Pt()*TMath::Sin(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Sin(tPair->Track2()->FourMomentum().Phi() - psi2))),((tPair->Track1()->Track()->Pt()*TMath::Cos(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Cos(tPair->Track2()->FourMomentum().Phi() - psi2)))));
@@ -412,7 +412,7 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
 	  else if(type == "mixed") {
             tCorrFctn->AddMixedPair(tPair);
 	  }
-       
+
 	}
       }
     }    // loop over second particle
@@ -420,12 +420,12 @@ void AliFemtoAnalysisAzimuthalPbPb::MakePairs(const char* typeIn, AliFemtoPicoEv
   }      // loop over first particle
 
   delete tPair;
-  
+
 }
 
 //_____________________________________________
 TVector2 AliFemtoAnalysisAzimuthalPbPb::GetQVector(AliFemtoParticleCollection* particlecollection){
-  
+
   TVector2 mQ;
   float mQx=0, mQy=0;
 
@@ -443,7 +443,7 @@ TVector2 AliFemtoAnalysisAzimuthalPbPb::GetQVector(AliFemtoParticleCollection* p
     mQx += (cos(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
     mQy += (sin(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
   }
-  
+
   mQ.Set(mQx,mQy);
   return mQ;
 }
@@ -455,7 +455,7 @@ double AliFemtoAnalysisAzimuthalPbPb::GetCurrentReactionPlane()
 }
 
 //______________________________________________________________________________
-void AliFemtoAnalysisAzimuthalPbPb::SetEPhistname(char* histname)
+void AliFemtoAnalysisAzimuthalPbPb::SetEPhistname(const char* histname)
 {
   fphidist->SetName(Form("fphidist%s",histname));
   fpairphi->SetName(Form("fpairphi%s",histname));
@@ -476,7 +476,7 @@ TList* AliFemtoAnalysisAzimuthalPbPb::GetOutputList()
   AliFemtoCorrFctnIterator iter;
   for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
     TList *tListCf = (*iter)->GetOutputList();
-    
+
     TIter nextListCf(tListCf);
     while (TObject *obj = nextListCf()) {
       tOutputList->Add(obj);
@@ -491,5 +491,5 @@ TList* AliFemtoAnalysisAzimuthalPbPb::GetOutputList()
   tOutputList->Add(fmixedpsi);
 
   return tOutputList;
-  
+
 }

@@ -13,9 +13,14 @@
 
 // function to set TPC OCDB parameters
 void ConfigOCDB(Int_t crun);
+void SetupCalibTaskTrain1(TObject* task);
+void SetupCalibTaskTrainAlign(TObject* task);
+void SetupCalibTaskTrainCluster(TObject* task);
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
+Float_t lowtrunc = 0.02;
+Float_t hightrunc = 0.6;
 
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
@@ -61,8 +66,8 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
   AliTPCAnalysisTaskcalib *taskAlign=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainAlign(taskAlign);
   mgr->AddTask(taskAlign);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+  AliAnalysisDataContainer *cinput2 = mgr->GetCommonInputContainer();
+  if (!cinput2) cinput2 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
   for (Int_t i=0; i<taskAlign->GetJobs()->GetEntries(); i++) {
     if (taskAlign->GetJobs()->At(i)) {
@@ -73,14 +78,14 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
       mgr->ConnectOutput(taskAlign,i,coutput);
     }
   }
-  mgr->ConnectInput(taskAlign,0,cinput1);
+  mgr->ConnectInput(taskAlign,0,cinput2);
   //
   // setup task TPCCluster
   AliTPCAnalysisTaskcalib *taskCluster=new AliTPCAnalysisTaskcalib("CalibObjectsTrain1");
   SetupCalibTaskTrainCluster(taskCluster);
   mgr->AddTask(taskCluster);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-  if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
+  AliAnalysisDataContainer *cinput3 = mgr->GetCommonInputContainer();
+  if (!cinput3) cinput3 = mgr->CreateContainer("cchain",TChain::Class(), 
                                       AliAnalysisManager::kInputContainer);
   for (Int_t i=0; i<taskCluster->GetJobs()->GetEntries(); i++) {
     if (taskCluster->GetJobs()->At(i)) {
@@ -91,7 +96,7 @@ AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
       mgr->ConnectOutput(taskCluster,i,coutput);
     }
   }
-  mgr->ConnectInput(taskCluster,0,cinput1);
+  mgr->ConnectInput(taskCluster,0,cinput3);
   //
 
   return task1;
@@ -114,7 +119,7 @@ void AddCalibCalib(TObject* task){
 }
 
 //_____________________________________________________________________________
-void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "calibTimeGain"){
+void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name = "calibTimeGain"){
   //
   //  Responsible: Alexander Kalweit
   //  Description: Time Gain calibration
@@ -155,8 +160,8 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   calibTimeGain->SetDebugLevel(0);
   calibTimeGain->SetStreamLevel(0);
   calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibTimeGain->SetLowerTrunc(0.02);
-  calibTimeGain->SetUpperTrunc(0.6);
+  calibTimeGain->SetLowerTrunc(lowtrunc);
+  calibTimeGain->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibTimeGain);
 
@@ -165,14 +170,14 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   calibGainMult->SetDebugLevel(0);
   calibGainMult->SetStreamLevel(0);
   calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibGainMult->SetLowerTrunc(0.02);
-  calibGainMult->SetUpperTrunc(0.6);
+  calibGainMult->SetLowerTrunc(lowtrunc);
+  calibGainMult->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibGainMult);
 
   // ===| get reco param                     |==================================
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
+  const AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
   const Int_t spec = recoParam->GetEventSpecie();
 
   Float_t minTPCsignalN = spec&AliRecoParam::kLowMult?100.:90.;
@@ -283,7 +288,7 @@ void AddCalibAlignInterpolation(TObject* task){
   //  calibAlign->SetSyswatchStep(10);
 
   calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
-  ::Info("AddCalibAlignInterpolation");
+  ::Info("AddCalibAlignInterpolation", "Trigger mask set to accept everything");
   calibAlign->Dump();
   myTask->AddJob(calibAlign);
 }
@@ -360,7 +365,7 @@ void ConfigOCDB(Int_t run){
   AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
   param->ReadGeoMatrices();
   //
-  AliMagF* magF= TGeoGlobalMagField::Instance()->GetField();
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   printf("\n\nSET EXB FIELD\t\n\n");
   AliTPCcalibDB::Instance()->SetExBField(magF);
   //
@@ -397,6 +402,8 @@ void ConfigOCDB(Int_t run){
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
   ::Info("AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   tpcRecoParam->Print();
+  lowtrunc = tpcRecoParam->GetMinFraction();
+  hightrunc = tpcRecoParam->GetMaxFraction();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
 

@@ -24,10 +24,13 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/EBYE)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY	
                     ${AliPhysics_SOURCE_DIR}/PWGCF/EBYE/LRC
+                    ${AliPhysics_SOURCE_DIR}/PWGPP
+		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
+                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 
 # Sources - alphabetical order
@@ -35,6 +38,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskToyModel.cxx
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
+  BalanceFunctions/AliAnalysisTaskSignedBF.cxx
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
@@ -49,6 +53,11 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
+  BalanceFunctions/AliPidBFBase.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
+  BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
@@ -68,6 +77,17 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpp.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPbQA.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucLHC10h.cxx
+  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
@@ -93,8 +113,12 @@ set(SRCS
   NetParticle/AliAnalysisNetParticleHelper.cxx
   NetParticle/AliAnalysisTaskNetParticle.cxx
   NetParticle/AliAnalysisNetParticleQA.cxx
+  NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
+  LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
+  StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
+  FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   )
 
 # Headers from sources
@@ -110,7 +134,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB PWGTools EventMixing)
+set(LIBDEPS ANALYSISalice OADB PWGTools PWGPPevcharQnInterface EventMixing)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -137,6 +161,11 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY macros DESTINATION PWGCF/EBYE)
 install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
 install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
+install(DIRECTORY NetLambda/macros DESTINATION PWGCF/EBYE/NetLambda)
 install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)
 install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
+install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
+install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
+install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
+

@@ -909,11 +909,11 @@ void AliMultiplicityCorrection::Calculate0Bin(Int_t inputRange, EventType eventT
   if (eventType == kTrVtx)
     return;
   
-  Double_t fractionEventsInVertexRange = fMultiplicityESD[inputRange]->Integral(1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityESD[inputRange]->Integral(0, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins() + 1);
+  Double_t fractionEventsInVertexRange = fMultiplicityESD[inputRange]->Integral(1, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins(),1, fMultiplicityESD[inputRange]->GetYaxis()->GetNbins()) / fMultiplicityESD[inputRange]->Integral(0, fMultiplicityESD[inputRange]->GetXaxis()->GetNbins() + 1,0, fMultiplicityESD[inputRange]->GetYaxis()->GetNbins() + 1);
   
   // difference of fraction that is inside the considered range between triggered events and events with vertex
   // Extension to NSD not needed, INEL and NSD vertex distributions are nature-given and unbiased!
-  Double_t differenceVtxDist = (fMultiplicityINEL[inputRange]->Integral(1, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityINEL[inputRange]->Integral(0, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins() + 1)) / (fMultiplicityVtx[inputRange]->Integral(1, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins()) / fMultiplicityVtx[inputRange]->Integral(0, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins() + 1));
+  Double_t differenceVtxDist = (fMultiplicityINEL[inputRange]->Integral(1, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins(),1, fMultiplicityINEL[inputRange]->GetYaxis()->GetNbins()) / fMultiplicityINEL[inputRange]->Integral(0, fMultiplicityINEL[inputRange]->GetXaxis()->GetNbins() + 1,0, fMultiplicityINEL[inputRange]->GetYaxis()->GetNbins() + 1)) / (fMultiplicityVtx[inputRange]->Integral(1, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins(),1, fMultiplicityVtx[inputRange]->GetYaxis()->GetNbins()) / fMultiplicityVtx[inputRange]->Integral(0, fMultiplicityVtx[inputRange]->GetXaxis()->GetNbins() + 1,0, fMultiplicityVtx[inputRange]->GetYaxis()->GetNbins() + 1));
 
   Printf("Enabling 0 bin estimate for triggered events without vertex.");
   Printf("  Events in 0 bin: %d", zeroBinEvents);

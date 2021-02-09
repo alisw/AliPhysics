@@ -15,7 +15,7 @@
 
 class AliAnalysisMuMuCutElement;
 class AliVEvent;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliVParticle;
 
 class AliAnalysisMuMuCutCombination : public TObject
@@ -26,7 +26,7 @@ public:
 
   void Add(AliAnalysisMuMuCutElement* ce);
 
-  Bool_t Pass(const AliInputEventHandler& eventHandler) const;
+  Bool_t Pass(const AliVEventHandler& eventHandler) const;
 
   Bool_t Pass(const AliVParticle& particle) const;
 

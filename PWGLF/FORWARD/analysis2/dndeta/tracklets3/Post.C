@@ -40,6 +40,7 @@ void Usage(std::ostream& o)
     << "  0x0008   Do scaling by fully differential\n"
     << "  0x0010   Correct for decay of strange to secondary \n"
     << "  0x0020   Correct for fake tracklets\n"
+    << "  0x0040   Correct for non-flat centrality in each bin\n"
     << "  0x1000   MC closure test\n"
     << std::endl;
   o << "Visualization options:\n"
@@ -106,6 +107,7 @@ const TString& FormatInput(const char* inp, TString& shrt)
  * - 0x0008   Do scaling by fully differential
  * - 0x0010   Correct for decay of strange to secondary 
  * - 0x0020   Correct for fake tracklets
+ * - 0x0040   Correct for non-flat centrality in each bin
  * - 0x1000   MC closure test
  *
  * Visualization options: 
@@ -130,7 +132,8 @@ void Post(const char* sim,
 	  const char* output=0,
 	  UInt_t      proc=0x2,
 	  UInt_t      viz=0x32f,
-	  UInt_t      n=10)
+	  UInt_t      n=10,
+	  UInt_t      sNN=5023)
 {
   if (TString(sim) .Contains("help",TString::kIgnoreCase) ||
       TString(real).Contains("help",TString::kIgnoreCase)) {
@@ -171,7 +174,7 @@ void Post(const char* sim,
   // Extract a GSE
   Printf("Extracting GraphSysErr object(s)");
   gROOT->LoadMacro(Form("%s/ExtractGSE2.C",fwd.Data()));
-  ExtractGSE2(outFile);
+  ExtractGSE2(outFile,sNN);
 
   Printf("All output stored in %s", outFile.Data());
 }

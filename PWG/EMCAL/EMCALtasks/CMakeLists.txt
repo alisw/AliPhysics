@@ -37,6 +37,7 @@ set(SRCS
   AliAnalysisTaskEMCALClusterizeFast.cxx
   AliAnalysisTaskEmcalSample.cxx
   AliAnalysisTaskEmcalTriggerPatchClusterMatch.cxx
+  AliAodSkimTask.cxx
   AliEMCALClusterParams.cxx
   AliEmcalAodTrackFilterTask.cxx
   AliEmcalClusTrackMatcherTask.cxx
@@ -45,6 +46,7 @@ set(SRCS
   AliEmcalDebugTask.cxx
   AliEmcalEsdTrackFilterTask.cxx
   AliEmcalMCTrackSelector.cxx
+  AliEmcalMCPartonInfoCreator.cxx
   AliEmcalParticleMaker.cxx
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
@@ -62,6 +64,7 @@ set(SRCS
   AliEMCALConfigHandler.cxx
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
+  AliAnalysisTaskEmcalTriggerNormalization.cxx
   AliAnalysisTaskEmcalIteratorTest.cxx
   AliEmcalCopyCollection.cxx
   AliEmcalCorrectionEventManager.cxx
@@ -69,15 +72,24 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
+  AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionCellEmulateCrosstalk.cxx
   AliEmcalCorrectionCellCombineCollections.cxx
+  AliEmcalCorrectionCellCloneContainer.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
+  AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionCellEnergyVariation.cxx
+  AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
+  TestAliEmcalAODFilterBitCuts.cxx
+  TestAliEmcalTrackSelection.cxx
   )
 
 # Headers from sources

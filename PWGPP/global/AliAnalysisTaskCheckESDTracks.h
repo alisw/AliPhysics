@@ -25,6 +25,7 @@ class AliESDEvent;
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
+#include <THnSparse.h>
 
 class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
@@ -40,17 +41,32 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
   }  
+  void SetFillSparses(Bool_t fill=kTRUE){
+    fFillSparses=fill;
+  }  
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
   }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
+  }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
   void SetTriggerMask(Int_t mask){
     fTriggerMask=mask;
+  }
+  void SetCentralityInterval(Double_t minc, Double_t maxc, TString estim="V0M"){
+    fSelectOnCentrality=kTRUE;
+    fMinCentrality=minc;
+    fMaxCentrality=maxc;
+    fCentrEstimator=estim.Data();
+  }
+  void SetUsePileupCut(Bool_t opt=kTRUE){
+    fUsePileupCut=kTRUE;
   }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
@@ -65,12 +81,21 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
   }
+  void SetPhiBinning(Int_t nbins){
+    fNPhiBins=nbins;
+  }
+  void SetEtaBinning(Int_t nbins){
+    fNEtaBins=nbins;
+  }
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
 
   AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=9, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=35};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);
@@ -79,6 +104,15 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
   TH1F* fHistNEvents;                //!<!  histo with N of events
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
+  TH1F* fHistNTracksBackg;           //!<!  histo with N of background tracks
+  TH1F* fHistNTracksEmbed;           //!<!  histo with N of embedded tracks
+  TH1F* fHistNV0Daughters;                //!<!  histo with N of V0-tracks
+  TH1F* fHistNV0DaughtersBackg;           //!<!  histo with N of background V0-tracks
+  TH1F* fHistNV0DaughtersEmbed;           //!<!  histo with N of embedded V0-tracks
+  TH1F* fHistCheckK0SelBackg;     //!<!  histo to check K0s selection
+  TH1F* fHistCheckK0SelEmbed;     //!<!  histo to check K0s selection
+  TH1F* fHistCheckK0SelMixed;     //!<!  histo to check K0s selection
+  
   TH1F* fHistNITSClu;             //!<!  histo with N of ITS clusters
   TH1F* fHistCluInITSLay;        //!<!  histo with cluters in ITS layers
   
@@ -90,15 +124,44 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
+  TH2F* fHistdEdxVsP0[9];              //!<!  histo of dE/dx for hypos (all tracks)
+  TH2F* fHistdEdxVsPTPCsel0[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselITSref0[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
+  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. f PID hypos in tracking steps
+  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. f PID hypos in tracking steps
+
   TH2F* fHistnSigmaVsPdEdxTPCsel[9];  //!<!  histo of nSigma for particle species
 
   TH3F* fHistEtaPhiPtTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+    
+  TH3F* fHistEtaPhiPtPosChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtPosChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtPosChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistEtaPhiPtNegChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtNegChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtNegChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)  
+  TH3F* fHistEtaPhiPositionPtPosChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
+  TH3F* fHistEtaPhiPositionPtNegChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
+
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
 
+  TH3F* fHistEtaPhiPtTPCselITSrefMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
+  TH3F* fHistEtaPhiPtTPCselSPDanyMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
+
+  TH2F* fHistPtTPCInwVsPtTPCsel;              //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistDeltaPtTPCInwVsPtTPCsel;         //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselLowPt;   //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselMidPt;   //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselHighPt;  //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselITSref;        //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselSPDany;        //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCsel;       //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCselITSref; //!<!  histo of pt inw vs. pt refit
+  
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtInnerTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
@@ -117,48 +180,63 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
-  TH3F* fHistTPCsig1ptPerClusPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
 
-  TH3F* fHistEtaPhiPtGoodHypProtTPCsel;        //!<!  histo of eta,phi,pt (TPC cuts)
-  TH3F* fHistEtaPhiPtGoodHypProtTPCselITSref;  //!<!  histo of eta,phi,pt (ITSrefit)
-  TH3F* fHistEtaPhiPtGoodHypProtTPCselSPDany;  //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
-  TH3F* fHistEtaPhiPtInnerGoodHypProtTPCsel;        //!<!  histo of eta,phi,pt (TPC cuts)
-  TH3F* fHistEtaPhiPtInnerGoodHypProtTPCselITSref;  //!<!  histo of eta,phi,pt (ITSrefit)
-  TH3F* fHistEtaPhiPtInnerGoodHypProtTPCselSPDany;  //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
-  TH3F* fHistTPCchi2PerClusPhiPtGoodHypProtTPCsel;        //!<!  histo of chi2 vs. pt and phi;
-  TH3F* fHistTPCchi2PerClusPhiPtGoodHypProtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
-  TH3F* fHistTPCchi2PerClusPhiPtGoodHypProtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
-  TH2F* fHistdEdxVsPGoodHypProt;               //!<!  histo of dE/dx for protons
+  // Pi,K,p with good hypothesis in tracking
+  TH3F* fHistEtaPhiPtGoodHypTPCsel[3];             //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtGoodHypTPCselITSref[3];       //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtGoodHypTPCselSPDany[3];       //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistEtaPhiPtInnerGoodHypTPCsel[3];        //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtInnerGoodHypTPCselITSref[3];  //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtInnerGoodHypTPCselSPDany[3];  //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistTPCchi2PerClusPhiPtGoodHypTPCsel[3];       //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtGoodHypTPCselITSref[3]; //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtGoodHypTPCselSPDany[3]; //!<!  histo of chi2 vs. pt and phi;
+  TH2F* fHistdEdxVsPGoodHyp[3];                         //!<!  histo of dE/dx for protons
+  TH3F* fHistImpParXYPtMulGoodHypTPCselSPDany[3];       //!<!  histo of impact parameter
 
-  TH3F* fHistEtaPhiPtBadHypProtTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
-  TH3F* fHistEtaPhiPtBadHypProtTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
-  TH3F* fHistEtaPhiPtBadHypProtTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
-  TH3F* fHistEtaPhiPtInnerBadHypProtTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
-  TH3F* fHistEtaPhiPtInnerBadHypProtTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
-  TH3F* fHistEtaPhiPtInnerBadHypProtTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
-  TH3F* fHistTPCchi2PerClusPhiPtBadHypProtTPCsel;        //!<!  histo of chi2 vs. pt and phi;
-  TH3F* fHistTPCchi2PerClusPhiPtBadHypProtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
-  TH3F* fHistTPCchi2PerClusPhiPtBadHypProtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
-  TH2F* fHistdEdxVsPBadHypProt;                //!<!  histo of dE/dx for protons
+  // Pi,K,p with bad hypothesis in tracking
+  TH3F* fHistEtaPhiPtBadHypTPCsel[3];         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtBadHypTPCselITSref[3];   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtBadHypTPCselSPDany[3];   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistEtaPhiPtInnerBadHypTPCsel[3];         //!<!  histo of eta,phi,pt (TPC cuts)
+  TH3F* fHistEtaPhiPtInnerBadHypTPCselITSref[3];   //!<!  histo of eta,phi,pt (ITSrefit)
+  TH3F* fHistEtaPhiPtInnerBadHypTPCselSPDany[3];   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
+  TH3F* fHistTPCchi2PerClusPhiPtBadHypTPCsel[3];        //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtBadHypTPCselITSref[3];  //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtBadHypTPCselSPDany[3];  //!<!  histo of chi2 vs. pt and phi;
+  TH2F* fHistdEdxVsPBadHyp[3];                //!<!  histo of dE/dx for protons
+  TH3F* fHistImpParXYPtMulBadHypTPCselSPDany[3];   //!<!  histo of impact parameter
 
-  TH3F* fHistImpParXYPtMulGoodHypPionTPCselSPDany;  //!<!  histo of impact parameter
-  TH3F* fHistImpParXYPtMulBadHypPionTPCselSPDany;   //!<!  histo of impact parameter
-  TH3F* fHistImpParXYPtMulGoodHypProtTPCselSPDany;  //!<!  histo of impact parameter
-  TH3F* fHistImpParXYPtMulBadHypProtTPCselSPDany;   //!<!  histo of impact parameter
-
-  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPConlyAll;                             //!<!  Pt residuals for TPC only tracks
+  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks 
   TH2F* fHistPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefBadHyp[AliPID::kSPECIESC];  //!<!  Pt residuals for ITS+TPC tracks tracked with bad mass hypothesis (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPConlyAll;                             //!<!  1/Pt residuals for TPC only tracks
+  TH2F* fHistOneOverPtResidVsPtTPCselAll;                              //!<!  1/Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;                        //!<!  1/Pt residuals for ITS+TPC tracks
+  TH2F* fHistOneOverPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  1/Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefBadHyp[AliPID::kSPECIESC];  //!<!  1/Pt residuals for ITS+TPC tracks tracked with bad mass hypothesis (for each species)
+  TH2F* fHistPzResidVsPtTPCselAll;                       //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsPtTPCselITSrefAll;                 //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsEtaTPCselAll;                      //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
+  TH2F* fHistPzResidVsEtaTPCselITSrefAll;                //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
 
   TH3F* fHistEtaPhiPtTPCselITSrefGood;        //!<!  histo of eta,phi,pt - good MC tracks
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
   TH3F* fHistImpParXYPtMulTPCselSPDanyGood;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanyFake;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
+  TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  THnSparseF* fHistPtDeltaPtTrueImpParXY;       //!<!  histo of pt, pttrue, impact parameter
 
   TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -174,19 +252,28 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Int_t*   fTreeVarInt;        //!<! variables to be written to the tree
 
 
-  AliESDtrackCuts* fTrCutsTPC; // TPC track cuts
+  AliESDtrackCuts* fTrCutsTPC;        // TPC track cuts
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
+  Bool_t  fRejectGeneratedEventsWithPileup;  // reject events with generated pileup
   Int_t   fTriggerMask;        // mask used in physics selection
+  Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
+  Double_t fMinCentrality;     // centrality: lower limit
+  Double_t fMaxCentrality;     // centrality: upper limit
+  TString fCentrEstimator;     // centrality: estimator
+  Int_t fNEtaBins;             // number of eta intervals in histos
+  Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
+  Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,6);
+  ClassDef(AliAnalysisTaskCheckESDTracks,28);
 };
 
 

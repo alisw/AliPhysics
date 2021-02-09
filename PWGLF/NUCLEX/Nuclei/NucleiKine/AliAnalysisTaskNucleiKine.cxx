@@ -21,12 +21,12 @@ ClassImp(AliAnalysisTaskNucleiKine);
 
 AliAnalysisTaskNucleiKine::AliAnalysisTaskNucleiKine(const char* name) :
   AliAnalysisTaskSE{name},
-  fAfterburner{},
-  fUseAfterburner{false},
   fPdgCodes{211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334},
   fParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}",
       "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"},
   fIgnoreCentrality{true},
+  fUseAfterburner{false},
+  fAfterburner{},
   fOutputList{nullptr},
   fEventCounter{nullptr},
   fPtSpectra{nullptr},
@@ -82,7 +82,7 @@ void AliAnalysisTaskNucleiKine::UserExec(Option_t*) {
     AliCollisionGeometry* hd = dynamic_cast<AliCollisionGeometry*>(mcEvent->GenEventHeader());
     if (!hd)
       AliFatal("Missing collision geometry");
-    float impact = hd->ImpactParameter();
+    impact = hd->ImpactParameter();
   }
   int impact_bin = fEventCounter->GetXaxis()->FindBin(impact);
   fEventCounter->Fill(impact);

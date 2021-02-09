@@ -15,19 +15,19 @@ class TH2F;
 class TNamed;
 class TString;
 
-class AliESDEvent; 
-class AliESDfriend; 
+class AliVEvent;
+class AliVfriendEvent;
 class AliMCEvent;
-class AliESDtrack;
-class AliRecInfoCuts;
-class AliMCInfoCuts;
+class AliVTrack;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
-  AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
+  AliPerformanceDEdx(TRootIOCtor*);
+  AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   
   virtual ~AliPerformanceDEdx();
 
@@ -35,10 +35,10 @@ public :
   virtual void Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+    virtual void Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -56,27 +56,25 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Process events
-  void  ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
-  void  ProcessInnerTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent *const esdEvent);
-  void  ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack);      // not implemented
-  void  ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack); // not implemented
+  void  ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTrack); // not implemented
+  void  ProcessInnerTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent *const vEvent);
+  void  ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack);      // not implemented
+  void  ProcessConstrained(AliMCEvent* const mcev, AliVTrack *const vTrack); // not implemented
 
   
   // produce summary (currently not used)
   virtual TTree* CreateSummary();
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
-
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
+  void FilldEdxHisotgram(double *vDeDxHisto);
+    
   //
   // TPC dE/dx 
   //
   THnSparse* GetDeDxHisto() const {return fDeDxHisto;}
   TObjArray* GetHistos() const { return fFolderObj; }
+  TCollection* GetListOfDrawableObjects();
+    
+  virtual void ResetOutputData();
 
 private:
 
@@ -85,20 +83,22 @@ private:
   
   // TPC dE/dx 
   THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
-  TObjArray* fFolderObj; // array of analysed histograms
-  
-  // Selection cuts
-  AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
-  AliMCInfoCuts*   fCutsMC; // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
+  
+  TObjArray* fFolderObj; // array of analysed histograms
+  TH1D *h_tpc_dedx_mips_0; //!
+  TH1D *h_tpc_dedx_mipsele_0; //!
+  TH2D *h_tpc_dedx_mips_c_0_5; //!
+  TH2D *h_tpc_dedx_mips_a_0_5; //!
+  TH2D *h_tpc_dedx_mips_c_0_1; //!
+  TH2D *h_tpc_dedx_mips_a_0_1; //!
   
 
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,4);
+  ClassDef(AliPerformanceDEdx,8);
 };
 
 #endif

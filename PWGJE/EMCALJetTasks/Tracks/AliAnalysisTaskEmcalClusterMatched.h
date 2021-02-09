@@ -116,8 +116,8 @@ private:
   AliAnalysisTaskEmcalClusterMatched(const AliAnalysisTaskEmcalClusterMatched &);
   AliAnalysisTaskEmcalClusterMatched &operator=(const AliAnalysisTaskEmcalClusterMatched &);
 
-  AliEmcalTrackSelection                    *fTrackSelectionGlobal;                 ///< Global track cuts (strong condition)
-  AliEmcalTrackSelection                    *fTrackSelectionTPConly;                ///< TPC-only track cuts (weak condition)
+  AliEmcalTrackSelection       *fTrackSelectionGlobal;                  ///< Global track cuts (strong condition)
+  AliEmcalTrackSelection       *fTrackSelectionTPConly;                 ///< TPC-only track cuts (weak condition)
   AliCutValueRange<double>                  fTimeCut;                               ///< Cut on cluster time
   Bool_t                                    fEnableSumw2;                           ///< Enable Sumw2
 

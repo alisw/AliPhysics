@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/**************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include <TClonesArray.h>
 #include <TGrid.h>
 #include <THashList.h>
@@ -27,6 +39,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
@@ -43,9 +56,7 @@
 #include <sstream>
 #include <string>
 
-/// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMakerTask)
-/// \endcond
 
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   AliAnalysisTaskEmcal(),
@@ -56,8 +67,10 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fBadFEEChannelOADB(""),
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
-  fLoadFastORMaskingFromOCDB(kFALSE),
+  fLoadFastORMaskingFromOCDB(kTRUE),
   fCaloTriggersOut(0),
+  fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(kFALSE),
   fQAHistos(NULL)
 {
@@ -73,8 +86,10 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fBadFEEChannelOADB(""),
   fMaskedFastorOADB(""),
   fUseL0Amplitudes(kFALSE),
-  fLoadFastORMaskingFromOCDB(kFALSE),
+  fLoadFastORMaskingFromOCDB(kTRUE),
   fCaloTriggersOut(NULL),
+  fRunSmearing(kTRUE),
+  fSimulateNoise(kTRUE),
   fDoQA(doQA),
   fQAHistos(NULL)
 {
@@ -83,6 +98,8 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
 
 AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
   if(fTriggerMaker) delete fTriggerMaker;
+  if(fQAHistos) delete fQAHistos;
+  if(fCaloTriggersOut) delete fCaloTriggersOut;
 }
 
 /**
@@ -90,8 +107,8 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  const std::array<const TString, 3>  kTriggerTypeNames = {"EJE", "EGA", "EL0"},
-                                      kPatchTypes = {"Online", "Offline", "Recalc"};
+  const std::array<const TString, 3>  kTriggerTypeNames = {{"EJE", "EGA", "EL0"}},
+                                      kPatchTypes = {{"Online", "Offline", "Recalc"}};
 
   if(fDoQA) AliInfoStream() << "Trigger maker - QA requested" << std::endl;
   else AliInfoStream() << "Trigger maker - no QA requested" << std::endl;
@@ -154,6 +171,7 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
       fQAHistos->CreateTH2("FastORDiffEsmearADCrough", "FastOR ADC rough - smeared energy", 4994, -0.5, 4993.5, 200, -10., 10);
 
       for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
+      fQAHistos->GetListOfHistograms()->SetOwner(false);
       PostData(1, fOutput);
     } else {
       AliWarningStream() << "QA requested but no output container initialized - QA needs to be disabled" << std::endl;
@@ -200,7 +218,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
 
   // Configure trigger maker
   if(!fTriggerMaker->IsConfigured()){
-    AliInfoStream() << "Trigger maker not yet configure - automatically configuring ..." << std::endl;
+    std::cout << "EMCAL trigger maker: Not yet configure - automatically configuring ..." << std::endl;
     int runnumber = InputEvent()->GetRunNumber();
     std::string dataset = "";
     if(runnumber >= 145144 && runnumber <= 165746){
@@ -216,21 +234,34 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       // dataset contains also the setup for pp 2.76 TeV
       fTriggerMaker->ConfigureForPPb2013();
       dataset = "p-Pb 2013";
-    } else if((runnumber >= 224891 && runnumber <= 244628) || runnumber >= 253434){
+    } else if((runnumber >= 224891 && runnumber <= 244628) || (runnumber >= 252235 && runnumber <= 294960)){
       // Configuration starting with LHC15f
-      fTriggerMaker->ConfigureForPbPb2015();
-      dataset = "pp 2015-2016";
-    } else if(runnumber >= 244824 && runnumber <= 246994){
+      fTriggerMaker->ConfigureForPP2015();
+      dataset = "pp 2015-2018";
+    } else if((runnumber >= 244824 && runnumber <= 246994) || (runnumber >= 295581)){
       fTriggerMaker->ConfigureForPbPb2015();
       dataset = "Pb-Pb 2015";
     }
 
     if(fTriggerMaker->IsConfigured()){
-      AliInfoStream() << "Applying configuration for " << dataset << std::endl;
+      std::cout << "EMCAL trigger maker: Applying configuration for " << dataset << std::endl;
     } else {
-      AliErrorStream() << "No valid configuration found for the given dataset - trigger maker disabled" << std::endl;
-      fLocalInitialized = false;
+      std::cout << "EMCAL trigger maker: No valid configuration found for the given dataset - trigger maker run loop disabled" << std::endl;
     }
+
+    if(fRunSmearing && !fTriggerMaker->HasSmearModel()){
+      std::cout << "EMCAL trigger maker: Initialize standard smear model" << std::endl;
+      InitializeSmearModel(); // Initialize smear model if not yet set from outside
+      fTriggerMaker->SetApplyOnlineBadChannelMaskingToSmeared();
+    } 
+
+    if(MCEvent() && fSimulateNoise) {
+      // In MC mode add noise 
+      // Using noise sigma of 50 MeV/channel as found during the optimization of the trigger efficiency to run2 data
+      std::cout << "EMCAL trigger maker: Initialize standard noise model" << std::endl;
+      if(!fTriggerMaker->HasNoiseModel()) fTriggerMaker->SetGaussianNoiseFEESmear(0., 0.05);
+    }
+    std::cout << "EMCAL trigger maker: Configured ..." << std::endl;
   }
 
   fTriggerMaker->SetGeometry(fGeom);
@@ -244,6 +275,11 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
  * @return True
  */
 Bool_t AliEmcalTriggerMakerTask::Run(){
+  if(!fTriggerMaker->IsConfigured()){
+    AliErrorStream() << "Trigger maker not configured" << std::endl;
+    return false;    // only run trigger maker in case it is configured
+  }
+  AliDebugStream(1) << "Looking for trigger patches ..." << std::endl;
   fCaloTriggersOut->Delete(); // Needed to avoid memory leak
   // prepare trigger maker
   fTriggerMaker->Reset();
@@ -300,6 +336,8 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
       if(patchIter.IsJetHighSimple() || patchIter.IsJetLowSimple())       FillQAHistos("EJEOffline", patchIter);
       if(patchIter.IsGammaHighSimple() || patchIter.IsGammaLowSimple())   FillQAHistos("EGAOffline", patchIter);
       if(patchIter.IsLevel0())                                            FillQAHistos("EL0Online", patchIter);
+      if(patchIter.IsLevel0Simple())                                      FillQAHistos("EL0Offline", patchIter);
+      if(patchIter.IsLevel0Recalc())                                      FillQAHistos("EL0Recalc", patchIter);
       if(patchIter.IsRecalcJet())                                         FillQAHistos("EJERecalc", patchIter);
       if(patchIter.IsRecalcGamma())                                       FillQAHistos("EGARecalc", patchIter);
       // Redo checking of found trigger bits after masking of unwanted triggers
@@ -316,7 +354,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
 }
 
 void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
-  AliDebugStream(1) << "Run changed, new run " << newrun << std::endl;
+  std::cout << "EMCAL trigger maker: Run changed, new run " << newrun << ", loading new maskings ..." <<  std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
   fTriggerMaker->ClearFastORBadChannels();
@@ -333,9 +371,9 @@ void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
 }
 
 void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
-  AliInfoStream() << "Loading additional bad FEE channels from OADB container " << fBadFEEChannelOADB << std::endl;
+  std::cout << "EMCAL trigger maker: Loading additional bad FEE channels from OADB container " << fBadFEEChannelOADB << std::endl;
   fTriggerMaker->ClearOfflineBadChannels();
-  if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
+  if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("EmcalBadChannelsAdditional");
   badchannelDB.InitFromFile(fBadFEEChannelOADB.Data(), "EmcalBadChannelsAdditional");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
@@ -347,7 +385,7 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
-  AliInfoStream() << "Loading masked fastors from OCDB" << std::endl;
+  std::cout << "EMCAL trigger maker: Loading masked fastors from OCDB" << std::endl;
   AliCDBManager *cdb = AliCDBManager::Instance();
 
   AliCDBEntry *en = cdb->Get("EMCAL/Calib/Trigger");
@@ -378,10 +416,11 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
     // is used - it is assumed that parameter 1 (iADC) corresponds to the
     // channel ID.
     for(unsigned int ifield = 0; ifield < 6; ifield++){
+      std::bitset<sizeof(unsigned int) * 4> regmask(truconf->GetMaskReg(ifield));
       for(unsigned int ibit = 0; ibit < 16; ibit ++){
-        if((truconf->GetMaskReg(ifield) >> ibit) & 0x1){
+        if(regmask.test(ibit)){
           try{
-            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, (ic =  GetMaskHandler()(ifield, ibit)), fastOrAbsID);
+            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(RemapTRUIndex(itru), (ic =  GetMaskHandler(itru)(ifield, ibit)), fastOrAbsID);
             AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
             fTriggerMaker->AddFastORBadChannel(fastOrAbsID);
           } catch (int exept){
@@ -391,11 +430,54 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       }
     }
   }
+
+  // Load STU regions
+  // In case of STU region whole TRUs are disabled in case their corresponding
+  // bit is set to 0 in the STU region bitset
+  auto emcalstu = trgconf->GetSTUDCSConfig(false),
+       dcalstu = trgconf->GetSTUDCSConfig(true);
+  if(emcalstu) {
+    std::bitset<sizeof(int) * 8> sturegion(emcalstu->GetRegion());
+    for(int itru = 0; itru < 32; itru++) {
+      if(!sturegion.test(itru)) {
+        // TRU disabled
+        for(int ichannel = 0; ichannel < 96; ichannel++) {
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
+          fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
+        }
+      }
+    }
+  }
+
+  if(dcalstu){
+    std::bitset<sizeof(int) * 8> sturegion(emcalstu->GetRegion());
+    for(int itru = 0; itru < 14; itru++) {
+      if(!sturegion.test(itru)) {
+        // TRU disabled
+        for(int ichannel = 0; ichannel < 96; ichannel++) {
+          fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, ichannel, fastOrAbsID);
+          fTriggerMaker->AddFastORBadChannel(fastOrAbsID); 
+        }
+      }
+    }
+  }
+}
+
+void AliEmcalTriggerMakerTask::InitializeSmearModel(){
+  TF1 *meanmodel = new TF1("meanmodel", "pol1", 0., 1000.);
+  meanmodel->SetParameter(0, -0.0206247);
+  meanmodel->SetParameter(1, 0.966160);
+  // Power law smearing
+  TF1 *widthmodel = new TF1("widthmodel", "[0] * TMath::Power(x, [1]) + [2]", 0., 1000.);
+  widthmodel->SetParameter(0, 0.0273139);
+  widthmodel->SetParameter(1, 1.36187);
+  widthmodel->SetParameter(2, 0.0736051);
+  fTriggerMaker->SetSmearModel(meanmodel, widthmodel);
 }
 
 void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
   AliInfoStream() << "Initializing masked fastors from OADB container " << fMaskedFastorOADB.Data() << std::endl;
-  if(fMaskedFastorOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
+  if(fMaskedFastorOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien");
   AliOADBContainer badchannelDB("AliEmcalMaskedFastors");
   badchannelDB.InitFromFile(fMaskedFastorOADB, "AliEmcalMaskedFastors");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
@@ -408,8 +490,9 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
 }
 
 
-std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler() const {
-  if(fGeom->GetTriggerMappingVersion() == 2){
+std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler(int itru) const {
+  bool isTRUsmallSM = ((itru >= 30 && itru < 31) || (itru >= 44 && itru < 45)) ;
+  if(fGeom->GetTriggerMappingVersion() == 2 && !isTRUsmallSM){
     // Run 2 - complicated TRU layout in 6 subregions
     return [] (unsigned int ifield, unsigned int ibit) -> int {
       if(ifield >= 6 || ibit >= 16) throw kInvalidChannelException;
@@ -428,6 +511,13 @@ std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMas
       return ifield * 16 + ibit;
     };
   }
+}
+
+int AliEmcalTriggerMakerTask::RemapTRUIndex(int itru) const {
+  if(fGeom->GetTriggerMappingVersion() == 2){
+    const int trumapping[46] = {0,1,2,5,4,3,6,7,8,11,10,9,12,13,14,17,16,15,18,19,20,23,22,21,24,25,26,29,28,27,30,31,32,33,37,36,38,39,43,42,44,45,49,48,50,51};
+    return trumapping[itru];
+  } else return itru;
 }
 
 void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){

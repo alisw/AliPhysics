@@ -1,18 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include "AliAnalysisTaskRhoTransDev.h"
 
 #include <TClonesArray.h>
@@ -26,13 +37,8 @@
 #include "AliRhoParameter.h"
 #include "AliJetContainer.h"
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskRhoTransDev);
-/// \endcond
 
-/**
- * Default constructor. Needed by ROOT I/O
- */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
   AliAnalysisTaskRhoBaseDev(),
   fHistB2BRhoVsCent(0),
@@ -47,12 +53,6 @@ AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev() :
 {
 }
 
-/**
- * Standard constructor. Should be used by the user.
- *
- * @param[in] name  Name of the task
- * @param[in] histo If kTRUE, the task will also produce QA histograms
- */
 AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBaseDev(name, histo),
   fHistB2BRhoVsCent(0),
@@ -67,10 +67,6 @@ AliAnalysisTaskRhoTransDev::AliAnalysisTaskRhoTransDev(const char *name, Bool_t 
 {
 }
 
-/**
- * Performing run-independent initialization.
- * Here the histograms should be instantiated.
- */
 void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
 {
   if (!fCreateHisto) return;
@@ -153,17 +149,6 @@ void AliAnalysisTaskRhoTransDev::UserCreateOutputObjects()
   }
 }
 
-/**
- * Calculates the transervse momentum density in a region that
- * is perpedincular to the leading jet. The perpedincular region
- * spans over an angle pi/4 around pi/4 and -pi/4.
- * This implements the techniques described in the analysis note
- * of the ALICE inclusive jet spectrum in pp collisions at 2.76 TeV,
- * section 7.3: https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/rma/2013-Mar-29-analysis_note-ppJet_note.pdf
- * @param cont Collection of objects (tracks, clusters or particles) used to calculate the momentum density
- * @param leadingJet Leading jet used to define the perpendicular region
- * @return The perpendicular momentum density
- */
 Double_t AliAnalysisTaskRhoTransDev::GetPerpPtDensity(AliEmcalContainer* cont, AliVParticle* leadingJet)
 {
   static Float_t minPhi = (3.0/8.0) * TMath::Pi();
@@ -181,14 +166,6 @@ Double_t AliAnalysisTaskRhoTransDev::GetPerpPtDensity(AliEmcalContainer* cont, A
   return acc > 0 ? perpPt / acc : 0;
 }
 
-/**
- * Calculates the average background by summing the transverse momenta
- * of the particles perpendicular to the leading jet axis.
- * This implements the techniques described in the analysis note
- * of the ALICE inclusive jet spectrum in pp collisions at 2.76 TeV,
- * section 7.3: https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/rma/2013-Mar-29-analysis_note-ppJet_note.pdf
- * The background densisty is stored in fOutRho.
- */
 void AliAnalysisTaskRhoTransDev::CalculateRho()
 {
   AliEmcalJet* leadingJet = fLeadingJet["Signal"];
@@ -207,9 +184,6 @@ void AliAnalysisTaskRhoTransDev::CalculateRho()
   fOutRho->SetVal(perpPtDensity);
 }
 
-/**
- * Fill histograms.
- */
 Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
 {
   Bool_t r = AliAnalysisTaskRhoBaseDev::FillHistograms();
@@ -242,10 +216,6 @@ Bool_t AliAnalysisTaskRhoTransDev::FillHistograms()
   return kTRUE;
 }
 
-/**
- * Verify that the required particle, cluster and jet containers were provided.
- * @return kTRUE if all requirements are satisfied, kFALSE otherwise
- */
 Bool_t AliAnalysisTaskRhoTransDev::VerifyContainers()
 {
   if (fJetCollArray.count("Signal") == 0) {
@@ -261,21 +231,6 @@ Bool_t AliAnalysisTaskRhoTransDev::VerifyContainers()
   return kTRUE;
 }
 
-/**
- * Create an instance of this class and add it to the analysis manager
- * @param trackName name of the track collection
- * @param trackPtCut minimum pt of the tracks
- * @param clusName name of the calorimeter cluster collection
- * @param clusECut minimum energy of the calorimeter clustuers
- * @param nRho name of the output rho object
- * @param jetradius Radius of the kt jets used to calculate the background
- * @param acceptance Fiducial acceptance of the kt jets
- * @param jetType Jet type (full/charged)
- * @param rscheme Recombination scheme
- * @param histo If kTRUE the task will also produce QA histograms
- * @param suffix additional suffix that can be added at the end of the task name
- * @return pointer to the new AliAnalysisTaskRhoDev task
- */
 AliAnalysisTaskRhoTransDev* AliAnalysisTaskRhoTransDev::AddTaskRhoTransDev(TString trackName, Double_t trackPtCut, TString clusName, Double_t clusECut, TString nRho, Double_t jetradius, UInt_t acceptance, AliJetContainer::EJetType_t jetType , AliJetContainer::ERecoScheme_t rscheme, Bool_t histo, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method.

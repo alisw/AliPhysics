@@ -18,6 +18,7 @@ public:
 
    enum EType {
       kVz,            // event Z position of primary vertex
+      kSpherocity,    // Spherocity
       kMult,          // event multiplicity or centrality (depends on task settings)
       kRefMult,       // event reference multiplicity (depends on task settings) - may differ from centrality estimator
       kTracklets,     // event tracklets
@@ -36,8 +37,13 @@ public:
       kPtRatio,       // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
+      kCosThetaStarAbs,  // polarization angle
       kCosThetaJackson,  // polarization angle in Jackson frame
       kCosThetaTransversity, // polarization angle in transversity frame
+      kCosThetaHe,     //polarisation angle in HE frame
+      kCosThetaHeAbs,  //polarisation angle in HE frame
+      kPhiHePbPb5,     //angle[phi] in HE frame
+      kPhiHePP5,       //angle[phi] in HE frame
       kCosThetaToEventPlane, // polarization angle with respect to Event Plane
       kAngleLeading,  // angle to leading particle
       kFirstDaughterPt,  //pt of the first daughter of the pair
@@ -51,6 +57,7 @@ public:
       kPairPtRes,       // pair pT resolution
       kPairYRes,        // pair rapidity resolution
       kPhiV,   // PhiV calculation
+      kAsym,   // pair asymmetry
       kTypes          // -- general limit ----------------------------------------------------------
    };
 

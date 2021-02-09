@@ -5,8 +5,10 @@
 
 class TLorentzVector;
 
+class AliVCaloCells;
 class AliVEvent;
 
+#include <map>
 #include <TArrayI.h>
 #include <AliVCluster.h>
 
@@ -32,6 +34,9 @@ typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVCluster, EMCALIte
 class AliClusterContainer : public AliEmcalContainer {
  public:
   typedef enum AliVCluster::VCluUserDefEnergy_t VCluUserDefEnergy_t;
+
+  /// Relates string to the cluster energy enumeration for %YAML configuration
+  static const std::map <std::string, VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
 
   AliClusterContainer();
   AliClusterContainer(const char *name); 
@@ -71,6 +76,9 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetIncludePHOSonly(Bool_t b)                 { fIncludePHOSonly = b   ; }
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
+  void 						            SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
+  void                        SetEmcalMaxM02Energy(Double_t max)           { fEmcalMaxM02CutEnergy = max; }
+  void                        SetMaxFractionEnergyLeadingCell(Double_t max)  { fMaxFracEnergyLeadingCell = max; }
   void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
@@ -110,6 +118,7 @@ class AliClusterContainer : public AliEmcalContainer {
   static AliEmcalContainerIndexMap <TClonesArray, AliVCluster> fgEmcalContainerIndexMap; //!<! Mapping from containers to indices
 #endif
 
+  AliVCaloCells   *fEMCALCells;                 ///< pointer to EMCAL cells object
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters
   Double_t         fClusTimeCutUp;              ///< up time cut for clusters
   Bool_t           fExoticCut;                  ///< reject clusters marked as "exotic"
@@ -119,13 +128,17 @@ class AliClusterContainer : public AliEmcalContainer {
   Bool_t           fIncludePHOSonly;            ///< flag to accept only PHOS clusters (and reject EMCal clusters)
   Int_t            fPhosMinNcells;              ///< min number of phos cells per cluster
   Double_t         fPhosMinM02;                 ///< min value of M02 for phos clusters
+  Double_t		     fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
+  Double_t 		     fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
+  Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
+  Double_t         fMaxFracEnergyLeadingCell;   ///< max fraction of energy in the leading cell
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,9);
+  ClassDef(AliClusterContainer,12);
   /// \endcond
 };
 

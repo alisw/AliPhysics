@@ -1,9 +1,9 @@
 #ifndef ALIPICOV0RD_H
 #define ALIPICOV0RD_H
 
-#include "AliPicoV0Base.h"
+#include "AliPicoV0.h"
 
-class AliPicoV0RD : public AliPicoV0Base {
+class AliPicoV0RD : public AliPicoV0 {
 
  public :
 
@@ -26,11 +26,11 @@ class AliPicoV0RD : public AliPicoV0Base {
   AliPicoV0RD& operator=(const AliPicoV0RD &src);
   virtual ~AliPicoV0RD();
 
-  Bool_t IsKshort(Double_t dCuts[10]);
-  Bool_t IsLambda(Double_t dCuts[10]);
-  Bool_t IsAntiLa(Double_t dCuts[10]);
+  virtual Bool_t IsKshort(Double_t const dCuts[10]) const;
+  virtual Bool_t IsLambda(Double_t const dCuts[10]) const;
+  virtual Bool_t IsAntiLa(Double_t const dCuts[10]) const;
 
-  void GetControlVariables(Float_t d[20]);
+  virtual void GetControlVariables(Float_t d[20]) const;
 //=============================================================================
 
  private :
@@ -41,7 +41,7 @@ class AliPicoV0RD : public AliPicoV0Base {
   Float_t fPosProtonSigmaTPC;  //
   Float_t fNegProtonSigmaTPC;  //
 
-  ClassDef(AliPicoV0RD, 3);
+  ClassDef(AliPicoV0RD, 5);
 };
 
 #endif

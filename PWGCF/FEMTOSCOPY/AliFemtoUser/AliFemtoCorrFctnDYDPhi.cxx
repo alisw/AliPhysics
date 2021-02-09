@@ -15,15 +15,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDYDPhi)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass=0):
+AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const char* title, const int& aPhiBins=20, const int& aYBins=20, const double& mass=0):
   AliFemtoCorrFctn(),
   fDPhiDYNumerator(0),
   fDPhiDYDenominator(0),
@@ -94,7 +94,7 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(char* title, const int& aPhiBins=
   char tTitY[101] = "Y";
   strncat(tTitY,title, 100);
   fY = new TH1D(tTitY,title,90,-1.2,1.2);
-  
+
   // set up numerator
   char tTitYtNum[101] = "NumYtYt";
   strncat(tTitYtNum,title, 100);
@@ -237,12 +237,12 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const AliFemtoCorrFctnDYDPhi& aCo
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtDenominator = 0;
 
   fphiL = aCorrFctn.fphiL;
@@ -251,19 +251,20 @@ AliFemtoCorrFctnDYDPhi::AliFemtoCorrFctnDYDPhi(const AliFemtoCorrFctnDYDPhi& aCo
 
 //  if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//    else 
+//    else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
 
 }
 //____________________________
-AliFemtoCorrFctnDYDPhi::~AliFemtoCorrFctnDYDPhi(){
+AliFemtoCorrFctnDYDPhi::~AliFemtoCorrFctnDYDPhi()
+{
   // destructor
   delete fDPhiDYNumerator;
   delete fDPhiDYDenominator;
@@ -358,12 +359,12 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDYDenominator);
- else 
+ else
    fYtYtDenominator = 0;
 
  fIfCorrectionHist = kNone;
@@ -374,12 +375,12 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
 
 // if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//  else 
+//  else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -387,7 +388,8 @@ AliFemtoCorrFctnDYDPhi& AliFemtoCorrFctnDYDPhi::operator=(const AliFemtoCorrFctn
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnDYDPhi::Finish(){
+void AliFemtoCorrFctnDYDPhi::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -399,23 +401,23 @@ void AliFemtoCorrFctnDYDPhi::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDYDPhi::Report(){
+AliFemtoString AliFemtoCorrFctnDYDPhi::Report()
+{
   // create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiDYNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDYDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "TPC Ncls Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fDPhiDYNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDPhiDYDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 //____________________________
-void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDYDPhi::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double px1 = pair->Track1()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
@@ -481,15 +483,15 @@ void AliFemtoCorrFctnDYDPhi::AddRealPair( AliFemtoPair* pair){
 	Double_t val[] = {y1,y2,dphi,dy};
 	fYCorrectionsNum->Fill(val);
       }
-
     }
-
 }
 //____________________________
-void AliFemtoCorrFctnDYDPhi::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDYDPhi::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double px1 = pair->Track1()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
@@ -573,14 +575,16 @@ void AliFemtoCorrFctnDYDPhi::WriteHistos()
   }
   fPhi->Write();
   fY->Write();
-  
+
   if(fIfCorrectionHist){
     if(fIfCorrectionHist==kPt){
-    fPtCorrectionsNum->Write();
-    fPtCorrectionsDen->Write();}
+      fPtCorrectionsNum->Write();
+      fPtCorrectionsDen->Write();
+    }
     if(fIfCorrectionHist==kY){
-    fYCorrectionsNum->Write();
-    fYCorrectionsDen->Write();}
+      fYCorrectionsNum->Write();
+      fYCorrectionsDen->Write();
+    }
   }
 }
 
@@ -617,14 +621,14 @@ TList* AliFemtoCorrFctnDYDPhi::GetOutputList()
       tOutputList->Add(fYCorrectionsDen);
     }
   }
-  return tOutputList;
 
+  return tOutputList;
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
 {
   fDoPtAnalysis = do2d;
-  
+
   int aPhiBins = fDPhiDYNumerator->GetNbinsX();
   const char *title = fDPhiDYNumerator->GetTitle();
 
@@ -650,7 +654,6 @@ void AliFemtoCorrFctnDYDPhi::SetDoPtAnalysis(int do2d)
   fDPhiPtDenominator->Sumw2();
   fDCosPtNumerator->Sumw2();
   fDCosPtDenominator->Sumw2();
-  
 }
 
 void AliFemtoCorrFctnDYDPhi::SetDo4DCorrectionHist(CorrectionType doCorr)

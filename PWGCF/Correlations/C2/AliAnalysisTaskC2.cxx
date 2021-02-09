@@ -14,6 +14,9 @@
 #include "AliMultSelection.h"
 #include "AliStack.h"
 #include "AliVEvent.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHepMCEventHeader.h"
+#include "AliGenEventHeaderTunedPbPb.h"
 
 #include "AliAnalysisTaskC2.h"
 #include "AliAnalysisC2Utils.h"
@@ -171,7 +174,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
 
   {
     const Int_t ndims = 3;
-    const Int_t nbins[ndims] = {200, 20, 100};
+    const Int_t nbins[ndims] = {200, 20, 200};
     const Double_t lowerBounds[ndims] = {-4.0, 0, -10.0};
     const Double_t upperBounds[ndims] = {6.0, 2*TMath::Pi(), 10.0};
     this->fEtaPhiZvtx_max_res = new THnF("etaPhiZvtx_max_res",
@@ -200,6 +203,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     PostData(1, this->fOutputList);
     return;
   }
+
   const Float_t multiplicity = this->GetEventClassifierValue();
   const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
@@ -212,6 +216,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
       return;
     }
   }
+
   {
     TAxis* zvtxAxis = fEventCounter->GetAxis(cEventCounterDims::kZvtx);
     if (zvtxAxis->FindBin(zvtx) == 0
@@ -358,10 +363,15 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
     if (this->fSettings.fUseSPDclusters) {
       AliError("SPD clusters not yet implemented");
     }
-    else if (this->fSettings.fUseSPDtracklets) {
-      auto spdhits = ev_val->GetSPDtracklets();
+    else if (this->fSettings.fUseTracklets) {
+      auto spdhits = ev_val->GetTracklets();
       ret_vector.insert(ret_vector.end(), spdhits.begin(), spdhits.end());
     }
+    else if (this->fSettings.fUseTracks) {
+      auto trks = ev_val->GetTracks();
+      ret_vector.insert(ret_vector.end(), trks.begin(), trks.end());
+    }
+
     // Append the fmd hits to this vector if we are looking at reconstructed data,
     // All hits on the FMD (above the internally used threshold) are "valid"
     if (this->fSettings.fUseFMD) {
@@ -374,9 +384,7 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
   }
   // MC truth case:
   else {
-    AliError("MC truth is not yet implemented");
-    // auto allMCtracks = this->GetValidCentralTracks();
-    // this->fValidTracks.insert(this->fValidTracks.end(), allMCtracks.begin(), allMCtracks.end());
+    ret_vector = ev_val->GetMCTruthTracks();
   }
   return ret_vector;
 }
@@ -384,13 +392,27 @@ AliAnalysisTaskValidation::Tracks AliAnalysisTaskC2::GetValidTracks() {
 Float_t AliAnalysisTaskC2::GetEventClassifierValue() {
   if (this->fSettings.fMultEstimator == this->fSettings.fMultEstimatorValidTracks){
     return this->GetValidTracks().size();
-  }
-  else {
+  } else if (this->fSettings.fMultEstimator == "TunedPbPb") {
+    // For MC data:
+    if (!this->MCEvent()) {
+      AliFatal("Not running on MC data!");
+    }
+    AliHeader* header = (AliHeader*) this->MCEvent()->Header();
+    if (!header) {
+      AliFatal("No header found!");
+    }
+    auto tuned_header = dynamic_cast<AliGenEventHeaderTunedPbPb*>(header->GenEventHeader());
+    if (!tuned_header) {
+      AliFatal("Not running on AliGenEventTunedPbPb data?!");
+    }
+    return tuned_header->GetCentrality();
+  } else {
     // Event is invalid if no multselection is present; ie. tested in IsValidEvent() already
     AliMultEstimator *multEstimator =
       (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
       ->GetEstimator(this->fSettings.fMultEstimator);
     // const Float_t multiplicity = ((Float_t)multEstimator->GetValue()) / multEstimator->GetMean();
+    // const Float_t multiplicity = (Float_t)multEstimator->GetValue();
     const Float_t multiplicity = multEstimator->GetPercentile();
     return multiplicity;
   }

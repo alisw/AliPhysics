@@ -1,12 +1,16 @@
 // AliEmcalCorrectionCellTimeCalib
 //
 
+#include <memory>
+
 #include <TObjArray.h>
 #include <TFile.h>
+#include <TSpline.h>
 #include "AliEMCALGeometry.h"
 #include "AliOADBContainer.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODEvent.h"
+#include "AliDataFile.h"
 
 #include "AliEmcalCorrectionCellTimeCalib.h"
 
@@ -22,11 +26,15 @@ RegisterCorrectionComponent<AliEmcalCorrectionCellTimeCalib> AliEmcalCorrectionC
  */
 AliEmcalCorrectionCellTimeCalib::AliEmcalCorrectionCellTimeCalib() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellTimeCalib")
-  ,fCalibrateTime(kFALSE)
-  ,fCalibrateTimeL1Phase(kFALSE)
-  ,fUseAutomaticTimeCalib(1)
   ,fCellTimeDistBefore(0)
   ,fCellTimeDistAfter(0)
+  ,fCalibrateTimeVsE(kFALSE)
+  ,fCalibrateTime(kFALSE)
+  ,fCalibrateTimeL1Phase(kFALSE)
+  ,fDoMergedBCs(kFALSE)
+  ,fDoCalibrateLowGain(kFALSE)
+  ,fDoCalibMergedLG(kFALSE)
+  ,fUseAutomaticTimeCalib(1)
 {
 }
 
@@ -47,14 +55,30 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   
   AliWarning("Init EMCAL time calibration");
   
-  GetProperty("createHistos", fCreateHisto);
-  
-  fCalibrateTime = kTRUE;
-
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
+
+  GetProperty("doCalibTimeEdep", fCalibrateTimeVsE);
+  if (fCalibrateTimeVsE) AliWarning("energy dependent time calib will be enabled");
     
+  bool doL1PhaseShiftOnly = kFALSE;
+  GetProperty("doL1PhaseShiftOnly", doL1PhaseShiftOnly);
+  fCalibrateTime = !doL1PhaseShiftOnly;
+
+  GetProperty("doMergedBCs", fDoMergedBCs);    
+
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
+  GetProperty("doCalibrateLowGain", fDoCalibrateLowGain);
+
+  GetProperty("doCalibMergedLG", fDoCalibMergedLG);    
+
+  if (fDoCalibrateLowGain || fDoCalibMergedLG)
+    fRecoUtils->SwitchOnLG();
+  else
+    fRecoUtils->SwitchOffLG();
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
@@ -68,9 +92,9 @@ void AliEmcalCorrectionCellTimeCalib::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistBefore = new TH1F("hCellTimeDistBefore","hCellTimeDistBefore;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistBefore);
-    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_cell",1000,-10e-6,10e-6);
+    fCellTimeDistAfter = new TH1F("hCellTimeDistAfter","hCellTimeDistAfter;t_{cell} (s)",1000,-10e-6,10e-6);
     fOutput->Add(fCellTimeDistAfter);
   }
 }
@@ -90,6 +114,10 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
   CheckIfRunChanged();
   
   // CONFIGURE THE RECO UTILS -------------------------------------------------
+  if (fCalibrateTimeVsE)
+    fRecoUtils->SwitchOnTimeECorrection();
+  else 
+    fRecoUtils->SwitchOffTimeECorrection();
   
   // allows time calibration
   if (fCalibrateTime)
@@ -105,8 +133,7 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
   
   // START PROCESSING ---------------------------------------------------------
   // Test if cells present
-  if (fCaloCells->GetNumberOfCells()<=0)
-  {
+  if (fCaloCells->GetNumberOfCells()<=0){
     AliWarning(Form("Number of EMCAL cells = %d, returning", fCaloCells->GetNumberOfCells()));
     return kFALSE;
   }
@@ -127,6 +154,44 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
   return kTRUE;
 }
 
+
+/**
+ * Initialize the energy dependent time calibration.
+ */
+Int_t AliEmcalCorrectionCellTimeCalib::InitEDepTimeCalibration()
+{
+  
+  AliInfo("Initialising energy dependent time calibration map");
+  
+  std::unique_ptr<TFile> timeCalibFileVsE;
+  TSpline3* tiltCorr = nullptr;
+  // set spline for time dependent time calibration if option is enabled
+  if (fCalibrateTimeVsE){
+    if (fBasePath!=""){
+      //if fBasePath specified in the ->SetBasePath()
+      AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
+      timeCalibFileVsE = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeTiltCorrection.root",fBasePath.Data()),"read"));
+      if (!timeCalibFileVsE || timeCalibFileVsE->IsZombie()){
+        AliFatal(Form("EMCALTimeTiltCorrection.root was not found in the path provided: %s", fBasePath.Data()));
+        return 0;
+      }
+    } else { // Else choose the one in the $ALICE_PHYSICS directory
+      AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+
+      timeCalibFileVsE = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeTiltCorrection.root").data(),"read"));
+      if (!timeCalibFileVsE || timeCalibFileVsE->IsZombie()){
+        AliFatal("OADB/EMCAL/EMCALTimeTiltCorrection.root was not found");
+        return 0;
+      }
+    }
+    tiltCorr = (TSpline3*)timeCalibFileVsE->Get("highGainCellTimeCorr");
+    fRecoUtils->SetEMCALTimeVsEHighGainSlewingCorr(tiltCorr);
+    
+  }
+  
+  return 1;
+}
+
 /**
  * Initialize the time calibration.
  */
@@ -145,43 +210,37 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
-  if (fBasePath!="")
-  { //if fBasePath specified in the ->SetBasePath()
+  std::unique_ptr<AliOADBContainer> contTimeCalib;
+  std::unique_ptr<TFile> timeCalibFile;
+  if (fBasePath!=""){
+    //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"read");
-    if (!fbad || fbad->IsZombie())
-    {
-      AliFatal(Form("EMCALTimeCalib.root was not found in the path provided: %s",fBasePath.Data()));
+    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalib%s.root",fBasePath.Data(), fDoMergedBCs ? "MergedBCs" : "" ),"read"));
+    if (!timeCalibFile || timeCalibFile->IsZombie()){
+      AliFatal(Form("EMCALTimeCalib%s.root was not found in the path provided: %s", fDoMergedBCs ? "MergedBCs" : "" ,fBasePath.Data()));
       return 0;
     }
-    
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile(Form("%s/EMCALTimeCalib.root",fBasePath.Data()),"AliEMCALTimeCalib");
-  }
-  else
-  { // Else choose the one in the $ALICE_PHYSICS directory
+    contTimeCalib = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFile->Get("AliEMCALTimeCalib")));
+  } else { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","read");
-    if (!fbad || fbad->IsZombie())
-    {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root was not found");
+    timeCalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALTimeCalib%s.root", fDoMergedBCs ? "MergedBCs" : "")).data(),"read"));
+    if (!timeCalibFile || timeCalibFile->IsZombie()){
+      AliFatal(Form("OADB/EMCAL/EMCALTimeCalib%s.root was not found", fDoMergedBCs ? "MergedBCs" : ""));
       return 0;
     }
-    
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root","AliEMCALTimeCalib");
+    contTimeCalib = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFile->Get("AliEMCALTimeCalib")));
   }
+  if(!contTimeCalib){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contTimeCalib->SetOwner(true);
   
-  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
-  if (!arrayBC)
-  {
+  TObjArray *arrayBC=(TObjArray*)contTimeCalib->GetObject(runBC);
+  if (!arrayBC){
     AliError(Form("No external time calibration set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
@@ -195,33 +254,147 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   if (fRun > 209121) pass = "pass1";
   
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
-  if (!arrayBCpass)
-  {
+  if (!arrayBCpass)  {
     AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
-    delete contBC;
     return 2;
   }
   
   arrayBCpass->Print();
   
-  for(Int_t i = 0; i < 4; i++)
-  {
-    TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+  if(!fDoMergedBCs){
+    for(Int_t i = 0; i < 4; i++) {
+      TH1F *h = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+      if (h)
+        delete h;
+    
+      h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+    
+      if (!h) {
+        AliError(Form("Can not get hAllTimeAvBC%d",i));
+        continue;
+      }
+    
+      // Shift parameters for bc0 and bc1 in this pass
+      if ( pass=="spc_calo" && (i==0 || i==1) ) {
+        for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+          h->SetBinContent(icell,h->GetBinContent(icell)-100);
+      }
+    
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+
+      if(fDoCalibrateLowGain){
+        TH1F *hLG = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i+4);
+        if (hLG)
+          delete hLG;
+      
+        hLG = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvLGBC%d",i));
+      
+        if (!hLG){
+          AliError(Form("Can not get hAllTimeAvLGBC%d",i));
+          continue;
+        }
+      
+        // Shift parameters for bc0 and bc1 in this pass
+        if ( pass=="spc_calo" && (i==0 || i==1) ) {
+          for(Int_t icell = 0; icell < hLG->GetNbinsX(); icell++) 
+            hLG->SetBinContent(icell,hLG->GetBinContent(icell)-100);
+        }
+      
+        hLG->SetDirectory(0);
+        fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i+4,hLG);
+      }
+    }
+  }else{
+  
+    TH1S *h = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);//HG cells
     if (h)
       delete h;
-    
-    h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
-    
-    if (!h)
-    {
-      AliError(Form("Can not get hAllTimeAvBC%d",i));
-      continue;
-    }
-    h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
-  }
   
-  delete contBC;
+    h = (TH1S*)arrayBCpass->FindObject("hAllTimeAv");
+  
+    if (!h)
+      AliError("Can not get hAllTimeAv");
+    
+    h->SetDirectory(0);
+    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);//HG cells
+
+    if(fDoCalibrateLowGain && !fDoCalibMergedLG){
+      TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
+      if (hLG)
+        delete hLG;
+    
+      hLG = (TH1S*)arrayBCpass->FindObject("hAllTimeAvLG");
+    
+      if (!hLG)
+        AliError("Can not get hAllTimeAvLG");
+      
+      hLG->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
+    }
+  }
+
+  if(fDoCalibMergedLG && fDoMergedBCs){
+
+    std::unique_ptr<AliOADBContainer> contTimeCalibLG;
+    std::unique_ptr<TFile> timeCalibFileLG;
+    if (fBasePath!="") { //if fBasePath specified in the ->SetBasePath()
+      AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
+      
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeCalibMergedBCsLG.root",fBasePath.Data()),"read"));
+      if (!timeCalibFileLG || timeCalibFileLG->IsZombie())
+      {
+        AliFatal(Form("EMCALTimeCalibMergedBCsLG.root was not found in the path provided: %s",fBasePath.Data()));
+        return 0;
+      }
+      
+      contTimeCalibLG = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFileLG->Get("AliEMCALTimeCalib")));
+    } else { // Else choose the one in the $ALICE_PHYSICS directory
+      AliInfo("Loading time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+      
+      timeCalibFileLG = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalibMergedBCsLG.root").data(),"read"));
+      if (!timeCalibFileLG || timeCalibFileLG->IsZombie()) {
+        AliFatal("OADB/EMCAL/EMCALTimeCalibMergedBCsLG.root was not found");
+        return 0;
+      }
+      
+      contTimeCalibLG = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeCalibFileLG->Get("AliEMCALTimeCalib")));
+    }
+    if(!contTimeCalibLG){
+      AliError("No OADB container found");
+      return 0;
+    }
+    contTimeCalibLG->SetOwner(true);
+    
+    TObjArray *arrayBCLG=(TObjArray*)contTimeCalibLG->GetObject(runBC);
+    if (!arrayBCLG) {
+      AliError(Form("No external time calibration set for run number: %d", runBC));
+      return 2;
+    }
+     
+    TObjArray *arrayBCpassLG=(TObjArray*)arrayBCLG->FindObject(pass);
+    if (!arrayBCpassLG) {
+      AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
+      return 2;
+    }
+    
+    arrayBCpassLG->Print();
+
+    TH1S *hLG = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(1);//LG cells
+    if (hLG)
+      delete hLG;
+     
+    hLG = (TH1S*)arrayBCpassLG->FindObject("hAllTimeAvLG");
+      
+    if (!hLG)
+      AliError("Can not get hAllTimeAvLG");
+        
+    hLG->SetDirectory(0);
+    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(1,hLG);//LG cells
+
+  } else if (fDoCalibMergedLG) {
+    AliFatal(Form("You tried to run the low gain merged year calib (fDoCalibMergedLG == kTRUE) without activating the merged BC ( fDoMergedBCs == kFALSE), we don't have files for that. Please, fix your settings. Aborting....."));
+  }
   
   return 1;
 }
@@ -244,43 +417,44 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contTimeCalib;
+  std::unique_ptr<TFile> timeFile;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading time calibration OADB from given path %s",fBasePath.Data()));
     
-    TFile *timeFile=new TFile(Form("%s/EMCALTimeL1PhaseCalib.root",fBasePath.Data()),"read");
+    timeFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTimeL1PhaseCalib.root",fBasePath.Data()),"read"));
     if (!timeFile || timeFile->IsZombie())
     {
       AliFatal(Form("EMCALTimeL1PhaseCalib.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }
     
-    if (timeFile) delete timeFile;
-    
-    contBC->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fBasePath.Data()),"AliEMCALTimeL1PhaseCalib");
+    contTimeCalib = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeFile->Get("AliEMCALTimeL1PhaseCalib")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
-    AliInfo("Loading L1 phase in time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+    AliInfo("Loading L1 phase in time calibration OADB from OADB/EMCAL");
     
-    TFile *timeFile=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","read");
+    timeFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"read"));
     if (!timeFile || timeFile->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root was not found");
+      AliFatal("OADB/EMCAL/EMCALTimeL1PhaseCalib.root was not found");
       return 0;
     }
     
-    if (timeFile) delete timeFile;
-    
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeL1PhaseCalib.root","AliEMCALTimeL1PhaseCalib");
+    contTimeCalib = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(timeFile->Get("AliEMCALTimeL1PhaseCalib")));
   }
+  if(!contTimeCalib){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contTimeCalib->SetOwner(true);
   
-  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
+  TObjArray *arrayBC=(TObjArray*)contTimeCalib->GetObject(runBC);
   if (!arrayBC)
   {
     AliError(Form("No external L1 phase in time calibration set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
@@ -297,14 +471,13 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
   if (!arrayBCpass)
   {
     AliError(Form("No external L1 phase in time calibration set for: %d -%s", runBC,pass.Data()));
-    delete contBC;
     return 2;
   }
   
   arrayBCpass->Print();
   
   
-  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM();
+  TH1C *h = fRecoUtils->GetEMCALL1PhaseInTimeRecalibrationForAllSM(0);
   if (h) delete h;
   
   h = (TH1C*)arrayBCpass->FindObject(Form("h%d",runBC));
@@ -313,9 +486,34 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibrationL1Phase()
     AliFatal(Form("There is no calibration histogram h%d for this run",runBC));
   }
   h->SetDirectory(0);
-  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h);
-  
-  delete contBC;
+  fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(h,0);
+
+  //Now special case for PAR runs
+  fRecoUtils->SwitchOffParRun();
+  //access tree from OADB file
+  TTree *tGID = (TTree*)arrayBCpass->FindObject(Form("h%d_GID",runBC));
+  if(tGID){//check whether present = PAR run
+    fRecoUtils->SwitchOnParRun();
+    //access tree branch with PARs
+    ULong64_t parGlobalBCs;
+    tGID->SetBranchAddress("GID",&parGlobalBCs);
+    //set number of PARs in run
+    Short_t nPars = (Short_t) tGID->GetEntries();
+    fRecoUtils->SetNPars((Short_t)nPars);
+    //set global ID for each PAR
+    for (Short_t iParNumber = 0; iParNumber < nPars; ++iParNumber) {
+      tGID->GetEntry(iParNumber);
+      fRecoUtils->SetGlobalIDPar(parGlobalBCs,iParNumber);
+    }//loop over entries  
+
+    //access GlobalID hiostograms for each PAR
+    for(Short_t iParNumber=1; iParNumber< fRecoUtils->GetNPars()+1;iParNumber++){
+      TH1C *hPar = (TH1C*)arrayBCpass->FindObject( Form("h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      if (!hPar) AliError( Form("Could not load h%d_%llu",runBC,fRecoUtils->GetGlobalIDPar(iParNumber-1) ) );
+      hPar->SetDirectory(0);
+      fRecoUtils->SetEMCALL1PhaseInTimeRecalibrationForAllSM(hPar,iParNumber);
+    }//loop over PARs
+  }//end if tGID present  
   
   return 1;
 }
@@ -328,13 +526,35 @@ Bool_t AliEmcalCorrectionCellTimeCalib::CheckIfRunChanged()
 {
   Bool_t runChanged = AliEmcalCorrectionComponent::CheckIfRunChanged();
   
+  if (fCalibrateTimeVsE && !fRecoUtils->InitializedTimeVsEHighGainSlewingCorr()){
+    Int_t initTEC = InitEDepTimeCalibration();
+    if (!initTEC) {
+      AliError("InitEDepTimeCalibration returned false, returning");
+    } else {
+      AliWarning("InitEDepTimeCalibration OK");
+    }
+  }
+  
   if (runChanged) {
  
     // define what recalib parameters are needed for various switches
     // this is based on implementation in AliEMCALRecoUtils
     Bool_t needTimecalib   = fCalibrateTime;
     if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
-    Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
+
+    if(fRun<225000 && fCalibrateTime && fDoMergedBCs){
+      AliWarning("The merged BC histograms don't exist for Run1, falling back to the 4 BC histograms. For question contact constantin.loizides@cern.ch");
+      fDoMergedBCs=kFALSE;
+      fRecoUtils->SetUseOneHistForAllBCs(kFALSE);
+    }
+
+    if(fRun<225000 && fCalibrateTime && fDoCalibrateLowGain){
+      AliWarning("The low gain calibration histograms don't exist for Run1, switching off the calibration");
+      fDoCalibrateLowGain = kFALSE;   
+      fRecoUtils->SwitchOffLG(); 
+    }
+      
+    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
     
     // init time calibration
     if (needTimecalib && fUseAutomaticTimeCalib) {

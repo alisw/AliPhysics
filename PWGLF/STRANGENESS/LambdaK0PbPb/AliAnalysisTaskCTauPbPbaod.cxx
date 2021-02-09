@@ -472,7 +472,7 @@ void AliAnalysisTaskCTauPbPbaod::UserExec(Option_t *)
 	 if (code != kLambda0)
 	    if (code != kLambda0Bar) continue;
 
-       Int_t plab=p0->GetDaughter(0), nlab=p0->GetDaughter(1);
+       Int_t plab=p0->GetDaughterLabel(0), nlab=p0->GetDaughterLabel(1);
        if (nlab==plab) continue;
        AliAODMCParticle *part=(AliAODMCParticle*)(*stack)[plab];
        if (!part) continue;

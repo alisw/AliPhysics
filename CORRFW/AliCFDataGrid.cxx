@@ -135,7 +135,7 @@ void AliCFDataGrid::ApplyBGCorrection(const AliCFDataGrid &c)
 void AliCFDataGrid::Copy(TObject& c) const
 {
   // copy function
-  Copy(c);
+  AliCFGridSparse::Copy(c);
   AliCFDataGrid& target = (AliCFDataGrid &) c;
   target.fContainer=fContainer;
   target.fSelData=fSelData;

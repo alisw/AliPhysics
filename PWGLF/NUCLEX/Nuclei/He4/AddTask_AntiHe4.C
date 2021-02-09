@@ -45,10 +45,10 @@ AliAnalysisTask *AddTask_AntiHe4(){
 
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *coutput1 = 
-      mgr->CreateContainer("nmartin_AntiHe4", TObjArray::Class(),AliAnalysisManager::kOutputContainer,"nmartin_AntiHe4.root");
+      mgr->CreateContainer("nmartin_AntiHe4", TObjArray::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
 AliAnalysisDataContainer *coutput2 = 
-      mgr->CreateContainer("treeAntiHe4", TTree::Class(),AliAnalysisManager::kOutputContainer,"nmartin_AntiHe4Tree.root");
+      mgr->CreateContainer("treeAntiHe4", TTree::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
 
   //connect containers

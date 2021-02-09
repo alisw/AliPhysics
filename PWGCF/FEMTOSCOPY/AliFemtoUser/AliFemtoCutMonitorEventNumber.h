@@ -5,7 +5,7 @@
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ALIFEMTOCUTMONITOREVENTNUMBER_H
-#define ALIFEMTOCUTMONITOREVENTENUMBER_H
+#define ALIFEMTOCUTMONITOREVENTNUMBER_H
 
 class AliFemtoEvent;
 class AliFemtoTrack;

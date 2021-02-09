@@ -13,27 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <iostream>
+#include <chrono>
+#include <thread>
 #include <TString.h>
 
-#include "AliESDInputHandler.h"
+#include "AliInputEventHandler.h"
 #include "AliAnalysisTaskDummy.h"
 
 ClassImp(AliAnalysisTaskDummy)
 
-AliAnalysisTaskDummy::AliAnalysisTaskDummy() :
-  fDebugLevel(0)
-{
-
-}
-
-AliAnalysisTaskDummy::~AliAnalysisTaskDummy() {
-}
-
 void AliAnalysisTaskDummy::UserExec(Option_t *){
   TString filename = "";
-  AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(fInputHandler);
-  if(inh) filename = inh->GetInputFileName();
+  if(fInputHandler) filename = fInputHandler->GetInputFileName();
   if(fDebugLevel){
-    std::cout << "Running User exec from task AliAnalysisTaskDummy on ESDtree from file" << filename << std::endl;
+    std::cout << "Running User exec from task AliAnalysisTaskDummy on file" << filename << std::endl;
   }
+  std::chrono::milliseconds interval(fWaitTime);
+  std::this_thread::sleep_for(interval);
+
 }

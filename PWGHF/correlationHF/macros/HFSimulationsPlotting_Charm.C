@@ -37,12 +37,12 @@ Int_t HFSimulationsPlotting_Charm(){
     TString filename="AnalysisResults_pPb5TeV_Pythia8_Boost.root";
     Bool_t Savingfiles= kTRUE; //Want to save your files ?
     
-    DoCorreleations(filename, Savingfiles);
+    DoCorrelations(filename, Savingfiles);
     
 }
 
 //______________| Main function for correlation plots
-void DoCorreleations(const char *infile="", Bool_t fSave){
+void DoCorrelations(const char *infile="", Bool_t fSave){
     
     TFile* f = new TFile(infile,"READ");
     
@@ -72,7 +72,74 @@ void DoCorreleations(const char *infile="", Bool_t fSave){
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "5To8",  pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "8To16", pTasso, fSave); // PDGofDMeson = #
         CalculateDHadronCorrelations(SimCorrSpecificlist, "Dstar", "16To24", pTasso, fSave); // PDGofDMeson = #
+        AverageDmesonTemplates("3To5",  pTasso); // PDGofDMeson = #
+        AverageDmesonTemplates("5To8",  pTasso); // PDGofDMeson = #
+        AverageDmesonTemplates("8To16", pTasso); // PDGofDMeson = #
+        AverageDmesonTemplates("16To24",pTasso); // PDGofDMeson = #
     }
+}
+
+//______________________________________| Fatching Simulatios  task directory
+void AverageDmesonTemplates(TString DMesonpTRange, Double_t pTasso) {
+    
+    TString pTRange = "";
+    if(pTasso == 1)     pTRange = "ptAssall0.3to99.0";
+    else if(pTasso == 2)pTRange = "ptAssall0.3to1.0";
+    else if(pTasso == 3)pTRange = "ptAssall1.0to99.0";
+    else if(pTasso == 4)pTRange = "ptAssall2.0to99.0";
+    else if(pTasso == 5)pTRange = "ptAssall3.0to99.0";
+    else if(pTasso == 6)pTRange = "ptAssall1.0to2.0";
+    else if(pTasso == 7)pTRange = "ptAssall1.0to3.0";
+    else if(pTasso == 8)pTRange = "ptAssall2.0to3.0";
+
+    TString FileName = "";
+
+    FileName.Form("ppCorrelationPlots%sPtDzerofromC%s_%s_DeltaEta10.root", genName.Data(), DMesonpTRange.Data(), pTRange.Data());
+    TFile *fDzero=new TFile(FileName.Data(),"read");
+    TH1F *hDzero = (TH1F*)fDzero->Get("hCorrDeltaPhi");
+    TH1F *hDzeroTrig = (TH1F*)fDzero->Get("hnTriggers");
+    Double_t nTrigDzero = hDzeroTrig->GetBinContent(1);
+    hDzero->Scale(nTrigDzero);
+
+    FileName.Form("ppCorrelationPlots%sPtDplusfromC%s_%s_DeltaEta10.root", genName.Data(), DMesonpTRange.Data(), pTRange.Data());
+    TFile *fDplus=new TFile(FileName.Data(),"read");
+    TH1F *hDplus = (TH1F*)fDplus->Get("hCorrDeltaPhi");
+    TH1F *hDplusTrig = (TH1F*)fDplus->Get("hnTriggers");
+    Double_t nTrigDplus = hDplusTrig->GetBinContent(1);
+    hDplus->Scale(nTrigDplus);
+
+    FileName.Form("ppCorrelationPlots%sPtDstarfromC%s_%s_DeltaEta10.root", genName.Data(), DMesonpTRange.Data(), pTRange.Data());
+    TFile *fDstar=new TFile(FileName.Data(),"read");
+    TH1F *hDstar = (TH1F*)fDstar->Get("hCorrDeltaPhi");
+    TH1F *hDstarTrig = (TH1F*)fDstar->Get("hnTriggers");
+    Double_t nTrigDstar = hDstarTrig->GetBinContent(1);
+    hDstar->Scale(nTrigDstar);        
+ 
+    TH1F *hAverage = (TH1F*)hDzero->Clone();
+    hAverage->SetName("hCorrDeltaPhi");
+    hAverage->Add(hDplus);
+    hAverage->Add(hDstar);
+    hAverage->SetMarkerColor(kBlack);
+    hAverage->SetLineColor(kBlack);
+    hAverage->Scale(1./(nTrigDzero+nTrigDplus+nTrigDstar));
+
+    cout << "Evaluating average for " << DMesonpTRange.Data() << ", " << pTRange.Data() << endl;    
+
+    TH1F *hnTriggers = new TH1F("hnTriggers","Number of average triggers",1,0.,1.);
+    hnTriggers->Sumw2();
+    hnTriggers->SetBinContent(1,nTrigDzero+nTrigDplus+nTrigDstar);
+    hnTriggers->SetBinError(1,TMath::Sqrt(nTrigDzero+nTrigDplus+nTrigDstar));
+
+    FileName.Form("ppCorrelationPlots%sPtAveragefromC%s_%s_DeltaEta10.root", genName.Data(), DMesonpTRange.Data(), pTRange.Data());
+    TFile *fOut=new TFile(FileName.Data(),"RECREATE");
+    fOut->cd();
+    hAverage->Write();
+    hnTriggers->Write();
+    fOut->Close();
+
+    hAverage->Delete();
+    hnTriggers->Delete();
+
 }
 
 //______________________________________| Fatching Simulatios  task directory
@@ -163,13 +230,16 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     Double_t BW = Correlations1D->GetBinWidth(5);
     Correlations1D->Scale(1.0/BW); //Bin width corrections..
     Correlations1D->Scale(1.0/nTrg);// Normalization to number of triggers.
-    
     Correlations1D->Draw();
     TString namefile_gif1D;
     namefile_gif1D.Form("./plots_charm/Specific/png/%s.png", FileName.Data());
     Corr1D->Print(namefile_gif1D);
     Corr1D->Close();
-    
+        
+    TH1F *hnTriggers = new TH1F("hnTriggers",Form("Number of %s triggers",DMeson.Data()),1,0.,1.);
+    hnTriggers->Sumw2();
+    hnTriggers->SetBinContent(1,nTrg);
+    hnTriggers->SetBinError(1,TMath::Sqrt(nTrg));
     
     FileName += ".root";
     TFile *fOut=new TFile(FileName.Data(),"RECREATE");
@@ -178,13 +248,14 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     Corr2D->Write();
     Correlations1D->Write();
     Corr1D->Write();
+    hnTriggers->Write();
     Corr2D->Close();
     Corr1D->Close();
     fOut->Close();
     
     HFCorrelationsSoftPi->Delete();
     HFCorrelationsCorr->Delete();
-    
+    hnTriggers->Delete();
 }
 
 

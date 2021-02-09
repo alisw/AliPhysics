@@ -79,6 +79,10 @@ class AliNormalizationCounter : public TNamed
   Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity, Double_t minspherocity, Double_t maxspherocity);
   TH1D* DrawNEventsForNorm(Bool_t drawRatio=kFALSE);
 
+  TH1F* GetHistoGenVertexZ() const { return fHistGenVertexZ;}
+  TH1F* GetHistoGenVertexZRecoPV() const { return fHistGenVertexZRecoPV;}
+  TH1F* GetHistoRecoVertexZ() const { return fHistRecoVertexZ;}
+
  private:
   AliNormalizationCounter(const AliNormalizationCounter &source);
   AliNormalizationCounter& operator=(const AliNormalizationCounter& source);
@@ -96,9 +100,12 @@ class AliNormalizationCounter : public TNamed
   TH2F *fHistTrackAnaEvMult;/// hist to store no of analysis candidates vs no of tracks in the event
   TH2F *fHistTrackFilterSpdMult; /// hist to store no of filter candidates vs  SPD multiplicity
   TH2F *fHistTrackAnaSpdMult;/// hist to store no of analysis candidates vs SPD multiplicity 
+  TH1F *fHistGenVertexZ;       /// histo of generated z vertex
+  TH1F *fHistGenVertexZRecoPV; /// histo of generated z vertex for events with reco vert
+  TH1F *fHistRecoVertexZ;      /// histo of reconstructed z vertex
 
   /// \cond CLASSIMP    
-  ClassDef(AliNormalizationCounter,7);
+  ClassDef(AliNormalizationCounter,8);
   /// \endcond
 };
 #endif

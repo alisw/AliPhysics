@@ -1,16 +1,39 @@
+#if !defined (__CINT__) || (defined(__MAKECINT__))
+#include <iostream>
+#include "TCanvas.h"
+#include "TH1.h"
+#include "TLegend.h"
+#include "AliUnfolding.h"
+#include "TFile.h"
+#include "TH2.h"
+#include "TMath.h"
+#include "TStyle.h"
+#include "TObjArray.h"
+#include "TF1.h"
+#include "TRandom.h"
+#endif
+
+
 Float_t integr_eff = 0.;
 Float_t integr_eff_err = 0.;
 Float_t dndeta_eff = 0.;
 Float_t dndeta_eff_err = 0.;
 
-test2bMBcorr(Char_t *datatag, Char_t *mctag, Bool_t bayes = kFALSE)
+//const char * responseMatrix = "b%d_corrMatrix"; // FIXME: Implement a setter for this?
+const char * responseMatrix = "b%d_corrMatrixSel";
+
+TH1 * UnfoldMe_TAG(const Char_t *datatag, const Char_t *mctag, const Char_t *anatag, Int_t bin, Bool_t useMBcorr = kTRUE, Bool_t usecorrfit = kFALSE, Bool_t ismc = kFALSE, Float_t smooth = 0.001, Int_t iter = 50, Int_t regul = AliUnfolding::kPowerLaw, Float_t weight = 100., Bool_t bayesian = kTRUE, Int_t nloop = 1);
+TH1 * UnfoldMe_MB2(const Char_t *data, const Char_t *mc, const Char_t *anatag, Int_t bin, Bool_t useMBcorr = kTRUE, Bool_t usecorrfit = kFALSE, Bool_t ismc = kFALSE, Float_t smooth = 0.001, Int_t iter = 50, Int_t regul = AliUnfolding::kPowerLaw, Float_t weight = 100., Bool_t bayesian = kTRUE, Int_t nloop = 1);
+TH2 * ReturnCorrFromFit(TH2 *hcorr);
+
+void test2bMBcorr(const Char_t *datatag, const Char_t *mctag, Bool_t bayes = kFALSE)
 {
 
-  TCanvas *c = new TCanvas("c");
+  TCanvas *c = new TCanvas("c", "c");
   c->Divide(4, 3);
   for (Int_t i = 0; i < 10; i++) {
-    TH1 *hnomb = UnfoldMe_TAG(datatag, mctag, "V0M", i, kFALSE, kFALSE, kFALSE, 1., 4, AliUnfolding::kPowerLaw, 5000., bayes);
-    TH1 *hmb = UnfoldMe_TAG(datatag, mctag, "V0M", i, kTRUE, kFALSE, kFALSE, 1., 4, AliUnfolding::kPowerLaw, 5000., bayes);
+    TH1 *hnomb = UnfoldMe_TAG(datatag, mctag, "clist", i, kFALSE, kFALSE, kFALSE, 1., 4, AliUnfolding::kPowerLaw, 5000., bayes);
+    TH1 *hmb = UnfoldMe_TAG(datatag, mctag, "clist", i, kTRUE, kFALSE, kFALSE, 1., 4, AliUnfolding::kPowerLaw, 5000., bayes);
     hnomb->Divide(hmb);
     c->cd(i+1)->DrawFrame(1., 0.9, 100., 1.1);
     c->cd(i+1)->SetLogx();
@@ -20,10 +43,10 @@ test2bMBcorr(Char_t *datatag, Char_t *mctag, Bool_t bayes = kFALSE)
 
 }
 
-playsmoothiter(Char_t *datatag, Char_t *mctag, Char_t *anatag, Int_t bin, Bool_t ismc = kFALSE)
+void playsmoothiter(const Char_t *datatag, const Char_t *mctag, const Char_t *anatag, Int_t bin, Bool_t ismc = kFALSE)
 {
 
-  TCanvas *c = new TCanvas("c");
+  TCanvas *c = new TCanvas("cs", "cs");
   c->DrawFrame(0., 0.5, 100., 1.5);
 
   TH1 *href = UnfoldMe_TAG(datatag, mctag, anatag, bin, kTRUE, kFALSE, ismc, 1., 4);
@@ -45,8 +68,8 @@ playsmoothiter(Char_t *datatag, Char_t *mctag, Char_t *anatag, Int_t bin, Bool_t
 
 }
 
-void playV0M(Char_t *datatag= "data.root" ,
-             Char_t *mctag =  "mc.root" , Bool_t ismc = kFALSE)
+void playV0M(const Char_t *datatag= "data.root" ,
+             const Char_t *mctag =  "mc.root" , Bool_t ismc = kFALSE)
 {
 
   TFile* output = TFile::Open("results_unfold.root","RECREATE");
@@ -58,8 +81,8 @@ void playV0M(Char_t *datatag= "data.root" ,
     heff_ev->SetBinContent(i + 1, integr_eff);
     heff_ch->SetBinContent(i + 1, dndeta_eff);
   }
-  new TCanvas("cEff");
- heff_ev->SetMarkerStyle(21);
+  TCanvas * cEff = new TCanvas("cEff", "cEff");
+  heff_ev->SetMarkerStyle(21);
   //heff_ev->SetMarkerSize(1.9);
   heff_ev->GetYaxis()->SetTitle("Efficiency");
   heff_ev->GetXaxis()->SetTitle("Centrality bins (0-100%)");
@@ -82,14 +105,14 @@ void playV0M(Char_t *datatag= "data.root" ,
   legend->AddEntry(heff_ch, "Signal loss", "p");
   legend->Draw("same");
 
-cEff->SaveAs("eff_unfold.pdf");
-cEff->SaveAs("eff_unfold.C");
+  cEff->SaveAs("eff_unfold.pdf");
+  cEff->SaveAs("eff_unfold.C");
   output->Write();
 
 }
 
 TH1 *
-UnfoldMe_TAG(Char_t *datatag, Char_t *mctag, Char_t *anatag, Int_t bin, Bool_t useMBcorr = kTRUE, Bool_t usecorrfit = kFALSE, Bool_t ismc = kFALSE, Float_t smooth = 0.001, Int_t iter = 50, Int_t regul = AliUnfolding::kPowerLaw, Float_t weight = 100., Bool_t bayesian = kTRUE, Int_t nloop = 1)
+UnfoldMe_TAG(const Char_t *datatag, const Char_t *mctag, const Char_t *anatag, Int_t bin, Bool_t useMBcorr , Bool_t usecorrfit , Bool_t ismc , Float_t smooth , Int_t iter , Int_t regul , Float_t weight , Bool_t bayesian , Int_t nloop)
 {
 
   if (ismc)
@@ -100,23 +123,34 @@ UnfoldMe_TAG(Char_t *datatag, Char_t *mctag, Char_t *anatag, Int_t bin, Bool_t u
 }
 
 TH1 *
-UnfoldMe_MB2(Char_t *data, Char_t *mc, Char_t *anatag, Int_t bin, Bool_t useMBcorr = kTRUE, Bool_t usecorrfit = kFALSE, Bool_t ismc = kFALSE, Float_t smooth = 0.001, Int_t iter = 50, Int_t regul = AliUnfolding::kPowerLaw, Float_t weight = 100., Bool_t bayesian = kTRUE, Int_t nloop = 1)
+UnfoldMe_MB2(const Char_t *data, const Char_t *mc, const Char_t *anatag, Int_t bin, Bool_t useMBcorr , Bool_t usecorrfit , Bool_t ismc , Float_t smooth , Int_t iter , Int_t regul , Float_t weight , Bool_t bayesian , Int_t nloop )
 {
 
+  // MF comments:
+  // usedMBcorr: changes the matrix used for unfonding, from effMatrix to bin matrix (I think this is just to use mult dependent v s mb correction_)
+  // usecorrfit: if I understand correctly, fits the response matrix and uses fit to extrapolate it
+
+  
+  TFile *fdt =0;
   if (ismc)
-    TFile *fdt = TFile::Open(data);
+    fdt =  TFile::Open(data);
   else
-    TFile *fdt = TFile::Open(data);
+    fdt = TFile::Open(data);
   TFile *fmc = TFile::Open(mc);
 
   TList *ldt = (TList *)fdt->Get(Form("%s", anatag));
   TList *lmc = (TList *)fmc->Get(Form("%s", anatag));
-
-  TH2 *hmatdt = (TH2 *)ldt->FindObject(Form("b%d_corrMatrix", bin));
-  if (useMBcorr)
-    TH2 *hmatmc = (TH2 *)lmc->FindObject("effMatrix");
-  else
-    TH2 *hmatmc = (TH2 *)lmc->FindObject(Form("b%d_corrMatrix", bin));
+  
+  TH2 *hmatdt = (TH2 *)ldt->FindObject(Form(responseMatrix, bin));
+  TH2 *hmatmc = 0;
+  if (useMBcorr){
+     hmatmc = (TH2 *)lmc->FindObject("effMatrix");
+     std::cout << "USING MB" << std::endl;
+     
+  }
+  else {
+    hmatmc = (TH2 *)lmc->FindObject(Form(responseMatrix, bin));
+  }
 
   TH1 *hdata = hmatdt->ProjectionY("hdata");
 //  TH1 *hdata = hmatdt->ProjectionY("htrue");  // For truth Only Calculations
@@ -159,9 +193,9 @@ UnfoldMe_MB2(Char_t *data, Char_t *mc, Char_t *anatag, Int_t bin, Bool_t useMBco
     hden->SetBinContent(i + 1, int1);
     hden->SetBinError(i + 1, TMath::Sqrt(int1));
   }
-  new TCanvas("cEfficiency");
-cEfficiency->SetLogx();
-cEfficiency->SetLogy();
+  TCanvas *cEfficiency = new TCanvas("cEfficiency", "cEfficiency");
+  cEfficiency->SetLogx();
+  cEfficiency->SetLogy();
 
   heff->Divide(hnum, hden, 1., 1., "B");
   heff->Draw();
@@ -181,6 +215,17 @@ cEfficiency->SetLogy();
     hcorr->SetBinError(1, i + 1, 0.);
   }
   TH2 *hcorrfit = ReturnCorrFromFit(hcorr);
+  // Docs from AliUnfolding
+  //Int_t AliUnfolding::Unfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check)
+  // unfolds with unfolding method fgMethodType
+  //
+  // parameters:
+  //  correlation: response matrix as measured vs. generated
+  //  efficiency:  (optional) efficiency that is applied on the unfolded spectrum, i.e. it has to be in unfolded variables. If 0 no efficiency is applied.
+  //  measured:    the measured spectrum
+  //  initialConditions: (optional) initial conditions for the unfolding. if 0 the measured spectrum is used as initial conditions.
+  //  result:      target for the unfolded result
+  //  check:       depends on the unfolding method, see comments in specific functions
 
   for (Int_t iloop = 0; iloop < nloop; iloop++) {
     if (bayesian) {
@@ -188,7 +233,7 @@ cEfficiency->SetLogy();
       AliUnfolding::SetBayesianParameters(smooth, iter);
     } else {
       AliUnfolding::SetUnfoldingMethod(AliUnfolding::kChi2Minimization);
-      AliUnfolding::SetChi2Regularization(regul, weight);
+      AliUnfolding::SetChi2Regularization(AliUnfolding::RegularizationType(regul), weight);
     }
     AliUnfolding::SetSkip0BinInChi2(kTRUE);
     AliUnfolding::SetSkipBinsBegin(1);
@@ -201,7 +246,7 @@ cEfficiency->SetLogy();
   printf("hresu->Integral(2, -1) = %f\n", hresu->Integral(2, -1));
 
 
-  TCanvas *cUnfolded = new TCanvas ("cUnfolded", "", 400, 800);
+  TCanvas *cUnfolded = new TCanvas ("cUnfolded", "cUnfolded", 400, 800);
   cUnfolded->Divide(1, 2);
   cUnfolded->cd(1)->SetLogx();
   cUnfolded->cd(1)->SetLogy();
@@ -215,7 +260,8 @@ cEfficiency->SetLogy();
   hrat->Draw("same");
 
   TH1 *htrig = (TH1 *)hresu->Clone("htrig");
-  htrig->Multiply(heff);
+  htrig->Multiply(heff); 
+  
 
   Float_t dndeta_resu = 0.;
   Float_t integr_resu = 0.;
@@ -228,7 +274,7 @@ cEfficiency->SetLogy();
     integr_trig += htrig->GetBinContent(i + 1);
   }
 
-cUnfolded->SaveAs("unfold/test_grl1_truth_a3_v7_r1_unfold_efficiency.pdf");
+  cUnfolded->SaveAs("unfold_efficiency.pdf");
 
   integr_eff = integr_trig / integr_resu;
   integr_eff_err = TMath::Sqrt(integr_eff * (1. - integr_eff) / integr_resu);
@@ -251,7 +297,7 @@ ReturnCorrFromFit(TH2 *hcorr)
   TObjArray *oa = new TObjArray();
   hcorr->FitSlicesX(0, 0, -1, 0, "QNR", oa);
 
-  TCanvas *cFit = new TCanvas("cFit");
+  TCanvas *cFit = new TCanvas("cFit", "cFit");
   cFit->Divide(2, 2);
 
   TF1 *fMean = new TF1("fMean", "[0] + [1] * TMath::Power(x, [2])", 1., 100.);

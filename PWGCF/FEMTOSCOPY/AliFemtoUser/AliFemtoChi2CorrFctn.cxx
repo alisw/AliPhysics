@@ -11,12 +11,12 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoChi2CorrFctn)
 #endif
 
 //____________________________
-AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   AliFemtoCorrFctn(),
   fChi2ITSSUMNumerator(0),
   fChi2ITSSUMDenominator(0),
@@ -214,16 +214,16 @@ void AliFemtoChi2CorrFctn::AddRealPair( AliFemtoPair* pair){
 
   if ((pair->Track1()->Track()->ITSncls() == 0) && (pair->Track2()->Track()->ITSncls() == 0))
     fChi2ITSSUMNumerator->Fill(tQinv, 1000.0);
-  else 
-    fChi2ITSSUMNumerator->Fill(tQinv, 
-			       (pair->Track1()->Track()->ITSchi2() + 
+  else
+    fChi2ITSSUMNumerator->Fill(tQinv,
+			       (pair->Track1()->Track()->ITSchi2() +
 				pair->Track2()->Track()->ITSchi2())/
 			       (pair->Track1()->Track()->ITSncls() +
 				pair->Track2()->Track()->ITSncls()));
   if ((pair->Track1()->Track()->TPCncls() == 0) && (pair->Track2()->Track()->TPCncls() == 0))
     fChi2TPCSUMNumerator->Fill(tQinv, 1000.0);
   else
-    fChi2TPCSUMNumerator->Fill(tQinv, 
+    fChi2TPCSUMNumerator->Fill(tQinv,
 			       (pair->Track1()->Track()->TPCchi2() +
 				pair->Track2()->Track()->TPCchi2())/
 			       (pair->Track1()->Track()->TPCncls() +
@@ -267,11 +267,11 @@ void AliFemtoChi2CorrFctn::AddRealPair( AliFemtoPair* pair){
   }
 
   if (pair->Track1()->Track()->SigmaToVertex() > pair->Track2()->Track()->SigmaToVertex()) {
-    fSigmaToVertexNumerator->Fill(tQinv, 
+    fSigmaToVertexNumerator->Fill(tQinv,
 				  pair->Track1()->Track()->SigmaToVertex());
   }
   else {
-    fSigmaToVertexNumerator->Fill(tQinv, 
+    fSigmaToVertexNumerator->Fill(tQinv,
 				  pair->Track2()->Track()->SigmaToVertex());
   }
 }
@@ -282,16 +282,16 @@ void AliFemtoChi2CorrFctn::AddMixedPair( AliFemtoPair* pair){
 
   if ((pair->Track1()->Track()->ITSncls() == 0) && (pair->Track2()->Track()->ITSncls() == 0))
     fChi2ITSSUMDenominator->Fill(tQinv, 1000.0);
-  else 
-    fChi2ITSSUMDenominator->Fill(tQinv, 
-				 (pair->Track1()->Track()->ITSchi2() + 
+  else
+    fChi2ITSSUMDenominator->Fill(tQinv,
+				 (pair->Track1()->Track()->ITSchi2() +
 				  pair->Track2()->Track()->ITSchi2())/
 				 (pair->Track1()->Track()->ITSncls() +
 				  pair->Track2()->Track()->ITSncls()));
   if ((pair->Track1()->Track()->TPCncls() == 0) && (pair->Track2()->Track()->TPCncls() == 0))
     fChi2TPCSUMDenominator->Fill(tQinv, 1000.0);
   else
-    fChi2TPCSUMDenominator->Fill(tQinv, 
+    fChi2TPCSUMDenominator->Fill(tQinv,
 				 (pair->Track1()->Track()->TPCchi2() +
 				  pair->Track2()->Track()->TPCchi2())/
 				 (pair->Track1()->Track()->TPCncls() +
@@ -334,11 +334,11 @@ void AliFemtoChi2CorrFctn::AddMixedPair( AliFemtoPair* pair){
     fChi2TPCONEDenominator->Fill(tQinv, chi2perpointTPC2);
   }
   if (pair->Track1()->Track()->SigmaToVertex() > pair->Track2()->Track()->SigmaToVertex()) {
-    fSigmaToVertexDenominator->Fill(tQinv, 
+    fSigmaToVertexDenominator->Fill(tQinv,
 				  pair->Track1()->Track()->SigmaToVertex());
   }
   else {
-    fSigmaToVertexDenominator->Fill(tQinv, 
+    fSigmaToVertexDenominator->Fill(tQinv,
 				  pair->Track2()->Track()->SigmaToVertex());
   }
 }
@@ -357,7 +357,7 @@ void AliFemtoChi2CorrFctn::WriteHistos()
   fChi2TPCONEDenominator->Write();
   fSigmaToVertexNumerator->Write();
   fSigmaToVertexDenominator->Write();
-  
+
 }
 
 TList* AliFemtoChi2CorrFctn::GetOutputList()
@@ -375,7 +375,7 @@ TList* AliFemtoChi2CorrFctn::GetOutputList()
   tOutputList->Add(fChi2TPCONEDenominator);
   tOutputList->Add(fSigmaToVertexNumerator);
   tOutputList->Add(fSigmaToVertexDenominator);
-  
+
   return tOutputList;
 
 }

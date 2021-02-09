@@ -6,15 +6,16 @@
 #include <TFile.h>
 #include <TH1.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEvent.h>
+#include <AliEMCALRecoUtils.h>
+#include <AliOADBContainer.h>
 #include "AliEmcalList.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
-#include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);
@@ -28,9 +29,9 @@ AliEmcalCorrectionComponentFactory::map_type * AliEmcalCorrectionComponentFactor
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
+  fLoad1DBadChMap(kFALSE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
@@ -44,14 +45,14 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 
 {
   fVertex[0] = 0;
@@ -64,9 +65,9 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
+  fLoad1DBadChMap(kFALSE),
   fRun(-1),
   fFilepass(""),
   fGetPassFromFileName(kTRUE),
@@ -80,14 +81,14 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -108,16 +109,20 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
 {
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
-  GetProperty("pass", tempString);
+  // Cannot use usual helper function because "pass" is not inside of a component, but rather at the top level.
+  fYAMLConfig.GetProperty("pass", tempString, true);
   fFilepass = tempString.c_str();
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
     // Handle the "default" value used in MC
-    if (fFilepass == "default") {
+    if (fFilepass == "default" || fFilepass == "usedefault") {
       AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
       fFilepass = "pass1";
     }
   }
+
+  // Handle create histos, as this is universal for every component
+  GetProperty("createHistos", fCreateHisto);
 
   return kTRUE;
 }
@@ -203,9 +208,22 @@ void AliEmcalCorrectionComponent::UpdateCells()
   
   Int_t bunchCrossNo = fEventManager.InputEvent()->GetBunchCrossNumber();
   
-  if (fRecoUtils)
+  if (fRecoUtils){
+    //In case of PAR run check global event ID
+    if(fRecoUtils->IsParRun()){
+      Short_t currentParIndex = 0;
+      ULong64_t globalEventID = (ULong64_t)bunchCrossNo + (ULong64_t)fEventManager.InputEvent()->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEventManager.InputEvent()->GetPeriodNumber() * (ULong64_t)59793994260;
+      for(Short_t ipar=0;ipar<fRecoUtils->GetNPars();ipar++){
+        if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
+          currentParIndex++;
+        }
+      }
+      fRecoUtils->SetCurrentParNumber(currentParIndex);      
+    }
+    //end of PAR run settings
+
     fRecoUtils->RecalibrateCells(fCaloCells, bunchCrossNo);
-  
+  }
   fCaloCells->Sort();
 }
 
@@ -230,28 +248,6 @@ Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
     }
   }
   return runChanged;
-}
-
-/**
- * Check if value is a shared parameter, meaning we should look
- * at another node. Also edits the input string to remove "sharedParameters:"
- * if it exists, making it ready for use.
- *
- * @param[in] value String containing the string value return by the parameter.
- *
- * @return True if the value is shared.
- */
-bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
-{
-  std::size_t sharedParameterLocation = value.find("sharedParameters:");
-  if (sharedParameterLocation != std::string::npos)
-  {
-    // "sharedParameters:" is 17 characters long
-    value.erase(sharedParameterLocation, sharedParameterLocation + 17);
-    return true;
-  }
-  // Return false otherwise
-  return false;
 }
 
 /**
@@ -343,65 +339,91 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contBC(nullptr);
+  std::unique_ptr<TFile> fbad;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels%s.root",fBasePath.Data(), fLoad1DBadChMap ? "_1D" : ""),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
+      AliFatal(Form("EMCALBadChannels%s.root was not found in the path provided: %s", fLoad1DBadChMap ? "_1D" : "", fBasePath.Data()));
       return 0;
     }
     
-    if (fbad) delete fbad;
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
+  }
+  else if (fCustomBadChannelFilePath!="")
+  { //if fCustomBadChannelFilePath specified in the configuration for custom bad channel maps
+    AliInfo(Form("Loading custom Bad Channels OADB from given path %s",fCustomBadChannelFilePath.Data()));
     
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomBadChannelFilePath.Data()),"read"));
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("No valid Bad channel OADB object was not found in the path provided: %s",fCustomBadChannelFilePath.Data()));
+      return 0;
+    }
+    
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB(Form("EMCAL/EMCALBadChannels%s.root", fLoad1DBadChMap ? "_1D" : "")).data(),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal(Form("OADB/EMCAL/EMCALBadChannels%s.root was not found", fLoad1DBadChMap ? "_1D" : ""));
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
+  if(!contBC){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contBC->SetOwner(true);
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
-  Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-  for (Int_t i=0; i<sms; ++i)
-  {
-    TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
+  if(fLoad1DBadChMap){
+    TH1C *h = fRecoUtils->GetEMCALChannelStatusMap1D();
     if (h)
       delete h;
-    h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
-    
+    h=(TH1C*)arrayBC->FindObject("EMCALBadChannelMap");
+      
     if (!h)
     {
-      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-      continue;
+      AliError("Can not get EMCALBadChannelMap");
     }
     h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelStatusMap(i,h);
+    fRecoUtils->SetEMCALChannelStatusMap1D(h);
+  }else{
+    Int_t sms = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+    for (Int_t i=0; i<sms; ++i)
+    {
+      TH2I *h = fRecoUtils->GetEMCALChannelStatusMap(i);
+      if (h)
+        delete h;
+      h=(TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+      
+      if (!h)
+      {
+        AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+        continue;
+      }
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelStatusMap(i,h);
+    }
   }
-  
-  delete contBC;
-  
+    
   return 1;
 }
 

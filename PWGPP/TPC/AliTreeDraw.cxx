@@ -297,7 +297,7 @@ TH1F* AliTreeDraw::CreateResHisto(TH2F* hRes2, TH1F **phMean,  Bool_t drawBinFit
     //    
     if (hBin->GetEntries() > 5) {
       fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
-      hBin->Fit(fitFunc,"s");
+      hBin->Fit(fitFunc,"sQ");
       Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));
 
       if (sigma > 0.){
@@ -403,7 +403,7 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
     //    
     if (hBin->GetEntries() > 5) {
       fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
-      hBin->Fit(fitFunc,"s");
+      hBin->Fit(fitFunc,"sQ");
       Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));
 
       if (sigma > 0.){
@@ -509,7 +509,7 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
     //    
     if (hBin->GetEntries() > cut) {
       fitFunc->SetParameters(hBin->GetMaximum(),hBin->GetMean(),hBin->GetRMS());
-      hBin->Fit(fitFunc,"s");
+      hBin->Fit(fitFunc,"sQ");
       Double_t sigma = TMath::Abs(fitFunc->GetParameter(2));
 
       if (sigma > 0.){
@@ -677,4 +677,3 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    delete[] values;
    return preturnFormula;
 }
-

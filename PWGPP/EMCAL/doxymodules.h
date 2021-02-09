@@ -43,10 +43,10 @@
  *
  * Time Calibration code
  * ---------------------
- * + macro1.C
- * + macro2.C
- * + macro3.C
- *
+ * + copyFiles.sh
+ * + MakeReferenceFinalPass.C
+ * + MakeReferencePass1.C
+ * + MakeReferenceSM.C
  *
  * Bad Channel Analysis code
  * ---------------------
@@ -92,4 +92,16 @@
  * + scanAll.C
  * + scanTemp.C
  *
+ */
+
+/**
+ * \defgroup EMCALOfflineMacrosCalibPi0 EMCALOfflineMacrosCalibPi0 
+ * \ingroup EMCALOfflineMacros EMCALOfflineMacros
+ * \brief Macros for EMCal energy calibration with Pi0 
+ */
+
+/**
+ * \defgroup EMCAL_OADB EMCAL_OADB
+ * \ingroup EMCALOfflineMacros EMCALOfflineMacros
+ * \brief Macros for EMCal OADB files creation and checks
  */

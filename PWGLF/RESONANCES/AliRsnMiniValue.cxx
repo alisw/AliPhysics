@@ -98,6 +98,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
 
    switch (type) {
       case kVz:           return "EventVz";
+      case kSpherocity:   return "EventSpherocity";
       case kMult:         return "EventMult";
       case kRefMult:      return "EventReferenceMult";
       case kTracklets:    return "EventTracklets";
@@ -115,8 +116,13 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPtRatio:      return "PtRatio";
       case kDipAngle:     return "DipAngle";
       case kCosThetaStar: return "CosThetaStar";
+      case kCosThetaStarAbs:    return "CosThetaStarAbs";
       case kCosThetaJackson:    return "CosThetaJackson";
       case kCosThetaTransversity:    return "CosThetaTransversity";
+      case kCosThetaHe:   return "CosThetaHe";
+      case kCosThetaHeAbs:   return "CosThetaHeAbs";
+      case kPhiHePbPb5:   return "PhiHePbPb5";
+      case kPhiHePP5:   return "PhiHePP5";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
       case kAngleLeading: return "AngleToLeading";
       case kFirstDaughterPt: return "FirstDaughterPt";
@@ -130,6 +136,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kPairPtRes:        return "PairPtResolution";
       case kPairYRes:         return "PairYResolution";
       case kPhiV:         return "PhiV";
+      case kAsym:         return "PairAsymmetry";
       default:            return "Undefined";
    }
 }
@@ -160,6 +167,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          // ---- event values -------------------------------------------------------------------------
       case kVz:
          return event->Vz();
+      case kSpherocity:
+         return event->Spherocity();
       case kMult:
          return event->Mult();
       case kRefMult:
@@ -169,7 +178,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kPlaneAngle:
          return event->Angle();
       case kLeadingPt:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             return v.Pt();
@@ -197,14 +206,24 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->DipAngle(fUseMCInfo);
       case kCosThetaStar:
          return pair->CosThetaStar(fUseMCInfo);
+      case kCosThetaStarAbs:
+          return pair->CosThetaStarAbs(fUseMCInfo);           
       case kCosThetaJackson:
          return pair->CosThetaJackson(fUseMCInfo);
       case kCosThetaTransversity:
          return pair->CosThetaTransversity(fUseMCInfo);
+      case kCosThetaHe:
+           return pair->CosThetaHe(fUseMCInfo);
+      case kCosThetaHeAbs:
+           return pair->CosThetaHeAbs(fUseMCInfo);
+      case kPhiHePbPb5:
+           return pair->PhiHePbPb5(fUseMCInfo);
+      case kPhiHePP5:
+           return pair->PhiHePP5(fUseMCInfo);	   
       case kCosThetaToEventPlane:
          return pair->CosThetaToEventPlane(event, fUseMCInfo);
       case kAngleLeading:
-         l = event->LeadingParticle();
+         l = event->LeadingParticle(fUseMCInfo);
          if (l) {
             l->Set4Vector(v,-1.0,fUseMCInfo);
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
@@ -240,6 +259,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->PairYRes();     
       case kPhiV:
          return pair->PhiV(fUseMCInfo);
+      case kAsym:
+         return pair->PairAsymmetry(fUseMCInfo);
       default:
          AliError("Invalid value type");
          return 1E20;

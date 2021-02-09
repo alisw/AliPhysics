@@ -13,7 +13,7 @@ AliAnalysisTaskDmesonMCPerform *AddTaskDmesonMCPerform(TString suffix="",
   if(dpluscutfilename!="") {
     TFile* fileDpcuts=TFile::Open(dpluscutfilename.Data());
     if(!fileDpcuts ||(fileDpcuts&& !fileDpcuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      ::Fatal("AddTaskDmesonMCPerform", "Input file not found : check your cut object");
     }else{
       analysiscutsdp = (AliRDHFCutsDplustoKpipi*)fileDpcuts->Get("AnalysisCuts");
     }

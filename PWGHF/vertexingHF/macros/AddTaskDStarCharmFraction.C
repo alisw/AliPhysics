@@ -1,7 +1,7 @@
 AliAnalysisTaskSEDStarCharmFraction *AddTaskDStarCharmFraction(TString cutsFileName, Bool_t readMC = kFALSE, TString suffix = "", Double_t peakSigmaCut = 3., Double_t sidebandSigmaCut = 6., Bool_t singleSideband = kFALSE, Double_t impParMin = 0., TString fileOut = "AnalysisResults.root") {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    AliFatal("No analysis manager to connect to");
+    Printf("FATAL: No analysis manager to connect to");
     return NULL;
   }
 
@@ -14,7 +14,7 @@ AliAnalysisTaskSEDStarCharmFraction *AddTaskDStarCharmFraction(TString cutsFileN
   else {
     cutsFile = TFile::Open(cutsFileName.Data());
     if (!cutsFile || (cutsFile && !cutsFile->IsOpen())) {
-      AliFatal("Input cut file not found");
+      Printf("FATAL: Input cut file not found");
       return NULL;
     }
   }
@@ -31,7 +31,7 @@ AliAnalysisTaskSEDStarCharmFraction *AddTaskDStarCharmFraction(TString cutsFileN
   cuts->SetName("DStartoKpipiCuts");
 
   if (!cuts) {
-    AliFatal("Cut object not found");
+    Printf("FATAL: Cut object not found");
     return NULL;
   }
 

@@ -4,7 +4,9 @@
 TString ExtractFromCanvas(TString fn) {
   TString line;
   TFile::Open(fn);
-  TCanvas *c = (TCanvas*)canvas_par->GetListOfPrimitives()->At(0);
+  TCanvas *c = NULL;
+  gFile->GetObject("canvas_par", c);
+  c->Draw();
   TList *l = (TList*)c->GetListOfPrimitives();
   for (Int_t i=0; i<l->GetEntries()-1; ++i) {
     TString s = l->At(i)->GetTitle();

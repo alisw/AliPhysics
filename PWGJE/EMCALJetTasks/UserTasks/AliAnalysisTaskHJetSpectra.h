@@ -323,8 +323,6 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
    TArrayD  fCentralityBins; //bin boaders
 
-   TF1 *fTrackPtRef;  //inclusive track pt spectrum 6-7 GeV
-   TF1 *fTrackPtSig;  //inclusive track pt spectrum 12-50 GeV
 
    Int_t  fNofRandomCones; // the number of random cones per event
  
@@ -344,7 +342,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 25); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 26); // Charged jet analysis for pA
 
 };
 #endif

@@ -7,7 +7,7 @@
 
 #include "AliFemtoESDTrackCutNSigmaFilter.h"
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoESDTrackCutNSigmaFilter)
 #endif
 
@@ -21,6 +21,7 @@ AliFemtoESDTrackCutNSigmaFilter::AliFemtoESDTrackCutNSigmaFilter() :
   , fUseCustomKaonNSigmaFilter(false)
   , fUseCustomProtonNSigmaFilter(false)
   , fUseCustomElectronNSigmaFilter(false)
+  , fUseIsProbableElectronMethod(true)
 
   , fPionNSigmaFilter(NULL)
   , fKaonNSigmaFilter(NULL)
@@ -38,6 +39,7 @@ AliFemtoESDTrackCutNSigmaFilter::AliFemtoESDTrackCutNSigmaFilter(const AliFemtoE
   fUseCustomKaonNSigmaFilter(aCut.fUseCustomKaonNSigmaFilter),
   fUseCustomProtonNSigmaFilter(aCut.fUseCustomProtonNSigmaFilter),
   fUseCustomElectronNSigmaFilter(aCut.fUseCustomElectronNSigmaFilter),
+  fUseIsProbableElectronMethod(aCut.fUseIsProbableElectronMethod),
   fPionRejection(aCut.fPionRejection)
 {
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
@@ -58,6 +60,7 @@ AliFemtoESDTrackCutNSigmaFilter& AliFemtoESDTrackCutNSigmaFilter::operator=(cons
   fUseCustomKaonNSigmaFilter = aCut.fUseCustomKaonNSigmaFilter;
   fUseCustomProtonNSigmaFilter = aCut.fUseCustomProtonNSigmaFilter;
   fUseCustomElectronNSigmaFilter = aCut.fUseCustomElectronNSigmaFilter;
+  fUseIsProbableElectronMethod = aCut.fUseIsProbableElectronMethod;
   fPionRejection = aCut.fPionRejection;
 
   if(aCut.fPionNSigmaFilter) fPionNSigmaFilter = new AliFemtoNSigmaFilter(*aCut.fPionNSigmaFilter);
@@ -126,7 +129,7 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
     return false;
   }
 
-  if (track->TPCncls() > 0 && (track->TPCchi2() / track->TPCncls()) > fMaxTPCchiNdof) {
+  if (track->TPCchi2perNDF() > fMaxTPCchiNdof) {
     return false;
   }
 
@@ -242,8 +245,15 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
   {
     if(fUseCustomElectronNSigmaFilter)
     {
-//      if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
-      if(IsProbableElectron(track)) return false;
+      if(fUseIsProbableElectronMethod)
+      {
+        if(IsProbableElectron(track)) return false;
+      }
+      else
+      {
+        if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
+      }
+
     }
     else
     {
@@ -654,4 +664,3 @@ bool AliFemtoESDTrackCutNSigmaFilter::IsProbableElectron(const AliFemtoTrack* tr
   else if((nsigmaTPCPoi > nsigmaTPCE) && (nsigmaTOFPoi > nsigmaTOFE)) return true;
   else return false;
 }
-

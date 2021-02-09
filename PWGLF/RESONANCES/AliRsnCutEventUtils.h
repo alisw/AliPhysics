@@ -29,6 +29,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Bool_t         IsPileUpMultBins();
   void           SetUseVertexSelection2013pA(Bool_t vtxpA2013 = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pA = vtxpA2013; fMaxVtxZ = maxVtxZ;}
   void           SetUseVertexSelection2013pAIDspectra(Bool_t enable = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pAspectra = enable; fUseVertexSelection2013pA = kFALSE; fMaxVtxZ = maxVtxZ;}
+  Bool_t         Init(TObject *object);
   Bool_t         IsSelected(TObject *object);
   AliAnalysisUtils* GetAnalysisUtils() { return fUtils; }
   void           SetAnalysisUtils(AliAnalysisUtils* utils){ fUtils = utils; }
@@ -60,6 +61,12 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Bool_t         IsInelGt0SPDtracklets();
   Bool_t         IsInelGt0SPDtracklets(AliAODEvent* evt);
   Bool_t         IsInelGt0SPDtracklets(AliESDEvent* evt);
+    
+  Bool_t         GetCheckInelGt0MC(){return fCheckInelGt0MC;}
+  void           SetCheckInelGt0MC(Bool_t doit=kTRUE){fCheckInelGt0MC=doit;}
+  Bool_t         IsInelGt0MC();
+  Bool_t         IsInelGt0MCESD();
+  Bool_t         IsInelGt0MCAOD();
 
   Bool_t         GetCheckAcceptedMultSelection(){return fCheckAcceptedMultSelection;}
   void           SetCheckAcceptedMultSelection(Bool_t doit=kTRUE){fCheckAcceptedMultSelection=doit;}
@@ -85,6 +92,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Float_t             fASPDCvsTCut;//constant for the linear cut in SPD clusters vs tracklets
   Float_t             fBSPDCvsTCut;//slope for the linear cut in SPD  clusters vs tracklets
   Bool_t              fCheckInelGt0SPDtracklets;//select INEL>0 based on SPD tracklets
+  Bool_t              fCheckInelGt0MC;//select true INEL>0
   Bool_t              fCheckAcceptedMultSelection;//use the event-selection cuts from AliMultSelection
 
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object

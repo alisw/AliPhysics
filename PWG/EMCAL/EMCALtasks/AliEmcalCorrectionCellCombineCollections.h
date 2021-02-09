@@ -7,7 +7,7 @@ class AliVCaloCells;
 
 /**
  * @class AliEmcalCorrectionCellCombineCollections
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Combines two cell collections into one collection
  *
  * The internal cell branch should be set by the correction task! Then, the
@@ -48,12 +48,15 @@ class AliEmcalCorrectionCellCombineCollections : public AliEmcalCorrectionCompon
 
   void SetupCombinedCells();
   void CreateCombinedCells();
-  void AddCellsToCombinedCellObject(AliVCaloCells * inputCells);
+  void AddCellsToCombinedCellObject(AliVCaloCells * inputCells, int indexOffset);
+  void VerifyCombinedCells(std::vector <AliVCaloCells *> inputCaloCells);
   void AddObjectToEvent(TObject *obj, AliVEvent * event, Bool_t attempt = kFALSE);
 
   std::string fExternalCellsBranchName; ///<  Name of the cell branch which will be copied from the external event for the combined cells.
   std::string fCreatedCellsBranchName;  ///<  Name of the cell branch which will be created for the combined cells.
+  bool fVerifyCombinedCells;            ///<  True if the task should confirm that the combined cells properly copied the input cells.
   bool fInitializedCombinedCells;       //!<! True if the combined cells object has been initialized
+  bool fMergeCells;                     ///< True if cells with same absId are merged
   AliVCaloCells *fCombinedCells;        //!<! Cells combined from the input and external events.
   
   AliEmcalCorrectionCellCombineCollections(const AliEmcalCorrectionCellCombineCollections &);               // Not implemented
@@ -63,7 +66,7 @@ class AliEmcalCorrectionCellCombineCollections : public AliEmcalCorrectionCompon
   static RegisterCorrectionComponent<AliEmcalCorrectionCellCombineCollections> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellCombineCollections, 1); // EMCal correction to combine cell collections
+  ClassDef(AliEmcalCorrectionCellCombineCollections, 3); // EMCal correction to combine cell collections
   /// \endcond
 };
 

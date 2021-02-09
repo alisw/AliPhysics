@@ -67,8 +67,11 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   
   Double_t CosPiKPhiRFrameKKpi() const {return CosPiKPhiRFrame(0);}
   Double_t CosPiKPhiRFramepiKK() const {return CosPiKPhiRFrame(1);}
+  Double_t CosPiKPhiRFrameKpiK() const {return CosPiKPhiRFrame(2);}
+
   Double_t CosPiDsLabFrameKKpi() const {return CosPiDsLabFrame(0);}
   Double_t CosPiDsLabFramepiKK() const {return CosPiDsLabFrame(1);}
+  Double_t CosPiDsLabFrameKpiK() const {return CosPiDsLabFrame(2);}
   
   Double_t CosPiKPhiRFrame(Int_t option) const;
   Double_t CosPiDsLabFrame(Int_t option) const;
@@ -83,6 +86,8 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t CtLc(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(4122,vtx1);}
   Double_t InvMassLcpKpi() const {UInt_t pdg[3]={2212,321,211};return InvMass(3,pdg);}
   Double_t InvMassLcpiKp() const {UInt_t pdg[3]={211,321,2212};return InvMass(3,pdg);}
+  Double_t InvMassCdeuterondKpi() const {UInt_t pdg[3]={1000010020,321,211};return InvMass(3,pdg);}
+  Double_t InvMassCdeuteronpiKd() const {UInt_t pdg[3]={211,321,1000010020};return InvMass(3,pdg);}
   Bool_t   SelectLc(const Double_t* cuts,Int_t &okLcpKpi,Int_t &okLcpiKp) 
     const; // same variables as D+, for now
 

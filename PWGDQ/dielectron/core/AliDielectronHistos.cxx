@@ -17,10 +17,10 @@
 // Generic Histogram container with support for groups and filling of groups by passing
 // a vector of data
 //
-// Authors: 
-//   Jens Wiechula <Jens.Wiechula@cern.ch> 
-//   Julian Book   <Julian.Book@cern.ch> 
-// 
+// Authors:
+//   Jens Wiechula <Jens.Wiechula@cern.ch>
+//   Julian Book   <Julian.Book@cern.ch>
+//
 
 #include <TH1.h>
 #include <TH1F.h>
@@ -110,7 +110,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   //
 
   TVectorD *binLimX=0x0;
-  
+
   if (logBinX) {
     binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
@@ -135,7 +135,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 
   TVectorD *binLimX=0x0;
   TVectorD *binLimY=0x0;
-  
+
   if (logBinX) {
     binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
@@ -168,19 +168,19 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
   TVectorD *binLimX=0x0;
   TVectorD *binLimY=0x0;
   TVectorD *binLimZ=0x0;
-  
+
   if (logBinX) {
     binLimX=AliDielectronHelper::MakeLogBinning(nbinsX, xmin, xmax);
   } else {
     binLimX=AliDielectronHelper::MakeLinBinning(nbinsX, xmin, xmax);
   }
-  
+
   if (logBinY) {
     binLimY=AliDielectronHelper::MakeLogBinning(nbinsY, ymin, ymax);
   } else {
     binLimY=AliDielectronHelper::MakeLinBinning(nbinsY, ymin, ymax);
   }
-  
+
   if (logBinZ) {
     binLimZ=AliDielectronHelper::MakeLogBinning(nbinsZ, zmin, zmax);
   } else {
@@ -259,7 +259,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     else
       UserHistogram(histClass, hist, 999);
   }
-  
+
   delete binsX;
 }
 
@@ -285,7 +285,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     if(valTypeP==kNoProfile) {
       hist=new TH2F(name,title,
                     binsX->GetNrows()-1,binsX->GetMatrixArray(),
-                    binsY->GetNrows()-1,binsY->GetMatrixArray()); 
+                    binsY->GetNrows()-1,binsY->GetMatrixArray());
     }
     else  {
       TString opt=""; Double_t pmin=0., pmax=0.;
@@ -324,10 +324,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     else
       UserHistogram(histClass, hist, 999);
   }
-  
+
   delete binsX;
   delete binsY;
-  
+
 }
 
 //_____________________________________________________________________________
@@ -395,7 +395,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     else
       UserHistogram(histClass, hist, 999);
   }
-  
+
   delete binsX;
   delete binsY;
   delete binsZ;
@@ -535,7 +535,36 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
 
   }
 }
+//_____________________________________________________________________________
+void AliDielectronHistos::UserSparse(const char* histClass, const char*name, const char*title, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW)
+{
+  //
+  // THnSparse creation with linear binning
+  //
 
+  Bool_t isOk=kTRUE;
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnSparseD *hist;
+  if (isOk) {
+    hist=new THnSparseD(name,title, ndim, bins, mins, maxs);
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
 //_____________________________________________________________________________
 void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
 {
@@ -589,7 +618,59 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
 
   }
 }
+//_____________________________________________________________________________
+void AliDielectronHistos::UserSparse(const char* histClass, const char* name, const char* title, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
+{
+  //
+  // THnSparse creation with non-linear binning
+  //
 
+  Bool_t isOk=kTRUE;
+  isOk&=(ndim==limits->GetEntriesFast());
+  if(!isOk) return;
+
+  //// set automatic histo name
+  //TString name;
+  //for(Int_t iv=0; iv < ndim; iv++)
+  //  name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
+  //name.Resize(name.Length()-1);
+
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnSparseD *hist;
+  Int_t *bins=new Int_t[ndim];
+  if (isOk) {
+    // get number of bins
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      bins[idim]=vec->GetNrows()-1;
+    }
+
+    hist=new THnSparseD(name,title, ndim, bins, 0x0, 0x0);
+    delete [] bins;
+
+    // set binning
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      hist->SetBinEdges(idim,vec->GetMatrixArray());
+    }
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
 //_____________________________________________________________________________
 void AliDielectronHistos::UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes)
 {
@@ -597,7 +678,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, TObject* hist, UI
   // Add any type of user histogram
   //
 
-  //special case for the calss Pair. where histograms will be created for all pair classes
+  //special case for the class Pair. where histograms will be created for all pair classes
   Bool_t isReserved=fReservedWords->Contains(histClass);
   if (isReserved) {
     UserHistogramReservedWords(histClass, hist, valTypes);
@@ -791,7 +872,7 @@ TObject* AliDielectronHistos::GetHist(const char* cutClass, const char* histClas
   // return object from list of list of histograms
   // this function is thought for retrieving histograms if a list of AliDielectronHistos is set
   //
-  
+
   if (!fList) return 0x0;
   THashList *h=dynamic_cast<THashList*>(fList->FindObject(cutClass));
   if (!h)return 0x0;
@@ -853,7 +934,7 @@ void AliDielectronHistos::Draw(const Option_t* option)
     c->cd();
 //     c=new TCanvas;
   }
-  
+
   TIter nextClass(&fHistoList);
   THashList *classTable=0;
 //   Bool_t first=kTRUE;
@@ -881,7 +962,7 @@ void AliDielectronHistos::Draw(const Option_t* option)
 //       }
     }
     if (nCols>1||nRows>1) c->Divide(nCols,nRows);
-    
+
     //loop over histograms and draw them
     TIter nextHist(classTable);
     Int_t iPad=0;
@@ -906,7 +987,7 @@ void AliDielectronHistos::Draw(const Option_t* option)
     if (gVirtualPS) {
       c->Update();
     }
-    
+
   }
 //   if (gVirtualPS) delete c;
 }
@@ -955,7 +1036,7 @@ void AliDielectronHistos::PrintStructure() const
         while ( (o=nextHist()) )
           printf("|  | ->%s\n",o->GetName());
       }
-      
+
     }
   }
 }
@@ -1070,7 +1151,7 @@ void AliDielectronHistos::DrawSame(const char* histName, const Option_t *opt)
   }
 
   if (optLeg) leg=new TLegend(.8,.3,.99,.9);
-  
+
   Int_t i=0;
   TIter next(&fHistoList);
   THashList *classTable=0;
@@ -1444,7 +1525,7 @@ void AliDielectronHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
 	hist->GetYaxis()->SetNameTitle(AliDielectronVarManager::GetValueName(vary),
 				       Form("%s%s%s%s %s",
 					(bStdOpt ? "#LT" : "RMS("),
-					AliDielectronVarManager::GetValueLabel(vary), 
+					AliDielectronVarManager::GetValueLabel(vary),
 					(bStdOpt ? "#GT" : ")"),
 					calcrange.Data(),
 					AliDielectronVarManager::GetValueUnit(vary))
@@ -1508,6 +1589,3 @@ Int_t AliDielectronHistos::GetPrecision(Double_t value) {
   return precision;
 
 }
-
-
-

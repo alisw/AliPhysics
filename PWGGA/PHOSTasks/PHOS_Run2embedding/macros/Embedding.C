@@ -32,9 +32,9 @@ void Embedding(const char* dataset="collection.xml")
   // Create the chain
   TChain* chain = new TChain("esdTree");
 
-  TGridCollection * collection = dynamic_cast<TGridCollection*>(TAlienCollection::Open(dataset));
+  TGridCollection * collection = gGrid->OpenCollection(dataset);
   
-  TAlienResult* result = collection->GetGridResult("",0 ,0);
+  TGridResult* result = collection->GetGridResult("", 0, 0);
   TList* rawFileList = result->GetFileInfoList();
   for (Int_t counter=0 ; counter < rawFileList->GetEntries() ; counter++) {
     TFileInfo * fi =  static_cast<TFileInfo*>(rawFileList->At(counter)) ; 

@@ -32,15 +32,29 @@ using namespace std;
 ClassImp(AliMCInfoCuts)
 
 //_____________________________________________________________________________
-AliMCInfoCuts::AliMCInfoCuts(const Char_t* name,const Char_t *title) : 
-AliAnalysisCuts(name, title)
+AliMCInfoCuts::AliMCInfoCuts(TRootIOCtor*) : 
+AliAnalysisCuts()
 , fMinRowsWithDigits(0)
 , fMaxR(0)
 , fMaxVz(0)
 , fMinTPCSignal(0)
 , fMaxTPCSignal(0)
 , fMinTrackLength(0)
-, aTrackParticles(0)
+, aTrackParticles(NULL)
+{
+  // io ctor
+}
+
+//_____________________________________________________________________________
+AliMCInfoCuts::AliMCInfoCuts(const Char_t* name,const Char_t *title) : 
+  AliAnalysisCuts(name, title)
+, fMinRowsWithDigits(0)
+, fMaxR(0)
+, fMaxVz(0)
+, fMinTPCSignal(0)
+, fMaxTPCSignal(0)
+, fMinTrackLength(0)
+, aTrackParticles(NULL)
 {
   // default constructor 
   
@@ -49,14 +63,39 @@ AliAnalysisCuts(name, title)
 }
 
 //_____________________________________________________________________________
+AliMCInfoCuts::AliMCInfoCuts(const AliMCInfoCuts& that) :
+AliAnalysisCuts(that)
+, fMinRowsWithDigits(that.fMinRowsWithDigits)
+, fMaxR(that.fMaxR)
+, fMaxVz(that.fMaxVz)
+, fMinTPCSignal(that.fMinTPCSignal)
+, fMaxTPCSignal(that.fMaxTPCSignal)
+, fMinTrackLength(that.fMinTrackLength)
+, aTrackParticles(new TArrayI(*that.aTrackParticles))
+{
+}
+
+//_____________________________________________________________________________
+AliMCInfoCuts& AliMCInfoCuts::operator=(const AliMCInfoCuts& that)
+{
+  fMinRowsWithDigits = that.fMinRowsWithDigits;
+  fMaxR = that.fMaxR;
+  fMaxVz = that.fMaxVz;
+  fMinTPCSignal = that.fMinTPCSignal;
+  fMaxTPCSignal = that.fMaxTPCSignal;
+  fMinTrackLength = that.fMinTrackLength;
+  if (!aTrackParticles)
+    aTrackParticles = new TArrayI(*that.aTrackParticles);
+  else
+    *aTrackParticles = *that.aTrackParticles;
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliMCInfoCuts::~AliMCInfoCuts()  
 {
   // destructor
-  if(aTrackParticles != 0) 
-  {
-    delete aTrackParticles;
-	aTrackParticles = 0;
-  }
+  delete aTrackParticles;
 }
 
 //_____________________________________________________________________________

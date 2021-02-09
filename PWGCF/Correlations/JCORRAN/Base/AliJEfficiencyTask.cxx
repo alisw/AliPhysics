@@ -99,18 +99,12 @@ void AliJEfficiencyTask::UserCreateOutputObjects()
   //=== create the jcorran outputs objects
   if(fDebug > 1) printf("AliJEfficiencyTask::UserCreateOutPutData() \n");
   
-  //=== Get AnalysisManager
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  if(!man->GetOutputEventHandler()) {
-    Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-    return;
-  }
-
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
    fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
 
    OpenFile(1);
 
-   fEfficiencyScanner->SetJRunHeader( fFilterTask->GetJRunHeader() );//TODO
+   fEfficiencyScanner->SetJRunHeader( fFilterTask->GetFilter()->GetAliJRunHeader()); // caution RunHeader must be taken from the filter since it is set in the task macro
    fEfficiencyScanner->SetJTrackList( fFilterTask->GetFilter()->GetTrackList()     );
    fEfficiencyScanner->SetJMCTrackList( fFilterTask->GetFilter()->GetMCTrackList()    );
    fEffHistDir = gDirectory;//->mkdir("EffHist"); // no need

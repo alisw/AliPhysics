@@ -3,14 +3,19 @@
 /* $Id$ */
 
 #ifndef ALIANALYSISTASKUPCNano_MB_H
+const Int_t NTRIGGERINPUTS = 11;
+const Int_t NTRIGGERS = 10;
 #define ALIANALYSISTASKUPCNano_MB_H
 
 class TH1;
+class TH2;
 class TTree;
 class TList;
-class TBits;
+class TFile;
 class AliTOFTriggerMask;
+class TBits;
 
+#include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
@@ -21,27 +26,41 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void RunMC(AliAODEvent *aod);
+  virtual void RunMC(AliVEvent *aod);
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
-  void SetCutEta(Bool_t toCut){cutEta = toCut;}
+  void SetIsESD(Bool_t ESD){isESD = ESD;}
+  void SetParameters(Float_t cutE, Bool_t storeR){cutEta = cutE; storeRho = storeR;}
   Double_t GetMedian(Double_t *daArray);
+  void SetCrossed(Int_t spd[4], TBits &crossed);
+  Int_t GetChipId(Int_t index, Int_t &chipId2, Bool_t debug=0);
+  Bool_t IsSTGFired(TBits bits, Int_t dphiMin=4, Int_t dphiMax=10, Bool_t tolerance = 1);
   void FillTree(TTree *t, TLorentzVector v);
+  void FillTree(TTree *t, TLorentzVector v, TLorentzVector vgen);
  private:
  
   AliPIDResponse *fPIDResponse;
-  Bool_t isMC, cutEta;
+  AliTimeRangeCut fTimeRangeCut;
+  AliESDtrackCuts *fTrackCutsBit0;
+  AliESDtrackCuts *fTrackCutsBit1;
+  AliESDtrackCuts *fTrackCutsBit4;
+  AliESDtrackCuts *fTrackCutsBit5;
+  AliESDtrackCuts *fTrackCutsMatching;
+  AliESDtrackCuts *fTrackCutsITSsa;
+  Bool_t isMC; 
+  Bool_t isESD;
+  Float_t cutEta;
+  Bool_t storeRho;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
   TH1D *fHistMCTriggers;	//!
    
-  TTree *fTreePhi;		//!
   TTree *fTreeJPsi;		//!
   TTree *fTreePsi2s;		//!
-  TTree *fTreeRho;		//!
   TTree *fTreeGen;		//!
+  TTree *fTreeMatch;		//!
 
   TH2D *hTPCPIDMuonCorr; 	//!
   TH1D *hTPCPIDMuon;		//!
@@ -53,19 +72,40 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2D *hTOFPIDProtonCorr;	//!
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
-  TH2D *hTPCdEdxCorr;		//!
-  TH1D *hNLooseTracks;		//!
+  TH2D *hTPCdEdxCorr;		//! 
+  TH2I *hTriggerCounter;	//!
+  TH2I *hADdecision;		//!
+  TH2I *hV0decision;		//!
+  TH1D *hVertexZ;		//!
+  TH1D *hVertexContrib;		//!
+  TH2D *hTPCdEdxCorrMuon;	//!
+  TH2D *hTPCdEdxCorrElectron;	//!
+  TH2D *hChannelPIDCorr;	//!
+  TH2D *hChannelPIDCorrJpsi;	//! 
+
+  		 
   
-  Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime, fZNCtime, fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fNLooseTracks;
-  Bool_t fTriggerInputsMC[10];
-  TBits fFOFiredChips;
+  Float_t fPtDaughter[2], fPtGenDaughter[2];
+  TLorentzVector fVectDaughter[2];
+  Int_t fSignDaughter[2], fPdgDaughter[2];
+  Float_t fPt, fY, fM, fPhi, fPtGen, fYGen, fMGen, fPhiGen, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma, fTrackLenght[6], fTrackPhiPos[4];
+  Int_t fChannel, fSign, fRunNumber, fADAdecision, fADCdecision,fV0Adecision, fV0Cdecision, fNGoodTracksITS, fNGoodTracksLoose, fNGoodTracksDCA;
+  Bool_t fTriggerInputsMC[NTRIGGERINPUTS], fTriggers[NTRIGGERS], fInEtaGen, fInEtaRec, fMatchITS, fMatchTOF, fTriggerClass[3];
+  Float_t fTrackPt, fDCAxy, fDCAz, fTrackEta, fTrackPhi;
+  Short_t fClosestIR1, fClosestIR2;
+  
+  TFile *fSPDfile;
+  TFile *fTOFfile;
+  Int_t fLoadedRun;
+  TH2F *hTOFeff;
+  TH1D *hSPDeff;
   AliTOFTriggerMask *fTOFmask;
+  TBits fFOCrossFiredChips;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 8); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 37); 
 };
 
 #endif

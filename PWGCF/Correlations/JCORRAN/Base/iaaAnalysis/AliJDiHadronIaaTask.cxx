@@ -15,7 +15,7 @@
 
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
-// author: Jussi Viinikainen
+// author: Marton Vargyas, Jussi Viinikainen
 // ALICE Group University of Jyvaskyla 
 // Finland 
 // Fill the analysis containers for ESD or AOD
@@ -27,11 +27,11 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
-#include "AliJDiHadronIaaTask.h"
-#include "../AliJEventHeader.h"
-#include "../AliJRunHeader.h"
-#include "../AliJCORRANTask.h"
-#include "../AliJCard.h"
+#include <AliJDiHadronIaaTask.h>
+#include <AliJEventHeader.h>
+#include <AliJRunHeader.h>
+#include <AliJCORRANTask.h>
+#include <AliJCard.h>
 
 //______________________________________________________________________________
 AliJDiHadronIaaTask::AliJDiHadronIaaTask() :
@@ -101,10 +101,6 @@ void AliJDiHadronIaaTask::UserCreateOutputObjects()
 
 	//=== Get AnalysisManager
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-	if(!man->GetOutputEventHandler()) {
-		Fatal("UserCreateOutputObjects", "This task needs an AOD handler");
-		return;
-	}
 
 	fFilterTask = (AliJCORRANTask*)(man->GetTask( fFilterTaskName ));
 
@@ -113,12 +109,12 @@ void AliJDiHadronIaaTask::UserCreateOutputObjects()
 	fOutput->cd();
 
 	// Order should be kept for correct functionality
-	fIaaAnalysis->SetRunHeader(fFilterTask->GetJRunHeader());
+	fIaaAnalysis->SetRunHeader(fFilterTask->GetFilter()->GetAliJRunHeader()); // caution RunHeader must be taken from the filter since it is set in the task macro
 	fIaaAnalysis->UserCreateOutputObjects();
 	fIaaAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
 	fIaaAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
 	fIaaAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
-	fIaaAnalysis->GetCard()->WriteCard(fOutput);
+//	fIaaAnalysis->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
 

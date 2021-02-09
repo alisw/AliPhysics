@@ -1028,7 +1028,7 @@ Bool_t AliAnalysisTaskEmcalHFCJQA::FillTrackHistosAndSelectTrack(AliAODTrack *ao
 
   // check refit status
   Int_t refit=-1;
-  UInt_t status = esdtrack.GetStatus();
+  ULong64_t status = esdtrack.GetStatus();
   if(status&AliESDtrack::kTPCrefit)refit+=1;
   if(status&AliESDtrack::kITSrefit)refit+=2;
   point[11]=refit;

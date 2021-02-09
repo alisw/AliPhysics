@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: January 26th, 2017.							          //
+	//		version: 23 October, 2018. Old tender							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -90,23 +90,21 @@
 #include "AliVTrack.h"
 #include "AliEventPoolManager.h"
 #include "TObjArray.h"
-	//include to use reader as Lucile does
-#include "AliCaloTrackAODReader.h"
-#include "AliCaloTrackReader.h"
-#include "AliEMCALRecoUtils.h" //to remove exotics
+//include to use reader as Lucile does
+//#include "AliCaloTrackAODReader.h"
+//#include "AliCaloTrackReader.h"
+//#include "AliEMCALRecoUtils.h" //to remove exotics
 #include "AliAODHeader.h"
-#include "AliEMCALGeometry.h"
 
 #include "AliAnalysisUtils.h"
 
 
 
 	// --- ANALYSIS system ---
-#include "AliCalorimeterUtils.h"
+//#include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
@@ -115,8 +113,8 @@
 #include "AliAnalysisManager.h"
 
 	// --- Detector ---
-#include "AliEMCALGeometry.h"
-#include "AliPHOSGeoUtils.h"
+//#include "AliEMCALGeometry.h"
+//#include "AliPHOSGeoUtils.h"
 
 	//______________________________________________________________________
 
@@ -124,7 +122,7 @@
 ClassImp(AliAnalysisTaskEMCalHFEpA)
 
 	//______________________________________________________________________
-AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name) 
+AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 : AliAnalysisTaskSE(name)
 ,fCorrelationFlag(0)
 ,fIspp(kFALSE)
@@ -133,6 +131,17 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
 ,fUseTender(kFALSE)
+
+//new Tender organization, using global variables
+//,fTenderClusterName("caloClusters")
+//,fTenderTrackName("tracks")
+
+,fTenderClusterName("EmcCaloClusters")
+,fTenderTrackName("AODFilterTracks")
+
+
+
+
 ,fUseShowerShapeCut(kFALSE)
 ,fCalibrateTPC(0)
 ,fCalibrateTPC_eta(0)
@@ -154,6 +163,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fPartnerCuts(new AliESDtrackCuts())
 ,fOutputList(0)
 ,fPidResponse(0)
@@ -449,6 +460,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCNcls_EoverP(0)
 ,fTPCNcls_pid(0)
 ,fEta(0)
+,fPt_Eta(0)
+,fPt_Eta_excluding_range(0)
+,fPt_DCAr(0)
+,fPhi_DCAr(0)
+,fPhi_DCAr_neg(0)
+,fPhi_DCAr_pos(0)
 ,fPhi(0)
 ,fR(0)
 ,fR_EoverP(0)
@@ -464,6 +481,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_eta_electrons(0)
 ,fTPCnsigma_eta_hadrons(0)
 ,fEoverP_pt_pions(0)
+
+,fEoverP_pt_pions0(0)
+,fEoverP_pt_pions1(0)
+
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 
@@ -474,6 +495,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEoverP_pt_pions2_1(0)
 ,fEoverP_pt_pions2_2(0)
 ,fEoverP_pt_pions2_3(0)
+
+//centrality
+,fEoverP_pt_pions3_0(0)
+,fEoverP_pt_pions3_1(0)
+,fEoverP_pt_pions3_2(0)
+,fEoverP_pt_pions3_3(0)
 	//,fEoverP_pt_pions2_4(0)
 
 
@@ -701,7 +728,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 }
 
 	//________________________________________________________________________
-AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA() 
+AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCalHFEpA")
 ,fCorrelationFlag(0)
 ,fIspp(kFALSE)
@@ -710,6 +737,17 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
 ,fUseTender(kFALSE)
+
+//new Tender organization, using global variables
+//,fTenderClusterName("caloClusters")
+//,fTenderTrackName("tracks")
+
+,fTenderClusterName("EmcCaloClusters")
+,fTenderTrackName("AODFilterTracks")
+
+
+
+
 ,fUseShowerShapeCut(kFALSE)
 ,fCalibrateTPC(0)
 ,fCalibrateTPC_eta(0)
@@ -731,6 +769,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fPartnerCuts(new AliESDtrackCuts())
 ,fOutputList(0)
 ,fPidResponse(0)
@@ -1027,6 +1067,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCNcls_EoverP(0)
 ,fTPCNcls_pid(0)
 ,fEta(0)
+,fPt_Eta(0)
+,fPt_Eta_excluding_range(0)
+,fPt_DCAr(0)
+,fPhi_DCAr(0)
+,fPhi_DCAr_neg(0)
+,fPhi_DCAr_pos(0)
 ,fPhi(0)
 ,fR(0)
 ,fR_EoverP(0)
@@ -1042,6 +1088,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_eta_electrons(0)
 ,fTPCnsigma_eta_hadrons(0)
 ,fEoverP_pt_pions(0)
+
+,fEoverP_pt_pions0(0)
+,fEoverP_pt_pions1(0)
+
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 ,fEoverP_pt_pions2(0)
@@ -1050,6 +1100,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fEoverP_pt_pions2_1(0)
 ,fEoverP_pt_pions2_2(0)
 ,fEoverP_pt_pions2_3(0)
+
+//centrality
+,fEoverP_pt_pions3_0(0)
+,fEoverP_pt_pions3_1(0)
+,fEoverP_pt_pions3_2(0)
+,fEoverP_pt_pions3_3(0)
 	//,fEoverP_pt_pions2_4(0)
 
 
@@ -1283,11 +1339,9 @@ AliAnalysisTaskEMCalHFEpA::~AliAnalysisTaskEMCalHFEpA()
 	delete fPID;
 	delete fCFM;
 	delete fPIDqa;
-		//added in March 2016 by Cris
 	delete fNonHFE;
-		//added in June 2016 by Cris
-		//if(fTracks_tender) delete fTracks_tender;
-		//if(fCaloClusters_tender)// delete fCaloClusters_tender;
+	if(fTracks_tender) delete fTracks_tender;
+	if(fCaloClusters_tender) delete fCaloClusters_tender;
 	
 	
 
@@ -1809,7 +1863,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fECluster= new TH1F *[3];
 	fEtaPhi= new TH2F *[3];
 	fVtxZ= new  TH1F *[3];
-	fEtad= new  TH1F *[8];
+	
 	fNTracks= new  TH1F *[3];
 	
 	fNTracks_pt= new  TH2F *[3];
@@ -1978,12 +2032,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
 	
-	for(Int_t i = 0; i < 8; i++)
-	{
-		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
-		fOutputList->Add(fEtad[i]);
-		
-	}
+
 	
     //histo for centrality to run just once
 	if(fIsCentralitySys){
@@ -2076,7 +2125,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_eta_electrons=new TH2F *[6];
 	fTPCnsigma_eta_hadrons=new TH2F *[6];
 	
+	fEtad= new  TH1F *[15];
+	fPt_Eta=new TH2F *[15];
+	fPhi_DCAr=new TH2F *[15];
+	fPt_DCAr=new TH2F *[15];
 	
+	fPt_Eta_excluding_range=new TH2F *[3];
+	fPhi_DCAr_neg=new TH2F *[3];
+	fPhi_DCAr_pos=new TH2F *[3];
 	
 	if(fCorrelationFlag)
 	{
@@ -2184,6 +2240,38 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	}
 	
 	
+	//tracking problems studies
+	for(Int_t i = 0; i < 15; i++)
+	{
+		
+		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		fOutputList->Add(fEtad[i]);
+		
+		fPt_Eta[i] = new TH2F(Form("fPt_Eta%d",i),";pT;Eta",60,0,30,40,-1,1);
+		fOutputList->Add(fPt_Eta[i]);
+		
+		fPt_DCAr[i] = new TH2F(Form("fPt_DCAr%d",i),";pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPt_DCAr[i]);
+
+		fPhi_DCAr[i] = new TH2F(Form("fPhi_DCAr%d",i),";Phi;DCAxy",650,0,6.5,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr[i]);
+		
+	
+
+
+	}	
+	for(Int_t i=0; i<3;i++){
+		fPt_Eta_excluding_range[i] = new TH2F(Form("fPt_Eta_excluding_range%d",i),"excluding 2.0 < #eta < 2.7 ;pT;Eta",60,0,30,40,-1,1);
+		fOutputList->Add(fPt_Eta_excluding_range[i]);
+		
+		fPhi_DCAr_pos[i] = new TH2F(Form("fPhi_DCAr_pos%d",i),"positive charged tracks;pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr_pos[i]);
+		
+		fPhi_DCAr_neg[i] = new TH2F(Form("fPhi_DCAr_neg%d",i),"negative charged tracks;pT;DCAxy",60,0,30,1000,-10,10);
+		fOutputList->Add(fPhi_DCAr_neg[i]);
+
+	
+	}
 	
 	for(Int_t i = 0; i < 6; i++)
 	{
@@ -2286,6 +2374,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
 	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,2000,0,2);
+    
+    fEoverP_pt_pions0= new TH2F("fEoverP_pt_pions0","fEoverP_pt_pions0",1000,0,30,2000,0,2);
+    fEoverP_pt_pions1= new TH2F("fEoverP_pt_pions1","fEoverP_pt_pions1",1000,0,30,2000,0,2);
 	
 	ftpc_p_EoverPcut= new TH2F("ftpc_p_EoverPcut","ftpc_p_EoverPcut",1000,0,30,200,20,200);
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
@@ -2298,6 +2389,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fEoverP_pt_pions2_1= new TH2F("fEoverP_pt_pions2_1","fEoverP_pt_pions2_1",1000,0,30,2000,0,2);
 		fEoverP_pt_pions2_2= new TH2F("fEoverP_pt_pions2_2","fEoverP_pt_pions2_2",1000,0,30,2000,0,2);
 		fEoverP_pt_pions2_3= new TH2F("fEoverP_pt_pions2_3","fEoverP_pt_pions2_3",1000,0,30,2000,0,2);
+        
+        fEoverP_pt_pions3_0= new TH2F("fEoverP_pt_pions3_0","fEoverP_pt_pions3_0",1000,0,30,2000,0,2);
+        fEoverP_pt_pions3_1= new TH2F("fEoverP_pt_pions3_1","fEoverP_pt_pions3_1",1000,0,30,2000,0,2);
+        fEoverP_pt_pions3_2= new TH2F("fEoverP_pt_pions3_2","fEoverP_pt_pions3_2",1000,0,30,2000,0,2);
+        fEoverP_pt_pions3_3= new TH2F("fEoverP_pt_pions3_3","fEoverP_pt_pions3_3",1000,0,30,2000,0,2);
 			//fEoverP_pt_pions2_4= new TH2F("fEoverP_pt_pions2_4","fEoverP_pt_pions2_4",1000,0,30,2000,0,2);
 	}
 	
@@ -2314,6 +2410,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fNcells_pt);
 	fOutputList->Add(fEoverP_pt_pions);
+    
+    fOutputList->Add(fEoverP_pt_pions0);
+    fOutputList->Add(fEoverP_pt_pions1);
 	
 	fOutputList->Add(ftpc_p_EoverPcut);
 	fOutputList->Add(fnsigma_p_EoverPcut);
@@ -2327,6 +2426,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fEoverP_pt_pions2_2);
 		fOutputList->Add(fEoverP_pt_pions2_3);
 			//fOutputList->Add(fEoverP_pt_pions2_4);
+        
+        fOutputList->Add(fEoverP_pt_pions3_0);
+        fOutputList->Add(fEoverP_pt_pions3_1);
+        fOutputList->Add(fEoverP_pt_pions3_2);
+        fOutputList->Add(fEoverP_pt_pions3_3);
 	}
 	
 	
@@ -2655,7 +2759,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 //______________________________________________________________________
 //Main loop
 //Called for each event
-void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *) 
+void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 {
 		//Check Event
 	fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -3025,15 +3129,15 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 //______________________________________________________________________		
 //______________________________________________________________________
 //Centrality Selection
+Float_t centrality = -1;
+Float_t centrality2 = -1;
+    
 if(!fIspp){
-		//if(fHasCentralitySelection)
-		//{
-		Float_t centrality = -1;
-		Float_t centrality2 = -1;
+		
 		
 		if(fIsAOD) 
 		{
-				//fCentrality = fAOD->GetHeader()->GetCentralityP();
+				
 			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
 				//fCentrality2 = fAOD->GetCentrality();
 		}
@@ -3094,12 +3198,14 @@ if(!fIspp){
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	Int_t ClsNo0 = -999;
+    Int_t NTracks=0;
 		//ClsNo0 = fAOD->GetNumberOfCaloClusters(); 
 	if(fUseTender){
-			//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-			//NTracks = fTracks_tender->GetEntries();
-		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-		ClsNo0 = fCaloClusters_tender->GetEntries();
+       
+        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderTrackName));
+        NTracks = fTracks_tender->GetEntries();
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName));
+        ClsNo0 = fCaloClusters_tender->GetEntries();
 		
 		
 	}
@@ -3150,7 +3256,7 @@ if(!fIspp){
 					
 				
 					if(fUseTender){
-						TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+						//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 						ClsNo0 = fCaloClusters_tender->GetEntries();
 					
 					}
@@ -3160,7 +3266,7 @@ if(!fIspp){
 						AliVCluster *clus0 = 0x0;
 						
 						if(fUseTender){
-							TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+							//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 							clus0 = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 						}
 						
@@ -3257,51 +3363,20 @@ if(!fIspp){
 									//unfolding: denominator is pt_MC and numerator is pt_reco
 									fPtMCparticleAllHfe1->Fill(fMCparticle->Pt());
 									
-										//centrality
+                                    //centrality
 									if(fIsCentralitySys){
-										
-											Float_t centrality = -1;
-											
-											if(fIsAOD) 
-											{
-													//fCentrality = fAOD->GetHeader()->GetCentralityP();
-												fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-											}
-											else
-											{
-												fCentrality = fESD->GetCentrality();
-											}
-											
-										if(fEstimator==1){
-											centrality = fCentrality->GetCentralityPercentile("ZNA");
-										}
-										if(fEstimator==0){
-
-											centrality = fCentrality->GetCentralityPercentile("V0A");
-										}
-										if(fEstimator==2){
-											centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-										}
-										
-										if(fEstimator==3){
-											centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-										}
-										
-											
-											//printf("fPtMCparticleAllHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
-										
+                                       
 										if(centrality>=0 && centrality<20)fPtMCparticleAllHfe1_0->Fill(fMCparticle->Pt());
 										if(centrality>=20 && centrality<40)fPtMCparticleAllHfe1_1->Fill(fMCparticle->Pt());
 										if(centrality>=40 && centrality<60)fPtMCparticleAllHfe1_2->Fill(fMCparticle->Pt());
-										if(centrality>=60 && centrality<=95)fPtMCparticleAllHfe1_3->Fill(fMCparticle->Pt());
+										if(centrality>=60 && centrality<=105)fPtMCparticleAllHfe1_3->Fill(fMCparticle->Pt());
 											
 									}
-									
-									
+
 									fEtaPhi_den->Fill(fMCparticle->Phi(),fMCparticle->Eta());
-									
-								
-								} //denominator for total efficiency and tracking
+
+								}
+                                //denominator for total efficiency and tracking
 								if(fIsHFE2){
 									fPtMCparticleAllHfe2->Fill(fMCparticle->Pt());
 								}
@@ -3460,42 +3535,16 @@ if(!fIspp){
 //all events selected
 	
 	fNevent->Fill(0);
+    
 	
+    
 	if(fIsCentralitySys){
-		
-		Float_t centrality = -1;
-		
-		if(fIsAOD) 
-		{
-			//fCentrality = fAOD->GetHeader()->GetCentralityP();
-			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-		}
-		else
-		{
-			fCentrality = fESD->GetCentrality();
-		}
-		
-		if(fEstimator==1){
-			centrality = fCentrality->GetCentralityPercentile("ZNA");
-		}
-		if(fEstimator==0){
-
-			centrality = fCentrality->GetCentralityPercentile("V0A");
-		}
-		if(fEstimator==2){
-			centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-		}
-		
-		if(fEstimator==3){
-			centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-		}
-
-		
+        
 		
 		if(centrality>=0 && centrality<20)fNevent_0->Fill(0);
 		if(centrality>=20 && centrality<40)fNevent_1->Fill(0);
 		if(centrality>=40 && centrality<60)fNevent_2->Fill(0);
-		if(centrality>=60 && centrality<=95)fNevent_3->Fill(0);
+		if(centrality>=60 && centrality<=105)fNevent_3->Fill(0);
 			
 	}
 
@@ -3620,7 +3669,7 @@ if(!fIspp){
 	
 	///_____________________________________________________________________
 	///Track loop
-	Int_t NTracks=0;
+	
 	AliVCluster *clust = 0x0;
 	
 	if(!fUseTender){
@@ -3635,37 +3684,11 @@ if(!fIspp){
 					
 					if(fIsCentralitySys){
 						
-						Float_t centrality = -1;
-						
-						if(fIsAOD) 
-						{
-								//fCentrality = fAOD->GetHeader()->GetCentralityP();
-							fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-						}
-						else
-						{
-							fCentrality = fESD->GetCentrality();
-						}
-						
-						if(fEstimator==1){
-							centrality = fCentrality->GetCentralityPercentile("ZNA");
-						}
-						if(fEstimator==0){
-							centrality = fCentrality->GetCentralityPercentile("V0A");
-						}
-						if(fEstimator==2){
-							centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-						}
-						
-						if(fEstimator==3){
-							centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-						}
-
 						
 						if(centrality>=0 && centrality<20)fECluster_pure_0->Fill(clust->E());
 						if(centrality>=20 && centrality<40)fECluster_pure_1->Fill(clust->E());
 						if(centrality>=40 && centrality<60)fECluster_pure_2->Fill(clust->E());
-						if(centrality>=60 && centrality<=95)fECluster_pure_3->Fill(clust->E());
+						if(centrality>=60 && centrality<=105)fECluster_pure_3->Fill(clust->E());
 					}
 
 					
@@ -3680,15 +3703,20 @@ if(!fIspp){
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	if(fUseTender){
-		TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+        
+       
+		//fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+		//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 		NTracks = fTracks_tender->GetEntries();
-		TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		ClsNo = fCaloClusters_tender->GetEntries();
 		
+       
 		
 		//For cluster information from tender
 		for (Int_t i=0; i< ClsNo; i++ ){
-			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 			clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(i));
 			if (!clust) {
 					//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -3701,39 +3729,12 @@ if(!fIspp){
 				
 				if(fIsCentralitySys){
 					
-					Float_t centrality = -1;
-					
-					if(fIsAOD) 
-					{
-							//fCentrality = fAOD->GetHeader()->GetCentralityP();
-						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-					}
-					else
-					{
-						fCentrality = fESD->GetCentrality();
-					}
-					
-					if(fEstimator==1){
-						centrality = fCentrality->GetCentralityPercentile("ZNA");
-					}
-					if(fEstimator==0){
-
-						centrality = fCentrality->GetCentralityPercentile("V0A");
-					}
-					if(fEstimator==2){
-						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-					}
-					
-					if(fEstimator==3){
-						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-					}
-
 					
 				
 					if(centrality>=0 && centrality<20)fECluster_pure_0->Fill(clust->E());
 					if(centrality>=20 && centrality<40)fECluster_pure_1->Fill(clust->E());
 					if(centrality>=40 && centrality<60)fECluster_pure_2->Fill(clust->E());
-					if(centrality>=60 && centrality<=95)fECluster_pure_3->Fill(clust->E());
+					if(centrality>=60 && centrality<=105)fECluster_pure_3->Fill(clust->E());
 				}
 				
 			}
@@ -3783,9 +3784,10 @@ if(!fIspp){
 		*/
 		
 		if(fUseTender){
-			TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+			//fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+				//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 			Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
-			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		}
 			
 		if (!Vtrack) 
@@ -3918,9 +3920,7 @@ if(!fIspp){
 			//end of eta correction
 		
 		
-			
-		
-		
+
 		
 		//================================================================================
 		// Checks on SPD hits vs. SPD tracklets
@@ -3971,7 +3971,8 @@ if(!fIspp){
 		Double_t fEMCflag = kFALSE;
 		if(track->GetEMCALcluster()>0)
 		{
-				//fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
+			
+			//fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
@@ -3981,7 +3982,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4003,7 +4004,7 @@ if(!fIspp){
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
 					fEMCflag = kTRUE;
-					fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
+					
 					
 					
 					Float_t Energy	= fClus->E();
@@ -4065,6 +4066,33 @@ if(!fIspp){
 		
 		fNClusters[0]->Fill(ClsNo);
 		fTPCNcls_pid[0]->Fill(TPCNcls, TPCNcls_pid);
+		
+		fPt_Eta[0]->Fill(fPt,track->Eta());
+		
+		if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[0]->Fill(fPt,track->Eta());
+		
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[0]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[0]->Fill(track->Phi(),DCAxy);
+			
+			
+			if(track->Charge()<0)  fPhi_DCAr_neg[0]->Fill(track->Phi(),DCAxy);
+			if(track->Charge()>0)  fPhi_DCAr_pos[0]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+		
+
+		
 			//______________________________________________________________
 		
 ///Fill QA plots without track selection
@@ -4100,11 +4128,58 @@ if(!fIspp){
 			if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 		}
 		
+		
+//==============================================================
+		fEtad[9]->Fill(track->Eta());
+		
+		fPt_Eta[9]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[9]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[9]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
 			
 		
 
 			//RecKine: ITSTPC cuts  
 		if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+		
+//==============================================================
+		fEtad[10]->Fill(track->Eta());
+		
+		fPt_Eta[10]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[10]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[10]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+		
+		
+		
+		
+		
 //RecKink
 		if(fRejectKinkMother) 
 		{ 
@@ -4127,22 +4202,115 @@ if(!fIspp){
 			}
 		} 
 		
+		
+		
+//==============================================================
+		fEtad[11]->Fill(track->Eta());
+		
+		fPt_Eta[11]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[11]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[11]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+		
 //RecPrim
-		
-			//it was not working on aod... testing again
-			//July 29th, 2014: aparently working again
-		
-///if(!fIsAOD)
-//{
+//apply DCA cut here!!!
 
 		if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-//}
+		
+//==============================================================
+		fEtad[12]->Fill(track->Eta());
+		
+		fPt_Eta[12]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[12]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[12]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+
 		
 //HFEcuts: ITS layers cuts
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
 		
+//==============================================================
+		fEtad[13]->Fill(track->Eta());
+		
+		fPt_Eta[13]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[13]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[13]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+
+		
+		
+		
+		
 //HFE cuts: TPC PID cleanup
 		if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+		
+		
+//==============================================================
+		fEtad[14]->Fill(track->Eta());
+		
+		fPt_Eta[14]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[14]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[14]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+//==============================================================
+		
+
+		
+		
+		
 		
 //DCA cut done by hand --  has to be in absolute values!!!! Fixed
 //not using because line if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;   already apply DCA cut
@@ -4158,26 +4326,37 @@ if(!fIspp){
 		}
 		*/
 		
+		
+		
 		fEtad[1]->Fill(track->Eta());
+		
+		fPt_Eta[1]->Fill(fPt,track->Eta());
+		
+		if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[1]->Fill(fPt,track->Eta());
+		
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[1]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[1]->Fill(track->Phi(),DCAxy);
+			
+			
+			if(track->Charge()<0)  fPhi_DCAr_neg[1]->Fill(track->Phi(),DCAxy);
+			if(track->Charge()>0)  fPhi_DCAr_pos[1]->Fill(track->Phi(),DCAxy);
+
+			
+		}
+		 
 		
 		
 //______________________________________________________________________________________
-		/*
-		if(fIsAOD){	
-				//AOD test -- Francesco suggestion
-				//aod test -- Francesco suggestion
-			AliAODTrack *aod_track=dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-			
-			Int_t type=aod_track->GetType();
-			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
-			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
-			
-				//Int_t type2=track->GetType();
-				//if(type==AliAODTrack::kPrimary) fPtPrim2->Fill(track->Pt());
-				//if(type==AliAODTrack::kSecondary) fPtSec2->Fill(track->Pt());
-		}
-		*/
-			
+		
 		
 ///_____________________________________________________________
 ///QA plots after track selection
@@ -4229,40 +4408,12 @@ if(!fIspp){
 									
 									if(fIsCentralitySys){
                                     //===================================================================================
-										Float_t centrality = -1;
 										
-																					
-										if(fIsAOD) 
-										{
-												//fCentrality = fAOD->GetHeader()->GetCentralityP();
-											fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-										}
-										else
-										{
-											fCentrality = fESD->GetCentrality();
-										}
-										
-										if(fEstimator==1){
-											centrality = fCentrality->GetCentralityPercentile("ZNA");
-										}
-										if(fEstimator==0){
-											centrality = fCentrality->GetCentralityPercentile("V0A");
-										}
-										if(fEstimator==2){
-											centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-										}
-										
-										if(fEstimator==3){
-											centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-										}
-									//===================================================================================	
-
-											//printf("fPtMCparticleRecoHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
 										
 										if(centrality>=0 && centrality<20)fPtMCparticleRecoHfe1_0->Fill(fMCparticle->Pt());
 										if(centrality>=20 && centrality<40)fPtMCparticleRecoHfe1_1->Fill(fMCparticle->Pt());
 										if(centrality>=40 && centrality<60)fPtMCparticleRecoHfe1_2->Fill(fMCparticle->Pt());
-										if(centrality>=60 && centrality<=95)fPtMCparticleRecoHfe1_3->Fill(fMCparticle->Pt());
+										if(centrality>=60 && centrality<=105)fPtMCparticleRecoHfe1_3->Fill(fMCparticle->Pt());
 									
 										
 									}
@@ -4331,41 +4482,11 @@ if(!fIspp){
 			
 			if(fIsCentralitySys){
 				
-			//===================================================================================
-				Float_t centrality = -1;
-				
-				if(fIsAOD) 
-				{
-						//fCentrality = fAOD->GetHeader()->GetCentralityP();
-					fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-				}
-				else
-				{
-					fCentrality = fESD->GetCentrality();
-				}
-				
-				if(fEstimator==1){
-					centrality = fCentrality->GetCentralityPercentile("ZNA");
-				}
-				if(fEstimator==0){
-
-					centrality = fCentrality->GetCentralityPercentile("V0A");
-				}
-				if(fEstimator==2){
-					centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-				}
-				
-				if(fEstimator==3){
-					centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-				}
-              //===================================================================================	
-				
-					//printf("fTPCnsigma_pt_2D3   Estimator %d, Centrality %f \n", fEstimator, centrality);
 				
 				if(centrality>=0 && centrality<20)  fTPCnsigma_pt_2D3_0->Fill(fPt,fTPCnSigma);
 				if(centrality>=20 && centrality<40) fTPCnsigma_pt_2D3_1->Fill(fPt,fTPCnSigma);
 				if(centrality>=40 && centrality<60) fTPCnsigma_pt_2D3_2->Fill(fPt,fTPCnSigma);
-				if(centrality>=60 && centrality<=95)fTPCnsigma_pt_2D3_3->Fill(fPt,fTPCnSigma);
+				if(centrality>=60 && centrality<=105)fTPCnsigma_pt_2D3_3->Fill(fPt,fTPCnSigma);
 			}
 			
 			
@@ -4398,6 +4519,33 @@ if(!fIspp){
 		
 		if(track->GetEMCALcluster()>0)
 		{
+			
+			
+			fPt_Eta[2]->Fill(fPt,track->Eta());
+			
+			if(track->Phi() < 2.0 || track->Phi() > 2.7)fPt_Eta_excluding_range[2]->Fill(fPt,track->Eta());
+			
+			if(fIsAOD){
+				Double_t d0z0[2], cov[3];
+				AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+				track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+				Double_t DCAxy = d0z0[0];
+				Double_t DCAz = d0z0[1];
+				
+				fPt_DCAr[2]->Fill(fPt,DCAxy);
+				
+				fPhi_DCAr[2]->Fill(track->Phi(),DCAxy);
+				
+				if(track->Charge()<0)  fPhi_DCAr_neg[2]->Fill(track->Phi(),DCAxy);
+				if(track->Charge()>0)  fPhi_DCAr_pos[2]->Fill(track->Phi(),DCAxy);
+
+				
+				
+			}
+
+			
+			
+			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
@@ -4405,7 +4553,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4422,7 +4570,7 @@ if(!fIspp){
 				
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
-					fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
+					
 					
 					Float_t Energy	= fClus->E();
 					Float_t EoverP	= Energy/track->P();
@@ -4529,57 +4677,54 @@ if(!fIspp){
 						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
 							
-							if(fIsCentralitySys){
-								
-								
-									Float_t centrality = -1;
-									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
-										
-									//printf("fEoverP_pt_pions2   Estimator %d, Centrality %f \n", fEstimator, centrality);
-								
-								
-								if(centrality>=0 && centrality<20) fEoverP_pt_pions2_0->Fill(fPt, EoverP);
-								if(centrality>=20 && centrality<40) fEoverP_pt_pions2_1->Fill(fPt, EoverP);
-								if(centrality>=40 && centrality<60) fEoverP_pt_pions2_2->Fill(fPt, EoverP);
-								if(centrality>=60 && centrality<=95) fEoverP_pt_pions2_3->Fill(fPt, EoverP);
-								
-							}
-							 
-							
+                            if(fIsCentralitySys){
+                                
+                                if(centrality>=0 && centrality<20) fEoverP_pt_pions2_0->Fill(fPt, EoverP);
+                                if(centrality>=20 && centrality<40) fEoverP_pt_pions2_1->Fill(fPt, EoverP);
+                                if(centrality>=40 && centrality<60) fEoverP_pt_pions2_2->Fill(fPt, EoverP);
+                                if(centrality>=60 && centrality<=105) fEoverP_pt_pions2_3->Fill(fPt, EoverP);
+                            }
 							
 							if(fClus->E()>8.0)fEoverP_pt_pions2_highE1->Fill(fPt, EoverP);
 							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
 							
 						}
-						if(fTPCnSigma < -4.0){
-							fEoverP_pt_pions3->Fill(fPt, EoverP);
-							
-							
-						}
+                        
+                        if(fUseShowerShapeCut){
+                            if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+                                
+                                if(fTPCnSigma < -3.5){
+                            
+                                    fEoverP_pt_pions3->Fill(fPt, EoverP);
+                                    if(fIsCentralitySys){
+                                        
+                                        if(centrality>=0 && centrality<20) fEoverP_pt_pions3_0->Fill(fPt, EoverP);
+                                        if(centrality>=20 && centrality<40) fEoverP_pt_pions3_1->Fill(fPt, EoverP);
+                                        if(centrality>=40 && centrality<60) fEoverP_pt_pions3_2->Fill(fPt, EoverP);
+                                        if(centrality>=60 && centrality<=105) fEoverP_pt_pions3_3->Fill(fPt, EoverP);
+                                    }
+                                    
+                                    if(fClus->E()>8.0)fEoverP_pt_pions1->Fill(fPt, EoverP);
+                                    if(fClus->E()>12.0)fEoverP_pt_pions0->Fill(fPt, EoverP);
+                                    
+                                }
+                            }
+                        }
+                        if(!fUseShowerShapeCut){
+                                if(fTPCnSigma < -3.5){
+                                    if(fIsCentralitySys){
+                                        
+                                        if(centrality>=0 && centrality<20) fEoverP_pt_pions3_0->Fill(fPt, EoverP);
+                                        if(centrality>=20 && centrality<40) fEoverP_pt_pions3_1->Fill(fPt, EoverP);
+                                        if(centrality>=40 && centrality<60) fEoverP_pt_pions3_2->Fill(fPt, EoverP);
+                                        if(centrality>=60 && centrality<=105) fEoverP_pt_pions3_3->Fill(fPt, EoverP);
+                                    }
+                                    
+                                }
+                                
+                                
+                        }
+						
 						
 						
 					}
@@ -4793,38 +4938,12 @@ if(!fIspp){
 							
 							if(fIsHFE1 && fIsCentralitySys){
 								
-								//===================================================================================
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
-								//===================================================================================
 								
 								if(centrality>=0 && centrality<20) fPtMC_TPC_All_0->Fill(fMCparticle->Pt());
 								if(centrality>=20 && centrality<40) fPtMC_TPC_All_1->Fill(fMCparticle->Pt());
 								if(centrality>=40 && centrality<60) fPtMC_TPC_All_2->Fill(fMCparticle->Pt());
-								if(centrality>=60 && centrality<=95) fPtMC_TPC_All_3->Fill(fMCparticle->Pt());
+								if(centrality>=60 && centrality<=105) fPtMC_TPC_All_3->Fill(fMCparticle->Pt());
 							
 							}
 							 
@@ -4880,7 +4999,26 @@ if(!fIspp){
 	    fpid->Fill(pidpassed);
 		
 	    if(pidpassed==0) continue;
-///________________________________________________________________________		
+///________________________________________________________________________	
+		
+		//after TPC pid without track-matching
+		fPt_Eta[3]->Fill(fPt,track->Eta());
+		
+		if(fIsAOD){
+			Double_t d0z0[2], cov[3];
+			AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+			track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+			Double_t DCAxy = d0z0[0];
+			Double_t DCAz = d0z0[1];
+			
+			fPt_DCAr[3]->Fill(fPt,DCAxy);
+			
+			fPhi_DCAr[3]->Fill(track->Phi(),DCAxy);
+			
+		}
+		
+		
+		
 		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 			fTPCnsigma_pt_2D4->Fill(fPt,fTPCnSigma);
@@ -4911,40 +5049,12 @@ if(!fIspp){
 			
 			if(fIsCentralitySys){
 				
-					//===================================================================================
-				Float_t centrality = -1;
-				
-				if(fIsAOD) 
-				{
-						//fCentrality = fAOD->GetHeader()->GetCentralityP();
-					fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-				}
-				else
-				{
-					fCentrality = fESD->GetCentrality();
-				}
-				
-				if(fEstimator==1){
-					centrality = fCentrality->GetCentralityPercentile("ZNA");
-				}
-				if(fEstimator==0){
-
-					centrality = fCentrality->GetCentralityPercentile("V0A");
-				}
-				if(fEstimator==2){
-					centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-				}
-				
-				if(fEstimator==3){
-					centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-				}
-					//===================================================================================	
-				
+					
 				
 				if(centrality>=0 && centrality<20)  fTPCnsigma_pt_2D5_0->Fill(fPt,fTPCnSigma);
 				if(centrality>=20 && centrality<40) fTPCnsigma_pt_2D5_1->Fill(fPt,fTPCnSigma);
 				if(centrality>=40 && centrality<60) fTPCnsigma_pt_2D5_2->Fill(fPt,fTPCnSigma);
-				if(centrality>=60 && centrality<=95)fTPCnsigma_pt_2D5_3->Fill(fPt,fTPCnSigma);
+				if(centrality>=60 && centrality<=105)fTPCnsigma_pt_2D5_3->Fill(fPt,fTPCnSigma);
 			}
 			 
 			
@@ -5002,39 +5112,12 @@ if(!fIspp){
 							
 							if(fIsHFE1 && fIsCentralitySys){
 								
-								//===================================================================================
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
-								//===================================================================================
 								
 								if(centrality>=0 && centrality<20) fPtMC_TPC_Selected_0->Fill(fMCparticle->Pt());
 								if(centrality>=20 && centrality<40) fPtMC_TPC_Selected_1->Fill(fMCparticle->Pt());
 								if(centrality>=40 && centrality<60)  fPtMC_TPC_Selected_2->Fill(fMCparticle->Pt());
-								if(centrality>=60 && centrality<=95)  fPtMC_TPC_Selected_3->Fill(fMCparticle->Pt());
+								if(centrality>=60 && centrality<=105)  fPtMC_TPC_Selected_3->Fill(fMCparticle->Pt());
 							}
 							 
 							
@@ -5122,6 +5205,23 @@ if(!fIspp){
 		if(track->GetEMCALcluster()>0)
 		{
 			
+			
+			fPt_Eta[4]->Fill(fPt,track->Eta());
+			
+			if(fIsAOD){
+				Double_t d0z0[2], cov[3];
+				AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+				track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+				Double_t DCAxy = d0z0[0];
+				Double_t DCAz = d0z0[1];
+				
+				fPt_DCAr[4]->Fill(fPt,DCAxy);
+				
+				fPhi_DCAr[4]->Fill(track->Phi(),DCAxy);
+				
+			}
+			
+			
 			fEtad[4]->Fill(track->Eta());
 
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
@@ -5131,7 +5231,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(track->GetEMCALcluster()>0){
-					TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -5145,6 +5245,24 @@ if(!fIspp){
 			{
 				
 		//________________________________________________________________________		
+				
+				fPt_Eta[5]->Fill(fPt,track->Eta());
+				
+				
+				if(fIsAOD){
+					Double_t d0z0[2], cov[3];
+					AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+					track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+					Double_t DCAxy = d0z0[0];
+					Double_t DCAz = d0z0[1];
+					
+					fPt_DCAr[5]->Fill(fPt,DCAxy);
+					
+					fPhi_DCAr[5]->Fill(track->Phi(),DCAxy);
+					
+				}
+				
+				
 				
 				fEtad[5]->Fill(track->Eta());
 
@@ -5252,6 +5370,22 @@ if(!fIspp){
 				{
 					
 					fEtad[6]->Fill(track->Eta());
+					fPt_Eta[6]->Fill(fPt,track->Eta());
+					
+					if(fIsAOD){
+						Double_t d0z0[2], cov[3];
+						AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+						track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+						Double_t DCAxy = d0z0[0];
+						Double_t DCAz = d0z0[1];
+						
+						fPt_DCAr[6]->Fill(fPt,DCAxy);
+						
+						fPhi_DCAr[6]->Fill(track->Phi(),DCAxy);
+						
+					}
+					
+					
 
 					
 					Float_t Energy	= fClus->E();
@@ -5298,42 +5432,22 @@ if(!fIspp){
 							
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
+                                
+                                //checking with E cut > threshold EG0 > 12 GeV
+                                if(fClus->E() >=12.0)fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
+                                //checking with E cut > threshold EG1 > 8 GeV
+                                if(fClus->E() >=8.0)fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
 								
 									//centrality
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
-									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
+                                
 									
 									
 									if(centrality>=0 && centrality<20) fEoverP_pt_0->Fill(fPt,(fClus->E() / fP));
 									if(centrality>=20 && centrality<40)fEoverP_pt_1->Fill(fPt,(fClus->E() / fP));
 									if(centrality>=40 && centrality<60)fEoverP_pt_2->Fill(fPt,(fClus->E() / fP));
-									if(centrality>=60 && centrality<=95)fEoverP_pt_3->Fill(fPt,(fClus->E() / fP));
+									if(centrality>=60 && centrality<=105)fEoverP_pt_3->Fill(fPt,(fClus->E() / fP));
 										
 								}
 								
@@ -5628,6 +5742,23 @@ if(!fIspp){
 					{	
 						
 						
+						    fPt_Eta[7]->Fill(fPt,track->Eta());
+						
+						if(fIsAOD){
+							Double_t d0z0[2], cov[3];
+							AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+							track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+							Double_t DCAxy = d0z0[0];
+							Double_t DCAz = d0z0[1];
+							
+							fPt_DCAr[7]->Fill(fPt,DCAxy);
+							
+							fPhi_DCAr[7]->Fill(track->Phi(),DCAxy);
+							
+						}
+					
+						
+						
 							fECluster[2]->Fill(Energy);
 							fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
 						
@@ -5678,6 +5809,24 @@ if(!fIspp){
 								//background for triggered data: trigger electron must have same cuts on shower shape  06/Jan/2014
 								if(fUseShowerShapeCut){
 									if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+										
+										fPt_Eta[8]->Fill(fPt,track->Eta());
+										
+										if(fIsAOD){
+											Double_t d0z0[2], cov[3];
+											AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+											track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 20., d0z0, cov);
+											Double_t DCAxy = d0z0[0];
+											Double_t DCAz = d0z0[1];
+											
+											fPt_DCAr[8]->Fill(fPt,DCAxy);
+											
+											fPhi_DCAr[8]->Fill(track->Phi(),DCAxy);
+											
+										 }
+										
+										
+										
 										if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 											Background(track, iTracks, Vtrack, kFALSE, kFALSE, kFALSE);
 										}
@@ -5694,10 +5843,7 @@ if(!fIspp){
 							double emctof2 = fClus->GetTOF();
 							ftimingEle2->Fill(fPt,1e9*emctof2);
 							//Correlation Analysis
-							if(fCorrelationFlag) 
-							{
-								ElectronHadronCorrelation(track, iTracks, Vtrack);
-							}
+							
 						}
 						//_______________________________________________________
 						
@@ -5766,38 +5912,13 @@ if(!fIspp){
 														//centrality
 													if(fIsCentralitySys){
 														
-														Float_t centrality = -1;
 														
-														if(fIsAOD) 
-														{
-																//fCentrality = fAOD->GetHeader()->GetCentralityP();
-															fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-														}
-														else
-														{
-															fCentrality = fESD->GetCentrality();
-														}
-														
-														if(fEstimator==1){
-															centrality = fCentrality->GetCentralityPercentile("ZNA");
-														}
-														if(fEstimator==0){
-
-															centrality = fCentrality->GetCentralityPercentile("V0A");
-														}
-														if(fEstimator==2){
-															centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-														}
-														
-														if(fEstimator==3){
-															centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-														}
 														
 														if(centrality>=0 && centrality<20) fPtMCelectronAfterAll_unfolding_0->Fill(track->Pt());
 														if(centrality>=20 && centrality<40) fPtMCelectronAfterAll_unfolding_1->Fill(track->Pt());
 														if(centrality>=40 && centrality<60) fPtMCelectronAfterAll_unfolding_2->Fill(track->Pt());
-														if(centrality>=60 && centrality<=95) fPtMCelectronAfterAll_unfolding_3->Fill(track->Pt());
-															//if(centrality>80 && centrality<=95) fPtMCelectronAfterAll_unfolding_4->Fill(track->Pt());
+														if(centrality>=60 && centrality<=105) fPtMCelectronAfterAll_unfolding_3->Fill(track->Pt());
+															//if(centrality>80 && centrality<=105) fPtMCelectronAfterAll_unfolding_4->Fill(track->Pt());
 													}
 													
 													
@@ -5931,10 +6052,7 @@ if(!fIspp){
 		{
 			fPtElec_Inc->Fill(fPt);
 			
-			if(fCorrelationFlag) 
-			{
-				ElectronHadronCorrelation(track, iTracks, Vtrack);
-			}
+			
 		}
 			//_______________________________________________________
 		
@@ -5962,7 +6080,7 @@ if(!fIspp){
 }      
 
 	//______________________________________________________________________
-void AliAnalysisTaskEMCalHFEpA::Terminate(Option_t *) 
+void AliAnalysisTaskEMCalHFEpA::Terminate(Option_t *)
 {
 		//Draw result to the screen
 		//Called once at the end of the query
@@ -5996,17 +6114,47 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 	///MC analysis
 	//Bool_t IsMCefix=kFALSE; //to make correction on efix, use kTRUE (do not change the efficiency, so I will keep the correction only for d3)
 	
-	
-	
+	Float_t centrality = -1;
+    if(fIsCentralitySys){
+        
+       
+        if(fIsAOD)
+        {
+            //fCentrality = fAOD->GetHeader()->GetCentralityP();
+            fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+        }
+        else
+        {
+            fCentrality = fESD->GetCentrality();
+        }
+        
+        if(fEstimator==1){
+            centrality = fCentrality->GetCentralityPercentile("ZNA");
+        }
+        if(fEstimator==0){
+            
+            centrality = fCentrality->GetCentralityPercentile("V0A");
+        }
+        if(fEstimator==2){
+            centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+        }
+        
+        if(fEstimator==3){
+            centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+        }
+        
+       
+        
+    }
 	
 	
 		if(fIsMC)
 		{
-			if(track->GetLabel() < 0)
-			{
-				AliWarning(Form("The track %d  have a negative MC label, but we need to use it, taking the absolute value",trackIndex));
-				return;
-			}
+			//if(track->GetLabel() < 0)
+			//{
+				//AliWarning(Form("The track %d  have a negative MC label, but we need to use it, taking the absolute value",trackIndex));
+				//return;
+			//}
 			
 			if(fIsAOD)
 			{
@@ -6024,40 +6172,14 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						fPtBackgroundBeforeReco->Fill(track->Pt());
 							//centrality
 						if(fIsCentralitySys){
-							
-							Float_t centrality = -1;
-							
-							if(fIsAOD) 
-							{
-									//fCentrality = fAOD->GetHeader()->GetCentralityP();
-								fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-							}
-							else
-							{
-								fCentrality = fESD->GetCentrality();
-							}
-							
-							if(fEstimator==1){
-								centrality = fCentrality->GetCentralityPercentile("ZNA");
-							}
-							if(fEstimator==0){
-
-								centrality = fCentrality->GetCentralityPercentile("V0A");
-							}
-							if(fEstimator==2){
-								centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-							}
-							
-							if(fEstimator==3){
-								centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-							}
-
+                            
+                           
 							
 							if(centrality>=0 && centrality<20)fPtBackgroundBeforeReco_0->Fill(track->Pt());
 							if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_1->Fill(track->Pt());
 							if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_2->Fill(track->Pt());
-							if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_3->Fill(track->Pt());
-								//if(centrality>80 && centrality<=95)fPtBackgroundBeforeReco_4->Fill(track->Pt());
+							if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco_3->Fill(track->Pt());
+								//if(centrality>80 && centrality<=105)fPtBackgroundBeforeReco_4->Fill(track->Pt());
 						}
 					}
 					if(IsTPConly  && !IsWeight && !MassPtBins){
@@ -6065,38 +6187,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							//centrality
 						if(fIsCentralitySys){
 							
-							Float_t centrality = -1;
-							
-							if(fIsAOD) 
-							{
-									//fCentrality = fAOD->GetHeader()->GetCentralityP();
-								fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-							}
-							else
-							{
-								fCentrality = fESD->GetCentrality();
-							}
-							
-							if(fEstimator==1){
-								centrality = fCentrality->GetCentralityPercentile("ZNA");
-							}
-							if(fEstimator==0){
-
-								centrality = fCentrality->GetCentralityPercentile("V0A");
-							}
-							if(fEstimator==2){
-								centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-							}
-							
-							if(fEstimator==3){
-								centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-							}
+                        
 							
 							if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_0->Fill(track->Pt());
 							if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_1->Fill(track->Pt());
 							if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_2->Fill(track->Pt());
-							if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_3->Fill(track->Pt());
-								//if(centrality>80 && centrality<=95)fPtBackgroundBeforeReco2_4->Fill(track->Pt());
+							if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco2_3->Fill(track->Pt());
+								//if(centrality>80 && centrality<=105)fPtBackgroundBeforeReco2_4->Fill(track->Pt());
 						}
 						
 					}
@@ -6133,37 +6230,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./mweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./mweight);
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt(), 1./mweight);
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./mweight);
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./mweight);
 									
 							}
 							
@@ -6174,37 +6246,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./mweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt(), 1./mweight);
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt(), 1./mweight);
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./mweight);
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./mweight);
 									
 							}
 
@@ -6242,37 +6289,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./gmweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./gmweight);
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt(), 1./gmweight);
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt(), 1./gmweight);
 									
 							}
 							
@@ -6283,37 +6305,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./gmweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt(), 1./gmweight);
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt(), 1./gmweight);
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./gmweight);
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt(), 1./gmweight);
 									
 							}
 							
@@ -6328,37 +6325,11 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							fPtBackgroundBeforeReco_weight->Fill(track->Pt());
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
-								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt());
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt());
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco_weight_2->Fill(track->Pt());
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt());
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco_weight_3->Fill(track->Pt());
 							}
 							
 							
@@ -6367,37 +6338,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							fPtBackgroundBeforeReco2_weight->Fill(track->Pt());	
 							if(fIsCentralitySys){
 								
-								Float_t centrality = -1;
 								
-								if(fIsAOD) 
-								{
-										//fCentrality = fAOD->GetHeader()->GetCentralityP();
-									fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-								}
-								else
-								{
-									fCentrality = fESD->GetCentrality();
-								}
-								
-								if(fEstimator==1){
-									centrality = fCentrality->GetCentralityPercentile("ZNA");
-								}
-								if(fEstimator==0){
-									
-									centrality = fCentrality->GetCentralityPercentile("V0A");
-								}
-								if(fEstimator==2){
-									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-								}
-								
-								if(fEstimator==3){
-									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt());
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco2_weight_1->Fill(track->Pt());
 								if(centrality>=40 && centrality<60)fPtBackgroundBeforeReco2_weight_2->Fill(track->Pt());
-								if(centrality>=60 && centrality<=95)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt());
+								if(centrality>=60 && centrality<=105)fPtBackgroundBeforeReco2_weight_3->Fill(track->Pt());
 									
 							}
 							
@@ -6449,6 +6395,9 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		if(fAngleCutFlag) fNonHFE->SetOpeningAngleCut(fAngleCut);
 		if(fChi2CutFlag) fNonHFE->SetChi2OverNDFCut(fChi2Cut);
 		if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
+	
+		//latest change of Henrique
+	    fNonHFE->SetUseITSTPCRefit(kTRUE);
 	
 		//new cuts to be consistent with TPC-only analysis (Henrique changes on AliSelectNonHFE, December, 2016)
 		fNonHFE->SetUseGlobalTracks();	
@@ -6580,7 +6529,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		//----------------------------------------------------------------------------
 		*/	
 		
-		fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
+		if(!fUseTender)fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
+		if(fUseTender)fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent, fTracks_tender, fUseTender);
 		
 			//index of track selected as partner
 		Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
@@ -6635,37 +6585,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, mweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, mweight1);
 									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE, mweight1);
-									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE, mweight1);
+									if(centrality>=60 && centrality<=105)fPtElec_ULS_weight_3->Fill(fPtE, mweight1);
 									
 								}
 								
@@ -6675,37 +6600,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, mweight2);
 									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE, mweight2);
 									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE, mweight2);
-									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE, mweight2);
+									if(centrality>=60 && centrality<=105)fPtElec_LS_weight_3->Fill(fPtE, mweight2);
 									
 								}
 								
@@ -6747,37 +6647,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, gmweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, gmweight1);
 									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE, gmweight1);
-									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE, gmweight1);
+									if(centrality>=60 && centrality<=105)fPtElec_ULS_weight_3->Fill(fPtE, gmweight1);
 									
 								}
 								
@@ -6789,37 +6664,11 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
-									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, gmweight2);
 									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE, gmweight2);
 									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE, gmweight2);
-									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE, gmweight2);
+									if(centrality>=60 && centrality<=105)fPtElec_LS_weight_3->Fill(fPtE, gmweight2);
 									
 								}
 
@@ -6833,37 +6682,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=40 && centrality<60)fPtElec_ULS_weight_2->Fill(fPtE,fNonHFE->GetNULS());
-									if(centrality>=60 && centrality<=95)fPtElec_ULS_weight_3->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=60 && centrality<=105)fPtElec_ULS_weight_3->Fill(fPtE,fNonHFE->GetNULS());
 									
 								}
 
@@ -6875,37 +6699,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=20 && centrality<40)fPtElec_LS_weight_1->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=40 && centrality<60)fPtElec_LS_weight_2->Fill(fPtE,fNonHFE->GetNULS());
-									if(centrality>=60 && centrality<=95)fPtElec_LS_weight_3->Fill(fPtE,fNonHFE->GetNULS());									
+									if(centrality>=60 && centrality<=105)fPtElec_LS_weight_3->Fill(fPtE,fNonHFE->GetNULS());
 								}
 							}
 						}
@@ -6954,37 +6753,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, mweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, mweight1);
 									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE, mweight1);
-									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE, mweight1);
+									if(centrality>=60 && centrality<=105)fPtElec_ULS2_weight_3->Fill(fPtE, mweight1);
 									
 								}
 								
@@ -6996,37 +6770,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, mweight2);
 									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE, mweight2);
 									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE, mweight2);
-									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE, mweight2);
+									if(centrality>=60 && centrality<=105)fPtElec_LS2_weight_3->Fill(fPtE, mweight2);
 									
 								}
 								
@@ -7073,37 +6822,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, gmweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, gmweight1);
 									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE, gmweight1);
-									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE, gmweight1);
+									if(centrality>=60 && centrality<=105)fPtElec_ULS2_weight_3->Fill(fPtE, gmweight1);
 									
 								}
 								
@@ -7113,37 +6837,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, gmweight2);
 									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE, gmweight2);
 									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE, gmweight2);
-									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE, gmweight2);
+									if(centrality>=60 && centrality<=105)fPtElec_LS2_weight_3->Fill(fPtE, gmweight2);
 									
 								}
 								
@@ -7162,37 +6861,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=40 && centrality<60)fPtElec_ULS2_weight_2->Fill(fPtE,fNonHFE->GetNULS());
-									if(centrality>=60 && centrality<=95)fPtElec_ULS2_weight_3->Fill(fPtE,fNonHFE->GetNULS());
+									if(centrality>=60 && centrality<=105)fPtElec_ULS2_weight_3->Fill(fPtE,fNonHFE->GetNULS());
 									
 								}
 								
@@ -7202,37 +6876,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								
 								if(fIsCentralitySys){
 									
-									Float_t centrality = -1;
 									
-									if(fIsAOD) 
-									{
-											//fCentrality = fAOD->GetHeader()->GetCentralityP();
-										fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-									}
-									else
-									{
-										fCentrality = fESD->GetCentrality();
-									}
-									
-									if(fEstimator==1){
-										centrality = fCentrality->GetCentralityPercentile("ZNA");
-									}
-									if(fEstimator==0){
-										
-										centrality = fCentrality->GetCentralityPercentile("V0A");
-									}
-									if(fEstimator==2){
-										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-									}
-									
-									if(fEstimator==3){
-										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE,fNonHFE->GetNLS());
 									if(centrality>=20 && centrality<40)fPtElec_LS2_weight_1->Fill(fPtE,fNonHFE->GetNLS());
 									if(centrality>=40 && centrality<60)fPtElec_LS2_weight_2->Fill(fPtE,fNonHFE->GetNLS());
-									if(centrality>=60 && centrality<=95)fPtElec_LS2_weight_3->Fill(fPtE,fNonHFE->GetNLS());
+									if(centrality>=60 && centrality<=105)fPtElec_LS2_weight_3->Fill(fPtE,fNonHFE->GetNLS());
 									
 								}
 								
@@ -7361,32 +7010,6 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				
 				if(fIsCentralitySys){
 					
-					Float_t centrality = -1;
-					
-					if(fIsAOD) 
-					{
-							//fCentrality = fAOD->GetHeader()->GetCentralityP();
-						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-					}
-					else
-					{
-						fCentrality = fESD->GetCentrality();
-					}
-					
-					if(fEstimator==1){
-						centrality = fCentrality->GetCentralityPercentile("ZNA");
-					}
-					if(fEstimator==0){
-
-						centrality = fCentrality->GetCentralityPercentile("V0A");
-					}
-					if(fEstimator==2){
-						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-					}
-					
-					if(fEstimator==3){
-						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-					}
 					
 					
 					if(centrality>=0 && centrality<20){
@@ -7404,13 +7027,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						if(fNonHFE->IsLS()) fPtElec_LS_2->Fill(fPtE,fNonHFE->GetNLS());
 					
 					}
-					if(centrality>=60 && centrality<=95){
+					if(centrality>=60 && centrality<=105){
 						if(fNonHFE->IsULS()) fPtElec_ULS_3->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS_3->Fill(fPtE,fNonHFE->GetNLS());
 					
 					}
 					/*
-					if(centrality>80 && centrality<=95){
+					if(centrality>80 && centrality<=105){
 						if(fNonHFE->IsULS()) fPtElec_ULS_4->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS_4->Fill(fPtE,fNonHFE->GetNLS());
 					
@@ -7429,32 +7052,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 				
 				if(fIsCentralitySys){
 					
-					Float_t centrality = -1;
 					
-					if(fIsAOD) 
-					{
-							//fCentrality = fAOD->GetHeader()->GetCentralityP();
-						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-					}
-					else
-					{
-						fCentrality = fESD->GetCentrality();
-					}
-					
-					if(fEstimator==1){
-						centrality = fCentrality->GetCentralityPercentile("ZNA");
-					}
-					if(fEstimator==0){
-
-						centrality = fCentrality->GetCentralityPercentile("V0A");
-					}	
-					if(fEstimator==2){
-						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
-					}
-					
-					if(fEstimator==3){
-						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
-					}
 					
 					
 					if(centrality>=0 && centrality<20){
@@ -7472,13 +7070,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						if(fNonHFE->IsLS()) fPtElec_LS2_2->Fill(fPtE,fNonHFE->GetNLS());
 					
 					}
-					if(centrality>=60 && centrality<=95){
+					if(centrality>=60 && centrality<=105){
 						if(fNonHFE->IsULS()) fPtElec_ULS2_3->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS2_3->Fill(fPtE,fNonHFE->GetNLS());
 					
 					}
 					/*
-					if(centrality>80 && centrality<=95){
+					if(centrality>80 && centrality<=105){
 						if(fNonHFE->IsULS()) fPtElec_ULS2_4->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS2_4->Fill(fPtE,fNonHFE->GetNLS());
 					
@@ -7506,301 +7104,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 }//end of fPtElec_ULS function
 
 	//______________________________________________________________________
-void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack)
-{
-	
-	///_________________________________________________________________
-	///MC analysis
-	if(fIsMC)
-	{
-		if(track->GetLabel() < 0)
-        {
-			AliWarning(Form("The track %d  have a negative MC label, but we need to use it, taking the absolute value",trackIndex));
-			return;
-        }
-		
-		if(fIsAOD)
-		{
-			fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
-			
-			if(fMCparticle->GetMother()<0) return;
-	        
-	        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-	        
-	        if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
-	        {
-					//Is Background
-				fPtBackgroundBeforeReco->Fill(track->Pt());
-			}
-		}
-		else
-		{
-	        fMCtrack = fMCstack->Particle(TMath::Abs(track->GetLabel()));
-	        
-	        if(fMCtrack->GetFirstMother()<0) return;
-	        
-	        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-	        
-	        if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
-	        {
-					//Is Background
-				fPtBackgroundBeforeReco->Fill(track->Pt());
-			}
-		}
-	}
-		///_________________________________________________________________
-	
-		//________________________________________________
-		//Associated particle cut
-	fPartnerCuts->SetAcceptKinkDaughters(kFALSE);
-    fPartnerCuts->SetRequireITSRefit(kTRUE);
-    fPartnerCuts->SetRequireTPCRefit(kTRUE);
-    fPartnerCuts->SetEtaRange(-0.9,0.9);
-    fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
-    fPartnerCuts->SetMinNClustersTPC(80);
-    fPartnerCuts->SetPtRange(0.3,1e10);
-		//fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-		//fPartnerCuts->SetMaxDCAToVertexXY(1);
-		//fPartnerCuts->SetMaxDCAToVertexZ(3);
-		//_________________________________________________
-	
-		///#################################################################
-		//Non-HFE reconstruction
-	fNonHFE = new AliSelectNonHFE();
-	fNonHFE->SetAODanalysis(fIsAOD);
-	if(fMassCutFlag) fNonHFE->SetInvariantMassCut(fMassCut);
-	if(fAngleCutFlag) fNonHFE->SetOpeningAngleCut(fAngleCut);
-	if(fChi2CutFlag) fNonHFE->SetChi2OverNDFCut(fChi2Cut);
-	if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
-	fNonHFE->SetAlgorithm("DCA"); //KF
-	fNonHFE->SetPIDresponse(fPidResponse);
-	fNonHFE->SetTrackCuts(-3.5,3.5,fPartnerCuts);
-	fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
-	
-	
-	fNonHFE->SetHistAngleBack(fOpAngleBack);
-	fNonHFE->SetHistAngle(fOpAngle);
-	fNonHFE->SetHistDCABack(fDCABack);
-	fNonHFE->SetHistDCA(fDCA);
-	fNonHFE->SetHistMassBack(fInvMassBack);
-	fNonHFE->SetHistMass(fInvMass);
-	
-	fNonHFE->FindNonHFE(trackIndex,vtrack,fVevent);
-	
-	Int_t *fUlsPartner = fNonHFE->GetPartnersULS();
-	Int_t *fLsPartner = fNonHFE->GetPartnersLS();
-	Bool_t fUlsIsPartner = kFALSE;
-	Bool_t fLsIsPartner = kFALSE;
-		///#################################################################
-	
-	
-		//Electron Information
-	Double_t fPhiE = -999;
-	Double_t fEtaE = -999;
-	Double_t fPhiH = -999;
-	Double_t fEtaH = -999;  
-	Double_t fDphi = -999;
-	Double_t fDeta = -999;
-	Double_t fPtE = -999;
-	Double_t fPtH = -999;
-	
-	Double_t pi = TMath::Pi();
-	
-	fPhiE = track->Phi();
-	fEtaE = track->Eta();
-	fPtE = track->Pt();
-	
-	
-		///_________________________________________________________________
-		///MC analysis
-	if(fIsMC)
-	{
-		if(fIsAOD)
-		{
-			if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
-	        {
-				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-				
-				
-			}
-			
-			if(fNonHFE->IsULS()) fPtElec_ULS_NoPid->Fill(fPtE,fNonHFE->GetNULS());
-			if(fNonHFE->IsLS()) fPtElec_LS_NoPid->Fill(fPtE,fNonHFE->GetNLS());
-		}
-		else 
-		{
-			if(TMath::Abs(fMCtrack->GetPdgCode())==11 && (TMath::Abs(fMCtrackMother->GetPdgCode())==22 || TMath::Abs(fMCtrackMother->GetPdgCode())==111 || TMath::Abs(fMCtrackMother->GetPdgCode())==221))
-			{
-				if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-				
-			}
-			
-			
-		}
-	}
-		///_________________________________________________________________
-	else
-	{
-		if(fNonHFE->IsULS()) fPtElec_ULS->Fill(fPtE,fNonHFE->GetNULS());
-		if(fNonHFE->IsLS()) fPtElec_LS->Fill(fPtE,fNonHFE->GetNLS());
-	}
-	
-	
-	
-	
-		//__________________________________________________________________
-		//Event Mixing Analysis - Hadron Loop
-		//Retrieve
-	if(fEventMixingFlag)
-	{
-		fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
-		
-		if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f",fCentrality->GetCentralityPercentile("V0A"), fZvtx));
-		
-		if(fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
-		{
-			fPoolNevents->Fill(fPool->GetCurrentNEvents());
-			
-			for (Int_t jMix = 0; jMix < fPool->GetCurrentNEvents(); jMix++)  // mix with each event in the buffer
-			{
-				TObjArray* bgTracks = fPool->GetEvent(jMix);
-				
-				for (Int_t kMix = 0; kMix < bgTracks->GetEntriesFast(); kMix++)  // mix with each track in the event
-				{
-					const AliEHCParticle* MixedTrack(dynamic_cast<AliEHCParticle*>(bgTracks->At(kMix)));
-					if (NULL == MixedTrack) continue;
-					
-					fPhiH = MixedTrack->Phi();
-					fEtaH = MixedTrack->Eta();
-					fPtH = MixedTrack->Pt();
-					
-					if(fPtH<fAssHadronPtMin || fPtH>fAssHadronPtMax) continue;
-					
-					fDphi = fPhiE - fPhiH;
-					
-					if (fDphi > 3*pi/2) fDphi = fDphi - 2*pi;
-					if (fDphi < -pi/2)  fDphi = fDphi + 2*pi;
-					
-					fDeta = fEtaE - fEtaH;
-					
-					Double_t fPtBin[7] = {1,2,4,6,8,10,15};
-					
-					for(Int_t i = 0; i < 6; i++)
-					{
-					    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
-					    {
-							fCEtaPhi_Inc_EM[i]->Fill(fDphi,fDeta);
-							
-							if(fNonHFE->IsULS()) fCEtaPhi_ULS_EM[i]->Fill(fDphi,fDeta);
-							if(fNonHFE->IsLS()) fCEtaPhi_LS_EM[i]->Fill(fDphi,fDeta);
-							
-							if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-							if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight_EM[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-					    }
-					}
-					
-						// TODO your code: do event mixing with current event and bgTracks
-						// note that usually the content filled now is weighted by 1 / pool->GetCurrentNEvents()
-				}
-			}
-		}
-	}
-		//__________________________________________________________________
-	
-		//__________________________________________________________________
-		//Same Event Analysis - Hadron Loop
-	for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
-	{
-		if(trackIndex==iTracks) continue;
-		
-		AliVParticle* Vtrack2 = fVevent->GetTrack(iTracks);
-		if (!Vtrack2) 
-		{
-			printf("ERROR: Could not receive track %d\n", iTracks);
-			continue;
-		}
-		
-		AliVTrack *track2 = dynamic_cast<AliVTrack*>(Vtrack2);
-		
-		if(track2->Eta()<fEtaCutMin || track2->Eta()>fEtaCutMax ) continue;
-		
-		if(fIsAOD) 
-		{
-			AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
-			if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-			if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-			if(atrack2->GetTPCNcls() < 80) continue; 
-			if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
-		}
-		else
-		{   
-			AliESDtrack *etrack2 = dynamic_cast<AliESDtrack*>(Vtrack2); 
-			if(!fPartnerCuts->AcceptTrack(etrack2)) continue; 
-		}
-		
-		fPhiH = track2->Phi();
-		fEtaH = track2->Eta();
-		fPtH = track2->Pt();
-		
-		if(fPtH<fAssHadronPtMin || fPtH>fAssHadronPtMax) continue;
-		
-		fDphi = fPhiE - fPhiH;
-		
-		if (fDphi > 3*pi/2) fDphi = fDphi - 2*pi;
-		if (fDphi < -pi/2)  fDphi = fDphi + 2*pi;
-		
-		fDeta = fEtaE - fEtaH;
-		
-		Double_t fPtBin[7] = {1,2,4,6,8,10,15};
-		
-		//______________________________________________________________
-		//Check if this track is a Non-HFE partner
-		fUlsIsPartner = kFALSE;
-		fLsIsPartner = kFALSE;
-		for(Int_t i = 0; i < fNonHFE->GetNULS(); i++)
-		{
-			if(fUlsPartner[i]==iTracks) fUlsIsPartner=kTRUE;
-		}
-		for(Int_t i = 0; i < fNonHFE->GetNLS(); i++)
-		{
-			if(fLsPartner[i]==iTracks) fLsIsPartner=kTRUE;
-		}
-		//______________________________________________________________
-		
-		for(Int_t i = 0; i < 6; i++)
-		{
-		    if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
-		    {
-				fCEtaPhi_Inc[i]->Fill(fDphi,fDeta);
-				
-				if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta);
-				if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta);
-					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-					//new September 05, 2015:
-				 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-				
-					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-					//new September 05, 2015:
-				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-				
-				if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-				
-					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-					//new September 05, 2015:
-				if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-				
-					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-					//new September 05, 2015:
-				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
 
-				
-		    }
-		}
-	}
-}
 
 	//____________________________________________________________________________________________________________
 	//Create a TObjArray with selected hadrons, for the mixed event analysis

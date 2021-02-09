@@ -1,26 +1,26 @@
+/// \ingroup PWGPP/TPC/macros
+/// \brief   Macro to create performance histograms->maps->reports
+/// \author  marian.ivanov@cern.ch
+
 /*
   gSystem->AddIncludePath("-I$AliPhysics_SRC/PWGPP/ -I$AliPhysics_SRC/OADB/");  // ? why not in the alienv,  why not available ?
-
   AliDrawStyle::SetDefaults()
   AliDrawStyle::PrintStyles(0,TPRegexp("."));
   AliDrawStyle::ApplyStyle("figTemplate2");
-
   .L $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+ 
   gStyle->SetOptStat(0);
-  //
-  //
+
   //  performanceFiltered(20000000);
   //  InitAnalysis();
   //  AnalyzeHistograms();
-  //    AnalyzeHistograms()
+  //  AnalyzeHistograms()
   //  MakeResidualDistortionMaps()
   Combined tracking performance 
   //
   aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000\)
-//
-  aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000,1\) 
-
+  aliroot -b -q $HOME/rootlogon.C $AliPhysics_SRC/PWGPP/TPC/macros/performanceFiltered.C+\(2000000,1\)
 */
+
 #include "TSystem.h"
 #include "TChain.h"
 #include "TProof.h"
@@ -49,13 +49,14 @@
 #include "TKey.h"
 #include "AliDrawStyle.h"
 #include "AliAnalysisTaskFilteredTree.h"
+#include "AliCDBManager.h"
 //
 TChain * chain=0;
 TChain * chainV0=0;
 TTreeSRedirector *pcstream = 0;
 TObjArray fitSlicesArray(3);
 TObject * toStore =0;
-TGraph *lumiGraph=0;
+TGraph *luminosityGraph=0;
 TObjArray * hisArray=0;
 TObjArray * hisArrayV0=0;
 TObjArray * keepArray=0;
@@ -67,13 +68,14 @@ Int_t    chainEntries=0;
 //   parameters
 Int_t run=246272;
 TString period="LHC15o";
+TString year="2015";
 Double_t deltaT=300;  // 5 minutes binning
+Float_t bz=0;
 
-
-void InitAnalysis();
-TObjArray * FillPerfomanceHisto(Int_t maxEntries);
+Bool_t InitAnalysis();
+TObjArray * FillPerformanceHistogram(Int_t maxEntries);
 void SetMetadata();
-void MakeResidualDistortionMaps();
+void MakeResidualDistortionMaps(Int_t offset=1, Int_t step=0);
 //
 void GetNclReport(TObjArray * hisArray,  TObjArray *keepArray );
 void GetDCAReport(TObjArray * hisArray,  TObjArray *keepArray );
@@ -81,21 +83,31 @@ void GetChi2Report();
 void makeP2Report();
 void makeP4Report();
 
-
-void performanceFiltered(Int_t maxEvents, Int_t action=0){
+/// STEERING part
+/// Input:
+///     env. variables: run and period
+///     filtered.list with list of filtered trees
+///
+/// \param maxEvents  - maximum events to proceed  (in test mode subset of statistic can be used
+/// \param action     - 1        - make performance maps
+///                   - default  - make performance histograms
+///
+void performanceFiltered(Int_t maxEvents, Int_t action=0, Int_t p0=1, Int_t p1=1){
   //
-  //   .L $NOTES/JIRA/PWGPP-221/code/performanceFiltered.C+
   //
   if (action==1) {
-    MakeResidualDistortionMaps();
+    MakeResidualDistortionMaps(p0,p1);
     return;
   }
-  InitAnalysis();
+  if (InitAnalysis()==kFALSE){
+    ::Error("performanceFiltered","Failed to initialize. Exiting");
+    return;
+  }
   if (chain==NULL) {
     ::Error("performanceFiltered","Empty input chain");
     return;
   }
-  hisArray = FillPerfomanceHisto(maxEvents);
+  hisArray = FillPerformanceHistogram(maxEvents);
   keepArray=new TObjArray();
   //GetNclReport(hisArray,keepArray);
   //GetDCAReport(hisArray,keepArray);
@@ -104,7 +116,7 @@ void performanceFiltered(Int_t maxEvents, Int_t action=0){
   delete pcstream;
 }
 
-
+///
 void AnalyzeHistograms(){
   //
   //
@@ -128,8 +140,12 @@ void AnalyzeHistograms(){
 }
 
 
-
+/// Set aliases and metadata used to describe variables in trees
 void SetMetadata(){
+  //
+  chain->Draw("Bz","1","goff",1);
+  bz=chain->GetV1()[0];
+  chain->SetAlias("bz",Form("%f",bz));
   //
   chain->SetAlias("logTracks5","log(1+ntracks/5.)");
   chain->SetAlias("esdTrackPt","esdTrack.Pt()");
@@ -152,7 +168,6 @@ void SetMetadata(){
   chain->SetAlias("nclFROC0","esdTrack.GetTPCClusterInfo(3,0,0,62)");
   chain->SetAlias("nclFROC1","esdTrack.GetTPCClusterInfo(3,0,63,126)");
   chain->SetAlias("nclFROC2","esdTrack.GetTPCClusterInfo(3,0,127,159)");
-
   //
   chain->SetAlias("TPCASide","esdTrack.fIp.fP[1]>0");
   chain->SetAlias("TPCCSide","esdTrack.fIp.fP[1]<0");
@@ -183,18 +198,30 @@ void SetMetadata(){
 
 }
 
-
-void InitAnalysis(){
+/// InitAnalysis
+/// * Load chain of filtered tracks and V0s
+/// * Determine time intervals for  histograms
+///   * Use Logbook to retrieve information
+/// \return
+Bool_t  InitAnalysis(){
   //
   // get parameters
   // Init analysis
   ::Info("InitAnalysis()","START");
   pcstream = new TTreeSRedirector("performanceHisto.root","recreate");
   pcstream->GetFile()->cd();
-
+  if (gSystem->Getenv("run")==NULL  || gSystem->Getenv("period")==0 || gSystem->Getenv("year")==0){
+    ::Error("performaceFiltered::InitAnalisys","run and period to be set using env variables run, period");   /// todo add them as a paremeters
+    return kFALSE;
+  }else{
+    ::Info("using setting","%s\n\t%s\n\t%s",gSystem->Getenv("run"),  gSystem->Getenv("period"),  gSystem->Getenv("year"));
+     }
   run=TString(gSystem->Getenv("run")).Atoi();
   period=gSystem->Getenv("period");
+  year=gSystem->Getenv("year");
   if (gSystem->Getenv("deltaT")!=NULL) deltaT=TString(gSystem->Getenv("deltaT")).Atof();
+  AliCDBManager::Instance()->SetDefaultStorage(Form("local:///cvmfs/alice.cern.ch/calibration/data/%s/OCDB/",year.Data()));
+  AliCDBManager::Instance()->SetRun(run);
   //
   // get chain
   chain = AliXRDPROOFtoolkit::MakeChainRandom("filtered.list","highPt",0,40000,0,1);
@@ -206,7 +233,7 @@ void InitAnalysis(){
   Int_t selected = chain->Draw("ntracks:mult:evtTimeStamp","","goff",100000);
   if (selected<=0){
     ::Error("performanceFiltered.InitAnalysis","Empty or corrupted input list");
-    return;
+    return kFALSE;
   }
   ntracksEnd=TMath::KOrdStat(selected,chain->GetV1(),Int_t(selected*0.98))*1.02; // max Ntracks
   multEnd=TMath::KOrdStat(selected,chain->GetV2(),Int_t(selected*0.98))*1.02; // max Mult (primary)
@@ -217,50 +244,44 @@ void InitAnalysis(){
     "run="<<run<<
     "timeStart="<<timeStart<<
     "timeEnd="<<timeEnd;
-
-
+  
   AliExternalInfo info;
   TTree* treeLogbook = info.GetTree("Logbook",period.Data(),"");
-
   if (treeLogbook==NULL) {
-    //::Error("performanceFiltered.InitAnalysis","logbook tree not avaiable for period %s",period.Data()); 
-    return;
+    ::Error("performanceFiltered.InitAnalysis","logbook tree not available for period %s",period.Data());
+    return kFALSE;
   }
   Int_t entries = treeLogbook->Draw("DAQ_time_start:DAQ_time_end",TString::Format("run==%d",run).Data(),"goff");
   if (entries>0) {timeStart=treeLogbook->GetV1()[0];  timeEnd=treeLogbook->GetV2()[0];}
   timeBins=(timeEnd-timeStart)/deltaT+1;
   AliLumiTools lumiTool;
-  lumiGraph = lumiTool.GetLumiFromCTP(run,"local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB/");
+  luminosityGraph = lumiTool.GetLumiFromCTP(run,Form("local:///cvmfs/alice.cern.ch/calibration/data/%s/OCDB/",year.Data()));
   //
   TVectorF vecX(timeBins), vecLumi(timeBins);
-  for (Int_t itime=0; itime<timeBins; itime++){
-    Double_t ctime= timeStart+(timeEnd-timeStart)*(itime+0.5)/timeBins;
-    vecX[itime]=ctime;
-    vecLumi[itime]=lumiGraph->Eval(ctime);    
+  for (Int_t iTime=0; iTime<timeBins; iTime++){
+    Double_t cTime= timeStart+(timeEnd-timeStart)*(iTime+0.5)/timeBins;
+    vecX[iTime]=cTime;
+    vecLumi[iTime]=luminosityGraph->Eval(cTime);    
   }
   TGraph* grLumiBin=new TGraph(timeBins, vecX.GetMatrixArray(), vecLumi.GetMatrixArray());
   (*pcstream)<<"perf"<<
-    "lumiGraph.="<<lumiGraph<<
+    "luminosityGraph.="<<luminosityGraph<<
     "lumiBin.="<<grLumiBin;
+  return kTRUE;
 }
 
-
-TObjArray * FillPerfomanceHisto(Int_t maxEntries){
-  //
-  // Fill perfomance histograms
-  //      return array of histograms
-  //
-  /*
-    Int_t maxEntries=200000; 
-  */
+/// Fill performance histograms
+/// \param maxEntries
+/// \return   return array of histograms
+TObjArray * FillPerformanceHistogram(Int_t maxEntries){
   Int_t nTracks=chain->GetEntries();
   chain->SetEstimate(chain->GetEntries());
   TString timeRange=TString::Format( "%d,%.0f,%.0f",timeBins,timeStart, timeEnd);
   //
-  TString defaultCut="esdTrack.GetTPCClusterInfo(3,1)>60&&esdTrack.IsOn(0x1)>0";
-  TString defaultCutMatch="esdTrack.GetTPCClusterInfo(3,1)>60";
-  const Int_t nqaHistos=23;
-  const char * qaHistos[nqaHistos]={"nclITS","nclTPC","nclTRD",		\
+  TString defaultCut="(esdTrack.GetTPCClusterInfo(3,1)>60)&&esdTrack.IsOn(0x1)>0&&selectionPtMask>0";
+  TString defaultCutMatch="(esdTrack.GetTPCClusterInfo(3,1)>110-abs(qPt)*10)&&selectionPtMask>0&&normChi2TPC<4";
+  const Int_t nQAHisto=23;
+  const char * qaHistos[nQAHisto]={"nclITS","nclTPC","nclTRD",		\
 				    "normChi2ITS","normChi2TPC","normChi2TRD", \
 				    "nclROC0","nclROC1","nclROC2", "nclROCA", \
 				    "nclFROC0","nclFROC1","nclFROC2","nclFROCA", \
@@ -268,21 +289,21 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
 				    "pullPC2", "pullPC3", "pullPC4", \
 				    "covarPC2Norm", "covarPC3Norm", "covarPC4Norm"};
 
-  const Int_t histosBins[nqaHistos]={8,80,80,	\
+  const Int_t hisBins[nQAHisto]={8,80,80,	\
 				     50,50,50,	\
 				     64,64,32,160,	\
 				     55,55,55,55,\
 				     60,60,50, \
 				     50,50,50, \
 				     50,50,50 };
-  const Double_t histosMin[nqaHistos]={0,0,0,	\
+  const Double_t hisMin[nQAHisto]={0,0,0,	\
 				       0,0,0,	\
 				       0,0,0,0,	\
 				       0,0,0,0, \
 				       -0.015,-0.015,-0.1, \
 				       -10,-10,-10, \
 				       0.00,0.00,0.0};
-  const Double_t histosMax[nqaHistos]={8,160,160,	\
+  const Double_t hisMax[nQAHisto]={8,160,160,	\
 				       10,10,10,	\
 				       64,64,32,160,	\
 				       1.1,1.1,1.1,1.1, \
@@ -300,34 +321,44 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+="esdTrackQPt:tgl:secInner:#esdTrack.fTPCncls>60>>hisQptTglSecAll(40,-2,2,10,-1,1,90,0,18);"; 
   }
   // QA variables histograms
-  for (Int_t iPar=0; iPar<nqaHistos; iPar++){
+  for (Int_t iPar=0; iPar<nQAHisto; iPar++){
     // 
     hisString+=TString::Format("%s:qPt:tgl:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl(%d,%f,%f,200,-5,5,10,-1,1);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:logTracks5:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_LogTracks5(%d,%f,%f,50,-5,5,10,-1,1,10,0,10.);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:smdEdx:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_smdEdx(%d,%f,%f,50,-5,5,10,-1,1,10,0,1);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:smdEdx:logTracks5:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_smdEdx_LogTracks5(%d,%f,%f,50,-5,5,10,-1,1,10,0,1,10,0,10.);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dalphaQ(%d,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);", \
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
+    hisString+=TString::Format("%s:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_dSectorM(%d,%f,%f,48,-3,3,10,-1,1,50,0,1);", \
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
     hisString+=TString::Format("%s:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaV(%d,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
-			       qaHistos[iPar],qaHistos[iPar],histosBins[iPar],histosMin[iPar],histosMax[iPar]);
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
+     hisString+=TString::Format("%s:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>qahis%s_v_qPt_tgl_alphaM(%d,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",\
+			       qaHistos[iPar],qaHistos[iPar],hisBins[iPar],hisMin[iPar],hisMax[iPar]);
   }
-  // Matchin efficiency histograms for primary +-4 sigma tracks
+  // Matching efficiency histograms for primary +-4 sigma tracks
   //
-  const Int_t nmatchHistos=4;
-  const char * matchHistos[nmatchHistos]={"ITSOn","ITSRefit","TPCRefit","TRDOn"};
+  const Int_t nMatchHisto=4;
+  const char * matchHistos[nMatchHisto]={"ITSOn","ITSRefit","TPCRefit","TRDOn"};
    // QA variables histograms 
   TString hisMatch="";
-  for (Int_t iPar=0; iPar<nmatchHistos; iPar++){
+  for (Int_t iPar=0; iPar<nMatchHisto; iPar++){
     // 
     hisMatch+=TString::Format("%s:qPt:tgl:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl(2,-0.5,1.5,200,-5,5,10,-1,1);", \
 			       matchHistos[iPar],matchHistos[iPar]);
     hisMatch+=TString::Format("%s:qPt:tgl:dalphaQ:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_dalphaQ(2,-0.5,1.5,48,-3,3,10,-1,1,50,-0.18,0.18);", \
 			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:dSectorM:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_dSectorM(2,-0.5,1.5,48,-3,3,10,-1,1,50,-0.0,1);", \
+			       matchHistos[iPar],matchHistos[iPar]);
     hisMatch+=TString::Format("%s:qPt:tgl:alphaV:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_alphaV(2,-0.5,1.5,48,-3,3,10,-1,1,90,-3.145,3.145);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:alphaM:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_alphaM(2,-0.5,1.5,48,-3,3,10,-1,1,90,-3.145,3.145);", \
+			       matchHistos[iPar],matchHistos[iPar]);
+    hisMatch+=TString::Format("%s:qPt:tgl:logTracks5:#TPCOn&&TOFOn&&IsPrim4&&IsPrim4TPC>>matchhis%s_v_qPt_tgl_logTracks5(2,-0.5,1.5,48,-3,3,10,-1,1,10,0,10);", \
 			       matchHistos[iPar],matchHistos[iPar]);
     }
   
@@ -389,6 +420,16 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+=TString::Format("covarP%d:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,range[iPar]);
     hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
     hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaV:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_alphaV(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
+    //
+    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:alphaM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_alphaM(100,%f,%f,48,-3,3,10,-1,1,90,-3.145,3.145);",iPar,iPar, fnull,rangeCITS[iPar]);
+
     // Edge Effect histogramming
     hisString+=TString::Format("deltaP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -range[iPar],range[iPar]);
     hisString+=TString::Format("deltaP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, -range[iPar],range[iPar]);
@@ -398,6 +439,16 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     hisString+=TString::Format("covarP%d:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,range[iPar]);
     hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
     hisString+=TString::Format("covarP%dITS:qPt:tgl:dalphaQ:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_dalphaQ(100,%f,%f,48,-3,3,10,-1,1,50,-0.18,0.18);",iPar,iPar, fnull,rangeCITS[iPar]);
+    //
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisDeltaP%d_Allv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("deltaP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisDeltaP%d_TRDv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -range[iPar],range[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisPullP%d_Allv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("pullP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisPullP%d_TRDv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, -rangeP[iPar],rangeP[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%d_Allv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%d:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%d_TRDv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,range[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut>>hisCovarP%dITS_Allv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,rangeCITS[iPar]);
+    hisString+=TString::Format("covarP%dITS:qPt:tgl:dSectorM:#IsPrim4&&TPCOn&&ITSRefit&&ITSOn01&&nclCut&&TRDOn>>hisCovarP%dITS_TRDv_qPt_tgl_dSectorM(100,%f,%f,48,-3,3,10,-1,1,50,0,1);",iPar,iPar, fnull,rangeCITS[iPar]);
+
     //
     // multiplicity 
     //
@@ -414,7 +465,10 @@ TObjArray * FillPerfomanceHisto(Int_t maxEntries){
     // K0 performance
     hisV0String+="K0Delta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,10,-1,1);";  
     hisV0String+="K0Pull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,10,-1,1);";
-    // K0 resolution/maps - in respec to sector edge
+    //hisV0String+="LDelta:mpt:tglV0:#K0cut>>hisK0DMassQPtTgl(100,-0.03,0.03,80,0,2,10,-1,1);";
+    //hisV0String+="LPull:mpt:tglV0:#K0cut>>hisK0PullQPtTgl(100,-6.0,6.0,80,0,2,10,-1,1);";
+
+    // K0 resolution/maps - in respect to sector edge
     hisV0String+="K0Delta:mpt:tglV0:dalphaV0:#K0cut>>hisK0DMassQPtTglDSec(100,-0.03,0.03,10,0,1,10,-1,1,10,0.0,0.35);";  
     hisV0String+="K0Pull:mpt:tglV0:dalphaV0:#K0cut>>hisK0PullQPtTglDSec(100,-6.0,6.0,10,0,1,10,-1,1,10,0.0,0.35);";
     // K0 resolution/maps - 
@@ -628,16 +682,16 @@ void GetChi2Report(){
   padChi2ITS->SaveAs("itsChi2Report.pdf");
   padChi2ITS->SaveAs("itsChi2Report.C");
   // Time properties
-  TString drawExpressionChi2TPCTime="";
-  drawExpressionChi2TPCTime="[1,1,1]:";
-  drawExpressionChi2TPCTime+="%Otimex,gridx,gridy;";
-  drawExpressionChi2TPCTime+="hisChi2TPCSecTimeA(0,40,0,180,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,0,180,0,10000)(0,2)(f-mean p);:";
-  drawExpressionChi2TPCTime+="%Otimex,gridx,gridy;";
-  drawExpressionChi2TPCTime+="hisChi2TPCSecTimeA(0,40,U0,U18,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeA(0,40,U1,U9,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeA(0,40,U10,U18,0,10000)(0,2)(f-mean p);:";
-  drawExpressionChi2TPCTime+="%Otimex,gridx,gridy;";
-  drawExpressionChi2TPCTime+="hisChi2TPCSecTimeC(0,40,U0,U18,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,U1.5,U2.5,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,U11.5,U12.5,0,10000)(0,2)(f-mean p);:";
-  TPad * padChi2TPCTime = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionChi2TPCTime,keepArray, 1+2+4+8);
-  ((TCanvas*)padChi2TPCTime)->SetWindowSize(1600,1000);
+  TString drawExpressionChi2TPcTime="";
+  drawExpressionChi2TPcTime="[1,1,1]:";
+  drawExpressionChi2TPcTime+="%Otimex,gridx,gridy;";
+  drawExpressionChi2TPcTime+="hisChi2TPCSecTimeA(0,40,0,180,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,0,180,0,10000)(0,2)(f-mean p);:";
+  drawExpressionChi2TPcTime+="%Otimex,gridx,gridy;";
+  drawExpressionChi2TPcTime+="hisChi2TPCSecTimeA(0,40,U0,U18,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeA(0,40,U1,U9,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeA(0,40,U10,U18,0,10000)(0,2)(f-mean p);:";
+  drawExpressionChi2TPcTime+="%Otimex,gridx,gridy;";
+  drawExpressionChi2TPcTime+="hisChi2TPCSecTimeC(0,40,U0,U18,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,U1.5,U2.5,0,10000)(0,2)(f-mean p);hisChi2TPCSecTimeC(0,40,U11.5,U12.5,0,10000)(0,2)(f-mean p);:";
+  TPad * padChi2TPcTime = AliTreePlayer::DrawHistograms(0,hisArray,drawExpressionChi2TPcTime,keepArray, 1+2+4+8);
+  ((TCanvas*)padChi2TPcTime)->SetWindowSize(1600,1000);
   padChi2TPC->SaveAs("tpcChi2TimeReport.png");
   padChi2TPC->SaveAs("tpcChi2TimeReport.pdf");
   padChi2TPC->SaveAs("tpcChi2TimeReport.C");
@@ -730,7 +784,7 @@ void makeP4Report(){
 }
 
 
-void MakeResidualDistortionMaps(){
+void MakeResidualDistortionMaps(Int_t offset, Int_t step){
   //
   // MakeResidualDistortionMaps
   //    Input: performanceHisto.root with sets of histograms
@@ -738,33 +792,33 @@ void MakeResidualDistortionMaps(){
   TFile *finput = TFile::Open("performanceHisto.root","read");
   hisArray=new TObjArray();
   TList * keys = finput->GetListOfKeys();
-  for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){    
+  for (Int_t iKey=0; iKey<keys->GetEntries(); iKey++){
     TObject * object = finput->Get(TString::Format("%s;%d",keys->At(iKey)->GetName(),((TKey*)keys->At(iKey))->GetCycle()).Data());
     THnBase * his  = dynamic_cast<THnBase*>(object);
     if (his) hisArray->AddLast(his);
   }
-  TTreeSRedirector * pcstream = new TTreeSRedirector("residualMap.root","recreate");
+  TTreeSRedirector * pcstream = new TTreeSRedirector(Form("residualMap_%d.root",offset),"recreate");
   // Residual histogram -> maps creation
   TPRegexp regexpHis("^(his|matchhis|qahis)");    // make residual maps for each delta histogram  
-  TPRegexp regexpMatch("^matchhis");  
-  TPRegexp regexpK0("hisK0");   
+  TPRegexp regexpMatch("^matchhis");
+  TPRegexp regexpK0("hisK0");
   //
   //
   TMatrixD projectionInfo(5,5);
-  projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   
-  projectionInfo(1,0)=1;  projectionInfo(1,1)=1;  projectionInfo(1,2)=0; 
-  projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;  
-  projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;    
-  projectionInfo(4,0)=4;  projectionInfo(4,1)=0;  projectionInfo(4,2)=0;    
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;
+  projectionInfo(1,0)=1;  projectionInfo(1,1)=1;  projectionInfo(1,2)=0;
+  projectionInfo(2,0)=2;  projectionInfo(2,1)=0;  projectionInfo(2,2)=0;
+  projectionInfo(3,0)=3;  projectionInfo(3,1)=1;  projectionInfo(3,2)=0;
+  projectionInfo(4,0)=4;  projectionInfo(4,1)=0;  projectionInfo(4,2)=0;
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     Int_t proj[6]={0,1,2,3,4,5};
-    THn * hisInput=(THn*)hisArray->At(iHis);    
+    THn * hisInput=(THn*)hisArray->At(iHis);
     if (hisInput->GetNdimensions()<2) continue;
     THnBase *hisProj=0;
     ::Info("MakeResidualDistortionMaps","%s\t%d\t%d\t%d",hisInput->GetName(),hisInput->GetNdimensions(), hisInput->GetNbins(), Int_t(hisInput->GetEntries()));
     if (regexpHis.Match(TString(hisInput->GetName())) && regexpK0.Match(TString(hisInput->GetName()))==0){
       Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
-      hisInput->Print(); 
+      hisInput->Print();
       TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,fraction);
       Int_t nDim=hisInput->GetNdimensions();
       if (nDim<2) continue;
@@ -775,12 +829,12 @@ void MakeResidualDistortionMaps(){
     }
   }
   // Track performance maps
-  TPRegexp regexpPerf("_qPt_tgl$");  
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  TPRegexp regexpPerf("_qPt_tgl$");
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     THnBase *hisProj=0;
     Int_t proj[5]={0,1};
     if ( (regexpPerf.Match(TString(hisArray->At(iHis)->GetName()))>0) && (regexpK0.Match(TString(hisArray->At(iHis)->GetName()))==0) ){
-      hisArray->At(iHis)->Print(); 
+      hisArray->At(iHis)->Print();
       THn * hisInput=(THn*)hisArray->At(iHis);
       Double_t fraction=(regexpMatch.Match(TString(hisInput->GetName()))>0)?0.0:0.1;
       //A side
@@ -802,24 +856,24 @@ void MakeResidualDistortionMaps(){
   //
   //  TPRegexp regexpK0("hisK0");  
   projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;   // merge pt bins
-  projectionInfo(1,0)=1;  projectionInfo(1,1)=0;  projectionInfo(1,2)=0; 
-  projectionInfo(2,0)=2;  projectionInfo(2,1)=1;  projectionInfo(2,2)=0;  
+  projectionInfo(1,0)=1;  projectionInfo(1,1)=0;  projectionInfo(1,2)=0;
+  projectionInfo(2,0)=2;  projectionInfo(2,1)=1;  projectionInfo(2,2)=0;
   //
-  for (Int_t iHis=0; iHis<hisArray->GetEntries(); iHis++){
+  for (Int_t iHis=offset; iHis<hisArray->GetEntries(); iHis+=step){
     if ( (regexpK0.Match(TString(hisArray->At(iHis)->GetName()))>0) ){
-      hisArray->At(iHis)->Print(); 
+      hisArray->At(iHis)->Print();
       THn * hisInput=(THn*)hisArray->At(iHis);
       TStatToolkit::MakeDistortionMapFast(hisInput,pcstream,projectionInfo,0,0.1);
       Int_t proj[2]={0,1};
       THnBase * hisProj2D=hisInput->ProjectionND(2,proj);
       TStatToolkit::MakeDistortionMapFast(hisProj2D,pcstream,projectionInfo,0,0.1);
       if (hisInput->GetNdimensions()>3){ // for 4 diminsional histogram skip eta dapendence we use just A side c side
-	Int_t etaBins=hisInput->GetAxis(2)->GetNbins();
-	Int_t rebinEta[4]={1,1,etaBins/2,1};
-	THnBase * hisAC=hisInput->Rebin(rebinEta);
-	projectionInfo(2,1)=0;   
-	TStatToolkit::MakeDistortionMapFast(hisAC,pcstream,projectionInfo,0,0.1);
-	projectionInfo(2,1)=0; 
+        Int_t etaBins=hisInput->GetAxis(2)->GetNbins();
+        Int_t rebinEta[4]={1,1,etaBins/2,1};
+        THnBase * hisAC=hisInput->Rebin(rebinEta);
+        projectionInfo(2,1)=0;
+        TStatToolkit::MakeDistortionMapFast(hisAC,pcstream,projectionInfo,0,0.1);
+        projectionInfo(2,1)=0;
       }
     }
   }

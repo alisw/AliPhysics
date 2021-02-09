@@ -13,7 +13,7 @@
 #endif
 
 
-AliFemtoXiTrackCutNSigmaFilter::AliFemtoXiTrackCutNSigmaFilter() : 
+AliFemtoXiTrackCutNSigmaFilter::AliFemtoXiTrackCutNSigmaFilter() :
   AliFemtoXiTrackCut(),
 
   fIsDaughterV0FilterUpdated(false),
@@ -102,23 +102,23 @@ bool AliFemtoXiTrackCutNSigmaFilter::PassV0(const AliFemtoXi* aXi)
 
 bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
 {
-  // test the particle and return 
+  // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-   
+
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
-  
+
   if(aXi->ChargeXi()==0)
     return false;
 
 
   //ParticleType selection
-  //If fParticleTypeXi=kAll, any charged candidate will pass 
-  if(fParticleTypeXi == AliFemtoXiTrackCut::kXiPlus && aXi->ChargeXi() == -1) 
+  //If fParticleTypeXi=kAll, any charged candidate will pass
+  if(fParticleTypeXi == AliFemtoXiTrackCut::kXiPlus && aXi->ChargeXi() == -1)
     return false;
 
-  if(fParticleTypeXi == AliFemtoXiTrackCut::kXiMinus && aXi->ChargeXi() == 1) 
+  if(fParticleTypeXi == AliFemtoXiTrackCut::kXiMinus && aXi->ChargeXi() == 1)
     return false;
 
   //kinematic cuts
@@ -126,19 +126,19 @@ bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
   if(pt < fMinPtXi) return false;
   if(pt > fMaxPtXi) return false;
   if(TMath::Abs(aXi->EtaBac()) > fMaxEtaBac) return false;
-  if(aXi->PtBac()< fMinPtBac) return false; 
-  if(aXi->PtBac()> fMaxPtBac) return false; 
+  if(aXi->PtBac()< fMinPtBac) return false;
+  if(aXi->PtBac()> fMaxPtBac) return false;
 
-  
+
 
     //Xi from kinematics information
     if (fParticleTypeXi == AliFemtoXiTrackCut::kXiMinusMC || fParticleTypeXi == AliFemtoXiTrackCut::kXiPlusMC) {
       if(!(aXi->MassXi()>fInvMassXiMin && aXi->MassXi()<fInvMassXiMax) || !(aXi->BacNSigmaTPCPi()==0))
-	return false; 
+	return false;
       else
 	{
-	  return true;  
-	} 
+	  return true;
+	}
     }
 
 
@@ -160,19 +160,19 @@ bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
     //DCA Xi daughters
     if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters)
       return false;
-    
+
     //cos pointing angle
     if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi)
-      return false; 
-    
+      return false;
+
     //decay length
     if(aXi->DecayLengthXi()>fMaxDecayLengthXi)
       return false;
-    
+
     //fiducial volume radius
     if(aXi->RadiusXi()<fRadiusXiMin || aXi->RadiusXi()>fRadiusXiMax)
       return false;
- 
+
   if(fParticleTypeXi == kAll)
     return true;
 
@@ -199,8 +199,8 @@ bool AliFemtoXiTrackCutNSigmaFilter::Pass(const AliFemtoXi* aXi)
   if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
    {
      return false;
-   }  
-  
+   }
+
   fCTauXi->Fill(GetCTauXi(aXi));
   return true;
 }
@@ -212,14 +212,14 @@ AliFemtoString AliFemtoXiTrackCutNSigmaFilter::Report()
   report += TString::Format("Usings custom BacPion NSigma Filter:\t%i\n", fUseCustomBacPionNSigmaFilter)
           + AliFemtoXiTrackCut::Report()
           + fDaughterV0Filter->Report();
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 TList *AliFemtoXiTrackCutNSigmaFilter::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
- 
+
   return tListSetttings;
 }
 
@@ -239,7 +239,7 @@ TList *AliFemtoXiTrackCutNSigmaFilter::GetOutputList()
 
 void AliFemtoXiTrackCutNSigmaFilter::UpdateDaughterV0Filter()
 {
-  //TODO find more robust way of doing this, so it can evolve is AliFemtoV0Track cut 
+  //TODO find more robust way of doing this, so it can evolve is AliFemtoV0Track cut
   //  gains more attributes
   fDaughterV0Filter->SetInvariantMassLambda(fInvMassLambdaMin,fInvMassLambdaMax);
   fDaughterV0Filter->SetInvariantMassK0s(fInvMassK0sMin,fInvMassK0sMax);
@@ -270,7 +270,7 @@ void AliFemtoXiTrackCutNSigmaFilter::UpdateDaughterV0Filter()
 
   fDaughterV0Filter->SetRequireTOFPion(fRequireTOFPion);
   fDaughterV0Filter->SetRequireTOFProton(fRequireTOFProton);
-  
+
   fDaughterV0Filter->SetNsigmaPosDaughter(fNsigmaPosDaughterTPC);
   fDaughterV0Filter->SetNsigmaNegDaughter(fNsigmaNegDaughterTPC);
   fDaughterV0Filter->SetNsigmaPosDaughter(fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF);
@@ -404,6 +404,3 @@ void AliFemtoXiTrackCutNSigmaFilter::SetCTauHistoV0(int aNbins, double aMin, dou
 {
   fDaughterV0Filter->SetCTauHistoV0(aNbins,aMin,aMax);
 }
-
-
-

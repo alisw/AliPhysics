@@ -39,6 +39,7 @@ AliCaloPhoton::AliCaloPhoton() :
   fModule(0),
   fBC(0),
   fBadDist(0),
+  fBadDistfp(0.),
   fNCells(0),
   fFiducialArea(0),
   fPi0Decayflag(0),
@@ -61,9 +62,10 @@ AliCaloPhoton::AliCaloPhoton() :
   fNsigmaFullDisp(-1),
   fNsigmaCoreDisp(-1),
   fTOFCutEfficiency(1.),
+  fEmbEventID(-1),
   fCluster(0x0)
 {
-
+  ResetTagWeights() ;
 
 } 
 //===============================================
@@ -84,6 +86,7 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fModule(0),
   fBC(0),
   fBadDist(0),
+  fBadDistfp(0.),
   fNCells(0),
   fFiducialArea(0),
   fPi0Decayflag(0),
@@ -106,9 +109,10 @@ AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy
   fNsigmaFullDisp(-1),
   fNsigmaCoreDisp(-1),
   fTOFCutEfficiency(1.),
+  fEmbEventID(-1),
   fCluster(0x0)
 {
-  
+    ResetTagWeights() ;
 }
 //===============================================
 Bool_t AliCaloPhoton::IsPIDOK(Int_t ipid)const{

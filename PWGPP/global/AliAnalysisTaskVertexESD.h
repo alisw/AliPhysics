@@ -72,7 +72,8 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhTPCVertexZ; //! output histo
   TH2F        *fhTrackRefs;     //! output histo
   TTree       *fTreeBeamSpot;  //! output tree beam spot
-
+  TTree       *fTreeDiamond;   //! output tree diamond
+  TBits       *fStoredRuns;    //! runs stored in fTreeDiamond
   TH1F        *fhTriggeredTrklets; //! output histo
   TH1F        *fhSPD3DTrklets; //! output histo
   TH1F        *fhSPDZTrklets; //! output histo
@@ -108,7 +109,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   AliESDVertex* ReconstructPrimaryVertexTPC(Bool_t constr=kFALSE) const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE,Int_t mode=0) const;
   
-  ClassDef(AliAnalysisTaskVertexESD,11); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,12); // primary vertex analysis
 };
 
 #endif

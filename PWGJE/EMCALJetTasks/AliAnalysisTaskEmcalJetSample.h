@@ -41,6 +41,12 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   void                        UserCreateOutputObjects()                         ;
   void                        Terminate(Option_t *option)                       ;
 
+  static AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
+      const char *ntracks            = "usedefault",
+      const char *nclusters          = "usedefault",
+      const char* ncells             = "usedefault",
+      const char *suffix             = "");
+
  protected:
   void                        ExecOnce()                                        ;
   Bool_t                      FillHistograms()                                  ;

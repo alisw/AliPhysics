@@ -18,17 +18,15 @@ const Double_t thetamax = TMath::Pi();
 const Double_t zvtxmin = -10.0;
 const Double_t zvtxmax =  10.0;
 //
-// The following cuts are used on a specific container step, not used in standard efficiency evaluation for D-h analyses (and are active only for ESD analysis)
+// The following cuts are used on MC particles in step 3 (we don't use it) to check that they're reconstructable, so no influence on D-h effs
 const Int_t mintrackrefsTPC = 5;
 const Int_t mintrackrefsITS = 4;
 const Int_t mintrackrefsTOF = 0;
 const Int_t mintrackrefsMUON = 0;
-const Int_t minclustersTPC = 70;
-const Int_t minclustersITS = 2;
 const Bool_t TPCRefit = kTRUE;
 const Bool_t ITSRefit = kFALSE;
 const Bool_t ischarged = kTRUE;
-const Int_t  fBit = 0;
+//const Int_t fBit = 0;
 //const TString centralityEstimator = "ZNA";
 
 //
@@ -37,10 +35,10 @@ const Int_t  fBit = 0;
 // Container mutliplicity bins
 const Float_t multmin_0_20 = 0;
 const Float_t multmax_0_20 = 20;
-const Float_t multmin_20_50 = 20;
-const Float_t multmax_20_50 = 50;
-const Float_t multmin_50_102 = 50;
-const Float_t multmax_50_102 = 150;
+const Float_t multmin_20_35 = 20;
+const Float_t multmax_20_35 = 35;
+const Float_t multmin_35_200 = 35;
+const Float_t multmax_35_200 = 200;
 //  Container Pt bins
 Double_t ptmin_0_2   = 0.0;
 Double_t ptmax_0_2   = 2.0;
@@ -53,10 +51,10 @@ Double_t ptmax_8_16  = 16.0;
 Double_t ptmin_16_24 = 16.0;
 Double_t ptmax_16_24 = 24.0;
 // Container centrality bins
-const Float_t centmin_0_10 = 0.;
-const Float_t centmax_0_10 = 10.;
-const Float_t centmin_10_60 = 10.;
-const Float_t centmax_10_60 = 60.;
+const Float_t centmin_0_20 = 0.;
+const Float_t centmax_0_20 = 20.;
+const Float_t centmin_20_60 = 20.;
+const Float_t centmax_20_60 = 60.;
 const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 
@@ -72,8 +70,9 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
                                                                            TString effName="",
                                                                            TString cutObjName="",
 									   TString centralityEstimator="ZNA",
-                                                                           Double_t maxRadiusForPrimaries=999.
-                                                                           )
+                                                                           Double_t maxRadiusForPrimaries=999.,
+                                                                           Int_t fBit=0, //set this!! It's the filterbit to be checked!
+									   )
 {
     
     Info("AliCFSingleTrackEfficiencyTask","SETUP CONTAINER");
@@ -100,19 +99,19 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     const Int_t nbinpt_8_16 = 3;  //bins in pt from 8 to 16 GeV
     const Int_t nbinpt_16_24 = 1; //bins in pt from 16 to 24 GeV
     //   A2. Bins variation by hand for other variables
-    const Int_t nbin2 = 18; //bins in eta
+    const Int_t nbin2 = 16; //bins in eta
     const Int_t nbin3 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in phi
     const Int_t nbin4 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 9 : 1; //bins in theta
     const Int_t nbin5 = 20; //bins in zvtx
     //   A3. Bins for multiplicity
     const Int_t nbinmult = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 24 : 3;  //bins in multiplicity (total number)
     const Int_t nbinmult_0_20 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 0 and 20
-    const Int_t nbinmult_20_50 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 20 and 50
-    const Int_t nbinmult_50_102 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 4 : 1; //bins in multiplicity between 50 and 102
+    const Int_t nbinmult_20_35 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1; //bins in multiplicity between 20 and 35
+    const Int_t nbinmult_35_200 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 4 : 1; //bins in multiplicity between 35 and 200
     //  A4. Bins for centrality
     const Int_t nbincent = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 16 : 3;  //bins in centrality
-    const Int_t nbincent_0_10 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 2 : 1;  //bins in centrality between 0 and 10
-    const Int_t nbincent_10_60 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1;  //bins in centrality between 10 and 60
+    const Int_t nbincent_0_20 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 2 : 1;  //bins in centrality between 0 and 10
+    const Int_t nbincent_20_60 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 10 : 1;  //bins in centrality between 10 and 60
     const Int_t nbincent_60_100 = configuration==AliCFSingleTrackEfficiencyTask::kSlow ? 4 : 1;  //bins in centrality between 60 and 100
     
     //arrays for the number of bins in each dimension
@@ -149,13 +148,13 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskDhCorrelations(const
     
     // multiplicity bining..
     for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ;
-    for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ;
-    for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ;
+    for(Int_t i=0; i<=nbinmult_20_35; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_35 + (multmax_20_35-multmin_20_35)/nbinmult_20_35*(Double_t)i ;
+    for(Int_t i=0; i<=nbinmult_35_200; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_35]=(Double_t)multmin_35_200 + (multmax_35_200-multmin_35_200)/nbinmult_35_200*(Double_t)i ;
     
     // centrality bining
-    for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i;
-    for(Int_t i=0; i<=nbincent_10_60; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_60 + (centmax_10_60-centmin_10_60)/nbincent_10_60*(Double_t)i;
-    for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_0_10+nbincent_10_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i;
+    for(Int_t i=0; i<=nbincent_0_20; i++) binLimcent[i]=(Double_t)centmin_0_20 + (centmax_0_20-centmin_0_20)/nbincent_0_20*(Double_t)i;
+    for(Int_t i=0; i<=nbincent_20_60; i++) binLimcent[i+nbincent_0_20]=(Double_t)centmin_20_60 + (centmax_20_60-centmin_20_60)/nbincent_20_60*(Double_t)i;
+    for(Int_t i=0; i<=nbincent_60_100; i++) binLimcent[i+nbincent_0_20+nbincent_20_60]=(Double_t)centmin_60_100 + (centmax_60_100-centmin_60_100)/nbincent_60_100*(Double_t)i;
     
     // Container
     AliCFContainer* container = new AliCFContainer(Form("container%s",suffix.Data()),"container for tracks",nstep,nvar,iBin);

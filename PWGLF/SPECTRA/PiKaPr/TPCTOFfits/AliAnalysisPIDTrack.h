@@ -14,7 +14,7 @@
 #include "TF1.h"
 #include "AliPIDResponse.h"
 
-class AliStack;
+//class AliStack;
 class AliMCEvent;
 class TH2F;
 class TH1;
@@ -36,7 +36,7 @@ public TObject
   Float_t GetPhi() const {return fPhi;}; // get phi
   Float_t GetY(Float_t mass) const; // get Y
   Double_t GetSign() const {return fSign;}; // get sign
-  ULong_t GetStatus() const {return fStatus;}; // get status
+  ULong64_t GetStatus() const {return fStatus;}; // get status
   Int_t GetLabel() const {return fLabel;}; // get label
   Float_t GetImpactParameter(Int_t i) const {return fImpactParameter[i];}; // get impact parameter
   //Float_t GetImpactParameterCov(Int_t i) const {return fImpactParameterCov[i];}; // get impact parameter covariance
@@ -64,6 +64,8 @@ public TObject
   Int_t GetMCMotherPdgCode() const {return fMCMotherPdgCode;}; // get MC mother PDG code
   Int_t GetMCMotherPrimary() const {return fMCMotherPrimary;}; // get MC mother primary
   Int_t GetMCMotherLabel() const {return fMCMotherLabel; }; //get MC mother label
+  Int_t GetMCPrimaryPdgCode() const {return fMCPrimaryPdgCode;}; // get MC PDG code of primary (grand)mother
+  Int_t GetMCPrimaryLabel() const {return fMCPrimaryLabel; }; //get MC label of primary (grand)mother
   Bool_t IsMCTOFMatchPrimary() const {return fMCTOFMatchPrimary;};
   Int_t GetMCTOFMatchPdgCode() const {return fMCTOFMatchPdgCode;};
   Int_t GetMCTOFMatchLevel() const {return fMCTOFMatchLevel;};
@@ -89,7 +91,7 @@ public TObject
   Float_t GetTPCBetaGamma(Int_t ipart) const {return fTPCmomentum / AliPID::ParticleMass(ipart);}; // get TPC beta-gamma
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliStack *stack, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
+  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasIntegratedTimes() const{ return (fStatus & AliESDtrack::kTIME);}; // has integrated times
   Bool_t HasTPCPID() const; // has TPC PID
@@ -117,9 +119,13 @@ public TObject
   Float_t GetNSigmaPionTPC() {return nSigmaPionTPC;};
   Float_t GetNSigmaKaonTPC() {return nSigmaKaonTPC;};
   Float_t GetNSigmaProtonTPC() {return nSigmaProtonTPC;};
+  Float_t GetNSigmaElectronTPC() {return nSigmaElectronTPC;};
+  Float_t GetNSigmaMuonTPC() {return nSigmaMuonTPC;};
   Float_t GetNSigmaPionTOF() {return nSigmaPionTOF;};
   Float_t GetNSigmaKaonTOF() {return nSigmaKaonTOF;};
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
+  Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
+  Float_t GetNSigmaMuonTOF() {return nSigmaMuonTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
   Bool_t HasEMCal() { return fHasEMCal; };
   Float_t GetEMCalE() { return fEMCalE; };
@@ -129,6 +135,8 @@ public TObject
   static Bool_t LoadTuningExpTimeTh(const Char_t *filename); // load tuning exp time th
   Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
   Bool_t CheckExtraCuts(Float_t minTPCNcr=70, Float_t maxChi2PerFindableCluster = 4, Float_t maxDCAz = 2);
+  Double_t GetChi2TPCConstrainedVsGlobal() { return fChi2TPCConstrainedVsGlobal; };
+  void SetChi2TPCConstrainedVsGlobal(Double_t newval) { fChi2TPCConstrainedVsGlobal = newval; };
   //  Int_t GetTOFCalibIndex(Int_t imap) {return (Int_t)fgTOFcalibHisto.GetCalibMap(imap, fTOFIndex);}; // get TOF calib index
 
   static AliTOFPIDResponse *GetTOFResponse() {return fgTOFResponse;}; // getter
@@ -153,6 +161,9 @@ public TObject
   static void SetRejectITSFakes(Bool_t value) {fgRejectITSFakes = value;}; // setter
   static void SetMatchTrackDeltaX(Float_t value) {fgMatchTrackDeltaX = value;}; // setter
   static void SetMatchTrackDeltaZ(Float_t value) {fgMatchTrackDeltaZ = value;}; // setter
+  static AliTPCPIDResponse *fgTPCResponse;
+  static AliTOFPIDResponse *fgTOFResponse;
+
 
  private:
 
@@ -162,9 +173,9 @@ public TObject
   Float_t fEta; // eta
   Float_t fPhi; // phi
   Double_t fSign; // sign
-  ULong_t fStatus; // status
+  ULong64_t fStatus; // status
   Int_t fLabel; // label
-  Float_t fImpactParameter[2]; // impact parameters 
+  Float_t fImpactParameter[2]; // impact parameters
   //Float_t fImpactParameterCov[3]; // impact parameters covariance
   /*** TPC PID info ***/
   Float_t fTPCmomentum; // TPC inner wall momentum
@@ -173,6 +184,7 @@ public TObject
   UShort_t fTPCNcls; // number of clusters TPC
   UShort_t fTPCNclsF; // number of findable clusters TPC
   Float_t fTPCNcr; // number of crossed rows TPC
+  Double_t fChi2TPCConstrainedVsGlobal;
   /*** TOF PID info ***/
   Int_t fTOFIndex; // index
   Float_t fTOFTime; // time
@@ -186,23 +198,29 @@ public TObject
   Int_t fMCPdgCode; // MC PDG code
   Bool_t fMCMotherPrimary; // MC mother primary flag
   Int_t fMCMotherPdgCode; // MC mother PDG code
-  Int_t fMCMotherLabel; //MC mother label
+  Int_t fMCMotherLabel; // MC mother label
+  Int_t fMCPrimaryPdgCode; // MC PDG code of primary (grand)mother
+  Int_t fMCPrimaryLabel; // MC label of primary (grand)mother
   Bool_t fMCTOFMatchPrimary; // MC TOF match primary flag
   Int_t fMCTOFMatchPdgCode; // MC TOF match PDG code
   Short_t fMCTOFMatchLevel; // MC TOF match level
   Float_t fMCTOFTime; // MC TOF time
   Float_t fMCTOFLength; // MC TOF length
-  Bool_t fMCSecondaryWeak; 
-  Bool_t fMCSecondaryMaterial; 
+  Bool_t fMCSecondaryWeak;
+  Bool_t fMCSecondaryMaterial;
   /*** HMPID PID info ***/
   //Float_t fHMPIDmomentum;
   //Float_t fHMPIDsignal;
   Float_t nSigmaPionTPC;
   Float_t nSigmaKaonTPC;
   Float_t nSigmaProtonTPC;
+  Float_t nSigmaElectronTPC;
+  Float_t nSigmaMuonTPC;
   Float_t nSigmaPionTOF;
   Float_t nSigmaKaonTOF;
   Float_t nSigmaProtonTOF;
+  Float_t nSigmaElectronTOF;
+  Float_t nSigmaMuonTOF;
   /*** extras ***/
   Float_t fTPCchi2; // TPC chi2
   Bool_t fITSFakeFlag; // ITS fake flag
@@ -231,13 +249,11 @@ public TObject
   //static AliTOFGeometry fgTOFGeometry;
   //  static AliTOFcalibHisto fgTOFcalibHisto;
   //  static Bool_t fgTOFcalibHistoFlag;
-  static AliTPCPIDResponse *fgTPCResponse;
-  static AliTOFPIDResponse *fgTOFResponse;
   static TH2F *hTOFtuned_th[AliPID::kSPECIES];
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDTrack, 3);
+  ClassDef(AliAnalysisPIDTrack, 6);
 };
 
 #endif /* ALIANALYSISPIDTRACK_H */

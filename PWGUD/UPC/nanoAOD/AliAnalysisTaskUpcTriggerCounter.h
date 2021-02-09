@@ -6,9 +6,11 @@
 #define AliAnalysisTaskUpcTriggerCounter_H
 
 class TH1;
+class TH2;
 class TList;
 class AliAODEvent;
 
+#define ntrig 13
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcTriggerCounter : public AliAnalysisTaskSE {
@@ -23,13 +25,16 @@ class AliAnalysisTaskUpcTriggerCounter : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
 
  private:
+  TList *fListHist;		//<
   
-  TH1I *fHistTriggerCounter; 
+  TH1I *fHistTriggerCounter;    //!
+  TH2I *fHistTriggerCounterIR1; //!
+  TH2I *fHistTriggerCounterIR2; //!
 
   AliAnalysisTaskUpcTriggerCounter(const AliAnalysisTaskUpcTriggerCounter&); //not implemented
   AliAnalysisTaskUpcTriggerCounter& operator =(const AliAnalysisTaskUpcTriggerCounter&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcTriggerCounter, 1); 
+  ClassDef(AliAnalysisTaskUpcTriggerCounter, 2); 
 };
 
 #endif

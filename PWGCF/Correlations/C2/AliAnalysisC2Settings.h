@@ -76,7 +76,9 @@ class AliAnalysisC2Settings : public TObject {
   /// Use SPD Clusters in the central region
   Bool_t fUseSPDclusters;
   /// Use SPD tracklets in the central region
-  Bool_t fUseSPDtracklets;
+  Bool_t fUseTracklets;
+  /// Use Central tracks
+  Bool_t fUseTracks;
 
 private:
   ClassDef(AliAnalysisC2Settings, 1);

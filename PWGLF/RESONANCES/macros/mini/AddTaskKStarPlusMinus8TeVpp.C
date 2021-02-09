@@ -23,6 +23,19 @@ enum eventMixConfig { kDisabled = -1,
 		      k5Cent,          //=2 //10 events, Dvz = 1cm, DC = 5
 };
 
+enum eventCutSet { kEvtDefault=0,
+		   kNoPileUpCut, //=1
+		   kDefaultVtx12,//=2
+		   kDefaultVtx8, //=3
+		   kDefaultVtx5, //=4                    
+		   kMCEvtDefault, //=5
+		   kSpecial1, //=6                   
+		   kSpecial2, //=7
+		   kNoEvtSel, //=8 
+		   kSpecial3,//=9
+		   kSpecial4, //=10
+		   kSpecial5 //=11
+};
 
 AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
 (
@@ -30,6 +43,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
  Bool_t      isPP,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Float_t     cutV = 10.0,
+ Int_t       evtCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
  Bool_t      enableSys = kFALSE,
@@ -37,13 +51,15 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
  Bool_t      enableMonitor=kTRUE,
  TString     monitorOpt="NoSIGN",
  Float_t     piPIDCut = 3.0,
+ Int_t       customQualityCutsID=1,
+ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     MaxRap = 0.5,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.004,//here
  Float_t     pLife = 20,  
  Float_t     radiuslow = 0.5,
- Float_t     radiushigh = 200,    
+ Float_t     radiushigh = 100,    
  Float_t     MinDCAXY = 0.06,
  Bool_t      Switch = kFALSE,//here
  Float_t     k0sDCA = 0.3,
@@ -55,9 +71,6 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus",
- Bool_t      ptDep= kFALSE,
- Double_t    pt1 = 0.0105,
- Double_t    pt2 = 0.0350,
  Int_t       centr = 0
  )
 {
@@ -69,6 +82,16 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                   
   if(isMC) rejectPileUp=kFALSE;
+
+  if (evtCutSetID==eventCutSet::kDefaultVtx12){vtxZcut = 12.0;} //cm
+  
+  if (evtCutSetID==eventCutSet::kDefaultVtx8){vtxZcut = 8.0;} //cm
+  
+  if (evtCutSetID==eventCutSet::kDefaultVtx5){vtxZcut = 5.0;}//cm
+  
+  if (evtCutSetID==eventCutSet::kNoPileUpCut){rejectPileUp=kFALSE;}//cm
+  
+  if (evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
   
   //-------------------------------------------
   //mixing settings
@@ -118,20 +141,28 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE, kTRUE);
-   
-   if(isPP && (!isMC)){ //assume pp data
-     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup                                                                  
+   AliRsnCutPrimaryVertex *cutVertex=0;
+   if (evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel){
+     cutVertex = new AliRsnCutPrimaryVertex("cutVertex", vtxZcut, 0, kFALSE);
+     if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
+   }//vertex loop
+
+
+   if (isPP && (!isMC) && cutVertex) { 
+     cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
    }
-   
-   
-   // define and fill cut set for event cut                                                                                          
-   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-   //eventCuts->AddCut(cutEventUtils);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
-   task->SetEventCuts(eventCuts);
+
+   // define and fill cut set for event cut
+
+   AliRsnCutSet* eventCuts=0;
+   if(cutVertex){
+     eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
+     eventCuts->AddCut(cutVertex);
+     eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
+     task->SetEventCuts(eventCuts);
+   }   
+
 
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                       
    //vertex                                                                                                                                
@@ -163,22 +194,20 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
    cutY->SetRangeD(-0.5,0.5);
    
-   if (ptDep) {
-     cutsPair->SetCutScheme(cutY->GetName()); 
-   } else {
-     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
-     
-     AliRsnCutSet* PairCutsSame=new AliRsnCutSet("PairCutsSame",AliRsnTarget::kMother);
-     PairCutsSame->AddCut(cutY);
-     PairCutsSame->AddCut(cutV0);
-     PairCutsSame->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
-     //note the use of the ! operator in this cut scheme
-     
-     AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
-     PairCutsMix->AddCut(cutY);
-     PairCutsMix->SetCutScheme(cutY->GetName());
-   }
-
+   
+   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
+   
+   AliRsnCutSet* PairCutsSame=new AliRsnCutSet("PairCutsSame",AliRsnTarget::kMother);
+   PairCutsSame->AddCut(cutY);
+   PairCutsSame->AddCut(cutV0);
+   PairCutsSame->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
+   //note the use of the ! operator in this cut scheme
+   
+   AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
+   PairCutsMix->AddCut(cutY);
+   PairCutsMix->SetCutScheme(cutY->GetName());
+   
+   
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus8TeVpp.C");
@@ -188,7 +217,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus8TeVpp
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus8TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh,MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix,ptDep,pt1,pt2)) return 0x0;
+   if (!ConfigKStarPlusMinus8TeVpp(task, isPP, isMC, piPIDCut, customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol,MaxRap, massTolVeto, pLife, radiuslow, radiushigh,MinDCAXY, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

@@ -3,12 +3,12 @@
 /* $Id$ */
 
 /*****************************************************************
-  AliFlowEventSimple: A simple event 
-  for flow analysis                  
-                                     
-  origin: Naomi van der Kolk (kolk@nikhef.nl)           
-          Ante Bilandzic     (anteb@nikhef.nl)         
-          Raimond Snellings  (Raimond.Snellings@nikhef.nl)    
+  AliFlowEventSimple: A simple event
+  for flow analysis
+
+  origin: Naomi van der Kolk (kolk@nikhef.nl)
+          Ante Bilandzic     (anteb@nikhef.nl)
+          Raimond Snellings  (Raimond.Snellings@nikhef.nl)
   mods:   Mikolaj Krzewicki  (mikolaj.krzewicki@cern.ch)
           Redmer A. Bertens  (rbertens@cern.ch)
 *****************************************************************/
@@ -46,16 +46,16 @@ class AliFlowEventSimple: public TObject {
   virtual  ~AliFlowEventSimple();
 
   Bool_t  IsFolder() const {return kTRUE;};
-  void    Browse(TBrowser *b); 
+  void    Browse(TBrowser *b);
   void    Print(Option_t* option = "") const;      //method to print stats
-  
+
   Int_t    NumberOfTracks() const                   { return fNumberOfTracks; }
   Int_t    GetReferenceMultiplicity() const         { return fReferenceMultiplicity; }
   void     SetReferenceMultiplicity( Int_t m )      { fReferenceMultiplicity = m; }
-  Int_t    GetEventNSelTracksRP() const             { return GetNumberOfPOIs(0); } 
-  void     SetEventNSelTracksRP(Int_t nr)           { SetNumberOfPOIs(nr,0); }  
-  Int_t    GetEventNSelTracksPOI() const            { return GetNumberOfPOIs(1); } 
-  void     SetEventNSelTracksPOI(Int_t np)          { SetNumberOfPOIs(np,1); }  
+  Int_t    GetEventNSelTracksRP() const             { return GetNumberOfPOIs(0); }
+  void     SetEventNSelTracksRP(Int_t nr)           { SetNumberOfPOIs(nr,0); }
+  Int_t    GetEventNSelTracksPOI() const            { return GetNumberOfPOIs(1); }
+  void     SetEventNSelTracksPOI(Int_t np)          { SetNumberOfPOIs(np,1); }
   Int_t    GetNumberOfRPs() const                   { return GetNumberOfPOIs(0); }
   void     SetNumberOfRPs( Int_t nr )               { SetNumberOfPOIs(nr,0); }
   Int_t    GetNumberOfPOIs(Int_t i=1) const         { return (i<fNumberOfPOItypes)?fNumberOfPOIs[i]:0; }
@@ -107,16 +107,16 @@ class AliFlowEventSimple: public TObject {
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();
   virtual void ClearFast();
- 
+
   static TF1* SimplePtSpectrum();
   static TF1* SimplePtDepV2();
   static TF2* SimplePtEtaDepV2();
 
   AliFlowTrackSimple* GetTrack(Int_t i);
-  void AddTrack( AliFlowTrackSimple* track ); 
+  void AddTrack( AliFlowTrackSimple* track );
   void TrackAdded();
   AliFlowTrackSimple* MakeNewTrack();
- 
+
   virtual AliFlowVector GetQ(Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void GetZDC2Qsub(AliFlowVector* Qarray);
@@ -146,6 +146,10 @@ class AliFlowEventSimple: public TObject {
   Double_t GetZNCEnergy() const {return fZNCM;};
   void SetZNAEnergy(Double_t const en) {fZNAM = en;};
   Double_t GetZNAEnergy() const {return fZNAM;};
+  void SetZPCEnergy(Double_t const en) {fZPCM = en;};
+  Double_t GetZPCEnergy() const {return fZPCM;};
+  void SetZPAEnergy(Double_t const en) {fZPAM = en;};
+  Double_t GetZPAEnergy() const {return fZPAM;};
   void SetAbsOrbit(UInt_t const en) {fAbsOrbit = en;};
   UInt_t GetAbsOrbit() const {return fAbsOrbit;};
 
@@ -192,13 +196,15 @@ class AliFlowEventSimple: public TObject {
   // test members for LHC15o VZERO calibration, do not use
   AliFlowVector           fV0C[4];                    // Q_n vector from V0-C
   AliFlowVector           fV0A[4];                    // Q_n vector from V0-C
-  Double_t                fZNCQ0;                      // common channel ZNC-C
-  Double_t                fZNAQ0;                      // common channel ZNC-A
+  Double_t                fZNCQ0;                     // common channel ZNC-C
+  Double_t                fZNAQ0;                     // common channel ZNC-A
   Double_t                fZNCM;                      // total energy from ZNC-C
   Double_t                fZNAM;                      // total energy from ZNC-A
+  Double_t                fZPCM;                      // total energy from ZPC-C
+  Double_t                fZPAM;                      // total energy from ZPC-A
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
   UInt_t                  fAbsOrbit;                  // Absolute orbit number
- 
+
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
@@ -207,5 +213,3 @@ class AliFlowEventSimple: public TObject {
 };
 
 #endif
-
-

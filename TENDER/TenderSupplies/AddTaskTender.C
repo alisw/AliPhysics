@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE, 
+AliTender *AddTaskTender(Bool_t useV0=kFALSE, 
                                Bool_t useTPC=kTRUE,
                                Bool_t useTOF=kTRUE,
                                Bool_t useTRD=kTRUE,

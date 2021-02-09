@@ -162,6 +162,9 @@ AliAnalysisTaskSE("PID efficiency Analysis")
 , fkCentralityMethod(0)
 , fCentrMin(0)
 , fCentrMax(100)
+, fIsPileUpMultRejApplied(kFALSE)
+, fEvBeforePileUpMultRej(0)
+, fEvAfterPileUpMultRej(0)
 {
   //
   // Dummy constructor
@@ -244,6 +247,9 @@ AliAnalysisTaskSE(name)
 , fkCentralityMethod(0)
 , fCentrMin(0)
 , fCentrMax(100)
+, fIsPileUpMultRejApplied(kFALSE)
+, fEvBeforePileUpMultRej(0)
+, fEvAfterPileUpMultRej(0)
 {
   //
   // Default constructor
@@ -338,6 +344,9 @@ AliAnalysisTaskSE(ref)
 , fkCentralityMethod(0)
 , fCentrMin(0)
 , fCentrMax(100)
+, fIsPileUpMultRejApplied(kFALSE)
+, fEvBeforePileUpMultRej(0)
+, fEvAfterPileUpMultRej(0)
 {
   //
   // Copy Constructor
@@ -423,6 +432,9 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fHistSECVTX = fHistSECVTX;
   target.fHistELECBACKGROUND = fHistELECBACKGROUND;
   target.fQACollection = fQACollection;
+  target.fIsPileUpMultRejApplied = fIsPileUpMultRejApplied;
+  target.fEvBeforePileUpMultRej = fEvBeforePileUpMultRej;
+  target.fEvAfterPileUpMultRej = fEvAfterPileUpMultRej;
 }
 
 //____________________________________________________________
@@ -644,6 +656,19 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
 
   //fQA->Print();
 
+  // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+  if(fIsPileUpMultRejApplied){
+        fEvBeforePileUpMultRej = new TH2D("fEvBeforePileUpMultRej","Events before cut", 3000,0,30000,4000,0,40000);
+        fEvBeforePileUpMultRej ->GetXaxis()->SetTitle("Tracks with kTPCout on");
+        fEvBeforePileUpMultRej ->GetYaxis()->SetTitle("Multiplicity VZERO");
+        fEvAfterPileUpMultRej  = new TH2D("fEvAfterPileUpMultRej","Events before cut", 3000,0,30000,4000,0,40000);
+        fEvAfterPileUpMultRej  ->GetXaxis()->SetTitle("Tracks with kTPCout on");
+        fEvAfterPileUpMultRej  ->GetYaxis()->SetTitle("Multiplicity VZERO");
+        fOutput->Add(fEvBeforePileUpMultRej);
+        fOutput->Add(fEvAfterPileUpMultRej);
+  }
+  // -------------------------------------------------------------
+
   PrintStatus();
   // Done!!!
   PostData(1, fOutput);
@@ -743,14 +768,14 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   fvtxAna = GetPrimaryVertexAnalysis(fInputEvent);
   //printf("test2\n");
 
+  // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+  if(fIsPileUpMultRejApplied){ if(RejectPileUpMultiplicitySelection())       return;}
+  // -------------------------------------------------------------
+
   // need the centrality for everything (MC also)
   fCentralityF = -1;
-  Bool_t readingCentrality = ReadCentrality();
-  if(!readingCentrality)
-  {
-    fCentralityF = -1;
-    return;                 // return if the centrality is not into the desired interval
-  }
+  if(!ReadCentrality()) fCentralityF = -1;
+        if(IsPbPb() && fCentralityF==-1) return;
   //printf("pass centrality\n");
   //printf("Reading fCentralityF %d\n",fCentralityF);
 
@@ -3021,3 +3046,68 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
     fCentralityEstimator = centrMethod;
     return;
   }
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskHFE::RejectPileUpMultiplicitySelection()
+{
+        //
+        // Pile-up event rejection based on number of kTPCout tracks and 
+        // VZERO multiplicity correlation.
+        // Returning kTRUE while the event is pile-up
+        //
+
+        Int_t nTPCout=0;        // number of kTPCout tracks
+        Float_t mTotV0=0;       // VZERO multiplicity
+        AliAODEvent* AODev  = 0x0;
+        AliESDEvent* ESDev  = 0x0;
+        
+        Bool_t isPileUp = kFALSE;
+
+        if(IsAODanalysis()){    // AOD analysis
+                AODev= dynamic_cast<AliAODEvent *>(fInputEvent);
+                AliAODVZERO* v0data = (AliAODVZERO*) AODev->GetVZEROData();
+                Float_t mTotV0A=v0data->GetMTotV0A();
+                Float_t mTotV0C=v0data->GetMTotV0C();
+                mTotV0=mTotV0A+mTotV0C; // VZERO multiplicity defined
+        }
+        if(IsESDanalysis()){    // ESD analysis
+                ESDev= dynamic_cast<AliESDEvent *>(fInputEvent);     
+                AliESDVZERO* v0data = (AliESDVZERO*) ESDev->GetVZEROData();
+                Float_t mTotV0A=v0data->GetMTotV0A();
+                Float_t mTotV0C=v0data->GetMTotV0C();
+                mTotV0=mTotV0A+mTotV0C; // VZERO multiplicity defined           
+        }
+
+
+
+        Int_t ntracksEv = 0;
+        if(IsAODanalysis()){    // AOD analysis
+                ntracksEv = (Int_t) AODev->GetNumberOfTracks(); 
+                for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+                        AliAODTrack * track = dynamic_cast<AliAODTrack*>(AODev->GetTrack(itrack));
+                        if(!track) {AliFatal("Not a standard AOD");}
+                        if(track->GetID()<0)continue;
+                        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;       // number of kTPCout tracks definition
+                        else continue;
+                }
+        }
+        if(IsESDanalysis()){    // ESD analysis
+                ntracksEv = (Int_t) ESDev->GetNumberOfTracks(); 
+                for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+                        AliESDtrack * track = dynamic_cast<AliESDtrack*>(ESDev->GetTrack(itrack));
+                        if(!track) {AliFatal("Not a standard ESD");}
+                        if(track->GetID()<0)continue;
+                        if((track->GetStatus())&(AliESDtrack::kTPCout)) nTPCout++;       // number of kTPCout tracks definition
+                        else continue;
+                }
+        }
+
+        Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); // function to apply to pile-up rejection
+
+        // selection applying
+        if(mTotV0<mV0Cut) isPileUp = kTRUE;       
+
+        fEvBeforePileUpMultRej->Fill(nTPCout,mTotV0);
+        if(!isPileUp)   fEvAfterPileUpMultRej->Fill(nTPCout,mTotV0);
+
+        return isPileUp;
+}

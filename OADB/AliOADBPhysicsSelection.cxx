@@ -241,7 +241,7 @@ UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
   // If more than one bit is lit, prints an error and returns the first.
   // If no bit is on, prints an error and returns 0
 
-  const Int_t kNBitsToCheck = 29;
+  const Int_t kNBitsToCheck = 30;
 
   //  Int_t nbit = sizeof(mask)*8;
   Int_t nbit = kNBitsToCheck;
@@ -249,11 +249,11 @@ UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
   for(Int_t ibit = 0; ibit < nbit; ibit++){
     if ( mask & (0x1 << ibit) ) {
       if (activeBit == -1) activeBit = ibit;
-      else Printf("ERROR (AliTriggerAnalysis::GetActiveBit): More than one bit is on in this mask 0x%x", mask);
+      else Printf("ERROR (AliOADBPhysicsSelection::GetActiveBit): More than one bit is on in this mask 0x%x", mask);
     }
   }
   if (activeBit == -1) {
-    Printf("ERROR (AliTriggerAnalysis::GetActiveBit): No bit is on");
+    Printf("ERROR (AliOADBPhysicsSelection::GetActiveBit): No bit is on");
     activeBit=0;
   }
 

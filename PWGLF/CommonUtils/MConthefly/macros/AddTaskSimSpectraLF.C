@@ -8,9 +8,7 @@ AliAnalysisTask *AddTaskSimSpectraLF(TString suffixName =""){
 
   AliAnalysisTaskSimSpectraLF* taskSpectraLFMC = new  AliAnalysisTaskSimSpectraLF("AliAnalysisTaskSpectraLFMC");
   
-  taskSpectraLFMC -> SetEtaRange(0.8);
   taskSpectraLFMC -> SetYRange(0.5);
-  taskSpectraLFMC -> SetPtRange(0.,20.);
   
   // Get the pointer to the existing analysis manager via the static access method
   //===========================================================================

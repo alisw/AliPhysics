@@ -28,6 +28,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
+		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
   )
 
 # Sources - alphabetical order
@@ -53,6 +55,9 @@ set(SRCS
   AliAnalysisTaskFlowStrangee.cxx
   AliAnalysisTaskFlowEventforRP.cxx 
   AliAnalysisTaskMixedHarmonics.cxx 
+  AliAnalysisTaskFlowModes.cxx
+  AliAnalysisTaskFlowModesMC.cxx
+  AliAnalysisTaskFlowModes_pPb.cxx
   AliAnalysisTaskNestedLoops.cxx 
   AliAnalysisTaskQAflow.cxx 
   AliAnalysisTaskPIDflowQA.cxx 
@@ -68,12 +73,26 @@ set(SRCS
   AliAnalysisTaskPIDconfig.cxx
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
-  AliAnalysisTaskVnZDC.cxx
   AliAnalysisTaskZDCGainEq.cxx
-  AliAnalysisTaskZDCEP.cxx
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
-  )
+  AliAnalysisTaskCMEV0.cxx
+  AliAnalysisTaskCMEV0PID.cxx
+  AliAnalysisTaskCMEMC.cxx
+  AliAnalysisTaskStudentsCM.cxx
+  AliAnalysisTaskStudentsML.cxx
+  AliAnalysisTaskTwoMultiCorrelations.cxx
+  AliAnalysisTaskStudentsMW.cxx
+  AliAnalysisTaskCVE.cxx
+  AliAnalysisTaskNBodyFemtoscopy.cxx
+  AliAnalysisTaskCMW.cxx
+  AliAnalysisTaskCVEUNI.cxx
+  AliAnalysisTaskCMWPU.cxx
+  AliAnalysisTaskCMWPU2018.cxx
+  AliAnalysisTaskCVEUNIpt.cxx
+  AliAnalysisTaskCMWPUeqAch.cxx
+  AliAnalysisTaskCMWPUuncAch.cxx	
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -88,7 +107,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS PWGflowBase PWGmuon ANALYSIS ANALYSISalice AOD ESD STEERBase)
+set(LIBDEPS PWGflowBase PWGmuon ANALYSIS ANALYSISalice AOD ESD STEERBase PWGDevNanoAOD)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -13,12 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <algorithm>
+#include <cfloat>
 #include <iostream>
 #include <vector>
 #include <TClonesArray.h>
 
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliVCaloCells.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliTLorentzVector.h"
@@ -29,6 +31,14 @@
 ClassImp(AliClusterContainer);
 /// \endcond
 
+// string to enum map for use with the %YAML config
+const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliClusterContainer::fgkClusterEnergyTypeMap = {
+  {"kNonLinCorr", AliVCluster::kNonLinCorr },
+  {"kHadCorr", AliVCluster::kHadCorr },
+  {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
+  {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
+};
+
 // Properly instantiate the object
 AliEmcalContainerIndexMap <TClonesArray, AliVCluster> AliClusterContainer::fgEmcalContainerIndexMap;
 
@@ -37,6 +47,7 @@ AliEmcalContainerIndexMap <TClonesArray, AliVCluster> AliClusterContainer::fgEmc
  */
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer(),
+  fEMCALCells(nullptr),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fExoticCut(kTRUE),
@@ -44,7 +55,11 @@ AliClusterContainer::AliClusterContainer():
   fIncludePHOS(kFALSE),
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(-1.),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX),
+  fMaxFracEnergyLeadingCell(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -60,6 +75,7 @@ AliClusterContainer::AliClusterContainer():
  */
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
+  fEMCALCells(nullptr),
   fClusTimeCutLow(-10),
   fClusTimeCutUp(10),
   fExoticCut(kTRUE),
@@ -67,7 +83,11 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fIncludePHOS(kFALSE),
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
-  fPhosMinM02(0)
+  fPhosMinM02(0),
+  fEmcalMinM02(-1.),
+  fEmcalMaxM02(DBL_MAX),
+  fEmcalMaxM02CutEnergy(DBL_MAX),
+  fMaxFracEnergyLeadingCell(DBL_MAX)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -319,8 +339,9 @@ Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus, UInt_t &rejec
 
 /**
  * Return true if cluster is accepted.
- * @param clus
- * @return
+ * @param clus The cluster to which the cuts will be applied
+ * @param rejectionReason Contains the bit specifying the rejection reason
+ * @return True if the cluster is accepted.
  */
 Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &rejectionReason) const
 {
@@ -366,6 +387,28 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     return kFALSE;
   }
   
+  if (clus->IsEMCAL()) {
+    if (clus->GetNonLinCorrEnergy() < fEmcalMaxM02CutEnergy) {
+      if(clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) {
+        rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
+        return kFALSE;
+      }
+    }
+
+  }
+
+  if(fEMCALCells) {
+    double ecellmax = 0;
+    for(int icell = 0; icell < clus->GetNCells(); icell++){
+      double celltmp = fEMCALCells->GetCellAmplitude(clus->GetCellAbsId(icell));
+      if(celltmp > ecellmax) ecellmax = celltmp;
+    }
+    if(ecellmax/clus->E() > fMaxFracEnergyLeadingCell) {
+      rejectionReason |= kExoticCut;
+      return kFALSE;
+    }
+  }
+
   for (Int_t i = 0; i <= AliVCluster::kLastUserDefEnergy; i++) {
     if (clus->GetUserDefEnergy((VCluUserDefEnergy_t)i) < fUserDefEnergyCut[i]) {
       rejectionReason |= kEnergyCut;
@@ -439,13 +482,16 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
  * Connect the container to the array with content stored inside the virtual event.
  * The object name in the event must match the name given in the constructor.
  *
- * Additionally register the array into the index map.
+ * Additionally register the array into the index map and connect EMCAL cells
  *
  * @param event Input event containing the array with content.
  */
 void AliClusterContainer::SetArray(const AliVEvent * event)
 {
   AliEmcalContainer::SetArray(event);
+
+  // Connect EMCAL cells
+  fEMCALCells = event->GetEMCALCells();
 
   // Register TClonesArray in index map
   fgEmcalContainerIndexMap.RegisterArray(GetArray());

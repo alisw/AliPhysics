@@ -8,9 +8,20 @@
 #include "TH2I.h"
 #include "TH3I.h"
 #include "TSystem.h"
+#include "TCanvas.h"
 #include <iostream>
 
 using namespace std;
+
+////////////////////////////////////////////////////////////////////////////
+///                                                                       //
+///                                                                       //
+/// Utilities for file management et similia                              //
+///                                                                       //
+///                                                                       //
+/// Authors:                                                              //
+/// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
+////////////////////////////////////////////////////////////////////////////
 
 //_________________________________________________________________________________________________
 TFile * GetFile(TString fname, TString opt){
@@ -37,7 +48,7 @@ void GetListFromFile(TFile *fin, TString name, TList *& lin){
   if(!lin){
     fin->ls();
     Fatalmsg("GetListFromFile", Form("Cannot find TList %s from file %s", name.Data(), fin->GetName()));
-    
+
   }
 }
 
@@ -47,7 +58,7 @@ void GetListFromDirectory(TDirectory *dir, TString name, TList *& lin){
   if(!lin){
     dir->ls();
     Fatalmsg("GetListFromDirectory", Form("Cannot find TList %s from file %s", name.Data(), dir->GetName()));
-    
+
   }
 }
 
@@ -57,7 +68,7 @@ void GetDirectoryFromFile(TFile *fin, TString name, TDirectory *& dir){
   if(!dir){
     fin->ls();
     Fatalmsg("GetDirectoryFromFile", Form("Cannot find TDirectory %s from file %s", name.Data(), fin->GetName()));
-    
+
   }
 }
 
@@ -69,7 +80,7 @@ void GetHistogram(TList *lin, const TString hname, TH1F *& histo){//Gets the his
     lin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH1 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -80,7 +91,7 @@ void GetHistogram(TList *lin, const TString hname, TH1D *& histo){//Gets the his
     lin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH1 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -91,7 +102,7 @@ void GetHistogram(TFile *fin, const TString hname, TH1F *& histo){//Gets the his
     fin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH1 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -102,7 +113,7 @@ void GetHistogram(TFile *fin, const TString hname, TH1D *& histo){//Gets the his
     fin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH1 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -118,7 +129,7 @@ void GetHistogram(TFile *fin, const TString hname, TH2I *& histo){//Gets the his
     fin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH2 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -129,7 +140,7 @@ void GetHistogram(TFile *fin, const TString hname, TH2F *& histo){//Gets the his
     fin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH2 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -140,7 +151,7 @@ void GetHistogram(TList *lin, const TString hname, TH2F *& histo){//Gets the his
     lin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH2 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -151,7 +162,7 @@ void GetHistogram(TList *lin, const TString hname, TH2I *& histo){//Gets the his
     lin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH2 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -162,7 +173,7 @@ void GetHistogram(TList *lin, const TString hname, TH3I *& histo){//Gets the his
     lin->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH2 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
@@ -173,43 +184,48 @@ void GetHistogram(TDirectory *dir, const TString hname, TH1F *& histo){//Gets th
     dir->ls();
     Fatalmsg("GetHistogram", Form("Cannot find TH1 %s !", hname.Data()));
   }
-  
+
 }
 
 //_________________________________________________________________________________________________
 TList *ReduceList(TList *lin, const TString criteria){//Macro to produce multiple lists from one -> Useful for writing to file
   TList *result = new TList();
   result->SetOwner();
-  
+
   TIter next(lin);
   TObject *nextobj;
   TString objname, objtitle, objclass;
-  
+
   while ((nextobj = next())) {
     objname = nextobj->GetName();
     objtitle = nextobj->GetTitle();
     objclass = nextobj->ClassName();
     if(!objname.Contains(criteria)) continue;
-    
+
     result->Add(nextobj);
     lin->Remove(nextobj);
-    
+
   }
-  
+
   return result;
-  
+
 }
 
 //_________________________________________________________________________________________________
-TList *FormListFromFile(TFile *fin, const TString criteria, const TString checklists){
+TList *FormListFromFile(TFile *fin, const TString criteria, const TString checklists, const TString classes){
   TList *result = new TList();
   result->SetOwner();
-  
+  const Bool_t verbose = kFALSE;
+
   TList *lkeys = fin->GetListOfKeys();
   const Int_t max = lkeys->GetEntries();
   Int_t counter = 0;
   TIter next(lkeys);
   TKey *key;
+  TObjArray *lclasses = classes.Tokenize(" ");
+  if (verbose)
+    cout << "Asked only for " << classes << endl;
+  //
   while ((key = (TKey*)next())) {
     TString objclass  = key->GetClassName();
     TString objname  = key->GetName();
@@ -220,34 +236,72 @@ TList *FormListFromFile(TFile *fin, const TString criteria, const TString checkl
       TIter nextinlist(lin);
       TObject *nextobjinlist;
       TString objnameinlist, objtitleinlist, objclassinlist;
-      
+
       while ((nextobjinlist = nextinlist())) {
         objnameinlist = nextobjinlist->GetName();
         objtitleinlist = nextobjinlist->GetTitle();
         objclassinlist = nextobjinlist->ClassName();
+        if (verbose)
+          cout << "Checking if " << objnameinlist << " (" << objtitleinlist << ") " << objclassinlist << " passes requirements" << endl;
         if(!objnameinlist.Contains(criteria)) continue;
-        
         if(!criteria.IsNull() && !objnameinlist.Contains(criteria)) continue;
-        if(!objclassinlist.Contains("TH1")) continue;
-        TH1F *h = (TH1F*)nextobjinlist->Clone();
-        h->SetDirectory(0);
-        result->Add(static_cast<TH1F*>(h));
+        for (Int_t j = 0; j < lclasses->GetEntries(); j++){
+          if(!objclassinlist.Contains(lclasses->At(j)->GetName())) continue;
+        }
+        //
+        if (verbose)
+          cout << "Adding " << objclassinlist << " to list" << endl;
+        //
+        if (objclassinlist.Contains("TH1"))
+        {
+          TH1F *h = (TH1F *)nextobjinlist->Clone();
+          h->SetDirectory(0);
+          result->Add(static_cast<TH1F *>(h));
+        }
+        else if (objclassinlist.Contains("TCanvas"))
+        {
+          if (verbose)
+            cout << "TCanvas" << endl;
+          //
+          TCanvas *h = (TCanvas *)nextobjinlist->Clone();
+          result->Add(static_cast<TCanvas *>(h));
+        }
         //     PrintProgress(counter, max);
         if(!criteria.IsNull()) Infomsg("FormListFromFile", Form("%i/%i %s", counter, max, objnameinlist.Data()));
-        
+
       }
-      
+
     }
     else{
-      if(!criteria.IsNull() && !objname.Contains(criteria)) continue;
-      if(!objclass.Contains("TH1")) continue;
-      TH1F *h = (TH1F*)key->ReadObj();
-      h->SetDirectory(0);
-      result->Add(static_cast<TH1F*>(h));
+      if (!criteria.IsNull() && !objname.Contains(criteria))
+        continue;
+      for (Int_t j = 0; j < lclasses->GetEntries(); j++)
+      {
+        if (!objclass.Contains(lclasses->At(j)->GetName()))
+          continue;
+      }
+
+      if (verbose)
+      cout << "Adding " << objclass << " to list" << endl;
+      //
+      if (objclass.Contains("TH1"))
+      {
+        TH1F *h = (TH1F*)key->ReadObj();
+        h->SetDirectory(0);
+        result->Add(static_cast<TH1F*>(h));
+      }
+      else if (objclass.Contains("TCanvas"))
+      {
+        if (verbose)
+          cout << "TCanvas" << endl;
+        //
+        TCanvas *h = (TCanvas *)key->ReadObj();
+        result->Add(static_cast<TCanvas *>(h));
+      }
+
       //     PrintProgress(counter, max);
       if(!criteria.IsNull()) Infomsg("FormListFromFile", Form("%i/%i %s", counter, max, objname.Data()));
     }
   }
   return result;
 }
-  

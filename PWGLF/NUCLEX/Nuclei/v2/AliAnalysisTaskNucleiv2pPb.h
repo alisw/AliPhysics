@@ -60,15 +60,14 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     TH1D*        fQynmV0C;            // <Qy2> V0C
     TH1D*        fQxnsV0C;            // sigma Qx2 V0C
     TH1D*        fQynsV0C;            // sigma Qy2 V0C
-    
-    Double_t     fNHarm;              // harmonic number: 2, 3
+
     Short_t      fRecPass;            // flag for reconstruction pass: 0->Fast, 1->NoSDD, 2->SDD
     Short_t      fCenCalV0;           // flag for centrality estimators used for V0 recentering: 0->V0A, 1->V0, 2->V0AEq, 3-> CL1
+
     Short_t      fFilterBit;          // flag for AOD filterbit
-
-    Int_t fptc ;
-    Float_t fVzmax;
-
+    Int_t        fptc ;
+    Float_t      fVzmax;
+    Double_t     fNHarm;              // harmonic number: 2, 3
     
     //output hist
     TList	*fListHist;	           // List of  histograms
@@ -89,6 +88,8 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     // For SP resolution
     
     TH2F *hQVzAQVzCvsCentrality;
+    TH2F *hQVzAQTPCvsCentrality;
+    TH2F *hQVzCQTPCvsCentrality;
     
     // For NUA correction
     
@@ -96,7 +97,15 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     TH2F *hQyVzAvsCentrality;
     TH2F *hQxVzCvsCentrality;
     TH2F *hQyVzCvsCentrality;
-     
+
+    // for EP
+    TH2F *hCos2DeltaTPCVzAvsCentrality;
+    TH2F *hCos2DeltaTPCVzCvsCentrality;
+    TH2F *hCos2DeltaVzAVzCvsCentrality;
+    TH2F *hCos2DeltaVzATPCvsCentrality;
+    TH2F *hCos2DeltaVzCTPCvsCentrality;
+    TH2F *hCos2DeltaVzCVzAvsCentrality;
+
     Int_t eventtype;
 
     // TTree
@@ -109,8 +118,8 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     Double_t tuqV0A           ;
     Double_t tuqV0C           ;
     Double_t tCharge          ;
-    Double_t tCosdeltaphiV0A  ;
-    Double_t tCosdeltaphiV0C  ;
+    Double_t tdeltaphiV0A     ;
+    Double_t tdeltaphiV0C     ;
     Double_t timpactXY        ;
     Double_t timpactZ         ;
     Double_t tpull            ;

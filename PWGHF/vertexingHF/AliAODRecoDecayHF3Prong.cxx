@@ -307,9 +307,13 @@ const {
     indexPi=2;
     indexK1=0;
     indexK2=1;
-  }else{   //piKK
+  }else if (option==1){   //piKK
     indexPi=0;
     indexK1=1;
+    indexK2=2;
+  }else{  //KpiK
+    indexPi=1;
+    indexK1=0;
     indexK2=2;
   }
           
@@ -351,8 +355,10 @@ const {
 
   if (option==0){ //KKpi
     indexPi=2;
-  }else{ //piKK
+  }else if (option==1){//piKK
     indexPi=0;
+  }else{ //KpiK
+    indexPi=1;
   }
 
  

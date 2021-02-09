@@ -40,12 +40,14 @@
 //____________________________________________
 AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, 
 						Bool_t highMult = kFALSE, const char *triggerClass=0, 
-						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE, Bool_t bTPCOnly = kFALSE,
+						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE, Bool_t bTPCTrackingOnly = kFALSE,
 						Bool_t bDoEffTpcSec = kFALSE)
 {
-  Char_t *taskName[] = {"TPC", "HLT"};
-  Int_t idx = 0;
+  const TString taskName[] = {"TPC", "HLT"};
+  const TString taskName2[] = {"", "_Tracking"};
+  Int_t idx = 0, idx2 = 0;
   if (bUseHLT) idx = 1;
+  if (bTPCTrackingOnly) idx2 = 1;
   
   //
   // Add AliPerformanceTask with TPC performance components
@@ -79,9 +81,9 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   // Create task
   //
-  AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA",Form("%s Performance",taskName[idx]));
+  AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA",Form("%s%s Performance",taskName[idx].Data(), taskName2[idx2].Data()));
   if (!task) {
-    Error("AddTaskPerformanceTPCdEdxQA", Form("%s performance task cannot be created!",taskName[idx]));
+    Error("AddTaskPerformanceTPCdEdxQA", "%s", Form("%s%s performance task cannot be created!",taskName[idx].Data(), taskName2[idx2].Data()));
     return NULL;
   }
   task->SetUseMCInfo(bUseMCInfo);
@@ -98,7 +100,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   // Create TPC-ESD track reconstruction cuts
   // MB tracks
   //
-  AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts("pRecInfoCutsTPC"); 
   if(pRecInfoCutsTPC) {
     pRecInfoCutsTPC->SetMaxDCAToVertexXY(3.0);
     pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
@@ -110,8 +112,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
     pRecInfoCutsTPC->SetDCAToVertex2D(kTRUE);
 
     pRecInfoCutsTPC->SetHistogramsOn(kFALSE); 
-  } 
-  else {
+  } else {
     Error("AddTaskPerformanceTPCdEdxQA", "AliRecInfoCutsTPC cannot be created!");
     return NULL;
   }
@@ -119,11 +120,10 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   // Create TPC-MC track reconstruction cuts
   //
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+  AliMCInfoCuts *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
   if(pMCInfoCuts) {
     pMCInfoCuts->SetMinTrackLength(70);
-  } 
-  else {
+  } else {
     Error("AddTaskPerformanceTPCdEdxQA", "AliMCInfoCuts cannot be created!");
     return NULL;
   }
@@ -133,60 +133,66 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   enum { kTPC = 0, kTPCITS, kConstrained, kTPCInner, kTPCOuter, kTPCSec };
 
-  //
-  // TPC performance
-  //
-  AliPerformanceTPC *pCompTPC0 = new AliPerformanceTPC("AliPerformanceTPC","AliPerformanceTPC",kTPC,kFALSE,-1,highMult); 
-  if(!pCompTPC0) {
-    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceTPC");
-  }
-  pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
-  pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
-  //  pCompTPC0->SetUseTrackVertex(kFALSE);
-  pCompTPC0->SetUseTrackVertex(kTRUE);
-  pCompTPC0->SetUseHLT(bUseHLT);
-  pCompTPC0->SetUseTOFBunchCrossing(bUseTOF);
-  
-  //
-  // TPC ITS match
-  //
-  AliPerformanceMatch *pCompMatch1 = new AliPerformanceMatch("AliPerformanceMatchTPCITS","AliPerformanceMatchTPCITS",0,kFALSE); 
-  if(!pCompMatch1) {
-    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCITS");
-  }
-  pCompMatch1->SetAliRecInfoCuts(pRecInfoCutsTPC);
-  pCompMatch1->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMatch1->SetUseTOFBunchCrossing(bUseTOF);
+  AliPerformanceTPC *pCompTPC0;
+  AliPerformanceMatch *pCompMatch1;
+  AliPerformanceMatch *pCompMatch2;
+  AliPerformanceDEdx *pCompDEdx3;
+  if (bTPCTrackingOnly == kFALSE) {
+    //
+    // TPC performance
+    //
+    pCompTPC0 = new AliPerformanceTPC("AliPerformanceTPC","AliPerformanceTPC",kTPC,kFALSE,-1,highMult); 
+    if(!pCompTPC0) {
+      Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceTPC");
+    }
+    pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
+    //  pCompTPC0->SetUseTrackVertex(kFALSE);
+    pCompTPC0->SetUseTrackVertex(kTRUE);
+    pCompTPC0->SetUseHLT(bUseHLT);
+    pCompTPC0->SetUseTOFBunchCrossing(bUseTOF);
+    
+    //
+    // TPC ITS match
+    //
+    pCompMatch1 = new AliPerformanceMatch("AliPerformanceMatchTPCITS","AliPerformanceMatchTPCITS",0,kFALSE); 
+    if(!pCompMatch1) {
+      Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCITS");
+    }
+    pCompMatch1->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompMatch1->SetAliMCInfoCuts(pMCInfoCuts);
+    pCompMatch1->SetUseTOFBunchCrossing(bUseTOF);
 
 
-  //
-  // ITS TPC match
-  //
-  AliPerformanceMatch *pCompMatch2 = new AliPerformanceMatch("AliPerformanceMatchITSTPC","AliPerformanceMatchITSTPC",1,kFALSE); 
-  if(!pCompMatch2) {
-    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchITSTPC");  }
-  pCompMatch2->SetAliRecInfoCuts(pRecInfoCutsTPC);
-  pCompMatch2->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMatch2->SetUseTOFBunchCrossing(bUseTOF);
+    //
+    // ITS TPC match
+    //
+    pCompMatch2 = new AliPerformanceMatch("AliPerformanceMatchITSTPC","AliPerformanceMatchITSTPC",1,kFALSE); 
+    if(!pCompMatch2) {
+      Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchITSTPC");  }
+    pCompMatch2->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompMatch2->SetAliMCInfoCuts(pMCInfoCuts);
+    pCompMatch2->SetUseTOFBunchCrossing(bUseTOF);
 
-  //
-  // dEdx
-  //
-  AliPerformanceDEdx *pCompDEdx3 = new AliPerformanceDEdx("AliPerformanceDEdxTPCInner","AliPerformanceDEdxTPCInner",kTPCInner,kFALSE); 
-  if(!pCompDEdx3) {
-    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceDEdxTPCInner");
-  }
-  pCompDEdx3->SetAliRecInfoCuts(pRecInfoCutsTPC);
-  pCompDEdx3->SetAliMCInfoCuts(pMCInfoCuts);
-  //pCompDEdx3->SetUseTrackVertex(kFALSE);
-  pCompDEdx3->SetUseTrackVertex(kTRUE);
+    //
+    // dEdx
+    //
+    pCompDEdx3 = new AliPerformanceDEdx("AliPerformanceDEdxTPCInner","AliPerformanceDEdxTPCInner",kTPCInner,kFALSE); 
+    if(!pCompDEdx3) {
+      Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceDEdxTPCInner");
+    }
+    pCompDEdx3->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompDEdx3->SetAliMCInfoCuts(pMCInfoCuts);
+    //pCompDEdx3->SetUseTrackVertex(kFALSE);
+    pCompDEdx3->SetUseTrackVertex(kTRUE);
+  } //end bTPCTrackingOnly == kFALSE
 
   //
   // Resolution ------------------------------------------------------------------------------------
   //
 
-  AliPerformanceRes *pCompRes4 = new AliPerformanceRes("AliPerformanceRes",
-						       "AliPerformanceRes", bTPCOnly == kTRUE ? kTPCInner : kTPC,kFALSE); 
+  AliPerformanceRes *pCompRes4 = new AliPerformanceRes(bTPCTrackingOnly ? "AliPerformanceResTPC" : "AliPerformanceRes",
+						       "AliPerformanceRes", bTPCTrackingOnly == kTRUE ? kTPCInner : kTPC,kFALSE); 
   if(!pCompRes4) {
     Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceRes");
   }
@@ -194,51 +200,67 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
 
   pCompRes4->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompRes4->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompRes4->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
+  pCompRes4->SetUseTrackVertex(bTPCTrackingOnly == kTRUE ? kFALSE : kTRUE);
 
   //
   // Efficiency ------------------------------------------------------------------------------------
   //
 
-  AliPerformanceEff *pCompEff5 = new AliPerformanceEff("AliPerformanceEff",
+  AliPerformanceEff *pCompEff5 = new AliPerformanceEff(bTPCTrackingOnly ? "AliPerformanceEffTPC" : "AliPerformanceEff",
 						       "AliPerformanceEff",kTPC,kFALSE); 
   if(!pCompEff5) {
     Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceEff");
   }
 
-  pCompEff5->SetAliRecInfoCuts(pRecInfoCutsTPC);
+  AliRecInfoCuts *pRecInfoCutsTPC2 = NULL;
+  if (bTPCTrackingOnly)
+  {
+    //For low pt tracks, HLT finds only short track segments.
+    //Hence, for the tpc-tracking only tracking-efficiency, we lower the minimum number of hits per reconstructed TPC track
+    pRecInfoCutsTPC2 = new AliRecInfoCuts(*pRecInfoCutsTPC); 
+    pRecInfoCutsTPC2->SetMinNClustersTPC(20);
+    pCompEff5->SetAliRecInfoCuts(pRecInfoCutsTPC2);
+  }
+  else
+  {
+    pCompEff5->SetAliRecInfoCuts(pRecInfoCutsTPC);
+  }
   pCompEff5->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompEff5->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
+  pCompEff5->SetUseTrackVertex(bTPCTrackingOnly == kTRUE ? kFALSE : kTRUE);
 
   AliPerformanceEff *pCompEff5Sec;
   if (bDoEffTpcSec)
   {
-	  pCompEff5Sec = new AliPerformanceEff("AliPerformanceEffSec",
-						       "AliPerformanceEffSec",kTPCSec,kFALSE); 
-	  if(!pCompEff5Sec) {
-		  Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceEff");
-	  }
+    pCompEff5Sec = new AliPerformanceEff(bTPCTrackingOnly ? "AliPerformanceEffSecTPC" : "AliPerformanceEffSec",
+                   "AliPerformanceEffSec",kTPCSec,kFALSE); 
+    if(!pCompEff5Sec) {
+      Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceEff");
+    }
 
-	  pCompEff5Sec->SetAliRecInfoCuts(pRecInfoCutsTPC);
-	  pCompEff5Sec->SetAliMCInfoCuts(pMCInfoCuts);
-	  pCompEff5Sec->SetUseTrackVertex(bTPCOnly == kTRUE ? kFALSE : kTRUE);
+    pCompEff5Sec->SetAliRecInfoCuts(bTPCTrackingOnly ? pRecInfoCutsTPC2 : pRecInfoCutsTPC);
+    pCompEff5Sec->SetAliMCInfoCuts(pMCInfoCuts);
+    pCompEff5Sec->SetUseTrackVertex(bTPCTrackingOnly == kTRUE ? kFALSE : kTRUE);
   }
 
   //
   // TPC Constrain to vertex
   //
-  AliPerformanceMatch *pCompConstrain6 = new AliPerformanceMatch("AliPerformanceMatchTPCConstrain","AliPerformanceMatchTPCConstrain",2,kFALSE); 
-  if(!pCompConstrain6) {
-    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCConstrain");  }
-  pCompConstrain6->SetAliRecInfoCuts(pRecInfoCutsTPC);
-  pCompConstrain6->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompConstrain6->SetUseTOFBunchCrossing(bUseTOF);
+  AliPerformanceMatch *pCompConstrain6;
+  if (bTPCTrackingOnly == kFALSE) {
+    pCompConstrain6 = new AliPerformanceMatch("AliPerformanceMatchTPCConstrain","AliPerformanceMatchTPCConstrain",2,kFALSE); 
+    if(!pCompConstrain6) {
+      Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCConstrain");  }
+    pCompConstrain6->SetAliRecInfoCuts(pRecInfoCutsTPC);
+    pCompConstrain6->SetAliMCInfoCuts(pMCInfoCuts);
+    pCompConstrain6->SetUseTOFBunchCrossing(bUseTOF);
+  } //end bTPCTrackingOnly == kFALSE
 
 
 
   //
   // Add components to the performance task
   //
+  if (bTPCTrackingOnly == kFALSE) {
   if(!bUseMCInfo) { 
     pCompTPC0->SetTriggerClass(triggerClass);
     pCompMatch1->SetTriggerClass(triggerClass);
@@ -251,10 +273,11 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   task->AddPerformanceObject( pCompMatch2 );
   task->AddPerformanceObject( pCompDEdx3 );
   task->AddPerformanceObject( pCompConstrain6 );
+  } //end bTPCTrackingOnly == kFALSE
   if(bUseMCInfo)   {
       task->AddPerformanceObject( pCompRes4 );
       task->AddPerformanceObject( pCompEff5 );
-	  if (bDoEffTpcSec) task->AddPerformanceObject( pCompEff5Sec );
+      if (bDoEffTpcSec) task->AddPerformanceObject( pCompEff5Sec );
   }
 
   //
@@ -266,14 +289,14 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   // Create containers for output
   //
    
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%sQA", taskName[idx]), TList::Class(), 
-							   AliAnalysisManager::kOutputContainer, 
-							   Form("%s:%s_%s", mgr->GetCommonFileName(), taskName[idx],task->GetName()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("%s%sQA", taskName[idx].Data(), taskName2[idx2].Data()), TList::Class(), 
+                 AliAnalysisManager::kOutputContainer, 
+                 Form("%s:%s_%s", mgr->GetCommonFileName(), taskName[idx].Data(),task->GetName()));
 
 
-  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer(Form("%sQASummary", taskName[idx]), TTree::Class(), 
-							     AliAnalysisManager::kParamContainer, 
-							     Form("trending.root:Summary%sQA", taskName[idx])); 
+  AliAnalysisDataContainer *coutput2  = mgr->CreateContainer(Form("%s%sQASummary", taskName[idx].Data(), taskName2[idx2].Data()), TTree::Class(), 
+                   AliAnalysisManager::kParamContainer, 
+                   Form("trending.root:Summary%sQA", taskName[idx].Data())); 
   
   mgr->ConnectOutput(task, 1, coutput);
   mgr->ConnectOutput(task, 0, coutput2);

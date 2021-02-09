@@ -1,7 +1,7 @@
 #include "src/Common.h"
 #include "src/Utils.h"
-#include "src/Plotting.h"
 using namespace utils;
+#include "src/Plotting.h"
 
 #include <map>
 #include <array>
@@ -38,7 +38,7 @@ void SystematicsTPC() {
   //TFile secsyst_tpc_file(kSecondariesTPCoutput.data());
   TFile output_file(kSystematicsOutputTPC.data(),"recreate");
 
-  int n_centralities = 1;
+  int n_centralities = kCentLength;
 
   TAxis* centAxis = (TAxis*)input_file.Get("centrality");
 
@@ -95,9 +95,9 @@ void SystematicsTPC() {
             cout << basepath.data() << " is missing." << endl;
             return;
           }
-          variations[iV] = (TH1F*)variations_tmp->Rebin(n_pt_bins,Form("variation_%d",iV),pt_bin_limits);
+          variations[iV] = (TH1F*)variations_tmp->Rebin(n_pt_bins,Form("variation_%zu",iV),pt_bin_limits);
           variations[iV]->SetName(("cut" + to_string(iV)).data());
-          SetHistStyle(variations[iV],iV);
+          plotting::SetHistStyle(variations[iV],iV);
           sigmas[iV] = (TH1F*)variations[iV]->Clone(("sigma" + to_string(iV)).data());
           sigmas[iV]->Reset();
           sigmas[iV]->SetDrawOption("e");

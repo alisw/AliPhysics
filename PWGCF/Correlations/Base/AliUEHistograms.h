@@ -29,7 +29,7 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackEfficiencyCut = kFALSE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = 0.02, Bool_t applyEfficiency = kFALSE);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE, Bool_t twoTrackCuts = kTRUE, Float_t bSign = 0, Float_t twoTrackEfficiencyCutValue = -1, Bool_t applyEfficiency = kFALSE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
@@ -62,6 +62,7 @@ class AliUEHistograms : public TNamed
   TH2F* GetCorrelationMultiplicity() { return fCorrelationMultiplicity; }
   TH3F* GetYield() { return fYields; }
   TH2F* GetInvYield() { return fInvYield2; }
+  TH3F* GetYieldEtaPhiPT() { return fYieldsEtaPhiPT; }
   
   TH2F* GetEventCount()     { return fEventCount; }
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
@@ -89,9 +90,18 @@ class AliUEHistograms : public TNamed
   void SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-  void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
+  void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutK0sV = resonances; fCutLambdaV = resonances; }
+  void SetCutOnPhi(bool cutOnPhi) { if (cutOnPhi) fCutPhiV = 0.005; }
+  void SetCutOnRho(bool cutOnRho) { if (cutOnRho) fCutRhoV = 0.005; }
+  void SetCutOnK0s(Float_t cutOnK0sV) { fCutK0sV = cutOnK0sV; }
+  void SetCutOnLambda(Float_t cutOnLambdaV) { fCutLambdaV = cutOnLambdaV; }
+  void SetCutOnPhi(Float_t cutOnPhiV) { fCutPhiV = cutOnPhiV; }
+  void SetCutOnRho(Float_t cutOnRhoV) { fCutRhoV = cutOnRhoV; }
+  void SetCustomCut(Float_t cutCustomMass, Float_t cutCustomFirst, Float_t cutCustomSecond, Float_t cutCustomV) { fCutCustomMass = cutCustomMass; fCutCustomFirst = cutCustomFirst; fCutCustomSecond = cutCustomSecond; fCutCustomV = cutCustomV; }
+  
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
+  void SetOnlyOneAssocEtaSide(Int_t flag)    { fOnlyOneAssocEtaSide = flag; }
   void SetPtOrder(Bool_t flag) { fPtOrder = flag; }
   void SetTwoTrackCutMinRadius(Float_t min) { fTwoTrackCutMinRadius = min; }
 
@@ -127,6 +137,7 @@ protected:
   TH2F* fCorrelationLeading2Phi;// delta phi (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationMultiplicity; // number of mc particls vs reco particles (for pT > 0.5 GeV/c)
   TH3F* fYields;                // centrality vs pT vs eta
+  TH3F* fYieldsEtaPhiPT;        // pT vs eta vs phi
   TH2F* fInvYield2; 		// invariant yield as cross check of tracking
   
   TH2F* fEventCount;            // event count as function of step, (for pp: event type (plus additional step -1 for all events without vertex range even in MC)) (for PbPb: centrality)
@@ -150,9 +161,17 @@ protected:
   Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
   Bool_t fEtaOrdering;           // activate eta ordering to prevent shape distortions. see FillCorrelation for the details
   Float_t fCutConversionsV;        // cut on conversions (inv mass)
-  Float_t fCutResonancesV;         // cut on resonances (inv mass)
+  Float_t fCutK0sV;              // cut on K0s (inv mass)
+  Float_t fCutLambdaV;           // cut on Lambda (inv mass)
+  Float_t fCutPhiV;              // cut on Phi (inv mass)
+  Float_t fCutRhoV;              // cut on Rho (inv mass)
+  Float_t fCutCustomMass;       // user-defined inv mass value
+  Float_t fCutCustomFirst;      // user-defined mass of the 1st particle
+  Float_t fCutCustomSecond;     // user-defined mass of the 2nd particle
+  Float_t fCutCustomV;          // cut on user-defined value (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Int_t fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
   Bool_t fPtOrder;		// apply pT,a < pT,t condition
   Float_t fTwoTrackCutMinRadius; // min radius for TTR cut
@@ -163,7 +182,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 31)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 33)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

@@ -113,7 +113,10 @@ kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
 kHCorrMatrixSel = kHCorrMatrix+50, // correlation matrix with events sel
 
-kHCorrMatrixSel2 = kHCorrMatrixSel+50 // correlation matrix 2 with tracklets (triggered + Selected)
+kHCorrMatrixSel2 = kHCorrMatrixSel+50, // correlation matrix 2 with tracklets (triggered + Selected)
+kHCorrMatrixV0 = kHCorrMatrixSel2+50, // correlation matrix of V0M true Vs Central 0.5
+kHCorrMatrixV02 = kHCorrMatrixV0+50,  // Response matrix of V0M detector
+kHCorrMatrixV03 = kHCorrMatrixV02+50  // correlation matrix of V0M true Vs Central 2
 
 
 }; // custom histos
@@ -227,8 +230,9 @@ enum {kDummyBin,
   Bool_t GetUseSpecialOutput()            const {return fUseSpecialOutput;}
   void   SetUseSpecialOutput(Bool_t v=kTRUE)    {fUseSpecialOutput=v;}
   void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
+  void       SetMCCalib(Bool_t calib = kFALSE)              {fMCCalib = calib;}
   void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
-  void       SetCutOnPhi(Bool_t p=kFALSE)   {fCutOnPhi = p;}
+  void       SetCutOnPhi(const char* v="phi0")   {fCutOnPhi = v;}
   void SetCalibfilePath(TString CalibfilePath) {fCalibfilePath=CalibfilePath;}
   void SetCalibHisto(TH1D *calibhisto=0x0);
 
@@ -317,10 +321,11 @@ protected:
   Bool_t fIsSelected;                      //! did current event pass phys.sel.?
   Bool_t fVtxOK;                           //! rec.vertex is good
   Bool_t fUseSpecialOutput;                // flag to open special output
-  Bool_t fUseBCMod;                         // flag to use bunch crossing mod 4 events
-  Int_t      fBCMod4;                        // Select BC Mod4
-  Bool_t fCutOnPhi;                          // Set cut on affected phi regions
-  TString fCalibfilePath;                     // Set V0M MC calibration file name path
+  Bool_t fUseBCMod;                         //! flag to use bunch crossing mod 4 events
+  Bool_t fMCCalib;                         //! flag to use mc calibrated V0M boundries
+  Int_t      fBCMod4;                        //! Select BC Mod4
+  TString fCutOnPhi;                          // Set cut on affected phi regions and for systematics studies
+  TString fCalibfilePath;                     //! Set V0M MC calibration file name path
 
 
 

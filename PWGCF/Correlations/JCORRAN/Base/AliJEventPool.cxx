@@ -168,8 +168,8 @@ void AliJEventPool::AcceptList(TClonesArray *inList, float cent, float Z, float 
           new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJMCTrack(*mcTrack);
         }
 				else{
-					AliJTrack *tk3 = (AliJTrack*)inList->At(i);
-					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJTrack(*tk3);
+					AliJBaseTrack *tk3 = (AliJBaseTrack*)inList->At(i);
+					new ((*fLists[cBin][fwhereToStore[cBin]])[i]) AliJBaseTrack(*tk3);
 				}
     }
 

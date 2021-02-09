@@ -1000,8 +1000,8 @@ void AliXiStar::Exec(Option_t *)
       
       
       
-      AliAODMCParticle *mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXi->GetDaughter(0)));
-      AliAODMCParticle *mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXi->GetDaughter(1)));
+      AliAODMCParticle *mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXi->GetDaughterLabel(0)));
+      AliAODMCParticle *mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXi->GetDaughterLabel(1)));
       
       if(abs(mcInputTrackXiD1->GetPdgCode())!=kLambdaCode && abs(mcInputTrackXiD2->GetPdgCode())!=kLambdaCode) continue;
       if(abs(mcInputTrackXiD1->GetPdgCode())!=kPionCode && abs(mcInputTrackXiD2->GetPdgCode())!=kPionCode) continue;
@@ -1013,12 +1013,12 @@ void AliXiStar::Exec(Option_t *)
       AliAODMCParticle *mcInputTrackLamD2;
       
       if(abs(mcInputTrackXiD1->GetPdgCode())==kLambdaCode) {
-	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughter(0)));
-	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughter(1)));
+	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughterLabel(0)));
+	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughterLabel(1)));
       }
       else{
-	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughter(0)));
-	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughter(1)));
+	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughterLabel(0)));
+	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughterLabel(1)));
       }
 
 
@@ -1051,8 +1051,8 @@ void AliXiStar::Exec(Option_t *)
       else ((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar3"))->Fill(mcInputTrackXiStar->Pt(), mcInputTrackXiStar->Y(), mcInputTrackXiStar->GetCalcMass());
 
       
-      AliAODMCParticle *mcInputTrackXiStarD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStar->GetDaughter(0)));
-      AliAODMCParticle *mcInputTrackXiStarD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStar->GetDaughter(1)));
+      AliAODMCParticle *mcInputTrackXiStarD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStar->GetDaughterLabel(0)));
+      AliAODMCParticle *mcInputTrackXiStarD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStar->GetDaughterLabel(1)));
       
       if(abs(mcInputTrackXiStarD1->GetPdgCode())!=kXiCode && abs(mcInputTrackXiStarD2->GetPdgCode())!=kXiCode) continue;
       if(abs(mcInputTrackXiStarD1->GetPdgCode())!=kPionCode && abs(mcInputTrackXiStarD2->GetPdgCode())!=kPionCode) continue;
@@ -1063,12 +1063,12 @@ void AliXiStar::Exec(Option_t *)
       AliAODMCParticle *mcInputTrackXiD1;
       AliAODMCParticle *mcInputTrackXiD2;
       if(abs(mcInputTrackXiStarD1->GetPdgCode())==kXiCode) {
-	mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD1->GetDaughter(0)));
-	mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD1->GetDaughter(1)));
+	mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD1->GetDaughterLabel(0)));
+	mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD1->GetDaughterLabel(1)));
       }
       else{
-	mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD2->GetDaughter(0)));
-	mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD2->GetDaughter(1)));
+	mcInputTrackXiD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD2->GetDaughterLabel(0)));
+	mcInputTrackXiD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiStarD2->GetDaughterLabel(1)));
       }
       
       if(abs(mcInputTrackXiD1->GetPdgCode())!=kLambdaCode && abs(mcInputTrackXiD2->GetPdgCode())!=kLambdaCode) continue;
@@ -1081,12 +1081,12 @@ void AliXiStar::Exec(Option_t *)
       AliAODMCParticle *mcInputTrackLamD2;
 
       if(abs(mcInputTrackXiD1->GetPdgCode())==kLambdaCode) {
-	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughter(0)));
-	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughter(1)));
+	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughterLabel(0)));
+	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD1->GetDaughterLabel(1)));
       }
       else{
-	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughter(0)));
-	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughter(1)));
+	mcInputTrackLamD1 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughterLabel(0)));
+	mcInputTrackLamD2 = (AliAODMCParticle*)mcArray->At(abs(mcInputTrackXiD2->GetDaughterLabel(1)));
       }
 
       if(abs(mcInputTrackLamD1->GetPdgCode())!=kProtonCode && abs(mcInputTrackLamD2->GetPdgCode())!=kProtonCode) continue;

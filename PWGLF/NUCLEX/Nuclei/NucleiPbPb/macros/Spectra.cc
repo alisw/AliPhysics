@@ -91,8 +91,8 @@ void Spectra() {
   double n_norm = n_sel * n_vtx / n_rec;
   TTList* norm_list = (TTList*)data_file.Get(kFilterListNames.data());
   Requires(norm_list,"norm_list");
-  TH1F* number_of_events = (TH1F*)norm_list->Get("fCentralityClasses");
-  if (!number_of_events) {
+  TH1F* hCentrality = (TH1F*)norm_list->Get("fCentralityClasses");
+  if (!hCentrality) {
     cout << "Missing normalisation to the number of events " << endl;
     return;
   }
@@ -119,31 +119,28 @@ void Spectra() {
     for (int iS = 0; iS < 2; ++iS) {
       TDirectory* particle_dir = base_dir->mkdir(kNames[iS].data());
       particle_dir->cd();
-      //if(string(list_key->GetName())=="mpuccio_deuterons_") cout << kNames[iS].data() << endl;
-      for (int iC = 0; iC < n_centralities; ++iC) {
+      for (int iC = 0; iC < kCentLength; ++iC) {
         /// Getting efficiencies
-        TH1* eff_tpc_graph = (TH1*)efficiency_file.Get(Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],iC));
-        TH1* eff_tof_graph = (TH1*)efficiency_file.Get(Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],iC));
+        TH1* eff_tpc_graph = (TH1*)efficiency_file.Get(Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],0));
+        TH1* eff_tof_graph = (TH1*)efficiency_file.Get(Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],0));
         Requires(eff_tpc_graph,"eff_tpc_graph");
         Requires(eff_tof_graph,"eff_tof_graph");
-        // TF1* eff_tpc_func = eff_tpc_graph->GetFunction("effModel");
-        // TF1* eff_tof_func = eff_tof_graph->GetFunction("effModel");
         /// I am not considering Secondaries here, the analysis is only at high pT
         if (secondaries_file.IsOpen()) {
-          TH1* hResTFF = (TH1*)secondaries_file.Get(Form("%s/Results/hResTFF",list_key->GetName()));
-          Requires(hResTFF,Form("%s/Results/hResTFF",list_key->GetName()));
+          TH1* hResTFF = (TH1*)secondaries_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
+          Requires(hResTFF,Form("%s/Results/hResTFF_%i",list_key->GetName(),7));
           primary_fraction = hResTFF->GetFunction("fitFrac");
           Requires(primary_fraction,"Missing primary fraction");
         }
         if (secondaries_tpc_file.IsOpen()) {
-          TH1* hResTFF_TPC = (TH1*)secondaries_tpc_file.Get(Form("%s/Results/hResTFF_TPC",list_key->GetName()));
-          Requires(hResTFF_TPC,Form("%s/Results/hResTFF_TPC",list_key->GetName()));
+          TH1* hResTFF_TPC = (TH1*)secondaries_tpc_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
+          Requires(hResTFF_TPC,Form("%s/Results/hResTFF_%i",list_key->GetName(),7));
           primary_fraction_tpc = hResTFF_TPC->GetFunction("fitFrac");
           Requires(primary_fraction_tpc,"Missing primary fraction for TPC");
         }
 
         /// Getting raw signals
-        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/Fits/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
+        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/TailTail/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
         TH1D* rawTPC = (TH1D*)signal_file.Get(Form("%s/%s/TPConly/hTPConly%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
         Requires(rawTOF,"Missing TOF raw counts");
         Requires(rawTPC,"Missing TPC raw counts");
@@ -168,7 +165,7 @@ void Spectra() {
         }
         g3g4tof[iS]->SetLineColor(kBlue);
         g3g4tof[iS]->SetMarkerColor(kBlue);
-        g3g4tof[iS]->Fit(function_g3g4_tof,"R");
+        g3g4tof[iS]->Fit(function_g3g4_tof,"RQ");
         g3g4tof[iS]->Write();
         Divide(spectraTOF,function_g3g4_tof,corr_geant_tof[iS]);
         corr_geant_tof[iS]->Write();
@@ -179,21 +176,16 @@ void Spectra() {
         TF1 function_g3g4_tpc(Form("function_g3g4_tpc_%c",kLetter[iS]),"pol0",0.6,6.);
         g3g4tpc[iS]->SetLineColor(kBlue);
         g3g4tpc[iS]->SetMarkerColor(kBlue);
-        g3g4tpc[iS]->Fit(&function_g3g4_tpc,"R");
+        g3g4tpc[iS]->Fit(&function_g3g4_tpc,"RQ");
         g3g4tpc[iS]->Write();
         Divide(spectraTPC,&function_g3g4_tpc,corr_geant_tpc[iS]);
         corr_geant_tpc[iS]->Write();
         if (primary_fraction_tpc&&!iS) spectraTPC->Multiply(primary_fraction_tpc);
         //spectraTOF->Scale(0.7448 / n_norm,"width");
         //spectraTPC->Scale(0.7448 / n_norm,"width");
-        cout << "****************************************************************" << endl << endl;
-        cout << "number_of_events : " << number_of_events->GetEntries() <<endl;
-        cout << "n_sel : " << n_sel << endl;
-        cout << "n_rec : " << n_rec << endl;
-        cout << "n_vtx : " << n_vtx << endl;
-        cout << "n_norm : " << n_norm << endl;
-        spectraTOF->Scale(1. / number_of_events->GetEntries(),"width");
-        spectraTPC->Scale(1. / number_of_events->GetEntries(),"width");
+        float number_of_events = hCentrality->Integral(kCentBinsArray[iC][0],kCentBinsArray[iC][1]);
+        spectraTOF->Scale(1. / number_of_events,"width");
+        spectraTPC->Scale(1. / number_of_events,"width");
         spectraTOF->GetXaxis()->SetRange(1,15);
 
         spectraTOF->Write(Form("TOFspectra%i",iC));

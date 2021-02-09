@@ -8,7 +8,7 @@
 ///\modif M. Germin
 /// \date July 4 , 2017
 
-AliEmcalTriggerQATask* AddTaskEmcalTriggerQA_QAtrain(const Int_t runnumber=253681)
+TObjArray AddTaskEmcalTriggerQA_QAtrain(const Int_t runnumber=253681)
 {
   return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(runnumber);
 }

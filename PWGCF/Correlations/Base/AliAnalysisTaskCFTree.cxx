@@ -576,7 +576,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         // track selection based on filter mask (if set)
         // or ITSsa cuts
 	if (fTrackFilterBit != 0) {
-          if (mask & fTrackFilterBit == 0)
+          if ((mask & fTrackFilterBit) == 0)
             continue;
         }
         else if (track->InheritsFrom("AliAODTrack")) {

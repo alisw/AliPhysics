@@ -56,7 +56,7 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4()
   fHistDeDxSharp(0),
   fHistTOF2D(0),
   fHistTOFnuclei(0x0),
-  fNTriggers(5),
+  fNTriggers(6),
   fBBParametersLightParticles(),
   fBBParametersNuclei(),
   fMCtrue(0),
@@ -109,7 +109,7 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4(const char *name)
     fHistDeDxSharp(0),
     fHistTOF2D(0),
     fHistTOFnuclei(0x0),
-    fNTriggers(5),
+    fNTriggers(6),
     fBBParametersLightParticles(),
     fBBParametersNuclei(),
     fMCtrue(0),
@@ -213,7 +213,7 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   //trigger statitics histogram
   //
   fHistTriggerStat = new TH1F("fHistTriggerStat","Trigger statistics", fNTriggers,-0.5,fNTriggers-0.5);
-  const Char_t* aTriggerNames[] = { "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
+  const Char_t* aTriggerNames[] = {"kINT7", "kMB", "kCentral", "kSemiCentral", "kEMCEJE", "kEMCEGA" };
   for ( Int_t ii=0; ii < fNTriggers; ii++ )
     fHistTriggerStat->GetXaxis()->SetBinLabel(ii+1, aTriggerNames[ii]);
 
@@ -509,9 +509,9 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     AliCentrality *esdCentrality = fESD->GetCentrality();
     centralityClass10 = esdCentrality->GetCentralityClass10("V0M"); // centrality percentile determined with V0                           
     centralityPercentile = esdCentrality->GetCentralityPercentile("V0M"); // centrality percentile determined with V0                        
-    if(!fMCtrue){
-      if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %  
-    }
+//    if(!fMCtrue){
+//      if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %
+//    }
   }
   //
 //  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
@@ -524,6 +524,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   if(fTriggerFired[2] == kTRUE) fHistTriggerStatAfterEventSelection->Fill(2);
   if(fTriggerFired[3] == kTRUE) fHistTriggerStatAfterEventSelection->Fill(3);
   if(fTriggerFired[4] == kTRUE) fHistTriggerStatAfterEventSelection->Fill(4);
+  if(fTriggerFired[5] == kTRUE) fHistTriggerStatAfterEventSelection->Fill(5);
   //
   //
   if (!fESDpid) fESDpid = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
@@ -610,9 +611,9 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     TBits shared = track->GetTPCSharedMap();
 
     track->GetImpactParameters(dca, cov);
-    Float_t dcaXY = TMath::Sqrt(dca[0]*dca[0]);
+    Float_t dcaXY = dca[0]; //TMath::Sqrt(dca[0]*dca[0]);
     Float_t dcaXYsign = dca[0];
-    Float_t dcaZ  = TMath::Sqrt(dca[1]*dca[1]);
+    Float_t dcaZ  = dca[1]; //TMath::Sqrt(dca[1]*dca[1]);
     //
     Double_t cov1[15];
     track->GetExternalCovariance(cov1);//->GetSigmaQoverP();
@@ -983,11 +984,12 @@ void AliAnalysisTaskAntiHe4::ResetEvent() {
 Bool_t AliAnalysisTaskAntiHe4::IsTriggered() {
   // Check if Event is triggered and fill Trigger Histogram
 
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kMB))          fTriggerFired[0] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kCentral))     fTriggerFired[1] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fTriggerFired[2] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      fTriggerFired[3] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      fTriggerFired[4] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kINT7))        fTriggerFired[0] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kMB))          fTriggerFired[1] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kCentral))     fTriggerFired[2] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fTriggerFired[3] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      fTriggerFired[4] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      fTriggerFired[5] = kTRUE;
 
   Bool_t isTriggered = kFALSE;
 
@@ -1050,6 +1052,23 @@ void AliAnalysisTaskAntiHe4::SetBBParameters(Int_t runNumber){
         
     }
 
+    if(runNumber > 244824){ //LHC RUN 2
+        
+        fBBParametersLightParticles[0]   = 3.43419;
+        fBBParametersLightParticles[1]   = 11.7654;
+        fBBParametersLightParticles[2]   = -0.0179698;
+        fBBParametersLightParticles[3]   = 2.23013;
+        fBBParametersLightParticles[4]   = 1.69306;
+        
+        fBBParametersNuclei[0]  = 2.43644;
+        fBBParametersNuclei[1]  = 19.6453;
+        fBBParametersNuclei[2]  = 0.0140561;
+        fBBParametersNuclei[3]  = 2.2299;
+        fBBParametersNuclei[4]  = 3.23329;
+        
+    }
+
+    
     
 }
 //______________________________________________________________________________

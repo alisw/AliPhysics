@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/**************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #include <iostream>
 #include <vector>
 #include <cstring>
@@ -38,9 +50,7 @@
 #include "AliVEvent.h"
 #include "AliVVZERO.h"
 
-/// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMakerKernel)
-/// \endcond
 
 AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   TObject(),
@@ -52,6 +62,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fLevel0PatchFinder(nullptr),
   fL0MinTime(7),
   fL0MaxTime(10),
+  fApplyL0TimeCut(true),
   fMinCellAmp(0),
   fMinL0FastORAmp(0),
   fMinL1FastORAmp(0),
@@ -61,10 +72,20 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fDebugLevel(0),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
+  fApplyOnlineBadChannelsToSmeared(kFALSE),
   fConfigured(kFALSE),
   fSmearModelMean(nullptr),
   fSmearModelSigma(nullptr),
   fSmearThreshold(0.1),
+  fScaleShift(0.),
+  fScaleMult(1.),
+  fConstNoiseFEESmear(0.),
+  fMeanNoiseFEESmear(0.),
+  fSigmaNoiseFEESmear(0.),
+  fAddConstantNoiseFEESmear(false),
+  fAddGaussianNoiseFEESmear(false),
+  fUseNegPartGaussNoise(false),
+  fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
   fPatchADCSimple(nullptr),
@@ -78,6 +99,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
   fCellTimeLimits[0] = -10000.;
   fCellTimeLimits[1] = 10000.;
+  memset(fRhoValues, 0, sizeof(Double_t) * kNIndRho);
 }
 
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
@@ -152,6 +174,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPbPb2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit() | 1<<fTriggerBitConfig->GetBkgBit(), 8, 4);
+  fDoBackgroundSubtraction = true;
   fConfigured = true;
 }
 
@@ -168,7 +191,24 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
-  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
+  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  fConfigured = true;
+}
+
+void AliEmcalTriggerMakerKernel::ConfigureForPP20158x8()
+{
+  AliEMCALTriggerBitConfig* triggerBitConfig = new AliEMCALTriggerBitConfigNew();
+  SetTriggerBitConfig(triggerBitConfig);
+
+  // Initialize patch finder
+  if (fPatchFinder) delete fPatchFinder;
+  fPatchFinder = new AliEMCALTriggerPatchFinder<double>;
+
+  SetL0TriggerAlgorithm(0, 103, 1<<fTriggerBitConfig->GetLevel0Bit(), 2, 1);
+  AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
+  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
+  AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
   fConfigured = true;
 }
 
@@ -312,13 +352,19 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     // trigger bits can also occur on online masked fastors. Therefore trigger
     // bits are handled before ADC values, and independently whether fastor is
     // masked or not
+    bitmap = 0;
     trigger->GetTriggerBits(bitmap);
-    try {
-      (*fTriggerBitMap)(globCol, globRow) = bitmap;
-    }
-    catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
-      std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
-      AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+    if(bitmap){
+      // protection against duplicate entries in the AliVCaloTriggers object:
+      // the grid is anyhow initialized with 0, so in case of a 0 entry don't overwrite
+      // existing entries
+      try {
+        (*fTriggerBitMap)(globCol, globRow) = bitmap;
+      }
+      catch (AliEMCALTriggerDataGrid<int>::OutOfBoundsException &e) {
+        std::string dirstring = e.GetDirection() == AliEMCALTriggerDataGrid<int>::OutOfBoundsException::kColDir ? "Col" : "Row";
+        AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
+      }
     }
 
     // also Level0 times need to be handled without masking of the fastor ...
@@ -350,7 +396,10 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     trigger->GetL1TimeSum(adcAmp);
     if (adcAmp < 0) adcAmp = 0;
 
-    if (adcAmp >= fMinL1FastORAmp) {
+    if (adcAmp >= std::max(fMinL1FastORAmp, 1)) {
+      // protection against duplicate entries: the grid is anyhow
+      // initialized with 0, so in case of an entry with negative or
+      // 0 ADC time sum don't overwrite the existing one
       try {
         (*fPatchADC)(globCol,globRow) = adcAmp;
       }
@@ -371,7 +420,10 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
     amplitude *= 4; // values are shifted by 2 bits to fit in a 10 bit word (on the hardware side)
     amplitude -= fFastORPedestal[absId];
     if(amplitude < 0) amplitude = 0;
-    if (amplitude >= fMinL0FastORAmp) {
+    if (amplitude > std::max(0., double(fMinL0FastORAmp))) {
+      // protection against duplicate entries: the grid is anyhow
+      // initialized with 0, so in case of an entry with negative or
+      // 0 ADC time sum don't overwrite the existing one
       try{
         (*fPatchAmplitudes)(globCol,globRow) = amplitude;
       }
@@ -380,6 +432,13 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
         AliErrorStream() << "Trigger maker task - filling trigger bit grid - index out-of-bounds in " << dirstring << ": " << e.GetIndex() << std::endl;
       }
     }
+  }
+
+  // Reading of the rho values (only PbPb)
+  if(fDoBackgroundSubtraction) {
+    AliInfoStream() << "Reading median values: EMCAL " << fRhoValues[kIndRhoEMCAL] << ", DCAL " << fRhoValues[kIndRhoDCAL] << std::endl;
+    fRhoValues[kIndRhoEMCAL] = trigger->GetMedian(0);     // EMCAL STU at position 0
+    fRhoValues[kIndRhoDCAL] = trigger->GetMedian(1);      // DCAL STU at position 1
   }
 }
 
@@ -399,7 +458,11 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
+    amp *= fScaleMult;
     if(amp < fMinCellAmplitude) continue;
+    if(fScaleShift) amp += fScaleShift;
+     
+    amp = TMath::Max(amp, 0.);      // never go negative in energy
     // get position
     Int_t absId=-1;
     fGeometry->GetFastORIndexFromCellIndex(cellId, absId);
@@ -428,6 +491,22 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     AliDebugStream(1) << "Trigger Maker: Apply energy smearing" << std::endl;
     for(int icol = 0; icol < fPatchADCSimple->GetNumberOfCols(); icol++){
       for(int irow = 0; irow < fPatchADCSimple->GetNumberOfRows(); irow++){
+        bool doChannel = true;
+        if(irow >= 64 && irow < 100 && icol >= 16 && icol < 32) {
+          // in PHOS Hole, continue
+          continue;
+        }
+        if(fApplyOnlineBadChannelsToSmeared) {
+          int absFastor = -1;
+          fGeometry->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, absFastor);
+          if(absFastor > -1) {
+            if(fBadChannels.find(absFastor) != fBadChannels.end()){
+              AliDebugStream(1) << "In smearing, FastOR " << absFastor << " masked, rejecting." << std::endl;
+              doChannel = false;
+            }
+          }
+        }
+        if(!doChannel) continue;
         double energyorig = (*fPatchADCSimple)(icol, irow) * fADCtoGeV;          // Apply smearing in GeV
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){
@@ -436,7 +515,20 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
           if(energysmear < 0) energysmear = 0;      // only accept positive or 0 energy values
           AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
         }
-        (*fPatchEnergySimpleSmeared)(icol, irow) = energysmear;
+        (*fPatchEnergySimpleSmeared)(icol, irow) += energysmear;
+        // check whether to handle noise
+        if(fAddConstantNoiseFEESmear) {
+          (*fPatchEnergySimpleSmeared)(icol, irow) += fConstNoiseFEESmear;
+        }
+        if(fAddGaussianNoiseFEESmear) {
+          // Accept also the negative part of the gaussian to simulate underfluctuations
+          double noisevalue = gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+          if(noisevalue < 0. && !fUseNegPartGaussNoise) 
+            noisevalue = 0.;
+          (*fPatchEnergySimpleSmeared)(icol, irow) += noisevalue;
+        }
+        // Truncate to 0
+        (*fPatchEnergySimpleSmeared)(icol, irow) = TMath::Max((*fPatchEnergySimpleSmeared)(icol, irow), 0.);
       }
     }
     AliDebugStream(1) << "Smearing done" << std::endl;
@@ -521,6 +613,12 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
       if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
       onlinebits &= bkgPatchMask;
     }
+    if(fDoBackgroundSubtraction) {
+      double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/8., 2);
+      double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];  // Rho values are for a detector measured in the opposite arm
+      AliDebugStream(1) << "Subtracting background for area " << area << ": " << rhoval  << " -> " << (area * rhoval) << std::endl;
+      patchit->SetADC(patchit->GetADC() - area * rhoval);
+    }
     // convert
     AliEMCALTriggerPatchInfo fullpatch;
     fullpatch.Initialize(patchit->GetColStart(), patchit->GetRowStart(),
@@ -574,6 +672,15 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
   // std::cout << "Finished finding trigger patches" << std::endl;
 }
 
+double AliEmcalTriggerMakerKernel::GetL0TriggerChannelAmplitude(Int_t col, Int_t row) const{
+  double amp = 0;
+  try {
+    amp = (*fPatchAmplitudes)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return amp;
+}
 
 double AliEmcalTriggerMakerKernel::GetTriggerChannelADC(Int_t col, Int_t row) const{
   double adc = 0;
@@ -657,8 +764,12 @@ AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::C
       }
       if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
       if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
-      Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
-      if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
+      if(fApplyL0TimeCut) {
+        Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
+        if(l0times > fL0MinTime && l0times < fL0MaxTime) nvalid++;
+      } else {
+        nvalid++;
+      }
     }
   }
   if (nvalid == 4) result = kLevel0Fired;

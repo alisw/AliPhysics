@@ -27,10 +27,10 @@ SteerAnalysisTaskdNdEtaRuben(const Char_t *inputfilename = NULL, Int_t type = 0,
     if (str.EndsWith(".xml")) {
         TGrid::Connect("alien://");
         Info("", "reading data list from collection:");
-        TAlienCollection coll(inputfilename, maxFiles);
-        coll.Reset();
-        while (coll.Next()) {
-            filename = coll.GetTURL();
+        TGridCollection *coll = gGrid->OpenCollection(inputfilename, maxFiles);
+        coll->Reset();
+        while (coll-.Next()) {
+            filename = coll->GetTURL();
             Info("", Form("%s", filename));
             chain->Add(filename);
         }

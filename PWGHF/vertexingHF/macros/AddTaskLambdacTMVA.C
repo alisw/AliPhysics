@@ -4,7 +4,7 @@ Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t sto
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskLambdac", "No analysis manager to connect to.");
+    ::Error("AddTaskLambdacTMVA", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -16,7 +16,7 @@ Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t sto
   } else {
       filecuts=TFile::Open(finname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	::Error("AddTaskLambdacTMVA","Input file not found : check your cut object");
       }
   }
   AliRDHFCutsLctopKpi *analysiscuts = new AliRDHFCutsLctopKpi();
@@ -57,7 +57,7 @@ Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t sto
 		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvSel");
 		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrPSSel");
 		else {
-			AliFatal("useNtrkWeight value not a valid option - choice from 1-4");
+			::Error("AddTaskLambdacTMVA","useNtrkWeight value not a valid option - choice from 1-4");
 			return 0x0;
 		}
 		if(hNchPrimaries){ 
@@ -65,7 +65,7 @@ Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t sto
 			lambdacTask->SetMCNchHisto(hNchPrimaries);
 		}
 		else {
-			AliFatal("Histogram for multiplicity weights not found");
+			::Error("AddTaskLambdacTMVA","Histogram for multiplicity weights not found");
 			return 0x0;
 		}
 	}
@@ -132,7 +132,7 @@ Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0,Int_t sto
 
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
 
-	TString foutname = Form("InvMassLambdac_nt1.root",postname.Data());
+	TString foutname = "InvMassLambdac_nt1.root";
   if (storeNtuple) {
     AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								     AliAnalysisManager::kOutputContainer,foutname);

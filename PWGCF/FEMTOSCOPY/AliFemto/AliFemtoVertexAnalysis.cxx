@@ -101,7 +101,7 @@ AliFemtoString AliFemtoVertexAnalysis::Report()
 
   report += AliFemtoSimpleAnalysis::Report();
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //_________________________
 void AliFemtoVertexAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)

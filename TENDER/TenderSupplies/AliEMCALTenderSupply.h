@@ -63,6 +63,12 @@ public:
 
   void     SetBasePath(const Char_t *basePath)            { fBasePath = basePath             ;}
  
+  void     SetCustomBC(const Char_t *BCfile)              { fCustomBC = BCfile               ;}
+ 
+  void     SetCustomTimeCalibration(const Char_t *SMFile, const Char_t *ParamFile)
+                                                          { fCustomTempCalibSM = SMFile      ;
+                                                          fCustomTempCalibParams = ParamFile ;}
+ 
   void     SetConfigFileName(const char *name)            { fConfigName = name               ;}
 
   void     SetNonLinearityFunction(Int_t fun)             { fNonLinearFunc = fun             ;}
@@ -141,6 +147,8 @@ public:
   void     SwitchOnBadCellRemove()                        { fBadCellRemove = kTRUE           ;} 
   void     SwitchOffBadCellRemove()                       { fBadCellRemove = kFALSE          ;}  
 
+  void     Load1DBadChannelMap()                          { fLoad1DBadChMap = kTRUE          ;}
+
   void     SwitchOnClusterBadChannelCheck()               { fClusterBadChannelCheck = kTRUE  ;} 
   void     SwitchOffClusterBadChannelCheck()              { fClusterBadChannelCheck = kFALSE ;}  
 
@@ -151,7 +159,9 @@ public:
   void     SwitchOffClusterExoticChannelCheck()           { fRejectExoticClusters = kFALSE   ;}  
 
   void     SwitchOnCalibrateEnergy()                      { fCalibrateEnergy = kTRUE         ;} 
-  void     SwitchOffCalibrateEnergy()                     { fCalibrateEnergy = kFALSE        ;}  
+  void     SwitchOffCalibrateEnergy()                     { fCalibrateEnergy = kFALSE        ;}
+
+  void     Load1DRecalibration()                          { fLoad1DRecalibFactors = kTRUE    ;}  
 
   void     SwitchOnCalibrateTime()                        { fCalibrateTime = kTRUE           ;} 
   void     SwitchOffCalibrateTime()                       { fCalibrateTime = kFALSE          ;}  
@@ -192,7 +202,10 @@ public:
   void     SwitchOffUseAutomaticRunDepRecalibParam()       { fUseAutomaticRunDepRecalib = kFALSE ; }
   void     SwitchOffUseAutomaticTimeCalibParam()           { fUseAutomaticTimeCalib     = kFALSE ; }
   void     SwitchOffUseAutomaticRecParam()                 { fUseAutomaticRecParam      = kFALSE ; }
-  
+
+  void     SwitchUseNewRunDepTempCalib(Bool_t doUseTC)     { fUseNewRunDepTempCalib     = doUseTC; }
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
+
 private:
 
   AliVEvent* GetEvent();
@@ -232,6 +245,8 @@ private:
   Bool_t                 fCalibrateTimeL1Phase;   // flag cell time calibration with L1phase shift
   Bool_t                 fDoNonLinearity;         // nNon linearity correction flag
   Bool_t                 fBadCellRemove;          // zero bad cells
+  Bool_t                 fLoad1DBadChMap;         // Flag to load 1D bad channel map
+  Bool_t                 fLoad1DRecalibFactors;   // Falg to load 1D energy recalibration histogram
   Bool_t                 fRejectExoticCells;      // reject exotic cells
   Bool_t                 fRejectExoticClusters;   // recect clusters with exotic cells
   Bool_t                 fClusterBadChannelCheck; // check clusters for bad channels
@@ -253,6 +268,9 @@ private:
   Float_t                fEtacut;                 // eta cut for track matching  
   Float_t                fPhicut;                 // phi cut for track matching  
   TString                fBasePath;               // base folder path to get root files 
+  TString                fCustomBC;               // custom BC map file
+  TString                fCustomTempCalibSM;      // custom temperature per SM file
+  TString                fCustomTempCalibParams;  // custom temp calib params file
   Bool_t                 fReClusterize;           // switch for reclustering
   AliEMCALClusterizer   *fClusterizer;            //!clusterizer 
   Bool_t                 fGeomMatrixSet;          // set geometry matrices only once, for the first event.         
@@ -267,6 +285,7 @@ private:
   Float_t                fExoticCellFraction;     // good cell if fraction < 1-ecross/ecell
   Float_t                fExoticCellDiffTime;     // if time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
   Float_t                fExoticCellMinAmplitude; // check for exotic only if amplitud is larger than this value
+  Bool_t                 fDoMergedBCs;            // flag whether to load four histos for the time calib or one merged histo
 
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
@@ -287,12 +306,13 @@ private:
   // Change to false if experts
   Bool_t                 fUseAutomaticRecalib;       // On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; // On by default the check in the OADB of the run dependent energy recalibration
+  Bool_t                 fUseNewRunDepTempCalib;     // Off by default the check in the OADB of the new run dependent temperature calib which covers Run1 and Run2
   Bool_t                 fUseAutomaticTimeCalib;     // On by default the check in the OADB of the time recalibration
   Bool_t                 fUseAutomaticRecParam;      // On the auto setting of the rec param
   
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 19); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 24); // EMCAL tender task
 };
 #endif

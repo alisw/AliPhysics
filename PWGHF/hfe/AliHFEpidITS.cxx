@@ -41,104 +41,122 @@ ClassImp(AliHFEpidITS)
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS():
-  AliHFEpidBase()
-  , fNsigmaITS(3)
-  , fMeanShift(0)
+AliHFEpidBase()
+, fNsigmaITSlow(-3)
+, fNsigmaITShigh(3)
+, fMeanShift(0)
 {
-  //
-  // Constructor
-  //
-  
+    //
+    // Constructor
+    //
+    
 } 
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const Char_t *name):
-  AliHFEpidBase(name)
-  , fNsigmaITS(3)
-  , fMeanShift(0)
+AliHFEpidBase(name)
+, fNsigmaITSlow(-3)
+, fNsigmaITShigh(3)
+, fMeanShift(0)
 {
-  //
-  // Default constructor
-  //
+    //
+    // Default constructor
+    //
 }
 
 //___________________________________________________________________
 AliHFEpidITS::AliHFEpidITS(const AliHFEpidITS &ref):
-    AliHFEpidBase("")
-  , fNsigmaITS(ref.fNsigmaITS)
-  , fMeanShift(ref.fMeanShift)
+AliHFEpidBase("")
+, fNsigmaITSlow(ref.fNsigmaITSlow)
+, fNsigmaITShigh(ref.fNsigmaITShigh)
+, fMeanShift(ref.fMeanShift)
 {
-  //
-  // Copy constructor
-  //
-  ref.Copy(*this);
+    //
+    // Copy constructor
+    //
+    ref.Copy(*this);
 }
 
 //___________________________________________________________________
 AliHFEpidITS &AliHFEpidITS::operator=(const AliHFEpidITS &ref){
-  //
-  // Assignment operator
-  //
-  if(this != &ref) ref.Copy(*this);
-  return *this;
+    //
+    // Assignment operator
+    //
+    if(this != &ref) ref.Copy(*this);
+    return *this;
 }
 
 //___________________________________________________________________
 AliHFEpidITS::~AliHFEpidITS(){
-  //
-  // Destructor
-  //
+    //
+    // Destructor
+    //
 }
 
 //___________________________________________________________________
 void AliHFEpidITS::Copy(TObject &ref) const {
-  //
-  // Copy function
-  // Provides a deep copy
+    //
+    // Copy function
+    // Provides a deep copy
     //
     AliHFEpidITS &target = dynamic_cast<AliHFEpidITS &>(ref);
-
-    target.fNsigmaITS = fNsigmaITS;
+    target.fNsigmaITSlow = fNsigmaITSlow;
+    target.fNsigmaITShigh = fNsigmaITShigh;
     target.fMeanShift = fMeanShift;
     AliHFEpidBase::Copy(ref);
 }
 
 //___________________________________________________________________
 Bool_t AliHFEpidITS::InitializePID(Int_t /*run*/){
-  //
-  // ITS PID initialization
-  //
-  return kTRUE;
+    //
+    // ITS PID initialization
+    //
+    return kTRUE;
 }
 
 
 //___________________________________________________________________
 Int_t AliHFEpidITS::IsSelected(const AliHFEpidObject* track, AliHFEpidQAmanager* pidqa) const {
-  //
-  // Does PID decision for ITS
-  //
+    //
+    // Does PID decision for ITS
+    //
     if(!fkPIDResponse) return 0;
     AliDebug(2, "PID object available");
-
+    
     const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
     if(!vtrack) return 0;
-
+    
     if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kITSpid, AliHFEdetPIDqa::kBeforePID);
     
     // Fill before selection
     Int_t pdg = 0;
     Double_t sigEle = GetITSNsigmaCorrected(vtrack);
     AliDebug(2, Form("Number of sigmas in ITS: %f", sigEle));
-    if(TMath::Abs(sigEle) < fNsigmaITS) pdg = 11;
+    if(sigEle > fNsigmaITSlow && sigEle < fNsigmaITShigh) pdg = 11;
+  //  if(TMath::Abs(sigEle) < fNsigmaITS) pdg = 11;
     if(pdg == 11 && pidqa) pidqa->ProcessTrack(track, AliHFEpid::kITSpid, AliHFEdetPIDqa::kAfterPID);
     return pdg;
-//  return 11;  // @TODO: Implement ITS PID decision
+    //  return 11;  // @TODO: Implement ITS PID decision
 }
 
 //___________________________________________________________________
 Double_t AliHFEpidITS::GetITSNsigmaCorrected(const AliVTrack *track) const {
-  //
-  // Get the ITS number of sigmas corrected for a possible shift of the mean dE/dx
-  //
-  return fkPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron) - fMeanShift;
+    //
+    // Get the ITS number of sigmas corrected for a possible shift of the mean dE/dx
+    //
+    return fkPIDResponse->NumberOfSigmasITS(track, AliPID::kElectron) - fMeanShift;
 }
+//___________________________________________________________________
+void AliHFEpidITS::SetITSnSigma(Float_t nSigmalow, Float_t nSigmahigh) {
+    //
+    //Set nSigma cut
+    //
+    fNsigmaITSlow = nSigmalow;
+    fNsigmaITShigh = nSigmahigh;
+}
+//___________________________________________________________________
+
+
+
+
+

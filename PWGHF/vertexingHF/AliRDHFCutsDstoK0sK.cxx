@@ -53,6 +53,8 @@ AliRDHFCuts(name)
    , fExcludedCut(-1)
    , fV0Type(0)
    , fV0daughtersCuts(0)
+   , fPidOption(1)
+   , fMaxPtStrongPid(0)
 {
    //
    /// Default Constructor
@@ -104,13 +106,15 @@ AliRDHFCuts(name)
 
 
    // PID settings
-   Double_t nsigma[5] = {3., 3., 3., 3., 0.}; // 0-2 for TPC, 3 for TOF, 4 for ITS
+   Double_t nsigma[5] = {2., 1., 2., 3., 0.}; // 0-2 for TPC, 3 for TOF, 4 for ITS
+   Double_t plim[2]   = {0.6, 0.8};
 
    if (fPidHF) delete fPidHF;
    fPidHF = new AliAODPidHF();
 
+   fPidHF -> SetPLimit(plim, 2);
    fPidHF -> SetMatch(1);          // switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
-   fPidHF -> SetAsym(kFALSE);      // asimmetric PID required (different sigmas for different p bins)
+   fPidHF -> SetAsym(kTRUE);       // asimmetric PID required (different sigmas for different p bins)
    fPidHF -> SetSigma(nsigma);     // sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
    fPidHF -> SetCompat(kTRUE);     // compatibility region : useful only if fMatch=1
    fPidHF -> SetTPC(1);
@@ -128,6 +132,8 @@ AliRDHFCuts(source)
    , fExcludedCut(source.fExcludedCut)
    , fV0Type(source.fV0Type)
    , fV0daughtersCuts(0)
+   , fPidOption(source.fPidOption)
+   , fMaxPtStrongPid(source.fMaxPtStrongPid)
 {
    //
    /// Standard constructor
@@ -335,7 +341,51 @@ void AliRDHFCutsDstoK0sK::GetCutVarsForOpt(AliAODRecoDecayHF* obj, Float_t* vars
 }
 
 
+//--------------------------------------------------------------------------
+Bool_t AliRDHFCutsDstoK0sK::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){
+  //
+  // Apply pre-selections, used in the AOD filtering
+  //
+  
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
 
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return 0;
+  }
+  
+  Double_t pt = d->Pt();
+  Int_t ptbin = PtBin(pt);
+  if (ptbin<0) return 0;
+  
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
+
+  // cut on V0 pT min
+  if (v0->Pt() < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
+  
+  // cut on the minimum pt of the bachelor
+  if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
+
+  // Cut on the K0s invariant mass
+  Double_t  mk0s   = v0->MassK0Short();
+  Double_t mk0sPDG   = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
+    
+  // cut on the D+ invariant mass
+  Double_t  mDs  = d->InvMassDstoK0sK();
+  Double_t mDsPDG  = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  if (TMath::Abs(mDs - mDsPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) return 0;
+
+  // - Cut on V0-daughters DCA (prong-to-prong)
+  if (TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;
+  
+  return kTRUE;
+}
 
 //--------------------------------------------------------------------------
 Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod)
@@ -357,6 +407,10 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       AliDebug(2, "AliAODRecoCascadeHF null");
       return 0;
    }
+
+   Double_t pt = d->Pt();
+   if (pt < fMinPtCand) return 0;
+   if (pt > fMaxPtCand) return 0;
 
    if (!d->GetSecondaryVtx()) {
       AliDebug(2, "No secondary vertex for cascade");
@@ -446,7 +500,6 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       Double_t  mk0s = v0->MassK0Short();
 
 
-      Double_t pt = d->Pt();
       Int_t ptbin = PtBin(pt);
       if (ptbin==-1) {
          return 0;
@@ -551,7 +604,7 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       //_________________________________________________
 
       // - Cut on bachelor pT
-      if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) {
+      if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) {
          AliDebug(4, Form(" bachelor track Pt=%2.2e < %2.2e", bachelorTrack->Pt(), fCutsRD[GetGlobalIndex(7,ptbin)]));
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;
@@ -559,7 +612,7 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
 
 
       // - Cut on V0 pT
-      if (TMath::Abs(v0->Pt()) < fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) {
+      if (v0->Pt() < fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) {
          AliDebug(4, Form(" V0 track Pt=%2.2e < %2.2e", v0->Pt(), fCutsRD[GetGlobalIndex(8,ptbin)]));
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;
@@ -654,6 +707,11 @@ Int_t AliRDHFCutsDstoK0sK::IsSelectedPID(AliAODRecoDecayHF* obj)
       return 1;
    }
 
+   if (!fPidHF) {
+      AliDebug(2, "PID not configured. Candidate accepted.");
+      return 1;
+   }
+
    AliAODRecoCascadeHF *d = (AliAODRecoCascadeHF*) obj;
    if (!d) {
       AliDebug(2, "AliAODRecoCascadeHF null");
@@ -668,10 +726,33 @@ Int_t AliRDHFCutsDstoK0sK::IsSelectedPID(AliAODRecoDecayHF* obj)
 
 
    // - Combined TPC/TOF PID
+   Double_t origCompatTOF = fPidHF -> GetPCompatTOF();
+   Double_t origThreshTPC = fPidHF -> GetPtThresholdTPC();
+   if (fPidOption == kStrong) {
+      fPidHF -> SetPCompatTOF(999999.);
+      fPidHF -> SetPtThresholdTPC(999999.);
+   }
+
+
    Int_t isKaon = fPidHF -> MakeRawPid(bachelorTrack, AliPID::kKaon);
 
-   if (isKaon>=0) return 1;
-   else           return 0;
+   if (isKaon < 0) {
+      fPidHF -> SetPCompatTOF(origCompatTOF);
+      fPidHF -> SetPtThresholdTPC(origThreshTPC);
+      return 0;
+   }
+
+   if (fPidOption == kStrong && d->Pt() < fMaxPtStrongPid && isKaon <= 0) {
+      fPidHF -> SetPCompatTOF(origCompatTOF);
+      fPidHF -> SetPtThresholdTPC(origThreshTPC);
+      return 0;
+   }
+
+
+   fPidHF -> SetPCompatTOF(origCompatTOF);
+   fPidHF -> SetPtThresholdTPC(origThreshTPC);
+
+   return 1;
 }
 
 

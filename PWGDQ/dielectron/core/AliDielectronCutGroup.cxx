@@ -23,6 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliDielectronCutGroup.h"
+#include "AliDielectronVarCuts.h"
 
 ClassImp(AliDielectronCutGroup)
 
@@ -81,6 +82,35 @@ Bool_t AliDielectronCutGroup::IsSelected(TObject* track)
     }
     else { //kCompAND
       selectionResult = (selectionResult && thisCut->IsSelected(track));
+      //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
+    }
+  }
+  return selectionResult;
+}
+
+//_____________________________________________________________________
+Bool_t AliDielectronCutGroup::IsSelected(TObject* track, Double_t* values)
+{
+  //
+  // Selection-finder handling different comparison operations
+  //
+
+  //Different init for and/or makes code shorter
+  Bool_t selectionResult=fCompOperator;
+
+  TIter listIterator(&fCutGroupList);
+  while (AliAnalysisCuts *thisCut = (AliAnalysisCuts*) listIterator()) {
+    if (fCompOperator == kCompOR) {
+      if (thisCut->IsA()==AliDielectronVarCuts::Class())
+        selectionResult = (selectionResult || (dynamic_cast<AliDielectronVarCuts*>(thisCut))->IsSelected(values));
+      else
+        selectionResult = (selectionResult || thisCut->IsSelected(track));
+    }
+    else { //kCompAND
+      if (thisCut->IsA()==AliDielectronVarCuts::Class())
+        selectionResult = (selectionResult && (dynamic_cast<AliDielectronVarCuts*>(thisCut))->IsSelected(values));
+      else
+        selectionResult = (selectionResult && thisCut->IsSelected(track));
       //      if (selectionResult==kFALSE) break; //Save loops vs. additional check?
     }
   }

@@ -2550,7 +2550,7 @@ Float_t AliAnalysisTaskSED0MassCutVarFDSub::GetTrueImpactParameter(AliAODMCHeade
   }
 
   //  Int_t nDau=partD0->GetNDaughters();
-  Int_t labelFirstDau = partD0->GetDaughter(0);
+  Int_t labelFirstDau = partD0->GetDaughterLabel(0);
 
   for(Int_t iDau=0; iDau<2; iDau++){
     Int_t ind = labelFirstDau+iDau;

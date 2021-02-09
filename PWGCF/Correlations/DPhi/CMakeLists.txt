@@ -26,9 +26,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY                  
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		    ${AliPhysics_SOURCE_DIR}/EVENTMIX
   )
 
 # Sources - alphabetical order
@@ -39,14 +42,19 @@ set(SRCS
     AliAnalysisTaskCorPIDTOFdeut.cxx
     AliAnalysisTaskCorPIDTOFprot.cxx
     AliAnalysisTaskCorPIDTOFhadr.cxx
+    AliAnalysisTaskCorPIDTOFdiprot.cxx
+    AliAnalysisTaskDiHadCorrelHighPt.cxx
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AlianalysisTaskDptPIDpPb.cxx    
     AliAnalysisTaskDptDptQA.cxx
     AlianalysisTaskDptPID.cxx
+    AliAnalysisTaskHadronPhiCorr.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
+    AliAnalysisTaskLongFluctuations2PC.cxx
     AliAnalysisTaskMinijet.cxx
+    AliAnalysisTaskMinijetV2.cxx
     AliAnalysisTaskPhiCorrelations.cxx
     AliAnalysisTaskCorrelationsDev.cxx
     AliAnalysisTaskpxpx.cxx
@@ -57,17 +65,28 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
+    AliAnalysisTaskR2P2.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
+    AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
+    AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
+    AliTrigAssoPairST.cxx
+    AliAnalysisTaskSEpPbCorrelationsJetV2.cxx
+    AliAnalysisTaskSEPbPbCorrelationsJetV2.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
     AliLeadingV0Correlation.cxx
+    AliAnalysisTaskV0ChCorrelation.cxx
+    AliAnalysisTaskV0ChCorrelationpp.cxx
+    AliAnalysisTaskV0ChCorrelationppsys.cxx
+    AliAnalysisTaskV0ChCorrelationsys.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
     AliAnalysisTaskEPCorrPP.cxx
     AliAnalysisTaskEPCorrAA.cxx
     AliAnalysisTaskEPCorrAAMC.cxx
     AliAnalysisTaskPIDBFDptDpt.cxx
+    AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
@@ -87,6 +106,16 @@ set(SRCS
     TriggerPID/AliAnalysisTaskPIDCORR.cxx
     TriggerPID/AliTwoParticlePIDCorr.cxx
     TriggerPID/AliTwoParticlePIDCorrKine.cxx
+    Unfoldedhistos/AliAnalysisTaskCorrelationsStudies.cxx
+    Unfoldedhistos/AliCSAnalysisCutsBase.cxx
+    Unfoldedhistos/AliCSEventCuts.cxx
+    Unfoldedhistos/AliCSPairAnalysis.cxx
+    Unfoldedhistos/AliCSPIDCuts.cxx
+    Unfoldedhistos/AliCSTrackCutsBase.cxx
+    Unfoldedhistos/AliCSTrackCuts.cxx
+    Unfoldedhistos/AliCSTrackMaps.cxx
+    Unfoldedhistos/AliCSTrackSelection.cxx
+    Unfoldedhistos/AliDptDptCorrelations.cxx
    )
 
 # Headers from sources
@@ -98,7 +127,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB PWGDevNanoAOD EventMixing)
 
 # Generate the ROOT map
 # Dependecies

@@ -240,7 +240,7 @@ void AliHFJetsContainer::GetBinning(TString var, Int_t &nBins, Double_t *bins, c
 	Float_t binmin=0., binmax=0.;    
 	if (var.EqualTo("cent")) {
 		axistitle="Multiplicity percentile";
-		nBins = 100; binmin= 0.5; binmax= 100.5;
+		nBins = 10; binmin= 0.; binmax= 100.;
 	}
   else if (var.EqualTo("jetPt")) {
 		axistitle="p_{T,jet} (GeV/c)";

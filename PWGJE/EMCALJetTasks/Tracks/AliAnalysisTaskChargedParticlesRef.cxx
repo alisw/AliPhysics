@@ -32,6 +32,8 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTrackSelection.h"
+#include "AliEmcalTriggerDecision.h"
+#include "AliEmcalTriggerDecisionContainer.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
@@ -83,7 +85,6 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fStudyExoticTriggers(false)
 {
   SetNeedEmcalGeom(true);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
@@ -152,7 +153,7 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   if(fStudyExoticTriggers){
     for(auto t : fSelectedTriggers){
       if(t.Contains("MB")) continue;
-      double weight = this->GetTriggerWeight(t);
+      double weight = this->GetTriggerWeight(t.Data());
 
       fHistos->FillTH1("hEventsExotricsTrigger" + t, 0.);
       fHistos->FillTH1("hEventsExotricsTrigger" + t, 3., weight);
@@ -177,7 +178,6 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
   AliVTrack *checktrack(nullptr);
-  int ptmin[5] = {1,2,5,10,20}; // for eta distributions
   Bool_t isEMCAL(kFALSE);
   Double_t etaEMCAL(0.), phiEMCAL(0.);
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
@@ -246,14 +246,14 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
 void AliAnalysisTaskChargedParticlesRef::UserFillHistosBeforeEventSelection(){
   // Apply vertex z cut
   for(const auto &t : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     fHistos->FillTH1(Form("hVertexBefore%s", t.Data()), fVertex[2], weight);
   }
 }
 
 void AliAnalysisTaskChargedParticlesRef::UserFillHistosAfterEventSelection(){
   for(const auto &t : fSelectedTriggers) {
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     // Fill Event counter and reference vertex distributions after event selection
     fHistos->FillTH1(Form("hEventCount%s", t.Data()), 1, weight);
     fHistos->FillTH1(Form("hVertexAfter%s", t.Data()), fVertex[2], weight);
@@ -274,36 +274,33 @@ bool AliAnalysisTaskChargedParticlesRef::IsExoticsTrigger(const TString &trg){
     return false;
   }
 
-  double threshold = this->GetOnlineTriggerThresholdByName(trg);
-  std::function<bool (const AliEMCALTriggerPatchInfo *)> PatchSelector = [&trg, threshold] (const AliEMCALTriggerPatchInfo *patch) -> bool {
-    if(trg.Contains("G")) {
-      return patch->IsGammaLowRecalc() && patch->GetADCAmp() >= threshold;
-    } else if (trg.Contains("J")) {
-      return patch->IsJetLowRecalc() && patch->GetADCAmp() >= threshold;
-    } else if (trg.Contains("MC")) { // EMC/DMC7/8 triggers
-      return patch->IsLevel0() && patch->GetADCAmp() >= threshold;
-    }
+  auto triggerselection = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerSelectionContainer));
+  if(!triggerselection) {
+    AliDebugStream(1) << "Exotics selection only applicable with trigger selection container ..." << std::endl;
     return false;
-  };
+  }
+  auto triggerdecision = triggerselection->FindTriggerDecision(trg.Data());
+  if(!triggerdecision){
+    AliDebugStream(1) << "No trigger decision object found for trigger " << trg << " ..." << std::endl;
+    return false;
+  }
 
   Bool_t hasNonExoticTriggerPatch = kFALSE;
-  for(auto p : *(fTriggerPatchInfo)) {
+  for(auto p : *(triggerdecision->GetAcceptedPatches())) {
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if(PatchSelector(patch)) {
-      bool hasMatch = false;
-      for(auto c : exoticClusters) {
-        TLorentzVector clustervec;
-        c->GetMomentum(clustervec, fVertex);
-        AliCutValueRange<double> etacut(patch->GetEtaMin(), patch->GetEtaMax()), phicut(patch->GetPhiMin(), patch->GetPhiMax());
-        if(etacut.IsInRange(clustervec.Eta()) && phicut.IsInRange(clustervec.Phi())) {
-          // cluster is matched
-          // patch can be considered as "exotic"
-          AliDebugStream(1) << GetName() << ", Trigger " << trg << ": Found match of triggering patch to exotic cluster: Type "
-              << ((patch->IsJetHighRecalc() || patch->IsJetLowRecalc()) ? "JetRecalc" : ((patch->IsGammaHighRecalc() || patch->IsGammaLowRecalc()) ? "GammaRecalc" : "L0"))
-              << ", ADC" << patch->GetADCAmp() << std::endl;
-          hasMatch = true;
-          break;
-        }
+    bool hasMatch = false;
+    for(auto c : exoticClusters) {
+      TLorentzVector clustervec;
+      c->GetMomentum(clustervec, fVertex);
+      AliCutValueRange<double> etacut(patch->GetEtaMin(), patch->GetEtaMax()), phicut(patch->GetPhiMin(), patch->GetPhiMax());
+      if(etacut.IsInRange(clustervec.Eta()) && phicut.IsInRange(clustervec.Phi())) {
+        // cluster is matched
+        // patch can be considered as "exotic"
+        AliDebugStream(1) << GetName() << ", Trigger " << trg << ": Found match of triggering patch to exotic cluster: Type "
+            << ((patch->IsJetHighRecalc() || patch->IsJetLowRecalc()) ? "JetRecalc" : ((patch->IsGammaHighRecalc() || patch->IsGammaLowRecalc()) ? "GammaRecalc" : "L0"))
+            << ", ADC" << patch->GetADCAmp() << std::endl;
+        hasMatch = true;
+        break;
       }
       if(!hasMatch){
         AliDebugStream(1) << GetName() << ": Found at least 1 non-exotic patch firing trigger " << trg << std::endl;
@@ -326,7 +323,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
     Bool_t inEmcal
     )
 {
-  Double_t weight = GetTriggerWeight(eventclass);
+  Double_t weight = GetTriggerWeight(eventclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
   double kinepointall[4] = {TMath::Abs(pt), etalab, phi, posCharge ? 1. : -1.}, kinepointcent[4] = {TMath::Abs(pt), etacent, phi, posCharge ? 1. : -1.};
   fHistos->FillTHnSparse("hPtEtaPhiAll" + histtag + eventclass, kinepointall, weight);
@@ -341,7 +338,7 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
     const TString &eventclass,
     const AliVTrack &trk
 ) {
-  Double_t weight = GetTriggerWeight(eventclass);
+  Double_t weight = GetTriggerWeight(eventclass.Data());
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in PID histograms." << std::endl;
   AliPIDResponse *pid = fInputHandler->GetPIDResponse();
   if(TMath::Abs(trk.Eta()) > 0.5) return;

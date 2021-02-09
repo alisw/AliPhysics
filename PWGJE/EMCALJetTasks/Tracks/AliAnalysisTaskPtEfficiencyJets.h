@@ -8,11 +8,12 @@
 
 class AliAnalysisUtils;
 class AliEmcalJet;
-class AliEmcalTrackSelection;
 class AliJetContainer;
 class AliVParticle;
 class AliVTrack;
 class TNtuple;
+
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -40,7 +41,7 @@ private:
 
   AliAnalysisUtils                    *fAnalysisUtils;
   TString                             fMCJetContainer;
-  AliEmcalTrackSelection              *fTrackCuts;
+  AliEmcalTrackSelection  *fTrackCuts;
   TNtuple                             *fTrackNtuple;
 
   ClassDef(AliAnalysisTaskPtEfficiencyJets, 1);

@@ -27,6 +27,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+		    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+		    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp
                    )
 
 # Sources in alphabetical order
@@ -51,6 +54,7 @@ set(SRCS
     AliAnaPi0Flow.cxx
     AliAnaRandomTrigger.cxx
     AliAnaClusterShapeCorrelStudies.cxx
+    AliAnaCaloExotics.cxx
    )
 
 # Headers from sources
@@ -62,7 +66,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics RIO Spectrum)
-set(ALIROOT_DEPENDENCIES ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase ANALYSISalice CDB PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec ESDfilter PWGGAUtils STEER)
+set(ALIROOT_DEPENDENCIES ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase ANALYSISalice CDB PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec ESDfilter PWGGAUtils STEER PWGJETFW)
 
 # Generate the ROOT map
 # Dependecies
@@ -115,4 +119,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
-install(DIRECTORY macros DESTINATION PWGGA/CaloTrackCorrelations)
+install(DIRECTORY macros yaml DESTINATION PWGGA/CaloTrackCorrelations)

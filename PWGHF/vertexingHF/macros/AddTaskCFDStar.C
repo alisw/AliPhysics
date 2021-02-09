@@ -332,7 +332,7 @@ AliCFTaskForDStarAnalysis *AddTaskCFDStar()
         thnDim[3] = iBin[1];
 
         THnSparseD* correlation = new THnSparseD("correlation","THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 

@@ -471,6 +471,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliVCaloCells::kEMCALCell);
     Double_t calibFactor = 1.;   
+    Int_t    status      = 0;
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
     { 
       Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -482,10 +483,15 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
         calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
       }
       
-      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
+      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi,status))
       { //Channel is not declared as bad
-        aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor,
-                           eventEMcells.GetTime(iCell),eventEMcells.GetMCLabel(iCell),eventEMcells.GetEFraction(iCell));
+        aodEMcells.SetCell(iCell,
+                           eventEMcells.GetCellNumber(iCell),
+                           eventEMcells.GetAmplitude(iCell)*calibFactor,
+                           eventEMcells.GetTime(iCell),
+                           eventEMcells.GetMCLabel(iCell),
+                           eventEMcells.GetEFraction(iCell), 
+                           eventEMcells.GetHighGain(iCell));
         //printf("GOOD channel\n");
       }
       else 
@@ -509,8 +515,13 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
     
     for (Int_t iCell = 0; iCell < nPHcell; iCell++) 
     {      
-      aodPHcells.SetCell(iCell,eventPHcells.GetCellNumber(iCell),eventPHcells.GetAmplitude(iCell),
-                         eventPHcells.GetTime(iCell),eventPHcells.GetMCLabel(iCell),eventPHcells.GetEFraction(iCell));
+      aodPHcells.SetCell(iCell,
+                         eventPHcells.GetCellNumber(iCell),
+                         eventPHcells.GetAmplitude(iCell),
+                         eventPHcells.GetTime(iCell),
+                         eventPHcells.GetMCLabel(iCell),
+                         eventPHcells.GetEFraction(iCell),
+                         eventPHcells.GetHighGain(iCell));
     }
     
     aodPHcells.Sort();
@@ -590,6 +601,9 @@ void AliAnalysisTaskCaloFilter::FillAODCaloClusters()
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
     caloCluster->SetTrackDistance(dR, dZ);
+    
+    caloCluster->SetCellsMCEdepFractionMap(cluster->GetCellsMCEdepFractionMap());
+    caloCluster->SetClusterMCEdepFraction (cluster->GetClusterMCEdepFraction ());
     
     AliDebug(2,Form("Filter, aod     : i %d, E %f, dispersion %f, m02 %f, m20 %f",caloCluster->GetID(),caloCluster->E(),
                     caloCluster->GetDispersion(),caloCluster->GetM02(),caloCluster->GetM20()));

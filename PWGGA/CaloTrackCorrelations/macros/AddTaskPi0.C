@@ -23,7 +23,7 @@ TString kAnaPi0 = "";
 /// \param muonCaloPass: in case of muon_calo passes, deactivate some checks
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param tm : A bool to select neutral clusters as triggers
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
@@ -44,7 +44,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
  Bool_t   muonCaloPass  = kFALSE,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = 0,
  Float_t  shshMax       = 0.5,
  Bool_t   tm            = kTRUE,
  Int_t    minCen        = -1,
@@ -228,7 +228,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation, 
                                      TString clustersArray, Bool_t tender, 
-                                     TString calorimeter,   Bool_t nonLinOn,
+                                     TString calorimeter,   Int_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig, 
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t printSettings, Int_t   debug        )
@@ -456,7 +456,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation,
                                         TString clustersArray, Bool_t tender, 
-                                        Bool_t  nonLinOn,      Int_t year, 
+                                        Int_t  nonLinOn,      Int_t year, 
                                         Bool_t  printSettings, Int_t   debug)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -628,7 +628,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 
   // Branch AOD settings
   ana->SetOutputAODName(Form("Photon_%s_%s",calorimeter.Data(), kAnaPi0.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPhoton_%s_TM%d_",calorimeter.Data(),tm));
@@ -811,7 +811,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,2.,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -860,9 +860,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   
   if(col.Contains("PbPb")) ana->SwitchOnFillHighMultiplicityHistograms();
   else                     ana->SwitchOffFillHighMultiplicityHistograms();
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

@@ -36,7 +36,8 @@ public:
 
   void SetVar(Int_t idx, Double_t val, Double_t step, Double_t min, Double_t max);
 
-  void DoFit( const TString &saveFileName);
+  void DoFit(const TString& saveFileName,
+             const TString& options="");
 
   Double_t GetNDF()  const { return GetNDFMoments()  + GetNDFRates();  }
   Double_t GetChi2() const { return GetChi2Moments() + GetChi2Rates(); }

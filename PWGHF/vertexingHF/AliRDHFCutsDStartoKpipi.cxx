@@ -37,6 +37,7 @@
 #include "AliTPCPIDResponse.h"
 #include "AliAODVertex.h"
 #include "AliESDVertex.h"
+#include "TObjArray.h"
 
 using std::cout;
 using std::endl;
@@ -52,7 +53,9 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
   fTPCflag(999.),
-  fCircRadius(0.)
+  fCircRadius(0.),
+  fUseTPCtrackCutsOnD0Daughters(kTRUE),
+  fUseTPCtrackCutsOnSoftPion(kFALSE)
 {
   //
   // Default Constructor
@@ -122,7 +125,9 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
   fTPCflag(999.),
-  fCircRadius(0.)
+  fCircRadius(0.),
+  fUseTPCtrackCutsOnD0Daughters(source.fUseTPCtrackCutsOnD0Daughters),
+  fUseTPCtrackCutsOnSoftPion(source.fUseTPCtrackCutsOnSoftPion)
 {
   //
   // Copy constructor
@@ -147,7 +152,13 @@ AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDSt
 
   return *this;
 }
-
+//---------------------------------------------------------------------------
+AliRDHFCutsDStartoKpipi::~AliRDHFCutsDStartoKpipi(){
+  //
+  // Destructor
+  //
+  if (fTrackCutsSoftPi) { delete fTrackCutsSoftPi; fTrackCutsSoftPi = nullptr;}
+}
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsDStartoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
@@ -264,6 +275,42 @@ void AliRDHFCutsDStartoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   return;
 }
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsDStartoKpipi::PreSelect(TObjArray aodTracks){
+  //
+  // apply pre selection
+  //
+  if(!fUsePreselect)return 3;
+  Int_t retVal=3;
+
+  //compute pt
+  Double_t px=0, py=0;
+  AliAODTrack *track[3];
+  for(Int_t iDaught=0; iDaught<3; iDaught++) {
+    track[iDaught] = (AliAODTrack*)aodTracks.At(iDaught);
+    if(!track[iDaught]) return retVal;
+    px += track[iDaught]->Px();
+    py += track[iDaught]->Py();
+  }
+
+  Double_t ptD=TMath::Sqrt(px*px+py*py);
+  
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
+  Int_t ptbin=PtBin(ptD);
+  if (ptbin==-1) {
+    return 0;
+  }
+  Float_t xy[2],z[2];
+  track[1]->GetImpactParameters(xy[0],z[0]);
+  track[2]->GetImpactParameters(xy[1],z[1]);
+  if(xy[0]*xy[1] > fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
+
+  retVal=IsSelectedPID(ptD,aodTracks);
+
+  return retVal;
+}
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
   //
   // Apply selection for D*.
@@ -350,6 +397,12 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
+
+    if(fUseTPCtrackCutsOnD0Daughters || !fUseTPCtrackCutsOnSoftPion){
+    //if by mistake both flags turned off in cutobject => only apply to D0daughters (default option)
+      SetUseTPCtrackCutsOnThisDaughter(kTRUE);
+    } else { SetUseTPCtrackCutsOnThisDaughter(kFALSE); }
+
     if(!AreDaughtersSelected(dd,aod)) return 0;
     if(fTrackCutsSoftPi) {
       AliAODVertex *vAOD = d->GetPrimaryVtx();
@@ -357,6 +410,10 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       vAOD->GetXYZ(pos);
       vAOD->GetCovarianceMatrix(cov);
       const AliESDVertex vESD(pos,cov,100.,100);
+
+      if(fUseTPCtrackCutsOnSoftPion){ SetUseTPCtrackCutsOnThisDaughter(kTRUE); }
+      else{ SetUseTPCtrackCutsOnThisDaughter(kFALSE); }
+
       if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi,aod)) return 0;
     }
   }
@@ -499,33 +556,50 @@ Bool_t AliRDHFCutsDStartoKpipi::IsInFiducialAcceptance(Double_t pt, Double_t y) 
     
   return kTRUE;
 }
-
 //_______________________________________________________________________________-
 Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* obj)
 {
-  //
-  // PID method, n signa approach default
-  //
+  Int_t retCode=3;
+  if(!fUsePID) return retCode;
   
   AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)obj;
   if(!dstar){
     cout<<"AliAODRecoCascadeHF null"<<endl;
     return 0;
-  } 
- 
-  if(!fUsePID || dstar->Pt() > fMaxPtPid) return 3;
-  
-  AliAODRecoDecayHF2Prong* d0 = (AliAODRecoDecayHF2Prong*)dstar->Get2Prong();  
+  }
+  AliAODRecoDecayHF2Prong* d0 = (AliAODRecoDecayHF2Prong*)dstar->Get2Prong();
   if(!d0){
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
     return 0;
   }
 
-  //  here the PID
-  AliAODTrack *pos = (AliAODTrack*)dstar->Get2Prong()->GetDaughter(0);
-  AliAODTrack *neg = (AliAODTrack*)dstar->Get2Prong()->GetDaughter(1);
+  if(dstar) {
+    Double_t pt = dstar->Pt();
+    TObjArray aodTracks(3);
+    aodTracks.AddAt(dstar->GetBachelor(),0); //soft pion
+    aodTracks.AddAt(d0->GetDaughter(0),1); //D0 prong0
+    aodTracks.AddAt(d0->GetDaughter(1),2); //D0 prong1
 
-  if (dstar->Charge()>0){
+    retCode = IsSelectedPID(pt,aodTracks);
+  }
+    
+  return retCode;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(Double_t pt, TObjArray aodTracks)
+{
+  //
+  // PID method, n signa approach default
+  //
+   
+  if(!fUsePID || pt > fMaxPtPid) return 3;
+
+  //  here the PID
+  AliAODTrack *softPion = (AliAODTrack*)aodTracks.At(0);
+  AliAODTrack *pos = (AliAODTrack*)aodTracks.At(1);
+  AliAODTrack *neg = (AliAODTrack*)aodTracks.At(2);
+
+  if (softPion->Charge()>0){
     if(!SelectPID(pos,2)) return 0;//pion+
     if(!SelectPID(neg,3)) return 0;//kaon-
   }else{
@@ -534,8 +608,6 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(AliAODRecoDecayHF* obj)
   }
 
   if ((fPidHF->GetMatch() == 10 || fPidHF->GetMatch() == 11) && fPidHF->GetITS()) { //ITS n sigma band
-    AliAODTrack *softPion = (AliAODTrack*) dstar->GetBachelor();
-
     if (fPidHF->CheckBands(AliPID::kPion, AliPIDResponse::kITS, softPion) == -1) {
       return 0;
     }
@@ -747,7 +819,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -862,7 +934,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1016,7 +1088,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2011DStar(TH1F *hfl){
   // flattening
   SetHistoForCentralityFlattening(hfl,0.,10,0.,0);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1148,7 +1220,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010DStarMult(Bool_t rec){
   SetUsePID(kTRUE);
   pidObj->SetOldPid(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;

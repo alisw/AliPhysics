@@ -32,6 +32,7 @@ class AliESDVertex;
 class AliESDtrackCuts;
 class AlidNdPtAcceptanceCuts;
 class AlidNdPtEventCuts;
+class AliEventCuts;
 class AliPWG0Helper;
 class AliOfflineTrigger;
 class AliMultiplicity;
@@ -82,6 +83,7 @@ class AlidNdPtHelper : public TObject
         static Int_t GetSPDMBTrackMult(const AliESDEvent* const esdEvent, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
         static Int_t GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, AliStack *const  stack, Float_t deltaThetaCut =0.025, Float_t deltaPhiCut = 0.08);
         static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
+        static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AliEventCuts* evtCuts, AlidNdPtAcceptanceCuts *const accCuts);
         static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AlidNdPtEventCuts *const evtCuts, AlidNdPtAcceptanceCuts *const accCuts, Double_t yShift);
 
         static AliESDtrack* GetTPCOnlyTrackSPDvtx(const AliESDEvent* const esdEvent, Int_t iTrack, Bool_t bUpdate);

@@ -7,7 +7,7 @@
 # 
 # Example usage:
 # 1.) source function   
-#      source $ALICE_PHYSICS/../src/PWGPP/scripts/aliendu.sh; 
+#      source $AliPhysics_SRC/PWGPP/scripts/aliendu.sh; 
 # 2.) Execute aliendu recursivelly:
 #      aliendu <basedir> <recursiveSize> <verbosity> <maxNuberOfDiretories>
 #      aliendu /alice/cern.ch/user/p/pwg_pp/JIRA/ 1000000000 1 100 
@@ -20,7 +20,7 @@ aliendu(){
     #prefix=/alice/cern.ch/user/m/miranov/
     #
     if [ -z "$ALILOG_HOST" ]; then
-	source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
+	source $ALICE_ROOT/libexec/alilog4bash.sh
     fi;
     if [ $# -ne 4 ] ; then
 	printf "\n"

@@ -56,11 +56,8 @@ ClassImp(AliJCORRAN)
         fhistos(0), 
         fcorrelations(0),
         fAcceptanceCorrection(0x0),
-        fphotonPool(0), 
         fassocPool(0),  
-        fphotonList(0),  
         fchargedHadronList(0), 
-        fpizeroList(0), 
         ftriggList(0),  
         fassocList(0), 
         fpairList(0), 
@@ -105,11 +102,8 @@ AliJCORRAN::AliJCORRAN(Bool_t execLocal) :
     fhistos(0), 
     fcorrelations(0),
     fAcceptanceCorrection(0x0),
-    fphotonPool(0),
     fassocPool(0),  
-    fphotonList(0),  
     fchargedHadronList(0), 
-    fpizeroList(0), 
     ftriggList(0),  
     fassocList(0), 
     fpairList(0), 
@@ -158,11 +152,8 @@ AliJCORRAN::AliJCORRAN(const AliJCORRAN& obj) :
     fhistos(obj.fhistos), 
     fcorrelations(obj.fcorrelations),
     fAcceptanceCorrection(obj.fAcceptanceCorrection),
-    fphotonPool(obj.fphotonPool), 
     fassocPool(obj.fassocPool),  
-    fphotonList(obj.fphotonList),  
     fchargedHadronList(obj.fchargedHadronList), 
-    fpizeroList(obj.fpizeroList), 
     ftriggList(obj.ftriggList),  
     fassocList(obj.fassocList), 
     fpairList(obj.fpairList), 
@@ -258,19 +249,14 @@ void AliJCORRAN::UserCreateOutputObjects(){
   
   //cout<<kParticleTypeStrName[kPhoton]<<" "<<kParticleTypeStrName[fjtrigg]<<endl;
   // EventPool for Mixing
-  fphotonPool  = new AliJEventPool( fcard, fhistos, fcorrelations, kJPhoton);  // for pi0 mass
   fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
   
-  fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
-  //     TClonesArray *cellList = new TClonesArray("AliJCaloCell",1500);
   fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
-  fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
   ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
   fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
   fpairList     = new TClonesArray(kParticleProtoType[fjtrigg],1500);
   fpairCounterList  = new TClonesArray("AliJTrackCounter",1500);
   finputList = NULL;
-  //TClonesArray *isolPizeroList  = new TClonesArray("AliPhJPiZero",1500);
   
   fdmg = new AliJDataManager(fcard, fhistos, fcorrelations, fExecLocal);
   fdmg->SetExecLocal( fExecLocal );
@@ -427,8 +413,6 @@ void AliJCORRAN::UserExec(){
 	// Triggers and associated
 	//----------------------ooooo---------------------------------------
 
-	if(fjtrigg==kJPizero || fjassoc==kJPizero || fjtrigg==kJPhoton || fjassoc==kJPhoton){
-	} // pizero || photon
 	if(fjtrigg==kJHadron || fjassoc==kJHadron){
 		fchargedHadronList->Clear();
 		fdmg->RegisterList(fchargedHadronList, NULL, cBin, zBin, kJHadron);
@@ -446,9 +430,7 @@ void AliJCORRAN::UserExec(){
 	}
 
 	//---- assign input list ---- 
-	if(fjtrigg==kJPizero)      finputList = fpizeroList;  
-	else if(fjtrigg==kJHadron) finputList = fchargedHadronList;
-	else if(fjtrigg==kJPhoton) finputList = fphotonList;
+	if(fjtrigg==kJHadron) finputList = fchargedHadronList;
 	int noAllTriggTracks = finputList->GetEntries();
 	int noAllChargedTracks = fchargedHadronList->GetEntries();
 	fhistos->fhChargedMult[cBin]->Fill(noAllChargedTracks);
@@ -592,9 +574,7 @@ void AliJCORRAN::UserExec(){
 	fassocList->Clear();
 	int noAssocs=0;
 	double  sumPtAroundLP = 0;
-	if(fjassoc==kJPizero) finputList = fpizeroList;  
-	else if(fjassoc==kJHadron) finputList = fchargedHadronList;
-	else if(fjassoc==kJPhoton) finputList = fphotonList;
+	if(fjassoc==kJHadron) finputList = fchargedHadronList;
 
 	int noAllAssocTracks = finputList->GetEntries();
 

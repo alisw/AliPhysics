@@ -25,6 +25,12 @@ public:
       kDeltaCosRange,
       kPhiVRange,
       kContainsV0Daughter,
+      kMassRange,
+      kAsymRange,
+      kAsymRangeMC,
+      kPseudorapidityRange,
+      kPseudorapidityRangeMC,
+      kPassesOOBPileupCut,
       kTypes
    };
 

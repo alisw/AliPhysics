@@ -38,6 +38,8 @@ public:
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void AddPrefilterPairCut(AliReducedInfoCut* cut) {fPreFilterPairCuts.Add(cut);}
   void SetRunEventMixing(Bool_t option) {fOptionRunMixing = option;};
+  void SetRunTrackRotation(Bool_t option);
+  void SetNRotations(Int_t n) {fNRotations = n;};
   void SetRunPairing(Bool_t option) {fOptionRunPairing = option;};
   void SetRunOverMC(Bool_t option) {fOptionRunOverMC = option;};
   void SetRunLikeSignPairing(Bool_t option) {fOptionRunLikeSignPairing = option;}
@@ -62,6 +64,8 @@ protected:
    AliMixingHandler*         fMixingHandler;    // mixing handler
    
    Bool_t fOptionRunMixing;    // true: run event mixing, false: no event mixing
+   Bool_t fOptionRunRotation;    // true: run track rotation, false: no track rotation
+   Int_t  fNRotations;
    Bool_t fOptionRunPairing;    // true: run pairing, false: only apply the track cuts
    Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
    Bool_t fOptionRunLikeSignPairing;   // true (default): performs the like sign pairing in addition to the opposite pairing
@@ -96,6 +100,7 @@ protected:
   void FillTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "Track");
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", Bool_t isMCTruth = kFALSE);
   void FillMCTruthHistograms();
+  void RunTrackRotation(AliReducedTrackInfo &pTrack, AliReducedTrackInfo &nTrack, Int_t pairType);
   
   ClassDef(AliReducedAnalysisJpsi2eeMult,3);
 };

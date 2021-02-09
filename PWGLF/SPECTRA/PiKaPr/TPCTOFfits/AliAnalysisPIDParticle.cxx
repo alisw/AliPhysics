@@ -16,22 +16,22 @@ TLorentzVector AliAnalysisPIDParticle::fgLorentzVector;
 Double_t
 AliAnalysisPIDParticle::GetY() const
 {
-  
+
   fgLorentzVector.SetPtEtaPhiM(fPt, fEta, fPhi, GetMass());
   return fgLorentzVector.Rapidity();
 }
 
 //___________________________________________________________
 
-Float_t
+Int_t
 AliAnalysisPIDParticle::GetSign() const
 {
-  
+
   TDatabasePDG *dbpdg = TDatabasePDG::Instance();
   TParticlePDG *ppdg = dbpdg->GetParticle(fPdgCode);
   if (!ppdg)
-    return 0.;
-  return TMath::Sign(1., ppdg->Charge());
+    return 0;
+  return TMath::Nint(ppdg->Charge());
 }
 
 //___________________________________________________________
@@ -58,7 +58,7 @@ AliAnalysisPIDParticle::GetMass() const
   /*
    * get mass
    */
-  
+
   if (GetPID() == -1)
     return 0.;
   return AliPID::ParticleMass(GetPID());
@@ -72,7 +72,8 @@ AliAnalysisPIDParticle::AliAnalysisPIDParticle() :
   fPt(0.),
   fEta(0.),
   fPhi(0.),
-  fPdgCode(0)
+  fPdgCode(0),
+  fMotherPdgCode(0)
 {
   /*
    * default constructor
@@ -87,7 +88,8 @@ AliAnalysisPIDParticle::AliAnalysisPIDParticle(const AliAnalysisPIDParticle &sou
   fPt(source.fPt),
   fEta(source.fEta),
   fPhi(source.fPhi),
-  fPdgCode(source.fPdgCode)
+  fPdgCode(source.fPdgCode),
+  fMotherPdgCode(source.fMotherPdgCode)
 {
   /*
    * copy constructor
@@ -111,7 +113,7 @@ AliAnalysisPIDParticle::operator=(const AliAnalysisPIDParticle &source)
   fEta = source.fEta;
   fPhi = source.fPhi;
   fPdgCode = source.fPdgCode;
-
+  fMotherPdgCode = source.fMotherPdgCode;
   return *this;
 }
 
@@ -138,23 +140,24 @@ AliAnalysisPIDParticle::Reset()
   fEta = 0.;
   fPhi = 0.;
   fPdgCode = 0;
-  
+  fMotherPdgCode = 0;
+
 }
 
 //___________________________________________________________
 
 void
-AliAnalysisPIDParticle::Update(TParticle *particle, Int_t label)
+AliAnalysisPIDParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg)
 {
   /*
    * update
    */
 
   fLabel = label;
+  fMotherPdgCode = MotherPdg;
   fPt = particle->Pt();
   fEta = particle->Eta();
   fPhi = particle->Phi();
   fPdgCode = particle->GetPdgCode();
-  
-}
 
+}

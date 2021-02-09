@@ -12,7 +12,8 @@ class AliVParticle;
 
 //====================================================================================================================================================
 
-class  AliAnalysisTaskLMREventFilter : public AliAnalysisTaskSE {
+class  AliAnalysisTaskLMREventFilter : public AliAnalysisTaskSE 
+{
 
 public:
  
@@ -25,13 +26,13 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  Bool_t IsSelectedTrigger(AliAODEvent *fAOD, Bool_t fillHisto,UShort_t &physicsSelectionMask,UShort_t &L0TriggerInput);
+  Bool_t IsSelectedTrigger(AliAODEvent *fAOD,UShort_t &physicsSelectionMask,UShort_t &L0TriggerInput);
   virtual void NotifyRun();
 private:
   
   AliAnalysisTaskLMREventFilter(const AliAnalysisTaskLMREventFilter&); // not implemented
   AliAnalysisTaskLMREventFilter& operator=(const AliAnalysisTaskLMREventFilter&);// not implemented
-  
+  void SetTriggerClasses();
 
   AliMuonTrackCuts *fMuonTrackCuts; 
   TTree *fEventTree;   // Tree containing events
@@ -45,6 +46,7 @@ private:
   TH1D *fhL0TriggerInputMUL;
   TH1D *fhL0TriggerInputMSL;
   TH1D *fhL0TriggerInputTVX;
+  TH1D *fhL2TriggerCINT7CENTNOTRD;
   TH2D *fhNMu;
 
   Int_t fL0TriggerInputMLL;

@@ -22,6 +22,7 @@ class AliParticleContainer;
 class AliClusterContainer;
 
 class AliEventPoolManager;
+class AliEventCuts;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -41,7 +42,9 @@ public:
   Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
 
   // event selection
-  void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
+  void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;}
+  void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
+  void SetUseIonutCut(Bool_t val = kTRUE) {fbUseIonutCut = val;}
 
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
@@ -93,7 +96,7 @@ public:
   void SetCutArmPod(Bool_t val = kTRUE) {fbCutArmPod = val;}
   void SetCutCross(Bool_t val = kTRUE) {fbCutCross = val;}
 
-  Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Double_t dDeltaZMax = -1);
+  Bool_t IsSelectedForAnalysis();
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
@@ -142,6 +145,7 @@ private:
   AliMCEvent* fEventMC; //! MC event
   TRandom* fRandom; //! random-number generator
   AliEventPoolManager* fPoolMgr; //! event pool manager
+  AliEventCuts fEventCutsStrictAntipileup; //! Event cuts class
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListQA; //! Output list for quality assurance
   TList* fOutputListCuts; //! Output list for checking cuts
@@ -158,7 +162,10 @@ private:
   Double_t fdCutCentLow; // [%] minimum centrality
   Double_t fdCutCentHigh; // [%] maximum centrality
   Double_t fdCutDeltaZMax; // [cm] maximum |Delta z| between nominal prim vtx and SPD vtx
+  Int_t fiNContribMin; // minimum number of prim vtx contributors
   Double_t fdCentrality; //! [%] centrality
+  Bool_t fbUseMultiplicity; // switch for getting centrality from AliMultSelection instead of from AliCentrality
+  Bool_t fbUseIonutCut; // Ionut's cut on the correlation between event variables
 
   // Mixed events parameters
   Bool_t fbCorrelations; // switch for V0-jet correlations
@@ -219,6 +226,7 @@ private:
   TH1D* fh1EventCent2Jets; //! number of events for different centralities
   TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
+  TH2D* fh2EventCentMult; //! reference multiplicity vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
   TH1D* fh1VtxZME[fgkiNBinsCent]; //! z coordinate of the primary vertex for events used in mixed events
   TH2D* fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
@@ -468,7 +476,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 19) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 23) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

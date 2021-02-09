@@ -35,7 +35,8 @@ public:
   AliAODUPCReplicator(const char* name="AliAODUPCReplicator", 
                        const char* title="Branch Replicator for muon related branches",
                        Bool_t replicateHeader=kFALSE,
-                       Bool_t replicateTracklets=kFALSE);
+                       Bool_t replicateTracklets=kFALSE,
+		       Bool_t replicateMuonTracks=kFALSE);
   virtual ~AliAODUPCReplicator();
   
   virtual TList* GetList() const;
@@ -59,12 +60,13 @@ private:
 
   Bool_t fReplicateHeader; // whether or not the replicate the AOD Header
   Bool_t fReplicateTracklets; // whether or not the replicate the AOD Tracklets
+  Bool_t fReplicateMuonTracks; 
   
 private:
   AliAODUPCReplicator(const AliAODUPCReplicator&);
   AliAODUPCReplicator& operator=(const AliAODUPCReplicator&);
   
-  ClassDef(AliAODUPCReplicator,2) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODUPCReplicator,3) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

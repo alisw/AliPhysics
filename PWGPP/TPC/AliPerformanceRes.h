@@ -5,7 +5,8 @@
 // Class to keep information from comparison of 
 // reconstructed and MC particle tracks (TPC resolution).   
 // 
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 23/10/2014
 //------------------------------------------------------------------------------
 
 class TString;
@@ -14,23 +15,22 @@ class TCanvas;
 class TH1F;
 class TH2F;
 
-class AliESDVertex;
-class AliESDtrack;
+class AliVTrack;
 class AliMCEvent;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriendEvent; 
+class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceRes : public AliPerformanceObject {
 public :
+  AliPerformanceRes(TRootIOCtor*);
   AliPerformanceRes(const Char_t* name="AliPerformanceRes", const Char_t* title="AliPerformanceRes",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceRes();
 
@@ -38,10 +38,10 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -50,11 +50,11 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process events
-  void ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent );
-  void ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent);
-  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack, AliESDEvent* const esdEvent);
+  void ProcessConstrained(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent );
+  void ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, AliVEvent* const vEvent);
+  void ProcessOuterTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, const AliVfriendTrack *const friendTrack, AliVEvent* const vEvent);
 
   AliTrackReference *GetFirstTPCTrackRef(AliMCParticle *mcParticle); 
   AliTrackReference *GetLastTPCTrackRef(AliMCParticle *mcParticle); 
@@ -65,13 +65,6 @@ public :
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
-
   TH1F*  MakeResol(TH2F * his, Int_t integ=0, Bool_t type=kFALSE, Int_t cut=0); 
 
   // getters
@@ -79,6 +72,11 @@ public :
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
   static void SetMergeEntriesCut(Double_t entriesCut){fgkMergeEntriesCut = entriesCut;}
+  
+  struct comparisonContainer
+  {
+    float mcX, mcY, mcZ, mcPt, mcPhi, mcDzds, deltaY, deltaZ, deltaPhi, deltaDzds, deltaPt, oldX, oldY, oldZ, nCls;
+  };
 
 private:
   //
@@ -93,18 +91,16 @@ private:
   //THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_phi:pull_lambda:pull_1pt:y:z:eta:phi:pt
   THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt
 
-  // Global cuts objects
-  AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;       // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliPerformanceRes(const AliPerformanceRes&); // not implemented
   AliPerformanceRes& operator=(const AliPerformanceRes&); // not implemented
   static Double_t            fgkMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
-
-  ClassDef(AliPerformanceRes,1);
+  char* fValidLabels; //!
+  comparisonContainer* fComparisonContainer; //!
+  
+  ClassDef(AliPerformanceRes,4);
 };
 
 #endif

@@ -46,6 +46,8 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   void SetpPb() {fSystem=2;}
   void SetPbPb() {fSystem=1;}
   void Setpp() {fSystem=0;}
+  void SetPtBins(Double_t ptMin=0., Double_t ptMax=40., Int_t nBins=40) {fPtMin=ptMin; fPtMax=ptMax; fNPtBins=nBins;}
+  void SetYBins(Double_t yMin=-2., Double_t yMax=2., Int_t nBins=40) {fYMin=yMin; fYMax=yMax; fNYBins=nBins;}
 
  private:
 
@@ -114,9 +116,15 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Int_t fSystem;         /// 0=pp, 1=PbPb, 2=pPb
   AliESDtrackCuts *fESDtrackCuts; /// track selection
   Bool_t fReadMC;
+  Double_t fPtMin; /// minumum pT in histograms
+  Double_t fPtMax; /// maximum pT in histograms
+  Int_t fNPtBins; /// number of pT bins in histograms
+  Double_t fYMin; /// minumum y in histograms
+  Double_t fYMax; /// maximum y in histograms
+  Int_t fNYBins; /// number of y bins in histograms
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckHFMCProd,9);
+  ClassDef(AliAnalysisTaskCheckHFMCProd, 10);
   /// \endcond
 };
 

@@ -246,25 +246,54 @@ void AliRsnEvent::SetDaughterESDv0(AliRsnDaughter &out, Int_t i)
             if (mc && tp && tn) {
                Int_t lp = TMath::Abs(tp->GetLabel());
                Int_t ln = TMath::Abs(tn->GetLabel());
-               TParticle *pp = ((AliMCParticle*)mc->GetTrack(lp))->Particle();
-               TParticle *pn = ((AliMCParticle*)mc->GetTrack(ln))->Particle();
+               AliMCParticle *pp = (AliMCParticle*)mc->GetTrack(lp);
+               AliMCParticle *pn = (AliMCParticle*)mc->GetTrack(ln);
+               //TParticle *pp = ((AliMCParticle*)mc->GetTrack(lp))->Particle(); // Before change in accessing MC infor in AliRoot v5-09-46
+               //TParticle *pn = ((AliMCParticle*)mc->GetTrack(ln))->Particle(); // Before Change in accessing MC infor in AliRoot v5-09-46
                //TParticle *pp = mc->Stack()->Particle(lp); // old way to read MC
                //TParticle *pn = mc->Stack()->Particle(ln); // old way to read MC
                if (pp && pn) {
                   // if their first mothers are the same, the V0 is true
                   // otherwise label remains '-1' --> fake V0
-                  if (pp->GetFirstMother() == pn->GetFirstMother() && pp->GetFirstMother() >= 0) {
+                  if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) {
+                       out.SetLabel(pp->GetMother());
+                       //patch for k0s/k0l
+                       AliMCParticle *mom = (AliMCParticle*)mc->GetTrack(pn->GetMother());
+                      
+                       if(mom && mom->PdgCode() == 310) {
+                           if(mom->GetMother() >= 0) {
+                               AliMCParticle *mom2 = (AliMCParticle*)mc->GetTrack(mom->GetMother());
+                               if(mom2 && TMath::Abs(mom2->PdgCode()) == 311) {
+                                   //take the mother of the k0s which is a k0 (311)
+                                   out.SetLabel(mom->GetMother());
+                               }
+                           } else {
+                               out.SetLabel(mom->GetMother());
+                           }
+                       }
+                       
+                       SetMCInfoESD(out);
+                   }
+                 /* if (pp->GetFirstMother() == pn->GetFirstMother() && pp->GetFirstMother() >= 0) {
                      out.SetLabel(pp->GetFirstMother());
                      //patch for k0s/k0l
                       TParticle *mom = ((AliMCParticle*)mc->GetTrack(pn->GetFirstMother()))->Particle();
                      //TParticle *mom = mc->Stack()->Particle(pn->GetFirstMother()); // old way to read MC
 
                      if(mom->GetPdgCode() == 310) {
-                        //take the mother of the k0s which is a k0 (311)
-                        out.SetLabel(mom->GetFirstMother());
+                        if(mom->GetFirstMother() >= 0) {
+                           TParticle *mom2 = ((AliMCParticle*)mc->GetTrack(mom->GetFirstMother()))->Particle();
+                           if(mom2 && TMath::Abs(mom2->GetPdgCode()) == 311) {
+                              //take the mother of the k0s which is a k0 (311)
+                              out.SetLabel(mom->GetFirstMother());
+                           }
+                        } else {
+                           out.SetLabel(mom->GetFirstMother());
+                        }
                      }
+
                      SetMCInfoESD(out);
-                  }
+                  } */ // Before Change in accessing MC infor in AliRoot v5-09-46
                }
             }
          }
@@ -303,6 +332,21 @@ void AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
                   // otherwise label remains '-1' --> fake V0
                   if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) {
                      out.SetLabel(pp->GetMother());
+                     //patch for k0s/k0l
+                      AliAODMCParticle *mom = (AliAODMCParticle*)mcArray->At(pn->GetMother());
+
+                     if(mom && mom->GetPdgCode() == 310) {
+                        if(mom->GetMother() >= 0) {
+			   AliAODMCParticle *mom2 = (AliAODMCParticle*)mcArray->At(mom->GetMother());
+                           if(mom2 && TMath::Abs(mom2->GetPdgCode()) == 311) {
+                              //take the mother of the k0s which is a k0 (311)
+                              out.SetLabel(mom->GetMother());
+                           }
+                        } else {
+                           out.SetLabel(mom->GetMother());
+                        }
+                     }
+
                      SetMCInfoAOD(out);
                   }
                }
@@ -329,7 +373,47 @@ void AliRsnEvent::SetDaughterESDcascade(AliRsnDaughter &out, Int_t i)
          out.SetRef(casc);
          out.SetGood();
          if (fRefMC) {
+            AliMCEvent  *mc = (AliMCEvent *)fRefMC;
+            AliESDtrack *tp = ev->GetTrack(casc->GetPindex());
+            AliESDtrack *tn = ev->GetTrack(casc->GetNindex());
+            AliESDtrack *tb = ev->GetTrack(casc->GetBindex());
+            if (tp && tn && tb) {
+               Int_t lp = TMath::Abs(tp->GetLabel());
+               Int_t ln = TMath::Abs(tn->GetLabel());
+               Int_t lb = TMath::Abs(tb->GetLabel());
+               AliMCParticle *pp = (AliMCParticle*)mc->GetTrack(lp);
+               AliMCParticle *pn = (AliMCParticle*)mc->GetTrack(ln);
+               AliMCParticle *pb = (AliMCParticle*)mc->GetTrack(lb);
+               if (pp && pn && pb && pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0 && pb->GetMother() >= 0) {
+                  // if the V0 daughters have the same mother, the V0 is true
+                  // if the true V0 and the bachelor have the same mother, the cascade is true
+                  // otherwise label remains '-1' --> fake V0
 
+                  //patch for k0s/k0l
+                  AliMCParticle *mom = (AliMCParticle*)mc->GetTrack(pn->GetMother());
+                  Int_t m1 = -1;
+
+                  if(mom && mom->PdgCode() == 310) { // should not happen for cascades
+                     if(mom->GetMother() >= 0) {
+                        AliMCParticle *mom2 = (AliMCParticle*)mc->GetTrack(mom->GetMother());
+                        if(mom2 && TMath::Abs(mom2->PdgCode()) == 311) {
+                           //take the mother of the k0s which is a k0 (311)
+                            m1 = mom2->GetMother();
+                        } else {
+                            m1 = mom->GetMother();
+                        }
+                     }
+                  } else {
+                     m1 = mom->GetMother();
+                  }
+
+                  if(m1 == pb->GetMother()) {
+                     out.SetLabel(pb->GetMother());
+                  }
+
+                  SetMCInfoESD(out);
+               } // if (pp && pn ...
+            } // if (mcArray && tp && tn && tb)
          }
       }
    }
@@ -347,15 +431,56 @@ void AliRsnEvent::SetDaughterAODcascade(AliRsnDaughter &out, Int_t i)
 
    if (i >= 0 && i < fRef->GetNumberOfCascades()) {
       AliAODEvent *ev = GetRefAOD();
-      AliAODv0    *casc = ev->GetCascade(i);
+      AliAODcascade *casc = ev->GetCascade(i);
       if (casc) {
          out.SetRef(casc);
          out.SetGood();
          if (fRefMC) {
+            AliAODEvent  *mc = (AliAODEvent *)fRefMC;
+            TClonesArray *mcArray = (TClonesArray *)mc->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+            AliAODTrack  *tp  = (AliAODTrack *)casc->GetDaughter(0);
+            AliAODTrack  *tn  = (AliAODTrack *)casc->GetDaughter(1);
+            AliAODTrack  *tb  = (AliAODTrack *)casc->GetDecayVertexXi()->GetDaughter(0);
+            if (mcArray && tp && tn && tb) {
+               Int_t lp = TMath::Abs(tp->GetLabel());
+               Int_t ln = TMath::Abs(tn->GetLabel());
+               Int_t lb = TMath::Abs(tb->GetLabel());
+               AliAODMCParticle *pp = (AliAODMCParticle *)mcArray->At(lp);
+               AliAODMCParticle *pn = (AliAODMCParticle *)mcArray->At(ln);
+               AliAODMCParticle *pb = (AliAODMCParticle *)mcArray->At(lb);
+               if (pp && pn && pb && pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0 && pb->GetMother() >= 0) {
+                  // if the V0 daughters have the same mother, the V0 is true
+                  // if the true V0 and the bachelor have the same mother, the cascade is true
+                  // otherwise label remains '-1' --> fake V0
 
-         }
-      }
-   }
+                  //patch for k0s/k0l
+                  AliAODMCParticle * mom = (AliAODMCParticle*)mcArray->At(pn->GetMother());
+                  Int_t m1 = -1;
+
+                  if(mom && mom->GetPdgCode() == 310) { // should not happen for cascades
+                     if(mom->GetMother() >= 0) {
+                        AliAODMCParticle *mom2 = (AliAODMCParticle*)mcArray->At(mom->GetMother());
+                        if(mom2 && TMath::Abs(mom2->GetPdgCode()) == 311) {
+                           //take the mother of the k0s which is a k0 (311)
+                            m1 = mom2->GetMother();
+                        } else {
+                            m1 = mom->GetMother();
+                        }
+                     }
+                  } else {
+                     m1 = mom->GetMother();
+                  }
+
+                  if(m1 == pb->GetMother()) {
+                     out.SetLabel(pb->GetMother());
+                  }
+
+                  SetMCInfoAOD(out);
+               } // if (pp && pn ...
+            } // if (mcArray && tp && tn && tb)
+         } // if (fRefMC)
+      } // if (casc)
+   } // if (i >= 0 ...
 }
 
 //_____________________________________________________________________________
@@ -393,7 +518,9 @@ Bool_t AliRsnEvent::SetMCInfoESD(AliRsnDaughter &out)
    out.SetRefMC(mcPart);
 
    // if the particle is not primary, find the mother and get its PDG
-   Int_t imum = mcPart->Particle()->GetFirstMother();
+   // Int_t imum = mcPart->Particle()->GetFirstMother();// Before change in accessing MC infor in AliRoot v5-09-46
+   Int_t imum = mcPart->GetMother();
+
    if (imum >= 0 && imum < nMC) {
       AliMCParticle *mcMother = (AliMCParticle *)mc->GetTrack(imum);
       if (mcMother) {
@@ -582,3 +709,4 @@ Int_t AliRsnEvent::SelectLeadingParticle(AliRsnCutSet *cuts)
 
    return fLeading;
 }
+

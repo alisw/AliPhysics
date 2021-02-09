@@ -11,11 +11,15 @@
 #include "AliAnalysisCuts.h"
 
 class TArrayI;
+class TRootIOCtor;
 
 class AliMCInfoCuts : public AliAnalysisCuts
 {
 public:
-  AliMCInfoCuts(const Char_t* name ="AliMCInfoCuts", const Char_t *title ="");
+  AliMCInfoCuts(TRootIOCtor*);
+  AliMCInfoCuts(const Char_t* name="", const Char_t *title ="");
+  AliMCInfoCuts(const AliMCInfoCuts& that);
+  AliMCInfoCuts& operator=(const AliMCInfoCuts& that);
   virtual ~AliMCInfoCuts(); 
  
   // setters 
@@ -87,9 +91,6 @@ private:
     prot = kProton,
     protbar = kProtonBar
   };
-
-  AliMCInfoCuts(const AliMCInfoCuts&); // not implemented
-  AliMCInfoCuts& operator=(const AliMCInfoCuts&); // not implemented
 
   ClassDef(AliMCInfoCuts, 1)
 };

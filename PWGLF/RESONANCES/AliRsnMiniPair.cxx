@@ -20,7 +20,7 @@ void AliRsnMiniPair::Fill
    p2->Set4Vector(fP2[1], m2, kTRUE );
    
    fDCA1 = p1->DCA();
-   fDCA2 = p2->DCA();  
+   fDCA2 = p2->DCA();
 
    fMother = -1;
    fIsFromB = kFALSE;
@@ -50,15 +50,29 @@ void AliRsnMiniPair::Fill
    fContainsV0Daughter = kFALSE;
    if (p1->IndexV0Pos() == p2->Index()) fContainsV0Daughter = kTRUE;
    if (p1->IndexV0Neg() == p2->Index()) fContainsV0Daughter = kTRUE;
+   if (p1->IndexBachelor() == p2->Index()) fContainsV0Daughter = kTRUE;
    if (p2->IndexV0Pos() == p1->Index()) fContainsV0Daughter = kTRUE;
    if (p2->IndexV0Neg() == p1->Index()) fContainsV0Daughter = kTRUE;
-    
-    
-   if ((p1->IndexV0Pos() == p2->IndexV0Pos()) && (p1->IndexV0Pos() != -1) && (p2->IndexV0Pos() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Pos() == p2->IndexV0Neg()) && (p1->IndexV0Pos() != -1) && (p2->IndexV0Neg() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Neg() == p2->IndexV0Pos()) && (p1->IndexV0Neg() != -1) && (p2->IndexV0Pos() != -1)) fContainsV0Daughter = kTRUE;
-   if ((p1->IndexV0Neg() == p2->IndexV0Neg()) && (p1->IndexV0Neg() != -1) && (p2->IndexV0Neg() != -1)) fContainsV0Daughter = kTRUE;
-    
+   if (p2->IndexBachelor() == p1->Index()) fContainsV0Daughter = kTRUE;
+
+   if (p1->IndexV0Pos() != -0x80000000){
+      if (p1->IndexV0Pos() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Pos() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Pos() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
+   if (p1->IndexV0Neg() != -0x80000000){
+      if (p1->IndexV0Neg() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Neg() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexV0Neg() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
+   if (p1->IndexBachelor() != -0x80000000){
+      if (p1->IndexBachelor() == p2->IndexV0Pos()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexBachelor() == p2->IndexV0Neg()) fContainsV0Daughter = kTRUE;
+      if (p1->IndexBachelor() == p2->IndexBachelor()) fContainsV0Daughter = kTRUE;
+   }
+
+   fPassesOOBPileupCut = kFALSE;
+   if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
 
 //__________________________________________________________________________________________________
@@ -97,6 +111,125 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
    Double_t cosThetaStar = normal.Dot(momentumD) / momentumD.Mag();
 
    return cosThetaStar;
+}
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::CosThetaStarAbs(Bool_t useMC)
+{
+    TLorentzVector &mother    = fSum[ID(useMC)];
+    TLorentzVector &daughter0 = fP1[ID(useMC)];
+    TVector3 momentumM(mother.Vect());
+    TVector3 normal(mother.Y()/momentumM.Pt(), -mother.X()/momentumM.Pt(), 0.0);
+    
+    // Computes components
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+    
+    // Computes Lorentz transformation of the momentum of the first daughter
+    // into the rest frame of the mother and theta*
+
+    daughter0.Boost(betaX, betaY, betaZ);
+    TVector3 momentumD = daughter0.Vect();
+    Double_t cosThetaStarAbs = TMath::Abs(normal.Dot(momentumD)/momentumD.Mag());
+    return cosThetaStarAbs;
+}
+
+Double_t AliRsnMiniPair::CosThetaHe(Bool_t useMC)
+{
+    // Return cosine of angle of one daughter to the resonance momentum in its rest frame //ak
+    TLorentzVector &mother    = fSum[ID(useMC)];
+    TLorentzVector daughter1  = fP1[ID(useMC)]; //don't add reference
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    daughter1.Boost(betaX, betaY, betaZ);
+
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    Double_t thetaHE= zAxisHE.Dot((daughter1.Vect()).Unit());
+    return thetaHE;
+}
+
+Double_t AliRsnMiniPair::CosThetaHeAbs(Bool_t useMC)
+{
+    // Return cosine of angle of one daughter to the resonance momentum in its rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    daughter1.Boost(betaX, betaY, betaZ);
+
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    Double_t thetaHE = TMath::Abs(zAxisHE.Dot((daughter1.Vect()).Unit()));
+    return thetaHE;
+}
+
+Double_t AliRsnMiniPair::PhiHePbPb5(Bool_t useMC)
+{
+    //calculate phi angle in helicity frame
+    Double_t Ebeam = 208.0 * 2510.0;
+    Double_t beamMass = 195.323554;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // Return one daughter to the resonance  rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+
+    //write four vector of projectile
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    //boost daughter particle, to rest frame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+
+    //get y and x -axis
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    TVector3 yaxisHE = ((pProjCM.Vect()).Cross(pTargCM.Vect())).Unit();
+    TVector3 xaxisHE = (yaxisHE.Cross(zAxisHE)).Unit();
+    //calculate phi angle
+    Double_t phiHE = TMath::ATan2((daughter1.Vect()).Dot(yaxisHE),(daughter1.Vect()).Dot(xaxisHE));
+    return phiHE;
+}
+
+Double_t AliRsnMiniPair::PhiHePP5(Bool_t useMC)
+{
+    // calculate phi angle in helicity frame
+    Double_t Ebeam = 2510;
+    Double_t beamMass = 0.93827231;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // Return one daughter to the resonance rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+
+    //write four vector of project //projectile in the muon-arm direction
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    //boost daughter particle, to rest freame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+
+    //get y and x -axis
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    TVector3 yaxisHE = ((pProjCM.Vect()).Cross(pTargCM.Vect())).Unit();
+    TVector3 xaxisHE = (yaxisHE.Cross(zAxisHE)).Unit();
+    //calculate phi angle
+    Double_t phiHE = TMath::ATan2((daughter1.Vect()).Dot(yaxisHE),(daughter1.Vect()).Dot(xaxisHE));
+    return phiHE;
 }
 
 //__________________________________________________________________________________________________
@@ -302,15 +435,15 @@ Double_t AliRsnMiniPair::PhiV(Bool_t mc)
   //    if (r > 0.5) { P1.SetXYZ (track2->Px(),track2->Py(),track2->Pz()); P2.SetXYZ (track1->Px(),track1->Py(),track1->Pz()); }
   
   
-  if (r < 0.5) { 
-    P1.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+  if (r < 0.5) {
+    P1.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz());
      P2.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
   }
   
   
-  if (r > 0.5) { 
+  if (r > 0.5) {
     P1.SetXYZ (fP2[ID(mc)].Px(), fP2[ID(mc)].Py(), fP2[ID(mc)].Pz());
-    P2.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz()); 
+    P2.SetXYZ (fP1[ID(mc)].Px(), fP1[ID(mc)].Py(), fP1[ID(mc)].Pz());
   }
   
   
@@ -333,24 +466,24 @@ Double_t AliRsnMiniPair::PhiV(Bool_t mc)
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
 {
-  //returns pt of the <id> daughter 
+  //returns pt of the <id> daughter
   // if MC returns generated momenta
   if (daughterId==0)
     return fP1[ID(mc)].Pt();
-  else 
+  else
     return fP2[ID(mc)].Pt();
 }
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterDCA(Int_t daughterId)
-{   
+{
   //
-  //returns dca to Primary Vertex of the <id> daughter 
+  //returns dca to Primary Vertex of the <id> daughter
   //
 
   if (daughterId==0)
     return fDCA1;
-  else 
+  else
     return fDCA2;
 }
 
@@ -401,4 +534,21 @@ Double_t AliRsnMiniPair::PairYRes() const
 //
   if (Y(1) <= 0.0) return 1E20;
   return (Y(0) - Y(1)) / Y(1);
+}
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc) 
+{
+//
+// Return pair asymmetry
+//
+  TLorentzVector &p1 = fP1[ID(mc)];
+  TLorentzVector &p2 = fP2[ID(mc)];
+  
+  TVector3 P1 = p1.Vect();
+  TVector3 P2 = p2.Vect();
+
+  Double_t asym=TMath::Abs(P1.Mag()-P2.Mag())/(P1.Mag()+P2.Mag());
+
+  return asym;
+  
 }

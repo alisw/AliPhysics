@@ -8,7 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date Feb 6, 2016
+/// \date Oct 13, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETS_H
 #define ALIANALYSISTASKDMESONJETS_H
@@ -48,6 +48,8 @@ class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
 
+//C++
+#include <exception>
 #include <list>
 #include <vector>
 #include <map>
@@ -62,13 +64,28 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 {
  public:
 
+  class AliEventNotFound : public std::exception
+  {
+  public:
+    AliEventNotFound(const std::string& class_name, const std::string& method_name);
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+    const char* what() const noexcept;
+#endif
+
+
+  private:
+    std::string  fClassName        ; ///< Class name where the event was not found
+    std::string  fAccessMethodName ; ///< Access method name used to retrieve the event
+    std::string  fWhat             ; ///< Error message
+  };
+
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
 
-  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
+  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput, kOnlyQAOutput, kTreeExtendedOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
-  enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth, kWrongPID };
+  enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth, kD0Reflection, kOnlyWrongPIDAccepted };
   enum EMesonOrigin_t {
     kUnknownQuark = BIT(0),
     kFromDown     = BIT(1),
@@ -98,6 +115,47 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
    kDeltaPhi          = BIT(6) , // Add the delta phi axis in the THnSparse
    kPositionJet       = BIT(7) , // Add the jet eta/phi axis in the THnSparse
    kJetConstituents   = BIT(8)   // Add the jet constituent axis in the THnSparse
+  };
+
+  /**
+   * \class EventInfo
+   * \brief Event information
+   */
+  class EventInfo {
+  public:
+    EventInfo() : fCent(-1), fEP(-1), fWeight(1), fPtHard(0) {}
+    EventInfo(double cent, double ep, double w, double pt) : fCent(cent), fEP(ep), fWeight(w), fPtHard(pt) {}
+
+    double fCent;
+    double fEP;
+    double fWeight;
+    double fPtHard;
+  };
+
+  /**
+   * \class AliEventInfoSummary
+   * \brief Class that encapsulates event properties in a very compact structure (useful for pp simulation analysis)
+   *
+   * Class that encapsulates event properties in a very compact structure
+   * for pp analysis on simulations (22 bits)
+   */
+  class AliEventInfoSummary {
+  public:
+    AliEventInfoSummary() : fWeight(1), fPtHard(0) {;}
+    AliEventInfoSummary(EventInfo event);
+
+    virtual ~AliEventInfoSummary() {;}
+
+    void Reset();
+    void Set(EventInfo event);
+
+    /// Centrality of the collision
+    Double32_t  fWeight          ; //[0,0,12]
+    Double32_t  fPtHard          ; //[0,512,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliEventInfoSummary, 1);
+    /// \endcond
   };
 
   /// \class AliJetInfo
@@ -158,7 +216,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODMCParticle  *fParton                  ; //!<! pointer to the parton in the shower tree of the D meson (only for particle level D mesons)
     Short_t            fPartonType              ; //!<! type of the parton in the shower tree (only for particle level D mesons)
     AliAODMCParticle  *fAncestor                ; //!<! pointer to the ancestor particle in the shower tree of the D meson (only for particle level D mesons)
-    Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar, 3=both
+    Bool_t             fD0D0bar                 ; //!<! kTRUE if selected both as D0 and D0bar
+    Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar
+    const AliVEvent   *fEvent                   ; //!<! pointer to the ESD/AOD event
+
+    Byte_t GetSelectionTypeSummary() const { return fD0D0bar && fSelectionType ? 3 : fSelectionType; }
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
@@ -264,7 +326,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
-  /// \class AliDmesonInfoSummary
+  /// \class AliDmesonMCInfoSummary
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson
@@ -306,10 +368,51 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     /// Invariant mass of the D0 meson candidate in GeV/c2
     Double32_t          fInvMass        ; //[0,6.5536,16]
+    /// Selection type: D0, D0bar, both
     Double32_t          fSelectionType  ; //[0,4,2]
 
     /// \cond CLASSIMP
     ClassDef(AliD0InfoSummary, 3);
+    /// \endcond
+  };
+
+  /// \class AliD0ExtendedInfoSummary
+  /// \brief Lightweight class that encapsulates D0
+  ///
+  /// This class encapsulates D0 jet
+  /// information in a very compact data structure (143 bits)
+  /// This is an extended version with additional variables
+  /// used to implement topological cuts
+  class AliD0ExtendedInfoSummary : public AliD0InfoSummary {
+  public:
+    AliD0ExtendedInfoSummary() : AliD0InfoSummary(), fDCA(0), fCosThetaStar(0), fPtK(0), fPtPi(0), fd0K(0), fd0Pi(0), fd0d0(0), fCosPointing(0), fMaxNormd0(0) {}
+    AliD0ExtendedInfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliD0ExtendedInfoSummary() {}
+
+    virtual void Reset();
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    /// Distance of closest approach
+    Double32_t          fDCA           ; //[0,2.56,9]
+    /// Cosine of theta star
+    Double32_t          fCosThetaStar  ; //[-1.28,1.28,8]
+    /// Transverse momentum of the kaon
+    Double32_t          fPtK           ; //[0,102.4,11]
+    /// Transverse momentum of the pion
+    Double32_t          fPtPi          ; //[0,102.4,11]
+    /// D0K
+    Double32_t          fd0K           ; //[-2.56,2.56,8]
+    /// D0Pi
+    Double32_t          fd0Pi          ; //[-2.56,2.56,8]
+    /// D0K * D0Pi
+    Double32_t          fd0d0          ; //[-0.000524288,0.000524288,20]
+    /// Cosine of the pointing angle
+    Double32_t          fCosPointing   ; //[0,1.28,7]
+    /// max norm d0
+    Double32_t          fMaxNormd0     ; //[-102.4,102.4,11]
+
+    /// \cond CLASSIMP
+    ClassDef(AliD0ExtendedInfoSummary, 4);
     /// \endcond
   };
 
@@ -337,6 +440,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
+  /// \class AliHFJetDefinition
+  /// \brief HF jet definition
+  ///
+  /// This class encapsulates the jet definition
   class AliHFJetDefinition : public TObject {
   public:
     AliHFJetDefinition();
@@ -354,6 +461,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetRhoName(TString n)                            { fRhoName      = n  ; }
+    void SetRecombinationScheme(ERecoScheme_t reco)       { fRecoScheme   = reco;}
     Double_t GetRadius() const { return fRadius; }
     TString GetRhoName() const { return fRhoName; }
 
@@ -367,10 +475,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     friend bool        operator==(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
     friend inline bool operator!=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs == rhs); }
-
-  protected:
-    friend class AliAnalysisTaskDmesonJets;
-    friend class AnalysisEngine;
 
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
@@ -396,6 +500,176 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
+  class AnalysisEngine;
+
+  /// \class OutputHandler
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// This is a base generic class: it only implements the filling of QA histograms
+  class OutputHandler {
+  public:
+    OutputHandler();
+    OutputHandler(AnalysisEngine* eng);
+
+    virtual ~OutputHandler() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName) {;}
+
+    virtual TObject* GetOutputObject() const           { return 0 ; }
+    virtual Int_t  GetDataSlotNumber() const           { return -1; }
+
+  protected:
+    ECandidateType_t                   fCandidateType         ; //!<! Candidate type
+    EMCMode_t                          fMCMode                ; //!<! MC mode: No MC (data and MC detector level), background-only (MC), signal-only (MC), MC truth (particle level)
+    Int_t                              fNMassBins             ; //!<! Mass number of bins
+    Double_t                           fMinMass               ; //!<! Min mass in histogram axis
+    Double_t                           fMaxMass               ; //!<! Max mass in histogram axis
+    std::vector<AliHFJetDefinition>   *fJetDefinitions        ; //!<! Jet definitions
+    Float_t                            fPtBinWidth            ; //!<! Histogram pt bin width
+    Float_t                            fMaxPt                 ; //!<! Histogram pt limit
+    Bool_t                             fD0Extended            ; //!<! Store extended information in the tree (only for D0 mesons)
+    EventInfo                         *fEventInfo             ; //!<! Object conatining the event information (centrality, pt hard, weight, etc.)
+    std::map<int, AliDmesonJetInfo>   *fDmesonJets            ; //!<! Array containing the D meson jets
+    THistManager                      *fHistManager           ; //!<! Histograms
+    TString                            fName                  ; //!<! Name of this object
+
+  private:
+    OutputHandler(const OutputHandler &source);  // not implemented
+    OutputHandler& operator=(const OutputHandler& source);  // not implemented
+  };
+
+  /// \class OutputHandlerTHnSparse
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// The output is stored in a THnSparse with user defined axis
+  class OutputHandlerTHnSparse : public OutputHandler {
+  public:
+    OutputHandlerTHnSparse();
+    OutputHandlerTHnSparse(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTHnSparse() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName);
+
+    Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
+
+    Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
+    void SetEnabledAxis(UInt_t axis) { fEnabledAxis = axis; }
+
+  protected:
+    UInt_t               fEnabledAxis               ; //!<! Use bit defined in EAxis_t to enable axis in the THnSparse
+
+  private:
+    OutputHandlerTHnSparse(const OutputHandlerTHnSparse &source);  // not implemented
+    OutputHandlerTHnSparse& operator=(const OutputHandlerTHnSparse& source);  // not implemented
+  };
+
+  /// \class OutputHandlerTTree
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// The output is stored in a TTree. Each entry of the tree corresponds to a D meson
+  /// and there are separate branches for each jet definition.
+  class OutputHandlerTTree : public OutputHandler {
+  public:
+    OutputHandlerTTree();
+    OutputHandlerTTree(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTTree() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName);
+    virtual TObject* GetOutputObject() const           { return fTree; }
+    virtual Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
+
+    TTree* GetTree() const { return fTree; }
+    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+
+  protected:
+    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
+    TTree                             *fTree                  ; //!<! Output tree
+    AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
+    AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
+
+  private:
+    OutputHandlerTTree(const OutputHandlerTTree &source);  // not implemented
+    OutputHandlerTTree& operator=(const OutputHandlerTTree& source);  // not implemented
+  };
+
+  /// \class OutputHandlerTTreeExtendedBase
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// The output is stored in a TTree. This is a base class, containing
+  /// some common fields and functions. The full implementation is given
+  /// in the template class OutputHandlerTTreeExtended for each combination
+  /// of event, D meson and jet output object types.
+  class OutputHandlerTTreeExtendedBase : public OutputHandler {
+  public:
+    OutputHandlerTTreeExtendedBase();
+    OutputHandlerTTreeExtendedBase(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTTreeExtendedBase() {;}
+
+    virtual TObject* GetOutputObject() const           { return fTree; }
+    virtual Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
+
+    TTree* GetTree() const { return fTree; }
+    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+
+    static OutputHandlerTTreeExtendedBase* GenerateOutputHandler(AnalysisEngine* eng);
+
+  protected:
+    Int_t                                                       fDataSlotNumber        ; //!<! Data slot where the tree output is posted
+    TTree                                                      *fTree                  ; //!<! Output tree
+    TString                                                     fEventClassName        ;
+    TString                                                     fDMesonClassName       ;
+    TString                                                     fJetClassName          ;
+
+  private:
+    OutputHandlerTTreeExtendedBase(const OutputHandlerTTreeExtendedBase &source);  // not implemented
+    OutputHandlerTTreeExtendedBase& operator=(const OutputHandlerTTreeExtendedBase& source);  // not implemented
+  };
+
+  /// \class OutputHandlerTTreeExtended
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// The output is stored in a TTree. Each entry of the tree corresponds to an event;
+  /// the event information is stored in a branch with the event header;
+  /// D mesons are stored in a branch of type std::vector;
+  /// each jet definition is stored in a different branch of type std::vector.
+  /// The std:vector branches of the D mesons and of each jet definition are kept in sync:
+  /// in order to get the jets corresponding to each D meson one must look at the same position
+  /// in the corresponding std::vector.
+  template<class EVENTTYPE, class DMESONTYPE, class JETTYPE>
+  class OutputHandlerTTreeExtended : public OutputHandlerTTreeExtendedBase {
+  public:
+    OutputHandlerTTreeExtended();
+    OutputHandlerTTreeExtended(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTTreeExtended() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+    virtual void BuildOutputObject(const char* taskName);
+
+  protected:
+    EVENTTYPE                                                   fCurrentEventInfo      ; //!<! Current event info
+    std::vector<DMESONTYPE>                                     fCurrentDmesonInfo     ; //!<! Current D meson jet info
+    std::map<std::string, std::vector<JETTYPE> >                fCurrentJetInfo        ; //!<! Current jet info
+
+  private:
+    OutputHandlerTTreeExtended(const OutputHandlerTTreeExtended &source);  // not implemented
+    OutputHandlerTTreeExtended& operator=(const OutputHandlerTTreeExtended& source);  // not implemented
+  };
+
   /// \class AnalysisEngine
   /// \brief Struct that encapsulates analysis parameters
   ///
@@ -407,7 +681,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     enum EFindParticleOriginMode_t {
       kFindFirst,    /// Look for the very first particle in the fragmentation tree
-      kFindLast     /// Look for the last particle in the fragmentation tree (closest to the hadron)
+      kFindLast      /// Look for the last particle in the fragmentation tree (closest to the hadron)
     };
 
     static AliAODMCParticle* FindParticleOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, EFindParticleOriginMode_t mode, const std::set<UInt_t>& pdgSet);
@@ -432,6 +706,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetAcceptedDecayMap(UInt_t m)              { fAcceptedDecay  = m    ; }
     void SetRejectISR(Bool_t b)                     { fRejectISR      = b    ; }
 
+    void SetD0Extended(Bool_t b)                    { fD0Extended     = b    ; }
+
     const char* GetCandidateName() const { return fCandidateName.Data(); }
     const char* GetName() const;
     const char* GetName(const AliHFJetDefinition& jetDef) const;
@@ -439,11 +715,18 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     EMCMode_t GetMCMode()                     const { return fMCMode         ; }
     ECandidateType_t GetCandidateType()       const { return fCandidateType  ; }
 
+    OutputHandler* GetOutputHandler() const { return fOutputHandler; }
+
     AliHFJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
     AliHFJetDefinition* AddJetDefinition(const AliHFJetDefinition& def);
     std::vector<AliHFJetDefinition>::iterator FindJetDefinition(const AliHFJetDefinition& eng);
     std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>& GetJetDefinitions() { return fJetDefinitions; }
-    Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
+
+    void SetJetPhiRange(Double_t min, Double_t max);
+    void SetJetEtaRange(Double_t min, Double_t max);
+    void SetJetPtRange(Double_t min, Double_t max);
+    void SetChargedPtRange(Double_t min, Double_t max);
+    void SetNeutralPtRange(Double_t min, Double_t max);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
     std::map<int, AliDmesonJetInfo>& GetDmesons() { return fDmesonJets; }
@@ -451,21 +734,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
 
-    TTree* BuildTree(const char* taskName);
-    TTree* GetTree() const { return fTree; }
-    Bool_t FillTree(Bool_t applyKinCuts);
-
-    void SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
-    void AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
-    Int_t GetDataSlotNumber() const          { return fDataSlotNumber    ; }
-
-    void BuildHnSparse(UInt_t enabledAxis);
-    Bool_t FillHnSparse(Bool_t applyKinCuts);
-    Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
-
-    Bool_t FillQA(Bool_t applyKinCuts);
+    void   SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
 
     Bool_t IsInhibit() const { return fInhibit; }
+
+    Bool_t IsD0Extended() const { return fD0Extended; }
 
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
@@ -474,8 +747,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     friend bool        operator==(const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator!=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs == rhs); }
-
-    std::map<AliAODMCParticle*, Short_t> fPartons ; //!<! set of the partons in the shower that produced each D meson
 
   protected:
     void RunAnalysis();
@@ -497,13 +768,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
+    Bool_t                             fD0Extended            ; ///<  Store extended information in the tree (only for D0 mesons)
+    OutputHandler                     *fOutputHandler         ; //!<! Output handler
     TRandom                           *fRandomGen             ; //!<! Random number generator
     Double_t                           fTrackEfficiency       ; //!<! Artificial tracking inefficiency (0...1) -> set automatically at ExecOnce by AliAnalysisTaskDmesonJets
     Bool_t                             fRejectISR             ; //!<! Reject initial state radiation
-    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
-    TTree                             *fTree                  ; //!<! Output tree
-    AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
-    AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
     std::map<int, AliDmesonJetInfo>    fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer*       fMCContainer           ; //!<! MC particle container
@@ -512,9 +781,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
-    Double_t                           fCent                  ; //!<! Event centrality
+    EventInfo                          fEventInfo             ; //!<! Event info (centrality, weight, pt hard etc.)
+    mutable TString                    fName                  ; //!<! Name of this object
 
     friend class AliAnalysisTaskDmesonJets;
+    friend class OutputHandler;
 
   private:
 
@@ -530,7 +801,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef);
 
     /// \cond CLASSIMP
-    ClassDef(AnalysisEngine, 2);
+    ClassDef(AnalysisEngine, 3);
     /// \endcond
   };
 
@@ -538,8 +809,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJets();
 
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
-  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString rhoName = "");
+  AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, TString cutfname, TString cuttype, EMCMode_t bkgMode, const AliHFJetDefinition& jetDef, TString rhoName = "");
   std::list<AnalysisEngine>::iterator FindAnalysisEngine(const AnalysisEngine& eng);
 
   void SetShowPositionD(Bool_t b = kTRUE)         { fEnabledAxis = b ?  fEnabledAxis | kPositionD         : fEnabledAxis & ~kPositionD         ; }
@@ -551,6 +822,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetShowDeltaPhi(Bool_t b = kTRUE)          { fEnabledAxis = b ?  fEnabledAxis | kDeltaPhi          : fEnabledAxis & ~kDeltaPhi          ; }
   void SetShowPositionJet(Bool_t b = kTRUE)       { fEnabledAxis = b ?  fEnabledAxis | kPositionJet       : fEnabledAxis & ~kPositionJet       ; }
   void SetShowJetConstituents(Bool_t b = kTRUE)   { fEnabledAxis = b ?  fEnabledAxis | kJetConstituents   : fEnabledAxis & ~kJetConstituents   ; }
+
+  UInt_t GetEnabledAxis() const { return fEnabledAxis; }
 
   void SetApplyKinematicCuts(Bool_t b)            { fApplyKinematicCuts = b ; }
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
@@ -575,7 +848,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
-  Int_t                PostDataFromAnalysisEngine(const AnalysisEngine& eng);
+  Int_t                PostDataFromAnalysisEngine(OutputHandler const* handler);
 
   void                 FillPartonLevelHistograms();
 
@@ -600,7 +873,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 9);
+  ClassDef(AliAnalysisTaskDmesonJets, 10);
   /// \endcond
 };
 

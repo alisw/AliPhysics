@@ -18,7 +18,7 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 
 #include <AliESD.h>
 #include "AliExternalTrackParam.h"
@@ -289,7 +289,7 @@ void  AliTPCComparisonPID::ProcessMCInfo(){
     Double_t dedx=track->GetTPCsignal();
     Double_t mass = particle->GetMass();
     Double_t bg  =mom/mass;
-    Double_t betheBloch = AliMathBase::BetheBlochAleph(bg);
+    Double_t betheBloch = AliExternalTrackParam::BetheBlochAleph(bg);
     //
     // Fill histos
     //

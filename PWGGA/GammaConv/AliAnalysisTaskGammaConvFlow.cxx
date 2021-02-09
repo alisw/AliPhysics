@@ -172,14 +172,15 @@ fMaxKappa(100),
 fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
+fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
-fFlowEvent(NULL),
-fIsMC(0),
-fMCEvent(NULL)
+fFlowEvent(NULL)
+
 {
   // DefineOutput(1, TList::Class());
   // DefineOutput(2, AliFlowEventSimple::Class());
@@ -293,14 +294,15 @@ fMaxKappa(100),
 fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
+fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(NULL),
-fIsMC(0),
-fMCEvent(NULL)
+fFlowEvent(NULL)
+
 
 {
   // Define output slots here
@@ -422,14 +424,14 @@ fMaxKappa(100),
 fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
+fIsMC(0),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
+fMCEvent(NULL),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(NULL),
-fIsMC(0),
-fMCEvent(NULL)
+fFlowEvent(NULL)
 
 {
   // Define output slots here
@@ -599,7 +601,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     fESDList[iCut]->Add(hNEvents[iCut]);
@@ -850,6 +852,7 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
   // Called for each event
   //
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+  if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       hNEvents[iCut]->Fill(eventQuality);

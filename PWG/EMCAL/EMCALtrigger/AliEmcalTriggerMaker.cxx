@@ -192,7 +192,7 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
-    std::array<std::string, 3> patchtypes = {"Online", "Offline", "Recalc"};
+    std::array<std::string, 3> patchtypes = {{"Online", "Offline", "Recalc"}};
 
     for(int itype = 0; itype < 5; itype++){
       for(const auto & patchtype : patchtypes){

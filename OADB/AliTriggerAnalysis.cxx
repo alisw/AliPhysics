@@ -22,6 +22,7 @@
 // Current support and development: Evgeny Kryshen, PNPI
 //-------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -52,9 +53,9 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fDoFMD(kFALSE),
 fMC(kFALSE),
 fPileupCutsEnabled(kFALSE),
-fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
 fHistFiredBitsSPD(0),
@@ -70,15 +71,6 @@ fHistV0C3vs012All(0),
 fHistV0C3vs012Cln(0),
 fHistSPDVtxPileupAll(0),
 fHistSPDVtxPileupCln(0),
-fHistV0MOnAll(0),
-fHistV0MOnAcc(0),
-fHistV0MOnVHM(0),
-fHistV0MOfAll(0),
-fHistV0MOfAcc(0),
-fHistOFOAll(0),
-fHistOFOAcc(0),
-fHistTKLAll(0),
-fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
 fHistVIRCln(0),
@@ -90,6 +82,15 @@ fHistBGAflagsAll(0),
 fHistBGAflagsAcc(0),
 fHistBGCflagsAll(0),
 fHistBGCflagsAcc(0),
+fHistV0MOnAll(0),
+fHistV0MOnAcc(0),
+fHistV0MOnVHM(0),
+fHistV0MOfAll(0),
+fHistV0MOfAcc(0),
+fHistOFOAll(0),
+fHistOFOAcc(0),
+fHistTKLAll(0),
+fHistTKLAcc(0),
 fHistAD(0),
 fHistADAAll(0),
 fHistADAAcc(0),
@@ -99,9 +100,9 @@ fHistV0AAll(0),
 fHistV0AAcc(0),
 fHistV0CAll(0),
 fHistV0CAcc(0),
+fHistZDC(0),
 fHistTimeZNA(0),
 fHistTimeZNC(0),
-fHistZDC(0),
 fHistTDCZDC(0),
 fHistTimeZNSumVsDif(0),
 fHistTimeCorrZDC(0),
@@ -805,19 +806,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHist
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
   // usage of uncorrected timings is deprecated
-  // TODO: implement selection on AOD in MC
-  if(fMC) {
-    if (event->GetDataLayoutType()==AliVEvent::kESD) {
-      const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
-      AliESDZDC *esdZDC = esd->GetESDZDC();
-      UInt_t esdFlag = esdZDC->GetESDQuality();
-      Bool_t znaFired = (esdFlag & 0x01) == 0x01;
-      Bool_t zncFired = (esdFlag & 0x10) == 0x10;
-      return znaFired | zncFired;
-    } else {
-      return kTRUE;
-    }
-  }
+  if(fMC) return kTRUE;
   
   Float_t zna[4]={0};
   Float_t znc[4]={0};
@@ -827,9 +816,11 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHist
     AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    Bool_t isZNAhit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNAhit() : 1;
+    Bool_t isZNChit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNChit() : 1;
     if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
-    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
-    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+    for (Int_t i=0;i<4;i++) zna[i] = isZNAhit ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
+    for (Int_t i=0;i<4;i++) znc[i] = isZNChit ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
   } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
     const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
     AliAODZDC* aodZDC = aod->GetZDCData();
@@ -874,8 +865,10 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliVEvent* event, AliceSide si
     AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
-    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
-    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+    Bool_t isZNAhit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNAhit() : 1;
+    Bool_t isZNChit = esd->GetRunNumber()>=208502 ? esdZDC->IsZNChit() : 1;
+    for (Int_t i=0;i<4;i++) zna[i] = isZNAhit ? esdZDC->GetZDCTDCCorrected(detChZNA,i) : 999;
+    for (Int_t i=0;i<4;i++) znc[i] = isZNChit ? esdZDC->GetZDCTDCCorrected(detChZNC,i) : 999;
   } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
     const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
     AliAODZDC* aodZDC = aod->GetZDCData();
@@ -1165,16 +1158,9 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
-  if (fMC) return kFALSE; // there are no dip events in MC
-  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  if (!aEsd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
-  return kFALSE;
+  // The function IsDetectorOn is implemented in AliESDEvent and AliAODEvent
+  if (fMC) return kFALSE; // by default return kFALSE for MC
+  return !event->IsDetectorOn(AliDAQ::kTPC);
 }
 
 
@@ -1387,10 +1373,10 @@ Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Int_t fillHists){
   }
   
   Bool_t vhm = 1;
-  vhm *= nBBA>=fVHMBBAflags;
-  vhm *= nBBC>=fVHMBBCflags;
-  vhm *= nBGA<=fVHMBGAflags;
-  vhm *= nBGC<=fVHMBGCflags;
+  vhm = vhm && nBBA>=fVHMBBAflags;
+  vhm = vhm && nBBC>=fVHMBBCflags;
+  vhm = vhm && nBGA<=fVHMBGAflags;
+  vhm = vhm && nBGC<=fVHMBGCflags;
   if (fillHists==1 && vhm) {
     Float_t on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
     fHistV0MOnVHM->Fill(on);
@@ -1504,8 +1490,10 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   fPileupCutsEnabled = kTRUE;
 
   SPDFiredChips(event,1,kTRUE,0);
-  Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
-  Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
+  ADTrigger(event, kASide, kFALSE, 1);
+  ADTrigger(event, kCSide, kFALSE, 1);
+  V0MTrigger(event,kTRUE,1);
+  TKLTrigger(event,1);
   Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, 1);
   Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, 1);
   Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event,1);
@@ -1516,10 +1504,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,1);
   Bool_t isV0Casym         = IsV0Casym(event,1);
   Bool_t isVHMTrigger      = VHMTrigger(event,1);
-  Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
   Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
-  Bool_t isTKLTrigger      = TKLTrigger(event,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
   Bool_t isZNATimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kASide);
   Bool_t isZNCTimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kCSide);

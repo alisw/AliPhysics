@@ -53,6 +53,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
   fYields(0),
+  fYieldsEtaPhiPT(0),
   fInvYield2(0),
   fEventCount(0),
   fEventCountDifferential(0),
@@ -69,9 +70,17 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversionsV(-1),
-  fCutResonancesV(-1),
+  fCutK0sV(-1),
+  fCutLambdaV(-1),
+  fCutPhiV(-1),
+  fCutRhoV(-1),
+  fCutCustomMass(-1),
+  fCutCustomFirst(-1),
+  fCutCustomSecond(-1),
+  fCutCustomV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -177,6 +186,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
   fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 200, -10, 10);
+  fYieldsEtaPhiPT = new TH3F("fYieldsEtaPhiPT", ";pT;eta;phi", 40,0,20,60,-3,3,200,0,TMath::TwoPi());
   fInvYield2 = new TH2F("fInvYield2", ";centrality;pT;1/pT dNch/dpT", 100, 0, 100, 80, 0, 20);
 
   if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
@@ -206,7 +216,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
-  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 3, -0.5, 2.5, 100, -0.1, 0.1);
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 6, -0.5, 5.5, 500, -0.5, 0.5);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -224,6 +234,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCorrelationLeading2Phi(0),
   fCorrelationMultiplicity(0),
   fYields(0),
+  fYieldsEtaPhiPT(0),
   fInvYield2(0),
   fEventCount(0),
   fEventCountDifferential(0),
@@ -240,9 +251,17 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
   fCutConversionsV(-1),
-  fCutResonancesV(-1),
+  fCutK0sV(-1),
+  fCutLambdaV(-1),
+  fCutPhiV(-1),
+  fCutRhoV(-1),
+  fCutCustomMass(-1),
+  fCutCustomFirst(-1),
+  fCutCustomSecond(-1),
+  fCutCustomV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -328,6 +347,12 @@ void AliUEHistograms::DeleteContainers()
   {
     delete fYields;
     fYields = 0;
+  }
+
+  if (fYieldsEtaPhiPT)
+  {
+    delete fYieldsEtaPhiPT;
+    fYieldsEtaPhiPT = 0;
   }
   
   if (fInvYield2)
@@ -541,7 +566,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackCuts, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -554,7 +579,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   if (weight < 0)
     fillpT = kTRUE;
   
-  if (twoTrackEfficiencyCut && !fTwoTrackDistancePt[0])
+  if (twoTrackCuts && (twoTrackEfficiencyCutValue > 0) && !fTwoTrackDistancePt[0])
   {
     // do not add this hists to the directory
     Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -757,6 +782,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
             continue;
         }
         
+        if (fOnlyOneAssocEtaSide != 0)
+          if (fOnlyOneAssocEtaSide * eta[j] < 0)
+            continue;
+
 	if (fEtaOrdering)
 	{
 	  if (triggerEta < 0 && eta[j] < triggerEta)
@@ -773,7 +802,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 
 	// conversions
-	if (fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
@@ -789,52 +818,104 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 	
 	// K0s
-	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutK0sV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
 	  const Float_t kK0smass = 0.4976;
 	  
-	  if (TMath::Abs(mass - kK0smass*kK0smass) < fCutResonancesV * 5)
+	  if (TMath::Abs(mass - kK0smass*kK0smass) < fCutK0sV * 5)
 	  {
 	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	    
 	    fControlConvResoncances->Fill(1, mass - kK0smass*kK0smass);
 
-	    if (mass > (kK0smass-fCutResonancesV)*(kK0smass-fCutResonancesV) && mass < (kK0smass+fCutResonancesV)*(kK0smass+fCutResonancesV))
+	    if (mass > (kK0smass-fCutK0sV)*(kK0smass-fCutK0sV) && mass < (kK0smass+fCutK0sV)*(kK0smass+fCutK0sV))
 	      continue;
 	  }
 	}
-	
+
 	// Lambda
-	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutLambdaV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass1 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 	  Float_t mass2 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 	  
 	  const Float_t kLambdaMass = 1.115;
 
-	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
+	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fCutLambdaV * 5)
 	  {
 	    mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 
 	    fControlConvResoncances->Fill(2, mass1 - kLambdaMass*kLambdaMass);
 	    
-	    if (mass1 > (kLambdaMass-fCutResonancesV)*(kLambdaMass-fCutResonancesV) && mass1 < (kLambdaMass+fCutResonancesV)*(kLambdaMass+fCutResonancesV))
+	    if (mass1 > (kLambdaMass-fCutLambdaV)*(kLambdaMass-fCutLambdaV) && mass1 < (kLambdaMass+fCutLambdaV)*(kLambdaMass+fCutLambdaV))
 	      continue;
 	  }
-	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
+	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fCutLambdaV * 5)
 	  {
 	    mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 
 	    fControlConvResoncances->Fill(2, mass2 - kLambdaMass*kLambdaMass);
 
-	    if (mass2 > (kLambdaMass-fCutResonancesV)*(kLambdaMass-fCutResonancesV) && mass2 < (kLambdaMass+fCutResonancesV)*(kLambdaMass+fCutResonancesV))
+	    if (mass2 > (kLambdaMass-fCutLambdaV)*(kLambdaMass-fCutLambdaV) && mass2 < (kLambdaMass+fCutLambdaV)*(kLambdaMass+fCutLambdaV))
 	      continue;
 	  }
 	}
 
-	if (twoTrackEfficiencyCut)
+        // Phi
+	if (twoTrackCuts && fCutPhiV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	{
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
+	  
+	  const Float_t kPhimass = 1.019;
+	  
+	  if (TMath::Abs(mass - kPhimass*kPhimass) < fCutPhiV * 5)
+	  {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
+	    
+	    fControlConvResoncances->Fill(3, mass - kPhimass*kPhimass);
+	    
+	    if (mass > (kPhimass-fCutPhiV)*(kPhimass-fCutPhiV) && mass < (kPhimass+fCutPhiV)*(kPhimass+fCutPhiV))
+	      continue;
+	  }
+	}	
+
+        // Rho
+	if (twoTrackCuts && fCutRhoV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+        {
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+	  
+	  const Float_t kRhomass = 0.770;
+	  
+	  if (TMath::Abs(mass - kRhomass*kRhomass) < fCutRhoV * 5)
+          {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+	    
+	    fControlConvResoncances->Fill(4, mass - kRhomass*kRhomass);
+	    
+	    if (mass > (kRhomass-fCutRhoV)*(kRhomass-fCutRhoV) && mass < (kRhomass+fCutRhoV)*(kRhomass+fCutRhoV))
+	      continue;
+	  }
+	}
+
+        // User-defined cut
+	if (twoTrackCuts && fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+        {
+	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
+	  
+	  if (TMath::Abs(mass - fCutCustomMass*fCutCustomMass) < fCutCustomV * 5)
+          {
+	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
+	    
+	    fControlConvResoncances->Fill(5, mass - fCutCustomMass*fCutCustomMass);
+	    
+	    if (mass > (fCutCustomMass-fCutCustomV)*(fCutCustomMass-fCutCustomV) && mass < (fCutCustomMass+fCutCustomV)*(fCutCustomMass+fCutCustomV))
+	      continue;
+	  }
+	}
+
+	if (twoTrackCuts && twoTrackEfficiencyCutValue > 0)
 	{
 	  // the variables & cuthave been developed by the HBT group 
 	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
@@ -983,6 +1064,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         fCorrelationEta->Fill(centrality, triggerEta);
         fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
 	fYields->Fill(centrality, triggerParticle->Pt(), triggerEta);
+	fYieldsEtaPhiPT->Fill(triggerParticle->Pt(), triggerEta, triggerParticle->Phi());
 	
 /*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
@@ -1231,6 +1313,9 @@ void AliUEHistograms::Copy(TObject& c) const
   
   if (fYields)
     target.fYields = dynamic_cast<TH3F*> (fYields->Clone());
+
+  if (fYieldsEtaPhiPT)
+    target.fYieldsEtaPhiPT = dynamic_cast<TH3F*> (fYieldsEtaPhiPT->Clone());
   
   if (fInvYield2)
     target.fInvYield2 = dynamic_cast<TH2F*> (fInvYield2->Clone());
@@ -1272,8 +1357,16 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fTriggerRestrictEta = fTriggerRestrictEta;
   target.fEtaOrdering = fEtaOrdering;
   target.fCutConversionsV = fCutConversionsV;
-  target.fCutResonancesV = fCutResonancesV;
+  target.fCutK0sV = fCutK0sV;
+  target.fCutLambdaV = fCutLambdaV;
+  target.fCutPhiV = fCutPhiV;
+  target.fCutRhoV = fCutRhoV;
+  target.fCutCustomMass = fCutCustomMass;
+  target.fCutCustomFirst = fCutCustomFirst;
+  target.fCutCustomSecond = fCutCustomSecond;
+  target.fCutCustomV = fCutCustomV;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
+  target.fOnlyOneAssocEtaSide = fOnlyOneAssocEtaSide;
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;
@@ -1300,7 +1393,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 20;
+  const Int_t kMaxLists = 21;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -1342,6 +1435,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
       lists[18]->Add(entry->fInvYield2);
     if (entry->fControlConvResoncances)
       lists[19]->Add(entry->fControlConvResoncances);
+    if (entry->fYieldsEtaPhiPT)
+      lists[20]->Add(entry->fYieldsEtaPhiPT);
 
     fMergeCount += entry->fMergeCount;
 
@@ -1377,6 +1472,8 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     fInvYield2->Merge(lists[18]);
   if (fControlConvResoncances && lists[19]->GetEntries() > 0)
     fControlConvResoncances->Merge(lists[19]);
+  if (fYieldsEtaPhiPT && lists[20]->GetEntries() > 0)
+    fYieldsEtaPhiPT->Merge(lists[20]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -1427,6 +1524,7 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fCorrelationLeading2Phi);
   list.Add(fCorrelationMultiplicity);
   list.Add(fYields);
+  list.Add(fYieldsEtaPhiPT);
   list.Add(fInvYield2);
   list.Add(fEventCount);
   list.Add(fEventCountDifferential);

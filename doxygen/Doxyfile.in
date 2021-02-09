@@ -786,7 +786,11 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting/invmass \
+                         @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/plotting/shape \
                          @CMAKE_SOURCE_DIR@/PWGGA/GammaConv \
+                         @CMAKE_SOURCE_DIR@/PWGGA/GammaConv/documentation \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
@@ -801,6 +805,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
+                         @CMAKE_SOURCE_DIR@/OADB/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \
@@ -877,7 +882,7 @@ EXCLUDE_PATTERNS       =
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = ClassDef ClassImp
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -2018,7 +2023,7 @@ ENABLE_PREPROCESSING   = YES
 # The default value is: NO.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES then
 # the macro expansion is limited to the macros specified with the PREDEFINED and

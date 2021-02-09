@@ -279,7 +279,7 @@ class Figure(object):
                 xmax = max([xmax, limits[1]]) if xmax is not None else limits[1]
                 ymin = min([ymin, limits[2]]) if ymin is not None else limits[2]
                 ymax = max([ymax, limits[3]]) if ymax is not None else limits[3]
-            except TypeError:
+            except (TypeError, ValueError):
                 # some plottables do not work with this rootpy function (eg. graph without points, tf1)
                 # TODO: should be fixed upstream
                 pass

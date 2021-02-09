@@ -34,7 +34,7 @@ public:
   virtual void Write();
   virtual TList* GetOutputList();
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
   void SetUseLCMS(int aUseLCMS);
   int  GetUseLCMS();

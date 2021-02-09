@@ -23,6 +23,8 @@
 #include <TMath.h>
 #include <TBits.h>
 
+#include <iostream>
+
 class AliHFEreducedTrack : public TObject{
  public:
   typedef enum{
@@ -121,6 +123,8 @@ class AliHFEreducedTrack : public TObject{
   Float_t GetTOFmismatchProb() const { return fTOFmismatchProb; }
   Double_t GetITSsigmaEl() const { return fITSsigmaEl; }
   Double_t GetITSsigmaP() const { return fITSsigmaP; }
+  UChar_t GetITSsharedClusterMap() const { return fITSsharedClusterMap; }
+  Double_t GetITSchi2() const { return fITSchi2; }
   Double_t GetEMCALEoverP() const { return fEoverP; }
   Double_t GetEMCALSigmaEl() const { return fEMCALsigmaEl; }
   void GetEMCALShowerShape(Double_t showershape[4]) const{
@@ -225,6 +229,8 @@ class AliHFEreducedTrack : public TObject{
   void SetTOFmismatchProbability(Float_t mismatchProb) { fTOFmismatchProb = mismatchProb; }
   void SetITSsigmaEl(Double_t sigma) { fITSsigmaEl = sigma; }
   void SetITSsigmaP(Double_t sigma) { fITSsigmaP = sigma; }
+  void SetITSchi2(Double_t chi2) { fITSchi2 = chi2;}
+  void SetITSsharedClusterMap(UChar_t sharedClusters) { fITSsharedClusterMap = sharedClusters;}
   void SetEMCALEoverP(Double_t eop) { fEoverP = eop; }
   void SetEMCALSigmaEl(Double_t sigma) { fEMCALsigmaEl = sigma; }
   void SetEMCALShowerShape(Double_t showershape[4]){
@@ -292,6 +298,8 @@ class AliHFEreducedTrack : public TObject{
   Float_t  fTOFmismatchProb;              // TOF mismatch prob
   Double_t fITSsigmaEl;                   // ITS sigma el
   Double_t fITSsigmaP;                    // ITS sigma p 
+  Double_t fITSchi2;                      // ITS chi2
+  UChar_t  fITSsharedClusterMap;          // ITS map of shared clusters
   Double_t fEoverP;                       // Eoverp
   Double_t fEMCALsigmaEl;                 // EMCAl sigmal el
   Double_t fShowerShape[4];               // showershape
@@ -301,6 +309,6 @@ class AliHFEreducedTrack : public TObject{
   Double_t  fV0ProdR;                      // V0 doughter production vertex R in x-y plane 
   Double_t fDCAerr;                       // New: Error on Track DCA
   
-  ClassDef(AliHFEreducedTrack, 4)
+  ClassDef(AliHFEreducedTrack, 5)
 };
 #endif

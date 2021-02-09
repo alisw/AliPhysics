@@ -56,13 +56,13 @@ fSpdC1(0),
 fSpdC2(0),
 fSpdT(0),
 ntracks(0),
-bgID(0),
-ntr(0),
-nbunch(0),
 nV0A(0),
 nV0C(0),
 nV0ABG(0),
-nV0CBG(0)
+nV0CBG(0),
+bgID(0),
+ntr(0),
+nbunch(0)
 {
 }
 //________________________________________________________________________
@@ -77,13 +77,13 @@ fSpdC1(0),
 fSpdC2(0),
 fSpdT(0),
 ntracks(0),
-bgID(0),
-ntr(0),
-nbunch(0),
 nV0A(0),
 nV0C(0),
 nV0ABG(0),
-nV0CBG(0)
+nV0CBG(0),
+bgID(0),
+ntr(0),
+nbunch(0)
 {
     // Constructor
     DefineInput(0, TChain::Class());
@@ -173,10 +173,9 @@ void AliAnalysisBGMonitorQATrain::Exec(Option_t *)
     runNumber = fESD->GetRunNumber();
     ntr = 10;
     nbunch = 21;
-    static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
     AliVVZERO *vzero = fESD->GetVZEROData();
-    AliAnalysisUtils *utils = new AliAnalysisUtils();
-    bgID = utils->IsSPDClusterVsTrackletBG(fESD);
+    AliAnalysisUtils utils; // Hans: suggest to make this a data member
+    bgID = utils.IsSPDClusterVsTrackletBG(fESD);
     //--- SPD cluster and tracklets
     const AliMultiplicity* mult = fESD->GetMultiplicity();
     fSpdC1 = 0;
@@ -227,7 +226,6 @@ void AliAnalysisBGMonitorQATrain::Exec(Option_t *)
     if(ftrigger[0]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(1);
     if(ftrigger[1]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(2);
     if(ftrigger[2]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(3);
-    static Bool_t SelGoodEvent;
     //
     // List of the information needed to fill the histograms---------------------------------------------------
     // fSpdT: GetNumberOfTracklets(), Int value
@@ -252,7 +250,7 @@ void AliAnalysisBGMonitorQATrain::FillHist(Int_t* ftrigger, Int_t fSpdT, Int_t f
     for(Int_t itrig = 0 ; itrig<9 ; itrig++){
         if(ftrigger[itrig]){
             Bool_t SelGoodEvent = 0;
-            Printf(Form("%s triggred",fNames[itrig]));
+            Printf("%s triggred",fNames[itrig]);
             ((TH1F*)fList->FindObject(Form("hTotalTrkVsClsSPID_%s",fNames[itrig])))->Fill(fSpdT, fSpdC1+fSpdC2); // No PF Selection
                //((TH1F*)fList->At(hTotalTrkVsClsSPID[itrig][0]))->Fill(fSpdT, fSpdC1+fSpdC2); //Not working
             for(Int_t ii=1; ii<33; ii++){

@@ -81,7 +81,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   // Create TPC-ESD track reconstruction cuts
   // MB tracks
   //
-  AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts("pRecInfoCutsTPC"); 
   if(pRecInfoCutsTPC) {
     pRecInfoCutsTPC->SetMaxDCAToVertexXY(3.0);
     pRecInfoCutsTPC->SetMaxDCAToVertexZ(30.0);
@@ -104,7 +104,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   // Create TPC-ESD track reconstruction cuts
   // MATCH tracks
   //
-  AliRecInfoCuts *pRecInfoCutsMATCH = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCutsMATCH = new AliRecInfoCuts("pRecInfoCutsMATCH"); 
   if(pRecInfoCutsMATCH) {
     pRecInfoCutsMATCH->SetMaxDCAToVertexXY(3.0);
     pRecInfoCutsMATCH->SetMaxDCAToVertexZ(3.0);
@@ -128,7 +128,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   //
   // Create TPC-ESD track reconstruction cuts
   // standard cuts
-  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts("pRecInfoCuts"); 
   if(pRecInfoCuts) {
     pRecInfoCuts->SetMaxDCAToVertexXY(3.0);
     pRecInfoCuts->SetMaxDCAToVertexZ(3.0);
@@ -145,7 +145,7 @@ AliPerformanceTask* AddTaskPerformanceTPC(Bool_t bUseMCInfo=kTRUE, Bool_t bUseES
   //
   // Create TPC-MC track reconstruction cuts
   //
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
   if(pMCInfoCuts) {
     pMCInfoCuts->SetMinTrackLength(70);
   } 

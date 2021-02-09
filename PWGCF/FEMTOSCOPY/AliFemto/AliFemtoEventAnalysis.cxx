@@ -23,21 +23,23 @@ AliFemtoParticleCut* copyTheCut(AliFemtoParticleCut*);
 AliFemtoCorrFctn*    copyTheCorrFctn(AliFemtoCorrFctn*);
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
-                                      AliFemtoEvent* hbtEvent,
+                                      const AliFemtoEvent* hbtEvent,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
 AliFemtoEventAnalysis::AliFemtoEventAnalysis(double multMin, double multMax):
-fMultMin(multMin),
-fMultMax(multMax),
+  AliFemtoAnalysis(),
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(kFALSE),
+fPicoEvent(NULL),
 fMixingBuffer(NULL),
 fNumEventsToMix(0),
+fMultMin(multMin),
+fMultMax(multMax),
+fPerformSharedDaughterCut(kFALSE),
 fIdenticalParticles(false)
 {
   if(fIdenticalParticles) srand(std::time(0));
@@ -47,24 +49,24 @@ fIdenticalParticles(false)
 }
 //____________________________
 AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a):
-AliFemtoAnalysis(),
+AliFemtoAnalysis(a),
 fCorrFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fNeventsProcessed(0),
-fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
+fPicoEvent(NULL),
 fMixingBuffer(NULL),
 fNumEventsToMix(a.fNumEventsToMix),
+fMultMin(a.fMultMin),
+fMultMax(a.fMultMax),
+fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
 fIdenticalParticles(a.fIdenticalParticles)
 {
-  /// Copy constructor
+  // Copy constructor
   
   const char msg_template[] = " AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a) - %s",
   warn_template[] = " WARNING [AliFemtoEventAnalysis::AliFemtoEventAnalysis(const AliFemtoEventAnalysis& a)] %s";
-  
-  fMultMin = a.fMultMin;
-  fMultMax = a.fMultMax;
   
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
@@ -92,8 +94,8 @@ fIdenticalParticles(a.fIdenticalParticles)
   
   
   fSecondParticleCut = (a.fFirstParticleCut == a.fSecondParticleCut)
-  ? fFirstParticleCut
-  : a.fSecondParticleCut->Clone();
+                     ? fFirstParticleCut
+                     : a.fSecondParticleCut->Clone();
   if (fSecondParticleCut) {
     SetSecondParticleCut(fSecondParticleCut);
     cout << TString::Format(msg_template, "second particle cut set") << endl;
@@ -227,25 +229,26 @@ AliFemtoString AliFemtoEventAnalysis::Report()
   /// Create a simple report from the analysis execution
   
   cout << "AliFemtoEventAnalysis - constructing Report..."<<endl;
-  string temp = "-----------\nHbt Analysis Report:\n";
-  temp += "\nEvent Cuts:\n";
-  temp += fEventCut->Report();
-  temp += "\nParticle Cuts - First Particle:\n";
-  temp += fFirstParticleCut->Report();
-  temp += "\nParticle Cuts - Second Particle:\n";
-  temp += fSecondParticleCut->Report();
-  temp += "\nCorrelation Functions:\n";
+  AliFemtoString report = "-----------\nHbt Analysis Report:\n";
+  report += "\nEvent Cuts:\n";
+  report += fEventCut->Report();
+  report += "\nParticle Cuts - First Particle:\n";
+  report += fFirstParticleCut->Report();
+  report += "\nParticle Cuts - Second Particle:\n";
+  report += fSecondParticleCut->Report();
+  report += "\nCorrelation Functions:\n";
   
   if (fCorrFctnCollection->empty()) {
     cout << "AliFemtoEventAnalysis-Warning : no correlations functions in this analysis " << endl;
   }
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); ++iter) {
-    temp += (*iter)->Report();
-    temp += "\n";
+
+  for (auto *cf : *fCorrFctnCollection) {
+    report += cf->Report();
+    report += "\n";
   }
-  temp += "-------------\n";
-  AliFemtoString returnThis=temp;
-  return returnThis;
+  report += "-------------\n";
+
+  return report;
 }
 
 void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
@@ -277,12 +280,12 @@ void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   }
   
   FillHbtParticleCollection(fFirstParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
   
   FillHbtParticleCollection(fSecondParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->SecondParticleCollection(),
                             fPerformSharedDaughterCut);
   

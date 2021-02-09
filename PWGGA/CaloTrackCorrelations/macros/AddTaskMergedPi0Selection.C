@@ -21,7 +21,7 @@ TString kAnaMergedPi0 = "";
 ///   * An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 ///   * A string with the array of clusters not being the default (default is empty string)
 ///   * A bool indicating if the tender was running before this analysis
-///   * A bool indicating that the non linearity correction is needed
+///   * An integer indicating that the non linearity correction is needed
 ///   * An int to select the minimum centrality, -1 means no selection
 ///   * An int to select the maximum centrality, -1 means no selection
 ///   * A string to change the name of the histograms output file, default is AnalysisResults.root
@@ -36,7 +36,7 @@ TString kAnaMergedPi0 = "";
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An integer to set the use of the non linearity correction
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
@@ -52,7 +52,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMergedPi0Selection
  Int_t    rejectEMCTrig = 0, 
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = 0,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  TString  outputfile    = "",
@@ -200,7 +200,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMergedPi0Selection
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation, 
                                      TString clustersArray, Bool_t tender, 
-                                     Bool_t nonLinOn,
+                                     Int_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig, 
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t printSettings,  Int_t   debug        )
@@ -418,7 +418,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation,
                                         TString clustersArray, Bool_t tender, 
-                                        Bool_t  nonLinOn,      Int_t year, 
+                                        Int_t   nonLinOn,      Int_t year, 
                                         Bool_t  printSettings, Int_t   debug)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -535,7 +535,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(Bool_t useSS,     Bool_t useAsy,
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("Pi0SS_TM%d_SS%d_Asy%d_Mass%d_%s",tm,useSS,useAsy,useMass,kAnaMergedPi0.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
    
   // Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPi0SSEbE_TM%d_SS%d_Asy%d_Mass%d_",tm,useSS,useAsy,useMass));
@@ -711,7 +711,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,2.,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -757,9 +757,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

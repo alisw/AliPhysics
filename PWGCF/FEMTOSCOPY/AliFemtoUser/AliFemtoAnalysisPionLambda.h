@@ -19,25 +19,26 @@ class TList;
 #include "AliFemtoVertexMultAnalysis.h"
 #include "AliFemtoV0TrackPairCut.h"
 
+
 /// \class AliFemtoAnalysisPionLambda
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
-/// \brief A simple analysis for studying femtoscopy between charged pions and
-///        lambda baryons.
+/// \brief A simple analysis for studying femtoscopy between charged
+///        pions and lambda baryons.
 ///
-/// This class reduces boilerplate code required to cut on specific variations
-/// of pions and lambdas.
+/// This class reduces boilerplate code required to cut on specific
+/// variations of pions and lambdas.
 ///
-/// The 'first' and 'second' particle cuts are aliased to 'lambda' and 'pion'
-/// cuts with specific types :ref:AliFemtoV0TrackCut and :ref:AliFemtoTrackCut,
-/// instead of the general AliFemtoParticleCut. These are accessable by the
-/// GetLambdaCut and GetPionCut.
+/// The 'first' and 'second' particle cuts are aliased to 'lambda'
+/// and 'pion' cuts with specific types :ref:AliFemtoV0TrackCut and
+/// :ref:AliFemtoTrackCut, instead of the general AliFemtoParticleCut.
+/// These are accessable by the GetLambdaCut and GetPionCut.
 ///
-/// To remove the hassle of managing which daughter particle should be the
-/// proton and which the pion when looking at lambdas vs antilambdas, aliases
-/// for daughter cut parameters have been added. These rely on the "type" of
-/// the lambda and pion being specified in the analysis' constructor via the
-/// enumerated particle types.
+/// To remove the hassle of managing which daughter particle should
+/// be the proton and which the pion when looking at lambdas vs
+/// antilambdas, aliases for daughter cut parameters have been added.
+/// These rely on the "type" of the lambda and pion being specified
+/// in the analysis' constructor via the enumerated particle types.
 ///
 class AliFemtoAnalysisPionLambda : public AliFemtoVertexMultAnalysis {
 public:
@@ -51,34 +52,30 @@ public:
   /// default constructor
   AliFemtoAnalysisPionLambda();
 
-  /**
-   * Construct the analysis with only a name.
-   * The particle types default to PiPlus and Lambda
-   */
+  /// Construct the analysis with only a name.
+  /// The particle types default to PiPlus and Lambda
+  ///
   AliFemtoAnalysisPionLambda(const char *name);
 
-  /**
-   * Construct the analysis with a name and specify the pion and lambda types
-   * to analyze.
-   */
+  /// Construct the analysis with a name and specify the pion and
+  /// lambda types to analyze.
+  ///
   AliFemtoAnalysisPionLambda(const char *name,
                              const PionType pion,
                              const LambdaType lambda);
 
-  /**
-   * Construct the analysis with a name, the pion and lambda types, and
-   * cut-configuration object.
-   */
+  /// Construct the analysis with a name, the pion and lambda types,
+  /// and cut-configuration object.
+  ///
   AliFemtoAnalysisPionLambda(const char *name,
                              const PionType pion,
                              const LambdaType lambda,
                              const CutParams& params);
 
 
-  /**
-   * Construct the analysis with a name, the pion and lambda types, and
-   * cut-configuration object.
-   */
+  /// Construct the analysis with a name, the pion and lambda types,
+  /// and cut-configuration object.
+  ///
   AliFemtoAnalysisPionLambda(const char *name,
                              const AnalysisParams&,
                              const CutParams&);
@@ -86,31 +83,25 @@ public:
   virtual void EventBegin(const AliFemtoEvent*);
   virtual void EventEnd(const AliFemtoEvent*);
 
-  /**
-   * Create a Cut-Parameter object with default options.
-   */
+  /// Create a Cut-Parameter object with default options.
   static CutParams DefaultCutConfig();
 
-  /**
-   * Create an analysis-parameter object with default options. This is used
-   * internally when using the default constructor. It is recommended to call
-   * this method to construct the AnalysisParams object, and modify that to
-   * create a custom AliFemtoAnalysisPionLambda.
-   */
+  /// Create an analysis-parameter object with default options.
+  /// This is used internally when using the default constructor.
+  /// It is recommended to call this method to construct the
+  /// AnalysisParams object, and modify that to create a custom
+  /// AliFemtoAnalysisPionLambda.
+  ///
   static AnalysisParams DefaultConfig();
   static AnalysisParams DefaultConfigWithTypes(PionType, LambdaType);
 
-  /**
-   * Return the particle cut which selects the lambda-like particle
-   * (implemented as ParticleCut1 - but could change)
-   */
+  /// Return the particle cut which selects the lambda-like particle
+  /// (implemented as ParticleCut1 - but could change)
   AliFemtoV0TrackCut* GetLambdaCut();
   const AliFemtoV0TrackCut* GetLambdaCut() const;
 
-  /**
-   * Return the particle cut which selects the charged pion-like track
-   * (implemented as ParticleCut2 - but could change)
-   */
+  /// Return the particle cut which selects the charged pion-like
+  /// track (implemented as ParticleCut2 - but could change)
   AliFemtoTrackCut* GetPionCut();
   const AliFemtoTrackCut* GetPionCut() const;
 
@@ -119,22 +110,19 @@ public:
   AliFemtoBasicEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 
-  /**
-   * For each cut already set (i.e. pointer is not NULL) this function
-   * creates two "standard" cut monitor (for pass/fail) and adds them to the
-   * cut. These cut monitors are defined with the AliFemtoPionLambdaCutMonitor
-   * class.
-   */
+  /// For each cut already set (i.e. pointer is not NULL) this
+  /// function creates two "standard" cut monitor (for pass/fail)
+  /// and adds them to the cut.
+  /// These cut monitors are defined with the
+  /// AliFemtoPionLambdaCutMonitor class.
+  ///
   void AddStanardCutMonitors();
 
-  /**
-   * Returns a TList of all objects
-   */
+  /// Returns a TList of all objects
   virtual TList *GetOutputList();
 
-  /**
-   * Returns a TList of TObjStrings containing the settings of the analysis.
-   */
+  /// Returns a TList of TObjStrings containing the settings of the
+  /// analysis.
   virtual TList *ListSettings();
 
 protected:
@@ -146,7 +134,8 @@ protected:
   PionType fPionType;
 
   /// The type of Lambda particles this analysis will search for.
-  /// This determines which V0 daughter (pos or neg) will pass proton vs pion daughter cuts
+  /// This determines which V0 daughter (pos or neg) will pass proton
+  /// vs pion daughter cuts
   LambdaType fLambdaType;
 
   /// Output objects in multiple TObjArrays instead of one TList
@@ -180,8 +169,9 @@ struct AliFemtoAnalysisPionLambda::AnalysisParams {
 };
 
 /// \class AliFemtoAnalysisPionLambda::CutParams
-/// \brief *not yet implemented* Structure containing all fit parameters for
-///        'easy' setting of custom fit parameters via one command.
+/// \brief *not yet implemented* Structure containing all fit
+///        parameters for 'easy' setting of custom fit parameters
+///        via one command.
 ///
 struct AliFemtoAnalysisPionLambda::CutParams {
   // EVENT

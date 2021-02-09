@@ -31,10 +31,14 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTRDfired(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
+  fOnlineTriggerMask(0),
+  fOnlineTriggerMaskNext50(0),
+  fTriggerClass(""),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -44,7 +48,12 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fVtxCovMatrix(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fTPCpileupZ(),
+  fTPCpileupContributors(),
+  fTPCpileupZ2(),
+  fTPCpileupContributors2(),
   fVtxSPD(),
+  fVtxMC(),
   fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
@@ -54,6 +63,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fNTRDtracklets(0),
   fSPDntracklets(0),
   fSPDnSingle(0),
+  fNtracksTPCout(0),
   fVZEROMult(),
   fVZEROTotalMult(),
   fZDCnEnergy(),
@@ -67,6 +77,8 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fT0start(0),
   fT0pileup(kFALSE),
   fT0sattelite(kFALSE),
+  fDiamondDim(),
+  fDiamondCov(),
   fNCaloClusters(0),
   fCaloClusters(0x0),
   fFMD(0x0),
@@ -79,13 +91,19 @@ AliReducedEventInfo::AliReducedEventInfo() :
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0.;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {
+     fTPCpileupZ[i]=-999.;fTPCpileupContributors[i]=-999;
+     fTPCpileupZ2[i]=-999.;fTPCpileupContributors2[i]=-999;
+  }
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
+  for(Int_t i=0; i<8; ++i) fNch[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -95,20 +113,25 @@ AliReducedEventInfo::AliReducedEventInfo() :
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  {fDiamondDim[i]=0.0; fDiamondCov[i]=0.0;}
 }
 
 
 //____________________________________________________________________________
-AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=kNoInit*/) :
-  AliReducedBaseEvent(name, trackOption),
+AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /*=AliReducedBaseEvent::kNoInit*/, Int_t track2Option /*=AliReducedBaseEvent::kNoInit*/) :
+  AliReducedBaseEvent(name, trackOption, track2Option),
   fEventNumberInFile(0),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTRDfired(0),
   fBC(0),
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
+  fOnlineTriggerMask(0),
+  fOnlineTriggerMaskNext50(0),
+  fTriggerClass(""),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -117,7 +140,12 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fIRIntClosestIntMap(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fTPCpileupZ(),
+  fTPCpileupContributors(),
+  fTPCpileupZ2(),
+  fTPCpileupContributors2(),
   fVtxSPD(),
+  fVtxMC(),
   fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
@@ -127,6 +155,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fNTRDtracklets(0),
   fSPDntracklets(0),
   fSPDnSingle(0),
+  fNtracksTPCout(0),
   fVZEROMult(),
   fVZEROTotalMult(),
   fZDCnEnergy(),
@@ -140,6 +169,8 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fT0start(0),
   fT0pileup(kFALSE),
   fT0sattelite(kFALSE),
+  fDiamondDim(),
+  fDiamondCov(),
   fNCaloClusters(0),
   fCaloClusters(0x0),
   fFMD(0x0),
@@ -151,13 +182,19 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {
+     fTPCpileupZ[i]=-999.;fTPCpileupContributors[i]=-999;
+     fTPCpileupZ2[i]=-999.;fTPCpileupContributors2[i]=-999;
+  }
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
+  for(Int_t i=0; i<8; ++i) fNch[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -167,6 +204,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   for(Int_t i=0; i<26; ++i) fT0amplitude[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOF[i]=0.0;
   for(Int_t i=0; i<3; ++i)  fT0TOFbest[i]=0.0;
+  for(Int_t i=0; i<3; ++i)  {fDiamondDim[i]=0.0; fDiamondCov[i]=0.0;}
   
   if(!fgCaloClusters) fgCaloClusters = new TClonesArray("AliReducedCaloClusterInfo", 50000);
   fCaloClusters = fgCaloClusters;
@@ -183,6 +221,76 @@ AliReducedEventInfo::~AliReducedEventInfo()
   //
 }
 
+
+void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
+   //
+   // overloading assignment operator
+   //   
+   ClearEvent();
+   AliReducedBaseEvent::CopyEventHeader(other);
+   
+   fEventNumberInFile = other->fEventNumberInFile;
+   fL0TriggerInputs = other->fL0TriggerInputs;
+   fL1TriggerInputs = other->fL1TriggerInputs;
+   fL2TriggerInputs = other->fL2TriggerInputs;
+   fTRDfired        = other->fTRDfired;
+   fBC = other->fBC;
+   fTimeStamp = other->fTimeStamp;
+   fEventType = other->fEventType;
+   fTriggerMask = other->fTriggerMask;
+   fOnlineTriggerMask = other->fOnlineTriggerMask;
+   fOnlineTriggerMaskNext50 = other->fOnlineTriggerMaskNext50;
+   fTriggerClass = other->fTriggerClass;
+   for(Int_t i=0; i<10; ++i) {
+      fMultiplicityEstimators[i] = other->fMultiplicityEstimators[i];
+      fMultiplicityEstimatorPercentiles[i] = other->fMultiplicityEstimatorPercentiles[i];
+   }
+   fIsPhysicsSelection = other->fIsPhysicsSelection;
+   fIsSPDPileup = other->fIsSPDPileup;
+   fIsSPDPileupMultBins = other->fIsSPDPileupMultBins;
+   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = other->fIRIntClosestIntMap[i];
+   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i] = other->fVtxCovMatrix[i];
+   for(Int_t i=0; i<3; ++i) fVtxTPC[i] = other->fVtxTPC[i];
+   fNVtxTPCContributors = other->fNVtxTPCContributors;
+   for(Int_t i=0; i<2; ++i) {
+      fTPCpileupZ[i] = other->fTPCpileupZ[i]; fTPCpileupContributors[i] = other->fTPCpileupContributors[i];
+      fTPCpileupZ2[i] = other->fTPCpileupZ2[i]; fTPCpileupContributors2[i] = other->fTPCpileupContributors2[i];
+   }
+   for(Int_t i=0; i<3; ++i) fVtxSPD[i] = other->fVtxSPD[i];
+   for(Int_t i=0; i<3; ++i) fVtxMC[i] = other->fVtxMC[i];
+   fNVtxSPDContributors = other->fNVtxSPDContributors;
+   fNpileupSPD = other->fNpileupSPD;
+   fNpileupTracks = other->fNpileupTracks;
+   fNTPCclusters = other->fNTPCclusters;
+   fNPMDtracks = other->fNPMDtracks;
+   fNTRDtracks = other->fNTRDtracks;
+   fNTRDtracklets = other->fNTRDtracklets;
+   fSPDntracklets = other->fSPDntracklets;
+   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = other->fSPDntrackletsEta[i];
+   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i] = other->fSPDFiredChips[i];
+   for(Int_t i=0; i<6; ++i) fITSClusters[i] = other->fITSClusters[i];
+   fSPDnSingle = other->fSPDnSingle;
+   fNtracksTPCout = other->fNtracksTPCout;
+   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = other->fNtracksPerTrackingFlag[i];
+   for(Int_t i=0; i<8; ++i) fNch[i] = other->fNch[i];
+   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = other->fVZEROMult[i];
+   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = other->fVZEROTotalMult[i];
+   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i] = other->fZDCnEnergy[i];
+   for(Int_t i=0; i<10; ++i) fZDCpEnergy[i] = other->fZDCpEnergy[i];
+   for(Int_t i=0; i<2; ++i) fZDCnTotalEnergy[i] = other->fZDCnTotalEnergy[i];
+   for(Int_t i=0; i<2; ++i) fZDCpTotalEnergy[i] = other->fZDCpTotalEnergy[i];
+   for(Int_t i=0; i<26; ++i) fT0amplitude[i] = other->fT0amplitude[i];
+   for(Int_t i=0; i<3; ++i) fT0TOF[i] = other->fT0TOF[i];
+   for(Int_t i=0; i<3; ++i) fT0TOFbest[i] = other->fT0TOFbest[i];
+   fT0zVertex = other->fT0zVertex;
+   fT0start = other->fT0start;
+   fT0pileup = other->fT0pileup;
+   fT0sattelite = other->fT0sattelite;
+   for(Int_t i=0; i<3; ++i) {fDiamondDim[i] = other->fDiamondDim[i]; fDiamondCov[i] = other->fDiamondCov[i];}
+   fEventPlane.CopyEvent(&other->fEventPlane);
+}
+
+
 //_____________________________________________________________________________
 void AliReducedEventInfo::ClearEvent() {
   //
@@ -191,16 +299,21 @@ void AliReducedEventInfo::ClearEvent() {
   AliReducedBaseEvent::ClearEvent();
   
   if(fCaloClusters) fCaloClusters->Clear("C");
+  fNCaloClusters = 0;
   if(fFMD) fFMD->Clear("C");
   fEventNumberInFile = -999;
   fL0TriggerInputs=0;
   fL1TriggerInputs=0;
   fL2TriggerInputs=0;
+  fTRDfired=0;
   fIRIntClosestIntMap[0] = 0; fIRIntClosestIntMap[1] = 0;
   fBC = 0;
   fTimeStamp = 0;
   fEventType = 0;
   fTriggerMask = 0;
+  fOnlineTriggerMask = 0;
+  fOnlineTriggerMaskNext50 = 0;
+  fTriggerClass = "";
   fIsPhysicsSelection = kTRUE;
   fIsSPDPileup = kFALSE;
   fIsSPDPileupMultBins = kFALSE;
@@ -211,16 +324,26 @@ void AliReducedEventInfo::ClearEvent() {
   fNPMDtracks=0;
   fNTRDtracks=0;
   fNTRDtracklets=0;
+  fNTPCclusters=0;
   fNtracks[0] = 0; fNtracks[1] = 0;
+  fSPDntracklets = 0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = 0;
   fSPDnSingle = 0;
+  fNtracksTPCout = 0;
+  for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
+  for(Int_t i=0; i<8; ++i) fNch[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {
+     fTPCpileupZ[i] = -999.; fTPCpileupContributors[i] = -999;
+     fTPCpileupZ2[i] = -999.; fTPCpileupContributors2[i] = -999;
+  }
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
-  for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
-  for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
+  for(Int_t i=0; i<13; ++i) fMultiplicityEstimators[i]=-999.;
+  for(Int_t i=0; i<13; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -234,6 +357,24 @@ void AliReducedEventInfo::ClearEvent() {
   fT0zVertex = -999.;
   fT0start = -999.;
   fT0sattelite = kFALSE;
+  for(Int_t i=0; i<3; ++i) {fDiamondDim[i]=0.0; fDiamondCov[i]=0.0;}
+}
+
+//_______________________________________________________________________________
+AliReducedCaloClusterInfo* AliReducedEventInfo::GetCaloClusterFromID(Int_t clusterID) const {
+  //
+  // get calorimeter cluster from ID
+  //
+  if(!fCaloClusters) return NULL;
+  if(fCaloClusters->GetEntries()==0) return NULL;
+  TIter nextCluster(fCaloClusters);
+  AliReducedCaloClusterInfo* cluster = NULL;
+  for (Int_t i=0; i<fCaloClusters->GetEntries(); ++i) {
+    cluster = (AliReducedCaloClusterInfo*)nextCluster();
+    if(!cluster) continue;
+    if (clusterID==cluster->ClusterID()) return cluster;
+  }
+  return NULL;
 }
 
 //_______________________________________________________________________________
@@ -586,40 +727,44 @@ Float_t AliReducedEventInfo::EnergyZDCn(Int_t ch) const
 }
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZEROA() const
+Float_t AliReducedEventInfo::MultVZEROA(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity in A side
   //
-  /*Float_t mult=0.0;
-  for(Int_t i=32;i<64;++i)
-    mult += fVZEROMult[i];
-  return mult;*/
+  if(fromChannels) {
+    Float_t mult=0.0;
+    for(Int_t i=32;i<64;++i)
+      mult += fVZEROMult[i];
+    return mult;
+  }
   return fVZEROTotalMult[0];
 }
 
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZEROC() const
+Float_t AliReducedEventInfo::MultVZEROC(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity in C side
   //
-  /*Float_t mult=0.0;
-  for(Int_t i=0;i<32;++i)
-    mult += fVZEROMult[i];
-  return mult;*/
+  if(fromChannels) {
+    Float_t mult=0.0;
+    for(Int_t i=0;i<32;++i)
+      mult += fVZEROMult[i];
+    return mult;
+  }
   return fVZEROTotalMult[1];
 }
 
 
 //____________________________________________________________________________
-Float_t AliReducedEventInfo::MultVZERO() const
+Float_t AliReducedEventInfo::MultVZERO(Bool_t fromChannels /*=kFALSE*/) const
 {
   //
   // Total VZERO multiplicity
   //
-  return MultVZEROA()+MultVZEROC();
+  return MultVZEROA(fromChannels)+MultVZEROC(fromChannels);
 }
 
 

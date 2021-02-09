@@ -1,3 +1,18 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TString.h"
+#include "TObjArray.h"
+
+#include "AliLog.h"
+#include "AliVEventHandler.h"
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliCounterCollection.h"
+
+#include "AliMuonEventCuts.h"
+#include "AliAnalysisTaskMuonQA.h"
+#endif
+
 AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectEvent = kTRUE, Bool_t selectMatched = kTRUE,
 				     Bool_t applyAccCut = kTRUE, Short_t selectCharge = 0)
 {

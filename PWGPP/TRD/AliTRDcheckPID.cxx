@@ -52,9 +52,9 @@
 #include <AliTRDCalPIDNN.h>
 #include "AliTRDcheckPID.h"
 #include "AliTRDinfoGen.h"
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDpidInfo.h"
-#include "info/AliTRDv0Info.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDpidInfo.h"
+#include "AliTRDv0Info.h"
 
 Char_t const * AliTRDcheckPID::fgMethod[3] = {"LQ", "NN", "ESD"};
 
@@ -1206,7 +1206,7 @@ Bool_t AliTRDcheckPID::GetRefFigure(Int_t ifig)
         h1->GetYaxis()->CenterTitle();h1->GetYaxis()->SetTitleOffset(1.2);
         h1->GetYaxis()->SetRangeUser(0.,40.);
       }
-      (TH1F*)h1->DrawClone(kFIRST ? "c" : "samec");
+      /*h = (TH1F*)*/h1->DrawClone(kFIRST ? "c" : "samec");
       //legNClus->AddEntry(h, Form("%s", AliTRDCalPID::GetPartName(is)), "l");
       kFIRST = kFALSE;
     }

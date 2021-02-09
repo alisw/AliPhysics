@@ -10,7 +10,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalTrackSelectionAOD.h"
-#include "AliEmcalTrackSelectionESD.h"AliEmcalTrackSelection
+#include "AliEmcalTrackSelectionESD.h"
 #include "AliEMCalTriggerExtraCuts.h"
 #include "AliReducedHighPtEventCreator.h"
 #endif

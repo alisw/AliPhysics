@@ -69,13 +69,7 @@ AliTOFAnalysisTaskCalibTree *AddTOFAnalysisTaskCalibTree(Bool_t savecoords = kFA
   task->GetTOFcalib()->SetCorrectTExp(kFALSE);
 
   //setup resolution 
-  Double_t timeReso = 100.;
-
-  // setup TOF response 
-  //task->GetESDpid()->GetTOFResponse().SetTimeResolution(timeReso);
-
-  // setup TOF-T0 maker 
-  task->GetTOFT0maker()->SetTimeResolution(timeReso);
+  task->SetTimeResolution(60.);
 
   // setup track cuts 
   AliESDtrackCuts *trackCuts = task->GetTrackCuts();

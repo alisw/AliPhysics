@@ -74,6 +74,8 @@
 #include "AliAnalysisManager.h"
 #include "AliPIDResponse.h"
 #include "TF2.h"
+#include "AliNanoAODHeader.h"
+#include "AliNanoAODTrack.h"
 
 
 using std::cout;
@@ -112,6 +114,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutFracSharedITSCluster(kFALSE),
+  fMaxFracSharedITSCluster(FLT_MAX),
   fCutCrossedTPCRows(kFALSE),
   fMinNCrossedRows(0),
   fMinCrossedRowsOverFindableClusters(2.),
@@ -262,6 +266,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutFracSharedITSCluster(kFALSE),
+  fMaxFracSharedITSCluster(FLT_MAX),
   fCutCrossedTPCRows(kFALSE),
   fMinNCrossedRows(0),
   fMinCrossedRowsOverFindableClusters(2.),
@@ -415,6 +421,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
   fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
   fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
+  fCutFracSharedITSCluster(that.fCutFracSharedITSCluster),
+  fMaxFracSharedITSCluster(that.fMaxFracSharedITSCluster),
   fCutCrossedTPCRows(that.fCutCrossedTPCRows),
   fMinNCrossedRows(that.fMinNCrossedRows),
   fMinCrossedRowsOverFindableClusters(that.fMinCrossedRowsOverFindableClusters),
@@ -590,6 +598,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
   fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
   fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
+  fCutFracSharedITSCluster=that.fCutFracSharedITSCluster;
+  fMaxFracSharedITSCluster=that.fMaxFracSharedITSCluster;
   fCutCrossedTPCRows=that.fCutCrossedTPCRows;
   fMinNCrossedRows=that.fMinNCrossedRows;
   fMinCrossedRowsOverFindableClusters=that.fMinCrossedRowsOverFindableClusters;
@@ -769,7 +779,7 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   // Get PID response
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man){
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    AliVEventHandler* inputHandler = man->GetInputEventHandler();
     if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
   }
 
@@ -1144,6 +1154,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   Bool_t isMCparticle = kFALSE; //some things are different for MC particles, check!
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*>(vparticle);
   AliAODTrack* aodTrack = NULL;
+  AliNanoAODTrack* aodNanoTrack = NULL;
   if (esdTrack)
   {
     //for an ESD track we do some magic sometimes like constructing TPC only parameters
@@ -1156,6 +1167,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
     //now check if produced particle is MC
     isMCparticle = (dynamic_cast<AliMCParticle*>(fTrack))!=NULL;
     aodTrack = dynamic_cast<AliAODTrack*>(vparticle); //keep the additional dynamic cast out of the way for ESDs
+    if (!aodTrack) aodNanoTrack = dynamic_cast<AliNanoAODTrack*>(vparticle);
   }
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
@@ -1187,7 +1199,8 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //the case of ESD or AOD
   if (esdTrack) { if (!PassesESDcuts(esdTrack)) { pass=kFALSE; } }
   if (aodTrack) { if (!PassesAODcuts(aodTrack,pass)) { pass=kFALSE; } }
-
+  if (aodNanoTrack) { if (!PassesNanoAODcuts(aodNanoTrack,pass)) { pass=kFALSE; } }
+ 
   if (fQA)
   {
     if (fMCparticle)
@@ -1416,6 +1429,116 @@ Int_t AliFlowTrackCuts::GetITStype(const AliAODTrack* track) const
   }
   return ITStype;
 }
+//_______________________________________________________________________
+Bool_t AliFlowTrackCuts::PassesNanoAODcuts(const AliNanoAODTrack* track, Bool_t passFid){
+    
+    //check cuts for AOD
+
+    Bool_t pass=passFid;
+    AliNanoAODHeader * nanoHeader = (AliNanoAODHeader*) fEvent->GetHeader();
+    
+    if (fCutNClustersTPC)
+    {
+        Int_t ntpccls = track->GetTPCNcls();
+        if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
+    }
+    
+    if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
+
+    Double_t chi2tpc =0.;
+    if (fCutChi2PerClusterTPC)
+    {
+        chi2tpc = track->Chi2perNDF();
+        if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+    }
+    
+    Double_t dedx = track->GetTPCsignal();
+    if(fCutMinimalTPCdedx) {
+        if (dedx < fMinimalTPCdedx) pass=kFALSE;
+    }
+    
+    Double_t DCAxy = track->DCA();
+    Double_t DCAz = track->ZAtDCA();
+    
+    if(fCutDCAToVertexXYAOD || fCutDCAToVertexZAOD || fCutDCAToVertexXYPtDepAOD) {
+        if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+            // re-evaluate the dca as it seems to not be natively present
+            // allowed only for tracks inside the beam pipe
+            Double_t pos[3] = {-99., -99., -99.};
+            track->GetPosition(pos);
+            if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+                AliNanoAODTrack copy(*track);       // stack copy
+                Double_t b[2] = {-99., -99.};
+                Double_t bCov[3] = {-99., -99., -99.};
+                if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), nanoHeader->GetMagneticField(), 100., b, bCov)) {
+                    DCAxy = b[0];
+                    DCAz = b[1];
+                }
+            }
+        }
+        if (fCutDCAToVertexXYAOD) {
+            if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
+        }
+        if (fCutDCAToVertexXYPtDepAOD) {
+            Double_t MaxDCAPtDep = 2.4;
+            if (fAODFilterBit!=128) MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+            else MaxDCAPtDep = 0.4+0.2/pow(track->Pt(),0.3);
+            if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
+        }
+        if (fCutDCAToVertexZAOD) {
+            if (TMath::Abs(DCAz)>fMaxDCAzAOD) pass=kFALSE;
+        }
+    }
+    Int_t ntpccls =0;
+    if (fCutFracSharedTPCCluster)
+    {
+        ntpccls = track->GetTPCncls();
+        if(ntpccls>0) {
+            Int_t ntpcclsS = track->GetTPCnclsS();
+            Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+            if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
+        }
+    }
+
+    if (fQA) {
+    // changed 04062014 used to be filled before possible PID cut
+    Double_t momTPC = track->GetTPCmomentum();
+    //QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
+    //if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
+    QAbefore( 1)->Fill(momTPC,dedx);
+    QAbefore( 5)->Fill(track->Pt(),DCAxy);
+    QAbefore( 6)->Fill(track->Pt(),DCAz);
+    if (pass) QAafter( 1)->Fill(momTPC,dedx);
+    if (pass) QAafter( 5)->Fill(track->Pt(),DCAxy);
+    if (pass) QAafter( 6)->Fill(track->Pt(),DCAz);
+   /* QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    if (pass) QAafter(  9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    QAbefore(10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    if (pass) QAafter( 10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    QAbefore(11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+    if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));*/
+    if(ntpccls>0) {
+      QAbefore(18)->Fill(track->Pt(),chi2tpc);
+      if (pass) QAafter( 18)->Fill(track->Pt(),chi2tpc);
+     // QAbefore(19)->Fill(track->Pt(),fshtpccls);
+      //if (pass) QAafter(19)->Fill(track->Pt(),fshtpccls);
+    }
+   /* if(nitscls>0) {
+      //QAbefore(20)->Fill(track->Pt(),chi2its);
+      //if (pass) QAafter(20)->Fill(track->Pt(),chi2its);
+     //QAbefore(21)->Fill(track->Pt(),fshitscls);
+      //if (pass) QAafter(21)->Fill(track->Pt(),fshitscls);
+    }*/
+  }
+    
+    return pass;
+    
+    
+}
 
 //_______________________________________________________________________
 Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFid)
@@ -1423,36 +1546,34 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   //check cuts for AOD
   Bool_t pass = passedFid;
 //  AliAODPid *pidObj = track->GetDetPid();
-
-  if (fCutNClustersTPC)
-  {
-    Int_t ntpccls = track->GetTPCNcls();
+  
+  // cut on # TPC clusters
+  Int_t ntpccls = track->GetTPCNcls();
+  if (fCutNClustersTPC) {
     if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
   }
-
-  if (fCutNClustersITS)
-  {
-    Int_t nitscls = track->GetITSNcls();
+  
+  // cut on # ITS clusters
+  Int_t nitscls = track->GetITSNcls();
+  if (fCutNClustersITS) {
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
   
-  if (fCutChi2PerClusterTPC)
-  {
-    Double_t chi2tpc = track->Chi2perNDF();
-    if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+  // cut on chi2 / # TPC clusters
+  Double_t chi2tpc = 0.;
+  if(ntpccls>0) {
+    chi2tpc = track->Chi2perNDF();
   }
+  if (fCutChi2PerClusterTPC && (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC)) pass=kFALSE;
   
-  if (fCutChi2PerClusterITS)
-  {
-    Int_t nitscls = track->GetITSNcls();
-    if(nitscls>0) {
-      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
-      if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
-    }
+  // cut on chi2 / # ITS clusters
+  Double_t chi2its = 0.;
+  if(nitscls>0) {
+    chi2its = track->GetITSchi2()/track->GetITSNcls();
   }
+  if (fCutChi2PerClusterITS && chi2its >= fMaxChi2PerClusterITS) pass=kFALSE;
   
-  if (fCutITSClusterGlobal)
-  {
+  if (fCutITSClusterGlobal) {
     Bool_t bSPDCl = kFALSE;
     for (Int_t i=0; i<2; i++) {
       if(track->HasPointOnITSLayer(i)) bSPDCl = kTRUE;
@@ -1464,32 +1585,39 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if(!temppass) pass=kFALSE;
   }
   
-  if (fCutFracSharedTPCCluster)
-  {
-    Int_t ntpccls = track->GetTPCncls();
-    if(ntpccls>0) {
-      Int_t ntpcclsS = track->GetTPCnclsS();
-      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
-      if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
-    }
+  // cut on fraction shared TPC clusters
+  Double_t fshtpccls = 0.;
+  if(ntpccls>0) {
+    Int_t ntpcclsS = track->GetTPCnclsS();
+    fshtpccls = 1.*ntpcclsS/ntpccls;
   }
+  if (fCutFracSharedTPCCluster && fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
   
-  if (fCutCrossedTPCRows)
-  {
+  // cut on fraction shared ITS clusters
+  Double_t fshitscls = 0.;
+  Int_t nshcl = 0;
+  if(nitscls>0) {
+    for (Int_t i=0; i<6; i++) {
+      if(track->HasSharedPointOnITSLayer(i)) nshcl++;
+    }
+    fshitscls = 1.*nshcl/nitscls;
+  }
+  if (fCutFracSharedITSCluster && fshitscls > fMaxFracSharedITSCluster) pass=kFALSE;
+  
+  // cut on number of crossed TPC rows
+  if (fCutCrossedTPCRows) {
     Int_t nCrossedRows = track->GetTPCNCrossedRows();
     if (nCrossedRows <= fMinNCrossedRows) pass=kFALSE;
     Float_t CrossedRowsOverFindableClusters = track->GetTPCFoundFraction();
     if (CrossedRowsOverFindableClusters < fMinCrossedRowsOverFindableClusters) pass=kFALSE;
   }
   
-  if (fCutGoldenChi2)
-  {
+  if (fCutGoldenChi2) {
     Double_t GoldenChi2 = track->GetChi2TPCConstrainedVsGlobal();
     if (GoldenChi2 >= fMaxGoldenChi2) pass=kFALSE;
   }
   
-  if (fRequireTOFSignal)
-  {
+  if (fRequireTOFSignal) {
     if(TMath::Abs(track->GetTOFsignalDz())>10.)  pass=kFALSE;
     if(track->GetTOFsignal() < 12000.)  pass=kFALSE;
     if(track->GetTOFsignal() > 25000.)  pass=kFALSE;
@@ -1589,22 +1717,17 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
-    QAbefore(18)->Fill(track->P(),track->Chi2perNDF());
-    if (pass) QAafter( 18)->Fill(track->P(),track->Chi2perNDF());
-    Int_t ntpccls = track->GetTPCncls();
     if(ntpccls>0) {
-      Int_t ntpcclsS = track->GetTPCnclsS();
-      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
-      QAbefore(19)->Fill(track->P(),fshtpccls);
-      if (pass) QAafter(19)->Fill(track->P(),fshtpccls);
+      QAbefore(18)->Fill(track->Pt(),chi2tpc);
+      if (pass) QAafter( 18)->Fill(track->Pt(),chi2tpc);
+      QAbefore(19)->Fill(track->Pt(),fshtpccls);
+      if (pass) QAafter(19)->Fill(track->Pt(),fshtpccls);
     }
-    QAbefore(20)->Fill(track->P(),ntpccls);
-    if (pass) QAafter(20)->Fill(track->P(),ntpccls);
-    Int_t nitscls = track->GetITSNcls();
     if(nitscls>0) {
-      Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
-      QAbefore(21)->Fill(track->P(),chi2TIS);
-      if (pass) QAafter(21)->Fill(track->P(),chi2TIS);
+      QAbefore(20)->Fill(track->Pt(),chi2its);
+      if (pass) QAafter(20)->Fill(track->Pt(),chi2its);
+      QAbefore(21)->Fill(track->Pt(),fshitscls);
+      if (pass) QAafter(21)->Fill(track->Pt(),fshitscls);
     }
   }
 
@@ -2868,17 +2991,17 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   
-  before->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
-  after->Add(new TH2F("Chi2PerClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  before->Add(new TH2F("Chi2PerClusterTPC",";p_{t}[GeV/c];#chi^{2}/N_{cl} (TPC)",kNbinsP,binsP,50,0.,5.)); //18
+  after->Add(new TH2F("Chi2PerClusterTPC",";p_{t}[GeV/c];#chi^{2}/N_{cl} (TPC)",kNbinsP,binsP,50,0.,5.)); //18
   
-  before->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
-  after->Add(new TH2F("FractionSharedClusterTPC",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  before->Add(new TH2F("FractionSharedClusterTPC",";p_{t}[GeV/c];frac. shared cl (TPC)",kNbinsP,binsP,50,0.,1.)); //19
+  after->Add(new TH2F("FractionSharedClusterTPC",";p_{t}[GeV/c];frac. shared cl (TPC)",kNbinsP,binsP,50,0.,1.)); //19
   
-  before->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
-  after->Add(new TH2F("NClustersTPC",";p[GeV/c];species",kNbinsP,binsP,150,50.,200.)); //20
+  before->Add(new TH2F("Chi2PerClusterITS",";p_{t}[GeV/c];#chi^{2}/N_{cl} (ITS)",kNbinsP,binsP,100,0.,50.)); //20
+  after->Add(new TH2F("Chi2PerClusterITS",";p_{t}[GeV/c];#chi^{2}/N_{cl} (ITS)",kNbinsP,binsP,100,0.,50.)); //20
   
-  before->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
-  after->Add(new TH2F("Chi2PerClusterITS",";p[GeV/c];species",kNbinsP,binsP,100,0.,50.)); //21
+  before->Add(new TH2F("FractionSharedClusterITS",";p_{t}[GeV/c];frac. shared cl (ITS)",kNbinsP,binsP,50,0.,1.)); //21
+  after->Add(new TH2F("FractionSharedClusterITS",";p_{t}[GeV/c];frac. shared cl (ITS)",kNbinsP,binsP,50,0.,1.)); //21
 
   TH1::AddDirectory(adddirstatus);
 }

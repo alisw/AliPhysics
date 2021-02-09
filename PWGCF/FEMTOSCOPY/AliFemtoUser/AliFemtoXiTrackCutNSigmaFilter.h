@@ -16,15 +16,15 @@
 
 /// \class AliFemtoXiTrackCutNSigmaFilter
 /// \brief A class designed to help track cuts test particle calculated NSigma values
-/// See AliFemtoNSigmaFilter.h for detailed description of how to use filter
-/// 
+///        See AliFemtoNSigmaFilter.h for detailed description of how to use filter
+///
 /// It seems more appropriate for this class to inherit from
 /// AliFemtoV0TrackCutNSigmaFilter instead of AliFemtoXiTrackCut,
 /// but it must inherit from AliFemtoXiTrackCut in order to fit well in AliFemtoSimpleAnalysis etc.
 /// As such, this class is much longer than initially envisioned
-/// 
+///
 /// NOTE:  Not so user friendly right now, but will be revisited after WPCF 2017
-
+///
 /// \author Jesse Buxton <jesse.thomas.buxton@cern.ch>
 ///
 class AliFemtoXiTrackCutNSigmaFilter : public AliFemtoXiTrackCut {

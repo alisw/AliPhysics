@@ -131,28 +131,43 @@ int AliJBin::GetMode( TString mode ){
 }
 //_____________________________________________________
 AliJBin & AliJBin::SetBin( const int n, const float * v ){
-    for( int i=0;i<n;i++ ) AddBin( v[i] );FixBin();
+    for( int i=0;i<n;i++ ) {
+        AddBin( v[i] );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________
 AliJBin & AliJBin::SetBin( const int n, const double * v ){
-    for( int i=0;i<n;i++ ) AddBin( v[i] );FixBin();
+    for( int i=0;i<n;i++ ) {
+        AddBin( v[i] );
+    }
+    FixBin();
     return *this;
 }
 AliJBin & AliJBin::SetBin( TVector *v ){
-    for( int i=0;i<v->GetNrows();i++ ) AddBin( (v->GetMatrixArray())[i] );FixBin();
+    for( int i=0;i<v->GetNrows();i++ ) {
+        AddBin( (v->GetMatrixArray())[i] );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________
 AliJBin& AliJBin::SetBin(const TString  v){
     std::vector<TString> ar = Tokenize( v, "\t ,");
-    for( UInt_t i=0; i<ar.size();i++ ) AddBin( ar[i] );FixBin();
+    for( UInt_t i=0; i<ar.size();i++ ) {
+        AddBin( ar[i] );
+    }
+    FixBin();
     return *this;
 }
 
 //_____________________________________________________
 AliJBin& AliJBin::SetBin(const int  n){
-    for( UInt_t i=0; i<UInt_t(n);i++ ) AddBin( i );FixBin();
+    for( UInt_t i=0; i<UInt_t(n);i++ ) {
+        AddBin( i );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________
@@ -746,6 +761,7 @@ AliJTH1 * AliJHistManager::GetTH1(TString s ){
         if( fHistNames[i] == s ){
             if( fHistConfigs[i].BeginsWith("AliJTH1D")) return new AliJTH1D( fHistConfigs[i], this );
             if( fHistConfigs[i].BeginsWith("AliJTH2D")) return new AliJTH2D( fHistConfigs[i], this );
+            if( fHistConfigs[i].BeginsWith("AliJTH3D")) return new AliJTH3D( fHistConfigs[i], this );
             if( fHistConfigs[i].BeginsWith("AliJTProfile")) return new AliJTProfile( fHistConfigs[i], this );
         }
     return NULL;
@@ -861,6 +877,7 @@ TString Join( vector<TString>& ss , TString del){
 
 template class AliJTH1Derived<TH1D>;
 template class AliJTH1Derived<TH2D>;
+template class AliJTH1Derived<TH3D>;
 template class AliJTH1Derived<TProfile>;
 
 bool OutOf( int i, int x, int y ){ return ( i<x || i>y ); }

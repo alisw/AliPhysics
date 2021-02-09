@@ -15,7 +15,7 @@
 class TList;
 class TH1F;
 class TH2F;
-class TTree;
+class TProfile;
 class TString;
 class AliESDEvent;
 class AliESDfriend;
@@ -54,6 +54,9 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   }
   void SetExcludeBadModules(Bool_t opt=kTRUE){
     fExcludeBadMod=opt;
+  }
+  void SetReadCDB(Bool_t opt=kTRUE){
+    fReadCDB=opt;
   }
   Bool_t CheckModule(Int_t lay, Int_t lad, Int_t det) const;
  
@@ -105,6 +108,14 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TH1F*   fSignalTime[8];   //! histos of dE/dx in time windows
   TH2F*   fCluSizAnVsTime;  //! Histo with anode cluster size vs. time
   TH2F*   fCluSizTbVsTime;  //! Histo with time-bin cluster size vs. time
+  TProfile* fProfRecPtsLay3VsTime; //! Profile of occupancy vs. time
+  TProfile* fProfRecPtsLay4VsTime; //! Profile of occupancy vs. time
+  TProfile* fProfTrPtsLay3VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfTrPtsLay4VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrRecLay3VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrRecLay4VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrkWithPntLay3VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrkWithPntLay4VsTime;  //! Profile of occupancy vs. time
   AliITSresponseSDD* fResp; // ResponseSDD object
   AliTriggerConfiguration* fTrigConfig; // trigger configuration object
   Bool_t  fUseITSsaTracks;   // Flag for using standalone ITS tracs
@@ -114,9 +125,10 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TString fTriggerClass;    // Name of selected trigger class
   Bool_t  fOnlyEventsWithSDD; // Flag to use only trigger cluster with SDD
   Bool_t  fExcludeBadMod;   // Flag to reject bad modules
-  Bool_t fInitCalib;        // Flag to check calib initiatization
+  Bool_t  fReadCDB;         // Flag to Switch on/off OCDB access
+  Bool_t  fInitCalib;       // Flag to check calib initiatization
  
-  ClassDef(AliAnalysisTaskSDDRP,7);
+  ClassDef(AliAnalysisTaskSDDRP,9);
 };
 
 

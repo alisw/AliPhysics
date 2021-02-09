@@ -335,7 +335,8 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   tBeamSpot->Branch("cov",           cov.GetMatrixArray(), "XX/D:XY:XZ:YX:YY:YZ:YX:YY:YZ");
   tBeamSpot->Branch("modelPar",        x.GetMatrixArray(), "muX/D:muY/D:muZ:sigmaX:sigmaY:sigmaZ:rhoXY:sX:sY:k");
   tBeamSpot->Branch("modelCov",       cx.GetMatrixArray(), "cov[100]/D");
-  tBeamSpot->Branch("llRatio",  &llRatio);
+  tBeamSpot->Branch("llRatio",   &llRatio);
+  tBeamSpot->Branch("nVertices", &fN);
   fListSave->Add(tBeamSpot);
 
   for (Int_t i=0; i<n; ++i) {

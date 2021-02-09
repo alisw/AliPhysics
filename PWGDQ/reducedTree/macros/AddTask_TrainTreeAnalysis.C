@@ -46,8 +46,18 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
       addTaskFullPath += tasksArray->At(0)->GetName();
       addTaskFullPath += ".C";
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", tasksArray->At(0)->GetName()))){
-         gROOT->LoadMacro(addTaskFullPath.Data());
-      }
+#ifdef __CLING__
+				// ROOT6 version of the Config macro. It cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+				std::stringstream addtaskload;
+				addtaskload << ".L " << addTaskFullPath;
+				std::string addtaskloadstring = addtaskload.str();
+				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
+				gROOT->ProcessLine(addtaskloadstring.c_str());
+#else
+				// ROOT5 version, allows loading a macro
+				gROOT->LoadMacro(addTaskFullPath.Data());
+#endif
+			}
       gROOT->ProcessLine(Form("AddTask_%s(%d,%d,\"%s\")", tasksArray->At(0)->GetName(), reducedEventType, (writeTree ? 1 : 0), prod.Data()));
       treeMaker = (AliAnalysisTask*)mgr->GetTasks()->FindObject("DSTTreeMaker");
       if(!treeMaker) {
@@ -81,8 +91,18 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
       }
       addTaskFullPath = Form("%s/AddTask_%s.C", addTaskFullPath.Data(), task.Data());
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", task.Data()))){
-         gROOT->LoadMacro(addTaskFullPath.Data());
-      }
+#ifdef __CLING__
+				// ROOT6 version of the Config macro. It cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+				std::stringstream addtaskload;
+				addtaskload << ".L " << addTaskFullPath;
+				std::string addtaskloadstring = addtaskload.str();
+				std::cout << "Calling Load macro using command string " << addtaskloadstring << std::endl;
+				gROOT->ProcessLine(addtaskloadstring.c_str());
+#else
+				// ROOT5 version, allows loading a macro
+				gROOT->LoadMacro(addTaskFullPath.Data());
+#endif
+			}
       
       Int_t runMode = AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents;
       if(!makeTrees) runMode = AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree;

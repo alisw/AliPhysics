@@ -13,30 +13,30 @@
 //#include "AliFemtoHisto.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctnNonIdDR)
 #endif
 
 //____________________________
-AliFemtoModelCorrFctnNonIdDR::AliFemtoModelCorrFctnNonIdDR(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoModelCorrFctnNonIdDR::AliFemtoModelCorrFctnNonIdDR(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   AliFemtoModelCorrFctn(title, nbins, QinvLo, QinvHi),
-  fNumTOutP(0), 
-  fNumTOutN(0),  
-  fNumTSideP(0), 
-  fNumTSideN(0), 
-  fNumTLongP(0), 
-  fNumTLongN(0), 
-  fNumFOutP(0), 
-  fNumFOutN(0),  
-  fNumFSideP(0), 
-  fNumFSideN(0), 
-  fNumFLongP(0), 
-  fNumFLongN(0), 
-  fDenOutP(0),  
-  fDenOutN(0),  
-  fDenSideP(0), 
-  fDenSideN(0), 
-  fDenLongP(0), 
+  fNumTOutP(0),
+  fNumTOutN(0),
+  fNumTSideP(0),
+  fNumTSideN(0),
+  fNumTLongP(0),
+  fNumTLongN(0),
+  fNumFOutP(0),
+  fNumFOutN(0),
+  fNumFSideP(0),
+  fNumFSideN(0),
+  fNumFLongP(0),
+  fNumFLongN(0),
+  fDenOutP(0),
+  fDenOutN(0),
+  fDenSideP(0),
+  fDenSideN(0),
+  fDenLongP(0),
   fDenLongN(0)
 {
   // Default constructor
@@ -85,46 +85,46 @@ AliFemtoModelCorrFctnNonIdDR::AliFemtoModelCorrFctnNonIdDR(char* title, const in
   fDenLongN = new TH1D(bufname,title,nbins,QinvLo,QinvHi);
 
   // to enable error bar calculation...
-  fNumTOutP->Sumw2(); 
-  fNumTOutN->Sumw2();  
-  fNumTSideP->Sumw2(); 
-  fNumTSideN->Sumw2(); 
-  fNumTLongP->Sumw2(); 
-  fNumTLongN->Sumw2(); 
-  fNumFOutP->Sumw2(); 
-  fNumFOutN->Sumw2();  
-  fNumFSideP->Sumw2(); 
-  fNumFSideN->Sumw2(); 
-  fNumFLongP->Sumw2(); 
-  fNumFLongN->Sumw2(); 
-  fDenOutP->Sumw2();  
-  fDenOutN->Sumw2();  
-  fDenSideP->Sumw2(); 
-  fDenSideN->Sumw2(); 
-  fDenLongP->Sumw2(); 
+  fNumTOutP->Sumw2();
+  fNumTOutN->Sumw2();
+  fNumTSideP->Sumw2();
+  fNumTSideN->Sumw2();
+  fNumTLongP->Sumw2();
+  fNumTLongN->Sumw2();
+  fNumFOutP->Sumw2();
+  fNumFOutN->Sumw2();
+  fNumFSideP->Sumw2();
+  fNumFSideN->Sumw2();
+  fNumFLongP->Sumw2();
+  fNumFLongN->Sumw2();
+  fDenOutP->Sumw2();
+  fDenOutN->Sumw2();
+  fDenSideP->Sumw2();
+  fDenSideN->Sumw2();
+  fDenLongP->Sumw2();
   fDenLongN->Sumw2();
 }
 
 //____________________________
 AliFemtoModelCorrFctnNonIdDR::AliFemtoModelCorrFctnNonIdDR(const AliFemtoModelCorrFctnNonIdDR& aCorrFctn) :
   AliFemtoModelCorrFctn(),
-  fNumTOutP(0), 
-  fNumTOutN(0),  
-  fNumTSideP(0), 
-  fNumTSideN(0), 
-  fNumTLongP(0), 
-  fNumTLongN(0), 
-  fNumFOutP(0), 
-  fNumFOutN(0),  
-  fNumFSideP(0), 
-  fNumFSideN(0), 
-  fNumFLongP(0), 
-  fNumFLongN(0), 
-  fDenOutP(0),  
-  fDenOutN(0),  
-  fDenSideP(0), 
-  fDenSideN(0), 
-  fDenLongP(0), 
+  fNumTOutP(0),
+  fNumTOutN(0),
+  fNumTSideP(0),
+  fNumTSideN(0),
+  fNumTLongP(0),
+  fNumTLongN(0),
+  fNumFOutP(0),
+  fNumFOutN(0),
+  fNumFSideP(0),
+  fNumFSideN(0),
+  fNumFLongP(0),
+  fNumFLongN(0),
+  fDenOutP(0),
+  fDenOutN(0),
+  fDenSideP(0),
+  fDenSideN(0),
+  fDenLongP(0),
   fDenLongN(0)
 {
   // copy constructor
@@ -170,23 +170,23 @@ AliFemtoModelCorrFctnNonIdDR::AliFemtoModelCorrFctnNonIdDR(const AliFemtoModelCo
 //____________________________
 AliFemtoModelCorrFctnNonIdDR::~AliFemtoModelCorrFctnNonIdDR(){
   // Destructor
-  delete fNumTOutP; 
-  delete fNumTOutN;  
-  delete fNumTSideP; 
-  delete fNumTSideN; 
-  delete fNumTLongP; 
-  delete fNumTLongN; 
-  delete fNumFOutP; 
-  delete fNumFOutN;  
-  delete fNumFSideP; 
-  delete fNumFSideN; 
-  delete fNumFLongP; 
-  delete fNumFLongN; 
-  delete fDenOutP;  
-  delete fDenOutN;  
-  delete fDenSideP; 
-  delete fDenSideN; 
-  delete fDenLongP; 
+  delete fNumTOutP;
+  delete fNumTOutN;
+  delete fNumTSideP;
+  delete fNumTSideN;
+  delete fNumTLongP;
+  delete fNumTLongN;
+  delete fNumFOutP;
+  delete fNumFOutN;
+  delete fNumFSideP;
+  delete fNumFSideN;
+  delete fNumFLongP;
+  delete fNumFLongN;
+  delete fDenOutP;
+  delete fDenOutN;
+  delete fDenSideP;
+  delete fDenSideN;
+  delete fDenLongP;
   delete fDenLongN;
 }
 //_________________________
@@ -325,23 +325,23 @@ void AliFemtoModelCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair){
 //____________________________
 void AliFemtoModelCorrFctnNonIdDR::Write(){
   // Write out histos
-  fNumTOutP->Write(); 
-  fNumTOutN->Write();  
-  fNumTSideP->Write(); 
-  fNumTSideN->Write(); 
-  fNumTLongP->Write(); 
-  fNumTLongN->Write(); 
-  fNumFOutP->Write(); 
-  fNumFOutN->Write();  
-  fNumFSideP->Write(); 
-  fNumFSideN->Write(); 
-  fNumFLongP->Write(); 
-  fNumFLongN->Write(); 
-  fDenOutP->Write();  
-  fDenOutN->Write();  
-  fDenSideP->Write(); 
-  fDenSideN->Write(); 
-  fDenLongP->Write(); 
+  fNumTOutP->Write();
+  fNumTOutN->Write();
+  fNumTSideP->Write();
+  fNumTSideN->Write();
+  fNumTLongP->Write();
+  fNumTLongN->Write();
+  fNumFOutP->Write();
+  fNumFOutN->Write();
+  fNumFSideP->Write();
+  fNumFSideN->Write();
+  fNumFLongP->Write();
+  fNumFLongN->Write();
+  fDenOutP->Write();
+  fDenOutN->Write();
+  fDenSideP->Write();
+  fDenSideN->Write();
+  fDenLongP->Write();
   fDenLongN->Write();
 }
 
@@ -350,33 +350,33 @@ TList* AliFemtoModelCorrFctnNonIdDR::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumTOutP); 
-  tOutputList->Add(fNumTOutN);  
-  tOutputList->Add(fNumTSideP); 
-  tOutputList->Add(fNumTSideN); 
-  tOutputList->Add(fNumTLongP); 
-  tOutputList->Add(fNumTLongN); 
-  tOutputList->Add(fNumFOutP); 
-  tOutputList->Add(fNumFOutN);  
-  tOutputList->Add(fNumFSideP); 
-  tOutputList->Add(fNumFSideN); 
-  tOutputList->Add(fNumFLongP); 
-  tOutputList->Add(fNumFLongN); 
-  tOutputList->Add(fDenOutP);  
-  tOutputList->Add(fDenOutN);  
-  tOutputList->Add(fDenSideP); 
-  tOutputList->Add(fDenSideN); 
-  tOutputList->Add(fDenLongP); 
+  tOutputList->Add(fNumTOutP);
+  tOutputList->Add(fNumTOutN);
+  tOutputList->Add(fNumTSideP);
+  tOutputList->Add(fNumTSideN);
+  tOutputList->Add(fNumTLongP);
+  tOutputList->Add(fNumTLongN);
+  tOutputList->Add(fNumFOutP);
+  tOutputList->Add(fNumFOutN);
+  tOutputList->Add(fNumFSideP);
+  tOutputList->Add(fNumFSideN);
+  tOutputList->Add(fNumFLongP);
+  tOutputList->Add(fNumFLongN);
+  tOutputList->Add(fDenOutP);
+  tOutputList->Add(fDenOutN);
+  tOutputList->Add(fDenSideP);
+  tOutputList->Add(fDenSideN);
+  tOutputList->Add(fDenLongP);
   tOutputList->Add(fDenLongN);
 
   return tOutputList;
 }
 
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnNonIdDR::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnNonIdDR::Clone() const
 {
   // Create clone
   AliFemtoModelCorrFctnNonIdDR *tCopy = new AliFemtoModelCorrFctnNonIdDR(*this);
-  
+
   return tCopy;
 }

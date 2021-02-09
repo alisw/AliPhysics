@@ -5,7 +5,8 @@
 // Class to extract some TPC Performance parameters from AliPerformanceTPC and
 // AliPerformanceDEdx objects and produce trend graphs.  
 // 
-// by M.Knichel 15/10/2010 
+// by M.Knichel 15/10/2010
+// Updated by J.Salzwedel 14/10/2014
 //------------------------------------------------------------------------------
 
 class TTree;
@@ -15,17 +16,16 @@ class AliPerformanceTPC;
 class AliPerformanceDEdx;
 class AliPerformanceDCA;
 class AliPerformanceMatch;
-#include "TVectorF.h"
-class TF1; 
 
 class AliTPCPerformanceSummary
 {
     public:
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
-    static Bool_t GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis=0); 
-    static Bool_t GetFitInfo(TF1 * fitFunction, TVectorF &statInfo); 
-
+    
+    static Bool_t GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis=0);
+    static Bool_t GetFitInfo(TF1 * fitFunction, TVectorF &statInfo);
+    
     static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
     
     static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,const AliPerformanceMatch* pPull, const AliPerformanceMatch* pConstrain, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
@@ -37,6 +37,8 @@ class AliTPCPerformanceSummary
     static Bool_t GetForceTHnSparse() { return fgForceTHnSparse; }
     static void SetForceTHnSparse(Bool_t forceSparse = kTRUE) { fgForceTHnSparse = forceSparse; }      
   
+    static void  MakeMissingChambersAliases(TTree * tree); 
+    
     private:
     
     static Bool_t fgForceTHnSparse;   // force to use THnSparse 
@@ -62,8 +64,9 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeQAPosNegDpT(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeQADCAFitParameter(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+
+    static void DrawSectors(const int side);
   
-  static void  MakeMissingChambersAliases(TTree * tree); 
     static void MakeRawOCDBQAPlot(TTreeSRedirector *pcstream);
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)

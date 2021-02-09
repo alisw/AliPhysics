@@ -2,11 +2,17 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "AliDAQ.h"
+#include "AliCDBManager.h"
+#include "AliVZEROTriggerData.h"
+#include "TLegend.h"
+#include "TLine.h"
 #endif
 #include "map"
+
 using namespace std;
 // TODO read number of bits from AliVEvent?
 #define NBITS 29
@@ -253,33 +259,25 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TString detName[nDetectors]={"ACORDE","PMD","FMD","HMPID","CPV","PHOS","EMCAL","MUONTRK","MUONTRG","T0","VZERO","AD","ZDC","ITSSPD","ITSSDD","ITSSSD","TPC","TRD","TOF"};
   for (Int_t iDet=0;iDet<nDetectors;iDet++) hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,detName[iDet].Data());
-  hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
-  hClassL2AvsRun     ->SetBit(TH1::kCanRebin);
-  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
-  hClassLumiVsRun    ->SetBit(TH1::kCanRebin);
-  hRecorded          ->SetBit(TH1::kCanRebin);
-  hReconstructed     ->SetBit(TH1::kCanRebin);
-  hAccepted          ->SetBit(TH1::kCanRebin);
-  hLumiRecorded      ->SetBit(TH1::kCanRebin);
-  hLumiReconstructed ->SetBit(TH1::kCanRebin);
-  hLumiAccepted      ->SetBit(TH1::kCanRebin);
+//  hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
+//  hClassL2AvsRun     ->SetBit(TH1::kCanRebin);
+//  hClassLifetimeVsRun->SetBit(TH1::kCanRebin);
+//  hClassLumiVsRun    ->SetBit(TH1::kCanRebin);
+//  hRecorded          ->SetBit(TH1::kCanRebin);
+//  hReconstructed     ->SetBit(TH1::kCanRebin);
+//  hAccepted          ->SetBit(TH1::kCanRebin);
+//  hLumiRecorded      ->SetBit(TH1::kCanRebin);
+//  hLumiReconstructed ->SetBit(TH1::kCanRebin);
+//  hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
-//  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
+//  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2017/OCDB");
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
 
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
-//    if (run==253660) continue;
-//    if (run>=255042 && run<=255076) continue;
-//    if (TMath::Abs(aV0MOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(bV0MOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(aSPDOnVsOfVal)<1e-5) continue;
-//    if (TMath::Abs(bSPDOnVsOfVal)<1e-5) continue;    
-
-//    if (!partition->String().Contains("PHYSICS_1")) continue;
-//    if (!lhcState->String().Contains("STABLE")) continue;
-//    if (!lhcPeriod->String().Contains("LHC15o")) continue;
+    if (!partition->String().Contains("PHYSICS_1")) continue;
+    if (!lhcState->String().Contains("STABLE")) continue;
     Double_t thr = 0;
     if (1) {
       man->SetRun(run);
@@ -783,7 +781,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TFile* fstat = new TFile("alias_statistics.root","recreate");
   for (Int_t i=1;i<=hRecorded->GetNbinsY();i++) {
-    char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
+    const char* bitName = hRecorded->GetYaxis()->GetBinLabel(i);
     printf("bit=%i %s\n",i,bitName);
     TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded_%s",bitName),i,i);
     TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed_%s",bitName),i,i);
@@ -905,9 +903,9 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-    hAccStep1Fraction->SetMinimum(elmin-0.1*(elmax-elmin));
-    hAccStep1Fraction->SetMaximum(1.0);
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
+    hAccStep1Fraction->SetMaximum(elmax+0.1*(elmax-elmin));
+    hAccStep1Fraction->SetMinimum(elmin-0.1*(elmax-elmin));
     // hAcceptedFraction->Draw();
     hAccStep1Fraction->Draw();
     hAccStep2Fraction->Draw("same");

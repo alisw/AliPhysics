@@ -213,9 +213,6 @@ if(FASTJET)
     if(ROOT_VERSION_MAJOR GREATER 5)
         # ROOT 6+: additional options required for dictionary generation.
         set(FASTJET_ROOTDICT_OPTS "-I${FASTJET_INCLUDE_DIR}")
-        foreach(fjl ${fjlibs};${fjextralibs})
-            set(FASTJET_ROOTDICT_OPTS "${FASTJET_ROOTDICT_OPTS} -rml lib${fjl}")
-        endforeach()
     else(ROOT_VERSION_MAJOR GREATER 5)
         if(NOT FASTJET_VERSION VERSION_LESS "3.2.0")
             # Disable some C++11 constructs on ROOT 5 and FastJet >= 3.2.0

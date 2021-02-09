@@ -27,14 +27,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-            	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
-		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
   )
 
 # Sources - alphabetical order
 set(SRCS
+  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
   ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
   ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
   ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
@@ -52,14 +54,37 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
+  ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
+  ChargedHadrons/dNdPt/Framework/AlidNdPtTools.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskUEStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
   ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraDPhi.cxx
+  ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
+  PiKaPr/TPC/Run3/AliAnalysisTaskSpectraTPCRun3.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -67,10 +92,19 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeEvent.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeParticle.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeTrack.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeV0.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascade.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisTaskTPCTOFCascade.cxx
+  PiKaPr/TOF/pp13/AliAnalysisTaskTOFppSpectra.cxx
+  PiKaPr/TOF/pp13/AliAnalysisTaskTOFMC.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
   PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
   PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnTOFevent.cxx
   PiKaPr/TOF/PbPb502/task/AliAnalysisTaskTOFSpectra.cxx
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx
@@ -86,10 +120,13 @@ set(SRCS
   Kinks/AliAnalysisTaskKinksFilimon.cxx
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
+  Kinks/AliAnalysisKinkTaskMult13pp.cxx
+  Kinks/AliAnalysisKinkTaskMult13ppMC.cxx
   Kinks/AliAnalysisTaskKinkpp5TeV.cxx
   Kinks/AliAnalysisTaskKinkpp5TeVMC.cxx
   Kinks/AliAnalysisTaskKinkPbPb.cxx
   Kinks/AliAnalysisTaskKinkPbPbMC.cxx
+  Kinks/AliAnalysisKinkTaskPbPb2018.cxx
   PiKaPr/TestAOD/AliSpectraBothTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothEventCuts.cxx
   PiKaPr/TestAOD/AliSpectraBothHistoManager.cxx
@@ -114,25 +151,43 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityEstimator.cxx
+  Spherocity/AliSpherocityUtils.cxx
+  Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskUE.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraINEL0.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Extra files to include in the PARfile
-set(PAR_EXTRAFILES
+set(PAR_EXTRAFILES_CXX
   PiKaPr/TestAOD/HistogramNamesBoth.cxx
-  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.cxx
+)
+
+set(PAR_EXTRAFILES_H
+  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.h
   PiKaPr/TestAOD/HistogramsBoth.h
   PiKaPr/TestAOD/Histograms.h
 )
 
+set(PAR_EXTRAFILES
+   ${PAR_EXTRAFILES_H}
+   ${PAR_EXTRAFILES_CXX}
+)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs} ${PAR_EXTRAFILES_H}")
 
 set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN PWGLFnuclex)
@@ -182,20 +237,34 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  install(FILES ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h DESTINATION include)
+endif()
 
 # install macros
+install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)
 install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPt)
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
+install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
+install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_phuhn_MCSpectraWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(DIRECTORY PiKaPr/TPC/rTPC DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
+install(DIRECTORY PiKaPr/TPC/Run3 DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(DIRECTORY PiKaPr/TPCTOFCascades DESTINATION PWGLF/SPECTRA/PiKaPr)
+
 install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
+install(FILES PiKaPr/TOF/pp13/AddTaskTOFppSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
+install(FILES PiKaPr/TOF/pp13/AddTaskTOFMC.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TPCTOF/AddTaskCombinedHadronSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOF)
 install(FILES PiKaPr/TPCTOFpA/AddTaskTPCTOFpA.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TPCTOFpA)
 install(DIRECTORY XtAnalysis/macros DESTINATION PWGLF/SPECTRA/XtAnalysis)
@@ -203,5 +272,5 @@ install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/MultEvShape/priorsDist_data_LHC10d_newAliroot.root)
   install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION PWGLF/SPECTRA/MultEvShape)
 endif()
-install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
+install(DIRECTORY Spherocity DESTINATION  PWGLF/SPECTRA)
 install(DIRECTORY AntiprotonToProton/train DESTINATION PWGLF/SPECTRA/AntiprotonToProton)

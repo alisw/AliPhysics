@@ -213,20 +213,29 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
   TH2D *GetQAHistPhiStarHBTbefore() {return fHistPhiStarHBTbefore;}
   TH2D *GetQAHistPhiStarHBTafter() {return fHistPhiStarHBTafter;}
+  TH2D *GetQAHistSameLabelMCCutBefore() {return fHistSameLabelMCCutBefore;}
+  TH2D *GetQAHistSameLabelMCCutAfter() {return fHistSameLabelMCCutAfter;}
   TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
   TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
+  TH3D *GetQAHistResonancesPhiBeforeUS() {return fHistResonancesPhiBeforeUS;}
+  TH3D *GetQAHistResonancesPhiBeforeLS() {return fHistResonancesPhiBeforeLS;}
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
   TH3D *GetQAHistResonancesK0() {return fHistResonancesK0;}
   TH3D *GetQAHistResonancesLambda() {return fHistResonancesLambda;}
+  TH3D *GetQAHistResonancesPhi() {return fHistResonancesPhi;}
   TH3D *GetQAHistQbefore() {return fHistQbefore;}
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
   void UseMomentumOrdering(Bool_t momentumOrdering = kTRUE) {fMomentumOrdering = momentumOrdering;}
   void UseResonancesCut() {fResonancesCut = kTRUE;}
+  void UsePhiResonanceCut(Double_t setNSigmaRejectionMin = 3, Double_t setNSigmaRejectionMax = 3){
+    fResonancePhiCut = kTRUE; fNSigmaRejectionMin = setNSigmaRejectionMin; fNSigmaRejectionMax = setNSigmaRejectionMax;}
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
+  void UseSameLabelMCCut() {fSameLabelMCCut = kTRUE;}
+  void UseResonancesLabelCut() {fResonancesLabelCut = kTRUE;}
   void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
     fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
@@ -261,13 +270,18 @@ class AliBalancePsi : public TObject {
   TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts  
   TH2D *fHistPhiStarHBTbefore; // Delta Eta vs. Delta Phi* before HBT inspired cuts
   TH2D *fHistPhiStarHBTafter; // Delta Eta vs. Delta Phi* after HBT inspired cuts
+  TH2D *fHistSameLabelMCCutBefore; // Delta Eta vs. Delta Phi before MC label cut 
+  TH2D *fHistSameLabelMCCutAfter; // Delta Eta vs. Delta Phi after MC label cut
   TH3D *fHistConversionbefore; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
+  TH3D *fHistResonancesPhiBeforeUS; //2D histogram (Pt,Invmass) for unlike-sign kaon pairs before removing phi
+  TH3D *fHistResonancesPhiBeforeLS; //2D histogram (Pt,Invmass) for like-sign kaon pairs before removing phi
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
   TH3D *fHistResonancesK0;     // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0 
   TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda
+  TH3D *fHistResonancesPhi;// 2D histogram (Pt,Invmass) for unlike-sign kaon pairs after removing phi
   TH3D *fHistQbefore; // Delta Eta vs. Delta Phi before cut on momentum difference
   TH3D *fHistQafter; // Delta Eta vs. Delta Phi after cut on momentum difference
 
@@ -276,10 +290,15 @@ class AliBalancePsi : public TObject {
 
   Bool_t fMomentumOrdering;//use momentum ordering pT,trig > pT,assoc (default = kTRUE)
   Bool_t fResonancesCut;//resonances cut
+  Bool_t fResonancePhiCut;//phi resonance cut
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
+  Bool_t fSameLabelMCCut; //apply cut to exclude particles reconstructed as two but with same MC label kFALSE as default
+  Bool_t fResonancesLabelCut;//apply cut on the label of the mother to exclude particles coming from the decay of the same mother
   Bool_t fConversionCut;//conversion cut
   Double_t fInvMassCutConversion;//invariant mass for conversion cut
+  Double_t fNSigmaRejectionMin;//nsigma min for phi resonance invariant mass cut
+  Double_t fNSigmaRejectionMax;//nsigma max for phi resonance invariant mass cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
   Double_t fDeltaPtMin;//delta pt cut: minimum value
   Bool_t fVertexBinning;//use vertex z binning in AliTHn
@@ -290,7 +309,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 2)
+  ClassDef(AliBalancePsi, 5)
 };
 
 #endif
