@@ -143,7 +143,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void    SmearVirtualPhoton(AliAODConversionPhoton* photon);
     TLorentzVector SmearElectron(TLorentzVector particle);
 
-    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1.;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
+    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
 
     //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
@@ -209,7 +209,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
-    Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
+    Bool_t   UseMCPSmearing(){if (fUseMCPSmearing > 0) return kTRUE; else return kFALSE;}
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
@@ -322,7 +322,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
     Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
-    Bool_t      fUseMCPSmearing;                ///< flag
+    Int_t       fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
     Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
@@ -346,7 +346,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,45)
+    ClassDef(AliConversionMesonCuts,46)
     /// \endcond
 };
 
