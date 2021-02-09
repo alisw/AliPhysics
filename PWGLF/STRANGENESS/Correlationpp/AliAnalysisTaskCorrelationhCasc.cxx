@@ -1355,7 +1355,7 @@ fHistSelectedV0PtPtTMaxIncl=new TH3F*[7];
 
   fHistGeneratedV0PtEta=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
-    fHistGeneratedV0PtEta[j]=new TH3F(Form("fHistGeneratedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 450,-1.2,1.2,  100, 0,  100 );
+    fHistGeneratedV0PtEta[j]=new TH3F(Form("fHistGeneratedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 480, -1.2,1.2,  100, 0,  100 );
     fHistGeneratedV0PtEta[j]->GetXaxis()->SetTitle("p_{T}");
     fHistGeneratedV0PtEta[j]->GetYaxis()->SetTitle("#eta");
   }
@@ -1550,7 +1550,7 @@ fHistSelectedV0PtPtTMaxIncl=new TH3F*[7];
     } 
   }
 
-  fHistMultiplicityOfMixedEvent=new TH1F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 20, 0.5, 20.5);
+  fHistMultiplicityOfMixedEvent=new TH2F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 100, 0.5, 100.5, 100, 0, 100);
 
   fEventCuts.AddQAplotsToList(fOutputList);
   
@@ -2985,6 +2985,8 @@ else  fHistTriggerFractionNum->Fill(5);
     if (bachTrackXi->HasPointOnITSLayer(0) || bachTrackXi->HasPointOnITSLayer(1) ) HasPointOnSPDBach=kTRUE;
 
     if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) && !(statusTOFBach ==  AliPIDResponse::kDetPidOk) && !(HasPointOnSPDPos) && !(HasPointOnSPDNeg) && !(HasPointOnSPDBach)) {
+    // just a try 
+    //    if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) && !(statusTOFBach ==  AliPIDResponse::kDetPidOk)) {
       continue;
     }
 
@@ -3036,6 +3038,8 @@ else  fHistTriggerFractionNum->Fill(5);
 
     if(lXiRadius<XiRadius[ParticleType]) continue;
     if(lV0RadiusXi<V0RadiusXi[ParticleType]) continue;
+    //    if(lXiRadius > 34.) continue;
+    //    if(lV0RadiusXi > 34.) continue;
     fHistEventV0->Fill(17);
 
     //cosine of pointing angle                                                                                                                                  
@@ -3718,8 +3722,10 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
     
   } // end first particle loop
   
-  if  (multmixedcounted) 
-    fHistMultiplicityOfMixedEvent->Fill(evmultmixed); //tells me with how many events the mixed-event was done
+  if  (multmixedcounted){
+    fHistMultiplicityOfMixedEvent->Fill(evmultmixed,lPercentiles); //tells me with how many events the mixed-event was done
+    //    cout << "percentiles " << lPercentiles << endl;
+  }
   
 }
 
