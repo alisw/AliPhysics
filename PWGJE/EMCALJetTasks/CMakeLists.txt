@@ -267,6 +267,7 @@ if(FASTJET_FOUND)
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+            UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
