@@ -6,6 +6,7 @@
 #include "AliAODEvent.h"
 #include "AliAODTracklets.h"
 #include "AliMultSelection.h"
+#include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include <TSystem.h>
 #include <TTree.h>
@@ -99,6 +100,9 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistoV0MultVsNclsTPC{nullptr},
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
+  fSelectOnGenerator{false},
+  fGenerToKeep{""},
+  fGenerToExclude{""},
   fMaxMult(500.),
   fSPDContributorsCut(5),
   fSPDZDiffCut(0.8),
@@ -186,11 +190,12 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"No TPC pileup"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"GeneratorName");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"PhysSel");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"No TPC pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Good vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pass zSPD-zTrk vert sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"|zvert|<10");
   fOutput->Add(fHistNEvents);
 
   fHistAllVtxType = new TH1F("hAllVtxType"," ; Vertex Type ; Entries",12,0.5,12.5);
@@ -344,6 +349,8 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
 
   
+  fHistNEvents->Fill(0);
+
   Double_t xMCVertex = -9999.;
   Double_t yMCVertex = -9999.;
   Double_t zMCVertex = -9999.;
@@ -357,15 +364,30 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     xMCVertex = mcHeader->GetVtxX();
     yMCVertex = mcHeader->GetVtxY();
     zMCVertex = mcHeader->GetVtxZ();
+    if(fSelectOnGenerator){
+      TList *lh=mcHeader->GetCocktailHeaders();
+      if(lh){
+	Bool_t keep=kTRUE;
+	if(fGenerToExclude.Length()==0) keep=kFALSE;
+	Int_t nh=lh->GetEntries();
+	for(Int_t i=0;i<nh;i++){
+	  AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	  TString genname=gh->GetName();
+	  if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
+	  if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
+	}
+	if(!keep) return;
+      }
+    }
   }
+  fHistNEvents->Fill(1);
 
 
-  fHistNEvents->Fill(0);
   if(fUsePhysSel){
     Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
     if(!isPhysSel) return;
   }
-  fHistNEvents->Fill(1);
+  fHistNEvents->Fill(2);
 
   Int_t runNumber=aod->GetRunNumber();
   if(runNumber>=295369 && runNumber<=297624){
@@ -376,7 +398,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     if(fApplyPbPbOutOfBunchPileupCut && mTotV0<mV0TPCclsCut) return;
     fHistoV0MultVsNclsTPC->Fill(nTPCcls,mTotV0);
   }
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(3);
 
   
   for(Int_t jv=0; jv<aod->GetNumberOfVertices(); jv++){
@@ -550,7 +572,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
 
   if (ct<2 || cs<1) return; // one of vertices is missing
-  fHistNEvents->Fill(3);
+  fHistNEvents->Fill(4);
   
   double covPrim[6],covSPD[6];
   vtPrim->GetCovarianceMatrix(covPrim);
@@ -560,10 +582,10 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   double errPrim = TMath::Sqrt(covPrim[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigPrim = TMath::Abs(dz)/errPrim;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigPrim>20) return; // bad vertexing
-  fHistNEvents->Fill(4);
+  fHistNEvents->Fill(5);
 
   if(TMath::Abs(vtPrim->GetZ())>10) return;
-  fHistNEvents->Fill(5);
+  fHistNEvents->Fill(6);
 
   PostData(1,fOutput);
   
