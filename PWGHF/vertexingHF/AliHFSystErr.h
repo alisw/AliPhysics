@@ -276,6 +276,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi20161718pp13TeVmb();
   void InitD0toKpi20161718pp13TeVlm();
   void InitD0toKpi20161718pp13TeVhm();
+  void InitD0toKpi20161718pp13TeVFineBins();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
