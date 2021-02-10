@@ -37,6 +37,7 @@
 #include <AliVCluster.h>
 #include <AliVTrack.h>
 
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
 #include "AliEmcalPythiaInfo.h"
@@ -387,6 +388,19 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
       AddSubstructureVariablesToMap("det_level");
     }
   }
+  // Add pythia info from embedding.
+  if (fJetShapeType == kDetEmbPartPythia) {
+    fSubstructureVariables["pt_hard_bin"] = -1;
+    fSubstructureVariables["pt_hard"] = -1;
+    fSubstructureVariables["cross_section"] = -1;
+    fSubstructureVariables["n_trials"] = -1;
+  }
+  // Alternatively if in pythia, we'll fill it out directly from the variables that are already available.
+  if (fIsPythia) {
+    // Will be automatically filled by AliAnalysisTaskEmcal.
+    fTreeSubstructure->Branch("pt_hard_bin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
+    fTreeSubstructure->Branch("pt_hard", &fPtHard);
+  }
 
   // Add appropriate subjet matching fields.
   std::string groomingMethod = GroomingMethodName();
@@ -396,20 +410,20 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
       // to get the matching arguments correct).
       std::string name = groomingMethod;
       name += "_hybrid_det_level_matching_";
-      fSubstructureVariables[name + "leading"];
-      fSubstructureVariables[name + "subleading"];
+      fSubstructureVariables[name + "leading"] = -1;
+      fSubstructureVariables[name + "subleading"] = -1;
 
       // Momentum fraction of det level subjets contained in the hybrid jet.
-      fSubstructureVariables[name + "leading_pt_fraction_in_hybrid_jet"];
-      fSubstructureVariables[name + "subleading_pt_fraction_in_hybrid_jet"];
+      fSubstructureVariables[name + "leading_pt_fraction_in_hybrid_jet"] = -1;
+      fSubstructureVariables[name + "subleading_pt_fraction_in_hybrid_jet"] = -1;
     }
     if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
       // det level-true level matching (true level will be labeled as "matched" usually, but we specialize here because we already have to specialize
       // to get the matching arguments correct).
       std::string name = groomingMethod;
       name += "_det_level_true_matching_";
-      fSubstructureVariables[name + "leading"];
-      fSubstructureVariables[name + "subleading"];
+      fSubstructureVariables[name + "leading"] = -1;
+      fSubstructureVariables[name + "subleading"] = -1;
     }
   }
 
@@ -418,12 +432,6 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
     // NOTE: We access the value via the map (even though we have access in the iterator) to ensure
     //       we get the right memory address (instead of the iterator memory address).
     fTreeSubstructure->Branch(p.first.c_str(), &fSubstructureVariables[p.first], TString::Format("%s/F", p.first.c_str()));
-  }
-
-  if (fIsPythia) {
-    // Will be automatically filled by AliAnalysisTaskEmcal.
-    fTreeSubstructure->Branch("ptHardBin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
-    fTreeSubstructure->Branch("ptHard", &fPtHard);
   }
 
   // Print out substructure variables that were added. This is generally for debugging, but is also good for logging purposes.
@@ -640,6 +648,15 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
 
         if (fraction < fMinFractionShared) {
           continue;
+        }
+
+        // Lastly, add the pythia information from the embedding helper if available.
+        const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+        if (embeddingHelper) {
+          fSubstructureVariables["pt_hard_bin"] = embeddingHelper->GetPtHardBin();
+          fSubstructureVariables["pt_hard"] = embeddingHelper->GetPythiaPtHard();
+          fSubstructureVariables["cross_section"] = embeddingHelper->GetPythiaXSection();
+          fSubstructureVariables["n_trials"] = embeddingHelper->GetPythiaTrials();
         }
       }
 
@@ -1369,9 +1386,9 @@ AliAnalysisTaskJetHardestKt* AliAnalysisTaskJetHardestKt::AddTaskJetHardestKt(
     trackContPartLevel = task->AddParticleContainer(ntracksPartLevel);
   } else
     trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
-  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia)
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia) {
     trackContPartLevel->SetIsEmbedding(true);
-  // Printf("ntracksPartLevel() = %s, trackContPartLevel=%p ", ntracksPartLevel, trackContPartLevel);
+  }
 
   AliClusterContainer* clusterCont = task->AddClusterContainer(nclusters);
 
