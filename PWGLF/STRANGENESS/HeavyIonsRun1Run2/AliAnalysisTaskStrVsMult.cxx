@@ -430,7 +430,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   //get MC header and MC array
   AliAODMCHeader* header = 0x0;
   TClonesArray* MCTrackArray = 0x0;
-  if(!isESD) {
+  if(!isESD && fisMC) {
       header = static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
       if (!header) {
         AliWarning("No header found.");
