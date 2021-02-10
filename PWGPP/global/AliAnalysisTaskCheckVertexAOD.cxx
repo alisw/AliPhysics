@@ -367,16 +367,16 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     if(fSelectOnGenerator){
       TList *lh=mcHeader->GetCocktailHeaders();
       if(lh){
-	Bool_t keep=kTRUE;
-	if(fGenerToExclude.Length()==0) keep=kFALSE;
-	Int_t nh=lh->GetEntries();
-	for(Int_t i=0;i<nh;i++){
-	  AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
-	  TString genname=gh->GetName();
-	  if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
-	  if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
-	}
-	if(!keep) return;
+        Bool_t keep=kTRUE;
+        if(fGenerToExclude.Length()==0) keep=kFALSE;
+        Int_t nh=lh->GetEntries();
+        for(Int_t i=0;i<nh;i++){
+          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+          TString genname=gh->GetName();
+          if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
+          if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
+        }
+        if(!keep) return;
       }
     }
   }
@@ -423,12 +423,12 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     if(title.Contains("VertexerTracks")){
       // track vertex (TPC or global)
       if (TMath::Abs(vtPrim->GetZ()-vtTPC->GetZ())<1e-6 &&
-	  TMath::Abs(vtPrim->GetChi2perNDF()-vtTPC->GetChi2perNDF())<1e-6) {
-	// TPC vertex
-	val=7;
+          TMath::Abs(vtPrim->GetChi2perNDF()-vtTPC->GetChi2perNDF())<1e-6) {
+        // TPC vertex
+        val=7;
       }else{
-	// track vertex
-	val=3;
+        // track vertex
+        val=3;
       }
     }else{
       // SPD vertex
@@ -470,12 +470,12 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistZtrkVsCent->Fill(centr,zt);
       fHistContrTrkVsCent->Fill(centr,ct);
       if(mcHeader){
-	fHistXtrkResidVsMult->Fill(ntracklets,xt-xMCVertex);
-	fHistYtrkResidVsMult->Fill(ntracklets,yt-yMCVertex);
-	fHistZtrkResidVsMult->Fill(ntracklets,zt-zMCVertex);
-	fHistXtrkResidVsCent->Fill(centr,xt-xMCVertex);
-	fHistYtrkResidVsCent->Fill(centr,yt-yMCVertex);
-	fHistZtrkResidVsCent->Fill(centr,zt-zMCVertex);
+        fHistXtrkResidVsMult->Fill(ntracklets,xt-xMCVertex);
+        fHistYtrkResidVsMult->Fill(ntracklets,yt-yMCVertex);
+        fHistZtrkResidVsMult->Fill(ntracklets,zt-zMCVertex);
+        fHistXtrkResidVsCent->Fill(centr,xt-xMCVertex);
+        fHistYtrkResidVsCent->Fill(centr,yt-yMCVertex);
+        fHistZtrkResidVsCent->Fill(centr,zt-zMCVertex);
       }
     }
   }
@@ -492,22 +492,22 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistYspdVsContrib->Fill(cs,ys);
       fHistZspdVsContrib->Fill(cs,zs);
       if(cs>=1){
-	fHistXspdVsMult->Fill(ntracklets,xs);
-	fHistYspdVsMult->Fill(ntracklets,ys);
-	fHistZspdVsMult->Fill(ntracklets,zs);
-	fHistXspdVsCent->Fill(centr,xs);
-	fHistYspdVsCent->Fill(centr,ys);
-	fHistZspdVsCent->Fill(centr,zs);
-	fHistContrSpdVsCent->Fill(centr,cs);
+        fHistXspdVsMult->Fill(ntracklets,xs);
+        fHistYspdVsMult->Fill(ntracklets,ys);
+        fHistZspdVsMult->Fill(ntracklets,zs);
+        fHistXspdVsCent->Fill(centr,xs);
+        fHistYspdVsCent->Fill(centr,ys);
+        fHistZspdVsCent->Fill(centr,zs);
+        fHistContrSpdVsCent->Fill(centr,cs);
       }
     }else if(spdtitle.Contains("ertexer: Z")){
       zs=vtSPD->GetZ();
       cs=vtSPD->GetNContributors();
       fHistZspdOnlyZVsContrib->Fill(cs,zs);
       if(cs>=1){
-	fHistZspdOnlyZVsMult->Fill(ntracklets,zs);
-	fHistZspdOnlyZVsCent->Fill(centr,zs);
-	fHistContrSpdOnlyZVsCent->Fill(centr,cs);
+        fHistZspdOnlyZVsMult->Fill(ntracklets,zs);
+        fHistZspdOnlyZVsCent->Fill(centr,zs);
+        fHistContrSpdOnlyZVsCent->Fill(centr,cs);
       }
     }
   }
@@ -557,15 +557,15 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       const AliAODVertex *trvp=aod->GetPileupVertexTracks(iv);
       Bool_t accept=kFALSE;
       if(trvp->GetNContributors()>=fMVContributorsCut && trvp->GetChi2perNDF() < fMVCChi2Cut){
-	if(fMVCheckPlpFromDifferentBC){
-	  Int_t bcPile = trvp->GetBC();
-	  if (bcPile!=AliVTrack::kTOFBCNA && TMath::Abs(bcPile-bcPrim)>2){
-	    accept=kTRUE;
-	  }
-	}
-	Double_t wDst = utils.GetWDist(vtPrim,trvp);
-	if (wDst>fMVWeiZDiffCut) accept=kTRUE;
-	if(accept) ++nSelPileupVertMV;
+        if(fMVCheckPlpFromDifferentBC){
+          Int_t bcPile = trvp->GetBC();
+          if (bcPile!=AliVTrack::kTOFBCNA && TMath::Abs(bcPile-bcPrim)>2){
+            accept=kTRUE;
+          }
+        }
+        Double_t wDst = utils.GetWDist(vtPrim,trvp);
+        if (wDst>fMVWeiZDiffCut) accept=kTRUE;
+        if(accept) ++nSelPileupVertMV;
       }
     }
     fHistoNOfSelPileupVertMV->Fill(nSelPileupVertMV);
