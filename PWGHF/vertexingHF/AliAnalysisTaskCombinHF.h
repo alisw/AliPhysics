@@ -168,7 +168,9 @@ private:
 
   TList *fOutput;                       //!<! list with output histograms
   TList *fListCuts;                     //!<! list with cut values 
-  TH1F *fHistNEvents;                   //!<! hist. for No. of events
+  TH1F *fHistNEvents;                   //!<! hist. for N of events
+  TH1F *fHistNEventsMCCharmInj;         //!<! hist. for N of events with ccbar
+  TH1F *fHistNEventsMCBeautyInj;        //!<! hist. for N of events with bbbar
   TH2F *fHistEventMultCent;             //!<! hist. for evnt Mult vs. centrality (all)
   TH2F *fHistEventMultCentEvSel;        //!<! hist. for evnt Mult vs. centrality (sel)
   TH2F *fHistEventMultZv;               //!<! hist. of evnt Mult vs. Zv for all events
@@ -342,7 +344,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,40); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,41); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
