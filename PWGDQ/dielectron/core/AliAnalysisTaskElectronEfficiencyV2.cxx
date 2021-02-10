@@ -193,6 +193,9 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
   fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -344,6 +347,9 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
   fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -1726,8 +1732,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
 
                 if(fDoFillPhiV) dynamic_cast<TH3D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, phiv ,weight * centralityWeight);//3D
-                else            dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
-
+                else{
+                  if(fApplyPhivCut){
+                    if(!(mass < fMaxMee && phiv > fMinPhiV)) dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+                  }
+                  else dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+                }
                 if (fWriteLegsFromPair){
                   ptNeg  = fRecNegPart[neg_i].fPt;
                   etaNeg = fRecNegPart[neg_i].fEta;
