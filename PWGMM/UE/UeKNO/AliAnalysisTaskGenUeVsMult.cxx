@@ -608,8 +608,8 @@ Int_t AliAnalysisTaskGenUeVsMult::GetMultipliciy(vector<Int_t> &multArray,vector
         if(!isPhysPrim)
             continue;
 
-       // etaPart = mcPart -> Eta();
-        if( TMath::Abs(particle->Eta()) < fEtaCut ){
+        etaPart = particle -> Eta();
+        if( TMath::Abs(etaPart) < fEtaCut ){
             mult_Eta8++;
             // only events with well defined leading particle
             if(fGenLeadIn>=0){
