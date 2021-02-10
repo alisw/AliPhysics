@@ -23,6 +23,8 @@
 #include "TChain.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TRandom.h"
+#include "TMath.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -40,8 +42,7 @@
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-
-
+#include "AliVertexingHFUtils.h"
 #include "AliKFParticle.h"
 
 //---- Header for Monte Carlo
@@ -80,9 +81,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fVtxZ_2(0),             // Zvertex after exent cut
     fVtxX(0),               // Xvertex
     fVtxY(0),               // Yvertex
+
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
+    fNcont(0),		    // NcontV vs. NcontVSPD
 
     fZvtx_Ntrklet(0),	    // Z vertex vs N tracklets
+    fZvtx_Ntrklet_Corr(0),  // Z vertex vs N tracklets (Corrected)
 
     fEMCClsEtaPhi(0),       // EMCal Cluster Eta vs. Phi
     fHistNCells(0),         // No. of EMCal Cells in a cluster
@@ -115,6 +119,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistEMCTrkMatch_Eta(0),        // Distance of EMCal cluster to its closest track (#Delta#eta)
     fHistEMCTrkMatch_Phi(0),        // Distance of EMCal cluster to its closest track (#Delta#phi)
     fEMCTrkMatch_EtaPhi(0),         // deltaEta vs deltaPhi
+    fEMCTrkMatch_EtaPhi_AfterCut(0),// deltaEta vs deltaPhi after cut
 
     fTrkPt_2(0),	    // track pT (after track cut)
     fTrkEta_2(0),	    // track Eta (after track cut)
@@ -130,6 +135,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fM02_2(0),              // long axis (after PID)
     fM20_2(0),              // short axis (after PID)
     fNtracks(0),            // track selection
+    fTrkEtaPhi_AfterCut(0), // Track Eta vs. Phi (after cut)_
 
     fHistEopAll(0),         // E/p Histgram (ALL)
     fEopElectron1(0),       // pT vs electron E/p
@@ -160,6 +166,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fEopElectron3(0),       // electron except photonic(invariant mass)
 
     fHistConv_R(0),	    // conversion R
+    fElectronEtaPhi(0),	    // eta vs. phi (electron)
+    fHadronEtaPhi(0),	    // eta vs. phi (hadron)
+
+
+    fMultiEstimatorAvg(0),  // TProfile
+    Nref(0),
 
 
     //---- MC data ----//
@@ -229,6 +241,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
 
 
 
+
+
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -254,9 +268,12 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fVtxZ_2(0),             // Zvertex after exent cut
     fVtxX(0),               // Xvertex
     fVtxY(0),               // Yvertex
+
     fVtxCorrelation(0),     // Primary Zvertex vs. SPD Zvertex
+    fNcont(0),		    // NcontV vs. NcontVSPD
     
     fZvtx_Ntrklet(0),	    // Z vertex vs N tracklets
+    fZvtx_Ntrklet_Corr(0),  // Z vertex vs N tracklets (Corrected)
 
     fEMCClsEtaPhi(0),       // EMCal Cluster Eta vs. Phi
     fHistNCells(0),         // No. of EMCal Cells in a cluster
@@ -289,6 +306,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistEMCTrkMatch_Eta(0),        // Distance of EMCal cluster to its closest track (#Delta#eta)
     fHistEMCTrkMatch_Phi(0),        // Distance of EMCal cluster to its closest track (#Delta#phi)
     fEMCTrkMatch_EtaPhi(0),         // deltaEta vs deltaPhi
+    fEMCTrkMatch_EtaPhi_AfterCut(0),// deltaEta vs deltaPhi after cut
 
     fTrkPt_2(0),	    // track pT (after track cut)
     fTrkEta_2(0),	    // track Eta (after track cut)
@@ -304,6 +322,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fM02_2(0),              // long axis (after PID)
     fM20_2(0),              // short axis (after PID)
     fNtracks(0),            // track selection
+    fTrkEtaPhi_AfterCut(0), // Track Eta vs. Phi (after cut)_
 
     fHistEopAll(0),         // E/p Histgram (ALL)
     fEopElectron1(0),       // pT vs electron E/p
@@ -334,6 +353,11 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fEopElectron3(0),       // electron except photonic(invariant mass)
 
     fHistConv_R(0),	    // conversion R
+    fElectronEtaPhi(0),	    // eta vs. phi (electron)
+    fHadronEtaPhi(0),	    // eta vs. phi (hadron)
+
+    fMultiEstimatorAvg(0),
+    Nref(0),
 
 
 
@@ -470,9 +494,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNevents->GetXaxis()->SetBinLabel(6,"SPD resolusion cut");
     fNevents->GetXaxis()->SetBinLabel(7,"|Zvertex| < 10cm");
     
-  // Primary Zvertex vs. SPD Zvertex
+  //Primary Zvertex vs. SPD Zvertex
     fVtxCorrelation = new TH2F("fVtxCorrelation",";Z_{vertex}^{Primary} (cm);Z_{vertex}^{SPD} (cm)",1200,-30,30,1200,-30,30);
     fOutputList->Add(fVtxCorrelation);
+
+  //Number of contribution
+    fNcont = new TH2F("fNcont","Number of contribution;Ncont (primary);Ncont (SPD)",500,0,500,500,0,500);
+    fOutputList->Add(fNcont);
     
   //centrality
     fCent = new TH1F("fCent","Centrality;centrality(%);counts",100,0,100);
@@ -499,8 +527,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fVtxY);
 
   //Z vertex vs N tracklets
-    fZvtx_Ntrklet = new TH2F("fZvtx_Ntrklet","Zvertex vs N tracklet;Z_{vertex} [cm];N^{SPD}_{tracklet}",400,-20,20,4001,-0.5,4000.5);
+    fZvtx_Ntrklet = new TH2F("fZvtx_Ntrklet","Zvertex vs N tracklets;Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,4001,-0.5,4000.5);
     fOutputList->Add(fZvtx_Ntrklet);
+
+  //Z vertex vs N tracklets (Corrected)
+    fZvtx_Ntrklet_Corr = new TH2F("fZvtx_Ntrklet_Corr","Zvertex vs N tracklets (Corrected);Z_{vertex} [cm];N^{SPD}_{tracklets}",400,-20,20,4001,-0.5,4000.5);
+    fOutputList->Add(fZvtx_Ntrklet_Corr);
 
   //EMCal Cluster Eta and Phi
     fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCal&DCal Cluster #eta and #phi distribution; #eta; #phi",150,-0.75,0.75,63,0,6.3);
@@ -600,7 +632,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTPCnsigEta2);
 
   //EMCal cluster Eta and Phi (after track matching)
-    fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCal cluster #eta and #phi distribution after track matching;#eta;#phi",160,-0.8,0.8,630,0,6.3);
+    fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCal cluster #eta and #phi distribution after track matching;#eta;#phi",180,-0.9,0.9,630,0,6.3);
     fOutputList->Add(fClsEtaPhiAftMatch);
 
   //EMCal cluster Eta and Phi (after track matching inside EMCal)
@@ -612,16 +644,20 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fClsEtaPhiAftMatchEMCout);
 
   //Distance of EMCal cluster to its closest track (#Delta#eta)
-    fHistEMCTrkMatch_Eta = new TH1F("fHistEMCTrkMatch_Eta","Distance of EMCal cluster to its closest track (#Delta#eta);#Delta#eta;counts",60,-0.3,0.3);
+    fHistEMCTrkMatch_Eta = new TH1F("fHistEMCTrkMatch_Eta","Distance of EMCal cluster to its closest track (#Delta#eta);#Delta#eta;counts",600,-0.3,0.3);
     fOutputList->Add(fHistEMCTrkMatch_Eta);
 
   //Distance of EMCal cluster to its closest track (#Delta#phi)
-    fHistEMCTrkMatch_Phi = new TH1F("fHistEMCTrkMatch_Phi","Distance of EMCal cluster to its closest track (#Delta#phi);#Delta#phi;counts",60,-0.3,0.3);
+    fHistEMCTrkMatch_Phi = new TH1F("fHistEMCTrkMatch_Phi","Distance of EMCal cluster to its closest track (#Delta#phi);#Delta#phi;counts",600,-0.3,0.3);
     fOutputList->Add(fHistEMCTrkMatch_Phi);
 
   //Distance of EMCal cluster (#Eta vs #Phi)
-    fEMCTrkMatch_EtaPhi = new TH2F("fEMCTrkMatch_EtaPhi","Distance of EMCal Cluster (#Delta#eta vs #Delta#phi);#Delta#eta;#Delta#phi",60,-0.3,0.3,60,-0.3,0.3);
+    fEMCTrkMatch_EtaPhi = new TH2F("fEMCTrkMatch_EtaPhi","Distance of EMCal Cluster (#Delta#eta vs #Delta#phi);#Delta#eta;#Delta#phi (rad)",600,-0.3,0.3,600,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch_EtaPhi);
+  
+  //Distance of EMCal cluster (#Eta vs #Phi) after cut
+    fEMCTrkMatch_EtaPhi_AfterCut = new TH2F("fEMCTrkMatch_EtaPhi_AfterCut","Distance of EMCal Cluster (#Delta#eta vs #Delta#phi) after cut;#Delta#eta;#Delta#phi (rad)",200,-0.1,0.1,200,-0.1,0.1);
+    fOutputList->Add(fEMCTrkMatch_EtaPhi_AfterCut);
 
   //pT distribution (after track cut)
     fTrkPt_2 = new TH1F("fTrkPt_2","p_{T} distribution (after track cut) ; p_{T} (GeV/c); counts",1000,0,50.0);
@@ -632,7 +668,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTrkEta_2);
 
   //Phi distribution (after track cut)
-    fTrkPhi_2 = new TH1F("fTrkPhi_2","Track #phi distribution (after track cut); #phi; counts",63,0,6.3);
+    fTrkPhi_2 = new TH1F("fTrkPhi_2","Track #phi distribution (after track cut); #phi (rad); counts",63,0,6.3);
     fOutputList->Add(fTrkPhi_2);
 
   //dE/dx (after track cut)
@@ -671,12 +707,16 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fM20_2 = new TH2F("fM20_2","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse (after PID) : M20 [cm]",400,0,20,800,0,4);
     fOutputList -> Add(fM20_2);
 
+  //Track Eta vs. Phi (after Track cut)
+    fTrkEtaPhi_AfterCut = new TH2F("fTrkEtaPhi_AfterCut","Track Eta vs. Phi (after cut);#eta,#phi (rad)",180,-0.9,0.9,630,0,6.3);
+    fOutputList->Add(fTrkEtaPhi_AfterCut);
+
   //E/p (all)
     fHistEopAll = new TH1F("fHistEopAll","E/p;E/p;counts",60,0,3.0);
     fOutputList->Add(fHistEopAll);
 
   //Ntracks
-    fNtracks = new TH1F("fNtracks","Number of tracks",10, -0.5, 9.5);
+    fNtracks = new TH1F("fNtracks","Number of tracks",11, -0.5, 10.5);
     fOutputList->Add(fNtracks);
     fNtracks->GetYaxis()->SetTitle("counts");
     fNtracks->GetXaxis()->SetBinLabel(1,"matching tracks");
@@ -687,9 +727,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtracks->GetXaxis()->SetBinLabel(5,"ITS cluster cut");
     fNtracks->GetXaxis()->SetBinLabel(6,"dE/dx calculation");
     fNtracks->GetXaxis()->SetBinLabel(7,"SPD hit cut");
-    fNtracks->GetXaxis()->SetBinLabel(8,"DCA cut");
-    fNtracks->GetXaxis()->SetBinLabel(9,"chi2 cut");
-    fNtracks->GetXaxis()->SetBinLabel(10,"Eta cut");
+    fNtracks->GetXaxis()->SetBinLabel(8,"chi2 cut");
+    fNtracks->GetXaxis()->SetBinLabel(9,"DCA cut");
+    fNtracks->GetXaxis()->SetBinLabel(10,"eta & phi diff cut");
+    fNtracks->GetXaxis()->SetBinLabel(11,"Eta cut");
     
   //pT vs E/p (electron)
     fEopElectron1 = new TH2F("fEopElectron1","Electron;p_{T} [GeV/c];E/p",600,0,30,150,0,3.0);
@@ -779,10 +820,17 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fEopElectron3 = new TH1F("fEopElectron3","Electron;p_{T} [GeV/c];",600,0,30);
     fOutputList->Add(fEopElectron3);
 
-
   //conversion R
     fHistConv_R = new TH2F("fHistConv_R","conversion R;p_{T} [GeV/c];R [cm]",600,0,30,500,0,50);
     fOutputList->Add(fHistConv_R);
+
+  //Electron Eta vs. Phi
+    fElectronEtaPhi = new TH2F("fElectronEtaPhi","Eta vs. Phi (electron)",180,-0.9,0.9,180,-0.9,0.9);
+    fOutputList->Add(fElectronEtaPhi);
+    
+  //Hadron Eta vs. Phi
+    fHadronEtaPhi = new TH2F("fHadronEtaPhi","Eta vs. Phi (hadron)",180,-0.9,0.9,180,-0.9,0.9);
+    fOutputList->Add(fHadronEtaPhi);
     
 
 
@@ -803,8 +851,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoB->GetXaxis()->SetBinLabel(7,"ITS cluster");
     fNoB->GetXaxis()->SetBinLabel(8,"dE/dx calculation");
     fNoB->GetXaxis()->SetBinLabel(9,"SPD hit");
-    fNoB->GetXaxis()->SetBinLabel(10,"DCA cut");
-    fNoB->GetXaxis()->SetBinLabel(11,"chi2 cut");
+    fNoB->GetXaxis()->SetBinLabel(10,"chi2 cut");
+    fNoB->GetXaxis()->SetBinLabel(11,"DCA cut");
     fNoB->GetXaxis()->SetBinLabel(12,"eta cut");
     fNoB->GetXaxis()->SetBinLabel(13,"after PID ");
   
@@ -821,8 +869,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoD->GetXaxis()->SetBinLabel(7,"ITS cluster");
     fNoD->GetXaxis()->SetBinLabel(8,"dE/dx calculation");
     fNoD->GetXaxis()->SetBinLabel(9,"SPD hit");
-    fNoD->GetXaxis()->SetBinLabel(10,"DCA cut");
-    fNoD->GetXaxis()->SetBinLabel(11,"chi2 cut");
+    fNoD->GetXaxis()->SetBinLabel(10,"chi2 cut");
+    fNoD->GetXaxis()->SetBinLabel(11,"DCA cut");
     fNoD->GetXaxis()->SetBinLabel(12,"eta cut");
     fNoD->GetXaxis()->SetBinLabel(13,"after PID");
 
@@ -923,8 +971,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_B_TrkCut4 = new TH1F("fHistPt_B_TrkCut4","B (ITS cluster cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut4);
     fHistPt_B_TrkCut5 = new TH1F("fHistPt_B_TrkCut5","B (dE/dx calculation);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut5);
     fHistPt_B_TrkCut6 = new TH1F("fHistPt_B_TrkCut6","B (SPD hit cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut6);
-    fHistPt_B_TrkCut7 = new TH1F("fHistPt_B_TrkCut7","B (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut7);
-    fHistPt_B_TrkCut8 = new TH1F("fHistPt_B_TrkCut8","B (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut8);
+    fHistPt_B_TrkCut7 = new TH1F("fHistPt_B_TrkCut7","B (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut7);
+    fHistPt_B_TrkCut8 = new TH1F("fHistPt_B_TrkCut8","B (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut8);
     fHistPt_B_TrkCut9 = new TH1F("fHistPt_B_TrkCut9","B (eta cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut9);
     
   //D Hist
@@ -935,8 +983,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_D_TrkCut4 = new TH1F("fHistPt_D_TrkCut4","D (ITS cluster cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut4);
     fHistPt_D_TrkCut5 = new TH1F("fHistPt_D_TrkCut5","D (dE/dx calculation);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut5);
     fHistPt_D_TrkCut6 = new TH1F("fHistPt_D_TrkCut6","D (SPD hit cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut6);
-    fHistPt_D_TrkCut7 = new TH1F("fHistPt_D_TrkCut7","D (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut7);
-    fHistPt_D_TrkCut8 = new TH1F("fHistPt_D_TrkCut8","D (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut8);
+    fHistPt_D_TrkCut7 = new TH1F("fHistPt_D_TrkCut7","D (chi2 cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut7);
+    fHistPt_D_TrkCut8 = new TH1F("fHistPt_D_TrkCut8","D (DCA cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut8);
     fHistPt_D_TrkCut9 = new TH1F("fHistPt_D_TrkCut9","D (eta cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut9);
 
     
@@ -979,7 +1027,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     Double_t CutTPCdEdx = 80;
     Double_t CutDCAxy   = 2.4;
     Double_t CutDCAz    = 3.2;
-    Int_t CutTPCNCrossedRow = 100; 
+    Int_t CutTPCNCrossedRow = 100;
+    Double_t CutDiff	= 0.05;
     
     //___________ PID Cut __________
     Double_t CutTPCNsigma[2] = {-1.0, 3.0};
@@ -992,8 +1041,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 //************************//
 //        if tender       //
 //************************//
-    if(fUseTender)
-    {
+    if(fUseTender) {
         //new branches with calibrated tracks and clusters
         if(IsAODanalysis()) fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));
     }
@@ -1058,7 +1106,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     Double_t NcontVSPD  = pVtxSPD -> GetNContributors();
     Double_t cov[6]={0};
     pVtxSPD -> GetCovarianceMatrix(cov);
+
     fVtxCorrelation->Fill(Zvertex,ZvertexSPD);
+    fNcont->Fill(NcontV, NcontVSPD);
     
     //----1.All events
     fNevents->Fill(0);
@@ -1098,6 +1148,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     if(fMCarray) CheckMCgen(fMCheader, CutTrackEta[1]);   // True production of HFE
 
 
+
     //---------- SPD tracklets ----------//
     Int_t nTracklets = 0;
     Int_t nAcc = 0;
@@ -1105,17 +1156,32 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
     AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
     nTracklets = tracklets->GetNumberOfTracklets();
-    for(Int_t nn=0; nn<nTracklets; nn++)
-    {
-	//Double_t theta = tracklets->GetTheta(nn);
-	//Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+
+    for(Int_t nn=0; nn<nTracklets; nn++) {
+	Double_t theta = tracklets->GetTheta(nn);
 	Double_t eta = tracklets->GetEta(nn);
 	if(TMath::Abs(eta) < etaRange) nAcc++;	// No. of tracklet in |eta|<1.0 (TPC coverage)
     }
+
     fZvtx_Ntrklet->Fill(Zvertex, nAcc);
 
 
-    //-------- Tracklet correction --------//
+
+    //-------- SPD tracklets correction --------//
+    Double_t correctednAcc = nAcc;
+    Double_t fRefMult = Nref;
+    //Double_t WeightNtrklet = -1.;
+    //Double_t WeightZvtx = -1.;
+    TProfile* estimatorAvg;
+    if(!fMCarray) estimatorAvg = GetEstimatorHistogram(fAOD);
+    if(fMCarray)  estimatorAvg = GetEstimatorHistogramMC(fAOD);
+
+    if(estimatorAvg) {
+	    correctednAcc = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, nAcc, Zvertex,fRefMult));
+    }
+
+    fZvtx_Ntrklet_Corr->Fill(Zvertex, correctednAcc);
+
 
 
 
@@ -1412,23 +1478,24 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fNtracks->Fill(6);
 	    	if(pid_eleB){ fNoB -> Fill(8); fHistPt_B_TrkCut6 -> Fill(TrkPt);}
 	    	if(pid_eleD){ fNoD -> Fill(8); fHistPt_D_TrkCut6 -> Fill(TrkPt);}
-            
-          //---- 7.DCA cut ----
-            Double_t DCA[2], cov[3];
-            if(track->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., DCA, cov))
-            if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
+
+	  //---- 7.chi2 cut ----
+	    if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
             fNtracks->Fill(7);
 	    	if(pid_eleB){ fNoB -> Fill(9); fHistPt_B_TrkCut7 -> Fill(TrkPt);}
 	    	if(pid_eleD){ fNoD -> Fill(9); fHistPt_D_TrkCut7 -> Fill(TrkPt);}
             
-	  //---- 8.chi2 cut ----
-	    if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
+            
+          //---- 8.DCA cut ----
+            Double_t DCA[2], CovarianceMatrix[3];
+            if(track->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., DCA, CovarianceMatrix))
+            if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
             fNtracks->Fill(8);
 	    	if(pid_eleB){ fNoB -> Fill(10); fHistPt_B_TrkCut8 -> Fill(TrkPt);}
 	    	if(pid_eleD){ fNoD -> Fill(10); fHistPt_D_TrkCut8 -> Fill(TrkPt);}
             
 
-
+	  //---- 9.eta & phi diff cut ----
 
             // calculate phi and eta difference between a track and a cluster
             Double_t fPhiDiff = -999, fEtaDiff = -999;
@@ -1436,6 +1503,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             fHistEMCTrkMatch_Eta -> Fill(fEtaDiff);         //delta Eta
             fHistEMCTrkMatch_Phi -> Fill(fPhiDiff);         //delta Phi
             fEMCTrkMatch_EtaPhi  -> Fill(fEtaDiff,fPhiDiff);//delta Eta vs delta Phi
+
+	    if(TMath::Abs(fPhiDiff) > CutDiff || TMath::Abs(fEtaDiff) > CutDiff) continue;
+	    fNtracks->Fill(9);
+            fEMCTrkMatch_EtaPhi_AfterCut -> Fill(fEtaDiff,fPhiDiff);
 
 
 
@@ -1475,10 +1546,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             fClsEtaPhiAftMatch->Fill(emceta,emcphi);
 
-            if(TrkPhi > 1.396 && TrkPhi < 3.264)    //EMCal acceptance (80 to 187 degrees)
-                fClsEtaPhiAftMatchEMCin -> Fill(emceta,emcphi); // inside
-            else
-                fClsEtaPhiAftMatchEMCout -> Fill(emceta,emcphi);// outside
+            if(TrkPhi > 1.396 && TrkPhi < 3.264){    //EMCal acceptance (80 to 187 degrees)
+                fClsEtaPhiAftMatchEMCin -> Fill(emceta,emcphi);} // inside
+            else{
+                fClsEtaPhiAftMatchEMCout -> Fill(emceta,emcphi);}// outside
 
 
         //---- EMCal Electron IDentification info ----//
@@ -1498,13 +1569,14 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
-            //---- 9.Eta cut ----
+            //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] && TrkEta < CutTrackEta[0]) continue;
-            fNtracks->Fill(9);
+            fNtracks->Fill(10);
 	    	if(pid_eleB){ fNoB -> Fill(11); fHistPt_B_TrkCut9 -> Fill(TrkPt);}
 	    	if(pid_eleD){ fNoD -> Fill(11); fHistPt_D_TrkCut9 -> Fill(TrkPt);}
 
             fHistEopAll -> Fill(eop);
+	    fTrkEtaPhi_AfterCut->Fill(TrkEta, TrkPhi);
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
             
@@ -1516,6 +1588,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                 if(eop >= CutEop[0] && eop <= CutEop[1]) // E/p cut (with TPC nsigma & shower shape cut)
                 {
                     fEopElectron2 -> Fill(TrkPt); 
+		    fElectronEtaPhi -> Fill(TrkEta, TrkPhi);
 
                     fM02_2 -> Fill(TrkPt,m02);
                     fM20_2 -> Fill(TrkPt,m20);
@@ -1591,6 +1664,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
                 if(eop >= CutEop[0] && eop <= CutEop[1])  // Hadron DCA in 0.8<E/p<1.2 
                 {
                     fEopHadron2 -> Fill(TrkPt);
+		    fHadronEtaPhi -> Fill(TrkEta, TrkPhi);
 
                     fDCAxy_Had_1 -> Fill(TrkPt, DCA[0]*charge*Bsign); 
                     fDCAxy_Had_2 -> Fill(TrkPt, DCA[0]*charge);
@@ -1941,29 +2015,53 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
 }
 
 
-/*
-//_________________________________________________________________________________________________
-void AliAnalysisTaskHFEBeautyMultiplicity::FindPatches(Bool_t &hasfiredEG1, Bool_t &hasfiredEG2, Double_t emceta, Double_t emcphi)
-{
-	//Find trigger patches
 
-	fTriggersInfo = dynamic_cast <TClonesArray*>(InputEvent()->FindListObject("EmcalTriggers"));
-	if(!fTriggersInfo) return;
-	Int_t nPatch = fTriggersInfo->GetEntries();
-	AliEMCALTriggerPatchInfo* patch=0;
-	for( int iPatch = 0; iPatch < nPatch; iPatch++){
-		patch = (AliEMCALTriggerPatchInfo*)fTriggerInfo->At( iPatch );
-		if(patch->GetADCAmp() < fThresholdEG2) continue;
-		if(patch->GetEtaMin() > emceta) continue;
-		if(patch->GetEtaMax() < emceta) continue;
-		if(patch->GetPhiMin() > emcphi) continue;
-		if(patch->GetPhiMax() < emcphi) continue;
-		if(patch->GetADCAmp() > fThresholdEG2) hasfiredEG2=1;
-		if(patch->GetADCAmp() > fThresholdEG1) hasfiredEG1=1;
-	}
+//_________________________________________________________________________________________________
+TProfile* AliAnalysisTaskHFEBeautyMultiplicity::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
+	//Int_t runNo = fAOD->GetRunNumber();
+	//Int_t period = 1;
+
+	return fMultiEstimatorAvg;
+
 }
 
-*/
+
+//_________________________________________________________________________________________________
+TProfile* AliAnalysisTaskHFEBeautyMultiplicity::GetEstimatorHistogramMC(const AliAODEvent* fAOD)
+{
+	//Int_t runNo = fAOD->GetRunNumber();
+	//Int_t period = 2;
+
+	return fMultiEstimatorAvg;
+}
+
+
+//_________________________________________________________________________________________________
+Double_t AliAnalysisTaskHFEBeautyMultiplicity::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
+{
+	if(TMath::Abs(vtxZ)>10.0){
+		return uncorrectedNacc;	// out of range for correction of multiplicity
+	}
+
+	if(!estimatorAvg){
+		cout << "ERROR:: Missing TProfile for correction of multiplicity" << endl;
+		return uncorrectedNacc;	// missing TProfile
+	}
+
+	Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+	Double_t deltaM = 0;
+	deltaM = uncorrectedNacc*(refMult/localAvg -1);
+
+
+	Double_t correctedNacc = -1;
+	correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->PoissonD(TMath::Abs(deltaM));
+
+	if(correctedNacc < 0) correctedNacc = 0;
+
+	return correctedNacc;
+
+}
 
 
 //_________________________________________________________________________________________________

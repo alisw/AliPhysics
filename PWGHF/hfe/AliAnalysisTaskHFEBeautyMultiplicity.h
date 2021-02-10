@@ -7,6 +7,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
+#include "TProfile.h"
+
 class TH1F;
 class AliAODEvent;
 class AliMultSelection;
@@ -32,11 +34,22 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         //---- called for end of analysis ----//
         virtual void            Terminate(Option_t* option);
 
+
+
         void SetAODAnalysis()   { SetBit(kAODanalysis, kTRUE); };
         void SetESDAnalysis()   { SetBit(kAODanalysis, kFALSE);};
         Bool_t IsAODanalysis()  const { return TestBit(kAODanalysis); };
 
         void SetCentralityEstimator(const char *estimator) {fCentralityEstimator = estimator; };
+
+	void SetMultiProfileLHC16qt(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof); }
+
+	TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
+	Double_t Nref;
+	void SetNref(Double_t nref) { Nref = nref; };
+
+	Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
+    
     
         //---- MC analysis ----//
         virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
@@ -44,6 +57,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Bool_t                  IsDdecay(int mpid);
         Bool_t                  IsBdecay(int mpid);
         virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+
+	TProfile* GetEstimatorHistogramMC(const AliAODEvent *fAOD);
     
     private:
         enum{
@@ -70,9 +85,13 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fVtxZ_2;                // Zvertex position after event cut
         TH1F* fVtxX;                  // Xvertex position
         TH1F* fVtxY;                  // Yvertex position
+
         TH2F* fVtxCorrelation;        // Primary Zvertex vs. SPD Zvertex
+	TH2F* fNcont;		      // Number of contribution
 	
-    	TH2F* fZvtx_Ntrklet;
+    	TH2F* fZvtx_Ntrklet;	      // Z vertex vs No. of tracklets
+    	TH2F* fZvtx_Ntrklet_Corr;     // Z vertex vs No. of tracklets (corrected)
+
 
         TH2F* fEMCClsEtaPhi;          // EMCal Clusters (Eta and Phi)
         TH2F* fHistNCells;            // No of EMCal Cells in a cluster
@@ -106,6 +125,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fHistEMCTrkMatch_Eta;   // distance of EMCal cluster to its closest track (Eta)
         TH1F* fHistEMCTrkMatch_Phi;   // distance of EMCal cluster to its closest track (Phi)
         TH2F* fEMCTrkMatch_EtaPhi;
+        TH2F* fEMCTrkMatch_EtaPhi_AfterCut;
 
 	
     	TH1F* fTrkPt_2;		      // track pT (after track cut)
@@ -122,6 +142,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH2F* fM02_2;
         TH2F* fM20_2;
         TH1F* fNtracks;
+    	TH2F* fTrkEtaPhi_AfterCut;  // Track Eta vs. Phi (after cut)_
     
         TH1F* fHistEopAll;          // E/p (all)
         TH2F* fEopElectron1;        // pT vs E/p (electron)
@@ -152,6 +173,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F* fEopHadron2;          // hadron pT (tight)
 
 	TH2F* fHistConv_R;
+    	TH2F* fElectronEtaPhi;      // eta vs. phi (electron)
+    	TH2F* fHadronEtaPhi;	    // eta vs. phi (hadron)
         
     
     
@@ -225,6 +248,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
         AliAnalysisTaskHFEBeautyMultiplicity(const AliAnalysisTaskHFEBeautyMultiplicity&);                // not implemented
         AliAnalysisTaskHFEBeautyMultiplicity& operator = (const AliAnalysisTaskHFEBeautyMultiplicity&);   // not implemented
+
+	TProfile*	fMultiEstimatorAvg;
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

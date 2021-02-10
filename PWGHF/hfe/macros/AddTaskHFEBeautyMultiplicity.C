@@ -6,8 +6,25 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskHFEBeautyMultiplicity(TString name = "name")
+AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
+	TString name = "name",
+	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorArg.root",
+	Double_t nref = 30.1
+
+	)
 {
+
+
+	TFile* fEstimator = TFile::Open(estimatorFilename.Data());
+	if(!fEstimator){
+		AliFatal("File with multiplicity estimator not found\n");
+		return;
+	}
+
+	TProfile* multEstimatorAvgMB;
+	multEstimatorAvgMB = (TProfile*)(fEstimator->Get("mean_Trklet"))->Clone("multEstimatorAvgMB");
+	task->SetMultiProfileLHC16qt(multEstimatorAvgMB);
+
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,7 +41,11 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(TString name = "name")
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskHFEBeautyMultiplicity* task = new AliAnalysisTaskHFEBeautyMultiplicity(name.Data());   
+
+    AliAnalysisTaskHFEBeautyMultiplicity* task = new AliAnalysisTaskHFEBeautyMultiplicity(name.Data());
+    task -> SetNref(nref);
+
+
     if(!task) return 0x0;
     // add your task to the manager
     mgr->AddTask(task);
