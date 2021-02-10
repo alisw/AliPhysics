@@ -199,16 +199,16 @@ void AliAnalysisTaskLundPlane::UserCreateOutputObjects() {
     const Double_t ptbins_reco[11] = {20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220};
     const Double_t Rbins_true[9] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 2.5};
     const Double_t Rbins_reco[8] = {0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4};
-    const Double_t ktbins_true[14] = {-3, -1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 3};
+    const Double_t ktbins_true[15] = {-3, -1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2, 3};
     const Double_t ktbins_reco[13] = {-1, -0.75, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.75, 1, 1.5, 2};    
 
     fHtrueMatch1D = new TH1D("fHtrueMatch1D", "matched truth jets", 12, ptbins_true);
     fOutput->Add(fHtrueMatch1D);
     fHtrueAll1D = new TH1D("fHtrueAll1D", "all truth jets", 12, ptbins_true);
     fOutput->Add(fHtrueAll1D);
-    fHtrueMatch = new TH3D("fHtrueMatch", "matched truth splittings", 8, Rbins_true, 13, ktbins_true, 12, ptbins_true);
+    fHtrueMatch = new TH3D("fHtrueMatch", "matched truth splittings", 8, Rbins_true, 14, ktbins_true, 12, ptbins_true);
     fOutput->Add(fHtrueMatch);
-    fHtrueAll = new TH3D("fHtrueAll", "all truth splitting", 8, Rbins_true, 13, ktbins_true, 12, ptbins_true);
+    fHtrueAll = new TH3D("fHtrueAll", "all truth splitting", 8, Rbins_true, 14, ktbins_true, 12, ptbins_true);
     fOutput->Add(fHtrueAll);
     fHrecoMatch = new TH3D("fHrecoMatch", "matched reco splittings", 7, Rbins_reco, 12, ktbins_reco, 10, ptbins_reco);
     fOutput->Add(fHrecoMatch);
@@ -627,6 +627,7 @@ void AliAnalysisTaskLundPlane::IterativeDeclusteringMC(
   for (auto  part: fJet->GetParticleConstituents()) {
     PseudoTracks.reset(part.Px(), part.Py(), part.Pz(), part.E());
     const AliVParticle* part2 = part.GetParticle();
+    if (part2->Charge() == 0) continue;
     PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part2, fJet));
     fInputVectors.push_back(PseudoTracks);
     constituentIndex++;
