@@ -57,6 +57,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fOutput(0x0),
   fListCuts(0x0),
   fHistNEvents(0x0),
+  fHistNEventsMCCharmInj(0x0),
+  fHistNEventsMCBeautyInj(0x0),
   fHistEventMultCent(0x0),
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
@@ -231,6 +233,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fOutput(0x0),
   fListCuts(0x0),
   fHistNEvents(0x0),
+  fHistNEventsMCCharmInj(0x0),
+  fHistNEventsMCBeautyInj(0x0),
   fHistEventMultCent(0x0),
   fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
@@ -410,6 +414,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistNEventsMCCharmInj;
+    delete fHistNEventsMCBeautyInj;
     delete fHistEventMultCent;
     delete fHistEventMultCentEvSel;
     delete fHistEventMultZv;
@@ -575,10 +581,13 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(12,"n. events with generated pileup");
   fHistNEvents->GetXaxis()->SetBinLabel(13,"n. events with generated same bunch pileup");
   fHistNEvents->GetXaxis()->SetBinLabel(14,"n. rejected for generated pileup");
-  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+  fHistNEventsMCCharmInj=(TH1F*)fHistNEvents->Clone("hNEventsMCCharmInj");
+  fHistNEventsMCBeautyInj=(TH1F*)fHistNEvents->Clone("hNEventsMCBeautyInj");
+  fOutput->Add(fHistNEventsMCCharmInj);
+  fOutput->Add(fHistNEventsMCBeautyInj);
 
   TString multAxTit="N_{tracklets} (|#eta|<1)";
   Int_t nMultEstimBins=fNumOfMultBins;
@@ -981,6 +990,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
+  TClonesArray *arrayMC=0;
+  AliAODMCHeader *mcHeader=0;
+  Int_t injType=-1;
   if(fReadMC){
     // Reject events with trigger mask 0 of the LHC13d3 production
     // For these events the ITS layers are skipped in the trakcing
@@ -996,6 +1008,34 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       fAnalysisCuts->SetTriggerMask(AliVEvent::kMB);
     }
     for(Int_t j=0; j<200000; j++) fOrigContainer[j]=-1;
+    arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if(!arrayMC) {
+      printf("AliAnalysisTaskCombinHF::UserExec: MC particles branch not found!\n");
+      return;
+    }
+    
+    // load MC header
+    mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+      printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
+      return;
+    }
+    TList *lh=mcHeader->GetCocktailHeaders();
+    if(lh){
+      Int_t nh=lh->GetEntries();
+      for(Int_t i=0;i<nh;i++){
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        if(genname.Contains("bchadr")){
+          injType=1;
+          break;
+        }
+        else if(genname.Contains("chadr")){
+          injType=0;
+          break;
+        }
+      }
+    }
   }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1003,6 +1043,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   
   
   fHistNEvents->Fill(0); // count event
+  if(injType==0) fHistNEventsMCCharmInj->Fill(0);
+  else if(injType==1) fHistNEventsMCBeautyInj->Fill(0);
+  
   // Post the data already here
   PostData(1,fOutput);
   
@@ -1010,20 +1053,54 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
   if(fAnalysisCuts->IsEventRejectedDueToTrigger() || fAnalysisCuts->IsEventRejectedDuePhysicsSelection()){
-    if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEvents->Fill(2);
-    if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
+    if(fAnalysisCuts->IsEventRejectedDueToTrigger()){
+      fHistNEvents->Fill(2);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(2);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(2);
+    }
+    if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()){
+      fHistNEvents->Fill(3);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(3);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(3);
+    }
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
       fHistNEvents->Fill(10);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(10);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(10);
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex()){
-        if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
-        if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(5);
-        if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex())fHistNEvents->Fill(6);
+        if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()){
+          fHistNEvents->Fill(4);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(4);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(4);
+        }
+        if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()){
+          fHistNEvents->Fill(5);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(5);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(5);
+        }
+        if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()){
+          fHistNEvents->Fill(6);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(6);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(6);
+        }
       }else{
-        if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(7);
-        else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(8);
-        else if(fAnalysisCuts->IsEventRejectedDueToTimeRangeCut())fHistNEvents->Fill(9);
+        if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){
+          fHistNEvents->Fill(7);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(7);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(7);
+        }
+        else if(fAnalysisCuts->IsEventRejectedDueToPileup()){
+          fHistNEvents->Fill(8);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(8);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(8);
+        }
+        else if(fAnalysisCuts->IsEventRejectedDueToTimeRangeCut()){
+          fHistNEvents->Fill(9);
+          if(injType==0) fHistNEventsMCCharmInj->Fill(9);
+          else if(injType==1) fHistNEventsMCBeautyInj->Fill(9);
+        }
       }
     }
   }
@@ -1056,21 +1133,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   // events not passing the centrality selection can be removed immediately. For the others we must count the generated D mesons
 
 
-  TClonesArray *arrayMC=0;
-  AliAODMCHeader *mcHeader=0;
   if(fReadMC){
-    arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC) {
-      printf("AliAnalysisTaskCombinHF::UserExec: MC particles branch not found!\n");
-      return;
-    }
-    
-    // load MC header
-    mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if(!mcHeader) {
-      printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
-      return;
-    }
     // selection on pt hard bins in Pb-Pb
     if(fSelectPtHardRange){
       TList *lh=mcHeader->GetCocktailHeaders();
@@ -1092,10 +1155,20 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     // Check for events generated with out-of-bunch pileup
     Bool_t isGenPileUp = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, "Hijing");
     Bool_t isGenSameBunchPileUp = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(mcHeader, "Hijing");
-    if(isGenPileUp) fHistNEvents->Fill(11);
-    if(isGenSameBunchPileUp) fHistNEvents->Fill(12);
+    if(isGenPileUp){
+      fHistNEvents->Fill(11);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(11);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(11);
+    }
+    if(isGenSameBunchPileUp){
+      fHistNEvents->Fill(12);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(12);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(12);
+    }
     if(isGenPileUp && fRejectGeneratedEventsWithPileup){
       fHistNEvents->Fill(13);
+      if(injType==0) fHistNEventsMCCharmInj->Fill(13);
+      else if(injType==1) fHistNEventsMCBeautyInj->Fill(13);
       return;
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
@@ -1123,6 +1196,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   if(!isEvSel)return;
   
   fHistNEvents->Fill(1);
+  if(injType==0) fHistNEventsMCCharmInj->Fill(1);
+  else if(injType==1) fHistNEventsMCBeautyInj->Fill(1);
   fHistEventMultCentEvSel->Fill(evCentr,fMultiplicityMC);
   fHistEventTrackletCentEvSel->Fill(evCentr,fMultiplicityEM);
 
