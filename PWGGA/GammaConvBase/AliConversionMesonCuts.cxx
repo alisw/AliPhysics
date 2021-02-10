@@ -175,6 +175,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoOutOfJet(0),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
   fEnableOmegaAPlikeCut(kFALSE),
@@ -294,6 +295,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
   fDoJetQA(ref.fDoJetQA),
+  fDoOutOfJet(ref.fDoOutOfJet),
   fDoIsolatedAnalysis(ref.fDoIsolatedAnalysis),
   fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
   fEnableOmegaAPlikeCut(ref.fEnableOmegaAPlikeCut),
@@ -1921,6 +1923,21 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
   case 5:
     fMesonKind = 0;
     fDoHighPtHadronAnalysis = kTRUE;
+    break;
+  case 6: // out of jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 1;
+    break;
+  case 7: // out of jet, only on opposite side of Jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 2;
+    break;
+  case 8: // out of jet, in "donut shape" [R, R + 0.2] around Jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 3;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;

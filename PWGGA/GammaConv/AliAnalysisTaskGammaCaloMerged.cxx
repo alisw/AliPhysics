@@ -88,6 +88,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fConvJetReader(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoOutOfJet(0),
   fJetHistograms(NULL),
   fAODMCTrackArray(NULL),
   farrClustersProcess(NULL),
@@ -323,6 +324,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fConvJetReader(NULL),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoOutOfJet(0),
   fJetHistograms(NULL),
   fAODMCTrackArray(NULL),
   farrClustersProcess(NULL),
@@ -551,6 +553,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
   if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetAnalysis())  fDoJetAnalysis = kTRUE;
   if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoJetQA())        fDoJetQA       = kTRUE;
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoOutOfJet() > 0 )fDoOutOfJet    = ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoOutOfJet();
 
   if(fDoJetAnalysis){
     fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
@@ -728,11 +731,15 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     fHistoJetArea             = new TH1F*[fnCuts];
     fClusterEtaPhiJets        = new TH2F*[fnCuts];
     fHistoNJets               = new TH1F*[fnCuts];
-    fHistoEventwJets          = new TH1F*[fnCuts];
+    if(fDoJetQA){
+      fHistoEventwJets          = new TH1F*[fnCuts];
+    }
     if(!fDoLightOutput){
       fHistoTruevsRecJetPt             = new TH2F*[fnCuts];
-      fHistoClusMergedPtvsRJetAccepted = new TH2F*[fnCuts];
-      fHistoJetFragmFunc               = new TH2F*[fnCuts];
+      if(fDoOutOfJet != 1 ){
+        fHistoClusMergedPtvsRJetAccepted = new TH2F*[fnCuts];
+        fHistoJetFragmFunc               = new TH2F*[fnCuts];
+      }
     }
   }
 
@@ -973,18 +980,30 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fJetHistograms[iCut]->Add(fHistoJetArea[iCut]);
       fHistoNJets[iCut] = new TH1F("NJets", "NJets", 10, 0, 10);
       fJetHistograms[iCut]->Add(fHistoNJets[iCut]);
-      fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 4, 0, 4);
-      fJetHistograms[iCut]->Add(fHistoEventwJets[iCut]);
+
+      if(fIsMC > 0){
+        if(fDoJetQA){
+          fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 3, 0, 3);
+          fHistoEventwJets[iCut]->GetXaxis()->SetBinLabel(1,"rec. > 10GeV");
+          fHistoEventwJets[iCut]->GetXaxis()->SetBinLabel(2,"rec. < 10GeV, true > 10GeV");
+          fHistoEventwJets[iCut]->GetXaxis()->SetBinLabel(3,"rec. > 10GeV, true < 10GeV");
+          fJetHistograms[iCut]->Add(fHistoEventwJets[iCut]);
+        }
+      }
 
       if(!fDoLightOutput){
         fClusterEtaPhiJets[iCut] = new TH2F("JetEtaPhiMap", "JetEtaPhiMap", 110, -0.7, 0.7, 462, 0, 2*TMath::Pi());
         fJetHistograms[iCut]->Add(fClusterEtaPhiJets[iCut]);
-        fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", ptBins, arrPtBinning, ptBins, arrPtBinning);
-        fJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
-        fHistoClusMergedPtvsRJetAccepted[iCut] = new TH2F("ESD_ClusMerged_Pt_RJet","ESD_ClusMerged_Pt_RJet",ptBins, arrPtBinning,50, 0, 0.5);
-        fJetHistograms[iCut]->Add(fHistoClusMergedPtvsRJetAccepted[iCut]);
-        fHistoJetFragmFunc[iCut] = new TH2F("ESD_Pi0inJetPt_FragmentationFunc","ESD_Pi0inJetPt_FragmentationFunc",ptBins, arrPtBinning,50, 0, 1);
-        fJetHistograms[iCut]->Add(fHistoJetFragmFunc[iCut]);
+        if(fDoOutOfJet != 1 ){
+          fHistoClusMergedPtvsRJetAccepted[iCut] = new TH2F("ESD_ClusMerged_Pt_RJet","ESD_ClusMerged_Pt_RJet",ptBins, arrPtBinning,50, 0, 1.);
+          fJetHistograms[iCut]->Add(fHistoClusMergedPtvsRJetAccepted[iCut]);
+          fHistoJetFragmFunc[iCut] = new TH2F("ESD_Pi0inJetPt_FragmentationFunc","ESD_Pi0inJetPt_FragmentationFunc",ptBins, arrPtBinning,50, 0, 1);
+          fJetHistograms[iCut]->Add(fHistoJetFragmFunc[iCut]);
+        }
+        if(fIsMC > 0){
+          fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", ptBins, arrPtBinning, ptBins, arrPtBinning);
+          fJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
+        }
       }
 
     if (fIsMC == 2){
@@ -993,12 +1012,16 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoJetPhi[iCut]->Sumw2();
       fHistoJetArea[iCut]->Sumw2();
       fHistoNJets[iCut]->Sumw2();
-      fHistoEventwJets[iCut]->Sumw2();
+      if(fDoJetQA){
+        fHistoEventwJets[iCut]->Sumw2();
+      }
       if(!fDoLightOutput){
         fClusterEtaPhiJets[iCut]->Sumw2();
         fHistoTruevsRecJetPt[iCut]->Sumw2();
-        fHistoClusMergedPtvsRJetAccepted[iCut]->Sumw2();
-        fHistoJetFragmFunc[iCut]->Sumw2();
+        if(fDoOutOfJet != 1 ){
+          fHistoClusMergedPtvsRJetAccepted[iCut]->Sumw2();
+          fHistoJetFragmFunc[iCut]->Sumw2();
+        }
       }
     }
   }
@@ -1889,12 +1912,11 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       if(fInputEvent->IsA()==AliAODEvent::Class())
         ProcessAODMCParticles();
     }
-
+    
     if (triggered==kFALSE) continue;
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters();                      // process calo clusters
-
 
 
     fHistoNClusterCandidates[iCut]->Fill(  fNClusterCandidates,
@@ -1922,7 +1944,7 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
   Int_t nclus = 0;
-  Bool_t InsideJet = kFALSE;
+  Bool_t IsClusAcceptedByJet = kFALSE;
   if(!fCorrTaskSetting.CompareTo("")){
     nclus = fInputEvent->GetNumberOfCaloClusters();
   } else {
@@ -2073,14 +2095,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       continue;
     }
 
-    InsideJet = kFALSE;
     Int_t matchedJet = 0;
     if(fDoJetAnalysis){
+      if(fDoOutOfJet == 1) IsClusAcceptedByJet = kTRUE;
+      else IsClusAcceptedByJet = kFALSE;
       Float_t clusPos[3]={0,0,0};
       clus->GetPosition(clusPos);
       TVector3 clusterVectorJets(clusPos[0],clusPos[1],clusPos[2]);
       Double_t etaCluster = clusterVectorJets.Eta();
-      Double_t phiCluster = clusterVectorJets.Phi();
+      Double_t phiCluster = (clusterVectorJets.Phi() > 0) ? clusterVectorJets.Phi() : clusterVectorJets.Phi() + 2*TMath::Pi();
       if(fConvJetReader->GetNJets()>0){
         fVectorJetEta = fConvJetReader->GetVectorJetEta();
         fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
@@ -2090,25 +2113,49 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
           }
+          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+            DeltaEta = fVectorJetEta.at(ij) + etaCluster;
+            DeltaPhi = TMath::Pi() - DeltaPhi;
+          }
           Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
           if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-              InsideJet = kTRUE;
-              matchedJet = ij;
-              if(!fDoLightOutput)fClusterEtaPhiJets[fiCut]->Fill(etaCluster, phiCluster);
-              break;
+            if(fDoOutOfJet == 0){ // in jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                IsClusAcceptedByJet = kTRUE;
+                matchedJet = ij;
+                break;
+              }
+            } else if(fDoOutOfJet == 1){ // out of jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                IsClusAcceptedByJet = kFALSE;
+                matchedJet = ij;
+                break;
+              }
+            } else if(fDoOutOfJet == 2){ // out of jet on away side
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                IsClusAcceptedByJet = kTRUE;
+                matchedJet = ij;
+                break;
+              }
+            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
+              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
+                IsClusAcceptedByJet = kTRUE;
+                matchedJet = ij;
+                break;
+              }
             }
           }
         }
         fVectorJetEta.clear();
         fVectorJetPhi.clear();
       }
-      if(!InsideJet){
+      if(!IsClusAcceptedByJet){
         delete clus;
         delete tmpvec;
         delete PhotonCandidate;
         continue;
       }
+      if(!fDoLightOutput)fClusterEtaPhiJets[fiCut]->Fill(etaCluster, phiCluster);
     }
 
     if(!((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,tempPhotonWeight,i)){
@@ -2193,7 +2240,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       fHistoClusMergedPtvsM02Accepted[fiCut]->Fill( PhotonCandidate->Pt(), clus->GetM02(), tempPhotonWeight);
       fHistoClusMergedEvsM02Accepted[fiCut]->Fill( PhotonCandidate->E(), clus->GetM02(), tempPhotonWeight);
 
-      if(fDoJetAnalysis && !fDoLightOutput){
+      if(fDoJetAnalysis && !fDoLightOutput && (fDoOutOfJet != 1 )){
         fVectorJetPt  = fConvJetReader->GetVectorJetPt();
         fVectorJetPx  = fConvJetReader->GetVectorJetPx();
         fVectorJetPy  = fConvJetReader->GetVectorJetPy();
@@ -2206,8 +2253,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
             DeltaPhi = 2*M_PI - DeltaPhi;
         }
         Double_t RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
-        if(fConvJetReader->Get_Jet_Radius() > 0 ){
-          if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+        if(fDoOutOfJet == 2){
+          RJetPi0Cand = abs(TMath::Pi() - RJetPi0Cand);
+        }
+        if(fConvJetReader->Get_Jet_Radius() > 0){
+          if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius() || (fDoOutOfJet == 3 && RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) ){
             Double_t dotproduct = fVectorJetPx.at(matchedJet)*pi0cand->Px() + fVectorJetPy.at(matchedJet)*pi0cand->Py() + fVectorJetPz.at(matchedJet)*pi0cand->Pz();
             Double_t magn = pow(fVectorJetPx.at(matchedJet),2) + pow(fVectorJetPy.at(matchedJet),2) + pow(fVectorJetPz.at(matchedJet),2);
             Double_t z = dotproduct/magn;
@@ -2296,9 +2346,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessJets()
   fHistoNJets[fiCut]->Fill(fConvJetReader->GetNJets());
   if(fConvJetReader->GetNJets()>0){
     fVectorJetPt  = fConvJetReader->GetVectorJetPt();
-    fVectorJetPx  = fConvJetReader->GetVectorJetPx();
-    fVectorJetPy  = fConvJetReader->GetVectorJetPy();
-    fVectorJetPz  = fConvJetReader->GetVectorJetPz();
     fVectorJetEta = fConvJetReader->GetVectorJetEta();
     fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
     fVectorJetArea = fConvJetReader->GetVectorJetArea();
@@ -2314,7 +2361,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessJets()
         fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i));
         fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i));
         fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i));
-        if(!fDoJetQA) fHistoEventwJets[fiCut]->Fill(0);
         if(fIsMC > 0 && fConvJetReader->GetNJets()>0 && fConvJetReader->GetTrueNJets()>0){
           Double_t min = 100;
           Int_t match = 0;
@@ -2333,18 +2379,15 @@ void AliAnalysisTaskGammaCaloMerged::ProcessJets()
           }
           if(!fDoLightOutput) fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
           if(fDoJetQA){
-            if(fVectorJetPt.at(i) >= 10) fHistoEventwJets[fiCut]->Fill(0);
-            if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) >= 10) fHistoEventwJets[fiCut]->Fill(1);
-            if(fVectorJetPt.at(i) >= 10 && fTrueVectorJetPt.at(match) < 10) fHistoEventwJets[fiCut]->Fill(2);
+            if(fVectorJetPt.at(i) >= 10) fHistoEventwJets[fiCut]->Fill(0.5);
+            if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) >= 10) fHistoEventwJets[fiCut]->Fill(1.5);
+            if(fVectorJetPt.at(i) >= 10 && fTrueVectorJetPt.at(match) < 10) fHistoEventwJets[fiCut]->Fill(2.5);
           }
         }
       }
     }
 
     fVectorJetPt.clear();
-    fVectorJetPx.clear();
-    fVectorJetPy.clear();
-    fVectorJetPz.clear();
     fVectorJetEta.clear();
     fVectorJetPhi.clear();
     fVectorJetArea.clear();
@@ -3244,17 +3287,40 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
 
       // check if particle is in Jet
       if(fDoJetAnalysis){
+        if(fDoOutOfJet == 1) particleInJet = kTRUE;
+        else particleInJet = kFALSE;
         for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
-          Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
-          Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+          Double_t DeltaEta = fVectorJetEta.at(j)-particle->Eta();
+          Double_t DeltaPhi = abs(fVectorJetPhi.at(j)-particle->Phi());
+          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+            DeltaEta = fVectorJetEta.at(j) + particle->Eta();
+            DeltaPhi = fVectorJetPhi.at(j) + particle->Phi() - TMath::Pi();
+          }
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
           }
           Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
           if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-              particleInJet = kTRUE;
-              break;
+            if(fDoOutOfJet == 0){ // in jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kTRUE;
+                break;
+              }
+            } else if(fDoOutOfJet == 1){ // out of jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kFALSE;
+                break;
+              }
+            } else if(fDoOutOfJet == 2){ // out of jet on away side
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kTRUE;
+                break;
+              }
+            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
+              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
+                particleInJet = kTRUE;
+                break;
+              }
             }
           }
         }
@@ -3545,26 +3611,47 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
         if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
-
       // check if particle is in Jet
       Bool_t particleInJet = kFALSE;
       if(fDoJetAnalysis){
+        if(fDoOutOfJet == 1) particleInJet = kTRUE;
+        else particleInJet = kFALSE;
         for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
           Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
           Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
+          if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
+            DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
+            DeltaPhi = fTrueVectorJetPhi.at(j) + particle->Phi() - TMath::Pi();
+          }
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
           }
           Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
           if(fConvJetReader->Get_Jet_Radius() > 0 ){
-            if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-              particleInJet = kTRUE;
-              break;
+            if(fDoOutOfJet == 0){ // in jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kTRUE;
+                break;
+              }
+            } else if(fDoOutOfJet == 1){ // out of jet
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kFALSE;
+                break;
+              }
+            } else if(fDoOutOfJet == 2){ // out of jet on away side
+              if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                particleInJet = kTRUE;
+                break;
+              }
+            } else if(fDoOutOfJet == 3){ // out of jet in interval [R, R+0.2]
+              if((RJetPi0Cand > fConvJetReader->Get_Jet_Radius()) && (RJetPi0Cand < fConvJetReader->Get_Jet_Radius() + 0.2)){
+                particleInJet = kTRUE;
+                break;
+              }
             }
           }
         }
       }
-
       Double_t mesonY = 1.e30;
       Double_t ratio  = 0;
       if (particle->E() != TMath::Abs(particle->Pz())){
