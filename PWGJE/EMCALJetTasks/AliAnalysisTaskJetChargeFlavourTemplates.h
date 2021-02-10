@@ -86,8 +86,8 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   // Here is the TTree
   TTree                               *fTreeJets;
   // These are the branch variables; there are nBranches of them
-  static const Int_t nBranchesJetChargeTemplates = 23;
-  Double_t                            fTreeBranch[nBranchesJetChargeTemplates];
+  static const Int_t nBranchesJetChargeFlavourTemplates = 23;
+  Double_t                            fTreeBranch[nBranchesJetChargeFlavourTemplates];
   TChain                              *pChain;
 
  private:
