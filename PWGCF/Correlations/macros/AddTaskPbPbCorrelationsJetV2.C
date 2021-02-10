@@ -1,4 +1,4 @@
-AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddAnalysisTaskPbPbCorrelationsJetV2(const char *centMethod = "V0M") {
+AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(const char *centMethod = "V0M") {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -44,7 +44,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddAnalysisTaskPbPbCorrelationsJetV2(con
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
   //  Double_t assocPtLimits[] = {1.,2.,3.,4.,5.,1e6};
-  Double_t assocPtLimits[] = {0.5,1.,2.,3.,5.,7.,1e6};
+  Double_t assocPtLimits[] = {0.5,1.,2.,3.,5.,7.,100.};
   const Int_t nBinAssocPt = sizeof(assocPtLimits) / sizeof(Double_t) - 1;
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
@@ -55,11 +55,14 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddAnalysisTaskPbPbCorrelationsJetV2(con
   mgr->AddTask(task);
 
   // create output container
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("FlowIncHistos_%s",centMethod), TList::Class(), AliAnalysisManager::kOutputContainer,
-							  Form("%s:FlowInc_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
+							  //Form("%s:FlowInc_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
+							  outputFileName);
 
   AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("FlowJetHistos_%s",centMethod), TList::Class(), AliAnalysisManager::kOutputContainer,
-							  Form("%s:FlowJet_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
+							  //Form("%s:FlowJet_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
+							  outputFileName);
 
 
 
