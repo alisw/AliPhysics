@@ -60,7 +60,7 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH1F                                *JCDown;
   TH1F                                *JCGluon;
   TH1F                                *JCOther;
-
+  TH1F                                *JCUnmatched;
 
   TH1F                                *JCLow;
 
@@ -68,6 +68,7 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH1F                                *JCDownLow;
   TH1F                                *JCGluonLow;
   TH1F                                *JCOtherLow;
+  TH1F                                *JCUnmatchedLow;
 
   TH1F                                *JCMid;
 
@@ -75,6 +76,7 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH1F                                *JCDownMid;
   TH1F                                *JCGluonMid;
   TH1F                                *JCOtherMid;
+  TH1F                                *JCUnmatchedMid;
 
   TH1F                                *JCHigh;
 
@@ -82,12 +84,12 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   TH1F                                *JCDownHigh;
   TH1F                                *JCGluonHigh;
   TH1F                                *JCOtherHigh;
-
+  TH1F                                *JCUnmatchedHigh;
   // Here is the TTree
   TTree                               *fTreeJets;
   // These are the branch variables; there are nBranches of them
-  static const Int_t nBranchesJetChargeTemplates = 23;
-  Double_t                            fTreeBranch[nBranchesJetChargeTemplates];
+  static const Int_t nBranchesJetChargeFlavourTemplates = 27;
+  Double_t                            fTreeBranch[nBranchesJetChargeFlavourTemplates];
   TChain                              *pChain;
 
  private:

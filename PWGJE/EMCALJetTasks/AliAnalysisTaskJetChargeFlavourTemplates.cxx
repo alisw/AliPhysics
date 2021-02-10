@@ -53,7 +53,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDown(0x0),
   JCGluon(0x0),
   JCOther(0x0),
-
+  JCUnmatched(0x0),
 
   JCLow(0x0),
 
@@ -61,6 +61,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownLow(0x0),
   JCGluonLow(0x0),
   JCOtherLow(0x0),
+  JCUnmatchedLow(0x0),
 
 
   JCMid(0x0),
@@ -69,6 +70,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownMid(0x0),
   JCGluonMid(0x0),
   JCOtherMid(0x0),
+  JCUnmatchedMid(0x0),
 
   JCHigh(0x0),
 
@@ -76,6 +78,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownHigh(0x0),
   JCGluonHigh(0x0),
   JCOtherHigh(0x0),
+  JCUnmatchedHigh(0x0),
 
 
 
@@ -106,6 +109,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDown(0x0),
   JCGluon(0x0),
   JCOther(0x0),
+  JCUnmatched(0x0),
 
 
   JCLow(0x0),
@@ -114,6 +118,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownLow(0x0),
   JCGluonLow(0x0),
   JCOtherLow(0x0),
+  JCUnmatchedLow(0x0),
 
 
   JCMid(0x0),
@@ -122,6 +127,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownMid(0x0),
   JCGluonMid(0x0),
   JCOtherMid(0x0),
+  JCUnmatchedMid(0x0),
 
   JCHigh(0x0),
 
@@ -129,13 +135,14 @@ AliAnalysisTaskJetChargeFlavourTemplates::AliAnalysisTaskJetChargeFlavourTemplat
   JCDownHigh(0x0),
   JCGluonHigh(0x0),
   JCOtherHigh(0x0),
+  JCUnmatchedHigh(0x0),
 
 
 
   fTreeJets(0)
 {
   // Standard constructor.
-  for(Int_t i=0;i<nBranchesJetChargeTemplates;i++){
+  for(Int_t i=0;i<nBranchesJetChargeFlavourTemplates;i++){
     fTreeBranch[i]=0;
   }
   SetMakeGeneralHistograms(kTRUE);
@@ -164,7 +171,7 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeJets = new TTree(nameoutput, nameoutput);
   // Names for the branches
-  TString *fTreeBranchName = new TString [nBranchesJetChargeTemplates];
+  TString *fTreeBranchName = new TString [nBranchesJetChargeFlavourTemplates];
 
   // Name the branches of your TTree here
   fTreeBranchName[0]  = "Pt";
@@ -200,8 +207,13 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fTreeBranchName[21] = "Mid_JCOther";
   fTreeBranchName[22] = "High_JCOther";
 
+  fTreeBranchName[23] = "JCUnmatched";
+  fTreeBranchName[24] = "Low_JCUnmatched";
+  fTreeBranchName[25] = "Mid_JCUnmatched";
+  fTreeBranchName[26] = "High_JCUnmatched";
+
   // Associate the branches
-  for(Int_t iBranch=0; iBranch < nBranchesJetChargeTemplates; iBranch++){
+  for(Int_t iBranch=0; iBranch < nBranchesJetChargeFlavourTemplates; iBranch++){
     cout<<"looping over variables"<<endl;
     fTreeJets->Branch(fTreeBranchName[iBranch].Data(), &fTreeBranch[iBranch], Form("%s/D", fTreeBranchName[iBranch].Data()));
   }
@@ -233,6 +245,8 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(JCGluon);
   JCOther= new TH1F("JCOther", "Jet Charge Other", 25, -3, 3);
   fOutput->Add(JCOther);
+  JCUnmatched= new TH1F("JCUnmatched", "Jet Charge Unmatched", 25, -3, 3);
+  fOutput->Add(JCUnmatched);
 
 
 
@@ -248,6 +262,9 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(JCGluonLow);
   JCOtherLow= new TH1F("JCOtherLow", "Jet Charge Other Low Pt", 25, -3, 3);
   fOutput->Add(JCOtherLow);
+  JCUnmatchedLow= new TH1F("JCUnmatchedLow", "Jet Charge Unmatched Low Pt", 25, -3, 3);
+  fOutput->Add(JCUnmatchedLow);
+
 
 
   JCMid= new TH1F("JCMid", "Jet Charge Mid Pt ", 25, -3, 3);
@@ -261,6 +278,8 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(JCGluonMid);
   JCOtherMid= new TH1F("JCOtherMid", "Jet Charge Other Mid Pt", 25, -3, 3);
   fOutput->Add(JCOtherMid);
+  JCUnmatchedMid= new TH1F("JCUnmatchedMid", "Jet Charge Unmatched Mid Pt", 25, -3, 3);
+  fOutput->Add(JCUnmatchedMid);
 
   JCHigh= new TH1F("JCHigh", "Jet Charge High Pt ", 25, -3, 3);
   fOutput->Add(JCHigh);
@@ -273,6 +292,9 @@ AliAnalysisTaskJetChargeFlavourTemplates::~AliAnalysisTaskJetChargeFlavourTempla
   fOutput->Add(JCGluonHigh);
   JCOtherHigh= new TH1F("JCOtherHigh", "Jet Charge Other High Pt", 25, -3, 3);
   fOutput->Add(JCOtherHigh);
+  JCUnmatchedHigh= new TH1F("JCUnmatchedHigh", "Jet Charge Unmatched High Pt", 25, -3, 3);
+  fOutput->Add(JCUnmatchedHigh);
+
 
 
   // Make sure that the outputs get written out
@@ -482,7 +504,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             int IndexOfMaximum = -1;
 
             // assigens index of maximum if the over limit factation of mother particles agree
-            Double_t limitFraction = 0.66;
+            Double_t limitFraction = 0.80;
             for(unsigned int i = 0; i < nUniques; i++)
             {
               if(UniquePdgFrequency[i] > limitFraction)
@@ -647,6 +669,36 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
             {
               fTreeBranch[18] = jetCharge;
               JCGluonHigh->Fill(jetCharge);
+            }
+
+
+        }
+
+        //Add Unmatched JetCharge Catagory
+        else if(IndexOfMaximum == -1)
+        {
+
+          fTreeBranch[23] = jetCharge;
+          JCUnmatched->Fill(jetCharge);
+
+
+            if(JetPt < 40.)
+            {
+
+              fTreeBranch[24] = jetCharge;
+              JCUnmatchedLow->Fill(jetCharge);
+            }
+            else if( JetPt > 40. && JetPt < 80.)
+            {
+
+              fTreeBranch[25] = jetCharge;
+              JCUnmatchedMid->Fill(jetCharge);
+            }
+            else
+            {
+
+              fTreeBranch[26] = jetCharge;
+              JCUnmatchedHigh->Fill(jetCharge);
             }
 
 
