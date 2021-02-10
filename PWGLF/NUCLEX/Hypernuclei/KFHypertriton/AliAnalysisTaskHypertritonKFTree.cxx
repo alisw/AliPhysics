@@ -35,10 +35,10 @@
 
 #include "AliAnalysisTaskHypertritonKFTree.h"
 
-class AliAnalysisTaskHypertritonKFTree;    /// your analysis class
-
-ClassImp(AliAnalysisTaskHypertritonKFTree) /// classimp: necessary for root
-
+/// your analysis class
+class AliAnalysisTaskHypertritonKFTree;
+/// classimp: necessary for root
+ClassImp(AliAnalysisTaskHypertritonKFTree)
 ///_____________________________________________________________________________
 AliAnalysisTaskHypertritonKFTree::AliAnalysisTaskHypertritonKFTree() : AliAnalysisTaskSE(), 
 fEventCuts(),
@@ -596,8 +596,10 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
   fOutputList->Add(histoEventCentrality);
   
   /// QA histograms
-  fEventCuts.AddQAplotsToList(fQAList); /// Add event selection QA plots
   if (kDoQA) {
+    /// Add event selection QA plots
+    fEventCuts.AddQAplotsToList(fQAList);
+    /// Add own QA plots
     fHistNsigmaTPCvsPPion = new TH2F("fHistNsigmaTPCvsPPion","#it{N}#sigma^{TPC}_{#pi} vs #it{p} (GeV/#it{c});#it{p} (GeV/#it{c});#it{N}#sigma^{TPC}_{#pi}", 100,0,10,100,-5.,5.);
     fHistNsigmaTPCvsPPion->Sumw2();
     fQAList->Add(fHistNsigmaTPCvsPPion);
@@ -729,6 +731,14 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     CandidateTree->Branch("DistanceToSecVertHe",&DistanceToSecVertHe,"DistanceToSecVertHe/F");
     CandidateTree->Branch("DeviationToSecVertHe",&DeviationToSecVertHe,"DeviationToSecVertHe/F");
     
+    CandidateTree->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
+    CandidateTree->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
+    CandidateTree->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
+    
+    CandidateTree->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
+    CandidateTree->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
+    CandidateTree->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
+    
     if (kIsMC){
       ///MC truth information
       /// true momentun of the hypertriton candidate
@@ -762,15 +772,6 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
       CandidateTree->Branch("xSecVertexMC",&xSecVertexMC,"xSecVertexMC/F");
       CandidateTree->Branch("ySecVertexMC",&ySecVertexMC,"ySecVertexMC/F");
       CandidateTree->Branch("zSecVertexMC",&zSecVertexMC,"zSecVertexMC/F");
-      
-      CandidateTree->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
-      CandidateTree->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
-      CandidateTree->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
-      
-      CandidateTree->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
-      CandidateTree->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
-      CandidateTree->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
-      
     }
   }
   
@@ -908,6 +909,14 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     CandidateTree_3Body->Branch("DistanceToSecVertPion",&DistanceToSecVertPion,"DistanceToSecVertPion/F");
     CandidateTree_3Body->Branch("DeviationToSecVertPion",&DeviationToSecVertPion,"DeviationToSecVertPion/F");
     
+    CandidateTree_3Body->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
+    CandidateTree_3Body->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
+    CandidateTree_3Body->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
+    
+    CandidateTree_3Body->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
+    CandidateTree_3Body->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
+    CandidateTree_3Body->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
+    
     if (kIsMC){
       ///MC truth information
       /// true momentun of the hypertriton candidate
@@ -950,15 +959,6 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
       CandidateTree_3Body->Branch("xSecVertexMC",&xSecVertexMC,"xSecVertexMC/F");
       CandidateTree_3Body->Branch("ySecVertexMC",&ySecVertexMC,"ySecVertexMC/F");
       CandidateTree_3Body->Branch("zSecVertexMC",&zSecVertexMC,"zSecVertexMC/F");
-      
-      CandidateTree_3Body->Branch("xSecVertex",&xSecVertex,"xSecVertex/F");
-      CandidateTree_3Body->Branch("ySecVertex",&ySecVertex,"ySecVertex/F");
-      CandidateTree_3Body->Branch("zSecVertex",&zSecVertex,"zSecVertex/F");
-      
-      CandidateTree_3Body->Branch("xSecVertexVariance",&xSecVertexVariance,"xSecVertexVariance/F");
-      CandidateTree_3Body->Branch("ySecVertexVariance",&ySecVertexVariance,"ySecVertexVariance/F");
-      CandidateTree_3Body->Branch("zSecVertexVariance",&zSecVertexVariance,"zSecVertexVariance/F");
-      
     }
   }
   
@@ -990,41 +990,47 @@ void AliAnalysisTaskHypertritonKFTree::UserCreateOutputObjects()
     
     if (kDoQA) {
       /// QA and corrections
-      fHistpxTrueRecHe3 = new TH2F("fHistpxTrueRecHe3", "(#it{p}_{x}^{true} - #it{p}_{x}^{rec}) vs #it{p}_{x}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
-      fHistpxTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{x}^{rec} (GeV/#it{c})");
-      fHistpxTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{x}^{true} - #it{p}_{x}^{rec}) (GeV/#it{c})");
-      fHistpxTrueRecHe3->Sumw2();
-      fQAList->Add(fHistpxTrueRecHe3);
+      if (kRun2BodyDecay) {
+        fHistpxTrueRecHe3 = new TH2F("fHistpxTrueRecHe3", "(#it{p}_{x}^{true} - #it{p}_{x}^{rec}) vs #it{p}_{x}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
+        fHistpxTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{x}^{rec} (GeV/#it{c})");
+        fHistpxTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{x}^{true} - #it{p}_{x}^{rec}) (GeV/#it{c})");
+        fHistpxTrueRecHe3->Sumw2();
+        fQAList->Add(fHistpxTrueRecHe3);
+        
+        fHistpyTrueRecHe3 = new TH2F("fHistpyTrueRecHe3", "(#it{p}_{y}^{true} - #it{p}_{y}^{rec}) vs #it{p}_{y}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
+        fHistpyTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{y}^{rec} (GeV/#it{c})");
+        fHistpyTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{y}^{true} - #it{p}_{y}^{rec}) (GeV/#it{c})");
+        fHistpyTrueRecHe3->Sumw2();
+        fQAList->Add(fHistpyTrueRecHe3);
+        
+        fHistpzTrueRecHe3 = new TH2F("fHistpzTrueRecHe3", "(#it{p}_{z}^{true} - #it{p}_{z}^{rec}) vs #it{p}_{z}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
+        fHistpzTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{z}^{rec} (GeV/#it{c})");
+        fHistpzTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{z}^{true} - #it{p}_{z}^{rec}) (GeV/#it{c})");
+        fHistpzTrueRecHe3->Sumw2();
+        fQAList->Add(fHistpzTrueRecHe3);
+        
+        fHistMomPion = new TH1F("fHistMomPion","Momentum distribution of #pi from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
+        fHistMomPion->Sumw2();
+        fQAList->Add(fHistMomPion);
+        
+        fHistMomHe3 = new TH1F("fHistMomHe3","Momentum distribution of ^{3}He from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
+        fHistMomHe3->Sumw2();
+        fQAList->Add(fHistMomHe3);
+      }
       
-      fHistpyTrueRecHe3 = new TH2F("fHistpyTrueRecHe3", "(#it{p}_{y}^{true} - #it{p}_{y}^{rec}) vs #it{p}_{y}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
-      fHistpyTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{y}^{rec} (GeV/#it{c})");
-      fHistpyTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{y}^{true} - #it{p}_{y}^{rec}) (GeV/#it{c})");
-      fHistpyTrueRecHe3->Sumw2();
-      fQAList->Add(fHistpyTrueRecHe3);
-      
-      fHistpzTrueRecHe3 = new TH2F("fHistpzTrueRecHe3", "(#it{p}_{z}^{true} - #it{p}_{z}^{rec}) vs #it{p}_{z}^{rec}", 100, 0.1, 10.1, 120, -3, 3);
-      fHistpzTrueRecHe3->GetXaxis()->SetTitle("#it{p}_{z}^{rec} (GeV/#it{c})");
-      fHistpzTrueRecHe3->GetYaxis()->SetTitle("(#it{p}_{z}^{true} - #it{p}_{z}^{rec}) (GeV/#it{c})");
-      fHistpzTrueRecHe3->Sumw2();
-      fQAList->Add(fHistpzTrueRecHe3);
-      
-      fHistMomPion = new TH1F("fHistMomPion","Momentum distribution of #pi from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
-      fHistMomPion->Sumw2();
-      fQAList->Add(fHistMomPion);
-      fHistMomHe3 = new TH1F("fHistMomHe3","Momentum distribution of ^{3}He from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
-      fHistMomHe3->Sumw2();
-      fQAList->Add(fHistMomHe3);
-      
-      fHistMomDeuteron = new TH1F("fHistMomDeuteron","Momentum distribution of deuteron from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
-      fHistMomDeuteron->Sumw2();
-      fQAList->Add(fHistMomDeuteron);
-      fHistMomProton = new TH1F("fHistMomProton","Momentum distribution of proton from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
-      fHistMomProton->Sumw2();
-      
-      fQAList->Add(fHistMomProton);
-      fHistMomPion_3Body = new TH1F("fHistMomPion_3Body","Momentum distribution of #pi from ^{3}_{#Lambda}H (3-body);#it{p} (GeV/#it{c});Counts",100,0,10);
-      fHistMomPion_3Body->Sumw2();
-      fQAList->Add(fHistMomPion_3Body);
+      if (kRun3BodyDecay){
+        fHistMomDeuteron = new TH1F("fHistMomDeuteron","Momentum distribution of deuteron from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
+        fHistMomDeuteron->Sumw2();
+        fQAList->Add(fHistMomDeuteron);
+        
+        fHistMomProton = new TH1F("fHistMomProton","Momentum distribution of proton from ^{3}_{#Lambda}H;#it{p} (GeV/#it{c});Counts",100,0,10);
+        fHistMomProton->Sumw2();
+        fQAList->Add(fHistMomProton);
+        
+        fHistMomPion_3Body = new TH1F("fHistMomPion_3Body","Momentum distribution of #pi from ^{3}_{#Lambda}H (3-body);#it{p} (GeV/#it{c});Counts",100,0,10);
+        fHistMomPion_3Body->Sumw2();
+        fQAList->Add(fHistMomPion_3Body);
+      }
     }
   }
   
@@ -1568,9 +1574,9 @@ void AliAnalysisTaskHypertritonKFTree::TwoBodyDecayMC(const vector<Int_t>& ESDTr
     /// Fill histograms for momentum range
     fHistMomHe3->Fill(mcDaughter1->P());
     
-    fHistpxTrueRecHe3->Fill(2*ESDTrack1->Px(), 2*ESDTrack1->Px()-pxHeMC);
-    fHistpyTrueRecHe3->Fill(2*ESDTrack1->Py(), 2*ESDTrack1->Py()-pyHeMC);
-    fHistpzTrueRecHe3->Fill(2*ESDTrack1->Pz(), 2*ESDTrack1->Pz()-pzHeMC);
+    fHistpxTrueRecHe3->Fill(2*ESDTrack1->Px(), pxHeMC-2*ESDTrack1->Px());
+    fHistpyTrueRecHe3->Fill(2*ESDTrack1->Py(), pyHeMC-2*ESDTrack1->Py());
+    fHistpzTrueRecHe3->Fill(2*ESDTrack1->Pz(), pzHeMC-2*ESDTrack1->Pz());
     
     fHistMomPion->Fill(mcDaughter2->P());
   }
@@ -2037,16 +2043,14 @@ Float_t AliAnalysisTaskHypertritonKFTree::CalculatePointingAngle(KFParticle KFPa
   
   KFPart.TransportToDecayVertex(); /// After SetProductionVertex the particle is stored at its production vertex but the information at the decay vertex is needed
   
-  if (kIsMC) {
-    /// Store position of secondary vertex
-    xSecVertex = KFPart.GetX();
-    ySecVertex = KFPart.GetY();
-    zSecVertex = KFPart.GetZ();
-    
-    xSecVertexVariance = KFPart.Covariance(0);
-    ySecVertexVariance = KFPart.Covariance(2);
-    zSecVertexVariance = KFPart.Covariance(5);
-  }
+  /// Store position of secondary vertex
+  xSecVertex = KFPart.GetX();
+  ySecVertex = KFPart.GetY();
+  zSecVertex = KFPart.GetZ();
+  
+  xSecVertexVariance = KFPart.Covariance(0);
+  ySecVertexVariance = KFPart.Covariance(2);
+  zSecVertexVariance = KFPart.Covariance(5);
   
   Double_t v[3];
   v[0] = KFPart.GetX() - KFVtx.GetX();
@@ -2273,6 +2277,7 @@ void AliAnalysisTaskHypertritonKFTree::FillDaughterVariables (KFParticle kfpDeut
   OpeningAngle_Pion_Deuteron = kfpPion.GetAngle(kfpDeuteron);
   OpeningAngle_Proton_Deuteron = kfpProton.GetAngle(kfpDeuteron);
 }
+///____________________________________________________________
 void AliAnalysisTaskHypertritonKFTree::FillDistanceToSececondaryVertex(KFParticle kfpHelium, KFParticle kfpPion, KFParticle kfpMother){
   
   kfpMother.TransportToDecayVertex(); /// After SetProductionVertex the particle is stored at its production vertex but the information at the decay vertex is needed
@@ -2284,6 +2289,7 @@ void AliAnalysisTaskHypertritonKFTree::FillDistanceToSececondaryVertex(KFParticl
   DistanceToSecVertPion = kfpPion.GetDistanceFromVertex(SecondaryVertex);
   DeviationToSecVertPion = kfpPion.GetDeviationFromVertex(SecondaryVertex);
 }
+///____________________________________________________________
 void AliAnalysisTaskHypertritonKFTree::FillDistanceToSececondaryVertex(KFParticle kfpDeuteron, KFParticle kfpProton, KFParticle kfpPion, KFParticle kfpMother){
   
   kfpMother.TransportToDecayVertex(); /// After SetProductionVertex the particle is stored at its production vertex but the information at the decay vertex is needed
