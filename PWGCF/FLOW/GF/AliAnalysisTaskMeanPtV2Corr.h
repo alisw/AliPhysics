@@ -36,7 +36,7 @@ class AliPIDCombined;
 class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskMeanPtV2Corr();
-  AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="");
+  AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
   virtual ~AliAnalysisTaskMeanPtV2Corr();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -46,16 +46,16 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
   Bool_t AcceptParticle(AliVParticle*);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
-  void FillWeights(AliAODEvent*, Double_t vz, Double_t l_Cent);
+  void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
-  void FillMeanPt(AliAODEvent*, Double_t vz, Double_t l_Cent);
-  void FillMeanPtMC(AliAODEvent*, Double_t vz, Double_t l_Cent);
-  void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void ProduceFBSpectra(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
-  void ProduceEfficiencies(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
+  void FillMeanPt(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FillMeanPtMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FillCK(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void ProduceALICEPublished_MptProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void ProduceALICEPublished_CovProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void ProduceEfficiencies(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -68,7 +68,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetBayesPIDIndex(AliAODTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
-  void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
   Int_t GetPIDIndex(const Int_t &pdgcode);
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
@@ -81,16 +80,17 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
-  void SetSystSwitch(Int_t newval) { fSystSwitch = newval; }; //Ambiguous naming here. this is to keep track of the subwagon number
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
+  void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
+  void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
  protected:
   AliEventCuts fEventCuts;
  private:
   AliAnalysisTaskMeanPtV2Corr(const AliAnalysisTaskMeanPtV2Corr&);
   AliAnalysisTaskMeanPtV2Corr& operator=(const AliAnalysisTaskMeanPtV2Corr&);
   Int_t fStageSwitch;
-  Int_t fSystSwitch;
+  TString *fContSubfix;
   TString *fCentEst;
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
@@ -140,8 +140,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, const Int_t &FilterBit=96);
-  Int_t fFilterBit;
+  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;

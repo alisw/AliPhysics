@@ -41,7 +41,7 @@ ClassImp(AliAnalysisTaskMeanPtV2Corr);
 AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   AliAnalysisTaskSE(),
   fStageSwitch(0),
-  fSystSwitch(0),
+  fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
@@ -87,16 +87,15 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fEfficiencies(0),
   fV0MMulti(0),
   fV2dPtMulti(0),
-  fFilterBit(96),
   fDisablePID(kFALSE),
   fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
 {
 };
-AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch):
+AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix):
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
-  fSystSwitch(0),
+  fContSubfix(0),
   fCentEst(0),
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
@@ -117,7 +116,6 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fBayesPID(0),
   fMPTList(0),
   fmPT(0),
-  fmptSet(kFALSE),
   fMultiDist(0),
   fNchVsMulti(0),
   fNchInBins(0),
@@ -126,6 +124,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
+  fmptSet(kFALSE),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
   fWeights(0),
@@ -142,12 +141,13 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fEfficiencies(0),
   fV0MMulti(0),
   fV2dPtMulti(0),
-  fFilterBit(96),
   fDisablePID(kFALSE),
   fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
+  SetContSubfix(ContSubfix);
+  fCentEst = new TString("V0M");
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
   if(fStageSwitch==1)
     DefineOutput(1,TList::Class());
@@ -187,9 +187,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
   printf("Stage switch is %i\n\n\n",fStageSwitch);
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->PrintSetup();
-  if(fGFWSelection->GetSystFlagIndex() == 13) fCentEst = new TString("CL0");
-  else if(fGFWSelection->GetSystFlagIndex() == 14) fCentEst = new TString("CL1");
-  else fCentEst = new TString("V0M");
+  if(fGFWSelection->GetSystFlagIndex() == 13) SetCentralityEstimator("CL0");
+  else if(fGFWSelection->GetSystFlagIndex() == 14) SetCentralityEstimator("CL1");
   OpenFile(1);
   const Int_t temp_NV0MBinsDefault=fExtendV0MAcceptance?11:10;
   Double_t temp_V0MBinsDefault[12] = {0,5,10,20,30,40,50,60,70,80,90,101}; //Last bin to include V0M beyond anchor point
@@ -317,7 +316,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("PrNeg24","PrNeg24"));*/
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
-    if(fSystSwitch) fcname.Append(Form("_%i",fSystSwitch));
+    if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
     fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
     fFC->Initialize(oba,fNMultiBins,fMultiBins);
@@ -479,19 +478,19 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   fGFWSelection->AcceptVertex(fAOD);
   if(fStageSwitch==1)
-    FillWeights(fAOD, vz,l_Cent);
+    FillWeights(fAOD, vz,l_Cent,vtxXYZ);
   if(fStageSwitch==2)
-    fIsMC?FillMeanPtMC(fAOD,vz,l_Cent):FillMeanPt(fAOD, vz, l_Cent);
+    fIsMC?FillMeanPtMC(fAOD,vz,l_Cent,vtxXYZ):FillMeanPt(fAOD, vz, l_Cent,vtxXYZ);
   if(fStageSwitch==3)
-    FillCK(fAOD,vz,l_Cent);
+    FillCK(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==4)
-    ProduceALICEPublished_MptProd(fAOD,vz,l_Cent);
+    ProduceALICEPublished_MptProd(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==5)
-    ProduceALICEPublished_CovProd(fAOD,vz,l_Cent);
+    ProduceALICEPublished_CovProd(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==6)
-    ProduceFBSpectra(fAOD,vz,l_Cent);
+    ProduceFBSpectra(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==7)
-    ProduceEfficiencies(fAOD,vz,l_Cent);
+    ProduceEfficiencies(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskMeanPtV2Corr::NotifyRun() {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -534,16 +533,16 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxX
   vtx->GetXYZ(lvtxXYZ);
   return kTRUE;
 };
-Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, const Int_t &FilterBit) {
-  // if(TMath::Abs(mtr->Eta())>0.8) return kFALSE; //0.8 is ALICE acceptance, so it's fine here if its hardcoded. Need to check explicitly in other places though
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp) {
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
-  // if(!mtr->TestFilterBit(FilterBit)) return kFALSE;
-  // if(mtr->GetTPCNclsF()<70) return kFALSE;
-  if(ltrackXYZ)
+  if(ltrackXYZ && vtxp) {
     mtr->GetXYZ(ltrackXYZ);
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kTRUE);
-  // return kTRUE;
+    ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
+    ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
+    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+  } else return kFALSE; //DCA cut is a must for now
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
@@ -563,7 +562,7 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("Efficiency")) return 7;
   return 0;
 }
-void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   //MC generated
   AliVParticle *lPart;
   AliAODTrack *lTrack;
@@ -587,7 +586,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, Double_t vz, Do
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     if(TMath::Abs(lTrack->Eta())>fEta) continue;
     if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
@@ -608,7 +607,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtCounterWW(const Double_t &pt, Double
   l_sum+=pt/w;
   l_count+=1./w;
 }
-void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   // LoadWeightAndMPT(fAOD);
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
@@ -622,7 +621,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
     Double_t leta = lTrack->Eta();
     if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
     if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
@@ -649,7 +648,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, Double_t vz, Dou
   fV0MMulti->Fill(l_Cent);
   PostData(1,fMPTList);
 };
-void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
   Double_t trackXYZ[3];
@@ -715,7 +714,7 @@ void AliAnalysisTaskMeanPtV2Corr::CalculateMptValues(Double_t outArr[4], Double_
   outArr[2] = inArr[0]*inArr[0] - inArr[4];
   outArr[3] = inArr[1]/inArr[0];
 }
-void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t wp[4][5] = {{0,0,0,0,0}, {0,0,0,0,0},
                        {0,0,0,0,0}, {0,0,0,0,0}}; //Initial values, [species][w*p]
@@ -758,7 +757,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
       if(!lTrack) continue;
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
-      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
+      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
       Double_t p1 = lTrack->Pt();
@@ -811,7 +810,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, Double_t vz, Double_
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }
-void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
@@ -822,7 +821,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,vtxp)) continue;
     nTotNoTracks++;
     FillMeanPtCounter(lpt,l_ptsum[0],l_ptCount[0],0);
     if(fDisablePID) continue;
@@ -838,7 +837,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
   fNchInBins->Fill(nTotNoTracks, nTotNoTracks);
   PostData(1,fMPTList);
 }
-void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
@@ -852,7 +851,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAO
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,vtxp)) continue;
     nTotNoTracks++;
     Double_t p1 = lTrack->Pt();
     FillWPCounter(wp[0],1,p1);
@@ -871,7 +870,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAO
   };
   PostData(1,fptVarList);
 }
-void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
@@ -881,7 +880,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, Double_t v
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.15,20)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.15,20,vtxp)) continue;
     fSpectra[0]->Fill(lpt,l_Cent);
     if(fDisablePID) continue;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
@@ -890,7 +889,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, Double_t v
   fV0MMulti->Fill(l_Cent);//Do not care about nTracks here
   PostData(1,fSpectraList);
 }
-void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
+void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
@@ -920,7 +919,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, Double_
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
-    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     Int_t fLabel = lTrack->GetLabel();
     Int_t index = TMath::Abs(fLabel);
     if (index < 0) continue;
