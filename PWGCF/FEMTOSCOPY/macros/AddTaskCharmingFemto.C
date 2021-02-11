@@ -13,9 +13,12 @@
 AliAnalysisTaskSE *AddTaskCharmingFemto(
     bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
-    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts", TString cutHFsuffix = "",
-    bool applyML = false, TString configML = "config_ML.yml",
-    int useAODProtection = 0, const char *cutVariation = "0") {
+    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
+    TString cutHFsuffix = "", bool applyML = false, TString configML =
+        "config_ML.yml",
+    int useAODProtection = 0, int massSelection =
+        AliAnalysisTaskCharmingFemto::kSignal,
+    const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -234,6 +237,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   task->SetDecayChannel(channelHF);
   task->SetHFCuts(analysisCutsHF);
   task->SetAODMismatchProtection(useAODProtection);
+  task->SetMassSelection(massSelection);
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
@@ -258,6 +262,11 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     addon += "MB_CharmFemto_";
   } else if (trigger == "kHighMultV0") {
     addon += "HM_CharmFemto_";
+  }
+  if (massSelection == AliAnalysisTaskCharmingFemto::kSidebandRight) {
+    addon += "SBRight_";
+  } else if (massSelection == AliAnalysisTaskCharmingFemto::kSidebandLeft) {
+    addon += "SBLeft_";
   }
   if(cutHFsuffix != "") {
     addon += Form("%s_", cutHFsuffix.Data());
