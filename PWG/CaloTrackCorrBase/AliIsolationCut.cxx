@@ -45,7 +45,7 @@ ClassImp(AliIsolationCut) ;
 //____________________________________
 AliIsolationCut::AliIsolationCut() :
 TObject(),
-fFillHistograms(0),        fFillEtaPhiHistograms(0),      
+fFillHistograms(0),        fFillEtaPhiHistograms(0), fEtaPhiHistogramsMinPt(0), 
 fFillLeadingHistograms(0), fFillHighMultHistograms(0), 
 fMakeConeExcessCorr(0),    fFillFractionExcessHistograms(0),
 fConeSize(0.),       fConeSizeBandGap(0.),
@@ -285,7 +285,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
     if ( dPhi >=  TMath::Pi() ) dPhi-=TMath::TwoPi();
     if ( dPhi <= -TMath::Pi() ) dPhi+=TMath::TwoPi();
 
-    if ( fFillHistograms && fFillEtaPhiHistograms )
+    if ( fFillHistograms && fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
       fhEtaPhiCluster->Fill(eta, phi, histoWeight);
 
     if ( fICMethod > kSumBkgSubIC && rad > fConeSize+fConeSizeBandGap )
@@ -311,7 +311,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
           else
             fhPhiBandClusterPt->Fill(ptC, pt, histoWeight);
 
-          if ( fFillEtaPhiHistograms )
+          if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
             fhPhiBandClusterEtaPhi->Fill(eta, phi, histoWeight);
         }
       } // phi band
@@ -332,7 +332,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
           else
             fhEtaBandClusterPt->Fill(ptC, pt, histoWeight);
 
-          if ( fFillEtaPhiHistograms )
+          if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
             fhEtaBandClusterEtaPhi->Fill(eta, phi, histoWeight);
         }
       } // eta band
@@ -421,7 +421,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
           fhPtClusterInConeCent->Fill(ptC, pt, centrality, histoWeight);
       }
       
-      if ( fFillEtaPhiHistograms )
+      if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
         fhEtaPhiInConeCluster->Fill(eta, phi, histoWeight);
     }
     
@@ -459,14 +459,14 @@ void AliIsolationCut::CalculateCaloSignalInCone
       {
         fhConeSumPtClusterCent->Fill(ptC, coneptsumCluster, centrality, histoWeight);
 
-        if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
           fhConeSumPtClusterTrigEtaPhiCent[cenBin] ->Fill(etaC, phiC, coneptsumCluster , histoWeight);
       }
       else
       {
         fhConeSumPtCluster ->Fill(ptC, coneptsumCluster , histoWeight);
         
-        if ( fFillEtaPhiHistograms )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
           fhConeSumPtClusterTrigEtaPhi ->Fill(etaC, phiC, coneptsumCluster , histoWeight);
 
         if ( fFillLeadingHistograms ) 
@@ -487,7 +487,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
         if ( fICMethod == kSumBkgSubPhiBandIC )
           fhConeSumPtPhiBandUEClusterCent->Fill(ptC, phiBandPtSumCluster, centrality, histoWeight);
 
-        if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
             fhConeSumPtEtaBandUEClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight);
@@ -510,7 +510,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
           fhConeSumPtVSUEClusterPhiBand->Fill(coneptsumCluster, phiBandPtSumCluster, histoWeight);
         }
 
-        if ( fFillEtaPhiHistograms )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
             fhConeSumPtEtaBandUEClusterTrigEtaPhi->Fill(etaC, phiC, etaBandPtSumCluster, histoWeight); // Check
@@ -670,7 +670,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
     
     // ** For the background out of cone **
     
-    if ( fFillHistograms && fFillEtaPhiHistograms )
+    if ( fFillHistograms && fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
       fhEtaPhiTrack->Fill(etaTrack, phiTrack, histoWeight);
     
     // Angles between trigger and track
@@ -702,7 +702,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
           else
             fhPhiBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
 
-          if ( fFillEtaPhiHistograms )
+          if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
             fhPhiBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
         }
       } // phi band
@@ -723,7 +723,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
           else
             fhEtaBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
 
-          if ( fFillEtaPhiHistograms )
+          if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
             fhEtaBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
         }
       } // eta band
@@ -757,7 +757,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
           else
             fhPtInPerpConeCent->Fill(ptTrig, ptTrack, centrality, histoWeight);
           
-          if ( fFillEtaPhiHistograms )
+          if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
             fhEtaPhiInPerpCone->Fill(etaTrack,phiTrack, histoWeight);
         }
       }
@@ -838,7 +838,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
           fhPtTrackInConeCent->Fill(ptTrig , ptTrack, centrality, histoWeight);
       }
 
-      if ( fFillEtaPhiHistograms )
+      if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
         fhEtaPhiInConeTrack->Fill(etaTrack, phiTrack, histoWeight);
     } // histograms
     
@@ -875,14 +875,14 @@ void AliIsolationCut::CalculateTrackSignalInCone
       {
         fhConeSumPtTrackCent ->Fill(ptTrig, coneptsumTrack, centrality, histoWeight);
         
-        if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+        if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
           fhConeSumPtTrackTrigEtaPhiCent[cenBin]->Fill(etaTrig, phiTrig, coneptsumTrack, histoWeight);
       }
       else
       {
         fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack, histoWeight);
         
-        if ( fFillEtaPhiHistograms )
+        if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
           fhConeSumPtTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrack, histoWeight);
 
         if ( fFillLeadingHistograms ) 
@@ -891,23 +891,6 @@ void AliIsolationCut::CalculateTrackSignalInCone
     }
     
     // UE subtraction
-    if ( fICMethod == kSumBkgSubIC )
-    {
-      if ( fFillHighMultHistograms )
-      {
-        fhPerpConeSumPtCent->Fill(ptTrig, perpConePtSumTrack, centrality, histoWeight);
-        if ( fFillEtaPhiHistograms  && cenBin < fNCentBins && cenBin >= 0 )
-          fhPerpConeSumPtTrigEtaPhiCent[cenBin]->Fill(etaTrig, phiTrig, perpConePtSumTrack, histoWeight);
-      }
-      else
-      {
-        fhPerpConeSumPt->Fill(ptTrig, perpConePtSumTrack, histoWeight);
-        fhConeSumPtVSPerpCone->Fill(coneptsumTrack, perpConePtSumTrack, histoWeight);
-        if ( fFillEtaPhiHistograms )
-          fhPerpConeSumPtTrigEtaPhi->Fill(etaTrig, phiTrig, perpConePtSumTrack, histoWeight);
-      }
-    }
-    
     if ( fICMethod > kSumBkgSubIC )
     {
       if ( fFillHighMultHistograms )
@@ -918,7 +901,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
         if ( fICMethod == kSumBkgSubPhiBandIC )
           fhConeSumPtPhiBandUETrackCent->Fill(ptTrig, phiBandPtSumTrack , centrality, histoWeight);
 
-        if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+        if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
             fhConeSumPtEtaBandUETrackTrigEtaPhiCent[cenBin]->Fill(etaTrig, phiTrig, etaBandPtSumTrack, histoWeight);
@@ -941,7 +924,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
           fhConeSumPtVSUETracksPhiBand->Fill(coneptsumTrack, phiBandPtSumTrack, histoWeight);
         }
 
-        if ( fFillEtaPhiHistograms )
+        if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
             fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSumTrack, histoWeight);
@@ -2845,7 +2828,7 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fDistMinToTrigger=%1.2f;",fDistMinToTrigger) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fFillHistograms=%d,fFillEtaPhiHistograms=%d;",fFillHistograms,fFillEtaPhiHistograms) ;
+  snprintf(onePar,buffersize,"fFillHistograms=%d,fFillEtaPhiHistograms=%d; pt>%2.1f",fFillHistograms,fFillEtaPhiHistograms,fEtaPhiHistogramsMinPt) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fMakeConeExcessCorr=%d;",fMakeConeExcessCorr) ;
   parList+=onePar ;
@@ -2863,6 +2846,7 @@ void AliIsolationCut::InitParameters()
 {
   fFillHistograms       = kFALSE; // True in GetCreateOutputObjects();
   fFillEtaPhiHistograms = kFALSE; 
+  fEtaPhiHistogramsMinPt= 10;
   fFillHighMultHistograms = kFALSE;
   fNCentBins            = 10 ;
   fConeSize             = 0.4 ;
@@ -3146,6 +3130,20 @@ void  AliIsolationCut::MakeIsolationCut
       
       // Add to candidate object
       pCandidate->SetChargedPtSumInPerpCone(perpPtSumTrack*excessAreaTrkEta);
+      
+      if ( fFillHighMultHistograms )
+      {
+        fhPerpConeSumPtCent->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, centrality, histoWeight);
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt  && cenBin < fNCentBins && cenBin >= 0 )
+          fhPerpConeSumPtTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+      }
+      else
+      {
+        fhPerpConeSumPt->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+        fhConeSumPtVSPerpCone->Fill(coneptsumTrack * excessAreaTrkEta, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+          fhPerpConeSumPtTrigEtaPhi->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+      }
     } // UE subtraction by perpendicular cones
     else if ( fICMethod >= kSumBkgSubEtaBandIC ) // eta or phi band
     {
@@ -3216,12 +3214,12 @@ void  AliIsolationCut::MakeIsolationCut
         {
           if ( fFillHighMultHistograms ) 
           {
-            fhConeSumPtUEBandNormClusterCent->Fill(ptC, coneptsumBkgCls, centrality, histoWeight);
+            fhConeSumPtUEBandNormClusterCent->Fill(ptC, coneptsumBkgCls*excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
           }
           else
           {
-            fhConeSumPtUEBandNormCluster->Fill(ptC, coneptsumBkgCls, histoWeight);
-            fhConeSumPtClusterSubVsNoSub->Fill(coneptsumCluster, coneptsumClusterSub, histoWeight);
+            fhConeSumPtUEBandNormCluster->Fill(ptC, coneptsumBkgCls*excessAreaClsEta*excessAreaClsPhi, histoWeight);
+            fhConeSumPtClusterSubVsNoSub->Fill(coneptsumCluster*excessAreaClsEta*excessAreaClsPhi, coneptsumClusterSub*excessAreaClsEta*excessAreaClsPhi, histoWeight);
           }
         } // histograms
       } // clusters in cone
@@ -3265,12 +3263,12 @@ void  AliIsolationCut::MakeIsolationCut
         {          
           if ( fFillHighMultHistograms )
           {
-            fhConeSumPtUEBandNormTrackCent->Fill(ptC, coneptsumBkgTrk, centrality, histoWeight);
+            fhConeSumPtUEBandNormTrackCent->Fill(ptC, coneptsumBkgTrk*excessAreaTrkEta, centrality, histoWeight);
           }
           else
           {
-            fhConeSumPtUEBandNormTrack->Fill(ptC, coneptsumBkgTrk, histoWeight);
-            fhConeSumPtTrackSubVsNoSub->Fill(coneptsumTrack, coneptsumTrackSub, histoWeight);
+            fhConeSumPtUEBandNormTrack->Fill(ptC, coneptsumBkgTrk*excessAreaTrkEta, histoWeight);
+            fhConeSumPtTrackSubVsNoSub->Fill(coneptsumTrack*excessAreaTrkEta, coneptsumTrackSub*excessAreaTrkEta, histoWeight);
           }
         } // fill 
       } // tracks in cone
@@ -3354,13 +3352,13 @@ void  AliIsolationCut::MakeIsolationCut
   if ( fFillHighMultHistograms )
   {
     fhConeSumPtCent->Fill(ptC, coneptsum, centrality, histoWeight);
-    if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+    if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
       fhConeSumPtTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsum, histoWeight);
   }
   else
   {
     fhConeSumPt->Fill(ptC, coneptsum, histoWeight);
-    if ( fFillEtaPhiHistograms )
+    if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
       fhConeSumPtTrigEtaPhi->Fill(etaC, phiC, coneptsum, histoWeight);
   }
   
@@ -3387,13 +3385,13 @@ void  AliIsolationCut::MakeIsolationCut
     if ( fFillHighMultHistograms )
     {
       fhConeSumPtUESubCent->Fill(ptC, coneptsumUESub, centrality, histoWeight);
-      if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+      if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
         fhConeSumPtUESubTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsumUESub, histoWeight);
     }
     else
     {
       fhConeSumPtUESub ->Fill(ptC, coneptsumUESub, histoWeight);
-      if ( fFillEtaPhiHistograms )
+      if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
         fhConeSumPtUESubTrigEtaPhi->Fill(etaC, phiC, coneptsumUESub, histoWeight);
     }
     
@@ -3402,24 +3400,24 @@ void  AliIsolationCut::MakeIsolationCut
     {
       if ( fFillHighMultHistograms ) 
       {
-        fhConeSumPtUESubTrackCent  ->Fill(ptC, coneptsumUESubTrack  , centrality, histoWeight);
-        fhConeSumPtUESubClusterCent->Fill(ptC, coneptsumUESubCluster, centrality, histoWeight);
+        fhConeSumPtUESubTrackCent  ->Fill(ptC, coneptsumUESubTrack * excessAreaTrkEta  , centrality, histoWeight);
+        fhConeSumPtUESubClusterCent->Fill(ptC, coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, centrality, histoWeight);
         
-        if ( fFillEtaPhiHistograms && cenBin < fNCentBins && cenBin >= 0 )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
         {
-          fhConeSumPtUESubTrackTrigEtaPhiCent  [cenBin]->Fill(etaC, phiC, coneptsumUESubTrack  , histoWeight);
-          fhConeSumPtUESubClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsumUESubCluster, histoWeight);
+          fhConeSumPtUESubTrackTrigEtaPhiCent  [cenBin]->Fill(etaC, phiC, coneptsumUESubTrack * excessAreaTrkEta  , histoWeight);
+          fhConeSumPtUESubClusterTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, histoWeight);
         }
       }
       else
       {
-        fhConeSumPtUESubTrack  ->Fill(ptC, coneptsumUESubTrack  , histoWeight);
-        fhConeSumPtUESubCluster->Fill(ptC, coneptsumUESubCluster, histoWeight);
+        fhConeSumPtUESubTrack  ->Fill(ptC, coneptsumUESubTrack * excessAreaTrkEta, histoWeight);
+        fhConeSumPtUESubCluster->Fill(ptC, coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, histoWeight);
         
-        if ( fFillEtaPhiHistograms )
+        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
         {
-          fhConeSumPtUESubTrackTrigEtaPhi  ->Fill(etaC, phiC, coneptsumUESubTrack, histoWeight);
-          fhConeSumPtUESubClusterTrigEtaPhi->Fill(etaC, phiC, coneptsumUESubCluster, histoWeight);
+          fhConeSumPtUESubTrackTrigEtaPhi  ->Fill(etaC, phiC, coneptsumUESubTrack * excessAreaTrkEta, histoWeight);
+          fhConeSumPtUESubClusterTrigEtaPhi->Fill(etaC, phiC, coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, histoWeight);
         }
       }
       
@@ -3427,16 +3425,18 @@ void  AliIsolationCut::MakeIsolationCut
       if( fICMethod != kSumBkgSubIC )
       {
         if ( fFillHighMultHistograms )
-          fhConeSumPtUESubClustervsTrackCent->Fill(coneptsumUESubCluster, coneptsumUESubTrack, centrality, histoWeight);
+          fhConeSumPtUESubClustervsTrackCent->Fill(coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, 
+                                                   coneptsumUESubTrack * excessAreaTrkEta, centrality, histoWeight);
         else
-          fhConeSumPtUESubClustervsTrack ->Fill(coneptsumUESubCluster, coneptsumUESubTrack, histoWeight);
+          fhConeSumPtUESubClustervsTrack ->Fill(coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta, 
+                                                coneptsumUESubTrack * excessAreaTrkEta, histoWeight);
 
         if ( TMath::Abs(coneptsumUESubTrack) > 0 ) 
         {
            if ( fFillHighMultHistograms ) 
-             fhConeSumPtUESubClusterTrackFracCent->Fill(ptC, coneptsumUESubCluster / coneptsumUESubTrack, centrality, histoWeight);
+             fhConeSumPtUESubClusterTrackFracCent->Fill(ptC, (coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta) / (coneptsumUESubTrack * excessAreaTrkEta), centrality, histoWeight);
           else
-            fhConeSumPtUESubClusterTrackFrac->Fill(ptC, coneptsumUESubCluster / coneptsumUESubTrack, histoWeight);
+            fhConeSumPtUESubClusterTrackFrac->Fill(ptC, (coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta) / (coneptsumUESubTrack * excessAreaTrkEta), histoWeight);
         }
       }
     }
