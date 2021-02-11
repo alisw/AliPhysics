@@ -802,7 +802,7 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Ce
   };
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
-    FillCovariance(fCovariance[i],corrconfigs.at(i*4),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);

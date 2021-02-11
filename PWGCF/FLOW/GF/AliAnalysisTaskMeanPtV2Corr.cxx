@@ -87,7 +87,6 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fEfficiencies(0),
   fV0MMulti(0),
   fV2dPtMulti(0),
-  fFilterBit(96),
   fDisablePID(kFALSE),
   fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
@@ -117,7 +116,6 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fBayesPID(0),
   fMPTList(0),
   fmPT(0),
-  fmptSet(kFALSE),
   fMultiDist(0),
   fNchVsMulti(0),
   fNchInBins(0),
@@ -126,6 +124,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
+  fmptSet(kFALSE),
   fTriggerType(AliVEvent::kMB),
   fWeightList(0),
   fWeights(0),
@@ -142,13 +141,12 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fEfficiencies(0),
   fV0MMulti(0),
   fV2dPtMulti(0),
-  fFilterBit(96),
   fDisablePID(kFALSE),
   fConsistencyFlag(0),
   fRequireReloadOnRunChange(kFALSE)
 {
   fStageSwitch = GetStageSwitch(stageSwitch);
-  fContSubfix = SetContSubfix(ContSubfix);
+  SetContSubfix(ContSubfix);
   fCentEst = new TString("V0M");
   if(!fStageSwitch) AliFatal("Stage switch is 0, not sure what should be done!\n");
   if(fStageSwitch==1)
@@ -588,7 +586,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t 
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     if(TMath::Abs(lTrack->Eta())>fEta) continue;
     if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
@@ -623,7 +621,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
     Double_t leta = lTrack->Eta();
     if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
     if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
@@ -759,7 +757,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       if(!lTrack) continue;
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
-      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,fFilterBit)) continue;
+      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
       Double_t p1 = lTrack->Pt();
@@ -823,7 +821,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAO
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,vtxp)) continue;
     nTotNoTracks++;
     FillMeanPtCounter(lpt,l_ptsum[0],l_ptCount[0],0);
     if(fDisablePID) continue;
@@ -853,7 +851,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_CovProd(AliAODEvent *fAO
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.5,2,vtxp)) continue;
     nTotNoTracks++;
     Double_t p1 = lTrack->Pt();
     FillWPCounter(wp[0],1,p1);
@@ -882,7 +880,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceFBSpectra(AliAODEvent *fAOD, const Doub
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
     Double_t lpt = lTrack->Pt();
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.15,20)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.15,20,vtxp)) continue;
     fSpectra[0]->Fill(lpt,l_Cent);
     if(fDisablePID) continue;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
@@ -921,7 +919,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
-    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,fFilterBit)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     Int_t fLabel = lTrack->GetLabel();
     Int_t index = TMath::Abs(fLabel);
     if (index < 0) continue;

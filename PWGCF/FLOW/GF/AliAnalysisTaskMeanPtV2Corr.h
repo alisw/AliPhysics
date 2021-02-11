@@ -68,7 +68,6 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetBayesPIDIndex(AliAODTrack*);
   Double_t GetMyWeight(Double_t eta, Double_t phi, Int_t pidind);
   void ChangeMptSet(Bool_t newval) {fmptSet = newval; };
-  void SetTrackFilterBit(Int_t newval) { fFilterBit = newval; };
   Int_t GetPIDIndex(const Int_t &pdgcode);
   void SetDisablePID(Bool_t newval) { fDisablePID = newval; };
   void SetPtBins(Int_t nBins, Double_t *ptbins);
