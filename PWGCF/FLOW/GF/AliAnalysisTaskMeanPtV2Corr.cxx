@@ -233,11 +233,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fEfficiencyList = (TList*)GetInputData(1);
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
-        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
+        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         if(!fEfficiencies[i]) {
           if(!i) AliFatal("Could not fetch efficiency!\n");
           printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
-          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         };
       }
     };
@@ -245,7 +245,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fMPTList->SetOwner(kTRUE);
     fmPT = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fmPT[i] = new TProfile(Form("MeanPt_%s",spNames[i].Data()),Form("MeanPt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fmPT[i] = new TProfile(Form("MeanPt_%s%s",spNames[i].Data(),fGFWSelection->GetSystPF()),Form("MeanPt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fMPTList->Add(fmPT[i]);
     }
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
@@ -260,18 +260,18 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     if(!fMPTList) AliFatal("Could not fetch input mean pT list!\n");
     fmPT = new TProfile*[4];
     for(Int_t i=0;i<4;i++) {
-      fmPT[i] = (TProfile*)fMPTList->FindObject(Form("MeanPt_%s",spNames[i].Data()));
+      fmPT[i] = (TProfile*)fMPTList->FindObject(Form("MeanPt_%s%s",spNames[i].Data(),fGFWSelection->GetSystPF()));
       if(!fmPT[i]) AliFatal("Could not fetch mean pt!\n");
     }
     if(!fIsMC) { //Efficiencies and NUA are only for the data
       fEfficiencyList = (TList*)GetInputData(2);
       fEfficiencies = new TH1D*[l_NV0MBinsDefault];
       for(Int_t i=0;i<l_NV0MBinsDefault;i++) {
-        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i",i));
+        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         if(!fEfficiencies[i]) {
           if(!i) AliFatal("Could not fetch efficiency!\n");
           printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
-          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i",i));
+          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
         };
       }
       fWeightList = (TList*)GetInputData(3);
@@ -317,7 +317,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
     if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
-    fcname.Append(fGFWSelection->GetSystPF());
+    // fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
     fFC->Initialize(oba,fNMultiBins,fMultiBins);
     delete oba;
@@ -797,7 +797,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   };
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
-    FillCovariance(fCovariance[i],corrconfigs.at(i*4),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -1060,7 +1060,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::LoadMyWeights(const Int_t &lRunNo) {
   if(lRunNo && lRunNo == fRunNo) return kTRUE;
   // if(!fWeights) { fWeights = new AliGFWWeights*[1]; };
   // if(fWeights[0]) delete fWeights[0];
-  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i",lRunNo));
+  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",lRunNo,fGFWSelection->GetSystPF()));
   if(!fWeights[0]) AliFatal(Form("Weights w%i not not found in the list provided!\n",lRunNo));
   fWeights[0]->CreateNUA();
   return kTRUE;
