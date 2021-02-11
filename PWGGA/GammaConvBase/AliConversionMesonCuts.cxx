@@ -3412,6 +3412,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
+    fBackgroundMode             = 7;
     break;
   case 28: // s cluster swapping method with 90 degree rotation angle with weighting
     fDoGammaSwappForBg          = 1;
