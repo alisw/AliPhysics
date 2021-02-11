@@ -1912,7 +1912,7 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
       if(fInputEvent->IsA()==AliAODEvent::Class())
         ProcessAODMCParticles();
     }
-    
+
     if (triggered==kFALSE) continue;
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
@@ -2115,7 +2115,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
           }
           if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fVectorJetEta.at(ij) + etaCluster;
-            DeltaPhi = TMath::Pi() - DeltaPhi;
+            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
           Double_t RJetPi0Cand = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
           if(fConvJetReader->Get_Jet_Radius() > 0 ){
@@ -3294,7 +3294,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
           Double_t DeltaPhi = abs(fVectorJetPhi.at(j)-particle->Phi());
           if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fVectorJetEta.at(j) + particle->Eta();
-            DeltaPhi = fVectorJetPhi.at(j) + particle->Phi() - TMath::Pi();
+            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
@@ -3621,7 +3621,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
           Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
           if(fDoOutOfJet == 2){ // check if on opposite side of jet (DeltaEta/Phi = 0 if directly opposite)
             DeltaEta = fTrueVectorJetEta.at(j) + particle->Eta();
-            DeltaPhi = fTrueVectorJetPhi.at(j) + particle->Phi() - TMath::Pi();
+            DeltaPhi = abs(TMath::Pi() - DeltaPhi);
           }
           if(DeltaPhi > TMath::Pi()) {
             DeltaPhi = 2*TMath::Pi() - DeltaPhi;
