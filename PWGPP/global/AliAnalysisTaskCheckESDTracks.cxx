@@ -1344,8 +1344,16 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
 
-    if(!fTrCutsTPC->AcceptTrack(pTrack)) continue;
-    if(!fTrCutsTPC->AcceptTrack(nTrack)) continue;
+    Bool_t okV0DauTr=kTRUE;
+    Double_t oldXY=fTrCutsTPC->GetMaxDCAToVertexXY();
+    Double_t oldZ=fTrCutsTPC->GetMaxDCAToVertexZ();
+    fTrCutsTPC->SetMaxDCAToVertexXY(999.);
+    fTrCutsTPC->SetMaxDCAToVertexZ(999.);
+    if(!fTrCutsTPC->AcceptTrack(pTrack)) okV0DauTr=kFALSE;
+    if(!fTrCutsTPC->AcceptTrack(nTrack)) okV0DauTr=kFALSE;
+    fTrCutsTPC->SetMaxDCAToVertexXY(oldXY);
+    fTrCutsTPC->SetMaxDCAToVertexZ(oldZ);
+    if(!okV0DauTr) continue;
     
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
