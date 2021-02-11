@@ -190,6 +190,8 @@ class AliIsolationCut : public TObject {
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
   void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ; }
  
+  void       SetEtaPhiMinPt(Float_t minpt)                     { fEtaPhiHistogramsMinPt = minpt ; }
+
   void       SwitchOnFillLeadingParticleHistograms ()          { fFillLeadingHistograms = kTRUE  ; }
   void       SwitchOffFillLeadingParticleHistograms()          { fFillLeadingHistograms = kFALSE ; }
   
@@ -208,6 +210,8 @@ class AliIsolationCut : public TObject {
   
   Bool_t     fFillEtaPhiHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with eta/phi or band related histograms 
 
+  Float_t    fEtaPhiHistogramsMinPt;                   ///< Fill eta vs phi histograms above a certain pT
+  
   Bool_t     fFillLeadingHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with leadiing particle related histograms 
   
   Bool_t     fFillHighMultHistograms;                  ///< Fill histograms if GetCreateOuputObjects() was called with centrality dependent histograms 
