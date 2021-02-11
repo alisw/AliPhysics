@@ -83,7 +83,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
-  void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
+  void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
  protected:
   AliEventCuts fEventCuts;
  private:
