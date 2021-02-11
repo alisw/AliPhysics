@@ -136,6 +136,31 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
     TrackCuts->SetPtRange(ProtonPtup, 4.05);
     AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+  } else if (suffix == "16") {
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "17") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "18") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "19") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "20") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
   }
 
   // =====================================================================
