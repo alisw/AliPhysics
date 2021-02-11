@@ -160,6 +160,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TList*                            fClusterCandidates;                                 //!<! good calo gammas after selection
     TList*                            fNeutralDecayParticleCandidates;                    //!<! good neutral pion candidates
     TList*                            fNeutralDecayParticleSidebandCandidates;            //!<! good neutral pion candidates from sideband
+    TList*                            fNeutralDecayParticleSwappCandidates;               //!<! good neutral pion candidates from Swapp method
     TList*                            fPosPionCandidates;                                 //!<! good positive pion candidates
     TList*                            fNegPionCandidates;                                 //!<! good negative pion candidates
     TList*                            fEventCutArray;                                     ///< array with event cuts
@@ -211,7 +212,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoConvGammaEta;                                 //!<! array of histos of conversion photon, eta
     TH1F**                            fHistoClusterGammaPt;                               //!<! array of histos of Cluster photon, pt
     TH1F**                            fHistoClusterGammaEta;                              //!<! array of histos of Cluster photon, eta
-    TH1F**                            fHistoClusterGammaE;                              //!<! array of histos of Cluster photon, energy
+    TH1F**                            fHistoClusterGammaE;                                //!<! array of histos of Cluster photon, energy
+    TH1I**                            fHistoNumberClusterGamma;                           //!<! array of histos of number of Cluster photons per event
     TH1F**                            fHistoNegPionPt;                                    //!<! array of histos of negative pion, pt
     TH1F**                            fHistoPosPionPt;                                    //!<! array of histos of positive pion, pt
     TH1F**                            fHistoNegPionPhi;                                   //!<! array of histos of negative pion, phi
@@ -227,6 +229,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoPionPionInvMassPt;                            //!<! array of histos of pion pion, invMass, pT_{pi+pi-}
     TH2F**                            fHistoGammaGammaInvMassPt;                          //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+    TH2F**                            fHistoSwappingGammaGammaInvMassPt;                  //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     //All Dalitz
@@ -301,6 +304,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced NNM via pi+pi-pi0 in the specified y range
     TH1F**                            fHistoMCHNMPiPlPiMiNDMEta;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPhi;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
+    TH2F**                            fHistoMCHNMPiPlPiMiNDMEtavsPt;                      //!<! array of histos of produced HNM eta vs Pt
     /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
     TH1F**                            fHistoMCHNMPiPlPiMiNDMInAccPt;                      //!<!
     TH2F**                            fHistoMCHNMInAccVsNDMPt;                            //!<!
@@ -480,8 +484,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 19);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 20);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
-

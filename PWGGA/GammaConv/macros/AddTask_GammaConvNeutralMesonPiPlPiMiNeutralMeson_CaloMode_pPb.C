@@ -225,6 +225,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("8008e113","411790105f032230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% without NL just EMC, EG2
     cuts.AddCutHeavyMesonCalo("8008e113","411793105f032230000","32c51070a","0103603o00000000","0453503000000000"); // 0-100% PCM NL just EMC, EG2
 
+  }else if (trainConfig == 1008){ // EMC  INT7 mixed background study pi+ pi- from same
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0o53503000000000"); // Mixed event pi+ pi- from same
+
+  }else if (trainConfig == 1009){ // EMC  INT7 mixed background study pi+ pi0 from same
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0p53503000000000"); // Mixed event pi+ pi0 from same
+
+  }else if (trainConfig == 1010){ // EMC  INT7 background study
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0r53503000000000"); // Rotation around pi0
+    cuts.AddCutHeavyMesonCalo("80010113","411790105f032230000","32c51070a","0103603o00000000","0a53503000000000"); // Likesign method
+
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  INT7 run1
     cuts.AddCutHeavyMesonCalo("80010113","244440004a013200000","32c51070a","0103603q00000000","0453503000000000");  // 0-100% without NL
