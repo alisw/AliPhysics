@@ -148,6 +148,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskConvJet* fConvJetReader;                                     // JetReader
     Bool_t                  fDoJetAnalysis;                                     // Switch for Jet Analysis
     Bool_t                  fDoJetQA;                                           // Switch for Jet QA
+    Int_t                   fDoOutOfJet;                                        // Switch for Jet Analysis out of jet (see AliConversionMesonCuts for detailed description)
     TList**                 fJetHistograms;                                     // List for Jet histograms
     TClonesArray*           fAODMCTrackArray;                                   // MC track array
     TClonesArray*           farrClustersProcess;                                // Cluster array
@@ -382,7 +383,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 41);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 42);
 };
 
 #endif
