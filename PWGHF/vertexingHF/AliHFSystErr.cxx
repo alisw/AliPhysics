@@ -8372,9 +8372,9 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,0.15);//1-2
-  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.15); // 1-2
-  for(Int_t i=3;i<=8;i++) fRawYield->SetBinContent(i,0.07); // from 2-3 to 7-8
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.08); // 8-10, 10-12
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.09); // 1-2
+  for(Int_t i=3;i<=5;i++) fRawYield->SetBinContent(i,0.03); // from 2-3 to 4-5
+  for(Int_t i=6;i<=12;i++) fRawYield->SetBinContent(i,0.06); // from 6-7 to 10-12
   for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10); // 12-24
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
@@ -8384,7 +8384,7 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   for(Int_t i=6;i<=10;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4 to 8-10
   for(Int_t i=11;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10-12, 12-24
 
-  // PID efficiency (from PID/noPID) (+++ Old! From coarser bins analysis +++)
+  // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
 
