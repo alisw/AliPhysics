@@ -259,7 +259,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (trigger == "kHighMultV0") {
     addon += "HM_CharmFemto_";
   }
-  if(cutHFsuffix != "") {
+  if(!cutHFsuffix.EqualTo("")) {
     addon += Form("%s_", cutHFsuffix.Data());
   }
 
