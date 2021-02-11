@@ -162,7 +162,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoToCloseV0sCut(kFALSE),
   fDoSharedElecCut(kFALSE),
   fDoMesonQualitySelection(kFALSE),
-  fUseMCPSmearing(kFALSE),
+  fUseMCPSmearing(0),
   fAlphaPtDepCut(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
   fDCAZMesonPrimVtxCutOn(kFALSE),
@@ -3735,6 +3735,12 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = 0.025;
       fPSigSmearingCte  = 0.020;
       break;
+    case 17:     //h
+      fUseMCPSmearing   = 2;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.025;
+      fPSigSmearingCte  = 0.020;
+      break;
 
     default:
       AliError("Warning: UseMCPSmearing not defined");
@@ -3885,6 +3891,11 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.009;
       fPSigSmearingCte  = 0.011;
+    case 24:     //o
+      fUseMCPSmearing   = 2;
+      fPSigSmearing     = 0.000222327;
+      fPSigSmearingCte  = -0.000123638;
+
       break;
     default:
       AliError("Warning: UseMCPSmearing not defined");
@@ -4307,20 +4318,34 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     theta=acos( photon->Pz()/ photon->P());
   }
 
-  if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
-    facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
-  }
-
-  if( fPBremSmearing != 1.){
-    if(fBrem!=NULL){
-      facPBrem = fBrem->GetRandom();
+  if (fUseMCPSmearing == 1){
+    if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
+      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
     }
-  }
 
-  photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
-  photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
-  photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
-  photon->SetE(photon->P());
+    if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+        facPBrem = fBrem->GetRandom();
+      }
+    }
+
+    photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+    photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+    photon->SetE(photon->P());
+  } else if (fUseMCPSmearing == 2) {
+    TF1* fScaling = new TF1("fScaling", "pol2", 0, 100);
+    fScaling->SetParameters(1.47693, -0.954702, 0.47791);    
+    facPSig = fRandom.Gaus(P,fScaling->GetX(fPSigSmearingCte+fPSigSmearing*P));
+    
+    photon->SetPx(facPSig*sin(theta)*cos(phi)) ;
+    photon->SetPy(facPSig*sin(theta)*sin(phi)) ;
+    photon->SetPz(facPSig*cos(theta));
+
+    photon->SetE(photon->P());
+  }
+  
+
 }
 //________________________________________________________________________
 void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)

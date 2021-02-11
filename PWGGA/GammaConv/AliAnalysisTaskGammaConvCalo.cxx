@@ -1831,12 +1831,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
         fHistoMotherInvMassECalibPCM[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib_PCM", "ESD_Mother_InvMass_E_Calib_PCM", 300, 0, 0.3, nBinsPt, arrPtBinning);
         fHistoMotherInvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-        fHistoMotherInvMassECalibPCM[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fHistoMotherInvMassECalibPCM[iCut]->SetYTitle("E_{PCM #gamma}(GeV)");
         fESDList[iCut]->Add(fHistoMotherInvMassECalibPCM[iCut]);
 
         fHistoMotherBackInvMassECalibPCM[iCut]     = new TH2F("ESD_Background_InvMass_E_Calib_PCM", "ESD_Background_InvMass_E_Calib_PCM", 300, 0, 0.3, nBinsPt, arrPtBinning);
         fHistoMotherBackInvMassECalibPCM[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-        fHistoMotherBackInvMassECalibPCM[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fHistoMotherBackInvMassECalibPCM[iCut]->SetYTitle("E_{PCM #gamma}(GeV)");
         fESDList[iCut]->Add(fHistoMotherBackInvMassECalibPCM[iCut]);
 
         if (fIsMC > 1){
