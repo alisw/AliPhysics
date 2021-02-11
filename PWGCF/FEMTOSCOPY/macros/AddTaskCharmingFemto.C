@@ -293,7 +293,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (massSelection == AliAnalysisTaskCharmingFemto::kSidebandLeft) {
     addon += "SBLeft_";
   }
-  if(cutHFsuffix != "") {
+  if(!cutHFsuffix.EqualTo("")) {
     addon += Form("%s_", cutHFsuffix.Data());
   }
 
