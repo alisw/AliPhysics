@@ -87,25 +87,6 @@ endif(FASTJET_FOUND)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-if(FASTJET_FOUND)
-  set(LIBDEPS
-    ${LIBDEPS}
-    fastjetcontribfragile
-    fastjetplugins
-    siscone_spherical
-    siscone
-    fastjettools
-    fastjet
-    )
-endif(FASTJET_FOUND)
-
-set(ROOUNFOLD_DEPENDENCIES)
-if(RooUnfold_FOUND)
-    get_target_property(ROOUNFOLD_LIBRARY RooUnfold::RooUnfold IMPORTED_LOCATION)
-    set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
-    set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
-endif(RooUnfold_FOUND)
-
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes (relative paths)
@@ -116,7 +97,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
