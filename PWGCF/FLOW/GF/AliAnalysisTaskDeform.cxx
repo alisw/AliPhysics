@@ -802,7 +802,7 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Ce
   };
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
-    FillCovariance(fCovariance[i],corrconfigs.at(i*4),nTotNoTracks,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -814,6 +814,7 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Ce
   // printf("Will use dpt v2 profile index %i (out of %i-1), multiplicity is %f\n",indx,fV2dPtList->GetEntries(),l_Multi);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
+  PostData(5,fQAList);
 }
 void AliAnalysisTaskDeform::ProduceALICEPublished_MptProd(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent) {
   AliAODTrack *lTrack;
