@@ -74,11 +74,14 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
-      fMassSelectionType(kSignalSigma),
+      fMassSelectionType(kSignal),
       fNSigmaMass(2.),
       fNSigmaOffsetSideband(5.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fSidebandWidth(0.2),
+      fLowerDstarRemoval(1.992),
+      fUpperDstarRemoval(2.028),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
@@ -146,11 +149,14 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
-      fMassSelectionType(kSignalSigma),
+      fMassSelectionType(kSignal),
       fNSigmaMass(2.),
       fNSigmaOffsetSideband(5.),
       fLowerMassSelection(0.),
       fUpperMassSelection(999.),
+      fSidebandWidth(0.2),
+      fLowerDstarRemoval(1.992),
+      fUpperDstarRemoval(2.028),
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
@@ -388,41 +394,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fHistDminusInvMassPt->Fill(dMeson->Pt(), mass);
     }
 
-    // select D mesons mass window
-    if (fMassSelectionType == kSignalSigma
-        || fMassSelectionType == kSidebandSigma) {
-      // simple parametrisation from D+ in 5.02 TeV
-      double massMean = TDatabasePDG::Instance()->GetParticle(absPdgMom)->Mass()
-          + 0.0025;  // mass shift observed in all Run2 data samples for all
-                     // D-meson species
-      double massWidth = 0.;
-      switch (fDecChannel) {
-        case kDplustoKpipi:
-          if (fSystem == kpp5TeV) {
-            massWidth = 0.0057 + dMeson->Pt() * 0.00066;
-          } else if (fSystem == kpp13TeV) {
-            massWidth = 0.006758 + dMeson->Pt() * 0.0005124;
-          }
-          break;
-      }
-      if (fMassSelectionType == kSignalSigma) {
-        fLowerMassSelection = massMean - fNSigmaMass * massWidth;
-        fUpperMassSelection = massMean + fNSigmaMass * massWidth;
-      } else if (fMassSelectionType == kSidebandSigma) {
-        double closeToD = massMean + massWidth * fNSigmaOffsetSideband;
-        double farAway = massMean
-            + massWidth * (fNSigmaOffsetSideband + 2.f * fNSigmaMass);
 
-        if (closeToD > farAway) {
-          fLowerMassSelection = farAway;
-          fUpperMassSelection = closeToD;
-        } else {
-          fLowerMassSelection = closeToD;
-          fUpperMassSelection = farAway;
-        }
-      }
-    }
-    if( mass > fLowerMassSelection && mass < fUpperMassSelection) {
+    if( MassSelection(mass, dMeson->Pt(), absPdgMom) ) {
       if (dMeson->Charge() > 0) {
         AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
         if (fIsMC && fMCBeautyRejection
@@ -657,7 +630,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fHistDplusInvMassPtSel = new TH2F(
         "fHistDplusInvMassPtSel",
         "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-        10, 100, 1.77, 1.97);
+        10, 100, 1.57, 2.17);
     fDChargedHistList->Add(fHistDplusInvMassPtSel);
     fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDplusEta);
@@ -703,7 +676,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fHistDminusInvMassPt = new TH2F(
       "fHistDminusInvMassPt",
       "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-      10, 100, 1.77, 1.97);
+      10, 100, 1.57, 2.17);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
     fHistDminusInvMassPtSel = new TH2F(
@@ -938,4 +911,47 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   }
   
   return isSelected;
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
+                                                 const double pt,
+                                                 const int pdg) {
+  // simple parametrisation from D+ in 5.02 TeV
+  double massMean = TDatabasePDG::Instance()->GetParticle(pdg)->Mass() + 0.0025;  // mass shift observed in all Run2 data samples for all
+                                                                                  // D-meson species
+  double massWidth = 0.;
+  switch (fDecChannel) {
+    case kDplustoKpipi:
+      if (fSystem == kpp5TeV) {
+        massWidth = 0.0057 + pt * 0.00066;
+      } else if (fSystem == kpp13TeV) {
+        massWidth = 0.006758 + pt * 0.0005124;
+      }
+      break;
+  }
+
+  // select D mesons mass window
+  if (fMassSelectionType == kSignal) {
+    fLowerMassSelection = massMean - fNSigmaMass * massWidth;
+    fUpperMassSelection = massMean + fNSigmaMass * massWidth;
+  } else if ( fMassSelectionType == kSidebandLeft) {
+    fLowerMassSelection = massMean - fNSigmaOffsetSideband * massWidth - fSidebandWidth;
+    fUpperMassSelection = massMean - fNSigmaOffsetSideband * massWidth;
+  } else if ( fMassSelectionType == kSidebandRight) {
+    fLowerMassSelection = massMean + fNSigmaOffsetSideband * massWidth;
+    fUpperMassSelection = massMean + fNSigmaOffsetSideband * massWidth + fSidebandWidth;
+
+    // additional removal of D*
+    if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
+      return false;
+    }
+  }
+
+
+  if (mass > fLowerMassSelection && mass < fUpperMassSelection) {
+    return true;
+  }
+
+  return false;
 }
