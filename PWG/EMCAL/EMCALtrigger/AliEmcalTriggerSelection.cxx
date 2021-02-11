@@ -55,7 +55,7 @@ AliEmcalTriggerSelection::AliEmcalTriggerSelection(const char *name, const AliEm
 {
 }
 
-AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArray * const inputPatches) const {
+AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArray * const inputPatches, const AliEmcalTriggerSelectionCuts::RhoForTrigger &rhocontainer) const {
   AliDebugStream(1) << "Trigger selection " << GetName() << ": Make decision" << std::endl;
   AliEmcalTriggerDecision *result = new AliEmcalTriggerDecision(GetName());
   TIter patchIter(inputPatches);
@@ -63,7 +63,7 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
   std::vector<AliEMCALTriggerPatchInfo *> selectedPatches;
   AliDebugStream(1) << "Number of input patches: " << inputPatches->GetEntries() << std::endl;
   while((patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
-    if(fSelectionCuts->IsSelected(patch)){
+    if(fSelectionCuts->IsSelected(patch, rhocontainer)){
       selectedPatches.push_back(patch);
     }
   }
@@ -73,7 +73,7 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
   for(std::vector<AliEMCALTriggerPatchInfo *>::iterator it = selectedPatches.begin(); it != selectedPatches.end(); ++it){
     testpatch = *it;
     if(!mainPatch) mainPatch = testpatch;
-    else if(fSelectionCuts->CompareTriggerPatches(testpatch, mainPatch) > 0) mainPatch = testpatch;
+    else if(fSelectionCuts->CompareTriggerPatches(testpatch, mainPatch, rhocontainer) > 0) mainPatch = testpatch;
     result->AddAcceptedPatch(testpatch);
   }
   if(mainPatch) result->SetMainPatch(mainPatch);
