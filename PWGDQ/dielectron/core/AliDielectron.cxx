@@ -614,6 +614,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 
   if (fTrackRotator) {
     fTrackRotator->ClearRotatedTrackPool();
+    fTrackRotator->ClearRotatedPairPool();
   }
 
   return 1;
@@ -1570,8 +1571,7 @@ void AliDielectron::FillPairArrayTR()
   while ( fTrackRotator->NextCombination() ){
     if(fTrackRotator->SameTracks() ) continue;
     AliDielectronPair candidate;
-    //candidate.SetKFUsage(fUseKF);
-    candidate.SetKFUsage(kTRUE);
+    candidate.SetKFUsage(fUseKF);
     candidate.SetTracks(&fTrackRotator->GetKFTrack1(), &fTrackRotator->GetKFTrack2(),
                         fTrackRotator->GetVTrack1(),fTrackRotator->GetVTrack2());
 
@@ -1595,8 +1595,6 @@ void AliDielectron::FillPairArrayTR()
     }
     else 
       continue;
-
-    
 
     //pair cuts
     UInt_t cutMask=fPairFilter.IsSelected(&candidate);
