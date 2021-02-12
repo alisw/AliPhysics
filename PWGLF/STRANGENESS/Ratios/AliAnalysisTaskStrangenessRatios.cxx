@@ -188,6 +188,9 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       if (labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg) {
         int labMothLam = lambda->GetMother();
         auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(labMothBac);
+        if (!cascade) {
+          continue;
+        }
         int pdgCascade = std::abs(cascade->GetPdgCode());
         if (labMothLam == labMothBac && (pdgCascade == kXiPdg || pdgCascade == kOmegaPdg)) {
           fGenCascade.pdg = cascade->GetPdgCode();
@@ -287,8 +290,12 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       track->XvYvZv(pv);
       for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++) {
         auto daugh = (AliAODMCParticle*)fMCEvent->GetTrack(iD);
+        if (!daugh) {
+          continue;
+        }
         if (std::abs(daugh->GetPdgCode()) == kLambdaPdg) {
-          daugh->XvYvZv(sv);    
+          daugh->XvYvZv(sv);
+          break;
         }
       }
       fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
