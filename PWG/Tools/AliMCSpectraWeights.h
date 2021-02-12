@@ -9,6 +9,7 @@
 #define __AliMCSpectraWeights__
 
 //#define __AliMCSpectraWeights_DebugPCC__
+//#define __AliMCSpectraWeights_DebugTiming__
 
 class TParticle;
 class AliMCEvent;
@@ -201,8 +202,9 @@ class AliMCSpectraWeights : public TNamed {
 struct AliMCSpectraWeightsHandler : public TNamed {
     AliMCSpectraWeightsHandler(); //default for ROOT
     AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name); // to be used
-    AliMCSpectraWeights* fMCSpectraWeight = 0;
+    ~AliMCSpectraWeightsHandler(){}
 
+    AliMCSpectraWeights* fMCSpectraWeight = 0;
 private:
     AliMCSpectraWeightsHandler(const AliMCSpectraWeightsHandler&);//copy
     AliMCSpectraWeightsHandler& operator=(const AliMCSpectraWeightsHandler&);//copy assign
