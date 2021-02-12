@@ -227,7 +227,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 {
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
-	for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalysisTaskSE(name),
@@ -403,7 +403,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	// you can add more output objects by calling DefineOutput(2, classname::Class())
 	// if you add more output objects, make sure to call PostData for all of them, and to
 	// make changes to your AddTask macro!
-	for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
@@ -412,7 +412,7 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 	if(fOutputList) {
 		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
 	}
-	for(Int_t i=0; i<6; i++) {
+	for(Int_t i=0; i<13; i++) {
 		if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 	}
 	if(fweightNtrkl) delete fweightNtrkl;
@@ -2062,7 +2062,14 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
   if (runNo>=256207 && runNo<=256420) period = 1; //LHC16j
   if (runNo>=256941 && runNo<=258537) period = 2; //LHC16k
   if (runNo>=262424 && runNo<=263487) period = 3; //LHC16o
-  if (period < 0 || period > 3) return 0;
+  if (runNo>=271868 && runNo<=273100) period = 4; //LHC17h
+  if (runNo>=273591 && runNo<=274442) period = 5; //LHC17i
+  if (runNo>=274801 && runNo<=276508) period = 6; //LHC17k
+  if (runNo>=276551 && runNo<=278216) period = 7; //LHC17l
+  if (runNo>=278915 && runNo<=280140) period = 8; //LHC17m
+  if (runNo>=280282 && runNo<=281961) period = 9; //LHC17o
+  if (runNo>=282544 && runNo<=282704) period = 10; //LHC17r
+  if (period < 0 || period > 10) return 0;
     
     
   return fMultEstimatorAvg[period];
@@ -2074,9 +2081,9 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   Int_t runNo  = fAOD->GetRunNumber();
   Int_t period = -1; 
    
-	if (runNo>=256504 && runNo<=258537) period = 4;  //LHC16k
-  if (runNo>=258919 && runNo<=259888) period = 5; //LHC16l
-  if (period < 4 || period > 5) return 0;
+	if (runNo>=256504 && runNo<=258537) period = 11;  //LHC16k
+  if (runNo>=258919 && runNo<=259888) period = 12; //LHC16l
+  if (period < 11 || period > 12) return 0;
     
     
   return fMultEstimatorAvg[period];
