@@ -18,6 +18,7 @@
 #include "AliMCSpectraWeights.h"
 
 //#define __AliMCWeightsTask_DebugPCC__
+//#define __AliMCWeightsTask_DebugTiming__
 
 enum MCGeneratorType {
     PP_PYTHIA=0,
@@ -50,7 +51,7 @@ private:
 
 
     /// \cond CLASSIMP
-    ClassDef(AliMCWeightsTask, 1);
+    ClassDef(AliMCWeightsTask, 2);
     /// \endcond
 };
 

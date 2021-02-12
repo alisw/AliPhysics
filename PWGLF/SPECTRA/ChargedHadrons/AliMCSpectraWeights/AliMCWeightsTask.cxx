@@ -18,11 +18,18 @@
 #include "TList.h"
 #include "TString.h"
 #include <iostream>
+#include <chrono>
 
 #ifdef __AliMCWeightsTask_DebugPCC__
 #define DebugPCC(x) std::cout << x
 #else
 #define DebugPCC(x)
+#endif
+
+#ifdef __AliMCWeightsTask_DebugTiming__
+#define DebugChrono(x) std::cout << x
+#else
+#define DebugChrono(x)
 #endif
 
 class AliMCWeightsTask;
@@ -45,11 +52,23 @@ fEvent(nullptr), fMCEvent(nullptr), fMCSpectraWeights(nullptr) {
 }
 
 AliMCWeightsTask::~AliMCWeightsTask() {
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t1 = std::chrono::high_resolution_clock::now();
+#endif
     // destructor
     if (fOutputList) delete fOutputList;
+
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    DebugChrono("deletion took " << duration << " microseconds\n");
+#endif
 }
 
 void AliMCWeightsTask::UserCreateOutputObjects() {
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t1 = std::chrono::high_resolution_clock::now();
+#endif
     OpenFile(1, "recreate");
     fOutputList = new TList();
     fOutputList->SetOwner();
@@ -62,9 +81,19 @@ void AliMCWeightsTask::UserCreateOutputObjects() {
     //    fOutputList->Add((TObject*)fMCSpectraWeights->GetHistMCWeightsSys());
 
     PostData(1, fOutputList);
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    DebugChrono("UserCreateOutputObjects took " << duration << " microseconds\n");
+#endif
 }
 
 void AliMCWeightsTask::UserExec(Option_t* option) {
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t1 = std::chrono::high_resolution_clock::now();
+    DebugChrono("Start new AliMCWeightsTask::UserExec\n");
+#endif
+
     AliInputEventHandler* inputHandler =
     (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()
     ->GetInputEventHandler();
@@ -101,7 +130,7 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
 
         TString fStoredObjectName = "fMCSpectraWeights";
         // Add to AliVEvent
-        auto tmpObject = dynamic_cast<AliMCSpectraWeights*>(fEvent->FindListObject(fStoredObjectName.Data()));
+        auto tmpObject = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject(fStoredObjectName.Data()));
         if (!tmpObject) {
             AliMCSpectraWeightsHandler* handler = new AliMCSpectraWeightsHandler(fMCSpectraWeights, fStoredObjectName.Data());
             fEvent->AddObject(handler);
@@ -114,10 +143,18 @@ void AliMCWeightsTask::UserExec(Option_t* option) {
     }
 
     PostData(1, fOutputList);
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    DebugChrono("UserExec took " << duration << " microseconds\n");
+#endif
 }
 
 AliMCWeightsTask*
 AliMCWeightsTask::AddTaskAliMCWeightsTask() {
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t1 = std::chrono::high_resolution_clock::now();
+#endif
 
     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -189,5 +226,11 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask() {
                                             AliAnalysisManager::kOutputContainer,
                                             fileName.Data()));
 
+#ifdef __AliMCWeightsTask_DebugTiming__
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    DebugChrono("AliMCWeightsTask took " << duration << " microseconds\n");
+#endif
+    
     return task;
 }
