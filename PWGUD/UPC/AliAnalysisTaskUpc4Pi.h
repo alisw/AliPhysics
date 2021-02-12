@@ -5,11 +5,13 @@
 #ifndef ALIANALYSISTASKUPC4PI_H
 #define ALIANALYSISTASKUPC4PI_H
 
+class TObjString;
 class TClonesArray;
 class TFile;
 class TTree;
 class TList;
 class TH1;
+class TH2;
 class TList;
 class AliPIDResponse;
 class AliESDEvent;
@@ -27,8 +29,8 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	virtual void Init();
 	virtual void UserCreateOutputObjects();
 	virtual void UserExec(Option_t *option);
-	virtual void Terminate(Option_t *){};
-
+	virtual void Terminate(Option_t *);
+	
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
 	void SetDebugMode(Bool_t _debugMode){ debugMode = _debugMode; }
 	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
@@ -50,8 +52,8 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
   	// tree
 	static const int Maxtrk=8;
 	Int_t ntrk;
-  	TTree *f4PiTree;
-  	TTree *f4PiTree1;
+  	TTree *f4PiTree;	//! Tree with all candidates
+  	TTree *f4PiTree1;	//! Tree with 0 sum charge and only 4 tracks
 	// tree variables and branches
 	Int_t RunNum_T;
 	UShort_t BunchCrossNumber_T;
@@ -75,10 +77,10 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	Float_t ZPCenergy_T;
 	Float_t ZDCAtime_T[4];
 	Float_t ZDCCtime_T[4];
-	Float_t PIDTPCPion_T[Maxtrk];
-	Float_t PIDTPCElectron_T[Maxtrk];
-	Int_t TPCsignal_T[Maxtrk];
-	Float_t TrackP_T[Maxtrk];
+	Float_t PIDTPCPion_T[8];
+	Float_t PIDTPCElectron_T[8];
+	Int_t TPCsignal_T[8];
+	Float_t TrackP_T[8];
 	Float_t Vertex_T[3];
 	Int_t VtxContrib_T;
 	Float_t VtxChi2_T,VtxNDF_T;
@@ -87,19 +89,19 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	Int_t Ntracklets_T;
 	Float_t Phi_T;
 	Int_t NTracks_T;
-	Float_t TrackEta_T[Maxtrk];
-	Float_t TrackPhi_T[Maxtrk];
-	Float_t TrackPx_T[Maxtrk];
-	Float_t TrackPy_T[Maxtrk];
-	Float_t TrackPz_T[Maxtrk];
+	Float_t TrackEta_T[8];
+	Float_t TrackPhi_T[8];
+	Float_t TrackPx_T[8];
+	Float_t TrackPy_T[8];
+	Float_t TrackPz_T[8];
 	Bool_t ChipCut_T;
 	Bool_t TriggerTOF_T;
 	Bool_t TriggerSPD_T;
-	Int_t ITSModuleInner_T[Maxtrk];
-	Int_t ITSModuleOuter_T[Maxtrk];
+	Int_t ITSModuleInner_T[8];
+	Int_t ITSModuleOuter_T[8];
 
 	// MC tree
-	TTree *fMCTree;
+	TTree *fMCTree;		//! Tree for MC (not used now)
 	Int_t RunNum_MC_T;
 	Float_t Mass_MC_T;
 	Float_t Pt_MC_T;
@@ -109,33 +111,33 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	AliPIDResponse *fPIDResponse;
 	TClonesArray *GenPart_T;
 
-	TList *fListHist;
-	TH1I *fHistTriggersPerRun;
-	TH1I *fITSmodule;
-	TH1I *fFOchip;
-	TH1I *fFOcount;
-	TH1F *TPCclustersP;
-	TH1F *TPCclustersN;
-	TH1F *fDeltaPhiRho;
-	TH1F *fDeltaPhiEe;
-	TH2F *dEdx;
-	TH2F *EtaPhiP;
-	TH2F *EtaPhiN;
+	TList *fListHist;	//! List of output Histograms
+	TH1I *fHistTriggersPerRun;	//! Triggers hist
+	TH1I *fITSmodule;		//! ITS hist
+	TH1I *fFOchip;			//! FO chip hist
+	TH1I *fFOcount;			//! FO count hist
+	TH1F *TPCclustersP;		//! positive TPC clusters hist
+	TH1F *TPCclustersN;		//! negative TPC clusters hist
+	TH1F *fDeltaPhiRho;		//! Delta Phi Rho hist
+	TH1F *fDeltaPhiEe;		//! Delta Phi Ee hist
+	TH2F *dEdx;			//! dEdx hist
+	TH2F *EtaPhiP;			//! EtaPhiP hist
+	TH2F *EtaPhiN;			//! EtaPhiN hist
 
 	// dEdx histograms
-	TH2F *fHistdEdxVsP1;
-	TH2F *fHistdEdxVsP2;
-	TH2F *fHistdEdxVsP3;
-	TH2F *fHistdEdxVsP4;
-	TH2F *fHistdEdxVsP5;
-	TH2F *fHistdEdxVsP6;
-	TH2F *fHistdEdxVsP7;
-	TH2F *fHistdEdxVsP8;
-	TH2F *fHistdEdxVsP9;
+	TH2F *fHistdEdxVsP1;		//! dEdx hist1
+	TH2F *fHistdEdxVsP2;		//! dEdx hist2
+	TH2F *fHistdEdxVsP3;		//! dEdx hist3
+	TH2F *fHistdEdxVsP4;		//! dEdx hist4
+	TH2F *fHistdEdxVsP5;		//! dEdx hist5
+	TH2F *fHistdEdxVsP6;		//! dEdx hist6
+	TH2F *fHistdEdxVsP7;		//! dEdx hist7
+	TH2F *fHistdEdxVsP8;		//! dEdx hist8
+	TH2F *fHistdEdxVsP9;		//! dEdx hist9
 
-	TH2F *fFOcorr;
-	TH1F *fGoodTracks;
-	TH1F *fTrackChi2;
+	TH2F *fFOcorr;			//! FO corr hist
+	TH1F *fGoodTracks;		//! Good Tracks number hist
+	TH1F *fTrackChi2;		//! Track Chi2 hist
 
 	// SPD effi
 	Bool_t isUsingEffi;
@@ -154,7 +156,7 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpc4Pi(const AliAnalysisTaskUpc4Pi&); //not implemented
 	AliAnalysisTaskUpc4Pi& operator =(const AliAnalysisTaskUpc4Pi&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpc4Pi, 7); 
+ 	ClassDef(AliAnalysisTaskUpc4Pi, 3); 
 
 };
 

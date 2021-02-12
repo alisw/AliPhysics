@@ -13,8 +13,18 @@
 * provided "as is" without express or implied warranty.                  * 
 **************************************************************************/
 #include <iostream>
+#include <string.h>
+#include <bitset>
 // my headers
 #include "AliAnalysisTaskUpc4Pi.h"
+
+#include "TH1I.h"
+#include "TTree.h"
+#include "TClonesArray.h"
+#include "TParticle.h"
+#include "TString.h"
+#include "TLorentzVector.h"
+#include <TObjString.h>
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
 #include "TFile.h"
@@ -24,22 +34,22 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
-// #include "AliAODEvent.h"
+//#include "AliAODEvent.h"
 #include "AliMCEvent.h"
-// #include "AliAODVZERO.h"
-// #include "AliAODZDC.h"
+//#include "AliAODVZERO.h"
+//#include "AliAODZDC.h"
 #include "AliESDVZERO.h"
 #include "AliESDZDC.h"
 #include "AliPIDResponse.h"
-// #include "AliAODTrack.h"
-// #include "AliAODPid.h"
-// #include "AliAODVertex.h"
+//#include "AliAODTrack.h"
+//#include "AliAODPid.h"
+#include "AliAODVertex.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-// #include "AliESDMuonTrack.h"
-// #include "AliAODMCParticle.h"
+#include "AliESDMuonTrack.h"
+//#include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 // #include "AliCentrality.h"
 // #include "AliKFVertex.h"
@@ -129,6 +139,7 @@ AliAnalysisTaskUpc4Pi::~AliAnalysisTaskUpc4Pi()
 void AliAnalysisTaskUpc4Pi::Init()
 {
 	for (Int_t i=0;i<Maxtrk;i++){
+	//for (Int_t i=0;i<4;i++){
 		PIDTPCPion_T[i] = -20;
 		PIDTPCElectron_T[i] = -20;
 		TPCsignal_T[i] = -1;
@@ -148,6 +159,7 @@ void AliAnalysisTaskUpc4Pi::Init()
 
 void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects() 
 {
+//	debugMode=1;
 	if(debugMode) std::cout<<"Starting UserCreateOutputObjects..."<<std::endl;
   	//PID response
  	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -348,12 +360,15 @@ void AliAnalysisTaskUpc4Pi::UserCreateOutputObjects()
 	PostData(1, f4PiTree);
 	PostData(2, fListHist);
 	PostData(3, f4PiTree1);
-	if (isMC) PostData(3, fMCTree);
+	if (isMC) PostData(4, fMCTree);
 	if(debugMode) std::cout<<"Post data done."<<std::endl;
 }
 
 void AliAnalysisTaskUpc4Pi::UserExec(Option_t *) 
 {
+  	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
+  	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
+  	Double_t pionMass = partPion->Mass();
   // if(debugMode) std::cout<<"Starting UserExec..."<<std::endl;
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
@@ -420,6 +435,10 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 
   Int_t nGoodTracks=0;
   Int_t TrackIndex[Maxtrk] = {0};
+//  Int_t TrackIndex[4];
+for (Int_t it=0;it < Maxtrk; it++){
+	TrackIndex[it]=-1;
+}
   if(debugMode)std::cout<<"starting track loop"<<std::endl;
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
@@ -443,7 +462,7 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
     if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
 
 	// store good track index
-	TrackIndex[ntrk] = itr;
+	TrackIndex[nGoodTracks] = itr;
 	ntrk++;
     nGoodTracks++;
     // std::cout<<nGoodTracks<<" good tracks"<<endl;
@@ -453,14 +472,13 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 
   	fGoodTracks->Fill(nGoodTracks);
 	NTracks_T = nGoodTracks;
-  if(nGoodTracks > 3 && nGoodTracks < 9){ // fill tree variables
+  if(nGoodTracks > 3 && nGoodTracks < Maxtrk){ // fill tree variables
 	if(debugMode)std::cout<<"four good tracks"<<std::endl;
-  	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
-  	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
-  	Double_t pionMass = partPion->Mass();
 
   	Double_t charge[Maxtrk]; // charge
 	TLorentzVector lv[Maxtrk];
+//  	Double_t charge[4]; // charge
+//	TLorentzVector lv[4];
 	TLorentzVector lvSum; // pair-4vector
 
 	Int_t fFOmodules[240];
@@ -531,6 +549,8 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 	Double_t PhiPlus = 0;
 	// loop over four good tracks
   	for(Int_t i=0; i<4; i++){				//CHANGE i here to look at different track number
+	//	if (TrackIndex[i] <= 0) continue; 
+  if(debugMode) std::cout<<"0"<<std::endl;
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
 
 		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
@@ -539,9 +559,11 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 		// phi test
 		if (trk->Charge()>0) PhiPlus = trk->Phi();
 
+  if(debugMode) std::cout<<"1"<<std::endl;
 		// TPC PID n-sigma
 		PIDTPCElectron_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		PIDTPCPion_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+  if(debugMode) std::cout<<"2"<<std::endl;
 
 		// separated PID
 		Double_t ptrackTPC=-1.;
@@ -549,6 +571,7 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 		if(ippar) ptrackTPC=ippar->P();
 		Double_t dedx=trk->GetTPCsignal();
 		Int_t  pidtr=trk->GetPIDForTracking();
+  if(debugMode) std::cout<<"3"<<std::endl;
 		if(pidtr==0) fHistdEdxVsP1->Fill(ptrackTPC,dedx);
 		if(pidtr==1) fHistdEdxVsP2->Fill(ptrackTPC,dedx);
 		if(pidtr==2) fHistdEdxVsP3->Fill(ptrackTPC,dedx);
@@ -558,6 +581,7 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 		if(pidtr==6) fHistdEdxVsP7->Fill(ptrackTPC,dedx);
 		if(pidtr==7) fHistdEdxVsP8->Fill(ptrackTPC,dedx);
 		if(pidtr==8) fHistdEdxVsP9->Fill(ptrackTPC,dedx);
+  if(debugMode) std::cout<<"4"<<std::endl;
 
 		charge[i] = trk->Charge();
 		TPCsignal_T[i] = trk->GetTPCsignal();
@@ -567,11 +591,13 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 		TrackPx_T[i] = trk->Px();
 		TrackPy_T[i] = trk->Py();
 		TrackPz_T[i] = trk->Pz();
+  if(debugMode) std::cout<<"5"<<std::endl;
 
 		fTrackChi2->Fill((Float_t)trk->GetTPCchi2()/trk->GetTPCNcls());
 
 		fITSmodule->Fill(ITSModuleInner_T[i]);
 		fITSmodule->Fill(ITSModuleOuter_T[i]);
+  if(debugMode) std::cout<<"6"<<std::endl;
 
 		for(Int_t j=0;j<240;j++){
 			if (fFOmodules[j] > 0){
@@ -593,6 +619,7 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
 		lv[i].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
 
   	} // end loop over four good tracks
+  if(debugMode) std::cout<<"00"<<std::endl;
 
   	lvSum = lv[0]+lv[1]+lv[2]+lv[3];
 
@@ -634,7 +661,7 @@ void AliAnalysisTaskUpc4Pi::UserExec(Option_t *)
  		}
   	}
   	fFOcount->Fill(fFOcounter);
-  	// fFOcorr->Fill();
+//  	fFOcorr->Fill();
 
   //fill
   f4PiTree ->Fill();
@@ -759,5 +786,10 @@ Bool_t AliAnalysisTaskUpc4Pi::IsTriggered(AliESDEvent *esd)
 } // end of MC trigger
 
 
+//_____________________________________________________________________________
+void AliAnalysisTaskUpc4Pi::Terminate(Option_t *)
+{
 
+  std::cout<<"Analysis complete."<<std::endl;
+}
 
