@@ -463,18 +463,28 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
       Error("AddOADBObjectFromSplineFile", "Could not open '%s' to extract the TF1 sigma parametrization", resolution.Data());
     } else {
       TObject* tf1Sigma = f->Get("SigmaParametrization");
+      TObject* tf1SigmaParams = f->Get("SigmaParametrizationParams");
+      TObject* multEstimator = f->Get("MultiplicityNormalization");
+
       if (!tf1Sigma) {
         Fatal("AddOADBObjectFromSplineFile", "Could not get TF1 function with name 'SigmaParametrization' from file '%s'", resolution.Data());
-      } else {
-        arrTPCPIDResponse->Add(tf1Sigma);
       }
 
-      TObject* multEstimator = f->Get("MultiplicityNormalization");
+      if (!tf1SigmaParams) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get TF1 function with name 'SigmaParametrization' from file '%s'", resolution.Data());
+      }
+
       if (!multEstimator) {
         Fatal("AddOADBObjectFromSplineFile", "Could not get 'MultiplicityNormalization' from file '%s'", resolution.Data());
-      } else {
-        arrTPCPIDResponse->Add(multEstimator);
       }
+
+      TObjArray* arrSigmaParam = new TObjArray;
+      arrSigmaParam->SetName("SigmaParametrization");
+      arrSigmaParam->Add(tf1Sigma);
+      arrSigmaParam->Add(tf1SigmaParams);
+      arrSigmaParam->Add(multEstimator);
+
+      arrTPCPIDResponse->Add(arrSigmaParam);
     }
   } else {
     if (contFromFile) {
