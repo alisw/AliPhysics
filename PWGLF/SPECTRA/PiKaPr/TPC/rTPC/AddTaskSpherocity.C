@@ -16,14 +16,6 @@ AliAnalysisTaskSpherocity* AddTaskSpherocity(
 		const char* period = "16l", 
 		const char* multClass = "0_1",
 		const bool IsV0M = kFALSE, 
-//		float JettyValue = 0.5,
-//		float JettyValue_0 = 0.5,
-//		float JettyValue_1 = 0.5,
-//		float JettyValue_2 = 0.5,
-//		float IsotrValue = 0.7,
-//		float IsotrValue_0 = 0.7,
-//		float IsotrValue_1 = 0.7,
-//		float IsotrValue_2 = 0.7,
 		int TrkCutMode = 0
 		)   
 {

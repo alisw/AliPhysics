@@ -162,6 +162,10 @@ ClassImp(AliAnalysisTaskSpherocity)
 		hCL1vsSOvsNT(0x0),
 		hV0MvsSOvsNoNT(0x0),
 		hCL1vsSOvsNoNT(0x0),
+		hV0MvsNoSOvsNT(0x0),
+		hCL1vsNoSOvsNT(0x0),
+		hV0MvsNoSOvsNoNT(0x0),
+		hCL1vsNoSOvsNoNT(0x0),
 		hPhiToward(0x0),
 		hPhiAway(0x0),
 		hPhiTransverse(0x0)
@@ -329,6 +333,10 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	hCL1vsSOvsNT(0x0),
 	hV0MvsSOvsNoNT(0x0),
 	hCL1vsSOvsNoNT(0x0),
+	hV0MvsNoSOvsNT(0x0),
+	hCL1vsNoSOvsNT(0x0),
+	hV0MvsNoSOvsNoNT(0x0),
+	hCL1vsNoSOvsNoNT(0x0),
 	hPhiToward(0x0),
 	hPhiAway(0x0),
 	hPhiTransverse(0x0)
@@ -751,6 +759,15 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	hCL1vsSOvsNoNT = new TH3F("hTrksvsSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsSOvsNoNT);
 
+	hV0MvsNoSOvsNT = new TH3F("hV0MvsNoSOvsNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hV0MvsNoSOvsNT);
+	hCL1vsNoSOvsNT = new TH3F("hTrksvsNoSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hCL1vsNoSOvsNT);
+	hV0MvsNoSOvsNoNT = new TH3F("hV0MvsNoSOvsNoNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hV0MvsNoSOvsNoNT);
+	hCL1vsNoSOvsNoNT = new TH3F("hTrksvsNoSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hCL1vsNoSOvsNoNT);
+
 	hPhiToward = new TH1F("hPhiToward",";#phi;Entries",nPhiBins,PhiBins);
 	fListOfObjects->Add(hPhiToward);
 	hPhiAway = new TH1F("hPhiAway",";#phi;Entries",nPhiBins,PhiBins);
@@ -1029,6 +1046,19 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	if(fAnalysisMC)
 		SOt = GetEventShapeTrue(fMCStack,hTruthPhiSo,hTruthEtaSo);
 
+	GetLeadingObject();
+	GetNT();
+
+	if( (fRecLeadPt >= 5.0) && (SOm < 0.0) ){
+		hV0MvsNoSOvsNT->Fill(fNT,SOm,V0MPercentile);
+		hCL1vsNoSOvsNT->Fill(fNT,SOm,RefPercentile);
+	}
+
+	if( (fRecLeadPt < 5.0) && (SOm < 0.0) ){
+		hV0MvsNoSOvsNoNT->Fill(fNT,SOm,V0MPercentile);
+		hCL1vsNoSOvsNoNT->Fill(fNT,SOm,RefPercentile);
+	}
+
 	// Events with non-measured spherocity
 	if( SOm < 0.0 ){
 		fEvents->Fill(8.5,MultPercentile);
@@ -1044,11 +1074,6 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	int Nch = -1;
 	Nch = ReadESDEvent();
 	hMultPercvsNch->Fill(V0MPercentile,RefPercentile,Nch);
-
-	// Correlations between SO and RT
-
-	GetLeadingObject();
-	GetNT();
 
 	if( (fRecLeadPt >= 5.0) && (fRecLeadPt < 40.0) ){
 		hV0MvsSOvsNT->Fill(fNT,SOm,V0MPercentile);

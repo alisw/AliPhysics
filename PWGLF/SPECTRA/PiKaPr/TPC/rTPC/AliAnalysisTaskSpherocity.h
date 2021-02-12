@@ -295,6 +295,10 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
                 TH3F* hCL1vsSOvsNT;
                 TH3F* hV0MvsSOvsNoNT;
                 TH3F* hCL1vsSOvsNoNT;
+                TH3F* hV0MvsNoSOvsNT;
+                TH3F* hCL1vsNoSOvsNT;
+                TH3F* hV0MvsNoSOvsNoNT;
+                TH3F* hCL1vsNoSOvsNoNT;
 		TH1F* hPhiToward;
 		TH1F* hPhiAway;
 		TH1F* hPhiTransverse;
