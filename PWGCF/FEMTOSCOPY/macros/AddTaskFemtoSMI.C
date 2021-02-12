@@ -11,8 +11,16 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE* AddTaskFemtoSMI(
-    bool isMC=false, // for now ignore implementing MC options
-    TString CentEst="kInt7")
+    bool isMC = false, // for now ignore implementing MC options
+    TString CentEst = "kInt7",
+    bool ControlLambdaCuts = false, // this and following not in older version
+    double InvMassCut = 0.004,
+    double CPACut = 0.99,
+    double KaonRejectionLowerCut = 0.48,
+    double KaonRejectionUpperCut = 0.515,
+    double DaugToPrimCut = 0.05,
+    double DaugTov0Cut = 1.5
+    )
 {
   //Framework specific blabla
   // the manager is static, so get the existing manager via the static method
@@ -56,7 +64,15 @@ AliAnalysisTaskSE* AddTaskFemtoSMI(
   v0Cuts->SetPDGCodeNegDaug(211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
   //leaving out anti-lambda def's for now  
-   
+
+  if(ControlLambdaCuts) {
+    //Adding additional settings to access from train setup
+    v0Cuts->SetCutInvMass(InvMassCut);  // default argument: 0.004
+    v0Cuts->SetCutCPA(CPACut);  // default: 0.99
+    v0Cuts->SetKaonRejection(KaonRejectionLowerCut,KaonRejectionUpperCut);  // default: 0.48, 0.515
+    v0Cuts->SetCutDCADaugToPrimVtx(DaugToPrimCut);  // default: 0.05
+    v0Cuts->SetCutDCADaugTov0Vtx(DaugTov0Cut);  // default: 1.5
+  }
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -231,3 +247,4 @@ AliAnalysisTaskSE* AddTaskFemtoSMI(
 
   return task;
 }
+
