@@ -71,8 +71,9 @@ namespace {
 
             long double sin_x;
             long double cos_x;
-
-            sincosl(x, &sin_x, &cos_x);
+            
+            sin_x = sinl(x);
+            cos_x = cosl(x);
             ret = (double)atan2l(sin_x, cos_x);
         }
 
