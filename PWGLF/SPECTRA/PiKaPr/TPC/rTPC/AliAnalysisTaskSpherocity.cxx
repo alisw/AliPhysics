@@ -759,13 +759,13 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	hCL1vsSOvsNoNT = new TH3F("hTrksvsSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsSOvsNoNT);
 
-	hV0MvsNoSOvsNT = new TH3F("hV0MvsNoSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	hV0MvsNoSOvsNT = new TH3F("hV0MvsNoSOvsNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hV0MvsNoSOvsNT);
-	hCL1vsNoSOvsNT = new TH3F("hCL1vsNoSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	hCL1vsNoSOvsNT = new TH3F("hTrksvsNoSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsNoSOvsNT);
-	hV0MvsNoSOvsNoNT = new TH3F("hV0MvsNoSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	hV0MvsNoSOvsNoNT = new TH3F("hTrksvsNoSOvsNoNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hV0MvsNoSOvsNoNT);
-	hCL1vsNoSOvsNoNT = new TH3F("hCL1vsNoSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	hCL1vsNoSOvsNoNT = new TH3F("hTrksvsNoSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsNoSOvsNoNT);
 
 	hPhiToward = new TH1F("hPhiToward",";#phi;Entries",nPhiBins,PhiBins);
