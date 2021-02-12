@@ -82,12 +82,12 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		void ProcessMCTruthV0M(const float& , const float& , const float& );
 		void ProcessMCTruthCL1(const float& , const float& , const float& );
 
-		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
-		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
+//		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
+//		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
 
 
-		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
-		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
+//		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
+//		int      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
 		bool selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
 		bool IsGoodSPDvertexRes(const AliESDVertex* spdVertex = NULL);
 		bool IsGoodZvertexPos(AliESDEvent *esd);
@@ -102,6 +102,10 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		float AnalyseGetSpherocity( const vector<Float_t> &pt, const vector<Float_t> &eta, const vector<Float_t> &phi );
 		bool TOFPID(AliESDtrack* track);
 		double EtaCalibration(const double& eta);
+
+		void GetNT();
+		void GetLeadingObject();
+		AliESDtrack* SetHybridTrackCuts(AliESDtrack * , const bool , const bool );
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
 
@@ -277,6 +281,23 @@ class AliAnalysisTaskSpherocity : public AliAnalysisTaskSE
 		TF1* fcutDCAxy;
 		TF1* fcutLow;
 		TF1* fcutHigh;
+
+                double fRecLeadPhi;
+                double fRecLeadPt;
+                int fRecLeadIn;
+                int fNT;
+                TH2F* hPhiStandard;
+                TH2F* hPhiHybrid1;
+                TH2F* hPhiTotal;
+                AliESDtrackCuts* fGeometricalCut;
+                AliESDtrackCuts* fHybridTrackCuts1;
+                TH3F* hV0MvsSOvsNT;
+                TH3F* hCL1vsSOvsNT;
+                TH3F* hV0MvsSOvsNoNT;
+                TH3F* hCL1vsSOvsNoNT;
+		TH1F* hPhiToward;
+		TH1F* hPhiAway;
+		TH1F* hPhiTransverse;
 
 		AliAnalysisTaskSpherocity(const AliAnalysisTaskSpherocity&);            // not implemented
 		AliAnalysisTaskSpherocity& operator=(const AliAnalysisTaskSpherocity&); // not implemented

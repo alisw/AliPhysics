@@ -148,7 +148,23 @@ ClassImp(AliAnalysisTaskSpherocity)
 		fEtaCalibrationPos(0x0),
 		fcutDCAxy(0x0),
 		fcutLow(0x0),
-		fcutHigh(0x0)
+		fcutHigh(0x0),
+		fRecLeadPhi(0.0),
+		fRecLeadPt(0.0),
+		fRecLeadIn(0),
+		fNT(0.0),
+		hPhiStandard(0x0),
+		hPhiHybrid1(0x0),
+		hPhiTotal(0x0),
+		fGeometricalCut(0x0),
+		fHybridTrackCuts1(0x0),
+		hV0MvsSOvsNT(0x0),
+		hCL1vsSOvsNT(0x0),
+		hV0MvsSOvsNoNT(0x0),
+		hCL1vsSOvsNoNT(0x0),
+		hPhiToward(0x0),
+		hPhiAway(0x0),
+		hPhiTransverse(0x0)
 
 {
 
@@ -299,7 +315,23 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	fEtaCalibrationPos(0x0),
 	fcutDCAxy(0x0),
 	fcutLow(0x0),
-	fcutHigh(0x0)
+	fcutHigh(0x0),
+	fRecLeadPhi(0.0),
+	fRecLeadPt(0.0),
+	fRecLeadIn(0),
+	fNT(0.0),
+	hPhiStandard(0x0),
+	hPhiHybrid1(0x0),
+	hPhiTotal(0x0),
+	fGeometricalCut(0x0),
+	fHybridTrackCuts1(0x0),
+	hV0MvsSOvsNT(0x0),
+	hCL1vsSOvsNT(0x0),
+	hV0MvsSOvsNoNT(0x0),
+	hCL1vsSOvsNoNT(0x0),
+	hPhiToward(0x0),
+	hPhiAway(0x0),
+	hPhiTransverse(0x0)
 {
 
 	hPionSimvsSOV0M = 0x0;
@@ -425,8 +457,6 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		SetTrackCutsSpherocity(fTrackFilter);
 	}
 
-	printf("fNcl - %d\n",fNcl);
-	printf("fTrackCuts_Mode - %d\n",fTrackCuts);
 	if(!fTrackFilterGolden){
 
 		fTrackFilterGolden = new AliESDtrackCuts("fTrackFilterGolden");
@@ -470,6 +500,29 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
 			fTrackFilterGolden->SetMaxDCAToVertexZ(1);
 		}
+	}
+
+	if(!fHybridTrackCuts1){
+		fHybridTrackCuts1 = new AliESDtrackCuts("fHybridTrackCuts1");
+		fHybridTrackCuts1->SetMinNCrossedRowsTPC(70);
+		fHybridTrackCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
+		fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE);
+		fHybridTrackCuts1->SetRequireTPCRefit(kTRUE);
+		fHybridTrackCuts1->SetRequireITSRefit(kFALSE);
+		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+		fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
+		fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
+		fHybridTrackCuts1->SetDCAToVertex2D(kFALSE);
+		fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
+		fHybridTrackCuts1->SetMaxChi2PerClusterITS(36);
+
+	}
+
+	if(!fGeometricalCut){
+		fGeometricalCut = new AliESDtrackCuts("fGeometricalCut");
+		fGeometricalCut->SetCutGeoNcrNcl(3, 130, 1.5, 0.85, 0.7);
 	}
 
 	/*if(!fSpheroUtils){
@@ -552,15 +605,22 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		BinsSO[i] = 0.0 + i*0.001;
 	}
 
+	const int nBinsSO0 = 100;
+	float BinsSO0[nBinsSO0+1] = {0};
+
+	for(int i = 0; i <= nBinsSO0; ++i){
+		BinsSO0[i] = 0.0 + i*0.01;
+	}
+
 	const int nBinsNsigma = 50;
-	float BinsNsigma[nBinsNsigma+1] = {0};
+	float BinsNsigma[nBinsNsigma+1] = {0.0};
 
 	for(int i = 0; i <= nBinsNsigma; ++i){
 		BinsNsigma[i] = -10.0+i*0.4;
 	}
 
 	const int nBetaBins   = 100;
-	float BetaBins[nBetaBins+1] = { 0 };
+	float BetaBins[nBetaBins+1] = { 0.0 };
 	for(int i = 0; i <= nBetaBins; ++i){
 		BetaBins[i] = 0.2+((double)i)/100.0;
 	}
@@ -568,7 +628,26 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	const int nPhiBins = 100; 
 	float PhiBins[nPhiBins+1] = {0.0};
 	for(int i = 0; i <= nPhiBins; ++i){
-		PhiBins[i] = -1.0*TMath::Pi() + 2.0*((float)i)*(0.01)*TMath::Pi();
+		PhiBins[i] = -1.0*TMath::Pi() + ((float)i)*(0.01)*(8.0*TMath::Pi()/2);
+	}
+
+	const int nEtaBins0 = 50; 
+	float EtaBins0[nEtaBins0+1] = {0.0};
+	for(int i = 0; i <= nEtaBins0; ++i){
+		EtaBins0[i] = -0.8 + 1.6*((float)i)*(0.02);
+	}
+
+	const int nEtaBins = 100; 
+	float EtaBins[nEtaBins+1] = {0.0};
+	for(int i = 0; i <= nEtaBins; ++i){
+		EtaBins[i] = -2.0 + 2.0*((float)i)*(0.01);
+	}
+
+	const int nBinsNT = 50;
+	float BinsNT[nBinsNT+1] = {0};
+
+	for(int i = 0; i <= nBinsNT; ++i){
+		BinsNT[i] = ((float)i)-0.5;
 	}
 
 	const int nNchBins = 100; 
@@ -577,11 +656,11 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		NchBins[i] = -0.5 + (float)i;
 	}
 
-	printf("==============================\n");
-	printf("Running the Fixed Code\n");
-	printf("Jetty cut: %f\n",fJettyCutOff);
-	printf("Isotropic cut: %f\n",fIsotrCutOff);
-	printf("==============================\n");
+	//printf("==============================\n");
+	//printf("Running the Fixed Code\n");
+	//printf("Jetty cut: %f\n",fJettyCutOff);
+	//printf("Isotropic cut: %f\n",fIsotrCutOff);
+	//printf("==============================\n");
 
 	const int ndEdxBins = fdEdxHigh-fdEdxLow;
 	float dEdxBins[ndEdxBins+1];
@@ -643,18 +722,41 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	hProtonSimvsSOCL1 =new TH3F("hProtonSimvsSOTrks",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
 	hProtonGenvsSOCL1 =new TH3F("hProtonGenvsSOTrks",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
 
-	hPionSimvsSOCL12 = new TH3F("hPionSimvsSOCL12",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
-	hKaonSimvsSOCL12 = new TH3F("hKaonSimvsSOCL12",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
-	hProtonSimvsSOCL12 = new TH3F("hProtonSimvsSOCL12",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hPionSimvsSOCL12 = new TH3F("hPionSimvsSOTrks2",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hKaonSimvsSOCL12 = new TH3F("hKaonSimvsSOTrks2",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hProtonSimvsSOCL12 = new TH3F("hProtonSimvsSOTrks2",";#it{p}_{T}^{gen};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
 
 	hTruthEtaSo = new TH1D("hTruthEtaSo","spherocity; #eta; counts",40,-1.0,1.0);
 	hTruthPhiSo = new TH1D("hTruthPhiSo","spherocity; #phi; counts",64,0.0,2*TMath::Pi());
 
-	hPhiSimV0M = new TH3F("hPhiSimV0M",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPhiBins,PhiBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
-	hPhiGenV0M = new TH3F("hPhiGenV0M",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPhiBins,PhiBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hPhiSimV0M = new TH3F("hPhiSimV0M",";#phi;#eta;#it{S}_{O}",nPhiBins,PhiBins,nEtaBins,EtaBins,nBinsSO,BinsSO);
+	hPhiGenV0M = new TH3F("hPhiGenV0M",";#phi;#eta;#it{S}_{O}",nPhiBins,PhiBins,nEtaBins,EtaBins,nBinsSO,BinsSO);
 
-	hPhiSimCL1 = new TH3F("hPhiSimCL1",";#phi;#it{S}_{O}^{r};V0M",nPhiBins,PhiBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
-	hPhiGenCL1 = new TH3F("hPhiGenCL1",";#phi;#it{S}_{O}^{r};V0M",nPhiBins,PhiBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hPhiSimCL1 = new TH3F("hPhiSimCL1",";#phi;#eta;#it{S}_{O}",nPhiBins,PhiBins,nEtaBins,EtaBins,nBinsSO,BinsSO);
+	hPhiGenCL1 = new TH3F("hPhiGenCL1",";#phi;#eta;#it{S}_{O}",nPhiBins,PhiBins,nEtaBins,EtaBins,nBinsSO,BinsSO);
+
+	hPhiStandard = new TH2F("hPhiStandard",";#eta ;#phi",nEtaBins0,EtaBins0,nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiStandard);
+	hPhiHybrid1 = new TH2F("hPhiHybrid",";#eta ;#phi",nEtaBins0,EtaBins0,nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiHybrid1);
+	hPhiTotal = new TH2F("hPhi_Standard_Hybrid",";#eta ;#phi",nEtaBins0,EtaBins0,nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiTotal);
+
+	hV0MvsSOvsNT = new TH3F("hV0MvsSOvsNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hV0MvsSOvsNT);
+	hCL1vsSOvsNT = new TH3F("hTrksvsSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hCL1vsSOvsNT);
+	hV0MvsSOvsNoNT = new TH3F("hV0MvsSOvsNoNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hV0MvsSOvsNoNT);
+	hCL1vsSOvsNoNT = new TH3F("hTrksvsSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	fListOfObjects->Add(hCL1vsSOvsNoNT);
+
+	hPhiToward = new TH1F("hPhiToward",";#phi;Entries",nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiToward);
+	hPhiAway = new TH1F("hPhiAway",";#phi;Entries",nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiAway);
+	hPhiTransverse = new TH1F("hPhiTransverse",";#phi;Entries",nPhiBins,PhiBins);
+	fListOfObjects->Add(hPhiTransverse);
 
 	for(Int_t topology = 0; topology < 2; ++topology){
 		for(Int_t so = 0; so < 4; ++so){
@@ -795,8 +897,8 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 		fListOfObjects->Add(hTruthEtaSo);
 		fListOfObjects->Add(hTruthPhiSo);
 		fListOfObjects->Add(hPhiSimV0M);
-		fListOfObjects->Add(hPhiGenV0M);
 		fListOfObjects->Add(hPhiSimCL1);
+		fListOfObjects->Add(hPhiGenV0M);
 		fListOfObjects->Add(hPhiGenCL1);
 
 	}
@@ -943,6 +1045,21 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 	Nch = ReadESDEvent();
 	hMultPercvsNch->Fill(V0MPercentile,RefPercentile,Nch);
 
+	// Correlations between SO and RT
+
+	GetLeadingObject();
+	GetNT();
+
+	if( (fRecLeadPt >= 5.0) && (fRecLeadPt < 40.0) ){
+		hV0MvsSOvsNT->Fill(fNT,SOm,V0MPercentile);
+		hCL1vsSOvsNT->Fill(fNT,SOm,RefPercentile);
+	}
+
+	if( fRecLeadPt < 5.0){
+		hV0MvsSOvsNoNT->Fill(fNT,SOm,V0MPercentile);
+		hCL1vsSOvsNoNT->Fill(fNT,SOm,RefPercentile);
+	}
+
 	if(fAnalysisMC){
 
 		hSOtvsSOrV0M->Fill(SOm,SOt,V0MPercentile);
@@ -1066,16 +1183,23 @@ void AliAnalysisTaskSpherocity::AnalyseSimDataV0M(const float& SOm, const float&
 				if((jTrack->Charge()==0) || (TMath::Abs(jTrack->Charge()) < 0.1))
 					continue;
 
-				double dPhisim = 0.0;
-				double dPhigen = 0.0;
+				double dPhisim = -999.0;
+				double dPhigen = -999.0;
+				double dEtasim = -999.0;
+				double dEtagen = -999.0;
 
 				dPhisim = DeltaPhi(esdTrack->Phi(),jTrack->Phi());
-				dPhigen = DeltaPhi(mcTrack->Phi(),j_mcTrack->Phi());
+				dPhigen = DeltaPhi(mcTrack->Phi(),j_mcTrack->Phi()); 
+
+				dEtasim = esdTrack->Eta()-jTrack->Eta();
+				dEtagen = mcTrack->Eta()-j_mcTrack->Eta(); 
 
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
-					hPhiSimV0M->Fill(dPhisim,SOm,MultPer);
-					hPhiGenV0M->Fill(dPhigen,SOt,MultPer);
+					if(MultPer > 10.0) continue;
+
+					hPhiSimV0M->Fill(dPhisim,dEtasim,SOm);
+					hPhiGenV0M->Fill(dPhigen,dEtagen,SOt);
 
 				}
 			}
@@ -1187,30 +1311,28 @@ void AliAnalysisTaskSpherocity::AnalyseSimDataCL1(const float& SOm, const float&
 				if((jTrack->Charge()==0) || (TMath::Abs(jTrack->Charge()) < 0.1))
 					continue;
 
-				double dPhisim = 0.0;
-				double dPhigen = 0.0;
+				double dPhisim = -999.0;
+				double dPhigen = -999.0;
+				double dEtasim = -999.0;
+				double dEtagen = -999.0;
 
 				dPhisim = DeltaPhi(esdTrack->Phi(),jTrack->Phi());
-				dPhigen = DeltaPhi(mcTrack->Phi(),j_mcTrack->Phi());
+				dPhigen = DeltaPhi(mcTrack->Phi(),j_mcTrack->Phi()); 
+
+				dEtasim = esdTrack->Eta()-jTrack->Eta();
+				dEtagen = mcTrack->Eta()-j_mcTrack->Eta(); 
 
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
-					hPhiSimCL1->Fill(dPhisim,SOm,MultPer);
-					hPhiGenCL1->Fill(dPhigen,SOt,MultPer);
+					if(MultPer > 10.0) continue;
+
+					hPhiSimCL1->Fill(dPhisim,dEtasim,SOm);
+					hPhiGenCL1->Fill(dPhigen,dEtagen,SOt);
 
 				}
 			}
 		}
 	}
-}
-//_____________________________________________________________________________
-double AliAnalysisTaskSpherocity::DeltaPhi(double phi, double Lphi, double rangeMin, double rangeMax)
-{
-
-	double dphi = -999;
-	dphi = phi - Lphi;
-
-	return dphi;
 }
 //_____________________________________________________________________________
 int AliAnalysisTaskSpherocity::GetMultiplicityParticles(Double_t etaCut)
@@ -1378,76 +1500,77 @@ void AliAnalysisTaskSpherocity::ProcessMCTruthCL1(const float& MultPer, const fl
 	}//MC track loop
 }
 //____________________________________________________________________
-TParticle* AliAnalysisTaskSpherocity::FindPrimaryMother(AliStack* stack, Int_t label)
-{
-	//
-	// Finds the first mother among the primary particles of the particle identified by <label>,
-	// i.e. the primary that "caused" this particle
-	//
-	// Taken from AliPWG0Helper class
-	//
+/*
+   TParticle* AliAnalysisTaskSpherocity::FindPrimaryMother(AliStack* stack, Int_t label)
+   {
+//
+// Finds the first mother among the primary particles of the particle identified by <label>,
+// i.e. the primary that "caused" this particle
+//
+// Taken from AliPWG0Helper class
+//
 
-	Int_t motherLabel = FindPrimaryMotherLabel(stack, label);
-	if (motherLabel < 0)
-		return 0;
+Int_t motherLabel = FindPrimaryMotherLabel(stack, label);
+if (motherLabel < 0)
+return 0;
 
-	return stack->Particle(motherLabel);
+return stack->Particle(motherLabel);
 }
 
 //____________________________________________________________________
 Int_t AliAnalysisTaskSpherocity::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
 {
-	//
-	// Finds the first mother among the primary particles of the particle identified by <label>,
-	// i.e. the primary that "caused" this particle
-	//
-	// returns its label
-	//
-	// Taken from AliPWG0Helper class
-	//
-	const Int_t nPrim  = stack->GetNprimary();
+//
+// Finds the first mother among the primary particles of the particle identified by <label>,
+// i.e. the primary that "caused" this particle
+//
+// returns its label
+//
+// Taken from AliPWG0Helper class
+//
+const Int_t nPrim  = stack->GetNprimary();
 
-	while (label >= nPrim) {
+while (label >= nPrim) {
 
-		//printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
+//printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
 
-		TParticle* particle = stack->Particle(label);
-		if (!particle) {
+TParticle* particle = stack->Particle(label);
+if (!particle) {
 
-			AliDebugGeneral("FindPrimaryMotherLabel", AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack.", label));
-			return -1;
-		}
+AliDebugGeneral("FindPrimaryMotherLabel", AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack.", label));
+return -1;
+}
 
-		// find mother
-		if (particle->GetMother(0) < 0) {
+// find mother
+if (particle->GetMother(0) < 0) {
 
-			AliDebugGeneral("FindPrimaryMotherLabel", AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
-			return -1;
-		}
+AliDebugGeneral("FindPrimaryMotherLabel", AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
+return -1;
+}
 
-		label = particle->GetMother(0);
-	}
+label = particle->GetMother(0);
+}
 
-	return label;
+return label;
 }
 
 //____________________________________________________________________
 TParticle* AliAnalysisTaskSpherocity::FindPrimaryMotherV0(AliStack* stack, Int_t label)
 {
-	//
-	// Finds the first mother among the primary particles of the particle identified by <label>,
-	// i.e. the primary that "caused" this particle
-	//
-	// Taken from AliPWG0Helper class
-	//
+//
+// Finds the first mother among the primary particles of the particle identified by <label>,
+// i.e. the primary that "caused" this particle
+//
+// Taken from AliPWG0Helper class
+//
 
-	Int_t nSteps = 0;
+Int_t nSteps = 0;
 
-	Int_t motherLabel = FindPrimaryMotherLabelV0(stack, label, nSteps);
-	if (motherLabel < 0)
-		return 0;
+Int_t motherLabel = FindPrimaryMotherLabelV0(stack, label, nSteps);
+if (motherLabel < 0)
+return 0;
 
-	return stack->Particle(motherLabel);
+return stack->Particle(motherLabel);
 }
 
 //____________________________________________________________________
@@ -1489,7 +1612,7 @@ Int_t AliAnalysisTaskSpherocity::FindPrimaryMotherLabelV0(AliStack* stack, Int_t
 
 	return label;
 }
-
+*/
 //__________________________________________________________________
 void AliAnalysisTaskSpherocity::ProduceArrayTrksESD( const float& Spherocity ){
 
@@ -2298,3 +2421,127 @@ double AliAnalysisTaskSpherocity::EtaCalibration(const double &eta){
 
 }
 //________________________________________________________________________
+void AliAnalysisTaskSpherocity::GetNT()
+{
+	const double pi = TMath::Pi();
+	int multTS = 0;
+
+	int iTracks(fESD->GetNumberOfTracks());
+	for(int i = 0; i < iTracks; i++){
+
+		if(i==fRecLeadIn) continue;
+		AliESDtrack* esdtrack = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+		if(!esdtrack) continue;
+		if(TMath::Abs(esdtrack->Eta()) > fEtaCut) continue;
+		if(esdtrack->Pt() < fPtMinCut) continue;
+
+		AliESDtrack* track = 0x0;
+		track = SetHybridTrackCuts(esdtrack,kTRUE,kTRUE);
+		if(!track) continue;
+
+		hPhiTotal->Fill(track->Eta(),track->Phi());
+		double DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+
+		if(TMath::Abs(DPhi)<pi/3.0){
+			hPhiToward->Fill(DPhi);
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){
+			hPhiAway->Fill(DPhi);
+		}
+		else{
+			hPhiTransverse->Fill(DPhi);
+			multTS++;
+		}
+
+		delete track;
+
+	}
+
+	fNT = multTS;	
+
+}
+//________________________________________________________________________
+double AliAnalysisTaskSpherocity::DeltaPhi(double phi, double Lphi, double rangeMin, double rangeMax)
+{
+
+	double dphi = -999;
+	double pi = TMath::Pi();
+	//      if(Lphi > 2*pi || Lphi < 0)cout << "Lphi :: " << Lphi << endl;
+	//      if(phi  > 2*pi || phi < 0)cout << "phi = " << phi << endl;
+
+	if(phi < 0)          phi += 2*pi;
+	else if(phi > 2*pi)  phi -= 2*pi;
+	if(Lphi < 0)         Lphi += 2*pi;
+	else if(Lphi > 2*pi) Lphi -= 2*pi;
+	dphi = Lphi - phi;
+	if (dphi < rangeMin)      dphi += 2*pi;
+	else if (dphi > rangeMax) dphi -= 2*pi;
+
+	return dphi;
+}
+//________________________________________________________________________
+void AliAnalysisTaskSpherocity::GetLeadingObject()
+{
+
+	double flPt = 0.0;
+	double flPhi = 0.0;
+	int flIndex = 0;
+
+	int iTracks(fESD->GetNumberOfTracks());
+	for(int i=0; i < iTracks; i++) {
+
+		AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+		if(!track) continue;
+		if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+		if(track->Pt() < fPtMinCut) continue;
+
+		AliESDtrack* track_hybrid = 0x0;
+		track_hybrid = SetHybridTrackCuts(track,kFALSE,kFALSE);
+		if(!track_hybrid) continue;
+
+		if(!fGeometricalCut->AcceptTrack(track_hybrid)) continue;
+
+		if(flPt < track_hybrid->Pt()){
+			flPt  = track_hybrid->Pt();
+			flPhi = track_hybrid->Phi();
+			flIndex = i;
+		}
+
+		delete track_hybrid;
+
+	}
+
+	fRecLeadPhi = flPhi;
+	fRecLeadPt  = flPt;
+	fRecLeadIn  = flIndex;
+
+}
+//________________________________________________________________________
+AliESDtrack* AliAnalysisTaskSpherocity::SetHybridTrackCuts(AliESDtrack *esdtrack, const bool fillPhiStand, const bool fillPhHyb1)
+{
+
+	AliESDtrack *newTrack = 0x0;
+
+	if(fTrackFilter->IsSelected(esdtrack)){
+		newTrack = new AliESDtrack(*esdtrack);
+		if(fillPhiStand) hPhiStandard->Fill(newTrack->Eta(),newTrack->Phi());
+		////                    newTrack->SetTRDQuality(0);
+	}
+	else if(fHybridTrackCuts1->AcceptTrack(esdtrack)){
+		if(esdtrack->GetConstrainedParam()){
+			newTrack = new AliESDtrack(*esdtrack);
+			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
+			newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
+			////                            newTrack->SetTRDQuality(1);
+			if(fillPhHyb1) hPhiHybrid1->Fill(newTrack->Eta(),newTrack->Phi());
+		}
+		else{ return 0x0; }
+	}
+
+	else{
+		return 0x0;
+	}
+
+	return newTrack;
+
+}
