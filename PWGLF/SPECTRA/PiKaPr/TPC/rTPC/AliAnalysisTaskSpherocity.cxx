@@ -763,7 +763,7 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	fListOfObjects->Add(hV0MvsNoSOvsNT);
 	hCL1vsNoSOvsNT = new TH3F("hTrksvsNoSOvsNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsNoSOvsNT);
-	hV0MvsNoSOvsNoNT = new TH3F("hTrksvsNoSOvsNoNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
+	hV0MvsNoSOvsNoNT = new TH3F("hV0MvsNoSOvsNoNT",";NT;#it{S}_{O};V0M",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hV0MvsNoSOvsNoNT);
 	hCL1vsNoSOvsNoNT = new TH3F("hTrksvsNoSOvsNoNT",";NT;#it{S}_{O};CL1",nBinsNT,BinsNT,nBinsSO0,BinsSO0,nBinsPer,BinsPer);
 	fListOfObjects->Add(hCL1vsNoSOvsNoNT);
