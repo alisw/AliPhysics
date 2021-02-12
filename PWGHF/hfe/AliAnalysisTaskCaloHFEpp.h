@@ -96,13 +96,44 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 						if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
 						fMultEstimatorAvg[3]=new TProfile(*hprof);
 		}
-		void 			SetMultiProfileMCLHC16k(TProfile * hprof){
+		void 			SetMultiProfileLHC17h(TProfile * hprof){
 						if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
 						fMultEstimatorAvg[4]=new TProfile(*hprof);
 		}
-		void 			SetMultiProfileMCLHC16l(TProfile * hprof){
+		void 			SetMultiProfileLHC17i(TProfile * hprof){
 						if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
 						fMultEstimatorAvg[5]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17k(TProfile * hprof){
+						if(fMultEstimatorAvg[6]) delete fMultEstimatorAvg[6];
+						fMultEstimatorAvg[6]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17l(TProfile * hprof){
+						if(fMultEstimatorAvg[7]) delete fMultEstimatorAvg[7];
+						fMultEstimatorAvg[7]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17m(TProfile * hprof){
+						if(fMultEstimatorAvg[8]) delete fMultEstimatorAvg[8];
+						fMultEstimatorAvg[8]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17o(TProfile * hprof){
+						if(fMultEstimatorAvg[9]) delete fMultEstimatorAvg[9];
+						fMultEstimatorAvg[9]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC17r(TProfile * hprof){
+						if(fMultEstimatorAvg[10]) delete fMultEstimatorAvg[10];
+						fMultEstimatorAvg[10]=new TProfile(*hprof);
+		}
+
+                // MC +++++++++++++++++
+
+		void 			SetMultiProfileMCLHC16k(TProfile * hprof){
+						if(fMultEstimatorAvg[11]) delete fMultEstimatorAvg[11];
+						fMultEstimatorAvg[11]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileMCLHC16l(TProfile * hprof){
+						if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
+						fMultEstimatorAvg[12]=new TProfile(*hprof);
 		}
 
 	private:
@@ -272,7 +303,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
-		TProfile*		fMultEstimatorAvg[6];
+		TProfile*		fMultEstimatorAvg[13];
 		TH1D*       fweightNtrkl;
 
 
