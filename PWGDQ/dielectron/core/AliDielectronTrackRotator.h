@@ -83,6 +83,7 @@ public:
   Int_t GetChargeTrack2() const {return fChargeTrack2;}
   Bool_t SameTracks() const {return fSameTracks;}
   void ClearRotatedTrackPool() {  fRotatedTracksP.clear(); fRotatedTracksN.clear(); }
+  void ClearRotatedPairPool()  {  fArrTrackPairs.clear();  fArrTrackPairsPM.clear();  fArrTrackPairsPP.clear();  fArrTrackPairsMM.clear();  }
   Int_t GetRotatedTrackPSize() { return fRotatedTracksP.size(); }
   Int_t GetRotatedTrackNSize() { return fRotatedTracksN.size(); }
   AliKFParticle* GetRotatedTrackP(Int_t track) { return &fRotatedTracksP[track]; }
@@ -95,19 +96,21 @@ public:
   Double_t GetWeightForPair(){return fWeight;};
   //void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, TVector3 *axis, const AliVEvent * const ev=0x0);
   void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, AliKFParticle * kfMother, const AliVEvent * const ev=0x0);
+  AliESDtrack RotateVTrack(AliVTrack* Vtrack, Double_t angle, TLorentzVector* LvecMother, const AliVEvent * const ev);
+  Int_t IJ( Int_t i, Int_t j );
   Int_t fRotWeight_minPtBin;
   Int_t fRotWeight_maxPtBin;
   
 
   class KFClass{
   public:
-    KFClass (AliKFParticle kf1, AliKFParticle kf2, Int_t index1, Int_t index2, Short_t charged_tracks, Double_t weight) :
-            kf1(kf1), kf2(kf2), index1(index1), index2(index2), charged_tracks(charged_tracks), weight(weight), rotAng(0.){}
-    KFClass() : kf1(), kf2(), index1(-1), index2(-1), charged_tracks(0), weight(0.), rotAng(0.){}
+    KFClass (AliKFParticle kf1, AliKFParticle kf2, AliESDtrack vtrack1, AliESDtrack vtrack2, Short_t charged_tracks, Double_t weight) :
+            kf1(kf1), kf2(kf2), vtrack1(vtrack1), vtrack2(vtrack2), charged_tracks(charged_tracks), weight(weight), rotAng(0.){}
+    KFClass() : kf1(), kf2(), vtrack1(), vtrack2(), charged_tracks(0), weight(0.), rotAng(0.){}
     AliKFParticle kf1;
     AliKFParticle kf2;
-    Int_t index1;
-    Int_t index2;
+    AliESDtrack vtrack1;
+    AliESDtrack vtrack2;
     Short_t charged_tracks; //0: ULS, 1: LS_PP, 2: LS_MM
     Double_t weight;
     Double_t rotAng;
@@ -136,8 +139,11 @@ private:
   TObjArray *fkArrTracksNRotation;    //! array of negative rotated tracks
   
   UInt_t   fCurrentIteration;       //! current iteration step
+  Int_t    fCurrentPairPP;           //! current positive track in array
+  Int_t    fCurrentPairMM;           //! current negative track in array
   Int_t    fCurrentTackP;           //! current positive track in array
   Int_t    fCurrentTackN;           //! current negative track in array
+
   Bool_t   fLastPairSent;
 
   AliVEvent *fEvent;                //! current event
