@@ -220,6 +220,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   //TH3D       *fHistdPhidEtaSSMixed[fNMaxBinsCentrality][fNMaxBinsPt][fNMaxBinsAssocPt]; //!
   AliTHn     *fHistdPhidEtaPt_Mixed; //!
   AliTHn     *fHistdPhidEtaPt_Mixed_SS; //!
+  AliTHn     *fHistTrig; //!
 
   TProfile *fHistACv2; //!
   TProfile *fHistATv2; //!
@@ -261,6 +262,15 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   TH2D *fHistNtrVsCent; //!
   TH2D *fHistV0CVsCent; //!
   TH2D *fHistESDvsTPC; //!
+  TH2D *fPileup1_Before; //!
+  TH2D *fPileup1_After; //!
+  TH2D *fPileup2_Before; //!
+  TH2D *fPileup2_After; //!
+  TH2D *fPileup3_Before_Low; //!
+  TH2D *fPileup3_After_Low; //!
+  TH2D *fPileup3_Before_High; //!
+  TH2D *fPileup3_After_High; //!
+
 
   TH2D *fHistCentVsZ; //!
   TH2D *fHistCentVsZMixed; //!
