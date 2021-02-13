@@ -868,7 +868,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
      }
     }
 
- const Int_t nbins_dPhidEtaPt[] = {24, 24, 20, fNbinsPtTrig, fNbinsAssocPt};
+ const Int_t nbins_dPhidEtaPt[] = {24, 24, 20, fNbinsPtTrig, fNbinsAssocPt, fNbinsCent};
  const Int_t nVar = sizeof(nbins_dPhidEtaPt) / sizeof(Int_t); 
 
  const TArrayD *aBin_Trig(fPtTrigAxis->GetXbins());
@@ -879,8 +879,13 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
  const Int_t nBin_Asso(aBin_Asso->GetSize() - 1);
  Double_t dBin_Asso[nBin_Asso+1];
 
+ const TArrayD *aBin_Cen(fCentAxis->GetXbins());
+ const Int_t nBin_Cen(aBin_Cen->GetSize() - 1);
+ Double_t dBin_Cen[nBin_Cen+1];
+
  for (Int_t i=0; i<=nBin_Trig; ++i) dBin_Trig[i] = (*aBin_Trig)[i];
  for (Int_t i=0; i<=nBin_Asso; ++i) dBin_Asso[i] = (*aBin_Asso)[i];
+ for (Int_t i=0; i<=nBin_Cen;  ++i) dBin_Cen[i]  = (*aBin_Cen)[i];
 
 
  fHistdPhidEtaPt = new AliTHn("fHistdPhidEtaPt", "fHistdPhidEtaPt", 1, nVar, nbins_dPhidEtaPt);
@@ -890,12 +895,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
  fHistdPhidEtaPt->SetBinLimits(2, -10, 10);
  fHistdPhidEtaPt->SetBinLimits(3, dBin_Trig);
  fHistdPhidEtaPt->SetBinLimits(4, dBin_Asso);
+ fHistdPhidEtaPt->SetBinLimits(5, dBin_Cen);
  
  fHistdPhidEtaPt->SetVarTitle(0, "#Delta#phi");
  fHistdPhidEtaPt->SetVarTitle(1, "#Delta#eta");
  fHistdPhidEtaPt->SetVarTitle(2, "Vz");
  fHistdPhidEtaPt->SetVarTitle(3, "leading p_{T} GeV/c");
  fHistdPhidEtaPt->SetVarTitle(4, "asso p_{T} GeV/c");
+ fHistdPhidEtaPt->SetVarTitle(5, "centrality");
 
  fHistdPhidEtaPt_SS = new AliTHn("fHistdPhidEtaPt_SS", "fHistdPhidEtaPt_SS", 1, nVar, nbins_dPhidEtaPt);
 
@@ -904,12 +911,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
  fHistdPhidEtaPt_SS->SetBinLimits(2, -10, 10);
  fHistdPhidEtaPt_SS->SetBinLimits(3, dBin_Trig);
  fHistdPhidEtaPt_SS->SetBinLimits(4, dBin_Asso);
+ fHistdPhidEtaPt_SS->SetBinLimits(5, dBin_Cen);
 
  fHistdPhidEtaPt_SS->SetVarTitle(0, "#Delta#phi");
  fHistdPhidEtaPt_SS->SetVarTitle(1, "#Delta#eta");
  fHistdPhidEtaPt_SS->SetVarTitle(2, "Vz");
  fHistdPhidEtaPt_SS->SetVarTitle(3, "leading p_{T} GeV/c");
  fHistdPhidEtaPt_SS->SetVarTitle(4, "asso p_{T} GeV/c");
+ fHistdPhidEtaPt_SS->SetVarTitle(5, "centrality");
  
  fHistdPhidEtaPt_Mixed = new AliTHn("fHistdPhidEtaPt_Mixed", "fHistdPhidEtaPt_Mixed", 1, nVar, nbins_dPhidEtaPt);
 
@@ -918,12 +927,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
  fHistdPhidEtaPt_Mixed->SetBinLimits(2, -10, 10);
  fHistdPhidEtaPt_Mixed->SetBinLimits(3, dBin_Trig);
  fHistdPhidEtaPt_Mixed->SetBinLimits(4, dBin_Asso);
+ fHistdPhidEtaPt_Mixed->SetBinLimits(5, dBin_Cen);
 
  fHistdPhidEtaPt_Mixed->SetVarTitle(0, "#Delta#phi");
  fHistdPhidEtaPt_Mixed->SetVarTitle(1, "#Delta#eta");
  fHistdPhidEtaPt_Mixed->SetVarTitle(2, "Vz");
  fHistdPhidEtaPt_Mixed->SetVarTitle(3, "leading p_{T} GeV/c");
  fHistdPhidEtaPt_Mixed->SetVarTitle(4, "asso p_{T} GeV/c"); 
+ fHistdPhidEtaPt_Mixed->SetVarTitle(5, "centrality"); 
 
  fHistdPhidEtaPt_Mixed_SS = new AliTHn("fHistdPhidEtaPt_Mixed_SS", "fHistdPhidEtaPt_Mixed_SS", 1, nVar, nbins_dPhidEtaPt);
 
@@ -932,17 +943,33 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
  fHistdPhidEtaPt_Mixed_SS->SetBinLimits(2, -10, 10);
  fHistdPhidEtaPt_Mixed_SS->SetBinLimits(3, dBin_Trig);
  fHistdPhidEtaPt_Mixed_SS->SetBinLimits(4, dBin_Asso);
+ fHistdPhidEtaPt_Mixed_SS->SetBinLimits(5, dBin_Cen);
 
  fHistdPhidEtaPt_Mixed_SS->SetVarTitle(0, "#Delta#phi");
  fHistdPhidEtaPt_Mixed_SS->SetVarTitle(1, "#Delta#eta");
  fHistdPhidEtaPt_Mixed_SS->SetVarTitle(2, "Vz");
  fHistdPhidEtaPt_Mixed_SS->SetVarTitle(3, "leading p_{T} GeV/c");
  fHistdPhidEtaPt_Mixed_SS->SetVarTitle(4, "asso p_{T} GeV/c"); 
+ fHistdPhidEtaPt_Mixed_SS->SetVarTitle(5, "centrality"); 
+
+ 
+ const Int_t nbins_dTrig[] = {fNbinsPtTrig, 20, fNbinsCent};
+ const Int_t nVar_Trig = sizeof(nbins_dTrig) / sizeof(Int_t);
+
+ fHistTrig = new AliTHn("fHistTrig", "fHistTrig", 1, nVar_Trig, nbins_dTrig);
+ fHistTrig->SetBinLimits(0, dBin_Trig);
+ fHistTrig->SetBinLimits(1, -10, 10);
+ fHistTrig->SetBinLimits(2, dBin_Cen);
+ fHistTrig->SetVarTitle(0, "leading p_{T} GeV/c");
+ fHistTrig->SetVarTitle(1, "Vz");
+ fHistTrig->SetVarTitle(2, "centrality");
+
 
  fOutputList1->Add(fHistdPhidEtaPt); 
  fOutputList1->Add(fHistdPhidEtaPt_SS); 
  fOutputList1->Add(fHistdPhidEtaPt_Mixed); 
  fOutputList1->Add(fHistdPhidEtaPt_Mixed_SS); 
+ fOutputList1->Add(fHistTrig);
 
 
   fHistACv2 = new TProfile("fHistACv2", "; centrality percentile; <Q^{2}_{V0A}.Q*^{2}_{V0C}>", fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray());
@@ -1042,9 +1069,69 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fHistCentrality -> SetXTitle("Centrality  [%]");
   fHistCentrality -> Sumw2();
 
+
+  fPileup1_Before = new TH2D("fPileup1_Before", "Pile_up_before (Online vs cut)",
+                                 500, 0, 50000,
+                                 500, 0, 50000);
+  fPileup1_Before -> SetXTitle("Multiplicity Online Cut");
+  fPileup1_Before -> SetYTitle("Multiplicity Online");
+  fPileup1_Before -> Sumw2();
+
+  fPileup1_After = new TH2D("fPileup1_After", "Pile_up_After (Online vs cut)",
+                                 500, 0, 50000,
+                                 500, 0, 50000);
+  fPileup1_After -> SetXTitle("Multiplicity Online Cut");
+  fPileup1_After -> SetYTitle("Multiplicity Online");
+  fPileup1_After -> Sumw2();
+
+  fPileup2_Before = new TH2D("fPileup2_Before", "ITS Multiplicity vs Num Tracklets", 5000, 0, 25000, 2000, 0 , 10000);
+  fPileup2_Before -> SetXTitle("N_{Clusters}");
+  fPileup2_Before -> SetYTitle("N_{Tracklets}");
+  fPileup2_Before -> Sumw2();
+  
+  fPileup2_After = new TH2D("fPileup2_After", "ITS Multiplicity vs Num Tracklets", 5000, 0, 25000, 2000, 0 , 10000);
+  fPileup2_After -> SetXTitle("N_{Clusters}");
+  fPileup2_After -> SetYTitle("N_{Tracklets}");
+  fPileup2_After -> Sumw2();
+
+  fPileup3_Before_Low = new TH2D("fPileup3_Before_Low", "CL0 vs Low Event Cut", 100, 0, 100, 100, 0 , 100);
+  fPileup3_Before_Low -> SetXTitle("Centrality  [%]");
+  fPileup3_Before_Low -> SetYTitle("Centrality  [%]");
+  fPileup3_Before_Low -> Sumw2();
+
+  fPileup3_After_Low = new TH2D("fPileup3_After_Low", "CL0 vs Low Event Cut", 100, 0, 100, 100, 0 , 100);
+  fPileup3_After_Low -> SetXTitle("Centrality  [%]");
+  fPileup3_After_Low -> SetYTitle("Centrality  [%]");
+  fPileup3_After_Low -> Sumw2();
+
+  fPileup3_Before_High = new TH2D("fPileup3_Before_High", "CL0 vs High Event Cut", 100, 0, 100, 100, 0 , 100);
+  fPileup3_Before_High -> SetXTitle("Centrality  [%]");
+  fPileup3_Before_High -> SetYTitle("Centrality  [%]");
+  fPileup3_Before_High -> Sumw2();
+
+  fPileup3_After_High = new TH2D("fPileup3_After_High", "CL0 vs High Event Cut", 100, 0, 100, 100, 0 , 100);
+  fPileup3_After_High -> SetXTitle("Centrality  [%]");
+  fPileup3_After_High -> SetYTitle("Centrality  [%]");
+  fPileup3_After_High -> Sumw2();
+
+
   fOutputList -> Add(fHistV0Multiplicity);
   fOutputList -> Add(fHistITSMultiplicity);
   fOutputList -> Add(fHistCentrality);
+
+  fOutputList -> Add(fPileup1_Before);
+  fOutputList -> Add(fPileup1_After);
+
+  fOutputList -> Add(fPileup2_Before);
+  fOutputList -> Add(fPileup2_After);
+
+  fOutputList -> Add(fPileup3_Before_Low);
+  fOutputList -> Add(fPileup3_After_Low);
+
+  fOutputList -> Add(fPileup3_Before_High);
+  fOutputList -> Add(fPileup3_After_High);
+
+
 
   fHistEvStat = new TH1D("fHistEvStat","Event cuts statistics",25,-0.5,24.5);
   fHistEvStat->SetXTitle("Cut index");
@@ -1310,8 +1397,11 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   
   const Int_t nzvtx = 10;
   Double_t zvtxbins[nzvtx+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
+ 
+  const Int_t nCentralityBins  = 14;
+  Double_t centBins[] = {0.,1.,2.,3.,4.,5., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
 
-  fPoolMgr = new AliEventPoolManager(1000, 50000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nzvtx, zvtxbins);
+  fPoolMgr = new AliEventPoolManager(1000, 50000, nCentralityBins, centBins, nzvtx, zvtxbins);
   //fPoolMgr = new AliEventPoolManager(500, 30000, fNbinsCent, (Double_t*)fCentAxis->GetXbins()->GetArray(), nzvtx, zvtxbins);
   if (!fPoolMgr) return;
   fPoolMgr->SetTargetValues(50000, 0.1, 5);
@@ -1399,26 +1489,34 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
     return; // bad vertexing
   fHistEvStat->Fill(cutIndex++);
   
+  fPileup1_Before->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
   if (fRemovePileup) {
     if (fv0multonline < fV0MultOfOnCut->Eval(fv0mult))
       return;
+    fPileup1_After->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
   }
   fHistEvStat->Fill(cutIndex++);
 
   AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
   nITSTrkls = aodTrkl->GetNumberOfTracklets();
 
+  fPileup2_Before->Fill(fitsmult,nITSTrkls);
   if (fRemovePileup2) {
     if (fitsmult > (400.+4.*Double_t(nITSTrkls)))
       return;
+    fPileup2_After->Fill(fitsmult,nITSTrkls);
   }
   fHistEvStat->Fill(cutIndex++);
 
+  fPileup3_Before_Low->Fill(fcl0percentile, fLowCenCut->Eval(fv0mpercentile));
+  fPileup3_Before_High->Fill(fcl0percentile,fHighCenCut->Eval(fv0mpercentile));
   if (fRemovePileup3) {
     if (fcl0percentile < fLowCenCut->Eval(fv0mpercentile))
       return;
+    fPileup3_After_Low->Fill(fcl0percentile, fLowCenCut->Eval(fv0mpercentile));
     if (fcl0percentile > fHighCenCut->Eval(fv0mpercentile))
       return;
+    fPileup3_After_High->Fill(fcl0percentile,fHighCenCut->Eval(fv0mpercentile));
   }
 
   fHistEvStat->Fill(cutIndex++);
@@ -1721,7 +1819,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trInde
   Double_t u3x = TMath::Cos(3.*phi);
   Double_t u3y = TMath::Sin(3.*phi);
 
-  Double_t binscont[5];
+  Double_t binscont_trig[3];
+  binscont_trig[0] = pt; 
+  binscont_trig[1] = fzvtx;
+  binscont_trig[2] = percentile;
+  fHistTrig->Fill(binscont_trig,0);
+
+  Double_t binscont[6];
+
 
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   for (Int_t iTr=0; iTr<nTracks; iTr++) {
@@ -1747,8 +1852,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trInde
       binscont[2] = fzvtx;
       binscont[3] = pt;
       binscont[4] = track->Pt();
+      binscont[5] = percentile;
       fHistdPhidEtaPt->Fill(binscont,0);
-
       // fill same-sign track pair histos
       if (charge*track->Charge()>0) {
 	fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
@@ -1766,7 +1871,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trInde
 
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin, TObjArray *mixedTracks)
 {
-  Double_t binscont[5];
+  Double_t binscont[6];
 
   Int_t ptBin = fPtTrigAxis->FindBin(pt);
   if (ptBin<1 || ptBin>fNbinsPtTrig) return;
@@ -1786,6 +1891,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t t
     binscont[2] = fzvtx;
     binscont[3] = pt;
     binscont[4] = track->Pt();
+    binscont[5] = percentile;
     fHistdPhidEtaPt_Mixed->Fill(binscont,0);  
   
     if (charge*track->Charge()>0) {
