@@ -141,6 +141,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   fRecCascade->centrality = fEventCut.GetCentrality();
 
   std::vector<int> checkedLabel;
+  fGenCascade.isReconstructed = true;
   for (int iCasc = 0; iCasc < ev->GetNumberOfCascades(); iCasc++)
   {
     AliAODcascade *casc = ev->GetCascade(iCasc);
@@ -175,7 +176,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
 
     if (fMC) {
-      fGenCascade.isReconstructed = true;
       fGenCascade.pdg = 0;
       auto posPart = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(pTrackCasc->GetLabel()));
       auto negPart = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(nTrackCasc->GetLabel()));
@@ -184,8 +184,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       int labMothPos = posPart->GetMother();
       int labMothNeg = negPart->GetMother();
       int labMothBac = bacPart->GetMother();
-      auto lambda = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(labMothNeg));
-      if (labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg) {
+      auto lambda = (AliAODMCParticle*)fMCEvent->GetTrack(labMothNeg);
+      if (lambda && labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg) {
         int labMothLam = lambda->GetMother();
         auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(labMothBac);
         if (!cascade) {
@@ -361,8 +361,8 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
       fRecCascade->dcaV0PV > fCutDCAV0toPV &&
       fRecCascade->dcaV0piPV > fCutDCAV0piToPV &&
       fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
-      fRecCascade->dcaV0tracks > fCutDCAV0tracks &&
-      fRecCascade->dcaBachV0 > fCutDCABachToV0[isOmega] &&
+      fRecCascade->dcaV0tracks < fCutDCAV0tracks &&
+      fRecCascade->dcaBachV0 < fCutDCABachToV0[isOmega] &&
       fRecCascade->cosPA > fCutCosPA &&
       fRecCascade->cosPAV0 > fCutCosPAV0 &&
       fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&

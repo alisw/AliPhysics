@@ -106,8 +106,8 @@ private:
   float fCutDCAV0toPV = 0.1;
   float fCutDCAV0piToPV = 0.2;
   float fCutDCAV0prToPV = 0.2;
-  float fCutDCAV0tracks = 1.0;
-  float fCutDCABachToV0[2]{1.0, 0.6};
+  float fCutDCAV0tracks = 1.2;
+  float fCutDCABachToV0[2]{1.0, 1.0};
   float fCutCosPA = 0.95;
   float fCutCosPAV0 = 0.95;
   float fCutV0MassWindow = 0.005;
