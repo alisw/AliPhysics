@@ -991,7 +991,6 @@ AliAnalysisTaskHypertriton3 *AliAnalysisTaskHypertriton3::AddTask(bool isMC, TSt
     ::Error("AddTaskHyperTriton2BodyML", "No analysis manager found.");
     return nullptr;
   }
-  mgr->SetDebugLevel(2);
 
   // Check the analysis type using the event handlers connected to the analysis
   // manager.

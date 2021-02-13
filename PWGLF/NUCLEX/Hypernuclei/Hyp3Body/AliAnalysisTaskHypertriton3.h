@@ -87,12 +87,12 @@ public:
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fMaxTrack2TrackDCA[3] = {8.,8.,8.};
   float fMaxTrack2SVDCA[3] = {8.,8.,8.};
-  float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
+  float fTPCsigmas[3] = {3.f, 3.f, 3.f};
   float fTOFsigmas[3] = {4.f, 4.f, 4.f};
   float fCandidateCtRange[2] = {0.f, 35.f};
   float fCandidatePtRange[2] = {1.f, 9.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
-  float fMinCosPA = 0.9;
+  float fMinCosPA = 0.99;
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
