@@ -1,6 +1,7 @@
 #include "AliAnalysisTaskStrangenessRatios.h"
 
 #include "AliAnalysisDataContainer.h"
+#include "AliLog.h"
 
 #include <algorithm>
 #include <cmath>
@@ -128,6 +129,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     return;
   }
 
+  double bField{ev->GetMagneticField()};
   auto pvObj = fEventCut.GetPrimaryVertex();
   double pv[3];
   pvObj->GetXYZ(pv);
@@ -230,9 +232,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     fRecCascade->cosPAV0 = casc->CosPointingAngle(pv);
 
     //TOF matching
-    // fCasc_PosTOFBunchCrossing = pTrackCasc->GetTOFBunchCrossing(lMagField);
-    // fCasc_NegTOFBunchCrossing = nTrackCasc->GetTOFBunchCrossing(lMagField);
-    // fCasc_BacTOFBunchCrossing = bTrackCasc->GetTOFBunchCrossing(lMagField);
+    fRecCascade->hasTOFhit = !pTrackCasc->GetTOFBunchCrossing(bField) || !nTrackCasc->GetTOFBunchCrossing(bField) || !bTrackCasc->GetTOFBunchCrossing(bField);
 
     //track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
     fRecCascade->hasITSrefit = (nTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (pTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (bTrackCasc->GetStatus() & AliVTrack::kITSrefit);
