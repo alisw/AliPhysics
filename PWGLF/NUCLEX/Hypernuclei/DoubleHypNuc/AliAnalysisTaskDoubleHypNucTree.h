@@ -73,6 +73,7 @@ enum PdgCodeType_t {
   AliMCEvent            *mcEvent;
   AliStack              *fStack;     
   AliEventCuts          fEventCuts; 
+  AliESDtrackCuts       *trackCutsNuclei;
   AliESDtrackCuts       *trackCutsStrong;
   AliESDtrackCuts       *trackCutsSoft;
   TTree                 *fTree;
@@ -171,7 +172,7 @@ enum PdgCodeType_t {
   Float_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
   Float_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
   Float_t               fEDaughter4, fpDaughter4, fptDaughter4, fpxDaughter4, fpyDaughter4, fpzDaughter4, fyDaughter4, fDcaDaughter4, fDcazDaughter4, fDcaSecDaughter4;
-  Float_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4;
+  Float_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4, fPtUncertDaughter, fPtUncertDaughter1, fPtUncertDaughter2, fPtUncertDaughter3, fPtUncertDaughter4;
   Float_t               fDCA2B, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fDecAngle, farmalpha, farmpt;
   Float_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ;
   Float_t               fmMother, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
