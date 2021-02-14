@@ -149,7 +149,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
     }
 
     for(unsigned int iProng = 0; iProng < fNProngs; iProng++) {
-        if(fPidOpt >= kNsigmaPID && fPidOpt != kNsigmaCombPID && fPidOpt != kBayesPID) {
+        if(fPidOpt >= kNsigmaPID && fPidOpt != kNsigmaCombPID && fPidOpt != kBayesPID && fPidOpt != kBayesAndNsigmaCombPID) {
             for(unsigned int iDet = 0; iDet < knMaxDet4Pid; iDet++) {
                 if(!useDet[iDet]) 
                     continue;
@@ -161,7 +161,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 }
             }
         }
-        if(fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID) {
+        if(fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID) {
             for(unsigned int iPartHypo = 0; iPartHypo < knMaxHypo4Pid; iPartHypo++) {
                 if(!useHypo[iPartHypo]) 
                     continue;
@@ -192,8 +192,8 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 fTreeVar->Branch(Form("probBayes_%s_%d", partHypoName[iPartHypo].Data(), iProng),
                                  &fPIDNsigmaVector[iProng][kBayesTPCTOF][iPartHypo]);
         
-	    }
-	}
+            }
+        }
     }
 }
 
@@ -250,7 +250,7 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                         pidhf->GetnSigmaTOF(prongtracks[iProng], parthypo[iPartHypo], nSigmaTOF);
                         sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
                     }
-                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID) && useTPC && useTOF) {
+                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID) && useTPC && useTOF) {
                         sigComb[iProng][iPartHypo] = AliVertexingHFUtils::CombineNsigmaTPCTOF(sig[iProng][kTPC][iPartHypo], 
                                                                                               sig[iProng][kTOF][iPartHypo]);
                     }
