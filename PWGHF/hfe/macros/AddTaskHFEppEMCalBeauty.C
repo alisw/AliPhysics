@@ -10,8 +10,6 @@ class AliAnalysisDataContainer;
 
 AliAnalysisHFEppEMCalBeauty* AddTaskHFEppEMCalBeauty(
 
-
-
 TString name = "", 
 Bool_t isMC=kFALSE,
 AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7,
@@ -20,7 +18,7 @@ Bool_t useTender = kTRUE,
 Bool_t ClsTypeEMC = kTRUE,
 Bool_t ClsTypeDCAL = kTRUE,
 Bool_t fSwitchRIP=kTRUE,
-Double_t Etarange= 0.6, 
+Double_t Etarange= 0.7, 
 Int_t TPCNCrRows=70,
 Double_t RatioCrossedRowOverFindable=0.8,
 Int_t ITSNclus= 3,
@@ -28,10 +26,10 @@ Int_t TPCNclusPID= 60,
 Bool_t SPDBoth= kFALSE,
 Bool_t SPDAny= kTRUE,
 Bool_t SPDFirst= kFALSE,
-Double_t DCAxyCut= 1,
-Double_t DCAzCut=2,
-Double_t TPCnsigmin= -1,
-Double_t TPCnsigmax= 3,
+Double_t DCAxyCut= 1.0,
+Double_t DCAzCut=2.0,
+Double_t TPCnsigmin= -1.0,
+Double_t TPCnsigmax= 3.0,
 Double_t EopEMin= 0.9,     
 Double_t EopEMax= 1.2,     
 Double_t  M02Min= 0.02,      
@@ -74,7 +72,8 @@ Double_t AssoTPCnsig=  3.0
     HFeTask->SetTrigger(trigger);
     HFeTask->SetMCAnalysis(isMC);
     HFeTask->SetTenderSwitch(useTender);
- 
+    HFeTask->SetClusterTypeEMC(ClsTypeEMC);
+    HFeTask->SetClusterTypeDCAL(ClsTypeDCAL);
     HFeTask->SwitchRecalImpPar(fSwitchRIP);
 
     HFeTask->SetEtaRange(Etarange);            
@@ -96,6 +95,7 @@ Double_t AssoTPCnsig=  3.0
     HFeTask->SetAssoEtarange(AssoEtarange);
     HFeTask->SetAssoTPCnsig(AssoTPCnsig);
 
+
   if(trigger==AliVEvent::kINT7){
 
     isEG1=kFALSE;
@@ -103,15 +103,13 @@ Double_t AssoTPCnsig=  3.0
     HFeTask->SetEMCalTriggerDG1(kFALSE);
     HFeTask->SetEMCalTriggerEG2(kFALSE);
     HFeTask->SetEMCalTriggerDG2(kFALSE);
-    HFeTask->SetClusterTypeEMC(ClsTypeEMC);
-    HFeTask->SetClusterTypeDCAL(ClsTypeDCAL);
-    cout<<"1 trigger  "<<trigger<<"   "<< isEG1 <<endl;   	
     }
-  
+
+
   if(trigger==AliVEvent::kEMCEGA &&  isEG1==kTRUE){
 
-    HFeTask->SetClusterTypeEMC(ClsTypeEMC);
-    HFeTask->SetClusterTypeDCAL(ClsTypeDCAL);
+    HFeTask->SetEMCalTriggerEG2(kFALSE);
+    HFeTask->SetEMCalTriggerDG2(kFALSE);
 
     if(ClsTypeEMC && ClsTypeDCAL){
         HFeTask->SetEMCalTriggerEG1(kTRUE);
@@ -126,19 +124,12 @@ Double_t AssoTPCnsig=  3.0
         HFeTask->SetEMCalTriggerDG1(kTRUE);
     }
         
-        HFeTask->SetEMCalTriggerEG2(kFALSE);
-        HFeTask->SetEMCalTriggerDG2(kFALSE);
-
-    cout<<" 2 trigger  "<<trigger<<"   "<< isEG1 <<endl;
   }
  
   if(trigger==AliVEvent::kEMCEGA && isEG1==kFALSE){
 
      HFeTask->SetEMCalTriggerEG1(kFALSE);
      HFeTask->SetEMCalTriggerDG1(kFALSE);
-
-     HFeTask->SetClusterTypeEMC(ClsTypeEMC);
-     HFeTask->SetClusterTypeDCAL(ClsTypeDCAL);
                
      if(ClsTypeEMC && ClsTypeDCAL){
         HFeTask->SetEMCalTriggerEG2(kTRUE);
@@ -153,7 +144,6 @@ Double_t AssoTPCnsig=  3.0
         HFeTask->SetEMCalTriggerDG2(kTRUE);
      }
 
-    cout<<"3 trigger  "<<trigger<<"   "<< isEG1 <<endl;    
     }
 
     mgr->AddTask(HFeTask);    

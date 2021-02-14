@@ -467,7 +467,9 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fNentries->SetBinContent(28,fM02Max2);
   fNentries->SetBinContent(29,fM02Max3); 
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
+  fNentries->Sumw2();
   fNentries->SetMinimum(0);
+
 
     fHistVx=new TH1F("fHistVx","",400,-20,20);
     fHistVx->Sumw2();
@@ -968,8 +970,14 @@ void AliAnalysisHFEppEMCalBeauty::UserExec(Option_t *)
   TString TriggerDG2("DG2");
     
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+  
   if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
   if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+
+  if(fDCalDG2 && !fEMCEG2) { if(!firedTrigger.Contains(TriggerDG2))return; }
+  if(fEMCEG1  && !fDCalDG1){ if(!firedTrigger.Contains(TriggerEG1))return; }
+  if(fEMCEG2  && !fDCalDG2){ if(!firedTrigger.Contains(TriggerEG2))return; }
+  if(fDCalDG1 && !fEMCEG1) { if(!firedTrigger.Contains(TriggerDG1))return; }
 
   fHistEvent->Fill(5); // Number of events after passing EMCal Trigger
  
@@ -1344,8 +1352,11 @@ for(Int_t icl=0; icl<Nclust; icl++)
                 fHadPt_AftEID->Fill(track->Pt());
                 fHadDCA->Fill(track->Pt(),fTrkDCA);               
               
-                Double_t Rconv = -999;  TrackConvRadius(track, Rconv);
-                fHadConvRadius->Fill(track->Pt(),Rconv);
+                if(fIsMC){
+                  Double_t Rconv = -999;  
+                  TrackConvRadius(track, Rconv);
+                  fHadConvRadius->Fill(track->Pt(),Rconv); 
+                }
          }
             
             if(!fElectTrack) continue;
@@ -1582,7 +1593,7 @@ void AliAnalysisHFEppEMCalBeauty::GetTrkClsEtaPhiDiff(AliAODTrack *t, AliAODCalo
 void AliAnalysisHFEppEMCalBeauty::TrackConvRadius(AliAODTrack* track,  Double_t &R)
 {
   Int_t labelr = track->GetLabel(); 
-  if(labelr>=0) 
+  if(fIsMC && labelr>=0) 
   {
     AliAODMCParticle *mctrackk = dynamic_cast<AliAODMCParticle *>(fMCArray->At(labelr));
     R = TMath::Sqrt(mctrackk->Xv()*mctrackk->Xv()+mctrackk->Yv()*mctrackk->Yv());
@@ -2403,15 +2414,19 @@ void AliAnalysisHFEppEMCalBeauty::SelectPhotonicElectron(Int_t itrack, AliAODTra
             if(fFlagLS){
                 fLSElecPt->Fill(TrkPt);
                 fLSElecDCA->Fill(TrkPt,fTrkDCA); 
-                TrackConvRadius(track, RLS);  
-                fRVsLSElecPt->Fill(TrkPt, RLS);
+                if(fIsMC){ 
+                  TrackConvRadius(track, RLS);  
+                  fRVsLSElecPt->Fill(TrkPt, RLS); 
+                }
             }
 
             if(fFlagULS){
                 fULSElecPt->Fill(TrkPt);
                 fULSElecDCA->Fill(TrkPt,fTrkDCA); 
-                TrackConvRadius(track, RULS);
-                fRVsULSElecPt->Fill(TrkPt,RULS);
+                if(fIsMC){ 
+                  TrackConvRadius(track, RULS);
+                  fRVsULSElecPt->Fill(TrkPt,RULS); 
+                }
             }
         }
         
