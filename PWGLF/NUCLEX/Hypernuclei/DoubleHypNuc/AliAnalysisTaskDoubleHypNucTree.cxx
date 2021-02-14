@@ -55,7 +55,8 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   HMV0(0),
   HMSPD(0),
   HNU(0),
-  HQU(0),  
+  HQU(0),
+  trackCutsNuclei(0),
   trackCutsStrong(0),
   trackCutsSoft(0),
   fTree(0), 
@@ -226,6 +227,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   fSigmaYXDaughter(-99),
   fSigmaXYZDaughter(-99),
   fSigmaZDaughter(-99),
+  fPtUncertDaughter(-99),
 //
   fEDaughter1(-99),
   fpDaughter1(-99),
@@ -249,6 +251,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   fSigmaYXDaughter1(-99),
   fSigmaXYZDaughter1(-99),
   fSigmaZDaughter1(-99),
+  fPtUncertDaughter1(-99),
 //
   fEDaughter2(-99),
   fpDaughter2(-99),
@@ -272,6 +275,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   fSigmaYXDaughter2(-99),
   fSigmaXYZDaughter2(-99),
   fSigmaZDaughter2(-99),
+  fPtUncertDaughter2(-99),
 //
   fEDaughter3(-99),
   fpDaughter3(-99),
@@ -295,6 +299,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   fSigmaYXDaughter3(-99),
   fSigmaXYZDaughter3(-99),
   fSigmaZDaughter3(-99),
+  fPtUncertDaughter3(-99),
 //
   fEDaughter4(-99),
   fpDaughter4(-99),
@@ -308,7 +313,8 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree()
   fDcaSecDaughter4(-99),
   fSigmaYXDaughter4(-99),
   fSigmaXYZDaughter4(-99),
-  fSigmaZDaughter4(-99)
+  fSigmaZDaughter4(-99),
+  fPtUncertDaughter4(-99)
 {
 
 }
@@ -328,7 +334,8 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    HMV0(0),
    HMSPD(0),
    HNU(0),
-   HQU(0),  
+   HQU(0),
+   trackCutsNuclei(0),
    trackCutsStrong(0),
    trackCutsSoft(0),
    fTree(0), 
@@ -499,6 +506,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    fSigmaYXDaughter(-99),
    fSigmaXYZDaughter(-99),
    fSigmaZDaughter(-99),
+   fPtUncertDaughter(-99),
    //
    fEDaughter1(-99),
    fpDaughter1(-99),
@@ -522,6 +530,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    fSigmaYXDaughter1(-99),
    fSigmaXYZDaughter1(-99),
    fSigmaZDaughter1(-99),
+   fPtUncertDaughter1(-99),
    //
    fEDaughter2(-99),
    fpDaughter2(-99),
@@ -545,6 +554,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    fSigmaYXDaughter2(-99),
    fSigmaXYZDaughter2(-99),
    fSigmaZDaughter2(-99),
+   fPtUncertDaughter2(-99),
    //
    fEDaughter3(-99),
    fpDaughter3(-99),
@@ -568,6 +578,7 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    fSigmaYXDaughter3(-99),
    fSigmaXYZDaughter3(-99),
    fSigmaZDaughter3(-99),
+   fPtUncertDaughter3(-99),
    //
    fEDaughter4(-99),
    fpDaughter4(-99),
@@ -581,12 +592,22 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
    fDcaSecDaughter4(-99),
    fSigmaYXDaughter4(-99),
    fSigmaXYZDaughter4(-99),
-   fSigmaZDaughter4(-99)
+   fSigmaZDaughter4(-99),
+   fPtUncertDaughter4(-99)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
   DefineOutput(3, TTree::Class());
+
+  trackCutsNuclei = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
+  trackCutsNuclei->SetEtaRange(-0.8,0.8);
+  trackCutsNuclei->SetAcceptKinkDaughters(kFALSE);
+  trackCutsNuclei->SetRequireTPCRefit(kTRUE);
+  trackCutsNuclei->SetMaxChi2PerClusterTPC(5);
+  trackCutsNuclei->SetMinNClustersTPC(60);
+  //trackCutsNuclei->SetMaxRel1PtUncertainty(0.1);
+  //trackCutsNuclei->SetPtRange(0.0, 10.0);
 
   trackCutsStrong = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   trackCutsStrong->SetEtaRange(-0.8,0.8);
@@ -594,10 +615,10 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
   trackCutsStrong->SetRequireTPCRefit(kTRUE);
   trackCutsStrong->SetMaxChi2PerClusterTPC(5);
   trackCutsStrong->SetMinNClustersTPC(60);
-  trackCutsStrong->SetMaxRel1PtUncertainty(0.1);
-  trackCutsStrong->SetPtRange(0.0, 10.0);
-  trackCutsStrong->SetMinDCAToVertexXY(0.02);
-  trackCutsStrong->SetMinDCAToVertexZ(0.02);
+  //trackCutsStrong->SetMaxRel1PtUncertainty(0.1);
+  //trackCutsStrong->SetPtRange(0.0, 10.0);
+  //trackCutsStrong->SetMinDCAToVertexXY(0.02);
+  //trackCutsStrong->SetMinDCAToVertexZ(0.02);
 
   trackCutsSoft = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   trackCutsSoft->SetEtaRange(-0.8,0.8);
@@ -605,9 +626,9 @@ AliAnalysisTaskDoubleHypNucTree::AliAnalysisTaskDoubleHypNucTree(const char *nam
   trackCutsSoft->SetRequireTPCRefit(kTRUE);
   trackCutsSoft->SetMaxChi2PerClusterTPC(5);
   trackCutsSoft->SetMinNClustersTPC(60);
-  trackCutsSoft->SetMaxRel1PtUncertainty(0.1);
-  trackCutsSoft->SetMinDCAToVertexXY(0.1);
-  trackCutsSoft->SetMinDCAToVertexZ(0.1);
+  //trackCutsSoft->SetMaxRel1PtUncertainty(0.2);
+  //trackCutsSoft->SetMinDCAToVertexXY(0.1);
+  //trackCutsSoft->SetMinDCAToVertexZ(0.1);
 }
 // Destructor
 //_________________________________________________
@@ -752,6 +773,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   fTree->Branch("fSigmaYXDaughter",    &fSigmaYXDaughter,    "fSigmaYXDaughter/F");
   fTree->Branch("fSigmaXYZDaughter",   &fSigmaXYZDaughter,   "fSigmaXYZDaughter/F");
   fTree->Branch("fSigmaZDaughter",     &fSigmaZDaughter,     "fSigmaZDaughter/F");
+  fTree->Branch("fPtUncertDaughter",   &fPtUncertDaughter,   "fPtUncertDaughter/F");
   fTree->Branch("fEDaughter1",         &fEDaughter1,         "fEDaughter1/F");
   fTree->Branch("fpDaughter1",         &fpDaughter1,         "fpDaughter1/F");
   fTree->Branch("fptDaughter1",        &fptDaughter1,        "fptDaughter1/F");
@@ -774,6 +796,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   fTree->Branch("fSigmaYXDaughter1",   &fSigmaYXDaughter1,   "fSigmaYXDaughter1/F");
   fTree->Branch("fSigmaXYZDaughter1",  &fSigmaXYZDaughter1,  "fSigmaXYZDaughter1/F");
   fTree->Branch("fSigmaZDaughter1",    &fSigmaZDaughter1,    "fSigmaZDaughter1/F");
+  fTree->Branch("fPtUncertDaughter1",  &fPtUncertDaughter1,  "fPtUncertDaughter1/F");
   fTree->Branch("fEDaughter2",         &fEDaughter2,         "fEDaughter2/F");
   fTree->Branch("fpDaughter2",         &fpDaughter2,         "fpDaughter2/F");
   fTree->Branch("fptDaughter2",        &fptDaughter2,        "fptDaughter2/F");
@@ -796,6 +819,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   fTree->Branch("fSigmaYXDaughter2",   &fSigmaYXDaughter2,   "fSigmaYXDaughter2/F");
   fTree->Branch("fSigmaXYZDaughter2",  &fSigmaXYZDaughter2,  "fSigmaXYZDaughter2/F");
   fTree->Branch("fSigmaZDaughter2",    &fSigmaZDaughter2,    "fSigmaZDaughter2/F");
+  fTree->Branch("fPtUncertDaughter2",  &fPtUncertDaughter2,  "fPtUncertDaughter2/F");
   fTree->Branch("fEDaughter3",         &fEDaughter3,         "fEDaughter3/F");
   fTree->Branch("fpDaughter3",         &fpDaughter3,         "fpDaughter3/F");
   fTree->Branch("fptDaughter3",        &fptDaughter3,        "fptDaughter3/F");
@@ -818,6 +842,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   fTree->Branch("fSigmaYXDaughter3",   &fSigmaYXDaughter3,   "fSigmaYXDaughter3/F");
   fTree->Branch("fSigmaXYZDaughter3",  &fSigmaXYZDaughter3,  "fSigmaXYZDaughter3/F");
   fTree->Branch("fSigmaZDaughter3",    &fSigmaZDaughter3,    "fSigmaZDaughter3/F");
+  fTree->Branch("fPtUncertDaughter3",  &fPtUncertDaughter3,  "fPtUncertDaughter3/F");
   fTree->Branch("fEDaughter4",         &fEDaughter4,         "fEDaughter4/F");
   fTree->Branch("fpDaughter4",         &fpDaughter4,         "fpDaughter4/F");
   fTree->Branch("fptDaughter4",        &fptDaughter4,        "fptDaughter4/F");
@@ -831,6 +856,7 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   fTree->Branch("fSigmaYXDaughter4",   &fSigmaYXDaughter4,   "fSigmaYXDaughter4/F");
   fTree->Branch("fSigmaXYZDaughter4",  &fSigmaXYZDaughter4,  "fSigmaXYZDaughter4/F");
   fTree->Branch("fSigmaZDaughter4",    &fSigmaZDaughter4,    "fSigmaZDaughter4/F");
+  fTree->Branch("fPtUncertDaughter4",  &fPtUncertDaughter4,  "fPtUncertDaughter4/F");
 
   //++ generated Tree ++
   fTreeGen = new TTree("fTreeGen", "fTreeGen");  
@@ -993,7 +1019,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 
     if (!track1->GetInnerParam()) continue;
 
-    if (!trackCutsStrong->AcceptTrack(track1)) continue;    
+    if (!trackCutsNuclei->AcceptTrack(track1)) continue;    
 
     ptot1 = track1->GetInnerParam()->GetP();
     sign1 = track1->GetSign();
@@ -1017,10 +1043,10 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
     He3Pos1 = kFALSE;
     He3Neg1 = kFALSE;	
     if(sign1 > 0){      
-      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3) He3Pos1 = kTRUE;      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 4) He3Pos1 = kTRUE;      
     }
     else if(sign1 < 0){      
-      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 3) He3Neg1 = kTRUE;      
+      if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track1, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParamsHe)) < 4) He3Neg1 = kTRUE;      
     }
     if(!He3Pos1 && !He3Neg1) continue;
     //++++++++++++++++++++++++++++++++ second track +++++++++++++++++++++++++++++++++++++++//
@@ -1056,10 +1082,10 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
       pPos2 = kFALSE;
       pNeg2 = kFALSE;      
       if(sign2 > 0){	
-	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3) pPos2 = kTRUE;
+	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 4) pPos2 = kTRUE;
       }
       else if(sign2 < 0){	
-	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 3) pNeg2 = kTRUE;	
+	if(TMath::Abs(AliAnalysisTaskDoubleHypNucTree::Bethe(*track2, AliPID::ParticleMass(AliPID::kProton), 1, fBetheParamsT)) < 4) pNeg2 = kTRUE;	
       }    
       if(!(He3Pos1 && pPos2) && !(He3Neg1 && pNeg2)) continue;
       //++++++++++++++++++++++++++++++++ third track +++++++++++++++++++++++++++++++++++++++//
@@ -1077,7 +1103,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	sign3 = track3->GetSign();
 
 	if(sign2 == sign3) continue;
-	if(ptot3 > 1.0) continue;
+	if(ptot3 > 1.5) continue;
 
 	if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
 	
@@ -1105,6 +1131,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	particle1     = new TLorentzVector(0.,0.,0.,0.);
 	particle2     = new TLorentzVector(0.,0.,0.,0.);
 	particle3     = new TLorentzVector(0.,0.,0.,0.);
+	h             = new TVector3(0., 0., 0.);
 	particle1->SetXYZM(2.*track1->Px(), 2.*track1->Py(), 2.*track1->Pz(), AliPID::ParticleMass(AliPID::kHe3));
 	particle2->SetXYZM(   track2->Px(),    track2->Py(),    track2->Pz(), AliPID::ParticleMass(AliPID::kProton));
 	particle3->SetXYZM(   track3->Px(),    track3->Py(),    track3->Pz(), AliPID::ParticleMass(AliPID::kPion));
@@ -1119,10 +1146,44 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	  continue;
 	}
 	else {
-	  if(sublorentzsum) delete sublorentzsum;
-	  if(particle1)     delete particle1;
-	  if(particle2)     delete particle2;
-	  if(particle3)     delete particle3;
+
+	  trkArray = new TObjArray(3);
+	  trkArray->AddAt(track1,0);
+	  trkArray->AddAt(track2,1);
+	  trkArray->AddAt(track3,2);
+	  //+++ Vertex Start = Prim Vtx +++//
+	  tertVertex = (AliESDVertex*)tertvertexer->VertexForSelectedESDTracks(trkArray);
+	  if(trkArray) delete trkArray;
+	  TertVertex[0] = tertVertex->GetX();
+	  TertVertex[1] = tertVertex->GetY();
+	  TertVertex[2] = tertVertex->GetZ();		 
+	  track1->PropagateToDCA(tertVertex, fMagneticField, 10);
+	  track2->PropagateToDCA(tertVertex, fMagneticField, 10);
+	  track3->PropagateToDCA(tertVertex, fMagneticField, 10);
+	  if(tertVertex) delete tertVertex;
+
+	  dd[0] = PrimVertex[0] - TertVertex[0];
+	  dd[1] = PrimVertex[1] - TertVertex[1];
+	  dd[2] = PrimVertex[2] - TertVertex[2];
+	  h->SetXYZ(-dd[0],-dd[1],-dd[2]);
+
+	  fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
+		
+	  if(fSubPA2 < 0.99) {
+	    if(sublorentzsum) delete sublorentzsum;
+	    if(particle1)     delete particle1;
+	    if(particle2)     delete particle2;
+	    if(particle3)     delete particle3;
+	    if(h)             delete h;
+	    AliAnalysisTaskDoubleHypNucTree::ResetVals("");
+	    continue;
+	  }  	
+	  else {
+	    if(sublorentzsum) delete sublorentzsum;
+	    if(particle1)     delete particle1;
+	    if(particle2)     delete particle2;
+	    if(particle3)     delete particle3;
+	  }
 	}
 	//++++++++++++++++++++++++++++++++ fourth Track +++++++++++++++++++++++++++++++++++++++//
 	for (Int_t lTracks = kTracks + 1; lTracks < fESDevent->GetNumberOfTracks(); lTracks++) {
@@ -1139,7 +1200,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	  sign4 = track4->GetSign();
 
 	  if(sign3 != sign4) continue;
-	  if(ptot4 > 1.0) continue;
+	  if(ptot4 > 1.5) continue;
 
 	  if(fMCtrue && (lessCombinatoricsMC || noCombinatoricsMC)){
 	
@@ -1282,6 +1343,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	      fSigmaYXDaughter4  = yv[0];
 	      fSigmaXYZDaughter4 = yv[1];
 	      fSigmaZDaughter4   = yv[2];
+	      fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
 	      fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
 	      //_________________________________________________
 	      dd[0] = PrimVertex[0] - SecVertex[0];
@@ -1326,7 +1388,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	      fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
 	      fDecAngle        = sublorentzsum->Angle(particle4->Vect());
 		
-	      if(fSubPA < 0.9) {
+	      /*if(fSubPA2 < 0.9) {
 		if(sublorentzsum) delete sublorentzsum;
 		if(lorentzsum)    delete lorentzsum;
 		if(particle1)     delete particle1;
@@ -1337,7 +1399,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 		if(h)             delete h;
 		AliAnalysisTaskDoubleHypNucTree::ResetVals("");
 		continue;
-	      }				
+	      }  */			
 	      //_________________________________________________
 	      TVector3 vecN(0.,0.,0.);
 	      TVector3 vecP(0.,0.,0.);
@@ -1457,6 +1519,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	      fSigmaYXDaughter4  = yv[0];
 	      fSigmaXYZDaughter4 = yv[1];
 	      fSigmaZDaughter4   = yv[2];
+	      fPtUncertDaughter4 = TMath::Sqrt(exTrack->GetSigma1Pt2())*fptDaughter4;
 	      fDcaSecDaughter4   = TMath::Abs(exTrack->GetD(SecVertex[0], SecVertex[1], fMagneticField));
 	      //_________________________________________________
 	      dd[0] = PrimVertex[0] - SecVertex[0];
@@ -1501,7 +1564,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 	      fSubPA2          = TMath::Cos(sublorentzsum->Angle(*h));
 	      fDecAngle        = sublorentzsum->Angle(particle4->Vect());
 		
-	      if(fSubPA < 0.9) {
+	      /*if(fSubPA2 < 0.9) {
 		if(sublorentzsum) delete sublorentzsum;
 		if(lorentzsum)    delete lorentzsum;
 		if(particle1)     delete particle1;
@@ -1512,7 +1575,7 @@ void AliAnalysisTaskDoubleHypNucTree::AnalysisLoop(){
 		if(h)             delete h;
 		AliAnalysisTaskDoubleHypNucTree::ResetVals("");
 		continue;
-	      }				
+	      }	*/			
 	      //_________________________________________________
 	      TVector3 vecN(0.,0.,0.);
 	      TVector3 vecP(0.,0.,0.);
@@ -1691,6 +1754,7 @@ void AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation() {
   fPhiDaughter        = track1->Phi();
   fGeoLengthDaughter  = AliAnalysisTaskDoubleHypNucTree::GeoLength(*track1);
   fTOFSignalDaughter  = AliAnalysisTaskDoubleHypNucTree::GetTOFSignal(*track1);
+  fPtUncertDaughter   = TMath::Sqrt(track1->GetSigma1Pt2())*fptDaughter;
   //p track
   fpDaughter1         = track2->GetInnerParam()->GetP();
   fpxDaughter1        = particle2->Px();
@@ -1715,6 +1779,7 @@ void AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation() {
   fPhiDaughter1       = track2->Phi();
   fGeoLengthDaughter1 = AliAnalysisTaskDoubleHypNucTree::GeoLength(*track2);
   fTOFSignalDaughter1 = AliAnalysisTaskDoubleHypNucTree::GetTOFSignal(*track2);
+  fPtUncertDaughter1  = TMath::Sqrt(track2->GetSigma1Pt2())*fptDaughter1;
   //pi track
   fpDaughter2         = track3->GetInnerParam()->GetP();
   fpxDaughter2        = particle3->Px();
@@ -1739,6 +1804,7 @@ void AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation() {
   fPhiDaughter2       = track3->Phi();
   fGeoLengthDaughter2 = AliAnalysisTaskDoubleHypNucTree::GeoLength(*track3);
   fTOFSignalDaughter2 = AliAnalysisTaskDoubleHypNucTree::GetTOFSignal(*track3);
+  fPtUncertDaughter2  = TMath::Sqrt(track3->GetSigma1Pt2())*fptDaughter2;
   //pi track
   fpDaughter3         = track4->GetInnerParam()->GetP();
   fpxDaughter3        = particle4->Px();
@@ -1763,6 +1829,7 @@ void AliAnalysisTaskDoubleHypNucTree::SetDaughterInformation() {
   fPhiDaughter3       = track4->Phi();
   fGeoLengthDaughter3 = AliAnalysisTaskDoubleHypNucTree::GeoLength(*track4);
   fTOFSignalDaughter3 = AliAnalysisTaskDoubleHypNucTree::GetTOFSignal(*track4);
+  fPtUncertDaughter3  = TMath::Sqrt(track4->GetSigma1Pt2())*fptDaughter3;
   
   return;
 }
