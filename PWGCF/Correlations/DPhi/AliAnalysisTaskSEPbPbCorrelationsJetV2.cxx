@@ -1438,23 +1438,21 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   fitsmult = GetITSMultiplicity();
   fHistITSMultiplicity -> Fill(fitsmult);
 
-  Int_t centBin = GetCentBin();
+  Double_t percentile;
+  AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
+  percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
+  fHistCentrality->Fill(percentile);
+
+  fv0mpercentile = multSelection->GetMultiplicityPercentile("V0M");
+  fv0meqpercentile = multSelection->GetMultiplicityPercentile("V0MEq");
+  fv0apercentile = multSelection->GetMultiplicityPercentile("V0A");
+  fv0cpercentile = multSelection->GetMultiplicityPercentile("V0C");
+  fcl0percentile = multSelection->GetMultiplicityPercentile("CL0");
+  fcl1percentile = multSelection->GetMultiplicityPercentile("CL1");
+
+  Int_t centBin = GetCentBin(percentile);
   if (centBin<0) return;
   fHistEvStat->Fill(cutIndex++);
-
-
-    Double_t percentile;
-    AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
-    percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
-    fHistCentrality->Fill(percentile);
-
-    fv0mpercentile = multSelection->GetMultiplicityPercentile("V0M");
-    fv0meqpercentile = multSelection->GetMultiplicityPercentile("V0MEq");
-    fv0apercentile = multSelection->GetMultiplicityPercentile("V0A");
-    fv0cpercentile = multSelection->GetMultiplicityPercentile("V0C");
-    fcl0percentile = multSelection->GetMultiplicityPercentile("CL0");
-    fcl1percentile = multSelection->GetMultiplicityPercentile("CL1");
-
 
   if (fAOD->IsIncompleteDAQ()) return;
   fHistEvStat->Fill(cutIndex++);

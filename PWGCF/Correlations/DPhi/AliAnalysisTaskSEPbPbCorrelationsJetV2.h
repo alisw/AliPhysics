@@ -64,7 +64,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetCentBinning(Int_t nBins, Double_t *limits);
   void SetEtaBinning(Int_t nBins, Double_t *limits);
   void SetZvtxBinning(Int_t nBins, Double_t *limits);
-  void SetCentMethod(const Char_t *method) { fCentMethod = method; }
+  void SetCentMethod(TString method) { fCentMethod = method; }
   
   void FillHistogramsV2(Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
 			Double_t resA2, Double_t resC2, Double_t resT2,
