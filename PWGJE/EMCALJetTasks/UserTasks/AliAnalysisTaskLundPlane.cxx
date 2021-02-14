@@ -783,7 +783,7 @@ Bool_t AliAnalysisTaskLundPlane::SubjetMatching(std::vector < fastjet::PseudoJet
       if (lnkt_det < -1. || lnkt_det > 2) continue;
       if (lnr_det < 0. || lnr_det > 1.4) continue;
       reco_matches.push_back(ind_reco);            
-      fHtrueMatch->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet);
+      fHtrueMatch->Fill(lnr_part, lnkt_part, fShapesVar_Splittings_ptjet_part);
 
       fShapesVar_Matching_ptjet = fShapesVar_Splittings_ptjet;
       fShapesVar_Matching_mytrig = fShapesVar_Splittings_mytrig;
