@@ -192,8 +192,8 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 fTreeVar->Branch(Form("probBayes_%s_%d", partHypoName[iPartHypo].Data(), iProng),
                                  &fPIDNsigmaVector[iProng][kBayesTPCTOF][iPartHypo]);
         
-	    }
-	}
+            }
+        }
     }
 }
 
