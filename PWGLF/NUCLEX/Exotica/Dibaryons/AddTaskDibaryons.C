@@ -1,6 +1,7 @@
 AliAnalysisTask *AddTaskDibaryons( Int_t   collidingSystem                      = 0,
                                    AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7,
-                                   Bool_t  pileupCut                            = kTRUE )
+                                   Bool_t  pileupCut                            = kTRUE,
+                                   Bool_t  eventMixing                          = kTRUE )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
@@ -26,6 +27,7 @@ AliAnalysisTask *AddTaskDibaryons( Int_t   collidingSystem                      
   task->SetSelectedTriggerClass     (triggerclass);
   task->SetFilterBit                (128);
   task->SetPileupCut                (pileupCut);
+  task->SetEventMixing              (eventMixing);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
