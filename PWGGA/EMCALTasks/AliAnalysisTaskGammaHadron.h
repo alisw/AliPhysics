@@ -303,14 +303,17 @@ public:
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
   // Event Plane information (reconstructed event plane)
   TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt)
+  TH3             *fPtEPAnglePionAccCent;    //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt and cent)
   TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi_{EP} of MC truth pi0 (vs pt)
   TH2             *fPtEPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
   // Event Plane information (reconstructed event plane, 3rd order)
   TH2             *fPtEP3AnglePionAcc;        //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt)
+  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,2} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP3AngleMCPion;         //!<! Histogram of delta Psi_{EP,3} of MC truth pi0 (vs pt)
   TH2             *fPtEP3AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,3} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
   // Event Plane information (reconstructed event plane, 4th order)
   TH2             *fPtEP4AnglePionAcc;        //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt)
+  TH3             *fPtEP4AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
   TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
 
