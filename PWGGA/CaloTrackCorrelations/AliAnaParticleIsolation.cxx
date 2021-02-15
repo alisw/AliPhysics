@@ -5419,6 +5419,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 //             photonEta, photonPhi, partInConeEta, partInConePhi);      
     }
     
+//    printf("FillAcc::Generated Method %d cone %0.2f: sumPt Ch %2.1f, Ne %2.1f; "
+//           "eta band Ch %2.1f, Ne %2.1f; phi band Ch %2.1f, Ne %2.1f; perp Ch %2.1f \n ",
+//           isoMethod,coneSize,sumPtInConeCh,sumPtInConeNe,
+//           etaBandPtSumCh,etaBandPtSumNe,phiBandPtSumCh,phiBandPtSumNe,perpConePtSumCh);
     ///////END ISO MC/////////////////////////
     
     // ////////////////////ISO EMBED DATA/////////////////////////
@@ -5535,14 +5539,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       }
 
       // Tracks
-
-      for(Int_t itrack=0; itrack < (GetReader()->GetCTSTracks())->GetEntriesFast(); itrack++)
+      TObjArray * plCh = GetReader()->GetCTSTracks();
+      for(Int_t itrack=0; itrack < plCh->GetEntriesFast(); itrack++)
       {
-        AliVTrack* track = dynamic_cast<AliVTrack*>((GetReader()->GetCTSTracks())->At(itrack));
+        AliVTrack* track = dynamic_cast<AliVTrack*>(plCh->At(itrack));
 
         Int_t label  = track->GetLabel();
 
-        if ( label < 0  ) continue; // Accept only purely MC clusters
+        if ( label >= 0  ) continue; // Accept only purely MC clusters
 
         partInConePt     = track->Pt();
         partInConeEta    = track->Eta();
@@ -5627,6 +5631,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         //printf("Track %d pT %f\n",itrack, partInConePt);
 
       }
+
+//      printf("FillAcc::Embedded Method %d cone %0.2f: "
+//             "sumPt Ch %2.1f, Ne %2.1f; eta band Ch %2.1f, Ne %2.1f; "
+//             "phi band Ch %2.1f, Ne %2.1f; perp Ch %2.1f \n ",
+//             isoMethod,coneSize,sumPtInConeChEmb,sumPtInConeNeEmb,
+//             etaBandPtSumChEmb,etaBandPtSumNeEmb,phiBandPtSumChEmb,
+//             phiBandPtSumNeEmb,perpConePtSumChEmb);
 
       // Add generated particles to embedded
       sumPtInConeChEmb+=sumPtInConeCh;

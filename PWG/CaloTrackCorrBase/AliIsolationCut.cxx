@@ -3340,6 +3340,12 @@ void  AliIsolationCut::MakeIsolationCut
   pCandidate->SetNeutralPtSumInCone (coneptsumUESubCluster *excessAreaClsEta * excessAreaClsPhi);
   pCandidate->SetChargedPtSumInCone (coneptsumUESubTrack   *excessAreaTrkEta);
   
+//  printf("MakeIso:: Method %d cone %0.2f: sumPt Ch %2.1f, Ne %2.1f; "
+//         "eta band Ch %2.1f, Ne %2.1f; phi band Ch %2.1f, Ne %2.1f; perp Ch %2.1f \n ",
+//         fICMethod, fConeSize,coneptsumTrack ,coneptsumCluster ,
+//         etaBandPtSumTrack,etaBandPtSumCluster,
+//         phiBandPtSumTrack,phiBandPtSumCluster,perpPtSumTrack);
+
   //-------------------------------------------------------------------
   // Fill histograms
   //-------------------------------------------------------------------
