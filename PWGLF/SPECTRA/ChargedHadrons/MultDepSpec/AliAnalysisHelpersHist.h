@@ -23,6 +23,10 @@ struct Axis
   std::string title{};
   std::vector<double> binEdges{};
   int nBins{}; // 0 when bin edges are specified directly
+
+  //virtual ~Axis(){};
+  //ClassDef(Axis, 1);
+
 };
 
 template <typename RootHist_t>
@@ -246,16 +250,37 @@ public:
   double GetSize(double fillFraction = 1.)
   {
     if(!fRawHist) return 0.;
-    double nbinsTotal = 1.;
-    for(Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
-      nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
 
-    Double_t overhead = 4.; // probably often less; unfortunatley cannot access
-                            // fRawHist->GetCompactCoord()->GetBufferSize();
+    // THnSparse has massive overhead and should only be used when histogram is large and a very small fraction of bins is filled
+    double nBinsTotal = 1.;
+    int compCoordSize = 0; // size required to store a compact coordinate representation
+    for (int d = 0; d < fRawHist->GetNdimensions(); ++d) {
+      int nBins = fRawHist->GetAxis(d)->GetNbins() + 2;
+      nBinsTotal *= nBins;
 
-    return fillFraction * nbinsTotal
-           * (GetBaseElementSize(fRawHist) + overhead
-              + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
+      // number of bits needed to store compact coordinates
+      int b = 1;
+      while (nBins /= 2) {
+        ++b;
+      }
+      compCoordSize += b;
+    }
+    compCoordSize = (compCoordSize + 7) / 8; // turn bits into bytes
+
+    // THnSparse stores the data in an array of chunks (THnSparseArrayChunk), each containing a fixed number of bins (e.g. 1024 * 16)
+    double nBinsFilled = fillFraction * nBinsTotal;
+    int nCunks = ceil(nBinsFilled / fRawHist->GetChunkSize());
+    int chunkOverhead = sizeof(THnSparseArrayChunk);
+
+    // each chunk holds array of compact bin-coordinates and an array of bin content (+ one of bin error if requested)
+    double binSize = compCoordSize + GetBaseElementSize(fRawHist) + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.);
+    double size = nCunks * (chunkOverhead + fRawHist->GetChunkSize() * binSize);
+    // since THnSparse must keep track of all the stored bins, it stores a map that
+    // relates the compact bin coordinates (or a hash thereof) to a linear index
+    // this index determines in which chunk and therein at which position to find / store bin coordinate and content
+    size += nBinsFilled * 3 * sizeof(Long64_t); // hash, key, value; not sure why 3 are needed here...
+
+    return size;
   }
 
 private:
