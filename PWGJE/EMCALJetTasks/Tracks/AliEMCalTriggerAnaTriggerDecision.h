@@ -21,7 +21,9 @@ class TClonesArray;
 class TString;
 class AliEMCALTriggerPatchInfo;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -107,11 +109,11 @@ protected:
 
   Bool_t fDoDebug;                                                                 ///< Switch for debug mode
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerDecision, 1);     // EMCal trigger decision
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERANATRIGGERDECISION_H */

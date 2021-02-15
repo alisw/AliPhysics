@@ -59,11 +59,9 @@
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTrigger)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
   /*
    * constants
@@ -1025,8 +1023,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param contname Name of the container
    * @param isMC Defines whether the container is for MC truth or not
    */
-  void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
+  void AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
     TList &mycontainer = isMC ? fJetContainersMC : fJetContainersData;
     mycontainer.Add(new TObjString(contname));
   }
-}

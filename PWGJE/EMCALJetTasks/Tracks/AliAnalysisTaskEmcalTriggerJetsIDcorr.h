@@ -14,7 +14,9 @@ class THistManager;
 class TString;
 class TVector3;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 struct CorrParticleInfo {
   Double_t fPt;
@@ -68,11 +70,11 @@ private:
   AliPIDResponse        *fPIDResponse;        //!<! PID Response handler
   THistManager          *fHistos;             //!<! Histogram handler
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerJetsIDcorr, 1)
-  /// \endcond
 };
 
-} /* namespace EmcalTriggerJets */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERJETSIDCORR_H */

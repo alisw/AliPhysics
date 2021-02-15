@@ -9,7 +9,9 @@
 
 class THistManager;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEmcalTriggerEmulation;
 class AliEMCalTriggerWeightHandler;
@@ -99,11 +101,11 @@ private:
   AliCutValueRange<double>                    fEtaRange;                ///< Acceptance range for particles and tracks in \f$ \eta \f$-direction
   AliCutValueRange<double>                    fPhiRange;                ///< Acceptance range for particles and tracks in \f$ \phi \f$-direction
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerEmulation, 1)
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGEREMULATION_H */

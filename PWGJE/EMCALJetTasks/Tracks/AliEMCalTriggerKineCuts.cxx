@@ -16,11 +16,9 @@
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliVParticle.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerKineCuts)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default constructor
@@ -45,5 +43,3 @@ bool AliEMCalTriggerKineCuts::IsSelected(const AliVParticle* const track) const 
   if(!fPhiCut.IsInRange(track->Phi())) return false;
   return true;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

@@ -53,11 +53,9 @@
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesRefMC)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         AliAnalysisTaskEmcal(),
@@ -539,10 +537,10 @@ AliAnalysisTaskChargedParticlesRefMC *AliAnalysisTaskChargedParticlesRefMC::AddT
   // EJ2:  12 GeV
   mgr->AddTask(task);
   task->SetOfflineTriggerSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+      AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
   );
   task->SetEMCALTrackSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
+      AliEmcalAnalysisFactory::TrackCutsFactory(
           cutname,
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
       )
@@ -575,5 +573,3 @@ AliAnalysisTaskChargedParticlesRefMC::PtBinning::PtBinning() :
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

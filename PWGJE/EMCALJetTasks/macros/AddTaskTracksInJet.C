@@ -1,7 +1,7 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet * AddTaskTracksInJet(Bool_t isMC){
+PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet * AddTaskTracksInJet(Bool_t isMC){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet *trackInJet = new EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet("trackInJet");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet *trackInJet = new PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet("trackInJet");
   if(isMC){
     trackInJet->SetMC(kTRUE);
     trackInJet->SetOutlierCut(1.2);

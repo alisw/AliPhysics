@@ -7,7 +7,9 @@
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalTriggerMultiplicity
@@ -103,11 +105,11 @@ private:
   AliAnalysisTaskEmcalTriggerMultiplicity(const AliAnalysisTaskEmcalTriggerMultiplicity &);
   AliAnalysisTaskEmcalTriggerMultiplicity &operator=(const AliAnalysisTaskEmcalTriggerMultiplicity &);
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerMultiplicity, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERMULTIPLICITY_H */

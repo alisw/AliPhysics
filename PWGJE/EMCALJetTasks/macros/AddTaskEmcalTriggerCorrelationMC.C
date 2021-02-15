@@ -1,3 +1,3 @@
-EmcalTriggerJets::AliAnalysisTaskEmcalTriggerCorrelationMC *AddTaskEmcalTriggerCorrelationMC(const char *suffix){
-  return EmcalTriggerJets::AliAnalysisTaskEmcalTriggerCorrelationMC::AddTaskEmcalTriggerCorrelationMC(suffix);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelationMC *AddTaskEmcalTriggerCorrelationMC(const char *suffix){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelationMC::AddTaskEmcalTriggerCorrelationMC(suffix);
 }

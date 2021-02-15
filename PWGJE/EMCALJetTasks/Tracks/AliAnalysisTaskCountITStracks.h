@@ -8,7 +8,9 @@ class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskCountITStracks : public AliAnalysisTaskSE {
 public:
@@ -29,6 +31,8 @@ private:
   ClassDef(AliAnalysisTaskCountITStracks, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKCOUNTITSTRACKS_H */

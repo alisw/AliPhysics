@@ -48,11 +48,9 @@
 
 #include "AliAnalysisTaskChargedParticlesMCTriggerMimic.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesMCTriggerMimic)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor
@@ -343,7 +341,6 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
         if(!truepart->Charge()) continue;
 
         if(!IsPhysicalPrimary(truepart, fMCEvent)) continue;
-        AliAODMCParticle *aodmc = static_cast<AliAODMCParticle *>(truepart);
         isEMCAL = (truepart->Phi() > 1.5 && truepart->Phi() < 3.1) ? kTRUE : kFALSE;
 
         // Calculate eta in cms frame according
@@ -445,7 +442,7 @@ Bool_t AliAnalysisTaskChargedParticlesMCTriggerMimic::Run(){
     Double_t energy, et, eta, phi;
     AliClusterContainer *clustercont = this->GetClusterContainer(fNameClusters.Data());
     if(clustercont){
-      for(const auto &clust : clustercont->all()){
+      for(auto clust : clustercont->all()){
         if(!clust->IsEMCAL()) continue;
         if(clust->GetIsExotic()) continue;
 
@@ -692,6 +689,3 @@ AliAnalysisTaskChargedParticlesMCTriggerMimic::PtBinning::PtBinning() :
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */
