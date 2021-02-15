@@ -5419,9 +5419,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 //             photonEta, photonPhi, partInConeEta, partInConePhi);      
     }
     
-    printf("FillAcc::Generated Method %d cone %0.2f: sumPt Ch %2.1f, Ne %2.1f; eta band Ch %2.1f, Ne %2.1f; phi band Ch %2.1f, Ne %2.1f; perp Ch %2.1f \n ",
-           isoMethod,coneSize,sumPtInConeCh,sumPtInConeNe,
-           etaBandPtSumCh,etaBandPtSumNe,phiBandPtSumCh,phiBandPtSumNe,perpConePtSumCh);
+//    printf("FillAcc::Generated Method %d cone %0.2f: sumPt Ch %2.1f, Ne %2.1f; "
+//           "eta band Ch %2.1f, Ne %2.1f; phi band Ch %2.1f, Ne %2.1f; perp Ch %2.1f \n ",
+//           isoMethod,coneSize,sumPtInConeCh,sumPtInConeNe,
+//           etaBandPtSumCh,etaBandPtSumNe,phiBandPtSumCh,phiBandPtSumNe,perpConePtSumCh);
     ///////END ISO MC/////////////////////////
     
     // ////////////////////ISO EMBED DATA/////////////////////////
