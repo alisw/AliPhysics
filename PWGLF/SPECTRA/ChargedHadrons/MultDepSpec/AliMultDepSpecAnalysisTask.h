@@ -43,17 +43,11 @@ public:
   enum Dimension : unsigned int {
     pt_meas = 0,
     pt_true,
-    eta_meas,
-    eta_true,
-    phi_meas,
-    phi_true,
     mult_meas,
     mult_true,
-    zv,
-    event_cuts,
     sigma_pt,
     delta_pt,
-    phi,
+    zv,
     LAST,
   };
 
@@ -78,9 +72,7 @@ public:
 
   void SetAxis(unsigned int dim, const std::string name, const std::string title,
                const std::vector<double>& binEdges, int nBins = 0);
-  void SetCuts(unsigned int dim, const std::pair<double, double>& cuts){};
 
-  // Acceptance cuts -> to be replaced soon
   void SetMinEta(double minEta) { fMinEta = minEta; }
   void SetMaxEta(double maxEta) { fMaxEta = maxEta; }
   void SetMinPt(double minPt) { fMinPt = minPt; }
@@ -95,7 +87,7 @@ public:
   virtual bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
 protected:
-  virtual void DefineDefaultAxes(int maxMult = 100); // called in AddTask
+  virtual void DefineDefaultAxes(int maxMultMeas = 100, int maxMultTrue = 100); // called in AddTask
   virtual void BookHistograms();                     // called in UserCreateOutputObjects
 
   virtual bool InitEvent();
@@ -223,7 +215,7 @@ protected:
   double fMCPt{};  //!<! mc pt
   double fMCEta{}; //!<! mc eta
   double fMCPhi{}; //!<! mc phi
-
+  
   int fMCLabel{}; //!<! mc label
 
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
