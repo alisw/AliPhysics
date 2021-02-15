@@ -241,7 +241,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   config->SetClosePairRejection(closeRejection);
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
-  config->SetPtQA((suffix == "0" && fullBlastQA));
+  config->SetPtQA(true);
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
