@@ -23,6 +23,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     void SetPileupCut             (Bool_t pileupCut                            ) { fPileupCut       = pileupCut;       } 
     void SetEventMixing           (Bool_t eventMixing                          ) { fEventMixing     = eventMixing;     }
 
+    void PairCleaner();
     Double_t relKcalc(TLorentzVector track1, TLorentzVector track2);
 
   private:
