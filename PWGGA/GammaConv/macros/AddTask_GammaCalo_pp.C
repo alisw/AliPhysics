@@ -1980,13 +1980,21 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 819){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger
     cuts.AddCutCalo("00010113","24466190xa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190xa01cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig == 826){ // PHOS INT7, 300MeV mimic var
+
+  //Mimic var Option
+  } else if (trainConfig == 823){ // PHOS INT7, mimic var 1
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
-  } else if (trainConfig == 827){ // PHOS INT7, 300MeV mimic var2
+  } else if (trainConfig == 824){ // PHOS INT7, mimic var 2
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
-  } else if (trainConfig == 828){ // PHOS PHI7, 300MeV mimic var
+  } else if (trainConfig == 825){ // PHOS INT7, mimic var 3
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 826){ // PHOS PHI7, mimic var 1
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig == 829){ // PHOS PHI7, 300MeV mimic var2
+  } else if (trainConfig == 827){ // PHOS PHI7, mimic var 2
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 828){ // PHOS PHI7, mimic var 3
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 829){ // PHOS PHI7, mimic var 4
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
 
   }  else if (trainConfig == 840){ // PHOS INT7, 100MeV, with Timing Efficiency
