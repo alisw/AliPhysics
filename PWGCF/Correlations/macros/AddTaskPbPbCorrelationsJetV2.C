@@ -1,4 +1,4 @@
-AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(const char *centMethod = "V0M") {
+AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M") {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -25,9 +25,9 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(const char 
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;
   task->SetCentBinning(nBinCent, centLimits);
 
-  printf("Centrality: ");
-  for(Int_t ibin = 0; ibin <= nBinCent; ++ibin) printf("%.1f ",(Double_t)centLimits[ibin]);
-  printf("%s\n",centMethod);
+//  printf("Centrality: ");
+//  for(Int_t ibin = 0; ibin <= nBinCent; ++ibin) printf("%.1f ",(Double_t)centLimits[ibin]);
+//  printf("%s\n",centMethod);
 
   task->SetCentMethod(centMethod);
 
