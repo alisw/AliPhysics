@@ -18,14 +18,9 @@
 
 class TArrayD;
 
-/**
- * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-p_{t} tracks in triggered events
- *
- * This namespace contains classes for the analysis of high-p_{t} tracks in
- * triggered events.
- */
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerAnaTriggerClass;
 class AliEMCalTriggerAnaTriggerDecisionConfig;
@@ -102,11 +97,11 @@ private:
   AliAnalysisTaskPtEMCalTriggerV1(const AliAnalysisTaskPtEMCalTriggerV1 &);
   AliAnalysisTaskPtEMCalTriggerV1 &operator=(const AliAnalysisTaskPtEMCalTriggerV1 &);
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskPtEMCalTriggerV1, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKPTEMCALTRIGGERV1_H */

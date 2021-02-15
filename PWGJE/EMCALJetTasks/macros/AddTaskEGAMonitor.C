@@ -1,7 +1,7 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor *AddTaskEGAMonitor() {
+PWGJE::EMCALJetTasks::AliAnalysisTaskEGAMonitor *AddTaskEGAMonitor() {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor *egamonitor = new EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor("EGAMonitor");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEGAMonitor *egamonitor = new PWGJE::EMCALJetTasks::AliAnalysisTaskEGAMonitor("EGAMonitor");
   mgr->AddTask(egamonitor);
 
   TString outputcont = mgr->GetCommonFileName();

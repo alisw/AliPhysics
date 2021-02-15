@@ -35,23 +35,17 @@
 
 #include "AliAnalysisTaskEventSelectionRef.h"
 
-#if __cplusplus < 201103L
-#ifndef nullptr
-#define nullptr NULL
-#endif
-#endif
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEventSelectionRef)
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef)
-
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
   AliAnalysisTaskSE(),
   fClusterContainerName(""),
   fAnalysisUtils(nullptr),
   fTriggerSelection(nullptr),
-  fHistos(nullptr),
   fTrackCuts(nullptr),
+  fHistos(nullptr),
   fGeometry(nullptr),
   fTriggerPatchContainer(nullptr),
   fClusterContainer(nullptr),
@@ -64,8 +58,8 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *n
   fClusterContainerName(""),
   fAnalysisUtils(nullptr),
   fTriggerSelection(nullptr),
-  fHistos(nullptr),
   fTrackCuts(nullptr),
+  fHistos(nullptr),
   fGeometry(nullptr),
   fTriggerPatchContainer(nullptr),
   fClusterContainer(nullptr),
@@ -378,5 +372,3 @@ Bool_t AliAnalysisTaskEventSelectionRef::TrackSelectionAOD(AliAODTrack* track) {
   if(track->GetTPCNCrossedRows() < 120) return false;
   return true;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

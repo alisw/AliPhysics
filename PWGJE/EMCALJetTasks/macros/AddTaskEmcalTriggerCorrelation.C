@@ -1,3 +1,3 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation *AddTaskEmcalTriggerCorrelation(const char *name){
-  return EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation::AddTaskTriggerCorrelation(name);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelation *AddTaskEmcalTriggerCorrelation(const char *name){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelation::AddTaskTriggerCorrelation(name);
 }

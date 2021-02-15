@@ -45,11 +45,9 @@
 #include "AliOADBContainer.h"
 #include "AliVVertex.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerBase)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBase)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
@@ -828,5 +826,3 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
     }
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

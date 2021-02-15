@@ -46,11 +46,9 @@
 #include "AliEMCalTriggerExtraCuts.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesRef)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
@@ -392,15 +390,8 @@ AliAnalysisTaskChargedParticlesRef *AliAnalysisTaskChargedParticlesRef::AddTaskC
   // EJ1:  22 GeV
   // EJ2:  12 GeV
   mgr->AddTask(task);
-  task->SetOfflineTriggerSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
-  );
-  task->SetEMCALTrackSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
-          cutname,
-          mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
-      )
-  );
+  task->SetOfflineTriggerSelection(AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12));
+  task->SetEMCALTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()));
 
   TString outfile(mgr->GetCommonFileName());
   outfile += ":ChargedParticleQA_%s" + cutname;
@@ -426,5 +417,3 @@ AliAnalysisTaskChargedParticlesRef::PtBinning::PtBinning():
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

@@ -31,11 +31,9 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerClusterAnalysisComponent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerClusterAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerClusterAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor, not to be used by the user
@@ -145,6 +143,3 @@ void AliEMCalTriggerClusterAnalysisComponent::FillHistogram(const TString& histn
   double infs[5] = {clust->E(), vec.Eta(), vec.Phi(), xyz[2], inMB ? 1. : 0.};
   fHistos->FillTHnSparse(histname.Data(), infs);
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

@@ -30,11 +30,9 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerEventCounterAnalysisComponent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventCounterAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerEventCounterAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default (I/O) constructor, not to be used
@@ -153,5 +151,3 @@ Int_t AliEMCalTriggerEventCounterAnalysisComponent::FindAxis(THnSparse* hist, co
   }
   return result;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

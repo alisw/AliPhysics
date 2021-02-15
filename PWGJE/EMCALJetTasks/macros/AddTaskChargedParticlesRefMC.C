@@ -1,3 +1,3 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMC(const char *cutname = "standard"){
-  return EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC::AddTaskChargedParticlesRefMCDefault(cutname);
+PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMC(const char *cutname = "standard"){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesRefMC::AddTaskChargedParticlesRefMCDefault(cutname);
 }

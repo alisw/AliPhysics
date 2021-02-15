@@ -1,3 +1,3 @@
-EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets *AddTaskEmcalTriggerJets(const char *name){
-  return EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJets::AddTaskEmcalTriggerJets(name);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJets *AddTaskEmcalTriggerJets(const char *name){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJets::AddTaskEmcalTriggerJets(name);
 }

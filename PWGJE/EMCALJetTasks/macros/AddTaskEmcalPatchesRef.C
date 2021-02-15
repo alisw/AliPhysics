@@ -1,8 +1,8 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef(){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef(){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef("emcalPatchQA");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef *task = new PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef("emcalPatchQA");
 
   // Set Energy thresholds for additional patch selection:
   // These are events with offline patches of a given type where the trigger reached already the plateau
@@ -13,7 +13,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef()
   // EJ1:  22 GeV
   // EJ2:  12 GeV
   task->SetOfflineTriggerSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+      PWGJE::EMCALJetTasks::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
   );
 
   mgr->AddTask(task);

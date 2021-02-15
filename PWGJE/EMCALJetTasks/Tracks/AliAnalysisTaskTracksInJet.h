@@ -15,7 +15,9 @@ class AliMCEvent;
 class AliVParticle;
 class THistManager;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 
 /**
@@ -87,6 +89,8 @@ private:
   ClassDef(AliAnalysisTaskTracksInJet, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKTRACKSINJET_H */

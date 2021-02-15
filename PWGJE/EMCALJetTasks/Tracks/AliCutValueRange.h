@@ -6,7 +6,9 @@
 #include <iosfwd>
 #include <TObject.h>
 
-namespace EMCalTriggerPtAnalysis{
+namespace PWGJE {
+
+namespace EMCALJetTasks{
 
 template<typename t>
 class AliCutValueRange;
@@ -128,10 +130,10 @@ private:
 	bool    fUseSmallerEqual;           ///< Use smaller equal for upper bound (true by default)
 	bool    fUseLargerEqual;            ///< Use larger equal for lower bound (true by default)
 
-	/// \cond CLASSIMP
 	ClassDef(AliCutValueRange, 1);     // Value range for cuts
-	/// \endcond
 };
+
+}
 
 }
 
