@@ -69,7 +69,7 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3()
 ,fUseTOFPidCut(kFALSE)
 ,fMomTOFProt(10.)
 ,fMomTOFDeut(10.)
-,kAnalyseAllParticles(kFALSE)
+,kAnalyseAllParticles(kTRUE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -117,7 +117,7 @@ AliAnalysisTaskHe3::AliAnalysisTaskHe3(const char* name)
 ,fUseTOFPidCut(kFALSE)
 ,fMomTOFProt(10.)
 ,fMomTOFDeut(10.)
-,kAnalyseAllParticles(kFALSE)
+,kAnalyseAllParticles(kTRUE)
 {
     // constructor
     
