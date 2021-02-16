@@ -42,7 +42,8 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     }else{
         MCthere=kTRUE;
     }
-    
+
+    //Add tender 
     char calib[100];
     if(UseTender)
     {
