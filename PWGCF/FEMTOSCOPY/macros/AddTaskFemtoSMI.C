@@ -14,6 +14,7 @@ AliAnalysisTaskSE* AddTaskFemtoSMI(
     bool isMC = false, // for now ignore implementing MC options
     TString CentEst = "kInt7",
     bool ControlLambdaCuts = false, // this and following not in older version
+    int    taskCounter = 0,
     double InvMassCut = 0.004,
     double CPACut = 0.99,
     double KaonRejectionLowerCut = 0.48,
@@ -238,7 +239,12 @@ AliAnalysisTaskSE* AddTaskFemtoSMI(
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString QAName;
+  if(taskCounter > 0) 
+	QAName = Form("MyTask%d",taskCounter);
+  else
+	QAName = Form("MyTask");
+
   coutputQA = mgr->CreateContainer(
       QAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
