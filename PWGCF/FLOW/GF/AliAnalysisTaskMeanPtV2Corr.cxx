@@ -71,7 +71,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fV2dPtList(0),
   fCovariance(0),
   fmptSet(kFALSE),
-  fTriggerType(AliVEvent::kMB),
+  fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fWeightList(0),
   fWeights(0),
   fNUAList(0),
@@ -125,7 +125,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fV2dPtList(0),
   fCovariance(0),
   fmptSet(kFALSE),
-  fTriggerType(AliVEvent::kMB),
+  fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fWeightList(0),
   fWeights(0),
   fNUAList(0),
@@ -509,11 +509,10 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
   // printf("TPC linear cut: %f\n",fEventCuts.fESDvsTPConlyLinearCut[0]);
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
-  // fTriggerType = AliVEvent::kCentral;
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(fTriggerType&fSelMask)) return kFALSE;
-  if((fSelMask&AliVEvent::kCentral) && lCent>10) return kFALSE;
-  if((fSelMask&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+  if((fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
+  if((fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
