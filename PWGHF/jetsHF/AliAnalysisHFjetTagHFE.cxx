@@ -963,16 +963,16 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
   fOutput->Add(fEMCClsEtaPhi);
 
-  fHistRho = new TH1F("fHistRho", "Rho; ", 500, 0, 100.0);
+  fHistRho = new TH1F("fHistRho", "Rho; ", 500, 0, 500.0);
   fOutput->Add(fHistRho);
 
   fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
   fOutput->Add(fHistBGfrac);
 
-  fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGfracHFEev);
 
-  fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
 
   fHistJetEnergyReso = new TH2D("fHistJetENergyReso",";p_{T,ch jet}^{part};<(p_{T,ch,jet}^{det}-p_{T,ch,jet}^{part}/p_{T,ch,jet}^{part})>",100,0,100,200,-1,1);
@@ -1983,9 +1983,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                               ExJetEta[2] = Eta_eJet;
                               Double_t randomcone = CalRandomCone(ExJetPhi,ExJetEta,jetRadius);
                               //Double_t BGfracHFE = randomcone - fJetsCont->GetRhoVal()*acos(-1.0)*pow(jetRadius,2);
-                              Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
-                              fHistBGrandHFEev->Fill(randomcone);
-                              fHistBGfracHFEev->Fill(BGfracHFE);
+                              if(randomcone>=0 && pt>4.0)
+                                {
+                                 Double_t BGfracHFE = randomcone - rho*acos(-1.0)*pow(jetRadius,2);
+                                 fHistBGrandHFEev->Fill(randomcone);
+                                 fHistBGfracHFEev->Fill(BGfracHFE);
+                                }
 
                               double HFjetRap2[6];
                               double dphi_jet_e = atan2(sin(Phi_eJet - phi),cos(Phi_eJet - phi));
@@ -2383,13 +2386,16 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFj
 
     }while(iExclude==0);
 
-      Double_t pTrand = 0.0;
+      //Double_t pTrand = 0.0;
+      Double_t pTrand = -10.0;
 
    //if(dR0>0.45 && dR1>0.45)
    if(dR0>1.0)
      {
 
          //cout << "check 2 ; " << dR0 << " ; " << PhiRand << " ; " << EtaRand << endl;
+
+      pTrand = 0.0;
 
       Int_t ntracks = -999; 
       ntracks = ftrack->GetEntries();
