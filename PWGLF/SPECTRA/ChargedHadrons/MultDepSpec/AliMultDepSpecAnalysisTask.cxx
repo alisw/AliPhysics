@@ -25,7 +25,7 @@ void AliMultDepSpecAnalysisTask::SetAxis(unsigned int dim, const std::string nam
  * Define default axis properties.
  */
 //**************************************************************************************************
-void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMult)
+void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultTrue)
 {
   SetAxis(zv, "zv", "z vertex position", {-30., 30.}, 12);
 
@@ -35,14 +35,15 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMult)
                                 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
   SetAxis(pt_meas, "pt_meas", "#it{p}^{ meas}_{T} (GeV/#it{c})", ptBins);
 
-  int nBinsMult = maxMult + 1;
-  SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+  int nBinsMultMeas = maxMultMeas + 1;
+  SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMultMeas - 0.5}, nBinsMultMeas);
 
   int nBinsRelPtReso = 100;
   SetAxis(sigma_pt, "sigma_pt", "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3}, nBinsRelPtReso);
 
   if (fIsMC) {
-    SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMult - 0.5}, nBinsMult);
+    int nBinsMultTrue = maxMultTrue + 1;
+    SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMultTrue - 0.5}, nBinsMultTrue);
     SetAxis(pt_true, "pt_true", "#it{p}_{T} (GeV/#it{c})", ptBins);
     SetAxis(delta_pt, "delta_pt", "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}", {0., 0.3}, nBinsRelPtReso);
   }
@@ -87,8 +88,8 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_zVtx_evt_trig_gen.GetSize() +
     fHist_multDist_evt_gen.GetSize() +
     fHist_ptReso_trk_true.GetSize() +
-    fHist_multCorrel_evt.GetSize() +
-    fHist_multCorrel_prim.GetSize() +
+    fHist_multCorrel_evt.GetSize(0.045) +
+    fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
@@ -178,6 +179,8 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
   // FIXME: add PCC handler
+  // get handler per event
+  //AliMCSpectraWeightsHandler* handler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
   return 1.0;
 }
 
@@ -481,11 +484,10 @@ bool AliMultDepSpecAnalysisTask::InitParticleBase(Particle_t* particle)
   fMCPt = particle->Pt();
   fMCEta = particle->Eta();
   fMCPhi = particle->Phi();
-
   if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
     return false;
   }
-
+  
   bool isCharged = ((TMath::Abs(particle->Charge()) > 0.01)) ? true : false;
   fMCIsChargedPrimary = isCharged && particle->IsPhysicalPrimary();
   fMCIsChargedSecDecay = isCharged && particle->IsSecondaryFromWeakDecay();
@@ -840,12 +842,6 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     "XeXe_5TeV",
     "PbPb_2TeV",
     "PbPb_5TeV",
-    "XeXe_5TeV_semi",
-    "PbPb_2TeV_semi",
-    "PbPb_5TeV_semi",
-    "XeXe_5TeV_cent",
-    "PbPb_2TeV_cent",
-    "PbPb_5TeV_cent",
   };
 
   if (std::find(dataSets.begin(), dataSets.end(), dataSet) == dataSets.end()) {
@@ -860,33 +856,29 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   double cutPtHigh = 50.0;
   double cutEtaLow = -0.8;
   double cutEtaHigh = 0.8;
-  int maxMult = 100;
+  int maxMultMeas = 100;
+  int maxMultTrue = 100;
 
   bool includePeripheralEvents = false;
   bool useZDC = false;
 
   // colison system specific settings
   if (dataSet.find("pp") != string::npos) {
-    maxMult = 100;
     if (dataSet.find("trig") != string::npos) {
       triggerMask = AliVEvent::kHighMultV0;
     }
   } else if (dataSet.find("pPb") != string::npos) {
-    maxMult = 180;
+    maxMultMeas = 180;
+    maxMultTrue = 180;
   } else if (dataSet.find("PbPb") != string::npos || dataSet.find("XeXe") != string::npos) {
-    maxMult = 4500;
+    maxMultMeas = 2500;
+    maxMultTrue = 3800;
     includePeripheralEvents = true;
     useZDC = true;
-
-    if (dataSet.find("semi") != string::npos) {
-      triggerMask = AliVEvent::kSemiCentral;
-    }
-    if (dataSet.find("cent") != string::npos) {
-      triggerMask = AliVEvent::kCentral;
-    }
   }
   if (dataSet.find("XeXe") != string::npos) {
-    maxMult = 3700;
+    maxMultMeas = 1800;
+    maxMultTrue = 2800;
   }
 
   if (options.Contains("noPeripheral")) includePeripheralEvents = false;
@@ -905,6 +897,6 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   SetMinPt(cutPtLow);
   SetMaxPt(cutPtHigh);
 
-  DefineDefaultAxes(maxMult);
+  DefineDefaultAxes(maxMultMeas, maxMultTrue);
   return true;
 }
