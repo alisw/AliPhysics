@@ -186,7 +186,7 @@ void AliAnalysisTaskHe3::UserCreateOutputObjects()
 	fOutputAHe3 = new TList();
 	fOutputAHe3->SetName("AHe3");
 	fOutputAHe3->SetOwner(kTRUE);
-    
+    kAnalyseAllParticles=kTRUE;
     fOutputList->Add(fOutputEvent);
 	if (kAnalyseAllParticles) {
 			fOutputList->Add(fOutputProtons);
