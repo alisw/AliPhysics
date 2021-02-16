@@ -141,8 +141,7 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects()
 //**************************************************************************************************
 void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
 {
-  if (!InitEvent()) return;  // event objects were not found
-  if (!fIsTriggered) return; // consider only events that fulfill trigger condition
+  if (!InitEvent()) return;  // event objects were not found or trigger condition not fulfilled
 
   if (fIsMC) {
     fHist_zVtx_evt_trig_gen.Fill(fMCVtxZ);
@@ -198,7 +197,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   }
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  fIsTriggered = handl->IsEventSelected() & fTriggerMask;
+  if(!(handl->IsEventSelected() & fTriggerMask)) return false;
 
   if (fIsMC) {
     fMCEvent = MCEvent();
@@ -207,7 +206,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       return false;
     }
     fMCVtxZ = fMCEvent->GetPrimaryVertex()->GetZ();
-    fAcceptEventMC = fIsTriggered && std::abs(fMCVtxZ) <= 10.;
+    fAcceptEventMC = std::abs(fMCVtxZ) <= 10.;
   }
 
   // v0-mult: fEvent->GetVZEROData()->GetMTotV0A() + fEvent->GetVZEROData()->GetMTotV0C();
@@ -362,29 +361,27 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
     track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(i));
     // Set track properties and check if track is in kin range and has good quality
     if (!InitTrack(track)) continue;
-    if (!SelectTrack(count)) continue; // apply additional selection criteria on track sample
 
+    bool isValidParticle = false;
     // initialize particle properties
     if (fIsMC) {
-      // mc lable corresponding to measured track
-      // negative lable indicates bad quality track - use it anyway
+      // mc lable corresponding to measured track (negative lable indicates bad quality track)
       int mcLable = TMath::Abs(track->GetLabel());
 
       // Set mc particle properties and check if it is charged prim/sec and in kin range
       if (fIsESD) {
-        if (!InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLable))) continue;
+        isValidParticle = InitParticle((AliMCParticle*)fMCEvent->GetTrack(mcLable));
       } else {
-        if (!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLable))) continue;
+        isValidParticle = InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(mcLable));
       }
-      if (!SelectParticle(count)) continue; // apply additional selection criteria on particle sample
     }
-
+    
     if (count) {
       fMultMeas += fNRepetitions;
     } else {
       for (int i = 0; i < fNRepetitions; i++) {
         FillMeasTrackHistos();
-        if (fIsMC) FillMeasParticleHistos();
+        if (fIsMC && isValidParticle) FillMeasParticleHistos();
       }
     }
   }
@@ -408,7 +405,6 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     } else {
       if (!InitParticle((AliAODMCParticle*)fMCEvent->GetTrack(i))) continue;
     }
-    if (!SelectParticle(count)) continue; // apply additional selection criteria on particle sample
 
     // mc truth
     if (count) {
@@ -436,7 +432,6 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
   }
   fPt = track->Pt();
   fEta = track->Eta();
-  fPhi = track->Phi();
   if ((fPt <= fMinPt + PRECISION) || (fPt >= fMaxPt - PRECISION) || (fEta <= fMinEta + PRECISION) || (fEta >= fMaxEta - PRECISION)) {
     return false;
   }
@@ -475,26 +470,26 @@ bool AliMultDepSpecAnalysisTask::InitParticleBase(Particle_t* particle)
     AliError("Particle not available\n");
     return false;
   }
+  if(!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
+
+  fMCPt = particle->Pt();
+  fMCEta = particle->Eta();
+  if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
+    return false; // TODO: put this after the data driven weights since we want to scale background from edge particles as well
+  }
+
   fMCLabel = particle->GetLabel();
   // reject all particles and tracks that come from simulated out-of-bunch pileup
   if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(fMCLabel, fMCEvent)) {
     return false;
   }
-
-  fMCPt = particle->Pt();
-  fMCEta = particle->Eta();
-  fMCPhi = particle->Phi();
-  if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
-    return false;
-  }
   
-  bool isCharged = ((TMath::Abs(particle->Charge()) > 0.01)) ? true : false;
-  fMCIsChargedPrimary = isCharged && particle->IsPhysicalPrimary();
-  fMCIsChargedSecDecay = isCharged && particle->IsSecondaryFromWeakDecay();
-  fMCIsChargedSecMat = isCharged && particle->IsSecondaryFromMaterial();
+  fMCIsChargedPrimary = particle->IsPhysicalPrimary();
+  fMCIsChargedSecDecay = particle->IsSecondaryFromWeakDecay();
+  fMCIsChargedSecMat = particle->IsSecondaryFromMaterial();
   fMCIsChargedSecondary = fMCIsChargedSecDecay || fMCIsChargedSecMat;
 
-  // not interested in anything non-final or non-charged
+  // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
 
   fMCParticleWeight = 1.0;

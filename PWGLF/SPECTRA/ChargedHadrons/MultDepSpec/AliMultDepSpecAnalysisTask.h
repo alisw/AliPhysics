@@ -180,18 +180,17 @@ protected:
   Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! multiplicity distribution of generated (triggered, z<10) events
   Hist::Hist<TH2D> fHist_ptReso_trk_true{};       //!<! relative pt resolution from mc
 
-  Hist::Hist<THnSparseD> fHist_multCorrel_evt{};     //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
-  Hist::Hist<THnSparseD> fHist_multCorrel_prim{};    //!<! multiplicity correlation for reconstructed primary particles
+  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};     //!<! multilicity correlation of events [sparse wins for large histos (540% of 100x100 hist), pPb (140% of 200x200), PbPb (25% of 500x500)]
+  Hist::Hist<THnSparseF> fHist_multCorrel_prim{};    //!<! multiplicity correlation for reconstructed primary particles
   Hist::Hist<TH2D> fHist_ptCorrel_prim{};            //!<! pT correlation of measured primary particles
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};      //!<! generated primaries (that fulfil trigger condition and maybe z vertex cut)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};     //!<! reconstructed primaries
   Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! measured primaries
   Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! measured secondaries
-
+  
   // event related properties
   AliVEvent* fEvent{};    //!<! Event object
   AliMCEvent* fMCEvent{}; //!<! MC event
-  bool fIsTriggered{};    //!<! wether or not event fulfils trigger condition
   double fVtxZ{};         //!<! z position of z vertex
   double fMCVtxZ{};       //!<! z position of z vertex in MC truth
   double fMultMeas{};     //!<! measured central barrel track multiplicity
