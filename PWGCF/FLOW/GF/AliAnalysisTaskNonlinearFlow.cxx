@@ -459,9 +459,9 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
         //
         // if (fCurrSystFlag == 0) {
         if ( !fPeriod.EqualTo("LHC15o") ) {
-		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded!"); return; }
+		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
         } else {
-		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded!"); return; }
+		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
         }
 
 
