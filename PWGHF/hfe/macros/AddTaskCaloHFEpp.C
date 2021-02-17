@@ -89,7 +89,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     // MB get estimator file
     if(SetFlagClsTypeEMC && !flagEG1 && !flagEG2){
 	    const Char_t* profilebasename="SPDTrklMB";
-	    const Char_t* periodNames[11] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+	    const Char_t* periodNames[11] = {"LHC16i", "LHC16j","LHC16k","LHC16o","LHC17h","LHC17i","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
 
 	    TProfile* multEstimatorAvgMB[11];
 
@@ -105,6 +105,13 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 	    task->SetMultiProfileLHC16j(multEstimatorAvgMB[1]);
 	    task->SetMultiProfileLHC16k(multEstimatorAvgMB[2]);
 	    task->SetMultiProfileLHC16o(multEstimatorAvgMB[3]);
+	    task->SetMultiProfileLHC17h(multEstimatorAvgEG1[4]);
+	    task->SetMultiProfileLHC17i(multEstimatorAvgEG1[5]);
+	    task->SetMultiProfileLHC17k(multEstimatorAvgEG1[6]);
+	    task->SetMultiProfileLHC17l(multEstimatorAvgEG1[7]);
+	    task->SetMultiProfileLHC17m(multEstimatorAvgEG1[8]);
+	    task->SetMultiProfileLHC17o(multEstimatorAvgEG1[9]);
+	    task->SetMultiProfileLHC17r(multEstimatorAvgEG1[10]);
     }
 
     // EG1 get estimator file
