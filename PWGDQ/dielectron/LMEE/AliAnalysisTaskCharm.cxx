@@ -57,6 +57,9 @@ fMcHandler(0x0),
 fNbEvents(0),
 fProcessType(0),
 fPtCutHigh(1e6),
+fPtCutLow(0.2),
+fEtamin(-0.8),
+fEtamax(0.8),
 fScaleByRAA(kFALSE),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
@@ -141,6 +144,8 @@ hMeePtee_ULS_eta08(0),
 hMeePtee_LS_eta08(0),
 hMeePtee_ULS_eta08_pt200(0),
 hMeePtee_LS_eta08_pt200(0),
+hMeePtee_ULS_eta_pt(0),
+hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt300(0),
 hMeePtee_LS_eta08_pt300(0),
 hMeePtee_ULS_eta08_pt400(0),
@@ -174,6 +179,9 @@ fMcHandler(0x0),
 fNbEvents(0),
 fProcessType(0),
 fPtCutHigh(1e6),
+fPtCutLow(0.2),
+fEtamin(-0.8),
+fEtamax(0.8),
 fScaleByRAA(kFALSE),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
@@ -258,6 +266,8 @@ hMeePtee_ULS_eta08(0),
 hMeePtee_LS_eta08(0),
 hMeePtee_ULS_eta08_pt200(0),
 hMeePtee_LS_eta08_pt200(0),
+hMeePtee_ULS_eta_pt(0),
+hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt300(0),
 hMeePtee_LS_eta08_pt300(0),
 hMeePtee_ULS_eta08_pt400(0),
@@ -305,6 +315,8 @@ void AliAnalysisTaskCharm::UserCreateOutputObjects()
   printf("  select only event with one ccbar pair:    %s\n", fSelectoneccbar?"YES":"NO");
   printf("  select event with clean history:    %s\n", fSelectcleanhistory?"YES":"NO");
   printf("  high-pt cut:         %f\n", fPtCutHigh);
+  printf("  low-pt cut:         %f\n", fPtCutLow);
+  printf("  etamin %f and etamax %f\n", fEtamin, fEtamax);
   printf("  use CNM scaling:    %s\n", fScaleByCNM?"YES":"NO");
   printf("  Take pt of D meson:    %s\n", fTakeptOfDCNM?"YES":"NO");
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
@@ -1248,6 +1260,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       double ptweight2 = pt_cut200(pt_i) * pt_cut200(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.2
       double ptweight3 = pt_cut300(pt_i) * pt_cut300(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.3
       double ptweight4 = pt_cut400(pt_i) * pt_cut400(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.4
+      double ptweight5 = pt_cutLow(pt_i) * pt_cutLow(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // variable
 
        // R_AA CNM quark
       if (fScaleByCNM && i_is_charm && j_is_charm) {
@@ -1286,6 +1299,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	ptweight2 *= cnmw;
 	ptweight3 *= cnmw;
 	ptweight4 *= cnmw;
+	ptweight5 *= cnmw;
       }
       
       
@@ -1294,11 +1308,13 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
+	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
       // if not apply w or event w, then 1 for wm
       ptweight2 *= wm;
       ptweight3 *= wm;
       ptweight4 *= wm;
+      ptweight5 *= wm;
       
 
       //--------------------------------------- ULS pairs -------------------------------------------//
@@ -1323,6 +1339,10 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
           }//|eta|<0.35
           //_________________________________________________________
 
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_i) && (eta_i < fEtamax))  {
+            hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
+	  }
+	  
 
           if(fabs(eta_i)<0.8  && fabs(eta_j)<0.8)  {
             hMee_ULS_eta08->Fill(mass,wm);
@@ -1384,6 +1404,10 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 	    }
           }//|eta|<0.35
           //_________________________________________________________
+	  
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_i) && (eta_i < fEtamax))  {
+            hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
+	  }
 
           if(fabs(eta_i)<0.8  && fabs(eta_j)<0.8)  {
             hMee_LS_eta08->Fill(mass,wm);
@@ -1615,6 +1639,8 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hMeePtee_LS_eta08        = new TH2F("hMeePtee_LS_eta08"       ,"e+e- & e-e-, |eta|<0.8;m_{ee};p_{T,ee}"               ,nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt200 = new TH2F("hMeePtee_ULS_eta08_pt200","e+e-,        |eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt200  = new TH2F("hMeePtee_LS_eta08_pt200" ,"e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta_pt = new TH2F("hMeePtee_ULS_eta_pt","e+e- ;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta_pt  = new TH2F("hMeePtee_LS_eta_pt" ,"e+e- & e-e- ;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt300 = new TH2F("hMeePtee_ULS_eta08_pt300","e+e-,        |eta|<0.8 , pt>0.3 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt300  = new TH2F("hMeePtee_LS_eta08_pt300" ,"e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400 = new TH2F("hMeePtee_ULS_eta08_pt400","e+e-,        |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
@@ -1715,6 +1741,8 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hMeePtee_LS_eta08->Sumw2();
   hMeePtee_ULS_eta08_pt200->Sumw2();
   hMeePtee_LS_eta08_pt200->Sumw2();
+  hMeePtee_ULS_eta_pt->Sumw2();
+  hMeePtee_LS_eta_pt->Sumw2();
   hMeePtee_ULS_eta08_pt300->Sumw2();
   hMeePtee_LS_eta08_pt300->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
@@ -1810,6 +1838,8 @@ void AliAnalysisTaskCharm::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta08);
   fOutputList->Add(hMeePtee_ULS_eta08_pt200);
   fOutputList->Add(hMeePtee_LS_eta08_pt200);
+  fOutputList->Add(hMeePtee_ULS_eta_pt);
+  fOutputList->Add(hMeePtee_LS_eta_pt);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400);
   fOutputList->Add(hMeePtee_LS_eta08_pt400);
   fOutputList->Add(hMotherPt_ULS_eta08_pt200);
@@ -1842,6 +1872,11 @@ Double_t AliAnalysisTaskCharm::pt_cut400(Double_t pT) {
 
 Double_t AliAnalysisTaskCharm::pt_cutHigh(Double_t pT) {
   if (pT>fPtCutHigh) return 0.0;
+  return 1.0;
+}
+
+Double_t AliAnalysisTaskCharm::pt_cutLow(Double_t pT) {
+  if (pT<fPtCutLow) return 0.0;
   return 1.0;
 }
 
