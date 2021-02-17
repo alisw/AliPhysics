@@ -1980,13 +1980,21 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 819){ // TimingEff; 2GeV<ETag<5.5GeV, |TimingTag|<30ns, |TimingProbe|<1000ns, SignalExtraction, LowPt from Trigger
     cuts.AddCutCalo("00010113","24466190xa01cc00000","0163103100000010"); //INT7
     cuts.AddCutCalo("00062113","24466190xa01cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig == 826){ // PHOS INT7, 300MeV mimic var
+
+  //Mimic var Option
+  } else if (trainConfig == 823){ // PHOS INT7, mimic var 1
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
-  } else if (trainConfig == 827){ // PHOS INT7, 300MeV mimic var2
+  } else if (trainConfig == 824){ // PHOS INT7, mimic var 2
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
-  } else if (trainConfig == 828){ // PHOS PHI7, 300MeV mimic var
+  } else if (trainConfig == 825){ // PHOS INT7, mimic var 3
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 826){ // PHOS PHI7, mimic var 1
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
-  } else if (trainConfig == 829){ // PHOS PHI7, 300MeV mimic var2
+  } else if (trainConfig == 827){ // PHOS PHI7, mimic var 2
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 828){ // PHOS PHI7, mimic var 3
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  } else if (trainConfig == 829){ // PHOS PHI7, mimic var 4
     cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
 
   }  else if (trainConfig == 840){ // PHOS INT7, 100MeV, with Timing Efficiency
@@ -3443,14 +3451,17 @@ void AddTask_GammaCalo_pp(
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
+    analysisEventCuts[i] = new AliConvEventCuts();
 
     TString EventCutPos = cuts.GetEventCut(i);
     EventCutPos = EventCutPos(3,2);
     TString ClusterCutPos = cuts.GetClusterCut(i);
     ClusterCutPos = ClusterCutPos(0,1);
-    TString TriggerHelperName = Form("CaloTriggerHelper_%s", cuts.GetEventCut(i).Data());
+    TString TriggerHelperName = Form("CaloTriggerHelper_%s_%i_%i", cuts.GetEventCut(i).Data(),enableTriggerMimicking,TriggerMimickingDDLEffiFlag);
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
+      task->SetCaloTriggerHelperName(TriggerHelperName.Data());
+      analysisEventCuts[i]->SetCaloTriggerHelperName(TriggerHelperName.Data());
       if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {
@@ -3474,7 +3485,6 @@ void AddTask_GammaCalo_pp(
       }
     }
 
-    analysisEventCuts[i] = new AliConvEventCuts();
 
     // definition of weighting input
     TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());

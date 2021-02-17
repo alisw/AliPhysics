@@ -46,6 +46,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetCaloTriggerHelperName(TString name){fCaloTriggerHelperName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
@@ -151,6 +152,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
+    TString               fCaloTriggerHelperName;
     TString               fCorrTaskSetting;
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion
     AliVEvent*            fInputEvent;                                          // current event
@@ -603,7 +605,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 86);
+    ClassDef(AliAnalysisTaskGammaCalo, 87);
 };
 
 #endif

@@ -184,6 +184,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hV0MultVsNumberTPCoutTracks(NULL),
   hTPCSDDSSDClusters(NULL),
   fV0ReaderName(""),
+  CaloTriggerHelperName(""),
   fCorrTaskSetting(""),
   fCaloTriggers(NULL),
   fTriggerPatchInfo(NULL),
@@ -325,6 +326,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hV0MultVsNumberTPCoutTracks(NULL),
   hTPCSDDSSDClusters(NULL),
   fV0ReaderName(ref.fV0ReaderName),
+  CaloTriggerHelperName(ref.CaloTriggerHelperName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTriggers(NULL),
   fTriggerPatchInfo(NULL),
@@ -5287,11 +5289,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   if ((fMimicTrigger == 3)||(fMimicTrigger == 4)){
     if (fSpecialTrigger == 6){
       AliCaloTriggerMimicHelper* tempMimickHelper = 0x0;
-      tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", GetCutNumber().Data()) ));
+      tempMimickHelper = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(CaloTriggerHelperName.Data()));
       if (tempMimickHelper){
         return tempMimickHelper->GetEventChosenByTrigger();
       } else {
-        AliFatal(Form("AliCaloTriggerMimicHelper tempMimickHelper was not found for fSpecialTrigger == %d and fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));
+        AliFatal(Form("AliCaloTriggerMimicHelper tempMimickHelper was not found for fSpecialTrigger == %d and fMimicTrigger == %d (name:%s)", fSpecialTrigger, fMimicTrigger,CaloTriggerHelperName.Data()));
       }
     } else {
         AliFatal(Form("fSpecialTrigger == %d was not implemented in MimicTrigger case fMimicTrigger == %d", fSpecialTrigger, fMimicTrigger));

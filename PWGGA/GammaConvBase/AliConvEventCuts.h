@@ -412,6 +412,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPHOSTrigger(phosTriggerType t=kPHOSL0)                             { fPHOSTrigger=t                                            ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
+      void    SetCaloTriggerHelperName (TString name)                               { CaloTriggerHelperName = name                                      ; }
 
       void    SetAddedSignalPDGCode (Int_t addedSignalPDGcode)                      { fAddedSignalPDGCode = addedSignalPDGcode                  ; }
       void    SetPreSelectionCutFlag (Bool_t preSelFlag)                            { fPreSelCut = preSelFlag                                   ; }
@@ -765,6 +766,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hTPCSDDSSDClusters;                     ///< x: TPC clusters, y: SDD+SSD clusters
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
+      TString                     CaloTriggerHelperName;                  ///< Name of CaloTriggerHelper 
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
       AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
@@ -797,7 +799,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,83)
+      ClassDef(AliConvEventCuts,84)
       /// \endcond
 };
 

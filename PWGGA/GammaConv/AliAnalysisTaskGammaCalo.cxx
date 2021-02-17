@@ -67,6 +67,7 @@ ClassImp(AliAnalysisTaskGammaCalo)
 AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCaloTriggerHelperName(""),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
   fInputEvent(NULL),
@@ -499,6 +500,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fCaloTriggerHelperName(""),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
   fInputEvent(NULL),
@@ -2118,7 +2120,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType()==2) {
         fCaloTriggerMimicHelper[iCut] = NULL;
         if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetTriggerMimicking() > 0){
-            fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTriggerHelper_%s", cutstringEvent.Data() )));
+            fCaloTriggerMimicHelper[iCut] = (AliCaloTriggerMimicHelper*) (AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTriggerHelperName.Data()));
             if(fCaloTriggerMimicHelper[iCut]) {
                 if ( fSetEventCutsOutputlist[cutstringEvent] == kFALSE ) {
                     fSetEventCutsOutputlist[cutstringEvent]=kTRUE;
