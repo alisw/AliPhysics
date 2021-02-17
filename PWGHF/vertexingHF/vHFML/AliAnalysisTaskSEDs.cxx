@@ -1672,12 +1672,15 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  if (!fApplyML && !fMultiClass)
+  if (!fApplyML) {
     nSparseAxes -= 3;
-  if (fApplyML && !fMultiClass)
-    nSparseAxes -= 2;
-  if (fApplyML && fUseMinimalVarForSparse)
-    nSparseAxes = knVarForSparseMLMinimal;
+  } 
+  else {
+    if (fUseMinimalVarForSparse)
+      nSparseAxes = knVarForSparseMLMinimal;
+    if (!fMultiClass)
+      nSparseAxes -= 2;
+  }
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
   if (fUseFinPtBinsForSparse)
@@ -1842,6 +1845,12 @@ void AliAnalysisTaskSEDs::CreatePIDMLSparses()
   Double_t PIDmax = 20.;
   Double_t PIDcombMin = 0.;
   Double_t PIDcombMax = 40.;
+  Int_t nSparseAxesPID = knVarPID;
+  Int_t nSparseAxesPIDcomb = knVarPIDcomb;
+  if (fApplyML && !fMultiClass) {
+    nSparseAxesPID -= 2;
+    nSparseAxesPIDcomb -= 2;
+  }
 
   TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0", "n#sigmaTPCPi_1",
                                    "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2", "n#sigmaTOFPi_2",
@@ -1859,19 +1868,13 @@ void AliAnalysisTaskSEDs::CreatePIDMLSparses()
   Double_t xminPIDcomb[knVarPIDcomb] = {0., PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
   Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-  if (fApplyML && !fMultiClass)
-  {
-    knVarPID -= 2;
-    knVarPIDcomb -= 2;
-  }
-
-  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", knVarPID, nBinsPID, xminPID, xmaxPID);
-  for (Int_t iAxis = 0; iAxis < knVarPID; iAxis++)
+  fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", nSparseAxesPID, nBinsPID, xminPID, xmaxPID);
+  for (Int_t iAxis = 0; iAxis < nSparseAxesPID; iAxis++)
     fnSparseNsigmaPIDVsML[0]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnames[iAxis].Data()));
   fOutput->Add(fnSparseNsigmaPIDVsML[0]);
 
-  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", knVarPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
-  for (Int_t iAxis = 0; iAxis < knVarPIDcomb; iAxis++)
+  fnSparseNsigmaPIDVsML[1] = new THnSparseF("fnSparsePIDcomb", "nSparsePIDcomb", nSparseAxesPIDcomb, nBinsPIDcomb, xminPIDcomb, xmaxPIDcomb);
+  for (Int_t iAxis = 0; iAxis < nSparseAxesPIDcomb; iAxis++)
     fnSparseNsigmaPIDVsML[1]->GetAxis(iAxis)->SetTitle(Form("%s", PIDvarnamesComb[iAxis].Data()));
   fOutput->Add(fnSparseNsigmaPIDVsML[1]);
 }
