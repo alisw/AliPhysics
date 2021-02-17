@@ -109,7 +109,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 
  private:
   enum {kMaxPtBins = 36, knVarForSparse = 16, knVarForSparseAcc = 2, knVarForSparseAccFD = 3, kVarForImpPar = 3,
-        knVarPID = 16, knVarPIDcomb = 8, knVarForSparseMLMinimal = 5};
+        knVarPID = 16, knVarPIDcomb = 10, knVarForSparseMLMinimal = 5};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -246,7 +246,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;                                /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs, 41);            /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 42);            /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

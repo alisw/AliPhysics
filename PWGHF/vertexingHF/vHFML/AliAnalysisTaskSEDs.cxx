@@ -999,7 +999,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       //variables for ML application
       AliAODPidHF *Pid_HF = nullptr;
       std::vector<Double_t> modelPred = {};
-      bool isMLsel = true;
+      bool isMLsel = false;
       if (fApplyML)
         Pid_HF = fAnalysisCuts->GetPidHF();
 
@@ -1013,37 +1013,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if (fApplyML)
         {
-            isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF);
-
-          if (isMLsel)
-          {
-            if (modelPred.size() == 0)
-            {
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-            }
-            else if (modelPred.size() == 1)
-            {
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-            }
-          }
-
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF, 0);
           if (fEnablePIDMLSparses && (!fReadMC || (indexMCKKpi == GetSignalHistoIndex(iPtBin) && orig == 4)))
           {
-            std::vector<Double_t> var4nSparsePID = {ptCand, modelPred[0], modelPred[1], modelPred[2],
-                                                    fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+            std::vector<Double_t> var4nSparsePID = {ptCand, fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
                                                     fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
                                                     fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            var4nSparsePID.insert(var4nSparsePID.end(), modelPred.begin(), modelPred.end());
 
-            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, modelPred[0], modelPred[1], modelPred[2],
-                                                        fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+            var4nSparsePIDcomb.insert(var4nSparsePIDcomb.end(), modelPred.begin(), modelPred.end());
 
             fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID.data());
             fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb.data());
@@ -1052,13 +1036,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         std::vector<Double_t> var4nSparse(knVarForSparse);
         if (fApplyML && fUseMinimalVarForSparse) {
-          var4nSparse = {invMass_KKpi, ptCand, modelPred[0], modelPred[1], modelPred[2]};
+          var4nSparse = {invMass_KKpi, ptCand};
+          var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
         }
         else
         {
           var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000,
-                         modelPred[0], modelPred[1], modelPred[2]};
+                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+          var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
         }
 
         if (!fApplyML || isMLsel)
@@ -1096,35 +1081,21 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         if (fApplyML)
         {
-          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF);
-          if (isMLsel)
-          {
-            if (modelPred.size() == 0)
-            {
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-            }
-            else if (modelPred.size() == 1)
-            {
-              modelPred.push_back(-1.);
-              modelPred.push_back(-1.);
-            }
-          }
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, d, aod->GetMagneticField(), Pid_HF, 1);
           if (fEnablePIDMLSparses && (!fReadMC || (indexMCpiKK == GetSignalHistoIndex(iPtBin) && orig==4)))
           {
-            std::vector<Double_t> var4nSparsePID = {ptCand, modelPred[0], modelPred[1], modelPred[2],
-                                                    fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
+            std::vector<Double_t> var4nSparsePID = {ptCand, fMLResponse->GetVariable("nsigTPC_Pi_0"), fMLResponse->GetVariable("nsigTPC_K_0"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_0"), fMLResponse->GetVariable("nsigTOF_K_0"),
                                                     fMLResponse->GetVariable("nsigTPC_Pi_1"), fMLResponse->GetVariable("nsigTPC_K_1"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_1"), fMLResponse->GetVariable("nsigTOF_K_1"),
                                                     fMLResponse->GetVariable("nsigTPC_Pi_2"), fMLResponse->GetVariable("nsigTPC_K_2"),
                                                     fMLResponse->GetVariable("nsigTOF_Pi_2"), fMLResponse->GetVariable("nsigTOF_K_2")};
+            var4nSparsePID.insert(var4nSparsePID.end(), modelPred.begin(), modelPred.end());
 
-            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, modelPred[0], modelPred[1], modelPred[2],
-                                                        fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
+            std::vector<Double_t> var4nSparsePIDcomb = {ptCand, fMLResponse->GetVariable("nsigComb_Pi_0"), fMLResponse->GetVariable("nsigComb_K_0"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_1"), fMLResponse->GetVariable("nsigComb_K_1"),
                                                         fMLResponse->GetVariable("nsigComb_Pi_2"), fMLResponse->GetVariable("nsigComb_K_2")};
+            var4nSparsePIDcomb.insert(var4nSparsePIDcomb.end(), modelPred.begin(), modelPred.end());
 
             fnSparseNsigmaPIDVsML[0]->Fill(var4nSparsePID.data());
             fnSparseNsigmaPIDVsML[1]->Fill(var4nSparsePIDcomb.data());
@@ -1133,13 +1104,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
 
         std::vector<Double_t> var4nSparse(knVarForSparse);
         if (fApplyML && fUseMinimalVarForSparse) {
-          var4nSparse = {invMass_piKK, ptCand, modelPred[0], modelPred[1], modelPred[2]};
+          var4nSparse = {invMass_piKK, ptCand};
+          var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
         }
         else
         {
           var4nSparse = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000,
-                         modelPred[0], modelPred[1], modelPred[2]};
+                         cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
+          var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
         }
 
         if (!fApplyML || isMLsel)
@@ -1700,8 +1672,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Double_t maxMass = massDs + 0.5 * nInvMassBins * fMassBinSize;
 
   Int_t nSparseAxes = knVarForSparse;
-  if (!fApplyML)
+  if (!fApplyML && !fMultiClass)
     nSparseAxes -= 3;
+  if (fApplyML && !fMultiClass)
+    nSparseAxes -= 2;
   if (fApplyML && fUseMinimalVarForSparse)
     nSparseAxes = knVarForSparseMLMinimal;
 
@@ -1869,20 +1843,27 @@ void AliAnalysisTaskSEDs::CreatePIDMLSparses()
   Double_t PIDcombMin = 0.;
   Double_t PIDcombMax = 40.;
 
-  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "ML model output 0", "ML model output 1", "ML model output 2", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0",
-                                   "n#sigmaTPCPi_1", "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2", "n#sigmaTOFPi_2", "n#sigmaTOFK_2"};
-  Int_t nBinsPID[knVarPID] = {nPtBins, fNMLBins[0], fNMLBins[1], fNMLBins[2], nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins,
-                              nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins};
-  Double_t xminPID[knVarPID] = {0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2], PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin,
-                                PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin};
-  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2], PIDmax, PIDmax, PIDmax, PIDmax,
-                                PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax};
+  TString PIDvarnames[knVarPID] = {"#it{p}_{T}", "n#sigmaTPCPi_0", "n#sigmaTPCK_0", "n#sigmaTOFPi_0", "n#sigmaTOFK_0", "n#sigmaTPCPi_1",
+                                   "n#sigmaTPCK_1", "n#sigmaTOFPi_1", "n#sigmaTOFK_1", "n#sigmaTPCPi_2", "n#sigmaTPCK_2", "n#sigmaTOFPi_2",
+                                   "n#sigmaTOFK_2", "ML model output 0", "ML model output 1", "ML model output 2"};
+  Int_t nBinsPID[knVarPID] = {nPtBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins,
+                              nPIDbins, nPIDbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  Double_t xminPID[knVarPID] = {0., PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin, PIDmin,
+                                fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  Double_t xmaxPID[knVarPID] = {fPtLimits[fNPtBins], PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax, PIDmax,
+                                PIDmax, PIDmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "ML model output 0", "ML model output 1", "ML model output 2", "n#sigmaCombPi_0", "n#sigmaCombK_0",
-                                           "n#sigmaCombPi_1", "n#sigmaCombK_1", "n#sigmaCombPi_2", "n#sigmaCombK_2"};
-  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, fNMLBins[0], fNMLBins[1], fNMLBins[2], nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins};
-  Double_t xminPIDcomb[knVarPIDcomb] = {0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2], PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin};
-  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2], PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax};
+  TString PIDvarnamesComb[knVarPIDcomb] = {"#it{p}_{T}", "n#sigmaCombPi_0", "n#sigmaCombK_0", "n#sigmaCombPi_1", "n#sigmaCombK_1",
+                                           "n#sigmaCombPi_2", "n#sigmaCombK_2", "ML model output 0", "ML model output 1", "ML model output 2"};
+  Int_t nBinsPIDcomb[knVarPIDcomb] = {nPtBins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, nPIDbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  Double_t xminPIDcomb[knVarPIDcomb] = {0., PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, PIDcombMin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  Double_t xmaxPIDcomb[knVarPIDcomb] = {fPtLimits[fNPtBins], PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, PIDcombMax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+  if (fApplyML && !fMultiClass)
+  {
+    knVarPID -= 2;
+    knVarPIDcomb -= 2;
+  }
 
   fnSparseNsigmaPIDVsML[0] = new THnSparseF("fnSparsePID", "nSparsePID", knVarPID, nBinsPID, xminPID, xmaxPID);
   for (Int_t iAxis = 0; iAxis < knVarPID; iAxis++)
