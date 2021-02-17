@@ -757,8 +757,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   }
   if(fExplore_PIDstdCuts && fExplPID_BayesOnlyProt){  // add the bin for the Bayes PID case only for proton hypothesis
     printf("\n#################################################################################\n");
-    printf("ATTENTION: bins for PID axis in reco THnSparse for Lc (Xic) increased from 11 to 12\n");
+    printf("ATTENTION: bins for PID axis in reco THnSparse for SigmaC increased from 11 to 12\n");
     printf("#################################################################################\n");
+    nbinsSparseSigma[7]=12;
     upEdgesSigma[7]=11.5;
   }
   if(fReadMC){
