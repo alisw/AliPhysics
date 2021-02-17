@@ -733,6 +733,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     printf("\n#################################################################################\n");
     printf("ATTENTION: bins for PID axis in reco THnSparse for Lc (Xic) increased from 11 to 12\n");
     printf("#################################################################################\n");
+    nbinsSparse[7]=12;
     upEdges[7]=11.5;
   }
   if(fIsXicUpgradeAnalysis){
