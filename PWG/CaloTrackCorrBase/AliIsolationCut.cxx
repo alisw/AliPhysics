@@ -3131,19 +3131,22 @@ void  AliIsolationCut::MakeIsolationCut
       // Add to candidate object
       pCandidate->SetChargedPtSumInPerpCone(perpPtSumTrack*excessAreaTrkEta);
       
-      if ( fFillHighMultHistograms )
+      if ( fFillHistograms )
       {
-        fhPerpConeSumPtCent->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, centrality, histoWeight);
-        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt  && cenBin < fNCentBins && cenBin >= 0 )
-          fhPerpConeSumPtTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
-      }
-      else
-      {
-        fhPerpConeSumPt->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
-        fhConeSumPtVSPerpCone->Fill(coneptsumTrack * excessAreaTrkEta, perpPtSumTrack * excessAreaTrkEta, histoWeight);
-        if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
-          fhPerpConeSumPtTrigEtaPhi->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
-      }
+        if ( fFillHighMultHistograms )
+        {
+          fhPerpConeSumPtCent->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, centrality, histoWeight);
+          if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt  && cenBin < fNCentBins && cenBin >= 0 )
+            fhPerpConeSumPtTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+        }
+        else
+        {
+          fhPerpConeSumPt->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+          fhConeSumPtVSPerpCone->Fill(coneptsumTrack * excessAreaTrkEta, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+          if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+            fhPerpConeSumPtTrigEtaPhi->Fill(etaC, phiC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
+        }
+      } // fill perp cone histograms
     } // UE subtraction by perpendicular cones
     else if ( fICMethod >= kSumBkgSubEtaBandIC ) // eta or phi band
     {
