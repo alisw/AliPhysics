@@ -799,7 +799,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,83)
+      ClassDef(AliConvEventCuts,84)
       /// \endcond
 };
 
