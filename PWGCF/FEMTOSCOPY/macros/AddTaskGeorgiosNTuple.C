@@ -10,7 +10,7 @@
 #define MONTECARLO
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
-		                         bool isMC=false,
+		                         bool isMC=true,
 					 const char *cutVariation = "0") {
   //set fullBlastQA and suffix (cut variation)
   TString suffix = TString::Format("%s", cutVariation);
