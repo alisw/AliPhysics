@@ -40,7 +40,12 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("cntrd%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
-			printf("key = %s\n",key.Data());
+			//printf("key = %s\n",key.Data());
+      fun->GetAxis(4)->SetUniqueID(var4);
+      fun->GetAxis(3)->SetUniqueID(var3);
+      fun->GetAxis(2)->SetUniqueID(var2);
+      fun->GetAxis(1)->SetUniqueID(var1);
+      fun->GetAxis(0)->SetUniqueID(var0);
 			fPostPIDCntrdCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
 			// check for corrections and add their variables to the fill map
 			printf("detID = %u , parID = %u, POST PID CORRECTION in PU added for centroids:  ",detID,parID);
@@ -52,13 +57,22 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
+      fUsedVars->SetBitNumber(var0, kTRUE);
+      fUsedVars->SetBitNumber(var1, kTRUE);
+      fUsedVars->SetBitNumber(var2, kTRUE);
+      fUsedVars->SetBitNumber(var3, kTRUE);
+      fUsedVars->SetBitNumber(var4, kTRUE);
 		}
 
 		void SetWidthCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
 
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("wdth%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
-
+      fun->GetAxis(4)->SetUniqueID(var4);
+      fun->GetAxis(3)->SetUniqueID(var3);
+      fun->GetAxis(2)->SetUniqueID(var2);
+      fun->GetAxis(1)->SetUniqueID(var1);
+      fun->GetAxis(0)->SetUniqueID(var0);
 			fPostPIDWdthCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
 			// check for corrections and add their variables to the fill map
 			printf("detID = %u , parID = %u, POST PID CORRECTION IN PU added for widths:  ",detID,parID);
@@ -70,6 +84,11 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
+      fUsedVars->SetBitNumber(var0, kTRUE);
+      fUsedVars->SetBitNumber(var1, kTRUE);
+      fUsedVars->SetBitNumber(var2, kTRUE);
+      fUsedVars->SetBitNumber(var3, kTRUE);
+      fUsedVars->SetBitNumber(var4, kTRUE);
 		}
 
   protected:
@@ -152,7 +171,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 6);
+    ClassDef(AliAnalysisTaskTagAndProbe, 7);
 };
 
 
