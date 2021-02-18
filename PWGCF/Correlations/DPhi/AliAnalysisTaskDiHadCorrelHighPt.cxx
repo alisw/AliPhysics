@@ -14,11 +14,11 @@
  **************************************************************************/
 
 /* AliAnalysisTaskDiHadCorrelHighPt
- * The task selects candidates for K0s, Lambdas and AntiLambdas
+ * The task selects candidates for K0s, Lambdas, AntiLambdas, Xi+ and Xi-
  * and calculates correlations with charged unidentified particles in phi and eta.
  * The charged unidentified particles are also taken as trigger particles to have a check.
  * The task works with AOD or ESD (with or without MC info) events only and containes also mixing for acceptance corrections.
- * Last update edited by Lucia Anna Husova, January 2021
+ * Last update edited by Lucia Anna Husova, February 2021
  */
 
 #include <TChain.h>
@@ -200,7 +200,20 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fPercetileMax(100.),
     fEventCutsQAPlots(kFALSE),
     fpp(kTRUE),
-    fNMultiplicityBins(10)
+    fNMultiplicityBins(10),
+    fCascadePA(0.97),
+    fCascadeTransverseDecayRadius(0.6),
+    fDaughterV0DecayRadius(1.2),
+    fDaughterV0cosPA(0.97),
+    fDCADaughterV0PV(0.06),
+    fDCADaughterV0tracks(1.5),
+    fDCACascadeDaughters(1.3),
+    fDaugterV0InvariantMassRange(0.008),
+    fCascadeProperLifetime(3),
+    fNSigmasTPCCascadedaughterTracks(5),
+    fDCAbachelorPV(0.04),
+    fDCAbaryonDaughterPV(0.03),
+    fDCAmesonDaughterPV(0.04)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -348,7 +361,20 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char *n
     fPercetileMax(100.),
     fEventCutsQAPlots(kFALSE),
     fpp(kTRUE),
-    fNMultiplicityBins(10)
+    fNMultiplicityBins(10),
+    fCascadePA(0.97),
+    fCascadeTransverseDecayRadius(0.6),
+    fDaughterV0DecayRadius(1.2),
+    fDaughterV0cosPA(0.97),
+    fDCADaughterV0PV(0.06),
+    fDCADaughterV0tracks(1.5),
+    fDCACascadeDaughters(1.3),
+    fDaugterV0InvariantMassRange(0.008),
+    fCascadeProperLifetime(3),
+    fNSigmasTPCCascadedaughterTracks(5),
+    fDCAbachelorPV(0.04),
+    fDCAbaryonDaughterPV(0.03),
+    fDCAmesonDaughterPV(0.04)
 {
     // constructor
 
@@ -3116,7 +3142,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiCandidate(AliESDcascade * cas
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,1.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,1.5);
 
-    if( cas->GetCascadeCosineOfPointingAngle( fPV[0],fPV[1],fPV[2] )<0.97) return kFALSE; // Cascade cos PA
+    if( cas->GetCascadeCosineOfPointingAngle( fPV[0],fPV[1],fPV[2] )<fCascadePA) return kFALSE; // Cascade cos PA
 
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,2.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,2.5);
@@ -3131,22 +3157,22 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiCandidate(AliESDcascade * cas
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,4.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,4.5);
 
-    if (cas->GetV0CosineOfPointingAngle( fPV[0],fPV[1],fPV[2] ) < 0.97) return kFALSE; // V0 PA
+    if (cas->GetV0CosineOfPointingAngle( fPV[0],fPV[1],fPV[2] ) < fDaughterV0cosPA) return kFALSE; // V0 PA
 
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,5.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,5.5);
 
-    if (cas->GetD( fPV[0],fPV[1],fPV[2] ) < 0.06) return kFALSE; // DCA V0 to PV
+    if (cas->GetD( fPV[0],fPV[1],fPV[2] ) < fDCADaughterV0PV) return kFALSE; // DCA V0 to PV
 
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,6.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,6.5);
 
-    if (cas->GetDcaV0Daughters() >1.5) return kFALSE; // DCA V0 daughters
+    if (cas->GetDcaV0Daughters() >fDCADaughterV0tracks) return kFALSE; // DCA V0 daughters
 
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,7.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,7.5);
 
-    if(cas->GetDcaXiDaughters() > 1.3) return kFALSE; // DCA bach-V0
+    if(cas->GetDcaXiDaughters() > fDCACascadeDaughters) return kFALSE; // DCA bach-V0
 
     if(chargeXi>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,8.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,8.5);
@@ -3180,7 +3206,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDecayRadius(AliESDcascade * c
     Double_t posXi[3] = { -1000.0, -1000.0, -1000.0 };
 
     cas->GetXYZcascade( posXi[0],  posXi[1], posXi[2] );
-    if( TMath::Sqrt( posXi[0]*posXi[0]  +  posXi[1]*posXi[1] )<0.6 ) return kFALSE; // cascade decay radius
+    if( TMath::Sqrt( posXi[0]*posXi[0]  +  posXi[1]*posXi[1] )<fCascadeTransverseDecayRadius ) return kFALSE; // cascade decay radius
 
     return kTRUE;
 }
@@ -3188,7 +3214,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDecayRadius(AliESDcascade * c
 Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterV0DecayRadius(AliESDcascade * cas){
     Double_t posV0Xi[3] = { -1000.0, -1000.0, -1000.0 };
     cas->GetXYZ( posV0Xi[0],  posV0Xi[1], posV0Xi[2] );
-    if( TMath::Sqrt( posV0Xi[0]*posV0Xi[0]  +  posV0Xi[1]*posV0Xi[1] ) < 1.2 )return kFALSE; // V0 decay radius
+    if( TMath::Sqrt( posV0Xi[0]*posV0Xi[0]  +  posV0Xi[1]*posV0Xi[1] ) < fDaughterV0DecayRadius )return kFALSE; // V0 decay radius
 
     return kTRUE;
 }
@@ -3204,7 +3230,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiProperLifetime(AliESDcascade 
     Double_t ditanceToMomentum = TMath::Sqrt(TMath::Power( posXi[0] - fPV[0] , 2) +TMath::Power( posXi[1] - fPV[1] , 2) +TMath::Power( posXi[2] - fPV[2] , 2));
     ditanceToMomentum /= (totalMomXi+1e-13);
 
-    if(ditanceToMomentum* 1.32171 > 3*4.91) return kFALSE;  // proper lifetime cut
+    if(ditanceToMomentum* 1.32171 > fCascadeProperLifetime*4.91) return kFALSE;  // proper lifetime cut
 
     return kTRUE;
 
@@ -3234,12 +3260,12 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDaughterTracks(AliESDcascade 
     if(!fAnalysisMC){
         if(!IsMyGoodXiDaughterTrackPID(nTrackXi,casCharge,-1)) return kFALSE;
         if(!IsMyGoodXiDaughterTrackPID(pTrackXi,casCharge,1)) return kFALSE; // nSigma daughter tracks
-        if( fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion ) > 5 ) return kFALSE;
+        if( fPIDResponse->NumberOfSigmasTPC( bachTrackXi, AliPID::kPion ) > fNSigmasTPCCascadedaughterTracks ) return kFALSE;
     }
     if(casCharge>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,12.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,12.5);
                     
-    if( pTrackXi->GetTPCNcls() < 70 || nTrackXi->GetTPCNcls() < 70 || bachTrackXi->GetTPCNcls() < 70 ) return kFALSE; // number of clusters daughter tracks
+    if( pTrackXi->GetTPCNcls() < fnumOfTPCcrossedRows || nTrackXi->GetTPCNcls() < fnumOfTPCcrossedRows || bachTrackXi->GetTPCNcls() < fnumOfTPCcrossedRows ) return kFALSE; // number of clusters daughter tracks
 
     if(casCharge>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,13.5);
     else fHistXiMinusMassPtCut->Fill(massXi,cascadept,13.5);
@@ -3262,12 +3288,12 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDaughterTracks(AliESDcascade 
 
 
     if(casCharge<0){
-        if( TMath::Abs( pTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < 0.03) return kFALSE;  // DCA baryon V0 track to PV
-        if( TMath::Abs( nTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < 0.04) return kFALSE; // DCA meson V0 track to PV
+        if( TMath::Abs( pTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < fDCAbaryonDaughterPV) return kFALSE;  // DCA baryon V0 track to PV
+        if( TMath::Abs( nTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < fDCAmesonDaughterPV) return kFALSE; // DCA meson V0 track to PV
     }
     if(casCharge>0){
-        if( TMath::Abs( pTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < 0.04) return kFALSE;  // DCA meson V0 track to PV
-        if( TMath::Abs( nTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < 0.03) return kFALSE; // DCA baryon V0 track to PV
+        if( TMath::Abs( pTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < fDCAmesonDaughterPV) return kFALSE;  // DCA meson V0 track to PV
+        if( TMath::Abs( nTrackXi  ->GetD( fPV[0], fPV[1],fMagneticField  ) ) < fDCAbaryonDaughterPV) return kFALSE; // DCA baryon V0 track to PV
     }
 
     if(casCharge>0) fHistXiPlusMassPtCut->Fill(massXi,cascadept,17.5);
@@ -3284,18 +3310,18 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDaughterTracks(AliESDcascade 
 //________________________________________________________//
 Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDaughterTrackPID(AliESDtrack * tr, Int_t casCharge, Int_t trCharge){
 
-    if(casCharge<0  && trCharge<0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kPion ) > 5 ) return kFALSE;
-    if(casCharge>0 && trCharge<0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kProton ) > 5 ) return kFALSE;
+    if(casCharge<0  && trCharge<0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kPion ) > fNSigmasTPCCascadedaughterTracks ) return kFALSE;
+    if(casCharge>0 && trCharge<0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kProton ) > fNSigmasTPCCascadedaughterTracks ) return kFALSE;
 
-    if(casCharge>0 && trCharge>0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kPion ) > 5 ) return kFALSE;
-    if(casCharge<0 && trCharge>0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kProton ) > 5 ) return kFALSE;
+    if(casCharge>0 && trCharge>0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kPion ) > fNSigmasTPCCascadedaughterTracks ) return kFALSE;
+    if(casCharge<0 && trCharge>0 && fPIDResponse->NumberOfSigmasTPC( tr, AliPID::kProton ) > fNSigmasTPCCascadedaughterTracks ) return kFALSE;
 
     return kTRUE;
 }
 //________________________________________________________//
 Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodBachelorTrack(AliESDtrack * bach){
 
-    if( TMath::Abs( bach->GetD( fPV[0], fPV[1],fMagneticField  ) ) < 0.04) return kFALSE; // DCA bachelor - PV
+    if( TMath::Abs( bach->GetD( fPV[0], fPV[1],fMagneticField  ) ) < fDCAbachelorPV) return kFALSE; // DCA bachelor - PV
 
     Float_t dca[2];
     bach->GetDZ(fPV[0], fPV[1],fPV[2],fMagneticField,dca);
@@ -3336,7 +3362,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodXiDaughterV0Mass(AliESDcascade 
         e22 = -1;
     }
     Double_t invMassSquared =  m1*m1+m2*m2+2.*(e12*e22-lPMom[0]*lNMom[0]-lPMom[1]*lNMom[1]-lPMom[2]*lNMom[2]);
-    if( TMath::Abs(TMath::Sqrt(TMath::Max(invMassSquared,0.)) - 1.115683) > 0.008) return kFALSE;
+    if( TMath::Abs(TMath::Sqrt(TMath::Max(invMassSquared,0.)) - 1.115683) > fDaugterV0InvariantMassRange) return kFALSE;
 
     return kTRUE;
 
