@@ -69,6 +69,7 @@ public:
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
+    kRun2CollInfo,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -104,6 +105,15 @@ public:
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+  };
+  //Aliases for multiplicity selection criteria
+  enum MultSelectionCut {
+      kINELgtZERO = 0,
+      kPileupInMultBins,
+      kConsistencySPDandTrackVertices,
+      kTrackletsVsClusters,
+      kNonZeroNContribs,
+      kIncompleteDAQ
   };
   static const TClass* Generator[kGenerators]; // Generators
 
@@ -189,6 +199,12 @@ private:
     ULong64_t fGlobalBC = 0u;    /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
     ULong64_t fTriggerMask = 0u; /// Trigger class mask
   } bc; //! structure to keep trigger-related info
+  
+  struct {
+    Int_t fEventCuts = 0;         /// Run number
+    Int_t fCL0 = 0;    /// CL0
+    Int_t fCL1 = 0;    /// CL1
+  } run2collinfo; //! structure to keep run 2 related info 
   
   struct {
     // Track data
