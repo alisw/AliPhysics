@@ -749,6 +749,9 @@ void AliAnalysisTaskHe3::CreateHistosTrack(vector<TH1*> &histos)
 
     TH3F* fHistTOFmass2_DCAxy_pt = new TH3F("fHistTOFmass2_DCAxy_pt","TOF mass2 vs DCA_{xy} vs #it{p_T}/Z;#it{p}/Z, GeV/#it{c};TOF mass^{2} / Z^{2}, (GeV/#it{c}^{2})^{2};DCA_{xy}, cm;",50,0.,5.,1000,0.0,10.0,200,-1.0,1.0);
     histos.push_back(fHistTOFmass2_DCAxy_pt);
+	
+    TH2F* fHistDCAxyVsPt = new TH2F("fHistDCAxyVsPt","DCA xy;DCA_{xy};#it{p_T}",400,-2.0,2.0, 200, 0, 4);
+    histos.push_back(fHistDCAxyVsPt);
 
 	/* The charge corrected histograms are not working  correctly, need to fix them
 
@@ -873,6 +876,7 @@ void AliAnalysisTaskHe3::FillHistosTrack(vector<TH1*> &histos, AliAODTrack *trac
         histos.at(26)->Fill(trackP,nSigmaITSdeut);
 		histos.at(27)->Fill(trackP,nSigmaITSHe3);
 	    ((TH3F*)(histos.at(28)))->Fill(trackPt,fmass2TOF,DCAxy);
+	    histos.at(29)->Fill(DCAxy, trackPt);
 		/*
 		histos.at(28)->Fill(trackPCC, track->GetTPCsignal());
 		histos.at(29)->Fill(trackPCC, nSigmaTPCHe3);
