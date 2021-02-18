@@ -195,54 +195,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-  if (SidebandStudy) {
-    TrackCutsDeuteronDCA->SetPtRange(1.4, 4.05);
-    TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 4.05);
-    TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4);
-    TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 1.4);
-    TrackCutsDeuteronDCA->SetPlotTOFMassSq(true);
-    TrackCutsAntiDeuteronDCA->SetPlotTOFMassSq(true);
-    TrackCutsDeuteronDCA->SetCutTOFInvMass(true);
-    TrackCutsAntiDeuteronDCA->SetCutTOFInvMass(true);
-    TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
-    TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
-    if (suffix == "0"){
-      TrackCutsDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
-      TrackCutsAntiDeuteronDCA->SetCutPeakTOFInvMass(3.0,3.5);
-    }else if (suffix == "1") {
-      TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
-    }else if (suffix == "2") {
-      TrackCutsDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 4.05);
-    }else if (suffix == "3"){//left sideband
-      TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-    }else if (suffix == "4") {
-      TrackCutsDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-    }else if (suffix == "5") {/// right side band
-      TrackCutsDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 2.5);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-    }else if (suffix == "6") {
-      TrackCutsDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsAntiDeuteronDCA->SetPtRange(2.5, 4.05);
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-    }else if (suffix == "7"){///left side band full range
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,true,false);
-    }else if(suffix == "8") {/// right side band full range
-      TrackCutsDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-      TrackCutsAntiDeuteronDCA->SetCutTOFMassForSB(7.4,4.1,3.6,6.5,false,true);
-    }
-  }
+
 
  if (SystematicLowpT) {
    TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
@@ -1327,6 +1280,74 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
+  if (SidebandStudy) {
+    TrackCutsDeuteronDCA->SetPtRange(1.4, 4.05);
+    TrackCutsAntiDeuteronDCA->SetPtRange(1.4, 4.05);
+    TrackCutsDeuteronDCA->SetPID(AliPID::kDeuteron, 999.0);
+    TrackCutsAntiDeuteronDCA->SetPID(AliPID::kDeuteron, 999.0);
+    float up  = 0.0;
+    float low = 0.0;
+    if (suffix == "0"){//signal we keep fixed signal with tune from m^2 TPC+TOF
+       up  = 3.0;
+       low = -3.5;
+    }else if (suffix == "1") {//lower sideband defaul
+      up  = -4.1;
+      low = -10.6;
+    }else if (suffix == "2") {//lower sideband
+      up  = -4.07;
+      low = -10.6;
+    }else if (suffix == "3") {//lower sideband
+      up  = -4.13;
+      low = -10.6;
+    }else if (suffix == "4") {//lower sideband
+      up  = -4.05;
+      low = -10.6;
+    }else if (suffix == "5") {//lower sideband
+      up  = -4.15;
+      low = -10.6;
+    }else if (suffix == "6") {//lower sideband
+      up  = -4.1;
+      low = -10.3;
+    }else if (suffix == "7") {//lower sideband
+      up  = -4.1;
+      low = -10.9;
+    }else if (suffix == "8") {//lower sideband
+      up  = -4.1;
+      low = -10.0;
+    }else if (suffix == "9") {//lower sideband
+      up  = -4.1;
+      low = -11.2;
+    }else if (suffix == "10") {//upper sideband default
+       up  = 10.1;
+       low = 3.6;
+    }else if (suffix == "11") {//upper sideband
+      up  = 10.1;
+      low = 3.57;
+    }else if (suffix == "12") {//upper sideband
+      up  = 10.1;
+      low = 3.63;
+    }else if (suffix == "13") {//upper sideband
+      up  = 10.1;
+      low = 3.55;
+    }else if (suffix == "14") {//upper sideband
+      up  = 10.1;
+      low = 3.65;
+    }else if (suffix == "15") {//upper sideband
+      up  = 9.8;
+      low = 3.6;
+    }else if (suffix == "16") {//upper sideband
+      up  = 10.4;
+      low = 3.6;
+    }else if (suffix == "17") {//upper sideband
+      up  = 11.0;
+      low = 3.6;
+    }else if (suffix == "18") {//upper sideband
+      up  = 9.8;
+      low = 3.6;
+    }
+    task->SetSideband(up,low);
+    task->SetSideband(up,low);
+  }
   //Throw all our settings to the task
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsDeuteronDCA(TrackCutsDeuteronDCA);
@@ -1336,6 +1357,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   task->SetTrackCutsProtonDCA(TrackCutsProtonDCA);
   task->SetTrackCutsAntiProtonDCA(TrackCutsAntiProtonDCA);
   task->SetCollectionConfig(config);
+
   mgr->AddTask(task);
 
   TString addon = "HM";

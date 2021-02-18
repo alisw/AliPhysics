@@ -24,7 +24,9 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliAnalysisTaskFemtoDreamDeuteron();
   AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
-  Float_t GetMass2sq(AliFemtoDreamTrack *track);
+  Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
+  float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
+  float SigmaTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
   void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName);
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -40,6 +42,12 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
+  void SetSideband(float sigmaUp,float sigmalLow) {
+    fSigmaUp = sigmaUp;
+    fSigmaLow = sigmalLow;
+    fdoSideband= true;
+  }
+  ;
   private:
   AliAnalysisTaskFemtoDreamDeuteron(const AliAnalysisTaskFemtoDreamDeuteron &task);
   AliAnalysisTaskFemtoDreamDeuteron &operator=(const AliAnalysisTaskFemtoDreamDeuteron &task);
@@ -48,7 +56,9 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   bool fisLightWeight;                      //
   int fTrackBufferSize;                     //
   bool fIsMC;                               //
-
+  bool fdoSideband;                         //
+  float fSigmaUp;                           //
+  float fSigmaLow;                          //
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
   AliFemtoDreamEventCuts *fEventCuts;       //
