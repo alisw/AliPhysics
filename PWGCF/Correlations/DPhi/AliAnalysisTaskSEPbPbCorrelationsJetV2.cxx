@@ -140,7 +140,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fHistCentVsZ(0x0),
   fHistCentVsZMixed(0x0),
   
-  fCentMethod(0),
+  fCentMethod("V0M"),
   fOutputList(0x0),
   fOutputList1(0x0),
   fRunN(-1),
@@ -376,7 +376,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fHistCentVsZ(0x0),
   fHistCentVsZMixed(0x0),
   
-  fCentMethod(0),
+  fCentMethod("V0M"),
   fOutputList(0x0),
   fOutputList1(0x0),
   fRunN(-1),
@@ -1065,7 +1065,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fHistITSMultiplicity -> SetXTitle("N_{Clusters}");
   fHistITSMultiplicity -> Sumw2();
 
-  fHistCentrality = new TH1D("fHistCentrality", Form("%s Centrality",fCentMethod.Data()), 400, -100, 300);
+  fHistCentrality = new TH1D("fHistCentrality", Form("%s_Centrality",fCentMethod.Data()), 400, -100, 300);
   fHistCentrality -> SetXTitle("Centrality  [%]");
   fHistCentrality -> Sumw2();
 
@@ -1440,7 +1440,10 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
 
   Double_t percentile;
   AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
-  percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
+  if(!multSelection) return;
+  if(fCentMethod == "") fCentMethod = "V0M";
+  //percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
+  percentile = multSelection->GetMultiplicityPercentile(fCentMethod);
   fHistCentrality->Fill(percentile);
 
   fv0mpercentile = multSelection->GetMultiplicityPercentile("V0M");

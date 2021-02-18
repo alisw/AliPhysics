@@ -6,9 +6,11 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
     return NULL;
   }
 
-  AliAnalysisTaskSEPbPbCorrelationsJetV2 *task = new AliAnalysisTaskSEPbPbCorrelationsJetV2(Form("AliAnalysisTaskSEPbPbCorrelationsJetV2_%s",centMethod));
+  //AliAnalysisTaskSEPbPbCorrelationsJetV2 *task = new AliAnalysisTaskSEPbPbCorrelationsJetV2(Form("AliAnalysisTaskSEPbPbCorrelationsJetV2_%s",centMethod));
+  AliAnalysisTaskSEPbPbCorrelationsJetV2 *task = new AliAnalysisTaskSEPbPbCorrelationsJetV2("PbPbCorrelations_JetV2");
 
   // Set analysis cuts
+  task->SetCentMethod(centMethod);
   task->SetRemovePileup(kTRUE);
   task->SetRemovePileup2(kTRUE);
   task->SetRemovePileup3(kTRUE);
@@ -25,11 +27,10 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;
   task->SetCentBinning(nBinCent, centLimits);
 
-//  printf("Centrality: ");
-//  for(Int_t ibin = 0; ibin <= nBinCent; ++ibin) printf("%.1f ",(Double_t)centLimits[ibin]);
-//  printf("%s\n",centMethod);
+  printf("Centrality: ");
+  for(Int_t ibin = 0; ibin <= nBinCent; ++ibin) printf("%.1f ",(Double_t)centLimits[ibin]);
+  printf("%s\n",centMethod.Data());
 
-  task->SetCentMethod(centMethod);
 
   const Int_t nZvtxBins  = 1;
   Double_t vertexLimits[nZvtxBins+1] = {-10,10};
@@ -56,11 +57,11 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
   // create output container
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("FlowIncHistos_%s",centMethod), TList::Class(), AliAnalysisManager::kOutputContainer,
+  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("FlowIncHistos_%s",centMethod.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
 							  //Form("%s:FlowInc_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
 							  outputFileName);
 
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("FlowJetHistos_%s",centMethod), TList::Class(), AliAnalysisManager::kOutputContainer,
+  AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("FlowJetHistos_%s",centMethod.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
 							  //Form("%s:FlowJet_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
 							  outputFileName);
 

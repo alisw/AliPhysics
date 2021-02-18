@@ -1,5 +1,7 @@
-#ifndef AliAnalysisTaskSEPbPbCorrelationsJetV2_H
-#define AliAnalysisTaskSEPbPbCorrelationsJetV2_H
+/*
+ *****************************************************************************************/
+#ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
+#define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -106,7 +108,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   static const Int_t fNMaxBinsCentrality = 25; //!
   static const Int_t fNMaxBinsPt = 50; //!
   static const Int_t fNMaxBinsAssocPt = 10; //!
-  static const Int_t fNMaxBinsEta = 2; //!
+  static const Int_t fNMaxBinsEta = 6; //!
   static const Int_t fNMaxBinsZvtx = 20; //!
 
   static AliOADBContainer *cont; //!
