@@ -222,7 +222,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING = kFALSE;       /// flag to keep the background from HIJING only
   /// variables for ML application
   Bool_t fApplyML = kFALSE;                     /// flag to enable ML application
-  Bool_t fMultiClassML = kFALSE;                /// flag to enable multi-class models (Bkg, Prompt, FD)
+  Bool_t fMultiClass = kFALSE;                /// flag to enable multi-class models (Bkg, Prompt, FD)
   Bool_t fUseMinimalVarForSparse = kFALSE;      /// flag to keep only inv. mass, pt and prob. in the sparse
   TString fConfigPath = "";                     /// path to ML config file
   AliHFMLResponseDstoKKpi* fMLResponse = nullptr;  //!<! object to handle ML response
