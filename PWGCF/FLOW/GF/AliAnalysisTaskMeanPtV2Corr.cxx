@@ -924,6 +924,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
     if (index < 0) continue;
     lPart = (AliAODMCParticle*)tca->At(index);//fMCEvent->Particle(index);
     if(!lPart) continue;
+    if (TMath::Abs(lPart->Eta()) > fEta) continue;
     Int_t pdgcode = lPart->GetPdgCode();
     Int_t pidind = GetPIDIndex(pdgcode);
     Double_t lpt = lTrack->Pt();
