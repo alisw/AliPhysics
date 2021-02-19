@@ -63,7 +63,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetKeepOnlyBkgFromHIJING(Bool_t keeponlyhijing=kTRUE) {fKeepOnlyBkgFromHIJING = keeponlyhijing;}
   void SetFillBkgSparse(Bool_t dofill=kTRUE) {fFillBkgSparse = dofill;}
   /// methods for ML application
-  void SetDoMLApplication(Bool_t flag = kTRUE, Bool_t isMultiClass = kFALSE) {fApplyML = flag; fMultiClass = isMultiClass;}
+  void SetDoMLApplication(Bool_t flag = kTRUE, Bool_t isMultiClass = kFALSE) { fApplyML = flag; fMultiClass = isMultiClass;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins[0] = nbins; fMLOutputMin[0] = min; fMLOutputMax[0] = max;}
   void SetMultiClassMLBinsForSparse(Int_t nbinsBkg = 100,
