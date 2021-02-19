@@ -74,8 +74,12 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
 
     // weight
     TF1 *weight = new TF1("weight", "expo", 0., 50.);
-    weight->SetParameter(0, 0.853544);
-    weight->SetParameter(1, -0.325586);
+    // === PYTHIA 6 ===
+//    weight->SetParameter(0, 0.853544);
+//    weight->SetParameter(1, -0.325586);
+    // === PYTHIA 8 + WeakDecayFinder ===
+    weight->SetParameter(0, 1.05904);
+    weight->SetParameter(1, -0.380048);
     task->SetWeightFunction(weight);
 
     // select type of event

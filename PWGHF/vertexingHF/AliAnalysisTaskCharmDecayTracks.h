@@ -14,6 +14,7 @@ class TTree;
 class TH1F;
 class AliAODTrack;
 
+#include "AliNeutralTrackParam.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskCharmDecayTracks : public AliAnalysisTaskSE
@@ -30,6 +31,10 @@ public:
   virtual void Terminate(Option_t *option);
 
   void SetSelectedHadron(Int_t pdg){fSelSpecies=pdg;}
+  void SelectLcpK0s(){
+    fSelSpecies=4122;
+    fDecayMode=1;
+  }
   void SetUseCandidatesFromDeltaAOD(){fMethod=1;}
   void SetUseCharmedHadronsFromKine(){fMethod=0;}
   
@@ -52,6 +57,7 @@ public:
   }
 
   Bool_t IsTrackSelected(AliAODTrack* track);
+  Bool_t IsV0Selected(AliAODv0* v0);
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs, kLc};
   
 private:
@@ -62,6 +68,7 @@ private:
   AliAnalysisTaskCharmDecayTracks(const AliAnalysisTaskCharmDecayTracks &source);
   AliAnalysisTaskCharmDecayTracks& operator=(const AliAnalysisTaskCharmDecayTracks& source);
   void MapTrackLabels(AliAODEvent* aod);
+  void MapV0Labels(AliAODEvent* aod, TClonesArray* arrayMC);
   Bool_t PrepareTreeVars(AliAODMCParticle* partD, TClonesArray* arrayMC, AliAODMCHeader* mcHeader);
 
   TList* fOutput;                  //!<! list send on output slot 0
@@ -78,11 +85,14 @@ private:
   AliExternalTrackParam fTrPar1;   //!<! first track
   AliExternalTrackParam fTrPar2;   //!<! second track
   AliExternalTrackParam fTrPar3;   //!<! third track
+  AliNeutralTrackParam fTrParV0;   //!<! V0
   AliAODVertex *fPVertexTrk;       //!<! primary vertex
   Int_t  fSelSpecies;              /// Charmed hadron species to analyse
+  Int_t  fDecayMode;               /// 0=charged hadrons; 1=V0+bachelor
   UInt_t fFilterMask;              /// FilterMask
   AliESDtrackCuts* fTrCuts;        /// track selection
   Int_t fMapTrLabel[kMaxLabel];    /// map of track labels
+  Int_t fMapV0Label[kMaxLabel];    /// map of V0 labels
   Bool_t fReadMC;                  ///  flag for access to MC
   Bool_t fUsePhysSel;              /// flag use/not use phys sel
   Bool_t fUsePileupCut;            /// flag use/not use phys pileup cut
@@ -92,7 +102,7 @@ private:
   Int_t fMethod;                   /// analysis from kine or from deltaAOD
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCharmDecayTracks,4);
+  ClassDef(AliAnalysisTaskCharmDecayTracks,5);
   /// \endcond
 };
 

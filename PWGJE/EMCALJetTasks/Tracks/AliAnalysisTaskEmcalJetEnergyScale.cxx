@@ -38,6 +38,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergyScale.h"
+#include "AliEmcalMCPartonInfo.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalAnalysisFactory.h"
 #include "AliLog.h"
@@ -81,7 +82,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fJetTypeOutliers(kOutlierPartJet),
   fSampleSplitter(nullptr)
 {
-  SetUseAliAnaUtils(true);
+  SetMakeGeneralHistograms(true);
   DefineOutput(1, TList::Class());
 }
 
@@ -113,6 +114,12 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hHardestParton", "Pt of the hardest parton", 1000, 0., 1000.);
+  fHistos->CreateTH1("hHardestQuark", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
+  fHistos->CreateTH1("hHardestGluon", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllPartons", "Pt of the hardest parton", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllQuarks", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
+  fHistos->CreateTH1("hAllGluons", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
@@ -136,7 +143,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   // Debugging the JES
   std::array<double, 17> ptbins = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
-  for(int iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
+  for(std::size_t iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
     int ptbminI = ptbins[iptbin],
         ptbmaxI = ptbins[iptbin+1];
     fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
@@ -220,7 +227,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
-  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);
@@ -271,8 +278,25 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   AliDebugStream(1) << "event selected" << std::endl;
   fHistos->FillTH1("hEventCounter", 1);
 
-  auto detjets = GetJetContainer(fNameDetectorJets),
-       partjets = GetJetContainer(fNameParticleJets);
+  if(fMCPartonInfo) {
+    auto hardest = fMCPartonInfo->GetHardestParton();
+    if(hardest) {
+      fHistos->FillTH1("hHardestParton", hardest->GetMomentum().Pt());
+      if(hardest->GetPdg() == 21) fHistos->FillTH1("hHardestGluon", hardest->GetMomentum().Pt());
+      if(hardest->GetPdg() < 7) fHistos->FillTH1("hHardestQuark", hardest->GetMomentum().Pt());
+    }
+    for(auto partonObj : fMCPartonInfo->GetListOfDirectPartons()) {
+      auto parton = static_cast<PWG::EMCAL::AliEmcalPartonData *>(partonObj);
+      if(parton) {
+        fHistos->FillTH1("hAllPartons", parton->GetMomentum().Pt());
+        if(parton->GetPdg() == 21) fHistos->FillTH1("hAllGluons", parton->GetMomentum().Pt());
+        if(parton->GetPdg() < 7) fHistos->FillTH1("hAllQuarks", parton->GetMomentum().Pt());
+      }
+    }
+  }
+
+  auto detjets = GetDetLevelJetContainer(),
+       partjets = GetPartLevelJetContainer();
   if(!detjets || !partjets) {
     AliErrorStream() << "At least one jet container missing, exiting ..." << std::endl;
     return false;
@@ -504,10 +528,45 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
   return isEMCAL;
 }
 
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
+  SetMCProductionType(mcprodtype);
+  SetUsePtHardBinScaling(true);
+  SetUserPtHardBinning(pthardbinning);
+  if(doMCFilter) {
+    SetMCFilter();
+    SetJetPtFactor(jetptcut);
+  }
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigureMinBias(MCProductionType_t mcprodtype){
+  if(!(mcprodtype == kMCPythiaMB || mcprodtype == kMCHepMCMB)) {
+    AliErrorStream() << "MC prod type not compatible with min. bias production" << std::endl;
+  }
+  SetMCProductionType(mcprodtype);
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto partjets = GetPartLevelJetContainer(),
+       detjets = GetDetLevelJetContainer();
+  
+  partjets->SetJetPtCut(minJetPtPart);
+  partjets->SetMaxTrackPt(maxTrackPtPart);
+  detjets->SetJetPtCut(minJetPtDet);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPtDet);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
+
 AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
-    ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
+    ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
     return nullptr;
   }
 
@@ -554,25 +613,28 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
 
   AliClusterContainer *clusters(nullptr);
   if(addClusterContainer) {
-    clusters = energyscaletask->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
   AliTrackContainer *tracks(nullptr);
   if(addTrackContainer) {
-    tracks = energyscaletask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
   }
+
+  const std::string kNameJetsPart = "particleLevelJets",
+                    kNameJetsDet = "detectorLevelJets";
 
   auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                       acceptance, partcont, nullptr);
-  contpartjet->SetName("particleLevelJets");
-  energyscaletask->SetNamePartJetContainer("particleLevelJets");
+  contpartjet->SetName(kNameJetsPart.data());
+  energyscaletask->SetNamePartJetContainer(kNameJetsPart.data());
   std::cout << "Adding particle-level jet container with underling array: " << contpartjet->GetArrayName() << std::endl;
 
   auto contdetjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                      acceptance, tracks, clusters);
-  contdetjet->SetName("detectorLevelJets");
-  energyscaletask->SetNameDetJetContainer("detectorLevelJets");
+  contdetjet->SetName(kNameJetsDet.data());
+  energyscaletask->SetNameDetJetContainer(kNameJetsDet.data());
   std::cout << "Adding detector-level jet container with underling array: " << contdetjet->GetArrayName() << std::endl;
 
   std::stringstream outnamebuilder, listnamebuilder;

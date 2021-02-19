@@ -1,4 +1,6 @@
 #include "AliAnalysisTaskNonlinearFlow.h"
+#include "AliGFWWeights.h"
+#include "CorrelationCalculator.h"
 
 #include <TList.h>
 #include <TH1.h>
@@ -65,12 +67,15 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
 AliAnalysisTaskSE(),
 fAOD(0),
 fitssatrackcuts(0),
-fFilterbit(768),
+fFilterbit(96),
+fFilterbitDefault(96),
 fEtaCut(0.8),
 fVtxCut(10.0),
+fVtxCutDefault(10.0),
 fMinPt(0.2),
 fMaxPt(3.0),
 fTPCclusters(70),
+fChi2PerTPCcluster(10000),
 fMinITSClus(0),
 fMaxChi2(0),
 fUseDCAzCut(0),
@@ -96,6 +101,11 @@ fMultCentLowCut(0),
 fTrackEfficiency(0),
 hTrackEfficiency(0),
 hTrackEfficiencyRun(0),
+
+fFlowRunByRunWeights(false),
+fFlowPeriodWeights(false),
+fFlowUse3Dweights(false),
+fFlowWeightsList(nullptr),
 
 fPhiWeight(0),
 fPhiWeightPlus(0),
@@ -160,60 +170,8 @@ hDCAxy(0),
 hDCAz(0),
 hITSclusters(0),
 hChi2(0),
-
-hNtrksPt0530Pt0230(0),
-hNtrksPt0730Pt0230(0),
-hNtrksEta09Eta10(0),
-hNtrksEta08Eta10(0),
-hNtrksAllNtrksLS(0),
-hNtrksNoGapGap0(0),
-hNtrksNoGapGap2(0),
-hNtrksNoGapGap4(0),
-hNtrksNoGapGap6(0),
-hNtrksNoGapGap8(0),
-hNtrksNoGapGap(0),
-hNtrksNoGapGap14(0),
-hNtrksNoGapGap16(0),
-hNtrksNoGapGap18(0),
-hNtrksNoGap3sub(0),
-hNtrksNoGap3subGap(0),
-
-hReco(0),
-hRecoPion(0),
-hRecoKaon(0),
-hRecoProton(0),
-hRecoElectron(0),
-hRecoMuon(0),
-hRecoLSplus(0),
-hRecoLSminus(0),
-hPtRecoNtrks(0),
-hEtaRecoNtrks(0),
-hVzRecoNtrks(0),
-hPtRecoNtrksReco(0),
-hEtaRecoNtrksReco(0),
-hVzRecoNtrksReco(0),
-hTruth(0),
-hTruthPion(0),
-hTruthKaon(0),
-hTruthProton(0),
-hTruthElectron(0),
-hTruthMuon(0),
-hTruthLSplus(0),
-hTruthLSminus(0),
-hPtTruthNtrks(0),
-hEtaTruthNtrks(0),
-hVzTruthNtrks(0),
-hPtTruthNtrksReco(0),
-hEtaTruthNtrksReco(0),
-hVzTruthNtrksReco(0),
-hNtrksRecoNtrksTruth(0),
-hNtrksRecoCorrNtrksTruth(0),
-
-hPrimary(0),
-hPions(0),
-hDCAptMC(0),
-hDCAptMC_material(0),
-hDCAptMC_weak(0) {
+rand(32213) 
+ {
 
 }
 //______________________________________________________________________________
@@ -231,11 +189,14 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fMaxChi2(0),
 	fUseDCAzCut(0),
 	fDCAz(0),
+	fDCAzDefault(0),
 	fUseDCAxyCut(0),
 	fDCAxy(0),
+	fDCAxyDefault(0),
 	fSample(1),
 	fCentFlag(0),
 	fTrigger(0),
+	fAliTrigger(0),
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
@@ -252,6 +213,11 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fTrackEfficiency(0),
 	hTrackEfficiency(0),
 	hTrackEfficiencyRun(0),
+
+        fFlowRunByRunWeights(false),
+        fFlowPeriodWeights(false),
+        fFlowUse3Dweights(false),
+        fFlowWeightsList(nullptr),
 
 	fPhiWeight(0),
 	fPhiWeightPlus(0),
@@ -316,66 +282,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	hDCAz(0),
 	hITSclusters(0),
 	hChi2(0),
-
-	hNtrksPt0530Pt0230(0),
-	hNtrksPt0730Pt0230(0),
-	hNtrksEta09Eta10(0),
-	hNtrksEta08Eta10(0),
-	hNtrksAllNtrksLS(0),
-	hNtrksNoGapGap0(0),
-	hNtrksNoGapGap2(0),
-	hNtrksNoGapGap4(0),
-	hNtrksNoGapGap6(0),
-	hNtrksNoGapGap8(0),
-	hNtrksNoGapGap(0),
-	hNtrksNoGapGap14(0),
-	hNtrksNoGapGap16(0),
-	hNtrksNoGapGap18(0),
-	hNtrksNoGap3sub(0),
-	hNtrksNoGap3subGap(0),
-
-	//..MC
-	hMultMC(0),
-	fPhiDisTruth(0),
-	fEtaDisTruth(0),
-	fPtDisTruth(0),
-
-	hReco(0),
-	hRecoPion(0),
-	hRecoKaon(0),
-	hRecoProton(0),
-	hRecoElectron(0),
-	hRecoMuon(0),
-	hRecoLSplus(0),
-	hRecoLSminus(0),
-	hPtRecoNtrks(0),
-	hEtaRecoNtrks(0),
-	hVzRecoNtrks(0),
-	hPtRecoNtrksReco(0),
-	hEtaRecoNtrksReco(0),
-	hVzRecoNtrksReco(0),
-	hTruth(0),
-	hTruthPion(0),
-	hTruthKaon(0),
-	hTruthProton(0),
-	hTruthElectron(0),
-	hTruthMuon(0),
-	hTruthLSplus(0),
-	hTruthLSminus(0),
-	hPtTruthNtrks(0),
-	hEtaTruthNtrks(0),
-	hVzTruthNtrks(0),
-	hPtTruthNtrksReco(0),
-	hEtaTruthNtrksReco(0),
-	hVzTruthNtrksReco(0),
-	hNtrksRecoNtrksTruth(0),
-	hNtrksRecoCorrNtrksTruth(0),
-
-	hPrimary(0),
-	hPions(0),
-	hDCAptMC(0),
-	hDCAptMC_material(0),
-	hDCAptMC_weak(0), rand(32213) {
+	rand(32213) {
 
 		// Output slot #1 writes into a TList
 		DefineOutput(1, TList::Class());
@@ -417,14 +324,14 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	fEventCuts.fPileUpCutMV = true;
 
 	// range on Xaxis:
-	double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
-		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
+	// double xbins_tmp[] = {50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300,
+        // 		1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000 };
        
 
         if (fNtrksName == "Mult") {
-	    nn = 32;
-            for (int i = 0; i <= nn; i++) {
-                xbins[i] = xbins_tmp[i];
+	    nn = 3000;
+            for (int i = 0; i <= 3000; i++) {
+                xbins[i] = i;
             }
         } else {
             nn = 10;
@@ -462,25 +369,13 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 
 	Int_t inSlotCounter=1;
 	if(fNUA) {
-		fPhiWeight = (TFile*)GetInputData(inSlotCounter);
+                fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 	if(fNUE) {
 		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
-	//..phi weight: it is done run-by-run, the histograms are obtained in GetWeight() function
-	//    default
-  /*
-	fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR.root");
-	//    for systematics
-	if(fFilterbit == 768) fPhiWeight = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/PhiWeight_LHC15o_HIR_FB768.root");
-
-	//    default
-	fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root");
-	// for systematics
-	if(fFilterbit == 768) fTrackEfficiency = TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
-  */
 
 	// Physics profiles
 	//	NL response
@@ -499,7 +394,13 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	//..apply physics selection
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	Bool_t isTrigselected = false;
-	isTrigselected = fSelectMask&AliVEvent::kINT7;
+        if (fTrigger == 0) {
+	    isTrigselected = fSelectMask&AliVEvent::kINT7;
+	    fAliTrigger = AliVEvent::kINT7;
+        } else if (fTrigger == 1) {
+	    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+	    fAliTrigger = AliVEvent::kHighMultV0;
+        }
 	if(isTrigselected == false) return;
 
 	//..check if I have AOD
@@ -508,9 +409,22 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 		Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
 		return;
 	}
-	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
-		PostData(1,fListOfObjects);
-		return;
+
+	if (fPeriod.EqualTo("LHC15o")) {
+		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+			PostData(1,fListOfObjects);
+			return;
+		}
+	} else {
+		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
+
+		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+
+		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
+
+		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+		if(nTracksPrim < 0.5) { return; }
 	}
 	hEventCount->Fill("after fEventCuts", 1.);
 
@@ -518,6 +432,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
 	float fVtxZ = vtx->GetZ();
 	if(TMath::Abs(fVtxZ) > fVtxCut) return;
+        NTracksCalculation(fInputEvent);
+	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
 	fVtxAfterCuts->Fill(fVtxZ);
 
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
@@ -538,6 +454,18 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	fCentralityDis->Fill(centrV0);
 	fV0CentralityDis->Fill(cent);
 
+
+        // checking the run number for aplying weights & loading TList with weights
+        //
+        // if (fCurrSystFlag == 0) {
+        if ( !fPeriod.EqualTo("LHC15o") ) {
+		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
+        } else {
+		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
+        }
+
+
+
 	//..all charged particles
 	if(fLS == true){
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
@@ -548,6 +476,57 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	PostData(1, fListOfObjects);
 }
 
+void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
+	const int nAODTracks = aod->GetNumberOfTracks();
+	NtrksCounter = 0;
+
+	//..for DCA
+	double pos[3], vz, vx, vy;
+	vz = aod->GetPrimaryVertex()->GetZ();
+	vx = aod->GetPrimaryVertex()->GetX();
+	vy = aod->GetPrimaryVertex()->GetY();
+
+	//..LOOP OVER TRACKS........
+	//........................................
+	for(Int_t nt = 0; nt < nAODTracks; nt++)
+	{
+		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+		if (!aodTrk){
+			delete aodTrk;
+			continue;
+		}
+
+		double pos[3];
+		aodTrk->GetXYZ(pos);
+		double dcaZ = 100;
+		double dcaX = 100;
+		double dcaY = 100;
+		double dcaXY = 100;
+		dcaZ = pos[2] - vz;
+		dcaX = pos[0] - vx;
+		dcaY = pos[1] - vy;
+		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+
+		int nClustersITS = 0;
+		nClustersITS = aodTrk->GetITSNcls();
+		float chi2PerClusterITS = -1;
+		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+
+		if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
+		if (fFilterbitDefault == 96) {
+			if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
+		}
+
+		if(aodTrk->Pt() < fMinPt) continue;
+		if(aodTrk->Pt() > fMaxPt) continue;
+
+		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+
+		NtrksCounter += 1;
+	} // end loop of all track
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus)
 {
@@ -556,7 +535,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	// Init the number of tracks
 	double NtrksBefore = 0;
-	NtrksAfter = 0;
+        NtrksAfter = 0;
 	NtrksAfterGap10M = 0;
 	NtrksAfterGap10P = 0;
 	NtrksAfterGap14M = 0;
@@ -564,6 +543,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	NtrksAfter3subL = 0;
 	NtrksAfter3subM = 0;
 	NtrksAfter3subR = 0;
+
 
 	//..for DCA
 	double pos[3], vz, vx, vy;
@@ -615,15 +595,26 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		dcaY = pos[1] - vy;
 		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
+                // nClustersITS cut
 		int nClustersITS = 0;
 		nClustersITS = aodTrk->GetITSNcls();
 		float chi2PerClusterITS = -1;
 		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
+                // nClustersTPC cut
+                int nClustersTPC = 0;
+		nClustersTPC = aodTrk->GetTPCNcls();
+		if (nClustersTPC < fTPCclusters) { continue; }
+		float chi2PerClusterTPC = -1;
+		if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
+		if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
+
 		if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
 		if (fFilterbit == 96) {
 			if (TMath::Abs(dcaZ) > fDCAz) continue;
 		}
+                if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
+                if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
 
 		if(aodTrk->Pt() < fMinPt) continue;
 		if(aodTrk->Pt() > fMaxPt) continue;
@@ -635,7 +626,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
-			weight = GetWeight(aodTrk->Phi(), aodTrk->Eta(), aodTrk->Pt(), run, fPlus, fVtxZ, runNumber);
+                        // if (fCurrSystFlag == 0) {
+			if ( !fPeriod.EqualTo("LHC15o") ) {
+				weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
+			} else {
+				weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+			}
 		}
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
@@ -749,27 +745,21 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	//............................
 
 	//..calculate Q-vector for each harmonics n and power p
-	for(int iharm=0; iharm<20; iharm++)
-	{
-		for(int ipow=0; ipow<20; ipow++)
-		{
-			Qvector[iharm][ipow] = TComplex(Qcos[iharm][ipow], Qsin[iharm][ipow]);
-			Qvector10M[iharm][ipow] = TComplex(QcosGap10M[iharm][ipow], QsinGap10M[iharm][ipow]);
-			Qvector10P[iharm][ipow] = TComplex(QcosGap10P[iharm][ipow], QsinGap10P[iharm][ipow]);
-			Qvector14M[iharm][ipow] = TComplex(QcosGap14M[iharm][ipow], QsinGap14M[iharm][ipow]);
-			Qvector14P[iharm][ipow] = TComplex(QcosGap14P[iharm][ipow], QsinGap14P[iharm][ipow]);
-			QvectorSubLeft[iharm][ipow] = TComplex(QcosSubLeft[iharm][ipow], QsinSubLeft[iharm][ipow]);
-			QvectorSubRight[iharm][ipow] = TComplex(QcosSubRight[iharm][ipow], QsinSubRight[iharm][ipow]);
-			QvectorSubMiddle[iharm][ipow] = TComplex(QcosSubMiddle[iharm][ipow], QsinSubMiddle[iharm][ipow]);
-		}
-	}
+        correlator.FillQVector(correlator.Qvector, Qcos, Qsin); 
+        correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M); 
+        correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P); 
+        correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M); 
+        correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P); 
+        correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft); 
+        correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight); 
+        correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle); 
 
-	hMult->Fill(NtrksAfter);
+	hMult->Fill(NtrksCounter);
 
 	// CalculateProfile(centProfile, cent);
 	if (fNtrksName == "Mult") {
-	    CalculateProfile(multProfile, NtrksAfter);
-	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksAfter);
+	    CalculateProfile(multProfile, NtrksCounter);
+	    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
         } else {
 	    CalculateProfile(multProfile, cent);
 	    CalculateProfile(multProfile_bin[bootstrap_value], cent);
@@ -989,9 +979,7 @@ int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-
-	double weight = 1;
-  return weight;
+        return 1;
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
 	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
@@ -1000,6 +988,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 	double eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
 	double error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
+	double weight = 1;
 	if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
 	else{
 		TRandom3 r(0);
@@ -1015,1437 +1004,131 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
 {
-	double weight = 1;
+	TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
+        // cout << "weights_list" << weights_list << endl;
+        // weights_list->ls();
+        
+	TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
+        // cout << "averaged_list" << averaged_list << endl;
+	TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
+        // cout << "hist_list" << hPhiWeightRun << endl;
+
+	double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
+			hPhiWeightRun->GetYaxis()->FindBin(eta));
+			// , hPhiWeightRun->GetZaxis()->FindBin(vz));
 	return weight;
-	hPhiWeightRun = (TH3F*)fPhiWeight->Get(Form("fPhiWeight_%0.lf", runNumber));
-	weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
-			hPhiWeightRun->GetYaxis()->FindBin(eta),
-			hPhiWeightRun->GetZaxis()->FindBin(vz));
-	return weight;
 }
-//_____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Q(int n, int p)
-{
-
-	if(n>=0) return Qvector[n][p];
-	else return TComplex::Conjugate(Qvector[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap10M(int n, int p)
-{
-
-	if(n>=0) return Qvector10M[n][p];
-	else return TComplex::Conjugate(Qvector10M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap10P(int n, int p)
-{
-
-	if(n>=0) return Qvector10P[n][p];
-	else return TComplex::Conjugate(Qvector10P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap0M(int n, int p)
-{
-
-	if(n>=0) return Qvector0M[n][p];
-	else return TComplex::Conjugate(Qvector0M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap0P(int n, int p)
-{
-
-	if(n>=0) return Qvector0P[n][p];
-	else return TComplex::Conjugate(Qvector0P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap2M(int n, int p)
-{
-
-	if(n>=0) return Qvector2M[n][p];
-	else return TComplex::Conjugate(Qvector2M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap2P(int n, int p)
-{
-
-	if(n>=0) return Qvector2P[n][p];
-	else return TComplex::Conjugate(Qvector2P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap4M(int n, int p)
-{
-
-	if(n>=0) return Qvector4M[n][p];
-	else return TComplex::Conjugate(Qvector4M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap4P(int n, int p)
-{
-
-	if(n>=0) return Qvector4P[n][p];
-	else return TComplex::Conjugate(Qvector4P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap6M(int n, int p)
-{
-
-	if(n>=0) return Qvector6M[n][p];
-	else return TComplex::Conjugate(Qvector6M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap6P(int n, int p)
-{
-
-	if(n>=0) return Qvector6P[n][p];
-	else return TComplex::Conjugate(Qvector6P[-n][p]);
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap8M(int n, int p)
-{
-
-	if(n>=0) return Qvector8M[n][p];
-	else return TComplex::Conjugate(Qvector8M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap8P(int n, int p)
-{
-
-	if(n>=0) return Qvector8P[n][p];
-	else return TComplex::Conjugate(Qvector8P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap10M(int n, int p)
-{
-
-	if(n>=0) return pvectorM[n][p];
-	else return TComplex::Conjugate(pvectorM[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap10P(int n, int p)
-{
-
-	if(n>=0) return pvectorP[n][p];
-	else return TComplex::Conjugate(pvectorP[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap14M(int n, int p)
-{
-
-	if(n>=0) return Qvector14M[n][p];
-	else return TComplex::Conjugate(Qvector14M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap14P(int n, int p)
-{
-
-	if(n>=0) return Qvector14P[n][p];
-	else return TComplex::Conjugate(Qvector14P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap16M(int n, int p)
-{
-
-	if(n>=0) return Qvector16M[n][p];
-	else return TComplex::Conjugate(Qvector16M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap16P(int n, int p)
-{
-
-	if(n>=0) return Qvector16P[n][p];
-	else return TComplex::Conjugate(Qvector16P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap18M(int n, int p)
-{
-
-	if(n>=0) return Qvector18M[n][p];
-	else return TComplex::Conjugate(Qvector18M[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QGap18P(int n, int p)
-{
-
-	if(n>=0) return Qvector18P[n][p];
-	else return TComplex::Conjugate(Qvector18P[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubLeft(int n, int p)
-{
-
-	if(n>=0) return QvectorSubLeft[n][p];
-	else return TComplex::Conjugate(QvectorSubLeft[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubRight(int n, int p)
-{
-
-	if(n>=0) return QvectorSubRight[n][p];
-	else return TComplex::Conjugate(QvectorSubRight[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubMiddle(int n, int p)
-{
-
-	if(n>=0) return QvectorSubMiddle[n][p];
-	else return TComplex::Conjugate(QvectorSubMiddle[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Left(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Left[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Left[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Right(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Right[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Right[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::QsubGap2Middle(int n, int p)
-{
-
-	if(n>=0) return QvectorSubGap2Middle[n][p];
-	else return TComplex::Conjugate(QvectorSubGap2Middle[-n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::p(int n, int p)
-{
-
-	if(n>=0) return pvector[n][p];
-	else return TComplex::Conjugate(pvector[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::q(int n, int p)
-{
-
-	if(n>=0) return qvector[n][p];
-	else return TComplex::Conjugate(qvector[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap0M(int n, int p)
-{
-
-	if(n>=0) return pvector0M[n][p];
-	else return TComplex::Conjugate(pvector0M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap0P(int n, int p)
-{
-
-	if(n>=0) return pvector0P[n][p];
-	else return TComplex::Conjugate(pvector0P[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap4M(int n, int p)
-{
-
-	if(n>=0) return pvector4M[n][p];
-	else return TComplex::Conjugate(pvector4M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap4P(int n, int p)
-{
-
-	if(n>=0) return pvector4P[n][p];
-	else return TComplex::Conjugate(pvector4P[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap8M(int n, int p)
-{
-
-	if(n>=0) return pvector8M[n][p];
-	else return TComplex::Conjugate(pvector8M[n][p]);
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::pGap8P(int n, int p)
-{
-
-	if(n>=0) return pvector8P[n][p];
-	else return TComplex::Conjugate(pvector8P[n][p]);
-
-}
-//____________________________________________________________________
-void AliAnalysisTaskNonlinearFlow::ResetQ(const int nMaxHarm, const int nMaxPow)
-{
-
-	for(int i=0; i<nMaxHarm; i++)
-	{
-		for(int j=0; j<nMaxPow; j++)
-		{
-			Qvector[i][j] = TComplex(0.,0.);
-		}
-	}
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two(int n1, int n2)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1) - Q(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0(int n1, int n2)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2(int n1, int n2)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4(int n1, int n2)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6(int n1, int n2)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8(int n1, int n2)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10(int n1, int n2)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap14(int n1, int n2)
-{
-
-	TComplex formula = QGap14M(n1,1)*QGap14P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap16(int n1, int n2)
-{
-
-	TComplex formula = QGap16M(n1,1)*QGap16P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap18(int n1, int n2)
-{
-
-	TComplex formula = QGap18M(n1,1)*QGap18P(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubLM(int n1, int n2)
-{
-
-	TComplex formula = QsubLeft(n1,1)*QsubMiddle(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubRM(int n1, int n2)
-{
-
-	TComplex formula = QsubMiddle(n1,1)*QsubRight(n2,1);
-	return formula;
-
-}
-//
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubLR(int n1, int n2)
-{
-
-	TComplex formula = QsubLeft(n1,1)*QsubRight(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubGap2LM(int n1, int n2)
-{
-
-	TComplex formula = QsubGap2Left(n1,1)*QsubGap2Middle(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Two_3SubGap2RM(int n1, int n2)
-{
-
-	TComplex formula = QsubGap2Middle(n1,1)*QsubGap2Right(n2,1);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0M(int n1, int n2)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2M(int n1, int n2)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2M(n2,1) - QGap2M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4M(int n1, int n2)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4M(n2,1) - QGap4M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6M(int n1, int n2)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6M(n2,1) - QGap6M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8M(int n1, int n2)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8M(n2,1) - QGap8M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10M(int n1, int n2)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1) - QGap10M(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap0P(int n1, int n2)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1) - QGap0P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap2P(int n1, int n2)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1) - QGap2P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap4P(int n1, int n2)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1) - QGap4P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap6P(int n1, int n2)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1) - QGap6P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap8P(int n1, int n2)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1) - QGap8P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::TwoGap10P(int n1, int n2)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1) - QGap10P(n1+n2,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Three(int n1, int n2, int n3)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
-		- Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)-QGap0M(n1,1)*QGap0P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)-QGap0P(n1,1)*QGap0M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2P(n2,1)*QGap2P(n3,1)-QGap2M(n1,1)*QGap2P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2M(n2,1)*QGap2M(n3,1)-QGap2P(n1,1)*QGap2M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4P(n2,1)*QGap4P(n3,1)-QGap4M(n1,1)*QGap4P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4M(n2,1)*QGap4M(n3,1)-QGap4P(n1,1)*QGap4M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6P(n2,1)*QGap6P(n3,1)-QGap6M(n1,1)*QGap6P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6M(n2,1)*QGap6M(n3,1)-QGap6P(n1,1)*QGap6M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8P(n2,1)*QGap8P(n3,1)-QGap8M(n1,1)*QGap8P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8M(n2,1)*QGap8M(n3,1)-QGap8P(n1,1)*QGap8M(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10A(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-QGap10M(n1,1)*QGap10P(n2+n3,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10B(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10P(n1,1)*QGap10M(n2+n3,2);
-	return formula;
-
-}
-
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)-QGap0M(n1+n2,2)*QGap0M(n3,1)-QGap0M(n2,1)*QGap0M(n1+n3,2)
-		- QGap0M(n1,1)*QGap0M(n2+n3,2)+2.*QGap0M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap0_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)-QGap0P(n1+n2,2)*QGap0P(n3,1)-QGap0P(n2,1)*QGap0P(n1+n3,2)
-		- QGap0P(n1,1)*QGap0P(n2+n3,2)+2.*QGap0P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2M(n1,1)*QGap2M(n2,1)*QGap2M(n3,1)-QGap2M(n1+n2,2)*QGap2M(n3,1)-QGap2M(n2,1)*QGap2M(n1+n3,2)
-		- QGap2M(n1,1)*QGap2M(n2+n3,2)+2.*QGap2M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap2_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1)*QGap2P(n3,1)-QGap2P(n1+n2,2)*QGap2P(n3,1)-QGap2P(n2,1)*QGap2P(n1+n3,2)
-		- QGap2P(n1,1)*QGap2P(n2+n3,2)+2.*QGap2P(n1+n2+n3,3);
-	return formula;
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4M(n1,1)*QGap4M(n2,1)*QGap4M(n3,1)-QGap4M(n1+n2,2)*QGap4M(n3,1)-QGap4M(n2,1)*QGap4M(n1+n3,2)
-		- QGap4M(n1,1)*QGap4M(n2+n3,2)+2.*QGap4M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap4_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1)*QGap4P(n3,1)-QGap4P(n1+n2,2)*QGap4P(n3,1)-QGap4P(n2,1)*QGap4P(n1+n3,2)
-		- QGap4P(n1,1)*QGap4P(n2+n3,2)+2.*QGap4P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6M(n1,1)*QGap6M(n2,1)*QGap6M(n3,1)-QGap6M(n1+n2,2)*QGap6M(n3,1)-QGap6M(n2,1)*QGap6M(n1+n3,2)
-		- QGap6M(n1,1)*QGap6M(n2+n3,2)+2.*QGap6M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap6_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1)*QGap6P(n3,1)-QGap6P(n1+n2,2)*QGap6P(n3,1)-QGap6P(n2,1)*QGap6P(n1+n3,2)
-		- QGap6P(n1,1)*QGap6P(n2+n3,2)+2.*QGap6P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8M(n1,1)*QGap8M(n2,1)*QGap8M(n3,1)-QGap8M(n1+n2,2)*QGap8M(n3,1)-QGap8M(n2,1)*QGap8M(n1+n3,2)
-		- QGap8M(n1,1)*QGap8M(n2+n3,2)+2.*QGap8M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap8_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1)*QGap8P(n3,1)-QGap8P(n1+n2,2)*QGap8P(n3,1)-QGap8P(n2,1)*QGap8P(n1+n3,2)
-		- QGap8P(n1,1)*QGap8P(n2+n3,2)+2.*QGap8P(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10_subM(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10M(n1,1)*QGap10M(n2,1)*QGap10M(n3,1)-QGap10M(n1+n2,2)*QGap10M(n3,1)-QGap10M(n2,1)*QGap10M(n1+n3,2)
-		- QGap10M(n1,1)*QGap10M(n2+n3,2)+2.*QGap10M(n1+n2+n3,3);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::ThreeGap10_subP(int n1, int n2, int n3)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10P(n3,1)-QGap10P(n1+n2,2)*QGap10P(n3,1)-QGap10P(n2,1)*QGap10P(n1+n3,2)
-		- QGap10P(n1,1)*QGap10P(n2+n3,2)+2.*QGap10P(n1+n2+n3,3);
-	return formula;
-
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
-		- Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
-		+ Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
-		+ 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0P(n1+n2,2)*QGap0M(n3,1)*QGap0M(n4,1)
-		-QGap0P(n1,1)*QGap0P(n2,1)*QGap0M(n3+n4,2)+QGap0P(n1+n2,2)*QGap0M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0M(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0M(n1+n2,2)*QGap0M(n3,1)*QGap0M(n4,1)-QGap0M(n2,1)*QGap0M(n1+n3,2)*QGap0M(n4,1)
-		- QGap0M(n1,1)*QGap0M(n2+n3,2)*QGap0M(n4,1)+2.*QGap0M(n1+n2+n3,3)*QGap0M(n4,1)-QGap0M(n2,1)*QGap0M(n3,1)*QGap0M(n1+n4,2)
-		+ QGap0M(n2+n3,2)*QGap0M(n1+n4,2)-QGap0M(n1,1)*QGap0M(n3,1)*QGap0M(n2+n4,2)+QGap0M(n1+n3,2)*QGap0M(n2+n4,2)
-		+ 2.*QGap0M(n3,1)*QGap0M(n1+n2+n4,3)-QGap0M(n1,1)*QGap0M(n2,1)*QGap0M(n3+n4,2)+QGap0M(n1+n2,2)*QGap0M(n3+n4,2)
-		+ 2.*QGap0M(n2,1)*QGap0M(n1+n3+n4,3)+2.*QGap0M(n1,1)*QGap0M(n2+n3+n4,3)-6.*QGap0M(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap0P(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3,1)*QGap0P(n4,1)-QGap0P(n1+n2,2)*QGap0P(n3,1)*QGap0P(n4,1)-QGap0P(n2,1)*QGap0P(n1+n3,2)*QGap0P(n4,1)
-		- QGap0P(n1,1)*QGap0P(n2+n3,2)*QGap0P(n4,1)+2.*QGap0P(n1+n2+n3,3)*QGap0P(n4,1)-QGap0P(n2,1)*QGap0P(n3,1)*QGap0P(n1+n4,2)
-		+ QGap0P(n2+n3,2)*QGap0P(n1+n4,2)-QGap0P(n1,1)*QGap0P(n3,1)*QGap0P(n2+n4,2)+QGap0P(n1+n3,2)*QGap0P(n2+n4,2)
-		+ 2.*QGap0P(n3,1)*QGap0P(n1+n2+n4,3)-QGap0P(n1,1)*QGap0P(n2,1)*QGap0P(n3+n4,2)+QGap0P(n1+n2,2)*QGap0P(n3+n4,2)
-		+ 2.*QGap0P(n2,1)*QGap0P(n1+n3+n4,3)+2.*QGap0P(n1,1)*QGap0P(n2+n3+n4,3)-6.*QGap0P(n1+n2+n3+n4,4);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap2(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap2P(n1,1)*QGap2P(n2,1)*QGap2M(n3,1)*QGap2M(n4,1)-QGap2P(n1+n2,2)*QGap2M(n3,1)*QGap2M(n4,1)
-		-QGap2P(n1,1)*QGap2P(n2,1)*QGap2M(n3+n4,2)+QGap2P(n1+n2,2)*QGap2M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap4(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap4P(n1,1)*QGap4P(n2,1)*QGap4M(n3,1)*QGap4M(n4,1)-QGap4P(n1+n2,2)*QGap4M(n3,1)*QGap4M(n4,1)
-		-QGap4P(n1,1)*QGap4P(n2,1)*QGap4M(n3+n4,2)+QGap4P(n1+n2,2)*QGap4M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap6(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap6P(n1,1)*QGap6P(n2,1)*QGap6M(n3,1)*QGap6M(n4,1)-QGap6P(n1+n2,2)*QGap6M(n3,1)*QGap6M(n4,1)
-		-QGap6P(n1,1)*QGap6P(n2,1)*QGap6M(n3+n4,2)+QGap6P(n1+n2,2)*QGap6M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap8(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap8P(n1,1)*QGap8P(n2,1)*QGap8M(n3,1)*QGap8M(n4,1)-QGap8P(n1+n2,2)*QGap8M(n3,1)*QGap8M(n4,1)
-		-QGap8P(n1,1)*QGap8P(n2,1)*QGap8M(n3+n4,2)+QGap8P(n1+n2,2)*QGap8M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FourGap10(int n1, int n2, int n3, int n4)
-{
-
-	TComplex formula = QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3,1)*QGap10M(n4,1)-QGap10P(n1+n2,2)*QGap10M(n3,1)*QGap10M(n4,1)
-		-QGap10P(n1,1)*QGap10P(n2,1)*QGap10M(n3+n4,2)+QGap10P(n1+n2,2)*QGap10M(n3+n4,2);
-	return formula;
-
-}
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubMMLR(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubMiddle(n1,1)*QsubMiddle(n2,1)*QsubLeft(n3,1)*QsubRight(n4,1)-QsubMiddle(n1+n2,2)*QsubLeft(n3,1)*QsubRight(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubLLMR(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubLeft(n1,1)*QsubLeft(n2,1)*QsubMiddle(n3,1)*QsubRight(n4,1)-QsubLeft(n1+n2,2)*QsubMiddle(n3,1)*QsubRight(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubRRML(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubRight(n1,1)*QsubRight(n2,1)*QsubMiddle(n3,1)*QsubLeft(n4,1)-QsubRight(n1+n2,2)*QsubMiddle(n3,1)*QsubLeft(n4,1);
-	return formula;
-}
-
-//____________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Four_3SubGap2Evts(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = QsubGap2Middle(n1,1)*QsubGap2Middle(n2,1)*QsubGap2Left(n3,1)*QsubGap2Right(n4,1)
-		-QsubGap2Middle(n1+n2,2)*QsubGap2Left(n3,1)*QsubGap2Right(n4,1);
-	return formula;
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Five(int n1, int n2, int n3, int n4, int n5)
-{
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
-		- Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
-		+ 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)
-		+ Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)
-		+ Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)
-		- Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)
-		- 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)
-		+ Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)
-		+ Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)
-		- Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)
-		+ Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)
-		- 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)
-		- 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)
-		+ 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)
-		- 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)
-		- 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)
-		- 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)
-		- 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)+24.*Q(n1+n2+n3+n4+n5,5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap0M(n1, n2) * ThreeGap0_subP(n3, n4, n5);
-	//TComplex formula = (QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2)) * (QGap0P(n3,1)*QGap0P(n4,1)*QGap0P(n5,1)-QGap0P(n3+n4,2)*QGap0P(n5,1)-QGap0P(n4,1)*QGap0P(n3+n5,2) - QGap0P(n3,1)*QGap0P(n4+n5,2)+2.*QGap0P(n3+n4+n5,3));
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0A_2(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	//TComplex formula = TwoGap0M(n1, n2) * ThreeGap0_subP(n3, n4, n5);
-	TComplex formula = (QGap0M(n1,1)*QGap0M(n2,1) - QGap0M(n1+n2,2)) * (QGap0P(n3,1)*QGap0P(n4,1)*QGap0P(n5,1)-QGap0P(n3+n4,2)*QGap0P(n5,1)-QGap0P(n4,1)*QGap0P(n3+n5,2) - QGap0P(n3,1)*QGap0P(n4+n5,2)+2.*QGap0P(n3+n4+n5,3));
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap0B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap0P(n1, n2) * ThreeGap0_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap2A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap2M(n1, n2) * ThreeGap2_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap2B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap2P(n1, n2) * ThreeGap2_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap4A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap4M(n1, n2) * ThreeGap4_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap4B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap4P(n1, n2) * ThreeGap4_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap6A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap6M(n1, n2) * ThreeGap6_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap6B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap6P(n1, n2) * ThreeGap6_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap8A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap8M(n1, n2) * ThreeGap8_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap8B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap8P(n1, n2) * ThreeGap8_subM(n3, n4, n5);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap10A(int n1, int n2, int n3, int n4, int n5) // ( + +,- - - )
-{
-
-	TComplex formula = TwoGap10M(n1, n2) * ThreeGap10_subP(n3, n4, n5);
-	return formula;
-
-}
-
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::FiveGap10B(int n1, int n2, int n3, int n4, int n5) // (- - -, + +)
-{
-
-	TComplex formula = TwoGap10P(n1, n2) * ThreeGap10_subM(n3, n4, n5);
-	return formula;
-
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Six(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-		- Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-		+ 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)
-		+ Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)
-		+ Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)*Q(n6,1)
-		- Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)*Q(n6,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)*Q(n6,1)
-		- 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)
-		+ Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)*Q(n6,1)
-		+ Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)*Q(n6,1)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)*Q(n6,1)
-		- Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)
-		+ Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)*Q(n6,1)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)*Q(n6,1)
-		- 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)*Q(n6,1)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)*Q(n6,1)
-		- 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)*Q(n6,1)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)*Q(n6,1)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)*Q(n6,1)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)*Q(n6,1)
-		+ 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)*Q(n6,1)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)*Q(n6,1)
-		- 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)*Q(n6,1)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)*Q(n6,1)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)*Q(n6,1)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)*Q(n6,1)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)*Q(n6,1)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)*Q(n6,1)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)*Q(n6,1)
-		- 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)*Q(n6,1)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)*Q(n6,1)
-		- 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)*Q(n6,1)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)*Q(n6,1)
-		- 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)*Q(n6,1)+24.*Q(n1+n2+n3+n4+n5,5)*Q(n6,1)
-		- Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)+Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)
-		+ Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n1+n6,2)+Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n1+n6,2)
-		- 2.*Q(n2+n3+n4,3)*Q(n5,1)*Q(n1+n6,2)+Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n1+n6,2)
-		- Q(n3+n4,2)*Q(n2+n5,2)*Q(n1+n6,2)+Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n1+n6,2)
-		- Q(n2+n4,2)*Q(n3+n5,2)*Q(n1+n6,2)-2.*Q(n4,1)*Q(n2+n3+n5,3)*Q(n1+n6,2)
-		+ Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n1+n6,2)-Q(n2+n3,2)*Q(n4+n5,2)*Q(n1+n6,2)
-		- 2.*Q(n3,1)*Q(n2+n4+n5,3)*Q(n1+n6,2)-2.*Q(n2,1)*Q(n3+n4+n5,3)*Q(n1+n6,2)
-		+ 6.*Q(n2+n3+n4+n5,4)*Q(n1+n6,2)-Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)+Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n1,1)*Q(n3+n4,2)*Q(n5,1)*Q(n2+n6,2)-2.*Q(n1+n3+n4,3)*Q(n5,1)*Q(n2+n6,2)
-		+ Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n2+n6,2)-Q(n3+n4,2)*Q(n1+n5,2)*Q(n2+n6,2)
-		+ Q(n1,1)*Q(n4,1)*Q(n3+n5,2)*Q(n2+n6,2)-Q(n1+n4,2)*Q(n3+n5,2)*Q(n2+n6,2)
-		- 2.*Q(n4,1)*Q(n1+n3+n5,3)*Q(n2+n6,2)+Q(n1,1)*Q(n3,1)*Q(n4+n5,2)*Q(n2+n6,2)
-		- Q(n1+n3,2)*Q(n4+n5,2)*Q(n2+n6,2)-2.*Q(n3,1)*Q(n1+n4+n5,3)*Q(n2+n6,2)
-		- 2.*Q(n1,1)*Q(n3+n4+n5,3)*Q(n2+n6,2)+6.*Q(n1+n3+n4+n5,4)*Q(n2+n6,2)
-		+ 2.*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n2+n6,3)-2.*Q(n3+n4,2)*Q(n5,1)*Q(n1+n2+n6,3)
-		- 2.*Q(n4,1)*Q(n3+n5,2)*Q(n1+n2+n6,3)-2.*Q(n3,1)*Q(n4+n5,2)*Q(n1+n2+n6,3)
-		+ 4.*Q(n3+n4+n5,3)*Q(n1+n2+n6,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n1+n2,2)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)+Q(n2,1)*Q(n1+n4,2)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n1,1)*Q(n2+n4,2)*Q(n5,1)*Q(n3+n6,2)-2.*Q(n1+n2+n4,3)*Q(n5,1)*Q(n3+n6,2)
-		+ Q(n2,1)*Q(n4,1)*Q(n1+n5,2)*Q(n3+n6,2)-Q(n2+n4,2)*Q(n1+n5,2)*Q(n3+n6,2)
-		+ Q(n1,1)*Q(n4,1)*Q(n2+n5,2)*Q(n3+n6,2)-Q(n1+n4,2)*Q(n2+n5,2)*Q(n3+n6,2)
-		- 2.*Q(n4,1)*Q(n1+n2+n5,3)*Q(n3+n6,2)+Q(n1,1)*Q(n2,1)*Q(n4+n5,2)*Q(n3+n6,2)
-		- Q(n1+n2,2)*Q(n4+n5,2)*Q(n3+n6,2)-2.*Q(n2,1)*Q(n1+n4+n5,3)*Q(n3+n6,2)
-		- 2.*Q(n1,1)*Q(n2+n4+n5,3)*Q(n3+n6,2)+6.*Q(n1+n2+n4+n5,4)*Q(n3+n6,2)
-		+ 2.*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n1+n3+n6,3)-2.*Q(n2+n4,2)*Q(n5,1)*Q(n1+n3+n6,3)
-		- 2.*Q(n4,1)*Q(n2+n5,2)*Q(n1+n3+n6,3)-2.*Q(n2,1)*Q(n4+n5,2)*Q(n1+n3+n6,3)
-		+ 4.*Q(n2+n4+n5,3)*Q(n1+n3+n6,3)+2.*Q(n1,1)*Q(n4,1)*Q(n5,1)*Q(n2+n3+n6,3)
-		- 2.*Q(n1+n4,2)*Q(n5,1)*Q(n2+n3+n6,3)-2.*Q(n4,1)*Q(n1+n5,2)*Q(n2+n3+n6,3)
-		- 2.*Q(n1,1)*Q(n4+n5,2)*Q(n2+n3+n6,3)+4.*Q(n1+n4+n5,3)*Q(n2+n3+n6,3)
-		- 6.*Q(n4,1)*Q(n5,1)*Q(n1+n2+n3+n6,4)+6.*Q(n4+n5,2)*Q(n1+n2+n3+n6,4)
-		- Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)+Q(n1+n2,2)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)
-		+ Q(n2,1)*Q(n1+n3,2)*Q(n5,1)*Q(n4+n6,2)+Q(n1,1)*Q(n2+n3,2)*Q(n5,1)*Q(n4+n6,2)
-		- 2.*Q(n1+n2+n3,3)*Q(n5,1)*Q(n4+n6,2)+Q(n2,1)*Q(n3,1)*Q(n1+n5,2)*Q(n4+n6,2)
-		- Q(n2+n3,2)*Q(n1+n5,2)*Q(n4+n6,2)+Q(n1,1)*Q(n3,1)*Q(n2+n5,2)*Q(n4+n6,2)
-		- Q(n1+n3,2)*Q(n2+n5,2)*Q(n4+n6,2)-2.*Q(n3,1)*Q(n1+n2+n5,3)*Q(n4+n6,2)
-		+ Q(n1,1)*Q(n2,1)*Q(n3+n5,2)*Q(n4+n6,2)-Q(n1+n2,2)*Q(n3+n5,2)*Q(n4+n6,2)
-		- 2.*Q(n2,1)*Q(n1+n3+n5,3)*Q(n4+n6,2)-2.*Q(n1,1)*Q(n2+n3+n5,3)*Q(n4+n6,2)
-		+ 6.*Q(n1+n2+n3+n5,4)*Q(n4+n6,2)+2.*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n1+n4+n6,3)
-		- 2.*Q(n2+n3,2)*Q(n5,1)*Q(n1+n4+n6,3)-2.*Q(n3,1)*Q(n2+n5,2)*Q(n1+n4+n6,3)
-		- 2.*Q(n2,1)*Q(n3+n5,2)*Q(n1+n4+n6,3)+4.*Q(n2+n3+n5,3)*Q(n1+n4+n6,3)
-		+ 2.*Q(n1,1)*Q(n3,1)*Q(n5,1)*Q(n2+n4+n6,3)-2.*Q(n1+n3,2)*Q(n5,1)*Q(n2+n4+n6,3)
-		- 2.*Q(n3,1)*Q(n1+n5,2)*Q(n2+n4+n6,3)-2.*Q(n1,1)*Q(n3+n5,2)*Q(n2+n4+n6,3)
-		+ 4.*Q(n1+n3+n5,3)*Q(n2+n4+n6,3)-6.*Q(n3,1)*Q(n5,1)*Q(n1+n2+n4+n6,4)
-		+ 6.*Q(n3+n5,2)*Q(n1+n2+n4+n6,4)+2.*Q(n1,1)*Q(n2,1)*Q(n5,1)*Q(n3+n4+n6,3)
-		- 2.*Q(n1+n2,2)*Q(n5,1)*Q(n3+n4+n6,3)-2.*Q(n2,1)*Q(n1+n5,2)*Q(n3+n4+n6,3)
-		- 2.*Q(n1,1)*Q(n2+n5,2)*Q(n3+n4+n6,3)+4.*Q(n1+n2+n5,3)*Q(n3+n4+n6,3)
-		- 6.*Q(n2,1)*Q(n5,1)*Q(n1+n3+n4+n6,4)+6.*Q(n2+n5,2)*Q(n1+n3+n4+n6,4)
-		- 6.*Q(n1,1)*Q(n5,1)*Q(n2+n3+n4+n6,4)+6.*Q(n1+n5,2)*Q(n2+n3+n4+n6,4)
-		+ 24.*Q(n5,1)*Q(n1+n2+n3+n4+n6,5)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5+n6,2)-2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5+n6,2)
-		+ Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5+n6,2)-Q(n2+n3,2)*Q(n1+n4,2)*Q(n5+n6,2)
-		+ Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5+n6,2)-Q(n1+n3,2)*Q(n2+n4,2)*Q(n5+n6,2)
-		- 2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5+n6,2)+Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5+n6,2)
-		- Q(n1+n2,2)*Q(n3+n4,2)*Q(n5+n6,2)-2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5+n6,2)
-		- 2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5+n6,2)+6.*Q(n1+n2+n3+n4,4)*Q(n5+n6,2)
-		+ 2.*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5+n6,3)-2.*Q(n2+n3,2)*Q(n4,1)*Q(n1+n5+n6,3)
-		- 2.*Q(n3,1)*Q(n2+n4,2)*Q(n1+n5+n6,3)-2.*Q(n2,1)*Q(n3+n4,2)*Q(n1+n5+n6,3)
-		+ 4.*Q(n2+n3+n4,3)*Q(n1+n5+n6,3)+2.*Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5+n6,3)
-		- 2.*Q(n1+n3,2)*Q(n4,1)*Q(n2+n5+n6,3)-2.*Q(n3,1)*Q(n1+n4,2)*Q(n2+n5+n6,3)
-		- 2.*Q(n1,1)*Q(n3+n4,2)*Q(n2+n5+n6,3)+4.*Q(n1+n3+n4,3)*Q(n2+n5+n6,3)
-		- 6.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5+n6,4)+6.*Q(n3+n4,2)*Q(n1+n2+n5+n6,4)
-		+ 2.*Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5+n6,3)-2.*Q(n1+n2,2)*Q(n4,1)*Q(n3+n5+n6,3)
-		- 2.*Q(n2,1)*Q(n1+n4,2)*Q(n3+n5+n6,3)-2.*Q(n1,1)*Q(n2+n4,2)*Q(n3+n5+n6,3)
-		+ 4.*Q(n1+n2+n4,3)*Q(n3+n5+n6,3)-6.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5+n6,4)
-		+ 6.*Q(n2+n4,2)*Q(n1+n3+n5+n6,4)-6.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5+n6,4)
-		+ 6.*Q(n1+n4,2)*Q(n2+n3+n5+n6,4)+24.*Q(n4,1)*Q(n1+n2+n3+n5+n6,5)
-		+ 2.*Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5+n6,3)-2.*Q(n1+n2,2)*Q(n3,1)*Q(n4+n5+n6,3)
-		- 2.*Q(n2,1)*Q(n1+n3,2)*Q(n4+n5+n6,3)-2.*Q(n1,1)*Q(n2+n3,2)*Q(n4+n5+n6,3)
-		+ 4.*Q(n1+n2+n3,3)*Q(n4+n5+n6,3)-6.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5+n6,4)
-		+ 6.*Q(n2+n3,2)*Q(n1+n4+n5+n6,4)-6.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5+n6,4)
-		+ 6.*Q(n1+n3,2)*Q(n2+n4+n5+n6,4)+24.*Q(n3,1)*Q(n1+n2+n4+n5+n6,5)
-		- 6.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5+n6,4)+6.*Q(n1+n2,2)*Q(n3+n4+n5+n6,4)
-		+ 24.*Q(n2,1)*Q(n1+n3+n4+n5+n6,5)+24.*Q(n1,1)*Q(n2+n3+n4+n5+n6,5)
-		- 120.*Q(n1+n2+n3+n4+n5+n6,6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap0(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap0_subM(n1, n2, n3)*ThreeGap0_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap2(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap2_subM(n1, n2, n3)*ThreeGap2_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap4(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap4_subM(n1, n2, n3)*ThreeGap4_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap6(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap6_subM(n1, n2, n3)*ThreeGap6_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap8(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap8_subM(n1, n2, n3)*ThreeGap8_subP(n4, n5, n6);
-	return formula;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::SixGap10(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-
-	TComplex formula = ThreeGap10_subM(n1, n2, n3)*ThreeGap10_subP(n4, n5, n6);
-	return formula;
-
-}
-//_________________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7)
-{
-
-	TComplex Correlation = {0, 0};
-	int Narray[] = {n1, n2, n3, n4, n5, n6};
-
-	for(int k=7; k-->0; )
-	{// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-
-		int array[6] = {0,1,2,3,4,5};
-		int iPerm = 0;
-		int argument = 0;
-		int count = 0;
-
-		// k==6: there is just one combination, we can add it manually
-		if(k==6){
-			Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-				Six(n1, n2, n3, n4, n5, n6)*Q(n7, 7-k);
-		}// k==6
-
-		else if(k==5){
-			do{
-				iPerm += 1;
-				if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-					count += 1;
-					Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-						Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-								Narray[int(array[3])], Narray[int(array[4])])*
-						Q(Narray[int(array[5])]+n7, 7-k);
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==5
-
-		else if(k==4){
-			do{
-				iPerm += 1;
-				if(iPerm%2 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-									Narray[int(array[3])])*
-							Q(Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==4
-
-		else if(k==3){
-			do{
-				iPerm += 1;
-				if(iPerm%6 == 1){
-					if(array[0] < array[1] && array[1] < array[2]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-							Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==3
-
-		else if(k==2){
-			do{
-				iPerm += 1;
-				if(iPerm%24 == 1){
-					if(array[0] < array[1]){
-						Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-							Two(Narray[int(array[0])], Narray[int(array[1])])*
-							Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-									+Narray[int(array[5])]+n7, 7-k);
-					}
-				}
-			}while(std::next_permutation(array, array+6));
-		}// k==2
-
-		else if(k == 1){
-			Correlation = Correlation
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7, 7-k)
-				+ TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7, 7-k);
-		}// k==1
-
-		else if(k == 0){
-			Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
-		}// k==0
-
-		else{
-			cout<<"invalid range of k"<<endl;
-			return {0,0};
-		}
-
-	}// loop over k
-
-	return Correlation;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
-{
-
-	TComplex Correlation = {0, 0};
-	int Narray[] = {n1, n2, n3, n4, n5, n6, n7};
-
-	for(int k=8; k-->0; )
-	{// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-
-		int array[7] = {0,1,2,3,4,5,6};
-		int iPerm = 0;
-		int argument = 0;
-		int count = 0;
-
-		// k==7: there is just one combination, we can add it manually
-		if(k==7){
-			Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-				Seven(n1, n2, n3, n4, n5, n6, n7)*Q(n8, 8-k);
-		}// k==7
-
-		else if(k==6){
-			do{
-				iPerm += 1;
-				if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4] && array[4] < array[5]){
-					count += 1;
-					Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-						Six(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-								Narray[int(array[3])], Narray[int(array[4])], Narray[int(array[5])])*
-						Q(Narray[int(array[6])]+n8, 8-k);
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==6
-
-		else if(k==5){
-			do{
-				iPerm += 1;
-				if(iPerm%2 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-									Narray[int(array[3])], Narray[int(array[4])])*
-							Q(Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==5
-
-		else if(k==4){
-			do{
-				iPerm += 1;
-				if(iPerm%6 == 1){
-					if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])], Narray[int(array[3])])*
-							Q(Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==4
-
-		else if(k==3){
-			do{
-				iPerm += 1;
-				if(iPerm%24 == 1){
-					if(array[0] < array[1] && array[1] < array[2]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-							Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==3
-
-		else if(k==2){
-			do{
-				iPerm += 1;
-				if(iPerm%120 == 1){
-					if(array[0] < array[1]){
-						Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-							Two(Narray[int(array[0])], Narray[int(array[1])])*
-							Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-									+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-					}
-				}
-			}while(std::next_permutation(array, array+7));
-		}// k==2
-
-		else if(k == 1){
-			Correlation = Correlation
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7+n8, 8-k)
-				+ TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n7, 1)*Q(n1+n2+n3+n4+n5+n6+n8, 8-k);
-		}// k==1
-
-		else if(k == 0){
-			Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
-		}// k==0
-
-		else{
-			cout<<"invalid range of k"<<endl;
-			return {0,0};
-		}
-
-	}// loop over k
-
-	return Correlation;
-
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskNonlinearFlow::EightGap0(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
-{
-
-	TComplex formula = FourGap0M(n1, n2, n3, n4)*FourGap0P(n5, n6, n7, n8);
-	return formula;
-
-}
-//_____________________________________________________________________________
-Short_t AliAnalysisTaskNonlinearFlow::GetCentrCode(AliVEvent* ev)
-{
-	Short_t centrCode = -1;
-	Float_t lPercentile = 0;
-	Float_t V0M_Cent = 0, SPD_Cent = 0;
-
-	//if (fAnalysisType == "AOD"){
-	//AliAODEvent* aod = (AliAODEvent*)ev;
-	AliMultSelection *MultSelection = 0;
-	MultSelection = (AliMultSelection * ) ev->FindListObject("MultSelection");
-	if(!MultSelection){
-		lPercentile = -100;
-	}
-	else{
-		if (fCentFlag == 0)
-			lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-
-		if (fCentFlag == 1)
-			lPercentile = MultSelection->GetMultiplicityPercentile("CL0");
-
-		if (fCentFlag == 2)
-			lPercentile = MultSelection->GetMultiplicityPercentile("CL1");
-
-		V0M_Cent = MultSelection->GetMultiplicityPercentile("V0M");
-		SPD_Cent = MultSelection->GetMultiplicityPercentile("CL1");
-
-	}
-
-	if ((lPercentile > 0) && (lPercentile <= 5.0))
-		centrCode = 0;
-	else if ((lPercentile > 5.0) && (lPercentile <= 10.0))
-		centrCode = 1;
-	else if ((lPercentile > 10.0) && (lPercentile <= 20.0))
-		centrCode = 2;
-	else if ((lPercentile > 20.0) && (lPercentile <= 30.0))
-		centrCode = 3;
-	else if ((lPercentile > 30.0) && (lPercentile <= 40.0))
-		centrCode = 4;
-	else if ((lPercentile > 40.0) && (lPercentile <= 50.0))
-		centrCode = 5;
-	else if ((lPercentile > 50.0) && (lPercentile <= 60.0))
-		centrCode = 6;
-	else if ((lPercentile > 60.0) && (lPercentile <= 70.0))
-		centrCode = 7;
-	else if ((lPercentile > 70.0) && (lPercentile <= 80.0))
-		centrCode = 8;
-	else if ((lPercentile > 80.0) && (lPercentile <= 90.0))
-		centrCode = 9;
-
-
-	return centrCode;
 
+const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies species) const
+{
+  const char* name;
+
+  switch(species) {
+    case kRefs: name = "Refs"; break;
+    case kCharged: name = "Charged"; break;
+    case kPion: name = "Pion"; break;
+    case kKaon: name = "Kaon"; break;
+    case kProton: name = "Proton"; break;
+    case kCharUnidentified: name = "UnidentifiedCharged"; break;
+    case kK0s: name = "K0s"; break;
+    case kLambda: name = "Lambda"; break;
+    case kPhi: name = "Phi"; break;
+    default: name = "Unknown";
+  }
+
+  return name;
+}
+
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics()
+{
+	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+        else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+        if(!fWeightsSystematics)
+        {
+            printf("Weights could not be found in list!\n");
+            return kFALSE;
+        }
+        fWeightsSystematics->CreateNUA();
+        return kTRUE;
+}
+
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species)
+{
+
+    double dPhi = track->Phi();
+    double dEta = track->Eta();
+    double dVz = fVtxZ;
+    double dWeight = 1.0;
+    dWeight = fWeightsSystematics->GetNUA(dPhi, dEta, dVz);
+    return dWeight;
+}
+
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights()
+{
+  // (Re-) Loading of flow vector weights
+  // ***************************************************************************
+  if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
+
+  TList* listFlowWeights = nullptr;
+  
+  TString fFlowWeightsTag = "";
+  if(!fFlowWeightsTag.IsNull()) {
+      // using weights Tag if provided (systematics)
+      listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
+      if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
+  } else {
+      if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
+          // loading run-averaged weights
+          listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
+          if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
+      } else if(fFlowPeriodWeights){
+        // loading period-specific weights
+        listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fAOD->GetRunNumber()));
+        if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+      }
+      else {
+          // loading run-specific weights
+          listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fAOD->GetRunNumber()));
+
+          if(!listFlowWeights) {
+              // run-specific weights not found for this run; loading run-averaged instead
+              AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
+              listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
+              if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+          }
+      }
+  }
+
+
+  for(Int_t iSpec(0); iSpec <= kRefs; ++iSpec) {
+    if(fFlowUse3Dweights) {
+      fh3Weights[iSpec] = (TH3D*) listFlowWeights->FindObject(Form("%s3D",GetSpeciesName(PartSpecies(iSpec))));
+      if(!fh3Weights[iSpec]) { AliError(Form("Weight 3D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
+    } else {
+      fh2Weights[iSpec] = (TH2D*) listFlowWeights->FindObject(GetSpeciesName(PartSpecies(iSpec)));
+      if(!fh2Weights[iSpec]) { AliError(Form("Weight 2D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
+    }
+  }
+
+  return kTRUE;
+}
+
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species)
+{
+  // if not applying for reconstructed
+  // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
+
+  Double_t dWeight = 1.0;
+  if(fFlowUse3Dweights) {
+    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
+    dWeight = fh3Weights[species]->GetBinContent(iBin);
+  } else {
+    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
+    dWeight = fh2Weights[species]->GetBinContent(iBin);
+  }
+
+  if(dWeight <= 0.0) { dWeight = 1.0; }
+  return dWeight;
 }
 
 void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label) {
@@ -2598,26 +1281,26 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
 	//..calculate 2-particle correlations
 	//..................................
-	double Dn2 = Two(0, 0).Re();
-	double Dn2Gap10 = TwoGap10(0, 0).Re();
-	double Dn2Gap14 = TwoGap14(0, 0).Re();
-	double Dn2_3subLM = Two_3SubLM(0, 0).Re();
-	double Dn2_3subRM = Two_3SubRM(0, 0).Re();
-	double Dn2_3subLR = Two_3SubRM(0, 0).Re();
+	double Dn2 = correlator.Two(0, 0).Re();
+	double Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
+	double Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
+	double Dn2_3subLM = correlator.Two_3SubLM(0, 0).Re();
+	double Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
+	double Dn2_3subLR = correlator.Two_3SubLR(0, 0).Re();
 
 	if(NtrksAfter > 1 && Dn2 != 0) {
 		//..v2{2} = <cos2(phi1 - phi2)>
-		TComplex v22 = Two(2, -2);
+		TComplex v22 = correlator.Two(2, -2);
 		double v22Re = v22.Re()/Dn2;
 		profile.fChcn2[0]->Fill(Ntrks, v22Re, Dn2);
 
 		//..v3{2} = <cos3(phi1 - phi2)>
-		TComplex v32 = Two(3, -3);
+		TComplex v32 = correlator.Two(3, -3);
 		double v32Re = v32.Re()/Dn2;
 		profile.fChcn2[1]->Fill(Ntrks, v32Re, Dn2);
 
 		//..v4{2} = <cos4(phi1 - phi2)>
-		TComplex v42 = Two(4, -4);
+		TComplex v42 = correlator.Two(4, -4);
 		double v42Re = v42.Re()/Dn2;
 		profile.fChcn2[2]->Fill(Ntrks, v42Re, Dn2);
 
@@ -2626,17 +1309,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 0 && Dn2Gap10 != 0)
 	{
 		//..v2{2} with eta Gap > 1.0
-		TComplex v22Gap10 = TwoGap10(2, -2);
+		TComplex v22Gap10 = correlator.TwoGap10(2, -2);
 		double v22ReGap10 = v22Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[0]->Fill(Ntrks, v22ReGap10, Dn2Gap10);
 
 		//..v3{2} with eta Gap > 1.0
-		TComplex v32Gap10 = TwoGap10(3, -3);
+		TComplex v32Gap10 = correlator.TwoGap10(3, -3);
 		double v32ReGap10 = v32Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[1]->Fill(Ntrks, v32ReGap10, Dn2Gap10);
 
 		//..v4{2} with eta Gap > 1.0
-		TComplex v42Gap10 = TwoGap10(4, -4);
+		TComplex v42Gap10 = correlator.TwoGap10(4, -4);
 		double v42ReGap10 = v42Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[2]->Fill(Ntrks, v42ReGap10, Dn2Gap10);
 	}
@@ -2644,17 +1327,17 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap14M > 0 && NtrksAfterGap14P > 0 && Dn2Gap14 != 0)
 	{
 		//..v2{2} with eta Gap > 1.4
-		TComplex v22Gap14 = TwoGap14(2, -2);
+		TComplex v22Gap14 = correlator.TwoGap14(2, -2);
 		double v22ReGap14 = v22Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[0]->Fill(Ntrks, v22ReGap14, Dn2Gap14);
 
 		//..v3{2} with eta Gap > 1.4
-		TComplex v32Gap14 = TwoGap14(3, -3);
+		TComplex v32Gap14 = correlator.TwoGap14(3, -3);
 		double v32ReGap14 = v32Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[1]->Fill(Ntrks, v32ReGap14, Dn2Gap14);
 
 		//..v4{2} with eta Gap > 1.4
-		TComplex v42Gap14 = TwoGap14(4, -4);
+		TComplex v42Gap14 = correlator.TwoGap14(4, -4);
 		double v42ReGap14 = v42Gap14.Re()/Dn2Gap14;
 		profile.fChcn2_Gap14[2]->Fill(Ntrks, v42ReGap14, Dn2Gap14);
 	}
@@ -2662,64 +1345,64 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..for 3-subevent method, Gap0
 	if(NtrksAfter3subL > 0 && NtrksAfter3subM > 0 && Dn2_3subLM != 0)
 	{//..left+middle
-		TComplex v22_3subLM = Two_3SubLM(2, -2);
+		TComplex v22_3subLM = correlator.Two_3SubLM(2, -2);
 		double v22Re_3subLM = v22_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[0]->Fill(Ntrks, v22Re_3subLM, Dn2_3subLM);
 
-		TComplex v32_3subLM = Two_3SubLM(3, -3);
+		TComplex v32_3subLM = correlator.Two_3SubLM(3, -3);
 		double v32Re_3subLM = v32_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[1]->Fill(Ntrks, v32Re_3subLM, Dn2_3subLM);
 
-		TComplex v42_3subLM = Two_3SubLM(4, -4);
+		TComplex v42_3subLM = correlator.Two_3SubLM(4, -4);
 		double v42Re_3subLM = v42_3subLM.Re()/Dn2_3subLM;
 		profile.fChcn2_3subLM[2]->Fill(Ntrks, v42Re_3subLM, Dn2_3subLM);
 	}
 
 	if(NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn2_3subRM != 0)
 	{//..right+middle
-		TComplex v22_3subRM = Two_3SubRM(2, -2);
+		TComplex v22_3subRM = correlator.Two_3SubRM(2, -2);
 		double v22Re_3subRM = v22_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[0]->Fill(Ntrks, v22Re_3subRM, Dn2_3subRM);
 
-		TComplex v32_3subRM = Two_3SubRM(3, -3);
+		TComplex v32_3subRM = correlator.Two_3SubRM(3, -3);
 		double v32Re_3subRM = v32_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[1]->Fill(Ntrks, v32Re_3subRM, Dn2_3subRM);
 
-		TComplex v42_3subRM = Two_3SubRM(4, -4);
+		TComplex v42_3subRM = correlator.Two_3SubRM(4, -4);
 		double v42Re_3subRM = v42_3subRM.Re()/Dn2_3subRM;
 		profile.fChcn2_3subRM[2]->Fill(Ntrks, v42Re_3subRM, Dn2_3subRM);
 	}
 
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && Dn2_3subLR != 0)
 	{//..right+middle
-		TComplex v22_3subLR = Two_3SubLR(2, -2);
+		TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
 		double v22Re_3subLR = v22_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[0]->Fill(Ntrks, v22Re_3subLR, Dn2_3subLR);
 
-		TComplex v32_3subLR = Two_3SubLR(3, -3);
+		TComplex v32_3subLR = correlator.Two_3SubLR(3, -3);
 		double v32Re_3subLR = v32_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[1]->Fill(Ntrks, v32Re_3subLR, Dn2_3subLR);
 
-		TComplex v42_3subLR = Two_3SubLR(4, -4);
+		TComplex v42_3subLR = correlator.Two_3SubLR(4, -4);
 		double v42Re_3subLR = v42_3subLR.Re()/Dn2_3subLR;
 		profile.fChcn2_3subLR[2]->Fill(Ntrks, v42Re_3subLR, Dn2_3subLR);
 	}
 
 	//..calculate 3-particle correlations
 	//................................
-	double Dn3 = Three(0, 0, 0).Re();
-	double Dn3Gap10A = ThreeGap10A(0, 0, 0).Re();
-	double Dn3Gap10B = ThreeGap10B(0, 0, 0).Re();
+	double Dn3 = correlator.Three(0, 0, 0).Re();
+	double Dn3Gap10A = correlator.ThreeGap10A(0, 0, 0).Re();
+	double Dn3Gap10B = correlator.ThreeGap10B(0, 0, 0).Re();
 
 	if(NtrksAfter > 2 && Dn3 != 0)
 	{
 		//..v4{psi2}
-		TComplex v422 = Three(4, -2, -2);
+		TComplex v422 = correlator.Three(4, -2, -2);
 		double v422Re = v422.Re()/Dn3;
 		profile.fChc422->Fill(Ntrks, v422Re, Dn3);
 
 		//..v5{psi32}
-		TComplex v532 = Three(5, -3, -2);
+		TComplex v532 = correlator.Three(5, -3, -2);
 		double v532Re = v532.Re()/Dn3;
 		profile.fChc532->Fill(Ntrks, v532Re, Dn3);
 	}
@@ -2728,11 +1411,11 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 1 && Dn3Gap10A != 0)
 	{
 
-		TComplex v422Gap10A = ThreeGap10A(4, -2, -2);
+		TComplex v422Gap10A = correlator.ThreeGap10A(4, -2, -2);
 		double v422Gap10ARe = v422Gap10A.Re()/Dn3Gap10A;
 		profile.fChc422_Gap10A->Fill(Ntrks, v422Gap10ARe, Dn3Gap10A);
 
-		TComplex v532Gap10A = ThreeGap10A(5, -3, -2);
+		TComplex v532Gap10A = correlator.ThreeGap10A(5, -3, -2);
 		double v532Gap10ARe = v532Gap10A.Re()/Dn3Gap10A;
 		profile.fChc532_Gap10A->Fill(Ntrks, v532Gap10ARe, Dn3Gap10A);
 	}
@@ -2741,48 +1424,48 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	if(NtrksAfterGap10P > 0 && NtrksAfterGap10M > 1 && Dn3Gap10B != 0)
 	{
 
-		TComplex v422Gap10B = ThreeGap10B(4, -2, -2);
+		TComplex v422Gap10B = correlator.ThreeGap10B(4, -2, -2);
 		double v422Gap10BRe = v422Gap10B.Re()/Dn3Gap10B;
 		profile.fChc422_Gap10B->Fill(Ntrks, v422Gap10BRe, Dn3Gap10B);
 
-		TComplex v532Gap10B = ThreeGap10B(5, -3, -2);
+		TComplex v532Gap10B = correlator.ThreeGap10B(5, -3, -2);
 		double v532Gap10BRe = v532Gap10B.Re()/Dn3Gap10B;
 		profile.fChc532_Gap10B->Fill(Ntrks, v532Gap10BRe, Dn3Gap10B);
 	}
 
 	//..calculate 4-particle correlations
 	//................................
-	double Dn4 = Four(0, 0, 0, 0).Re();
-	double Dn4Gap10 = FourGap10(0, 0, 0, 0).Re();
-	double Dn4_3subMMLR = Four_3SubMMLR(0, 0, 0, 0).Re();
-	double Dn4_3subLLMR = Four_3SubLLMR(0, 0, 0, 0).Re();
-	double Dn4_3subRRML = Four_3SubRRML(0, 0, 0, 0).Re();
+	double Dn4 = correlator.Four(0, 0, 0, 0).Re();
+	double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
+	double Dn4_3subMMLR = correlator.Four_3SubMMLR(0, 0, 0, 0).Re();
+	double Dn4_3subLLMR = correlator.Four_3SubLLMR(0, 0, 0, 0).Re();
+	double Dn4_3subRRML = correlator.Four_3SubRRML(0, 0, 0, 0).Re();
 
 	if(NtrksAfter > 3 && Dn4 != 0)
 	{
 
-		TComplex v24 = Four(2, 2, -2, -2);
+		TComplex v24 = correlator.Four(2, 2, -2, -2);
 		double v24Re = v24.Re()/Dn4;
 		profile.fChcn4[0]->Fill(Ntrks, v24Re, Dn4);
 		// fcn4Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24Re, Dn4);
 
-		TComplex v34 = Four(3, 3, -3, -3);
+		TComplex v34 = correlator.Four(3, 3, -3, -3);
 		double v34Re = v34.Re()/Dn4;
 		profile.fChcn4[1]->Fill(Ntrks, v34Re, Dn4);
 		// fcn4Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34Re, Dn4);
 
-		TComplex v44 = Four(4, 4, -4, -4);
+		TComplex v44 = correlator.Four(4, 4, -4, -4);
 		double v44Re = v44.Re()/Dn4;
 		profile.fChcn4[2]->Fill(Ntrks, v44Re, Dn4);
 		// fcn4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Re, Dn4);
 
 		//..SC(3,2,-3,-2)
-		TComplex sc3232 = Four(3, 2, -3, -2);
+		TComplex sc3232 = correlator.Four(3, 2, -3, -2);
 		double sc3232Re = sc3232.Re()/Dn4;
 		profile.fChsc3232->Fill(Ntrks, sc3232Re, Dn4);
 
 		//..SC(4,2,-4,-2)
-		TComplex sc4242 = Four(4, 2, -4, -2);
+		TComplex sc4242 = correlator.Four(4, 2, -4, -2);
 		double sc4242Re = sc4242.Re()/Dn4;
 		profile.fChsc4242->Fill(Ntrks, sc4242Re, Dn4);
 
@@ -2790,23 +1473,23 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 
 	if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 1 && Dn4Gap10 !=0)
 	{
-		TComplex v24Gap10 = FourGap10(2, 2, -2, -2);
+		TComplex v24Gap10 = correlator.FourGap10(2, 2, -2, -2);
 		double v24Gap10Re = v24Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[0]->Fill(Ntrks, v24Gap10Re, Dn4Gap10);
 
-		TComplex v34Gap10 = FourGap10(3, 3, -3, -3);
+		TComplex v34Gap10 = correlator.FourGap10(3, 3, -3, -3);
 		double v34Gap10Re = v34Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[1]->Fill(Ntrks, v34Gap10Re, Dn4Gap10);
 
-		TComplex v44Gap10 = FourGap10(4, 4, -4, -4);
+		TComplex v44Gap10 = correlator.FourGap10(4, 4, -4, -4);
 		double v44Gap10Re = v44Gap10.Re()/Dn4Gap10;
 		profile.fChcn4_Gap10[2]->Fill(Ntrks, v44Gap10Re, Dn4Gap10);
 
-		TComplex sc3232Gap10 = FourGap10(3, 2, -3, -2);
+		TComplex sc3232Gap10 = correlator.FourGap10(3, 2, -3, -2);
 		double sc3232Gap10Re = sc3232Gap10.Re()/Dn4Gap10;
 		profile.fChsc3232_Gap10->Fill(Ntrks, sc3232Gap10Re, Dn4Gap10);
 
-		TComplex sc4242Gap10 = FourGap10(4, 2, -4, -2);
+		TComplex sc4242Gap10 = correlator.FourGap10(4, 2, -4, -2);
 		double sc4242Gap10Re = sc4242Gap10.Re()/Dn4Gap10;
 		profile.fChsc4242_Gap10->Fill(Ntrks, sc4242Gap10Re, Dn4Gap10);
 	}
@@ -2814,31 +1497,31 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && NtrksAfter3subM > 1 && Dn4_3subMMLR != 0)
 	{
-		TComplex v24_3sub = Four_3SubMMLR(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubMMLR(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subMMLR);
 
-		TComplex v34_3sub = Four_3SubMMLR(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubMMLR(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subMMLR);
 
-		TComplex v44_3sub = Four_3SubMMLR(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubMMLR(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subMMLR;
 		profile.fChcn4_3subMMLR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subMMLR);
 
-		TComplex sc3232_3subA = Four_3SubMMLR(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubMMLR(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subMMLR;
 		profile.fChsc3232_3subMMLRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subMMLR);
 
-		TComplex sc3232_3subB = Four_3SubMMLR(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubMMLR(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subMMLR;
 		profile.fChsc3232_3subMMLRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subMMLR);
 
-		TComplex sc4242_3subA = Four_3SubMMLR(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubMMLR(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subMMLR;
 		profile.fChsc4242_3subMMLRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subMMLR);
 
-		TComplex sc4242_3subB = Four_3SubMMLR(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubMMLR(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subMMLR;
 		profile.fChsc4242_3subMMLRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subMMLR);
 	}
@@ -2846,31 +1529,31 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 1 && NtrksAfter3subR > 0 && NtrksAfter3subM > 0 && Dn4_3subLLMR != 0)
 	{
-		TComplex v24_3sub = Four_3SubLLMR(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubLLMR(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[0]->Fill(Ntrks, v24_3subRe, Dn4_3subLLMR);
 
-		TComplex v34_3sub = Four_3SubLLMR(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubLLMR(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[1]->Fill(Ntrks, v34_3subRe, Dn4_3subLLMR);
 
-		TComplex v44_3sub = Four_3SubLLMR(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubLLMR(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subLLMR;
 		profile.fChcn4_3subLLMR[2]->Fill(Ntrks, v44_3subRe, Dn4_3subLLMR);
 
-		TComplex sc3232_3subA = Four_3SubLLMR(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubLLMR(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subLLMR;
 		profile.fChsc3232_3subLLMRA->Fill(Ntrks, sc3232_3subARe, Dn4_3subLLMR);
 
-		TComplex sc3232_3subB = Four_3SubLLMR(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubLLMR(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subLLMR;
 		profile.fChsc3232_3subLLMRB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subLLMR);
 
-		TComplex sc4242_3subA = Four_3SubLLMR(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubLLMR(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subLLMR;
 		profile.fChsc4242_3subLLMRA->Fill(Ntrks, sc4242_3subARe, Dn4_3subLLMR);
 
-		TComplex sc4242_3subB = Four_3SubLLMR(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubLLMR(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subLLMR;
 		profile.fChsc4242_3subLLMRB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subLLMR);
 	}
@@ -2878,40 +1561,211 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..3-subevent method
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 1 && NtrksAfter3subM > 0 && Dn4_3subRRML != 0)
 	{
-		TComplex v24_3sub = Four_3SubRRML(2, 2, -2, -2);
+		TComplex v24_3sub = correlator.Four_3SubRRML(2, 2, -2, -2);
 		double v24_3subRe = v24_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[0]->Fill(Ntrks, v24_3subRe, Dn4_3subRRML);
 
-		TComplex v34_3sub = Four_3SubRRML(3, 3, -3, -3);
+		TComplex v34_3sub = correlator.Four_3SubRRML(3, 3, -3, -3);
 		double v34_3subRe = v34_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[1]->Fill(Ntrks, v34_3subRe, Dn4_3subRRML);
 
-		TComplex v44_3sub = Four_3SubRRML(4, 4, -4, -4);
+		TComplex v44_3sub = correlator.Four_3SubRRML(4, 4, -4, -4);
 		double v44_3subRe = v44_3sub.Re()/Dn4_3subRRML;
 		profile.fChcn4_3subRRML[2]->Fill(Ntrks, v44_3subRe, Dn4_3subRRML);
 
-		TComplex sc3232_3subA = Four_3SubRRML(3, 2, -3, -2);
+		TComplex sc3232_3subA = correlator.Four_3SubRRML(3, 2, -3, -2);
 		double sc3232_3subARe = sc3232_3subA.Re()/Dn4_3subRRML;
 		profile.fChsc3232_3subRRMLA->Fill(Ntrks, sc3232_3subARe, Dn4_3subRRML);
 
-		TComplex sc3232_3subB = Four_3SubRRML(3, 2, -2, -3);
+		TComplex sc3232_3subB = correlator.Four_3SubRRML(3, 2, -2, -3);
 		double sc3232_3subBRe = sc3232_3subB.Re()/Dn4_3subRRML;
 		profile.fChsc3232_3subRRMLB->Fill(Ntrks, sc3232_3subBRe, Dn4_3subRRML);
 
-		TComplex sc4242_3subA = Four_3SubRRML(4, 2, -4, -2);
+		TComplex sc4242_3subA = correlator.Four_3SubRRML(4, 2, -4, -2);
 		double sc4242_3subARe = sc4242_3subA.Re()/Dn4_3subRRML;
 		profile.fChsc4242_3subRRMLA->Fill(Ntrks, sc4242_3subARe, Dn4_3subRRML);
 
-		TComplex sc4242_3subB = Four_3SubRRML(4, 2, -2, -4);
+		TComplex sc4242_3subB = correlator.Four_3SubRRML(4, 2, -2, -4);
 		double sc4242_3subBRe = sc4242_3subB.Re()/Dn4_3subRRML;
 		profile.fChsc4242_3subRRMLB->Fill(Ntrks, sc4242_3subBRe, Dn4_3subRRML);
 	}
 
 }
 
+const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const
+{
+  Bool_t isHM = kFALSE;
+  if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
+
+  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
+    if(!isHM && runNumber >= 252235 && runNumber <= 252375) return "LHC16de"; //d
+    if(!isHM && runNumber >= 253437 && runNumber <= 253591) return "LHC16de"; //e
+    if(runNumber >= 254128 && runNumber <= 254332) return "LHC16ghi"; //g
+    if(runNumber >= 254604 && runNumber <= 255467) return "LHC16ghi"; //h
+    if(runNumber >= 255539 && runNumber <= 255618) return "LHC16ghi"; //i
+    if(runNumber >= 256219 && runNumber <= 256418) return "LHC16j";
+    if(runNumber >= 256941 && runNumber <= 258537) return "LHC16k";
+    if(runNumber >= 258962 && runNumber <= 259888) return "LHC16l";
+    if(runNumber >= 262424 && runNumber <= 264035) return "LHC16o";
+    if(runNumber >= 264076 && runNumber <= 264347) return "LHC16p";
+  }
+
+  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
+    if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
+    if(runNumber >= 270822 && runNumber <= 270830){
+      if(isHM) return "averaged";
+      else return "LHC17ce";
+    }
+    if(runNumber >= 270854 && runNumber <= 270865){
+      if(isHM) return "averaged";
+      else return "LHC17f";
+    }
+    if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
+    if(runNumber >= 273591 && runNumber <= 274442) return "LHC17i";
+    if(!isHM && runNumber >= 274593 && runNumber <= 274671) return "LHC17j";
+    if(runNumber >= 274690 && runNumber <= 276508) return "LHC17k";
+    if(runNumber >= 276551 && runNumber <= 278216) return "LHC17l";
+    if(runNumber >= 278914 && runNumber <= 280140) return "LHC17m";
+    if(runNumber >= 280282 && runNumber <= 281961) return "LHC17o";
+    if(runNumber >= 282528 && runNumber <= 282704) return "LHC17r";
+  }
+
+  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
+    if(runNumber >= 285009 && runNumber <= 285396){
+      if(isHM) return "LHC18bd";
+      else return "LHC18b";
+    }
+    if(runNumber >= 285978 && runNumber <= 286350){
+      if(isHM) return "LHC18bd";
+      else return "LHC18d";
+    }
+    if(runNumber >= 286380 && runNumber <= 286937) return "LHC18e";
+    if(runNumber >= 287000 && runNumber <= 287658) return "LHC18f";
+    if(runNumber >= 288804 && runNumber <= 288806){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber == 288943){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(runNumber >= 289165 && runNumber <= 289201){
+      if(isHM) return "LHC18hjk";
+      else return "LHC18ghijk";
+    }
+    if(!isHM && runNumber >= 288619 && runNumber <= 288750) return "LHC18ghijk"; //g, no HM event, only MB
+    if(!isHM && runNumber >= 288861 && runNumber <= 288909) return "LHC18ghijk"; //i, no HM event, only MB
+    if(runNumber >= 289240 && runNumber <= 289971) return "LHC18l";
+    if(runNumber >= 290323 && runNumber <= 292839){
+      if(isHM) return "LHC18m";
+      else return "LHC18mn";
+    }
+    if(!isHM && runNumber >= 293357 && runNumber <= 293359) return "LHC18mn"; //n, no HM event, only MB
+    if(runNumber >= 293475 && runNumber <= 293898) return "LHC18o";
+    if(runNumber >= 294009 && runNumber <= 294925) return "LHC18p";
+  }
+
+  AliWarning("Unknown period! Returning averaged weights");
+  return "averaged";
+}
+
+
 //_____________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::Terminate(Option_t *)
 {
 	// Terminate loop
 	Printf("Terminate()");
+}
+
+ClassImp(PhysicsProfile);
+PhysicsProfile::PhysicsProfile() :
+		fChsc4242(nullptr),
+		fChsc4242_Gap0(nullptr),
+		fChsc4242_Gap2(nullptr),
+		fChsc4242_Gap4(nullptr),
+		fChsc4242_Gap6(nullptr),
+		fChsc4242_Gap8(nullptr),      
+		fChsc4242_Gap10(nullptr),    
+		fChsc4242_3sub(nullptr),	
+		fChsc4242_3subMMLRA(nullptr),
+		fChsc4242_3subMMLRB(nullptr),							
+		fChsc4242_3subLLMRA(nullptr),							
+		fChsc4242_3subLLMRB(nullptr),							
+		fChsc4242_3subRRMLA(nullptr),							
+		fChsc4242_3subRRMLB(nullptr),							
+		fChsc4224_3sub(nullptr),							
+		fChsc4242_3subGap2(nullptr),					
+		fChsc4224_3subGap2(nullptr),					
+		fChsc3232(nullptr),									
+		fChsc3232_Gap0(nullptr),							
+		fChsc3232_Gap2(nullptr),							
+		fChsc3232_Gap4(nullptr),                            
+		fChsc3232_Gap6(nullptr),                            
+		fChsc3232_Gap8(nullptr),                            
+		fChsc3232_Gap10(nullptr),                            
+		fChsc3232_3sub(nullptr),							
+		fChsc3232_3subMMLRA(nullptr),							
+		fChsc3232_3subMMLRB(nullptr),							
+		fChsc3232_3subLLMRA(nullptr),							
+		fChsc3232_3subLLMRB(nullptr),							
+		fChsc3232_3subRRMLA(nullptr),							
+		fChsc3232_3subRRMLB(nullptr),							
+		fChsc3223_3sub(nullptr),							
+		fChsc3232_3subGap2(nullptr),					
+		fChsc3223_3subGap2(nullptr),					
+		fChc422(nullptr), 
+		fChc532(nullptr),
+		fChc422_Gap0A(nullptr),   
+		fChc422_Gap0B(nullptr),   
+		fChc532_Gap0A(nullptr),   
+		fChc532_Gap0B(nullptr),   
+		fChc422_Gap2A(nullptr),   
+		fChc422_Gap2B(nullptr),   
+		fChc532_Gap2A(nullptr),   
+		fChc532_Gap2B(nullptr),   
+		fChc422_Gap4A(nullptr),   
+		fChc422_Gap4B(nullptr),   
+		fChc532_Gap4A(nullptr),   
+		fChc532_Gap4B(nullptr),   
+		fChc422_Gap6A(nullptr),   
+		fChc422_Gap6B(nullptr),   
+		fChc532_Gap6A(nullptr),   
+		fChc532_Gap6B(nullptr),   
+		fChc422_Gap8A(nullptr),   
+		fChc422_Gap8B(nullptr),   
+		fChc532_Gap8A(nullptr),   
+		fChc532_Gap8B(nullptr),   
+		fChc422_Gap10A(nullptr), 
+		fChc422_Gap10B(nullptr), 
+		fChc532_Gap10A(nullptr), 
+		fChc532_Gap10B(nullptr)
+{
+		memset(fChcn2, 0, sizeof(fChcn2));
+		memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
+		memset(fChcn2_Gap2, 0, sizeof(fChcn2_Gap2));
+		memset(fChcn2_Gap4, 0, sizeof(fChcn2_Gap4));
+		memset(fChcn2_Gap6, 0, sizeof(fChcn2_Gap6));
+		memset(fChcn2_Gap8, 0, sizeof(fChcn2_Gap8));
+		memset(fChcn2_Gap10, 0, sizeof(fChcn2_Gap10));
+		memset(fChcn2_Gap14, 0, sizeof(fChcn2_Gap14));
+		memset(fChcn2_Gap16, 0, sizeof(fChcn2_Gap16));
+		memset(fChcn2_Gap18, 0, sizeof(fChcn2_Gap18));
+
+		memset(fChcn2_3subLM, 0, sizeof(fChcn2_3subLM));
+		memset(fChcn2_3subRM, 0, sizeof(fChcn2_3subRM));
+		memset(fChcn2_3subLR, 0, sizeof(fChcn2_3subLR));
+		memset(fChcn2_3subGap2LM, 0, sizeof(fChcn2_3subGap2LM));
+		memset(fChcn2_3subGap2RM, 0, sizeof(fChcn2_3subGap2RM));
+
+		memset(fChcn4, 0, sizeof(fChcn4));
+		memset(fChcn4_Gap0, 0, sizeof(fChcn4_Gap0));
+		memset(fChcn4_Gap2, 0, sizeof(fChcn4_Gap2));
+		memset(fChcn4_Gap4, 0, sizeof(fChcn4_Gap4));
+		memset(fChcn4_Gap6, 0, sizeof(fChcn4_Gap6));
+		memset(fChcn4_Gap8, 0, sizeof(fChcn4_Gap8));
+		memset(fChcn4_Gap10, 0, sizeof(fChcn4_Gap10));
+		memset(fChcn4_3subMMLR, 0, sizeof(fChcn4_3subMMLR));
+		memset(fChcn4_3subLLMR, 0, sizeof(fChcn4_3subLLMR));
+		memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
+		memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
 }

@@ -59,8 +59,17 @@ class AliESDInputHandler;
 #include "AliEventCuts.h"
 #include "AliEmcalStringView.h"
 
-
 #include "AliAnalysisTaskSE.h"
+
+namespace PWG {
+
+  namespace EMCAL {
+
+    class AliEmcalMCPartonInfo;
+  
+  }
+}
+
 /**
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
@@ -286,6 +295,27 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   };
 
   /**
+   * @enum MCProducrionType_t
+   * @brief Handling of MC production type 
+   */
+  enum MCProductionType_t {
+    kMCPythiaPtHard,
+    kMCPythiaMB,
+    kMCHerwig6,
+    kMCHepMCPtHard,
+    kMCHepMCMB,
+    kNoMC
+  };
+
+  enum PtHardBinning_t {
+    kBinning06,
+    kBinning10,
+    kBinning13,
+    kBinning20,
+    kBinningUnknown
+  };
+
+  /**
    * @brief Default constructor.
    */
   AliAnalysisTaskEmcal();
@@ -454,6 +484,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetIsHepMC(Bool_t i)                                 { fIsHepMC          = i                              ; }
 
   /**
+   * @brief Set type of the MC production
+   * 
+   * In case of min. bias production also set number of pt-hard bins to 1,
+   * with limits 0 and infinity.
+   * 
+   * @param prodtype  Type of the MC production
+   */
+  void                        SetMCProductionType(MCProductionType_t prodtype);
+
+  /**
    * @brief Enable general histograms
    * 
    * Among general histograms are the QA histograms (vertex distribution, rejection reason), normalization
@@ -475,6 +515,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetGetPtHardBinFromPath(Bool_t docheck)               { fGetPtHardBinFromName = docheck; }
 
   /**
+   * @brief Check whether the pt-hard bin from path and pt-hard value in event match
+   * @param docheck If true the pt-hard value will be cross checked
+   */
+  void                        SetCheckPtHardBin(Bool_t docheck)                     { fDoCheckPtHardBin = docheck; }
+
+  /**
    * @brief Set the number of \f$ p_{t}\f$-hard bins
    * @param[in] nbins Number of \f$ p_{t}\f$-hard bins
    */
@@ -489,7 +535,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    *
    * @param[in] binning Non-standard binning to be applied
    */
-  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; }
+  void                        SetUserPtHardBinning(const TArrayI &binning)          { fPtHardBinning = binning; fNPtHardBins = binning.GetSize() -1; }
 
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
@@ -558,13 +604,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetMinVertexContrib(Int_t min)                        { fMinVertexContrib = min                             ; }
+  void                        SetMinPtHard(double minpthard)                        { fMinPtHard         = minpthard                      ; }
+  void                        SetMaxPtHard(double maxpthard)                        { fMaxPtHard         = maxpthard                      ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
   void                        SetGeneratePythiaInfoObject(Bool_t b)                 { fGeneratePythiaInfoObject = b                       ; }
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
+  void                        SetNameMCPartonInfo(const char *n)                    { fNameMCPartonInfo = n                               ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+  const PWG::EMCAL::AliEmcalMCPartonInfo *GetMCPartonInfo()                   const { return fMCPartonInfo                                ; }
 
   /**
    * @brief Switch on pt-hard bin scaling
@@ -640,7 +690,21 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
+  /**
+   * @brief Configure MC handling for a given MC dataset
+   * @param dataset Name of the dataset
+   */
+  MCProductionType_t ConfigureMCDataset(const char *dataset);
+
   // Static Utilities
+
+  /**
+   * @brief Get the pt-hard binning for a given production setup
+   * @param binningtype 
+   * @return Array with bin limits
+   */
+  static TArrayI GetPtHardBinningForProd(PtHardBinning_t binningtype);
+
   /**
    * @brief Add an AOD handler to the analysis manager
    * @return pointer to the new AOD handler
@@ -655,10 +719,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
  protected:
   /**
-   * @brief Load parton info
-   * @param event
+   * @brief Load PYTHIA parton info
+   * @param event Input event with parton info object attached
    */
   void                        LoadPythiaInfo(AliVEvent *event);
+
+  /**
+   * @brief Load MC parton info (HepMC-optimized)
+   * @param event Input event with parton info object attached
+   */
+  void                        LoadMCPartonInfo(AliVEvent *event);
 
   void                        SetRejectionReasonLabels(TAxis* axis);
 
@@ -803,10 +873,20 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param[in] currFile Name of the current ESD/AOD file
    * @param[out] fXsec Cross section calculated by PYTHIA
    * @param[out] fTrials Number of trials needed by PYTHIA
-   * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
    * @return True if parameters were obtained successfully, false otherwise
    */
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrial);
+
+  /**
+   * @brief Get the pt-hard bin from the file path
+   * 
+   * @param currentfile Path of the current file
+   * @return pthard \f$ p_{t} \f$-hard bin, extracted from path name
+   */
+  Int_t                       ParsePtHardBinFromPath(const char *currentfile);
+
+  TString                     ExtractVirtiualPathname(const char *currentfile);
+
   /**
    * @brief Determines if a track is inside the EMCal acceptance.
    *
@@ -1045,6 +1125,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual void				        UserFileChanged()					{}
 
   /**
+   * @brief Virtual method for user code to retrieve event objects used in their task
+   */
+  virtual void                UserRetrieveEventObjects() {}
+
+  /**
    * @brief Function filling histograms
    *
    * This function optionally fills histograms created by the users. Can
@@ -1171,6 +1256,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
 
   // Task configuration
   TString                     fPythiaInfoName;             ///< name of pythia info object
+  TString                     fNameMCPartonInfo;           ///< name of the MC parton info object
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
   Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
@@ -1201,6 +1287,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fEventPlaneVsEmcal;          ///< select events which have a certain event plane wrt the emcal
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
+  Double_t                    fMinPtHard;                  ///< minimum pt-hard value
+  Double_t                    fMaxPtHard;                  ///< maximum pt-hard value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
@@ -1255,11 +1343,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
   Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
+  Bool_t                      fDoCheckPtHardBin;           ///< Flag whether the pt-hard bin between path and pt-hard value should be checked
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
   AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
+  PWG::EMCAL::AliEmcalMCPartonInfo *fMCPartonInfo;         //!<! (HepMC) event parton info
 
   // Output
   AliEmcalList               *fOutput;                     //!<!output list
@@ -1286,7 +1376,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 20) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 21) // EMCAL base analysis task
   /// \endcond
 };
 

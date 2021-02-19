@@ -510,7 +510,6 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     TParticle* dummyPartGrandMother =NULL;
 
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
-      if (i > 49) continue;													// abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       if (enablePrintOuts) cout << "checking particle: " <<  i << endl;
       if (GetCaloPhotonMCLabel(i) < 0) continue;
       dummyPart = mcEvent->Particle(GetCaloPhotonMCLabel(i));
@@ -688,7 +687,6 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArr
     for (Int_t j = 0; j< fNCaloPhotonMCLabels; j++){
       neutralPionLabel = -1;
       foundNeutralPion = kFALSE;
-      if(j > 49) continue;                       // abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       PhotonDummyMerged        = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(j)); // main particle
       photonDummyMergedPDG = PhotonDummyMerged->GetPdgCode();
       if(TMath::Abs(photonDummyMergedPDG)==111){
@@ -1009,7 +1007,6 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArr
     AliAODMCParticle* dummyPartMother       = NULL;
     AliAODMCParticle* dummyPartGrandMother  = NULL;
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
-      if (i > 49) continue;                       // abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       dummyPart = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
       Int_t dummyPartMotherLabel            = dummyPart->GetMother();
       Int_t dummyPartGrandMotherLabel       = -1;

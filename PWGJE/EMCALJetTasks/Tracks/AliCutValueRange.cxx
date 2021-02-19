@@ -15,11 +15,10 @@
 #include <iostream>
 #include "AliCutValueRange.h"
 
-/// \cond CLASSIMP
-templateClassImp(EMCalTriggerPtAnalysis::AliCutValueRange)
-/// \endcond
+templateClassImp(PWGJE::EMCALJetTasks::AliCutValueRange)
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  namespace EMCALJetTasks {
 
   template<typename t>
   AliCutValueRange<t>::AliCutValueRange():
@@ -102,5 +101,7 @@ namespace EMCalTriggerPtAnalysis {
 	template std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<int> &val);
 	template std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<double> &val);
 	template std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<float> &val);
+}
+
 }
 

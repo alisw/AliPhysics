@@ -64,10 +64,11 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   //a) Methods used to assure global quality and track selection
   Bool_t GlobalQualityAssurance(AliAODEvent *aAODevent);
-  Bool_t TrackSelection(AliAODTrack *aTrack); 
+  Bool_t TrackSelection(AliAODVertex *aPrimaryVertex, AliAODTrack *aTrack); 
   Bool_t GlobalQualityAssurance(Int_t CentBin, AliMCEvent *aMCKineEvent);
   Bool_t TrackSelection(AliAODMCParticle *aMCtrack);
   Int_t SelectCentrality(AliAODEvent *aAODevent);
+  virtual void FisherYatesRandomizing(Int_t Mult, Int_t *RandomIndex); 
 
   //b) Method used to obtain particle weights
   virtual void CalculateWeight(Int_t CentBin, Int_t RunNumber, Double_t* weights, Int_t Multi, Double_t* angles, Double_t* pt, Double_t* eta);
@@ -102,7 +103,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   
   void SetFilter(Int_t top){this->fMainFilter = top;} 
 
-  void SetCentralityEstimator(Bool_t Esti){this->fCentralityfromVZero = Esti; }
+  void SetCentralityEstimator(TString Esti){this->fCentralityEstimator = Esti; }
  
   void SetUseWeights(Bool_t Weights, Bool_t Phi, Bool_t Pt, Bool_t Eta)
   {this->bUseWeights = Weights; this->bUsePhiWeights = Phi; this->bUsePtWeights = Pt; this->bUseEtaWeights = Eta;}
@@ -128,14 +129,20 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetNumberITSClusters(Bool_t Cut, Int_t Min)
   {this->bNumberITSCluster=Cut;  this->fMinITSCluster=Min; }
 
-  void SetChiSquareTPC(Bool_t Cut, Double_t Min, Double_t Max)
-  {this->bChiSquareTPC=Cut;  this->fMinChiSquareTPC=Min; this->fMaxChiSquareTPC=Max;}
+  void SetChiSquareTPC(Bool_t Cut, Int_t ChooseMethod, Double_t Min, Double_t Max) 
+  {this->bChiSquareTPC=Cut; this->fChooseChiSquareMethod=ChooseMethod; this->fMinChiSquareTPC=Min; this->fMaxChiSquareTPC=Max;}
 
   void SetDCAz(Bool_t Cut, Double_t Max)
   {this->bDCAz=Cut;  this->fMaxDCAz=Max;}
  
   void SetDCAxy(Bool_t Cut, Double_t Max)
   {this->bDCAxy=Cut;  this->fMaxDCAxy=Max;}
+
+  void SetChargeCut(Bool_t Cut, Bool_t Pos)
+  { this->bChargeCut=Cut; this->bChargePos=Pos; } 
+
+  void SetFisherYates(Bool_t DoFY, Float_t CutOff)
+  { this->bDoFisherYates=DoFY; this->fFisherYatesCutOff=CutOff; } 
 
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
@@ -189,15 +196,16 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TList *fCentralityList[16];		//! Will be one list per certain centrality bin. Up to 16 centraliy bins possible
   TList *fControlHistogramsList[16]; 	//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible
  
-  TH1F *fPTHistogram[16][4]; 		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: P_t Before Track Selection (second), 3: P_t After Track Selection (second);
-  TH1F *fPhiHistogram[16][4]; 		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: Phi Before Track Selection (second), 3: Phi After Track Selection (second);
-  TH1F *fEtaHistogram[16][4]; 		//! 0: Eta Before Track Selection, 1: Eta After Track Selection, 2: Eta Before Track Selection (second), 3: Eta After Track Selection (second);
+  TH1F *fPTHistogram[16][5]; 		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: P_t Before Track Selection (second), 3: P_t After Track Selection (second), 4: P_t After Track Selection Weighted; 
+  TH1F *fPhiHistogram[16][5]; 		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: Phi Before Track Selection (second), 3: Phi After Track Selection (second), 4: Phi After Track Selection Weighted; 
+  TH1F *fEtaHistogram[16][5]; 		//! 0: Eta Before Track Selection, 1: Eta After Track Selection, 2: Eta Before Track Selection (second), 3: Eta After Track Selection (second), 4: Eta After Track Selection Weighted; 
   TH1F *fMultHistogram[16][4]; 		//! 0: Multiplicity before HMO removel 1: Multiplicity Before Track Selection, 2: Mult. After Track Selection 3: Mult. After Track Selection (second);
   TH1F *fTPCClustersHistogram[16][2]; 	//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection
   TH1F *fITSClustersHistogram[16][2]; 	//! 0: ITS Clusters Before Track Selection, 1: ITS Clusters After Track Selection
   TH1F *fChiSquareTPCHistogram[16][2]; 	//! 0: ChiSquare TPC Before Track Selection, 1: ChiSquare TPC After Track Selection
   TH1F *fDCAzHistogram[16][2]; 		//! 0: DCAz Before Track Selection, 1: DCAz After Track Selection
   TH1F *fDCAxyHistogram[16][2]; 	//! 0: DCAxy Before Track Selection, 1: DCAxy After Track Selection
+  TH1I *fChargeHistogram[16][2]; 	//! 0: Charge Before Track Selection, 1: Charge After Track Selection 
   TH1F *fCentralityHistogram[16]; 	//! Centrality After Corresponding Cut
   TH1F *fCentralityHistogramBefore;     //! Centrality Histogram before Centrality selection
 
@@ -234,9 +242,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TH1F *fVertexYHistogram[16][2];       //! 0: Vertex Y Before Corresponding, 1: Vertex Y After Corresponding Cut
   TH1F *fVertexZHistogram[16][2];       //! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut
 
-  Bool_t fCentralityfromVZero;	     	// if kTRUE: Use V0 as centrality estimator, if kFALSE: SPD Cluster
-
-    //Physics-Selection
+  TString fCentralityEstimator;	     	// Choose between: "V0M" for V0 as centrality estimator, or "CL1" for SPC Clusters
+  //Physics-Selection
   Bool_t bCutOnEta;               	// Bool to apply eta cuts (default kTRUE)
   Bool_t bCutOnPt;               	// Bool to apply pt cuts (default kTRUE)
   Bool_t bNumberTPCCluster;		// Bool to apply cuts on number of TPC clusters (default kTRUE)
@@ -244,16 +251,23 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t bChiSquareTPC;			// Bool to apply cuts on chi square TPC (default kTRUE)
   Bool_t bDCAz;				// Bool to apply cuts on DCAz (default kTRUE)
   Bool_t bDCAxy;			// Bool to apply cuts on DCAxy (default kTRUE)
+  Bool_t bChargeCut;			// Bool to apply cut on charge (default kFALSE) 
+  Bool_t bChargePos;			// Bool to select only positive charge (if kTRUE) and negative if (kFALSE). Only relevant if bChargeCut==kTRUE 
   Double_t fMinEtaCut;               	// min eta cut (default -0.8)
   Double_t fMaxEtaCut;               	// max eta cut (default 0.8)
   Double_t fMinPtCut;               	// min pt cut (default 0.2)
   Double_t fMaxPtCut;               	// max pt cut (default 5.0)
   Int_t fMinTPCCluster;			// Number of minimum TPC clusters (default 70)
   Int_t fMinITSCluster;			// Number of minimum ITS clusters (default 2)
+  Int_t fChooseChiSquareMethod;		// Choose how Chi Square is defined
   Double_t fMinChiSquareTPC;		// Minimal Chi Square TPC (default 0.1)
   Double_t fMaxChiSquareTPC;		// Maximal Chi Square TPC (default 4.0)
   Double_t fMaxDCAz;			// Maximal DCAz (default 3.2 cm)
   Double_t fMaxDCAxy;			// Maximal DCAxy (default 2.4 cm)
+
+  //Fisher-Yales
+  Bool_t bDoFisherYates;		//if kTRUE: Do Fisher Yates Mixing of phi, pt and eta arrays after track selection (default: kFALSE)
+  Float_t fFisherYatesCutOff;		//How much percentage of the orginal particles are kept, e.g. if 0.7 only 70% of the current particles are kept for analysis
 
   //Weights
   Bool_t bUseWeights; 
@@ -288,11 +302,12 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7;  //harmonics
   Int_t fi1, fi2, fi3, fi4, fi5, fi6, fi7;  //eigth set of harmonics 
   
-  TComplex fQvector[85][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[113][15];       	// //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
+  TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
   Bool_t bDoMixed;		 	// if kTRUE: Do special mixed particle analysis, default kFALSE (MainTask)
   Bool_t bDifferentCharge; 	 	// used in DoMixed: if kTRUE mixed particle analysis between positiv and negativ
@@ -302,11 +317,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t bSetSameChargePositiv;   	// used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fMixedHarmonic;			// Harmonic of special mixed particle analysis
   TH1F *fCounterHistogram;       	//! for some checks
+  TProfile *fProfileEventCuts;  	//! Profile to save the cut values for event selection
+  TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection
   TList *fFinalResultsList[16];      	//! List to hold all histograms with final results for a specific centrality bin. Up to 16 centraliy bins possible
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,31);
+  ClassDef(AliAnalysisTaskStudentsML,38); 
 
 };
 

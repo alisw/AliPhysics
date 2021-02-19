@@ -51,6 +51,7 @@ class AliJFJTask : public AliAnalysisTaskSE {
         virtual void UserExec(Option_t *option);
         virtual void Terminate(Option_t* );
         AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
+        TString GetJCatalystTaskName() {return fJCatalystTaskName;}
         void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
         void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
         void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
@@ -81,7 +82,7 @@ class AliJFJTask : public AliAnalysisTaskSE {
     private:
 
         AliJCatalystTask *fJCatalystTask;  //!
-        TString           fJCatalystTaskName; //! Name for JCatalyst task
+        TString           fJCatalystTaskName; //
         vector<double> fcentralityBins; //
         double fjetCone; //
         double fktJetCone; //

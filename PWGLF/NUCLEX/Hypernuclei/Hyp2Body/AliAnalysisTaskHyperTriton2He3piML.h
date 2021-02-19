@@ -61,6 +61,14 @@ struct RHyperTritonHe3pi
   bool fMatter;
 };
 
+struct RHyperTritonHe3piFull : public RHyperTritonHe3pi {
+  RHyperTritonHe3piFull() {}
+  RHyperTritonHe3piFull(const RHyperTritonHe3pi& oth) : RHyperTritonHe3pi{oth} {}
+  AliExternalTrackParam fRHe3Track;
+  AliExternalTrackParam fRPiTrack;
+  int fRHe3pidHypo;
+};
+
 struct RCollision
 {
   float fX;
@@ -130,7 +138,8 @@ public:
     kINT7 = BIT(0),
     kCentral = BIT(1),
     kSemiCentral = BIT(2),
-    kPositiveB = BIT(3)
+    kPositiveB = BIT(3),
+    kHighMultV0 = BIT(4)
   };
 
   AliAnalysisTaskHyperTriton2He3piML(bool mc = false, std::string name = "HyperTriton2He3piML");
@@ -184,8 +193,10 @@ public:
 
   void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
+  void SetEMdepth(unsigned int deep) { fEMdepth = deep; }
 
   AliEventCuts fEventCuts; /// Event cuts class
+
   bool fMaxInfo;
   int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
@@ -240,22 +251,24 @@ private:
   float fMinTrackletCosP;
 
   bool fEnableLikeSign;
+  bool fEnableEventMixing;
 
   TObjString fCurrentFileName; //!
   int fCurrentEventNumber;
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
-  std::vector<SGenericV0> fSGenericV0;              //!
-  std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
-  std::vector<AliExternalTrackParam> fRHe3Track;    //!
-  std::vector<AliExternalTrackParam> fRPiTrack;     //!
-  std::vector<RTracklet> fRTracklets;               //!
-  std::vector<SGenericTracklet> fSGenericTracklets; //!
-  RCollision fRCollision;                           //!
-  float      fRPVcovariance[6];                     //!
-  std::vector<int> fRHe3pidHypo;                    //!
+  std::vector<SHyperTritonHe3pi> fSHyperTriton;         //!
+  std::vector<SGenericV0> fSGenericV0;                  //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton;         //!
+  std::vector<RHyperTritonHe3piFull> fRHyperTritonFull; //!
+  std::vector<RTracklet> fRTracklets;                   //!
+  std::vector<SGenericTracklet> fSGenericTracklets;     //!
+  RCollision fRCollision;                               //!
+  float      fRPVcovariance[6];                         //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
+
+  unsigned int fEMdepth;
+  std::list<AliESDtrack> fHe3mixed[2][10][10];
 
   /// Objects for V0 detector calibration
   TH1D*        fMultV0;             //! profile from V0 multiplicity

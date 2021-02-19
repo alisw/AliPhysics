@@ -56,6 +56,23 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
     fInvMassCutSBup = up;
   }
 
+  void SetpTprotonMCTRUTH(float pT) {
+    fprotonpT = pT;
+  }
+
+  void SetetaprotonMCTRUTH(float eta) {
+    fprotoneta = eta;
+  }
+
+  void SetpTkaonMCTRUTH(float pT) {
+    fkaonpT = pT;
+  }
+
+  void SetetakaonMCTRUTH(float eta) {
+    fkaoneta = eta;
+  }
+
+
  private:
   AliAnalysisTaskNanoAODFemtoDreamPhi(const AliAnalysisTaskNanoAODFemtoDreamPhi &);
   AliAnalysisTaskNanoAODFemtoDreamPhi &operator=(const AliAnalysisTaskNanoAODFemtoDreamPhi &);
@@ -63,12 +80,16 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                            //
   bool fIsMCTruth;                       //
-  bool fIsmixTRUTHREAL;              //
-  bool fIsmixTRUTHFAKE;              //
-  bool fIsmixREC;                    //
-  bool fUseOMixing;                     //
+  bool fIsmixTRUTHREAL;                  //
+  bool fIsmixTRUTHFAKE;                  //
+  bool fIsmixREC;                        //
+  bool fUseOMixing;                      //
   float fInvMassCutSBdown;               //
   float fInvMassCutSBup;                 //
+  float fprotonpT;                       //
+  float fprotoneta;                      //
+  float fkaonpT;                         //
+  float fkaoneta;                        //
   UInt_t fTrigger;                       //
   TList *fOutput;                        //!
   AliVEvent *fInputEvent;                //! current event
@@ -87,7 +108,7 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamControlSample *fSample;   //!  
   AliVTrack **fGTI;                        //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 8)
+  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 9)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskNanoAODFemtoDreamPhi_H_ */

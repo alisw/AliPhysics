@@ -18,6 +18,7 @@
 class AliESDEvent;
 class TFile;
 class TDirectory;
+class TParticle;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -38,11 +39,12 @@ public:
   virtual void FinishTaskOutput();
   virtual void Terminate(Option_t *option);
 
-  void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
+  void SetBasketSize(int events, int tracks) { fBasketSizeEvents = events; fBasketSizeTracks = tracks; }
 
   virtual void SetTruncation(Bool_t trunc=kTRUE) {fTruncate = trunc;}
   virtual void SetCompression(UInt_t compress=101) {fCompress = compress; }
   virtual void SetMaxBytes(ULong_t nbytes = 100000000) {fMaxBytes = nbytes;}
+  void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -117,6 +119,7 @@ public:
   void SetSkipPileup(Bool_t flag) { fSkipPileup = flag; }
   void SetSkipTPCPileup(Bool_t flag) { fSkipTPCPileup = flag; }
   AliEventCuts& GetEventCuts() { return fEventCuts; }
+  Bool_t Select(TParticle* part, Float_t rv, Float_t zv);
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -126,21 +129,23 @@ private:
   TList *fOutputList = nullptr; //! output list
   
   Int_t fEventCount = 0; //! event count
-  Int_t fTfCount = 0;
+  Bool_t fTfInitialized = false; //!
+  Int_t fTFCount = 0; //! count TF written
 
   // Output TF and TTrees
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void Prune();                       // Function to perform tree pruning
   void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
   void WriteTree(TreeIndex t);        // Function to write the trees (only the active ones)
-  void InitTF(Int_t tfId);            // Initialize output subdir and trees for TF tfId
+  void InitTF(ULong64_t tfId);           // Initialize output subdir and trees for TF tfId
   void FillEventInTF();
   void FinishTF();
 
   // Task configuration variables
   TString fPruneList = "";                // Names of the branches that will not be saved to output file
   Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
-  int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
+  int fBasketSizeEvents = 1000000;   // Maximum basket size of the trees for events
+  int fBasketSizeTracks = 10000000;   // Maximum basket size of the trees for tracks
 
   TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
@@ -490,6 +495,7 @@ private:
   TH1F *fCentralityHist = nullptr; ///! Centrality histogram
   TH1F *fCentralityINT7 = nullptr; ///! Centrality histogram for the INT7 triggers
   TH1I *fHistPileupEvents = nullptr; ///! Counter histogram for pileup events
+  Double_t fEMCALAmplitudeThreshold = 0.1; ///< EMCAL amplitude threshold (for compression - default: 100 MeV := cluster cell threshold)
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
@@ -499,7 +505,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 11);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 14);
 };
 
 #endif

@@ -4,6 +4,9 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
                                     TString photonCutNumberV0Reader       = "",  
                                     TString periodNameV0Reader            = "",
                                     Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
+                                    Bool_t    enableElecdEdxPostCalibration = kFALSE,     //PostCalibration
+                                    Bool_t    ForceRPostCalibration = kFALSE,   //Works only with Postcalibration.
+                                    Bool_t    lightVersion = kFALSE,                      //lightVersion Systematic.
                                     TString   fileNameExternalInputs        = "",
                                     Int_t   enableMatBudWeightsPi0          =  0,              // 1 = three radial bins, 2 = 10 radial bins
                                     TString   additionalTrainConfig         = "0"
@@ -103,6 +106,13 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task->SetIsHeavyIon(0);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+    if (enableQAMesonTask && lightVersion){
+    cout << "\n\n**************************************************************" << endl;
+    cout << "******* QA and Light version are incompatible, changing lightVersion to kFALSE........" << endl;
+    cout << "**************************************************************\n\n" << endl;
+    lightVersion=kFALSE;
+  }
+  task->SetDoLightVersion(lightVersion);
 
 
 
@@ -357,6 +367,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863202223710", "0152103500000000");//Standard with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400863002223710", "0152103500000000");//No PsiPair cut with kBoth on electrons
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263202223710", "0152103500000000");//Standard
+//     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263502223710", "0152103500000000");//Standard a 0.06
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400263002223710", "0152103500000000");//No PsiPair on electrons
   } else if (trainConfig == 417) {//Systematic for TPC cluster and pion energy
     cuts.AddCutPCMDalitz("00010113", "0dm00008f9730000dge0404000", "204c6400263202223710", "0152103500000000"); // TPC cluster 35%
@@ -595,8 +606,12 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    //////////////////////////////////////
+    //// Material Budget Weights flag ////
+    //////////////////////////////////////
+
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
             if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
@@ -605,6 +620,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
@@ -616,12 +633,31 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisMesonCuts[i]->SetFillCutHistograms("");
 
     analysisElecCuts[i] = new AliDalitzElectronCuts();
+
+    ////////////////////////////////////
+    //// Elec dE/dx PostCalibration ////
+    ////////////////////////////////////
+
+    if (enableElecdEdxPostCalibration){
+        if (isMC == 0){
+            analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+            analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kTRUE);
+            if(ForceRPostCalibration){
+              //Dependance in range 0-33 on R, and not TPC dependace
+            analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+            analysisElecCuts[i]->ForceTPCRecalibrationAsFunctionOfConvRPrimaryPair();
+            }
+        } else{
+        cout << "ERROR enableElecdEdxPostCalibration set to True even if it is MC file. Automatically reset to 0"<< endl;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+        analysisElecCuts[i]->SetDoElecDeDxPostCalibrationPrimaryPair(kFALSE);
+      }
+    }
+
     analysisElecCuts[i]->InitializeCutsFromCutString((cuts.GetElectronCut(i)).Data());
     ElecCutList->Add(analysisElecCuts[i]);
     analysisElecCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
-
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
@@ -635,8 +671,10 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   if (trainConfig == 325 || trainConfig == 425) {
     task->SetDoChicAnalysis(kTRUE);
   }
-  //task->SetDoMesonAnalysis(kTRUE);
-  if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+    ////////////////////////////////////
+    /////////// QA Meson task //////////
+    ////////////////////////////////////
+  if (enableQAMesonTask) task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   //if (enableQAMesonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
   //connect containers

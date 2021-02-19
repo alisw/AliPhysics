@@ -16,8 +16,12 @@
 ClassImp(AliAnalysisTaskFemtoDreamDeuteron)
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
   : AliAnalysisTaskSE(),
+    fisLightWeight(false),
+    fTrackBufferSize(),
     fIsMC(false),
-    fIsMCTruth(false),
+    fdoSideband(false),
+    fSigmaUp(0.0),
+    fSigmaLow(0.0),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -28,6 +32,10 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fTrackCutsProtonDCA(nullptr),
     fTrackCutsAntiProtonDCA(nullptr),
     fConfig(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fGTI(nullptr),
+    fEvtList(nullptr),
     fProtonList(nullptr),
     fProtonMCList(nullptr),
     fAntiProtonList(nullptr),
@@ -40,27 +48,23 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
     fDeuteronMCNoTOFList(nullptr),
     fAntiDeuteronNoTOFList(nullptr),
     fAntiDeuteronMCNoTOFList(nullptr),
-    fPairCleaner(nullptr),
-    fPartColl(nullptr),
-    fGTI(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
-    fAntiDeuteronRestMassNoTOF(nullptr),
-    fResults(nullptr),
-    fResultsQA(nullptr),
-    fProtonDeuteronDump(nullptr),
-    fAntiProtonAntiDeuteronDump(nullptr),
-    fDumpster(nullptr),
-    fUseDumpster(false),
-    fTrackBufferSize() {
+    fAntiDeuteronRestMassNoTOF(nullptr){
 }
 
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
   const char *name, bool isMC)
   : AliAnalysisTaskSE(name),
+    fisLightWeight(false),
+    fTrackBufferSize(2000),
     fIsMC(isMC),
-    fIsMCTruth(false),
+    fdoSideband(false),
+    fSigmaUp(0.0),
+    fSigmaLow(0.0),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -71,6 +75,10 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fTrackCutsProtonDCA(nullptr),
     fTrackCutsAntiProtonDCA(nullptr),
     fConfig(nullptr),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fGTI(nullptr),
+    fEvtList(nullptr),
     fProtonList(nullptr),
     fProtonMCList(nullptr),
     fAntiProtonList(nullptr),
@@ -83,20 +91,12 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
     fDeuteronMCNoTOFList(nullptr),
     fAntiDeuteronNoTOFList(nullptr),
     fAntiDeuteronMCNoTOFList(nullptr),
-    fPairCleaner(nullptr),
-    fPartColl(nullptr),
-    fGTI(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr),
     fDeuteronRestMass(nullptr),
     fAntiDeuteronRestMass(nullptr),
     fDeuteronRestMassNoTOF(nullptr),
-    fAntiDeuteronRestMassNoTOF(nullptr),
-    fResults(nullptr),
-    fResultsQA(nullptr),
-    fProtonDeuteronDump(nullptr),
-    fAntiProtonAntiDeuteronDump(nullptr),
-    fDumpster(nullptr),
-    fUseDumpster(false),
-    fTrackBufferSize(2000) {
+    fAntiDeuteronRestMassNoTOF(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -106,12 +106,11 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(
   DefineOutput(7, TList::Class());  //Output for the AntiDeuteronNoTOF Cuts
   DefineOutput(8, TList::Class());  //Output for the Results
   DefineOutput(9, TList::Class());  //Output for the Results QA
-  DefineOutput(10, TList::Class());  //Output for the Dumpster
   if (fIsMC) {
-    DefineOutput(11, TList::Class());  //Output for the Proton MC
-    DefineOutput(12, TList::Class());  //Output for the AntiProton MC
-    DefineOutput(13, TList::Class());  //Output for the Deuteron MC
-    DefineOutput(14, TList::Class());  //Output for the AntiDeuteron MC
+    DefineOutput(10, TList::Class());  //Output for the Proton MC
+    DefineOutput(11, TList::Class());  //Output for the AntiProton MC
+    DefineOutput(12, TList::Class());  //Output for the Deuteron MC
+    DefineOutput(13, TList::Class());  //Output for the AntiDeuteron MC
   }
 }
 
@@ -126,20 +125,10 @@ AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
   delete fTrackCutsAntiProtonDCA;
   delete fPairCleaner;
   delete fPartColl;
-
-  if (fProtonDeuteronDump) {
-    delete fProtonDeuteronDump;
-  }
-  if (fAntiProtonAntiDeuteronDump) {
-    delete fAntiProtonAntiDeuteronDump;
-  }
-  if (fDumpster) {
-    delete fDumpster;
-  }
 }
 
 Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(
-  AliFemtoDreamTrack *track) {
+  AliFemtoDreamTrack *track)const{
   Float_t p = track->GetP();
   Float_t mass2sq = -999;
   Float_t beta = track->GetbetaTOF();
@@ -148,6 +137,25 @@ Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(
   }
   return mass2sq;
 }
+
+float AliAnalysisTaskFemtoDreamDeuteron::MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const{
+  float pTVal = track->GetPt();
+  float par0 =  3.55375e+00;
+  float par1 = -1.25749e+00;
+  float par2 = -3.60444e-01;
+  float par3 = -1.00250e-01;
+  float par4 = -1.00782e-02;
+  return par0 + TMath::Exp(par1 * pTVal + par2 * pTVal * pTVal+ par3 * pTVal * pTVal * pTVal+ par4 * pTVal* pTVal * pTVal * pTVal);
+};
+float AliAnalysisTaskFemtoDreamDeuteron::SigmaTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const{
+  float pTVal = track->GetPt();
+  Float_t par0 = 1.19287e-02;
+  Float_t par1 = 0.202460e-02;
+  Float_t par2 = 1.23058e-02;//par[2];
+  Float_t par3 = 30.23644e-04;
+  Float_t par4 = 45.80006e-05;
+  return 0.088 + 0.1*(par0 * pTVal + par1 * pTVal * pTVal + par2 * pTVal * pTVal* pTVal+ par3 * pTVal * pTVal* pTVal* pTVal+ par4 * pTVal * pTVal* pTVal* pTVal* pTVal);
+};
 
 void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
 
@@ -188,10 +196,10 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     fDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fDeuteronList = fTrackCutsDeuteronDCA->GetQAHists();
+    fDeuteronList->Add(fDeuteronRestMass);
     if (fIsMC) {
       fDeuteronMCList = fTrackCutsDeuteronDCA->GetMCQAHists();
     }
-    fDeuteronList->Add(fDeuteronRestMass);
   }
 
   if (!fTrackCutsAntiDeuteronDCA) {
@@ -203,10 +211,10 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
     fAntiDeuteronRestMass->GetXaxis()->SetTitle("pT(GeV)");
     fAntiDeuteronRestMass->GetYaxis()->SetTitle("m^2(Gev)^2");
     fAntiDeuteronList = fTrackCutsAntiDeuteronDCA->GetQAHists();
+    fAntiDeuteronList->Add(fAntiDeuteronRestMass);
     if (fIsMC) {
       fAntiDeuteronMCList = fTrackCutsAntiDeuteronDCA->GetMCQAHists();
     }
-    fAntiDeuteronList->Add(fAntiDeuteronRestMass);
   }
 //--------------------------------------------------------------------------------------------------------------------
   if (!fTrackCutsDeuteronMass) {
@@ -242,21 +250,10 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
         fConfig->GetMinimalBookingME());
   }
 
-  fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates());
+  fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,GetCollisionCandidates(), true);
+  fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
-
-  fDumpster = new TList();
-  fDumpster->SetName("Dumpster");
-  fDumpster->SetOwner(kTRUE);
-
-  if (fUseDumpster) {
-    fProtonDeuteronDump = new AliFemtoDreamDump("pd");
-    fDumpster->Add(fProtonDeuteronDump->GetOutput());
-
-    fAntiProtonAntiDeuteronDump = new AliFemtoDreamDump("ApAd");
-    fDumpster->Add(fAntiProtonAntiDeuteronDump->GetOutput());
-  }
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -291,20 +288,19 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   PostData(7, fAntiDeuteronNoTOFList);
   PostData(8, fResults);
   PostData(9, fResultsQA);
-  PostData(10, fDumpster);
 
   if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
-    PostData(11, fProtonMCList);
+    PostData(10, fProtonMCList);
   }
   if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
-    PostData(12, fAntiProtonMCList);
+    PostData(11, fAntiProtonMCList);
   }
 
   if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
-    PostData(13, fDeuteronMCList);
+    PostData(12, fDeuteronMCList);
   }
   if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
-    PostData(14, fAntiDeuteronMCList);
+    PostData(13, fAntiDeuteronMCList);
   }
 }
 
@@ -314,13 +310,9 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
   if (!Event) {
     AliWarning("No Input Event");
   } else {
-
     fEvent->SetEvent(Event);
-
     if (fEventCuts->isSelected(fEvent)) {
-
       ResetGlobalTrackReference();
-
       for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
         AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
         if (!track) {
@@ -331,7 +323,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
       }
 
       fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-
       static std::vector<AliFemtoDreamBasePart> DCADeuterons;
       DCADeuterons.clear();
       static std::vector<AliFemtoDreamBasePart> DCAAntiDeuterons;
@@ -340,7 +331,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
       DCAProtons.clear();
       static std::vector<AliFemtoDreamBasePart> DCAAntiProtons;
       DCAAntiProtons.clear();
-
 
       //Now we loop over all the tracks in the reconstructed event.
       for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
@@ -351,54 +341,49 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
         }
 
         fTrack->SetTrack(track);
-        if (fIsMCTruth && fIsMC) {
-          int mcpdg;
-          mcpdg = fTrack->GetMCPDGCode();
-          if ((mcpdg == 2212) && (fTrackCutsProtonDCA->isSelected(fTrack))) {
-            DCAProtons.push_back(*fTrack);
-          }
-          if ((mcpdg == -2212) && (fTrackCutsAntiProtonDCA->isSelected(fTrack))) {
-            DCAAntiProtons.push_back(*fTrack);
-          }
-          if ((mcpdg == 1000010020) && (fTrackCutsDeuteronDCA->isSelected(fTrack))) {
-            fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-            DCADeuterons.push_back(*fTrack);
-          }
-          if ((mcpdg == -1000010020)
-              && (fTrackCutsAntiDeuteronDCA->isSelected(fTrack))) {
-            fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-            DCAAntiDeuterons.push_back(*fTrack);
-          }
-          if ((mcpdg == 1000010020)
-              && (fTrackCutsDeuteronMass->isSelected(fTrack))) {
-            fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-          }
-          if ((mcpdg == -1000010020)
-              && (fTrackCutsAntiDeuteronMass->isSelected(fTrack))) {
-            fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-          }
+        if (fTrackCutsProtonDCA->isSelected(fTrack)) {
+          DCAProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
+          DCAAntiProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
+          fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+        }
+        if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
+          fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(),GetMass2sq(fTrack));
+        }
 
-        } else {
-          if (fTrackCutsDeuteronDCA->isSelected(fTrack)) {
+        if (fTrackCutsDeuteronDCA->isSelected(fTrack)){
+          float MassSqaured = GetMass2sq(fTrack);
+          if(fdoSideband){
+            float meanMass = MeanTOFMassSqdDeuteron(fTrack);
+            float sigmaMass = SigmaTOFMassSqdDeuteron(fTrack);
+            float upMass = meanMass+ (fSigmaUp* sigmaMass);
+            float LowMass = meanMass+ (fSigmaLow*sigmaMass);
+            if((MassSqaured>= LowMass)&&(MassSqaured<=upMass)) {
+              DCADeuterons.push_back(*fTrack);
+              fDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
+            }
+          }else{
             DCADeuterons.push_back(*fTrack);
-            fDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+            fDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
           }
-          if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
-            fDeuteronRestMassNoTOF->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-          }
-          if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)) {
+        }
+        if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)){
+          float MassSqaured = GetMass2sq(fTrack);
+          if(fdoSideband){
+            float meanMass = MeanTOFMassSqdDeuteron(fTrack);
+            float sigmaMass = SigmaTOFMassSqdDeuteron(fTrack);
+            float upMass = meanMass+fSigmaUp*sigmaMass;
+            float LowMass = meanMass+fSigmaLow*sigmaMass;
+            if((MassSqaured >= LowMass)&&(MassSqaured<=upMass)) {
+              DCAAntiDeuterons.push_back(*fTrack);
+              fAntiDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
+            }
+          }else{
             DCAAntiDeuterons.push_back(*fTrack);
-            fAntiDeuteronRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
-          }
-          if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
-            fAntiDeuteronRestMassNoTOF->Fill(fTrack->GetPt(),
-                                             GetMass2sq(fTrack));
-          }
-          if (fTrackCutsProtonDCA->isSelected(fTrack)) {
-            DCAProtons.push_back(*fTrack);
-          }
-          if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
-            DCAAntiProtons.push_back(*fTrack);
+            fAntiDeuteronRestMass->Fill(fTrack->GetPt(), MassSqaured);
           }
         }
       }
@@ -411,13 +396,12 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
 
         for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
           AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
-          if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+          if (mcPart->IsPhysicalPrimary()) {
             if (mcPart->GetPdgCode() == fTrackCutsProtonDCA->GetPDGCode()) {
               fTrackCutsProtonDCA->FillGenerated(mcPart->Pt());
             } else if (mcPart->GetPdgCode() == fTrackCutsAntiProtonDCA->GetPDGCode()) {
               fTrackCutsAntiProtonDCA->FillGenerated(mcPart->Pt());
             } else if (mcPart->GetPdgCode() == fTrackCutsDeuteronDCA->GetPDGCode()) {
-              std::cout << "deuterons " << mcPart->GetPdgCode() << std::endl;
               fTrackCutsDeuteronDCA->FillGenerated(mcPart->Pt());
             } else if (mcPart->GetPdgCode() == fTrackCutsAntiDeuteronDCA->GetPDGCode()) {
               fTrackCutsAntiDeuteronDCA->FillGenerated(mcPart->Pt());
@@ -438,19 +422,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
       void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
                     std::vector<AliFemtoDreamBasePart> &vec2,
                     AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
-
-      if (fUseDumpster) {
-        if (fProtonDeuteronDump) {
-          fProtonDeuteronDump->SetEvent(DCAProtons, DCADeuterons, fEvent, 2212,
-                                        1000010020);
-        }
-
-        if (fAntiProtonAntiDeuteronDump) {
-          fAntiProtonAntiDeuteronDump->SetEvent(DCAAntiProtons,
-                                                DCAAntiDeuterons, fEvent, -2212,
-                                                -1000010020);
-        }
-      }
     }
   }
 
@@ -463,19 +434,18 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
   PostData(7, fAntiDeuteronNoTOFList);
   PostData(8, fResults);
   PostData(9, fResultsQA);
-  PostData(10, fDumpster);
 //-----------------------------------------MCTracksStorage------------------------------------------------------------------------------
   if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
-    PostData(11, fProtonMCList);
+    PostData(10, fProtonMCList);
   }
   if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
-    PostData(12, fAntiProtonMCList);
+    PostData(11, fAntiProtonMCList);
   }
   if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
-    PostData(13, fDeuteronMCList);
+    PostData(12, fDeuteronMCList);
   }
   if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
-    PostData(14, fAntiDeuteronMCList);
+    PostData(13, fAntiDeuteronMCList);
   }
 }
 

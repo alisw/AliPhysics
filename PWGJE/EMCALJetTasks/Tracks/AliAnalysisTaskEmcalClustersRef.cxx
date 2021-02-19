@@ -53,7 +53,6 @@
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelectionCuts.h"
-#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEmcalTriggerStringDecoder.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
@@ -67,14 +66,13 @@
 
 #include "AliAnalysisTaskEmcalClustersRef.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalClustersRef)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     AliAnalysisTaskEmcalTriggerBase(),
+    AliAnalysisEmcalTriggerSelectionHelperImpl(),
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
     fEventCentrality(-1),
@@ -241,38 +239,9 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
   fTriggerClusters.clear();
   fTriggerClusters.emplace_back(kTrgClusterANY);
   if(fFillTriggerClusters) {
-    Bool_t isCENT(false), isCENTNOTRD(false), isCALO(false), isCALOFAST(false);
-    for(auto trg : PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
-      auto trgclust = trg.Triggercluster();
-      if(trgclust == "CENT" && !isCENT){
-        isCENT = true;
-        fTriggerClusters.emplace_back(kTrgClusterCENT);
-      }
-      if(trgclust == "CENTNOTRD" && ! isCENTNOTRD){
-        isCENTNOTRD = true;
-        fTriggerClusters.emplace_back(kTrgClusterCENTNOTRD);
-      }
-      if(trgclust == "CALO" && !isCALO){
-        isCALO = true;
-        fTriggerClusters.emplace_back(kTrgClusterCALO);
-      }
-      if(trgclust == "CALOFAST" && ! isCALOFAST) {
-        isCALOFAST = true;
-        fTriggerClusters.emplace_back();
-      } 
-    }
-    // Mixed clusters
-    if(isCENT || isCENTNOTRD) {
-      if(isCENT) {
-        if(isCENTNOTRD) fTriggerClusters.emplace_back(kTrgClusterCENTBOTH);
-        else fTriggerClusters.emplace_back(kTrgClusterOnlyCENT);
-      } else fTriggerClusters.emplace_back(kTrgClusterOnlyCENTNOTRD);
-    }
-    if(isCALO || isCALOFAST){
-      if(isCALO) {
-        if(isCALOFAST) fTriggerClusters.emplace_back(kTrgClusterCALOBOTH);
-        else fTriggerClusters.emplace_back(kTrgClusterOnlyCALO);
-      } else fTriggerClusters.emplace_back(kTrgClusterOnlyCALOFAST);
+    auto triggerclusters =  GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
+    for(auto en : triggerclusters) {
+      if(std::find(fTriggerClusters.begin(), fTriggerClusters.end(), en) == fTriggerClusters.end()) fTriggerClusters.emplace_back(en);
     }
   }
 
@@ -298,7 +267,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
       if(decision){
         patchhandlers[t] = decision->GetAcceptedPatches();
         if(energycomp < 0) {
-          switch(decision->GetSelectionCuts()->GetSelectionMethod()){
+          switch((decision->GetSelectionCuts()->GetSelectionMethod())){
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kADC: energycomp = 0; break;
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOffline: energycomp = 1; break;
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared: energycomp = 2; break;
@@ -309,7 +278,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   }
 
   auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
-  Double_t energy, et, eta, phi, energyMaxEMCAL(0.), energyMaxDCAL(0.);
+  Double_t energy, eta, phi, energyMaxEMCAL(0.), energyMaxDCAL(0.);
   const TList *selpatches(nullptr);
   AliVCluster *maxclusterEMCAL = nullptr,
               *maxclusterDCAL = nullptr;
@@ -673,7 +642,7 @@ AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalCl
 
   TString taskname = "emcalClusterQA_" + suffix;
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef(taskname.Data());
+  auto task = new AliAnalysisTaskEmcalClustersRef(taskname.Data());
   task->AddClusterContainer(clusName.Data());
   task->SetClusterContainer(clusName.Data());
   mgr->AddTask(task);
@@ -692,25 +661,13 @@ AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalCl
 AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClustersRefDefault(const TString &nClusters){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef("emcalClusterQA");
+  auto task = new AliAnalysisTaskEmcalClustersRef("emcalClusterQA");
   mgr->AddTask(task);
 
   // Adding cluster container
   TString clusName(nClusters == "usedefault" ? AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->InheritsFrom("AliAODInputHandler")) : nClusters);
   task->AddClusterContainer(clusName.Data());
   task->SetClusterContainer(clusName.Data());
-
-  // Set Energy thresholds for additional patch selection:
-  // These are events with offline patches of a given type where the trigger reached already the plateau
-  // These numers are determined as:
-  // EMC7: 3.5 GeV
-  // EG1:  14 GeV
-  // EG2:  8 GeV
-  // EJ1:  22 GeV
-  // EJ2:  12 GeV
-  task->SetOfflineTriggerSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
-  );
 
   TString outfile(mgr->GetCommonFileName());
   outfile += ":ClusterQA";
@@ -740,6 +697,3 @@ AliAnalysisTaskEmcalClustersRef::EnergyBinning::EnergyBinning():
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

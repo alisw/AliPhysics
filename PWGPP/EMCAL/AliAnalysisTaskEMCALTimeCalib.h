@@ -115,6 +115,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fBadReco(kFALSE),
     fFillHeavyHisto(kFALSE),
     fOneHistAllBCs(kFALSE),
+    fTimeECorrection(kFALSE),
+    fEMCALTimeEShiftCorrection(0),
+    fEMCALRecalibrationFactors(NULL),
     fBadChannelMapArray(0),
     fBadChannelMapSet(kFALSE),
     fSetBadChannelMapSource(0),
@@ -288,10 +291,15 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     if(fBadChannelMapArray) return (Int_t) ((TH2I*)fBadChannelMapArray->At(0))->GetBinContent(absId+1);
     else return 0;}//Channel is ok by default
 
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE);
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE, Bool_t oneHistoAllBCs=kFALSE, Bool_t isPAR=kFALSE, Bool_t doFit=kFALSE);
   static void ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile="Reference.root",TString outputFile="ReferenceSM.root",Bool_t offset100=kTRUE, Bool_t justL1phase=kTRUE,TString PARfilename="");
 
   void SwithOnFillOneHistAllBCs()  { fOneHistAllBCs = kTRUE ; }
+  void SwitchOnTimeECorrection()  { fTimeECorrection = kTRUE  ; }
+  void SwitchOffTimeECorrection()  { fTimeECorrection = kFALSE  ; }
+
+  void CorrectCellTimeVsE(Float_t energy, Float_t & celltime, Bool_t isHighGain) const;
+  Double_t GetLowGainSlewing(Double_t energy) const;
 
   private:
   
@@ -308,6 +316,13 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t AcceptCluster(AliVCluster* clus);
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
   Bool_t IsLowGainCellInCluster(AliVCluster* clus);
+
+  Int_t InitEDepTimeCalibration();
+  Int_t InitRecalib();
+  Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const;
+  void SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
+
+  TString GetPass();
 
   // data members
   Int_t          fRunNumber ; //!<! run number
@@ -372,6 +387,10 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t         fFillHeavyHisto;       ///< flag to fill heavy histograms
 
   Bool_t	 fOneHistAllBCs;		///< flag to use one histogram for all the BCs instead of four
+  Bool_t   fTimeECorrection;  ///< Switch on or off the energy dependent time recalibration
+
+  TSpline3*  fEMCALTimeEShiftCorrection;  ///< Spline to correct energy dependent time shift for high gain cells
+  TObjArray* fEMCALRecalibrationFactors;  ///< Array of histograms with map of recalibration factors, EMCAL
 
   // bad channel map
   TObjArray     *fBadChannelMapArray;   ///< bad channel map array

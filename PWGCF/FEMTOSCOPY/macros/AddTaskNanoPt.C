@@ -6,7 +6,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoPt.h"
 AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
-                                 bool fIsMCTruth = true, //2
+                                 bool IsMCTruth = true, //2
                                  TString trigger = "kINT7", //3
                                  bool DCAPlots = false, //4
                                  bool CombSigma = false, //5
@@ -1466,7 +1466,7 @@ AliAnalysisTaskSE* AddTaskNanoPt(bool isMC = true, //1
   task->SetAntiDeuteronCutsNoTOF(AntiTrackCutsDeuteronNoTOF);
   task->SetCollectionConfig(config);
   task->SetUseDumpster(DumpPdApAd);
-  task->SetMCTruth(fIsMCTruth);
+  task->SetMCTruth(IsMCTruth);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();

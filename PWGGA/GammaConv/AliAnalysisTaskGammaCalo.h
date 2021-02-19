@@ -22,11 +22,15 @@
 #include <map>
 
 // simple struct used for merging studies
-typedef struct {
+struct clusterLabel{
+  clusterLabel(): mesonID(0), clusID(0), daughterID(0), daughterPDG(0),
+                  EClus(0), EFrac(0), ETrue(0), PtMeson(0), EtaMeson(0), OpeningAngle(0),
+                  clusVec()
+                  {};
   Int_t mesonID,clusID,daughterID,daughterPDG;
   Float_t EClus,EFrac,ETrue,PtMeson,EtaMeson, OpeningAngle;
   TLorentzVector clusVec;
-} clusterLabel;
+};
 
 class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   public:
@@ -42,6 +46,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetCaloTriggerHelperName(TString name){fCaloTriggerHelperName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
@@ -147,6 +152,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
+    TString               fCaloTriggerHelperName;
     TString               fCorrTaskSetting;
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion
     AliVEvent*            fInputEvent;                                          // current event
@@ -205,10 +211,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
-    TH1F**                fHistoClusGammaPt_onlyTriggered;                      //! array of histos with cluster, pt
+    TH1F**                fHistoClusGammaE_BothBM;                              //! array of histos with cluster, E; Only clusters, which are good on triggered bad map and analysis bad map; Only MB
+    TH1F**                fHistoClusGammaE_BothBM_highestE;                     //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
+    TH1F**                fHistoClusGammaE_AnaBM_highestE;                      //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
     TH1F**                fHistoClusGammaE_onlyTriggered;                       //! array of histos with cluster, E
-    TH1F***               fHistoClusGammaPt_DDL;                             //! array of histos with cluster, pt
-    TH1F***               fHistoClusGammaE_DDL;                              //! array of histos with cluster, E
+    TH1F***               fHistoClusGammaE_DDL;                                 //! array of histos with cluster, E
+    TH1F***               fHistoClusGammaE_DDL_TrBM;                            //! array of histos with cluster, E, only clusters on Triggered Bad map
+    TH1F***               fHistoClusGammaE_DDL_wL0_TrigEv;                      //! array of histos with cluster, E, MB histogram, for events with L0 flag with triggered clusters
+    TH1F***               fHistoClusGammaE_DDL_woL0_TrigEv;                     //! array of histos with cluster, E, MB histogram, for events with no L0 flag with triggered clusters
+    TH1F***               fHistoClusGammaE_DDL_wL0_TrigEv_TrBM;                 //! array of histos with cluster, E, only clusters on Triggered Bad map
+    TH1F***               fHistoClusGammaE_DDL_woL0_TrigEv_TrBM;                //! array of histos with cluster, E, only clusters on Triggered Bad map
     TH1I**                fHistoGoodMesonClusters;                                //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
@@ -250,7 +262,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // MC validated reconstructed quantities mesons
     TH2F**                fHistoTruePi0InvMassPt;                               //! array of histos with validated mothers, invMass, pt
+    TH2F**                fHistoTruePi0InvMassPtAdditional;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTrueEtaInvMassPt;                               //! array of histos with validated mothers, invMass, pt
+    TH2F**                fHistoTrueEtaInvMassPtAdditional;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTruePi0CaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTrueEtaCaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTruePi0CaloConvertedPhotonInvMassPt;            //! array of histos with validated pi0, converted photon leading, invMass, pt
@@ -434,10 +448,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoTruePi0JetFragmFunc;                            // Histogram to determine true pi0 fragmentation function
     TH2F**                 fHistoTruePi0JetFragmFuncZInvMass;                    // Histogram to determine true pi0 Inv Mass distribution with z
     TH2F**                 fHistoTrueEtaJetFragmFunc;                            // Histogram to determine true eta fragmentation function
-    TH2F**                 fHistoTrueEtaJetFragmFuncZInvMass;                    // Histogram to determine true eta Inv Mass distribution with z 
+    TH2F**                 fHistoTrueEtaJetFragmFuncZInvMass;                    // Histogram to determine true eta Inv Mass distribution with z
     TH2F**                 fHistoMCPi0GenVsNClus;                                // pi0 produced on gen level vs Nclus for merging studies
     TH2F**                 fHistoMCPi0GenFoundInOneCluster;                      // pi0 produced on gen level where both decay photons were found in same cluster (merged)
     TH2F**                 fHistoMCPi0GenFoundInTwoCluster;                      // pi0 produced on gen level where both decay photons were found in different clusters
+    TH2F**                fHistoMCEtaGenFoundInOneCluster;                      // pi0 produced on gen level where both decay photons were found in same cluster (merged)
+    TH2F**                 fHistoMCEtaGenFoundInTwoCluster;                      // pi0 produced on gen level where both decay photons were found in different clusters
     TH2F**                 fHistoMCGammaConvRvsPt;                      // pi0 produced on gen level where both decay photons were found in different clusters
     TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
@@ -572,6 +588,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
     TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
     TObjString*           fFileNameBroken;                                      // string object for broken file name
+    TTree*                tTriggerFiles_wL0;                                    // tree for keeping track of triggering files in MB
+    TTree*                tTriggerFiles_woL0;                                   // tree for keeping track of triggering files in MB
+    TObjString*           fFileNameTrigger;                                     // string object for triggering filename in MB
     TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
     TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas
@@ -586,7 +605,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 82);
+    ClassDef(AliAnalysisTaskGammaCalo, 87);
 };
 
 #endif

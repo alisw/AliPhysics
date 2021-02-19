@@ -49,7 +49,7 @@ public:
 
 ////		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
 		virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
-		virtual void  SetTrackFilter2015PbPb(AliAnalysisFilter* trackF) {fTrackFilter2015PbPb = trackF;}
+////		virtual void  SetTrackFilter2015PbPb(AliAnalysisFilter* trackF) {fTrackFilter2015PbPb = trackF;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
@@ -99,7 +99,6 @@ public:
 		AliStack*    fMCStack;              //! MC ESD stack
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
-		AliAnalysisFilter* fTrackFilter2015PbPb;    //  Track Filter, set 2010 with golden cuts
 		AliESDtrackCuts* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
 		AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
 		AliAnalysisUtils* utils;
@@ -211,20 +210,26 @@ public:
 		TH1D* hMcInPos[3];
 		TH1D* hMcOutNeg[3];
 		TH1D* hMcOutPos[3];
+		TH1D* hMcOutNegTOF[3];
+		TH1D* hMcOutPosTOF[3];
 
-		TH3D* hDCApTPrim[2][2];
-		TH3D* hDCApTWDec[2][2];
-		TH3D* hDCApTMate[2][2];
+		TH3F* hDCApTPrim[2][2];
+		TH3F* hDCApTWDec[2][2];
+		TH3F* hDCApTMate[2][2];
 
-		TH3D* hDCAxyVsPtPiNeg_TPC;
-		TH3D* hDCAxyVsPtPNeg_TPC;
-		TH3D* hDCAxyVsPtPiNeg_TOF;
-		TH3D* hDCAxyVsPtPNeg_TOF;
+		TH3F* hDCApTPrim_TOF[2][2];
+		TH3F* hDCApTWDec_TOF[2][2];
+		TH3F* hDCApTMate_TOF[2][2];
 
-		TH3D* hDCAxyVsPtPiPos_TPC;
-		TH3D* hDCAxyVsPtPPos_TPC;
-		TH3D* hDCAxyVsPtPiPos_TOF;
-		TH3D* hDCAxyVsPtPPos_TOF;
+		TH3F* hDCAxyVsPtPiNeg_TPC;
+		TH3F* hDCAxyVsPtPNeg_TPC;
+		TH3F* hDCAxyVsPtPiNeg_TOF;
+		TH3F* hDCAxyVsPtPNeg_TOF;
+
+		TH3F* hDCAxyVsPtPiPos_TPC;
+		TH3F* hDCAxyVsPtPPos_TPC;
+		TH3F* hDCAxyVsPtPiPos_TOF;
+		TH3F* hDCAxyVsPtPPos_TOF;
 
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;

@@ -103,6 +103,7 @@
 
 #pragma link C++ class AliAnalysisTaskStronglyIntensiveCorrTree+;
 #pragma link C++ class AliAnalysisFBCorrelationsWithPID+;
+#pragma link C++ class TrackInfoCorr+;
 
 #pragma link C++ class TrackInfoCorr+;
 #pragma link C++ class AliAnalysisTaskFluctMCTEPOS+;

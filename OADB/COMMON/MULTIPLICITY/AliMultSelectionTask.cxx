@@ -206,6 +206,7 @@ fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
 fMC_SpherocityTracks(0),
+fMC_IsPileup(kFALSE), 
 
 //Histos
 fHistEventCounter(0),
@@ -369,6 +370,7 @@ fMC_NchEta14(0),
 fMC_b(0),
 fMC_Spherocity(0),
 fMC_SpherocityTracks(0),
+fMC_IsPileup(kFALSE),
 
 //Histos
 fHistEventCounter(0),
@@ -702,6 +704,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //A.T. FIXME change into AliMultVariable
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
+        fTreeEvent->Branch("fMC_IsPileup", &fMC_IsPileup, "fMC_IsPileup/O");
         
         //Automatic Loop for linking directly to AliMultInput
         for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
@@ -1190,6 +1193,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 AliGenDPMjetEventHeader* dpmHeader=0;
                 AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
                 
+                //Check pileup
+                fMC_IsPileup = fUtils->IsPileupInGeneratedEvent(mcEvent, "Hijing");
+              
                 //DPMJet/HIJING info if available
                 if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
                     hHijing = (AliGenHijingEventHeader*)mcGenH;
@@ -1633,14 +1639,26 @@ void AliMultSelectionTask::UserExec(Option_t *)
             Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
             Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
             Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
-            
+          
+            //Exception check: periods LHC16qrst
+            Bool_t l2016Override = kFALSE;
+            TString lPeriod = GetPeriodNameByRunNumber();
+            if(lPeriod.Contains("LHC16q")||lPeriod.Contains("LHC16r")||lPeriod.Contains("LHC16s")||lPeriod.Contains("LHC16t")) l2016Override = kTRUE;
+
+            if( l2016Override ){
+              detCh_ZNA = 14;
+              detCh_ZNC = 12;
+              detCh_ZPA = 15;
+              detCh_ZPC = 13;
+            }
+          
             for (Int_t j = 0; j < 4; ++j) {
                 if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired -> SetValueInteger(1);
                 if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired -> SetValueInteger(1);
                 if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired -> SetValueInteger(1);
                 if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired -> SetValueInteger(1);
             }
-            
+          
             const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
             const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
             const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
@@ -2934,7 +2952,14 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 122374 && runNumber <= 126437 ) lSystemType = "pp";
     if ( runNumber >= 127712 && runNumber <= 130840 ) lSystemType = "pp";
     if ( runNumber >= 146746 && runNumber <= 146860 ) lSystemType = "pp";
-    
+  
+    //Registered Productions : Run 1 p-Pb 13bcdef
+    if ( runNumber >= 195344 && runNumber <= 195483 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195529 && runNumber <= 195677 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195681 && runNumber <= 195873 ) lSystemType = "p-Pb";
+    if ( runNumber >= 195935 && runNumber <= 196311 ) lSystemType = "p-Pb";
+    if ( runNumber >= 196433 && runNumber <= 197388 ) lSystemType = "p-Pb";
+  
     //Registered Productions : Run 1 Pb-Pb
     if ( runNumber >= 136851 && runNumber <= 139517 ) lSystemType = "Pb-Pb";
     

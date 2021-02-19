@@ -96,7 +96,13 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fCutGeoNcrNclFractionNcl(0.7),
   fWhichCuts(kDefault),
   fTPCclstCut(1)
+  ,fUsePbPb2018EvSel(kFALSE)
+  ,fPileUpPbPb2018cut(0)
+  ,fAliEventCuts(0)
+  ,fKeepOnlyPileUp(kFALSE)
 {
+
+  fAliEventCuts.SetManualMode();
 
 }
 //________________________________________________________________________
@@ -143,10 +149,15 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fCutGeoNcrNclFractionNcl(0.7),
   fWhichCuts(kDefault),
   fTPCclstCut(1)
+  ,fUsePbPb2018EvSel(kFALSE)
+  ,fPileUpPbPb2018cut(0)
+  ,fAliEventCuts(0)
+  ,fKeepOnlyPileUp(kFALSE)
 {
   //
   // standard constructur
   //
+  fAliEventCuts.SetManualMode();
 
   DefineOutput(1, TList::Class());
 
@@ -232,7 +243,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   //
   // (1.) basic QA and statistics histograms
   //
-  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",7,-1.5,5.5);
+  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",9,-1.5,7.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from ESD");
@@ -242,6 +253,8 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(5,"|zVertex|<10");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Error on zVertex<0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Time-range cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"ITS-TPC OOB pile-up");
 
   fListHist->Add(fHistNEvents);
 
@@ -416,6 +429,55 @@ void AliAnalysisTrackingUncertaintiesAOT::UserExec(Option_t *)
   if (fUseCentrality!=kCentOff) {
     if(!IsEventSelectedInCentrality(fESD)) return;
   }
+
+  //
+  //  Event selection specific for Pb-Pb 2018 in data
+  //    1. time-range cut for LHC18r runs
+  //    2. pile-up rejection exploiting nClstTPC vs. nClstITS correlation
+  //
+  //  Pile-up rejection in MC
+  //
+  if(fUsePbPb2018EvSel){
+    
+    if(fMC && mcEvent){ // MC
+      Bool_t isPileUpGenMC = AliAnalysisUtils::IsPileupInGeneratedEvent(mcEvent,"Hijing");
+      if(isPileUpGenMC){  // the event is pile-up
+        fHistNEvents->Fill(7);
+        if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
+          return;
+        }
+      }
+      else{ // the event is not pile-up one, according to the selection
+        if(fKeepOnlyPileUp) return;
+      }
+    }
+    else{ // data
+      // set-up for Pb-Pb 2018
+      int run = fESD->GetRunNumber();
+      fAliEventCuts.SetupPbPb2018();
+      fAliEventCuts.UseTimeRangeCut();  // set the time-range cut
+      fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true, fPileUpPbPb2018cut); // set the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
+      //
+      // process the event with the mentioned selections
+      fAliEventCuts.AcceptEvent(fESD);
+      if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses)){  // apply the time-range cut
+        fHistNEvents->Fill(6);
+        return;
+      }
+      if(!fAliEventCuts.PassedCut(AliEventCuts::kTPCPileUp)){ // apply the out-of-bunch pile-up rejection according to ITS-TPC cluster correlation
+        fHistNEvents->Fill(7);
+        if(!fKeepOnlyPileUp){     // the event is pile-up and we want to reject it
+          return;
+        }
+      }
+      else{ // the event is not pile-up one, according to the selection
+        if(fKeepOnlyPileUp) return;
+      }
+    }
+  
+  }
+
+
   //
   // Fill track cut variation histograms
   //

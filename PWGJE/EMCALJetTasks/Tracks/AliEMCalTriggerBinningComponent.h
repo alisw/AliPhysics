@@ -10,7 +10,9 @@
 
 class TObjArray;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliEMCalTriggerBinningComponent
@@ -72,9 +74,7 @@ public:
   private:
     TBinning                          *fBinning;        ///< Underlying binning data
 
-    /// \cond CLASSIMP
     ClassDef(AliEMCalTriggerBinningData, 1);
-    /// \endcond
   };
 
   /**
@@ -147,11 +147,11 @@ private:
 
   TObjArray       *fDimensions;           ///< List of binnings (dimensions)
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerBinningComponent, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERBINNINGCOMPONENT_H */

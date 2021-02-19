@@ -26,8 +26,8 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
                                         Double_t EopEMax = 1.2,
                                         Double_t TPCNSigMin = -1.,
                                         Double_t TPCNSigMax = 3.,
-                                        Double_t M20Min =0.02,
-                                        Double_t M20Max =0.35,
+                                        Double_t M02Min =0.02,
+                                        Double_t M02Max =0.35,
                                         Int_t AssoTPCCluster = 80.,
                                         Int_t AssoITSCluster =3.,
                                         Double_t AssoEPt =0.1,
@@ -78,7 +78,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
         HFEtaskINT7->SetDCACut(DCAxyCut,DCAzCut);
         HFEtaskINT7->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
         HFEtaskINT7->SetEopE(EopEMin,EopEMax);
-        HFEtaskINT7->SetShowerShapeEM20(M20Min,M20Max);
+        HFEtaskINT7->SetShowerShapeEM02(M02Min,M02Max);
         HFEtaskINT7->SetInvMassCut(InvmassCut);
         HFEtaskINT7->SetAssoTPCclus(AssoTPCCluster);
         HFEtaskINT7->SetAssoITSclus(AssoITSCluster);
@@ -157,7 +157,7 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
         HFEtaskGA->SetDCACut(DCAxyCut,DCAzCut);
         HFEtaskGA->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
         HFEtaskGA->SetEopE(EopEMin,EopEMax);
-        HFEtaskGA->SetShowerShapeEM20(M20Min,M20Max);
+        HFEtaskGA->SetShowerShapeEM02(M02Min,M02Max);
         HFEtaskGA->SetInvMassCut(InvmassCut);
         HFEtaskGA->SetAssoTPCclus(AssoTPCCluster);
         HFEtaskGA->SetAssoITSclus(AssoITSCluster);

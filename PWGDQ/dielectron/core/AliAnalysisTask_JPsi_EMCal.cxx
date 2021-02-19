@@ -22,7 +22,8 @@
 //                                                                    //
 //	    Authors 							                          //
 //		                                                              //
-//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
+//		Cristiane Jahnke		(cristiane.jahnke@cern.ch)            //
+//      22 January, 2021 -> TPC calibrations for 2017 and 2018 data   //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -111,15 +112,19 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
+,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
 ,fSelect_trigger_events2(kFALSE)
 
 //new Tender organization, using global variables
-,fTenderClusterName("caloClusters")
-,fTenderTrackName("tracks")
+,fTenderClusterName("caloClusters")//TMClustersBranch
+,fTenderTrackName("tracks")//usedefault
+//,fTenderClusterName("TMClustersBranch")//TMClustersBranch
+//,fTenderTrackName("usedefault")//usedefault
 ,fTracks_tender(0)
 ,fCaloClusters_tender(0)
 
@@ -219,8 +224,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
-
-
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
+,fTOF_p(0)
+,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
 ,fECluster_emcal(0)
@@ -247,6 +254,11 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 ,fNClusters(0)
+,fNClusters_pure(0)
+
+,fEoverP_ntracks_matched(0)
+,fEoverP_ncells(0)
+
 ,fECluster_pure(0)
 ,fECluster_pure_emcal(0)
 
@@ -281,6 +293,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fMCparticle(0)
 ,fMCparticleMother(0)
 
+
 ,fMCparticle2(0)
 ,fMCparticleMother2(0)
 
@@ -298,6 +311,11 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
 ,fHist_InvMass_pt_LS_KF(0)
+
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
+
 
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
@@ -378,7 +396,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
-,fIspp2011(kFALSE)
+
 
 	//MC efficiencies
 ,fPtMCparticleAllHfe1(0)
@@ -396,6 +414,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 ,fPtMCparticleAll_trueJPsi_pT(0)
+,fPtMCparticleAll_trueJPsi_pT_weight(0)
+,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 
 //tracking efficiency
@@ -436,6 +456,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 ,fPtMCparticle_TotalplusMass_JPsi_pT(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt(0)
 
 {
   //Named constructor
@@ -464,7 +486,9 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fFill_ESparse(kFALSE)
+,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
+,fIs_TPC_calibration(kFALSE)
 
 //to select events with high energy cluster (to mimic the trigger)
 ,fSelect_trigger_events1(kFALSE)
@@ -473,6 +497,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 //new Tender organization, uisng global variables
 ,fTenderClusterName("caloClusters")
 ,fTenderTrackName("tracks")
+
+//,fTenderClusterName("TMClustersBranch")//TMClustersBranch
+//,fTenderTrackName("usedefault")//usedefault
+
 ,fTracks_tender(0)
 ,fCaloClusters_tender(0)
 
@@ -572,8 +600,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fEoverP_pt(0)
 ,fTPC_p(0)
 ,fTPCnsigma_p(0)
-
-
+,fTPCnsigma_p_beforeCalibration(0)
+,fTPCnsigma_p_afterCalibration(0)
+,fTOF_p(0)
+,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
 ,fECluster_emcal(0)
@@ -621,12 +651,16 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fSPD2(0)
 
 ,fNClusters(0)
+,fNClusters_pure(0)
 
+,fEoverP_ntracks_matched(0)
+,fEoverP_ncells(0)
 
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
 ,fMCparticleMother(0)
+
 
 ,fMCparticle2(0)
 ,fMCparticleMother2(0)
@@ -645,6 +679,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 	//KF
 ,fHist_InvMass_pt_ULS_KF(0)
 ,fHist_InvMass_pt_LS_KF(0)
+
+,fHist_Correlation_leg1_emcal_leg2_not(0)
+,fHist_Correlation_leg1_not_leg2_emcal(0)
+,fHist_Correlation_leg1_emcal_leg2_emcal(0)
 
 //multiplicity histos
 ,fHist_InvMass_pt_ULS_KF_SPDmulti_1(0)
@@ -723,7 +761,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fvalueElectronTPC(0)
 ,fSparseMulti(0)
 ,fvalueMulti(0)
-,fIspp2011(kFALSE)
+
 
 	//MC efficiencies
 ,fPtMCparticleAllHfe1(0)
@@ -740,6 +778,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleAll_particles(0)
 
 ,fPtMCparticleAll_trueJPsi_pT(0)
+,fPtMCparticleAll_trueJPsi_pT_weight(0)
+,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
 
 ,fPtMCparticleReco_electrons(0)
@@ -781,6 +821,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fPtMCparticle_TotalplusMass_JPsi_pT(0)
 ,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight(0)
+,fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt(0)
 
 
 {
@@ -863,7 +905,7 @@ void AliAnalysisTask_JPsi_EMCal::Init()
         }
     }
     
-    PostData(2,fListProfiles);
+   // PostData(2,fListProfiles);
     
     
     return;
@@ -915,6 +957,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fEoverP_pt = new TH2F *[3];
 	fTPC_p = new TH2F *[3];
 	fTPCnsigma_p = new TH2F *[3];
+    //TOF
+    fTOF_p = new TH2F *[3];
+    fTOFnsigma_p = new TH2F *[3];
+    
 	fTPCnsigma_EoverP = new TH2F *[3];
 	fECluster= new TH1F *[4];
    
@@ -929,13 +975,16 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
-	  fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",600,0,30,500,0,2);
-	  fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",1000,0,20,1000,-20,200);
-	  fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0,20,1000,-15,10);
+	  fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",400,0,40,500,0,2);
+	  fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";p (GeV/c);TPC dE/dx (a. u.)",400,0,40,1000,-20,200);
+	  fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",400,0,40,1000,-15,10);
+        
+        fTOF_p[i] = new TH2F(Form("fTOF_p%d",i),";p (GeV/c);TOF (a. u.)",400,0,40,300,-1,2);
+        fTOFnsigma_p[i] = new TH2F(Form("fTOFnsigma_p%d",i),";p (GeV/c);TOF Electron N#sigma",400,0,40,1000,-15,10);
 	  
 		
-		fECluster_emcal[i]= new TH1F(Form("fECluster_emcal%d",i), ";ECluster EMCal",2000, 0,100);
-		fECluster_dcal[i]= new TH1F(Form("fECluster_dcal%d",i), ";ECluster DCal",2000, 0,100);
+		fECluster_emcal[i]= new TH1F(Form("fECluster_emcal%d",i), ";ECluster EMCal",1000, 0,100);
+		fECluster_dcal[i]= new TH1F(Form("fECluster_dcal%d",i), ";ECluster DCal",1000, 0,100);
 		
 	  fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
 	  fNClusters[i]= new TH1F(Form("fNClusters%d",i),"fNClusters0",100, 0,100);
@@ -949,6 +998,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	  fOutputList->Add(fEoverP_pt[i]);
 	  fOutputList->Add(fTPC_p[i]);
 	  fOutputList->Add(fTPCnsigma_p[i]);
+        
+      fOutputList->Add(fTOF_p[i]);
+      fOutputList->Add(fTOFnsigma_p[i]);
+        
       fOutputList->Add(fTPCnsigma_EoverP[i]);
 	  
 		
@@ -964,18 +1017,39 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 	}
     
+    fTPCnsigma_p_beforeCalibration = new TH2F("fTPCnsigma_p_beforeCalibration",";p (GeV/c);TPC Electron N#sigma (bef. calibration)",400,0,40,1000,-15,10);
+    fTPCnsigma_p_afterCalibration = new TH2F("fTPCnsigma_p_afterCalibration", ";p (GeV/c);TPC Electron N#sigma (aft. calibration)",400,0,40,1000,-15,10);
+    
+    fOutputList->Add(fTPCnsigma_p_beforeCalibration);
+    fOutputList->Add(fTPCnsigma_p_afterCalibration);
+    
+    
+    
     for(Int_t i = 0; i < 4; i++)
     {
         fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
         fOutputList->Add(fECluster[i]);
         
         //pileup histos
-        fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",600, 0,3000, 500, 0, 500000);
+        fTPC_vs_ITScls[i]= new TH2F(Form("fTPC_vs_ITScls%d",i), ";# TPC clusters; #SSD and SDD clusters",10000, 0,10000, 2000, 0, 2000);
         fOutputList->Add(fTPC_vs_ITScls[i]);
     }
     
     //=================================================================================================================================================================
     // Multiplicity histos
+    
+    fNClusters_pure= new TH1F("fNClusters_pure","fNClusters_pure",100, 0,100);
+    fOutputList->Add(fNClusters_pure);
+    
+    fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched","fEoverP_ntracks_matched;E/p; N tracks matched to a cluster",200,0,2,20,0,20);
+    fOutputList->Add(fEoverP_ntracks_matched);
+  
+    fEoverP_ncells = new TH2F("fEoverP_ncells","fEoverP_ncells;E/p; N cells",200,0,2,100,0,100);
+    fOutputList->Add(fEoverP_ncells);
+    
+ 
+    
+    
     
     fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",400,-20,20,500,0,1000);
     fOutputList->Add(fVtxZ_V0);
@@ -1096,6 +1170,17 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fOutputList->Add(fHist_InvMass_pt_ULS_KF);
 	fHist_InvMass_pt_LS_KF = new TH2F("fHist_InvMass_pt_LS_KF","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
 	fOutputList->Add(fHist_InvMass_pt_LS_KF);
+    
+    //Correlation btween leg1 and leg2
+    fHist_Correlation_leg1_emcal_leg2_not = new TH2F("fHist_Correlation_leg1_emcal_leg2_not","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    fHist_Correlation_leg1_not_leg2_emcal = new TH2F("fHist_Correlation_leg1_not_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    fHist_Correlation_leg1_emcal_leg2_emcal = new TH2F("fHist_Correlation_leg1_emcal_leg2_emcal","leg1 vs leg2;p_{T} leg1 (GeV/c);p_{T} leg2 (GeV/c)",50,0,50,50,0,50);
+    
+    fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_not);
+    fOutputList->Add(fHist_Correlation_leg1_not_leg2_emcal);
+    fOutputList->Add(fHist_Correlation_leg1_emcal_leg2_emcal);
+    
+    
     
     //multiplicity histos
     
@@ -1224,10 +1309,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	fOutputList->Add(fHist_InvMass_pt_LStpc);
     
     
-    fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,100,0,10);
+    fHist_InvMass_pt_ULStpc_wMatching = new TH2F("fHist_InvMass_pt_ULStpc_wMatching","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",50,0,50,1000,0,10);
     fOutputList->Add(fHist_InvMass_pt_ULStpc_wMatching);
     
-    fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,100,0,10);
+    fHist_InvMass_pt_LStpc_wMatching = new TH2F("fHist_InvMass_pt_LStpc_wMatching","Invariant mass ee (like-sign) ;p_{T} (GeV/c); M_{ee}",50,0,50,1000,0,10);
     fOutputList->Add(fHist_InvMass_pt_LStpc_wMatching);
 	
     
@@ -1252,6 +1337,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         
         
         fPtMCparticleAll_trueJPsi_pT = new TH1F("fPtMCparticleAll_trueJPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_trueJPsi_pT_weight = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticleAll_trueJPsi_pT_weight_prompt = new TH1F("fPtMCparticleAll_trueJPsi_pT_weight_prompt",";p_{T} (GeV/c);Count",500,0,50);
+        
+        
         fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",500,0,50);
         
         fPtMCparticleReco_electrons = new TH1F("fPtMCparticleReco_electrons",";p_{T} (GeV/c);Count",500,0,50);
@@ -1295,7 +1384,10 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother = new TH1F("fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother",";p_{T} (GeV/c);Count",500,0,50);
    
         fPtMCparticle_TotalplusMass_JPsi_pT = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT",";p_{T} (GeV/c);Count",500,0,50);
-        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",500,0,50);
+       
+         fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight",";p_{T} (GeV/c);Count",500,0,50);
+        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt = new TH1F("fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt",";p_{T} (GeV/c);Count",500,0,50);
     
 	
         fOutputList->Add(fPtMCparticleRecoHfe1);
@@ -1314,6 +1406,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         
         
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT);
+        fOutputList->Add(fPtMCparticleAll_trueJPsi_pT_weight);
+        fOutputList->Add(fPtMCparticleAll_trueJPsi_pT_weight_prompt);
+        
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
         
         fOutputList->Add(fPtMCparticleReco_electrons);
@@ -1353,6 +1448,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT);
         fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight);
+        fOutputList->Add(fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt);
+        
         
         
     }
@@ -1360,23 +1458,23 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 	
    
 	
-	fvalueElectron = new Double_t[9];
-    fvalueElectronTPC = new Double_t[5];
+	fvalueElectron = new Double_t[8];
+    fvalueElectronTPC = new Double_t[6];
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
-	Int_t bins[9]={58,40,40,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
-	Double_t xmin[9]={2,-15,0,0,0,0,0,0,0};
-	Double_t xmax[9]={60,5,2,2,2,40,6, 450, 90};
-	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
+	Int_t bins[8]={58,40,40,20,20, 40, 6, 40}; // pt, TPCnsig, E/p, M20, M02, E,phi, TPCnsig_old
+	Double_t xmin[8]={2,-15,0,0,0,0,0,-15};
+	Double_t xmax[8]={60,5,2,2,2,40,6, 5};
+	fSparseElectron = new THnSparseD ("Electron","Electron",8,bins,xmin,xmax);
 	fOutputList->Add(fSparseElectron);
     
     //electron Sparse TPC
     //electron Sparse
-    Int_t binse[5]={40, 40, 40, 18, 6}; // p, pt, TPCnsigma, eta, phi
-    Double_t xmine[5]={1, 1,-15,-0.9,0};
-    Double_t xmaxe[5]={41,41,5,0.9,6};
-    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",5,binse,xmine,xmaxe);
+    Int_t binse[6]={40, 40, 40, 18, 6, 40}; // p, pt, TPCnsigma, eta, phi
+    Double_t xmine[6]={1, 1,-15,-0.9,0, -15};
+    Double_t xmaxe[6]={41,41,5,0.9,6, 5};
+    fSparseElectronTPC = new THnSparseD ("Electrons TPC","Electrons TPC",6,binse,xmine,xmaxe);
     fOutputList->Add(fSparseElectronTPC);
     
     
@@ -1390,7 +1488,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 //______________________________________________________________________
 	
 	PostData(1, fOutputList);
-    PostData(2,fListProfiles);
+    //PostData(2,fListProfiles);
 	
 ///______________________________________________________________________
 }
@@ -1907,6 +2005,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                         {
                             fPtMCparticleAll_trueJPsi_pT->Fill(fMCparticle->Pt());
                             
+                            Double_t weight = CalculateWeight(fMCparticle->Pt());//weight based on JPsi pT
+                            fPtMCparticleAll_trueJPsi_pT_weight->Fill(fMCparticle->Pt(), weight);
+                                                        
+                            //to check for prompt J/psi
+                            if(fMCparticle->GetMother()>0){
+                                Int_t mpdg = fMCparticleMother->GetPdgCode();
+                                if(mpdg > 500 && mpdg < 600)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt());//from B wo weight
+                                else fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);//has mother but it is not B
+                            }
+                            if(fMCparticle->GetMother()<=0)fPtMCparticleAll_trueJPsi_pT_weight_prompt->Fill(fMCparticle->Pt(), weight);//no mother (prompt)
+                            
                             //check J/psi pT distribution of each generator
                             if(IsMB_gen)fTracksMCPt[6]->Fill(fMCparticle->Pt());
                             if(IsPythiaCC_gen)fTracksMCPt[7]->Fill(fMCparticle->Pt());
@@ -2070,11 +2179,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	if(!fUseTender){
 		if(fIsAOD){
+            
+             fNClusters_pure->Fill(ClsNo);
+            
 			for (Int_t i=0; i< ClsNo; i++ ){
 				clust = (AliVCluster*) fAOD->GetCaloCluster(i);
 				
 				if(clust && clust->IsEMCAL())
 				{
+                    
+                   
+                    
 					fECluster_pure->Fill(clust->E());
                     
                     if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
@@ -2136,6 +2251,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     Int_t NTracks=0;
     if(!fUseTender) NTracks=fVevent->GetNumberOfTracks();
     
+    
+    
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     //To use tender
 	if(fUseTender){
@@ -2148,9 +2265,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         NTracks = fTracks_tender->GetEntries();
         ClsNo = fCaloClusters_tender->GetEntries();
         
-       
+        
 		
         //For cluster information from tender
+        Int_t ClsNo_emcal=0.;
 		for (Int_t i=0; i< ClsNo; i++ ){
 			
 			clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(i));
@@ -2161,6 +2279,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			{
 				fECluster_pure->Fill(clust->E());
                 
+                ClsNo_emcal++;
                 
                 if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
                    
@@ -2212,6 +2331,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			}
 			
 		}
+        //to count only clusters on EMCal
+        fNClusters_pure->Fill(ClsNo_emcal);
 	}
    //all cases
     fV0->Fill(fV0Mult_corr2);
@@ -2271,26 +2392,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(eta > fEtaCutMax || eta < fEtaCutMin) continue;
 		
 		
-		if(fIspp2011){
-			Double_t phi=0;
-			phi = track->Phi();
-			if(phi<0 || phi>4 ) continue;
-		}
-		
-		
+		Double_t fTPCnSigma_old = -999;
 		Double_t fTPCnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
 		Double_t fTPCnSigma_kaon = -999;
 		Double_t fTPCsignal = -999;
-		Double_t fPt = -999;
+     	Double_t fPt = -999;
 		Double_t fP = -999;
 		Double_t fP2 = -999;
 		Double_t fPt2 = -999;
 		
 		
 		//TOF
-		Double_t fTOFnsigma = -999;
+		Double_t fTOFnSigma = -999;
 		Double_t fTOFsignal = -999;
 		
 		
@@ -2304,14 +2419,29 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
 		
 		fTPCsignal = track->GetTPCsignal();
-		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+		fTPCnSigma_old = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+        
+        //Apply TPC calibration here!
+        fTPCnsigma_p_beforeCalibration->Fill(fP,fTPCnSigma_old);
+        
+        if(fIs_TPC_calibration) fTPCnSigma = GetTPCCalibration(fAOD->GetRunNumber(), fTPCnSigma_old);
+        if(!fIs_TPC_calibration) fTPCnSigma = fTPCnSigma_old;
+        
+        fTPCnsigma_p_afterCalibration->Fill(fP,fTPCnSigma);
+        
+        //TOF
+        fTOFsignal = track->GetTOFsignal();
+        fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		
 
         fTPC_p[0]->Fill(fP,fTPCsignal);
         fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
+        
+        fTOF_p[0]->Fill(fP,fTOFsignal);
+        fTOFnsigma_p[0]->Fill(fP,fTOFnSigma);
         
         if(track->GetEMCALcluster()>0)
         {
@@ -2343,7 +2473,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     Float_t Energy	= fClus->E();
                     fECluster[0]->Fill(Energy);
 					fTPCnsigma_EoverP[0]->Fill(fTPCnSigma, (fClus->E() / fP));
-					fNClusters[0]->Fill(ClsNo);
+					
 					
 					//======================================// for Eta Phi distribution
 					fClus->GetPosition(pos0);
@@ -2374,7 +2504,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         
        // fVtxZ[0]->Fill(fZvtx);
 		fTracksPt[0]->Fill(fPt);
-		fTracksQAPt[0]->Fill(fPt);
+		
 		
 //=======================================================================
 // Track Selection Cuts are applied here
@@ -2479,21 +2609,28 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 //=======================================================================
 
 		fTracksPt[1]->Fill(fPt);
+        
 		fTPC_p[1]->Fill(fP,fTPCsignal);
 		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
+        
+        fTOF_p[1]->Fill(fP,fTOFsignal);
+        fTOFnsigma_p[1]->Fill(fP,fTOFnSigma);
         
         
         
        // printf("Track: %d, p: %f, pt: %f, TPCnsigma: %f, eta: %f, phi: %f \n", iTracks, fP,track->Pt(),fTPCnSigma, track->Eta(), track->Phi());
         
-        fvalueElectronTPC[0] = fP;
-        fvalueElectronTPC[1] = track->Pt();
-        fvalueElectronTPC[2] = fTPCnSigma;
-        fvalueElectronTPC[3] = track->Eta();
-        fvalueElectronTPC[4] = track->Phi();
-   
-       
-        if(fFill_ESparse)fSparseElectronTPC->Fill(fvalueElectronTPC);
+        if(track->Pt() >=2){
+            
+            fvalueElectronTPC[0] = fP;
+            fvalueElectronTPC[1] = track->Pt();
+            fvalueElectronTPC[2] = fTPCnSigma;
+            fvalueElectronTPC[3] = track->Eta();
+            fvalueElectronTPC[4] = track->Phi();
+            fvalueElectronTPC[5] = fTPCnSigma_old;
+            
+            if(fFill_ESparseTPC)fSparseElectronTPC->Fill(fvalueElectronTPC);
+        }
         
        // printf("SparseElectronTPC was filled \n");
 		
@@ -2551,6 +2688,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		if(track->GetEMCALcluster()>0)
 		{
 				
+            
+            
 			
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
@@ -2578,21 +2717,32 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				//if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
 			  //{
 			      fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
+                
+                
 				   
 				  Float_t Energy	= fClus->E();
 				  fECluster[1]->Fill(Energy);
+                  fTracksQAPt[0]->Fill(fPt);
+                
+                
+                //to check how many tracks matches the cluster
+                fEoverP_ntracks_matched->Fill(fClus->E()/fP, fClus->GetNTracksMatched());
+                fEoverP_ncells->Fill(fClus->E()/fP, fClus->GetNCells());
+                
                 
                 
                 //Ecluster for electrons on TPC
-                if(fTPCnSigma > fTPCnsigmaCutMin && fTPCnSigma < fTPCnsigmaCutMax){
+                if(fTPCnSigma >= fTPCnsigmaCutMin && fTPCnSigma <= fTPCnsigmaCutMax){
                      fECluster[2]->Fill(fClus->E());
                     //Ecluster for electrons on TPC and on EMCal
                     if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <=fEoverPCutMax){
                          fECluster[3]->Fill(fClus->E());
                     }
                 }
-               
                 
+                //TOF signal for tracks matched to emcal
+                fTOF_p[2]->Fill(fP,fTOFsignal);
+                fTOFnsigma_p[2]->Fill(fP,fTOFnSigma);
                 
 				  fTPCnsigma_EoverP[1]->Fill(fTPCnSigma, (fClus->E() / fP));
 				  
@@ -2635,10 +2785,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				fvalueElectron[4] = fClus->GetM02();
 				fvalueElectron[5] = fClus->E(); // to check rejection factor for electrons
                 fvalueElectron[6] = cphi; //to separate emcal and dcal
-                fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
-                fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
+                fvalueElectron[7] = fTPCnSigma_old; //to separate emcal and dcal
+                //fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
+               // fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
-				//if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
+				if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
 				
 			}
 		}
@@ -2899,7 +3050,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				Double_t dEdx3 =-999, fTPCnSigma2=-999;
 				dEdx3 = track2->GetTPCsignal();
 				fTPCnSigma2 = fPidResponse->NumberOfSigmasTPC(track2, AliPID::kElectron);
-				if(fTPCnSigma2 > fTPCnsigmaCutMin && fTPCnSigma2 < fTPCnsigmaCutMax){
+				if(fTPCnSigma2 >= fTPCnsigmaCutMin && fTPCnSigma2 <= fTPCnsigmaCutMax){
                     
                     //printf("Second leg: Track2 on Electron band with fPt2=%f\n", fPt2);
 					
@@ -3029,6 +3180,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 					//Filling the invariant mass spectrum
 					
 					if(fIsTrack1Emcal && (!fIsTrack2Emcal)){
+                        
 						
                         //tpc electrons but at least one leg with track-matching
                         if(charge1*charge2 <0) fHist_InvMass_pt_ULStpc_wMatching->Fill(pt_kf,imass);
@@ -3042,6 +3194,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                
                                  if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass, weight/weight2);//multi integrated with weight
+                                  
+                                 //correlation between leg1 and leg2
+                                  fHist_Correlation_leg1_emcal_leg2_not->Fill(fPt, fPt2);
+                                  
                               }
 							  if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                               
@@ -3157,6 +3313,25 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                             if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
                                                                 fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                 fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
+                                                                
+                                                                //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
+                                                                Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
+                                                                fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
+                                                                
+                                                                //to check for prompt J/psi -> check JPsi mother
+                                                                if(fMCparticleMother->GetMother()>0){
+                                                                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                                                    Int_t gmpdg = fMCparticleGMother->GetPdgCode();
+                                                                    //printf("mother of J/psi is %d\n", gmpdg);
+                                                                    if(gmpdg > 500 && gmpdg < 600)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf);//from B without weight
+                                                                    else fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight (has mother but it is not B meson)
+                                                                }
+                                                                //if there is no mother, has to fill (prompt J/psi)
+                                                                if(fMCparticleMother->GetMother()<=0){
+                                                                    //printf("case of J/psi without mother\n");
+                                                                    fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight
+                                                                }
+                                                                
                
 														}//mass cut
                                                       }//same mother
@@ -3202,6 +3377,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                   if(fMultiAnalysis)fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                                 
+                                 //correlation between leg1 and leg2
+                                 fHist_Correlation_leg1_not_leg2_emcal->Fill(fPt, fPt2);
+                                 
+                                 
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -3323,6 +3503,24 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
                                                                     
+                                                                    //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
+                                                                    Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
+                                                                    fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
+                                                                    
+                                                                    //to check for prompt J/psi -> check JPsi mother
+                                                                    if(fMCparticleMother->GetMother()>0){
+                                                                        fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                                                        Int_t gmpdg = fMCparticleGMother->GetPdgCode();
+                                                                       // printf("mother of J/psi is %d\n", gmpdg);
+                                                                        if(gmpdg > 500 && gmpdg < 600)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf);//from B without weight
+                                                                        else fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight (has mother but it is not B meson)
+                                                                    }
+                                                                    //if there is no mother, has to fill (prompt J/psi)
+                                                                    if(fMCparticleMother->GetMother()<=0){
+                                                                        //printf("case of J/psi without mother\n");
+                                                                        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight
+                                                                    }
+                                                                    
                                                                 }//mass cut
                                                             }//same mother
                                                         }
@@ -3375,6 +3573,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 if(fMultiAnalysis) fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight/weight2);//multi integrated with weight
+                           
+                                //correlation between leg1 and leg2
+                                fHist_Correlation_leg1_emcal_leg2_emcal->Fill(fPt, fPt2);//not both above the threshold, at least one above the threshold
+                            
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
@@ -3467,7 +3669,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 									{
 										if(fMCparticle2->Eta()>=fEtaCutMin && fMCparticle2->Eta()<=fEtaCutMax && fMCparticle2->Charge()!=0){
 											
-											if( TMath::Abs(pdg) == 11 && TMath::Abs(pdg3) == 11 ) //bug here
+											if( TMath::Abs(pdg) == 11 && TMath::Abs(pdg3) == 11 )
 											{	
 												
 												if(fMCparticle->IsPhysicalPrimary() && fMCparticle2->IsPhysicalPrimary())
@@ -3487,7 +3689,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                             
                                                             
                                                             fPtMCparticle_Total_e_from_JPsi->Fill(track->Pt());
-                                                            //leg1 and leg2 passed emcal cuts.
+                                                            //leg1 and leg2 on emcal. At least one of them passed the emcal cuts
                                                             fPtMCparticle_EMCalpid_both_leg1_e_from_JPsi->Fill(track->Pt());
                                                             fPtMCparticle_EMCalpid_both_leg2_e_from_JPsi->Fill(track2->Pt());
                                                             
@@ -3500,6 +3702,25 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                                                 if(invmass3>=fMassCutMin && invmass3<=fMassCutMax){
                                                                     fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother->Fill(track->Pt()); //reconstructed pT
                                                                     fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother->Fill(pt_kf);//spectrum of reconstructed J/Psi
+                                                                    
+                                                                    //weights calculated based on J/Psi true MC pT, but applied on e+e- pair pt
+                                                                    Double_t weight2 = CalculateWeight(fMCparticleMother->Pt());
+                                                                    fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight->Fill(pt_kf, weight2);
+                                                                    
+                                                                    //to check for prompt J/psi -> check JPsi mother
+                                                                    if(fMCparticleMother->GetMother()>0){
+                                                                        fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                                                        Int_t gmpdg = fMCparticleGMother->GetPdgCode();
+                                                                        //printf("mother of J/psi is %d\n", gmpdg);
+                                                                        if(gmpdg > 500 && gmpdg < 600)fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf);//from B without weight
+                                                                        else fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight (has mother but it is not B meson)
+                                                                    }
+                                                                    //if there is no mother, has to fill (prompt J/psi)
+                                                                    if(fMCparticleMother->GetMother()<=0){
+                                                                        //printf("case of J/psi without mother\n");
+                                                                        fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt->Fill(pt_kf, weight2);//prompt with weight
+                                                                    }
+                                                                    
                                                                     
                                                                 }//mass cut
                                                             }//same mother
@@ -3576,7 +3797,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	
 	delete fListOfmotherkink;
 	PostData(1, fOutputList);
-    PostData(2,fListProfiles);
+    //PostData(2,fListProfiles);
 }      
 
 //=======================================================================
@@ -3928,7 +4149,340 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0
     return correctedV0;
     
 }
-
+Double_t AliAnalysisTask_JPsi_EMCal::CalculateWeight(Double_t x)
+{
+    Double_t weight=1;
+    
+    if(x>= 0.000 &&  x < 0.200 ) weight=0.614277;
+    if(x>= 0.200 &&  x < 0.400 ) weight=0.613708;
+    if(x>= 0.400 &&  x < 0.600 ) weight=0.616810;
+    if(x>= 0.600 &&  x < 0.800 ) weight=0.621853;
+    if(x>= 0.800 &&  x < 1.000 ) weight=0.630272;
+    if(x>= 1.000 &&  x < 1.200 ) weight=0.639764;
+    if(x>= 1.200 &&  x < 1.400 ) weight=0.650248;
+    if(x>= 1.400 &&  x < 1.600 ) weight=0.662680;
+    if(x>= 1.600 &&  x < 1.800 ) weight=0.674690;
+    if(x>= 1.800 &&  x < 2.000 ) weight=0.690799;
+    if(x>= 2.000 &&  x < 2.200 ) weight=0.706232;
+    if(x>= 2.200 &&  x < 2.400 ) weight=0.722133;
+    if(x>= 2.400 &&  x < 2.600 ) weight=0.740174;
+    if(x>= 2.600 &&  x < 2.800 ) weight=0.759401;
+    if(x>= 2.800 &&  x < 3.000 ) weight=0.776361;
+    if(x>= 3.000 &&  x < 3.200 ) weight=0.791707;
+    if(x>= 3.200 &&  x < 3.400 ) weight=0.812156;
+    if(x>= 3.400 &&  x < 3.600 ) weight=0.827268;
+    if(x>= 3.600 &&  x < 3.800 ) weight=0.844515;
+    if(x>= 3.800 &&  x < 4.000 ) weight=0.861771;
+    if(x>= 4.000 &&  x < 4.200 ) weight=0.877448;
+    if(x>= 4.200 &&  x < 4.400 ) weight=0.893644;
+    if(x>= 4.400 &&  x < 4.600 ) weight=0.911980;
+    if(x>= 4.600 &&  x < 4.800 ) weight=0.923118;
+    if(x>= 4.800 &&  x < 5.000 ) weight=0.940259;
+    if(x>= 5.000 &&  x < 5.200 ) weight=0.952314;
+    if(x>= 5.200 &&  x < 5.400 ) weight=0.967387;
+    if(x>= 5.400 &&  x < 5.600 ) weight=0.980388;
+    if(x>= 5.600 &&  x < 5.800 ) weight=0.994637;
+    if(x>= 5.800 &&  x < 6.000 ) weight=1.000000;
+    if(x>= 6.000 &&  x < 6.200 ) weight=0.674078;
+    if(x>= 6.200 &&  x < 6.400 ) weight=0.648798;
+    if(x>= 6.400 &&  x < 6.600 ) weight=0.624233;
+    if(x>= 6.600 &&  x < 6.800 ) weight=0.595486;
+    if(x>= 6.800 &&  x < 7.000 ) weight=0.563306;
+    if(x>= 7.000 &&  x < 7.200 ) weight=0.528029;
+    if(x>= 7.200 &&  x < 7.400 ) weight=0.496518;
+    if(x>= 7.400 &&  x < 7.600 ) weight=0.469522;
+    if(x>= 7.600 &&  x < 7.800 ) weight=0.435593;
+    if(x>= 7.800 &&  x < 8.000 ) weight=0.401749;
+    if(x>= 8.000 &&  x < 8.200 ) weight=0.373716;
+    if(x>= 8.200 &&  x < 8.400 ) weight=0.346930;
+    if(x>= 8.400 &&  x < 8.600 ) weight=0.315269;
+    if(x>= 8.600 &&  x < 8.800 ) weight=0.292034;
+    if(x>= 8.800 &&  x < 9.000 ) weight=0.269475;
+    if(x>= 9.000 &&  x < 9.200 ) weight=0.245979;
+    if(x>= 9.200 &&  x < 9.400 ) weight=0.223318;
+    if(x>= 9.400 &&  x < 9.600 ) weight=0.205727;
+    if(x>= 9.600 &&  x < 9.800 ) weight=0.185729;
+    if(x>= 9.800 &&  x < 10.000 ) weight=0.171318;
+    if(x>= 10.000 &&  x < 10.200 ) weight=0.153972;
+    if(x>= 10.200 &&  x < 10.400 ) weight=0.140388;
+    if(x>= 10.400 &&  x < 10.600 ) weight=0.128839;
+    if(x>= 10.600 &&  x < 10.800 ) weight=0.116666;
+    if(x>= 10.800 &&  x < 11.000 ) weight=0.105318;
+    if(x>= 11.000 &&  x < 11.200 ) weight=0.097047;
+    if(x>= 11.200 &&  x < 11.400 ) weight=0.088199;
+    if(x>= 11.400 &&  x < 11.600 ) weight=0.079519;
+    if(x>= 11.600 &&  x < 11.800 ) weight=0.074030;
+    if(x>= 11.800 &&  x < 12.000 ) weight=0.067971;
+    if(x>= 12.000 &&  x < 12.200 ) weight=0.060773;
+    if(x>= 12.200 &&  x < 12.400 ) weight=0.054765;
+    if(x>= 12.400 &&  x < 12.600 ) weight=0.050744;
+    if(x>= 12.600 &&  x < 12.800 ) weight=0.046101;
+    if(x>= 12.800 &&  x < 13.000 ) weight=0.042468;
+    if(x>= 13.000 &&  x < 13.200 ) weight=0.038402;
+    if(x>= 13.200 &&  x < 13.400 ) weight=0.034957;
+    if(x>= 13.400 &&  x < 13.600 ) weight=0.031370;
+    if(x>= 13.600 &&  x < 13.800 ) weight=0.028945;
+    if(x>= 13.800 &&  x < 14.000 ) weight=0.026552;
+    if(x>= 14.000 &&  x < 14.200 ) weight=0.024333;
+    if(x>= 14.200 &&  x < 14.400 ) weight=0.023281;
+    if(x>= 14.400 &&  x < 14.600 ) weight=0.021372;
+    if(x>= 14.600 &&  x < 14.800 ) weight=0.019601;
+    if(x>= 14.800 &&  x < 15.000 ) weight=0.017743;
+    if(x>= 15.000 &&  x < 15.200 ) weight=0.017142;
+    if(x>= 15.200 &&  x < 15.400 ) weight=0.015805;
+    if(x>= 15.400 &&  x < 15.600 ) weight=0.014111;
+    if(x>= 15.600 &&  x < 15.800 ) weight=0.013415;
+    if(x>= 15.800 &&  x < 16.000 ) weight=0.011595;
+    if(x>= 16.000 &&  x < 16.200 ) weight=0.011130;
+    if(x>= 16.200 &&  x < 16.400 ) weight=0.010443;
+    if(x>= 16.400 &&  x < 16.600 ) weight=0.010265;
+    if(x>= 16.600 &&  x < 16.800 ) weight=0.009009;
+    if(x>= 16.800 &&  x < 17.000 ) weight=0.008355;
+    if(x>= 17.000 &&  x < 17.200 ) weight=0.007828;
+    if(x>= 17.200 &&  x < 17.400 ) weight=0.007548;
+    if(x>= 17.400 &&  x < 17.600 ) weight=0.006651;
+    if(x>= 17.600 &&  x < 17.800 ) weight=0.006077;
+    if(x>= 17.800 &&  x < 18.000 ) weight=0.006180;
+    if(x>= 18.000 &&  x < 18.200 ) weight=0.005638;
+    if(x>= 18.200 &&  x < 18.400 ) weight=0.005469;
+    if(x>= 18.400 &&  x < 18.600 ) weight=0.004448;
+    if(x>= 18.600 &&  x < 18.800 ) weight=0.004038;
+    if(x>= 18.800 &&  x < 19.000 ) weight=0.003919;
+    if(x>= 19.000 &&  x < 19.200 ) weight=0.003747;
+    if(x>= 19.200 &&  x < 19.400 ) weight=0.003555;
+    if(x>= 19.400 &&  x < 19.600 ) weight=0.003505;
+    if(x>= 19.600 &&  x < 19.800 ) weight=0.003087;
+    if(x>= 19.800 &&  x < 20.000 ) weight=0.002941;
+    if(x>= 20.000 &&  x < 20.200 ) weight=0.002754;
+    if(x>= 20.200 &&  x < 20.400 ) weight=0.002387;
+    if(x>= 20.400 &&  x < 20.600 ) weight=0.002710;
+    if(x>= 20.600 &&  x < 20.800 ) weight=0.002113;
+    if(x>= 20.800 &&  x < 21.000 ) weight=0.002486;
+    if(x>= 21.000 &&  x < 21.200 ) weight=0.002096;
+    if(x>= 21.200 &&  x < 21.400 ) weight=0.002194;
+    if(x>= 21.400 &&  x < 21.600 ) weight=0.001721;
+    if(x>= 21.600 &&  x < 21.800 ) weight=0.001628;
+    if(x>= 21.800 &&  x < 22.000 ) weight=0.001981;
+    if(x>= 22.000 &&  x < 22.200 ) weight=0.001892;
+    if(x>= 22.200 &&  x < 22.400 ) weight=0.001488;
+    if(x>= 22.400 &&  x < 22.600 ) weight=0.001412;
+    if(x>= 22.600 &&  x < 22.800 ) weight=0.001390;
+    if(x>= 22.800 &&  x < 23.000 ) weight=0.001336;
+    if(x>= 23.000 &&  x < 23.200 ) weight=0.001326;
+    if(x>= 23.200 &&  x < 23.400 ) weight=0.001355;
+    if(x>= 23.400 &&  x < 23.600 ) weight=0.001102;
+    if(x>= 23.600 &&  x < 23.800 ) weight=0.001032;
+    if(x>= 23.800 &&  x < 24.000 ) weight=0.001129;
+    if(x>= 24.000 &&  x < 24.200 ) weight=0.001078;
+    if(x>= 24.200 &&  x < 24.400 ) weight=0.000867;
+    if(x>= 24.400 &&  x < 24.600 ) weight=0.000866;
+    if(x>= 24.600 &&  x < 24.800 ) weight=0.000722;
+    if(x>= 24.800 &&  x < 25.000 ) weight=0.000862;
+    if(x>= 25.000 &&  x < 25.200 ) weight=0.000818;
+    if(x>= 25.200 &&  x < 25.400 ) weight=0.001302;
+    if(x>= 25.400 &&  x < 25.600 ) weight=0.000799;
+    if(x>= 25.600 &&  x < 25.800 ) weight=0.000603;
+    if(x>= 25.800 &&  x < 26.000 ) weight=0.000619;
+    if(x>= 26.000 &&  x < 26.200 ) weight=0.000766;
+    if(x>= 26.200 &&  x < 26.400 ) weight=0.000535;
+    if(x>= 26.400 &&  x < 26.600 ) weight=0.000420;
+    if(x>= 26.600 &&  x < 26.800 ) weight=0.000450;
+    if(x>= 26.800 &&  x < 27.000 ) weight=0.000365;
+    if(x>= 27.000 &&  x < 27.200 ) weight=0.000488;
+    if(x>= 27.200 &&  x < 27.400 ) weight=0.000347;
+    if(x>= 27.400 &&  x < 27.600 ) weight=0.000386;
+    if(x>= 27.600 &&  x < 27.800 ) weight=0.000325;
+    if(x>= 27.800 &&  x < 28.000 ) weight=0.000320;
+    if(x>= 28.000 &&  x < 28.200 ) weight=0.000260;
+    if(x>= 28.200 &&  x < 28.400 ) weight=0.000237;
+    if(x>= 28.400 &&  x < 28.600 ) weight=0.000251;
+    if(x>= 28.600 &&  x < 28.800 ) weight=0.000382;
+    if(x>= 28.800 &&  x < 29.000 ) weight=0.000187;
+    if(x>= 29.000 &&  x < 29.200 ) weight=0.000317;
+    if(x>= 29.200 &&  x < 29.400 ) weight=0.000168;
+    if(x>= 29.400 &&  x < 29.600 ) weight=0.000182;
+    if(x>= 29.600 &&  x < 29.800 ) weight=0.000213;
+    if(x>= 29.800 &&  x < 30.000 ) weight=0.000332;
+    if(x>= 30.000 &&  x < 30.200 ) weight=0.000169;
+    if(x>= 30.200 &&  x < 30.400 ) weight=0.000188;
+    if(x>= 30.400 &&  x < 30.600 ) weight=0.000135;
+    if(x>= 30.600 &&  x < 30.800 ) weight=0.000196;
+    if(x>= 30.800 &&  x < 31.000 ) weight=0.000126;
+    if(x>= 31.000 &&  x < 31.200 ) weight=0.000142;
+    if(x>= 31.200 &&  x < 31.400 ) weight=0.000305;
+    if(x>= 31.400 &&  x < 31.600 ) weight=0.000084;
+    if(x>= 31.600 &&  x < 31.800 ) weight=0.000139;
+    if(x>= 31.800 &&  x < 32.000 ) weight=0.000466;
+    if(x>= 32.000 &&  x < 32.200 ) weight=0.000129;
+    if(x>= 32.200 &&  x < 32.400 ) weight=0.000132;
+    if(x>= 32.400 &&  x < 32.600 ) weight=0.000065;
+    if(x>= 32.600 &&  x < 32.800 ) weight=0.000093;
+    if(x>= 32.800 &&  x < 33.000 ) weight=0.000133;
+    if(x>= 33.000 &&  x < 33.200 ) weight=0.000086;
+    if(x>= 33.200 &&  x < 33.400 ) weight=0.000099;
+    if(x>= 33.400 &&  x < 33.600 ) weight=0.000067;
+    if(x>= 33.600 &&  x < 33.800 ) weight=0.000135;
+    if(x>= 33.800 &&  x < 34.000 ) weight=0.000089;
+    if(x>= 34.000 &&  x < 34.200 ) weight=0.000073;
+    if(x>= 34.200 &&  x < 34.400 ) weight=0.000090;
+    if(x>= 34.400 &&  x < 34.600 ) weight=0.000050;
+    if(x>= 34.600 &&  x < 34.800 ) weight=0.000076;
+    if(x>= 34.800 &&  x < 35.000 ) weight=0.000142;
+    if(x>= 35.000 &&  x < 35.200 ) weight=0.000098;
+    if(x>= 35.200 &&  x < 35.400 ) weight=0.000186;
+    if(x>= 35.400 &&  x < 35.600 ) weight=0.000068;
+    if(x>= 35.600 &&  x < 35.800 ) weight=0.000039;
+    if(x>= 35.800 &&  x < 36.000 ) weight=0.000097;
+    if(x>= 36.000 &&  x < 36.200 ) weight=0.000068;
+    if(x>= 36.200 &&  x < 36.400 ) weight=0.000084;
+    if(x>= 36.400 &&  x < 36.600 ) weight=0.000039;
+    if(x>= 36.600 &&  x < 36.800 ) weight=0.000072;
+    if(x>= 36.800 &&  x < 37.000 ) weight=0.000029;
+    if(x>= 37.000 &&  x < 37.200 ) weight=0.000095;
+    if(x>= 37.200 &&  x < 37.400 ) weight=0.000044;
+    if(x>= 37.400 &&  x < 37.600 ) weight=0.000033;
+    if(x>= 37.600 &&  x < 37.800 ) weight=0.000038;
+    if(x>= 37.800 &&  x < 38.000 ) weight=0.000024;
+    if(x>= 38.000 &&  x < 38.200 ) weight=0.000033;
+    if(x>= 38.200 &&  x < 38.400 ) weight=0.000024;
+    if(x>= 38.400 &&  x < 38.600 ) weight=0.000019;
+    if(x>= 38.600 &&  x < 38.800 ) weight=0.000021;
+    if(x>= 38.800 &&  x < 39.000 ) weight=0.000014;
+    if(x>= 39.000 &&  x < 39.200 ) weight=0.000016;
+    if(x>= 39.200 &&  x < 39.400 ) weight=0.000011;
+    if(x>= 39.400 &&  x < 39.600 ) weight=0.000014;
+    if(x>= 39.600 &&  x < 39.800 ) weight=0.000019;
+    if(x>= 39.800 &&  x < 40.000 ) weight=0.000024;
+    if(x>= 40.000 &&  x < 40.200 ) weight=0.000017;
+    if(x>= 40.200 &&  x < 40.400 ) weight=0.000010;
+    if(x>= 40.400 &&  x < 40.600 ) weight=0.000058;
+    if(x>= 40.600 &&  x < 40.800 ) weight=0.000011;
+    if(x>= 40.800 &&  x < 41.000 ) weight=0.000007;
+    if(x>= 41.000 &&  x < 41.200 ) weight=0.000010;
+    if(x>= 41.200 &&  x < 41.400 ) weight=0.000011;
+    if(x>= 41.400 &&  x < 41.600 ) weight=0.000008;
+    if(x>= 41.600 &&  x < 41.800 ) weight=0.000006;
+    if(x>= 41.800 &&  x < 42.000 ) weight=0.000006;
+    if(x>= 42.000 &&  x < 42.200 ) weight=0.000017;
+    if(x>= 42.200 &&  x < 42.400 ) weight=0.000016;
+    if(x>= 42.400 &&  x < 42.600 ) weight=0.000004;
+    if(x>= 42.600 &&  x < 42.800 ) weight=0.000014;
+    if(x>= 42.800 &&  x < 43.000 ) weight=0.000005;
+    if(x>= 43.000 &&  x < 43.200 ) weight=0.000013;
+    if(x>= 43.200 &&  x < 43.400 ) weight=0.000012;
+    if(x>= 43.400 &&  x < 43.600 ) weight=0.000004;
+    if(x>= 43.600 &&  x < 43.800 ) weight=0.000003;
+    if(x>= 43.800 &&  x < 44.000 ) weight=0.000007;
+    if(x>= 44.000 &&  x < 44.200 ) weight=0.000003;
+    if(x>= 44.200 &&  x < 44.400 ) weight=0.000006;
+    if(x>= 44.400 &&  x < 44.600 ) weight=0.000002;
+    if(x>= 44.600 &&  x < 44.800 ) weight=0.000005;
+    if(x>= 44.800 &&  x < 45.000 ) weight=0.000002;
+    if(x>= 45.000 &&  x < 45.200 ) weight=0.000003;
+    if(x>= 45.200 &&  x < 45.400 ) weight=0.000002;
+    if(x>= 45.400 &&  x < 45.600 ) weight=0.000002;
+    if(x>= 45.600 &&  x < 45.800 ) weight=0.000002;
+    if(x>= 45.800 &&  x < 46.000 ) weight=0.000005;
+    if(x>= 46.000 &&  x < 46.200 ) weight=0.000003;
+    if(x>= 46.200 &&  x < 46.400 ) weight=0.000002;
+    if(x>= 46.400 &&  x < 46.600 ) weight=0.000009;
+    if(x>= 46.600 &&  x < 46.800 ) weight=0.000002;
+    if(x>= 46.800 &&  x < 47.000 ) weight=0.000008;
+    if(x>= 47.000 &&  x < 47.200 ) weight=0.000003;
+    if(x>= 47.200 &&  x < 47.400 ) weight=0.000002;
+    if(x>= 47.400 &&  x < 47.600 ) weight=0.000001;
+    if(x>= 47.600 &&  x < 47.800 ) weight=0.000001;
+    if(x>= 47.800 &&  x < 48.000 ) weight=0.000001;
+    if(x>= 48.000 &&  x < 48.200 ) weight=0.000006;
+    if(x>= 48.200 &&  x < 48.400 ) weight=0.000001;
+    if(x>= 48.400 &&  x < 48.600 ) weight=0.000001;
+    if(x>= 48.600 &&  x < 48.800 ) weight=0.000000;
+    if(x>= 48.800 &&  x < 49.000 ) weight=0.000002;
+    if(x>= 49.000 &&  x < 49.200 ) weight=0.000001;
+    if(x>= 49.200 &&  x < 49.400 ) weight=0.000000;
+    if(x>= 49.400 &&  x < 49.600 ) weight=0.000000;
+    if(x>= 49.600 &&  x < 49.800 ) weight=0.000002;
+    if(x>= 49.800 &&  x < 50.000 ) weight=0.000000;
+    
+    return weight;
+}
+//______________________________________________________________________________
+Double_t AliAnalysisTask_JPsi_EMCal::GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0)
+{
+   
+    Double_t mean_shift=0.00;
+    Double_t sigma_norm=1.00;
+    
+    
+    if(runNo == 258454){//16k test
+        mean_shift = 0.2;
+        sigma_norm = 1;
+     
+    }
+    
+    if (runNo>271839 && runNo<273103){//17h
+        mean_shift = 0.08;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=273486 && runNo< 274442){//17i
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=274690 && runNo< 276508){//17k
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=276551 && runNo< 278729){//17l
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=278818 && runNo< 280140){//17m
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=280282 && runNo< 281961){//17o
+        mean_shift = 0.25;
+        sigma_norm = 1.03;
+    }
+    if (runNo>=282504 && runNo< 282704){//17r
+        mean_shift = 0.15;
+        sigma_norm = 1.03;
+    }
+    
+    //2018 periods
+    if (runNo>=286982 && runNo< 287977){//18f
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=288804 && runNo< 288806){//18h
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289165 && runNo< 289201){//18k
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=289240 && runNo< 289971){//18l
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=293368 && runNo< 293898){//18o
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    if (runNo>=294009 && runNo< 295232){//18p
+        mean_shift = -0.05;
+        sigma_norm = 0.8;
+    }
+    
+    
+    //corrected TPCnsigma
+    Double_t TPCnsigma_corr = (TPCnsigma0 - mean_shift)/sigma_norm;
+    
+   
+    return TPCnsigma_corr;
+    
+}
 
 
 /*

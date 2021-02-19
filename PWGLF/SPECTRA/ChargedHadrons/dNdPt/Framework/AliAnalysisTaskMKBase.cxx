@@ -419,9 +419,9 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
   fMultSelection = static_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
   
   // apply event cuts
-  fIsAcceptedAliEventCuts = kFALSE; // reset transient member
   fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
-
+  fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+    
   //FIXME: in principle all of the following is not necessary if event will be rejected anyway...
   
   if(fNeedEventVertex)  InitEventVertex();
@@ -926,7 +926,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrackCuts()
 {
   fAcceptTrackM =
   (fESDtrackCutsM) ? fESDtrackCutsM->AcceptTrack(fESDTrack) : kFALSE;
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 30; i++) {
     fAcceptTrack[i] = (fESDtrackCuts[i])
     ? fESDtrackCuts[i]->AcceptTrack(fESDTrack)
     : kFALSE;
@@ -1010,17 +1010,21 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
     fMCPrimSec = 0;
     fMCProdcutionType = AlidNdPtTools::kPrim;
   }
-  if (fMCisSecDecay) {
+  else if (fMCisSecDecay) {
     fMCPrimSec = 1;
     fMCProdcutionType = AlidNdPtTools::kSecDecay;
   }
-  if (fMCisSecMat) {
+  else if (fMCisSecMat) {
     fMCPrimSec = 2;
     fMCProdcutionType = AlidNdPtTools::kSecMaterial;
   }
-  if(fMCPileUpTrack){
+  else if(fMCPileUpTrack){
     fMCPrimSec = 3;
     fMCProdcutionType = AlidNdPtTools::ProductionType::kPileUpTrack;
+  }
+  else {
+      fMCPrimSec = -1;
+      fMCProdcutionType = AlidNdPtTools::ProductionType::kUnknown;
   }
   // if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
   if (fMCisPrim && fMCisSec) {

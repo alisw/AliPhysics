@@ -32,6 +32,7 @@
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliMCEvent.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 //---- CaloTrack corr system ----
 #include "AliAnaCaloTrackCorrBaseClass.h"
@@ -68,7 +69,8 @@ fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhCentralityCaloOnly(0),
 fhCentralityEMCEGA(0),        fhCentralityEMC7(0),
-fhCentralityINT7(0),          fhCentrality0Tracks(0),              
+fhCentralityINT7(0),          fhCentralityCENT(0),
+fhCentralitySEMI(0),          fhCentrality0Tracks(0),
 fhCentralityTrackMult(0), 
 fhEventPlaneAngle(0),
 fhNEventsWeighted(0),         fhTrackMultWeighted(0),
@@ -86,7 +88,8 @@ fhClusterTriggerBCUnMatch(0),           fhClusterTriggerBCExoticUnMatch(0),
 fhClusterTriggerBCBadCellUnMatch(0),    fhClusterTriggerBCBadCellExoticUnMatch(0),
 fhClusterTriggerBCBadClusterUnMatch(0), fhClusterTriggerBCBadClusterExoticUnMatch(0),
 fhClusterTriggerBCEventBC(0),           fhClusterTriggerBCEventBCUnMatch(0),
-fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0)
+fhClusterTriggerBCExoticEventBC(0),     fhClusterTriggerBCExoticEventBCUnMatch(0),
+fhRunNumberEmbeddedDiff(0)
 {
   AliDebug(1,"*** Analysis Maker Constructor ***");
   
@@ -138,6 +141,8 @@ fhCentralityCaloOnly(maker.fhCentralityCaloOnly),
 fhCentralityEMCEGA(maker.fhCentralityEMCEGA),
 fhCentralityEMC7(maker.fhCentralityEMC7),
 fhCentralityINT7(maker.fhCentralityINT7),
+fhCentralityCENT(maker.fhCentralityCENT),
+fhCentralitySEMI(maker.fhCentralitySEMI),
 fhCentrality0Tracks(maker.fhCentrality0Tracks),
 fhCentralityTrackMult(maker.fhCentralityTrackMult),
 fhEventPlaneAngle(maker.fhEventPlaneAngle),
@@ -170,7 +175,8 @@ fhClusterTriggerBCBadClusterExoticUnMatch(maker.fhClusterTriggerBCBadClusterExot
 fhClusterTriggerBCEventBC(maker.fhClusterTriggerBCEventBC),
 fhClusterTriggerBCEventBCUnMatch(maker.fhClusterTriggerBCEventBCUnMatch),
 fhClusterTriggerBCExoticEventBC(maker.fhClusterTriggerBCExoticEventBC),
-fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch)
+fhClusterTriggerBCExoticEventBCUnMatch(maker.fhClusterTriggerBCExoticEventBCUnMatch),
+fhRunNumberEmbeddedDiff(maker.fhRunNumberEmbeddedDiff)
 {
   for(Int_t i = 0; i < 3; i++)
   {
@@ -268,7 +274,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhZVertex->Fill(v[2]);
   
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
-  fhCentrality     ->Fill(fReader->GetEventCentrality  ());
+  fhCentrality     ->Fill(fReader->GetEventCentralityF ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
   
   if ( fFillCentralityChecks )
@@ -281,6 +287,10 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
       fhCentralityEMC7->Fill(fReader->GetEventCentrality());
     if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kINT7 )
       fhCentralityINT7->Fill(fReader->GetEventCentrality());
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kCentral )
+      fhCentralityCENT->Fill(fReader->GetEventCentrality());
+    if ( fReader->GetEventTriggerMaskInput() & AliVEvent::kSemiCentral )
+      fhCentralitySEMI->Fill(fReader->GetEventCentrality());
     
     // Number of events analyzed but no unfiltered track found
     if (  fReader->GetInputEvent()->GetNumberOfTracks() == 0 )
@@ -299,6 +309,13 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
   
+  if ( fReader->IsEmbeddedMCEventUsed() && !fReader->IsEmbeddedInputEventUsed() )
+  {
+    AliVEvent * externalEvent = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+    //printf("Inp %d, Ext %d\n",fReader->GetInputEvent()->GetRunNumber(),externalEvent->GetRunNumber());
+    fhRunNumberEmbeddedDiff->Fill(fReader->GetInputEvent()->GetRunNumber()-externalEvent->GetRunNumber());
+  }
+  
   // Check the pT hard in MC, assume it is pythia
   // Make sure AliCaloTrackReader::FillInputEvent() run before
   if ( fCheckPtHard &&  fReader->GetGenPythiaEventHeader() ) 
@@ -315,7 +332,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
                     pTHard,fReader->GetEventWeight()));
   }
     
-  if(fFillDataControlHisto)
+  if ( fFillDataControlHisto )
   {
     if( fReader->IsPileUpFromSPD())
       fhNPileUpEvents->Fill(0.5);
@@ -357,7 +374,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
         fhNPileUpEventsTriggerBC0->Fill(7.5);
     }
     
-    if(fReader->IsPileUpFromSPD())
+    if ( fReader->IsPileUpFromSPD() )
       fhPileUpClusterMultAndSPDPileUp ->Fill(fReader->GetNPileUpClusters());
     
     fhPileUpClusterMult ->Fill(fReader->GetNPileUpClusters  ());
@@ -396,7 +413,7 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhNPileUpVertTracks->Fill(nVerticesTracks);
     
     // Time stamp
-    if(fReader->IsSelectEventTimeStampOn() && esdevent)
+    if ( fReader->IsSelectEventTimeStampOn() && esdevent )
     {
       Int_t timeStamp = esdevent->GetTimeStamp();
       Float_t timeStampFrac = 1.*(timeStamp-fReader->GetRunTimeStampMin()) /
@@ -561,29 +578,49 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
 
-  fhCentrality   = new TH1F("hCentrality","Number of events in centrality bin", 100, 0., 100) ;
+  Int_t ncenbin = 102;
+  Float_t cenmax = 101;
+  Float_t cenmin =  -1;
+
+  fhCentrality   = new TH1F
+  ("hCentrality","Number of events in centrality bin", ncenbin*4, cenmin,cenmax) ;
   fhCentrality->SetXTitle("Centrality bin");
   fOutputContainer->Add(fhCentrality) ;
 
   if ( fFillCentralityChecks )
   {
-    fhCentralityCaloOnly   = new TH1F("hCentralityCaloOnly","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityCaloOnly   = new TH1F
+    ("hCentralityCaloOnly","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
     fhCentralityCaloOnly->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityCaloOnly) ;
     
-    fhCentralityEMCEGA   = new TH1F("hCentralityEMCEGA","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityEMCEGA   = new TH1F
+    ("hCentralityEMCEGA","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
     fhCentralityEMCEGA->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityEMCEGA) ;
     
-    fhCentralityEMC7 = new TH1F("hCentralityEMC7","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityEMC7 = new TH1F
+    ("hCentralityEMC7","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
     fhCentralityEMC7->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityEMC7) ;
     
-    fhCentralityINT7   = new TH1F("hCentralityINT7","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityINT7   = new TH1F
+    ("hCentralityINT7","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
     fhCentralityINT7->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityINT7) ;
 
-    fhCentrality0Tracks   = new TH1F("hCentrality0Tracks","Number of events in centrality bin", 100, 0., 100) ;
+    fhCentralityCENT   = new TH1F
+    ("hCentralityCENT","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
+    fhCentralityCENT->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralityCENT) ;
+
+    fhCentralitySEMI   = new TH1F
+    ("hCentralitySEMI","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
+    fhCentralitySEMI->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralitySEMI) ;
+
+    fhCentrality0Tracks   = new TH1F
+    ("hCentrality0Tracks","Number of events in centrality bin", ncenbin, cenmin,cenmax) ;
     fhCentrality0Tracks->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentrality0Tracks) ;
 
@@ -608,14 +645,14 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhCentralityTrackMult   = new TH2F
     ("hCentralityTrackMult","Number of events in centrality bin",
      cenBinsArray .GetSize() - 1,  cenBinsArray .GetArray(),
-     multBinsArray.GetSize() - 1,  multBinsArray.GetArray()
-     ) ;
+     multBinsArray.GetSize() - 1,  multBinsArray.GetArray()) ;
     fhCentralityTrackMult->SetXTitle("Centrality bin");
     fhCentralityTrackMult->SetYTitle("Track multiplicity");
     fOutputContainer->Add(fhCentralityTrackMult) ;
   }
   
-  fhEventPlaneAngle = new TH1F("hEventPlaneAngle","Number of events in event plane", 100, 0., TMath::Pi()) ;
+  fhEventPlaneAngle = new TH1F
+  ("hEventPlaneAngle","Number of events in event plane", 100, 0., TMath::Pi()) ;
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
 
@@ -629,7 +666,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   if(fCheckPtHard)
   {
-    fhPtHard  = new TH1F("hPtHard"," #it{p}_{T}-hard for selected triggers",300,0,300); 
+    fhPtHard  = new TH1F
+    ("hPtHard"," #it{p}_{T}-hard for selected triggers",300,0,300);
     fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
     fOutputContainer->Add(fhPtHard);
     
@@ -644,15 +682,18 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   
   if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
   {
-    fhNEventsWeighted         = new TH1F("hNEventsWeighted",   "Number of analyzed events weighted by centrality", 1 , 0 , 1  ) ;
+    fhNEventsWeighted         = new TH1F
+    ("hNEventsWeighted",   "Number of analyzed events weighted by centrality", 1 , 0 , 1  ) ;
     fhNEventsWeighted->SetYTitle("# events");
     fOutputContainer->Add(fhNEventsWeighted);
       
-    fhCentralityWeighted      = new TH1F("hCentralityWeighted","Number of events in centrality bin weighted by centrality", 100, 0.,100) ;
+    fhCentralityWeighted      = new TH1F
+    ("hCentralityWeighted","Number of events in centrality bin weighted by centrality", ncenbin, cenmin, cenmax) ;
     fhCentralityWeighted->SetXTitle("Centrality bin");
     fOutputContainer->Add(fhCentralityWeighted) ;
       
-    fhEventPlaneAngleWeighted = new TH1F("hEventPlaneAngleWeighted","Number of events in event plane weighted by centrality",100, 0., TMath::Pi()) ;
+    fhEventPlaneAngleWeighted = new TH1F
+    ("hEventPlaneAngleWeighted","Number of events in event plane weighted by centrality",100, 0., TMath::Pi()) ;
     fhEventPlaneAngleWeighted->SetXTitle("EP angle (rad)");
     fOutputContainer->Add(fhEventPlaneAngleWeighted) ;
       
@@ -665,7 +706,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhTrackMultWeighted);
   }
     
-  if(fFillDataControlHisto)
+  if ( fFillDataControlHisto )
   {
     // Trigger and exoticity related histograms
     if(fFillDataControlHisto > 1)
@@ -951,7 +992,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhNMergedFiles->Fill(1); // Fill here with one entry, while merging it will count the rest
   fOutputContainer->Add(fhNMergedFiles);
   
-  if(fScaleFactor > 0)
+  if ( fScaleFactor > 0 )
   {    
     fhScaleFactor = new TH1F("hScaleFactor",   "Number of merged output files"     , 1 , 0 , 1  ) ;
     fhScaleFactor->SetYTitle("scale factor");
@@ -959,9 +1000,19 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fOutputContainer->Add(fhScaleFactor);
   }
   
+  if ( fReader->IsEmbeddedMCEventUsed() && !fReader->IsEmbeddedInputEventUsed() )
+  {
+    fhRunNumberEmbeddedDiff = new TH1I
+    ("hRunNumberEmbeddedDiff",
+     "Bkg Data - MC signal run number",
+     2500,-2500,2500);
+    fhRunNumberEmbeddedDiff->SetXTitle("Bkg data - signal MC run number");
+    fOutputContainer->Add(fhRunNumberEmbeddedDiff);
+  }
+  
   // Histograms defined and filled in this class, just get the pointers
   // and add them to the list.
-  if(GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn())
+  if ( GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn() )
   {
     TList * templist =  GetReader()->GetWeightUtils()->GetCreateOutputHistograms();
       

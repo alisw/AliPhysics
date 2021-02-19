@@ -43,6 +43,7 @@ public:
   void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
   void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
+  void SetImproverSuffix(TString suffix="central") {fImproverSuffix=suffix;}
 
 private:
   AliAnalysisTaskSEImproveITSCVMFS(const AliAnalysisTaskSEImproveITSCVMFS&);

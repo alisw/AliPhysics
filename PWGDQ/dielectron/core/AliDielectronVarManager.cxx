@@ -276,7 +276,11 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Leg2Phi",                "Leg2 #phi",                                          ""},
   {"DeltaPhiChargeOrdered",  "#Delta #phi_{charge ordered}",                       ""},
   {"Leg1Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
-  {"Leg2Pt",                "Leg1 p_{T}",                                          "(GeV/c)"},
+  {"Leg2Pt",                "Leg2 p_{T}",                                          "(GeV/c)"},
+  {"Leg1PIn",                "Leg1 p_{In}",                                          "(GeV/c)"},
+  {"Leg2PIn",                "Leg2 p_{In}",                                          "(GeV/c)"},
+  {"Leg1TPCnSigmaEle",       "n#sigma^{1}_{e}^{TPC}",                                "(#sigma)"},
+  {"Leg2TPCnSigmaEle",       "n#sigma^{2}_{e}^{TPC}",                                "(#sigma)"},
   {"Merr",                   "m_{inv} error",                                      "(GeV/#it{c}^{2})"},
   {"DCA",                    "#it{dca}",                                           "(cm)"},
   {"PairType",               "PairType",                                           ""},
@@ -624,32 +628,32 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnV0CrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{V0C}))",             ""},
   {"QnV0rpH2FlowV2",            "cos(2(#phi^{pair}-#Psi^{V0}))",              ""},
   {"QnSPDrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{SPD}))",             ""},
-	// Eventplane Scalar-Product
-	{"QnTPCrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{TPC*}#GT",             ""},
-	{"QnV0ArpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0A*}#GT",             ""},
-	{"QnV0CrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0C*}#GT",             ""},
-	{"QnV0rpH2FlowSPV2",            "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0*}#GT",              ""},
-	{"QnSPDrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{SPD*}#GT",             ""},
+  // Eventplane Scalar-Product
+  {"QnTPCrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{TPC*}#GT",             ""},
+  {"QnV0ArpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0A*}#GT",             ""},
+  {"QnV0CrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0C*}#GT",             ""},
+  {"QnV0rpH2FlowSPV2",            "#LT #bf{u}_{n,k}#bf{Q}_{n}^{V0*}#GT",              ""},
+  {"QnSPDrpH2FlowSPV2",           "#LT #bf{u}_{n,k}#bf{Q}_{n}^{SPD*}#GT",             ""},
 
-	// End of Eventplane variables from Qn Framework
+  // End of Eventplane variables from Qn Framework
 
-	{"NclsITS1",                   "N_{cls}^{ITS1}",                                 ""},
-	{"NclsITS2",                   "N_{cls}^{ITS2}",                                 ""},
-	{"NclsITS3",                   "N_{cls}^{ITS3}",                                 ""},
-	{"NclsITS4",                   "N_{cls}^{ITS4}",                                 ""},
-	{"NclsITS5",                   "N_{cls}^{ITS5}",                                 ""},
-	{"NclsITS6",                   "N_{cls}^{ITS6}",                                 ""},
-	{"NSPDclsEvent",               "N_{cls}^{SPD}",                                  ""},
-	{"NSDDclsEvent",               "N_{cls}^{SDD}",                                  ""},
-	{"NSSDclsEvent",               "N_{cls}^{SSD}",                                  ""},
-	{"NSDDSSDclsEvent",            "N_{cls}^{SDD+SSD}",                              ""},
+  {"NclsITS1",                   "N_{cls}^{ITS1}",                                 ""},
+  {"NclsITS2",                   "N_{cls}^{ITS2}",                                 ""},
+  {"NclsITS3",                   "N_{cls}^{ITS3}",                                 ""},
+  {"NclsITS4",                   "N_{cls}^{ITS4}",                                 ""},
+  {"NclsITS5",                   "N_{cls}^{ITS5}",                                 ""},
+  {"NclsITS6",                   "N_{cls}^{ITS6}",                                 ""},
+  {"NSPDclsEvent",               "N_{cls}^{SPD}",                                  ""},
+  {"NSDDclsEvent",               "N_{cls}^{SDD}",                                  ""},
+  {"NSSDclsEvent",               "N_{cls}^{SSD}",                                  ""},
+  {"NSDDSSDclsEvent",            "N_{cls}^{SDD+SSD}",                              ""},
 
-	{"TPCpileupZA",                "Z_{pileup}^{A}",                             "(cm)"},
-	{"TPCpileupZC",                "Z_{pileup}^{C}",                             "(cm)"},
-	{"TPCpileupZ",                 "Z_{pileup}",                                 "(cm)"},
-	{"TPCpileupMA",                "M_{pileup}^{A}",                                 ""},
-	{"TPCpileupMC",                "M_{pileup}^{C}",                                 ""},
-	{"TPCpileupM",                 "M_{pileup}",                                     ""},
+  {"TPCpileupZA",                "Z_{pileup}^{A}",                             "(cm)"},
+  {"TPCpileupZC",                "Z_{pileup}^{C}",                             "(cm)"},
+  {"TPCpileupZ",                 "Z_{pileup}",                                 "(cm)"},
+  {"TPCpileupMA",                "M_{pileup}^{A}",                                 ""},
+  {"TPCpileupMC",                "M_{pileup}^{C}",                                 ""},
+  {"TPCpileupM",                 "M_{pileup}",                                     ""},
 
   {"NTrk",                   "N_{trk}",                                            ""},
   {"Tracks",                 "tracks/per event",                                             ""},
@@ -717,7 +721,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"CentralityCL0plus10",        "centrality_{V0M AP +1.0%}",                     "(%)"},
   {"CentralityCL0minus10",       "centrality_{V0M AP -1.0%}",                     "(%)"},
 
-  {"Transversecity",       "transverse spherocity",                          ""},
+  {"TransverseSpherocity",       "transverse spherocity",                          ""},
   {"TransverseSpherocityFast",   " fast transverse spherocity",                    ""},
   {"TransverseSpherocityESD",    " transverse spherocity on ESDs",                 ""},
   {"TransverseSpherocityFastESD"," fast transverse spherocity on ESDs",            ""},
@@ -731,7 +735,17 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nevents",                "N_{evt}",                                            ""},
   {"RunNumber",              "run",                                                ""},
   {"MixingBin",              "mixing bin",                                         ""},
-  {"LegSource",              "Leg source",                                         ""}
+  {"LegSource",              "Leg source",                                         ""},
+  {"RotationAngle",                       "Rotation angle of the ULS pair",        ""},
+  {"WeightFromRotationAngle",             "Weight from rotation, angle",           ""},
+  {"WeightFromRotationMultiplicity",      "Weight from rotation, multiplicity",    ""},
+  {"WeightFromRotationMultiplicity_PP",   "Weight from rotation, multiplicity_PP", ""},
+  {"WeightFromRotationMultiplicity_MM",   "Weight from rotation, multiplicity_MM", ""},
+  {"WeightFromRotationSingleTracks",      "Weight from rotation, single tracks",   ""},
+  {"NumberOfLSPairs",                     "Number of LS pairs",                    ""},
+  {"NumberOfRotatedPairs",                "Number of Rotated pairs",               ""},
+  {"kWeightFromRotationSingleTracksForPairSum", "Sum of Pair Weights",             ""}
+
 };
 
 AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;

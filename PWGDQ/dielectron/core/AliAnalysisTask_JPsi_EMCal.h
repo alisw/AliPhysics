@@ -14,6 +14,7 @@
 //        Authors                                                     //
 //                                                                    //
 //        Cristiane Jahnke        (cristiane.jahnke@cern.ch)          //
+//        22 January, 2021 -> TPC calibrations for 2017 and 2018 data //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +60,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
-	void SetPeriod2011() {fIspp2011 = kTRUE;};
+	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	
     //trigger selection
@@ -75,7 +76,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
+    void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
     void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
+    
+    void Set_TPCCalibration(){fIs_TPC_calibration=kTRUE;};
     
     //to select events with high energy cluster (to mimic the trigger)
     void Set_Select_trigger_events2() {fSelect_trigger_events2=kTRUE;};
@@ -112,6 +116,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     }
     Double_t         GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t run_number); /*const*/
     
+    Double_t GetTPCCalibration(Int_t runNo, Double_t TPCnsigma0);/*const*/
+    
     //V0 correction
     void SetMultiProfileV0(TProfile2D * hprofV0){
         if(fMultEstimatorV0[0]) delete fMultEstimatorV0[0];
@@ -131,7 +137,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     //Mass cut
     void SetMassCut(Double_t MassCutMin,Double_t MassCutMax ) { fMassCutMin = MassCutMin; fMassCutMax = MassCutMax; };
    
-
+    //To apply weights due to J/psi enhancement
+    Double_t CalculateWeight(Double_t x);
 	//Getters
 	//AliHFEpid *GetPID() const {return fPID;};
 //______________________________________________________________________
@@ -151,7 +158,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fFill_ESparse;
+    Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
+    Bool_t              fIs_TPC_calibration;
     Bool_t              fSelect_trigger_events1;
     Bool_t              fSelect_trigger_events2;
     
@@ -288,9 +297,16 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
 	TH2F				**fEoverP_pt;
 	TH2F				**fTPC_p;
+    
 	TH2F				**fTPCnsigma_p;
+    TH2F                *fTPCnsigma_p_beforeCalibration;
+    TH2F                *fTPCnsigma_p_afterCalibration;
+    
+    TH2F                **fTOF_p;
+    TH2F                **fTOFnsigma_p;
 	
-		
+   
+    
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;
@@ -342,6 +358,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     
     TH1F				**fNClusters;
+    
+    TH1F                *fNClusters_pure;
+    TH2F                *fEoverP_ntracks_matched;
+    TH2F                *fEoverP_ncells;
 
 	
 
@@ -352,6 +372,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	AliAODMCHeader 		*fMCheader;
 	AliAODMCParticle 	*fMCparticle;
 	AliAODMCParticle 	*fMCparticleMother;
+
 	
 	AliAODMCParticle 	*fMCparticle2;
 	AliAODMCParticle 	*fMCparticleMother2;
@@ -370,7 +391,11 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				*fHist_InvMass_pt_ULS_KF;
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
-   TH2F                *fHist_InvMass_pt_ULS_KF_weight;
+    TH2F                *fHist_Correlation_leg1_emcal_leg2_not;
+    TH2F                *fHist_Correlation_leg1_not_leg2_emcal;
+    TH2F                *fHist_Correlation_leg1_emcal_leg2_emcal;
+    
+    TH2F                *fHist_InvMass_pt_ULS_KF_weight;
     
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1;
@@ -450,7 +475,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     THnSparse  *fSparseMulti;//!Multiplicity info
     Double_t   *fvalueMulti;//!Multiplicity info
 	
-	Bool_t				fIspp2011;
+	
 	
 	//MC efficiencies
 	TH1F				*fPtMCparticleRecoHfe1;
@@ -497,6 +522,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     
     TH1F                *fPtMCparticleAll_trueJPsi_pT;
+    TH1F                *fPtMCparticleAll_trueJPsi_pT_weight;
+    TH1F                *fPtMCparticleAll_trueJPsi_pT_weight_prompt;
+    
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
     
  
@@ -507,6 +535,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt;
 	
 
 //______________________________________________________________________

@@ -138,11 +138,12 @@ public:
   void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
   { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
   
-  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE ; }
+  Bool_t          IsHistoCentDependentOn()           const {   return fHistoCentDependent  ; }
+  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE; }
   void            SwitchOnHistoCentDependent()             {   fHistoCentDependent = kTRUE ; }
   
-  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE ; }
-  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE ; }
+  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE  ; }
+  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE   ; }
   
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
@@ -619,7 +620,13 @@ public:
   
   Float_t          GetMaximumChi2PerITScluster()      const { return fSelectMaxChi2PerITScluster ; }
   void             SetMaximumChi2PerITScluster(Float_t max) { fSelectMaxChi2PerITScluster = max  ; }
-  
+
+  Int_t            GetMinimumTPCclusters()           const { return fSelectMinTPCclusters ; }
+  void             SetMinimumTPCclusters(Int_t min)        { fSelectMinTPCclusters = min  ; }
+
+  Float_t          GetMaximumChi2PerTPCcluster()      const { return fSelectMaxChi2PerTPCcluster ; }
+  void             SetMaximumChi2PerTPCcluster(Float_t max) { fSelectMaxChi2PerTPCcluster = max  ; }
+
   Int_t            GetTrackMultiplicity(Int_t cut=0) const 
   {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
   Float_t          GetTrackSumPt(Int_t cut=0) const 
@@ -701,7 +708,8 @@ public:
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
   virtual Int_t    GetCentralityOpt()                const { return fCentralityOpt               ; }
-  virtual Int_t    GetEventCentrality()              const ;
+  virtual Float_t  GetEventCentralityF()             const ;
+  virtual Int_t    GetEventCentrality()              const { return TMath::Floor(GetEventCentralityF()); }
   virtual void     SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                            { fCentralityBin[0]=min; fCentralityBin[1]=max;  
                                                              if(min>=0 && max > 0) fCentralityOpt = 100 ; }
@@ -816,7 +824,13 @@ public:
   virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
-  
+
+  virtual Bool_t   ComparePtHardAndPromptPhotonPt(Int_t process, TString processName) ;
+  virtual Bool_t   IsPtHardAndPromptPhotonPtComparisonSet()       const { return  fComparePtHardAndPromptPhotonPt   ; }
+  virtual void     SetPtHardAndPromptPhotonPtComparison(Bool_t compare) { fComparePtHardAndPromptPhotonPt = compare ; }
+  virtual Float_t  GetPtHardAndPromptPhotonFactor()               const { return  fPtHardAndPromptPhotonPtFactor    ; }
+  virtual void     SetPtHardAndPromptPhotonPtFactor(Float_t factor)     { fPtHardAndPromptPhotonPtFactor = factor   ; }
+
   // Select particles or clusters depending on generator
   virtual void     SetNumberOfMCGeneratorsToAccept(Int_t nGen) 
   { fNMCGenerToAccept = nGen ; 
@@ -838,6 +852,13 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
+  void   SwitchOnMCPromptPhotonsSelection()         { fAcceptMCPromptPhotonOnly    = kTRUE ; }
+  void   SwitchOffMCPromptPhotonsSelection()        { fAcceptMCPromptPhotonOnly    = kFALSE; }
+  Bool_t AreMCPromptPhotonsSelected()         const { return fAcceptMCPromptPhotonOnly     ; }
+  void   SwitchOnMCFragmentationPhotonsRejection()  { fRejectMCFragmentationPhoton = kTRUE ; }
+  void   SwitchOffMCFragmentationPhotonsRejection() { fRejectMCFragmentationPhoton = kFALSE; }
+  Bool_t AreMCFragmentationPhotonsRejected()  const { return fRejectMCFragmentationPhoton  ; }
+
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -900,6 +921,9 @@ public:
   Bool_t           fComparePtHardAndClusterPt;     ///<  In MonteCarlo, jet events, reject events with too large cluster energy.
   Float_t          fPtHardAndClusterPtFactor;      ///<  Factor between ptHard and cluster pT to reject/accept event.
   
+  Bool_t           fComparePtHardAndPromptPhotonPt;///<  In MonteCarlo, prompt photon events, reject fake events with wrong jet energy.
+  Float_t          fPtHardAndPromptPhotonPtFactor; ///<  Factor between ptHard and prompt photon pT to reject/accept event.
+
   Float_t          fCTSPtMin;                      ///<  pT Threshold on charged particles. 
   Float_t          fEMCALPtMin;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMin;                     ///<  pT Threshold on phos clusters.
@@ -980,8 +1004,10 @@ public:
   // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers, AOD
-  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of clusters, AOD 
+  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of ITS clusters, AOD
   Float_t          fSelectMaxChi2PerITScluster;    ///< Ensure track as less than this Chi2/nCls of ITS, AOD 
+  Int_t            fSelectMinTPCclusters;          ///< Ensure track as at least this number of TPC clusters, AOD
+  Float_t          fSelectMaxChi2PerTPCcluster;    ///< Ensure track as less than this Chi2/nCls of TPC, AOD
   
   Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
   Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts
@@ -1179,6 +1205,9 @@ public:
   TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+  TH1F  *          fhCTSTrackCutsPtSignal[6];      //!<! Control histogram on the different CTS tracks selection cuts, pT. Embedded signal
+  TH2F  *          fhCTSTrackCutsPtCen[6];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH2F  *          fhCTSTrackCutsPtCenSignal[6];   //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
   TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
   TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events
@@ -1188,7 +1217,12 @@ public:
   TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
   TH2F  *          fhEMCALNSumEnCellsPerStrip;     //!<! Control histogram of LED events on strips rejection, after LED SM rejection
   TH2F  *          fhEMCALNSumEnCellsPerStripAfter;//!<! Control histogram of LED events on strips rejection, after strip LED and SM rejection
-  
+
+  TH1F  *          fhPtHardPtJetPtRatio;           //!<! Control histogram fraction of generated jet pT over pT hard
+  TH1F  *          fhPtHardPromptPhotonPtRatio;    //!<! Control histogram fraction of generated prompt photon Pt over pT hard
+  TH1F  *          fhPtHardEnClusterRatio;         //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard
+  TH2F  *          fhPtHardEnClusterCenRatio;      //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard  vs centrality
+
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
@@ -1202,12 +1236,14 @@ public:
   Int_t            fMCGenerIndexToAccept[5];       ///<  List with index of generators that should not be included
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
-  
-  
+
   AliGenEventHeader       * fGenEventHeader;       //!<! Event header
   AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
   Bool_t                    fCheckPythiaEventHeader; ///< Switch on/off recovery of the Pythia event header
   
+  Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
+  Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1215,7 +1251,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,92) ;
+  ClassDef(AliCaloTrackReader,95) ;
   /// \endcond
 
 } ;

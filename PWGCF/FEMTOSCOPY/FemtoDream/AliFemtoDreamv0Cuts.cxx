@@ -21,7 +21,6 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fMCData(false),
       fCPAPlots(false),
       fContribSplitting(false),
-      fDoMultBinning(false),
       fCheckMother(false),
       fRunNumberQA(false),
       fMinRunNumber(0),
@@ -79,7 +78,6 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fMCData(cuts.fMCData),
       fCPAPlots(cuts.fCPAPlots),
       fContribSplitting(cuts.fContribSplitting),
-      fDoMultBinning(cuts.fDoMultBinning),
       fCheckMother(cuts.fCheckMother),
       fRunNumberQA(cuts.fRunNumberQA),
       fMinRunNumber(cuts.fMinRunNumber),
@@ -139,7 +137,6 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fMCData = cuts.fMCData;
     this->fCPAPlots = cuts.fCPAPlots;
     this->fContribSplitting = cuts.fContribSplitting;
-    this->fDoMultBinning = cuts.fDoMultBinning;
     this->fCheckMother = cuts.fCheckMother;
     this->fRunNumberQA = cuts.fRunNumberQA;
     this->fMinRunNumber = cuts.fMinRunNumber;
@@ -536,10 +533,10 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
     }
   }
   if (massPass && fCPAPlots && !fMinimalBooking) {
-    fHist->FillCPAPtBins(v0->GetPt(), v0->GetCPA(), v0->GetEventMultiplicity());
+    fHist->FillCPAPtBins(v0->GetPt(), v0->GetCPA());
     if (fMCData) {
       fMCHist->FillMCCPAPtBins(v0->GetParticleOrigin(), v0->GetPt(),
-                               v0->GetCPA(), v0->GetEventMultiplicity());
+                               v0->GetCPA());
     }
   }
   if (massPass) {
@@ -581,8 +578,7 @@ void AliFemtoDreamv0Cuts::Init() {
     if (fMCData) {
       fMCHist = new AliFemtoDreamv0MCHist(fNumberXBins, fAxisMinMass,
                                           fAxisMaxMass, fContribSplitting,
-                                          fCPAPlots, fDoMultBinning,
-                                          fCheckMother);
+                                          fCPAPlots, fCheckMother);
       fMCHistList = new TList();
       fMCHistList->SetOwner();
       fMCHistList->SetName("v0MCCuts");

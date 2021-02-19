@@ -155,6 +155,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
         fIsoArray(0),
+        fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -226,7 +227,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 {
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
-	for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalysisTaskSE(name),
@@ -325,6 +326,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
         fIsoArray(0),
+        fHFArray(0),
 	fzvtx_Ntrkl(0),
 	fzvtx_Nch(0),
 	fzvtx_Ntrkl_Corr(0),
@@ -401,7 +403,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	// you can add more output objects by calling DefineOutput(2, classname::Class())
 	// if you add more output objects, make sure to call PostData for all of them, and to
 	// make changes to your AddTask macro!
-	for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
@@ -410,7 +412,7 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 	if(fOutputList) {
 		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
 	}
-	for(Int_t i=0; i<6; i++) {
+	for(Int_t i=0; i<13; i++) {
 		if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 	}
 	if(fweightNtrkl) delete fweightNtrkl;
@@ -483,11 +485,14 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[7]=   {100, 100, 200, 500, 100, 100, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[7]={  0,  -5,   0,   0,   0,   0,   0};
-        Double_t xmax[7]={100,   5,   2, 0.5, 100,   1,   1};
-        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;m20;m02",7,bins,xmin,xmax);
+        Int_t bins[10]=   { 90, 100, 200, 500, 100, 100, 100, 20, 500, 20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[10]={ 10,  -5,   0,   0,   0,   0,   0,  0,   0,  0};
+        Double_t xmax[10]={100,   5,   2, 0.5, 100,   1,   1, 20, 0.5, 20};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont",10,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
+
+        fHFArray = new THnSparseD ("fHFArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont",10,bins,xmin,xmax);
+        fOutputList->Add(fHFArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
 	fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
@@ -514,7 +519,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
 	fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
 	fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
-	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",100,0,100);
+	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",90,10,100);
 
 
 
@@ -1279,19 +1284,25 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			Bool_t fFlagNonHFE=kFALSE; 
 			Bool_t fFlagIsolation=kFALSE; 
                         Double_t IsoEnergy = -999.9;
+                        Int_t NcontCone = 0;
+                        Double_t IsoEnergyTrack = -999.9;
+                        Int_t NtrackCone = 0;
 
                         Bool_t icaliso = kTRUE;
                         if(fMCarray && TMath::Abs(pdgorg)!=24 && pdgstatus!=1)icaliso = kFALSE;
-                        cout << "icaliso = " << icaliso << endl;
+                        //cout << "icaliso = " << icaliso << endl;
 
-			if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
+			if(icaliso && TrkPt>15.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
+			if(icaliso && TrkPt>15.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
 			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
-                        //cout << "IsoEnergy = " << IsoEnergy << endl << IsoEnergy << endl;;
+                        //cout << "IsoEnergy = " << IsoEnergy << endl;
+                        //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
 
                         //if(TrkPt>10.0 && TMath::Abs(pdgorg)==24)
                         if(TrkPt>10.0 && icaliso)
                            {
-                            Double_t isoarray[7];
+                            Double_t isoarray[10];
                             isoarray[0] = TrkPt;
                             isoarray[1] = fTPCnSigma;
                             isoarray[2] = eop;
@@ -1299,7 +1310,28 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[4] = pTpart;
                             isoarray[5] = m20;
                             isoarray[6] = m02;
+                            isoarray[7] = (Double_t)NcontCone;
+                            isoarray[8] = IsoEnergyTrack;
+                            isoarray[9] = (Double_t)NtrackCone;
+                            //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
+                           }
+
+                        if(TrkPt>10.0 && ((pid_eleD) || (pid_eleB)))
+                           {
+                            Double_t isoarray[10];
+                            isoarray[0] = TrkPt;
+                            isoarray[1] = fTPCnSigma;
+                            isoarray[2] = eop;
+                            isoarray[3] = IsoEnergy;
+                            isoarray[4] = pTpart;
+                            isoarray[5] = m20;
+                            isoarray[6] = m02;
+                            isoarray[7] = (Double_t)NcontCone;
+                            isoarray[8] = IsoEnergyTrack;
+                            isoarray[9] = (Double_t)NtrackCone;
+                            //cout <<"isoarray = " << isoarray[7] << endl;
+                            fHFArray->Fill(isoarray);
                            }
 
                         if(fFlagIsolation && TrkPt>10.0)
@@ -1640,6 +1672,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 
 	     fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+             if(!fMCparticle)continue;
 	     Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
 	     Double_t pdgEta = fMCparticle->Eta(); 
 	     Double_t pTtrue = fMCparticle->Pt(); 
@@ -1751,7 +1784,7 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone)
 {
 	//##################### Set cone radius  ##################### //
 	Double_t CutConeR = MaxConeR;
@@ -1831,13 +1864,90 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 		if(fFlagB || fFlagD){fHist_eff_Iso -> Fill(TrackPt,riso);}
 	}
 
-	if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
+	//if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
 
 	if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
         //cout << "riso = " << riso << endl;
         //cout << "NinSide = " << NinSide << endl;
 	fFlagIso = flagIso;
         IsoEnergy = riso;
+        NcontCone = NinSide;
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone)
+{
+
+	//##################### Set cone radius  ##################### //
+	Double_t CutConeR = MaxConeR;
+	//################################################################# //
+
+	Int_t nWassotracks = -999;
+	nWassotracks = fTracks_tender->GetEntries();
+
+        Double_t risoTrack = 0.0; 
+
+	//////////////////////////////
+	// Track loop
+	//////////////////////////////
+	for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+		AliVParticle* VWassotrack = 0x0;
+		VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+		if (!VWassotrack) {
+			printf("ERROR: Could not receive track %d\n", jtrack);
+			continue;
+		}
+
+		AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+		AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+		if(!aWassotrack) continue;                            // if we failed, skip this 
+
+		//------reject same track
+		if(jtrack==itrack) continue;
+		if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+                //------ find tracks around candidate
+		Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+		Double_t TrackPhi = -999., TrackEta = -999.;
+
+		ptWasso         = aWassotrack->Pt();
+		phiWasso        = aWassotrack->Phi();
+		etaWasso        = aWassotrack->Eta();
+		TrackPhi        = track->Phi();
+		TrackEta        = track->Eta();
+
+		if(ptWasso <0.15) continue;
+               
+		Double_t Wphidiff = phiWasso - TrackPhi; 
+		Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+		if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+                Double_t Wetadiff = etaWasso - TrackEta;
+
+                Double_t ConeRtr = sqrt(pow(Wetadiff,2)+pow(Wphidiff,2));
+                //cout << "ConeRtr = " << ConeRtr << endl;
+
+               if(ConeRtr>CutConeR) continue;
+
+	       Int_t EMCalIndex_TrCone = aWassotrack->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+               if(EMCalIndex_TrCone<0)continue;
+	       AliVCluster *Assoclust_TrCone = 0x0;     
+	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex_TrCone)); 
+
+	       risoTrack += Assoclust_TrCone->E();
+               //cout << "risoTrack = " << risoTrack << endl;
+
+               NtrackCone++;
+
+	}  // end track loop
+
+        //cout << "<----- risoTrack = " << risoTrack << endl;
+        //cout << "<----- MatchclE = " << MatchclE << endl;
+        
+        IsoEnergyTrack = risoTrack/MatchclE;
 
 }
 
@@ -1952,7 +2062,14 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAO
   if (runNo>=256207 && runNo<=256420) period = 1; //LHC16j
   if (runNo>=256941 && runNo<=258537) period = 2; //LHC16k
   if (runNo>=262424 && runNo<=263487) period = 3; //LHC16o
-  if (period < 0 || period > 3) return 0;
+  if (runNo>=271868 && runNo<=273100) period = 4; //LHC17h
+  if (runNo>=273591 && runNo<=274442) period = 5; //LHC17i
+  if (runNo>=274801 && runNo<=276508) period = 6; //LHC17k
+  if (runNo>=276551 && runNo<=278216) period = 7; //LHC17l
+  if (runNo>=278915 && runNo<=280140) period = 8; //LHC17m
+  if (runNo>=280282 && runNo<=281961) period = 9; //LHC17o
+  if (runNo>=282544 && runNo<=282704) period = 10; //LHC17r
+  if (period < 0 || period > 10) return 0;
     
     
   return fMultEstimatorAvg[period];
@@ -1964,9 +2081,9 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   Int_t runNo  = fAOD->GetRunNumber();
   Int_t period = -1; 
    
-	if (runNo>=256504 && runNo<=258537) period = 4;  //LHC16k
-  if (runNo>=258919 && runNo<=259888) period = 5; //LHC16l
-  if (period < 4 || period > 5) return 0;
+	if (runNo>=256504 && runNo<=258537) period = 11;  //LHC16k
+  if (runNo>=258919 && runNo<=259888) period = 12; //LHC16l
+  if (period < 11 || period > 12) return 0;
     
     
   return fMultEstimatorAvg[period];

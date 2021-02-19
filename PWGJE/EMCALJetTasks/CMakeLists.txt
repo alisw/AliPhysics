@@ -263,8 +263,11 @@ if(FASTJET_FOUND)
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         AliLundPlaneHelper.cxx
+      AliAnalysisTaskJetCharge.cxx
+      AliAnalysisTaskJetChargeFlavourTemplates.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+            UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx

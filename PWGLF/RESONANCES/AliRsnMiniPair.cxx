@@ -164,8 +164,72 @@ Double_t AliRsnMiniPair::CosThetaHeAbs(Bool_t useMC)
     daughter1.Boost(betaX, betaY, betaZ);
 
     TVector3 zAxisHE = (mother.Vect()).Unit();
-    double thetaHE = TMath::Abs(zAxisHE.Dot((daughter1.Vect()).Unit()));
+    Double_t thetaHE = TMath::Abs(zAxisHE.Dot((daughter1.Vect()).Unit()));
     return thetaHE;
+}
+
+Double_t AliRsnMiniPair::PhiHePbPb5(Bool_t useMC)
+{
+    //calculate phi angle in helicity frame
+    Double_t Ebeam = 208.0 * 2510.0;
+    Double_t beamMass = 195.323554;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // Return one daughter to the resonance  rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+
+    //write four vector of projectile
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    //boost daughter particle, to rest frame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+
+    //get y and x -axis
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    TVector3 yaxisHE = ((pProjCM.Vect()).Cross(pTargCM.Vect())).Unit();
+    TVector3 xaxisHE = (yaxisHE.Cross(zAxisHE)).Unit();
+    //calculate phi angle
+    Double_t phiHE = TMath::ATan2((daughter1.Vect()).Dot(yaxisHE),(daughter1.Vect()).Dot(xaxisHE));
+    return phiHE;
+}
+
+Double_t AliRsnMiniPair::PhiHePP5(Bool_t useMC)
+{
+    // calculate phi angle in helicity frame
+    Double_t Ebeam = 2510;
+    Double_t beamMass = 0.93827231;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // Return one daughter to the resonance rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+
+    //write four vector of project //projectile in the muon-arm direction
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // Computes components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+
+    //boost daughter particle, to rest freame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+
+    //get y and x -axis
+    TVector3 zAxisHE = (mother.Vect()).Unit();
+    TVector3 yaxisHE = ((pProjCM.Vect()).Cross(pTargCM.Vect())).Unit();
+    TVector3 xaxisHE = (yaxisHE.Cross(zAxisHE)).Unit();
+    //calculate phi angle
+    Double_t phiHE = TMath::ATan2((daughter1.Vect()).Dot(yaxisHE),(daughter1.Vect()).Dot(xaxisHE));
+    return phiHE;
 }
 
 //__________________________________________________________________________________________________

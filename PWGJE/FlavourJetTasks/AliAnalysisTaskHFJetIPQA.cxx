@@ -87,6 +87,7 @@ fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
 bMatched(kFALSE),
+bIsTrueGenV0Jet(0),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
@@ -99,14 +100,15 @@ fV0MotherEta{0},
 fV0MotherEtaMC{0},
 iTrackITSHits{0},
 iV0MCID{0},
+iV0RecID{0},
 bTrackIsV0{0},
 bPassedSD{0},
-bFull{0},
+//bFull{0},
 bSingle1st{0},
-bSingle2nd{0},
-bSingle3rd{0},
+//bSingle2nd{0},
+//bSingle3rd{0},
 bDouble{0},
-bTriple{0},
+//bTriple{0},
 jetconrec(nullptr),
 jetcongen(nullptr),
 fRunSmearing(kFALSE),
@@ -236,6 +238,7 @@ fJetFlavour(-99),
 nTracks(0),
 fNEvent(0),
 bMatched(kFALSE),
+bIsTrueGenV0Jet(0),
 fTrackIPs{0},
 fTrackIPSigs{0},
 fTrackProb{0},
@@ -248,14 +251,15 @@ fV0MotherEta{0},
 fV0MotherEtaMC{0},
 iTrackITSHits{0},
 iV0MCID{0},
+iV0RecID{0},
 bTrackIsV0{0},
 bPassedSD{0},
-bFull{0},
+//bFull{0},
 bSingle1st{0},
-bSingle2nd{0},
-bSingle3rd{0},
+//bSingle2nd{0},
+//bSingle3rd{0},
 bDouble{0},
-bTriple{0},
+//bTriple{0},
 jetconrec(nullptr),
 jetcongen(nullptr),
 fRunSmearing(kFALSE),
@@ -417,6 +421,7 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_MinJetArea] =0.6*TMath::Pi()*0.4*0.4;
     fAnalysisCuts[bAnalysisCut_SDz]=  0.1;
     fAnalysisCuts[bAnalysisCut_SDbeta]=0;
+    fAnalysisCuts[bAnalysisCut_MaxIPLNJP]=25;
 
     //Events
     fAnalysisCuts[bAnalysisCut_PtHardAndJetPtFactor] =3;
@@ -441,7 +446,8 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultV0Cuts(){
     fV0Cuts[MaxDecayRadius]=1000;
     fV0Cuts[MaxCosPALambda]=0.995;
     fV0Cuts[MinCosPAK0]=0.97;
-    fV0Cuts[MaxLifeTime]=5;
+    fV0Cuts[MaxLifeTimeK0]=5;
+    fV0Cuts[MaxLifeTimeLambda]=5;
     fV0Cuts[DoArmenteros]=1;
     fV0Cuts[DoMassWindow]=1;
     fV0Cuts[InvarMassWindowK0]=0.01;
@@ -839,11 +845,11 @@ Int_t AliAnalysisTaskHFJetIPQA::NDaughterInCone(vector<Int_t>& vecDaughLabels, c
       if(bDebug)printf("NDaughtersInCone:: Checking daugh %lu, label %i\n",iDaugh,vecDaughLabels[iDaugh]);
 
       Double_t fip=-999;
-      if(IsParticleInCone(pDaugh, jet,dRMax)){
-          iDaughInCone++;
-          GetMCIP(pDaugh,event, jet, fip);
-          if(bDebug)printf("NDaughtersInCone:: daugh %lu in cone: ipsig=%f\n",iDaugh,fip);
-      }
+      //if(IsParticleInCone(pDaugh, jet,dRMax)){
+      iDaughInCone++;
+      GetMCIP(pDaugh,event, jet, fip);
+      if(bDebug)printf("NDaughtersInCone:: daugh %lu in cone: ipsig=%f\n",iDaugh,fip);
+      //}
       if(fip>fIPSigMax) fIPSigMax=fip;
       pDaugh=0x0;
   }
@@ -962,7 +968,7 @@ void AliAnalysisTaskHFJetIPQA::FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t i
  * Double_t DcaPosToPrimVertex() const;
  * Double_t DcaNegToPrimVertex() const;
  */
-
+/*
 void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
   AliAODMCParticle* pAOD=NULL;
   AliEmcalJet* jetMC=NULL;
@@ -1057,57 +1063,61 @@ void AliAnalysisTaskHFJetIPQA::GetGeneratedV0(){
     jetMC=NULL;
     pAOD=NULL;
 }
+*/
 
-void AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen,vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel){
+Int_t AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs,Int_t iCount, Int_t iLevel){
     Int_t nDaughters=pAOD->GetNDaughters();
     AliAODMCParticle* pDaugh=0x0;
     Int_t iLabel=-99;
     Bool_t bDebug=kFALSE;
-
-    if((vecDaughLabels.size()>0)&&iCount==0) AliError(Form("FindAllV0Daughters:: vecDaughLabels not empty at the start (size=%lu)!\n",vecDaughLabels.size()));
-    if((nDaughters<2)&&(iCount==0)) printf("FindAllV0Daughters:: strange daughters %i\n",nDaughters);
+    Double_t fMaxIP=-999;
+    Int_t iInVectorInx=-999;
+    Int_t iInVectorInxMaxIP=-999;
 
     Int_t iFirstLabel=pAOD->GetDaughterLabel(0);
     if(bDebug)printf("FindAllV0Daughters:: n=%i, pdgmother=%i, iFirstLabel=%i, \n", nDaughters,pAOD->GetPdgCode(),iFirstLabel);
 
     for(int iDaugh=0;iDaugh<nDaughters;iDaugh++){
       iLabel=iFirstLabel+iDaugh;
+      iInVectorInx=-999;
       pDaugh=dynamic_cast<AliAODMCParticle*>(GetMCTrack(iLabel));
       if(!pDaugh){
         AliError(Form("FindAllV0Daughters:: iDaugh=%i, iCount=%i not available!\n", iDaugh, iCount));
         continue;
        }
 
-      /*ULong64_t nstatus=pDaugh->GetStatus();
+      ULong64_t nstatus=pDaugh->GetStatus();
       Int_t nDaughDaughters=pDaugh->GetNDaughters();
-      UInt_t flag=pDaugh->GetFlag();
+      //UInt_t flag=pDaugh->GetFlag();
 
       std::string spaces;
       spaces.resize(2*iLevel,'  ');
-      if(bDebug)printf("%s pdg=%i, iDaugh=%i,  nstatus=%llu, ndaughdaughters=%i\n",spaces.c_str(),pDaugh->GetPdgCode(), iDaugh,nstatus,nDaughDaughters    );
-*/
-      if(bDebug)printf("pdg=%i, iDaugh=%i, label =%i\n",pDaugh->GetPdgCode(), iDaugh, iLabel);
-      /*
-      if(nDaughDaughters==0){*/
-        vecDaughLabels.push_back(iLabel);
-      //  if(bDebug)printf("FindAllV0Daughters:: Found final state daughter label =%i, %i!\n", pDaugh->GetLabel(), iLabel);
-      /*}
-      else{
-        if(iCount==100) return;
-        iCount++;
-        if(bDebug)printf("FindAllV0Daughters:: iDaugh %i not final state, going recursive for the %i'time!\n", iDaugh, iCount);
-        FindAllV0Daughters(pDaugh, event, jetgen,vecDaughLabels, iCount, iLevel+1);
-      }
+      if(bDebug)printf("%s pdg=%i, iDaugh=%i,  nstatus=%llu, ndaughdaughters=%i, label=%i\n",spaces.c_str(),pDaugh->GetPdgCode(), iDaugh,nstatus,nDaughDaughters    ,iLabel);
 
-      if(iLevel==0){
-        Double_t ipsig=-999;
-        GetMCIP(pDaugh,event,jetgen,ipsig);
-        printf("iDaugh=%i, ipsig=%f\n",iDaugh, ipsig);
-      }*/
+      iInVectorInx=IsInVector(iTrackLabels, iLabel,__FUNCTION__);
+      if((nDaughDaughters==0)||!(iInVectorInx<0)){
+        if(!(iInVectorInx<0)){
+          //vecDaughLabels.push_back(iLabel);
+          if(fTrackRecIPs[iInVectorInx]>fMaxIP){
+            fMaxIP=fTrackRecIPs[iInVectorInx];
+            iInVectorInxMaxIP=iInVectorInx;
+            if(bDebug)printf("FindAllV0Daughters:: Found final state daughter label =%i!, iInVectorInxMaxIP=%i, IP=%f, IPMax=%f\n",  iLabel,iInVectorInxMaxIP, fTrackRecIPs[iInVectorInx], fMaxIP);
+          }//
+        }
+        else{
+          //if(bDebug)printf("FindAllV0Daughters:: Rejecting Daughter as not reconstructedin jet lael =%i!\n", iLabel);
+        }
+      }
+      else{
+        if(iCount==100) return -999;
+        iCount++;
+        //if(bDebug)printf("FindAllV0Daughters:: iDaugh %i not final state, going recursive for the %i'time!\n", iDaugh, iCount);
+        FindAllV0Daughters(pDaugh, event, jetgen,iTrackLabels,fTrackRecIPs, iCount, iLevel+1);
+      }
 
       pDaugh=NULL;
     }
-    return;
+    return iInVectorInxMaxIP;
 }
 
 /*!
@@ -1118,15 +1128,16 @@ void AliAnalysisTaskHFJetIPQA::FindAllV0Daughters(AliAODMCParticle* pAOD, const 
  * - acceptance cuts
  * - return -999 if not V0 candidate
  */
-Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event){
-    Int_t iDaughInCone=0;
-    Double_t ipsig=-999;
+void  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs, Int_t& iInVectorInxMaxIP){
+    //Int_t iDaughInCone=0;
     Bool_t bDebug=kFALSE;
+    Bool_t bV0MCIsK0s=kFALSE;
+    Bool_t bV0MCIsLambda=kFALSE;
+    Bool_t bV0MCIsALambda=kFALSE;
 
     Bool_t bV0MCIsPrimaryDist = pAOD->IsPhysicalPrimary();
     if(!bV0MCIsPrimaryDist){
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as not primari: bV0MCIsPrimaryDist=%i\n",bV0MCIsPrimaryDist);
-      return ipsig;
+      return;
     }
 
     //Ask for PDG !
@@ -1134,42 +1145,44 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
     Bool_t bV0 = ((id==3122) || (id==-3122) || (id==310));
     if (!bV0) {
       pAOD=0;
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as wrong ID=%i\n",id);
-      return ipsig;
+      return;
     }
 
     //Daughter Properties
     int itrackPos = pAOD->GetDaughterLabel(0); // positive daughter track
     int itrackNeg = pAOD->GetDaughterLabel(1); // negative daughter track
 
+
     AliAODMCParticle* trackPos=(AliAODMCParticle*) GetMCTrack(itrackPos);
     AliAODMCParticle* trackNeg=(AliAODMCParticle*) GetMCTrack(itrackNeg);
 
-    if((!trackPos)||(!trackNeg))       return -999;;
-    Double_t fPosPt=trackPos->Pt();
-    Double_t fNegPt=trackNeg->Pt();
-    Double_t fPosEta=trackPos->Eta();
-    Double_t fNegEta=trackNeg->Eta();
+
+    //MC acceptance cuts
+    if(!PerformV0MCAcceptanceCuts(pAOD, trackPos,trackNeg,bV0MCIsK0s,bV0MCIsLambda,bV0MCIsALambda)) return;
+    if(bDebug)printf("%s:: bV0MCIsK0s=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i\n",__FUNCTION__, bV0MCIsK0s, bV0MCIsLambda,bV0MCIsALambda);
+    if((!bV0MCIsK0s)&&(!bV0MCIsLambda)&&(!bV0MCIsALambda)) return;
+    if(bDebug)printf("%s:: Passed PerformV0MCAcceptanceCuts!\n",__FUNCTION__);
 
     //acceptance cuts !
-    if (TMath::Abs(pAOD->Y()) > fV0Cuts[MaxV0Rap]) { pAOD=0; return ipsig; }
-    if (pAOD->Pt() <0.15) return ipsig;
-    if ((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta]))return ipsig;
-    if ((fPosPt < fV0Cuts[DaughMinPt])||(fNegPt < fV0Cuts[DaughMinPt]))return ipsig;
-    if(bDebug) printf("GetGeneratedV0:: Passed acceptance cuts: V0y=%f, V0pt=%f, poseta=%f, negeta=%f, pospt%f, negpt=%f, id=%i, bV0MCIsPrimaryDist=%i\n", pAOD->Y(), pAOD->Pt(), fPosEta,fNegEta,fPosPt, fNegPt,id, bV0MCIsPrimaryDist);
+    if(!PerformV0AcceptanceCuts(pAOD->Pt(), pAOD->Y(), trackPos->Pt(), trackPos->Eta(),trackNeg->Pt(), trackNeg->Eta())) return;
+    if(bDebug)printf("%s:: Passed acceptance cuts",__FUNCTION__);
 
     //asking whether v0 within jet cone !
-    vector<Int_t> vecDaughLabels;
-    FindAllV0Daughters(pAOD,event, jetgen,vecDaughLabels,0,0);
-
-    Double_t fV0IP=-999;
-    GetMCIP(pAOD, event,jetgen,fV0IP);
-    if(bDebug)printf("GetGeneratedV0:: fV0IP=%f\n",fV0IP);
-    iDaughInCone=NDaughterInCone(vecDaughLabels, jetgen,event, fJetRadius, ipsig);
-
-    return ipsig;
+    iInVectorInxMaxIP=FindAllV0Daughters(pAOD,event, jetgen,iTrackLabels,fTrackRecIPs,0,0);
+    if(bDebug)printf("%s: iInVectorInxMaxIP=%i\n",__FUNCTION__, iInVectorInxMaxIP);
 }
 
+Int_t AliAnalysisTaskHFJetIPQA::IsInVector(const vector<Int_t>& vec, Int_t iLabel, TString sFunc){
+  Int_t iVecFind=-999;
+  for(long unsigned iVec=0;iVec<vec.size();iVec++){
+    if(iLabel==vec[iVec]){
+      iVecFind=iVec;
+      //printf("%s: Found Label for %s: %i at iTrackLabel position %i\n",__FUNCTION__,sFunc.Data(),iLabel, iVecFind);
+      return iVecFind;
+    }
+  }
+  return iVecFind;
+}
 
 /*!
  * Fills thnsparse with MC truth information about V0 pt, eta, jetpt of generated V0 jet
@@ -1180,19 +1193,23 @@ Double_t  AliAnalysisTaskHFJetIPQA::GetGenV0DaughterIP(AliAODMCParticle *pAOD, c
  * - stores id, pt and eta of V0 mother if one of their daughter has the maximum IP within the jet
  * - fills thnsparse object if largest IP track within jet is V0 daughter and if jetflavour is not b
  */
-void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour){
+Int_t AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts,Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP){
     Bool_t bDebug=kFALSE;
     if(fGenJetFlavour==B){
       if(bDebug)printf("GetGenV0Jets:: Returning as B jet jetflavour=%i\n",fGenJetFlavour);
-      return;
+      return kFALSE;
     }
+    if(iTrackLabels.size()!=fTrackRecIPs.size()) AliError(Form("%s: size of iTrackLabels (%lu) and fTrackRecIPs (%lu) not matching!\n",__FUNCTION__, iTrackLabels.size(), fTrackRecIPs.size()));
+    if(iTrackLabels.size()!=fTrackRecPts.size()) AliError(Form("%s: size of iTrackLabels (%lu) and fTrackRecPts (%lu) not matching!\n",__FUNCTION__, iTrackLabels.size(), fTrackRecIPs.size()));
+
     AliAODMCParticle* pAOD=NULL;
 
     Double_t fIPSigPart=-999;
-
+    Int_t iPartIsInJet=-999;
     Bool_t bMaxIPIsV0=kFALSE;
     Int_t iMaxIPTrack=-999;
     Int_t fMaxV0ID=-999;
+    Int_t iIsV0Jet=V0Untagged;
     Double_t fMaxIP=-999;
     Double_t fMaxV0Pt=-999;
     Double_t fMaxV0Eta=-999;
@@ -1200,50 +1217,64 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
 
     if(bDebug)printf("GetGenV0Jets:: Starting up....................................................\n");
 
-    //for (Int_t i=0; i<fMCArray->GetEntriesFast(); i++) {
+    /*for(long unsigned iTrack=0;iTrack<iTrackLabels.size();iTrack++){
+
+      pAOD = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetMCTrack(iTrackLabels[iTrack]));
+      if (!pAOD) continue;
+
+      printf("iTrack=%i, iLabel=%i, pt=%f, rap=%f\n", iTrack, iTrackLabels[iTrack], pAOD->Pt(), pAOD->Eta());
+    }*/
+
     for(Int_t i=0;i<fMCEvent->GetNumberOfTracks();i++){
-      pAOD = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(i));
+      pAOD = dynamic_cast<AliAODMCParticle*>(GetMCTrack(i));
       if (!pAOD) continue;
       fIPSigPart=-999;
+      iPartIsInJet=-999;
 
-      Int_t status=pAOD->GetStatus();
-      Int_t nDaughters=pAOD->GetNDaughters();
-      //if(bDebug) printf("GetGeneratedV0:: status %i\n",status);
+      Int_t id = pAOD->GetPdgCode();
+      Bool_t bV0 = ((id==3122) || (id==-3122) || (id==310));
 
-
-      //Get Large IP tracks which are not V0 daughters
-      if((status!=0)&&(status!=1)) AliError(Form("GetGenV0Jets:: strange particle status %i\n",status));
-      if(nDaughters==0){
-          //if(bDebug) printf("GetGeneratedV0:: Part with status %i, nDaughters=%i\n",status,nDaughters);
-          if(IsParticleInCone(pAOD,jetgen,fJetRadius)){  //
-            GetMCIP(pAOD,event, jetgen, fIPSigPart);
-            //printf("GetGeneratedV0:: Got fIPSigPart=%f\n",fIPSigPart);
-          }
-
-          if(fIPSigPart>fMaxIP){
-            Double_t fOldMaxIP=fMaxIP;
-            bMaxIPIsV0=kFALSE;
-            iMaxIPTrack=i;
-            fMaxIP=fIPSigPart;
-            if(bDebug)printf("GetGeneratedV0:: Accepting Part as OldMaxIP=%f, NewMaxIP=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i\n",fOldMaxIP,fMaxIP, bMaxIPIsV0, iMaxIPTrack);
-          }
-          else{
-            //if(bDebug)printf("GetGeneratedV0:: Returning Part as fIPSigPart %f<fMaxIP %f\n",fIPSigPart, fMaxIP);
-            continue;
-          }
+      iPartIsInJet=IsInVector(iTrackLabels,i,__FUNCTION__);
+      if((!bV0)&&(iPartIsInJet<0)){
+          continue;
       }
-      //Get V0 IP
-      Double_t fIPV0=GetGenV0DaughterIP(pAOD, jetgen,  event);
 
-      if(fIPV0>fMaxIP){
+      if(!(iPartIsInJet<0)){
+        fIPSigPart=fTrackRecIPs[iPartIsInJet];
+        //GetMCIP(pAOD,event, jetgen, fIPSigPart);
+       // printf("%s:: Got fIPSigPart=%f for track with label %i\n",__FUNCTION__,fIPSigPart, iTrackLabels[iPartIsInJet]);
+      }
+
+      if(fIPSigPart>fMaxIP){
         Double_t fOldMaxIP=fMaxIP;
-        fMaxIP=fIPV0;
+        bMaxIPIsV0=kFALSE;
+        iMaxIPTrack=i;
+        fMaxIP=fIPSigPart;
+        if(bDebug)printf("GetGeneratedV0:: Accepting Part as OldMaxIP=%f, NewMaxIP=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, bPartIsInJet=%i, pt=%f, rap=%f, \n",fOldMaxIP,fMaxIP, bMaxIPIsV0, iMaxIPTrack,iPartIsInJet, pAOD->Pt(), pAOD->Eta());
+        //if(nDaughters!=0)printf("GetGeneratedV0:: Accepting Part with nDaughters=%i as OldMaxIP=%f, NewMaxIP=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, bPartIsInJet=%i, pt=%f, rap=%f, \n",nDaughters,fOldMaxIP,fMaxIP, bMaxIPIsV0, iMaxIPTrack,iPartIsInJet, pAOD->Pt(), pAOD->Eta());
+      }
+
+
+      //Get V0 IP
+      Int_t iInVectorInxMaxIP=-999;
+      Double_t fIPV0Daugh=-999;
+      Double_t fPtV0Daugh=-999;
+      GetGenV0DaughterIP(pAOD, jetgen,  event, iTrackLabels,fTrackRecIPs, iInVectorInxMaxIP);
+      if(iInVectorInxMaxIP>=0){
+        fIPV0Daugh=fTrackRecIPs[iInVectorInxMaxIP];
+        fPtV0Daugh=fTrackRecPts[iInVectorInxMaxIP];
+        if(bDebug)printf("%s: Overtaking fIPV0Daugh=%f, fPtV0Daugh=%f\n",__FUNCTION__, fIPV0Daugh, fPtV0Daugh);
+      }
+
+      if(fIPV0Daugh>fMaxIP){
+        Double_t fOldMaxIP=fMaxIP;
+        fMaxIP=fIPV0Daugh;
         bMaxIPIsV0=kTRUE;
         iMaxIPTrack=i;
-        fMaxV0Pt=pAOD->Pt();
+        fMaxV0Pt=fPtV0Daugh;
         fMaxV0Eta=pAOD->Eta();
         fMaxV0ID=pAOD->GetPdgCode();
-        if(bDebug)printf("GetGeneratedV0:: Accepting V0 as OldMaxIP=%f, NewMaxIP=%f, fIPV0=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, fMaxV0Pt=%f, fMaxV0Eta=%f, fMaxV0ID=%i\n",fOldMaxIP,fMaxIP, fIPV0,bMaxIPIsV0, iMaxIPTrack,fMaxV0Pt, fMaxV0Eta, fMaxV0ID);
+        if(bDebug)printf("GetGeneratedV0:: Accepting V0 as OldMaxIP=%f, NewMaxIP=%f, fIPV0=%f, bMaxIPIsV0=%i, iMaxIPTrack=%i, fMaxV0Pt=%f, fMaxV0Eta=%f, fMaxV0ID=%i\n",fOldMaxIP,fMaxIP, fIPV0Daugh,bMaxIPIsV0, iMaxIPTrack,fMaxV0Pt, fMaxV0Eta, fMaxV0ID);
       }
       else{
         //if(bDebug)printf("GetGeneratedV0:: Returning V0 daug as fIPSigV0 %f<fMaxIP %f\n",fIPV0, fMaxIP);
@@ -1251,114 +1282,31 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
       }
     }//end fMCArray
 
-    double thnentries[4]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fMaxV0Eta, fJetPt};
+    double thnentries[6]={static_cast<double>(fMaxV0ID), fMaxV0Pt, fLNJP, fJetPt, static_cast<double>(kTagDec[1][Double]),fMaxIP};
     if(bMaxIPIsV0==0){
       if(bDebug)printf("GetGeneratedV0:: Returning as no V0 jet\n");
-      return;
+      return kFALSE;
     }
     if(fMaxV0ID==310) {
-        fhnV0InJetK0s->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour);
+        fhnV0InJetK0s->Fill(thnentries); //
+        if(bDebug)printf("Found MCTrue K0s: id=%i, eta=%f, pt=%f, jetpt=%f, jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt, fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
+        iIsV0Jet=V0K0s;
     }
     if(fMaxV0ID==3122) {
         fhnV0InJetLambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour);
+        if(bDebug)printf("Found MCTrue Lambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
+        iIsV0Jet=V0Lambda;
     }
     if(fMaxV0ID==-3122) {
         fhnV0InJetALambda->Fill(thnentries);
-        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour);
+        if(bDebug)printf("Found MCTrue ALambda: id=%i, eta=%f, pt=%f, jetpt=%f,jetflavour=%i, tagging=%i - %f, fIPV0Max=%f, fLNJP=%f\n",fMaxV0ID, fMaxV0Eta, fMaxV0Pt, fJetPt,fGenJetFlavour,kTagDec[1][Double],static_cast<double>(kTagDec[1][Double]),fMaxIP, fLNJP);
+        iIsV0Jet=V0AntiLambda;
     }
 
       pAOD=NULL;
+    if((!bMaxIPIsV0)||((fMaxV0ID!=310)&&(fMaxV0ID!=3122)&&(fMaxV0ID!=-3122))) AliError(Form("%s: Inconsistent decision of V0 jets: MaxIPIsV0=%i, fMaxV0ID=%i\n",__FUNCTION__, bMaxIPIsV0,fMaxV0ID));
+    return iIsV0Jet;
 }
-
-/*
-void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event){
- AliAODMCParticle* pAOD=NULL;
- AliAODMCParticle* pmAOD=NULL;
- Double_t fJetPt= jetgen->Pt();
- Bool_t bDebug=kTRUE;
- AliVParticle* vpart=0x0;
- Int_t iMaxIPTrack=-99;
- Double_t fMaxIP=-999;
- Bool_t bMaxIPIsV0=kFALSE;
-
- for(Int_t iTrack=0;iTrack<jetgen->N();iTrack++){
-    vpart=dynamic_cast<AliVParticle*>(jetgen->Track(iTrack));
-    pAOD=dynamic_cast<AliAODMCParticle*>(vpart);
-
-    if (!pAOD) printf("No Track? iTrack=%i\n",iTrack);
-    Int_t iDaughterLabel=pAOD->GetLabel();
-    if(bDebug)printf("GetGenV0Jets:: daughid=%i\n",pAOD->GetPdgCode());
-
-    //calculate IP
-    /*Double_t ipsig=-99;
-    GetMCIP(pAOD,event, jetgen, ipsig);
-    if(bDebug)printf("GetGenV0Jets:: ipsig=%f\n",ipsig);
-
-    if(ipsig<fMaxIP){
-      if(bDebug)printf("GetGenV0Jets:: Continuing as fMaxIP=%f, ipsig=%f\n",fMaxIP, ipsig);
-      continue;
-    }
-    else{
-      fMaxIP=ipsig;
-      iMaxIPTrack=iTrack;
-      bMaxIPIsV0=kFALSE;
-      if(bDebug) printf("GetGenV0Jets:: Setting fMaxIP to %i, iMaxIPTrack to %i, bMaxIPIsV0=%i\n", fMaxIP, iMaxIPTrack, bMaxIPIsV0);
-    }*/
-
- /*   //V0 acceptance cuts
-    Int_t iMotherLabel=pAOD->GetMother();
-    pmAOD = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iMotherLabel));
-    if (!pmAOD) printf("No Mother Track? iTrack=%i, iMother=%i\n",iTrack, iMotherLabel);
-
-    Bool_t bV0MCIsPrimaryDist = pmAOD->IsPhysicalPrimary();
-    if(!bV0MCIsPrimaryDist){
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as not primari: bV0MCIsPrimaryDist=%i, ID=%i\n",bV0MCIsPrimaryDist, pmAOD->GetPdgCode());
-      continue;
-    }
-
-    //Ask for PDG !
-    Int_t id = pmAOD->GetPdgCode();
-    Bool_t bV0 = ((id==3122) || (id==-3122) || (id==310));
-    if (!bV0) {
-      pAOD=0;
-      if(bDebug)printf("GetGeneratedV0:: Rejecting as wrong ID=%i\n",id);
-      continue;
-    }
-
-    //Daughter Properties
-    int itrackPos = pmAOD->GetDaughterLabel(0); // positive daughter track
-    int itrackNeg = pmAOD->GetDaughterLabel(1); // negative daughter track
-
-    if((iDaughterLabel!=itrackPos)&&(iDaughterLabel!=itrackNeg)) {
-        pAOD=0;
-        if(bDebug)printf("GetGeneratedV0:: Original particle %i is neither negative %i nor positive daugh %i\n",iDaughterLabel, itrackPos, itrackNeg);
-        continue;
-    }
-
-    AliAODMCParticle* trackPos=(AliAODMCParticle*) GetMCTrack(itrackPos);
-    AliAODMCParticle* trackNeg=(AliAODMCParticle*) GetMCTrack(itrackNeg);
-
-    if((!trackPos)||(!trackNeg)) continue;
-
-    Double_t fPosPt=trackPos->Pt();
-    Double_t fNegPt=trackNeg->Pt();
-    Double_t fPosEta=trackPos->Eta();
-    Double_t fNegEta=trackNeg->Eta();
-    printf("Before acceptance cuts: ID=%i\n",id);
-
-    //acceptance cuts !
-    if (TMath::Abs(pmAOD->Y()) > fV0Cuts[MaxV0Rap]) { pAOD=0; continue; }
-    if (pmAOD->Pt() <0.15) continue;
-    if ((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) continue;
-    if ((fPosPt < fV0Cuts[DaughMinPt])||(fNegPt < fV0Cuts[DaughMinPt])) continue;
-
-    if(bDebug)printf("GetGeneratedV0:: Passed acceptance cuts: V0y=%f, V0pt=%f, poseta=%f, negeta=%f, pospt%f, negpt=%f\n", pAOD->Y(), pAOD->Pt(), fPosEta,fNegEta,fPosPt, fNegPt);
-    bMaxIPIsV0=kTRUE;
-  }//end: jet const loop
-  if(bDebug&&bMaxIPIsV0) printf("GetGeneratedV0:: Found V0Jet!\n");
-}*/
 
 
 /*!
@@ -1369,12 +1317,6 @@ void AliAnalysisTaskHFJetIPQA::GetGenV0Jets(const AliEmcalJet* jetgen, const Ali
  * - does not fullfill v0 and v0 daughter rapidity, eta and minpt cuts
  * - cuts all based on generated information?!? Check...
  */
-Bool_t AliAnalysisTaskHFJetIPQA::SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0){
-  Int_t iPdgCodePion = 211;
-  Int_t iPdgCodeProton = 2212;
-  Int_t iPdgCodeK0s = 310;
-  Int_t iPdgCodeLambda = 3122;
-  bool bPrintCuts=kFALSE;
 
   //AliAODMCHeader* headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
   //Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
@@ -1387,72 +1329,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::SelectV0CandidatesMC(const AliAODEvent* fAODIn,
   //dPrimVtxMCY = headerMC->GetVtxY();
   //dPrimVtxMCZ = headerMC->GetVtxZ();
 
-  //***********************
-  //Get V0 daughter particles
-  const AliAODTrack* postrack = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
-  const AliAODTrack* negtrack = (AliAODTrack*)v0->GetDaughter(1); // positive daughter track
-  Int_t iposLabel = postrack->GetLabel();
-  Int_t inegLabel = negtrack->GetLabel();
 
-  AliAODMCParticle* particleMCDaughterPos=(AliAODMCParticle*) GetMCTrack(iposLabel);
-  AliAODMCParticle* particleMCDaughterNeg=(AliAODMCParticle*) GetMCTrack(inegLabel);
-  if(!particleMCDaughterNeg || !particleMCDaughterPos) return kFALSE;
-  Int_t iPdgCodeDaughterPos = particleMCDaughterPos->GetPdgCode();
-  Int_t iPdgCodeDaughterNeg = particleMCDaughterNeg->GetPdgCode();
-  Double_t fPosEta=particleMCDaughterPos->Eta();
-  Double_t fPosPt=particleMCDaughterPos->Pt();
-  Double_t fNegEta=particleMCDaughterNeg->Eta();
-  Double_t fNegPt=particleMCDaughterNeg->Pt();
-
-  //************************
-  //Get mother of daughters
-  Int_t iIndexMotherPos = particleMCDaughterPos->GetMother();
-  Int_t iIndexMotherNeg = particleMCDaughterNeg->GetMother();
-  //Int_t iNTracksMC = fMCArray->GetEntriesFast();
-  Int_t iNTracksMC=fMCEvent->GetNumberOfTracks();
-
-  //Mothers indices of daughters not matching
-  if(iIndexMotherNeg != iIndexMotherPos){
-    if(bPrintCuts)printf("GetV0MCVeto:: Mothers are different: iIndexMotherNeg=%i, iIndexMotherPos=%i, neglab=%i, poslab=%i, negid=%i, posid=%i\n", iIndexMotherNeg,iIndexMotherPos,inegLabel, iposLabel ,iPdgCodeDaughterNeg,iPdgCodeDaughterPos);
-    //printf("posndaughs=%i, pos0daughs=%i, pos1daughs=%i, negndaughs=%i, neg0daughs=%i, neg1daughs=%i\n",posndaughs, pos0daughs, pos1daughs, negndaughs, neg0daughs, neg1daughs);
-    //printf("pos0daughslabel=%i, pos1daughslabel=%i, neg0daughslabel=%i, neg1daughslabel=%i\n",pos0daughslabel, pos1daughslabel, neg0daughslabel, neg1daughslabel);
-    return kFALSE;
-  }
-
-  //Mothers not in range !
-  if((iIndexMotherNeg < 0) || (iIndexMotherNeg >= iNTracksMC)){
-    if(bPrintCuts)printf("GetV0MCVeto:: Mother not in array range: iIndexMotherNeg=%i, iIndexMotherPos=%i,iNTracksMC=%i\n", iIndexMotherNeg, iIndexMotherPos, iNTracksMC);
-    return kFALSE;
-  }
-
-  //_____________________
-  // Mother Properties
-  //AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCArray->At(iIndexMotherPos);
-  AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCEvent->GetTrack(iIndexMotherPos);
-  if(!particleMCMother)return kFALSE;
-  Int_t iPdgCodeMother = particleMCMother->GetPdgCode();
-  Double_t fV0pt = particleMCMother->Pt();
-  Double_t dRapV0Gen = particleMCMother->Y();
-
-  // Skip not interesting particles (check for particles coming throug)
-  if((iPdgCodeMother != iPdgCodeK0s) && (TMath::Abs(iPdgCodeMother) != iPdgCodeLambda)){
-    if(bPrintCuts)printf("GetV0MCVeto: Pdgs of mother not interesting %i\n",iPdgCodeMother);
-    return kFALSE;
-  }
-
-  // Acceptance Cuts
-  if(bPrintCuts)printf("GetV0MCVeto:: V0rap=%f, V0pt=%f, V0poseta=%f, V0negeta=%f, V0pospt=%f, V0negpt=%f\n", dRapV0Gen, fV0pt, fPosEta, fNegEta, fPosPt, fNegPt);
-  if((TMath::Abs(dRapV0Gen) > fV0Cuts[MaxV0Rap])) return kFALSE;
-  if(fV0pt <0.15) return kFALSE;
-  if((TMath::Abs(fPosEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(fNegEta) > fV0Cuts[DaughMaxEta])) return kFALSE;
-  if((fPosPt<fV0Cuts[DaughMinPt])||(fNegPt<fV0Cuts[DaughMinPt])) return kFALSE;
-
-  // Check identity of the MC mother particle and the decay channel
-  Bool_t bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
-  Bool_t bV0MCIsLambda = ((iPdgCodeMother == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
-  Bool_t bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
-  if((!bV0MCIsK0s)&&(!bV0MCIsLambda)&&(!bV0MCIsALambda)) return kFALSE;
-  if(bPrintCuts)printf("iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, iPdgMother=%i\n", iPdgCodeDaughterPos, iPdgCodeDaughterNeg, iPdgCodeMother);
 
   // Get the distance between production point of the MC mother particle and the primary vertex
   //Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
@@ -1460,17 +1337,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::SelectV0CandidatesMC(const AliAODEvent* fAODIn,
   //Double_t dz = dPrimVtxMCZ - particleMCMother->Zv();
   //Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
   //Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fV0Cuts[MinDecayRadius]); // Is close enough to be considered primary-like?
-  Bool_t bV0MCIsPrimaryDist = particleMCMother->IsPhysicalPrimary();
-  if(bPrintCuts)printf("GetV0MCVeto:: isK0=%i, isLambda=%i, isALambda=%i, isPrimary=%i\n", bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda, bV0MCIsPrimaryDist);
-  if(!bV0MCIsPrimaryDist)return kFALSE;
 
-  //headerMC=NULL;
-  //delete headerMC;
-
-  if(bPrintCuts)printf("GetV0MCVeto: returning MC candidate!\n");
-
-  return kTRUE;
-}
 
 
 //////////////////////////////////////////////////
@@ -1497,11 +1364,16 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
         int tracklabel=track->GetLabel();
         int posdaughlabel=-99;
         int negdaughlabel=-99;
-        bool isV0DecayPart=kFALSE;
         int iV0Tag=V0No;
-        Double_t fV0pt=-99;
-        Double_t fV0ptData=-99;
-        Double_t fV0eta=-99;
+
+        Int_t iV0RecIDTemp=V0Untagged;
+        Int_t iV0MCIDTemp=V0Untagged;
+        Int_t iV0TagTemp=V0No;
+        Bool_t bInvalidMCInfo=kFALSE;
+
+        Bool_t isK0=kTRUE;
+        Bool_t isLambda=kTRUE;
+        Bool_t isAntiLambda=kTRUE;
 
         if(bDebug)printf("--------------------------IsV0Daughter: V0 data candidates=%i ------------------------\n",fV0CandidateArray->GetEntriesFast());
         for(int i = 0; i < fV0CandidateArray->GetEntriesFast(); ++i) {
@@ -1512,6 +1384,9 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
           }
           posid=-99;
           negid=-99;
+          isK0=kTRUE;
+          isLambda=kTRUE;
+          isAntiLambda=kTRUE;
 
           //****************************
           //Data: matching of track labels
@@ -1523,25 +1398,40 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
           if(bDebug)printf("Investigating Data candidate %i, tracklabel=%i\n",i,tracklabel);
 
           if(posid == trackid || negid == trackid) {
-            iV0Tag=V0Rec;
-            fV0MotherPt[iTrack]=v0aod->Pt();
-            fV0MotherEta[iTrack]=v0aod->Eta();
-            if(bDebug)printf("Found V0 candidate %i: posid=%i, negid=%i, trackid=%i, tracketa=%f, V0pt=%f\n", i, posid, negid, trackid,track->Eta(),v0aod->Pt());
-            if(isV0DecayPart){
-              if(bDebug) printf("Found 2nd V0 candidate, continuing!\n");
-              continue;
+            //set iV0TagTemp to reconstructed, if no true reconstructed V0 has been found before
+            if(iV0TagTemp!=V0TrueRec) iV0TagTemp=V0Rec;//iV0Tag=V0Rec;
+
+            IdentifyRecV0PDG(v0aod->MassK0Short(),v0aod->MassLambda(), v0aod->MassAntiLambda(),isK0, isLambda, isAntiLambda, __FUNCTION__);
+
+            //prohibit second reconstructed V0 with different ID
+            if(isK0&&(iV0RecIDTemp!=isK0)&&(iV0RecIDTemp!=V0Untagged)){
+              if(bDebug)printf("%s: Found differeing second K0s (isK0=%i, iV0RecIDTemp=%i)",__FUNCTION__, isK0,iV0RecIDTemp);
+              return V0No;
             }
-            isV0DecayPart=kTRUE;
+            if(isLambda&&(iV0RecIDTemp!=isLambda)&&(iV0RecIDTemp!=V0Untagged)){
+              if(bDebug)printf("%s: Found differeing second Lambda (isK0=%i, iV0RecIDTemp=%i)",__FUNCTION__, isLambda,iV0RecIDTemp);
+              return V0No;
+            }
+            if(isAntiLambda&&(iV0RecIDTemp!=isAntiLambda)&&(iV0RecIDTemp!=V0Untagged)){
+              if(bDebug)printf("%s: Found differeing second ALambda (isK0=%i, iV0RecIDTemp=%i)",__FUNCTION__, isAntiLambda,iV0RecIDTemp);
+              return V0No;
+            }
+
+            if(isK0) iV0RecIDTemp=V0K0s; //iV0RecID[iTrack]=V0K0s;
+            if(isLambda) iV0RecIDTemp=V0Lambda; //iV0RecID[iTrack]=V0Lambda;
+            if(isAntiLambda) iV0RecIDTemp=V0AntiLambda; //iV0RecID[iTrack]=V0AntiLambda;
+
+            if(bDebug)printf("Found V0 candidate %i: posid=%i, negid=%i, trackid=%i, tracketa=%f, V0pt=%f, isK0=%i, isLambda=%i, isAntiLambda=%i, iV0RecID=%i\n", i, posid, negid, trackid,track->Eta(),v0aod->Pt(),isK0, isLambda, isAntiLambda, iV0RecID[iTrack]);
           }
           if(trackid<0)printf("Track ID<0: trackid=%i, tracklabel=%i\n",trackid, tracklabel);
 
           //Check Matching of Labels not IDs
           posdaughlabel=trackPos->GetLabel();
           negdaughlabel=trackNeg->GetLabel();
-          if((i == posdaughlabel)&&(trackid!=posid) ) {
+          if((i == posdaughlabel)&&(trackid!=posid)&&(fIsPythia)) {
             AliError(Form("Mismatch of trackid=%i and posdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, posid, tracklabel, posdaughlabel));
           }
-          if((tracklabel == negdaughlabel)&&(trackid!=negid)){
+          if((tracklabel == negdaughlabel)&&(trackid!=negid)&&(fIsPythia)){
             AliError(Form("Mismatch of trackid=%i and negdaughter id=%i! (tracklabel=%i, daughlabel=%i) Are you using hybrid tracks?",trackid, negid, tracklabel, negdaughlabel));
           }
 
@@ -1549,24 +1439,43 @@ Int_t AliAnalysisTaskHFJetIPQA::IsV0Daughter(const AliAODEvent* fAODIn,const Ali
         //test the matching of IDs and compare to MC truth
           if(fIsPythia){
             if(bDebug)printf("Investigating MC candidate %i, fV0ptData=%f, tracklabel=%i\n", i, fV0MotherPt[iTrack], tracklabel);
-            fV0ptData=fV0MotherPt[iTrack];
-            iV0MCID[iTrack]=GetV0MCVeto(fAODIn, v0aod,tracklabel, fV0pt, fV0ptData,fV0eta);
-            if((iV0MCID[iTrack]!=V0Untagged)&&(iV0Tag!=V0Rec)){
-              iV0Tag=V0MC;
-              fV0MotherPtMC[iTrack]=fV0pt;
-              fV0MotherPt[iTrack]=fV0ptData;
-              fV0MotherEtaMC[iTrack]=fV0eta;
-              if(bDebug)printf("PtMC=%f pt=%f, eta=%f\n", fV0MotherPtMC[iTrack],fV0MotherPt[iTrack],fV0eta);
+            if(bInvalidMCInfo){
+              continue;
             }
-            if((iV0MCID[iTrack]!=V0Untagged)&&(iV0Tag==V0Rec)){
-              iV0Tag=V0TrueRec;
-              fV0MotherPtMC[iTrack]=fV0pt;
-              fV0MotherPt[iTrack]=fV0ptData;
-              fV0MotherEtaMC[iTrack]=fV0eta;
-              if(bDebug)printf("TrueRec=%f pt=%f, eta=%f\n", fV0MotherPtMC[iTrack],fV0MotherPt[iTrack], fV0eta);
+            Int_t iV0MCIDTempTemp=GetV0MCVeto(fAODIn, v0aod,tracklabel);
+            if((iV0MCIDTempTemp!=iV0MCIDTemp)&&(iV0MCIDTemp!=V0Untagged)&&(iV0MCIDTempTemp!=V0Untagged)){
+              AliError(Form("%s: Setting bInvlaidMCInfo as iV0MCIDTempTemp=%i, iV0MCIDTemp=%i\n",__FUNCTION__, iV0MCIDTempTemp,iV0MCIDTemp));
+              bInvalidMCInfo=kTRUE;
+              continue;
+            }
+
+            if((iV0MCIDTempTemp!=V0Untagged)&&(iV0TagTemp!=V0Rec)){
+              iV0TagTemp=V0MC;
+              iV0MCIDTemp=iV0MCIDTempTemp;
+              if(bDebug)printf("%s: Setting iV0TagTemp to V0MC, iV0MCIDTemp=%i, iV0TagTemp=%i\n", __FUNCTION__, iV0MCIDTemp, iV0TagTemp);
+            }
+            if((iV0MCIDTempTemp!=V0Untagged)&&(iV0TagTemp==V0Rec)){
+              iV0TagTemp=V0TrueRec;
+              iV0MCIDTemp=iV0MCIDTempTemp;
+              if(bDebug)printf("%s: Setting iV0TagTemp to TrueRec, iV0MCIDTemp=%i, iV0TagTemp=%i\n", __FUNCTION__, iV0MCIDTemp, iV0TagTemp);
             }
           }
         }
+
+        if(iV0MCIDTemp>0){
+          iV0MCID[iTrack]=iV0MCIDTemp;
+          //printf("%s: Setting iV0MCID to %i\n", __FUNCTION__, iV0MCID[iTrack]);
+        }
+        if(iV0RecIDTemp>0){
+          iV0RecID[iTrack]=iV0RecIDTemp;
+          //printf("%s: Setting iV0RecID to %i\n", __FUNCTION__, iV0RecID[iTrack]);
+        }
+        if(iV0TagTemp>0){
+          iV0Tag=iV0TagTemp;
+          //printf("%s: Setting iV0Tag to %i\n", __FUNCTION__, iV0Tag);
+        }
+
+        if(((iV0MCID[iTrack]>0)||(iV0RecID[iTrack]>0))&&iV0Tag==V0No) throw invalid_argument(Form("%s: MC(%i) and Rec(%i) Ids inconsistent with iV0Tag (%i)!\n",__FUNCTION__, iV0MCID[iTrack], iV0RecID[iTrack], iV0Tag));
 
         if(bDebug)printf("--------------------------End candidates------------------------\n");
         fflush(stdout);
@@ -1615,9 +1524,6 @@ AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack(int iLabel){
   // return MC track
   //
   if(!fIsPythia) return NULL;
-  //if(!fMCArray) { AliError("No fMCArray"); return NULL;}
-  //Int_t nStack = fMCArray->GetEntriesFast();
-
   if(!fMCEvent){ AliError("No fMCEvent"); return NULL;}
   Int_t nStack = fMCEvent->GetNumberOfTracks();
 
@@ -1626,81 +1532,222 @@ AliAODMCParticle* AliAnalysisTaskHFJetIPQA::GetMCTrack(int iLabel){
       return NULL;
   }
 
-  //AliAODMCParticle *mctrack =  dynamic_cast<AliAODMCParticle *>(fMCArray->At(iLabel));
   AliAODMCParticle *mctrack =  dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(iLabel));
 
   return mctrack;
 }
 
-int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta){
-  fV0pt=-99;
+Bool_t AliAnalysisTaskHFJetIPQA::PerformV0AcceptanceCuts(Double_t V0pt, Double_t V0y, Double_t V0PosDaughpt, Double_t V0PosDaughEta,Double_t V0NegDaughpt, Double_t V0NegDaughEta){
+  //printf("%s: Before acceptance cuts! V0pt=%f, V0y=%f, pospt=%f, poseta=%f, negpt=%f, negeta=%f\n",__FUNCTION__, V0pt, V0y, V0PosDaughpt, V0PosDaughEta, V0NegDaughpt, V0NegDaughEta);
+  if (TMath::Abs(V0y) > fV0Cuts[MaxV0Rap]) return kFALSE;
+  if (V0pt <0.15) return kFALSE;
+  if ((TMath::Abs(V0PosDaughEta) > fV0Cuts[DaughMaxEta])||(TMath::Abs(V0NegDaughEta) > fV0Cuts[DaughMaxEta])) return kFALSE;
+  if ((V0PosDaughpt < fV0Cuts[DaughMinPt])||(V0NegDaughpt < fV0Cuts[DaughMinPt])) return kFALSE;
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskHFJetIPQA::PerformV0MCAcceptanceCuts(const AliAODMCParticle* pAODMother, AliAODMCParticle* pAODPosDaugh, AliAODMCParticle* pAODNegDaugh,Bool_t& bV0MCIsK0s,Bool_t& bV0MCIsLambda,Bool_t& bV0MCIsALambda){
+    Bool_t bDebug=kFALSE;
+
+    //Existance of V0 daughters
+    if(!pAODPosDaugh || !pAODNegDaugh || !pAODMother){
+      if(bDebug)printf("%s: posdaugh=%p, negdaugh=%p, mother=%p not existing",__FUNCTION__, pAODPosDaugh, pAODNegDaugh, pAODMother);
+      return kFALSE;
+    }
+
+    //Consistency of V0 mothers
+    Int_t iIndexMotherPos = pAODPosDaugh->GetMother();
+    Int_t iIndexMotherNeg = pAODNegDaugh->GetMother();
+    if(iIndexMotherNeg != iIndexMotherPos){
+      if(bDebug)printf("%s:: Mothers are different: iIndexMotherNeg=%i, iIndexMotherPos=%i\n", __FUNCTION__,iIndexMotherNeg,iIndexMotherPos);
+     return kFALSE;
+    }
+
+    //IsPhysicalPrimary
+    if(!pAODMother->IsPhysicalPrimary()){
+      if(bDebug)printf("%s:: Mother is not physical primary!\n",__FUNCTION__);
+      return kFALSE;
+    }
+
+    //PDGCode Matching
+    Int_t iPdgCodeMother = pAODMother->GetPdgCode();
+    Int_t iPdgCodeDaughterPos = pAODPosDaugh->GetPdgCode();
+    Int_t iPdgCodeDaughterNeg = pAODNegDaugh->GetPdgCode();
+
+
+    if((iPdgCodeDaughterPos<0)&&(iPdgCodeDaughterNeg>0)){
+      /*printf("%s: Positive dump before:\n",__FUNCTION__);
+      pAODPosDaugh->Dump();
+      printf("%s: Negative dump before:\n",__FUNCTION__);
+      pAODNegDaugh->Dump();*/
+
+      AliAODMCParticle* pDummyPos;
+      pDummyPos=pAODPosDaugh;
+      pAODPosDaugh=pAODNegDaugh;
+      pAODNegDaugh=pDummyPos;
+      pDummyPos=NULL;
+
+      iPdgCodeDaughterPos = pAODPosDaugh->GetPdgCode();
+      iPdgCodeDaughterNeg = pAODNegDaugh->GetPdgCode();
+      /*printf("%s: Positive dump after:\n",__FUNCTION__);
+      pAODPosDaugh->Dump();
+      printf("%s: Negative dump after:\n",__FUNCTION__);
+      pAODNegDaugh->Dump();*/
+
+      if((iPdgCodeDaughterPos<0)&&(iPdgCodeDaughterNeg>0)){
+        AliError(Form("%s: Now I completely screwed the signs posID=%i, negID=%i\n",__FUNCTION__,iPdgCodeDaughterPos, iPdgCodeDaughterNeg));
+      }
+    }
+
+    Int_t iPdgCodePion = 211;
+    Int_t iPdgCodeProton = 2212;
+    Int_t iPdgCodeK0s = 310;
+    Int_t iPdgCodeLambda = 3122;
+    bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
+    bV0MCIsLambda = ((iPdgCodeMother == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
+    bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
+    if(bDebug)printf("%s:: iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, iPdgCodeMother=%i, bV0MCIsK0s=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i\n",__FUNCTION__, iPdgCodeDaughterPos, iPdgCodeDaughterNeg,iPdgCodeMother,bV0MCIsK0s, bV0MCIsLambda,bV0MCIsALambda);
+    if(bDebug)printf("%s:: iIndexMotherPos=%i, iIndexMotherNeg=%i, isPhysicalPrimary=%i\n",__FUNCTION__,iIndexMotherPos,iIndexMotherNeg,pAODMother->IsPhysicalPrimary());
+
+    return kTRUE;
+}
+
+int AliAnalysisTaskHFJetIPQA::GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel){
   Bool_t bDebug=kFALSE;
   // PDG codes of used particles
-  Int_t iPdgCodePion = 211;
-  Int_t iPdgCodeProton = 2212;
-  Int_t iPdgCodeK0s = 310;
-  Int_t iPdgCodeLambda = 3122;
 
+  Bool_t bV0MCIsK0s=kFALSE;
+  Bool_t bV0MCIsLambda=kFALSE;
+  Bool_t bV0MCIsALambda=kFALSE;
 
   //***********************
-  //Get V0 daughter particles !
+  //Get V0 daughter particle
   const AliAODTrack* postrack = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
   const AliAODTrack* negtrack = (AliAODTrack*)v0->GetDaughter(1); // positive daughter track
   Int_t iposLabel = postrack->GetLabel();
   Int_t inegLabel = negtrack->GetLabel();
   if((iposLabel!=tracklabel)&&(inegLabel!=tracklabel)){
-    if(bDebug)printf("GetV0MCVeto:: labels of pos. %i and neg. %i not matching track label %i!\n", iposLabel, inegLabel, tracklabel);
+    //if(bDebug)printf("GetV0MCVeto:: labels of pos. %i and neg. %i not matching track label %i!\n", iposLabel, inegLabel, tracklabel);
     return V0Untagged;
   }
-
-  AliAODMCParticle* particleMCDaughterPos=(AliAODMCParticle*) GetMCTrack(iposLabel);
-  AliAODMCParticle* particleMCDaughterNeg=(AliAODMCParticle*) GetMCTrack(inegLabel);
-  if(!particleMCDaughterNeg || !particleMCDaughterPos) return V0Untagged;
-  Int_t iPdgCodeDaughterPos = particleMCDaughterPos->GetPdgCode();
-  Int_t iPdgCodeDaughterNeg = particleMCDaughterNeg->GetPdgCode();
+  AliAODMCParticle* particleMCDaughter=0x0;
+  Int_t iSearchedLabel=-99;
+  if(iposLabel==tracklabel)iSearchedLabel=iposLabel;
+  if(inegLabel==tracklabel)iSearchedLabel=inegLabel;
+  //if(bDebug) printf("%s: iposLabel=%i, inegLabel=%i, iSearchedLabel=%i, tracklabel=%i\n",__FUNCTION__, iposLabel, inegLabel, iSearchedLabel,tracklabel);
+  particleMCDaughter=(AliAODMCParticle*) GetMCTrack(iSearchedLabel);
+  if(!particleMCDaughter){
+    //if(bDebug)printf("GetV0MCVeto:: daughter particle not existing %p!\n", particleMCDaughter);
+    return V0Untagged;
+  }
 
   //************************
-  //Get mother of daughters
-  Int_t iIndexMotherPos = particleMCDaughterPos->GetMother();
-  //AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCArray->At(iIndexMotherPos);
-  AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCEvent->GetTrack(iIndexMotherPos);
-  //if(!particleMCMother)printf("No Mother?!");
-  Int_t iPdgCodeMother = particleMCMother->GetPdgCode();
-  fV0pt = particleMCMother->Pt();
-  fV0eta= particleMCMother->Eta();
-  if((fV0ptData>0)&&(TMath::Abs(fV0ptData-v0->Pt())>0.00001)){
-    if(bDebug)printf("Mismatch of MC and Data v0 pt: data =%f, mc=%f\n",fV0ptData, v0->Pt());
+  //Get V0 Mother
+  Int_t iIndexMother = particleMCDaughter->GetMother();
+  AliAODMCParticle* particleMCMother = (AliAODMCParticle*)fMCEvent->GetTrack(iIndexMother);
+  if(!particleMCMother){
+    //if(bDebug)printf("GetV0MCVeto:: particleMCMother not existing!\n");
     return V0Untagged;
   }
-  fV0ptData=v0->Pt();
 
-  // Check identity of the MC mother particle and the decay channel
-  Bool_t bV0MCIsK0s = ((iPdgCodeMother == iPdgCodeK0s) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodePion));
-  Bool_t bV0MCIsLambda = ((iPdgCodeMother == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
-  Bool_t bV0MCIsALambda = ((iPdgCodeMother == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
-  if(bDebug)printf("iPdgCodeDaughterPos=%i, iPdgCodeDaughterNeg=%i, iPdgCodeMother=%i\n", iPdgCodeDaughterPos, iPdgCodeDaughterNeg,iPdgCodeMother);
+  //************************
+  //Get V0 daughter particles
+  int itrackPos = particleMCMother->GetDaughterLabel(0); // positive daughter track
+  int itrackNeg = particleMCMother->GetDaughterLabel(1); // negative daughter track
+  if((itrackPos!=iSearchedLabel)&&(itrackNeg!=iSearchedLabel)){
+    if(bDebug)printf("GetV0MCVeto:: neither itrackPos=%i nor itrackNeg=%i equal to iSearchedLabel=%i\n", itrackPos, itrackNeg, iSearchedLabel);
+    return V0Untagged;
+  }
+  AliAODMCParticle* particleMCDaughterPos=(AliAODMCParticle*) GetMCTrack(itrackPos);
+  AliAODMCParticle* particleMCDaughterNeg=(AliAODMCParticle*) GetMCTrack(itrackNeg);
+  if(!particleMCDaughterNeg || !particleMCDaughterPos){
+    if(bDebug)printf("GetV0MCVeto:: negative (%p) or positive (%p) daughter not existing!\n", particleMCDaughterPos, particleMCDaughterNeg);
+    return V0Untagged;
+  }
+  if(bDebug)printf("GetV0MCVeto:: poslabelV0=%i, neglabelV0=%i, motherlabel=%i, poslabelMother=%i, neglabelMother=%i!\n", iposLabel, inegLabel, iIndexMother,itrackPos, itrackNeg);
+  //if((itrackPos!=iposLabel)||(itrackNeg!=inegLabel)) printf("%s: Labels not matching!\n");
+
+  //************************
+  //Perform Cuts
+  if(!PerformV0MCAcceptanceCuts(particleMCMother, particleMCDaughterPos,particleMCDaughterNeg, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda)) return V0Untagged;
+  if(bDebug)printf("%s: passed V0MCAcceptanceCuts!\n", __FUNCTION__);
+  if(!PerformV0AcceptanceCuts(particleMCMother->Pt(),particleMCMother->Y(),particleMCDaughterPos->Pt(), particleMCDaughterPos->Eta(),particleMCDaughterNeg->Pt(), particleMCDaughterNeg->Eta()))  return V0Untagged;
+  if(bDebug)printf("%s: passed acceptance Cuts!\n",__FUNCTION__);
 
   // K0s
   if(bV0MCIsK0s){ // well reconstructed candidates
-      if(bDebug)printf("Found K0s iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
-        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
+      if(bDebug)printf("Found K0s iposlabel=%i, ineglabel=%i, tracklabel=%i,bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
       return V0K0s;
   }
   // Lambda
   if(bV0MCIsLambda){ // well reconstructed candidates
-      if(bDebug)printf("Found Lambda iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
-        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
+      if(bDebug)printf("Found Lambda iposlabel=%i, ineglabel=%i, tracklabel=%i, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
       return V0Lambda;
   }
 
   // anti-Lambda
   if(bV0MCIsALambda){ // well reconstructed candidates
-      if(bDebug)printf("Found ALambda iposlabel=%i, ineglabel=%i, tracklabel=%i, fV0ptData=%f, fV0ptMC=%f, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
-        iposLabel, inegLabel, tracklabel, fV0ptData, fV0pt, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
+      if(bDebug)printf("Found ALambda iposlabel=%i, ineglabel=%i, tracklabel=%i, bV0MCIsK0=%i, bV0MCIsLambda=%i, bV0MCIsALambda=%i",
+        iposLabel, inegLabel, tracklabel, bV0MCIsK0s, bV0MCIsLambda, bV0MCIsALambda);
     return V0AntiLambda;
   }
 
   return V0Untagged;
+}
+
+void AliAnalysisTaskHFJetIPQA::IdentifyRecV0PDG(Double_t fMassK0, Double_t fMassLambda, Double_t fMassAntiLambda, Bool_t& isK0, Bool_t& IsLambda, Bool_t& IsAntiLambda, TString sIsCalledBy){
+    Double_t dMassPeakWindowK0s = fV0Cuts[InvarMassWindowK0]; //0.010; // LF p-p
+    Double_t dMassPeakWindowLambda = fV0Cuts[InvarMassWindowLambda]; //0.005; // LF p-p
+    Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
+    Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
+    Bool_t doPrintCuts=kFALSE;
+    Bool_t IsInPeakK0=kFALSE;
+    Bool_t IsInPeakLambda=kFALSE;
+    Bool_t IsInPeakAntiLambda=kFALSE;
+
+    if(doPrintCuts)printf("%s: Is called by %s\n",__FUNCTION__, sIsCalledBy.Data());
+
+    if(TMath::Abs(fMassK0 - dMassPDGK0s) < dMassPeakWindowK0s){
+      if(doPrintCuts)printf("Found K0s! mass =%f, window=%f\n",fMassK0,dMassPeakWindowK0s);
+      IsInPeakK0 = kTRUE;
+    }
+    if(TMath::Abs(fMassLambda - dMassPDGLambda) < dMassPeakWindowLambda){
+      if(doPrintCuts)printf("Found Lambda! mass =%f, window=%f\n",fMassLambda,dMassPeakWindowLambda);
+      IsInPeakLambda = kTRUE;
+    }
+    if(TMath::Abs(fMassAntiLambda - dMassPDGLambda) < dMassPeakWindowLambda){
+      if(doPrintCuts)printf("Found AntiLambda! mass =%f, window=%f\n",fMassAntiLambda,dMassPeakWindowLambda);
+      IsInPeakAntiLambda = kTRUE;
+    }
+
+    if(!IsInPeakK0&&!IsInPeakLambda&&!IsInPeakAntiLambda){
+      isK0 = kFALSE;
+      IsLambda = kFALSE;
+      IsAntiLambda = kFALSE;
+      if(doPrintCuts)printf("Setting all candidates to 0!\n");
+    }
+
+    if(IsInPeakK0){
+      IsLambda = kFALSE;
+      IsAntiLambda = kFALSE;
+      if(doPrintCuts)printf("Setting lambdas to 0!\n");
+    }
+
+    if(IsInPeakLambda){
+      isK0 = kFALSE;
+      IsAntiLambda = kFALSE;
+      if(doPrintCuts)printf("Setting K0 and AntiLambda to 0!\n");
+    }
+
+    if(IsInPeakAntiLambda){
+      isK0 = kFALSE;
+      IsLambda = kFALSE;
+      if(doPrintCuts)printf("Setting K0 and Lambda to 0!\n");
+    }
+
+    //printf("%s: isK0=%i, isLambda=%i, isALambda=%i, peakk0=%i, peakLambda=%i, peakALambda=%i\n",__FUNCTION__, isK0, IsLambda, IsAntiLambda, IsInPeakK0,IsInPeakLambda,IsInPeakAntiLambda);
 }
 
 void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
@@ -1894,16 +1941,16 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
       // Mean lifetime
       Double_t dCTauK0s = 2.6844; // [cm] c*tau of K0S
       Double_t dCTauLambda = 7.89; // [cm] c*tau of Lambda
-      if(fV0Cuts[MaxLifeTime] > 0.){
-        if(doPrintCuts)printf("SelectV0Candidates:: Requiring V0 max lifetime <%f\n",fV0Cuts[MaxLifeTime]);
-        if(sV0->fLifetimeK0 > fV0Cuts[MaxLifeTime] * dCTauK0s) sV0->bIsCandidateK0s = kFALSE;
-        if(sV0->fLifetimeLambda > fV0Cuts[MaxLifeTime] * dCTauLambda)
+      if(fV0Cuts[MaxLifeTimeK0] > 0.){
+        if(doPrintCuts)printf("SelectV0Candidates:: Requiring V0 max lifetime K0<%f, Lambda<%f\n",fV0Cuts[MaxLifeTimeK0],fV0Cuts[MaxLifeTimeLambda]);
+        if(sV0->fLifetimeK0 > fV0Cuts[MaxLifeTimeK0] * dCTauK0s) sV0->bIsCandidateK0s = kFALSE;
+        if(sV0->fLifetimeLambda > fV0Cuts[MaxLifeTimeLambda] * dCTauLambda)
         {
           sV0->bIsCandidateLambda = kFALSE;
           sV0->bIsCandidateALambda = kFALSE;
         }
       }
-      if(fV0Cuts[MaxLifeTime] > 0.){
+      if(fV0Cuts[MaxLifeTimeK0] > 0.){
         FillV0Candidates(sV0->bIsCandidateK0s, sV0->bIsCandidateLambda, sV0->bIsCandidateALambda, iCutIndex);
       }
       iCutIndex++;
@@ -1939,45 +1986,10 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
 
       // 14
       // Invariant mass peak selection
-      Double_t dMassPeakWindowK0s = fV0Cuts[InvarMassWindowK0]; //0.010; // LF p-p
-      Double_t dMassPeakWindowLambda = fV0Cuts[InvarMassWindowLambda]; //0.005; // LF p-p
-      Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
-      Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
-
-      if(TMath::Abs(sV0->fMassK0 - dMassPDGK0s) < dMassPeakWindowK0s){
-        if(doPrintCuts)printf("Found K0s! mass =%f, window=%f\n",sV0->fMassK0,dMassPeakWindowK0s);
-        sV0->bIsInPeakK0s = kTRUE;
-      }
-      if(TMath::Abs(sV0->fMassLambda - dMassPDGLambda) < dMassPeakWindowLambda){
-        if(doPrintCuts)printf("Found Lambda! mass =%f, window=%f\n",sV0->fMassLambda,dMassPeakWindowLambda);
-        sV0->bIsInPeakLambda = kTRUE;
-      }
-      if(TMath::Abs(sV0->fMassAntilambda - dMassPDGLambda) < dMassPeakWindowLambda){
-        if(doPrintCuts)printf("Found AntiLambda! mass =%f, window=%f\n",sV0->fMassAntilambda,dMassPeakWindowLambda);
-        sV0->bIsInPeakALambda = kTRUE;
-      }
-
-
       if(fV0Cuts[DoMassWindow]){
-        if(!(sV0->bIsInPeakK0s)&&!(sV0->bIsInPeakK0s)&&!(sV0->bIsInPeakALambda)){
-          sV0->bIsCandidateLambda = kFALSE;
-          sV0->bIsCandidateALambda = kFALSE;
-          sV0->bIsCandidateK0s = kFALSE;
-          if(doPrintCuts)printf("Setting all candidates to 0!\n");
-        }
-        if(sV0->bIsInPeakK0s){
-          sV0->bIsCandidateLambda = kFALSE;
-          sV0->bIsCandidateALambda = kFALSE;
-          if(doPrintCuts)printf("Setting lambdas to 0!\n");
-        }
-        if(sV0->bIsInPeakLambda){
-          sV0->bIsCandidateK0s = kFALSE;
-          if(doPrintCuts)printf("Setting K0 to 0!\n");
-        }
-        if(sV0->bIsInPeakALambda){
-          sV0->bIsCandidateK0s = kFALSE;
-          if(doPrintCuts)printf("Setting K0 to 0!\n");
-        }
+        if(doPrintCuts)printf("SelectCandidates:: Before IsK0=%i, IsLambda=%i, IsALamda=%i, massK0=%f, massLambda=%f, massALambda=%f\n",sV0->bIsCandidateK0s, sV0->bIsCandidateLambda, sV0->bIsCandidateALambda,sV0->fMassK0, sV0->fMassLambda,sV0->fMassAntilambda);
+        IdentifyRecV0PDG(sV0->fMassK0, sV0->fMassLambda,sV0->fMassAntilambda, sV0->bIsCandidateK0s,sV0->bIsCandidateLambda, sV0->bIsCandidateALambda);
+        if(doPrintCuts)printf("SelectCandidates:: After IsK0=%i, IsLambda=%i, IsALamda=%i\n",sV0->bIsCandidateK0s, sV0->bIsCandidateLambda, sV0->bIsCandidateALambda);
         FillV0Candidates(sV0->bIsCandidateK0s, sV0->bIsCandidateLambda, sV0->bIsCandidateALambda, iCutIndex);
       }
       iCutIndex++;
@@ -1986,10 +1998,10 @@ void AliAnalysisTaskHFJetIPQA::SelectV0Candidates(const AliAODEvent *fAODIn){
       //if(sV0->bIsCandidateLambda) {fh2dLamdaMassVsPt->Fill(sV0->fPt, sV0->fMassLambda,1); }
       //if(sV0->bIsCandidateALambda) {fh2dAnLamdaMassVsPt->Fill(sV0->fPt, sV0->fMassAntilambda,1); }
 
-      if(fIsPythia){
+      /*if(fIsPythia){
         if(!SelectV0CandidatesMC(fAODIn, v0)) continue;
         if(doPrintCuts)printf("Passed all MC cuts!\n");
-      }
+      }*/
 
       //Store V0 candidate for later rejection of daughter tracks
       if(sV0->bIsCandidateK0s || sV0->bIsCandidateLambda || sV0->bIsCandidateALambda){
@@ -2019,6 +2031,7 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
   fMeanLNKtSD=-99;
   fMeanThetaSD=-99;
   bMatched=kFALSE;
+  bIsTrueGenV0Jet=0;
   std::fill( std::begin( fTrackIPs ), std::end( fTrackIPs ), -99 );
   std::fill( std::begin( fTrackIPSigs ), std::end( fTrackIPSigs ), -99 );
   std::fill( std::begin( fTrackProb ), std::end( fTrackProb ), -99 );
@@ -2026,26 +2039,27 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
   std::fill( std::begin( fTrackChi2OverNDF ), std::end( fTrackChi2OverNDF ), -99 );
   std::fill( std::begin( fDeltaRij), std::end( fDeltaRij), -99);
   std::fill( std::begin( iTrackITSHits ), std::end( iTrackITSHits ), -99 );
-  std::fill( std::begin( iV0MCID ), std::end( iV0MCID ), -99 );
+  std::fill( std::begin( iV0MCID ), std::end( iV0MCID ), V0Untagged );
+  std::fill( std::begin( iV0RecID ), std::end( iV0RecID ), V0Untagged );
   std::fill( std::begin( bTrackIsV0 ), std::end( bTrackIsV0 ), -99 );
   std::fill( std::begin( fV0MotherPt ), std::end( fV0MotherPt ), -99);
   std::fill( std::begin( fV0MotherPtMC ), std::end( fV0MotherPtMC ), -99);
   std::fill( std::begin( fV0MotherEta ), std::end( fV0MotherEta ), -99);
   std::fill( std::begin( fV0MotherEtaMC ), std::end( fV0MotherEtaMC ), -99);
   std::fill( std::begin( bPassedSD ), std::end( bPassedSD ), kFALSE );
-  std::fill( std::begin( bFull ), std::end( bFull ), kFALSE );
+  //std::fill( std::begin( bFull ), std::end( bFull ), kFALSE );
   std::fill( std::begin( bSingle1st ), std::end( bSingle1st ), kFALSE );
-  std::fill( std::begin( bSingle2nd ), std::end( bSingle2nd ), kFALSE );
-  std::fill( std::begin( bSingle3rd ), std::end( bSingle3rd ), kFALSE );
+  //std::fill( std::begin( bSingle2nd ), std::end( bSingle2nd ), kFALSE );
+  //std::fill( std::begin( bSingle3rd ), std::end( bSingle3rd ), kFALSE );
   std::fill( std::begin( bDouble ), std::end( bDouble ), kFALSE );
-  std::fill( std::begin( bTriple ), std::end( bTriple ), kFALSE );
+  //std::fill( std::begin( bTriple ), std::end( bTriple ), kFALSE );
 }
 
 /*
  * - Sort after storing track parameters as otherwise assignment wrt. IP and IPSig to different tracks!
  * */
 
-void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t &nGoodIPTracks)
+void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t &nGoodIPTracks)
 {
     nGoodIPTracks=sImpParXY.size();
     if(nGoodIPTracks==0) return;
@@ -2081,15 +2095,19 @@ void AliAnalysisTaskHFJetIPQA::PrintAllTreeVars(){
   printf("fMatchedJetPt %f\n", fMatchedJetPt);
   printf("fJetProb=%f\n",fJetProb);
   printf("bMatched %i\n",bMatched);
+  printf("bIsTrueGenV0Jet=%i\n", bIsTrueGenV0Jet);
   printf("Tagging Results:\n");
-  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+  /*for(int iThresh=0;iThresh<fNThresholds;iThresh++){
      printf("    Thresh %i,\n     bFull=%i,\n     bSingle1st=%i,\n     bSingle2nd=%i,\n     bSingle3rd=%i,\n     bDouble=%i\n    bTriple=%i\n",
      iThresh, bFull[iThresh],bSingle1st[iThresh],bSingle2nd[iThresh],bSingle3rd[iThresh],bDouble[iThresh],bTriple[iThresh]);
+  }*/
+  for(int iThresh=0;iThresh<fNThresholds;iThresh++){
+     printf("    Thresh %i,\n     bSingle1st=%i,\n     bDouble=%i\n    ",iThresh, bSingle1st[iThresh],bDouble[iThresh]);
   }
   printf("TrackProperties\n");
   for(int iTrack=0;iTrack<nTracks;iTrack++){
-    printf("     iTrack=%i,\n     fTrackIP=%f,\n     fTrackIPSigs=%f,\n     fTrackProb=%f,\n     fTrackPt=%f,\n     fTrackChi2OverNdf=%f,\n     fDeltaRij=%f\n,     iTrackITSHits=%i,\n     iV0MCID=%i,\n     bTrackIsV0=%i,\n     bPassedSD=%i,\n     fV0MotherPt=%f,\n     fV0MotherPtMC=%f,     fV0motherEta=%f\n",
-    iTrack, fTrackIPs[iTrack], fTrackIPSigs[iTrack], fTrackProb[iTrack], fTrackPt[iTrack], fTrackChi2OverNDF[iTrack], fDeltaRij[iTrack],iTrackITSHits[iTrack], iV0MCID[iTrack], bTrackIsV0[iTrack], bPassedSD[iTrack], fV0MotherPt[iTrack], fV0MotherPtMC[iTrack], fV0MotherEta[iTrack]);
+    printf("     iTrack=%i,\n     fTrackIP=%f,\n     fTrackIPSigs=%f,\n     fTrackProb=%f,\n     fTrackPt=%f,\n     fTrackChi2OverNdf=%f,\n     fDeltaRij=%f\n,     iTrackITSHits=%i,\n     iV0MCID=%i,\n     iV0RecID=%i,\n     bTrackIsV0=%i,\n     bPassedSD=%i,\n     fV0MotherPt=%f,\n     fV0MotherPtMC=%f,     fV0motherEta=%f\n",
+    iTrack, fTrackIPs[iTrack], fTrackIPSigs[iTrack], fTrackProb[iTrack], fTrackPt[iTrack], fTrackChi2OverNDF[iTrack], fDeltaRij[iTrack],iTrackITSHits[iTrack], iV0MCID[iTrack], iV0RecID[iTrack], bTrackIsV0[iTrack], bPassedSD[iTrack], fV0MotherPt[iTrack], fV0MotherPtMC[iTrack], fV0MotherEta[iTrack]);
   }
   printf("-------------------------------------\n");
   fflush(stdout);
@@ -2216,13 +2234,17 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     AliEmcalJet * jetmatched  = nullptr;
     Bool_t is_udgjet = kFALSE;
     Double_t fMatchedJetEta=-999;
-    std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
-    AliVParticle* vp=0x0;
     Int_t NJetParticles=0;  //Used for counting particles per jet
+    Int_t nGoodIPTracks=-1;
+    AliVParticle* vp=0x0;
+
+    std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
-    vector <Int_t> fJetConstTrackID;
-    Int_t nGoodIPTracks=-1;
+    std::vector <Int_t> fJetConstTrackID;
+    std::vector <Int_t> iTrackLabels;
+    std::vector <Double_t> fTrackRecPt;
+    std::vector <Double_t> fTrackRecIPs;
 
     Int_t isV0=V0No;
     Float_t fIPValue=999;
@@ -2242,6 +2264,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       ipval.clear();
       ipvalsig.clear();
       fJetConstTrackID.clear();
+      fTrackRecIPs.clear();
+      iTrackLabels.clear();
+      fTrackRecPt.clear();
       vp=0x0;
       NJetParticles=0;
       isV0=V0No;
@@ -2270,7 +2295,6 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           else{
             fJetFlavour=Unid;
           }
-          GetGenV0Jets(jetrec, ev, fJetFlavour);
         }
 
         FillRecHistograms(fJetFlavour, fJetRecPt,fMatchedJetPt, jetrec->Eta(),fMatchedJetEta,jetrec->Phi(), fUnfoldFracCalc);
@@ -2286,6 +2310,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {//start trackloop
           isV0=V0No;
           Double_t xyzatcda[3];
+          dca[0]=-99999; dca[1]=-99999;
+          cov[0]=-99999; cov[1]=-99999; cov[2]=-99999;
+          sign=0;
 
           vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
           if (!vp){
@@ -2302,13 +2329,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           if (!trackV || !jetrec)            continue;
           if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
           if(!GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign, fJetFlavour)) continue;
-          //printf("dca[0] =%f, dca[1]=%f\n",dca[0], dca[1]);
-          isV0=IsV0Daughter(ev,trackV, NJetParticles);
-
           if(fEventVertex) {
            delete fEventVertex;
            fEventVertex =nullptr;
           }
+
+          iTrackLabels.push_back(trackV->GetLabel());
+
+          //printf("dca[0] =%f, dca[1]=%f\n",dca[0], dca[1]);
+          isV0=IsV0Daughter(ev,trackV, NJetParticles);
+
           TrackWeight=1;
           corridx=-1;ppt=-1;
           fIPValue=999;
@@ -2333,6 +2363,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           Double_t cursImParXYZ    =TMath::Abs(GetValImpactParameter(   kXYZ,dca,cov))*sign;
           Double_t cursImParXYZSig =TMath::Abs(GetValImpactParameter(kXYZSig,dca,cov))*sign;
           //printf("cursImParXY=%f, cursImParXYSig=%f, cursImParXYZ=%f, cursImParXYZSig=%f\n", cursImParXY,cursImParXYSig, cursImParXYZ, cursImParXYZSig);
+          fTrackRecIPs.push_back(cursImParXY);
+          fTrackRecPt.push_back(fTrackPt[NJetParticles]);
+          //printf("%s: Track with label %i, IP=%f, pt=%f\n",__FUNCTION__, trackV->GetLabel(), cursImParXY, fTrackPt[NJetParticles]);
 
           fTrackIPs[NJetParticles]=cursImParXY;
           fTrackIPSigs[NJetParticles]=cursImParXYSig;
@@ -2341,10 +2374,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           iTrackITSHits[NJetParticles]=(int) vtrack->HasPointOnITSLayer(0) + (int) vtrack->HasPointOnITSLayer(1)+(int) vtrack->HasPointOnITSLayer(2) + (int) vtrack->HasPointOnITSLayer(3) + (int) vtrack->HasPointOnITSLayer(4) + (int) vtrack->HasPointOnITSLayer(5);
 
           //printf("Generated:fTrackChi2OverNDF=%f,  bTrackIsV0=%i, iTrackITSHits=%i\n",  fTrackChi2OverNDF[NJetParticles],bTrackIsV0[NJetParticles], iTrackITSHits[NJetParticles]);
-          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles]); sImpParXY.push_back(a);
-          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles]); sImpParXYZ.push_back(b);
-          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles]);sImpParXYSig.push_back(c);
-          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles]);sImpParXYZSig.push_back(d);
+          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXY.push_back(a);
+          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXYZ.push_back(b);
+          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYSig.push_back(c);
+          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYZSig.push_back(d);
           //printf("curImParXY=%f, isV0=%i, pt=%f\n",sImpParXYSig.back().first,sImpParXYSig.back().is_V0, sImpParXYSig.back().trackpt);
 
 
@@ -2352,6 +2385,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           //  printf("Normaltrack=%i, fNJetParticles=%i : %f\n",iTrack, NJetParticles, fTrackIPs[iTrack]);
           //  if(TMath::Abs(fTrackIPs[NJetParticles-1]+99.)<0.0001) printf("iTrack=%i, fNJetParticles=%i\n",iTrack, NJetParticles);
           //}
+          //if(isV0!=V0Untagged){ printf("Found true reconstructed pt=%f, ip=%f, MCID=%i, DataID=%i\n", fTrackPt[NJetParticles],fTrackIPs[NJetParticles], iV0MCID[NJetParticles], iV0RecID[NJetParticles]);}
           ++NJetParticles;
          }//end trackloop
         nTracks=NJetParticles;
@@ -2392,6 +2426,20 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
        //**************
        //Probability Dists
        fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig);
+
+       Double_t fLNJP=-999;
+       if(fJetProb>0)fLNJP=-TMath::Log(fJetProb);
+       if((fIsPythia)&&(fJetProb>0))bIsTrueGenV0Jet=GetGenV0Jets(jetrec, ev, iTrackLabels,fTrackRecIPs,fTrackRecPt,fJetFlavour, kTagDec, fLNJP);
+       //if(bIsTrueGenV0Jet) printf("%s: Found true V0 jet!\n",__FUNCTION__);
+
+       if(sImpParXY.size()>0){
+         if((bIsTrueGenV0Jet!=sImpParXY[0].iv0MCID)&&((sImpParXY[0].is_V0==V0MC)||(sImpParXY[0].is_V0==V0TrueRec))&&(fLNJP>0)&&(fJetFlavour!=B)){
+           AliError(Form("Found Inconsistency! bIsTrueGenV0Jet=%i, sImpParIsV0=%i\n", bIsTrueGenV0Jet, sImpParXY[0].is_V0));
+           PrintAllTreeVars();
+         }
+       }
+
+
        //PrintAllTreeVars();
        tJetTree->Fill();
        for(int iThresh=0;iThresh<fNThresholds;iThresh++){
@@ -2636,21 +2684,21 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
     //V0Cuts
       //V0s from reconstruction
-      const Int_t iNDimInJC = 4;
-      Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200};
-      Double_t xminKInJC[iNDimInJC] = {0, 0., -10., 0.};
-      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 10., 200.};
-      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200};
-      Double_t xminLInJC[iNDimInJC] = {0, 0., -10., 0.};
-      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 10., 200.};
+      const Int_t iNDimInJC = 6;
+      Int_t binsKInJC[iNDimInJC] = {200, 200, 200, 200,2,400};
+      Double_t xminKInJC[iNDimInJC] = {0, 0., 0., 0.,0,-0.5};
+      Double_t xmaxKInJC[iNDimInJC] = {3000, 100., 40., 200.,2,1.5};
+      Int_t binsLInJC[iNDimInJC] = {200, 200, 200, 200,2,400};
+      Double_t xminLInJC[iNDimInJC] = {0, 0., 0, 0.,0,-0.5};
+      Double_t xmaxLInJC[iNDimInJC] = {3000, 100., 40., 200.,2,1.5};
 
       fh2dKshortMassVsPt=(TH2D*)AddHistogramm("fh2dKshortMassVsPt","KShort Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,0.35, 0.65);
       fh2dLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dLamdaMassVsPt","Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
       fh2dAnLamdaMassVsPt =(TH2D*)AddHistogramm("fh2dAnLamdaMassVsPt","Anti Lamda Mass Vs Pt;p_{T} (GeV/c);Mass (GeV)",200,0,50,200,1.05,1.25);
 
-      fhnV0InJetK0s = new THnSparseD("fhnV0InJetK0s", ";K0s[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]", iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
-      fhnV0InJetLambda = new THnSparseD("fhnV0InJetLambda", ";Lambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
-      fhnV0InJetALambda = new THnSparseD("fhnV0InJetALambda", ";ALambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})]", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+      fhnV0InJetK0s = new THnSparseD("fhnV0InJetK0s", ";K0s[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag; d_{0} (cm)", iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
+      fhnV0InJetLambda = new THnSparseD("fhnV0InJetLambda", ";Lambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})]; DoubleTag; d_{0} (cm)", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+      fhnV0InJetALambda = new THnSparseD("fhnV0InJetALambda", ";ALambda[ID;#it{p}_{T}^{V0} (GeV/#it{c});-Ln(JP);#it{p}_{T}^{jet} (GeV/#it{c})];DoubleTag; d_{0} (cm)", iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
       fhnV0InJetK0s->Sumw2();
       fhnV0InJetLambda->Sumw2();
       fhnV0InJetALambda->Sumw2();
@@ -2723,6 +2771,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fMeanLNKtSD",&fMeanLNKtSD,"fMeanLNKtSD/F");
     tJetTree->Branch("fMeanThetaSD",&fMeanThetaSD,"fMeanThetaSD/F");
     //tJetTree->Branch("bMatched",&bMatched, "bMatched/O");
+    tJetTree->Branch("bIsTrueGenV0Jet",&bIsTrueGenV0Jet, "bIsTrueGenV0Jet/I");
     tJetTree->Branch("fTrackIPs",&fTrackIPs,"fTracksIPs[nTracks]/F");
     tJetTree->Branch("fTrackIPSigs",&fTrackIPSigs,"fTrackIPSigs[nTracks]/F");
     tJetTree->Branch("fTrackProb",&fTrackProb,"fTrackProb[nTracks]/F");
@@ -2731,6 +2780,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     tJetTree->Branch("fDeltaRij",&fDeltaRij, "fDeltaRij[nTracks]/F");
     tJetTree->Branch("iTrackITSHits",&iTrackITSHits,"iTrackITSHits[nTracks]/I");
     tJetTree->Branch("iV0MCID",&iV0MCID, "iV0MCID[nTracks]/I");
+    tJetTree->Branch("iV0RecID",&iV0RecID, "iV0RecID[nTracks]/I");
     tJetTree->Branch("bTrackIsV0",&bTrackIsV0,"bTrackIsV0[nTracks]/I");
     tJetTree->Branch("fV0MotherPt",&fV0MotherPt, "fV0MotherPt[nTracks]/F");
     tJetTree->Branch("fV0MotherPtMC",&fV0MotherPtMC, "fV0MotherPtMC[nTracks]/F");
@@ -2755,6 +2805,10 @@ void AliAnalysisTaskHFJetIPQA::UserExecOnce(){
     fAnalysisCuts[bAnalysisCut_MinJetEta]=jetconrec->GetMinEta();
     fAnalysisCuts[bAnalysisCut_MaxJetEta]=jetconrec->GetMaxEta();
 
+    printf("--------------------------------------------------------------------------------\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+    printf("XXXXXXXXXX Code version 09.02.21 XXXXXXXXXX\n");
+    printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
     PrintSettings();
     PrintV0Settings();
 }
@@ -2817,6 +2871,8 @@ void AliAnalysisTaskHFJetIPQA::PrintSettings(){
     jetcuts+=Form("%0.1f", fAnalysisCuts[bAnalysisCut_SDz]);
     jetcuts+="+";
     jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_SDbeta]);
+    jetcuts+="+";
+    jetcuts+=Form("%0.f", fAnalysisCuts[bAnalysisCut_MaxIPLNJP]);
 
     printf("Cut Jet Settings: %s\n",jetcuts.Data());
 
@@ -4336,7 +4392,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::getJetVtxMass(AliEmcalJet *jet,double &value ){
 }
 
 
-Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour)
+Bool_t AliAnalysisTaskHFJetIPQA:: GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour)
 {
     if(!track || !event || !jet)return kFALSE;
     if(dca==0 || cov ==0 ||XYZatDCA ==0 ) return kFALSE;
@@ -4369,7 +4425,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::GetImpactParameterWrtToJet(const AliAODTrack *t
     etp_jet.GetDCA(&etp_track, event->GetMagneticField(), xa, xb);
     etp_jet.GetXYZAt(xa, event->GetMagneticField(),xyz_jet_global);
     etp_track.GetXYZAt(xb, event->GetMagneticField(),xyz_track_global);
-    etp_track.PropagateTo(xb,event->GetMagneticField());
+    if(!etp_track.PropagateTo(xb,event->GetMagneticField())) return kFALSE;
 
     if(fEventVertex) {
         delete fEventVertex;
@@ -4611,12 +4667,12 @@ void AliAnalysisTaskHFJetIPQA::DoTCTagging(Float_t jetpt, Int_t nGoodIPTracks, c
         printf("iThresh=%f, %i, kTagDec=%i\n",fFracs[iThresh],iType,kTagDec[iThresh][iType]);
       }
     }*/
-    bFull[iThresh]=kTagDec[iThresh][Full];
+    //bFull[iThresh]=kTagDec[iThresh][Full];
     bSingle1st[iThresh]=kTagDec[iThresh][Single1st];
-    bSingle2nd[iThresh]=kTagDec[iThresh][Single2nd];
-    bSingle3rd[iThresh]=kTagDec[iThresh][Single3rd];
+    //bSingle2nd[iThresh]=kTagDec[iThresh][Single2nd];
+    //bSingle3rd[iThresh]=kTagDec[iThresh][Single3rd];
     bDouble[iThresh]=kTagDec[iThresh][Double];
-    bTriple[iThresh]=kTagDec[iThresh][Triple];
+    //bTriple[iThresh]=kTagDec[iThresh][Triple];
   }
 }
 
@@ -4746,7 +4802,9 @@ Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGood
 
   for(long unsigned iN=0;iN<ipval.size();iN++){
     if(ipval[iN]<0) continue;
-    if(ipval[iN]>25) continue;
+    if(ipval[iN]>fAnalysisCuts[bAnalysisCut_MaxIPLNJP]){
+      continue;
+    }
     probval=-999;
     if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
     else{probval=IntegrateIP(jetpt,ipval[iN], iN);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}

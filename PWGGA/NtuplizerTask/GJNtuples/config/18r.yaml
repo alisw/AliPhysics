@@ -1,0 +1,20 @@
+gridWorkingDir:			workingdir
+gridOutputDir:			outputdir_18r/297595
+aliPhysicsVersion:      vAN-20200629_ROOT6-1
+package:                fastjet::v3.2.1_1.024-alice3-71
+package:                boost::v1.72.0-alice1-1
+# package:                GCC-Toolchain::v7.3.0-alice2-7
+# aliROOTVersion:         v5-09-54a-2
+gridDataDir:			/alice/data/2018/LHC18q
+dataPattern:      /pass3/AOD/*/AliAOD.root
+runPrefix:        000
+runNumber:				[297595]
+# runNumber:			[297595, 297590, 297588, 297558, 297544, 297542, 297541, 297540, 297537, 297512, 297479, 297452, 297451, 297450, 297446, 297442, 297441, 297415, 297414, 297413, 297406, 297405, 297380, 297379, 297366, 297363, 297336, 297335, 297333, 297332, 297317, 297315, 297312, 297311, 297310, 297278, 297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297123, 297118, 297117, 297031, 296966, 296941, 296935, 296934, 296932, 296931, 296930, 296903, 296899, 296894, 296851, 296850, 296848, 296839, 296838, 296835, 296799, 296794, 296793, 296790, 296786, 296785, 296784, 296781, 296752, 296690]
+trackCutsPeriod:  lhc18r
+emcalCorrection:		emcal_correction.yaml
+emcalGeometryFilename:  	geometry_2015.root
+emcalLocal2MasterFilename:  	EMCALlocal2master.root
+skimClusterMinE:        15
+splitMaxInputFileNumber: 20
+isMC: false
+isEmbed: false

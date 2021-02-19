@@ -30,9 +30,9 @@
 #define AliAnalysisTaskElectronStudies_cxx
 
 typedef struct {
-  UShort_t ClusterE, ClusterM02, ClusterM20,Track_E, Track_Px, Track_Py, Track_Pz, Track_PonEMCal;
-  UShort_t MC_True_Cluster_E, MC_True_Track_E, MC_True_Track_Px, MC_True_Track_Py, MC_True_Track_Pz;
-  Short_t Track_NSigmaElec,Track_Charge,Track_dEta,Track_dPhi;
+  UShort_t ClusterE, ClusterM02, ClusterM20,Track_E, Track_PonEMCal;
+  UShort_t MC_True_Cluster_E, MC_True_Track_E;
+  Short_t Track_NSigmaElec,Track_Charge,Track_dEta,Track_dPhi, Track_Px, Track_Py, Track_Pz,MC_True_Track_Px, MC_True_Track_Py, MC_True_Track_Pz;
   Bool_t Track_IsFromV0,MC_Track_Is_Electron,MC_Cluster_Is_Electron;
   UShort_t MC_ClusterTrack_Same_Electron;
   Int_t MC_True_Track_MotherPDG;
@@ -202,9 +202,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     std::vector<UShort_t> fBuffer_ClusterM02; 
     std::vector<UShort_t> fBuffer_ClusterM20; 
     std::vector<UShort_t> fBuffer_Track_E; // default is always closest
-    std::vector<UShort_t> fBuffer_Track_Px; // default is always closest
-    std::vector<UShort_t> fBuffer_Track_Py; 
-    std::vector<UShort_t> fBuffer_Track_Pz; 
+    std::vector<Short_t> fBuffer_Track_Px; // default is always closest
+    std::vector<Short_t> fBuffer_Track_Py; 
+    std::vector<Short_t> fBuffer_Track_Pz; 
     std::vector<UShort_t> fBuffer_Track_PonEMCal; 
     std::vector<Short_t> fBuffer_Track_Charge; 
     std::vector<Short_t> fBuffer_Track_dEta; 
@@ -217,9 +217,9 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
 
     std::vector<UShort_t> fBuffer_MC_True_Cluster_E; 
     std::vector<UShort_t> fBuffer_MC_True_Track_E; 
-    std::vector<UShort_t> fBuffer_MC_True_Track_Px; 
-    std::vector<UShort_t> fBuffer_MC_True_Track_Py; 
-    std::vector<UShort_t> fBuffer_MC_True_Track_Pz; 
+    std::vector<Short_t> fBuffer_MC_True_Track_Px; 
+    std::vector<Short_t> fBuffer_MC_True_Track_Py; 
+    std::vector<Short_t> fBuffer_MC_True_Track_Pz; 
     std::vector<Int_t> fBuffer_MC_True_Track_MotherPDG; 
     std::vector<Bool_t> fBuffer_MC_Track_Is_Electron; 
     std::vector<Bool_t> fBuffer_MC_Cluster_Is_Electron; 
@@ -254,7 +254,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     std::pair<Double_t,Double_t> ProcessChargedIsolation(AliAODTrack* track);
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 9);
+    ClassDef(AliAnalysisTaskElectronStudies, 11);
 
 };
 

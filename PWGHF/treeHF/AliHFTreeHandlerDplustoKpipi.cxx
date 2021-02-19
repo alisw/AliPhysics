@@ -96,7 +96,7 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo, AliAODPidHF* pidhf)
 {
   fRunNumber=runnumber;
   fEvID=eventID;
@@ -143,7 +143,7 @@ bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, int eventID, int 
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true,pidhf);
   if(!setpid) return false;
 
   return true;

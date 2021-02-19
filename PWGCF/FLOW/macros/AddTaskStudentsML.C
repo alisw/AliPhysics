@@ -1,6 +1,7 @@
 AliAnalysisTaskStudentsML* AddTaskStudentsML(
     const char* trigger = "MB",
     const char* mainTask = "LHC10h-SPCs-0080",
+    const char* WeightFile = "",
     const char* suffix = "")
 {
 // Get the pointer to the existing analysis manager via the static access method.
@@ -39,7 +40,7 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
 // Centrality: Set edges of the centrality bin, negative value for breaking point. Ascending order important. First two values have to be valid centrality values
   myTask->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
   myTask->SetInitializeCentralityArray();
-  myTask->SetCentralityEstimator(kFALSE);
+  myTask->SetCentralityEstimator("CL1");
 
 // PV_x: No selection.
   myTask->SetVertexX(kFALSE,-44.,-44.);
@@ -61,15 +62,18 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
   myTask->SetEtaCut(kTRUE,-0.8,0.8);
 // Number of TPC clusters > 70.
   myTask->SetNumberTPCClusters(kTRUE, 70.);
-// chi^2/NDF in [0.1, 4.0].
-  myTask->SetChiSquareTPC(kTRUE, 0.1, 4.0);
+// chi^2/NDF in [0.1, 4.0]. Chi^2 selection method chosen by the second parameter (here 1)
+  myTask->SetChiSquareTPC(kTRUE, 1, 0.1, 4.0);
 // Number of ITS clusters: no selection (we use TPConly).
   myTask->SetNumberITSClusters(kFALSE, 2.);
 // DCAxy < 2.4cm.
   myTask->SetDCAxy(kTRUE, 2.4);
 // DCAz < 3.2cm.
   myTask->SetDCAz(kTRUE, 3.2);
-
+// Charge Cut. First parameter: if kTRUE: Cut on charge. Second parameter: if kTRUE: Select only positive.
+  myTask->SetChargeCut(kFALSE,kTRUE);
+//Fisher Yates Randomizing. First Parameter: Do FY or not. Second Parameter: How much of the originally passed tracks should be kept
+  myTask->SetFisherYates(kFALSE, 1.); 
 // Use (or not use) Reco-Kine-Table (1. parameter to kTRUE), keep weak secondaries (2. parameter kTRUE)
   myTask->SetKineSpecifics(kFALSE,kTRUE);
 // Use weights or not (1. parameter), use Phi (2. parameter), pt (3. parameter), eta (4. parameter)
@@ -77,8 +81,11 @@ AliAnalysisTaskStudentsML* AddTaskStudentsML(
 // Data period for the list of runs.
   myTask->SetListOfRuns("LHC10h");
 // Path to the weight.root file.
-  //myTask->SetInputParticleWeights("alien:///alice/cern.ch/user/c/cimordas/Weights/LHC11a10a_bis_v2/Weights.root");
-  myTask->SetInputParticleWeights("/home/marcel/Analysis/SymmetryPlaneExp/Weights_LHC10h/FinishedWeights/WeightsLHC10h.root");
+
+  TString InputWeightFile;
+  InputWeightFile.Form("%s",WeightFile);
+
+  myTask->SetInputParticleWeights(InputWeightFile);
 
 // Configure Multiparticle Correlators
   myTask->SetCorrSet1(4., 2., -2., 4, -4., 0., 0.,0.);

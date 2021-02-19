@@ -32,7 +32,6 @@
 #pragma link C++ class AliAnalysisTaskFemtoDreamDeuteron+;
 #pragma link C++ class AliAnalysisTaskNanoXioton+;
 #pragma link C++ class AliAnalysisTaskAODXioton+;
-#pragma link C++ class AliAnalysisTaskNanoXioton1530+;
 #pragma link C++ class AliAnalysisTaskNanoLoton+;
 #pragma link C++ class AliAnalysisTaskAODLoton+;
 #pragma link C++ class AliAnalysisTaskLeuteronAOD+;
@@ -68,5 +67,18 @@
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoAODPionProton+;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoPionProton+;
 
+#pragma link C++ class AliSigma0AODPhotonMotherCuts+;
+#pragma link C++ class AliSigma0PhotonCuts+;
+
 #endif
 
+#ifdef __CLING__
+
+#pragma link off all globals;
+#pragma link off all classes;
+#pragma link off all functions;
+
+//the classes below work only in ROOT6
+#pragma link C++ class AliAnalysisTaskCharmingFemto+;
+
+#endif

@@ -365,10 +365,13 @@ AliReducedCaloClusterInfo* AliReducedEventInfo::GetCaloClusterFromID(Int_t clust
   //
   // get calorimeter cluster from ID
   //
+  if(!fCaloClusters) return NULL;
+  if(fCaloClusters->GetEntries()==0) return NULL;
   TIter nextCluster(fCaloClusters);
   AliReducedCaloClusterInfo* cluster = NULL;
   for (Int_t i=0; i<fCaloClusters->GetEntries(); ++i) {
     cluster = (AliReducedCaloClusterInfo*)nextCluster();
+    if(!cluster) continue;
     if (clusterID==cluster->ClusterID()) return cluster;
   }
   return NULL;

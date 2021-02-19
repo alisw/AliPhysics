@@ -1,18 +1,18 @@
-#include "AliAnalysisDataContainer.h";
+#include "AliAnalysisDataContainer.h"
 class TNamed;
 AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeights=kFALSE, Bool_t IsMC=kFALSE, Bool_t IsTrain=kTRUE, Bool_t AddQA=kFALSE, TString weightpath="", TString centMap="", TString subfx="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
-  if(IsMC) {
-    if(!mgr->GetMCtruthEventHandler()) {
-      Error("AddTaskGFWFlow","Could not get MC truth handler");
-      return NULL;
-    };
-    AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-    handler->SetReadTR(kTRUE);
-  };
+  // if(IsMC) {
+  //   if(!mgr->GetMCtruthEventHandler()) {
+  //     Error("AddTaskGFWFlow","Could not get MC truth handler");
+  //     return NULL;
+  //   };
+  //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
+  //   handler->SetReadTR(kTRUE);
+  // };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskGFWFlow* task = new AliAnalysisTaskGFWFlow(Form("%s%s",name.Data(),subfx.Data()), ProduceWeights, IsMC, IsTrain, AddQA);
   if(!task)

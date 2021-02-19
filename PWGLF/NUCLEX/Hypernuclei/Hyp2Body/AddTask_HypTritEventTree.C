@@ -1,10 +1,10 @@
 AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD, Bool_t pidQa = kFALSE, Bool_t betheSplines = kFALSE, Int_t period = 2017) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_lkreis_HypTritEventTree", "No analysis manager found.");
+    Error("AddTask_HypTritEventTree", "No analysis manager found.");
     return 0;
   }
-  AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("lkreisTaskHypTritEventTree");
+  AliAnalysisTaskHypTritEventTree *task = new AliAnalysisTaskHypTritEventTree("mhartungTaskHypTritEventTree");
   task->SelectCollisionCandidates(triggerMask);
   task->SetTriggerMask(triggerMask);
   task->SetPidQa(pidQa);

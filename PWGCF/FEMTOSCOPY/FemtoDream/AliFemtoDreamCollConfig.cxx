@@ -476,3 +476,67 @@ std::vector<bool> AliFemtoDreamCollConfig::GetAllPairRejection() {
   pairs.push_back(true);         // barXi barXi
   return pairs;
 }
+
+std::vector<float> AliFemtoDreamCollConfig::GetDefaultZbins() {
+  std::vector<float> defVec;
+  defVec.push_back(-10);
+  defVec.push_back(-8);
+  defVec.push_back(-6);
+  defVec.push_back(-4);
+  defVec.push_back(-2);
+  defVec.push_back(0);
+  defVec.push_back(2);
+  defVec.push_back(4);
+  defVec.push_back(6);
+  defVec.push_back(8);
+  defVec.push_back(10);
+  return defVec;
+}
+std::vector<int> AliFemtoDreamCollConfig::GetHMMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(44);
+  defVec.push_back(48);
+  defVec.push_back(52);
+  defVec.push_back(56);
+  defVec.push_back(60);
+  defVec.push_back(64);
+  defVec.push_back(68);
+  defVec.push_back(72);
+  defVec.push_back(76);
+  defVec.push_back(80);
+  defVec.push_back(84);
+  defVec.push_back(88);
+  defVec.push_back(92);
+  defVec.push_back(96);
+  defVec.push_back(100);
+  return defVec;
+}
+
+std::vector<int> AliFemtoDreamCollConfig::GetMBMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(60);
+  defVec.push_back(80);
+  return defVec;
+}

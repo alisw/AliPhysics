@@ -1,6 +1,5 @@
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALINANALYSISTASKNANOPPCOALESCENCE_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALINANALYSISTASKNANOPPCOALESCENCE_H_
-
 #include "AliAnalysisTaskSE.h"
 #include "AliVTrack.h"
 #include "AliMCEvent.h"
@@ -19,7 +18,6 @@
 #include "AliPIDResponse.h"
 #include "AliStack.h"
 #include "TChain.h"
-
 class AliVParticle;
 class AliVTrack;
 
@@ -30,7 +28,6 @@ class AliAnalysisTaskNanoPPCoalescence : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskNanoPPCoalescence();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
   }
@@ -54,33 +51,26 @@ class AliAnalysisTaskNanoPPCoalescence : public AliAnalysisTaskSE {
     const AliAnalysisTaskNanoPPCoalescence &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
+  int fTrackBufferSize; //
   bool fIsMC;//
   bool fIsMCTruth;//
-
   AliVEvent *fInputEvent;//!
   AliFemtoDreamEvent *fEvent;//!
   AliFemtoDreamEventCuts *fEvtCuts;//
   AliFemtoDreamTrack *fTrack;//
   AliFemtoDreamTrackCuts *fProtonTrack;//
   AliFemtoDreamTrackCuts *fAntiProtonTrack;//
-
-
-  int fTrackBufferSize; //
+  AliFemtoDreamCollConfig *fConfig; //
+  AliFemtoDreamPairCleaner *fPairCleaner;   //!
+  AliFemtoDreamPartCollection *fPartColl;   //!
   AliVTrack **fGTI;  //!
-
   TList *fEvtList;//!
   TList *fProtonList;//!
   TList *fProtonMCList;//!
   TList *fAntiProtonList;//!
   TList *fAntiProtonMCList;//!
-
-  AliFemtoDreamCollConfig *fConfig; //
-  AliFemtoDreamPairCleaner *fPairCleaner;   //!
-  AliFemtoDreamPartCollection *fPartColl;   //!
-
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
-
   ClassDef(AliAnalysisTaskNanoPPCoalescence, 1)
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALINANALYSISTASKNANOPPCOALESCENCE_H_ */

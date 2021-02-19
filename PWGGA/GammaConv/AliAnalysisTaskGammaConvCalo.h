@@ -35,6 +35,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetCaloTriggerHelperName(TString name){fCaloTriggerHelperName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
@@ -154,6 +155,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                      fV0Reader;              //! basic photon Selection Task
     TString                             fV0ReaderName;
+    TString                             fCaloTriggerHelperName;
     TString                             fCorrTaskSetting;       // Correction Task Special Name
     AliGammaConversionAODBGHandler**    fBGHandler;             //! BG handler for Conversion
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           //! BG handler for Conversion (possibility to mix with respect to RP)
@@ -252,6 +254,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherEtaConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherInvMassECalib;          //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
     TH2F**                  fHistoMotherBackInvMassECalib;      //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of cluster
+    TH2F**                  fHistoMotherInvMassECalibPCM;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of PCM photon
+    TH2F**                  fHistoMotherBackInvMassECalibPCM;   //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of PCM photon
 
     // histograms for rec photons tagged by Calo
     TH2F**                  fHistoPhotonPairPtconv;             //! array of histo for pairs vs. pt of converted photon
@@ -259,7 +263,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
-    TH1F**                  fHistoClusGammaPt_onlyTriggered;    //! array of histos with cluster, pt
+    TH1F**                  fHistoClusGammaE_BothBM;            //! array of histos with cluster, E; Only clusters, which are good on triggered bad map and analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaE_BothBM_highestE;   //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
+    TH1F**                  fHistoClusGammaE_AnaBM_highestE;    //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
     TH1F**                  fHistoClusGammaE_onlyTriggered;     //! array of histos with cluster, E
     TH1I**                  fHistoGoodMesonClusters;              //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
@@ -321,6 +327,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0InvMassPt;                             //! array of histos with validated pi0, invMass, pt
     TH2F**                  fHistoTrueEtaInvMassPt;                             //! array of histos with validated eta, invMass, pt
+    TH2F**                  fHistoTruePi0InvMassPtAdditional;                             //! array of histos with validated pi0, invMass, pt
+    TH2F**                  fHistoTrueEtaInvMassPtAdditional;                             //! array of histos with validated eta, invMass, pt
     TH2F**                  fHistoTruePi0MatchedInvMassPt;                      //! array of histos with rejected pi0, invMass, pt
     TH2F**                  fHistoTrueEtaMatchedInvMassPt;                      //! array of histos with rejected eta, invMass, pt
     TH2F**                  fHistoTruePi0CaloPhotonInvMassPt;                   //! array of histos with validated pi0, photon leading, invMass, pt
@@ -528,6 +536,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
+    TH2F**                  fHistoTruePi0InvMassECalibPCM;                         //! array of histogram with pure pi0 signal inv Mass, energy of PCM
 
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
@@ -596,7 +605,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 64);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 68);
 };
 
 #endif

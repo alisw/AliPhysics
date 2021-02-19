@@ -46,6 +46,7 @@ set(SRCS
   AliEmcalDebugTask.cxx
   AliEmcalEsdTrackFilterTask.cxx
   AliEmcalMCTrackSelector.cxx
+  AliEmcalMCPartonInfoCreator.cxx
   AliEmcalParticleMaker.cxx
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
@@ -71,6 +72,7 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
   AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
   AliEmcalCorrectionCellEmulateCrosstalk.cxx

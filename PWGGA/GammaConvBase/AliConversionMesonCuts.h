@@ -143,7 +143,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void    SmearVirtualPhoton(AliAODConversionPhoton* photon);
     TLorentzVector SmearElectron(TLorentzVector particle);
 
-    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1.;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
+    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
 
     //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
@@ -205,11 +205,12 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
+    Int_t    DoOutOfJet(){return fDoOutOfJet;}
     Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
     Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
-    Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
+    Bool_t   UseMCPSmearing(){if (fUseMCPSmearing > 0) return kTRUE; else return kFALSE;}
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
@@ -322,7 +323,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
     Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
-    Bool_t      fUseMCPSmearing;                ///< flag
+    Int_t       fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
     Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
@@ -335,6 +336,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
+    Int_t       fDoOutOfJet;                    ///< switch to Analyse mesons out of jet (0 = switched off, 1 = all mesons out of jet, 2 = mesons on away side of jet, 3 = mesons in "donut shape" around jet)
     Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
     Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
     Bool_t      fEnableOmegaAPlikeCut;          ///< falg to enable the overloaded to close to V0 cut as cut inside an AP like plot
@@ -346,7 +348,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,45)
+    ClassDef(AliConversionMesonCuts,46)
     /// \endcond
 };
 

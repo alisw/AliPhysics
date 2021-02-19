@@ -17,7 +17,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     // enum and names.
     enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_TOFBunchCrossing, kV0cutsnum}; 
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_TOFBunchCrossing, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_DcaBacBar, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_TOFBunchCrossing, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -38,6 +38,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetParticleAnalysisStatus(bool, bool, bool, bool);
     bool GetParticleAnalysisStatus(int);
 
+    //MC-related setters and getters
+    void SetIsMC(bool IsMC){fisMC = IsMC;};
+    void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -51,6 +55,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //objects retreived from input handler
     AliPIDResponse *fPIDResponse;                             //!
     UInt_t fTriggerMask;                                      //!
+
+    //MC-realted variables
+    bool fisMC;                                               //
+    bool fisMCassoc;                                          //
 
     //Default cut configuration
     bool fDefOnly;                                            //
@@ -126,7 +134,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     ULong64_t fCasc_NegTrackStatus;                           //!
     ULong64_t fCasc_PosTrackStatus;                           //!
     ULong64_t fCasc_BacTrackStatus;                           //!
-    double fCasc_DcaBacBar;                                   //!
+    double fCasc_BacBarCosPA;                                   //!
 
     //cut values to be set
     double cutval_V0[kV0cutsnum];                             //
@@ -149,7 +157,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
     void DataPosting();
-    void FillHistCutVariations(bool, double);
+    void FillHistCutVariations(bool, double, bool, bool*, double);
     //functions to allow the correct streaming of the cut variation
     void SetDefCutVals();
     void SetCutVariation(bool, int, int, double, double);
@@ -158,7 +166,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 3); 
+    ClassDef(AliAnalysisTaskStrVsMult, 4); 
+    //version 4: introduced MC handeling
 };
 
 #endif

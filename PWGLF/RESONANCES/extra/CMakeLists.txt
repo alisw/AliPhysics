@@ -23,11 +23,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES/extra)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-		                ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD 
                     ${AliPhysics_SOURCE_DIR}/PWGLF/RESONANCES
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
+		    ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                    )
 
 # Sources - alphabetical order
@@ -49,6 +52,8 @@ set(SRCS
   AliRsnf0f2Task.cxx
   AliAnalysisTaskPPVsMultMCRSN.cxx
   AliAnalysisTaskEffMatrix.cxx
+  RESOSA/AliAnalysisTaskPhiSA.cxx
+  AliAnalysisTaskPhiCount.cxx
   )
 
 # Headers from sources
@@ -64,7 +69,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice CDB CORRFW OADB TOFbase TOFrec PWGTools)
+set(LIBDEPS ANALYSISalice CDB CORRFW OADB PWGPPevcharQnInterface TOFbase TOFrec PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -92,4 +97,9 @@ install(FILES AddTaskXiStarPbPb.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskXiStarPbPb_RUN2.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskPPVsMultMCRSN.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTaskEffMatrix.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddAnalysisTaskPhiCount.C DESTINATION PWGLF/RESONANCES/extra)
+
+# Install directories
+install(DIRECTORY RESOSA DESTINATION PWGLF/RESONANCES/extra)
+
 

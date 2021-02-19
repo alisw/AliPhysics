@@ -18,13 +18,11 @@ class AliFemtoDreamTrackMCHist {
  public:
   AliFemtoDreamTrackMCHist();
   AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist,
-                           bool DoMultBinning = false,
-                           bool checkMother = false,
-			   float pTmin = 0.5, float pTmax = 4.05,
-			   int MultRangeLow = 27, int MultRangeHigh = 55);
+                           bool checkMother = false, float pTmin = 0.5,
+                           float pTmax = 4.05);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth,
-                         float pT, float dcaxy, int multiplicity);
+                         float pT, float dcaxy);
   void FillMCCorr(float pT) {
     fMCCorrPt->Fill(pT);
   }
@@ -108,18 +106,10 @@ class AliFemtoDreamTrackMCHist {
   void FillMCPtResolution(float pTTrue, float pTReco);
   void FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue);
   void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
-  void FillMultiplicityHistos(int multiplicity, float pT, float dcaxy,
-                              TH2F *histo1, TH2F *histo2, TH2F *histo3);
   void FillMCMother(float pT, int pdg) { fHistMCMother->Fill(pT, std::abs(pdg));
     fHistMCMotherPDG->Fill(std::abs(pdg));
   }
 
-  void SetMultRangeLow(int range) {
-    fMultRangeLow = range;
-  }
-  void SetMultRangeHigh(int range) {
-    fMultRangeHigh = range;
-  }
   void SetName(TString name) {
     fMCList->SetName(name.Data());
   }
@@ -136,11 +126,8 @@ class AliFemtoDreamTrackMCHist {
   AliFemtoDreamTrackMCHist &operator=(const AliFemtoDreamTrackMCHist &obj);
   AliFemtoDreamTrackMCHist(const AliFemtoDreamTrackMCHist&);
   float fpTbins;                 //!
-  float fMultRangeLow;			 //!
-  float fMultRangeHigh;			 //!
   bool fDoSplitting;              //!
   bool fDoDCAPlots;               //!
-  bool fDoMultiplicityBinning;    //!
   float fpTmin;                   //!
   float fpTmax;                   //!
 
@@ -171,19 +158,6 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCSecKshortDCAXYPtBins;      //!
   TH2F *fMCSecKchDCAXYPtBins;         //!
 
-  TH2F *fMCPrimDCAXYPtBinsMult[3];       	//!
-  TH2F *fMCMaterialDCAXYPtBinsMult[3];   	//!
-  TH2F *fMCSecondaryDCAXYPtBinsMult[3];	 	//!
-  TH2F *fMCSecLambdaDCAXYPtBinsMult[3];  	//!
-  TH2F *fMCSecSigmaDCAXYPtBinsMult[3];   	//!
-  TH2F *fMCSecSigmaPlusDCAXYPtBinsMult[3];   	//!
-  TH2F *fMCSecSigmaMinusDCAXYPtBinsMult[3];	//!
-  TH2F *fMCSecXiDCAXYPtBinsMult[3];   		//!
-  TH2F *fMCSecOmegaDCAXYPtBinsMult[3];  	//!
-  TH2F *fMCSecKlongDCAXYPtBinsMult[3];  	//!
-  TH2F *fMCSecKshortDCAXYPtBinsMult[3];   	//!
-  TH2F *fMCSecKchDCAXYPtBinsMult[3];     	//!
-
   TH1F *fMCpTPCDist[4];           //!
   TH1F *fMCetaDist[4];            //!
   TH1F *fMCphiDist[4];            //!
@@ -202,7 +176,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fPtResolution;            //!
   TH2F *fThetaResolution;         //!
   TH2F *fPhiResolution;           //!
-ClassDef(AliFemtoDreamTrackMCHist,4)
+ClassDef(AliFemtoDreamTrackMCHist, 5)
   ;
 };
 

@@ -30,8 +30,6 @@ AliAnalysisTaskSEXic0Semileptonic *AddTaskXic0Semileptonic(
 	if(fcoll.Contains("PA")) ispa = true;
 	task->SetMC(ismc);
 	task->SetPA(ispa);
-	task->SetFitParameter1(1.97848e-00);
-	task->SetFitParameter2(-3.68931e-01);
 	
 	task->UseTrig_kINT7();
 	if (UseTrigHM)
@@ -49,13 +47,13 @@ AliAnalysisTaskSEXic0Semileptonic *AddTaskXic0Semileptonic(
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histogram", TDirectory::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cut", TList::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
-	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("MCCutTree", TTree::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
+	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("MCXicTree", TTree::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("PairTree", TTree::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("MCPairTree", TTree::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("EventTree", TTree::Class(), AliAnalysisManager::kOutputContainer,outputfile.Data());
-	AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("eleXiCounter",AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //counter
-
-	mgr->AddTask(task);
+    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("eleXiCounter",AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //counter
+	
+    mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, cinput);
 	mgr->ConnectOutput(task, 1, coutput1);
 	mgr->ConnectOutput(task, 2, coutput2);

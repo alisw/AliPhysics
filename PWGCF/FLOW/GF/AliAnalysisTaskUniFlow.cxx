@@ -127,6 +127,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowWeightsList{nullptr},
   fMC{kFALSE},
   fNeedPIDCorrection{kFALSE},
+  fPIDCorrectionPhi{kFALSE},
   fIs2018data{kFALSE},
   fIsHMpp{kFALSE},
   fInit{kFALSE},
@@ -147,6 +148,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowVecSpos{},
   fFlowVecSneg{},
   fFlowVecSmid{},
+  fFlowVecQ{},
   fVecCorrTask{},
   fVector{},
   fRunMode{kFull},
@@ -178,10 +180,14 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
+  fPool{nullptr},
+  fSelectedTracks{nullptr},
+  fCorrUsingGF{kFALSE},
   fCorrFill{kFALSE},
   fFillMixed{kTRUE},
+  fUsePtBinnedEventPool{kTRUE},
   fPoolSize{-1},
-  fMixingTracks{50000},
+  fMixingTracks{5000},
   fMinEventsToMix{5},
   fCorrDEtaBinNum{32},
   fCorrDPhiBinNum{72},
@@ -189,6 +195,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fCorrdEtaMax{1.6},
   fCorrdPhiMin{-0.5*TMath::Pi()},
   fCorrdPhiMax{1.5*TMath::Pi()},
+  fEtaSlicesArr{},
   fColSystem{kPPb},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -417,6 +424,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowWeightsList{nullptr},
   fMC{bIsMC},
   fNeedPIDCorrection{kFALSE},
+  fPIDCorrectionPhi{kFALSE},
   fIs2018data{kFALSE},
   fIsHMpp{kFALSE},
   fInit{kFALSE},
@@ -437,6 +445,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowVecSpos{},
   fFlowVecSneg{},
   fFlowVecSmid{},
+  fFlowVecQ{},
   fVecCorrTask{},
   fVector{},
   fRunMode{kFull},
@@ -468,10 +477,14 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fEventPoolMgr{nullptr},
+  fPool{nullptr},
+  fSelectedTracks{nullptr},
+  fCorrUsingGF{kFALSE},
   fCorrFill{kFALSE},
   fFillMixed{kTRUE},
+  fUsePtBinnedEventPool{kTRUE},
   fPoolSize{-1},
-  fMixingTracks{50000},
+  fMixingTracks{5000},
   fMinEventsToMix{5},
   fCorrDEtaBinNum{32},
   fCorrDPhiBinNum{72},
@@ -479,6 +492,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fCorrdEtaMax{1.6},
   fCorrdPhiMin{-0.5*TMath::Pi()},
   fCorrdPhiMax{1.5*TMath::Pi()},
+  fEtaSlicesArr{},
   fColSystem{colSys},
   fTrigger{AliVEvent::kINT7},
   fCentEstimator{kV0A},
@@ -743,6 +757,11 @@ AliAnalysisTaskUniFlow::~AliAnalysisTaskUniFlow()
   if(fQAPID) delete fQAPID;
   if(fQAPhi) delete fQAPhi;
   if(fQAV0s) delete fQAV0s;
+
+  //deleting event mixing variables
+  if(fEventPoolMgr) delete fEventPoolMgr;
+  if(fPool) delete fPool;
+  if(fSelectedTracks) delete fSelectedTracks;
 
   DumpTObjTable("Destructor: end");
 
@@ -1095,6 +1114,12 @@ Bool_t AliAnalysisTaskUniFlow::InitializeTask()
     fVector[iSpec]->reserve(iReserve);
   }
 
+  if(fCorrUsingGF){
+    for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices+1; iBin++){
+      fEtaSlicesArr[iBin] = (2.0*fFlowEtaMax/fFlowBinNumberEtaSlices)*iBin - fFlowEtaMax;
+    }
+  }
+
   AliInfo("Initialization succesfull!");
   return kTRUE;
 }
@@ -1257,8 +1282,8 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   DumpTObjTable("UserExec: after filtering");
 
-  // Bool_t bCorrelations = FillCorrelations();
-  // DumpTObjTable("UserExec: after FillCorrelations");
+  Bool_t bCorrelations = FillCorrelations();
+  DumpTObjTable("UserExec: after FillCorrelations");
 
   // processing of selected event
   Bool_t bProcessed = CalculateFlow();
@@ -1348,7 +1373,7 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
 
       if(fIndexCentrality < 0) { return kFALSE; }
       if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
-      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
+      if(fCentMax > 0 && fIndexCentrality >= fCentMax) { return kFALSE; }
   }
   fhEventCounter->Fill("Centrality OK",1);
 
@@ -3162,10 +3187,14 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, AliVParticle* tra
 // ============================================================================
 Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
 {
-  if(!fCorrFill) { fEventCounter++; return kTRUE; }
+  if(!fCorrFill) { return kTRUE; }
+
+  fSelectedTracks = new TObjArray();
 
   Double_t fillingCorr[4];
   fillingCorr[3] = fIndexCentrality;
+
+  Int_t nRefs = fVector[kRefs]->size();
 
   for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
   {
@@ -3173,9 +3202,27 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
     if(!track) AliError("Track was not dynamically recasted.");
     Double_t etaTrig = track->Eta();
     Double_t phiTrig = track->Phi();
-    Double_t ptTrig = track->Pt();
+    // Double_t ptTrig = track->Pt();
     Int_t dTrigID = track->GetID();
 
+    fSelectedTracks->Add(track);
+
+    for (auto part2 = fVector[kRefs]->begin(); part2 != fVector[kRefs]->end(); part2++)
+    {
+      AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(*part2);
+      if(!track2) AliError("Track was not dynamically recasted.");
+      if(track2->GetID() == dTrigID) continue;
+
+      Double_t etaAs = track2->Eta();
+      Double_t phiAs = track2->Phi();
+
+      fillingCorr[0] = etaTrig - etaAs;
+      fillingCorr[1] = RangePhi(phiTrig - phiAs);
+      fillingCorr[2] = 1.0;
+
+      fh4CorrelationsSE[kRefs]->Fill(fillingCorr);
+    }
+    /*
     for(Int_t iSpec(1); iSpec < kUnknown; iSpec++){
       if(!fProcessSpec[iSpec]) continue;
       if(!fh4CorrelationsSE[iSpec]) {AliError("Sparse (same event) doesn't exist."); return kFALSE; }
@@ -3202,19 +3249,48 @@ Bool_t AliAnalysisTaskUniFlow::FillCorrelations()
         AliWarning("Not implemented yet!"); return kFALSE;
       } //end reconstructed species
     }
+    */
   } // end loop reference particles (triggers)
 
   if(!fFillMixed) return kTRUE;
 
-  AliEventPool *pool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
-  if(!pool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
-  if(!pool->IsReady() && pool->NTracksInPool() < fMixingTracks &&  pool->GetCurrentNEvents() < fMinEventsToMix) return kFALSE;
+  fPool = fEventPoolMgr->GetEventPool(fIndexCentrality, fPVz);
+  if(!fPool) {  AliFatal(Form("No pool found for centrality = %d, zVtx = %f", fIndexCentrality,fPVz)); return kFALSE; }
 
-  for(Int_t iMix(0); iMix < pool->GetCurrentNEvents(); iMix++){
-    TObjArray *mixedEvent = pool->GetEvent(iMix);
-    if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
-  }
+  //mixed events
+  Int_t nMixEvents = fPool->GetCurrentNEvents();
+  if(fPool->IsReady() || fPool->NTracksInPool() > 0.1*fMixingTracks ||  nMixEvents >= fMinEventsToMix){
+    for(Int_t iMix(0); iMix < nMixEvents; iMix++){
+      TObjArray *mixedEvent = fPool->GetEvent(iMix);
+      if(!mixedEvent) {  AliFatal("Mixed event not found!"); return kFALSE; }
 
+      for(auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
+      {
+        AliAODTrack* track = dynamic_cast<AliAODTrack*>(*part);
+        if(!track) AliError("Track was not dynamically recasted.");
+        Double_t etaTrig = track->Eta();
+        Double_t phiTrig = track->Phi();
+
+        for(Int_t mixTrack(0); mixTrack < mixedEvent->GetEntriesFast(); mixTrack++){
+          AliAODTrack* track2 = (AliAODTrack*) mixedEvent->At(mixTrack);
+          if(!track2) AliError("Mixed track not here!");
+
+          Double_t etaAs = track2->Eta();
+          Double_t phiAs = track2->Phi();
+
+          fillingCorr[0] = etaTrig - etaAs;
+          fillingCorr[1] = RangePhi(phiTrig - phiAs);
+          fillingCorr[2] = 1.0;
+
+          fh4CorrelationsME[kRefs]->Fill(fillingCorr);
+        } //end mixed tracks
+      } // end refs (current event)
+    } // end loop mixed events
+  } // end pool is ready (etc.)
+
+  TObjArray* cloneArray = (TObjArray *)fSelectedTracks->Clone();
+  cloneArray->SetOwner(kTRUE);
+  fPool->UpdatePool(cloneArray);
 
   return kTRUE;
 }
@@ -3225,6 +3301,7 @@ Double_t AliAnalysisTaskUniFlow::RangePhi(Double_t dPhi){
     return dPhi;
 }
 // ============================================================================
+
 Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, const Int_t iTask, Bool_t doLowerOrder)
 {
     if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
@@ -3258,6 +3335,7 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
               if(iNumHarm > 12) CalculateCorrelations(fVecCorrTask.at(iTask-6), kRefs);
               if(iNumHarm > 14) CalculateCorrelations(fVecCorrTask.at(iTask-7), kRefs);
             }
+            if(fCorrUsingGF) CalculateDihCorr(task);
             continue;
         }
 
@@ -3352,6 +3430,54 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task, c
     } // end-for {iSpecies}
 
     return kTRUE;
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::CalculateDihCorr(const AliUniFlowCorrTask* const task) const
+{
+  //opening all histos
+  if(task->fiHarm[0] != -task->fiHarm[1]) { AliError("Harmonics are not the same! Not possible to calculate dihadron correlations."); return;}
+  Int_t harm = (Int_t) task->fiHarm[0];
+  Double_t width = 2.0*fFlowEtaMax/fFlowBinNumberEtaSlices;
+
+  TComplex cNom = TComplex(0.0,0.0,kFALSE);
+  TComplex cDenom = TComplex(0.0,0.0,kFALSE);
+  TComplex hermConj = TComplex(0.0,0.0,kFALSE);
+
+  TProfile* prof = nullptr;
+  for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+    hermConj = TComplex::Conjugate(fFlowVecQ[iBin][harm][1]);
+    cDenom = fFlowVecQ[iBin][0][1]*fFlowVecQ[iBin][0][1] - fFlowVecQ[iBin][0][2];
+    cNom = fFlowVecQ[iBin][harm][1]*hermConj - fFlowVecQ[iBin][0][2];
+
+    Double_t dNom = cNom.Re();
+    Double_t dDenom = cDenom.Re();
+    Double_t dValue = 0.0;
+    if(dDenom > 0.0) { dValue = dNom / dDenom; }
+
+    prof = (TProfile*) fListFlow[kRefs]->FindObject(Form("%s_eta_%.3g_%.3g_sample%d",task->fsName.Data(),0.0,width,fIndexSampling));
+    if(!prof) { AliError(Form("Profile '%s_eta_%.3g_%.3g_sample%d' not found!", task->fsName.Data(),0.0,width,fIndexSampling)); return; }
+    prof->Fill(fIndexCentrality, dValue, dDenom);
+  }
+
+  for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+    for(Int_t iSecondBin(iBin+1); iSecondBin < fFlowBinNumberEtaSlices; iSecondBin++){
+        Int_t diff = iSecondBin - iBin;
+        hermConj = TComplex::Conjugate(fFlowVecQ[iSecondBin][harm][1]);
+        cDenom = fFlowVecQ[iBin][0][1]*fFlowVecQ[iSecondBin][0][1];
+        cNom = fFlowVecQ[iBin][harm][1]*hermConj;
+
+        Double_t dNom = cNom.Re();
+        Double_t dDenom = cDenom.Re();
+        Double_t dValue = 0.0;
+        if(dDenom > 0.0) { dValue = dNom / dDenom; }
+
+        prof = (TProfile*) fListFlow[kRefs]->FindObject(Form("%s_eta_%.3g_%.3g_sample%d",task->fsName.Data(),width*diff,width*(diff+1),fIndexSampling));
+        if(!prof) { AliError(Form("Profile '%s_eta_%.3g_%.3g_sample%d' not found!", task->fsName.Data(),width*diff,width*(diff+1),fIndexSampling)); return; }
+        prof->Fill(fIndexCentrality, dValue, dDenom);
+    } // end second
+  } // end iBin
+
+  return;
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
@@ -3870,6 +3996,24 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
   return kTRUE;
 }
 // ============================================================================
+void AliAnalysisTaskUniFlow::FillFlowQVectorsForDih(const Double_t dWeight, const Double_t dPhi, const Double_t dEta, const Int_t harm)
+{
+  // Filling Q flow vector with RFPs for dihadron correlation study
+  for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+    if(dEta > fEtaSlicesArr[iBin+1]) continue;
+    Double_t dCos = dWeight * TMath::Cos(harm * dPhi);
+    Double_t dSin = dWeight * TMath::Sin(harm * dPhi);
+    fFlowVecQ[iBin][harm][1] += TComplex(dCos,dSin,kFALSE);
+
+    fFlowVecQ[iBin][0][1] += TComplex(dWeight,(Double_t) 0.0,kFALSE);
+
+    dCos = TMath::Power(dWeight,2);
+    fFlowVecQ[iBin][0][2] += TComplex(dCos,(Double_t) 0.0,kFALSE);
+    break;
+  }
+  return;
+}
+// ============================================================================
 void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, const Double_t dGap)
 {
   // Filling Q flow vector with RFPs
@@ -3898,19 +4042,22 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   ResetFlowVector(fFlowVecQneg, maxHarm, maxWeightPower, usePowVector, maxPowVec);
   if(bHas3sub) { ResetFlowVector(fFlowVecQmid, maxHarm, maxWeightPower, usePowVector, maxPowVec); }
 
+  if(fCorrUsingGF) { ResetFlowVectorQdih(fFlowVecQ, (Int_t) task->fiHarm[0]); }
+
 
   if(!fFlowUsePIDWeights){
     for (auto part = fVector[kRefs]->begin(); part != fVector[kRefs]->end(); part++)
     {
       Double_t dPhi = (*part)->Phi();
       Double_t dEta = (*part)->Eta();
-      Double_t dPt = (*part)->Pt();
 
       if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
       // loading weights if needed
       Double_t dWeight = 1.0;
       if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kRefs); }
+
+      if(fCorrUsingGF) { FillFlowQVectorsForDih((Double_t) dWeight, (Double_t) dPhi, (Double_t) dEta, (Int_t) task->fiHarm[0]); }
 
       if(!bHasGap) // no eta gap
       {
@@ -3971,7 +4118,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endfor {tracks} particle loop
 
     return;
-  }
+  } //end fFlowUsePIDWeights
 
   //if use PID weights
 
@@ -3979,7 +4126,6 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
-    Double_t dPt = (*part)->Pt();
 
     if(!IsWithinRefs(*part)) { continue; }
 
@@ -4051,7 +4197,6 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
-    Double_t dPt = (*part)->Pt();
 
     if(!IsWithinRefs(*part)) { continue; }
 
@@ -4119,11 +4264,10 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endif {dEtaGap}
   } // endfor {tracks} particle loop
 
-  for (auto part = fVector[kKaon]->begin(); part != fVector[kKaon]->end(); part++)
+    for (auto part = fVector[kProton]->begin(); part != fVector[kProton]->end(); part++)
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
-    Double_t dPt = (*part)->Pt();
 
     if(!IsWithinRefs(*part)) { continue; }
 
@@ -4131,7 +4275,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kKaon); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kProton); }
 
     if(!bHasGap) // no eta gap
     {
@@ -4191,11 +4335,12 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
     } // endif {dEtaGap}
   } // endfor {tracks} particle loop
 
-  for (auto part = fVector[kProton]->begin(); part != fVector[kProton]->end(); part++)
+  if(fProcessSpec[kPhi] && !fPIDCorrectionPhi) return;
+
+  for (auto part = fVector[kKaon]->begin(); part != fVector[kKaon]->end(); part++)
   {
     Double_t dPhi = (*part)->Phi();
     Double_t dEta = (*part)->Eta();
-    Double_t dPt = (*part)->Pt();
 
     if(!IsWithinRefs(*part)) { continue; }
 
@@ -4203,7 +4348,7 @@ void AliAnalysisTaskUniFlow::FillRefsVectors(const AliUniFlowCorrTask* task, con
 
     // loading weights if needed
     Double_t dWeight = 1.0;
-    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kProton); }
+    if(fFlowUseWeights) { dWeight = GetFlowWeight(*part, kKaon); }
 
     if(!bHasGap) // no eta gap
     {
@@ -4864,6 +5009,18 @@ void AliAnalysisTaskUniFlow::ResetFlowVector(TComplex (&array)[fFlowNumHarmonics
     for(Int_t iPower(0); iPower <= maxWeightPower; ++iPower) {
       array[iHarm][iPower](0.0,0.0);
     }
+  }
+  return;
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::ResetFlowVectorQdih(TComplex (&array)[fFlowBinNumberEtaSlices][6][3], Int_t harm)
+{
+  // Reset RFPs (Q) array values to TComplex(0,0,kFALSE) for given array
+  // *************************************************************
+  for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+    array[iBin][harm][1](0.0,0.0);
+    array[iBin][0][1](0.0,0.0);
+    array[iBin][0][2](0.0,0.0);
   }
   return;
 }
@@ -6645,6 +6802,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
           TH1* profile = nullptr;
           TH1* profileNeg = nullptr;
           TH1* profile3sub[3][3] = {nullptr};
+          TProfile* profileEtaSlices[fFlowBinNumberEtaSlices] = {nullptr};
 
           switch(iSpec)
           {
@@ -6670,6 +6828,14 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                 else {
                   AliError(Form("AliUniFlowCorrTask %d : 3 subevents implemented only for 2- and 4-particle correlations.\n",iTask));
                   return;
+                }
+              }
+              if(fCorrUsingGF){
+                Double_t width = 2.0*fFlowEtaMax/fFlowBinNumberEtaSlices;
+                for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+                  Double_t lowerLimit = width*iBin;
+                  Double_t upperLimit = width*(iBin+1);
+                  profileEtaSlices[iBin] = new TProfile(Form("%s_eta_%.3g_%.3g_sample%d",corName,lowerLimit,upperLimit,iSample), Form("%s: %s; %s",GetSpeciesLabel(PartSpecies(iSpec)), corLabel,GetCentEstimatorLabel(fCentEstimator)),fCentBinNum,fCentMin,fCentMax);
                 }
               }
               break;
@@ -6842,7 +7008,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                 if(iSpec != kRefs && corrOrder == 2 && poiPos == twoPos) continue;
                 if(!profile3sub[poiPos][twoPos]) { fInit = kFALSE; AliError("Profiles combi NOT created!"); task->PrintTask(); return; }
                 if(fListFlow[iSpec]->FindObject(profile3sub[poiPos][twoPos]->GetName())) {
-                  AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
+                  AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile3sub[poiPos][twoPos]->GetName()));
                   fInit = kFALSE;
                   task->PrintTask();
                   delete profile3sub[poiPos][twoPos];
@@ -6853,7 +7019,24 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
                 }
               }
             }
-          }
+          } // end has gap
+
+          if(fCorrUsingGF){
+            for(Int_t iBin(0); iBin < fFlowBinNumberEtaSlices; iBin++){
+              if(!profileEtaSlices[iBin]) { fInit = kFALSE; AliError("Profile (eta slices) NOT created!"); task->PrintTask(); return; }
+              if(fListFlow[iSpec]->FindObject(profileEtaSlices[iBin]->GetName())) {
+                AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profileEtaSlices[iBin]->GetName()));
+                fInit = kFALSE;
+                task->PrintTask();
+                delete profileEtaSlices[iBin];
+                return;
+              }
+              profileEtaSlices[iBin]->Sumw2();
+              fListFlow[iSpec]->Add(profileEtaSlices[iBin]);
+            }
+          } // end di-hadron corr
+
+
         } // end-for {iSample}
       } // end-for {iSpec}
     } // end-for {iTask}
@@ -6963,10 +7146,10 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
     fEventPoolMgr->SetTargetValues(fMixingTracks, 0.1, 5);
     if(!fEventPoolMgr){ AliError("AliEventPoolManager doesn't exist!"); }
 
-    fEventPoolMgr->Validate();
+    // fEventPoolMgr->Validate();
 
     const Int_t binsForCor[4] = {fCorrDEtaBinNum, fCorrDPhiBinNum, sizePt, fCentBinNum};
-    for(Int_t iSpec(1); iSpec < kUnknown; iSpec++)
+    for(Int_t iSpec(0); iSpec < kUnknown; iSpec++)
     {
       if(!fProcessSpec[iSpec]) continue;
 

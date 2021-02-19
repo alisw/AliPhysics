@@ -34,11 +34,9 @@
 
 #include <iostream>
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalClusterMatched)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalClusterMatched::AliAnalysisTaskEmcalClusterMatched():
     AliAnalysisTaskEmcalTriggerBase(),
@@ -214,4 +212,3 @@ AliAnalysisTaskEmcalClusterMatched::EnergyBinning::EnergyBinning():
   this->AddStep(100, 10);
   this->AddStep(200, 20);
 }
-} /* namespace EMCalTriggerPtAnalysis */

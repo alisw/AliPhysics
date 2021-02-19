@@ -15,8 +15,9 @@ class TNtuple;
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
-
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskPtEfficiencyJets: public AliAnalysisTaskEmcalJet {
 public:
@@ -47,6 +48,8 @@ private:
   ClassDef(AliAnalysisTaskPtEfficiencyJets, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALTriggerJets */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKPTEFFICIENCYJETS_H */

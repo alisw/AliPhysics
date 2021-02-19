@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/Tools)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
   )
@@ -37,7 +38,6 @@ set(SRCS
   AliFigure.cxx
   AliCanvas.cxx
   AliHelperPID.cxx
-  AliMCSpectraWeights.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
   TCustomBinning.cxx
@@ -50,6 +50,10 @@ set(SRCS
   AliAnalysisTaskDummy.cxx
   AliTLorentzVector.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliMCSpectraWeights.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -73,7 +77,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS AOD CORRFW ESD STEERBase ASImage)
+set(LIBDEPS ANALYSIS AOD CORRFW ESD STEERBase ASImage OADB)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Link against yaml-cpp. It must be included _after_ the ROOT map because it is static rather than shared!

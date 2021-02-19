@@ -137,17 +137,21 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fMaxDeltaTheta{0.12},
       fMinTrackletCosP{0.8},
       fEnableLikeSign{false},
+      fEnableEventMixing{false},
       fCurrentFileName{""},
       fCurrentEventNumber{-1},
       fSHyperTriton{},
       fSGenericV0{},
       fRHyperTriton{},
+      fRHyperTritonFull{},
       fRTracklets{},
       fSGenericTracklets{},
       fRCollision{},
       fRPVcovariance{},
       fFatParticle{AliPID::kHe3},
       fHyperPDG{1010010030},
+      fEMdepth{10},
+      fHe3mixed{},
       fMultV0{nullptr},
       fQxnmV0A{nullptr},
       fQynmV0A{nullptr},
@@ -208,20 +212,19 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   OpenFile(2);
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("RCollision", &fRCollision);
-  fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
   if (fSaveFileNames) {
     fTreeV0->Branch("Filename", &fCurrentFileName);
     fTreeV0->Branch("EventNumber", &fCurrentEventNumber);
     fStoreAllEvents = false;
   }
+  if (fMaxInfo) {
+    fTreeV0->Branch("RPVcovariance", &fRPVcovariance, "RPVcovariance[6]/F");
+    fTreeV0->Branch("RHyperTriton", &fRHyperTritonFull);
+  } else {
+    fTreeV0->Branch("RHyperTriton", &fRHyperTriton);
+  }
   if (fFillTracklet)
     fTreeV0->Branch("RTracklets", &fRTracklets);
-  if (fMaxInfo) {
-    fTreeV0->Branch("RHe3Track", &fRHe3Track);
-    fTreeV0->Branch("RPiTrack", &fRPiTrack);
-    fTreeV0->Branch("RHe3pidHypo", &fRHe3pidHypo);
-    fTreeV0->Branch("RPVcovariance", &fRPVcovariance, "RPVcovariance[6]/F");
-  }
 
   if (man->GetMCtruthEventHandler())
   {
@@ -316,10 +319,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   AliVEvent *vEvent = InputEvent();
   AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(vEvent);
 
-  fRHe3Track.clear();
-  fRPiTrack.clear();
-  fRHe3pidHypo.clear();
-
   if (fSaveFileNames)
     fCurrentEventNumber = esdEvent->GetHeader()->GetEventNumberInFile();
   
@@ -376,11 +375,20 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     tgr |= kCentral;
   if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+    tgr |= kHighMultV0;
   int magField = vEvent->GetMagneticField() > 0 ? kPositiveB : 0;
 
   
   fPIDResponse = fInputHandler->GetPIDResponse();
   fRCollision.fTrigger = tgr + magField;
+
+  /// For the event mixing
+  int centBin = std::floor((fRCollision.fCent - 1.e4)/ 10);
+  int zBin = std::floor((fRCollision.fZ + 10 - 1.e4) / 2);
+  if (fEnableEventMixing && (zBin < 0 || zBin > 9 || centBin < 0 || centBin > 9))
+    AliFatal("Event mixing mode cannot work with events with z vertices outside -10, 10 and centralities not in 0,100");
+
 
   if (!fUseNanoAODs)
   {
@@ -601,6 +609,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   }
 
   fRHyperTriton.clear();
+  fRHyperTritonFull.clear();
   std::vector<int> he3TrackIndices;
 
   std::vector<AliESDv0> V0Vector;
@@ -608,7 +617,16 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   { 
     if(!fLambda)
       esdEvent->ResetV0s();
-    V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
+    if (!fEnableEventMixing)
+      V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent, fLambda);
+    else {
+      std::vector<AliESDtrack*> he3v, antihe3v;
+      for (auto& he3 : fHe3mixed[0][centBin][zBin])
+        he3v.push_back(&he3);
+      for (auto& ahe3 : fHe3mixed[1][centBin][zBin])
+        antihe3v.push_back(&ahe3);
+      V0Vector = fV0Vertexer.Tracks2V0verticesEM(esdEvent, fPIDResponse, he3v, antihe3v);
+    }
   }
 
   int nV0s = (fUseOnTheFly || fUseNanoAODs) ? esdEvent->GetNumberOfV0s() : V0Vector.size();
@@ -651,6 +669,16 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       v0part.fDecayZ = z - fRCollision.fZ;
       v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
       v0part.fChi2V0 = v0->GetChi2V0();
+      if (fMaxInfo) {
+        RHyperTritonHe3piFull fullV0 = v0part;
+        AliESDtrack* he3t = esdEvent->GetTrack((he3index == lKeyPos) ? lKeyPos : lKeyNeg);
+        AliESDtrack* pit = esdEvent->GetTrack((he3index == lKeyPos) ? lKeyNeg : lKeyPos);
+        fullV0.fRHe3Track = *he3t;
+        fullV0.fRPiTrack = *pit;
+        fullV0.fRHe3pidHypo = he3t->GetPIDForTracking();
+        fRHyperTritonFull.push_back(fullV0);
+      } else
+        fRHyperTriton.push_back(v0part);
     }
     else
     {
@@ -659,7 +687,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       double nP[3] = {v0->MomNegX(), v0->MomNegY(), v0->MomNegZ()};
       lKeyPos = std::abs(v0->GetPosID());
       lKeyNeg = std::abs(v0->GetNegID());
-
       Bool_t isFilled = FillHyperCandidate(v0, vEvent, mcEvent, mcMap, pP, nP, lKeyPos, lKeyNeg, v0part, he3index);
       if (!isFilled)
         continue;
@@ -670,11 +697,24 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
       v0part.fDecayZ = z - fRCollision.fZ;
       v0part.fDcaV0daughters = v0->AliAODv0::DcaV0Daughters();
       v0part.fChi2V0 = v0->Chi2V0();
+      fRHyperTriton.push_back(v0part);
     }
 
-    fRHyperTriton.push_back(v0part);
     he3TrackIndices.push_back(he3index);
   }
+
+  if (fEnableEventMixing) {
+    for (int idx : he3TrackIndices) {
+      AliESDtrack* he3 = esdEvent->GetTrack(idx);
+      fHe3mixed[he3->GetSign() < 0][centBin][zBin].push_back(*he3);
+    }
+    for (int i = 0; i < 2; ++i) {
+      while (fHe3mixed[i][centBin][zBin].size() > fEMdepth) {
+        fHe3mixed[i][centBin][zBin].pop_front();
+      }
+    }
+  }
+
   // loop on tracklets to match them with mother MClabel1m
   fRTracklets.clear();
   if (!fUseNanoAODs)
@@ -744,7 +784,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     }
   }
 
-  if (fRHyperTriton.size() != 0 || fStoreAllEvents)
+  if (fRHyperTriton.size() != 0 || fRHyperTritonFull.size() != 0 || fStoreAllEvents)
     fTreeV0->Fill();
 
   PostData(1, fListHist);
@@ -925,7 +965,7 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
       {
         if (std::abs(part->PdgCode()) == fHyperPDG)
         {
-          fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
+          fSHyperTriton[mcMap[ilab]].fRecoIndex = fMaxInfo ? (fRHyperTritonFull.size()) : (fRHyperTriton.size());
           fSHyperTriton[mcMap[ilab]].fFake = false;
           fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
           isFake = false;
@@ -998,9 +1038,6 @@ bool AliAnalysisTaskHyperTriton2He3piML::FillHyperCandidate(T *v0, AliVEvent *ev
 
   he3index = aHyperTriton ? lKeyNeg : lKeyPos;
 
-  fRHe3Track.push_back(*(AliExternalTrackParam*)he3Track);
-  fRPiTrack.push_back(*(AliExternalTrackParam*)piTrack);
-  fRHe3pidHypo.push_back(he3Track->GetPIDForTracking());
   return true;
 }
 

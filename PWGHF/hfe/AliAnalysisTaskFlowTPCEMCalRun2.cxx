@@ -281,6 +281,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *nam
 	fMaxCentr(50.),
         iCentral(kFALSE),
         iSemiCentral(kTRUE),
+        iBevt(kFALSE),
 	fDWeightNew(0),//weight pT at D mesons and B mesons
 	fDWeightVar1(0),
 	fDWeightVar2(0),
@@ -542,6 +543,7 @@ AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysis
 	fMaxCentr(50.),
         iCentral(kFALSE),
         iSemiCentral(kTRUE),
+        iBevt(kFALSE),
 	fDWeightNew(0),//weight pT at D mesons and B mesons
 	fDWeightVar1(0),
 	fDWeightVar2(0),
@@ -2005,68 +2007,69 @@ cout << "-------------------------------------" << endl;
 	    }
     }
 
-
+    iBevt = kFALSE;
     if(fMCarray)CheckMCgen(fMCheader,0.6);
+    //cout << "Bevt 0 = " << iBevt << endl;
 
     //cout << "--------- NembMCpi0 ; NembMCeta " << endl;
     //cout << NembMCpi0 << " ;  " << NembMCeta << endl;
 
 ////////////////////////////// EMCAL cluster loop////////////////////////////////////
 
-Int_t Nclust = fVevent->GetNumberOfCaloClusters();
+    Int_t Nclust = fVevent->GetNumberOfCaloClusters();
 
-int NclustAll = 0;
-int NclustE1 = 0;//Number of cluster E>0.1
-int NclustE2 = 0;//Number of cluster E>0.2
-int NclustE3 = 0;//Number of cluster E>0.5
+    int NclustAll = 0;
+    int NclustE1 = 0;//Number of cluster E>0.1
+    int NclustE2 = 0;//Number of cluster E>0.2
+    int NclustE3 = 0;//Number of cluster E>0.5
 
-for(Int_t icl=0; icl<Nclust; icl++)
-{
-	AliVCluster *clust = 0x0;
-	//clust = (AliVCluster*)fVevent->GetCaloCluster(icl); // address cluster matched to track
-        clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
+    for(Int_t icl=0; icl<Nclust; icl++)
+    {
+	    AliVCluster *clust = 0x0;
+	    //clust = (AliVCluster*)fVevent->GetCaloCluster(icl); // address cluster matched to track
+	    clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 
-	if(clust && clust->IsEMCAL())
-	{
-		Double_t clustE = clust->E();
+	    if(clust && clust->IsEMCAL())
+	    {
+		    Double_t clustE = clust->E();
 
-		//Select EMCAL or DCAL clusters
-		Float_t emcx[3];//cluster pos
-		clust->GetPosition(emcx);
-		TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-		Double_t emcphi = clustpos.Phi();
-		Double_t emceta = clustpos.Eta();
+		    //Select EMCAL or DCAL clusters
+		    Float_t emcx[3];//cluster pos
+		    clust->GetPosition(emcx);
+		    TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+		    Double_t emcphi = clustpos.Phi();
+		    Double_t emceta = clustpos.Eta();
 
-		fEMCClsEtaPhi->Fill(emceta,emcphi);
+		    fEMCClsEtaPhi->Fill(emceta,emcphi);
 
-		fHistClustE->Fill(clustE);
+		    fHistClustE->Fill(clustE);
 
-		fHistNoCells->Fill(clustE,clust->GetNCells());
+		    fHistNoCells->Fill(clustE,clust->GetNCells());
 
-		// printf("%f \n",clustE);
+		    // printf("%f \n",clustE);
 
 
-		NclustAll++;
-		if(clustE>0.1)NclustE1++;
-		if(clustE>0.2)NclustE2++;
-		if(clustE>0.5)NclustE3++;
+		    NclustAll++;
+		    if(clustE>0.1)NclustE1++;
+		    if(clustE>0.2)NclustE2++;
+		    if(clustE>0.5)NclustE3++;
 
-	}
+	    }
 
-}
+    }
 
-fHistNCls->Fill(NclustAll);
-fHistNClsE1->Fill(NclustE1);
-fHistNClsE2->Fill(NclustE2);
-fHistNClsE3->Fill(NclustE3);
+    fHistNCls->Fill(NclustAll);
+    fHistNClsE1->Fill(NclustE1);
+    fHistNClsE2->Fill(NclustE2);
+    fHistNClsE3->Fill(NclustE3);
 
-//cell information
-AliVCaloCells *fCaloCells = fVevent->GetEMCALCells();
+    //cell information
+    AliVCaloCells *fCaloCells = fVevent->GetEMCALCells();
 
-Short_t cellAddr, nSACell;
-Int_t mclabel;
-Short_t iSACell;
-Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
+    Short_t cellAddr, nSACell;
+    Int_t mclabel;
+    Short_t iSACell;
+    Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
 
     nSACell = fCaloCells->GetNumberOfCells();
     for(iSACell = 0; iSACell < nSACell; iSACell++){
@@ -2075,720 +2078,730 @@ Double_t cellAmp=-1., cellTimeT=-1., clusterTime=-1., efrac=-1.;
     }
 
 
-/////////////////////////////////Track loop///////////////////////////////
+    /////////////////////////////////Track loop///////////////////////////////
 
 
     //Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
     Int_t iTracks(fTracks_tender->GetEntries());           // see how many tracks there are in the event
     for(Int_t i = 0; i < iTracks; i++) {                 // loop over all these tracks
 
-	//AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-	AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));         // get a track (type AliAODTrack) from the event
-
-	if(!track) continue;                            // if we failed, skip this track
-	fHistPt->Fill(track->Pt());                     // plot the pt value of the track in a histogram
-
-	//////////////Apply track cuts//////////
-	if(track->GetTPCNcls() < 80)continue;
-	if(track->GetITSNcls() < 3)continue;
-	if((!(track->GetStatus()&AliESDtrack::kITSrefit) || (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-	if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))continue;
-
-	//////////////Track properties//////////
-	Bool_t fFlagNonHFE=kFALSE;
-
-	Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999, fITSnSigma=-999;
-	Double_t TrkPhi=-999, TrkPt=-999,TrkEta=-999,TrkP=-999;
-
-	TrkPhi = track->Phi();
-	TrkPt = track->Pt();
-	TrkEta = track->Eta();
-	if(TrkEta < -0.6 || TrkEta > 0.6)continue;
-	TrkP = track->P();
-	dEdx = track->GetTPCsignal();
-	fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-        fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
-	fITSnSigma = fpidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
-
-	fTrkPt -> Fill(TrkPt);
-	fTrkphi -> Fill(TrkPhi);
-	fTrketa -> Fill(TrkEta);
-	fTrkP -> Fill(TrkP);
-	fdEdx -> Fill(TrkP,dEdx);
-	fTPCnsig -> Fill(TrkP,fTPCnSigma);
-        fTOFnsig -> Fill(TrkP,fTOFnSigma);
-        fITSnsig -> Fill(TrkP,fITSnSigma);
-        fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
-
-        fvalueElectron[0] = TrkPt;
-        fvalueElectron[1] = TrkP;
-        fvalueElectron[2] = fTPCnSigma;
-        fvalueElectron[3] = fITSnSigma;
-        fvalueElectron[4] = fTOFnSigma;
-        fvalueElectron[5] = -1.0;
-
-	////Charged Particle v2////
-
-	Double_t TrkPhiPI = -999.;
-
-	TrkPhiPI = TVector2::Phi_mpi_pi(TrkPhi);
-
-	//Double_t TrkPhiEPTPC = -999.;
-	Double_t TrkPhiEPV0A = -999.;
-	Double_t TrkPhiEPV0A_ele = -999.;
-        Double_t TrkPhiEPV0A_had = -999.;
-        Double_t TrkPhiEPV0A_ele_lowpt = -999.;
-
-	//Double_t TrkPhiEP2 = -999;
-	//Double_t const PI = TMath::Pi();
-	//Double_t const PI_2 = TMath::Pi()/2.;
-	//Double_t const PI_4 = TMath::Pi()/4.;
-
-
-        Double_t TrkPhicos2 = -999;
-        Double_t TrkPhisin2 = -999;
-
-	////if(track->Pt() > 1.5){
-
-	//TrkPhiEPTPC = TrkPhiPI - PsinFullTPC;
-	TrkPhiEPV0A = TrkPhiPI - PsinV0A;
-
-	//if(TrkPhiEPTPC > TMath::Pi()/2.){
-	//	TrkPhiEPTPC -= TMath::Pi();
-	//}
-
-	//if(TrkPhiEPTPC < -TMath::Pi()/2.){
-	//	TrkPhiEPTPC += TMath::Pi();
-	//}
-
-	if(TrkPhiEPV0A > TMath::Pi()/2.){
-		TrkPhiEPV0A -= TMath::Pi();
-	}
-
-	if(TrkPhiEPV0A < -TMath::Pi()/2.){
-		TrkPhiEPV0A += TMath::Pi();
-	}
-
-	//cout << "TrkPhiEPTPC =" << TrkPhiEPTPC << endl;
-	//cout << "TrkPhiEPV0A =" << TrkPhiEPV0A << endl;
-
-	//fTrkPhiEPFullTPC -> Fill(TrkPhiEPTPC);
-	//fTrkPhiEPFullV0A -> Fill(TrkPhiEPV0A);
-
-	//fTrkPhiEPFullTPC_Pt -> Fill(track->Pt(),TrkPhiEPTPC);
-	fTrkPhiEPV0A_Pt -> Fill(track->Pt(),TrkPhiEPV0A);
-
-	//fcorTrkPhicent_charge -> Fill(TrkPhiEP,lPercentile);
-
-        TrkPhicos2 = cos(2*TrkPhiEPV0A);
-        TrkPhisin2 = sin(2*TrkPhiEPV0A);
-
-        fTrkPhicos2 -> Fill(track->Pt(),TrkPhicos2);
-        fTrkPhisin2 -> Fill(track->Pt(),TrkPhisin2);
-
-	//fcorcentcos2_charge -> Fill(lPercentile,TrkPhicos2);
-
-
-	//if(TrkPhiEP > -PI_4 && TrkPhiEP < PI_4){
-
-	//	fInplane -> Fill(track->Pt());
-	//	fcorcentInplane -> Fill(lPercentile,track->Pt());
-
-	//}
-
-	//if(TrkPhiEP > PI_4 || TrkPhiEP < -PI_4){
-
-	//	fOutplane -> Fill(track->Pt());
-	//	fcorcentOutplane -> Fill(lPercentile,track->Pt());
-
-	//}
-	//////Charged Particle v2 each Pt////
-
-	//fTrkPhiEP_Pt -> Fill(track->Pt(),TrkPhiEP);
-	//}
-
-	//Event cut for eta distribution
-	//if(TMath::Abs(TrkPt)>1.0)return;
-//fTrketa2 ->Fill(TrkEta);
-
-        Int_t EMCalIndex = -1;
-        EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
-        //cout << "EMCalIndex = " << EMCalIndex << endl;
-
-	//cout << "EMCal Index = " << EMCalIndex << endl;
-
-	/////track cut/////
-
-	//===DCA cut===
-	Double_t DCA[2] = {-999.,-999.}, covar[3];
-	if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
-	{
-
-		//cout << "DCA[0] = "<< DCA[0] << endl;
-		//cout << "DCA[1] = "<< DCA[1] << endl;
-
-		//if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
-		if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2)continue;
-
-	}
-
-	//cout << "EMCal Index = " << EMCalIndex << endl;
-
-	//////Get MC information///////
-	Int_t ilabel = TMath::Abs(track->GetLabel());
-	Int_t pdg = -999;
-	Double_t pid_ele = 0.0;
-	Double_t pTmom = -1.0;
-	Int_t pidM = -1;
-	Int_t ilabelM = -1;
-
-	Bool_t pid_eleD = kFALSE;
-	Bool_t pid_eleB = kFALSE;
-	Bool_t pid_eleP = kFALSE;
-
-	Int_t ilabelGM = -1;
-	Int_t pidGM = -1;
-	Double_t pTGMom = -1;
-
-	Bool_t iEmbPi0 = kFALSE;
-	Bool_t iEmbEta = kFALSE;
-
-
-	if(ilabel>0 && fMCarray){
-
-		fMCTrackpart = (AliAODMCParticle*) fMCarray->At(ilabel);
-
-		pdg = fMCTrackpart->GetPdgCode();
-
-		if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-
-		if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
-
-		pid_eleB = IsBdecay(pidM);
-
-		pid_eleP = IsPdecay(pidM);
-
-		pid_eleD = IsDdecay(pidM);
-
-		if(pid_eleD || pid_eleB)fNDB->Fill(0);
-
-		if(pid_eleD){
-
-			AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
-
-			FindMother(fMCTrackpartMom,ilabelGM,pidGM,pTGMom);
-
-			if(IsBdecay(pidGM)){
-                                //cout << pid_eleD << " ; "<< pid_eleB << "; before pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
-				pid_eleB = IsBdecay(pidGM);
-
-				pid_eleD = kFALSE;
-
-				pidM = pidGM;
-
-                                pTmom = pTGMom;
-
-                                //cout << pid_eleD << " ; "<< pid_eleB << "; afetr pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
-			}
-
-		} //pid_eleD
-
-		if(pid_eleD || pid_eleB)fNDB->Fill(1);
-
-		if(pidM==111){
-			if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
-			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
-
-		}
-		if(pidM==221){
-                        
-			if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
-
-		}
-
-		if(pidM==22){
-
-			AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-			FindMother(fMCparticleM, ilabelM, pidM, pTmom);
-
-			if(pidM==111){
-		 		if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
-				if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
-
-			}
-
-			if(pidM==221){
-
-				if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
-
-			}
-
-		} //pidM = 22
-
-		fMCcheckMother->Fill(abs(pidM));
-	}
-
-
-	//if(pidM==443)continue;
-	//if(pidM==-99)continue;
-
-	if(pid_eleB || pid_eleD) {
-
-		fHist_eff_HFE->Fill(TrkPt);
-
-		if(fTPCnSigma>-1 && fTPCnSigma<3) fHist_eff_TPC->Fill(TrkPt);
-
-	}
-
-
-	///// calucurate weight of photon for MC /////
-	Double_t WeightPho = -999.0;
-
-	if(iEmbPi0){
-
-           if(iCentral)
-             {
-                if(pTmom<6.75)
-                  {
-                   WeightPho = fPi010_0->Eval(pTmom);
-                  }
-                 else
-                  {
-                   WeightPho = fPi010_1->Eval(pTmom);
-                  }
-             }
-
-            if(iSemiCentral)
-             {
-              if(pTmom<4.0)
-                 {
-	          WeightPho = fPi3050_0 -> Eval(pTmom);
-                  }
-               else
-                  {
-	           WeightPho = fPi3050_1 -> Eval(pTmom);
-                  }
-              }
+	    //AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
+	    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));         // get a track (type AliAODTrack) from the event
+
+	    if(!track) continue;                            // if we failed, skip this track
+	    fHistPt->Fill(track->Pt());                     // plot the pt value of the track in a histogram
+
+	    //////////////Apply track cuts//////////
+	    if(track->GetTPCNcls() < 80)continue;
+	    if(track->GetITSNcls() < 3)continue;
+	    if((!(track->GetStatus()&AliESDtrack::kITSrefit) || (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+	    if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))continue;
+
+	    //////////////Track properties//////////
+	    Bool_t fFlagNonHFE=kFALSE;
+
+	    Double_t dEdx=-999, fTPCnSigma=-999, fTOFnSigma=-999, fITSnSigma=-999;
+	    Double_t TrkPhi=-999, TrkPt=-999,TrkEta=-999,TrkP=-999;
+
+	    TrkPhi = track->Phi();
+	    TrkPt = track->Pt();
+	    TrkEta = track->Eta();
+	    if(TrkEta < -0.6 || TrkEta > 0.6)continue;
+	    TrkP = track->P();
+	    dEdx = track->GetTPCsignal();
+	    fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+	    fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+	    fITSnSigma = fpidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
+
+	    fTrkPt -> Fill(TrkPt);
+	    fTrkphi -> Fill(TrkPhi);
+	    fTrketa -> Fill(TrkEta);
+	    fTrkP -> Fill(TrkP);
+	    fdEdx -> Fill(TrkP,dEdx);
+	    fTPCnsig -> Fill(TrkP,fTPCnSigma);
+	    fTOFnsig -> Fill(TrkP,fTOFnSigma);
+	    fITSnsig -> Fill(TrkP,fITSnSigma);
+	    fTPCnsig_TOFnsig -> Fill(fTOFnSigma,fTPCnSigma);
+
+	    fvalueElectron[0] = TrkPt;
+	    fvalueElectron[1] = TrkP;
+	    fvalueElectron[2] = fTPCnSigma;
+	    fvalueElectron[3] = fITSnSigma;
+	    fvalueElectron[4] = fTOFnSigma;
+	    fvalueElectron[5] = -1.0;
+
+	    ////Charged Particle v2////
+
+	    Double_t TrkPhiPI = -999.;
+
+	    TrkPhiPI = TVector2::Phi_mpi_pi(TrkPhi);
+
+	    //Double_t TrkPhiEPTPC = -999.;
+	    Double_t TrkPhiEPV0A = -999.;
+	    Double_t TrkPhiEPV0A_ele = -999.;
+	    Double_t TrkPhiEPV0A_had = -999.;
+	    Double_t TrkPhiEPV0A_ele_lowpt = -999.;
+
+	    //Double_t TrkPhiEP2 = -999;
+	    //Double_t const PI = TMath::Pi();
+	    //Double_t const PI_2 = TMath::Pi()/2.;
+	    //Double_t const PI_4 = TMath::Pi()/4.;
+
+
+	    Double_t TrkPhicos2 = -999;
+	    Double_t TrkPhisin2 = -999;
+
+	    ////if(track->Pt() > 1.5){
+
+	    //TrkPhiEPTPC = TrkPhiPI - PsinFullTPC;
+	    TrkPhiEPV0A = TrkPhiPI - PsinV0A;
+
+	    //if(TrkPhiEPTPC > TMath::Pi()/2.){
+	    //	TrkPhiEPTPC -= TMath::Pi();
+	    //}
+
+	    //if(TrkPhiEPTPC < -TMath::Pi()/2.){
+	    //	TrkPhiEPTPC += TMath::Pi();
+	    //}
+
+	    if(TrkPhiEPV0A > TMath::Pi()/2.){
+		    TrkPhiEPV0A -= TMath::Pi();
 	    }
 
-	if(iEmbEta){
+	    if(TrkPhiEPV0A < -TMath::Pi()/2.){
+		    TrkPhiEPV0A += TMath::Pi();
+	    }
 
-           if(iCentral)
-             {
-                WeightPho = fEta010->Eval(pTmom);
-             }
-           if(iSemiCentral)
-             {
-		WeightPho = fEta3050 -> Eval(pTmom);
-             }
-	}
+	    //cout << "TrkPhiEPTPC =" << TrkPhiEPTPC << endl;
+	    //cout << "TrkPhiEPV0A =" << TrkPhiEPV0A << endl;
 
-	//////// calculation of electron v2 at low pt using TPC and TOF info. //////
+	    //fTrkPhiEPFullTPC -> Fill(TrkPhiEPTPC);
+	    //fTrkPhiEPFullV0A -> Fill(TrkPhiEPV0A);
 
-	Double_t TrkPhicos2_elelow = -999;
-	Double_t TrkPhisin2_elelow = -999;
+	    //fTrkPhiEPFullTPC_Pt -> Fill(track->Pt(),TrkPhiEPTPC);
+	    fTrkPhiEPV0A_Pt -> Fill(track->Pt(),TrkPhiEPV0A);
 
-	if(fTOFnSigma > -3 && fTOFnSigma < 3){ //TOF nsigma cut
+	    //fcorTrkPhicent_charge -> Fill(TrkPhiEP,lPercentile);
 
-		fHistele_TOFcuts->Fill(fTPCnSigma,track->Pt());
+	    TrkPhicos2 = cos(2*TrkPhiEPV0A);
+	    TrkPhisin2 = sin(2*TrkPhiEPV0A);
 
-		if(fTPCnSigma > 0 && fTPCnSigma <3){ //TPC nsigma cut
+	    fTrkPhicos2 -> Fill(track->Pt(),TrkPhicos2);
+	    fTrkPhisin2 -> Fill(track->Pt(),TrkPhisin2);
 
-			TrkPhiEPV0A_ele_lowpt = TrkPhiPI - PsinV0A;
+	    //fcorcentcos2_charge -> Fill(lPercentile,TrkPhicos2);
 
-			if(TrkPhiEPV0A_ele_lowpt > TMath::Pi()/2.){
-				TrkPhiEPV0A_ele_lowpt -= TMath::Pi();
-			}
 
-			if(TrkPhiEPV0A_ele_lowpt < -TMath::Pi()/2.){
-				TrkPhiEPV0A_ele_lowpt += TMath::Pi();
-			}
+	    //if(TrkPhiEP > -PI_4 && TrkPhiEP < PI_4){
 
-			fTrkPhiEPV0A_Pt_ele_lowpt -> Fill(track->Pt(),TrkPhiEPV0A_ele_lowpt);
+	    //	fInplane -> Fill(track->Pt());
+	    //	fcorcentInplane -> Fill(lPercentile,track->Pt());
 
-			TrkPhicos2_elelow = cos(2*TrkPhiEPV0A_ele_lowpt);
-			TrkPhisin2_elelow = sin(2*TrkPhiEPV0A_ele_lowpt);
+	    //}
 
-			fTrkPhicos2_elelow -> Fill(track->Pt(),TrkPhicos2_elelow);
-			fTrkPhisin2_elelow -> Fill(track->Pt(),TrkPhisin2_elelow);
-		}
+	    //if(TrkPhiEP > PI_4 || TrkPhiEP < -PI_4){
 
-	}
+	    //	fOutplane -> Fill(track->Pt());
+	    //	fcorcentOutplane -> Fill(lPercentile,track->Pt());
 
-	if(fTOFnSigma < -3.5){ //TOF nsigma cut
+	    //}
+	    //////Charged Particle v2 each Pt////
 
-		fHisthad_TOFcuts->Fill(fTPCnSigma,track->Pt());
+	    //fTrkPhiEP_Pt -> Fill(track->Pt(),TrkPhiEP);
+	    //}
 
-	}
+	    //Event cut for eta distribution
+	    //if(TMath::Abs(TrkPt)>1.0)return;
+	    //fTrketa2 ->Fill(TrkEta);
 
-	//////Track matching to EMCAL//////
+	    Int_t EMCalIndex = -1;
+	    EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
+	    //cout << "EMCalIndex = " << EMCalIndex << endl;
 
-	AliVCluster *clustMatch=0x0;
-	//cout << "EMCalIndex = " << EMCalIndex << endl;
-	//if(EMCalIndex>=0)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
-        if(EMCalIndex>=0) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+	    //cout << "EMCal Index = " << EMCalIndex << endl;
 
-	//cout << "Charge = " << track -> Charge() << endl;
+	    /////track cut/////
 
-	if(clustMatch && clustMatch->IsEMCAL())
-	{
-	 Double_t clustMatchE = clustMatch->E();
-	 if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
-        }
-        if(iTree)fSparseElectron->Fill(fvalueElectron);
+	    //===DCA cut===
+	    Double_t DCA[2] = {-999.,-999.}, covar[3];
+	    if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
+	    {
 
+		    //cout << "DCA[0] = "<< DCA[0] << endl;
+		    //cout << "DCA[1] = "<< DCA[1] << endl;
 
+		    //if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz)continue;
+		    if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2)continue;
 
-	Double_t emcphi = -999, emceta = -999;
+	    }
 
-	if(clustMatch && clustMatch->IsEMCAL())
-	{
+	    //cout << "EMCal Index = " << EMCalIndex << endl;
 
-		//shower shape cut
-		Double_t fPhiDiff = -999, fEtaDiff = -999;
-		GetTrkClsEtaPhiDiff(track,clustMatch,fPhiDiff,fEtaDiff);
-		fEMCTrkMatchPhi->Fill(fPhiDiff);
-		fEMCTrkMatchEta->Fill(fEtaDiff);
+	    //////Get MC information///////
+	    Int_t ilabel = TMath::Abs(track->GetLabel());
+	    Int_t pdg = -999;
+	    Double_t pid_ele = 0.0;
+	    Double_t pTmom = -1.0;
+	    Int_t pidM = -1;
+	    Int_t ilabelM = -1;
 
-                //cout << "fPhiDiff = "<< fPhiDiff << endl;
+	    Bool_t pid_eleD = kFALSE;
+	    Bool_t pid_eleB = kFALSE;
+	    Bool_t pid_eleP = kFALSE;
 
-		if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
+	    Int_t ilabelGM = -1;
+	    Int_t pidGM = -1;
+	    Double_t pTGMom = -1;
 
+	    Bool_t iEmbPi0 = kFALSE;
+	    Bool_t iEmbEta = kFALSE;
 
-		//Select EMCAL or DCAL clusters
-		Float_t emcx[3];//cluster pos
-		clustMatch->GetPosition(emcx);
-		TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-		emcphi = clustpos.Phi();
-		emceta = clustpos.Eta();
 
-		fClsEtaPhiAftMatch->Fill(emceta,emcphi);
+	    if(ilabel>0 && fMCarray){
 
+		    fMCTrackpart = (AliAODMCParticle*) fMCarray->At(ilabel);
 
-		//////Properties of tracks matched to the EMCAL/////
-		fEMCTrkPt->Fill(TrkPt);
+		    pdg = fMCTrackpart->GetPdgCode();
 
-		if(TrkPt>1.0){
-			fEMCTrketa->Fill(TrkEta);
-			fEMCTrkphi->Fill(TrkPhi);
-		}
+		    if(TMath::Abs(pdg)==11)pid_ele = 1.0;
 
-		Double_t clustMatchE = clustMatch->E();
+		    if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
 
+		    pid_eleB = IsBdecay(pidM);
 
-		/////EMCAL EID info///////
-		Double_t eop = -1.0;
-		Double_t m02 = -99999, m20 = -99999;
+		    pid_eleP = IsPdecay(pidM);
 
-		if(track->P()>0)eop = clustMatchE/track->P();
-		m02 = clustMatch->GetM02();
-		m20 = clustMatch->GetM20();
+		    pid_eleD = IsDdecay(pidM);
+                    //if(pidM==4122)cout << "pidM = " << pidM << " ; pid_eleD = " << pid_eleD << endl;
 
-		//add by sudo
+		    if(pid_eleD || pid_eleB)fNDB->Fill(0);
 
-		if(track->Pt()>2.0){
-			fHistNsigEop->Fill(eop,fTPCnSigma);
-		}
+		    if(pid_eleD){
 
-		fM20->Fill(track->Pt(),clustMatch->GetM20());
-		fM02->Fill(track->Pt(),clustMatch->GetM02());
+			    AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
 
-		//cout << "eop" << eop << endl;
+			    FindMother(fMCTrackpartMom,ilabelGM,pidGM,pTGMom);
 
-		Double_t TrkPhicos2_elehigh = -999;
-		Double_t TrkPhisin2_elehigh = -999;
+			    if(IsBdecay(pidGM)){
+				    //cout << pid_eleD << " ; "<< pid_eleB << "; before pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
+				    pid_eleB = IsBdecay(pidGM);
 
-		//if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
-		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3){ //TPC nsigma & shower shape cut
+				    pid_eleD = kFALSE;
 
-                if(track->Pt()<3.0){
-                      //if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
-                      if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
-                       }
+				    pidM = pidGM;
 
+				    pTmom = pTGMom;
 
-			//if(eop>0.9 && eop<1.3){ //eop cut
-			if(eop>femceop && eop<1.3 && (m20 > femcss_mim && m20 < femcss_max)){ //eop cut
+				    //cout << pid_eleD << " ; "<< pid_eleB << "; afetr pidM = " << pidM << ";   pTmom = " << pTmom <<endl;
+			    }
 
-				//SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
-				SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCA[0],Bsign,TrkPhiPI,PsinV0A);
-				////electron v2////
+		    } //pid_eleD
 
-				//if(track->Pt() > 1.5){
+                    if(iBevt)pid_eleD = kFALSE;
+                    //cout << "pidM = " << pidM << " ; " << pid_eleD << endl;
 
-				TrkPhiEPV0A_ele = TrkPhiPI - PsinV0A;
+		    if(pid_eleD || pid_eleB)fNDB->Fill(1);
 
-				if(TrkPhiEPV0A_ele > TMath::Pi()/2.){
-					TrkPhiEPV0A_ele -= TMath::Pi();
-				}
+		    if(pidM==111){
+			    if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+			    if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
-				if(TrkPhiEPV0A_ele < -TMath::Pi()/2.){
-					TrkPhiEPV0A_ele += TMath::Pi();
-				}
-				//if(TrkPhiEP2 > PI_2){
-				//	TrkPhiEP2 -= PI;
-				//}
+		    }
+		    if(pidM==221){
 
-				//if(TrkPhiEP2 < -PI_2){
-				//	TrkPhiEP2 += PI;
-				//}
-				//fTrkPhiEP2 -> Fill(TrkPhiEP2);
-				//fcorTrkPhicent_ele -> Fill(TrkPhiEP2,lPercentile);
+			    if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
-				////electron v2 each Pt/////
+		    }
 
-				fTrkPhiEPV0A_Pt_ele -> Fill(track->Pt(),TrkPhiEPV0A_ele);
+		    if(pidM==22){
 
-				TrkPhicos2_elehigh = cos(2*TrkPhiEPV0A_ele);
-				TrkPhisin2_elehigh = sin(2*TrkPhiEPV0A_ele);
+			    AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+			    FindMother(fMCparticleM, ilabelM, pidM, pTmom);
 
-				fTrkPhicos2_elehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
-				fTrkPhisin2_elehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
-				//}
+			    if(pidM==111){
+				    if(ilabelM>=NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+				    if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
-                                if(!fFlagNonHFE){
+			    }
 
-                                fTrkPhicos2_hfehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
-                                fTrkPhisin2_hfehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
-								fDCAxy_Pt_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+			    if(pidM==221){
 
-                                }
+				    if(ilabelM>=NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
 
+			    }
 
-				if(TrkPhiEPV0A_ele > -TMath::Pi()/4. && TrkPhiEPV0A_ele < TMath::Pi()/4.){
+		    } //pidM = 22
 
-					fInplane_ele -> Fill(track->Pt());
-					fDCAxy_Pt_Inplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+		    fMCcheckMother->Fill(abs(pidM));
+	    }
 
-                                         if(!fFlagNonHFE){
 
-                                                 fInplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
-												 fDCAxy_Pt_Inplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+	    //if(pidM==443)continue;
+	    //if(pidM==-99)continue;
 
-                                         }
+	    if(pid_eleB || pid_eleD) {
 
+		    fHist_eff_HFE->Fill(TrkPt);
 
-				}
+		    if(fTPCnSigma>-1 && fTPCnSigma<3) fHist_eff_TPC->Fill(TrkPt);
 
+	    }
 
 
-				if(TrkPhiEPV0A_ele > TMath::Pi()/4. || TrkPhiEPV0A_ele < -TMath::Pi()/4.){
+	    ///// calucurate weight of photon for MC /////
+	    Double_t WeightPho = -999.0;
 
-					fOutplane_ele -> Fill(track->Pt());
-					fDCAxy_Pt_Outplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+	    if(iEmbPi0){
 
-                                        if(!fFlagNonHFE){
+		    if(iCentral)
+		    {
+			    if(pTmom<6.75)
+			    {
+				    WeightPho = fPi010_0->Eval(pTmom);
+			    }
+			    else
+			    {
+				    WeightPho = fPi010_1->Eval(pTmom);
+			    }
+		    }
 
-                                                fOutplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
-												fDCAxy_Pt_Outplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+		    if(iSemiCentral)
+		    {
+			    if(pTmom<4.0)
+			    {
+				    WeightPho = fPi3050_0 -> Eval(pTmom);
+			    }
+			    else
+			    {
+				    WeightPho = fPi3050_1 -> Eval(pTmom);
+			    }
+		    }
+	    }
 
-                                          }
+	    if(iEmbEta){
 
-				}
+		    if(iCentral)
+		    {
+			    WeightPho = fEta010->Eval(pTmom);
+		    }
+		    if(iSemiCentral)
+		    {
+			    WeightPho = fEta3050 -> Eval(pTmom);
+		    }
+	    }
 
+	    //////// calculation of electron v2 at low pt using TPC and TOF info. //////
 
-				/////DCA distribution////
-				//fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+	    Double_t TrkPhicos2_elelow = -999;
+	    Double_t TrkPhisin2_elelow = -999;
 
-				/////Identify Non-HFE/////
-				//SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
+	    if(fTOFnSigma > -3 && fTOFnSigma < 3){ //TOF nsigma cut
 
-				if(pid_eleP){
+		    fHistele_TOFcuts->Fill(fTPCnSigma,track->Pt());
 
-					fHistPhoReco0 -> Fill(track->Pt());
+		    if(fTPCnSigma > 0 && fTPCnSigma <3){ //TPC nsigma cut
 
-					//cout << "iSemiCentral = " << iSemiCentral << " ; iEmbPi0 = " << iEmbPi0 << " ; WeightPho1 = " << WeightPho << endl;
+			    TrkPhiEPV0A_ele_lowpt = TrkPhiPI - PsinV0A;
 
-					if(iEmbPi0)fHistPhoPi0->Fill(track->Pt(),WeightPho);
-					if(iEmbEta)fHistPhoEta->Fill(track->Pt(),WeightPho);
+			    if(TrkPhiEPV0A_ele_lowpt > TMath::Pi()/2.){
+				    TrkPhiEPV0A_ele_lowpt -= TMath::Pi();
+			    }
 
+			    if(TrkPhiEPV0A_ele_lowpt < -TMath::Pi()/2.){
+				    TrkPhiEPV0A_ele_lowpt += TMath::Pi();
+			    }
 
-					if(fFlagNonHFE){
-						fHistPhoReco1 -> Fill(track->Pt());
-						if(iEmbPi0)fHistPhoPi01->Fill(track->Pt(),WeightPho);
-						if(iEmbEta)fHistPhoEta1->Fill(track->Pt(),WeightPho);
+			    fTrkPhiEPV0A_Pt_ele_lowpt -> Fill(track->Pt(),TrkPhiEPV0A_ele_lowpt);
 
-					}
+			    TrkPhicos2_elelow = cos(2*TrkPhiEPV0A_ele_lowpt);
+			    TrkPhisin2_elelow = sin(2*TrkPhiEPV0A_ele_lowpt);
 
-					else{
-						fHistPhoReco2 -> Fill(track->Pt());
-					}
-				}
+			    fTrkPhicos2_elelow -> Fill(track->Pt(),TrkPhicos2_elelow);
+			    fTrkPhisin2_elelow -> Fill(track->Pt(),TrkPhisin2_elelow);
+		    }
 
-			}
+	    }
 
-			fHisteop->Fill(eop);
-			fHistelectron->Fill(eop,track->Pt());
-		}
+	    if(fTOFnSigma < -3.5){ //TOF nsigma cut
 
-		Double_t dWeight = -99;
-        Double_t bWeight = -99;
-		if(fTPCnSigma > ftpcnsig && fTPCnSigma <3 && m20 > 0.02 && m20 < 0.3){ // TPC nsigma & shower shape cut
-						
-						if(eop>femceop && eop<1.3){ // E/p cut
-								if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
-								if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
-								
-								fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-										//D meson : pidM>400, <499, =421, =413, >430, <436 D+ : =411 Ds : =431 Lc : 4122 from AliAnalysisTaskTPCCalBeauty.cxx
-										if(TMath::Abs(pidM)> 400 || TMath::Abs(pidM)< 499 || TMath::Abs(pidM)== 421 || TMath::Abs(pidM)== 413 || TMath::Abs(pidM)> 430 || TMath::Abs(pidM)< 436){//if from D meson
-											if (pTmom>1 && pTmom<50.) { //in proper pt range
+		    fHisthad_TOFcuts->Fill(fTPCnSigma,track->Pt());
 
-                                				dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-												fDCAxy_Pt_D_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    }
 
-                                				dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(pTmom));
-												fDCAxy_Pt_D_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    //////Track matching to EMCAL//////
 
-                                				dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-												fDCAxy_Pt_D_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    AliVCluster *clustMatch=0x0;
+	    //cout << "EMCalIndex = " << EMCalIndex << endl;
+	    //if(EMCalIndex>=0)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
+	    if(EMCalIndex>=0) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 
-												fDCAxy_Pt_D->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                            				}
-										}if (TMath::Abs(pidM)== 411) { //if from D+ meson
-                        				    if (pTmom>1 && pTmom<50.) { //in proper pt range
+	    //cout << "Charge = " << track -> Charge() << endl;
 
-                        				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-												fDCAxy_Pt_Dpm_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-				
-                        				        dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(pTmom));
-												fDCAxy_Pt_Dpm_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-				
-                        				        dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-												fDCAxy_Pt_Dpm_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    if(clustMatch && clustMatch->IsEMCAL())
+	    {
+		    Double_t clustMatchE = clustMatch->E();
+		    if(track->P()>0) fvalueElectron[5] = clustMatchE/track->P();
+	    }
+	    if(iTree)fSparseElectron->Fill(fvalueElectron);
 
-												fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                        				    }
 
-                                        }if (TMath::Abs(pidM)== 421) { //if from D0 meson
-                                            if (pTmom>1 && pTmom<50.) { //in proper pt range
 
-                                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-                                                fDCAxy_Pt_D0_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-                                                fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                                            }
-											
-                        				}if (TMath::Abs(pidM)== 431) { //if from Ds meson
-											if (pTmom>1 && pTmom<50.) { //in proper pt range
-				
-                        				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-												fDCAxy_Pt_Ds_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-				
-                        				        dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(pTmom));
-												fDCAxy_Pt_Ds_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
-				
-                        				        dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
-												fDCAxy_Pt_Ds_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    Double_t emcphi = -999, emceta = -999;
 
-												fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                        				    }
-											
-                        				}if (TMath::Abs(pidM)==4122) { //if from Lc
-                        				    if (pTmom>1 && pTmom<50.) { //in proper pt range
-                        				        dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
-												fDCAxy_Pt_lambda_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+	    if(clustMatch && clustMatch->IsEMCAL())
+	    {
 
-                        				        dWeight = fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_lambda_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+		    //shower shape cut
+		    Double_t fPhiDiff = -999, fEtaDiff = -999;
+		    GetTrkClsEtaPhiDiff(track,clustMatch,fPhiDiff,fEtaDiff);
+		    fEMCTrkMatchPhi->Fill(fPhiDiff);
+		    fEMCTrkMatchEta->Fill(fEtaDiff);
 
-                        				        dWeight = fLcWeightVar2->GetBinContent(fLcWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_lambda_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+		    //cout << "fPhiDiff = "<< fPhiDiff << endl;
 
-												fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                        				    }
-											
-                        				}if (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599 ) {//if from B meson
-                        				    //cout<<"TESTING5"<<endl;
-                        				    if (pTmom>0. && pTmom<50.) { //in proper pt range
+		    if(TMath::Abs(fPhiDiff)>0.05 || TMath::Abs(fEtaDiff)>0.05)continue;
 
-                        				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
 
-                        				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+		    //Select EMCAL or DCAL clusters
+		    Float_t emcx[3];//cluster pos
+		    clustMatch->GetPosition(emcx);
+		    TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+		    emcphi = clustpos.Phi();
+		    emceta = clustpos.Eta();
 
-                        				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+		    fClsEtaPhiAftMatch->Fill(emceta,emcphi);
 
-												fDCAxy_Pt_Bmeson->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                        				    }
-											
-                        				}if (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999 ) {//if from B baryon
-                        				    if (pTmom>0. && pTmom<50.) { //in proper pt range
 
-                        				        bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+		    //////Properties of tracks matched to the EMCAL/////
+		    fEMCTrkPt->Fill(TrkPt);
 
-                        				        bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+		    if(TrkPt>1.0){
+			    fEMCTrketa->Fill(TrkEta);
+			    fEMCTrkphi->Fill(TrkPhi);
+		    }
 
-                        				        bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
-                        				        fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+		    Double_t clustMatchE = clustMatch->E();
 
-												fDCAxy_Pt_Bbaryon->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                        				    }
-											
-                        				}
 
+		    /////EMCAL EID info///////
+		    Double_t eop = -1.0;
+		    Double_t m02 = -99999, m20 = -99999;
 
-										// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
-										//if(pid_eleD){
-										//				if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-										//				if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-										//				if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-										//}
-										//if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-										//if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-						}
-		}
+		    if(track->P()>0)eop = clustMatchE/track->P();
+		    m02 = clustMatch->GetM02();
+		    m20 = clustMatch->GetM20();
 
-		Double_t TrkPhicos2_hadhigh = -999;
-		Double_t TrkPhisin2_hadhigh = -999;
+		    //add by sudo
 
-		if((fTPCnSigma < -3) && (m20 > 0.01 && m20 < 3.0)){
+		    if(track->Pt()>2.0){
+			    fHistNsigEop->Fill(eop,fTPCnSigma);
+		    }
 
-                if(track->Pt()<3.0){
-                              if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
-                      }
+		    fM20->Fill(track->Pt(),clustMatch->GetM20());
+		    fM02->Fill(track->Pt(),clustMatch->GetM02());
 
-				TrkPhiEPV0A_had = TrkPhiPI - PsinV0A;
+		    //cout << "eop" << eop << endl;
 
-				if(TrkPhiEPV0A_had > TMath::Pi()/2.){
-					TrkPhiEPV0A_had -= TMath::Pi();
-				}
+		    Double_t TrkPhicos2_elehigh = -999;
+		    Double_t TrkPhisin2_elehigh = -999;
 
-				if(TrkPhiEPV0A_had < -TMath::Pi()/2.){
-					TrkPhiEPV0A_had += TMath::Pi();
-				}
+		    //if((fTPCnSigma > -1 && fTPCnSigma <3) && (m20 > 0.01 && m20 < 0.3)){ //TPC nsigma & shower shape cut
+		    if(fTPCnSigma > ftpcnsig && fTPCnSigma <3){ //TPC nsigma & shower shape cut
 
-				TrkPhicos2_hadhigh = cos(2*TrkPhiEPV0A_had);
-				TrkPhisin2_hadhigh = sin(2*TrkPhiEPV0A_had);
+			    if(track->Pt()<3.0){
+				    //if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) || (fTPCnSigma<0) )continue;
+				    if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
+			    }
 
-				fTrkPhicos2_hadhigh -> Fill(track->Pt(),TrkPhicos2_hadhigh);
-				fTrkPhisin2_hadhigh -> Fill(track->Pt(),TrkPhisin2_hadhigh);
 
-			fHisthadron -> Fill(eop,track->Pt());
-			fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-			//cout<<"DCA= "<<DCA[i]<<endl;
-			//cout<<"Bsign= "<<Bsign<<endl;
-			//cout<<"charge= "<<track->Charge()<<endl;
-            if(TrkPhiEPV0A_had > -TMath::Pi()/4. && TrkPhiEPV0A_had < TMath::Pi()/4.){
-                fDCAxy_Pt_Inplane_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-            }
-            if(TrkPhiEPV0A_had > TMath::Pi()/4. || TrkPhiEPV0A_had < -TMath::Pi()/4.){
-                fDCAxy_Pt_Outplane_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-            }
+			    //if(eop>0.9 && eop<1.3){ //eop cut
+			    if(eop>femceop && eop<1.3 && (m20 > femcss_mim && m20 < femcss_max)){ //eop cut
 
+				    //SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
+				    SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCA[0],Bsign,TrkPhiPI,PsinV0A);
+				    ////electron v2////
 
-		}
+				    //if(track->Pt() > 1.5){
 
+				    TrkPhiEPV0A_ele = TrkPhiPI - PsinV0A;
 
-	}
+				    if(TrkPhiEPV0A_ele > TMath::Pi()/2.){
+					    TrkPhiEPV0A_ele -= TMath::Pi();
+				    }
 
-    }                                                   // continue until all the tracks are processed
-    PostData(1, fOutputList);                           // stream the results the analysis of this event to
-    // it to a file
-}
+				    if(TrkPhiEPV0A_ele < -TMath::Pi()/2.){
+					    TrkPhiEPV0A_ele += TMath::Pi();
+				    }
+				    //if(TrkPhiEP2 > PI_2){
+				    //	TrkPhiEP2 -= PI;
+				    //}
+
+				    //if(TrkPhiEP2 < -PI_2){
+				    //	TrkPhiEP2 += PI;
+				    //}
+				    //fTrkPhiEP2 -> Fill(TrkPhiEP2);
+				    //fcorTrkPhicent_ele -> Fill(TrkPhiEP2,lPercentile);
+
+				    ////electron v2 each Pt/////
+
+				    fTrkPhiEPV0A_Pt_ele -> Fill(track->Pt(),TrkPhiEPV0A_ele);
+
+				    TrkPhicos2_elehigh = cos(2*TrkPhiEPV0A_ele);
+				    TrkPhisin2_elehigh = sin(2*TrkPhiEPV0A_ele);
+
+				    fTrkPhicos2_elehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
+				    fTrkPhisin2_elehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
+				    //}
+
+				    if(!fFlagNonHFE){
+
+					    fTrkPhicos2_hfehigh -> Fill(track->Pt(),TrkPhicos2_elehigh);
+					    fTrkPhisin2_hfehigh -> Fill(track->Pt(),TrkPhisin2_elehigh);
+					    fDCAxy_Pt_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+				    }
+
+
+				    if(TrkPhiEPV0A_ele > -TMath::Pi()/4. && TrkPhiEPV0A_ele < TMath::Pi()/4.){
+
+					    fInplane_ele -> Fill(track->Pt());
+					    fDCAxy_Pt_Inplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+					    if(!fFlagNonHFE){
+
+						    fInplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+						    fDCAxy_Pt_Inplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+					    }
+
+
+				    }
+
+
+
+				    if(TrkPhiEPV0A_ele > TMath::Pi()/4. || TrkPhiEPV0A_ele < -TMath::Pi()/4.){
+
+					    fOutplane_ele -> Fill(track->Pt());
+					    fDCAxy_Pt_Outplane_ele -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+					    if(!fFlagNonHFE){
+
+						    fOutplane_hfe -> Fill(track->Pt());//using this at pt < 3 GeV
+						    fDCAxy_Pt_Outplane_hfe -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+					    }
+
+				    }
+
+
+				    /////DCA distribution////
+				    //fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
+				    /////Identify Non-HFE/////
+				    //SelectPhotonicElectron(iTracks,track,fFlagNonHFE,TrkPt,DCAxy,Bsign,TrkPhiPI,PsinV0A);
+
+				    if(pid_eleP){
+
+					    fHistPhoReco0 -> Fill(track->Pt());
+
+					    //cout << "iSemiCentral = " << iSemiCentral << " ; iEmbPi0 = " << iEmbPi0 << " ; WeightPho1 = " << WeightPho << endl;
+
+					    if(iEmbPi0)fHistPhoPi0->Fill(track->Pt(),WeightPho);
+					    if(iEmbEta)fHistPhoEta->Fill(track->Pt(),WeightPho);
+
+
+					    if(fFlagNonHFE){
+						    fHistPhoReco1 -> Fill(track->Pt());
+						    if(iEmbPi0)fHistPhoPi01->Fill(track->Pt(),WeightPho);
+						    if(iEmbEta)fHistPhoEta1->Fill(track->Pt(),WeightPho);
+
+					    }
+
+					    else{
+						    fHistPhoReco2 -> Fill(track->Pt());
+					    }
+				    }
+
+			    }
+
+			    fHisteop->Fill(eop);
+			    fHistelectron->Fill(eop,track->Pt());
+		    }
+
+		    Double_t dWeight = -99;
+		    Double_t bWeight = -99;
+		    if(fTPCnSigma > ftpcnsig && fTPCnSigma <3 && m20 > 0.02 && m20 < 0.3){ // TPC nsigma & shower shape cut
+
+			    if(eop>femceop && eop<1.3){ // E/p cut
+				    if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
+				    if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+
+				    fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+				    //D meson : pidM>400, <499, =421, =413, >430, <436 D+ : =411 Ds : =431 Lc : 4122 from AliAnalysisTaskTPCCalBeauty.cxx
+				    
+                                    if(pid_eleD)
+				    {
+					    if(TMath::Abs(pidM)> 400 || TMath::Abs(pidM)< 499 || TMath::Abs(pidM)== 421 || TMath::Abs(pidM)== 413 || TMath::Abs(pidM)> 430 || TMath::Abs(pidM)< 436){//if from D meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_D_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    fDCAxy_Pt_D->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+					    }if (TMath::Abs(pidM)== 411) { //if from D+ meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDPlusWeightVar1->GetBinContent(fDPlusWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_Dpm_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+
+					    }if (TMath::Abs(pidM)== 421) { //if from D0 meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_D0_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+							    fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+
+					    }if (TMath::Abs(pidM)== 431) { //if from Ds meson
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDsWeightVar1->GetBinContent(fDsWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_Ds_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+
+					    }if (TMath::Abs(pidM)==4122) { //if from Lc
+						    if (pTmom>1 && pTmom<50.) { //in proper pt range
+							    dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fLcWeightVar1->GetBinContent(fLcWeightVar1->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    dWeight = fLcWeightVar2->GetBinContent(fLcWeightVar2->FindBin(pTmom));
+							    fDCAxy_Pt_lambda_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),dWeight);
+
+							    fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+						    }
+
+                                     } // end if pid_eleD
+
+
+				    }if (pid_eleB && (TMath::Abs(pidM)> 500 || TMath::Abs(pidM)< 599) ) {//if from B meson
+					    //cout<<"TESTING5"<<endl;
+					    if (pTmom>0. && pTmom<50.) { //in proper pt range
+
+						    bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
+						    fDCAxy_Pt_Bmeson_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
+						    fDCAxy_Pt_Bmeson_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
+						    fDCAxy_Pt_Bmeson_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    fDCAxy_Pt_Bmeson->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+					    }
+
+				    }if (pid_eleB && (TMath::Abs(pidM)> 5000 || TMath::Abs(pidM)< 5999)) {//if from B baryon
+					    if (pTmom>0. && pTmom<50.) { //in proper pt range
+
+						    bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(pTmom));
+						    fDCAxy_Pt_Bbaryon_WeightNew->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(pTmom));
+						    fDCAxy_Pt_Bbaryon_WeightVar1->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(pTmom));
+						    fDCAxy_Pt_Bbaryon_WeightVar2->Fill(TrkPt,DCA[0]*Bsign*track->Charge(),bWeight);
+
+						    fDCAxy_Pt_Bbaryon->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+					    }
+
+				    }
+
+
+				    // 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+				    //if(pid_eleD){
+				    //				if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+				    //				if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+				    //				if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+				    //}
+				    //if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+				    //if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+			    }
+		    }
+
+		    Double_t TrkPhicos2_hadhigh = -999;
+		    Double_t TrkPhisin2_hadhigh = -999;
+
+		    if((fTPCnSigma < -3) && (m20 > 0.01 && m20 < 3.0)){
+
+			    if(track->Pt()<3.0){
+				    if( (fTOFnSigma<-1 || fTOFnSigma>1) || (fITSnSigma<-3 || fITSnSigma>1) )continue;
+			    }
+
+			    TrkPhiEPV0A_had = TrkPhiPI - PsinV0A;
+
+			    if(TrkPhiEPV0A_had > TMath::Pi()/2.){
+				    TrkPhiEPV0A_had -= TMath::Pi();
+			    }
+
+			    if(TrkPhiEPV0A_had < -TMath::Pi()/2.){
+				    TrkPhiEPV0A_had += TMath::Pi();
+			    }
+
+			    TrkPhicos2_hadhigh = cos(2*TrkPhiEPV0A_had);
+			    TrkPhisin2_hadhigh = sin(2*TrkPhiEPV0A_had);
+
+			    fTrkPhicos2_hadhigh -> Fill(track->Pt(),TrkPhicos2_hadhigh);
+			    fTrkPhisin2_hadhigh -> Fill(track->Pt(),TrkPhisin2_hadhigh);
+
+			    fHisthadron -> Fill(eop,track->Pt());
+			    fDCAxy_Pt_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+			    //cout<<"DCA= "<<DCA[i]<<endl;
+			    //cout<<"Bsign= "<<Bsign<<endl;
+			    //cout<<"charge= "<<track->Charge()<<endl;
+			    if(TrkPhiEPV0A_had > -TMath::Pi()/4. && TrkPhiEPV0A_had < TMath::Pi()/4.){
+				    fDCAxy_Pt_Inplane_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+			    }
+			    if(TrkPhiEPV0A_had > TMath::Pi()/4. || TrkPhiEPV0A_had < -TMath::Pi()/4.){
+				    fDCAxy_Pt_Outplane_had -> Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+			    }
+
+
+		    }
+
+
+		    }
+
+	    }                                                   // continue until all the tracks are processed
+	    PostData(1, fOutputList);                           // stream the results the analysis of this event to
+	    // it to a file
+	    }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowTPCEMCalRun2::Terminate(Option_t *)
@@ -3030,6 +3043,7 @@ void AliAnalysisTaskFlowTPCEMCalRun2::CheckMCgen(AliAODMCHeader* fMCheader,Doubl
 	TString MCgen;
 	TString embpi0("pi");
 	TString embeta("eta");
+	TString embbeauty("bele");
 
 	if(lh)
 {
@@ -3045,6 +3059,10 @@ void AliAnalysisTaskFlowTPCEMCalRun2::CheckMCgen(AliAODMCHeader* fMCheader,Doubl
 
 				if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
 				if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
+				if(MCgen.Contains(embbeauty))
+                                   {
+                                    iBevt = kTRUE;
+                                    }  
 
 				NpureMCproc += gh->NProduced(); //generated by PYTHIA or HIJING
                                 //cout << "NpureMCproc = " << NpureMCproc << endl;
@@ -3151,7 +3169,7 @@ else
 Bool_t AliAnalysisTaskFlowTPCEMCalRun2::IsDdecay(int mpid){
 
 	int abmpid = TMath::Abs(mpid);
-	if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433){
+	if(abmpid==411 || abmpid==421 || abmpid==413 || abmpid==423 || abmpid==431 || abmpid==433 || abmpid==4122){
 
 		return kTRUE;
 

@@ -78,7 +78,7 @@ bool AliAnalysisTaskEmcalOutliersGen::Run() {
 AliAnalysisTaskEmcalOutliersGen *AliAnalysisTaskEmcalOutliersGen::AddTaskEmcalOutliersGen(const char *name) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
-    ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
+    ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
     return nullptr;
   } 
 

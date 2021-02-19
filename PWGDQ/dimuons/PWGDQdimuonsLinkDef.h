@@ -7,4 +7,5 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskTree_MCut+;
+#pragma link C++ class AliAnalysisTaskPbPbTree_MCut+;
 #endif

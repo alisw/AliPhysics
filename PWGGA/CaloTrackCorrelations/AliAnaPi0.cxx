@@ -113,12 +113,12 @@ fhMCPi0MassPtRecCen(0x0),    fhMCPi0MassPtTrueCen(0x0),
 fhMCPi0PtTruePtRecCen(0x0),  fhMCPi0PtTruePtRecMassCutCen(0x0),
 fhMCEtaMassPtRecCen(0x0),    fhMCEtaMassPtTrueCen(0x0),
 fhMCEtaPtTruePtRecCen(0x0),  fhMCEtaPtTruePtRecMassCutCen(0x0),
-fhMCPi0PtTruePtRecRat(0),    fhMCPi0PtTruePtRecDif(0), fhMCPi0PtRecOpenAngle(0),
-fhMCEtaPtTruePtRecRat(0),    fhMCEtaPtTruePtRecDif(0), fhMCEtaPtRecOpenAngle(0),
-fhMCPi0PtTruePtRecRatMassCut(0), fhMCPi0PtTruePtRecDifMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
-fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
-fhMCPi0PtTruePtRecDifCen(0),        fhMCEtaPtTruePtRecDifCen(0), 
-fhMCPi0PtTruePtRecDifCenMassCut(0), fhMCEtaPtTruePtRecDifCenMassCut(0),
+fhMCPi0PtTruePtRecDifOverPtTrue(0), fhMCPi0PtRecOpenAngle(0),
+fhMCEtaPtTruePtRecDifOverPtTrue(0), fhMCEtaPtRecOpenAngle(0),
+fhMCPi0PtTruePtRecDifOverPtTrueMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
+fhMCEtaPtTruePtRecDifOverPtTrueMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
+fhMCPi0PtTruePtRecDifOverPtTrueCen(0),     fhMCEtaPtTruePtRecDifOverPtTrueCen(0), 
+fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut(0), fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut(0),
 fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
 fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
@@ -1766,74 +1766,39 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCEtaPtTruePtRecMassCut[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
         outputContainer->Add(fhMCEtaPtTruePtRecMassCut[0]) ;
         
-        fhMCPi0PtTruePtRecRat = new TH2F
-        ("hMCPi0PtTruePtRecRat",
-         "Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs",
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCPi0PtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCPi0PtTruePtRecRat) ;
-        
-        fhMCPi0PtTruePtRecRatMassCut = new TH2F
-        ("hMCPi0PtTruePtRecRatCutMassCut",
-         Form("Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
-              fPi0MassWindow[0],fPi0MassWindow[1]),
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCPi0PtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCPi0PtTruePtRecRatMassCut) ;
-        
-        fhMCEtaPtTruePtRecRat = new TH2F
-        ("hMCEtaPtTruePtRecRat",
-         "Reconstructed / generated #it{p}_{T} of true #eta cluster pairs",
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCEtaPtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCEtaPtTruePtRecRat) ;
-        
-        fhMCEtaPtTruePtRecRatMassCut = new TH2F
-        ("hMCEtaPtTruePtRecRatCutMassCut",
-         Form("Reconstructed / generated #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
-              fEtaMassWindow[0],fEtaMassWindow[1]),
-         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
-        fhMCEtaPtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
-        outputContainer->Add(fhMCEtaPtTruePtRecRatMassCut) ;
-        
-        fhMCPi0PtTruePtRecDif = new TH2F
-        ("hMCPi0PtTruePtRecDif",
-         "Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+        fhMCPi0PtTruePtRecDifOverPtTrue = new TH2F
+        ("hMCPi0PtTruePtRecDifOverPtTrue",
+         "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs",
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCPi0PtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCPi0PtTruePtRecDif) ;
+        fhMCPi0PtTruePtRecDifOverPtTrue->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PtTruePtRecDifOverPtTrue->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrue) ;
         
-        fhMCPi0PtTruePtRecDifMassCut = new TH2F
-        ("hMCPi0PtTruePtRecDifCutMassCut",
-         
-         Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut = new TH2F
+        ("hMCPi0PtTruePtRecDifOverPtTrueMassCut",
+         Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
               fPi0MassWindow[0],fPi0MassWindow[1]),
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCPi0PtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCPi0PtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCPi0PtTruePtRecDifMassCut) ;
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PtTruePtRecDifOverPtTrueMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} ");
+        outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueMassCut) ;
         
-        fhMCEtaPtTruePtRecDif = new TH2F
-        ("hMCEtaPtTruePtRecDif",
-         "Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
+        fhMCEtaPtTruePtRecDifOverPtTrue = new TH2F
+        ("hMCEtaPtTruePtRecDifOverPtTrue",
+         "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}  of true #eta cluster pairs",
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCEtaPtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCEtaPtTruePtRecDif) ;
+        fhMCEtaPtTruePtRecDifOverPtTrue->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPtTruePtRecDifOverPtTrue->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrue) ;
         
-        fhMCEtaPtTruePtRecDifMassCut = new TH2F
-        ("hMCEtaPtTruePtRecDifCutMassCut",
-         Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut = new TH2F
+        ("hMCEtaPtTruePtRecDifOverPtTrueCutMassCut",
+         Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
               fEtaMassWindow[0],fEtaMassWindow[1]),
          nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
-        fhMCEtaPtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-        fhMCEtaPtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-        outputContainer->Add(fhMCEtaPtTruePtRecDifMassCut) ;
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPtTruePtRecDifOverPtTrueMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+        outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueMassCut) ;
       }
       
       if ( fFillAngleHisto )
@@ -1965,51 +1930,51 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtTruePtRecMassCutCen->SetZTitle("Centrality (%)");
       outputContainer->Add(fhMCEtaPtTruePtRecMassCutCen) ;
       
-      fhMCPi0PtTruePtRecDifCen = new TH3F
-      ("hMCPi0PtTruePtRecDifCen",
-       "Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+      fhMCPi0PtTruePtRecDifOverPtTrueCen = new TH3F
+      ("hMCPi0PtTruePtRecDifOverPtTrueCen",
+       "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #pi^{0} cluster pairs",
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCPi0PtTruePtRecDifCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCPi0PtTruePtRecDifCen->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCPi0PtTruePtRecDifCen->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCPi0PtTruePtRecDifCen) ;
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCPi0PtTruePtRecDifOverPtTrueCen->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueCen) ;
       
-      fhMCPi0PtTruePtRecDifCenMassCut = new TH3F
-      ("hMCPi0PtTruePtRecDifCutCenMassCut",
-       Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut = new TH3F
+      ("hMCPi0PtTruePtRecDifOverPtTrueCenMassCut",
+       Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
             fPi0MassWindow[0],fPi0MassWindow[1]),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCPi0PtTruePtRecDifCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCPi0PtTruePtRecDifCenMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCPi0PtTruePtRecDifCenMassCut->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCPi0PtTruePtRecDifCenMassCut) ;
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut) ;
       
-      fhMCEtaPtTruePtRecDifCen = new TH3F
-      ("hMCEtaPtTruePtRecDifCen",
-       "Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
+      fhMCEtaPtTruePtRecDifOverPtTrueCen = new TH3F
+      ("hMCEtaPtTruePtRecDifOverPtTrueCen",
+       "(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} of true #eta cluster pairs",
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCEtaPtTruePtRecDifCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCEtaPtTruePtRecDifCen->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCEtaPtTruePtRecDifCen->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCEtaPtTruePtRecDifCen) ;
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} ");
+      fhMCEtaPtTruePtRecDifOverPtTrueCen->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueCen) ;
       
-      fhMCEtaPtTruePtRecDifCenMassCut = new TH3F
-      ("hMCEtaPtTruePtRecDifCutCenMassCut",
-       Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut = new TH3F
+      ("hMCEtaPtTruePtRecDifCutOverPtTrueCenMassCut",
+       Form("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener} #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
             fEtaMassWindow[0],fEtaMassWindow[1]),
         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
        difBinsArray.GetSize() - 1, difBinsArray.GetArray(),
        cenBinsArray.GetSize() - 1, cenBinsArray.GetArray());
-      fhMCEtaPtTruePtRecDifCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
-      fhMCEtaPtTruePtRecDifCenMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
-      fhMCEtaPtTruePtRecDifCenMassCut->SetZTitle("Centrality (%)");
-      outputContainer->Add(fhMCEtaPtTruePtRecDifCenMassCut) ;
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetYTitle("(#it{p}_{T, reco} - #it{p}_{T, gener}) / #it{p}_{T, gener}");
+      fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->SetZTitle("Centrality (%)");
+      outputContainer->Add(fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut) ;
     } // High Mult, Origin
 
   } // MC data
@@ -3419,6 +3384,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
   Float_t prodRcorr = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
+  Float_t ratPrim = 0;
+  if ( ptPrim > 0.1 ) ratPrim = (pt-ptPrim)/ptPrim;
   Float_t cent   = GetEventCentrality();
   Double_t vertex[3]={0.,0.,0.};
   GetVertex(vertex);
@@ -3427,7 +3394,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
                     ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus));
     
-    if ( ancPDG==22 )
+    AliVParticle * mom = GetMC()->GetTrack(ancLabel);
+
+    if ( ancPDG == 22 )
     { // gamma, from conversions?
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
@@ -3435,7 +3404,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       else
         mcIndex = 14;
     }
-    else if(TMath::Abs(ancPDG)==11)
+    else if ( TMath::Abs(ancPDG) == 11 )
     {// electron, from conversions?
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCConversion) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCConversion)    )
@@ -3443,9 +3412,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       else
         mcIndex = 15;
     }
-    else if ( ancPDG==111 )
+    else if ( ancPDG==111 &&  mom )
     {//Pi0
-      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
       Bool_t ok= kTRUE;
       
       if ( mom->GetNDaughters()!=2 )
@@ -3456,7 +3424,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       {
         AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
         AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
-        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
+
+        if      ( !d1 || !d2 )
+          ok = kFALSE;
+        else if ( d1->PdgCode() != 22 || d2->PdgCode() != 22 )
+          ok = kFALSE;
       }
       
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCPi0Decay) &&
@@ -3469,12 +3441,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           fhMCPi0MassPtTrueCen    ->Fill(ptPrim, mass , cent, GetEventWeight()*weightPt);
           fhMCPi0MassPtRecCen     ->Fill(pt    , mass , cent, GetEventWeight()*weightPt);
           fhMCPi0PtTruePtRecCen   ->Fill(ptPrim,   pt , cent, GetEventWeight()*weightPt);
-          fhMCPi0PtTruePtRecDifCen->Fill(pt, pt-ptPrim, cent, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRecDifOverPtTrueCen->Fill(pt , ratPrim, cent, GetEventWeight()*weightPt);
           
-          if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
+          if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] ) 
           {
-            fhMCPi0PtTruePtRecMassCutCen   ->Fill(ptPrim, pt       , cent, GetEventWeight()*weightPt);
-            fhMCPi0PtTruePtRecDifCenMassCut->Fill(pt    , pt-ptPrim, cent, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecMassCutCen->Fill(ptPrim, pt, cent, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut->Fill(pt, ratPrim, cent, GetEventWeight()*weightPt);
           }
         }
         else if ( fMultiCutAnaSim )
@@ -3503,16 +3475,14 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         }// Multi cut ana sim
         else
         {
-          fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-          fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCPi0PtTruePtRecDifOverPtTrue->Fill(pt, ratPrim, GetEventWeight()*weightPt);
           
           if ( fFillAngleHisto )
             fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
           
           if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
           {
-            fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-            fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+            fhMCPi0PtTruePtRecDifOverPtTrueMassCut->Fill(pt, ratPrim, GetEventWeight()*weightPt);
             
             if  ( fFillAngleHisto )
               fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
@@ -3532,7 +3502,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             uniqueID = ancestor->GetUniqueID();
             
             Bool_t momOK = kFALSE;
-            if(momindex >= 0) 
+            if ( momindex >= 0 )
             {
               AliVParticle* mother = GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->PdgCode());
@@ -3703,9 +3673,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       }
 
     }
-    else if ( ancPDG==221 )
+    else if ( ancPDG==221 && mom )
     {//Eta
-      AliVParticle * mom = GetMC()->GetTrack(ancLabel);
       Bool_t ok= kTRUE;
       
       if ( mom->GetNDaughters()!=2 ) 
@@ -3716,11 +3685,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
       {
         AliVParticle * d1 = GetMC()->GetTrack(mom->GetDaughterLabel(0));
         AliVParticle * d2 = GetMC()->GetTrack(mom->GetDaughterLabel(1));
-        if(d1->PdgCode() != 22 || d2->PdgCode() != 22) ok = kFALSE;
+        if      ( !d1 || !d2 )
+          ok = kFALSE;
+        else if ( d1->PdgCode() != 22 || d2->PdgCode() != 22 )
+          ok = kFALSE;
       }
       
-      if ( mom->GetNDaughters()!=2 ) ok = kFALSE;
-
       if ( GetMCAnalysisUtils()->CheckTagBit(mctag2,AliMCAnalysisUtils::kMCEtaDecay) &&
            GetMCAnalysisUtils()->CheckTagBit(mctag1,AliMCAnalysisUtils::kMCEtaDecay) && ok )
       {        
@@ -3731,12 +3701,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
           fhMCEtaMassPtTrueCen    ->Fill(ptPrim, mass , cent, GetEventWeight()*weightPt);
           fhMCEtaMassPtRecCen     ->Fill(pt    , mass , cent, GetEventWeight()*weightPt);
           fhMCEtaPtTruePtRecCen   ->Fill(ptPrim,   pt , cent, GetEventWeight()*weightPt);
-          fhMCEtaPtTruePtRecDifCen->Fill(pt, pt-ptPrim, cent, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRecDifOverPtTrueCen->Fill(pt , ratPrim, cent, GetEventWeight()*weightPt);
           
           if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
           {
-            fhMCEtaPtTruePtRecMassCutCen   ->Fill(ptPrim, pt       , cent, GetEventWeight()*weightPt);
-            fhMCEtaPtTruePtRecDifCenMassCut->Fill(pt    , pt-ptPrim, cent, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecMassCutCen->Fill(ptPrim, pt, cent, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut->Fill(pt, ratPrim, cent, GetEventWeight()*weightPt);
           }
         }
         else if ( fMultiCutAnaSim )
@@ -3766,16 +3736,14 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
         } //Multi cut ana sim
         else
         {      
-          fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-          fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+          fhMCEtaPtTruePtRecDifOverPtTrue->Fill(pt, ratPrim, GetEventWeight()*weightPt);
           
           if ( fFillAngleHisto )
             fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight()*weightPt);
           
           if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
           {
-            fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight()*weightPt);
-            fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight()*weightPt);
+            fhMCEtaPtTruePtRecDifOverPtTrueMassCut->Fill(pt, ratPrim, GetEventWeight()*weightPt);
             
             if ( fFillAngleHisto )
               fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight()*weightPt);
@@ -3793,7 +3761,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t ancLabel , Int_t ancPDG,
             
             AliVParticle* ancestor = GetMC()->GetTrack(ancLabel);
             momindex  = ancestor->GetMother();
-            if(momindex >= 0) 
+            if ( momindex >= 0 ) 
             {
               AliVParticle* mother = GetMC()->GetTrack(momindex);
               mompdg    = TMath::Abs(mother->PdgCode());
@@ -4139,13 +4107,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   {
     FillAcceptanceHistograms();
   
-    if(fFillOnlyMCAcceptanceHisto) return;
+    if ( fFillOnlyMCAcceptanceHisto ) return;
   }
   
 //if (GetReader()->GetEventNumber()%10000 == 0)
 // printf("--- Event %d ---\n",GetReader()->GetEventNumber());
   
-  if(!GetInputAODBranch())
+  if ( !GetInputAODBranch() )
   {
     AliFatal(Form("No input aod photons in AOD with name branch < %s >, STOP",GetInputAODName().Data()));
     return;
@@ -4164,7 +4132,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   Int_t last       = 1;     // last entry in first loop to be removed
   
   // Combine 2 detectors:
-  if(fPairWithOtherDetector)
+  if ( fPairWithOtherDetector )
   {
     // Input from CaloTrackCorr tasks
     secondLoopInputData = (TClonesArray *) GetReader()->GetAODBranchList()->FindObject(fOtherDetectorInputName);
@@ -4196,7 +4164,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     return ;
   }
-  else if(fPairWithOtherDetector && nPhot2 < minEntries)
+  else if ( fPairWithOtherDetector && nPhot2 < minEntries )
   {
     AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
     
@@ -4206,24 +4174,33 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     return ;
   }
   
+  // Init variables
+
   Int_t ncentr = GetNCentrBin();
-  if(GetNCentrBin()==0) ncentr = 1;
-  
-  //Init variables
+  if ( GetNCentrBin() == 0 )
+    ncentr = 1;
+  Int_t curCentrBin = 0;
+  if ( ncentr > 1 )
+    curCentrBin = GetEventCentralityBin();
+
   Int_t module1         = -1;
   Int_t module2         = -1;
   Double_t vert[]       = {0.0, 0.0, 0.0} ; //vertex
   Int_t evtIndex1       = 0 ;
   Int_t currentEvtIndex = -1;
-  Int_t curCentrBin     = GetEventCentralityBin();
-  //Int_t curVzBin        = GetEventVzBin();
-  //Int_t curRPBin        = GetEventRPBin();
+//Int_t curVzBin        = GetEventVzBin();
+//Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
     
-  if(eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin())
+  if ( eventbin < 0 || eventbin >= GetNCentrBin()*GetNZvertBin()*GetNRPBin() )
   {
-    AliWarning(Form("Mix Bin not expected: cen bin %d, z bin %d, rp bin %d, total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
-                    GetEventCentralityBin(),GetEventVzBin(), GetEventRPBin(),eventbin,GetEventCentrality(),vert[2],GetEventPlaneAngle()));
+    AliWarning(Form("Mix Bin not expected: cen bin %d (<%d), z bin %d (<%d), rp bin %d (<%d), "
+                    "total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
+                    GetEventCentralityBin(), ncentr,
+                    GetEventVzBin(), GetNZvertBin(),
+                    GetEventRPBin(), GetNRPBin(),
+                    eventbin,GetEventCentrality(),
+                    vert[2],GetEventPlaneAngle()));
     return;
   }
   
@@ -4253,18 +4230,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       continue ;
     
     // Only effective in case of mixed event frame
-    if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
+    if ( TMath::Abs(vert[2]) > GetZvertexCut() ) continue ;   //vertex cut
     
-    if (evtIndex1 != currentEvtIndex)
+    if ( evtIndex1 != currentEvtIndex )
     {
       // Fill event bin info
-      if( DoOwnMix() ) fhEventBin->Fill(eventbin, GetEventWeight()) ;
+      if ( DoOwnMix() ) fhEventBin->Fill(eventbin, GetEventWeight()) ;
       
-      if( IsHighMultiplicityAnalysisOn() )
+      if ( IsHighMultiplicityAnalysisOn() )
       {
         fhCentrality->Fill(curCentrBin, GetEventWeight());
         
-        if( GetEventPlane() )
+        if ( GetEventPlane() )
           fhEventPlaneResolution->Fill(curCentrBin, TMath::Cos(2.*GetEventPlane()->GetQsubRes()), GetEventWeight());
       }
       
@@ -4291,7 +4268,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
     Int_t   iRCU1 = -1, iRCU2 = -1;
 
-    if(fMultiCutAnaAcc || fFillAngleHisto)
+    if ( fMultiCutAnaAcc || fFillAngleHisto )
     {
       AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
       if(!cluster1) AliWarning("Cluster1 not found!");
@@ -4318,7 +4295,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     // Second loop on photons/clusters
     //---------------------------------
     Int_t first = i1+1;
-    if(fPairWithOtherDetector) first = 0;
+    if ( fPairWithOtherDetector ) first = 0;
     
     for(Int_t i2 = first; i2 < nPhot2; i2++)
     {
@@ -4422,26 +4399,27 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //--------------------------------
       // Check if opening angle is too large or too small compared to what is expected
       Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
-      if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
+      if ( fUseAngleEDepCut && 
+          !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05) )
       {
         AliDebug(2,Form("Real pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
         continue;
       }
       
-      if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+      if ( fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut) )
       {
         AliDebug(2,Form("Real pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut), RadToDeg(angle), RadToDeg(fAngleMaxCut)));
         continue;
       }
 
-      if(fUseOneCellSeparation)
+      if ( fUseOneCellSeparation )
       {
-	Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
-	if(!separation)
-	{
-	  AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
-	  continue;
-	}
+        Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+        if ( !separation )
+        {
+          AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
+          continue;
+        }
       }
       
       //-----------------------------------
@@ -4456,7 +4434,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       {
         ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(p1->GetLabel(), p2->GetLabel(),
                                                              GetMC(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
-        if( ancLabel >= 0 )
+        if ( ancLabel >= 0 )
         {
           TString genName;
           Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(ancLabel, genName);
@@ -4473,14 +4451,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
            module1 >=0 && module1<fNModules        && 
            module2 >=0 && module2<fNModules           )
       {
-        if(!fPairWithOtherDetector)
+        if ( !fPairWithOtherDetector )
         {
           if ( module1==module2 )
           {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight()*weightPt);
           }
-          else if (GetCalorimeter() == kEMCAL )
+          else if ( GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL )
           {
             // Same sector
             Int_t isector1 = module1/2;
@@ -4504,7 +4482,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 fhReSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
             } // side
           } // EMCAL
-          else
+          else if ( GetCalorimeter() == kPHOS )
           { // PHOS
             if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()*weightPt) ;
             if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()*weightPt) ;
@@ -4542,11 +4520,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       // In case we want only pairs in same (super) module, check their origin.
       Bool_t ok = kTRUE;
       
-      if(fSameSM)
+      if ( fSameSM )
       {
-        if(!fPairWithOtherDetector)
+        if ( !fPairWithOtherDetector )
         {
-          if(module1!=module2) ok=kFALSE;
+          if ( module1!=module2 ) ok=kFALSE;
         } 
         else // PHOS and DCal in same sector
         {
@@ -4559,7 +4537,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
       } // Pair only in same SM
       
-      if(!ok) continue;
+      if ( !ok ) continue;
       
       //
       // Fill histograms with selected cluster pairs
@@ -4573,7 +4551,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       
       // Fill shower shape cut histograms
-      if(fFillSSCombinations)
+      if ( fFillSSCombinations )
       {
         if     ( l01 > 0.01 && l01 < 0.4  &&
                  l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt, m, GetEventWeight()*weightPt); // Tight
@@ -4588,34 +4566,37 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //
       for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
       {
-        if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
+        if ( (p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && 
+             (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))    )
         {
           for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
           {
-            if(a < fAsymCuts[iasym])
+            if ( a < fAsymCuts[iasym] )
             {
               if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
               
               Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
               //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d - max index %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym, curCentrBin*fNPIDBits*fNAsymCuts);
               
-              if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+              if ( index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts ) continue ;
               
               fhRe1     [index]->Fill(pt, m, GetEventWeight()*weightPt);
               
-              if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+              if ( fMakeInvPtPlots ) fhReInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
               
-              if(fFillBadDistHisto)
+              if ( fFillBadDistHisto )
               {
-                if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                if ( p1->DistToBad()>0 && p2->DistToBad()>0 )
                 {
                   fhRe2     [index]->Fill(pt, m, GetEventWeight()*weightPt) ;
-                  if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+                  if ( fMakeInvPtPlots )
+                    fhReInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
                   
-                  if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                  if ( p1->DistToBad()>1 && p2->DistToBad()>1 )
                   {
                     fhRe3     [index]->Fill(pt, m, GetEventWeight()*weightPt) ;
-                    if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
+                    if ( fMakeInvPtPlots )
+                      fhReInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()*weightPt) ;
                   }// bad 3
                 }// bad2
               }// Fill bad dist histos
@@ -4626,7 +4607,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       //
       // Fill histograms with opening angle
-      if(fFillAngleHisto)
+      if ( fFillAngleHisto )
       {
         fhRealOpeningAngle   ->Fill(pt, angle, GetEventWeight()*weightPt);
         fhRealCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight()*weightPt);
@@ -4634,16 +4615,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       
       //
       // Fill histograms for different opening angle bins
-      if(fFillOpAngleCutHisto)
+      if ( fFillOpAngleCutHisto )
       {        
         Int_t angleBin = -1;
         for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
         {
-          if(angle >= fAngleCutBinsArray[ibin] && 
-             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+          if ( angle >= fAngleCutBinsArray[ibin] && 
+               angle <  fAngleCutBinsArray[ibin+1]  ) angleBin = ibin;
         }
         
-        if( angleBin >= 0 && angleBin < fNAngleCutBins)
+        if ( angleBin >= 0 && angleBin < fNAngleCutBins )
         {
           Float_t e1   = fPhotonMom1.E();
           Float_t e2   = fPhotonMom2.E();
@@ -4665,11 +4646,12 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // Recover original cluster
           AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
-          if(!cluster2) AliWarning("Cluster2 not found!");
+          if ( !cluster2 ) 
+            AliWarning("Cluster2 not found!");
 
           absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
           
-          if(e2 > e1)
+          if ( e2 > e1 )
           {
             e1   = fPhotonMom2.E();
             e2   = fPhotonMom1.E();
@@ -4704,9 +4686,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           fhReOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()*weightPt) ; 
 
           fhReOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()*weightPt) ;
-          if(mod2 == mod1)  fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()*weightPt) ;
+          if ( mod2 == mod1 )  
+            fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()*weightPt) ;
                     
-          if(e1 > 0.01) fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()*weightPt) ;  
+          if ( e1 > 0.01 )
+            fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()*weightPt) ;  
           
           fhReOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()*weightPt) ;
           fhReOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()*weightPt) ;
@@ -4722,7 +4706,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 
       
       // Fill histograms with pair assymmetry
-      if(fFillAsymmetryHisto)
+      if ( fFillAsymmetryHisto )
       {
         fhRePtAsym->Fill(pt, a, GetEventWeight()*weightPt);
         if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhRePtAsymPi0->Fill(pt, a, GetEventWeight()*weightPt);
@@ -4730,7 +4714,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       
       // Check cell time content in cluster
-      if ( fFillSecondaryCellTiming)
+      if ( fFillSecondaryCellTiming )
       {
         if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
           fhReSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight()*weightPt);
@@ -4811,16 +4795,17 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //-------------------------------------------------------------
   // Mixing
   //-------------------------------------------------------------
-  if(DoOwnMix())
+  if ( DoOwnMix() )
   {
     // Recover events in with same characteristics as the current event
     
     // Check that the bin exists, if not (bad determination of RP, centrality or vz bin) do nothing
-    if(eventbin < 0) return ;
+    if ( eventbin < 0 || eventbin >= GetNCentrBin()*GetNZvertBin()*GetNRPBin() ) 
+      return ;
     
     TList * evMixList=fEventsList[eventbin] ;
     
-    if(!evMixList)
+    if ( !evMixList )
     {
       AliWarning(Form("Mix event list not available, bin %d",eventbin));
       return;
@@ -4871,27 +4856,28 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // Check if opening angle is too large or too small compared to what is expected
           Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
-          if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
+          if ( fUseAngleEDepCut && 
+              !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05) )
           {
             AliDebug(2,Form("Mix pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
             continue;
           }
           
-          if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
+          if ( fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut) )
           {
             AliDebug(2,Form("Mix pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut),RadToDeg(angle),RadToDeg(fAngleMaxCut)));
             continue;
           }
 
-	  if(fUseOneCellSeparation)
-	  {
-	    Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
-	    if(!separation)
-	    {
-	      AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
-	      continue;
-	    }
-	  }
+          if ( fUseOneCellSeparation )
+          {
+            Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+            if ( !separation )
+            {
+              AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
+              continue;
+            }
+          }
           
           AliDebug(2,Form("Mixed Event: pT: fPhotonMom1 %2.2f, fPhotonMom2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %2.3f",p1->Pt(), p2->Pt(), pt,m,a));
           
@@ -4912,7 +4898,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
                 if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
               }
-              else if ( GetCalorimeter()==kEMCAL )
+              else if ( GetCalorimeter() == kEMCAL || GetCalorimeter() == kDCAL )
               {
                 // Same sector
                 Int_t isector1 = module1/2;
@@ -4936,7 +4922,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     fhMiSameSideEMCALMod[iside2]->Fill(pt, m, GetEventWeight());
                 }
               } // EMCAL
-              else
+              else if ( GetCalorimeter() == kPHOS )
               { // PHOS
                 if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt, m, GetEventWeight()) ;
                 if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt, m, GetEventWeight()) ;
@@ -4955,8 +4941,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               Float_t phi1 = GetPhi(fPhotonMom1.Phi());
               Float_t phi2 = GetPhi(fPhotonMom2.Phi());
               Bool_t etaside = 0;
-              if(   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
-                 || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
+              if (   (p1->GetDetectorTag()==kEMCAL && fPhotonMom1.Eta() < 0) 
+                  || (p2->GetDetectorTag()==kEMCAL && fPhotonMom2.Eta() < 0)) etaside = 1;
               
               if      (    phi1 > DegToRad(260) && phi2 > DegToRad(260) && phi1 < DegToRad(280) && phi2 < DegToRad(280))  fhMiSameSectorDCALPHOSMod[0+etaside]->Fill(pt, m, GetEventWeight());
               else if (    phi1 > DegToRad(280) && phi2 > DegToRad(280) && phi1 < DegToRad(300) && phi2 < DegToRad(300))  fhMiSameSectorDCALPHOSMod[2+etaside]->Fill(pt, m, GetEventWeight());
@@ -4972,11 +4958,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           } //  different SM combinations
           
           Bool_t ok = kTRUE;          
-          if(fSameSM)
+          if ( fSameSM )
           {
-            if(!fPairWithOtherDetector)
+            if ( !fPairWithOtherDetector )
             {
-              if(module1!=module2) ok=kFALSE;
+              if ( module1!=module2 ) ok=kFALSE;
             } 
             else // PHOS and DCal in same sector
             {
@@ -4989,7 +4975,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }
           } // Pair only in same SM
           
-          if(!ok) continue ;
+          if ( !ok ) continue ;
           
           //
           // Do the final histograms with the selected clusters
@@ -5008,32 +4994,34 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           //
           for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
           {
-            if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
+            if ( (p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)) )
             {
               for(Int_t iasym=0; iasym < fNAsymCuts; iasym++)
               {
-                if(a < fAsymCuts[iasym])
+                if ( a < fAsymCuts[iasym] )
                 {
                   if ( curCentrBin < 0 || curCentrBin >= GetNCentrBin() ) continue;
 
                   Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                   
-                  if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
+                  if ( index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts ) continue ;
                   
                   fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
                   if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                   
-                  if(fFillBadDistHisto)
+                  if ( fFillBadDistHisto )
                   {
-                    if(p1->DistToBad()>0 && p2->DistToBad()>0)
+                    if ( p1->DistToBad()>0 && p2->DistToBad()>0 )
                     {
                       fhMi2[index]->Fill(pt, m, GetEventWeight()) ;
-                      if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                      if ( fMakeInvPtPlots )
+                        fhMiInvPt2[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                       
-                      if(p1->DistToBad()>1 && p2->DistToBad()>1)
+                      if ( p1->DistToBad()>1 && p2->DistToBad()>1 )
                       {
                         fhMi3[index]->Fill(pt, m, GetEventWeight()) ;
-                        if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
+                        if ( fMakeInvPtPlots )
+                          fhMiInvPt3[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                       }
                     }
                   }// Fill bad dist histo
@@ -5049,7 +5037,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t  ncell1 = p1->GetNCells();
           Int_t  ncell2 = p1->GetNCells();
           
-          if(fMultiCutAna)
+          if ( fMultiCutAna )
           {
             // Several pt,ncell and asymmetry cuts
             for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
@@ -5070,7 +5058,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     //printf("\t %p, %p\n",fhMiPtNCellAsymCuts[index],fhMiPtNCellAsymCutsOpAngle[index]);
                     
                     fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                    if(fFillAngleHisto)  fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
+                    if ( fFillAngleHisto )
+                      fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
                     
                     //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                   }
@@ -5081,7 +5070,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           //
           // Fill histograms with opening angle
-          if(fFillAngleHisto)
+          if ( fFillAngleHisto )
           {
             fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
             fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
@@ -5089,16 +5078,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           //
           // Fill histograms for different opening angle bins
-          if(fFillOpAngleCutHisto)
+          if ( fFillOpAngleCutHisto )
           {
             Int_t angleBin = -1;
             for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
             {
-              if(angle >= fAngleCutBinsArray[ibin] && 
-                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+              if ( angle >= fAngleCutBinsArray[ibin] && 
+                   angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
             }
             
-            if( angleBin >= 0 && angleBin < fNAngleCutBins)
+            if ( angleBin >= 0 && angleBin < fNAngleCutBins )
             {
               Float_t e1   = fPhotonMom1.E();
               Float_t e2   = fPhotonMom2.E();
@@ -5127,7 +5116,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               //              Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
               //              Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
               
-              if(e2 > e1)
+              if ( e2 > e1 )
               {
                 e1   = fPhotonMom2.E();
                 e2   = fPhotonMom1.E();
@@ -5162,9 +5151,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               fhMiOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
               
               fhMiOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
-              if(mod2 == mod1)  fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
+              if ( mod2 == mod1 )
+                fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
               
-              if(e1 > 0.01) fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
+              if ( e1 > 0.01 )
+                fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
               
               fhMiOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
               fhMiOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
@@ -5183,7 +5174,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           }
           
           // Fill histograms with pair assymmetry
-          if(fFillAsymmetryHisto)
+          if ( fFillAsymmetryHisto )
           {
             fhMiPtAsym->Fill(pt, a, GetEventWeight());
             if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
@@ -5212,11 +5203,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     TClonesArray *currentEvent = new TClonesArray(*secondLoopInputData);
     
     // Add current event to buffer and Remove redundant events
-    if( currentEvent->GetEntriesFast() > 0 )
+    if ( currentEvent->GetEntriesFast() > 0 )
     {
       evMixList->AddFirst(currentEvent) ;
-      currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-      if( evMixList->GetSize() >= GetNMaxEvMix() )
+      currentEvent = 0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
+      if ( evMixList->GetSize() >= GetNMaxEvMix() )
       {
         TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
         evMixList->RemoveLast() ;

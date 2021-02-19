@@ -10,7 +10,9 @@ class AliPIDResponse;
 class THistManager;
 class TString;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalTriggerJets: public AliAnalysisTaskEmcalJet {
 public:
@@ -36,11 +38,11 @@ private:
   AliPIDResponse        *fPIDResponse;        //!<! PID Response handler
   THistManager          *fHistos;             //!<! Histogram handler
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalTriggerJets, 1)
-  /// \endcond
 };
 
-} /* namespace EmcalTriggerJets */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERJETS_H */

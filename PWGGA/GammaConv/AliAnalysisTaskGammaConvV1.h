@@ -408,11 +408,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
 
+    AliConversionPhotonCuts::TMapPhotonBool fMapPhotonHeaders;                   // map to remember if the photon tracks are from selected headers
+
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 52);
+    ClassDef(AliAnalysisTaskGammaConvV1, 53);
 };
 
 #endif

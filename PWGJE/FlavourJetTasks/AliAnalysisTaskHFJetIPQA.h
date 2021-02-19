@@ -93,7 +93,8 @@ public:
         bAnalysisCut_PtHardAndJetPtFactor=28,
         bAnalysisCut_MinNewVertexContrib=29,
         bAnalysisCut_SDz=30,
-        bAnalysisCut_SDbeta=31
+        bAnalysisCut_SDbeta=31,
+        bAnalysisCut_MaxIPLNJP=32
     };
 
     enum V0Cuts{
@@ -115,7 +116,8 @@ public:
         MaxDecayRadius,
         MaxCosPALambda,
         MinCosPAK0,
-        MaxLifeTime,
+        MaxLifeTimeK0,
+        MaxLifeTimeLambda,
         DoArmenteros,
         DoMassWindow,
         InvarMassWindowK0,
@@ -165,13 +167,14 @@ public:
 
     //UTILITY STRUCT DEFINITIONS
     struct SJetIpPati {
-        SJetIpPati(Double_t v1, Double_t v2, Int_t isv0, Bool_t c,Int_t tl,Double_t pt): first(v1),second(v2),is_V0(isv0),is_fromB(c),trackLabel(tl),trackpt(pt){}
+        SJetIpPati(Double_t v1, Double_t v2, Int_t isv0, Bool_t c,Int_t tl,Double_t pt, Int_t v0mcid): first(v1),second(v2),is_V0(isv0),is_fromB(c),trackLabel(tl),trackpt(pt),iv0MCID(v0mcid){}
         Double_t first; // to be compatible with std::pair
         Double_t second;// to be compatible with std::pair
         Int_t   is_V0; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
         Int_t trackLabel;
         Double_t trackpt;
+        Int_t iv0MCID;
     };
 
     struct SV0Daugh {
@@ -295,6 +298,7 @@ public:
     {
         fProductionNumberPtHard = value;
     }
+    Int_t IsInVector(const vector<Int_t>& vec, Int_t iLabel, TString sFunc);
     Bool_t IsParton(int pdg);
     Bool_t IsParticleInCone(const AliVParticle* part, const AliEmcalJet* jet, Double_t dRMax);
     Int_t NDaughterInCone(std::vector<Int_t>& vecDaughLabels, const AliEmcalJet* jet, const AliAODEvent* event, Double_t dRMax, Double_t& ipsig);
@@ -322,14 +326,16 @@ public:
     void FillV0Candidates(Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut);
     Int_t IsV0Daughter(const AliAODEvent* fAODIn,const AliAODTrack* track, Int_t iTrack);
     void SelectV0Candidates(const AliAODEvent *fAODIn);
-    Bool_t SelectV0CandidatesMC(const AliAODEvent* fAODIn, const AliAODv0* v0);
-    void GetGeneratedV0();
-    void GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, Int_t fGenJetFlavour);
-    void FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen,std::vector<Int_t>& vecDaughLabels,Int_t iCount, Int_t iLevel);
-    Double_t GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event);
+    void IdentifyRecV0PDG(Double_t fMassK0, Double_t fMassLambda, Double_t fMassAntiLambda, Bool_t& isK0, Bool_t& IsLambda, Bool_t& IsAntiLambda, TString sIsCalledBy="");
+    Bool_t PerformV0AcceptanceCuts(Double_t V0pt, Double_t V0y, Double_t V0PosDaughpt, Double_t V0PosDaughEta,Double_t V0NegDaughpt, Double_t V0NegDaughEta);
+    Bool_t PerformV0MCAcceptanceCuts(const AliAODMCParticle* pAODMother, AliAODMCParticle* pAODPosDaugh,AliAODMCParticle* pAODNegDaugh,Bool_t& bV0MCIsK0s,Bool_t& bV0MCIsLambda,Bool_t& bV0MCIsALambda);
+    //void GetGeneratedV0();
+    Int_t GetGenV0Jets(const AliEmcalJet* jetgen, const AliAODEvent* event, const std::vector<Int_t>& iTrackLabels, const std::vector<Double_t>& fTrackRecIPs, const std::vector<Double_t>& fTrackRecPts, Int_t fGenJetFlavour, Bool_t **kTagDec, Double_t fLNJP);
+    Int_t FindAllV0Daughters(AliAODMCParticle* pAOD, const AliAODEvent* event, const AliEmcalJet* jetgen, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs,Int_t iCount, Int_t iLevel);
+    void GetGenV0DaughterIP(AliAODMCParticle *pAOD, const AliEmcalJet* jetgen, const AliAODEvent* event, const vector<Int_t>& iTrackLabels, const vector<Double_t>& fTrackRecIPs, Int_t& iInVectorInxMaxIP);
     //AliAODMCParticle* GetMCTrack( const AliAODTrack* track);
     AliAODMCParticle* GetMCTrack(int iLabel);
-    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel, Double_t& fV0pt, Double_t& fV0ptData, Double_t& fV0eta);
+    int GetV0MCVeto(const AliAODEvent* fAODIn, AliAODv0* v0, Int_t tracklabel);
     void FillV0EfficiencyHists(int isV0, int & jetflavour, double jetpt, bool &isV0Jet);
 
     void FillCandidateJet(Int_t CutIndex, Int_t JetFlavor);
@@ -347,7 +353,7 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign, int jetflavour);
     int DetermineUnsuitableVtxTracks(int *skipped, AliAODEvent * const aod, AliVTrack * const track);
-    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, std::vector<Float_t> &ipvalsig, std::vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
+    void DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, std::vector<Float_t> &ipvalsig, std::vector<Float_t> &ipval, Int_t& HasGoodIPTracks);
     //______________________________
     //Corrections
     double DoUESubtraction(AliJetContainer* &jetcongen, AliJetContainer* &jetconrec, AliEmcalJet* &jetrec, double jetpt);
@@ -459,6 +465,7 @@ private:
     Int_t nTracks;
     Int_t fNEvent;
     bool bMatched;
+    Int_t bIsTrueGenV0Jet;
     Float_t fTrackIPs[40];
     Float_t fTrackIPSigs[40];
     Float_t fTrackProb[40];
@@ -471,14 +478,15 @@ private:
     Float_t fV0MotherEtaMC[40];
     Int_t iTrackITSHits[40];
     Int_t iV0MCID[40];
+    Int_t iV0RecID[40];
     Int_t bTrackIsV0[40];
     Bool_t bPassedSD[40];
-    Bool_t bFull[30];
+    //Bool_t bFull[30];
     Bool_t bSingle1st[30];
-    Bool_t bSingle2nd[30];
-    Bool_t bSingle3rd[30];
+    //Bool_t bSingle2nd[30];
+    //Bool_t bSingle3rd[30];
     Bool_t bDouble[30];
-    Bool_t bTriple[30];
+    //Bool_t bTriple[30];
 
     void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
     void DoJetLoop(); //jet matching function 2/4
@@ -634,8 +642,8 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[32]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
-    Double_t fV0Cuts[25];
+    Double_t fAnalysisCuts[33]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fV0Cuts[26];
 
     AliPIDCombined *fCombined ;//!
 
@@ -703,7 +711,7 @@ private:
     return kTRUE;
     }*/
 
-   ClassDef(AliAnalysisTaskHFJetIPQA, 69)
+   ClassDef(AliAnalysisTaskHFJetIPQA, 79)
 };
 
 #endif

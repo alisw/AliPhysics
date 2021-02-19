@@ -3189,7 +3189,8 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesV0(TTree *tree) {
   tree->SetAlias("alpha0M",Form("track0.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
   tree->SetAlias("dSector1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
   tree->SetAlias("alpha1M",Form("track1.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
-
+  tree->SetAlias("logQP0","sign(track0.fP[4])*log(1+track0.fIp.P())");
+  tree->SetAlias("logQP1","sign(track1.fP[4])*log(1+track1.fIp.P())");
   TDatabasePDG *pdg = TDatabasePDG::Instance();
   Double_t massLambda = pdg->GetParticle("Lambda0")->Mass();
   Double_t massK0 = pdg->GetParticle("K0")->Mass();
@@ -3308,7 +3309,7 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   Float_t irocMiddle = (AliTPCROC::Instance()->GetPadRowRadii(0,62)+ AliTPCROC::Instance()->GetPadRowRadii(0,0))*0.5;
   tree->SetAlias("dSectorM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,13)",irocMiddle,bz));
   tree->SetAlias("alphaM",Form("esdTrack.fIp.GetParameterAtRadius(%f,%f+0,7)",irocMiddle,bz));
-
+  tree->SetAlias("logQP","sign(esdTrack.fP[4])*log(1+esdTrack.fIp.P())");
   tree->SetAlias("phiInner","atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)");
   tree->SetAlias("secInner","9*(atan2(esdTrack.fIp.Py(),esdTrack.fIp.Px()+0)/pi)+18*(esdTrack.fIp.Py()<0)");
   tree->SetAlias("tgl","esdTrack.fP[3]");
@@ -3353,8 +3354,21 @@ void  AliAnalysisTaskFilteredTree::SetDefaultAliasesHighPt(TTree *tree){
   tree->SetAlias("nclCut","(esdTrack.GetTPCClusterInfo(3,1)+esdTrack.fTRDncls)>140-5*(abs(esdTrack.fP[4]))");
   tree->SetAlias("IsPrim4","sqrt((esdTrack.fD**2)/esdTrack.fCdd+(esdTrack.fZ**2)/esdTrack.fCzz)<4");
   tree->SetAlias("IsPrim4TPC","sqrt((esdTrack.fdTPC**2)/esdTrack.fCddTPC+(esdTrack.fzTPC**2)/esdTrack.fCzzTPC)<4");
-  
+  //DCA aliases
+  tree->SetAlias("dcaRTPC","esdTrack.fdTPC");
+  tree->SetAlias("dcaZTPC","esdTrack.fzTPC");
+  tree->SetAlias("dcaR","esdTrack.fD");
+  tree->SetAlias("dcaZ","esdTrack.fZ");
+  tree->SetAlias("dcaRTPCN","esdTrack.fdTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZTPCN","esdTrack.fzTPC/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaRN","esdTrack.fD/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaZN","esdTrack.fZ/sqrt(1+esdTrack.fP[4]**2)");
+  tree->SetAlias("dcaRTPCPull","esdTrack.fdTPC/sqrt(esdTrack.fCddTPC)");
+  tree->SetAlias("dcaZTPCPull","esdTrack.fzTPC/sqrt(esdTrack.fCzzTPC)");
+  tree->SetAlias("dcaRPull","esdTrack.fD/sqrt(esdTrack.fCdd)");
+  tree->SetAlias("dcaZPull","esdTrack.fZ/sqrt(esdTrack.fCzz)");
 
+  //
   const char * chName[5]={"#it{r#phi}","#it{z}","sin(#phi)","tan(#it{#theta})", "q/#it{p}_{t}"};
   const char * chUnit[5]={"cm","cm","","", "(1/GeV)"};
   const char * refBranch=(tree->GetBranch("extInnerParamV."))? "extInnerParamV":"esdTrack.fTPCInner";

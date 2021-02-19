@@ -442,7 +442,7 @@ void AliAnalysisTaskCMWPU::UserCreateOutputObjects()
 
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90};
 
-  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,50,-0.5,0.5);
+  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,1000,-1.0,1.0);
   fListHist->Add(fHistAChrgVsCent);
 
 		 
@@ -944,11 +944,11 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
       //Apply track cuts here:
       //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 	  
-	  if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
 	  
 
 	  
@@ -1113,6 +1113,9 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
   //stepCount++;
 
   
+  if(fHCorrectEVNTWGTChrg){
+    fWgtEvent=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
+  }
   
   Float_t fAchrgNet = (fNumOfPos - fNumOfNeg)/(fNumOfPos + fNumOfNeg); // Efficiency & NUA Corrected!
 
@@ -1235,11 +1238,11 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
 
       
       //Apply track cuts here:
-      //      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 
-	if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
 
 	
 	//dcaXY  = track->DCA();
@@ -1277,7 +1280,8 @@ void AliAnalysisTaskCMWPU::UserExec(Option_t*) {
 	  if(trkPt<=0.45 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut){
 	    isItKaon = kTRUE;
 	  }
-	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
+	  else if(trkPt>0.45 && trkPt<=10.0 && TMath::Sqrt(nSigTPCkaon*nSigTPCkaon + nSigTOFkaon*nSigTOFkaon)<=fNSigmaTOFCut){
+	    //else if(trkPt>0.45 && trkPt<=10.0 && TMath::Abs(nSigTPCkaon)<=fNSigmaTPCCut && TMath::Abs(nSigTOFkaon)<=fNSigmaTOFCut){
 	    isItKaon = kTRUE;
 	  }
 	}

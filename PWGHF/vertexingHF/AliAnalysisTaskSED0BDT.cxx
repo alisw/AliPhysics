@@ -36,6 +36,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
+#include "AliESDUtils.h"
 #include <TDatabasePDG.h>
 #include <THnSparse.h>
 #include "AliVertexingHFUtils.h"
@@ -103,6 +105,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
+  fHistNtrCorrEvSel(0),
   fSelectTrueD0(kFALSE),
   fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
@@ -129,11 +132,26 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fListBDTResp(0),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
-  fBDTClassifierVarString("")
+fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:multiplicity"),
+  fBDTClassifierVarString(""),
+fSubtractTrackletsFromDau(kFALSE),
+fRefMult(9.26),
+fMultiplicityEstimator(kNtrk10),
+fMCPrimariesEstimator(kEta10),
+fListProfiles(0),
+fmultiana(0),
+fCounterC(0),
+fDoVZER0ParamVertexCorr(1),
+fYearNumber(16)
 {
   /// Default constructor
-    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
@@ -168,6 +186,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fFillVarHists(kTRUE),
   fSys(0),
   fIsRejectSDDClusters(0),
+  fHistNtrCorrEvSel(0),
   fFillPtHist(kTRUE),
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
@@ -205,11 +224,26 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fListBDTResp(0),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
-  fBDTClassifierVarString("")
+fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:multiplicity"),
+  fBDTClassifierVarString(""),
+fSubtractTrackletsFromDau(kFALSE),
+fRefMult(9.26),
+fmultiana(0),
+fMultiplicityEstimator(kNtrk10),
+fMCPrimariesEstimator(kEta10),
+fListProfiles(0),
+fCounterC(0),
+fDoVZER0ParamVertexCorr(1),
+fYearNumber(16)
 {
   /// Default constructor
-    for(Int_t i=0; i<5; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
@@ -233,12 +267,17 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   // Output slot #6 
   DefineOutput(6,TList::Class());
   DefineOutput(7,TList::Class());
-
+    DefineOutput(8,TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
 {
+    for(Int_t i=0; i<14; i++) {
+      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
+    }
+    delete fListProfiles;
+    delete fCounterC;
   if (fOutputMass) {
     delete fOutputMass;
     fOutputMass = 0;
@@ -274,8 +313,24 @@ AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
     delete fVariablesTree;
     fVariablesTree = 0;
   }
-  for(Int_t i=0; i<5; i++){
-    if(h3Invmass[i]) delete h3Invmass[i];
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass[i]) delete h3Invmass[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_19[i]) delete h3Invmass_19[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_1029[i]) delete h3Invmass_1029[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_3059[i]) delete h3Invmass_3059[i];
+    }
+    //pxy_new
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_19999[i]) delete h3Invmass_19999[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_6099[i]) delete h3Invmass_6099[i];
     }
   if (fDetSignal) {
     delete fDetSignal;
@@ -335,6 +390,65 @@ void AliAnalysisTaskSED0BDT::Init()
   AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
   const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
+    fListProfiles = new TList();
+    fListProfiles->SetOwner();
+    TString period[14];
+    Int_t nProfiles=14;
+    if(fYearNumber == 10){
+    period[0]="LHC10b";
+    period[1]="LHC10c";
+    period[2]="LHC10d";
+    period[3]="LHC10e";
+    nProfiles = 4;
+  }else if(fYearNumber == 16){
+     period[0]="LHC16d";
+     period[1]="LHC16e";
+     period[2]="LHC16g";
+     period[3]="LHC16h1";
+     period[4]="LHC16h2";
+     period[5]="LHC16j";
+     period[6]="LHC16k";
+     period[7]="LHC16l";
+     period[8]="LHC16o";
+     period[9]="LHC16p";
+     nProfiles = 10;
+  }else if(fYearNumber == 17){
+    period[0]="LHC17e";
+    period[1]="LHC17f";
+    period[2]="LHC17h";
+    period[3]="LHC17i";
+    period[4]="LHC17j";
+    period[5]="LHC17k";
+    period[6]="LHC17l";
+    period[7]="LHC17m";
+    period[8]="LHC17o";
+    period[9]="LHC17r";
+    nProfiles = 10;
+  }else if(fYearNumber == 18){
+    period[0]="LHC18b";
+    period[1]="LHC18d";
+    period[2]="LHC18e";
+    period[3]="LHC18f";
+    period[4]="LHC18g";
+    period[5]="LHC18h";
+    period[6]="LHC18i";
+    period[7]="LHC18j";
+    period[8]="LHC18k";
+    period[9]="LHC18l";
+    period[10]="LHC18m";
+    period[11]="LHC18n";
+    period[12]="LHC18o";
+    period[13]="LHC18p";
+    nProfiles = 14;
+   }
+    for(Int_t i=0; i<nProfiles; i++){
+      if(fMultEstimatorAvg[i]){
+        TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
+        hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
+        fListProfiles->Add(hprof);
+      }
+    }
+    PostData(8,fListProfiles);
   // Post the data
   PostData(4,copyfCuts);
 
@@ -1184,6 +1298,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   if(fFillSparses){
 	//"ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"
 	// MC !NOT TESTED YET!
+      fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel",Form("Corrected  multiplicity for selected events ; Entries"),200,0,200);
+      fOutputMass->Add(fHistNtrCorrEvSel);
 	if(fReadMC){
 		TNtuple *NtupleD0C = new TNtuple("NtupleD0C", "MC Prompt D0", fBDTFullVarString);
 		TNtuple *NtupleD0B = new TNtuple("NtupleD0B", "MC Non-prompt D0", fBDTFullVarString);
@@ -1201,18 +1317,32 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 	else{
 		fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
 		for(Int_t ii=0;ii<fCut4BDTptbin->GetNPtBins();ii++){
-			const Int_t NBDT = fListBDTNames->GetEntries() - 1;
-		//	TH3F *h3Invmass[NBDT];
-			for(Int_t jj=0;jj<NBDT;jj++){
-				TString BDT1Name = fListBDTNames->At(0)->GetName();
-				TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
-				h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
-				//h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
-				fListBDTResp->Add(h3Invmass[jj]);
-			}
-		}
+            const Int_t NBDT = fListBDTNames->GetEntries() - 1;
+            for(Int_t jj=0;jj<NBDT;jj++){
+            TString BDT1Name = fListBDTNames->At(0)->GetName();
+            TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
+            h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            h3Invmass_19[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            h3Invmass_1029[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_1029",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            h3Invmass_3059[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_3059",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_19999[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19999",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                h3Invmass_6099[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_6099",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+
+            //h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
+            fListBDTResp->Add(h3Invmass[jj]);
+            fListBDTResp->Add(h3Invmass_19[jj]);
+            fListBDTResp->Add(h3Invmass_1029[jj]);
+            fListBDTResp->Add(h3Invmass_3059[jj]);
+                fListBDTResp->Add(h3Invmass_19999[jj]);
+                fListBDTResp->Add(h3Invmass_6099[jj]);
+        }
 	}
   }
+  }
+    fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
+    fCounterC->SetStudyMultiplicity(kTRUE,1.);
+    fCounterC->Init();
+    fDistr->Add(fCounterC);
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -1221,8 +1351,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   PostData(6,fListBDTNtuple);
   PostData(7,fListBDTResp);
   return;
-}
 
+}
 //________________________________________________________________________
 void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
 
@@ -1292,6 +1422,92 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
+    Float_t countCorr = -99999;
+    if(fmultiana){
+    Int_t countTreta1=0, countTreta03=0, countTreta05=0, countTreta16=0;
+    AliAODTracklets* tracklets=aod->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=tracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-0.3 && eta<0.3) countTreta03++;
+      if(eta>-0.5 && eta<0.5) countTreta05++;
+      if(eta>-1.0 && eta<1.0) countTreta1++;
+      if(eta>-1.6 && eta<1.6) countTreta16++;
+    }
+    
+    Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+    Int_t vzeroMultEq=0, vzeroMultAEq=0, vzeroMultCEq=0;
+    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+    if(vzeroAOD) {
+      vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+      vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+      vzeroMult = vzeroMultA + vzeroMultC;
+      vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod));
+      vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod));
+      vzeroMultEq = vzeroMultAEq + vzeroMultCEq;
+    }
+
+    Int_t countMult = countTreta1;
+    if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
+    else if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
+    else if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
+    else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+    else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
+    else if(fMultiplicityEstimator==kVZEROEq) { countMult = vzeroMultEq; }
+    else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
+    
+    Double_t countTreta1corr=countTreta1;
+    countCorr=countMult;
+    AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+    // In case of VZERO multiplicity, consider the zvtx correction flag
+    //  fDoVZER0ParamVertexCorr: 0= none, 1= usual d2h, 2=AliESDUtils
+    Bool_t isDataDrivenZvtxCorr=kTRUE;
+    Bool_t isVtxOk=kFALSE;
+    Int_t vzeroMultACorr=vzeroMultA, vzeroMultCCorr=vzeroMultC, vzeroMultCorr=vzeroMult;
+    Int_t vzeroMultAEqCorr=vzeroMultAEq, vzeroMultCEqCorr=vzeroMultCEq, vzeroMultEqCorr=vzeroMultEq;
+
+    if(isVtxOk){
+      if( (fMultiplicityEstimator==kVZERO) || (fMultiplicityEstimator==kVZEROA) ||
+      (fMultiplicityEstimator==kVZEROEq) || (fMultiplicityEstimator==kVZEROAEq) ){
+        if(fDoVZER0ParamVertexCorr==0){
+      // do not correct
+      isDataDrivenZvtxCorr=kFALSE;
+        } else if (fDoVZER0ParamVertexCorr==2){
+      // use AliESDUtils correction
+      Float_t zvtx = vtx1->GetZ();
+      isDataDrivenZvtxCorr=kFALSE;
+      vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultA,zvtx));
+      vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(vzeroMultC,zvtx));
+      vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
+      vzeroMultAEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultAEq,zvtx));
+      vzeroMultCEqCorr =static_cast<Int_t>( AliESDUtils::GetCorrV0C(vzeroMultCEq,zvtx));
+      vzeroMultEqCorr = vzeroMultAEqCorr + vzeroMultCEqCorr;
+      if(fMultiplicityEstimator==kVZERO) { countCorr = vzeroMultCorr; }
+      else if(fMultiplicityEstimator==kVZEROA) { countCorr = vzeroMultACorr; }
+      else if(fMultiplicityEstimator==kVZEROEq) { countCorr = vzeroMultEqCorr; }
+      else if(fMultiplicityEstimator==kVZEROAEq) { countCorr = vzeroMultAEqCorr; }
+        }
+      }
+    }
+    // Data driven multiplicity z-vertex correction
+    if(isVtxOk && isDataDrivenZvtxCorr){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aod);
+      if(estimatorAvg){
+        countTreta1corr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult));
+        // vzeroMultACorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultA,vtx1->GetZ(),fRefMult));
+        // vzeroMultCorr= vzeroMultACorr + static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultC,vtx1->GetZ(),fRefMult));
+        // vzeroMultAEqCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultAEq,vtx1->GetZ(),fRefMult));
+        // vzeroMultEqCorr= vzeroMultAEqCorr + static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultCEq,vtx1->GetZ(),fRefMult));
+        countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,vtx1->GetZ(),fRefMult));
+      }
+    }
+
+    }
+    fCounterC->StoreEvent(aod,fCuts,fReadMC,countCorr);
+    Float_t multForCand = countCorr;
+    fHistNtrCorrEvSel->Fill(countCorr,1);
+    
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
@@ -1426,7 +1642,22 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
 
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
+      if(fSubtractTrackletsFromDau){
+       
+      // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
 
+
+      for(Int_t iDau=0; iDau<2; iDau++){
+        AliAODTrack *t = NULL;
+
+     t = (AliAODTrack*)d->GetDaughter(iDau);
+        if(!t) continue;
+        if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
+          if(multForCand>0) multForCand-=1;
+        }
+      }
+        
+      }
     if(fUseSelectionBit && d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
 	fNentries->Fill(2);
 	continue; //skip the D0 from Dstar
@@ -1484,7 +1715,7 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
 
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
       FillCandVariables(aod,d,mcArray,mcHeader,fCuts);
-      if(fFillSparses) ProcessBDT(aod, d,mcArray);
+        if(fFillSparses)  ProcessBDT(aod, d,mcArray, multForCand);
       if (fPIDCheck) {
         Int_t isSelectedPIDfill = 3;
 	      if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
@@ -3157,7 +3388,7 @@ Bool_t AliAnalysisTaskSED0BDT::CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_
   return kTRUE;
 }
 //________________________________________
-void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC){
+void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi){
     fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
     fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
     AliAODTrack *prong2=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
@@ -3193,7 +3424,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     cosThetaStarD0bar = part->CosThetaStarD0bar();
     //  if (part->Pt() > 10) return;
     // DCA part->GetDCA();
-    Float_t tmp[22];
+    Float_t tmp[23];
     tmp[8]= -99;                                // Invariant Mass
     tmp[18] = -99;                                 // ptB (if accessible)
     tmp[19] = 0;                                 // PDGCode
@@ -3215,6 +3446,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     tmp[16] = d0Prong[1];                         // d02
     tmp[20] = part->YD0();
     tmp[21] = part->Phi();
+    tmp[22] = multi;
     
     if(tmp[0]<fBDTPtCut[0]||tmp[0]>=fBDTPtCut[1]) return;		// Global pT cut
     // PID and Cuts
@@ -3285,16 +3517,19 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 		if(!fIsSelectedCandidate) return;
 
 		std::vector<Double_t> BDTClsVar;// BDT cls input
-		BDTClsVar.resize(11);
+        if(fSys == 0)    BDTClsVar.resize(11);
+        if(fSys == 1)    BDTClsVar.resize(10);
  
         if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3314,8 +3549,18 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
 					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
-					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
-					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
 					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
@@ -3329,9 +3574,11 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3351,8 +3598,19 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
 					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
-					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
-					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
+
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
 					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
@@ -3362,4 +3620,64 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
         }
     }
     
+}
+//_________________________________________________________________________
+TProfile* AliAnalysisTaskSED0BDT::GetEstimatorHistogram(const AliVEvent* event){
+  /// Get Estimator Histogram from period event->GetRunNumber();
+  ///
+  /// If you select SPD tracklets in |eta|<1 you should use type == 1
+  ///
+    
+  Int_t runNo  = event->GetRunNumber();
+  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  // pPb 2013: 0-LHC13b, 1-LHC13c
+  // pPb 2016: 0-LHC16q: 265499->265525; 265309->265387, 1-LHC16q:265435, 2-LHC16q:265388->265427, LHC16t: 267163->267166
+
+
+    if(fYearNumber==10){
+    if(runNo>114930 && runNo<117223) period = 0;
+    if(runNo>119158 && runNo<120830) period = 1;
+    if(runNo>122373 && runNo<126438) period = 2;
+    if(runNo>127711 && runNo<130851) period = 3;
+    if(period<0 || period>3) return 0;
+    }else if(fYearNumber==16){
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
+    if(runNo>=264076  && runNo<=264347 )period = 9;//16p
+    }else if(fYearNumber==17){
+    if(runNo>=270822 && runNo<=270830)period = 0;//17e
+    if(runNo>=270854 && runNo<=270865)period = 1;//17f
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
+    if(runNo>=273591  && runNo<=274442)period = 3;//17i
+    if(runNo>=274593  && runNo<=274671)period = 4;//17j
+    if(runNo>=274690  && runNo<=276508)period = 5;//17k
+    if(runNo>=276551  && runNo<=278216)period = 6;//17l
+    if(runNo>=278914  && runNo<=280140)period = 7;//17m
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
+    }else if(fYearNumber==18){
+      if(runNo>=285008 && runNo<=285447)period = 0;//18b
+    if(runNo>=285978 && runNo<=286350)period = 1;//18d
+    if(runNo>=286380 && runNo<=286937)period = 2;//18e
+    if(runNo>=287000  && runNo<=287977)period = 3;//18f
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
+    if(runNo>=288804  && runNo<=288806)period = 5;//18h
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
+    if(runNo==288943)period = 7;//18j
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
+    if(runNo>=289240  && runNo<=289971)period = 9;//18l
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
+    if(runNo>=293368   && runNo<=293898)period = 12;//18o
+    if(runNo>=294009  && runNo<=294925)period = 13;//18p
+  }
+  
+  return fMultEstimatorAvg[period];
 }

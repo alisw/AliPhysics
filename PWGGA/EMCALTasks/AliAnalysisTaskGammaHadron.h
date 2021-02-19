@@ -237,6 +237,8 @@ public:
 
   //..Event Plane variables
   Double_t                    fQnCorrEventPlaneAngle;    //!<! Event plane angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
+  Double_t                    fQnCorrEventPlane3Angle;    //!<! Event plane(3rd order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
+  Double_t                    fQnCorrEventPlane4Angle;    //!<! Event plane angle (4th order) corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
 
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
@@ -261,10 +263,31 @@ public:
   TH1F            *fEPAngleV0M;              //!<! EP Angle from V0M
   TH1F            *fEPAngleTPCA;             //!<! EP Angle from TPC A (eta > 0)
   TH1F            *fEPAngleTPCC;             //!<! EP Angle from TPC C (eta < 0)
+
+  TH1F            *fEP3AngleV0M;              //!<! EP3 Angle from V0M
+  TH1F            *fEP3AngleTPCA;             //!<! EP3 Angle from TPC A (eta > 0)
+  TH1F            *fEP3AngleTPCC;             //!<! EP3 Angle from TPC C (eta < 0)
+
+  TH1F            *fEP4AngleV0M;              //!<! EP4 Angle from V0M
+  TH1F            *fEP4AngleTPCA;             //!<! EP4 Angle from TPC A (eta > 0)
+  TH1F            *fEP4AngleTPCC;             //!<! EP4 Angle from TPC C (eta < 0)
+
+
   static const int kNumEPROrders = 6;        ///<  How many orders of EPR to measure
+  // For 2nd Order Event Plane
   TProfile2D     **fEPR_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
   TProfile2D     **fEPR_CosD2;               //!<! Cos(N[V0 - TPCC])
   TProfile2D     **fEPR_CosD3;               //!<! Cos(N[TPCA - TPC])
+  // For 3rd Order Event Plane
+  TProfile2D     **fEP3R_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
+  TProfile2D     **fEP3R_CosD2;               //!<! Cos(N[V0 - TPCC])
+  TProfile2D     **fEP3R_CosD3;               //!<! Cos(N[TPCA - TPC])
+  // For 4th Order Event Plane
+  TProfile2D     **fEP4R_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
+  TProfile2D     **fEP4R_CosD2;               //!<! Cos(N[V0 - TPCC])
+  TProfile2D     **fEP4R_CosD3;               //!<! Cos(N[TPCA - TPC])
+
+
 
   //..Histograms -
 
@@ -280,9 +303,24 @@ public:
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
   // Event Plane information (reconstructed event plane)
   TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt)
+  TH3             *fPtEPAnglePionAccCent;    //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt and cent)
   TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi_{EP} of MC truth pi0 (vs pt)
   TH2             *fPtEPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+  // Event Plane information (reconstructed event plane, 3rd order)
+  TH2             *fPtEP3AnglePionAcc;        //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt)
+  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,2} of accepted pi0 (vs pt and cent)
+  TH2             *fPtEP3AngleMCPion;         //!<! Histogram of delta Psi_{EP,3} of MC truth pi0 (vs pt)
+  TH2             *fPtEP3AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,3} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+  // Event Plane information (reconstructed event plane, 4th order)
+  TH2             *fPtEP4AnglePionAcc;        //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt)
+  TH3             *fPtEP4AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt and cent)
+  TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
+  TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
+  TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
+  TH3             *fHistTrackPsiEP4PtCent;    //!<! Histogram of delta Psi_{EP,4} of accepted tracks (vs pt and centrality)
+
   // Event Plane information (MC information);
   TH1             *fMCReactionPlane;         //!<! Histogram of distribution of reaction plane angle (MC information)
   TH2             *fPtRPAnglePionAcc;        //!<! Histogram of delta Psi_{RP} of accepted pi0 (vs pt)

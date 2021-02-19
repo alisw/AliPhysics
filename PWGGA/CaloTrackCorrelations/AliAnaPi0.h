@@ -509,26 +509,22 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhMCEtaPtTruePtRecCen;       //!<! Real eta pairs, reconstructed pt vs generated pt of pair  vs centrality.
   TH3F *   fhMCEtaPtTruePtRecMassCutCen;//!<! Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass  vs centrality.
   
-  TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
-  TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
-  TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+  TH2F *   fhMCPi0PtTruePtRecDifOverPtTrue;           //!<! Real pi0 pairs, pT  (generated - reco) / generated
+  TH2F *   fhMCPi0PtRecOpenAngle;                     //!<! Real pi0 pairs, reco pT vs reco opening angle 
   
-  TH2F *   fhMCEtaPtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
-  TH2F *   fhMCEtaPtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
-  TH2F *   fhMCEtaPtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+  TH2F *   fhMCEtaPtTruePtRecDifOverPtTrue;           //!<! Real pi0 pairs,  pT  (generated - reco) / generated
+  TH2F *   fhMCEtaPtRecOpenAngle;                     //!<! Real pi0 pairs, reco pT vs reco opening angle 
 
-  TH2F *   fhMCPi0PtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
-  TH2F *   fhMCPi0PtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
-  TH2F *   fhMCPi0PtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  TH2F *   fhMCPi0PtTruePtRecDifOverPtTrueMassCut;    //!<! Real pi0 pairs,  pT  (generated - reco) / generated, inside a mass window 
+  TH2F *   fhMCPi0PtRecOpenAngleMassCut;              //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
   
-  TH2F *   fhMCEtaPtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
-  TH2F *   fhMCEtaPtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
-  TH2F *   fhMCEtaPtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  TH2F *   fhMCEtaPtTruePtRecDifOverPtTrueMassCut;    //!<! Real pi0 pairs,  pT  (generated - reco) / generated, inside a mass window 
+  TH2F *   fhMCEtaPtRecOpenAngleMassCut;              //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
   
-  TH3F *   fhMCPi0PtTruePtRecDifCen;        //!<! Real pi0 pairs, reco pT vs pT difference generated - reco vs centrality
-  TH3F *   fhMCEtaPtTruePtRecDifCen;        //!<! Real pi0 pairs, reco pT vs pT difference generated - reco  vs centrality
-  TH3F *   fhMCPi0PtTruePtRecDifCenMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window, vs centrality
-  TH3F *   fhMCEtaPtTruePtRecDifCenMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window, vs centrality 
+  TH3F *   fhMCPi0PtTruePtRecDifOverPtTrueCen;        //!<! Real pi0 pairs,  pT  (generated - reco) / generated  vs centrality
+  TH3F *   fhMCEtaPtTruePtRecDifOverPtTrueCen;        //!<! Real pi0 pairs,  pT  (generated - reco) / generated  vs centrality
+  TH3F *   fhMCPi0PtTruePtRecDifOverPtTrueCenMassCut; //!<! Real pi0 pairs,  pT  (generated - reco) / generated, inside a mass window, vs centrality
+  TH3F *   fhMCEtaPtTruePtRecDifOverPtTrueCenMassCut; //!<! Real pi0 pairs,  pT  (generated - reco) / generated, inside a mass window, vs centrality 
   
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.

@@ -200,11 +200,11 @@ void AliOtonOmegaCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
 
   bool IsOmegaTrack = true;
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos,mcEvent,-1,false,IsOmegaTrack);
+  fPosDaug->SetTrack(esdCascadePos,mcEvent,false,IsOmegaTrack);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg,mcEvent,-1,false,IsOmegaTrack);
+  fNegDaug->SetTrack(esdCascadeNeg,mcEvent,false,IsOmegaTrack);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach,mcEvent,-1,false,IsOmegaTrack);
+  fBach->SetTrack(esdCascadeBach,mcEvent,false,IsOmegaTrack);
 
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;

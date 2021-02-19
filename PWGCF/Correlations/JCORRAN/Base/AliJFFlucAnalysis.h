@@ -2,13 +2,12 @@
 #define AliJFFlucAnalysis_cxx
 
 //#include <AliAnalysisTaskSE.h>
-#include "AliJEfficiency.h"
+//#include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
-#include <TF3.h>
+//#include <TF3.h>
 
 class TClonesArray;
-class AliJEfficiency;
 
 class AliJFFlucAnalysis{// : public AliAnalysisTaskSE {
 public:
@@ -33,7 +32,7 @@ public:
 	//void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
 
 	void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; }
-	void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
+	//void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
 	//void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
 	//void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
 	//void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
@@ -41,14 +40,14 @@ public:
 		fQC_eta_cut_min = QC_eta_cut_min;
 		fQC_eta_cut_max = QC_eta_cut_max;
 		fQC_eta_gap_half = QC_eta_gap_half;
-		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
+		std::cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << std::endl;
 	}
-	void SetPhiWeights(TH1 *p){
-		pPhiWeights = p;
-	}
-	void SetPhiWeights(TF3 *p){
-		pPhiWeightsAna = p;
-	}
+	//void SetPhiWeights(TH1 *p){
+	//	pPhiWeights = p;
+	//}
+	//void SetPhiWeights(TF3 *p){
+	//	pPhiWeightsAna = p;
+	//}
 
 	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
 	void SetEventFB32TracksQA(unsigned int fb32, unsigned int fb32tof){ fFB32trks = (float)fb32; fFB32TOFtrks = (float)fb32tof;}
@@ -60,7 +59,7 @@ public:
 	void Fill_QA_plot(double eta1, double eta2 );
 
 	double Get_ScaledMoments( int k, int harmonics);
-	AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
+	//AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
 
 	// new function for QC method //
 	void CalculateQvectorsQC(double, double);
@@ -115,15 +114,15 @@ public:
 private:
 
 	TClonesArray *fInputList;
-	AliJEfficiency *fEfficiency;
-	const double *fVertex;//!
-	TH1 *pPhiWeights;//!
-	TF3 *pPhiWeightsAna;//!
+	//AliJEfficiency *fEfficiency;
+	const Double_t *fVertex;//!
+	//TH1 *pPhiWeights;//!
+	//TF3 *pPhiWeightsAna;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
-	int fEffMode;
-	int fEffFilterBit;
+	//int fEffMode;
+	//int fEffFilterBit;
 	float fTPCtrks;
 	float fGlbtrks;
 	float fFB32trks;

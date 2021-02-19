@@ -220,7 +220,7 @@ void AliAnalysisTaskFemtoSMI::UserExec(Option_t *) {
       	  iv0 < static_cast<TClonesArray *>(Event->GetV0s())->GetEntriesFast();
       	  ++iv0) {
         AliAODv0* v0 = Event->GetV0(iv0);
-        fv0->Setv0(Event, v0, fEvent->GetMultiplicity());
+        fv0->Setv0(Event, v0);
         if (fLambda->isSelected(fv0)) {
       	  Lambdas.push_back(*fv0);
     	}

@@ -707,11 +707,6 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
 
 
-  AliTimeRangeCut  *fTimeRangeCut;
-  fTimeRangeCut = new AliTimeRangeCut;
-  fTimeRangeCut->InitFromEvent(fAOD);
-  if (fTimeRangeCut->CutEvent(fInputEvent))
-    return;
 
 
   fHistEventCount->Fill(stepCount); //2
@@ -785,6 +780,7 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
 
 
+
   //Pile up cut function called--------------------------
 
   Bool_t kPileupEvent = kFALSE;
@@ -793,6 +789,16 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
   if (!bSkipPileUpCut)
     if(kPileupEvent)  return;
     
+  
+  /*
+  AliTimeRangeCut  *fTimeRangeCut;
+  fTimeRangeCut = new AliTimeRangeCut;
+  fTimeRangeCut->InitFromEvent(fAOD);
+  if (fTimeRangeCut->CutEvent(fAOD))
+    return;
+  */
+
+
 
   //////////////////////////////////////////////////
 
@@ -970,11 +976,11 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
       //Apply track cuts here:
       //     if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 	  
-	  if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+      //if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
 	  
 
 	  
@@ -1249,11 +1255,11 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
 
       
       //Apply track cuts here:
-      //      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
+      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 
-	if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && ((trkDCAxy)<fDCAxyMax) && ((trkDCAz)<fDCAzMax)){
 
 	
 	//dcaXY  = track->DCA();
@@ -1824,6 +1830,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
+
   TF1 *fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
     
 
@@ -1996,6 +2003,8 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
+
+  cout<<"---------------------------hi i am in 2015 dataset-------------------------------------"<<endl;
 
 
   Bool_t BisPileup=kFALSE;

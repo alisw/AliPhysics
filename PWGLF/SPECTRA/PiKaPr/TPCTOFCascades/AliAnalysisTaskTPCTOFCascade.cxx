@@ -71,6 +71,8 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
   fTrackCuts2011Sys(NULL),
+  fTrackCutsHybrid_kNone(NULL),
+  fTrackCutsHybrid_kOff(NULL),
   fESDpid(new AliESDpid()),
   fIsCollisionCandidate(kFALSE),
   fIsEventSelected(0),
@@ -106,6 +108,7 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fTrackCuts2011 = new AliESDtrackCuts("AliESDtrackCuts2011","AliESDtrackCuts2011");
   fTrackCuts2011 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
   fTrackCuts2011->SetEtaRange(-0.8,0.8);
+ 
   fTrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
   fTrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   fTrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
@@ -117,6 +120,41 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade() :
   fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
   fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
+  
+  fTrackCutsHybrid_kNone = new AliESDtrackCuts("AliESDtrackCutsHybrid_kNone","AliESDtrackCutsHybrid_kNone");
+  //  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kNone->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kNone->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kNone->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetRequireITSRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kNone->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kNone->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterITS(36);
+  fTrackCutsHybrid_kNone->SetEtaRange(-0.8,0.8);
+  fTrackCutsHybrid_kNone->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  
+  fTrackCutsHybrid_kOff = new AliESDtrackCuts("AliESDtrackCutsHybrid_kOff","AliESDtrackCutsHybrid_kOff");
+  // fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kOff->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kOff->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kOff->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kOff->SetRequireITSRefit(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kOff->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kOff->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterITS(36);	
+  fTrackCutsHybrid_kOff->SetEtaRange(-0.8,0.8);
+  fTrackCutsHybrid_kOff->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  
   fTrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0", "AliESDtrackCutsV0");
   fTrackCutsV0 = AliESDtrackCuts::GetStandardV0DaughterCuts();
   fTrackCutsV0->SetEtaRange(-0.8,0.8);
@@ -149,6 +187,8 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fTrackCuts2011(NULL),
   fTrackCutsTPCRefit(NULL),
   fTrackCuts2011Sys(NULL),
+  fTrackCutsHybrid_kNone(NULL),
+  fTrackCutsHybrid_kOff(NULL),
   fESDpid(new AliESDpid()),
   fIsCollisionCandidate(kFALSE),
   fIsEventSelected(0),
@@ -184,6 +224,8 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fTrackCuts2011 = new AliESDtrackCuts("AliESDtrackCuts2011","AliESDtrackCuts2011");
   fTrackCuts2011 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
   fTrackCuts2011->SetEtaRange(-0.8,0.8);
+
+  
   fTrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
   fTrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
   fTrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
@@ -195,6 +237,41 @@ AliAnalysisTaskTPCTOFCascade::AliAnalysisTaskTPCTOFCascade(Bool_t isMC) :
   fTrackCuts2011Sys->SetMinNCrossedRowsTPC(60);
   fTrackCuts2011Sys->SetMaxChi2PerClusterTPC(5);
   fTrackCuts2011Sys->SetMaxDCAToVertexZ(3);
+
+  fTrackCutsHybrid_kNone = new AliESDtrackCuts("AliESDtrackCutsHybrid_kNone","AliESDtrackCutsHybrid_kNone");
+  //  fTrackCutsHybrid_kNone = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kNone->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kNone->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kNone->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetRequireITSRefit(kTRUE);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kNone->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kNone->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kNone->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kNone->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kNone->SetMaxChi2PerClusterITS(36);
+  fTrackCutsHybrid_kNone->SetEtaRange(-0.8,0.8);
+  fTrackCutsHybrid_kNone->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  
+  fTrackCutsHybrid_kOff = new AliESDtrackCuts("AliESDtrackCutsHybrid_kOff","AliESDtrackCutsHybrid_kOff");
+  // fTrackCutsHybrid_kOff = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); //If not running, set to kFALSE;
+  fTrackCutsHybrid_kOff->SetMinNCrossedRowsTPC(70);
+  fTrackCutsHybrid_kOff->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterTPC(4);
+  fTrackCutsHybrid_kOff->SetAcceptKinkDaughters(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireTPCRefit(kTRUE);
+  fTrackCutsHybrid_kOff->SetRequireITSRefit(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  fTrackCutsHybrid_kOff->SetMaxChi2TPCConstrainedGlobal(36);
+  fTrackCutsHybrid_kOff->SetMaxDCAToVertexZ(2);
+  fTrackCutsHybrid_kOff->SetDCAToVertex2D(kFALSE);
+  fTrackCutsHybrid_kOff->SetRequireSigmaToVertex(kFALSE);
+  fTrackCutsHybrid_kOff->SetMaxChi2PerClusterITS(36);	
+  fTrackCutsHybrid_kOff->SetEtaRange(-0.8,0.8);
+  fTrackCutsHybrid_kOff->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  
   fTrackCutsV0 = new AliESDtrackCuts("AliESDtrackCutsV0", "AliESDtrackCutsV0");
   fTrackCutsV0 = AliESDtrackCuts::GetStandardV0DaughterCuts();
   fTrackCutsV0->SetEtaRange(-0.8,0.8);
@@ -226,6 +303,8 @@ AliAnalysisTaskTPCTOFCascade::~AliAnalysisTaskTPCTOFCascade()
   if (fTrackCutsV0) delete fTrackCutsV0;
   if (fTrackCuts2010) delete fTrackCuts2010;
   if (fTrackCuts2011) delete fTrackCuts2011;
+  if (fTrackCutsHybrid_kOff) delete fTrackCutsHybrid_kOff;
+  if (fTrackCutsHybrid_kNone) delete fTrackCutsHybrid_kNone;
   if (fTrackCutsTPCRefit) delete fTrackCutsTPCRefit;
   if (fTrackCuts2011Sys) delete fTrackCuts2011Sys;
   delete fESDpid;
@@ -466,6 +545,8 @@ Int_t AliAnalysisTaskTPCTOFCascade::GetTrackCutsFlag(AliESDtrack *LocalTrack) {
   if(fTrackCutsTPCRefit->AcceptTrack(LocalTrack)) ReturnFlag+=4;
   if(fTrackCuts2011Sys->AcceptTrack(LocalTrack)) ReturnFlag+=8;
   if(fTrackCutsV0->AcceptTrack(LocalTrack)) ReturnFlag+=16;
+  if(fTrackCutsHybrid_kOff->AcceptTrack(LocalTrack)) ReturnFlag+=32;
+  if(fTrackCutsHybrid_kNone->AcceptTrack(LocalTrack)) ReturnFlag+=64;
 
   return ReturnFlag;
 };
@@ -512,6 +593,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
     if(IV0Radius>200||IV0Radius<0.1) 
       continue;
 
+    
     //fAnalysisTrack->Update(track, fMCStack, fMCEvent,fPIDResponse, fTrackCuts->AcceptTrack(track));
     AliESDtrack *pEsdTrack = fESDEvent->GetTrack((UInt_t)TMath::Abs(V0Vertex->GetPindex()));
     AliESDtrack *nEsdTrack = fESDEvent->GetTrack((UInt_t)TMath::Abs(V0Vertex->GetNindex()));
@@ -614,8 +696,8 @@ void AliAnalysisTaskTPCTOFCascade::ProcessV0s() {
     
     AliAnalysisPIDCascadeTrack *pTrack = new AliAnalysisPIDCascadeTrack();
     AliAnalysisPIDCascadeTrack *nTrack = new AliAnalysisPIDCascadeTrack();
-    pTrack->Update(pEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(pEsdTrack));
-    nTrack->Update(nEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(nEsdTrack));
+    pTrack->Update(pEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(pEsdTrack),pEsdTrack->GetLengthInActiveZone(1,3,220,pEsdTrack->GetESDEvent()->GetMagneticField()));
+    nTrack->Update(nEsdTrack, fMCEvent, fPIDResponse, GetTrackCutsFlag(nEsdTrack),nEsdTrack->GetLengthInActiveZone(1,3,220,nEsdTrack->GetESDEvent()->GetMagneticField()));
 
     v0Tree->Update(pTrack, nTrack, InvMasses, IV0Radius, V0Vertex->GetDcaV0Daughters(), V0Vertex->GetV0CosineOfPointingAngle(), lpT, lEta, lDCAtoPrim);
   };
@@ -762,10 +844,10 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
      
      AliAnalysisPIDCascadeTrack* pTrack = new AliAnalysisPIDCascadeTrack();
      AliAnalysisPIDCascadeTrack* nTrack = new AliAnalysisPIDCascadeTrack();
-
-     bTrack->Update(temp_b,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_b));
-     pTrack->Update(temp_p,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_p));
-     nTrack->Update(temp_n,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_n));
+     
+     bTrack->Update(temp_b,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_b),temp_b->GetLengthInActiveZone(1,3,220,temp_b->GetESDEvent()->GetMagneticField()));
+     pTrack->Update(temp_p,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_p),temp_p->GetLengthInActiveZone(1,3,220,temp_p->GetESDEvent()->GetMagneticField()));
+     nTrack->Update(temp_n,fMCEvent,fPIDResponse, GetTrackCutsFlag(temp_n),temp_n->GetLengthInActiveZone(1,3,220,temp_n->GetESDEvent()->GetMagneticField()));
      
      
      Int_t cascade_pdg = 0;      // 0 would mean not matched to a unqie
@@ -950,7 +1032,8 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
     if(!trflag) continue;
     
     /* update and add analysis track */
-    fAnalysisTrack->Update(track, fMCEvent,fPIDResponse, trflag);
+    Double_t LengthInActiveZoneTPC = track->GetLengthInActiveZone(1,3,220,track->GetESDEvent()->GetMagneticField());
+    fAnalysisTrack->Update(track, fMCEvent,fPIDResponse, trflag, LengthInActiveZoneTPC);
     const AliESDVertex *vtx = fESDEvent->GetPrimaryVertexTracks();
     if(!vtx || !vtx->GetStatus())
       vtx = fESDEvent->GetPrimaryVertexSPD();

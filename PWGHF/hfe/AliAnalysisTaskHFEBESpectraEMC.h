@@ -46,7 +46,7 @@ public:
     Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
     void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
     void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
-    
+        
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -60,6 +60,7 @@ public:
     
     Bool_t GetTenderSwitch() {return fUseTender;};
     void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+    void SetCorrectionTaskCont(TString ClsName, TString TrkName) {fCorrTaskClusCont = ClsName; fCorrTaskTrackCont = TrkName;};
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -137,6 +138,9 @@ private:
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
     
+    TString        fCorrTaskClusCont;//
+    TString        fCorrTaskTrackCont;//
+
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     

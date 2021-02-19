@@ -260,7 +260,10 @@ class AliVertexingHFUtils : public TObject{
   static KFParticle CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
   static KFParticle CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
   static KFParticle CreateKFParticleCasc(KFParticle kfpV0, AliAODTrack *btrack, Int_t pdg_V0, Int_t pdg_btrack);
+  static Double_t DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV);
+  static Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
   static Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
 
  private:
 

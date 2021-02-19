@@ -137,3 +137,22 @@ bool AliHFMLVarHandlerLctopKpi::SetVariables(AliAODRecoDecayHF* cand, float bfie
 
     return true;
 }
+//----------------------------------------------------------------
+void AliHFMLVarHandlerLctopKpi::SetIsLcpKpiRes(int restype){
+    if(restype==1)
+        fCandType  |= kLcNonRes;
+    else
+        fCandType  &= ~kLcNonRes;
+    if(restype==2)
+        fCandType  |= kLcKStar;
+    else
+        fCandType  &= ~kLcKStar;
+    if(restype==3)
+        fCandType  |= kLcDelta;
+    else
+        fCandType  &= ~kLcDelta;
+    if(restype==4)
+        fCandType  |= kLcLambda1520;
+    else
+        fCandType  &= ~kLcLambda1520;
+}

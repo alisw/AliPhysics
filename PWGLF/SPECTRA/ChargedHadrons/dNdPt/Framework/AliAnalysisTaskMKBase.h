@@ -355,8 +355,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
     Bool_t                          fUseEventCuts;              ///<  use event cuts?                                                     --
     AliESDtrackCuts*                fESDtrackCutsM;             //-> trackcuts used for mult estimate                                   --
     Bool_t                          fAcceptTrackM;              ///<  is track accepted by fESDtrackCutsM                                --InitTrackCuts()
-    AliESDtrackCuts*                fESDtrackCuts[10];          //-> several track cuts that can be used in the analysis                --
-    Bool_t                          fAcceptTrack[10];           ///<  is track accepted by fESDtrackCuts[10]                             --InitTrackCuts()
+    AliESDtrackCuts*                fESDtrackCuts[30];          //-> several track cuts that can be used in the analysis                --
+    Bool_t                          fAcceptTrack[30];           ///<  is track accepted by fESDtrackCuts[10]                             --InitTrackCuts()
     TString                         fMultEstimator;             ///<  mult/cent estimator                                                  --
     TString                         fCentEstimator;             ///<  old cent estimator                                                   --
     UInt_t                          fTriggerMaskRequired;       ///<  only events with this trigger mask are accepted                      --

@@ -28,6 +28,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   void SetCorr(Bool_t ishhCorr){fIshhCorr = ishhCorr;}
   void SetMC(Bool_t isMC){fReadMCTruth = isMC;}
   void SetEff(Bool_t isEff){isEfficiency = isEff;}
+  void SetHybridMCTruth(Bool_t isHybridMCTr){isHybridMCTruth = isHybridMCTr;}
   void SetEvtToMix(Int_t EvtToMix){fnEventsToMix = EvtToMix;}
   void SetEtaTrigger(Float_t EtaTrigger){fEtaTrigger = EtaTrigger;}
   void SetEtahAssoc(Float_t EtahAssoc){fEtahAssoc = EtahAssoc;}
@@ -47,7 +48,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   //  Double_t ThetaS( Double_t posSftR125[3] )const; 
   //Double_t EtaS( Double_t posSftR125[3] ) const ; 
 
-  void DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, Double_t lBestPrimaryVtxPos, Float_t ptTriggerMassimo);
+  void DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, Double_t lBestPrimaryVtxPos, Double_t ptTriggerMassimo);
   //void DoPairshh ( const Float_t lcentrality, int fieldsignf);
 
  private:
@@ -69,6 +70,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   Bool_t                  fReadMCTruth;
   Bool_t                  fIshhCorr;
   Bool_t                  isEfficiency;
+  Bool_t                  isHybridMCTruth;
   AliAnalysisCorrelationEventCollection ***fEventColl;  //!
   AliAnalysisCorrelationEvent *    fEvt;                //!
 
@@ -97,6 +99,8 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistPtvsMultBefAll;        //! 
   TH2F*                   fHistPtMaxvsMult;           //! 
   TH2F*                   fHistPtMaxvsMultBefAll;     //! 
+  TH2F*                   fHistPtMaxvsMultBefAllReco;  //! 
+  TH2F*                   fHistPtMaxvsMultBefAllGen; //! 
   TH1F*                   fHistZvertex;               //!
   TH1F*                   fHistFractionSharedTPCClusters;               //!
   TH3F*                   fHistNumberChargedAllEvents; //!
@@ -158,7 +162,7 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH2F*                   fHistMultiplicityVsVertexZ; 	    //!
   TH1F*                   fHistTriggervsMult; 		    //!
   TH1F*                   fHistTriggervsMultMC; 	    //!
-  TH1F*                   fHistMultiplicityOfMixedEvent;    //!
+  TH2F*                   fHistMultiplicityOfMixedEvent;    //!
   TH3F *                  fHistGeneratedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedTriggerPtPhi; 	    //!
   TH3F **                 fHistSelectedGenTriggerPtPhi;     //!
@@ -175,6 +179,8 @@ class AliAnalysisTaskCorrelationhhK0s : public AliAnalysisTaskSE
   TH3F **                 fHistCPGeneratedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedV0PtPtTMax; 	    //!
   TH3F **                 fHistSelectedGenV0PtPtTMax; 	    //!
+  TH3F **                 fHistGeneratedV0PtEta; 	    //!
+  TH3F **                 fHistSelectedV0PtEta; 	    //!
   TH3F *                  fHistReconstructedV0PtMass; 	    //!
   TH3F *                  fHistSelectedV0PtMass;            //!
 

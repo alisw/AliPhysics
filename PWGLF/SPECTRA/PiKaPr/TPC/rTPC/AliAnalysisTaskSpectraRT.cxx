@@ -378,10 +378,10 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fHybridTrackCuts1->SetMaxChi2PerClusterTPC(4);
 		fHybridTrackCuts1->SetAcceptKinkDaughters(kFALSE);
 		fHybridTrackCuts1->SetRequireTPCRefit(kTRUE);
-		fHybridTrackCuts1->SetRequireITSRefit(kTRUE);
+		fHybridTrackCuts1->SetRequireITSRefit(kFALSE);
 		fHybridTrackCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
 		fHybridTrackCuts1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-		fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
+		//fHybridTrackCuts1->SetMaxChi2TPCConstrainedGlobal(36);
 		fHybridTrackCuts1->SetMaxDCAToVertexZ(2);
 		fHybridTrackCuts1->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts1->SetRequireSigmaToVertex(kFALSE);
@@ -399,7 +399,7 @@ void AliAnalysisTaskSpectraRT::UserCreateOutputObjects()
 		fHybridTrackCuts2->SetRequireITSRefit(kFALSE);
 		fHybridTrackCuts2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 		fHybridTrackCuts2->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-		fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);
+		//fHybridTrackCuts2->SetMaxChi2TPCConstrainedGlobal(36);
 		fHybridTrackCuts2->SetMaxDCAToVertexZ(2);
 		fHybridTrackCuts2->SetDCAToVertex2D(kFALSE);
 		fHybridTrackCuts2->SetRequireSigmaToVertex(kFALSE);
@@ -907,6 +907,8 @@ void AliAnalysisTaskSpectraRT::GetLeadingObject(bool isMC) {
 				flIndex = i;
 			}
 
+			delete track_hybrid;
+
 		}
 
 		fRecLeadPhi = flPhi;
@@ -980,6 +982,8 @@ void AliAnalysisTaskSpectraRT::GetMultiplicityDistributions(){
 			multTSrec++;
 		}
 
+		delete track;
+
 	}
 }
 //_____________________________________________________________________________
@@ -1044,6 +1048,8 @@ void AliAnalysisTaskSpectraRT::GetDetectorResponse() {
 		else{
 			multTSrec++;
 		}
+
+		delete track;
 	}
 
 }
@@ -1106,6 +1112,9 @@ void AliAnalysisTaskSpectraRT::GetMCCorrections(){
 		else{
 			multTSrec++;
 		}
+
+		delete track;
+
 	}
 }
 //_____________________________________________________________________________
@@ -1194,6 +1203,8 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 			hPhiData[2]->Fill(DPhi);
 			multTSdata++;
 		}
+
+		delete track;
 
 	}
 
@@ -1386,6 +1397,7 @@ void AliAnalysisTaskSpectraRT::ProduceArrayTrksESD(){
 			hNchVsPrTPC[2][nh]->Fill(momentum,multTSdata);
 		}
 
+		delete esdTrack;
 
 	}//end of track loop
 }
@@ -1786,7 +1798,8 @@ void AliAnalysisTaskSpectraRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 		esdTrackCuts->SetEtaRange(-0.8,0.8);
 	}
 	else{
-		esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
+		esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+		esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 		esdTrackCuts->SetEtaRange(-0.8,0.8);
 	}
 
@@ -1816,7 +1829,7 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 		}
 		else{ return 0x0; }
 	}
-	else if(fHybridTrackCuts2->AcceptTrack(esdtrack)){
+	/*else if(fHybridTrackCuts2->AcceptTrack(esdtrack)){
 		if(esdtrack->GetConstrainedParam()){
 			newTrack = new AliESDtrack(*esdtrack);
 			const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
@@ -1825,7 +1838,7 @@ AliESDtrack* AliAnalysisTaskSpectraRT::SetHybridTrackCuts(AliESDtrack *esdtrack,
 			if(fillPhHyb2) hPhiHybrid2->Fill(newTrack->Eta(),newTrack->Phi());
 		}
 		else{ return 0x0; }
-	}
+	}*/
 	else{
 		return 0x0;
 	}
@@ -1863,7 +1876,10 @@ double AliAnalysisTaskSpectraRT::EtaCalibration(const double &eta){
 	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
 		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
-	}else{
+	}else if(strcmp(fPeriod,"17data")==0){
+                aPos = 49.6097; bPos = 0.922856; cPos = -6.57484; dPos = 65.3117; ePos = -372.142; fPos = 950.451; gPos = -1085.27; hPos = 458.144;
+                aNeg = 49.6555; bNeg = 6.98696; cNeg = 102.734;  dNeg = 566.424; eNeg = 1513.64;  fNeg = 2092.01; gNeg = 1429.32;  hNeg = 375.642;
+        }else{
 		aPos = 49.6975; bPos = 2.32535; cPos = -42.6516; dPos = 283.058; ePos = -1009.58; fPos = 1945.89; gPos = -1871.23; hPos = 698.552;
 		aNeg = 49.8071; bNeg = 9.78466; cNeg = 120.018;  dNeg = 603.325; eNeg = 1470.92;  fNeg = 1819.63; gNeg = 1073.82;  hNeg = 230.142;
 	}
@@ -1924,7 +1940,10 @@ double AliAnalysisTaskSpectraRT::EtaCalibrationEl(const double &eta){
 	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 80.0719; bPos = 7.10053; cPos = -42.4788; dPos = 86.1074; ePos = -54.0891;
 		aNeg = 79.6155; bNeg = -12.1254; cNeg = -66.2488; dNeg = -132.426; eNeg = -85.0155;
-	}else{
+	}else if(strcmp(fPeriod,"17data")==0){
+                aPos = 82.4621; bPos = 5.20353; cPos = -32.2608; dPos = 63.4788; ePos = -39.3277;
+                aNeg = 82.306; bNeg = -4.04076; cNeg = -22.133; dNeg = -40.5782; eNeg = -23.8157;
+        }else{
 		aPos = 79.7726; bPos = 6.83744; cPos = -40.0469; dPos = 78.987; ePos = -50.1373;
 		aNeg = 79.4863; bNeg = -5.00403; cNeg = -21.6184;  dNeg = -39.1295; eNeg = -24.8757;
 	}

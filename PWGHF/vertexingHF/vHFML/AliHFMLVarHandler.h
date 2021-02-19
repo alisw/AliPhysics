@@ -18,6 +18,7 @@
 #include "AliAODTrack.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODPidHF.h"
+#include "AliPIDCombined.h"
 
 class AliHFMLVarHandler : public TObject
 {
@@ -38,13 +39,16 @@ class AliHFMLVarHandler : public TObject
             kNsigmaPID,
             kNsigmaCombPID,
             kNsigmaDetAndCombPID,
-            kRawAndNsigmaPID
+            kRawAndNsigmaPID,
+            kBayesPID,
+            kBayesAndNsigmaCombPID
         };
 
         enum piddet {
             kTPC,
             kTOF,
-            kCombTPCTOF // must be the last element in the enum
+            kCombTPCTOF, // must be the last but one element in the enum
+            kBayesTPCTOF // must be the last element in the enum
         };
 
         AliHFMLVarHandler();
@@ -82,7 +86,7 @@ class AliHFMLVarHandler : public TObject
         void AddSingleTrackBranches();
         void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
         bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
-        bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+        bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidhf, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     
         //utils methods
         float GetTOFmomentum(AliAODTrack* track, AliAODPidHF* pidrespo);
@@ -108,13 +112,14 @@ class AliHFMLVarHandler : public TObject
         float fTOFPProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong TOF momentum
         float fTrackIntegratedLengthProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong track integrated lengths
         float fStartTimeResProng[knMaxProngs] = {-999., -999., -999., -999.};           /// prong track start time resolutions (for TOF)
-        float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid];             /// PID nsigma variables
+        float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+2][knMaxHypo4Pid];             /// PID nsigma variables (accomodates also TPC+TOF Nsigma combined and bayesian)
         float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                                 /// raw PID variables
         bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
         float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
-        
+        AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
+
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 2); ///
+    ClassDef(AliHFMLVarHandler, 3); ///
     /// \endcond
 };
 #endif

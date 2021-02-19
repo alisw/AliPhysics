@@ -329,6 +329,7 @@ private:
     AliMultVariable *fMC_b;
     AliMultVariable *fMC_Spherocity;
     AliMultVariable *fMC_SpherocityTracks;
+    Bool_t fMC_IsPileup; 
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!

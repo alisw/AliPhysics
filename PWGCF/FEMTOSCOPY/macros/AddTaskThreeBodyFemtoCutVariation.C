@@ -12,7 +12,7 @@
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *triggerVariation = "0",  const char *cutVariation = "0") {
+                                     const char *triggerVariation = "0", bool ClosePairRejectionForAll = "false",  const char *cutVariation = "0") {
 
 
 
@@ -137,6 +137,29 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
 
   }
 
+  if(suffix=="16"){
+    ClosePairRejectionForAll = true;
+  }
+
+  if(suffix=="17"){
+    ClosePairRejectionForAll = false;
+
+  }
+
+  if(suffix=="18"){
+    v0Cuts->SetCutWindow(1.,1.2);
+    Antiv0Cuts->SetCutWindow(1.,1.2);
+  }
+
+  if(suffix=="19"){
+    v0Cuts->SetCutWindow(1.08,1.108);
+    Antiv0Cuts->SetCutWindow(1.08,1.108);
+  }
+
+  if(suffix=="20"){
+    v0Cuts->SetCutWindow(1.16,1.24);
+    Antiv0Cuts->SetCutWindow(1.16,1.24);
+  }
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
@@ -145,6 +168,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullB
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
   }
+  #
 
 
   AliFemtoDreamEventCuts *evtCutsTrigger;
@@ -1224,9 +1248,22 @@ if(suffixTrigger=="5"){
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
-  config->SetUseEventMixing(true);
 
+  config->SetMixingDepth(10);
+  if(suffix=="21"){
+    config->SetMixingDepth(20);
+  }  
+  if(suffix=="22"){
+    config->SetMixingDepth(50);
+  }
+  if(suffix=="23"){
+    config->SetMixingDepth(100);
+  }
+  if(suffix=="24"){
+    config->SetMixingDepth(5);
+  }  
+
+  config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   std::vector<int> MultBins;
@@ -1473,6 +1510,7 @@ if(suffixTrigger=="5"){
     taskNano->SetAntiv0Cuts(Antiv0Cuts);  
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 

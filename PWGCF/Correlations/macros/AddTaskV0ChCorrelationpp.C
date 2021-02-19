@@ -10,7 +10,7 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
                             effCorr, isMC);
 }
 
- void AddTaskV0ChCorrelationpp(
+ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
                               float cenMin, float cenMax,
                               TString folderName="myFolder",
                               TString suffixName="mySuffix",
@@ -55,20 +55,20 @@ AliAnalysisTaskV0ChCorrelationpp* AddTaskV0ChCorrelationpp(
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
-  task->SetV0PtMin(8.);
+  task->SetV0PtMin(3.);
   task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);
   task->SetK0sLifeTimeMax(20);
   task->SetLambdaLifeTimeMin(0);
   task->SetLambdaLifeTimeMax(30);
-  task->SetDCANegtoPrimVertex(0.05);//
-  task->SetDCAPostoPrimVertex(0.05);//
+  task->SetDCANegtoPrimVertex(0.06);//
+  task->SetDCAPostoPrimVertex(0.06);//
   
   
-  task->SetDCAV0DaughtersMax(1.2);//
-  task->Setk0sCPA(0.977);//
-  task->SetLambdaCPA(0.999);//
+  task->SetDCAV0DaughtersMax(1);//
+  task->Setk0sCPA(0.98);//
+  task->SetLambdaCPA(0.998);//
   task->SetCosPointingAngleMin(0.975);
   task->Set2DFiducialMin(0.5);
 
@@ -167,5 +167,7 @@ AliAnalysisDataContainer *coutput7
    if(effCorr)
    cinput1->SetData(effList);
   
+return task;
+
 }
 

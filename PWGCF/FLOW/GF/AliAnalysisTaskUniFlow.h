@@ -17,6 +17,7 @@ class TProfile;
 class TH1D;
 class TH2D;
 class TH3D;
+class TObjArray;
 
 class AliPIDResponse;
 class AliPIDCombined;
@@ -30,6 +31,7 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODMCParticle;
 class AliEventPoolManager;
+class AliEventPool;
 
 class AliUniFlowCorrTask;
 
@@ -63,6 +65,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetDumpTObjectTable(Bool_t dump = kTRUE) { fDumpTObjectTable = dump; }
       void					          SetAnalysisType(AnalType type = kAOD) { fAnalType = type; }
       void					          SetNeedPIDCorrection(Bool_t pidCorr) { fNeedPIDCorrection = pidCorr; }
+      void					          SetPIDCorrectionPhi(Bool_t pidCorr) { fPIDCorrectionPhi = pidCorr; }
       void					          SetIs2018data(Bool_t is2018data) { fIs2018data = is2018data; }
       void					          SetIsHMpp(Bool_t isHMpp = kTRUE) { fIsHMpp = isHMpp; }
       void                    SetSampling(Bool_t sample = kTRUE, Int_t iNum = 10) { fSampling = sample; fNumSamples = iNum; }
@@ -74,7 +77,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessK0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; }
       void                    SetProcessLambda(Bool_t use = kTRUE) { fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
-      void                    SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
+      void                    SetDoCorrelationsUsingGF(Bool_t use = kTRUE) { fCorrUsingGF = use;}
       void                    SetUseGeneralFormula(Bool_t use = kTRUE) { fUseGeneralFormula = use;}
       void                    SetUsePIDweights(Bool_t use = kTRUE) { fFlowUsePIDWeights = use;}
       // flow related setters
@@ -142,7 +145,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					  SetV0sDCAPVMin(Double_t dca) { fCutV0sDCAtoPVMin = dca; }
       void					  SetV0sDCAPVMax(Double_t dca) { fCutV0sDCAtoPVMax = dca; }
       void					  SetV0sDCAPVzMax(Double_t dca) { fCutV0sDCAtoPVzMax = dca; }
-      void                    SetV0sDaughtersFilterBit(UInt_t filter) { fCutV0sDaughterFilterBit = filter; }
+      void            SetV0sDaughtersFilterBit(UInt_t filter) { fCutV0sDaughterFilterBit = filter; }
       void					  SetV0sDCADaughtersMin(Double_t dca) { fCutV0sDCADaughtersMin = dca; }
       void					  SetV0sDCADaughtersMax(Double_t dca) { fCutV0sDCADaughtersMax = dca; }
       void					  SetV0sDecayRadiusMin(Double_t radius) { fCutV0sDecayRadiusMin = radius; }
@@ -150,7 +153,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					  SetV0sDaughterEtaMax(Double_t eta) { fCutV0sDaughterEtaMax = eta; }
       void					  SetV0sDaughterPtMin(Double_t pt) { fCutV0sDaughterPtMin = pt; }
       void					  SetV0sDaughterPtMax(Double_t pt) { fCutV0sDaughterPtMax = pt; }
-      void                    SetV0sMotherRapMax(Double_t rap) { fCutV0sMotherRapMax = rap; }
+      void            SetV0sMotherRapMax(Double_t rap) { fCutV0sMotherRapMax = rap; }
       void					  SetV0sK0sInvMassMin(Double_t mass) { fCutV0sInvMassK0sMin = mass; }
       void					  SetV0sK0sInvMassMax(Double_t mass) { fCutV0sInvMassK0sMax = mass; }
       void					  SetV0sLambdaInvMassMin(Double_t mass) { fCutV0sInvMassLambdaMin = mass; }
@@ -161,16 +164,20 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					  SetV0sLambdaNumTauMax(Double_t nTau) { fCutV0sNumTauLambdaMax = nTau; }
       void					  SetV0sK0sArmenterosAlphaMin(Double_t alpha) { fCutV0sArmenterosAlphaK0sMin = alpha; }
       void					  SetV0sLambdaArmenterosAlphaMax(Double_t alpha) { fCutV0sArmenterosAlphaLambdaMax = alpha; }
-      void                    SetV0sK0sPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sK0sPionNumTPCSigmaMax = nSigma; }
-      void                    SetV0sLambdaPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaPionNumTPCSigmaMax = nSigma; }
-      void                    SetV0sLambdaProtonNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaProtonNumTPCSigmaMax = nSigma; }
+      void            SetV0sK0sPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sK0sPionNumTPCSigmaMax = nSigma; }
+      void            SetV0sLambdaPionNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaPionNumTPCSigmaMax = nSigma; }
+      void            SetV0sLambdaProtonNumTPCSigmaMax(Float_t nSigma) { fCutV0sLambdaProtonNumTPCSigmaMax = nSigma; }
       // phi setters
       void					  SetPhiInvMassMin(Double_t mass) { fCutPhiInvMassMin = mass; }
       void					  SetPhiInvMassMax(Double_t mass) { fCutPhiInvMassMax = mass; }
 
       //correlations related setters
+      void            SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
       void            SetDEta(Int_t nBins, Double_t min, Double_t max) { fCorrDEtaBinNum = nBins; fCorrdEtaMin = min; fCorrdEtaMax = max; }
       void            SetDPhi(Int_t nBins, Double_t min, Double_t max) { fCorrDPhiBinNum = nBins; fCorrdPhiMin = min; fCorrdPhiMax = max; }
+      void            SetDisablePtBinnedPool(Bool_t dis = kFALSE) {fUsePtBinnedEventPool = dis; }
+      void            SetDisableFillMixedCorrelations(Bool_t fill = kFALSE) { fFillMixed = fill;}
+      void            SetMaxPoolSize(Int_t size){fPoolSize = size; }
       Bool_t          FillCorrelations();
       Double_t        RangePhi(Double_t dPhi);
 
@@ -180,6 +187,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 25; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 17; // maximum weight power length of flow vector array
+      static const Int_t      fFlowBinNumberEtaSlices = 32; // number of eta bin slices (for correlation study)
 
       const char*             GetSpeciesName(PartSpecies species) const;
       const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
@@ -249,6 +257,11 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, Double_t dEtaGap, Double_t dPtLow, Double_t dPtHigh, std::array<Int_t, 4> &indexStart); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations for charged species with GF weights fix
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4, Bool_t usePow = kFALSE, std::vector<Int_t> maxPowVec = {}); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
+
+      //dihadron corr related method
+      void                    ResetFlowVectorQdih(TComplex (&array)[fFlowBinNumberEtaSlices][6][3], Int_t harm); // set values to TComplex(0,0,0) for given array
+      void                    FillFlowQVectorsForDih(Double_t dWeight, Double_t dPhi, Double_t dEta, Int_t harm); // fill flow vector Q with RFPs for dihadron correlation study
+      void                    CalculateDihCorr(const AliUniFlowCorrTask* task) const;
 
       TComplex                Q(Int_t n, Int_t p) const;
       TComplex                QGapPos(Int_t n, Int_t p) const;
@@ -326,6 +339,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TList*                  fFlowWeightsList; //! list of weights from input file
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fNeedPIDCorrection; // does data need PID correction?
+      Bool_t                  fPIDCorrectionPhi; // special case for phi
       Bool_t                  fIs2018data; // is 2018 data?
       Bool_t                  fIsHMpp; // is high multiplicity pp? (different event selection)
       Bool_t                  fInit; // initialization check
@@ -347,6 +361,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                fFlowVecSpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
+
+      TComplex                fFlowVecQ[fFlowBinNumberEtaSlices][6][3]; // flow vector array for flow calculation in very narrow delta eta slices (for the correlation study)
+
 
       std::vector<AliUniFlowCorrTask*>  fVecCorrTask; //
       std::vector<AliVParticle*>* fVector[kUnknown]; //! container for selected Refs charged particles
@@ -383,11 +400,14 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
       // cuts & selection: correlations related
       AliEventPoolManager*    fEventPoolMgr; // event pool manager
+      AliEventPool*           fPool; //
+      TObjArray*              fSelectedTracks; //! tracks for mixing
+      Bool_t                  fCorrUsingGF; // [kFALSE] fill correlations flag (but using GF and Q-cumulants)
       Bool_t                  fCorrFill; // [kFALSE] fill correlations flag
       Bool_t		              fFillMixed;		// [kTRUE] enable event mixing
       Bool_t		              fUsePtBinnedEventPool;		// [kTRUE] enable filling mixed events based on pT dependence
       Int_t                   fPoolSize; // [-1] maximum number of events, -1 means no limit
-      Int_t  		              fMixingTracks;	// [50000] size of track buffer for event mixing
+      Int_t  		              fMixingTracks;	// [5000] size of track buffer for event mixing
       Int_t  		              fMinEventsToMix;	// [5] min number of events for event mixing
       Int_t                   fCorrDEtaBinNum; // [32] number of dEta bins for correlations
       Int_t                   fCorrDPhiBinNum; // [72] number of dPhi bins for correlations
@@ -395,6 +415,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Double_t                fCorrdEtaMax; // [1.6] max of dEta bins for correlations
       Double_t                fCorrdPhiMin; // [-pi/2] min of dEta bins for correlations
       Double_t                fCorrdPhiMax ; // [3/2 pi] max of dEta bins for correlations
+      Double_t                fEtaSlicesArr[fFlowBinNumberEtaSlices+1]; // array with lower
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
@@ -632,7 +653,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 23);
+      ClassDef(AliAnalysisTaskUniFlow, 26);
 };
 
 #endif

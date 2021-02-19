@@ -39,6 +39,8 @@ public:
   
   void         SetProcessType(Int_t processType)            { fProcessType = processType; }
   void         SetPtCutHigh(Double_t max)                   { fPtCutHigh = max; }
+  void         SetPtCutLow(Double_t min)                    { fPtCutLow = min; }
+  void         SetEtaCutMinMax(Double_t min, Double_t max)  { fEtamin = min; fEtamax = max;}
   void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b; }
   void         ScaleByCNM(Bool_t b,TGraph *cnmgraph)        { fScaleByCNM = b; fgraphCNM = cnmgraph;}
   void         TakeptOfDCNM(Bool_t b)                       { fTakeptOfDCNM = b; }
@@ -56,6 +58,7 @@ private:
   Double_t       pt_cut300(Double_t pT);
   Double_t       pt_cut400(Double_t pT);
   Double_t       pt_cutHigh(Double_t pT);
+  Double_t       pt_cutLow(Double_t pT);
   Double_t       scale_RAA(Double_t pT);
   Double_t       scale_CNM(Double_t pT);
   Bool_t         Inphenixacc(Double_t phi, Double_t pt, Int_t pdg);
@@ -67,6 +70,9 @@ protected:
   Int_t                    fNbEvents;   // number of events
   Int_t                    fProcessType; // Select the process type 
   Double_t                 fPtCutHigh;
+  Double_t                 fPtCutLow;
+  Double_t                 fEtamin;
+  Double_t                 fEtamax;
   Bool_t                   fScaleByRAA;
   Bool_t                   fScaleByCNM;
   TGraph                  *fgraphCNM;
@@ -171,6 +177,8 @@ protected:
   TH2F *hMeePtee_LS_eta08;                             //!
   TH2F *hMeePtee_ULS_eta08_pt200;                      //!
   TH2F *hMeePtee_LS_eta08_pt200;                       //!
+  TH2F *hMeePtee_ULS_eta_pt;                           //!
+  TH2F *hMeePtee_LS_eta_pt;                            //!
   TH2F *hMeePtee_ULS_eta08_pt300;                      //!
   TH2F *hMeePtee_LS_eta08_pt300;                       //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
@@ -199,7 +207,7 @@ protected:
   AliAnalysisTaskCharm(const AliAnalysisTaskCharm &c); // not implemented
   AliAnalysisTaskCharm& operator= (const AliAnalysisTaskCharm &c); // not implemented
   
-  ClassDef(AliAnalysisTaskCharm,2)
+  ClassDef(AliAnalysisTaskCharm,3)
 };
 
 #endif

@@ -108,13 +108,21 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
     // Event rejection cuts for jet-jet simulations, do not use in other
     if (  cutsString.Contains("JetJet")  )
     {
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking jet pT\n");
       reader->SetPtHardAndJetPtComparison(kTRUE);
       reader->SetPtHardAndJetPtFactor(2);
     }
     
     // Event rejection more suitable for gamma-jet simulations, do not use in other
-    if (  cutsString.Contains("GamJet")  )
+    if (  cutsString.Contains("GamJetGen")  )
     {    
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking prompt photon pT\n");
+      reader->SetPtHardAndPromptPhotonPtComparison(kTRUE);
+      reader->SetPtHardAndPromptPhotonPtFactor(2);
+    }
+    else if (  cutsString.Contains("GamJet")  )
+    {    
+      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking cluster energy\n");
       reader->SetPtHardAndClusterPtComparison(kTRUE);
       reader->SetPtHardAndClusterPtFactor(1.5);
     }
@@ -142,14 +150,14 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   
   // If EMCal trigger decission task was active
   //
-  if ( rejectEMCTrig == 3 && trigger.Contains("CAL_L") )
+  if ( rejectEMCTrig == 3 && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA")) )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers from Trigger Maker === \n");
     reader->SwitchOnBadTriggerEventsFromTriggerMakerRemoval();
   }
   // Old handmade trigger recalculation
   //
-  else if ( rejectEMCTrig > 0 && !simulation && trigger.Contains("CAL_L") )
+  else if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("CAL_L") ||  trigger.Contains("CAL_GA"))  )
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers (old procedure) === \n");
     reader->SwitchOnTriggerPatchMatching();
@@ -372,11 +380,23 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   }
   else if ( inputDataType == "AOD" )
   {
-    if ( cutsString.Contains("ITSonly") )
+
+    if ( cutsString.Contains("ITSonly") || cutsString.Contains("MuonCaloPass") )
     {
       printf("AddTaskCaloTrackCorrBase::ConfigureTrackCuts() - Set AOD ITS only cuts\n");
-      reader->SetTrackStatus(AliVTrack::kITSrefit);
-      reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+     
+      if ( cutsString.Contains("MuonCaloPass") ) 
+      {
+        printf("\t Set AOD Muon-Calo pass\n");
+        reader->SetTrackStatus(AliVTrack::kITSrefit|AliESDtrack::kITSpureSA);
+      }
+      else
+      {
+        printf("\t Set AOD ITSsa mask\n");
+        reader->SetTrackStatus(AliVTrack::kITSrefit);
+        reader->SetTrackFilterMask(AliAODTrack::kTrkITSsa);
+      }
+      
       reader->SwitchOnTrackHitSPDSelection();
       reader->SetMinimumITSclusters(3);
       reader->SetMaximumChi2PerITScluster(2.5);
@@ -405,7 +425,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp, NoTracks)
 /// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms and cuts
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
@@ -417,7 +437,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, TString calorimeter, 
                                      TString cutsString,    
-                                     Bool_t  nonLinOn,      Bool_t calibrate,
+                                     Int_t   nonLinOn,      Bool_t calibrate,
                                      Int_t   year,          
                                      TString trigger,       Int_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
@@ -456,6 +476,15 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 
   ConfigureEMCALClusterCuts(reader, calorimeter, cutsString, clustersArray, year, simulation);
 
+  // Select only prompt photons from gamma-jet events
+  // or reject fragmentation photons from jet-jet events
+  reader->SwitchOffMCPromptPhotonsSelection();
+  reader->SwitchOffMCFragmentationPhotonsRejection();
+  if ( cutsString.Contains("SelectPrompt") )
+    reader->SwitchOnMCPromptPhotonsSelection();
+  if ( cutsString.Contains("RejectFragment") )
+    reader->SwitchOnMCFragmentationPhotonsRejection();
+
   // Extra calorimeter stuff:
   //
   // In case no external calibrated cluster/cell list or EMCal correction framework applied before
@@ -478,14 +507,14 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 /// \param simulation : A bool identifying the data as simulation
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts (FullCalo)
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation, 
-                                        TString calorimeter, TString cutsString, Bool_t nonLinOn,      
+                                        TString calorimeter, TString cutsString, Int_t nonLinOn,      
                                         Bool_t calibrate,    Int_t   year,        
                                         Bool_t printSettings, Int_t   debug)
 {
@@ -494,7 +523,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
   cu->SetDebug(debug);
   
   // Remove clusters close to borders, at least max energy cell is 1 cell away
-  cu->SetNumberOfCellsFromEMCALBorder(0); // temporary! set it back to 1.
+  cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder (2);
   
   cu->SetNumberOfSuperModulesUsed(10);
@@ -534,16 +563,22 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
            cu->GetNumberOfSuperModulesUsed(),cu->GetFirstSuperModuleUsed(), cu->GetLastSuperModuleUsed());
   }
   
+  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  
   // Search of local maxima in cluster
   if ( col == "pp" )
   {
     cu->SetLocalMaximaCutE(0.1);
     cu->SetLocalMaximaCutEDiff(0.03);
+    recou->SetLocalMaximaCutE(0.1);
+    recou->SetLocalMaximaCutEDiff(0.03);
   }
   else
   {
     cu->SetLocalMaximaCutE(0.2);
     cu->SetLocalMaximaCutEDiff(0.03);
+    recou->SetLocalMaximaCutE(0.2);
+    recou->SetLocalMaximaCutEDiff(0.03);
   }
   
   cu->SwitchOffRecalculateClusterTrackMatching();
@@ -554,8 +589,6 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
   
   if ( !simulation )
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
   // Calibrations, do nothing by default
   Bool_t calibEner = kFALSE;
@@ -579,6 +612,13 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
                               kTRUE,      // bad map
                               calibTime); // time calib
   
+  // Exoticity cut
+  // Default value set in ConfigureEMCALRecoUtils() to 0.97 from 4 GeV cluster energy
+  if ( col == "PbPb" )
+    recou->SetExoticCellFractionCut(0.95);
+  else
+    recou->SetExoticCellFractionCut(0.97);
+
   //if( calibTime ) recou->SetExoticCellDiffTimeCut(50);
   
   //if( nonLinOn )  cu->SwitchOnCorrectClusterLinearity(); // Done in Configure method
@@ -613,7 +653,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
@@ -634,6 +674,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
 ///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
+///       * GamJetGen: Compare prompt photon pt and generated parton pt, careful, test before using
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
 ///       * Strip: Consider also removing LED flashing single strips
@@ -645,6 +686,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///       *Do not reject MB events from EMC_L0, L1, L2; 
 ///       *Do not reject EMC_L0 events from EMC_L1, L2; 
 ///       *Do not reject EMC_L2 from EMC_L1
+///    * SelectPrompt: Accept only prompt photon clusters in gamma-jet simulations
+///    * RejectFragment: Reject fragmentation photon clusters from jet-jet simulations
 ///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
@@ -657,7 +700,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
  TString  clustersArray = "",
  TString  cutsString    = "", 
  Bool_t   calibrate     = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = kFALSE,
  Int_t    minCen        = -1,
  Int_t    maxCen        = -1,
  Bool_t   mixOn         = kTRUE,

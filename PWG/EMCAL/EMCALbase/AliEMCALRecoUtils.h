@@ -42,6 +42,7 @@ class TArrayF;
 #include <TH2I.h>
 class TH2F;
 #include <TRandom3.h>
+#include <TSpline.h>
 
 // AliRoot includes
 class AliVCluster;
@@ -227,6 +228,26 @@ public:
     ((TH2F*)fEMCALSingleChannelRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
   
   // Time Recalibration
+  Bool_t   IsTimeECorrectionOn()                   const { return fTimeECorrection; }
+  void     SwitchOffTimeECorrection()                  { fTimeECorrection = kFALSE ; }                                                
+  void     SwitchOnTimeECorrection()                   { fTimeECorrection = kTRUE  ; }
+
+  void     CorrectCellTimeVsE(Double_t energy, Double_t & celltime, Bool_t isLowGain) const;
+  Double_t GetLowGainSlewing (Double_t energy) const;
+  Bool_t   InitializedTimeVsEHighGainSlewingCorr(){
+    if (fEMCALTimeEShiftCorrection)
+      return kTRUE; 
+    else 
+      return kFALSE;
+  }
+  void     SetEMCALTimeVsEHighGainSlewingCorr(const TSpline3* spline);
+  TSpline3*  GetEMCALTimeVsEHighGainSlewingCorr(){
+    if (fEMCALTimeEShiftCorrection)
+      return fEMCALTimeEShiftCorrection; 
+    else 
+      return nullptr;
+  }  
+
   void     SetUseOneHistForAllBCs(Bool_t useOneHist)     { fDoUseMergedBC = useOneHist ; }
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
@@ -354,6 +375,18 @@ public:
   //-----------------------------------------------------
   // Recalculate other cluster parameters
   //-----------------------------------------------------
+  Bool_t   AreNeighbours(Int_t absId1, Int_t absId2, const AliEMCALGeometry* geom) const ;
+
+  Int_t    GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,  const AliEMCALGeometry* geom)  ;
+  Int_t    GetNumberOfLocalMaxima(AliVCaloCells* cells, const AliEMCALGeometry* geom, const Int_t nCells, const UShort_t *absIdList);
+  Int_t    GetNumberOfLocalMaxima(AliVCaloCells* cells, const AliEMCALGeometry* geom, const Int_t nCells, const UShort_t *absIdList,
+                                  Int_t *absIdListLocMax,     Float_t *maxEListLocMax)  ;
+  Float_t  GetLocalMaximaCutE()                 const { return fLocMaxCutE           ; }
+   void    SetLocalMaximaCutE(Float_t cut)            { fLocMaxCutE     = cut        ; }
+
+   Float_t GetLocalMaximaCutEDiff()             const { return fLocMaxCutEDiff       ; }
+   void    SetLocalMaximaCutEDiff(Float_t c)          { fLocMaxCutEDiff = c          ; }
+
   void     RecalculateClusterDistanceToBadChannel (const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster);
   void     RecalculateClusterShowerShapeParameters(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
@@ -369,6 +402,16 @@ public:
                                                                Float_t & enAfterCuts, Float_t & l0,   Float_t & l1,   
                                                                Float_t & disp, Float_t & dEta, Float_t & dPhi,
                                                                Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
+  
+  void     RecalculateClusterShowerShapeParametersNxNCells(const AliEMCALGeometry * geom,
+                                                           AliVCaloCells* cells, AliVCluster * cluster,
+                                                           Bool_t selectNeighbours, Int_t cellDiff,
+                                                           Float_t cellEcut, Float_t cellTimeCut,
+                                                           Float_t & energy, Int_t & nlm,
+                                                           Float_t & l0,   Float_t & l1,
+                                                           Float_t & disp, Float_t & dEta, Float_t & dPhi,
+                                                           Float_t & sEta, Float_t & sPhi, Float_t & sEtaPhi);
+  
   void     RecalculateClusterPID(AliVCluster * cluster);
   AliEMCALPIDUtils * GetPIDUtils() { return fPIDUtils;}
 
@@ -578,6 +621,11 @@ private:
   TArrayL64  fGlobalEventID;                   ///< Global event ID
   Bool_t     fDoUseMergedBC;                   ///< flag for using one histo for all BCs
 
+  // energy dependent time clalibration
+  Bool_t     fTimeECorrection;            ///< Switch on or off the energy dependent time recalibration
+  TSpline3*  fEMCALTimeEShiftCorrection;  ///< Spline to correct energy dependent time shift for high gain cells
+  
+  // R
   // Recalibrate with run dependent corrections, energy
   Bool_t     fUseRunCorrectionFactors;   ///< Use Run Dependent Correction
     
@@ -606,6 +654,10 @@ private:
   // PID
   AliEMCALPIDUtils * fPIDUtils;          ///< Recalculate PID parameters
     
+  // Local maxima
+  Float_t    fLocMaxCutE;                ///<  Local maxima cut must have more than this energy.
+  Float_t    fLocMaxCutEDiff;            ///<  Local maxima cut, when aggregating cells, next can be a bit higher.
+
   // Track matching
   UInt_t     fAODFilterMask;             ///< Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
   Bool_t     fAODHybridTracks;           ///< Match with hybrid
@@ -651,7 +703,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 35) ;
+  ClassDef(AliEMCALRecoUtils, 36) ;
   /// \endcond
 
 };

@@ -10,17 +10,26 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isMC = false,
   bool isHighMultV0 = true,
   bool isNanoAOD = true,
-  bool BruteForceDebugging = false){
+  bool BruteForceDebugging = false,
+  bool DeuteronSideband = false,
+  double thresholdTOF = 1.4,
+  double DeuteronSigmaLeft = 2.0,
+  double DeuteronSigmaRight = 4.0,
+  double AntideuteronSigmaLeft = 2.0,
+  double AntideuteronSigmaRight = 4.0,
+  double Deuteron_pT_low = 0.4,
+  double Deuteron_pT_up = 4.0,
+  const char *CutVariation = "0"){
 
   // isHighMultV0:
   // (false)  kINT7:	    minimum bias trigger
   // (true)   kHighMultV0:  high multiplicity trigger
 
+  TString suffix = TString::Format("%s",CutVariation);
   int PionPDG = 211;
   int ProtonPDG = 2212;
   int LambdaPDG = 3122;
   int DeuteronPDG = 1000010020;
-
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Begin of the AddTask\n");
@@ -60,7 +69,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Protons
-  TrackCuts1->SetPlotDCADist(false);			// plot DCA_xy vs. pT
+  TrackCuts1->SetPlotDCADist(true);			// plot DCA_xy vs. pT
   TrackCuts1->SetPlotCombSigma(false);			// plot combined sigma: nSigmaTOF vs. nSigmaTPC vs. momentum
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
@@ -96,7 +105,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antiprotons
-  TrackCuts2->SetPlotDCADist(false);
+  TrackCuts2->SetPlotDCADist(true);
   TrackCuts2->SetPlotCombSigma(false);
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
@@ -126,12 +135,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Deuterons
-  TrackCuts3->SetPlotDCADist(false);
+  TrackCuts3->SetPlotDCADist(true);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
-  TrackCuts3->SetFilterBit(128);
-  TrackCuts3->SetPtRange(0.4,4.0);
+  TrackCuts3->SetFilterBit(256);
+  TrackCuts3->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
   TrackCuts3->SetDCAReCalculation(true);
@@ -139,10 +148,11 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts3->SetPID(AliPID::kDeuteron,thresholdTOF,60.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
+
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Deuteron (TrackCuts3) set\n");
@@ -157,12 +167,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
   // Antideuterons
-  TrackCuts4->SetPlotDCADist(false);
+  TrackCuts4->SetPlotDCADist(true);
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
-  TrackCuts4->SetFilterBit(128);
-  TrackCuts4->SetPtRange(0.4,4.0);
+  TrackCuts4->SetFilterBit(256);
+  TrackCuts4->SetPtRange(Deuteron_pT_low,Deuteron_pT_up);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
   TrackCuts4->SetDCAReCalculation(true);
@@ -170,7 +180,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,1.4,3.0);
+  TrackCuts4->SetPID(AliPID::kDeuteron,thresholdTOF,60.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -382,7 +392,10 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
-  config->SetPtQA(true);
+  
+  if(fullBlastQA){
+    config->SetPtQA(true);
+  }
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");
@@ -394,7 +407,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   if(isNanoAOD){
 
-    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging);
+    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft,DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
 
     if(!taskNanoAOD){				  // check if the NanoAOD task is there
       printf("taskNanoAOD not found\n");
@@ -426,7 +439,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging);
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft, DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
@@ -469,7 +482,6 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
 
   TString addon = "";
-  TString suffix = "";
   TString file = AliAnalysisManager::GetCommonFileName();
 
   TString coutputEventCutsName = Form("%sLeuteronEventCuts%s", addon.Data(), suffix.Data());

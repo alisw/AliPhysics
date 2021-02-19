@@ -161,7 +161,7 @@ void AliAnalysisTaskSENonPromptLc::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
 {
-    if (fCreateMLtree && fEnableEvtSampling && gRandom->Rndm() > fFracEvtToKeep)
+    if (fCreateMLtree && fEnableEvtSampling && ((fOptionSampling == 0 && gRandom->Rndm() > fFracEvtToKeep) || (fOptionSampling == 1 && gRandom->Rndm() < 1-fFracEvtToKeep)))
     {
         PostData(1, fOutput);
         return;
@@ -295,7 +295,7 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         AliAODVertex *origOwnVtx = nullptr;
 
         int isSelected = IsCandidateSelected(lc, &vHF, unsetVtx, recVtx, origOwnVtx);
-        if (!isSelected || (fDecChannel == kLctopK0s && isSelected % 2 == 0) || (fDecChannel == kLctopiL && isSelected % 2 > 0))
+        if (!isSelected || (fDecChannel == kLctopK0s && isSelected % 2 == 0) || (fDecChannel == kLctopiL && isSelected < 2))
         {
             if (unsetVtx)
                 lc->UnsetOwnPrimaryVtx();
@@ -313,11 +313,11 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
         int orig = 0;
         bool isCandInjected = false;
         float ptB = -999.;
-        int pdgLctopKpi[3] = {2122, 321, 211};
+        int pdgLctopKpi[3] = {2212, 321, 211};
         int pdgLctopK0s[2] = {2212, 310};
-        int pdgLctopiL[2] = {3122, 211};
+        int pdgLctopiL[2] = {211, 3122};
         int pdgDgK0stoDaughters[2] = {211, 211};
-        int pdgDgLtoDaughters[2] = {2122, 211};
+        int pdgDgLtoDaughters[2] = {2212, 211};
 
         if (fReadMC)
         {
@@ -356,13 +356,21 @@ void AliAnalysisTaskSENonPromptLc::UserExec(Option_t * /*option*/)
                 ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partLc);
             }
         }
-
         // fill tree for ML
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
         if (fCreateMLtree)
         {
             if (fDecChannel == kLctopKpi) // Lc->pKpi
             {
+                if (fReadMC)
+                {
+                    int labD[3] = {-1, -1, -1};
+                    //check if resonant decay
+                    int  decay = 0;
+                    if(labLc && partLc)
+                        decay = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC, partLc, labD);
+                    (dynamic_cast<AliHFMLVarHandlerLctopKpi *>(fMLhandler))->SetIsLcpKpiRes(decay);
+                }
                 if (isSelected == 1 || isSelected == 3) // pKpi
                 {
                     bool isSignal = false;
@@ -654,13 +662,13 @@ void AliAnalysisTaskSENonPromptLc::FillMCGenAccHistos(TClonesArray *arrayMC, Ali
                     {
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid,(double)deca};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
                             double ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB};
+                            double var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid, ptB,(double)deca};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                         }
                     }
@@ -701,9 +709,9 @@ void AliAnalysisTaskSENonPromptLc::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
-    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.};
-    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj]};
+    int nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins,6};
+    double xminAcc[knVarForSparseAccFD] = {0., -1., 0.,0};
+    double xmaxAcc[knVarForSparseAccFD] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj],6};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)

@@ -30,16 +30,16 @@
 #include "AliAnalysisTaskEmcalTriggerCorrelation.h"
 #include "AliMultSelection.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerCorrelation)
 
-using namespace EMCalTriggerPtAnalysis;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerCorrelation::AliAnalysisTaskEmcalTriggerCorrelation():
   AliAnalysisTaskEmcalTriggerBase(),
   fRequestCentrality(false),
   fEventCentrality(99.),
-  fCentralityRange(0.,100.),
-  fCentralityEstimator("V0M")
+  fCentralityEstimator("V0M"),
+  fCentralityRange(0.,100.)
 {
   SetRequireAnalysisUtils(true);
 }
@@ -48,8 +48,8 @@ AliAnalysisTaskEmcalTriggerCorrelation::AliAnalysisTaskEmcalTriggerCorrelation(c
   AliAnalysisTaskEmcalTriggerBase(name),
   fRequestCentrality(false),
   fEventCentrality(99.),
-  fCentralityRange(0.,100.),
-  fCentralityEstimator("V0M")
+  fCentralityEstimator("V0M"),
+  fCentralityRange(0.,100.)
 {
   SetRequireAnalysisUtils(true);
 }

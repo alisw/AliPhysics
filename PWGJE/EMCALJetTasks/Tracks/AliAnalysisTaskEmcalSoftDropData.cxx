@@ -61,7 +61,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
   fZcut(0.1),
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
-  fUseNeutralConstituents(kTRUE),
+  fUseNeutralConstituents(kTRUE), 
+  fDropMass0Jets(false),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -80,6 +81,7 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGV
   fReclusterizer(kCAAlgo),
   fUseChargedConstituents(kTRUE),
   fUseNeutralConstituents(kTRUE),
+  fDropMass0Jets(false),
   fHistos(nullptr),
   fPtBinning(nullptr)
 {
@@ -182,7 +184,7 @@ void AliAnalysisTaskEmcalSoftDropData::RunChanged(Int_t newrun){
 }
 
 Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
-  auto jets = GetJetContainer("datajets");
+  auto jets = GetDetLevelJetContainer();
   if(!jets) {
     AliErrorStream() << "Jet container not found" << std::endl;
     return false;
@@ -218,13 +220,14 @@ Bool_t AliAnalysisTaskEmcalSoftDropData::Run() {
     }
     try {
       FillJetQA(*jet, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex);
+      auto sdparams = MakeSoftdrop(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
+      auto splittings = IterativeDecluster(*jet, jets->GetJetRadius(), false, {(AliAnalysisEmcalSoftdropHelperImpl::EReclusterizer_t)fReclusterizer, fBeta, fZcut, fUseChargedConstituents, fUseNeutralConstituents}, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);
       bool untagged = sdparams.fZg < fZcut;
       AliDebugStream(2) << "Found jet with pt " << jet->Pt() << " and zg " << sdparams.fZg << std::endl;
       Double_t pointZg[3] = {sdparams.fZg, jet->Pt(), -1},
                pointRg[3] = {untagged ? -0.01 : sdparams.fRg, jet->Pt(), -1},
                pointThetaG[3] = {untagged ? -0.05 : sdparams.fRg/Rjet, jet->Pt(), -1},
-               pointNSD[3] = {untagged ? -1. : double(sdparams.fNsd), jet->Pt(), -1};
+               pointNSD[3] = {untagged ? -1. : double(splittings.size()), jet->Pt(), -1};
       for(auto icl : trgclusters) {
         pointZg[2] = pointRg[2] = pointNSD[2] = pointThetaG[2] = icl;
         fHistos->FillTHnSparse("hZgVsPt", pointZg);
@@ -348,6 +351,20 @@ void AliAnalysisTaskEmcalSoftDropData::FillJetQA(const AliEmcalJet &jet, AliVClu
   }
 }
 
+void AliAnalysisTaskEmcalSoftDropData::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto detjets = GetDetLevelJetContainer();
+  
+  detjets->SetJetPtCut(minJetPt);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPt);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
 
 AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -371,14 +388,14 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
 
   AliTrackContainer *tracks(nullptr);
   if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
-      tracks = datamaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      tracks = datamaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
       tracks->SetMinPt(0.15);
   }
   AliClusterContainer *clusters(nullptr);
   if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
     std::cout << "Using full or neutral jets ..." << std::endl;
-    clusters = datamaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters = datamaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
     switch (energydef)
     {

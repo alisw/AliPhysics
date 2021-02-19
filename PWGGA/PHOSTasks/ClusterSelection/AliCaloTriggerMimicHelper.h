@@ -38,10 +38,14 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     AliVEvent* GetCurrentEvent()                            { return fInputEvent                            ; }
     void SetDebugOutput( Int_t flag )                       { fDoDebugOutput = flag                         ; }
     void SetTriggerHelperRunMode( Int_t flag )              { fTriggerHelperRunMode = flag                  ; }
+    void SetMinEnergyToTrigger(Double_t flag)               { minEnergyToTrigger = flag                     ; }
+    void SetMinCellsToTrigger(Int_t flag)                   { minCellsToTrigger = flag                      ; }
+    void SetEfficiencyChoiceOption_TriggerHelper(Int_t flag) { fEfficiencyChoiceOption_TriggerHelper = flag ; }
     Int_t GetTriggerHelperRunMode()                         { return fTriggerHelperRunMode                  ; }
     TList* GetTriggerMimicHelperHistograms()                { return fOutputList                            ; }
-    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }
-    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }
+    Bool_t HasEventFlagPassed()                             { return fEventFlagPassed                       ; }
+    Int_t IsClusterIDTriggered(Int_t ClusterID)             { return fMapClusterIDToHaveTriggered[ClusterID]      ; }//return 0 for not triggered clusters
+    Int_t IsClusterIDBadMapTrigger(Int_t ClusterID)         { return fMapClusterIDToIsInTriggerMap[ClusterID]     ; }//return 0 for bad clusters
     Int_t IsTriggeredClusterIDInBadDDL(Int_t ClusterID)     { return fMapTriggeredClusterInBadDDL[ClusterID]; } //2 return Bad DDLs, 1 include maybe bad DDLs as well
 
   private:
@@ -83,7 +87,8 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Bool_t                  fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                  fForceRun ;                                 // use fixed run number, dont read from data
     Bool_t                  fIsMC ;                                     // Is this is MC
-    Int_t                   fTriggerHelperRunMode;                      //0 is standard
+    Int_t                   fTriggerHelperRunMode;                      //0 uses L0 events, 1 uses events which have no L0, 3 uses all events
+    Bool_t                  fEventFlagPassed;                           //Only true if the event selection has passed
     Bool_t                  fEventChosenByTrigger;                      //!
     Bool_t                  fEventChosenByTriggerTrigUtils;             //!
     Int_t                   fCurrentClusterTriggered;                   //
@@ -91,6 +96,9 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
     Int_t                   fCurrentClusterTriggerBadMapResult;         //
     Int_t                   fCurrentTriggeredClusterInBadDDL;           //
     Int_t                   fDoDebugOutput;                             //
+    Double_t                minEnergyToTrigger;                         //
+    Int_t                   minCellsToTrigger;                         //
+    Int_t                   fEfficiencyChoiceOption_TriggerHelper;      //Sets, which Turnoncurves will be used
 
     map<Int_t,Int_t>        fMapClusterIDToHaveTriggered;               //! connects a given cluster ID with the Information if Cluster has triggered
     map<Int_t,Int_t>        fMapClusterIDToIsInTriggerMap;              //! connects a given cluster ID with the information, if it is in trigger good map
@@ -141,7 +149,7 @@ class AliCaloTriggerMimicHelper : public AliAnalysisTaskSE {
 
     Double_t                fEnergyThreshold_ColumnVsRow;
 
-    ClassDef(AliCaloTriggerMimicHelper, 11);
+    ClassDef(AliCaloTriggerMimicHelper, 14);
 };
 
 #endif

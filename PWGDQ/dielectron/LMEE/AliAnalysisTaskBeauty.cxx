@@ -454,6 +454,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       for(int d=k1; d <= k2; d++) {
         if(d>0){
           AliVParticle *decay = fMcEvent->GetTrack(d);
+	  if(!decay) continue;
           int pdgdecay = decay->PdgCode();
           //printf("Mesons %d and dpg %d, index %d\n",d,pdgdecay,d);
           if ( int(TMath::Abs(pdgdecay)/100.) == 5 || int(TMath::Abs(pdgdecay)/1000.) == 5 ) {
@@ -508,6 +509,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
     //_____________________________ b->e _______________________________
     int num = p->GetMother();
     AliVParticle *mom = fMcEvent->GetTrack ( num );
+    if(!mom) continue;
     int ppid = TMath::Abs( mom->PdgCode() );
 
 
@@ -560,6 +562,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 
     int num_ce = p->GetMother(); // c is the first mother of e
     AliVParticle *mom_ce = fMcEvent->GetTrack ( num_ce );
+    if(!mom_ce) continue;
     int ppid_ce = TMath::Abs( mom_ce->PdgCode() ); // c
     //if ( ppid_ce == 411 || ppid_ce == 421 || ppid_ce == 431 || ppid_ce ==4122 ) is_charm2e = kTRUE;
     if (((ppid_ce>=400) && (ppid_ce<=439)) || ((ppid_ce>=4000) && (ppid_ce<=4399))) is_charm2e = kTRUE;
@@ -570,13 +573,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       //printf("Found one electron from charm mother pdg %d and index %d\n",mom_ce->PdgCode(),num_ce);
       while (indexx > 0) { // recursive loop to check if it comes from beauty.
         gm = fMcEvent->GetTrack ( indexx );
-        int pid_gm = TMath::Abs( gm->PdgCode() );// pdg of the mother
-        //printf("Next mother is %d with index %d\n",gm->PdgCode(),indexx);
-        if (((pid_gm>=500) && (pid_gm<=549)) || ((pid_gm>=5000) && (pid_gm<=5499)) || (pid_gm == 5)) {
-          is_beauty2charm = kTRUE;
-          break;
-        }
-        indexx = gm->GetMother(); //
+        if(gm) {
+	  int pid_gm = TMath::Abs( gm->PdgCode() );// pdg of the mother
+	  //printf("Next mother is %d with index %d\n",gm->PdgCode(),indexx);
+	  if (((pid_gm>=500) && (pid_gm<=549)) || ((pid_gm>=5000) && (pid_gm<=5499)) || (pid_gm == 5)) {
+	    is_beauty2charm = kTRUE;
+	    break;
+	  }
+	  indexx = gm->GetMother(); //
+	} else indexx = -1;
       }
       if(is_beauty2charm == kFALSE) {
         is_charm2e = kFALSE; // it is not a charm that comes from beauty.
@@ -684,11 +689,13 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 
       int num_i = p_i->GetMother();
       AliVParticle *mom_i = fMcEvent->GetTrack ( num_i );
+      if(!mom_i) continue;
       int ppid_i = TMath::Abs( mom_i->PdgCode() );
       //if ( !(ppid_i == 511) || !(ppid_i == 521) || !(ppid_i == 531) || !(ppid_i == 5122) ) continue;
       //
       int num_j = p_j->GetMother();
       AliVParticle *mom_j = fMcEvent->GetTrack ( num_j );
+      if(!mom_j) continue;
       int ppid_j = TMath::Abs( mom_j->PdgCode() );
       //if ( !(ppid_j == 511) || !(ppid_j == 521) || !(ppid_j == 531) || !(ppid_j == 5122) ) continue;
       //
@@ -708,10 +715,12 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       // c->e
       int num_ce_i = p_i->GetMother(); // c is the first mother of e
       AliVParticle *mom_ce_i = fMcEvent->GetTrack ( num_ce_i );
+      if(!mom_ce_i) continue;
       int ppid_ce_i = TMath::Abs( mom_ce_i->PdgCode() ); // c
       //
       int num_ce_j = p_j->GetMother(); // c is the first mother of e
       AliVParticle *mom_ce_j = fMcEvent->GetTrack ( num_ce_j );
+      if(!mom_ce_j) continue;
       int ppid_ce_j = TMath::Abs( mom_ce_j->PdgCode() ); // c
       //
       i_is_charm2e = kFALSE;
@@ -732,12 +741,14 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
         Int_t indexx_i = mom_ce_i->GetMother(); // First mother of D
         while (indexx_i > 0) { // recursive loop to check if it comes from beauty.
           gm_i = fMcEvent->GetTrack ( indexx_i );
-          int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
-          if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
-            i_is_beauty2charm = kTRUE;
-            break;
-          }
-          indexx_i = gm_i->GetMother(); //
+          if(gm_i) {
+	    int pid_gm_i = TMath::Abs( gm_i->PdgCode() );// pdg of the mother
+	    if (((pid_gm_i>=500) && (pid_gm_i<=549)) || ((pid_gm_i>=5000) && (pid_gm_i<=5499)) || (pid_gm_i == 5)) {
+	      i_is_beauty2charm = kTRUE;
+	      break;
+	    }
+	    indexx_i = gm_i->GetMother(); //
+	  } else indexx_i = -1;
         }
         if(i_is_beauty2charm == kFALSE) i_is_charm2e = kFALSE; // it is not a charm that comes from beauty.
       }
@@ -746,12 +757,14 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
         Int_t indexx_j = mom_ce_j->GetMother(); // First mother of D
         while (indexx_j > 0) { // recursive loop to check if it comes from beauty.
           gm_j = fMcEvent->GetTrack ( indexx_j );
-          int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
-          if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
-            j_is_beauty2charm = kTRUE;
-            break;
-          }
-          indexx_j = gm_j->GetMother(); //
+          if(gm_j) {
+	    int pid_gm_j = TMath::Abs( gm_j->PdgCode() );// pdg of the mother
+	    if (((pid_gm_j>=500) && (pid_gm_j<=549)) || ((pid_gm_j>=5000) && (pid_gm_j<=5499)) || (pid_gm_j == 5)) {
+	      j_is_beauty2charm = kTRUE;
+	      break;
+	    }
+	    indexx_j = gm_j->GetMother(); //
+	  } else indexx_j = -1;
         }
         if(j_is_beauty2charm == kFALSE) j_is_charm2e = kFALSE; // it is not a charm that comes from beauty.
       }

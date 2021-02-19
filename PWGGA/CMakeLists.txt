@@ -20,5 +20,6 @@ add_subdirectory(GammaConvBase)
 add_subdirectory(Hyperon)
 add_subdirectory(PHOSTasks)
 add_subdirectory(PWGGAUtils)
+add_subdirectory(NtuplizerTask)
 
 message(STATUS "PWGGA enabled")

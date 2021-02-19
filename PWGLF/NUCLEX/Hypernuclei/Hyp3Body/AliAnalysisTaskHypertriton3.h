@@ -71,9 +71,11 @@ public:
   void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
   void SetEventMixingPoolMaxReuse(int maxDepth) { fEventMixingPoolMaxReuse = maxDepth; }
 
+  int CheckPionCharge(std::vector<AliESDtrack *> tracks[2][2], AliESDv0 v0);
+
   AliEventCuts fEventCuts;                  /// Event cuts class
   AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
-
+  int fCounter;
   o2::vertexing::DCAFitter3 fVertexer;
   o2::vertexing::DCAFitter2 fVertexerLambda;
   enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
@@ -85,12 +87,12 @@ public:
   float fMinTrackDCA[3] = {0., 0., 0.};
   float fMaxTrack2TrackDCA[3] = {8.,8.,8.};
   float fMaxTrack2SVDCA[3] = {8.,8.,8.};
-  float fTPCsigmas[3] = {3.5f, 3.5f, 3.5f};
+  float fTPCsigmas[3] = {3.f, 3.f, 3.f};
   float fTOFsigmas[3] = {4.f, 4.f, 4.f};
   float fCandidateCtRange[2] = {0.f, 35.f};
   float fCandidatePtRange[2] = {1.f, 9.f};
   float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
-  float fMinCosPA = 0.9;
+  float fMinCosPA = 0.99;
   bool  fUseAbsCosPAcut = true;
   bool  fOnlyTrueCandidates = false;
   bool  fLambdaCheck = true;
@@ -128,6 +130,7 @@ private:
   TH2D *fHistNSigmaP = nullptr;      //! # sigma TPC proton for the positive prong
   TH2D *fHistNSigmaPi = nullptr;     //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass = nullptr;      //! # Invariant mass histogram
+  TH1D *fHistDecVertexRes = nullptr; //! # decay vertex resolution
 
   float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
   float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree

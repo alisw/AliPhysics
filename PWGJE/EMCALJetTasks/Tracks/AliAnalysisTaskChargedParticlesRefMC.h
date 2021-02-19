@@ -23,7 +23,9 @@ class AliVParticle;
 class AliMCEvent;
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE{
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerWeightHandler;
 class AliEmcalTriggerOfflineSelection;
@@ -375,11 +377,11 @@ private:
 
   TString                               fNameAcceptanceOADB;        ///< Name of the OADB container with trigger acceptance maps
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesRefMC, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKCHARGEDPARTICLESREFMC_H */

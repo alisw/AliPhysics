@@ -82,6 +82,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void SetDoHistoDalitzMassLog(Bool_t flag){fDoHistoDalitzMassLog = flag;}
     void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoLightVersion(Bool_t flag) { fDoLightVersion= flag;}
 
   private:
     void InitBack();
@@ -297,6 +298,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     TH2F                              **fHistoSPDClusterTrackletBackground;        //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1I                              **hNV0Tracks;
     //TH3F                              **hESDEposEnegPsiPairpTleptonsDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTPionDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTEtaDPhi;
+    TH3F                              **hESDEposEnegPsiPairpTPhotonDPhi;
     TProfile                          **hEtaShift;
     TH2F                              **fHistoDoubleCountTruePi0InvMassPt;      //! array of histos with double counted pi0s, invMass, pT
     TH2F                              **fHistoDoubleCountTrueEtaInvMassPt;      //! array of histos with double counted etas, invMass, pT
@@ -335,6 +339,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     Double_t                          fWeightJetJetMC;
     Bool_t                            fDoHistoDalitzMassLog;
     Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
+    Bool_t                            fDoLightVersion;
 
   private:
     AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented

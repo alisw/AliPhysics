@@ -132,7 +132,7 @@ void DeDxV0::Copy(TObject& object) const
 
   v0->p	            = p;		 
   v0->pt	    = pt;		 
-  v0->eta	    = eta;		 
+  v0->eta	    = eta;
   v0->phi	    = phi;		 
   v0->pdca	    = pdca;		 
   v0->ndca	    = ndca;		 

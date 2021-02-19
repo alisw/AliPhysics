@@ -61,17 +61,20 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, Bool_t bEoP, Bool_t bRes,
-                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight, Int_t cen) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm,
+                               Bool_t matched, Bool_t bEoP, Bool_t bRes,
+                               Int_t mctag, Float_t mcbin,
+                               Float_t egen, Float_t ptgen,
+                               Int_t noverlaps, Float_t weight, Int_t cen) ;
   
   void         FillAcceptanceHistograms(Int_t cen);
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t weight,
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t egen, Float_t ptgen, Float_t weight,
                                           Int_t cen, Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
-                                          Int_t & largeTimeInside) ;
+                                          Int_t nlmNxN, Float_t l0NxN, Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
@@ -82,6 +85,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillShowerShapeHistogramsPerSM()   { fFillSSPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistogramsPerSM()  { fFillSSPerSMHistograms = kFALSE ; }  
   
+  void         SwitchOnFillShowerShapeEtaHistograms()     { fFillSSEtaHistograms   = kTRUE  ; }
+  void         SwitchOffFillShowerShapeEtaHistograms()    { fFillSSEtaHistograms   = kFALSE ; }
+
   void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
 
@@ -128,6 +134,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillOnlyPtHisto()                  { fFillOnlyPtHisto = kTRUE  ; }
   void         SwitchOffFillOnlyPtHisto()                 { fFillOnlyPtHisto = kFALSE ; }
    
+  void         SwitchOnUse5x5ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 2 ; }
+  void         SwitchOnUse7x7ShowerShape()                { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = 3 ; }
+  void         SwitchOnUseNxNShowerShape(Int_t n=2)       { fUseNxNShowerShape = kTRUE  ; fNxNShowerShapeColRowDiffNumber = n ; }
+  void         SwitchOffUseNxNShowerShape()               { fUseNxNShowerShape = kFALSE ; }
+  void         SwitchOnUse5x5ShowerShapeHisto()           { SwitchOnUse5x5ShowerShape() ; } // Keep for old analysis
+  void         SwitchOnUse7x7ShowerShapeHisto()           { SwitchOnUse7x7ShowerShape() ; } // Keep for old analysis
+  void         SwitchOnUseNxNShowerShapeHisto(Int_t n=2)  { SwitchOnUseNxNShowerShape(n); } // Keep for old analysis
+  void         SwitchOffUseNxNShowerShapeHisto()          { SwitchOffUseNxNShowerShape(); } // Keep for old analysis
+  void         SwitchOnFillNxNShowerShapeAllHisto()       { fFillNxNShowerShapeAllHisto   = kTRUE  ; }
+  void         SwitchOffFillNxNShowerShapeAllHisto()      { fFillNxNShowerShapeAllHisto   = kFALSE ; }
+  void         SwitchOnNxNShowerShapeOnlyNeighbours()     { fNxNShowerShapeOnlyNeigbours  = kTRUE  ; }
+  void         SwitchOffNxNShowerShapeOnlyNeighbours()    { fNxNShowerShapeOnlyNeigbours  = kFALSE ; }
+  void         SetNxNShowerShapeColRowDiffNumber(Int_t n) { fNxNShowerShapeColRowDiffNumber = n    ; }
+  void         SetNxNShowerShapeMinEnCell(Float_t min)    { fNxNShowerShapeMinEnCell      = min  ; }
+ 
   // Cocktail generator studies
   void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   
@@ -162,8 +183,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnAcceptanceHistoPerEBin()       { fFillEBinAcceptanceHisto = kTRUE  ; }
   void         SwitchOffAcceptanceHistoPerEBin()      { fFillEBinAcceptanceHisto = kFALSE ; }
 
-  void         SwitchOnAcceptanceHistoPerPrimaryMC()       { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
-  void         SwitchOffAcceptanceHistoPerPrimaryMC()      { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
+  void         SwitchOnAcceptanceHistoPerPrimaryMC()  { fFillPrimaryMCAcceptanceHisto = kTRUE  ; }
+  void         SwitchOffAcceptanceHistoPerPrimaryMC() { fFillPrimaryMCAcceptanceHisto = kFALSE ; }
   
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
@@ -232,6 +253,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
+  Bool_t   fFillSSEtaHistograms ;                   ///<  Fill shower shape vs eta histograms
+
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
   Bool_t   fFillConversionVertexHisto   ;           ///<  Fill histograms depending on the conversion vertex
@@ -248,6 +271,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fSeparateConvertedDistributions;         ///< For shower shape histograms, fill different histogram for converted and non converted
   
+  Bool_t   fUseNxNShowerShape;                      ///< Calculate shower shape restricting to NxN and fill histograms
+  Bool_t   fFillNxNShowerShapeAllHisto;             ///< Fill NxN histograms depending on NLM or correlations
+  Int_t    fNxNShowerShapeColRowDiffNumber;         ///< Number of columns and rows from leading cell in shower shape calculation
+  Bool_t   fNxNShowerShapeOnlyNeigbours;            ///< Make sure when adding the NxN cells, that all cells are contiguous to max energy cell
+  Float_t  fNxNShowerShapeMinEnCell;                ///< Minimum energy of cells in NxN cluster shower shape
+
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
@@ -271,6 +300,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   //
   // Histograms
   //
+  /// Total number of EMCal sectors, half of number of SM
+  static const Int_t fgkNSectors = 10;     
+
   /// Total number basic cluster cuts
   static const Int_t fgkNClusterCuts = 11 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
@@ -405,8 +437,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
   TH2F * fhMCParticleConverted[4];                  //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final
-  TH3F * fhMCParticleVsErecEgenFrac[4];             //!<! Trace origin of matched particle vs reconstructed and generated E ratio:raw, selected before TM, after TM, final
-  TH3F * fhMCParticleVsErecEgenDiff[4];             //!<! Trace origin of matched particle vs reconstructed and generated E difference:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsErecEgenDiffOverEgen[4];     //!<! Trace origin of matched particle vs reconstructed and generated Erec-Egen/Egen:raw, selected before TM, after TM, final
+  TH3F * fhMCParticleVsErecEgen[4];                 //!<! Trace origin of matched particle vs reconstructed and generated energy:raw, selected before TM, after TM, final
   TH3F * fhMCParticleVsNOverlaps[4];                //!<! Trace origin of matched particle vs number of overlaps:raw, selected before TM, after TM, final
   TH3F * fhMCParticleNLM;                           //!<! Trace origin of matched particle after all cuts,  NLM. 
   TH3F * fhMCParticleM02;                           //!<! Trace origin of matched particle after all cuts, shower shape long axis
@@ -418,19 +450,28 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhMCParticleConvertedCen[4];               //!<! Trace origin of matched particle, converted:raw, selected before TM, after TM, final. Centrality dependent
   TH3F * fhMCPrimParticleCen;                       //!<! Trace origin ID of generated particle. Centrality dependent.
   TH3F * fhMCPrimParticleAccCen;                    //!<! Trace origin ID of generated particle, in acceptance. Centrality dependent.
-  ///< Trace origin of matched particle vs reconstructed and generated E ratio, after all cuts, per centrality bin
-  TH3F ** fhMCParticleVsErecEgenFracCen;            //![GetNCentrBin()] 
-  ///< Trace origin of matched particle vs reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCParticleVsErecEgenDiffCen;            //![GetNCentrBin()] 
+ 
+  ///< Trace origin of matched particle vs reconstructed and generated (Erec-Egen)/Egen, after all cuts, per centrality bin
+  TH3F ** fhMCParticleVsErecEgenDiffOverEgenCen;    //![GetNCentrBin()] 
+
+  ///< Trace origin of matched particle vs reconstructed and generated energy , after all cuts, per centrality bin.
+  TH3F **fhMCParticleVsErecEgenCen;                 //![GetNCentrBin()]
+
+  TH3F * fhMCParticleErecEgenDiffOverEgenNLM[fgkNssTypes]; //!<! MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts.
+  TH3F * fhMCParticleErecEgenNLM[fgkNssTypes];     //!<! Trace origin of matched particle vs reconstructed and generated energy vs n local max, after all cuts.
+
+  ///< MC cluster from different origins reconstructed and generated (Erec-Egen)/Egen vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleErecEgenDiffOverEgenNLMCen;    //![GetNCentrBin()*fgkNssTypes]
+
+  ///< Trace origin of matched particle vs reconstructed and generated energy vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleErecEgenNLMCen;               //![GetNCentrBin()*fgkNssTypes]
+
+  TH3F * fhMCParticleNLMCen[fgkNssTypes];           //!<!  MC clusters from different origins pt vs NLM vs Centrality 
   
-  ///< MC single photon reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCPhotonErecEgenDiffNLMCen;             //![GetNCentrBin()] 
-  ///< MC merged pi0 reconstructed and generated E difference, after all cuts, per centrality bin
-  TH3F ** fhMCPi0ErecEgenDiffNLMCen;                //![GetNCentrBin()] 
-  
-  TH3F * fhMCPhotonNLMCen;                          //!<!  Single Photon clusters after all cuts,  NLM. Centrality dependent
-  TH3F * fhMCPi0NLMCen;                             //!<!  Single Photon clusters after all cuts,  NLM. Centrality dependent
-  
+  ///< MC cluster from different origins  shower shape long axis  vs n local max, after all cuts, per centrality bin.
+  TH3F **fhMCParticleM02NLMCen;                     //![GetNCentrBin()*fgkNssTypes]
+  TH3F * fhMCParticleM02NLM   [fgkNssTypes];        //!<! MC cluster from different origins  shower shape long axis  vs n local max, after all cuts.
+
 //  TH2F * fhMCDeltaE [fgkNmcTypes];                  //!<! MC-Reco E distribution coming from MC particle
 //  TH2F * fhMCDeltaPt[fgkNmcTypes];                  //!<! MC-Reco pT distribution coming from MC particle
 //  TH2F * fhMC2E     [fgkNmcTypes];                  //!<! E distribution, Reco vs MC coming from MC particle
@@ -486,21 +527,51 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhMCLambda0DispEta [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp eta
   TH2F * fhMCLambda0DispPhi [7][fgkNssTypes] ;           //!<! shower shape correlation l0 vs disp phi
 
-  //Embedding
+  // Shower shape restricted size, activate with fUseNxNShowerShape=true
+  static const Int_t fgkNxNcases = 4;
+  TH2F * fhLam0NxNOrLam0[fgkNxNcases];                   //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT
+  TH3F * fhLam0NxNNLM;                                   //!<! Cluster long axis restricted to NxN vs  pT vs NLM
+  TH3F * fhLam0NxNLam0PerNLM[fgkNxNcases];               //!<! Cluster long axis restricted to NxN vs std long axis vs  pT, per NLM
+  TH2F * fhMCLam0NxNOrLam0[fgkNxNcases][fgkNssTypes];    //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT, per particle origin
+  TH3F * fhEnNxNFracNLM;                                 //!<! Cluster energy over  restricted to NxN eenergy vs  pT vs NLM
+
+  TH3F * fhLam0NxNCenPerSM[20] ;                         //!<! Cluster lambda0 vs  Pt vs centrality, in different SM 
+  TH2F * fhLam0NxNPerSM   [20] ;                         //!<! Cluster lambda0 vs  Pt, in different SM
+
+  TH3F * fhLam0NxNEta[fgkNSectors];                      //!<! Cluster lambda0 vs  Pt vs eta
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  TH3F **fhLam0NxNEtaPerCen;                             //![GetNCentrBin()*fgkNSectors]
+
+  TH3F * fhLam0NxNOrLam0Cen[fgkNxNcases];                //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT vs centrality
+  ///<  Cluster long axis restricted to NxN vs  pT vs nlm, per centrality
+  TH3F **fhLam0NxNNLMPerCen;                             //![GetNCentrBin()]
+  ///< Cluster long axis restricted to NxN vs std long axis vs  pT, per NLM
+  TH3F **fhLam0NxNLam0PerNLMPerCen;                      //![GetNCentrBin()*fgkNxNcases]
+  TH3F * fhMCLam0NxNOrLam0Cen[fgkNxNcases][fgkNssTypes]; //!<! Cluster long axis restricted to NxN or std long axis depending NLM vs  pT vs centrality, per particle origin
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs nlm, per centrality
+  TH3F **fhEnNxNFracNLMPerCen;                           //![GetNCentrBin()]
+
+  // Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;           //!<! Fraction of embedded signal vs cluster energy
   TH3F * fhEmbeddedSignalFractionEnergyCen ;        //!<! Fraction of signal energy of embedded signal vs cluster energy vs centrality
   
   TH2F * fhEmbeddedPhotonFractionEnergy ;           //!<!  Fraction of photon energy of embedded signal vs cluster energy
   TH3F * fhEmbeddedPhotonFractionEnergyCen ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs centrality
   TH3F * fhEmbeddedPhotonFractionEnergyM02 ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs M02
+  TH3F * fhEmbeddedPhotonFractionEnergyNLM ;        //!<!  Fraction of photon energy of embedded signal vs cluster energy vs N local maxima
   /// Shower shape long axis vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
    TH3F **fhEmbeddedPhotonFractionEnergyM02Cen;     //![GetNCentrBin()] 
+  /// Number or local maxima vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
+   TH3F **fhEmbeddedPhotonFractionEnergyNLMCen;     //![GetNCentrBin()] 
   
   TH2F * fhEmbeddedPi0FractionEnergy ;              //!<!  Fraction of pi0 energy of embedded signal vs cluster energy
   TH3F * fhEmbeddedPi0FractionEnergyCen ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs centrality
   TH3F * fhEmbeddedPi0FractionEnergyM02 ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs M02
+  TH3F * fhEmbeddedPi0FractionEnergyNLM ;           //!<!  Fraction of pi0 energy of embedded signal vs cluster energy vs Number of local maxima
   /// Shower shape long axis vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
   TH3F **fhEmbeddedPi0FractionEnergyM02Cen;        //![GetNCentrBin()] 
+  /// Number of local maxima vs fraction of pi0 energy of embedded signal  vs pT, per centrality bin 
+  TH3F **fhEmbeddedPi0FractionEnergyNLMCen;        //![GetNCentrBin()] 
   
   // Track Matching
     
@@ -526,6 +597,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedMCParticleConverted[2];      //!<! Trace origin of matched particle vs cluster E, converted
 
   TH3F * fhTrackMatchedMCParticleVsEOverP[2];       //!<! Trace origin of matched particle vs compare to E over P
+  TH3F * fhTrackMatchedMCParticleVsErecEgenDiffOverEgen[2]; //!<! Trace origin of matched particle vs reconstructed and generated E
   TH3F * fhTrackMatchedMCParticleVsErecEgen[2];     //!<! Trace origin of matched particle vs reconstructed and generated E
   TH3F * fhTrackMatchedMCParticleVsNOverlaps[2];    //!<! Trace origin of matched particle vs number of overlaps
   
@@ -648,6 +720,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhCellClusterIndexELam0BinPerSMLargeTime[2][20]; //!<! Cell in Cluster index (low index high energy, high index low energy) vs cluster pT, with large time  
   TH2F * fhNCellsWithLargeTimeInCluster    [2][20]; //!<! Number of cells in cluster with large time  
   
+  TH3F * fhLam0CenPerSM                      [20] ; //!<! Cluster lambda0 vs  Pt vs centrality, in different SM 
   TH2F * fhLam0PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
   TH2F * fhLam1PerSM                         [20] ; //!<! Cluster lambda0 vs  Pt, in different SM
   TH2F * fhLam0PerSMLargeTimeInClusterCell   [20] ; //!<! Cluster lambda0 vs  Pt, when any secondary cell has t > 50 ns, in different SM
@@ -656,6 +729,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLam1PerNLargeTimeInClusterCell     [5] ; //!<! Cluster lambda1 vs  Pt, when any secondary cell has t > 50 ns, per number of large time secondary cells 
 //TH2F * fhLam0PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM
 //TH2F * fhLam1PerSMSPDPileUp                [20] ; //!<! Cluster lambda0 vs  Pt, when event tagged as pile-up by SPD, in different SM  
+
+  TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
+  ///<  Cluster energy over restricted to NxN energy vs  pT vs eta, per centrality
+  TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
 
   TH2F *  fhLocalRegionClusterEtaPhi[6]  ;                       //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal, for different cocktail merging cases 
   TH2F *  fhLocalRegionClusterEnergySum[6] ;                     //!<! Sum of energy near the cluster, R<0.2, vs cluster E, for different cocktail merging cases
@@ -699,19 +776,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F *  fhMergeGeneratorClusterHijingAndOtherBkg[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
   TH1F *  fhMergeGeneratorClusterHijingBkg        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
   TH1F *  fhCleanGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
-
   
-  TH2F *  fhMergeGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoRatio        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhCleanGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
-  
-  TH2F *  fhMergeGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
-  TH2F *  fhCleanGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterEPrimRecoDiffOverEPrim                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiffOverEPrim     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiffOverEPrim[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiffOverEPrim        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoDiffOverEPrim                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
   
 //  
 //  TH2F *  fhDistanceAddedPhotonAddedPrimarySignal   ; //!<! Generated added cocktail photon vs distance to other generator primary particle.
@@ -731,7 +801,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,52) ;
+  ClassDef(AliAnaPhoton,58) ;
   /// \endcond
 
 } ;

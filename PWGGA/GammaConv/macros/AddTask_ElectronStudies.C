@@ -64,21 +64,21 @@ void AddTask_ElectronStudies(
 
   if(trainConfig == 1){  // min bias 
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "4117921060e32000000";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
                                          //411792106fe32220000 latest and greates
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117921062e32000000";
+      TaskTMCut                         = "4117900062e32000000";
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "0008e113";
-      TaskClusterCutnumberEMC           = "4117921060e32000000";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117921062e32000000"; // only used for track mathing
+      TaskTMCut                         = "4117900062e32000000"; // only used for track mathing
 
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "0008d113";
-      TaskClusterCutnumberEMC           = "4117921060e32000000";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-      TaskTMCut                         = "4117921062e32000000";
+      TaskTMCut                         = "4117900062e32000000";
   // Same cluster cuts as default
   // but trying to replicate track cuts used for electrons as close as possible
   } else if(trainConfig == 4){  // mb
@@ -131,7 +131,71 @@ void AddTask_ElectronStudies(
       TaskClusterCutnumberEMC           = "4117921060e32000000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
       TaskTMCut                         = "4117921062e32000000";
-  } 
+
+  //
+  // ─── OLD NL ─────────────────────────────────────────────────────────────────────
+  //
+
+  } else if(trainConfig == 10){  // min bias 
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "4117905060e32000000";
+                                         //411790506fe32220000 latest and greates
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117905062e32000000";
+  } else if(trainConfig == 11){  // trigger
+      TaskEventCutnumber                = "0008e113";
+      TaskClusterCutnumberEMC           = "4117905060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117905062e32000000"; // only used for track mathing
+
+  } else if(trainConfig == 12){  // trigger
+      TaskEventCutnumber                = "0008d113";
+      TaskClusterCutnumberEMC           = "4117905060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117905062e32000000";
+  //
+  // ─── Variation new Nonlin1 ─────────────────────────────────────────────────────────────────────
+  //
+
+  } else if(trainConfig == 13){  // min bias 
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "4117939060e32000000";
+                                         //411793906fe32220000 latest and greates
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117939062e32000000";
+  } else if(trainConfig == 14){  // trigger
+      TaskEventCutnumber                = "0008e113";
+      TaskClusterCutnumberEMC           = "4117939060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117939062e32000000"; // only used for track mathing
+
+  } else if(trainConfig == 15){  // trigger
+      TaskEventCutnumber                = "0008d113";
+      TaskClusterCutnumberEMC           = "4117939060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117939062e32000000";
+  //
+  // ─── Variation new Nonlin2 ─────────────────────────────────────────────────────────────────────
+  //
+  } else if(trainConfig == 16){  // min bias 
+      TaskEventCutnumber                = "00010113";
+      TaskClusterCutnumberEMC           = "4117938060e32000000";
+                                         //411793806fe32220000 latest and greates
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117938062e32000000";
+  } else if(trainConfig == 17){  // trigger
+      TaskEventCutnumber                = "0008e113";
+      TaskClusterCutnumberEMC           = "4117938060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117938062e32000000"; // only used for track mathing
+
+  } else if(trainConfig == 18){  // trigger
+      TaskEventCutnumber                = "0008d113";
+      TaskClusterCutnumberEMC           = "4117938060e32000000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+      TaskTMCut                         = "4117938062e32000000";
+  }
+  
 
   TString clusterTypeString(TaskTMCut(0,1));
   Int_t clusterType = clusterTypeString.Atoi();

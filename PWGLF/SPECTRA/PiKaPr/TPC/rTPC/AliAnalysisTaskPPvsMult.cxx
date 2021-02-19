@@ -98,7 +98,6 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		fMCStack(0x0),
 		fMCArray(0x0),
 		fPIDResponse(0x0),
-		fTrackFilter2015PbPb(0x0),
 		fTrackFilterGolden(0x0),
 		fTrackFilterTPC(0x0),
 		utils(0x0),
@@ -227,6 +226,8 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		hMcInPos[pid]  = 0;
 		hMcOutNeg[pid] = 0;
 		hMcOutPos[pid] = 0;
+		hMcOutNegTOF[pid] = 0;
+		hMcOutPosTOF[pid] = 0;
 	}
 
 	for(Int_t pid=0;pid<2;++pid){
@@ -234,6 +235,10 @@ ClassImp(AliAnalysisTaskPPvsMult)
 			hDCApTPrim[pid][q]  = 0;
 			hDCApTWDec[pid][q]  = 0;
 			hDCApTMate[pid][q]  = 0;
+
+			hDCApTPrim_TOF[pid][q]  = 0;
+			hDCApTWDec_TOF[pid][q]  = 0;
+			hDCApTMate_TOF[pid][q]  = 0;
 		}
 	}
 
@@ -249,7 +254,6 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	fMCStack(0x0),
 	fMCArray(0x0),
 	fPIDResponse(0x0),
-	fTrackFilter2015PbPb(0x0),
 	fTrackFilterGolden(0x0),
 	fTrackFilterTPC(0x0),
 	utils(0x0),
@@ -376,6 +380,8 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 		hMcInPos[pid]=0;
 		hMcOutNeg[pid]=0;
 		hMcOutPos[pid]=0;
+		hMcOutNegTOF[pid] = 0;
+		hMcOutPosTOF[pid] = 0;
 	}
 
 	for(Int_t pid=0;pid<2;++pid){
@@ -383,6 +389,10 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 			hDCApTPrim[pid][q]=0;
 			hDCApTWDec[pid][q]=0;
 			hDCApTMate[pid][q]=0;
+
+			hDCApTPrim_TOF[pid][q]  = 0;
+			hDCApTWDec_TOF[pid][q]  = 0;
+			hDCApTMate_TOF[pid][q]  = 0;
 		}
 	}
 
@@ -435,14 +445,13 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		// ITS
 		fTrackFilterGolden->SetRequireITSRefit(kTRUE);
 		fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
+		//fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
 		fTrackFilterGolden->SetMaxDCAToVertexZ(2);
 		fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
 		fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
 		fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
 
 	}
-
 
 	//OpenFile(1);
 	fListOfObjects = new TList();
@@ -548,22 +557,22 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 	felededxfitPos     = new TF1("felededxfitPos", "pol4", 0.0, 1.0);
 	felededxfitNeg     = new TF1("felededxfitNeg", "pol4", -1.0, 0.0);
 
-	hDCAxyVsPtPiNeg_TPC = new TH3D(Form("hDCAxyVsPtPionNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiNeg_TPC = new TH3F(Form("hDCAxyVsPtPionNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiNeg_TPC);
-	hDCAxyVsPtPNeg_TPC = new TH3D(Form("hDCAxyVsPtProtonNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPNeg_TPC = new TH3F(Form("hDCAxyVsPtProtonNeg_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPNeg_TPC);
-	hDCAxyVsPtPiNeg_TOF = new TH3D(Form("hDCAxyVsPtPionNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiNeg_TOF = new TH3F(Form("hDCAxyVsPtPionNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiNeg_TOF);
-	hDCAxyVsPtPNeg_TOF = new TH3D(Form("hDCAxyVsPtProtonNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPNeg_TOF = new TH3F(Form("hDCAxyVsPtProtonNeg_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPNeg_TOF);
 
-	hDCAxyVsPtPiPos_TPC = new TH3D(Form("hDCAxyVsPtPionPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiPos_TPC = new TH3F(Form("hDCAxyVsPtPionPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiPos_TPC);
-	hDCAxyVsPtPPos_TPC = new TH3D(Form("hDCAxyVsPtProtonPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPPos_TPC = new TH3F(Form("hDCAxyVsPtProtonPos_TPC"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPPos_TPC);
-	hDCAxyVsPtPiPos_TOF = new TH3D(Form("hDCAxyVsPtPionPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPiPos_TOF = new TH3F(Form("hDCAxyVsPtPionPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPiPos_TOF);
-	hDCAxyVsPtPPos_TOF = new TH3D(Form("hDCAxyVsPtProtonPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+	hDCAxyVsPtPPos_TOF = new TH3F(Form("hDCAxyVsPtProtonPos_TOF"), "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 	fListOfObjects->Add(hDCAxyVsPtPPos_TOF);
 
 	Int_t nPhiBins = 36;
@@ -727,44 +736,65 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 			if(pid==0){
 				hMcInNeg[pid] = new TH1D("hInNeg_Pion","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Pion","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Pion","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Pion","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Pion","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Pion","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Pion","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Pion","",nPtBins,ptBins);
 			}
 			else if(pid==1){
 				hMcInNeg[pid] = new TH1D("hInNeg_Kaon","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Kaon","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Kaon","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Kaon","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Kaon","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Kaon","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Kaon","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Kaon","",nPtBins,ptBins);
 			}
 			else{
 				hMcInNeg[pid] = new TH1D("hInNeg_Proton","",nPtBins,ptBins);
 				hMcInPos[pid] = new TH1D("hInPos_Proton","",nPtBins,ptBins);
-				hMcOutNeg[pid] = new TH1D("hMcOutNeg_Proton","",nPtBins,ptBins);
-				hMcOutPos[pid] = new TH1D("hMcOutPos_Proton","",nPtBins,ptBins);
+				hMcOutNeg[pid] = new TH1D("hPtRecNegTPC_Proton","",nPtBins,ptBins);
+				hMcOutPos[pid] = new TH1D("hPtRecPosTPC_Proton","",nPtBins,ptBins);
+				hMcOutNegTOF[pid] = new TH1D("hPtRecNegTOF_Proton","",nPtBins,ptBins);
+				hMcOutPosTOF[pid] = new TH1D("hPtRecPosTOF_Proton","",nPtBins,ptBins);
 			}
+
 			fListOfObjects->Add(hMcInNeg[pid]);
 			fListOfObjects->Add(hMcInPos[pid]);
 			fListOfObjects->Add(hMcOutNeg[pid]);
 			fListOfObjects->Add(hMcOutPos[pid]);
+			fListOfObjects->Add(hMcOutNegTOF[pid]);
+			fListOfObjects->Add(hMcOutPosTOF[pid]);
 
 		}	// pid Eff
 
 		for(Int_t pid=0; pid<2; ++pid){
 			for(Int_t q=0; q<2; ++q){
 				if(pid==0){
-					hDCApTPrim[pid][q] = new TH3D(Form("hDCA_Pion%sPrim",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTWDec[pid][q] = new TH3D(Form("hDCA_Pion%sWDec",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTMate[pid][q] = new TH3D(Form("hDCA_Pion%sMate",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTPrim[pid][q] = new TH3F(Form("hDCA_Pion%sPrim_TPC",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec[pid][q] = new TH3F(Form("hDCA_Pion%sWDec_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate[pid][q] = new TH3F(Form("hDCA_Pion%sMate_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+
+					hDCApTPrim_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sPrim_TOF",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sWDec_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate_TOF[pid][q] = new TH3F(Form("hDCA_Pion%sMate_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 				}else{
-					hDCApTPrim[pid][q] = new TH3D(Form("hDCA_Proton%sPrim",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTWDec[pid][q] = new TH3D(Form("hDCA_Proton%sWDec",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
-					hDCApTMate[pid][q] = new TH3D(Form("hDCA_Proton%sMate",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTPrim[pid][q] = new TH3F(Form("hDCA_Proton%sPrim_TPC",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec[pid][q] = new TH3F(Form("hDCA_Proton%sWDec_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate[pid][q] = new TH3F(Form("hDCA_Proton%sMate_TPC",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+
+					hDCApTPrim_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sPrim_TOF",Q[q]),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTWDec_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sWDec_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
+					hDCApTMate_TOF[pid][q] = new TH3F(Form("hDCA_Proton%sMate_TOF",Q[q]),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)",nPtBins,ptBins,nDCABins,DCABins,nV0MMultBins,V0MMultBins);
 
 				}
 
 				fListOfObjects->Add(hDCApTPrim[pid][q]);
 				fListOfObjects->Add(hDCApTWDec[pid][q]);
 				fListOfObjects->Add(hDCApTMate[pid][q]);
+
+				fListOfObjects->Add(hDCApTPrim_TOF[pid][q]);
+				fListOfObjects->Add(hDCApTWDec_TOF[pid][q]);
+				fListOfObjects->Add(hDCApTMate_TOF[pid][q]);
 			}	// charge MC
 		}	// pid MC
 
@@ -1118,7 +1148,7 @@ void AliAnalysisTaskPPvsMult::ProcessMCTruthESD(const Int_t Cent)
 {
 	// Fill the special MC histogram with the MC truth info
 
-	cout<<"Cent Inside ProcessMCTruth ::: "<<Cent<<endl;
+	///cout<<"Cent Inside ProcessMCTruth ::: "<<Cent<<endl;
 	const Int_t nTracksMC = fMCStack->GetNtrack();
 
 	for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
@@ -1399,68 +1429,129 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 			TParticle* mcTrack = 0;
 			mcTrack = fMCStack->Particle(label);
 
-			if (mcTrack){
+			if (!mcTrack) continue; ///{
 
-				if( esdTrack->Charge()==0 )
-					continue;
+			if( esdTrack->Charge()==0 )
+				continue;
 
-				Int_t pdgCode = mcTrack->GetPdgCode();
-				pidCode = GetPidCode(pdgCode);
+			Int_t pdgCode = mcTrack->GetPdgCode();
+			pidCode = GetPidCode(pdgCode);
 
+			if( fMCStack->IsPhysicalPrimary(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+
+						if(PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh)){
+							if(pidCode==1) hMcOutNeg[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutNeg[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutNeg[2]->Fill(esdTrack->Pt());
+						}
+					}
+
+					if(pidCode==1) hDCApTPrim[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTPrim[1][0]->Fill(pt,dcaxy,V0MPer);
+
+				}
+				else{
+
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+
+						if(PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh)){
+							if(pidCode==1) hMcOutPos[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutPos[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutPos[2]->Fill(esdTrack->Pt());
+						}
+
+					}
+
+					if(pidCode==1) hDCApTPrim[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTPrim[1][1]->Fill(pt,dcaxy,V0MPer);
+
+				}
+			}	// Primary particles MC
+
+			if( fMCStack->IsSecondaryFromWeakDecay(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+					if(pidCode==1) hDCApTWDec[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTWDec[1][0]->Fill(pt,dcaxy,V0MPer);
+				}
+				else{
+					if(pidCode==1) hDCApTWDec[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTWDec[1][1]->Fill(pt,dcaxy,V0MPer);
+				}
+			}	// Weak Decay MC
+
+			if( fMCStack->IsSecondaryFromMaterial(label) ){
+
+				if( esdTrack->Charge() < 0.0 ){
+					if(pidCode==1) hDCApTMate[0][0]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTMate[1][0]->Fill(pt,dcaxy,V0MPer);
+				}
+				else{
+					if(pidCode==1) hDCApTMate[0][1]->Fill(pt,dcaxy,V0MPer);
+					if(pidCode==3) hDCApTMate[1][1]->Fill(pt,dcaxy,V0MPer);
+				}
+			}	// Material Inte MC
+
+			bool TOF_out = kFALSE;
+			TOF_out = TOFPID(esdTrack);
+			if(TOF_out){
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
 
 						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
-							if(pidCode==1) hMcOutNeg[0]->Fill(esdTrack->Pt());
-							if(pidCode==2) hMcOutNeg[1]->Fill(esdTrack->Pt());
-							if(pidCode==3) hMcOutNeg[2]->Fill(esdTrack->Pt());
-
+							if(pidCode==1) hMcOutNegTOF[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutNegTOF[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutNegTOF[2]->Fill(esdTrack->Pt());
 						}
 
-						if(pidCode==1) hDCApTPrim[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTPrim[1][0]->Fill(pt,dcaxy,V0MPer);
-
+						if(pidCode==1) hDCApTPrim_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTPrim_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
 
-						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
-							if(pidCode==1) hMcOutPos[0]->Fill(esdTrack->Pt());
-							if(pidCode==2) hMcOutPos[1]->Fill(esdTrack->Pt());
-							if(pidCode==3) hMcOutPos[2]->Fill(esdTrack->Pt());
-
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+							if(pidCode==1) hMcOutPosTOF[0]->Fill(esdTrack->Pt());
+							if(pidCode==2) hMcOutPosTOF[1]->Fill(esdTrack->Pt());
+							if(pidCode==3) hMcOutPosTOF[2]->Fill(esdTrack->Pt());
 						}
 
-						if(pidCode==1) hDCApTPrim[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTPrim[1][1]->Fill(pt,dcaxy,V0MPer);
-
+						if(pidCode==1) hDCApTPrim_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTPrim_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Primary particles MC
 
 				if( fMCStack->IsSecondaryFromWeakDecay(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
-						if(pidCode==1) hDCApTWDec[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTWDec[1][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTWDec_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTWDec_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
-						if(pidCode==1) hDCApTWDec[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTWDec[1][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTWDec_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTWDec_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Weak Decay MC
 
 				if( fMCStack->IsSecondaryFromMaterial(label) ){
 
 					if( esdTrack->Charge() < 0.0 ){
-						if(pidCode==1) hDCApTMate[0][0]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTMate[1][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTMate_TOF[0][0]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTMate_TOF[1][0]->Fill(pt,dcaxy,V0MPer);
 					}
 					else{
-						if(pidCode==1) hDCApTMate[0][1]->Fill(pt,dcaxy,V0MPer);
-						if(pidCode==3) hDCApTMate[1][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==1) hDCApTMate_TOF[0][1]->Fill(pt,dcaxy,V0MPer);
+						if(pidCode==3) hDCApTMate_TOF[1][1]->Fill(pt,dcaxy,V0MPer);
 					}
 				}	// Material Inte MC
-			}	//mcTrack
+
+			} // DCA for TOF analysis
+
+			///			}	//mcTrack
 		}	//fAnalysis MC
 
 		if(esdTrack->Charge() < 0.0){
@@ -2101,6 +2192,9 @@ double AliAnalysisTaskPPvsMult::EtaCalibration(const double &eta){
 	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
 		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
+	}else if(strcmp(fPeriod,"17data")==0){
+		aPos = 49.6097; bPos = 0.922856; cPos = -6.57484; dPos = 65.3117; ePos = -372.142; fPos = 950.451; gPos = -1085.27; hPos = 458.144;
+		aNeg = 49.6555; bNeg = 6.98696; cNeg = 102.734;  dNeg = 566.424; eNeg = 1513.64;  fNeg = 2092.01; gNeg = 1429.32;  hNeg = 375.642;
 	}else{
 		aPos = 49.6975; bPos = 2.32535; cPos = -42.6516; dPos = 283.058; ePos = -1009.58; fPos = 1945.89; gPos = -1871.23; hPos = 698.552;
 		aNeg = 49.8071; bNeg = 9.78466; cNeg = 120.018;  dNeg = 603.325; eNeg = 1470.92;  fNeg = 1819.63; gNeg = 1073.82;  hNeg = 230.142;
@@ -2162,6 +2256,9 @@ double AliAnalysisTaskPPvsMult::EtaCalibrationEl(const double &eta){
 	}else if(strcmp(fPeriod,"16deghijop")==0){
 		aPos = 80.0719; bPos = 7.10053; cPos = -42.4788; dPos = 86.1074; ePos = -54.0891;
 		aNeg = 79.6155; bNeg = -12.1254; cNeg = -66.2488; dNeg = -132.426; eNeg = -85.0155;
+	}else if(strcmp(fPeriod,"17data")==0){
+		aPos = 82.4621; bPos = 5.20353; cPos = -32.2608; dPos = 63.4788; ePos = -39.3277;
+		aNeg = 82.306; bNeg = -4.04076; cNeg = -22.133; dNeg = -40.5782; eNeg = -23.8157;
 	}else{
 		aPos = 79.7726; bPos = 6.83744; cPos = -40.0469; dPos = 78.987; ePos = -50.1373;
 		aNeg = 79.4863; bNeg = -5.00403; cNeg = -21.6184;  dNeg = -39.1295; eNeg = -24.8757;

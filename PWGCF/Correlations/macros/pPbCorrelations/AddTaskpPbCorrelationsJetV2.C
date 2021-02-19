@@ -3,21 +3,24 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
 								       TString  fCollisiontype ="pPb",
-								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
+								       Bool_t fDataType        =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SECA
+								       TString anamode         ="TPCTPCFMDA",//TPCTPC, TPCTPCFMDA, TPCTPCFMDC, FMDAFMDC, TPCFMDA, TPCFMDC
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =5,
+								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
-								       Bool_t fmakehole        =kFALSE,
+								       Bool_t fprimTPC         =kTRUE,
+                                                                       Bool_t fprimFMD         =kTRUE,
+                                                                       Bool_t fcentcalib       =kTRUE,
                                                                        Double_t fReduceDphi    =-1., // 1.5707, 0.9, -1
-                                                                       Bool_t Is2Dfit          =kTRUE,
                                                                        Bool_t fSymmetricFMD    =kFALSE,
+                                                                       Bool_t IsLikeSign       =kFALSE,
 								       Float_t fminpt          =0.5,
-								       Float_t fmaxpt          =5.0,
-								       Int_t fMinNTracksInPool =5000,
+								       Float_t fmaxpt          =20.0,
+								       Float_t fAsscoptCut     =0.5,
+                                                                       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5, 
 								       Double_t dCenMin = 0.,
 								       Double_t dCenMax = 10.
@@ -59,28 +62,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
   
 
-
-// Remove side band of delta phi
-
-/*
-  if (!TGrid::Connect("alien://")) {
-    ::Error("AnalysisTrainMuonAlien.C::AnalysisTrainMuonAlien","Can not connect to the Grid!");
-    return 0x0;
-  }
-  
-  TFile * file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/Jet_V2/TPCTPC/TPCTPC_Fit_Results.root");
-*/
-
-
-//  TFile * file = TFile::Open("../../../FMD_Corr/Original/result/TPCTPC_Fit_Results.root");
-
-/*
-  if(!file) { printf("ERROR: TPCTPC_Fit_Results file is not available!\n");return 0x0;}
-
-  TList *TPCTPC_Fit = 0x0;
-  TPCTPC_Fit = (TList*)file->Get(Form("list_TPCTPC_Fit")); 
-*/
-
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsJetV2 *myTask = new AliAnalysisTaskSEpPbCorrelationsJetV2(fListName.Data());
 
@@ -89,16 +70,18 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetAnalysisMode(anamode);
   myTask->SetAssociatedTrack(assomode);
   myTask->SetDatatype(fDataType);
+  myTask->SetCentCalib(fcentcalib);
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
-  myTask->Setacceptancehole(fmakehole);
   myTask->SetReduceDphi(fReduceDphi);
   myTask->SetSymmetricFMD(fSymmetricFMD);
+  myTask->SetLikeSign(IsLikeSign);
   myTask->SetPtMin(fminpt);
   myTask->SetPtMax(fmaxpt);
+  myTask->SetAssoCut(fAsscoptCut);
   myTask->SetCentrality(dCenMin,dCenMax);
-  myTask->Set2Dfit(Is2Dfit);
+//  myTask->SetTPCTPCList(TPCTPC_Fit);
 
   //myTask->SetMinNTracksInPool(5000);
   myTask->SetMinNTracksInPool(fMinNTracksInPool);
@@ -106,6 +89,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 			    
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
+  myTask->SetmcprimFMD(fprimFMD);
+  myTask->SetmcprimTPC(fprimTPC);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
@@ -119,15 +104,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   }
   mgr->AddTask(myTask);
 
-  //cout<<"hogehoge"<<endl;
-  //  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/y/ysekiguc/correction.root ./");
-  //cout<<"hogehoge"<<endl;
-
-
-  // Create containers for input/output
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  ///  TString output1name="Corr";
-  //TString output2name="QA";
+    TString outputFileName = AliAnalysisManager::GetCommonFileName();
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(fListName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);

@@ -255,8 +255,8 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   printf("\n--- First fit with only background on the side bands - Exclusion region = %.2f sigma ---\n",fNSigma4SideBands);
   if(fTypeOfFit4Bkg==6){
     if(PrepareHighPolFit(fBkgFuncSb)){
-      fHistoInvMass->GetListOfFunctions()->Add(fBkgFuncSb);
-      fHistoInvMass->GetFunction(fBkgFuncSb->GetName())->SetBit(1<<9,kTRUE);
+    //   fHistoInvMass->GetListOfFunctions()->Add(fBkgFuncSb);
+    //   fHistoInvMass->GetFunction(fBkgFuncSb->GetName())->SetBit(1<<9,kTRUE);
       status=0;
     }
   }
@@ -974,9 +974,8 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
   /// Perform intermediate fit steps up to fPolDegreeBkg-1
   /// in case of fit with a polynomial with degree > 2 (fTypeOfFit4Bkg=6)
 
-  TH1F *hCp=(TH1F*)fHistoInvMass->Clone("htemp");
-  Double_t estimatecent=0.5*(hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn))+hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn)));// just a first rough estimate
-  Double_t estimateslope=(hCp->GetBinContent(hCp->FindBin(fMass+3.5*fSigmaSgn))-hCp->GetBinContent(hCp->FindBin(fMass-3.5*fSigmaSgn)))/(7*fSigmaSgn);// first rough estimate
+  Double_t estimatecent=0.5*(fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass-3.5*fSigmaSgn))+fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass+3.5*fSigmaSgn)));// just a first rough estimate
+  Double_t estimateslope=(fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass+3.5*fSigmaSgn))-fHistoInvMass->GetBinContent(fHistoInvMass->FindBin(fMass-3.5*fSigmaSgn)))/(7*fSigmaSgn);// first rough estimate
 
   fCurPolDegreeBkg=2;
   TF1 *funcbkg,*funcPrev=0x0;
@@ -993,7 +992,7 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
       funcbkg->SetParameter(1,estimateslope);
     }
     printf("   ---> Pre-fit of background with pol degree %d ---\n",fCurPolDegreeBkg);
-    hCp->Fit(funcbkg,"REMN","");
+    fHistoInvMass->Fit(funcbkg,"REMN","");
     funcPrev=(TF1*)funcbkg->Clone("ftemp");
     delete funcbkg;
     fCurPolDegreeBkg++;
@@ -1004,19 +1003,17 @@ Bool_t AliHFInvMassFitter::PrepareHighPolFit(TF1 *fback){
     fback->SetParError(j,funcPrev->GetParError(j));
   }
   printf("   ---> Final background fit with pol degree %d ---\n",fPolDegreeBkg);
-  hCp->Fit(fback,"REMN","");// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
-
+  fHistoInvMass->Fit(fback,Form("R,%s,+,0",fFitOption.Data()));// THIS IS JUST TO SET NOT ONLY THE PARAMETERS BUT ALSO chi2, etc...
 
   // The following lines might be useful for debugging
   //   TCanvas *cDebug=new TCanvas();
   //   cDebug->cd();
-  //   hCp->Draw();
+  //   fHistoInvMass->Draw();
   //   TString strout=Form("Test%d.root",(Int_t)fhistoInvMass->GetBinContent(fhistoInvMass->FindBin(fMass)));
   //   cDebug->Print(strout.Data());
   // delete cDebug;
 
   delete funcPrev;
-  delete hCp;
   return kTRUE;
 
 }

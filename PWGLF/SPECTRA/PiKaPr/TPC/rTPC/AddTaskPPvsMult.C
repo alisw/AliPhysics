@@ -35,11 +35,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	trackFilterTPC->AddCuts(esdTrackCutsTPC);
 
-	AliAnalysisFilter* trackFilterGolden2015PbPb = new AliAnalysisFilter("trackFilter2015PbPb");
-  	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
-  	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
-
-
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
@@ -74,7 +69,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
 	task->SetTrackFilterTPC(trackFilterTPC);
-	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
 //	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);

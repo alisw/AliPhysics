@@ -45,6 +45,7 @@ endif()
 
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
+  Exotica/Dibaryons/AliAnalysisTaskDibaryons.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
@@ -55,11 +56,11 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
-  Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypV0s.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisCODEXS3task.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
@@ -86,6 +87,7 @@ set(SRCS
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
@@ -106,13 +108,14 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
-  Utils/NanoAOD/AliNanoSkimmingV0s.cxx  
+  Utils/NanoAOD/AliNanoSkimmingV0s.cxx
   Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
+      Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx

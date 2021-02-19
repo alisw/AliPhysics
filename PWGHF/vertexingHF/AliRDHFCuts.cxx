@@ -24,6 +24,7 @@
 #include <Riostream.h>
 
 #include "AliVEvent.h"
+#include "AliVTrack.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
@@ -507,18 +508,18 @@ Bool_t AliRDHFCuts::IsEventSelectedForCentrFlattening(Float_t centvalue){
 void AliRDHFCuts::SetupPID(AliVEvent *event) {
   // Set the PID response object in the AliAODPidHF
   // in case of old PID sets the TPC dE/dx BB parameterization
-
+  
+  Bool_t isMC=kFALSE;
   if(fPidHF){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
     if(fPidHF->GetPidResponse()==0x0){
-      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
       AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
       fPidHF->SetPidResponse(pidResp);
     }
     if(fPidHF->GetUseCombined()) fPidHF->SetUpCombinedPID();
     if(fPidHF->GetOldPid()) {
 
-      Bool_t isMC=kFALSE;
       TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
       if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
@@ -542,8 +543,25 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
     }
 
-    if(fEnableNsigmaTPCDataCorr) {
-      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
+    // force recomputation of TOF Nsigma with tune-on-data to have latest development of tail parametrisation in old AODs
+    if(isMC) {
+      for(Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
+        AliVTrack* track=dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+        if(!track || track->GetTOFsignalTunedOnData() > 99999) continue;
+        track->SetTOFsignalTunedOnData(100000);
+      }
+    }
+    else { // apply TPC postcalibration
+      if(fEnableNsigmaTPCDataCorr) {
+
+        Bool_t isPass1 = kFALSE;
+        TTree *treeAOD = inputHandler->GetTree();
+        TString currentFile = treeAOD->GetCurrentFile()->GetName();
+        if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+          isPass1 = kTRUE;
+
+        fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
+      }
     }
   }
 }
@@ -1564,21 +1582,23 @@ void AliRDHFCuts::PrintAll() const {
   }
 
   printf("---- Single Track Cuts ----\n");
-  printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
-  printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
-  printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
-  printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
-  printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
-  printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
-  printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
   TString itsSelString[8]={"kOff", "kNone", "kAny", "kFirst", "kOnlyFirst", "kSecond", "kOnlySecond", "kBoth"};
-  printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
-  printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
-  printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
-  printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
-  printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
-  printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
-  printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  if(fTrackCuts) {
+    printf(" Require TPC refit                          = %d\n",fTrackCuts->GetRequireTPCRefit());
+    printf(" Min. number of TPC Clusters                = %d\n",fTrackCuts->GetMinNClusterTPC());
+    printf(" Min. number of TPC Crossed Rows            = %.0f\n",fTrackCuts->GetMinNCrossedRowsTPC());
+    printf(" Min. ratio crossed rows /findable clusters = %f\n",fTrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC());
+    printf(" Max. chi2/cluster TPC                      = %f\n",fTrackCuts->GetMaxChi2PerClusterTPC());
+    printf(" Require ITS refit                          = %d\n",fTrackCuts->GetRequireITSRefit());
+    printf(" Min. number of ITS Clusters                = %d\n",fTrackCuts->GetMinNClustersITS());
+    printf(" Cluster requirement SPD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)].Data());
+    printf(" Cluster requirement SDD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSDD)].Data());
+    printf(" Cluster requirement SSD                    = %s\n",itsSelString[fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSSD)].Data());
+    printf(" Max. chi2/cluster ITS                      = %f\n",fTrackCuts->GetMaxChi2PerClusterITS());
+    printf(" Max. chi2 TPC constr-global (golden chi2)  = %f\n",fTrackCuts->GetMaxChi2TPCConstrainedGlobal());
+    printf(" DCA to vertex (XY) Min - Max (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexXY(),fTrackCuts->GetMaxDCAToVertexXY());
+    printf(" DCA to vertex (Z) Min - Max  (cm)          = %f - %f\n",fTrackCuts->GetMinDCAToVertexZ(),fTrackCuts->GetMaxDCAToVertexZ());
+  }
   
   if(fCutRatioClsOverCrossRowsTPC) printf("N TPC Clusters > %f N TPC Crossed Rows\n", fCutRatioClsOverCrossRowsTPC);
   if(fCutRatioSignalNOverCrossRowsTPC) printf("N TPC Points for dE/dx > %f N TPC Crossed Rows\n", fCutRatioSignalNOverCrossRowsTPC);

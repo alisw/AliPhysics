@@ -249,6 +249,16 @@ void AliGFWFlowContainer::PickAndMerge(TFile *tfi) {
   };
   //printf("After merge: %i in target, %i in source\n",fProfRand->GetEntries(),tarr->GetEntries());
 };
+Bool_t AliGFWFlowContainer::OverrideBinsWithZero(Int_t xb1, Int_t yb1, Int_t xb2, Int_t yb2) {
+  AliProfileSubset *t_apf = new AliProfileSubset(*fProf);
+  if(!t_apf->OverrideBinsWithZero(xb1,yb1,xb2,yb2)) {
+    delete t_apf;
+    return kFALSE;
+  };
+  delete fProf;
+  fProf = (TProfile2D*)t_apf;
+  return kTRUE;
+}
 Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen) {
   if(!fProfRand) {
     printf("Cannot override main profile with a randomized one. Random profile array does not exist.\n");
