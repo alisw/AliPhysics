@@ -115,7 +115,7 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
   AliEmcalCorrectionComponent::Run();
-  
+
   // loop over clusters
   AliVCluster *clus = 0;
   AliClusterContainer * clusCont = 0;
@@ -138,8 +138,8 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
       if (fRecoUtils) {
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
-          clus->SetNonLinCorrEnergy(energy);
           if ( fSetForceClusterE ) clus->SetE(energy);
+          clus->SetNonLinCorrEnergy(energy);
         }
       }
 

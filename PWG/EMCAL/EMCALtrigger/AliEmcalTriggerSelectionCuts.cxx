@@ -43,27 +43,34 @@ AliEmcalTriggerSelectionCuts::AliEmcalTriggerSelectionCuts() :
   fAcceptanceType(kEMCALDCALAcceptance),
   fThreshold(0),
   fUseSimpleOffline(kFALSE),
-  fUseRecalc(kFALSE)
+  fUseRecalc(kFALSE),
+  fSubtractRho(kFALSE),
+  fRhoMethod(kNoRho)
 {
 }
 
-Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEMCALTriggerPatchInfo * const patch) const {
+Bool_t AliEmcalTriggerSelectionCuts::IsSelected(const AliEMCALTriggerPatchInfo * const patch, const RhoForTrigger &rhocontainer) const {
   //if(fUseSimpleOffline && !patch->IsOfflineSimple()) return kFALSE;
   //else if(!fUseSimpleOffline && patch->IsOfflineSimple()) return kFALSE;
   if(!SelectAcceptance(patch)) return kFALSE;
   if(!SelectPatchType(patch)) return kFALSE;
-  if(GetCutPrimitive(patch) < fThreshold) return kFALSE;
+  double rho = 0;
+  if(fSubtractRho) rho = GetRho(rhocontainer, patch->IsEMCal());
+  if(GetCutPrimitive(patch, rho) < fThreshold) return kFALSE;
   return kTRUE;
 }
 
-Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second) const {
-  Double_t valfirst = GetCutPrimitive(first), valsecond = GetCutPrimitive(second);
+Int_t AliEmcalTriggerSelectionCuts::CompareTriggerPatches(const AliEMCALTriggerPatchInfo *first, const AliEMCALTriggerPatchInfo *second, const RhoForTrigger &rhocontainer) const {
+  double rho = 0.;
+  if(fSubtractRho) rho = GetRho(rhocontainer, first->IsEMCal());
+  Double_t valfirst = GetCutPrimitive(first, rho), valsecond = GetCutPrimitive(second, rho);
   if(valfirst == valsecond) return 0;
   if(valfirst > valsecond) return 1;
   return -1;
 }
 
-Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEMCALTriggerPatchInfo * const patch) const{
+Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEMCALTriggerPatchInfo * const patch, double rho) const{
+  const double kPatchSizeBackground = 8;     // background patches for rho estimate have a fixed patch size of 8
   double energy(0);
   switch(fSelectionMethod){
   case kADC: energy = static_cast<Double_t>(patch->GetADCAmp()); break;
@@ -72,7 +79,24 @@ Double_t AliEmcalTriggerSelectionCuts::GetCutPrimitive(const AliEMCALTriggerPatc
   case kEnergyOffline: energy = patch->GetPatchE(); break;
   default: energy = -1.;
   };
+  if(fSubtractRho) {
+    // scale rho by the ratio of the patch sizes
+    double scale1D = double(patch->GetPatchSize())/kPatchSizeBackground;
+    energy -= rho * scale1D * scale1D; 
+  }
   return energy;
+}
+
+Double_t AliEmcalTriggerSelectionCuts::GetRho(const AliEmcalTriggerSelectionCuts::RhoForTrigger &rhocontainer, Bool_t isEMCAL) const {
+  double rho = 0;
+  switch(fRhoMethod) {
+    case kOnlineRho: rho = isEMCAL ? rhocontainer.fRhoForEmcalOnline : rhocontainer.fRhoForDCALOnline; break;
+    case kRecalcRho: rho = isEMCAL ? rhocontainer.fRhoForEmcalRecalc : rhocontainer.fRhoForDCALRecalc; break;
+    case kOfflineRho: rho = isEMCAL ? rhocontainer.fRhoForEmcalOffline : rhocontainer.fRhoForDCALOffline; break;
+    case kNoRho:
+    default: break;
+  };
+  return rho;
 }
 
 Bool_t AliEmcalTriggerSelectionCuts::SelectPatchType(const AliEMCALTriggerPatchInfo * const patch) const{

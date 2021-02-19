@@ -12,22 +12,22 @@
 ****************************************************************************/
 
 Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task, 
-			    Bool_t                 isMC, 
-			    Bool_t                 isPP,
-			    AliRsnCutSet           *cutsPair,
-			    Int_t                  Strcut = 2011,
-			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
-			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
-			    Float_t                nsigmaPi = 3.0,
-			    Float_t                nsigmaK  = 3.0,
-			    Bool_t                 enableMonitor = kTRUE,
-			   Int_t                   Multbin=100,
-			    Int_t                   lMultbin=0,
-			   Int_t                   hMultbin=100,
-			    Int_t                   Ptbin=100,
-			    Int_t                   lPtbin=0,
-			    Int_t                   hPtbin=10
-			   
+			 Bool_t                 isMC, 
+			 Bool_t                 isPP,
+			 AliRsnCutSet           *cutsPair,
+			 Int_t                  Strcut = 2011,
+			 Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
+			 AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
+                         Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
+			 Float_t                nsigmaK  = 3.0,
+			 Float_t               nsigmaTOF = 3.0,			 
+			 Bool_t                 enableMonitor = kTRUE,
+			 Int_t                   Multbin=100,
+			 Int_t                   lMultbin=0,
+			 Int_t                   hMultbin=100,
+			 Int_t                   Ptbin=100,
+			 Int_t                   lPtbin=0,
+			 Int_t                   hPtbin=10
 			 )
 
 {
@@ -42,10 +42,11 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
   AliRsnCutSetDaughterParticle* cutSetK;
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(!trkQualityCut) return kFALSE;
-
-  if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
-    // cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK);
+  
+if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,Strcut)){
+  // cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK,nsigmaTOF),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK,
+nsigmaTOF);
   }
   else{
     printf("Doughter Track cuts has been selected =================\n");
@@ -68,79 +69,113 @@ Bool_t ConfigPhiPbPb2018(AliRsnMiniAnalysisTask *task,
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
   /* CosThetaStar     */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
   if(isMC==1)
-   {
-  /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+    {
+      /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(ThetaStar, kTRUE);
     }
-     else
-       {
-       /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
-       }
-     
-     // -- Create all needed outputs -----------------------------------------------------------------
+  else
+    {
+       /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(ThetaStar, kFALSE);
+    }
+  
+  // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
      // // [0] = unlike
   // [1] = mixing
   // [2] = like ++
   // [3] = like --
-
-  Bool_t  use     [10] = {1         ,1         ,1       ,1       ,isMC     ,isMC     ,isMC     ,isMC     ,isMC    ,isMC    };
-  Bool_t  useIM   [10] = {1         ,1         ,1       ,1       ,1        ,1        ,1        ,1        ,0       ,0       };
-  TString name    [10] = {"UnlikePM","MixingPM","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP" };
-  TString comp    [10] = {"PAIR"    ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"TRUE"  ,"TRUE"  };
-  TString output  [10] = {"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE","SPARSE"};
-  Char_t  charge1 [10] = {'+'       ,'+'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-'     };
-  Char_t  charge2 [10] = {'-'       ,'-'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'     };
-  Int_t   cutIDK  [10] = {iCutK    ,iCutK    ,iCutK  ,iCutK  ,iCutK   ,iCutK   ,iCutK   ,iCutK   ,iCutK  ,iCutK};
-  Int_t   PDGCode [10] = {333      ,333      ,333    ,333    ,333     ,333     ,333     ,333     ,333    ,333};
-
-  /*
-  Bool_t  use     [3] = {isMC     ,isMC     ,isMC};
-  Bool_t  useIM   [3] = {1        ,1        ,0 };
-  TString name    [3] = {"MCGenPM","TruesPM","ResPM"};
-  TString comp    [3] = {"MOTHER" ,"TRUE"   ,"TRUE"};
-  TString output  [3] = {"SPARSE" ,"SPARSE" ,"SPARSE"};
-  Char_t  charge1 [3] = {'+'      ,'+'      ,'+'};
-  Char_t  charge2 [3] = {'-'      ,'_'      ,'-'};
-  Int_t   cutIDK  [3] = {iCutK   ,iCutK   ,iCutK};
-  Int_t   PDGCode [3] = {333     ,333     ,333};
-  */
-
- for (Int_t i = 0; i < 10; i++) {
-    if (!use[i]) continue;
-    AliRsnMiniOutput *out = task->CreateOutput(Form("CustomId%d_%s", customQualityCutsID, name[i].Data()), output[i].Data(), comp[i].Data());
-    out->SetDaughter(0, AliRsnDaughter::kKaon);
-    out->SetDaughter(1, AliRsnDaughter::kKaon);
-    out->SetCutID(0, cutIDK[i]);
-    out->SetCutID(1, cutIDK[i]);
-    out->SetCharge(0, charge1[i]);
-    out->SetCharge(1, charge2[i]);
-    out->SetMotherPDG(PDGCode[i]);
-    out->SetMotherMass(mass);
-    out->SetPairCuts(cutsPair);
-
-    // axis X: invmass (or resolution)
-    if (useIM[i]) 
-      out->AddAxis(imID, 115, 0.985, 1.1);
-    else
-      out->AddAxis(resID, 200, -0.02, 0.02);
-
-    // axis Y: transverse momentum
-    //    out->AddAxis(ptID, 100, 0.0, 10.0);
-    out->AddAxis(ptID, Ptbin,lPtbin,hPtbin);
+  
+  
+  Bool_t  use     [12] = {1         ,1         ,1       ,1       ,isMC     ,isMC     ,isMC     ,isMC   ,  isMC, isMC, isMC    ,isMC    };
+  Bool_t  useIM   [12] = {1         ,1         ,1       ,1       ,1        ,1        ,1        ,1        ,1,     1  ,         0       ,0       };
+  TString name    [12] = {"UnlikePM","MixingPM","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","MCGenPMNOpileup","MCGenMPNopileup","ResPM" ,"ResMP" };
+  TString comp    [12] = {"PAIR"    ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"MOTHER_NO_PILEUP" , "MOTHER_NO_PILEUP","TRUE"  ,"TRUE"  };
+  TString output  [12] = {"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE","SPARSE"};
+  Char_t  charge1 [12] = {'+'       ,'+'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-','+'     ,'-'};
+  Char_t  charge2 [12] = {'-'       ,'-'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+', '-'     ,'+'};
+  Int_t   cutIDK  [12] = {iCutK    ,iCutK    ,iCutK  ,iCutK  ,iCutK   ,iCutK   ,iCutK   ,iCutK   ,iCutK  ,iCutK,,iCutK  ,iCutK};
+  Int_t   PDGCode [12] = {333      ,333      ,333    ,333    ,333     ,333     ,333     ,333     ,333    ,333,333    ,333};
+  
+  if(isMC ==0)
+    {
+      
+      for (Int_t i = 0; i < 4; i++) {
+	if (!use[i]) continue;
+	AliRsnMiniOutput *out = task->CreateOutput(Form("CustomId%d_%s", customQualityCutsID, name[i].Data()), output[i].Data(), comp[i].Data());
+	out->SetDaughter(0, AliRsnDaughter::kKaon);
+	out->SetDaughter(1, AliRsnDaughter::kKaon);
+	out->SetCutID(0, cutIDK[i]);
+	out->SetCutID(1, cutIDK[i]);
+	out->SetCharge(0, charge1[i]);
+	out->SetCharge(1, charge2[i]);
+	out->SetMotherPDG(PDGCode[i]);
+	out->SetMotherMass(mass);
+	out->SetPairCuts(cutsPair);
+	
+	// axis X: invmass (or resolution)
+	if (useIM[i]) 
+	  out->AddAxis(imID, 115, 0.985, 1.1);
+	else
+	  out->AddAxis(resID, 200, -0.02, 0.02);
+    
+	// axis Y: transverse momentum
+	//    out->AddAxis(ptID, 120, 0.0, 10.0);
+	out->AddAxis(ptID, Ptbin,lPtbin,hPtbin);
     // axis Z: centrality-multiplicity
-    if (!isPP)
+	if (!isPP)
       //      out->AddAxis(centID, 100, 0.0, 100.0);
       //out->AddAxis(centID, 100, 0.0, 100.0);
-    out->AddAxis(centID, Multbin,lMultbin,hMultbin);
-    else 
-      out->AddAxis(centID, 400, 0.0, 400.0);
-
-    // axis W: CosThetaStar
-    if (!isPP)
-      out->AddAxis(cosThStarID, 10, 0.0, 1.0);
-    else 
-      out->AddAxis(cosThStarID, 10, 0.0, 1.0);
-  }
+	  out->AddAxis(centID, Multbin,lMultbin,hMultbin);
+	else 
+	  out->AddAxis(centID, 400, 0.0, 400.0);
+	
+	// axis W: CosThetaStar
+	if (!isPP)
+	  out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+	else 
+	  out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+      }
+      
+    }
+  if(isMC==1)
+    {
+      for (Int_t i = 4; i < 12; i++) {
+	if (!use[i]) continue;
+	AliRsnMiniOutput *out = task->CreateOutput(Form("CustomId%d_%s", customQualityCutsID, name[i].Data()), output[i].Data(), comp[i].Data());
+	out->SetDaughter(0, AliRsnDaughter::kKaon);
+	out->SetDaughter(1, AliRsnDaughter::kKaon);
+	out->SetCutID(0, cutIDK[i]);
+	out->SetCutID(1, cutIDK[i]);
+	out->SetCharge(0, charge1[i]);
+	out->SetCharge(1, charge2[i]);
+	out->SetMotherPDG(PDGCode[i]);
+	out->SetMotherMass(mass);
+	out->SetPairCuts(cutsPair);
+	
+	// axis X: invmass (or resolution)
+	if (useIM[i]) 
+	  out->AddAxis(imID, 115, 0.985, 1.1);
+	else
+	  out->AddAxis(resID, 200, -0.02, 0.02);
+	
+	// axis Y: transverse momentum
+	//    out->AddAxis(ptID, 100, 0.0, 10.0);
+	out->AddAxis(ptID, Ptbin,lPtbin,hPtbin);
+	// axis Z: centrality-multiplicity
+	if (!isPP)
+	  //      out->AddAxis(centID, 100, 0.0, 100.0);
+	  //out->AddAxis(centID, 100, 0.0, 100.0);
+	  out->AddAxis(centID, Multbin,lMultbin,hMultbin);
+	else 
+	  out->AddAxis(centID, 400, 0.0, 400.0);
+	
+	// axis W: CosThetaStar
+	if (!isPP)
+	  out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+	else 
+	  out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+      }
+      
+    }
   return kTRUE;
 }
 

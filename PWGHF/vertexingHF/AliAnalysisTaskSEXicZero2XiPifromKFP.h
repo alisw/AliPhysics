@@ -24,6 +24,7 @@
 #include "THnSparse.h"
 #include "AliPIDResponse.h"
 #include "AliAODInputHandler.h"
+#include "AliVertexingHFUtils.h"
 
 // includes added to play with KFParticle
 #include <vector>
@@ -33,7 +34,7 @@
 #include "KFPVertex.h"
 #include "KFVertex.h"
 
-class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE  
+class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisTaskSEXicZero2XiPifromKFP();
@@ -64,16 +65,6 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         Int_t                   MatchToMCAntiLambdaFromXi(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, TClonesArray *mcArray);
         Int_t                   MatchToMCPion(AliAODTrack *track, TClonesArray *mcArray);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
-        Double_t                CosPointingAngleKF(KFParticle kfp, KFParticle kfpmother);
-        Double_t                CosThetaStarKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);
-        Bool_t                  CheckVertexCov(AliAODVertex *vtx);
-        Bool_t                  CheckTrackCov(AliAODTrack *track);
-        Bool_t                  CheckKFParticleCov(KFParticle kfp);
-        KFParticle              CreateKFTrack(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg);
-        KFVertex                CreateKFVertex(Double_t *param, Double_t *cov);
-        KFParticle              CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
-        KFParticle              CreateKFMotherParticle(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
-        KFParticle              CreateSecKFParticle(KFParticle kfp1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
         Int_t                   MatchToXicZeroMC(TClonesArray *mcArray, Int_t PDGXicZero, const Int_t nDaughters, const Int_t *daughterIndex, const Int_t *daughterPDG);
 
         /// set MC usage
@@ -418,7 +409,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 4);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 5);
 };
 
 #endif

@@ -441,7 +441,7 @@ std::vector<AliAODConversionPhoton> AliAnalysisTaskK0toPi0Pi0::MakeCaloPhotonCan
     if(fIsMC>0){
       photonCandidate.SetNCaloPhotonMCLabels(c->GetNLabels());
       for (UInt_t k = 0; k < c->GetNLabels(); k++){
-        if(k < 50) photonCandidate.SetCaloPhotonMCLabel(k,c->GetLabels()[k]);
+        photonCandidate.SetCaloPhotonMCLabel(k,c->GetLabels()[k]);
       }
     }
 
@@ -638,6 +638,3 @@ AliClusterContainer *AliAnalysisTaskK0toPi0Pi0::AddClusterContainer(const char *
   fClusterContainer = new AliClusterContainer(name);
   return fClusterContainer;
 }
-
-
-

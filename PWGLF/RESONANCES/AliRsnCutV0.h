@@ -36,6 +36,8 @@ public:
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
+   //void           SetMaxArmentousCut(Double_t value)       {fMaxArm          = value;}
+   //Double_t       GetMaxArmentousCut()                     {return fMaxArm;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
    void           SetMaxPseudorapidity(Double_t value)           {fMaxPseudorapidity = value;}
@@ -60,6 +62,8 @@ protected:
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
    Bool_t      TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
+   Bool_t      TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
+   Bool_t      AODTrackAccepted(AliAODTrack* t);
    
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Int_t            fpT_Tolerance=0;     // Switch to set pT dependent Mass Tolerance
@@ -74,6 +78,7 @@ protected:
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
+   //Double_t         fMaxArm;           // max armentous cut value
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
    Double_t         fMaxPseudorapidity; // max allowed V0 pseudorapidity

@@ -7,6 +7,7 @@
 
 #include "AliFemtoDreamBasePart.h"
 #include "AliMCParticle.h"
+#include "AliVertexingHFUtils.h"
 
 #include <iostream>
 ClassImp(AliFemtoDreamBasePart)
@@ -41,8 +42,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fEvtNumber(0),
       fIsMC(false),
       fUse(true),
-      fIsSet(true),
-      fEvtMultiplicity(-1) {
+      fIsSet(true) {
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
@@ -76,8 +76,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fEvtNumber(part.fEvtNumber),
       fIsMC(part.fIsMC),
       fUse(part.fUse),
-      fIsSet(part.fIsSet),
-      fEvtMultiplicity(part.fEvtMultiplicity) {
+      fIsSet(part.fIsSet) {
 }
 
 AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
@@ -116,7 +115,6 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fIsMC = obj.fIsMC;
   fUse = obj.fUse;
   fIsSet = obj.fIsSet;
-  fEvtMultiplicity = obj.fEvtMultiplicity;
   return (*this);
 }
 
@@ -153,8 +151,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fEvtNumber(0),
       fIsMC(-1),
       fUse(true),
-      fIsSet(true),
-      fEvtMultiplicity(-1) {
+      fIsSet(true) {
   double momV0[3] = { 0, 0, 0 };
   momV0[0] = gamma->Px();
   momV0[1] = gamma->Py();
@@ -210,6 +207,122 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fCharge.push_back(negTrack->Charge());
 }
 
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
+                                             const AliAODEvent *aod,
+                                             const int pdgParent,
+                                             std::vector<unsigned int> &pdgChildren)
+    : fIsReset(false),
+      fGTI(0),
+      fVGTI(0),
+      fTrackBufferSize(0),
+      fP(1 + pdgChildren.size()),
+      fMCP(),
+      fPt(dmeson->Pt()),
+      fMCPt(0),
+      fP_TPC(0),
+      fEta(),
+      fTheta(),
+      fMCTheta(),
+      fPhi(),
+      fPhiAtRadius(0),
+      fXYZAtRadius(0),
+      fMCPhi(),
+      fIDTracks(),
+      fCharge(),
+      fCPA(dmeson->Eta()),
+      fInvMass(dmeson->InvMass(pdgChildren.size(), &pdgChildren[0])),
+      fOrigin(kUnknown),
+      fPDGCode(0),
+      fMCPDGCode(0),
+      fPDGMotherWeak(0),
+      fMotherID(-1),
+      fID(0),
+      fMotherPDG(0),
+      fEvtNumber(0),
+      fIsMC(-1),
+      fUse(true),
+      fIsSet(true) {
+  SetMomentum(0, { dmeson->Px(), dmeson->Py(), dmeson->Pz() });
+
+  fEta.push_back(dmeson->Eta());
+  fTheta.push_back(dmeson->Theta());
+  fPhi.push_back(dmeson->Phi());
+  fCharge.push_back(dmeson->Charge());
+
+  std::vector<float> phiAtRadii;
+  for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
+    AliAODTrack *track = (AliAODTrack *) dmeson->GetDaughter(iChild);
+    SetMomentum(iChild + 1, { track->Px(), track->Py(), track->Pz() });
+    fIDTracks.push_back(track->GetID());
+    fEta.push_back(track->Eta());
+    fTheta.push_back(track->Theta());
+    fPhi.push_back(track->Phi());
+    phiAtRadii.clear();
+    PhiAtRadii(track, aod->GetMagneticField(), phiAtRadii);
+    fPhiAtRadius.push_back(phiAtRadii);
+    fCharge.push_back(track->Charge());
+  }
+
+  // MC Matching
+  TClonesArray *mcarray = dynamic_cast<TClonesArray*>(aod->FindListObject(
+      AliAODMCParticle::StdBranchName()));
+  if (mcarray) {
+    // dmeson->InvMass needs unsigned int*, this one needs a const int* (and does TMath::Abs() on that). Great.
+    int PDGDaug[pdgChildren.size()];
+    for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
+      PDGDaug[iChild] = pdgChildren.at(iChild);
+    }
+    const int label = dmeson->MatchToMC(std::abs(pdgParent), mcarray,
+                                        pdgChildren.size(), PDGDaug);
+    if (label < 0) {
+      this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+    } else {
+      this->SetID(label);  // to keep track of the actual MC particle
+      AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(label);
+      if (!mcPart) {
+        this->SetUse(false);
+      } else {
+        this->SetMCPDGCode(mcPart->GetPdgCode());
+        this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
+        this->SetMCPt(mcPart->Pt());
+        this->SetMCPhi(mcPart->Phi());
+        this->SetMCTheta(mcPart->Theta());
+
+        const int origin = AliVertexingHFUtils::CheckOrigin(mcarray, mcPart);
+        if (origin == 4) {
+          // proper charm
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(mcPart->GetMother())))
+                  ->GetPdgCode());
+        } else if (origin == 5) {
+          // from beauty
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kBeauty);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(mcPart->GetMother())))
+                  ->GetPdgCode());
+        } else {
+          // this we don't want to keep
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+          this->SetUse(false);
+
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          while (motherID != -1) {
+            lastMother = motherID;
+            motherID = static_cast<AliAODMCParticle*>(mcarray->At(motherID))
+                ->GetMother();
+          }
+          this->SetMotherID(lastMother);
+          this->SetMotherPDG(
+              (static_cast<AliAODMCParticle*>(mcarray->At(lastMother)))
+                  ->GetPdgCode());
+        }
+      }
+    }
+  }
+}
+
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
   fGTI = nullptr;
   fVGTI = nullptr;
@@ -256,6 +369,8 @@ void AliFemtoDreamBasePart::SetMCParticleRePart(AliAODMCParticle *mcPart) {
   this->SetUse(true);
   this->fIsReset = false;
   this->SetCharge(mcPart->Charge());
+  this->SetMCPDGCode(mcPart->GetPdgCode());
+
 }
 
 void AliFemtoDreamBasePart::ResetMCInfo() {

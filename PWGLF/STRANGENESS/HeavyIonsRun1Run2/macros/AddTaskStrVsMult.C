@@ -1,4 +1,4 @@
-AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7)
+AliAnalysisTaskStrVsMult *AddTaskStrVsMult(bool K0s = true, bool Lam = true, bool Xi = true, bool Om = true, TString suffix = "")
 {
   // analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -12,36 +12,31 @@ AliAnalysisTaskStrVsMult *AddTaskStrVsMult(UInt_t triggerMask = AliVEvent::kINT7
   }
 
   // Create the task and add it to the manager
-  AliAnalysisTaskStrVsMult *mytask = new AliAnalysisTaskStrVsMult("StrVsMult_Task");
-  mytask->SelectCollisionCandidates(triggerMask);
+  TString tskname = Form("StrVsMult_Task_%s", suffix.Data());
+  AliAnalysisTaskStrVsMult *mytask = new AliAnalysisTaskStrVsMult(tskname);
   mgr->AddTask(mytask);
+  mytask->SetParticleAnalysisStatus(K0s, Lam, Xi, Om);
 
   // output file name
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGLF_StrVsMult";
-  printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
+  printf("Set OutputFileName : \n %s\n", outputFileName.Data());
 
-  //output containers
-  AliAnalysisDataContainer *coutput_0, *coutput_1, *coutput_2, *coutput_3, *coutput_4, *coutput_5, *coutput_6, *coutput_7;
-  coutput_0 = mgr->CreateContainer("chists_eve", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_1 = mgr->CreateContainer("chists_K0S", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_2 = mgr->CreateContainer("chists_Lam", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_3 = mgr->CreateContainer("chists_ALam",TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_4 = mgr->CreateContainer("chists_Xim", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_5 = mgr->CreateContainer("chists_Xip", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_6 = mgr->CreateContainer("chists_Omm", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
-  coutput_7 = mgr->CreateContainer("chists_Omp", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName );
+  //create and link only used containers
+  AliAnalysisDataContainer *coutput[8];
+  TString clabels[8] = {"eve", "K0S", "Lam", "ALam", "Xim", "Xip", "Omm", "Omp"};
 
-  //connecting input and output
-  mgr->ConnectInput (mytask, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(mytask, 1, coutput_0);
-  mgr->ConnectOutput(mytask, 2, coutput_1);
-  mgr->ConnectOutput(mytask, 3, coutput_2);
-  mgr->ConnectOutput(mytask, 4, coutput_3);
-  mgr->ConnectOutput(mytask, 5, coutput_4);
-  mgr->ConnectOutput(mytask, 6, coutput_5);
-  mgr->ConnectOutput(mytask, 7, coutput_6);
-  mgr->ConnectOutput(mytask, 8, coutput_7);
+  mgr->ConnectInput(mytask, 0, mgr->GetCommonInputContainer());
+  coutput[0] = mgr->CreateContainer(Form("chists_%s_%s", clabels[0].Data(), suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);mgr->ConnectOutput(mytask, 1, coutput[0]);
+  
+  int cnumber = 1;
+  for (int icont=1; icont<8; icont++) {
+    if (mytask->GetParticleAnalysisStatus(icont-1)) {
+      coutput[cnumber] = mgr->CreateContainer(Form("chists_%s_%s", clabels[icont].Data(), suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+      mgr->ConnectOutput(mytask, cnumber+1, coutput[cnumber]);
+      cnumber++;
+    }
+  }
 
   return mytask;
 

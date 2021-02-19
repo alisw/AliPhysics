@@ -86,6 +86,8 @@ public:
 
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
+  void   SetCentralityFileFromAlien(std::string filename) {fCentralityFilenameFromAlien = filename; }
+
    // Support Histos
    void   SetSupportHistoMCSignalAndCutsetting(int nMCSignal, int nCutsetting) {fSupportMCSignal = nMCSignal; fSupportCutsetting = nCutsetting;}
 
@@ -122,6 +124,7 @@ public:
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
    void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
+   void   SetPhiVCut(Bool_t apply, Double_t maxMee, Double_t minphiv){fApplyPhivCut = apply; fMaxMee = maxMee; fMinPhiV = minphiv;}
 
    // Single leg from Pair related setter
    void   SetWriteLegsFromPair(bool enable){fWriteLegsFromPair = enable;}
@@ -210,6 +213,7 @@ private:
 
   double GetWeight(Particle part1, Particle part2, double motherpt);
   double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
+  Double_t CalculateNbins();
 
   AliAnalysisCuts*  fEventFilter; // event filter
 
@@ -301,6 +305,7 @@ private:
 
   TH1F* fHistEvents;
   TH1F* fHistEventStat;
+  TH1F* fHistCentralityRaw;
   TH1F* fHistCentrality;
   TH1F* fHistVertex;
   TH1F* fHistVertexContibutors;
@@ -311,7 +316,10 @@ private:
 
   TFile* fCentralityFile;
   std::string fCentralityFilename;
+  std::string fCentralityFilenameFromAlien;
   TH1F* fHistCentralityCorrection;
+  Double_t fNBinsCentralityCorr;
+  Double_t fEntriesCentralityCorr;
   TList* fOutputListSupportHistos;
 
   std::vector<TH3D*> fHistGenPosPart;
@@ -345,6 +353,9 @@ private:
   std::vector<THnSparseF*> fTHnSparseRecLegsFromPair;
 
   Bool_t fDoFillPhiV;
+  Bool_t fApplyPhivCut;
+  Double_t fMaxMee;
+  Double_t fMinPhiV;
 
   Bool_t fDoPairing;
   Bool_t fDoULSandLS;
@@ -378,7 +389,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 4);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 7);
 };
 
 

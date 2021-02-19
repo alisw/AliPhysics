@@ -50,7 +50,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetUseRotBkg(Bool_t flag=kFALSE) {fDoRotBkg=flag;}
   void SetUseBkgFromPhiSB(Bool_t flag=kFALSE) {fDoBkgPhiSB=flag;}
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
@@ -66,7 +66,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetDoMLApplication(Bool_t flag = kTRUE) {fApplyML = flag;}
   void SetMLConfigFile(TString path = ""){fConfigPath = path;}
   void SetMLBinsForSparse(Int_t nbins = 300, Double_t min = 0.85, Double_t max = 1.) { fNMLBins = nbins; fMLOutputMin = min; fMLOutputMax = max;}
-  void EnablePIDMLSparses(Bool_t enable=kTRUE) {fEnablePIDMLSparses=enable;}
+  void EnablePIDMLSparses(Bool_t enable = kTRUE) {fEnablePIDMLSparses = enable;}
+  void SetMinimalVarForMLSparse(Bool_t flag = kTRUE) {fUseMinimalVarForSparse = flag;}
   /// methods for ML tree creation
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
   void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID
@@ -97,7 +98,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
  private:
-  enum {kMaxPtBins=36,knVarForSparse=14,knVarForSparseAcc=2,knVarForSparseAccFD=3,kVarForImpPar=3,knVarPID=14,knVarPIDcomb=8};
+  enum {kMaxPtBins = 36, knVarForSparse = 14, knVarForSparseAcc = 2, knVarForSparseAccFD = 3, kVarForImpPar = 3,
+        knVarPID = 14, knVarPIDcomb = 8, knVarForSparseMLMinimal = 3};
 
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -180,7 +182,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fDoRotBkg = kFALSE;                   /// flag to create rotational bkg (rotating pi track)
   Bool_t  fDoBkgPhiSB = kFALSE;                 /// flag to create bkg from phi sidebands
   Bool_t  fDoCutV0multTPCout = kFALSE;          /// flag to activate cut on V0mult vs #tracks TPCout
-  Int_t   fAODProtection = 1;                   /// flag to activate protection against AOD-dAOD mismatch.
+  Int_t   fAODProtection = 0;                   /// flag to activate protection against AOD-dAOD mismatch.
                                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins = 0;                         /// number of Pt bins
   TList *fListCuts = nullptr;                   /// list of cuts
@@ -210,6 +212,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fKeepOnlyBkgFromHIJING = kFALSE;       /// flag to keep the background from HIJING only
   /// variables for ML application
   Bool_t fApplyML = kFALSE;                     /// flag to enable ML application
+  Bool_t fUseMinimalVarForSparse = kFALSE;      /// flag to keep only inv. mass, pt and prob. in the sparse
   TString fConfigPath = "";                     /// path to ML config file
   AliHFMLResponseDstoKKpi* fMLResponse = nullptr;  //!<! object to handle ML response
   Int_t fNMLBins = 300;                         /// number of bins for ML output axis in THnSparse
@@ -219,20 +222,20 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   THnSparseF* fnSparseNsigmaPIDVsML[2] = {};    //!<! histograms with PID Nsigma variables vs ML output
   /// variables for ML tree creation
   Bool_t fCreateMLtree = kFALSE;
-  AliHFMLVarHandlerDstoKKpi* fMLhandler = nullptr;  //!<! object to handle ML tree creation and filling
-  TTree* fMLtree = nullptr;                     //!<! tree with candidates for ML
+  AliHFMLVarHandlerDstoKKpi* fMLhandler = nullptr;                //!<! object to handle ML tree creation and filling
+  TTree* fMLtree = nullptr;                                       //!<! tree with candidates for ML
   int fPIDopt = AliHFMLVarHandlerDstoKKpi::kNsigmaDetAndCombPID;  /// option for PID variables
-  Bool_t fAddSingleTrackVar = kFALSE;           /// option to store single track variables
-  Bool_t fFillOnlySignal = kFALSE;              /// option to store only signal when using MC
-  Bool_t fEnableEvtSampling = kFALSE;           /// flag to apply event sampling
-  Float_t fFracEvtToKeep = 1.1;                 /// fraction of events to be kept by event sampling
-  ULong_t fSeedSampling = 0;                    /// seed for sampling
-  Bool_t fEnableCandSampling = kFALSE;          /// flag to apply candidate sampling
-  Float_t fFracCandToKeep = 1.1;                /// fraction of candidates to be kept by sampling
-  Float_t fMaxCandPtSampling = 0.;              /// maximun candidate pt to apply sampling
+  Bool_t fAddSingleTrackVar = kFALSE;                             /// option to store single track variables
+  Bool_t fFillOnlySignal = kFALSE;                                /// option to store only signal when using MC
+  Bool_t fEnableEvtSampling = kFALSE;                             /// flag to apply event sampling
+  Float_t fFracEvtToKeep = 1.1;                                   /// fraction of events to be kept by event sampling
+  ULong_t fSeedSampling = 0;                                      /// seed for sampling
+  Bool_t fEnableCandSampling = kFALSE;                            /// flag to apply candidate sampling
+  Float_t fFracCandToKeep = 1.1;                                  /// fraction of candidates to be kept by sampling
+  Float_t fMaxCandPtSampling = 0.;                                /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs, 40);       /// AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs, 41);            /// AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

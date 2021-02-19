@@ -978,16 +978,16 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
     }
   } // particle loop
   
-  // Leding decision
+  // Leading decision
   if(ptTrig > ptMaxCharged)
   {
+    leading[4] = kTRUE ;
 //    printf("pt charged %2.2f, pt neutral %2.2f, pt neutral emcal %2.2f, pt photon %2.2f, pt photon emcal %2.2f\n",
 //           ptMaxCharged, ptMaxNeutral, ptMaxNeutEMCAL,ptMaxNeutPhot, ptMaxNeutEMCALPhot);
     if(ptTrig > ptMaxNeutral      ) leading[0] = kTRUE ;
     if(ptTrig > ptMaxNeutEMCAL    ) leading[1] = kTRUE ;
     if(ptTrig > ptMaxNeutPhot     ) leading[2] = kTRUE ;
     if(ptTrig > ptMaxNeutEMCALPhot) leading[3] = kTRUE ;
-                                    leading[4] = kTRUE ;
   }
   
 //  printf("N in cone over threshold: tracks  %d, neutral %d, neutral emcal %d, photon %d, photon emcal %d\n",

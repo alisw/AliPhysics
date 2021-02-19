@@ -29,11 +29,9 @@
 
 #include "AliAnalysisTaskTrackDCA.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDCA)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default constructor
@@ -218,5 +216,3 @@ void AliAnalysisTaskTrackDCA::CreateLinearBinning(TArrayD& binning, int nbins, d
     currentlimit += binwidth;
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

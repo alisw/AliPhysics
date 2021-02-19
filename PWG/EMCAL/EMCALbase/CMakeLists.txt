@@ -48,6 +48,7 @@ set(SRCS
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalESDHybridTrackCuts.cxx
   AliEmcalESDtrackCutsWrapper.cxx
+  AliEmcalMCPartonInfo.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx

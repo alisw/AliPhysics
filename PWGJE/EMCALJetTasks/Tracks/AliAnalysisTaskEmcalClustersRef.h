@@ -27,6 +27,7 @@
 #ifndef ALIANALYSISTASKEMCALCLUSTERSREF_H
 #define ALIANALYSISTASKEMCALCLUSTERSREF_H
 
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
@@ -35,7 +36,9 @@
 
 class TClonesArray;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalClustersRef
@@ -54,7 +57,7 @@ namespace EMCalTriggerPtAnalysis {
  * be used). The energy can be the uncorrected, corrected energy for non-linearity or the
  * energy corrected for hadronic contribution.
  */
-class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskEmcalTriggerBase {
+class AliAnalysisTaskEmcalClustersRef : public AliAnalysisTaskEmcalTriggerBase, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
 
   /**
@@ -65,21 +68,6 @@ public:
     kDefaultEnergy,       ///< Uncorrected energy measurement
     kNonLinCorrEnergy,    ///< Energy corrected for non-linearity
     kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
-  };
-
-  enum TriggerCluster_t {
-    kTrgClusterANY,
-    kTrgClusterCENT,
-    kTrgClusterCENTNOTRD,
-    kTrgClusterCENTBOTH,
-    kTrgClusterOnlyCENT,
-    kTrgClusterOnlyCENTNOTRD,
-    kTrgClusterCALO,
-    kTrgClusterCALOFAST,
-    kTrgClusterCALOBOTH,
-    kTrgClusterOnlyCALO,
-    kTrgClusterOnlyCALOFAST,
-    kTrgClusterN
   };
 
   /**
@@ -305,6 +293,8 @@ private:
   /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALCLUSTERSREF_H */

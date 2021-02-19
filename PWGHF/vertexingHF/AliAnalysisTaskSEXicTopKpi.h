@@ -76,7 +76,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetAnalysisType(Int_t antype){fAnalysisType=antype;};
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;} 
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;} 
   //void SetLcCuts(AliRDHFCutsLctopKpi *cuts){fCutsLc=cuts;}
   void SetXicCuts(AliRDHFCutsXictopKpi *cuts){fCutsXic=cuts;}
   Int_t CheckXicpKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab)const;
@@ -92,7 +92,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fMaxPtTrackkFirst=minpt;
   }
   void SetFillTree(Int_t filltree){fFillTree=filltree;}
-  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC);
+  void FillTree(AliAODRecoDecayHF3Prong *cand,Int_t massHypothesis,Float_t *varPointer,Int_t flagMC,AliAODEvent *aod,AliAODMCParticle* p,TClonesArray* array_MC, AliAODMCHeader *mcHeader);
   void SetMaxChi2Cut(Double_t maxchi2){fMaxVtxChi2Cut=maxchi2;}
   Double_t GetMaxChi2Cut(){return fMaxVtxChi2Cut;}
   Double_t CosThetaStar(Double_t mumVector[3],Double_t daughtVector[3],Double_t massMum,Double_t massDaught);
@@ -116,6 +116,12 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetExplorePIDstd(Bool_t flag){ fExplore_PIDstdCuts=flag; }
   // dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
   void SetOnlyBayesPIDbin_recoSparse(Bool_t flag) {fOnlyBayesPIDbin=flag;}
+  /// include the PID selection with Bayes approach only for proton
+  void SetExplPID_BayesOnlyProt(Bool_t flag, Bool_t rejectStdPIDcases=kFALSE){
+    if(!fExplore_PIDstdCuts)  SetExplorePIDstd(flag);
+    fExplPID_BayesOnlyProt = flag;
+    fNoStdPIDcases = rejectStdPIDcases;
+  }
 
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
@@ -139,6 +145,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // Change the min pT for the soft pion
   void SetMinPtSoftPion(Double_t pTmin) {fMinPtSoftPion=pTmin;}
+
+  void SetNSigmaPreFilterPID(Double_t nsigma) {fNSigmaPreFilterPID=TMath::Abs(nsigma);}
+
+  // switch on/off the ev. sel ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  void SetApplyEvSel(Bool_t flag){fApplyEvSel=flag;}
 
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -274,6 +285,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH2F *fProtonID; //!<! histo for purity of PID
+  TH2F *fKaonID; //!<! histo for purity of PID
+  TH2F *fPionID; //!<! histo for purity of PID
   TList *fOutput;//! Output List
   AliVertexerTracks *fVertexerTracks;//!<! vertexer
   Bool_t fSetTrackCutLcFilteringPP; /// flag to force esd track cuts used for Lc filtering
@@ -339,8 +353,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
    Float_t fmaxpT_treeFill;   /// max. pT
   Bool_t fCompute_dist12_dist23;  /// flag to require the calculation of dist12 and dist23
 
-  Bool_t fExplore_PIDstdCuts; /// flag to switch on the exporation of PID cuts with standard strategy
-  Bool_t fOnlyBayesPIDbin;  /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplore_PIDstdCuts;     /// flag to switch on the exporation of PID cuts with standard strategy
+  Bool_t fOnlyBayesPIDbin;        /// dirty solution: flag to reduce the axes in the reco sparses ---> make the merging easier (mfaggin)
+  Bool_t fExplPID_BayesOnlyProt;  /// flag to include the PID selection with Bayes approach only for proton
 
   Double_t fLcMassWindowForSigmaC; /// lc mass window for used in sigma_C loop
   Double_t fSigmaCDeltaMassWindow; /// mass window for accetping sigma_C candidate
@@ -368,8 +383,30 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // double to change the min pT for the soft pion
   Double_t fMinPtSoftPion;  // !
 
+  // histogram to look at the vtx_z in MC
+  TH1D* fZvtx_gen_within10_MC; //!<!
+  TH1D* fZvtx_gen_noSel10_MC; //!<!
+  TH1D* fZvtx_reco_noSel10_MC; //!<!
+
+  // histogram to count candidates
+  TH1F* fCandCounter; //!<!
+  TH1F* fCandCounter_onTheFly; //!<!
+
+  // pT distribution of candidate soft pion tracks
+  TH1F* fPtSoftPionCand; //!<!
+  // pT distribution of candidate soft pion tracks inside SigmaC loop
+  TH1F* fPtSoftPionCand_insideScLoop; //!<!
+
+  Double_t fNSigmaPreFilterPID; // number of sigma for TPC and TOF pre-filtering PID on tracks
+  
+  // bool to remove ev. selection (useful to run on ITS2-ITS3 upgrade MC)
+  Bool_t fApplyEvSel;
+
+  // bool to keep only the Bayes PID- based PID selections
+  Bool_t fNoStdPIDcases;
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,15); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,18); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

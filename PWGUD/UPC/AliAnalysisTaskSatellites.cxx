@@ -49,9 +49,15 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites()
     tOutput(0),
     fRunNumber(0),
     fL0inputs(0),
+    fL1inputs(0),
+    fTimeStamp(0),
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
+    fTrgClassC0V0M(0),
+    fTrgInputVBA(0),
+    fTrgInputVBC(0),
+    fTrgInputZAC(0),
     hDummyCounter(0),
     hSatellitesCounter(0),
     hTriggerInputsCounter(0),
@@ -68,9 +74,15 @@ AliAnalysisTaskSatellites::AliAnalysisTaskSatellites(const char *name)
     tOutput(0),
     fRunNumber(0),
     fL0inputs(0),
+    fL1inputs(0),
+    fTimeStamp(0),
     fIsSatellite(0),
     fTrgClassCINTZAC(0),
     fTrgInputV0M(0),
+    fTrgClassC0V0M(0),
+    fTrgInputVBA(0),
+    fTrgInputVBC(0),
+    fTrgInputZAC(0),
     hDummyCounter(0),
     hSatellitesCounter(0),
     hTriggerInputsCounter(0),
@@ -109,13 +121,19 @@ void AliAnalysisTaskSatellites::UserCreateOutputObjects()
 
   tOutput = new TTree("tOutput", "tOutput");
   tOutput ->Branch("fRunNumber", &fRunNumber);
+  tOutput ->Branch("fTimeStamp",&fTimeStamp);
   tOutput ->Branch("fL0inputs",&fL0inputs);
+  tOutput ->Branch("fL1inputs",&fL1inputs);
   tOutput ->Branch("fIsSatellite", &fIsSatellite);
   tOutput ->Branch("fTrgClassCINTZAC", &fTrgClassCINTZAC);
   tOutput ->Branch("fTrgInputV0M", &fTrgInputV0M);
+  tOutput ->Branch("fTrgClassC0V0M", &fTrgClassC0V0M);
+  tOutput ->Branch("fTrgInputVBA", &fTrgInputVBA);
+  tOutput ->Branch("fTrgInputVBC", &fTrgInputVBC);
+  tOutput ->Branch("fTrgInputZAC", &fTrgInputZAC);
   tOutput ->Branch("fZNATDCm", &fZNATDCm,"fZNATDCm[4]/F");
   tOutput ->Branch("fZNCTDCm", &fZNCTDCm,"fZNCTDCm[4]/F");
-  
+
   const Int_t STARTRUN = 240000;
   const Int_t ENDRUN = 300000;
 
@@ -159,8 +177,10 @@ void AliAnalysisTaskSatellites::UserExec(Option_t *)
      Printf("AliVEvent object not found!");
      return;
   }
-//  Printf("Event %s was loaded",event->GetName());
+//  Printf("Event %s was loaded",event->GetName());\
 
+  fRunNumber = event->GetRunNumber();
+  fTimeStamp = event->GetTimeStamp();
   hDummyCounter->Fill(fRunNumber);  // simple counter for basic information
 
   // ZDC timing decision
@@ -174,24 +194,31 @@ void AliAnalysisTaskSatellites::UserExec(Option_t *)
   }
   fIsSatellite = IsSatellite(ZDCdata);
 
-  //Pick only trigger
+  //Trigger decisions
   fTrgClassCINTZAC = event->GetFiredTriggerClasses().Contains("CINT7ZAC-B-NOPF-CENT");
-  if (!fTrgClassCINTZAC) return;
+  fTrgClassC0V0M = event->GetFiredTriggerClasses().Contains("C0V0M-B-NOPF-");
+//  if (!fTrgClassCINTZAC) return;
 
-  fRunNumber = event->GetRunNumber();
   fL0inputs = event->GetHeader()->GetL0TriggerInputs();
-  Int_t inputV0M = 7; //V0M in Pb-Pb
+  fL1inputs = event->GetHeader()->GetL1TriggerInputs();
+  Int_t inputV0M = 7; //0V0M in Pb-Pb
+  Int_t inputVBA = 1; //0VBA in Pb-Pb
+  Int_t inputVBC = 2; //0VBC in Pb-Pb
+  Int_t inputZAC = 19; //1ZAC in Pb-Pb
   if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
   fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
-  if (!fTrgInputV0M) return;
+  fTrgInputVBA =  fL0inputs & (1 << (inputVBA-1));
+  fTrgInputVBC =  fL0inputs & (1 << (inputVBC-1));
+  fTrgInputZAC =  fL1inputs & (1 << (inputZAC-1));
+//  if (!fTrgInputV0M) return;
 
 //  if (fTrgClassCINTZAC) hTriggerClassesCounter->Fill(fRunNumber);
   if (fTrgInputV0M) hTriggerInputsCounter->Fill(fRunNumber);
   if (fTrgInputV0M && fIsSatellite) hSatellitesCounter->Fill(fRunNumber);
 
-  Printf("fIsSatellite %i",fIsSatellite);
+//  Printf("fIsSatellite %i",fIsSatellite);
 //  Printf("fTrgClassCINTZAC %i",fTrgClassCINTZAC);
-  Printf("fTrgInputV0M %i",fTrgInputV0M);
+//  Printf("fTrgInputV0M %i",fTrgInputV0M);
 
   tOutput->Fill();
 

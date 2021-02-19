@@ -14,7 +14,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		const char* Period  = "16g"
 		)   
 {
 
@@ -31,18 +31,9 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		return 0x0;
 	}
 
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
-
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
 	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	trackFilterTPC->AddCuts(esdTrackCutsTPC);
-
-	AliAnalysisFilter* trackFilterGolden2015PbPb = new AliAnalysisFilter("trackFilter2015PbPb");
-  	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
-  	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
-
 
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -59,7 +50,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	task->SetPeriod(Period);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -77,9 +68,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
-	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
-	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
 //	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);

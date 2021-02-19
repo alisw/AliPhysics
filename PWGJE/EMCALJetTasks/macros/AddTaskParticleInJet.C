@@ -45,7 +45,7 @@ AliEmcalTrackSelection *TrackSelectionFactory(Bool_t isAOD){
   if(isAOD){
     AliEmcalTrackSelectionAOD *aodcuts = new AliEmcalTrackSelectionAOD();
     aodcuts->AddFilterBit(AliAODTrack::kTrkGlobal);
-    EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extracuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts;
+    PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts *extracuts = new PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts;
     extracuts->SetMinTPCCrossedRows(120);
     result = aodcuts;
   } else {

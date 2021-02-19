@@ -24,7 +24,7 @@ class TClonesArray;
 class AliAODMCParticle;
 class TClonesArray;
 class AliAODParticle;
-class AliVertexingHFUtils;
+
 
 #include <TProfile.h>
 #include "AliAnalysisTaskSE.h"
@@ -93,39 +93,28 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	Double_t Beta(AliAODTrack *track);*/
 	Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 	TProfile* GetEstimatorHistogram(const AliAODEvent* fAOD);
-    void SetEstimatorHistogram(Int_t period){fPeriod=period;}
+	
+       void SetEstimatorHistogram(Int_t period){fPeriod=period;}
 	
 	AliHFEpid *GetPID() const { return fPID; }
 	  
 	//Setters
 	void SetMCAnalysis(Bool_t isMC){fIsMC=isMC;}
 	void SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
+
+  	
+  	void SetMultiplVsZProfile(TProfile* hprof){
+  	       if(fMultEstimatorAvg) delete fMultEstimatorAvg;
+		fMultEstimatorAvg=new TProfile(*hprof);
 		
-	void SetMultiplVsZProfile_16k_MB(TProfile* hprof){
-		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
-		fMultEstimatorAvg[0]=new TProfile(*hprof);
   	}
-	void SetMultiplVsZProfile_16k_EG2(TProfile* hprof){
-		if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
-		fMultEstimatorAvg[1]=new TProfile(*hprof);
-  	}
-	void SetMultiplVsZProfile_16k_EG1(TProfile* hprof){
-		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
-		fMultEstimatorAvg[2]=new TProfile(*hprof);
-  	}
-    void SetMultiplVsZProfile_17d20a1_extra(TProfile* hprof){
-		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
-		fMultEstimatorAvg[3]=new TProfile(*hprof);
-  	}
-	void SetMultiplVsZProfile_17c3b1(TProfile* hprof){
-		if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
-		fMultEstimatorAvg[4]=new TProfile(*hprof);
-  	}
+  	
 	//----------Setter for Track and PID cuts
 	void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
 	//void SetTrigger(Int_t trigger){ftrigger =trigger;}
 	void SetEtaRange(Double_t Etarange){fEtarange=Etarange;}
 	void SetMinTPCCluster(Int_t TPCNclus){fTPCNclus=TPCNclus;}
+	void SetMinRatioCrossedRowOverFindable(Int_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
 	void SetMinITSCluster(Int_t ITSNclus){fITSNclus=ITSNclus;}
 	void SetMinTPCClusterPID(Int_t TPCNclusPID){fTPCNclusPID=TPCNclusPID;}
 	void SetHitsOnSPDLayers(Bool_t SPDBoth,Bool_t SPDAny, Bool_t SPDFirst)	{
@@ -158,6 +147,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
   	void                  SetEMCalTriggerDG1(Bool_t flagTrDG1) { fDCalDG1=flagTrDG1;};
   	void                  SetEMCalTriggerDG2(Bool_t flagTrDG2) { fDCalDG2=flagTrDG2;};
   	//void    		SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+  	void                 SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+       void                 SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
 	
 	//------------Setters for Photonic Electron Selection Cuts
@@ -173,7 +164,8 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	//------------Track and PID cut variables--------------
 	AliVEvent::EOfflineTriggerTypes ftrigger;
-	Int_t fTPCNclus;  
+	Int_t fTPCNclus; 
+	Int_t fRatioCrossedRowOverFindable; 
 	Int_t fITSNclus;  
 	Int_t fTPCNclusPID;  
 	Bool_t fSPDBoth;  
@@ -254,6 +246,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
 	
 	   TH2F *fClusEtaPhi;//
    TH1F *fClusT;//
+   TH1F *fTrckT;//
    TH1F *fNCells ;//
    TH1F *fClusE;//
    TH2F *fClusEvsnTracklets;//
@@ -326,7 +319,7 @@ class AliAnalysisTaskHFEmultTPCEMCAL : public AliAnalysisTaskSE {
    TH1F *fSPDCorrMultDist_max;//
    TH1F *fSPDWeightedCorrMultDist_max;//
     Int_t fPeriod;
-   	TProfile *fMultEstimatorAvg[5]; /// TProfile with mult vs. Z per period
+   	TProfile *fMultEstimatorAvg; /// TProfile with mult vs. Z per period
    	TProfile *Profile_Mean; //
    	TProfile *Profile_MeanCorr; //
    	Double_t SPDntr;//

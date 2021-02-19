@@ -78,10 +78,10 @@ public:
     void            SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    void                  SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
-    void                  SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
-    void                  SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
-    void                  SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
+    void                  SetEMCalTriggerEG1(Bool_t flagEG1) { fEMCEG1=flagEG1;};
+    void                  SetEMCalTriggerEG2(Bool_t flagEG2) { fEMCEG2=flagEG2;};
+    void                  SetEMCalTriggerDG1(Bool_t flagDG1) { fDCalDG1=flagDG1;};
+    void                  SetEMCalTriggerDG2(Bool_t flagDG2) { fDCalDG2=flagDG2;};
     void            SelectNonHFElectron(Int_t itrack, AliAODTrack *track, Int_t iMCmom, Int_t MomPDG, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS, Int_t vzeroMultCorr,Int_t correctednAcc);
     void             SetReferenceMultiplicity(Double_t multi){fRefMult=multi;};
     void             SetMultiProfileLHC16s(TProfile * hprof){
@@ -102,7 +102,8 @@ public:
     
     void             SetNcontVCut(Int_t NcontV){fCutNcontV=NcontV;}
     void             SetEtaRange(Double_t Etarange){fCutTrackEta=Etarange;}
-    void             SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
+    void             SetRatioCrossedRowOverFindable(Double_t RatioCrossedRowOverFindable){fRatioCrossedRowOverFindable=RatioCrossedRowOverFindable;}
+    void             SetNTPCCrossRows(Int_t NTPCCrossRows){fCutTPCCrossRows=NTPCCrossRows;}
     void             SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
     void             SetNITSCluster(Int_t ITSNclus){fCutITSNCls=ITSNclus;}
     void             SetTrackpTMin(Double_t TrackPtMin){fCutpTMin = TrackPtMin;}
@@ -123,9 +124,9 @@ public:
         fCutEopEMax=EopEMax;
     }
     
-    void             SetShowerShapeEM20(Double_t M20Min,Double_t M20Max){
-        fCutM20Min=M20Min;
-        fCutM20Max=M20Max;
+    void             SetShowerShapeEM02(Double_t M02Min,Double_t M02Max){
+        fCutM02Min=M02Min;
+        fCutM02Max=M02Max;
     }
     
     
@@ -145,10 +146,11 @@ private:
     //--------------------Event Cut------------------
     Int_t         fCutNcontV;
     //--------------------Track Cut------------------
-    Int_t            fCutTPCMaxCls;
+    Double_t            fRatioCrossedRowOverFindable;
+    Int_t            fCutTPCCrossRows;
     Int_t            fCutTPCchi2perNDF;
-    Int_t         fCutTPCNCls;
-    Int_t         fCutITSNCls;
+    Int_t            fCutTPCNCls;
+    Int_t            fCutITSNCls;
     Double_t         fCutDCAxy;
     Double_t         fCutDCAz;
     Double_t         fCutTrackEta;
@@ -158,8 +160,8 @@ private:
     Double_t         fCutEopEMax;
     Double_t         fCutNsigmaEMin;
     Double_t         fCutNsigmaEMax;
-    Double_t         fCutM20Min;
-    Double_t         fCutM20Max;
+    Double_t         fCutM02Min;
+    Double_t         fCutM02Max;
     //--------------------Loose cuts for photonic electron pair------------------
     Int_t         fAssoTPCCluster;//!
     Int_t         fAssoITSCluster;//!
@@ -274,6 +276,10 @@ private:
     TH1F*                 fMissingEmbEtaEleTrkPt;//!
     TH2F*                 fHFElecPtAll;//!
     TH2F*                 fHFElecPtReco_wtrkcuts;//!
+    TH2F*                 fHFElecPtReco_wtrkmatch;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEop;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEopTPC;//!
+    TH2F*                 fHFElecPtReco_wtrkmatchEopTPCM02;//!
     TH2F*                 fHFElecPtReco_wTPCPID;//!
     TH2F*                 fHFElecPtReco_wtrkCalocuts;//!
     TH2F*                 fHFElecPtReco_wTPCCaloPID;//!

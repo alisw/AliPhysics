@@ -56,7 +56,7 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
         virtual void UserExec(Option_t* option);
 	virtual void FinishTaskOutput();
         virtual void Terminate(Option_t *);
-	bool GoodTracksSelection(int iTrackCut, double TPCsig, double TOFsig, double TPCalonesig);
+	bool GoodTracksSelection(int iTrackCut, double TPCsig, double TOFsig, double TPCalonesig, double TOFMISMATCH);
         void FillTracks();
 	int GetPID(AliPIDResponse *pid, const AliVTrack *trk);
 
@@ -110,6 +110,7 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	TAxis				binCentForMC;
         TAxis                           binZ; //!
         TAxis                           binPt; //!
+        TAxis                           binPtGen; //!
 	TAxis                           binType; //!
         TAxis                           binMass; //!
 	TAxis				binPtTrack;

@@ -6,6 +6,7 @@
 #include "AliESDtrack.h"
 #include "AliPIDtools.h"
 #include "TLeaf.h"
+#include "TSystem.h"
 
 std::map<Int_t, AliTPCPIDResponse *> AliPIDtools::pidTPC;     /// we should use better hash map
 std::map<Int_t, AliPIDResponse *> AliPIDtools::pidAll;        /// we should use better hash map
@@ -88,7 +89,9 @@ Int_t AliPIDtools::LoadPID(Int_t run, Int_t passNumber, TString recoPass, Bool_t
   pid->SetUseTPCMultiplicityCorrection(kTRUE);
   pid->SetUseTPCEtaCorrection(kTRUE);
   pid->SetUseTPCPileupCorrection(kTRUE);
-  pid->SetOADBPath("$ALICE_PHYSICS/OADB");
+  const char * aodbPath = gSystem->ExpandPathName("$ALICE_PHYSICS/OADB");
+  ::Info("AliPIDtools::LoadPID","form :%s",aodbPath);
+  pid->SetOADBPath(aodbPath);
   pid->InitialiseEvent(&ev,passNumber, recoPass, run);
   AliTPCPIDResponse &tpcpid=pid->GetTPCResponse();
   // pid.InitFromOADB(246751,1,"pass1");
@@ -303,6 +306,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrack() {
       }
       lastEntry=entry;
     }
+    if (branch==NULL){
+      ::Error("AliPIDtools::GetCurrentTrack","Branch does not exist, entry %d",entry);
+      return 0;
+    }
     pptrack = (AliESDtrack **) (branch->GetAddress());
   }
   return *pptrack;
@@ -319,6 +326,10 @@ AliESDtrack* AliPIDtools::GetCurrentTrackV0(Int_t index) {
       branch0 = fFilteredTreeV0->GetTree()->GetBranch("track0.");
       branch1 = fFilteredTreeV0->GetTree()->GetBranch("track1.");
       treeNumber = fFilteredTreeV0->GetTreeNumber();
+    }
+    if (branch0==NULL || branch1==NULL){
+      ::Error("AliPIDtools::GetCurrentTrackV0","Branch does not exist, entry %d",entry);
+      return 0;
     }
     pptrack = (index == 0) ? (AliESDtrack **) (branch0->GetAddress()) : (AliESDtrack **) (branch1->GetAddress());
     return *pptrack;

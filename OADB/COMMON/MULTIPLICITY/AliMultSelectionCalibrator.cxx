@@ -462,6 +462,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         }else{
             cout<<"--- Processing run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<fNRunRanges<<"), with "<<ntot<<" events..."<<endl;
         }
+        if( ntot < 1 ){ cout<<"Sample empty! Skipping..."<<endl; continue; }
         sTree[iRun]->SetEstimate(ntot+1);
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
@@ -526,6 +527,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         }else{
             cout<<"--- Processing run "<<lRunNumbers[iRun]<<" ("<<iRun<<"/"<<fNRunRanges<<"), with "<<ntot<<" events..."<<endl;
         }
+        if( ntot < 1 ){ cout<<"Sample empty! Skipping..."<<endl; continue; }
         sTree[iRun]->SetEstimate(ntot+1);
         // Memory allocation: don't repeat it per estimator! only per run
         TArrayL64 index(ntot);

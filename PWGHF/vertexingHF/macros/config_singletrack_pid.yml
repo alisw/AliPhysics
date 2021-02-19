@@ -1,15 +1,25 @@
 inputs:
     data:
-        filename: /Users/fabrizio/cernbox/ALICE_WORK/Files/Trains/Run2/LHC18qr/LHC18q/AnalysisResults_PID6080_QvecCalibTPC.root
+        filename: [ /Users/fabrizio/cernbox/ALICE_WORK/Files/Trains/Run2/LHC18qr/LHC18q/AnalysisResults_PID6080_QvecCalibTPC.root ] # list of files
         dirname: PWGHF_D2H_SystNsigmaPID_PbPb_6080_kINT7
         listname: coutputPIDhistos_PbPb_6080_kINT7
     MC:
-        filename: /Users/fabrizio/cernbox/ALICE_WORK/AnalysisResults.root
+        filename: [ /Users/fabrizio/cernbox/ALICE_WORK/AnalysisResults.root ] # list of files
         dirname: PWGHF_D2H_SystNsigmaPID_PbPb_3050_kMB
         listname: coutputPIDhistos_PbPb_3050_kMB
 
 output:
     dirname: '.'
+
+pileup:
+    option: reject # none, reject, keep
+    selbit: kTightITSTPC # options (kTightITSTPC, kMediumITSTPC, kLooseITSTPC, kVeryLooseITSTPC)
+
+fit:
+    options: M0RQ
+    partollerance:
+        integral: 0.5
+        shape: 0.3
 
 binning:
     bins:

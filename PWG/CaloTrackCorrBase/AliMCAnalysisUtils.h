@@ -83,6 +83,8 @@ class AliMCAnalysisUtils : public TObject {
 
   TLorentzVector GetMotherWithPDG     (Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
   TLorentzVector GetFirstMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
+  TLorentzVector GetFirstMotherWithPDGAndPrimary(Int_t label, Int_t pdg, 
+                                                const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
   
   void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent,
                                       Float_t & asy, Float_t & angle, Bool_t & ok);
@@ -103,6 +105,7 @@ class AliMCAnalysisUtils : public TObject {
   } 
   
   Bool_t  CheckTagBit(Int_t tag, UInt_t test) const {
+    if ( tag < 0 ) return kFALSE;
     // Check if in tag the bit test (mcTypes) is set.
     if (tag & (1<<test) ) return  kTRUE ;    
     else return kFALSE ;

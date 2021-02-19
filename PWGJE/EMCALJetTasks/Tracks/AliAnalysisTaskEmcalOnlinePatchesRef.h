@@ -36,6 +36,7 @@
 
 class THistManager;
 class AliOADBContainer;
+class AliEMCALRecoUtils;
 class AliEMCALTriggerPatchInfo;
 
 namespace PWGJE {
@@ -68,6 +69,7 @@ protected:
 
   bool IsCellMasked(int absCellID) const;
   bool IsFastORMasked(int absFastORID) const;
+  bool IsPhosHole(int icol, int row) const;
 
   bool SelectPatch(const AliEMCALTriggerPatchInfo &patch) const;
   std::pair<int,int> GetNumberOfFastors(const AliEMCALTriggerPatchInfo &patch) const;
@@ -84,12 +86,12 @@ private:
   AliEMCALTriggerDataGrid<int>            *fInOnlinePatch;        //!<! Grid indicating FastORs contributing to an online trigger patch
   AliEMCALTriggerDataGrid<int>            *fMaskedCellsFastor;    //!<! Number of masked cells in Fastor
   std::vector<int>                        fMaskedFastors;         ///< List of masked fastors
-  std::vector<int>                        fMaskedCells;           ///< List of masked cells
-  EMCalTriggerPtAnalysis::AliCutValueRange<double> fCellTimeCut;  ///< Cell time cut
+  AliCutValueRange<double>                fCellTimeCut;  ///< Cell time cut
   TString                                 fNameMaskedFastorOADB;  ///< Name of the OADB container with masked fastors
   TString                                 fNameMaskedCellOADB;    ///< Name of the OADB container with masked cells
   AliOADBContainer                        *fMaskedFastorOADB;     //!<! OADB container with masked fastors
   AliOADBContainer                        *fMaskedCellOADB;       //!<! OADB container with masked cells
+  AliEMCALRecoUtils                       *fRecoUtils;            //!<! Reco utils for bad channel handling
 
   ClassDef(AliAnalysisTaskEmcalOnlinePatchesRef, 1);
 };

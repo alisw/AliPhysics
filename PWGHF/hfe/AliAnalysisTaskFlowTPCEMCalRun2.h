@@ -240,19 +240,44 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 		TH2F* fDCAxy_Pt_Outplane_ele;
 		TH2F* fDCAxy_Pt_Inplane_hfe;
 		TH2F* fDCAxy_Pt_Outplane_hfe;
-		TH2F* fDCAxy_Inplane_ele;
-		TH2F* fDCAxy_Outplane_ele;
-		TH2F* fDCAxy_Inplane_hfe;
-		TH2F* fDCAxy_Outplane_hfe;
+		TH2F* fDCAxy_Pt_Inplane_had;
+		TH2F* fDCAxy_Pt_Outplane_had;
 		TH1F* fHistPt_HFE_MC_D;
 		TH1F* fHistPt_HFE_MC_B;
+		TH2F* fDCAxy_Pt_D;
+		TH2F* fDCAxy_Pt_D_WeightNew;
+		TH2F* fDCAxy_Pt_D_WeightVar1;
+		TH2F* fDCAxy_Pt_D_WeightVar2;
 		TH2F* fDCAxy_Pt_Dpm;
+		TH2F* fDCAxy_Pt_Dpm_WeightNew;
+		TH2F* fDCAxy_Pt_Dpm_WeightVar1;
+		TH2F* fDCAxy_Pt_Dpm_WeightVar2;
 		TH2F* fDCAxy_Pt_D0;
+		TH2F* fDCAxy_Pt_D0_WeightNew;
+		//TH2F* fDCAxy_Pt_D0_WeightVar1;
+		//TH2F* fDCAxy_Pt_D0_WeightVar2;
 		TH2F* fDCAxy_Pt_Ds;
+		TH2F* fDCAxy_Pt_Ds_WeightNew;
+		TH2F* fDCAxy_Pt_Ds_WeightVar1;
+		TH2F* fDCAxy_Pt_Ds_WeightVar2;
 		TH2F* fDCAxy_Pt_lambda;
-		TH2F* fDCAxy_Pt_B;
+		TH2F* fDCAxy_Pt_lambda_WeightNew;
+		TH2F* fDCAxy_Pt_lambda_WeightVar1;
+		TH2F* fDCAxy_Pt_lambda_WeightVar2;
+		TH2F* fDCAxy_Pt_Bmeson;
+		TH2F* fDCAxy_Pt_Bmeson_WeightNew;
+		TH2F* fDCAxy_Pt_Bmeson_WeightVar1;
+		TH2F* fDCAxy_Pt_Bmeson_WeightVar2;
+		TH2F* fDCAxy_Pt_Bbaryon;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightNew;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightVar1;
+		TH2F* fDCAxy_Pt_Bbaryon_WeightVar2;
 		TH2F* fDCAxy_Pt_LS;
 		TH2F* fDCAxy_Pt_ULS;
+		TH2F* fDCAxy_Pt_Inplane_LS;
+		TH2F* fDCAxy_Pt_Outplane_LS;
+		TH2F* fDCAxy_Pt_Inplane_ULS;
+		TH2F* fDCAxy_Pt_Outplane_ULS;
 
 		TH2F* fsubV0ACcos2;
 		TH2F* fsubV0ATPCcos2;
@@ -303,9 +328,21 @@ class AliAnalysisTaskFlowTPCEMCalRun2 : public AliAnalysisTaskSE
 
                 Bool_t iCentral;
                 Bool_t iSemiCentral;
+                Bool_t iBevt;
 
 		TList* fqnSplinesList[6];
 
+		TH1F* fDWeightNew; //!
+    	TH1F* fDWeightVar1; //!
+    	TH1F* fDWeightVar2; //!
+    	TH1F* fDPlusWeightVar1; //!
+    	TH1F* fDsWeightVar1; //!
+    	TH1F* fLcWeightVar1; //!
+    	TH1F* fLcWeightVar2; //!
+    	TH1F* fBWeightNew; //!
+    	TH1F* fBWeightVar1; //!
+    	TH1F* fBWeightVar2; //
+		
 		THnSparse  *fSparseElectron;//!Electron info
 		Double_t *fvalueElectron;//!Electron info
                 Bool_t iTree;

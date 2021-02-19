@@ -20,7 +20,7 @@ AliAnalysisTaskNuclei* AddHighMultNucleiTask(TString name = "name", ULong64_t tr
     if(!task) return 0x0;
 	//Add task settings here
 	task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-	task->SetFilterBit(256);
+	task->SetFilterBit(16);
 	task->SetLowPCut(0.1);
 	task->SetHighPCut(1e30);
 	task->SetEtaCut(0.8);

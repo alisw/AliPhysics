@@ -1,5 +1,6 @@
 /***************************************************************************
 dmallick@cern.ch - last modified on 09/03/2020
+29/08/2020
 //
 // General macro to configure the RSN analysis task.
 // It calls all configs desired by the user, by means
@@ -23,22 +24,23 @@ AliRsnMiniAnalysisTask * AddTaskKStarPbPb2018(
 						AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
 						Float_t     nsigmaPi            = 2.0,
 						Float_t     nsigmaK             = 2.0,
+						Float_t     nsigmaTOF           = 3.0,
+						Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
 						Bool_t      enableMonitor       = kTRUE,
 						Int_t       nmix                = 5,
 						Float_t     maxDiffVzMix        = 1.0,
 						Float_t     maxDiffMultMix      = 5.0,
 						UInt_t      trigger =   AliVEvent::kINT7,
 						TString     outNameSuffix       = "PbPb",
-
 						Int_t     Multbin       = 100,
 						Int_t     lMultbin       = 0,
 						Int_t     hMultbin       = 100,
-
 						Int_t     Ptbin       = 100,
 						Int_t     lPtbin       = 0,
-						Int_t     hPtbin       = 10
+						Int_t     hPtbin       = 10,
+						Bool_t      timeRangeCut  = kTRUE
 						
-					                                        )
+					      )
 {  
   Bool_t      rejectPileUp = kTRUE;
   //if(!isPP || isMC) rejectPileUp = kFALSE;
@@ -69,9 +71,10 @@ AliRsnMiniAnalysisTask * AddTaskKStarPbPb2018(
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
-   task->UseMC(isMC);
+   task->SetMaxDiffAngle(20.*TMath::DegToRad());
+   task->SetUseTimeRangeCut(timeRangeCut);
    ::Info("AddTaskKStarPbPbRunTwo", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n", nmix, maxDiffVzMix, maxDiffMultMix));
-   
+   task->UseMC(isMC);   
    mgr->AddTask(task);
       
    AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
@@ -110,9 +113,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPbPb2018(
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPbPb2018.C");
-   //   gROOT->LoadMacro("ConfigKStarPbPb2018.C");
-
-   if (!ConfigKStarPbPb2018(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK,enableMonitor, Multbin, lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
+   //  gROOT->LoadMacro("ConfigKStarPbPb2018.C");
+    if (!ConfigKStarPbPb2018(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK,nsigmaTOF,ThetaStar,enableMonitor, Multbin, lMultbin,hMultbin,Ptbin,lPtbin,hPtbin)) return 0x0;
 
    //
    // -- CONTAINERS --------------------------------------------------------------------------------

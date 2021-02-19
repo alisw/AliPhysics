@@ -46,6 +46,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TAxis.h"
 #include "TTree.h"
 #include "THnSparse.h"
 #include "TLorentzVector.h"
@@ -149,6 +150,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -158,7 +160,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
+  fNBinsCentralityCorr(0.),
+  fEntriesCentralityCorr(0.),
   fOutputListSupportHistos(0x0),
   fHistGenPosPart(),
   fHistGenNegPart(),
@@ -188,6 +193,9 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
   fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -296,6 +304,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -305,7 +314,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
+  fNBinsCentralityCorr(0.),
+  fEntriesCentralityCorr(0.),
   fOutputListSupportHistos(0x0),
   fHistGenPosPart(),
   fHistGenNegPart(),
@@ -335,6 +347,9 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
   fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -485,13 +500,42 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
 
   if (fCentralityFilename != ""){
     fCentralityFile = TFile::Open(fCentralityFilename.c_str());
-    if (!fCentralityFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fCentralityFilename.c_str()));
+    if (fCentralityFile == 0x0){
+      std::cout << "Location in AliEN: " <<  fCentralityFilenameFromAlien << std::endl;
+      gSystem->Exec(Form("alien_cp alien://%s .", fCentralityFilenameFromAlien.c_str()));
+      std::cout << "Copy centrality weighting from Alien" << std::endl;
+      fCentralityFile = TFile::Open(fCentralityFilename.c_str());
+    }
+    if (!fCentralityFile) {
+      AliFatal(Form("Could not open file %s", fCentralityFilename.c_str()));
     }
     TList* list_temp = (TList*)fCentralityFile->Get("efficiency");
     fHistCentralityCorrection = (TH1F*) list_temp->FindObject("centrality");
     if (fHistCentralityCorrection == 0x0){
       AliError(Form("Could not extract centrality histogram from file %s", fCentralityFilename.c_str()));
+    }
+    else {
+
+      if((fMinCentrality<0.)||(fMaxCentrality<0.)) {
+	fEntriesCentralityCorr =  fHistCentralityCorrection->Integral();
+      }
+      else {
+	TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+	Int_t bina_mix = xaxis->FindBin(fMinCentrality);
+	Int_t binb_mix = xaxis->FindBin(fMaxCentrality);
+	Double_t lowedge_mix = xaxis->GetBinLowEdge(bina_mix);
+	Double_t upedge_mix = xaxis->GetBinUpEdge(binb_mix);
+	if(lowedge_mix > (fMinCentrality+0.0000000001)) bina_mix--;
+	if(lowedge_mix < (fMinCentrality-0.0000000001)) bina_mix++;
+	if(upedge_mix < (fMaxCentrality-0.0000000001)) binb_mix++;
+	if(upedge_mix > (fMaxCentrality+0.0000000001)) binb_mix--;
+	fEntriesCentralityCorr =  fHistCentralityCorrection->Integral(bina_mix,binb_mix);
+      }
+      fNBinsCentralityCorr = CalculateNbins();
+      
+      std::cout << "Centrality correction On in the range " << fMinCentrality << " " << fMaxCentrality << std::endl;
+      std::cout << "nbins: " << fNBinsCentralityCorr << std::endl;
+      std::cout << "entries: " << fEntriesCentralityCorr << std::endl;
     }
   }
 
@@ -525,12 +569,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   // Initialize all histograms
     fHistEvents             = new TH1F("events", "events", 1, 0., 1.);
     fHistEventStat          = new TH1F("eventStats", "eventStats", kLastBin, -0.5, kLastBin-0.5);
+    fHistCentralityRaw      = new TH1F("centralityRaw", "centralityRaw", 100, 0., 100.);
     fHistCentrality         = new TH1F("centrality", "centrality", 100, 0., 100.);
     fHistVertex             = new TH1F("zVertex", "zVertex", 300, -15.0, 15.0);
     fHistVertexContibutors  = new TH1F("vtxContributor", "vtxContributor",5000,-0.5,4999.5);
     fHistNTracks            = new TH1F("nTracks", "nTracks", 4000, 0., 40000.);
     fOutputList->Add(fHistEvents);
     fOutputList->Add(fHistEventStat);
+    fOutputList->Add(fHistCentralityRaw);
     fOutputList->Add(fHistCentrality);
     fOutputList->Add(fHistVertex);
     // fOutputList->Add(fHistVertexContibutors);
@@ -1041,19 +1087,33 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
-  fHistCentrality->Fill(centralityF);
+  fHistCentralityRaw->Fill(centralityF);
+
 
   // Calculating the weight when centrality correction is applied
   double centralityWeight = 1.;
   if (fHistCentralityCorrection != 0x0){
-    centralityWeight = (fHistCentralityCorrection->GetEntries() / fHistCentralityCorrection->GetNbinsX()) / fHistCentralityCorrection->FindBin(centralityF) ;
-    std::cout << "cent: " << centralityF << "  " << "weight: " << centralityWeight << std::endl;
+
+    // find bin
+    TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+    Int_t bin_cent = xaxis->FindBin(centralityF);
+    Double_t lowedge_cent = xaxis->GetBinLowEdge(bin_cent);
+    Double_t upedge_cent = xaxis->GetBinUpEdge(bin_cent);
+    if(lowedge_cent > (centralityF+0.0000000001)) bin_cent--;
+    if(upedge_cent < (centralityF-0.0000000001)) bin_cent++;
+
+    
+    if((fNBinsCentralityCorr>0.) && (fHistCentralityCorrection->GetBinContent(bin_cent)>0.)) centralityWeight = fEntriesCentralityCorr/(fNBinsCentralityCorr*fHistCentralityCorrection->GetBinContent(bin_cent));
+    
+    //centralityWeight = (fHistCentralityCorrection->GetEntries() / fHistCentralityCorrection->GetNbinsX()) / fHistCentralityCorrection->FindBin(centralityF) ;
+    //std::cout << "cent: " << centralityF << "  " << "weight: " << centralityWeight << std::endl;
   }
+  fHistCentrality->Fill(centralityF,centralityWeight);
 
   // ##########################################################
   // Fill Multiplicity histogram
   int nTracks = fEvent->GetNumberOfTracks();
-  fHistNTracks->Fill(nTracks);
+  fHistNTracks->Fill(nTracks,centralityWeight);
 
 
   // ######################################################
@@ -1672,8 +1732,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
 
                 if(fDoFillPhiV) dynamic_cast<TH3D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, phiv ,weight * centralityWeight);//3D
-                else            dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
-
+                else{
+                  if(fApplyPhivCut){
+                    if(!(mass < fMaxMee && phiv > fMinPhiV)) dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+                  }
+                  else dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+                }
                 if (fWriteLegsFromPair){
                   ptNeg  = fRecNegPart[neg_i].fPt;
                   etaNeg = fRecNegPart[neg_i].fEta;
@@ -2064,10 +2128,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vecto
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, fMC)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   TString genname="";
@@ -2105,10 +2169,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(trackID, fMC)) return false;//particles from pileup collision should NOT be used.
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));
@@ -2429,5 +2493,37 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::PhivPair(Double_t MagField, Int_t 
   Double_t phiv = TMath::ACos(cosPhiV);
 
   return phiv;
+}
+//____________________________
+Double_t AliAnalysisTaskElectronEfficiencyV2::CalculateNbins() {
+
+  //
+  // Calculate the number of bins not emptied in the correction centrality histo in the centrality range we are interested in
+  //
+
+  Double_t nbins=0.;
+
+  if(!fHistCentralityCorrection) return nbins;
+
+  
+  for(Int_t k=0; k < fHistCentralityCorrection->GetNbinsX(); k++) {
+     
+    TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+    Double_t cent = xaxis->GetBinCenter(k+1);
+
+    if((fMinCentrality < 0.) || (fMaxCentrality < 0.)) {
+      if( fHistCentralityCorrection->GetBinContent(k+1)>0.) nbins = nbins + 1.;
+    }
+    else {
+      if((cent>=fMinCentrality) && (cent<=fMaxCentrality)) {
+	if( fHistCentralityCorrection->GetBinContent(k+1)>0.) nbins = nbins + 1.;
+      }
+    }
+    
+  }
+    
+   
+  return nbins;
+  
 }
 //________________________________________________________________________

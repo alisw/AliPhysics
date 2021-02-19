@@ -37,6 +37,8 @@ The names are available via the function PairClassName(Int_t i)
 9: ev2- ev2-  (same event like sign -)
 
 10: ev1+ ev1- (same event track rotation)
+11: ev1+ ev1+ (same event track rotation)
+12: ev1- ev1- (same event track rotation)
 
 */
 //                                                                       //
@@ -47,6 +49,7 @@ The names are available via the function PairClassName(Int_t i)
 #include <TMath.h>
 #include <TObject.h>
 #include <TGrid.h>
+#include <TSystem.h>
 
 #include <AliKFParticle.h>
 
@@ -76,14 +79,16 @@ The names are available via the function PairClassName(Int_t i)
 
 ClassImp(AliDielectron)
 
-const char* AliDielectron::fgkTrackClassNames[4] = {
+const char* AliDielectron::fgkTrackClassNames[6] = {
   "ev1+",
   "ev1-",
   "ev2+",
-  "ev2-"
+  "ev2-",
+  "ev1_TR+",
+  "ev1_TR-"
 };
 
-const char* AliDielectron::fgkPairClassNames[11] = {
+const char* AliDielectron::fgkPairClassNames[13] = {
   "ev1+_ev1+",
   "ev1+_ev1-",
   "ev1-_ev1-",
@@ -94,7 +99,9 @@ const char* AliDielectron::fgkPairClassNames[11] = {
   "ev1-_ev2-",
   "ev2+_ev2-",
   "ev2-_ev2-",
-  "ev1+_ev1-_TR"
+  "ev1+_ev1-_TR",
+  "ev1+_ev1+_TR",
+  "ev1-_ev1-_TR"
 };
 
 //________________________________________________________________
@@ -110,6 +117,7 @@ AliDielectron::AliDielectron() :
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
+  fRotateTrackCorrectionMap(),
 	fPIDCalibinPU(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
@@ -134,7 +142,7 @@ AliDielectron::AliDielectron() :
   fHistoArray(0x0),
   fHistos(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
-  fPairCandidates(new TObjArray(11)),
+  fPairCandidates(new TObjArray(13)),
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
   fRotatePP(kFALSE),
@@ -164,9 +172,16 @@ AliDielectron::AliDielectron() :
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
+  fQnCalibrationFilepath(""),
+  fDoQnV0GainEqualization(kFALSE),
+  fDoQnV0Recentering(kFALSE),
+  fDoQnTPCRecentering(kFALSE),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fZDCRecenteringFilename("")
+  fZDCRecenteringFilename(""),
+  fUseAccMap(kTRUE),
+  fIterations(1)
+
 
 {
   //
@@ -200,6 +215,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
 	fPIDCalibinPU(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
+  fRotateTrackCorrectionMap(),
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter1("PairPreFilter1"),
@@ -221,7 +237,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fHistoArray(0x0),
   fHistos(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
-  fPairCandidates(new TObjArray(11)),
+  fPairCandidates(new TObjArray(13)),
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
   fRotatePP(kFALSE),
@@ -251,9 +267,15 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
+  fQnCalibrationFilepath(""),
+  fDoQnV0GainEqualization(kFALSE),
+  fDoQnV0Recentering(kFALSE),
+  fDoQnTPCRecentering(kFALSE),
   fVZEROCalibrationFilename(""),
   fVZERORecenteringFilename(""),
-  fZDCRecenteringFilename("")
+  fZDCRecenteringFilename(""),
+  fUseAccMap(kTRUE),
+  fIterations(1)
 {
   //
   // Named constructor
@@ -295,13 +317,14 @@ AliDielectron::~AliDielectron()
   if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
 
+
+
 	for(Int_t i=0;i<15;i++){
 		for(Int_t j=0;j<15;j++){
 			if(fPostPIDCntrdCorrPU[i][j]) delete fPostPIDCntrdCorrPU[i][j];
 			if(fPostPIDWdthCorrPU[i][j] ) delete fPostPIDWdthCorrPU[i][j] ;
 		}
 	}
-
 }
 //________________________________________________________________
 void AliDielectron::Init()
@@ -336,7 +359,9 @@ void AliDielectron::Init()
   if(fTRDpidCorrectionFilename.Contains(".root")) AliDielectronVarManager::InitTRDpidEffHistograms(fTRDpidCorrectionFilename.Data());
   if(fVZEROCalibrationFilename.Contains(".root")) AliDielectronVarManager::SetVZEROCalibrationFile(fVZEROCalibrationFilename.Data());
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
-  if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+  if(fZDCRecenteringFilename.Contains(".root"))   AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
+
+  if(fQnCalibrationFilepath != "") AliDielectronVarManager::SetQnCalibrationFilePath(fQnCalibrationFilepath.Data(), fDoQnV0GainEqualization, fDoQnV0Recentering, fDoQnTPCRecentering);
 
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
@@ -405,7 +430,6 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //
   // Process the events
   //
-
   //at least first event is needed!
   if (!ev1){
     AliError("At least first event must be set!");
@@ -542,8 +566,8 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
       for (Int_t itrackArr2=itrackArr1; itrackArr2<4; ++itrackArr2){
-        if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
-        FillPairArrays(itrackArr1, itrackArr2, ev1);
+	if(!fProcessLS && GetPairIndex(itrackArr1,itrackArr2)!=kEv1PM) continue;
+	FillPairArrays(itrackArr1, itrackArr2, ev1);
       }
     }
 
@@ -584,8 +608,13 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if(GetHasMC()) { // only for MC needed
     for (Int_t iCut=0; iCut<fTrackFilter.GetCuts()->GetEntries();++iCut) {
       if ( fTrackFilter.GetCuts()->At(iCut)->IsA() == AliDielectronV0Cuts::Class() )
-        ((AliDielectronV0Cuts*)fTrackFilter.GetCuts()->At(iCut))->ResetUniqueEventNumbers();
+	((AliDielectronV0Cuts*)fTrackFilter.GetCuts()->At(iCut))->ResetUniqueEventNumbers();
     }
+  }
+
+  if (fTrackRotator) {
+    fTrackRotator->ClearRotatedTrackPool();
+    fTrackRotator->ClearRotatedPairPool();
   }
 
   return 1;
@@ -670,18 +699,18 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
 
       // particles satisfying both branches are treated separately to avoid double counting during pairing
       if(truth1 && truth2) {
-        labels12[isig][indexes12[isig]] = ipart;
-        ++indexes12[isig];
+	labels12[isig][indexes12[isig]] = ipart;
+	++indexes12[isig];
       }
       else {
-        if(truth1) {
-          labels1[isig][indexes1[isig]] = ipart;
-          ++indexes1[isig];
-        }
-        if(truth2) {
-          labels2[isig][indexes2[isig]] = ipart;
-          ++indexes2[isig];
-        }
+	if(truth1) {
+	  labels1[isig][indexes1[isig]] = ipart;
+	  ++indexes1[isig];
+	}
+	if(truth2) {
+	  labels2[isig][indexes2[isig]] = ipart;
+	  ++indexes2[isig];
+	}
       }
     }
   }  // end loop over MC particles
@@ -693,19 +722,19 @@ void AliDielectron::ProcessMC(AliVEvent *ev1)
     for(Int_t i1=0;i1<indexes1[isig];++i1) {
       if(!indexes2[isig]) FillMCHistograms(labels1[isig][i1], -1, isig); // (e.g. single electrons only, no pairs)
       for(Int_t i2=0;i2<indexes2[isig];++i2) {
-        // add pair cuts on mc truth level
-        if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
-        if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
-        FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
+	// add pair cuts on mc truth level
+	if(bFillCF) fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+	if(bFillHF) fHistoArray->Fill(labels1[isig][i1], labels2[isig][i2], isig);
+	FillMCHistograms(labels1[isig][i1], labels2[isig][i2], isig);
       }
     }
     // mix the particles which satisfy both branches
     for(Int_t i1=0;i1<indexes12[isig];++i1) {
       for(Int_t i2=0; i2<i1; ++i2) {
-        // add pair cuts on mc truth level
-        if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
-        if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
-        FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
+	// add pair cuts on mc truth level
+	if(bFillCF) fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+	if(bFillHF) fHistoArray->Fill(labels12[isig][i1], labels12[isig][i2], isig);
+	FillMCHistograms(labels12[isig][i1], labels12[isig][i2], isig);
       }
     }
   }    // end loop over signals
@@ -788,14 +817,40 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   //Fill track information, separately for the track array candidates
   if (!pairInfoOnly){
     className2.Form("Track_%s",fgkPairClassNames[1]);  // unlike sign, SE only
-    for (Int_t i=0; i<4; ++i){
+    for (Int_t i=0; i<6; ++i){
       className.Form("Track_%s",fgkTrackClassNames[i]);
       Bool_t mergedtrkClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
       Bool_t trkClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
       if (!trkClass && !mergedtrkClass) continue;
-      Int_t ntracks=fTracks[i].GetEntriesFast();
+
+      Double_t ntracks; 
+      Double_t nPos = fTracks[0].GetEntriesFast();
+      Double_t nNeg = fTracks[1].GetEntriesFast();
+      //Int_t numberLS_PP = nPos*(nPos-1);
+      //Int_t numberLS_MM = nNeg*(nNeg-1);
+      if (i < 4) ntracks = fTracks[i].GetEntriesFast();
+      else if ( i == 4) ntracks = fTrackRotator->GetRotatedTrackPSize();
+      else if ( i == 5) ntracks = fTrackRotator->GetRotatedTrackNSize();
+      
+
       for (Int_t itrack=0; itrack<ntracks; ++itrack){
-        AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
+        if (i < 4) {
+          AliDielectronVarManager::Fill(fTracks[i].UncheckedAt(itrack), values);
+        }
+        else if (i == 4){
+          AliKFParticle* part = fTrackRotator->GetRotatedTrackP(itrack);
+          //AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedTrackWeightP(itrack) * GetWeightFromRotation(part) * nPos / ntracks);
+          AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks,  GetWeightFromRotation(part) * nPos / ntracks);
+
+          AliDielectronVarManager::Fill(part, values);
+        }
+        else if (i == 5) {
+          AliKFParticle* part = fTrackRotator->GetRotatedTrackN(itrack);
+          //AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedTrackWeightN(itrack) * GetWeightFromRotation(part) * nNeg / ntracks);
+          AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks,  GetWeightFromRotation(part) * nNeg / ntracks);
+
+          AliDielectronVarManager::Fill(part, values);
+        }
         if(trkClass)
           fHistos->FillClass(className, AliDielectronVarManager::kNMaxValues, values);
         if(mergedtrkClass && i<2)
@@ -806,7 +861,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
 
   //Fill Pair information, separately for all pair candidate arrays and the legs
   TObjArray arrLegs(100);
-  for (Int_t i=0; i<10; ++i){
+  for (Int_t i=0; i<13; ++i){
     className.Form("Pair_%s",fgkPairClassNames[i]);
     className2.Form("Track_Legs_%s",fgkPairClassNames[i]);
     Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
@@ -1513,14 +1568,33 @@ void AliDielectron::FillPairArrayTR()
   // select pairs and fill pair candidate arrays
   //
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
-
   while ( fTrackRotator->NextCombination() ){
     if(fTrackRotator->SameTracks() ) continue;
     AliDielectronPair candidate;
     candidate.SetKFUsage(fUseKF);
-    candidate.SetTracks(&fTrackRotator->GetKFTrackP(), &fTrackRotator->GetKFTrackN(),
-                        fTrackRotator->GetVTrackP(),fTrackRotator->GetVTrackN());
-    candidate.SetType(kEv1PMRot);
+    candidate.SetTracks(&fTrackRotator->GetKFTrack1(), &fTrackRotator->GetKFTrack2(),
+                        fTrackRotator->GetVTrack1(),fTrackRotator->GetVTrack2());
+
+    Int_t label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother);
+    candidate.SetLabel(label);
+    if (label>-1) candidate.SetPdgCode(fPdgMother);
+      else candidate.SetPdgCode(0);
+
+    if ((fTrackRotator->GetChargeTrack1() == +1 && fTrackRotator->GetChargeTrack2() == -1) ||
+        (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == +1)){
+      candidate.SetType(kEv1PMRot);
+      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+    }
+    else if (fTrackRotator->GetChargeTrack1() == +1 && fTrackRotator->GetChargeTrack2() == +1){
+      candidate.SetType(kEv1PPRot);
+      if(fStoreRotatedPairs) PairArray(kEv1PPRot)->Add(new AliDielectronPair(candidate));
+    }
+    else if (fTrackRotator->GetChargeTrack1() == -1 && fTrackRotator->GetChargeTrack2() == -1){
+      candidate.SetType(kEv1MMRot);
+      if(fStoreRotatedPairs) PairArray(kEv1MMRot)->Add(new AliDielectronPair(candidate));
+    }
+    else 
+      continue;
 
     //pair cuts
     UInt_t cutMask=fPairFilter.IsSelected(&candidate);
@@ -1532,10 +1606,10 @@ void AliDielectron::FillPairArrayTR()
     if (cutMask==selectedMask) {
 
       //histogram array for the pair
-      if (fHistoArray) fHistoArray->Fill((Int_t)kEv1PMRot,&candidate);
+      if (fHistoArray) fHistoArray->Fill(candidate.GetType() ,&candidate);
 
-      if(fHistos) FillHistogramsPair(&candidate);
-      if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
+      //if(fHistos) FillHistogramsPair(&candidate);
+      //if(fStoreRotatedPairs) PairArray(kEv1PMRot)->Add(new AliDielectronPair(candidate));
     }
   }
 }
@@ -1647,6 +1721,8 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   //
   if (!fSignalsMC) return;
   TString className,className2,className3;
+  TString className4,className5,className6;
+  TString className4_2,className5_2,className6_2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars);
   // AliDielectronVarManager::Fill(ev, values);
@@ -1659,10 +1735,26 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
     className.Form("Pair_%s",fSignalsMC->At(isig)->GetName());
     className2.Form("Track_Legs_%s",fSignalsMC->At(isig)->GetName());
     className3.Form("Track_%s_%s",fgkPairClassNames[1],fSignalsMC->At(isig)->GetName());  // unlike sign, SE only
+
     Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
     Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
     Bool_t mergedtrkClass=fHistos->GetHistogramList()->FindObject(className3.Data())!=0x0;
     if(!pairClass && !legClass && !mergedtrkClass) continue;
+
+    className4.Form("Pair_%s_ev1+_ev1-_TR",fSignalsMC->At(isig)->GetName());
+    className5.Form("Pair_%s_ev1+_ev1+_TR",fSignalsMC->At(isig)->GetName());
+    className6.Form("Pair_%s_ev1-_ev1-_TR",fSignalsMC->At(isig)->GetName());
+
+    className4_2.Form("Track_Legs_%s_ev1+_ev1-_TR",fSignalsMC->At(isig)->GetName());
+    className5_2.Form("Track_Legs_%s_ev1+_ev1+_TR",fSignalsMC->At(isig)->GetName());
+    className6_2.Form("Track_Legs_%s_ev1-_ev1-_TR",fSignalsMC->At(isig)->GetName());
+
+    Bool_t pairClass_ULS_TR=fHistos->GetHistogramList()->FindObject(className4.Data())!=0x0;
+    Bool_t pairClass_LSpp_TR=fHistos->GetHistogramList()->FindObject(className5.Data())!=0x0;
+    Bool_t pairClass_LSmm_TR=fHistos->GetHistogramList()->FindObject(className6.Data())!=0x0;
+    Bool_t legClass_ULS_TR=fHistos->GetHistogramList()->FindObject(className4_2.Data())!=0x0;
+    Bool_t legClass_LSpp_TR=fHistos->GetHistogramList()->FindObject(className5_2.Data())!=0x0;
+    Bool_t legClass_LSmm_TR=fHistos->GetHistogramList()->FindObject(className6_2.Data())!=0x0;
 
     // fill pair and/or their leg variables
     if(pairClass || legClass) {
@@ -1729,6 +1821,80 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
           } //is signal
         } //loop: pairs
       } // fill -- pairs
+
+
+      if (fTrackRotator) {
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckUnlikeSign()){
+          Int_t npairs=PairArray(AliDielectron::kEv1PMRot)->GetEntriesFast(); // SE +-
+          for (Int_t ipair=0; ipair<npairs; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PMRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairPM(ipair)->rotAng); 
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairPM(ipair)->weight); 
+            if(isMCtruth) {
+              //fill pair information
+              if (pairClass_ULS_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className4, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_ULS_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className4_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className4_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill +- pairs
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignPP()){
+          Int_t npairsLS1=PairArray(AliDielectron::kEv1PPRot)->GetEntriesFast(); // SE ++
+          for (Int_t ipair=0; ipair<npairsLS1; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1PPRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairPP(ipair)->rotAng);
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairPP(ipair)->weight); 
+            if(isMCtruth){
+              //fill pair information
+              if (pairClass_LSpp_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className5, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_LSpp_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className5_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className5_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill ++ pairs
+        if(((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetCheckLikeSignMM()){
+          Int_t npairsLS2=PairArray(AliDielectron::kEv1MMRot)->GetEntriesFast(); // SE --
+          for (Int_t ipair=0; ipair<npairsLS2; ++ipair){
+            AliDielectronPair *pair=static_cast<AliDielectronPair*>(PairArray(AliDielectron::kEv1MMRot)->UncheckedAt(ipair));
+            Bool_t isMCtruth = AliDielectronMC::Instance()->IsMCTruth(pair, (AliDielectronSignalMC*)fSignalsMC->At(isig));
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kRotationAngle, fTrackRotator->GetRotatedPairMM(ipair)->rotAng);
+            AliDielectronVarManager::SetValue(AliDielectronVarManager::kWeightFromRotationSingleTracks, fTrackRotator->GetRotatedPairMM(ipair)->weight); 
+            if(isMCtruth){
+              //fill pair information
+              if (pairClass_LSmm_TR){
+                AliDielectronVarManager::Fill(pair, values);
+                fHistos->FillClass(className6, AliDielectronVarManager::kNMaxValues, values);
+              }
+              //fill leg information, both + and - in the same histo
+              if (legClass_LSmm_TR){
+                AliDielectronVarManager::Fill(&(pair->GetKFFirstDaughter()),values);
+                fHistos->FillClass(className6_2, AliDielectronVarManager::kNMaxValues, values);
+                AliDielectronVarManager::Fill(&(pair->GetKFSecondDaughter()),values);
+                fHistos->FillClass(className6_2, AliDielectronVarManager::kNMaxValues, values);
+              }
+            } //is signal
+          } //loop: pairs
+        } // fill -- pairs
+      }
+
     }
 
     // fill single tracks of signals
@@ -1750,6 +1916,8 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   } //loop: MCsignals
 
 }
+
+
 
 //______________________________________________
 void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary, UInt_t varz)
@@ -2138,6 +2306,8 @@ void AliDielectron::SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, 
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
+
+
 //______________________________________________
 void AliDielectron::SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4)
 {
@@ -2311,3 +2481,128 @@ void AliDielectron::FinishEvtVsTrkHistoClass()
 {
   if(fEvtVsTrkHist) fEvtVsTrkHist->CalculateMatchingEfficiency();
 }
+
+
+void AliDielectron::SetRotatedTrackWeightMap(TString filename, TString histoname){
+  TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated track map from Alien\n");
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
+  }
+  else {
+    printf("Track Correction Map loaded\n");
+  }
+  if (file == nullptr){
+    AliFatal(Form("Rotated-Track-Weighting file %s not found!", filename.Data()));
+  }
+  fRotateTrackCorrectionMap = *(dynamic_cast<TH3F*>(file->Get(histoname.Data())));
+  if (&fRotateTrackCorrectionMap == nullptr){
+    AliFatal(Form("Weighting histogram %s not found!", histoname.Data()));
+  }
+  fRotateTrackCorrectionMap.SetDirectory(0);
+  file->Close();
+}
+
+
+//______________________________________________
+Double_t AliDielectron::GetWeightFromRotation(AliKFParticle* part){
+  if(!fUseAccMap){
+    return 1;
+  }
+  else{
+    int bin_pt  = fRotateTrackCorrectionMap.GetXaxis()->FindBin(part->GetPt() );
+    const int bin_eta = fRotateTrackCorrectionMap.GetYaxis()->FindBin(part->GetEta());
+
+    if(bin_pt < fRotWeight_minPtBin){
+      if(fRotWeight_minPtBin <= 1) bin_pt = 1;
+      else bin_pt = fRotWeight_minPtBin;
+    }
+    if(bin_pt > fRotWeight_maxPtBin){
+      if(fRotWeight_maxPtBin >= fRotateTrackCorrectionMap.GetXaxis()->GetNbins()) bin_pt = fRotateTrackCorrectionMap.GetXaxis()->GetNbins();
+      else bin_pt = fRotWeight_maxPtBin;
+    }
+
+
+    double phi = part->GetPhi();
+    if (phi < 0) phi += TMath::TwoPi();
+    const int bin_phi = fRotateTrackCorrectionMap.GetZaxis()->FindBin(phi);
+
+    Double_t weight = fRotateTrackCorrectionMap.GetBinContent(bin_pt, bin_eta, bin_phi);
+
+    Int_t i = 1;
+    while(weight <= 0){
+      weight = fRotateTrackCorrectionMap.GetBinContent(bin_pt-i, bin_eta, bin_phi);
+      i++;
+      if (bin_pt-i <= 1)
+        break;
+    }
+
+    return weight;  
+
+  }
+}
+
+
+
+void AliDielectron::SetRotatedPairWeightMap(TString filename, TString histoname){
+  
+  TFile* file = TFile::Open(filename.Data(), "READ");
+  printf("%p\n", file);
+  if (file == 0x0){
+    gSystem->Exec(Form("alien_cp alien://%s .",filename.Data()));
+    printf("Copy rotated pair map from Alien\n");
+    TObjArray *arrNames=filename.Tokenize("/");
+    TString name = arrNames->Last()->GetName();
+    file = TFile::Open(Form("%s", name.Data()));
+  }
+  else {
+    printf("Pair Correction Map loaded\n");
+  }
+  if (file == nullptr){
+    AliFatal(Form("Rotated-Pair-Weighting file %s not found!", filename.Data()));
+  }
+  fRotatePairCorrectionMap = *(dynamic_cast<TH2F*>(file->Get(histoname.Data())));
+  if (&fRotatePairCorrectionMap == nullptr){
+    AliFatal(Form("Weighting histogram %s not found!", histoname.Data()));
+  }
+  fRotatePairCorrectionMap.SetDirectory(0);
+  file->Close();
+}
+
+
+Double_t AliDielectron::GetWeightFromOpeningAngle(AliKFParticle* KFpos, AliKFParticle* KFneg){
+  // if(!fUseAccMap){
+  //  return 1;
+  //}
+  //else{
+    static const double electron_mass = AliPID::ParticleMass(AliPID::kElectron);
+    TLorentzVector LvecPos;
+    LvecPos.SetPtEtaPhiM(KFpos->GetPt(), KFpos->GetEta(), KFpos->GetPhi(), electron_mass);
+    TLorentzVector LvecNeg;
+    LvecNeg.SetPtEtaPhiM(KFneg->GetPt(), KFneg->GetEta(), KFneg->GetPhi(), electron_mass);
+    TLorentzVector LvecMother = LvecPos + LvecNeg;
+    Double_t ptee         = LvecMother.Pt();
+    Double_t openingAngle = LvecPos.Angle(LvecNeg.Vect());
+
+    if(openingAngle > 0.5) return 1.;
+
+    int bin_ptee  = fRotatePairCorrectionMap.GetYaxis()->FindBin(ptee);
+    const int bin_opAng = fRotatePairCorrectionMap.GetXaxis()->FindBin(openingAngle);
+
+
+    double weight = fRotatePairCorrectionMap.GetBinContent(bin_opAng, bin_ptee);
+    Int_t i = 1;
+    while(weight <= 0){
+      weight = fRotatePairCorrectionMap.GetBinContent(bin_opAng, bin_ptee-i);
+      i++;
+      if (bin_ptee-i <= 1)
+        return 1.;
+    }
+    return weight;
+  //}
+}
+ 

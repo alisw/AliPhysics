@@ -3,7 +3,7 @@
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Friederike Bock, Daniel Muehlheim
-
+#include <TObjString.h>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVEvent.h"
@@ -34,6 +34,7 @@ class AliAODMCParticle;
 class AliEMCALTriggerPatchInfo;
 class AliCaloTriggerMimicHelper;
 class AliV0ReaderV1;
+class AliAODConversionPhoton;
 
 /**
  * @class AliConvEventCuts
@@ -411,6 +412,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetPHOSTrigger(phosTriggerType t=kPHOSL0)                             { fPHOSTrigger=t                                            ; }
 
       void    SetV0ReaderName (TString name)                                        { fV0ReaderName = name                                      ; }
+      void    SetCaloTriggerHelperName (TString name)                               { CaloTriggerHelperName = name                                      ; }
 
       void    SetAddedSignalPDGCode (Int_t addedSignalPDGcode)                      { fAddedSignalPDGCode = addedSignalPDGcode                  ; }
       void    SetPreSelectionCutFlag (Bool_t preSelFlag)                            { fPreSelCut = preSelFlag                                   ; }
@@ -505,7 +507,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString   GetCutNumber();
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
-      Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
       Bool_t    GetUseSphericityTrue()                                              { return fUseSphericityTrue                                 ; }
@@ -537,12 +538,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetDoEtaShift()                                                     { return fDoEtaShift                                        ; }
       Bool_t    GetUseJetFinderForOutliers()                                        { return fUseJetFinderForOutlier                            ; }
       Bool_t    GetUsePtHardBinFromFile()                                           { return fUseFilePathForPthard                              ; }
-
       TString   GetSpecialTriggerName()                                             { return fSpecialTriggerName                                ; }
       const TString& GetLabelNamePileupCutTPC() const                               { return fLabelNamePileupCutTPC                             ; }
       AliEMCALTriggerPatchInfo   *GetMainTriggerPatch();
       ULong_t   GetTriggerList();
       phosTriggerType GetPHOSTrigger()                                              { return fPHOSTrigger                                       ; }
+      Int_t    GetTriggerMimicking()                                                { return fMimicTrigger                                      ; }
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
@@ -598,6 +599,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                       AliVEvent *event = 0x0,
                                       Int_t debug = 0
                                    );
+      TString   GetParticleHeaderName(  Int_t index,
+                                      AliMCEvent *mcEvent,
+                                      AliVEvent *event = 0x0,
+                                      Int_t debug = 0
+                                   );
+
+      Bool_t PhotonPassesAddedParticlesCriterion(AliMCEvent             *theMCEvent,
+                                                 AliVEvent              *theInputEvent,
+                                                 AliAODConversionPhoton &thePhoton,
+                                                 Bool_t                 &theIsFromSelectedHeader); // future todo: make this const
 
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
@@ -755,6 +766,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hTPCSDDSSDClusters;                     ///< x: TPC clusters, y: SDD+SSD clusters
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
+      TString                     CaloTriggerHelperName;                  ///< Name of CaloTriggerHelper 
       TString                     fCorrTaskSetting;                       ///< Name of Corr Task Setting
       AliVCaloTrigger*            fCaloTriggers;                          //!<! calo triggers
       TClonesArray*               fTriggerPatchInfo;                      //!<! trigger patch info array
@@ -787,7 +799,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,81)
+      ClassDef(AliConvEventCuts,84)
       /// \endcond
 };
 

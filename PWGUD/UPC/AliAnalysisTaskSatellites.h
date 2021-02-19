@@ -1,9 +1,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
+
 #ifndef ALIANALYSISTASKSATELLITES_H
 #define ALIANALYSISTASKSATELLITES_H
-
 
 class TH1D;
 class TH1I;
@@ -36,8 +36,9 @@ class AliAnalysisTaskSatellites : public AliAnalysisTaskSE {
   TH1I *hTriggerInputsCounter;
   TH1I *hSatellitesCounter;
   Bool_t fTrgClassCINTZAC, fTrgInputV0M, fIsSatellite;
+  Bool_t fTrgClassC0V0M, fTrgInputVBA, fTrgInputVBC, fTrgInputZAC;
   Int_t fRunNumber;
-  UInt_t fL0inputs;
+  UInt_t fL0inputs, fL1inputs, fTimeStamp;
   Float_t fZNATDCm[4], fZNCTDCm[4];
   
   AliAnalysisTaskSatellites(const AliAnalysisTaskSatellites&); //not implemented

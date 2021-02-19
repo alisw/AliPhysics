@@ -23,11 +23,9 @@
 
 #include "AliEMCalTriggerExtraCuts.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Constructor
@@ -94,7 +92,6 @@ Float_t AliEMCalTriggerExtraCuts::GetTPCCrossedRows(const AliVTrack *const trk) 
  */
 Double_t AliEMCalTriggerExtraCuts::CalculateTPCTrackLength(AliVTrack *trk) const{
   Double_t result = 0;
-  AliAODTrack *tr;
   Short_t sign = trk->Charge();
   Double_t xyz[50];
   Double_t pxpypz[50];
@@ -114,5 +111,3 @@ Double_t AliEMCalTriggerExtraCuts::CalculateTPCTrackLength(AliVTrack *trk) const
   result = AliESDtrack::GetLengthInActiveZone(&par,3,236, bMagZ ,0,0);
   return result;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

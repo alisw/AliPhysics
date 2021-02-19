@@ -45,11 +45,9 @@
 #include "AliOADBContainer.h"
 #include "AliVVertex.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerBase)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBase)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
@@ -262,7 +260,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
   if(fEnableNoINTTriggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcNoIntTriggers[itrg] = true;
   const std::array<std::string, AliEmcalTriggerOfflineSelection::kTrgn> kEmcalSelectTriggerStrings = {
-    		"=CEMC7|CEMC8|C0EMC", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "=CDMC7|CDMC8|C0DMC", "DG1", "DG2", "DJ1", "DJ2"
+    		"=CEMC7|CEMC8|C0EMC|EMCL0", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "=CDMC7|CDMC8|C0DMC|DMCL0", "DG1", "DG2", "DJ1", "DJ2"
   };
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
@@ -348,15 +346,16 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     if(fUseTriggerSelectionContainer){
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
         auto emcalSelectionStatus = MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
-        if(isT0trigger) {
-          emc8Triggers[iclass] &= emcalSelectionStatus;
-        } 
-        if(isVZEROtrigger){
-          emcalTriggers[iclass] &= emcalSelectionStatus;
-        } 
-        if(!(isT0trigger || isVZEROtrigger)){
-          // No coincidence with interaction trigger
-          emcNoIntTriggers[iclass] &= emcalSelectionStatus; 
+        if(emcalSelectionStatus) {
+          // trigger selected - correlate with interaction trigger status
+          emcalTriggers[iclass] &= isVZEROtrigger;
+          emc8Triggers[iclass] &= isT0trigger;
+          emcNoIntTriggers[iclass] &= !(isT0trigger || isVZEROtrigger);
+        } else {
+          // trigger not selected, set trigger bit to false
+          emcalTriggers[iclass] = false;
+          emc8Triggers[iclass] = false;
+          emcNoIntTriggers[iclass] = false;
         }
         if(emcalTriggers[iclass])
           AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
@@ -827,5 +826,3 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
     }
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

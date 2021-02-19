@@ -19,12 +19,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   evtCuts->SetSphericityCuts(0.7, 1);
 
   // Proton cuts
-  const float ProtonPtlow = 0.45;
-  const float ProtonPtup = 0.55;
-  const float ProtonEtaLow = 0.78;
-  const float ProtonEtaUp = 0.82;
-  const float ProtonNsigmaLow = 2.7;
-  const float ProtonNsigmaUp = 3.3;
+  const float ProtonPtlow = 0.425;
+  const float ProtonPtup = 0.575;
+  const float ProtonEtaLow = 0.75;
+  const float ProtonEtaUp = 0.85;
+  const float ProtonNsigmaLow = 2.5;
+  const float ProtonNsigmaUp = 3.5;
   const float ProtonNClsLow = 70;
   const float ProtonNClsUp = 90;
 
@@ -41,17 +41,21 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     AntiTrackCuts->SetMinimalBooking(true);
   }
 
+
+
+
+
   // Kaon cuts
-  const float KaonPtlow = 0.1;
-  const float KaonPtup = 0.2;
-  const float KaonEtaLow = 0.78;
-  const float KaonEtaUp = 0.82;
-  const float KaonNsigmaLow = 4.5;
-  const float KaonNsigmaUp = 5.5;
+  const float KaonPtlow = 0.075;
+  const float KaonPtup = 0.225;
+  const float KaonEtaLow = 0.75;
+  const float KaonEtaUp = 0.85;
+  const float KaonNsigmaLow = 4.25;
+  const float KaonNsigmaUp = 5.75;
   const float KaonNClsLow = 70;
   const float KaonNClsUp = 90;
-  const float SpheriLow = 0.68;
-  const float SpheriUp = 0.72;
+  const float SpheriLow = 0.665;
+  const float SpheriUp = 0.735;
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
@@ -73,6 +77,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
     TrackNegKaonCuts->SetMinimalBooking(true);
   }
 
+
+
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
   TrackCutsPhi->SetAxisInvMassPlots(400, 0.95, 2);
@@ -86,87 +92,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
+
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-  //    if (suffix != "0") {
-  //      TrackCutsPhi->SetMinimalBooking(true);
-  //    }
+  if (suffix != "0") {
+    TrackCutsPhi->SetMinimalBooking(true);
+  }
 
-  if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(0.987, 1.011);
-  }
-  if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(1.027, 1.062);
-  }
-  if (suffix == "3") {
-     TrackCutsPhi->SetCutWindow(1.062, 1.1);
-  }
-  if (suffix == "4") {
-    TrackCutsPhi->SetCutWindow(1.1, 1.15);
-  }
-  if (suffix == "5") {
-    TrackCutsPhi->SetCutWindow(1.15, 1.2);
-  }
-  if (suffix == "6") {
-    TrackCutsPhi->SetCutWindow(1.2, 1.25);
-  }
-  if (suffix == "7") {
-    TrackCutsPhi->SetCutWindow(1.25, 1.3);
-  }
-  if (suffix == "8") {
-    TrackCutsPhi->SetCutWindow(1.3, 1.35);
-  }
-  if (suffix == "9") {
-    TrackCutsPhi->SetCutWindow(1.35, 1.4);
-  }
-  if (suffix == "10") {
-    TrackCutsPhi->SetCutWindow(1.4, 1.45);
-  }
-  if (suffix == "11") {
-    TrackCutsPhi->SetCutWindow(1.45, 1.5);
-  }
-  if (suffix == "12") {
-    TrackCutsPhi->SetCutWindow(1.5, 1.55);
-  }
-  if (suffix == "13") {
-    TrackCutsPhi->SetCutWindow(1.55, 1.6);
-  }
-  if (suffix == "14") {
-    TrackCutsPhi->SetCutWindow(1.6, 1.7);
-  }
-  if (suffix == "15") {
-    TrackCutsPhi->SetCutWindow(1.7, 1.8);
-  }
-  if (suffix == "16") {
-    TrackCutsPhi->SetCutWindow(1.8, 1.9);
-  }
-  if (suffix == "17") {
-    TrackCutsPhi->SetCutWindow(1.9, 2.0);
-  }
-  if (suffix == "18") {
-    TrackCutsPhi->SetCutWindow(2.2, 2.3);
-  }
-  if (suffix == "19") {
-    TrackCutsPhi->SetCutWindow(2.4, 2.5);
-  }
-  if (suffix == "20") {
-    TrackCutsPhi->SetCutWindow(2.6, 2.7);
-  }
-  if (suffix == "21") {
-    TrackCutsPhi->SetCutWindow(2.8, 2.9);
-  }
-  if (suffix == "22") {
-    TrackCutsPhi->SetCutWindow(3.0, 3.1);
-  }
-  if (suffix == "23") {
-    TrackCutsPhi->SetCutWindow(3.3, 3.4);
-  }
-  if (suffix == "24") {
-    TrackCutsPhi->SetCutWindow(3.7, 3.8);
-  }
-  if (suffix == "25") {
-    TrackCutsPhi->SetCutWindow(4.0, 4.1);
-  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -174,18 +106,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   // First we need to tell him about the particles we mix, from the
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);  // 0 protons
-  PDGParticles.push_back(2212);  // 1 antiprot
-  PDGParticles.push_back(333);   // 2 v0 particle
-  PDGParticles.push_back(2212);  // 3 proton truth
-  PDGParticles.push_back(2212);  // 4 antiprot truth
-  PDGParticles.push_back(333);   // 5 phi truth
-  //  PDGParticles.push_back(333);   // 6 phiall
-  //  PDGParticles.push_back(2212);  // 7 proton common
-  //  PDGParticles.push_back(2212);  // 8 aproton common
-  //  PDGParticles.push_back(333);   // 9 phi common
-  //  PDGParticles.push_back(2212);  // 10 proton no prim
-  //  PDGParticles.push_back(2212);  // 11 antiprot no prim
+  PDGParticles.push_back(2212);  // 0 protons REC MC
+  PDGParticles.push_back(2212);  // 1 antiprot REC MC
+  PDGParticles.push_back(333);   // 2 v0 particle REC MC
+  PDGParticles.push_back(2212);  // 3 proton truth MC TRUTH
+  PDGParticles.push_back(2212);  // 4 antiprot truth MC TRUTH
+  PDGParticles.push_back(333);   // 5 True Phi inv mass MC TRUTH
+  PDGParticles.push_back(333);   // 6 Fake Phi inv mass (combi. BG) MC TRUTHn
+  PDGParticles.push_back(321);   // 7 Kaon
+  PDGParticles.push_back(321);   // 8 AntiKaon
+  PDGParticles.push_back(321);   // 9 Kaon inv mass phi
+  PDGParticles.push_back(321);   // 10 AngiKaon inv mass phi
+
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -223,6 +155,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
 
   // Number of bins
   std::vector<int> NBins;
@@ -257,35 +194,51 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  pairQA.push_back(12); //apphi
   //  pairQA.push_back(22); //phiphi
 
-
-  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6); i++) {
+  for (int i = 0; i < (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 11); i++) {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 10;   // pp
-  pairQA[1] = 10;   // pap
-  pairQA[2] = 10;   // pphi
-  pairQA[6] = 10;   // apap
-  pairQA[7] = 10;   // apphi
-  pairQA[11] = 10;  // phiphi
+  pairQA[0] = 11;   // pp
+  pairQA[1] = 11;   // pap
+  pairQA[2] = 12;   // pphi
+  pairQA[3] = 0;
+  pairQA[4] = 0;
+  pairQA[5] = 0;
+  pairQA[6] = 0;
+  pairQA[7] = 11;   // KK
+  pairQA[8] = 11;   // KaK
+  pairQA[9] = 11;
+  pairQA[10] = 11;
+
+
+  pairQA[11] = 11;   // apap
+  pairQA[12] = 12;   // apphi
+  pairQA[13] = 0;
+  pairQA[14] = 0;
+  pairQA[15] = 0;
+  pairQA[16] = 0;
+  pairQA[17] = 11;   // KK
+  pairQA[18] = 11;   // KaK
+  pairQA[19] = 11;
+  pairQA[20] = 11;
+
+  pairQA[21] = 0;  // phiphi
 
   if (isMC) {
-    pairQA[15] = 10;  // TRUE
-    pairQA[16] = 10;
-    pairQA[17] = 10;
-    pairQA[18] = 10;
-    pairQA[19] = 10;
-    pairQA[20] = 10;
-
+   for (int i=22;i<66;i++)  {
+       pairQA[i] = 0;
+      }
   }
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
-  config->SetPtQA(true);
-  config->SetMassQA(true);
+//  config->SetPtQA(true);
+//  config->SetMassQA(true);
+//  config->SetmTBinning(true);
+//  config->SetdPhidEtaPlots(true);
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
@@ -295,7 +248,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(30);
+//  config->SetPhiEtaBinnign(true);
+  //config->SetMomentumResolution(true);
+
+//  if (suffix == "0") {
+//      config->SetMassQA(true);
+//  }
+//  if (suffix == "1") {
+//      config->SetMassQA(true);
+//  }
+//  if (suffix == "2") {
+//      config->SetMassQA(true);
+//  }
 
 
   //-------MIXED EVENTS---------------------------
@@ -308,9 +273,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   //  config->SetControlMethod(AliFemtoDreamCollConfig::kPhiSpin);
   //  config->SetSpinningDepth(1);
 
+  //-------COMMON ANCESTORS-------------------------
+
+//  if (isMC) {
+//    config->SetAncestors(true);
+//    config->GetDoAncestorsPlots();
+//  }
+
   if (isMC) {
-    config->SetAncestors(true);
-    config->GetDoAncestorsPlots();
+    config->SetMomentumResolution(true);
+  } else {
+    std::cout << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
 
   /*
@@ -383,29 +356,46 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
   task->SetPhiCuts(TrackCutsPhi);
-  task->SetUseDumpster(false);
   task->SetOEventMixing(false);
   task->SetMCTruth(false);
 
+//  task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+//  task->SetmixREC(true);
+//  task->SetMCTruth(true);
+//  task->SetmixTRUTHREAL(true);
+//  task->SetmixTRUTFAKE(true);
+//  task->SetpTprotonMCTRUTH(0.5);
+//  task->SetetaprotonMCTRUTH(0.8);
+//  task->SetpTkaonMCTRUTH(0.15);
+//  task->SetetakaonMCTRUTH(0.8);
 
-//  if (suffix == "6") {
-//    task->SetOEventMixing(true);
+
+//  if (suffix == "0") {
+//      task->SetCutWindowMCTRUTH(Phimass - 0.008, Phimass + 0.008);
+//      config->SetPtQA(true);
+//      config->SetMassQA(true);
+//      config->SetmTBinning(true);
+//      config->SetdPhidEtaPlots(true);
+//      config->SetExtendedQAPairs(pairQA);
+//      task->SetmixREC(true);
+//      task->SetmixTRUTHREAL(true);
+//      task->SetmixTRUTFAKE(true);
 //  }
-//  if (suffix == "7") {
-//    task->SetOEventMixing(true);
-//  }
-//  if (suffix == "8") {
-//    task->SetOEventMixing(true);
-//  }
-//  if (suffix == "9") {
-//    task->SetOEventMixing(true);
-//  }
-//  if (suffix == "10") {
-//    task->SetOEventMixing(true);
-//  }
-//  if (suffix == "11") {
-//    task->SetOEventMixing(true);
-//  }
+//    if (suffix == "1") {
+//        task->SetCutWindowMCTRUTH(0.995, 1.011);
+//        TrackCutsPhi->SetMinimalBooking(true);
+//        task->SetmixREC(true);
+//        task->SetmixTRUTHREAL(true);
+//        task->SetmixTRUTFAKE(true);
+//    }
+//    if (suffix == "2") {
+//        task->SetCutWindowMCTRUTH(1.028, 1.044);
+//        TrackCutsPhi->SetMinimalBooking(true);
+//        task->SetmixREC(true);
+//        task->SetmixTRUTHREAL(true);
+//        task->SetmixTRUTFAKE(true);
+//    }
+
 
 
   mgr->AddTask(task);
@@ -428,13 +418,6 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
                                    AliAnalysisManager::kOutputContainer,
                                    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
-
-  AliAnalysisDataContainer *coutputDumpsterQA;
-  TString DumpsterName = Form("%sDumpster%s", addon.Data(), suffix.Data());
-  coutputDumpsterQA = mgr->CreateContainer(
-      DumpsterName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), DumpsterName.Data()));
-  mgr->ConnectOutput(task, 2, coutputDumpsterQA);
 
   return task;
 }

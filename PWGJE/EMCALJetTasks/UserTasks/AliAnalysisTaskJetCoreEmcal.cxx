@@ -559,6 +559,10 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),25000,-50,200);  
 	fhDphiPtRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
+  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",200,0,2*TMath::Pi(),250,-50,200,300,0.,3.);
+	fhDphiPtShiftRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
+	fhDphiPtShiftRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
+	fhDphiPtShiftRefPi->GetZaxis()->SetTitle("#rho shift (GeV)"); 
 
 	fhDphiPtSig = new TH2F("hDphiPtS","recoil #Delta #phi vs jet pT signal",100,-2,5,250,-50,200);  
 	fhDphiPtSig->GetXaxis()->SetTitle("#Delta #phi"); 
@@ -572,6 +576,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fhDphiPtSig);  
 	fOutput->Add(fhDphiPtRefPi);  
 	fOutput->Add(fhDphiPtSigPi);  
+	fOutput->Add(fhDphiPtShiftRefPi);  
 
 
 	fhPtHybrDet= new TH2F("hPtHybrDet","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
@@ -939,6 +944,11 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			else         {
         fhDphiPtRefPi->Fill(dPhiShiftPi,ptcorr);
         fhDphiPtRef->Fill(dPhiShift,ptcorr);
+        for(Int_t i=0;i<300;i++) {
+          Double_t rhoshift = Double_t(i)*0.01;
+          Double_t ptcorrshift=ptbig-(rho+rhoshift)*areabig;
+          fhDphiPtShiftRefPi->Fill(dPhiShiftPi,ptcorrshift,rhoshift);
+        }
       }
 
 			// selection on relative phi

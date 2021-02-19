@@ -75,7 +75,7 @@ class AliIsolationCut : public TObject {
                               TObjArray * bgTrk, TObjArray * bgCls,
                               Int_t calorimeter, AliCaloPID * pid,
                               Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated, 
-                              Double_t histoWeight = 1, Float_t centrality = -1) ;
+                              Double_t histoWeight = 1, Float_t centrality = -1, Int_t cenBin = 1 ) ;
 
   void       Print(const Option_t * opt) const ;
 
@@ -90,7 +90,8 @@ class AliIsolationCut : public TObject {
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,
                                         Float_t & etaBandPtSum, Float_t & phiBandPtSum,  
-                                        Double_t histoWeight=1, Float_t centrality = -1) ;
+                                        Double_t histoWeight=1, 
+                                        Float_t centrality = -1, Int_t cenBin = -1) ;
   
   void       CalculateTrackSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, AliCaloTrackReader * reader,
                                         Bool_t    bFillAOD    , Bool_t    useRefs, 
@@ -99,13 +100,14 @@ class AliIsolationCut : public TObject {
                                         Float_t & coneptsum   , Float_t & coneptLead,  
                                         Float_t & etaBandPtSum, Float_t & phiBandPtSum, 
                                         Float_t & perpBandPtSum,
-                                        Double_t  histoWeight=1,Float_t centrality = -1) ;
+                                        Double_t  histoWeight=1,
+                                        Float_t centrality = -1, Int_t cenBin = -1) ;
   
   // Cone background studies medthods
 
   void       GetDetectorAngleLimits( AliCaloTrackReader * reader, Int_t calorimeter );
 
-  Float_t    CalculateExcessAreaFraction(Float_t excess) const ;
+  Float_t    CalculateExcessAreaFraction(Float_t excess, Float_t gap = 0) const ;
 
   void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC,
                                                               Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
@@ -132,7 +134,7 @@ class AliIsolationCut : public TObject {
 
   // Parameter setters and getters
 
-  Bool_t     IsBandExclusionRectangular() const { return fUEBandRectangularExclusion ; }
+  Bool_t     IsConeExcessCorrected()  const { return fMakeConeExcessCorr ; }
   Float_t    GetConeSize()            const { return fConeSize       ; }
   Float_t    GetConeSizeBandGap()     const { return fConeSizeBandGap; }
   Float_t    GetPtThreshold()         const { return fPtThreshold    ; }
@@ -162,8 +164,9 @@ class AliIsolationCut : public TObject {
   Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
   Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
   Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
+  Float_t    GetEMCPhiMin ()          const { return fEMCPhiMin ; }
+  Float_t    GetEMCPhiMax ()          const { return fEMCPhiMax ; }
   
-  void       SetBandExclusionRectangular( Bool_t ex)           { fUEBandRectangularExclusion = ex ; }
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
@@ -187,27 +190,39 @@ class AliIsolationCut : public TObject {
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
   void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ; }
  
+  void       SetEtaPhiMinPt(Float_t minpt)                     { fEtaPhiHistogramsMinPt = minpt ; }
+
+  void       SwitchOnFillLeadingParticleHistograms ()          { fFillLeadingHistograms = kTRUE  ; }
+  void       SwitchOffFillLeadingParticleHistograms()          { fFillLeadingHistograms = kFALSE ; }
+  
   void       SwitchOnFillHighMultHistograms ()                 { fFillHighMultHistograms = kTRUE  ; }
   void       SwitchOffFillHighMultHistograms()                 { fFillHighMultHistograms = kFALSE ; }
   
   void       SwitchOnConeExcessCorrection ()                   { fMakeConeExcessCorr = kTRUE  ; }
   void       SwitchOffConeExcessCorrection()                   { fMakeConeExcessCorr = kFALSE ; }
   
+  void       SwitchOnConeFillExcessCorrHisto ()                { fFillFractionExcessHistograms = kTRUE  ; }
+  void       SwitchOffConeFillExcessCorrHisto()                { fFillFractionExcessHistograms = kFALSE ; }
+
  private:
 
   Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
   
   Bool_t     fFillEtaPhiHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with eta/phi or band related histograms 
+
+  Float_t    fEtaPhiHistogramsMinPt;                   ///< Fill eta vs phi histograms above a certain pT
+  
+  Bool_t     fFillLeadingHistograms;                    ///< Fill histograms if GetCreateOuputObjects() was called with leadiing particle related histograms 
   
   Bool_t     fFillHighMultHistograms;                  ///< Fill histograms if GetCreateOuputObjects() was called with centrality dependent histograms 
   
   Bool_t     fMakeConeExcessCorr;                      ///< Make cone excess from detector correction. 
   
+  Bool_t     fFillFractionExcessHistograms;            ///< Fill histograms checking the correction excess
+
   Float_t    fConeSize ;                               ///< Size of the isolation cone
  
   Float_t    fConeSizeBandGap ;                        ///< Gap to add to size of the isolation cone when filling eta/phi bands for UE estimation
-
-  Bool_t     fUEBandRectangularExclusion ;             ///< UE band signal exclusion region is rectangular, not just the isolation cone zone
   
   Float_t    fPtThreshold ;                            ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
 
@@ -254,19 +269,27 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
   
+  TH3F *   fhPtInConeCent ;                            //!<! Cluster/track Pt in the cone vs centrality.
+  TH3F *   fhPtClusterInConeCent ;                     //!<! Cluster Pt in the cone vs centrality.
+  TH3F *   fhPtTrackInConeCent ;                       //!<! Track Pt in the cone vs centrality.
+
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt in the cone.
-  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger.
+  TH3F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger.
+  TH3F *   fhConeSumPtTrackTrigEtaPhi ;                //!<! Tracks Sum Pt in the cone, per eta-phi bin of trigger.
+  TH3F *   fhConeSumPtClusterTrigEtaPhi ;              //!<! Cluster Sum Pt in the cone, per eta-phi bin of trigger.
 
   TH2F *   fhConeSumPtUESub ;                          //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubCluster ;                   //!<! Clusters Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubTrack ;                     //!<! Tracks Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt in the cone  minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt in the cone  minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
+  TH3F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
+  TH3F *   fhConeSumPtUESubTrackTrigEtaPhi ;           //!<! Tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
+  TH3F *   fhConeSumPtUESubClusterTrigEtaPhi ;         //!<! Cluster  Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
 
   TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
   TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
@@ -285,7 +308,7 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPerpConeSumPt ;                           //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90).
   TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
   TH2F *   fhConeSumPtVSPerpCone;                      //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.=
-  TH2F *   fhPerpConeSumPtTrigEtaPhi;                  //!<! Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger.
+  TH3F *   fhPerpConeSumPtTrigEtaPhi;                  //!<! Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger.
   
   // UE bands
   
@@ -304,10 +327,22 @@ class AliIsolationCut : public TObject {
   TH2F *   fhEtaBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Eta band to estimate UE in cone, only tracks.
   TH2F *   fhPhiBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Phi band to estimate UE in cone, only tracks. 
   
-  TH2F *   fhConeSumPtEtaBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
-  TH2F *   fhConeSumPtPhiBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
-  TH2F *   fhConeSumPtEtaBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the eta band for tracks, per eta-phi bin of trigger, before normalization.
-  TH2F *   fhConeSumPtPhiBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the phi band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F *   fhConeSumPtEtaBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
+  TH3F *   fhConeSumPtPhiBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
+  TH3F *   fhConeSumPtEtaBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the eta band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F *   fhConeSumPtPhiBandUETrackTrigEtaPhi;        //!<! Track Sum Pt in the phi band for tracks, per eta-phi bin of trigger, before normalization.
+
+  /// Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
+  TH3F **  fhConeSumPtEtaBandUEClusterTrigEtaPhiCent;  //!<!  [fNCentBins]
+
+  /// Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtPhiBandUEClusterTrigEtaPhiCent;  //!<! [fNCentBins]
+
+  /// Track Sum Pt in the eta band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtEtaBandUETrackTrigEtaPhiCent;    //!<! [fNCentBins]
+
+  /// Track Sum Pt in the phi band for tracks, per eta-phi bin of trigger, before normalization.
+  TH3F **  fhConeSumPtPhiBandUETrackTrigEtaPhiCent;    //!<! [fNCentBins]
 
   TH2F *   fhConeSumPtVSUETracksEtaBand;               //!<! Tracks, eta band: sum pT in cone vs bkg to subtract.
   TH2F *   fhConeSumPtVSUETracksPhiBand;               //!<! Tracks, phi band:  sum pT in cone vs bkg to subtract.
@@ -318,13 +353,13 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPtUEBandNormTrack;                 //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger.
   
   TH2F *   fhFractionTrackOutConeEta;                  //!<! Fraction of cone out of tracks acceptance in eta.
-  TH2F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEta;                //!<! Fraction of cone out of clusters acceptance in eta.
-  TH2F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConePhi;                //!<! Fraction of cone out of clusters acceptance in phi.
-  TH2F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
-  TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
+  TH3F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
   TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt in the cone, after subtraction in eta or phi band.
   
@@ -341,16 +376,31 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtTrackCent ;                      //!<! Tracks Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtClustervsTrackCent ;             //!<! Cluster vs tracks Sum Pt in the cone vs centrality.
   TH3F *   fhConeSumPtClusterTrackFracCent ;           //!<! Cluster / tracks Sum Pt in the cone vs centrality.
-
+  /// Tracks and clusters Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtTrigEtaPhiCent ;                 //![fNCentBins]
+  /// Tracks Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtTrackTrigEtaPhiCent ;            //![fNCentBins]
+  /// Clusters Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtClusterTrigEtaPhiCent ;          //![fNCentBins]
+  
   TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE  vs centrality.
   TH3F *   fhConeSumPtUESubClustervsTrackCent ;        //!<! Cluster vs tracks Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubClusterTrackFracCent;       //!<! Cluster / tracks Sum Pt in the cone  minus UE vs centrality.
+  /// Tracks  and clusters Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtUESubTrigEtaPhiCent ;            //![fNCentBins]
+  /// Tracks Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtUESubTrackTrigEtaPhiCent ;       //![fNCentBins]
+  /// Clusters Sum Pt in the cone vs centrality, vs trigger Eta-phi
+  TH3F **  fhConeSumPtUESubClusterTrigEtaPhiCent ;     //![fNCentBins]
 
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
-  
+  TH3F *   fhPtInPerpConeCent ;                        //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
+  /// Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger vs centrality.
+  TH3F **  fhPerpConeSumPtTrigEtaPhiCent;              //![fNCentBins]
+
   // UE bands
   TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
   TH3F *   fhConeSumPtUEBandNormTrackCent;             //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
@@ -365,6 +415,11 @@ class AliIsolationCut : public TObject {
   TH3F *   fhEtaBandTrackPtCent   ;                    //!<! pT in Eta band to estimate UE in cone vs centrality, only tracks.
   TH3F *   fhPhiBandTrackPtCent   ;                    //!<! pT in Phi band to estimate UE in cone vs centrality, only tracks.
   
+  TH3F *   fhConeSumPtUEBandSubClustervsTrackCent ;    //!<! Cluster vs tracks Sum Pt in the cone vs centrality, after subtraction in eta or phi band.
+
+  TH3F *   fhBandClustervsTrackCent ;                  //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, clusters vs tracks.
+  TH3F *   fhBandNormClustervsTrackCent ;              //!<! Accumulated pT in eta or phi band to estimate UE in cone vs centrality, normalized to cone size, clusters vs tracks.
+
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
 
@@ -372,7 +427,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,15) ;
+  ClassDef(AliIsolationCut,20) ;
   /// \endcond
 
 } ;

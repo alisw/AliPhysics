@@ -16,11 +16,9 @@
 #include "AliEmcalContainer.h"
 #include "AliEmcalTriggerEmulation.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerEmulation)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEmcalTriggerEmulation)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliEmcalTriggerEmulation::AliEmcalTriggerEmulation():
      TObject(),
@@ -68,6 +66,3 @@ bool AliEmcalTriggerEmulation::SelectEvent(const AliEmcalContainer * const cont)
   }
   return true;
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

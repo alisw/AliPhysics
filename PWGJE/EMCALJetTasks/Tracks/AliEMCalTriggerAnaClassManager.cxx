@@ -18,11 +18,9 @@
 #include "AliEMCalTriggerAnaTriggerClass.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaClassManager)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor
@@ -159,5 +157,3 @@ TObjArray * AliEMCalTriggerAnaClassManager::GetAllTriggerClasses() const {
   if(!fTriggerClasses->GetEntries()) throw TriggerManagerEmptyException();
   return fTriggerClasses;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

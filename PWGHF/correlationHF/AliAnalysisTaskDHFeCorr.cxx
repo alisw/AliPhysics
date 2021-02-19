@@ -1,6 +1,7 @@
 #include "AliAnalysisTaskDHFeCorr.h"
 
 //ROOT Includes
+#include <TObjString.h>
 #include "TChain.h"
 #include "TH1F.h"
 #include "TH2F.h"

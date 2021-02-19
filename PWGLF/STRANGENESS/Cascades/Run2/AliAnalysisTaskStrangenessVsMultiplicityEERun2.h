@@ -12,16 +12,13 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
+ *                                                                        *
+ *                                                                        *
+ * Modified version of AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx   *
+ *                                                                        *
+ * --- Francesca Ercolessi: francesca.ercolessi@cern.ch                   *
+ *                                                                        *
  **************************************************************************/
-
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
-// Modified version of AliAnalysisTaskCheckCascade.h
-// Used bits of code from AliAnalysisTaskCheckPerformanceStrange
-//
-// --- David Dobrigkeit Chinellato
-//
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #ifndef AliAnalysisTaskStrangenessVsMultiplicityEERun2_H
 #define AliAnalysisTaskStrangenessVsMultiplicityEERun2_H
@@ -75,6 +72,9 @@ public:
     }
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
+    }
+    void SetApplySPDClsVsTrackletsCut(Bool_t lSPDClsVsTrk = kTRUE) {
+        fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
     }
     void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
         //Highly experimental, use with care!
@@ -274,6 +274,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 

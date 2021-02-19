@@ -683,10 +683,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  // e) Dump the results:
  //TDirectoryFile *df = new TDirectoryFile("outputMPFanalysis","");
  //df->Add(fHistList);
- TFile *f = new TFile("AnalysisResults.root","RECREATE");
- fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
-
- delete f;
 
 } // end of void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
 

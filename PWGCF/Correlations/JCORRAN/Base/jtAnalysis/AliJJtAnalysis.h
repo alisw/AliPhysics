@@ -4,8 +4,8 @@
 #ifndef ALIJJTANALYSIS_H
 #define ALIJJTANALYSIS_H
 
-#include "../AliJDataManager.h"
-#include "../AliJConst.h"
+#include <AliJDataManager.h>
+#include <AliJConst.h>
 #include <TH1D.h>
 #include <TRandom3.h>
 

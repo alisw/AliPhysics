@@ -139,6 +139,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
  binPt = AxisVar("Pt",verptbin);
+ binPtGen = AxisFix("Pt",200,0.0,20.0);
 
  binType = AxisStr("Type",{"PN","PP","NN"});
 
@@ -196,11 +197,11 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
         {binCentForMC,binTrig},"s");
 
  CreateTHnSparse("hRhoGenParticle","hRhoGenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
  CreateTHnSparse("hF0GenParticle","hF0GenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
-        {binZ,binCentForMC,binPt,binMass},"s");
+        {binZ,binCentForMC,binPtGen,binMass},"s");
 
  CreateTHnSparse("VtxSelection","VtxSelection",2,
 	{binCentForMC,binSwitch},"s");
@@ -639,12 +640,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( IsMC ) IsSelectedFromAliMultSelection = kTRUE;
  if( IsMC && fabs(genzvtx)<15 ) IsSelectedFromAliMultSelectionForSysZ = kTRUE;
  if( fOption.Contains("kMB") ) IsSelectedFromAliMultSelection = kTRUE;
+ if( fOption.Contains("INEL")) IsSelectedFromAliMultSelection = kTRUE;
 //***************************************************
 
 
 //IsMultiplicityInsideBin Flag Configuration********
  centbin = binCent.FindBin(fCent) -1;
- if( centbin >= 0 ) IsMultiplicityInsideBin = kTRUE; 
+ if( centbin >= 0 || fOption.Contains("INEL")) IsMultiplicityInsideBin = kTRUE; 
 //************************************
 
 
@@ -669,14 +671,16 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  }
 
  if( fOption.Contains("QAMode") && IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
-	if( this -> GoodTracksSelection(0x20, 5, 3, 2) ) FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+	if( this -> GoodTracksSelection(0x20, 5, 3, 2,0.01) ) FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
  }
 
  if( !fOption.Contains("EvtSelStudy") ){
 	if( !fOption.Contains("Sys") ){
 		if( ( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin && !fOption.Contains("2018") ) ||
 			( IsEventSelectedPbPb && fOption.Contains("2018") ) ){
-			if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
+			if( fOption.Contains("MismatchCheck") ){
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 100)) this -> FillTracks();
+			} else{ if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); }
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 		}
@@ -685,7 +689,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 		if( !fOption.Contains("SysTrk") ){
 			if( IsTriggered && IsNotPileup && IsValidVtx && ( fabs(fZ) < 15 ) &&
 			IsSelectedFromAliMultSelectionForSysZ && IsMultiplicityInsideBin ){
-				if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2,0.01)) this -> FillTracks();
 				fHistos->FillTH1("hEvtNumberUsed",1,1);
 				FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 			}
@@ -694,9 +698,9 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			if( !fOption.Contains("SysPID") ){
 				if( IsTriggered && IsNotPileup && IsValidVtx && ( fabs(fZ) < 15 ) &&
 				IsSelectedFromAliMultSelectionForSysZ && IsMultiplicityInsideBin ){
-					if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x60, 5, 3, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x300, 5, 3, 2)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 3, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x60, 5, 3, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x300, 5, 3, 2,0.01)) this -> FillTracks();
 					fHistos->FillTH1("hEvtNumberUsed",1,1);
 					FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 				}
@@ -704,13 +708,13 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			else if( fOption.Contains("SysPID") ){
 				if( IsTriggered && IsNotPileup && IsValidVtx && ( fabs(fZ) < 15 ) &&
 				IsSelectedFromAliMultSelectionForSysZ && IsMultiplicityInsideBin ){
-					if(this -> GoodTracksSelection(0x20, 5, 3, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x60, 5, 3, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x300, 5, 3, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x20, 5, 3.5, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x20, 5, 3, 2.5)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x20, 5, 2.5, 2)) this -> FillTracks();
-					if(this -> GoodTracksSelection(0x20, 5, 3, 1.5)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 3, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x60, 5, 3, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x300, 5, 3, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 3.5, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 3, 2.5,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 2.5, 2,0.01)) this -> FillTracks();
+					if(this -> GoodTracksSelection(0x20, 5, 3, 1.5,0.01)) this -> FillTracks();
 
 					fHistos->FillTH1("hEvtNumberUsed",1,1);
 					FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
@@ -924,7 +928,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 }
 
 
-bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig, double TOFsig, double TPCalonesig){
+bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig, double TOFsig, double TPCalonesig, double TOFMismatchRatio=0.01){
 
  const UInt_t ntracks = fEvt ->GetNumberOfTracks();
  goodtrackindices.clear();
@@ -995,7 +999,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 		}
 */
 		if( !(
-			( fPIDResponse->GetTOFMismatchProbability( track ) < 0.01 &&
+			( fPIDResponse->GetTOFMismatchProbability( track ) < TOFMismatchRatio &&
 			fabs( fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) ) < TOFsig ) ||
 
 //			( fPIDResponse->GetTOFMismatchProbability( track ) > 0.01 &&
@@ -1150,7 +1154,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				PIDcut2 = 0;
 
 				if( 
-				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < TOFMismatchRatio
 				&& fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
 //				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
 //				&&
@@ -1159,7 +1163,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				}
 
                                 if(
-				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < TOFMismatchRatio
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
 //				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
 //                                &&
@@ -1188,7 +1192,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 PIDcut2 = 0;
 
                                 if(
-				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < 0.01 
+				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) < TOFMismatchRatio
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd1Recon, AliPID::kPion) ) < TOFsig ) ||
 //				( fPIDResponse->GetTOFMismatchProbability( trackd1Recon ) > 0.01
 //                                &&
@@ -1197,7 +1201,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
                                 }
 
                                 if(
-				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < 0.01
+				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) < TOFMismatchRatio
                                 && fabs( fPIDResponse->NumberOfSigmasTOF(trackd2Recon, AliPID::kPion) ) < TOFsig ) ||
 //				( fPIDResponse->GetTOFMismatchProbability( trackd2Recon ) > 0.01
   //                              &&

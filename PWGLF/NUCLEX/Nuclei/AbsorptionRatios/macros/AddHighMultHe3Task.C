@@ -35,6 +35,7 @@ AliAnalysisTaskHe3* AddHighMultHe3Task(TString name = "name", ULong64_t triggerM
 	// momentum p from which a hit/cut in TOF is required
 	task->SetMomForTOFanaProt(0.7);
 	task->SetMomForTOFanaDeut(1.4);
+	task->SetAnalyseAllParticles(kTRUE);
 
 
     // add your task to the manager

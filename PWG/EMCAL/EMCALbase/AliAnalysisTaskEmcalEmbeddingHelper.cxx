@@ -150,6 +150,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -225,6 +227,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -339,6 +343,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("filenameIndex", fFilenameIndex, false);
   // Configuration path makes no sense, as we are already using the %YAML configuration
   res = fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
+  res = fYAMLConfig.GetProperty("runblock", fEmbeddedRunblock, false);
   // Generally should not be set
   res = fYAMLConfig.GetProperty("filenames", fFilenames, false);
   res = fYAMLConfig.GetProperty("fPythiaCrossSectionFilenames", fPythiaCrossSectionFilenames, false);
@@ -487,7 +492,6 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       if (usedFilePattern) {
         AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
       }
-
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -547,7 +551,8 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   // NOTE: We invert the result of IsFileAccessible because we should return true for files that should be _removed_ (ie are inaccessible)
   fFilenames.erase(std::remove_if(fFilenames.begin(), fFilenames.end(), [](const std::string & filename) {return (::IsFileAccessible(filename) == false);} ), fFilenames.end());
 
-  AliInfoStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
+  // NOTE: This isn't necessarily a problem, but we want to clearly indicate what has happened for the user.
+  AliErrorStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
 
   // Determine pythia filename
   DeterminePythiaXSecFilename();
@@ -612,6 +617,79 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & pat
     }
   }
   return false;
+}
+
+/**
+ * Get the data background run number from the data file path, and determine which run run block of 
+ * fEmbeddedRunblock it belongs to. Then filter the input list of MC files and select those anchored to this run block.
+ * Note that this functionality should only be used when train runs per run.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames() 
+{
+  std::size_t nBlocks = fEmbeddedRunblock.size();
+ 
+  if ( nBlocks == 0 ) {
+    return ;
+  }
+  
+  AliInfoStream() << "nRunBlocks " << nBlocks << ".\n";
+  
+  // Recover the background data run number
+  //
+  Int_t runNumber = -1;
+  if ( AliAnalysisTaskSE::InputEvent() ) {
+    runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    
+    if ( runNumber < 100000 || runNumber > 300000 ) {
+      AliFatal(Form("Data run number %d is not good!",runNumber));
+    }
+  }
+  
+  if ( fDataRunNumber != runNumber ) {
+    AliDebugStream(1) << "Set data run number, new "<< runNumber << ", previous "<<fDataRunNumber<<".\n";
+    fDataRunNumber = runNumber;
+  }
+  
+  AliInfoStream() << "Data run anchor "<<fDataRunNumber<<".\n";
+  
+  // Select the run block
+  //
+  Int_t runMin = -1, runMax = -1;
+  UInt_t iblock = 0;
+  for (iblock = 0; iblock < nBlocks-1; iblock++) 
+  {  
+    runMin = fEmbeddedRunblock.at(iblock  );
+    runMax = fEmbeddedRunblock.at(iblock+1);
+    
+    AliDebug(0,Form("\t block %d, run min %d, run max %d",iblock,runMin,runMax));
+    
+    if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) {
+      break ;
+    }
+  } // block loop
+  
+  AliInfoStream() << "Selected run range block "<< iblock <<": ["<<runMin<<","<<runMax<<"].\n";
+  
+  if ( runMin < 0 && runMax < 0 ) {
+    AliFatal("Runblock not found, stop!");
+    return ;
+  }
+
+  // Filter the list of files
+  //
+  AliInfoStream() << "Size of filenames list before filtering "<<  fFilenames.size() << ".\n"; 
+  
+  fFilenames.erase(std::remove_if( fFilenames.begin(), fFilenames.end(),
+                                  [runMin, runMax](const std::string& str) {
+    int run = AliAnalysisManager::GetRunFromAlienPath(str.c_str());
+    return (run < runMin || run >= runMax); }), 
+                   fFilenames.end() );
+  
+  AliInfoStream() << "Size of filenames list after filtering "<<  fFilenames.size() <<".\n"; 
+
+  for (auto v : fFilenames) {
+    AliDebugStream(1) << v << "\n";
+  }
 }
 
 /**
@@ -798,6 +876,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
     // Floor ensures that we it doesn't overflow
     TRandom3 rand(0);
     fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+    
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -1125,7 +1204,11 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
-  SetupEmbedding();
+  if ( fEmbeddedRunblock.size() == 0 ) {
+    SetupEmbedding();
+  }
+  
+  // else, do it on UserExec() at least once
 
   // Reinitialize the YAML config after it was streamed so that it can be used properly.
   fYAMLConfig.Reinitialize();
@@ -1276,6 +1359,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Find which MC run corresponds to the data run
+  if ( fEmbeddedRunblock.size() > 0 ) {
+    FilterRunblockFilenames();
+  }
+  
   // Determine which file to start with
   DetermineFirstFileToEmbed();
 
@@ -1334,7 +1422,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   if (fFilenames.size() > fMaxNumberOfFiles) {
     AliErrorStream() << "Number of input files (" << fFilenames.size() << ") is larger than the number of available files (" << fMaxNumberOfFiles << "). Something went wrong when adding some of those files to the TChain!\n";
   }
-
+  
   // Setup input event
   Bool_t res = InitEvent();
   if (!res) return kFALSE;
@@ -1601,8 +1689,26 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
 void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 {
   if (!fInitializedEmbedding) {
-    AliError("Chain not initialized before running! Setting up now.");
+    if ( fEmbeddedRunblock.size() == 0 ) {
+      AliError("Chain not initialized before running! Setting up now.");
+    }
     SetupEmbedding();
+  }
+  
+  if ( fEmbeddedRunblock.size() > 0 ) {
+    // I do not think this is enough, I am not sure how to know if the train 
+    // was setup for run by run or run mixed analysis
+    Int_t runNumber = -1;
+    if ( AliAnalysisTaskSE::InputEvent() ) {
+      runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    }
+    
+    if ( fDataRunNumber > -1 && fDataRunNumber != runNumber ) {
+      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d"
+                    " but block range was anchored to %d"
+                    " setup the train to do the analysis per Run",
+                    AliAnalysisTaskSE::InputEvent()->GetRunNumber(), fDataRunNumber));
+    }
   }
 
   // Apply internal event selection

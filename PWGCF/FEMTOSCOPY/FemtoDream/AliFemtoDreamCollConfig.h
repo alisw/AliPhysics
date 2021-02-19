@@ -278,6 +278,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
+
+  static std::vector<float> GetDefaultZbins();
+  static std::vector<int> GetHMMultBins();
+  static std::vector<int> GetMBMultBins();
+
  private:
   bool fMultBinning;            //
   bool fCentBinning;            //

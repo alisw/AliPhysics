@@ -15,11 +15,11 @@
 
 // Container class for histograms needed in the analysis.
 
-#include "AliJJtHistograms.h"
-#include "../AliJCard.h"
-#include "../AliJBaseTrack.h"
-#include "../AliJPhoton.h"
-#include "../AliJTrack.h"
+#include <AliJJtHistograms.h>
+#include <AliJCard.h>
+#include <AliJBaseTrack.h>
+#include <AliJPhoton.h>
+#include <AliJTrack.h>
 #include <TGrid.h>
 #include <TPRegexp.h>
 

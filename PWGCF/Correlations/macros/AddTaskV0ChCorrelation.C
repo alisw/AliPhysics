@@ -48,14 +48,14 @@ if (!mgr->GetInputEventHandler()) {
  // task->SetTrackMCPtMin(1);
 
   task->SetTrackPtMin(1.);
-  task->SetTrackPtMax(8.);
+  task->SetTrackPtMax(10.);
   task->SetTrackEta(0.8);
-  task->SetFilterBit(1);
+  task->SetFilterBit(768);
   task->SetAssocNcls(70);
   //------------------------------V0--------------------------------------
   //task->SetV0MCPtMin(3);
   task->SetV0PtMin(3.);
-  task->SetV0PtMax(15.);
+  task->SetV0PtMax(16.);
   task->SetV0Eta(0.7);
   task->SetK0sLifeTimeMin(0);
   task->SetK0sLifeTimeMax(20);
@@ -71,7 +71,7 @@ if (!mgr->GetInputEventHandler()) {
 
   task->SetCosPointingAngleMin(0.975);
   task->SetLambdaCPA(0.995);//
-  task->Setk0sCPA(0.98);//
+  task->Setk0sCPA(0.978);//
   task->Set2DFiducialMin(5);
   task->SetV0DaughterTrackTPCCluster(70.);
   task->SetNCrossedRowsTPCfindable(0.8);

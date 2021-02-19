@@ -22,14 +22,9 @@ class AliParticleContainer;
 class AliVTrack;
 class AliVParticle;
 
-/**
- * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
- *
- * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
- * triggered events.
- */
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * \class AliAnalysisTaskPtEMCalTrigger
@@ -107,10 +102,10 @@ private:
   Bool_t						            fSwapEta;				          ///< Allow swapping of the eta sign in asymmetric collision systems
   Bool_t 						            fUseTriggersFromTriggerMaker; ///< Use trigger classes from trigger maker
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
-  /// \endcond
 };
+
+}
 
 }
 #endif

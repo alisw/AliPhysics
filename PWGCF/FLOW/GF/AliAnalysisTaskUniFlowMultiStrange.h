@@ -12,6 +12,7 @@ class TString;
 class TComplex;
 class TFile;
 class TList;
+class TList;
 class TClonesArray;
 class TProfile;
 class TH1D;
@@ -28,6 +29,7 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODcascade;
 class AliAODMCParticle;
+//class AliAnalysisTaskUniFlowMultiStrange;
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
@@ -89,8 +91,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
       void                    SetProcessCascades(Bool_t use = kTRUE) { fProcessSpec[kXi] = use; fProcessSpec[kOmega] = use; }
-      void                    SetPosAndNegRF(Bool_t use = kTRUE){IsPosAndNegRF = use;} 
-      void                    SetPIDRFFlow(Bool_t use = kTRUE){IsPIDRFFlow= use;}
+      
+      void                    SetUseOldNUA(Bool_t use = kTRUE){bIsUseOldNUA=use;}
+ 
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE){
                               fAddTwoN1.push_back(n1); fAddTwoN2.push_back(n2); fAddTwoIsRefs.push_back(refs);
                               fAddTwoIsPOIs.push_back(pois);}
@@ -131,6 +134,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    SetChargedDCAxyMax(Double_t dcaxy) {  fCutChargedDCAxyMax = dcaxy; }
       void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
       void                    SetChargedTrackFilterBit(UInt_t filter) { fCutChargedTrackFilterBit = filter; }
+      void                    SetChi2perNDF(Double_t fChi2){fChi2perNDF=fChi2;}
       // PID (pi,K,p) setters
       void                    SetPIDUseAntiProtonOnly(Bool_t use = kTRUE) { fCutPIDUseAntiProtonOnly = use; }
       void                    SetPIDNumSigmasPionMax(Float_t numSigmas) { fCutPIDnSigmaMax[kPion] = numSigmas; }
@@ -198,24 +202,23 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
 
 
+
       //--------------------------cascade----------------------------------------------------------------
       void  SetXiEtaMin(Double_t value){fXiPseMin = value;}
       void  SetXiEtaMax(Double_t value){fXiPseMax = value;}
       void  SetV0RadiusXiMin(Double_t value){fV0RadiusXiMin = value;}
+      void  SetV0RadiusXiMax(Double_t value){fV0RadiusXiMax = value;}
       void  SetXiRadiusMin(Double_t value){fXiRadiusMin = value;}
+      void  SetXiRadiusMax(Double_t value){fXiRadiusMax = value;}
       void  SetDCAXiDaughtersMax(Double_t value){fdcaXiDaughtersMax = value;}
       void  SetXiCosOfPointingAngleMin(Double_t value){fXiCosOfPointingAngleMin = value;}
       void  SetDCAV0ToPrimaryVtxXiMin(Double_t value){fdcaV0ToPrimaryVtxXiMin = value;}
       void  SetDCABachToPrimaryVtxXiMin(Double_t value){fdcaBachToPrimaryVtxXiMin = value;}
-      void  SetDCABachToPrimaryVtxXiMinLowPt(Double_t value){fdcaBachToPrimaryVtxXiMinLowPt = value;}
       void  SetLambdaMassWindow(Double_t value){fLambdaMassWind = value;}
       void  SetDCAV0DaughtersXi(Double_t value){fdcaV0DaughtersXi = value;}
       void  SetV0CosOfPointingAngleXiMin(Double_t value){fV0CosOfPointingAngleXiMin = value;}
       void  SetDCAPosToPrimaryVtxXiMin(Double_t value){fdcaPosToPrimaryVtxXiMin = value;}
       void  SetDCANegToPrimaryVtxXiMin(Double_t value){fdcaNegToPrimaryVtxXiMin = value;}
-      void  SetDCAPosToPrimaryVtxXiMinLowPt(Double_t value){fdcaPosToPrimaryVtxXiMinLowPt = value;}
-      void  SetDCANegToPrimaryVtxXiMinLowPt(Double_t value){fdcaNegToPrimaryVtxXiMinLowPt = value;}
-
       void  SetCascadesRejectKinks(Bool_t reject) { fCutCascadesrejectKinks = reject; }
       void  SetXiPIDSigma(Double_t value){fXiPIDsigma = value;}
       void  SetXiMasswindow(Double_t value){fXiMasswindow = value;}
@@ -241,6 +244,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       static const Int_t      fV0sNumBinsMass = 60; // number of InvMass bins for V0s distribution
       static const Int_t      fPhiNumBinsMass = 60; // number of InvMass bins for phi distribution
       static const Int_t      fCascadesNumBinsMass = 60;
+
       static const Int_t      fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
 
       const char*             GetSpeciesName(PartSpecies species) const;
@@ -296,8 +300,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       void                    FillQAPhi(Int_t iQAindex, const AliPicoTrack* part = 0x0) const; // filling QA plots for V0s candidates
 
       // Flow related methods
-      void                    FillRefsVectors(Double_t dGap, PartSpecies species); // fill flow vector Q with RFPs for reference flow
-      Int_t                    FillPIDRefsVectors(const Double_t dEtaGap, const PartSpecies species, const Double_t dPtLow, const Double_t dPtHigh, const Double_t dMassLow, const Double_t dMassHigh);
+      void                    FillRefsVectors(Double_t dGap); // fill flow vector Q with RFPs for reference flow
       Int_t                   FillPOIsVectors(Double_t dEtaGap, PartSpecies species, Double_t dPtLow, Double_t dPtHigh, Double_t dMassLow = 0.0, Double_t dMassHigh = 0.0); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
@@ -319,24 +322,21 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Bool_t  Is2018Data;//
        Bool_t  IsPIDorrection;//
        Bool_t  IsAdditional2018DataEventCut;//
-       Bool_t  IsPosAndNegRF;//
-       Bool_t  IsPIDRFFlow;//
        Double_t fXiPseMin;//
        Double_t fXiPseMax;//
        Double_t fV0RadiusXiMin;//
+       Double_t fV0RadiusXiMax;//
        Double_t fXiRadiusMin;//
+       Double_t fXiRadiusMax;//
        Double_t fdcaXiDaughtersMax;//
        Double_t fXiCosOfPointingAngleMin;//
        Double_t fdcaV0ToPrimaryVtxXiMin;//
        Double_t fdcaBachToPrimaryVtxXiMin;//
-       Double_t fdcaBachToPrimaryVtxXiMinLowPt;//
        Double_t fLambdaMassWind;//
        Double_t fdcaV0DaughtersXi;//
        Double_t fV0CosOfPointingAngleXiMin;//
        Double_t fdcaPosToPrimaryVtxXiMin;//
        Double_t fdcaNegToPrimaryVtxXiMin;//
-       Double_t fdcaPosToPrimaryVtxXiMinLowPt;//
-       Double_t fdcaNegToPrimaryVtxXiMinLowPt;//
        Bool_t   fCutCascadesrejectKinks; // Reject Kink cascade daughter tracks ?
        Double_t fXiPIDsigma;//
        Double_t fXiMasswindow;//
@@ -344,7 +344,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
        Double_t fTPCNcls; // number of TPC clusters   
        Double_t fTrackEta;//
        Double_t fTrackPtMin;//
-       Bool_t   fRPFromTPC;//
+       Bool_t   fRPFromTPC;//  
+
+
 
 //----------------------------------------------------------------------------------------
       TComplex                Q(Int_t n, Int_t p) const;//
@@ -360,9 +362,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       TComplex                Two(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (no eta gap)
       TComplex                TwoGap(Int_t n1, Int_t n2) const; // Two particle reference correlation calculations (with eta gap)
-       TComplex               TwoPos(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the positive eta)
-      TComplex                TwoNeg(Int_t n1, Int_t n2) const; /// Two particle reference correlation calculations (just from the negative eta)
-
       TComplex                Three(Int_t n1, Int_t n2, Int_t n3) const; // Three particle reference correlation calculations (no eta gap)
       TComplex                Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
       TComplex                FourGap(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (no eta gap)
@@ -400,7 +399,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Int_t                   fEventCounter; // event counter (used for local test runmode purpose)
       Int_t                   fNumEventsAnalyse; // [50] number of events to be analysed / after passing selection (only in test mode)
       Int_t                   fRunNumber; // [-1] run number of previous event (not the current one)
-
+      Bool_t                  bIsUseOldNUA;
       TComplex                fFlowVecQpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecQneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecQmid[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
@@ -451,7 +450,6 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       std::vector<Bool_t>  fAddFourGapIsRefs; // 
       std::vector<Bool_t>  fAddFourGapIsPOIs; //
 
-    
 
       //cuts & selection: analysis
       RunMode                 fRunMode; // running mode (not grid related)
@@ -461,6 +459,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       Bool_t                  fFillQA; //[kTRUE] flag for filling the QA plots
       Bool_t                  fProcessSpec[kUnknown];  // [false] flag for processing species
       // cuts & selection: flow related
+      Double_t                fChi2perNDF;//
       Double_t                fFlowRFPsPtMin; // [0.2] (GeV/c) min pT treshold for RFPs particle for reference flow
       Double_t                fFlowRFPsPtMax; // [5.0] (GeV/c) max pT treshold for RFPs particle for reference flow
       Double_t                fFlowPOIsPtMin; // [0] (GeV/c) min pT treshold for POIs for differential flow
@@ -549,7 +548,7 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
 
       // output lists
       TList*                  fQAEvents; //! events list
-      TList*                  fQAEventCut; //! events list
+      TList*                       fQAEventCut; //! events list
       TList*                  fQACharged; //! charged tracks list
       TList*                  fQAPID; //! pi,K,p list
       TList*                  fQAV0s; //! V0s candidates list
@@ -582,6 +581,9 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       // Charged
       TH1D*                   fhRefsMult; //!multiplicity distribution of selected RFPs
       TH1D*                   fhRefsPt; //! pt distribution of selected RFPs
+     
+      TH2D*                   fhRefPtV0M;//! 
+
       TH1D*                   fhRefsEta; //! pt distribution of selected RFPs
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>
@@ -597,11 +599,11 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH2D*                   fh2PIDTPCdEdxDelta[3]; //! TPC delta dEdx (measured - expected) response of selected pions
       TH2D*                   fh2PIDTOFbeta[3]; //! TOF beta of selected pions
       TH2D*                   fh2PIDTOFbetaDelta[3]; //! TOF delta beta (measured - expected) of selected pions
-      TH2D*                   fh2PIDBayesElectron[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
-      TH2D*                   fh2PIDBayesMuon[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
-      TH2D*                   fh2PIDBayesPion[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
-      TH2D*                   fh2PIDBayesKaon[3]; //! Bayesian PID probability vs pT for selected pions (kaon hypothesis)
-      TH2D*                   fh2PIDBayesProton[3]; //! Bayesian PID probability vs pT for selected pions (proton hypothesis)
+      TH3D*                   fh3PIDBayesElectron[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
+      TH3D*                   fh3PIDBayesMuon[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
+      TH3D*                   fh3PIDBayesPion[3]; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
+      TH3D*                   fh3PIDBayesKaon[3]; //! Bayesian PID probability vs pT for selected pions (kaon hypothesis)
+      TH3D*                   fh3PIDBayesProton[3]; //! Bayesian PID probability vs pT for selected pions (proton hypothesis)
       TH2D*                   fh2PIDTPCnSigmaElectron[3]; //! TPC nSigma vs pT for selected pions (pion hypothesis)
       TH2D*                   fh2PIDTOFnSigmaElectron[3]; //! TOF nSigma vs pT for selected pions (pion hypothesis)
       TH2D*                   fh2PIDTPCnSigmaMuon[3]; //! TPC nSigma vs pT for selected pions (pion hypothesis)
@@ -677,14 +679,20 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       TH1D*                   fhQAChargedNumTPCcls[fiNumIndexQA];  //! dist of track number of TPC clusters
       TH1D*                   fhQAChargedDCAxy[fiNumIndexQA];      //! dist of Charged DCA in transverse plane
       TH1D*                   fhQAChargedDCAz[fiNumIndexQA];       //! dist of charged DCA in z coordinate
+      TH3D*                   fh3QAChi2PtCentCharged;//!
+
       // QA: PID tracks
       TH1D*                   fhQAPIDTPCstatus[fiNumIndexQA];  //! based on AliPIDResponse::CheckPIDStatus();
       TH1D*                   fhQAPIDTOFstatus[fiNumIndexQA];  //! based on AliPIDResponse::CheckPIDStatus();
       TH2D*                   fhQAPIDTPCdEdx[fiNumIndexQA];    //! TPC PID information
       TH2D*                   fhQAPIDTOFbeta[fiNumIndexQA];    //! TOF PID information
-      TH3D*                   fh3QAPIDnSigmaTPCTOFPtPion[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
-      TH3D*                   fh3QAPIDnSigmaTPCTOFPtKaon[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
-      TH3D*                   fh3QAPIDnSigmaTPCTOFPtProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTPCPtCentPion[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTPCPtCentKaon[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTPCPtCentProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTOFPtCentPion[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTOFPtCentKaon[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+      TH3D*                   fh3QAPIDnSigmaTOFPtCentProton[fiNumIndexQA]; //! nSigma TPC vs nSigma TOF vs pt
+
       // QA: V0s candidates
       TH1D*			  		        fhQAV0sMultK0s[fiNumIndexQA];	//! number of K0s candidates
       TH1D*			  		        fhQAV0sMultLambda[fiNumIndexQA];	//! number of Lambda candidates
@@ -732,4 +740,3 @@ class AliAnalysisTaskUniFlowMultiStrange : public AliAnalysisTaskSE
       ClassDef(AliAnalysisTaskUniFlowMultiStrange, 13);
 };
 #endif
-

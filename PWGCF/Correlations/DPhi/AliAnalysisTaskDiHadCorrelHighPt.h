@@ -129,8 +129,15 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetMaxDCAToVertexXY(Float_t max) { fMaxDCAToVertexXY = max; }
         void                    SetMinNCrossedRowsTPCprimtracks(Float_t min) { fMinNCrossedRowsTPCprimtracks = min; }
         void                    SetNPhiBins(Int_t nbins) { fNumberPhiBins = nbins; }
-
-        AliEventCuts            fAliEventCuts;
+        void                    SetEffCorrMixing(Bool_t mix) { fMixCorrect = mix; }
+        void                    SetMinBiasTrigger(Bool_t tr) { fminBias = tr; }
+        void                    SetHighMultTriggerV0(Bool_t tr) { fhighMult = tr; }
+        void                    SetHighMultTriggerSPD(Bool_t tr) { fhighMultSPD= tr; }
+        void                    SetPercentileRange(Double_t min, Double_t max) { fPercentileMin = min; fPercetileMax = max; }
+        void                    SetEventQAPlots(Bool_t pl) { fEventCutsQAPlots = pl; }
+        void                    SetppAnalysis(Bool_t pp) { fpp = pp; }
+        void                    SetNMultiplicityBins(Int_t nBins) { fNMultiplicityBins = nBins; }
+        AliEventCuts *           fAliEventCuts; //!
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -275,11 +282,22 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F *                  fHistSecondaryCont; //!
         TList *                 fEffList; //!
         Bool_t                  fUseEff;
+        Bool_t                  fMixCorrect; // enable efficiency correction for mixing
+        Bool_t                  fminBias;// enable minimum bias trigger , deffault
+        Bool_t                  fhighMult;// enable V0 high multiplicity trigger 
+        Bool_t                  fhighMultSPD;// enable SPD high multiplicity trigger
+        TH3D *                  fHistMultVZEROTracklets; //!    
+        Double_t                fPercentileMin; // minimum muliplicity percentile to be analysed
+        Double_t                fPercetileMax; // maximum muliplicity percentile to be analysed
+        Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
+        Bool_t                  fpp; // flag pp / PbPb
+        Int_t                   fNMultiplicityBins; // number of multiplicity bins
+
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 28);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 34);
 };
 
 class AliV0ChParticle : public AliVParticle

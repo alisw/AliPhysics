@@ -29,8 +29,8 @@ AliReducedMatchedTrack::AliReducedMatchedTrack() :
     fPx(0),
     fPy(0),
     fPz(0),
-    fNclustersTPC(0),
     fGoodTrackLabel(false),
+    fNclustersTPC(0),
     fTrackCuts(0)
 {
 }
@@ -47,8 +47,8 @@ AliReducedMatchedTrack::AliReducedMatchedTrack(double px, double py, double pz):
     fPx(px),
     fPy(py),
     fPz(pz),
-    fNclustersTPC(0),
     fGoodTrackLabel(false),
+    fNclustersTPC(0),
     fTrackCuts(0)
 {
 }
@@ -92,4 +92,4 @@ void AliReducedMatchedTrack::FillVector(TVector3& vec) {
   vec.SetXYZ(fPx, fPy, fPz);
 }
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace HighPtTracks */

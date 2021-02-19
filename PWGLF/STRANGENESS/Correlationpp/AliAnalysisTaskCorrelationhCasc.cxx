@@ -59,6 +59,7 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fMCEvent(0), 
   fReadMCTruth(0),
   isEfficiency(0),
+  isHybridMCTruth(0),
   fEventColl(0x0), 
   fEvt(0x0), 
   fzVertexBins(10), 
@@ -88,7 +89,9 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fHistPtMaxvsMult(0), 
   fHistPtMaxvsMultKeepV0(0), 
   fHistPtMaxvsMultSkipV0(0), 
-  fHistPtMaxvsMultBefAll(0), 
+  fHistPtMaxvsMultBefAll(0),
+  fHistPtMaxvsMultBefAllReco(0),
+  fHistPtMaxvsMultBefAllGen(0), 
   fHistZvertex(0),  
   fHistFractionSharedTPCClusters(0),
   fHistGoldenCut(0),
@@ -99,7 +102,9 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fHist_eta_phi_PtMax(0),  
   fHist_multiplicity(0),
   fHist_multiplicity_EvwTrigger(0),
-  fHistEventMult(0), 
+  fHistEventMult(0),
+  fHistTriggerFractionNum(0), 
+  fHistTriggerFractionDenom(0), 
   fHistEventV0(0), 
   fHistTrack(0), 
   fHistLengthvsCrossedRowsAfterSel(0),
@@ -155,9 +160,16 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fHistCPGeneratedV0PtTMaxEta(0),
   fHistSelectedV0PtTMaxEta(0),
   fHistGeneratedV0PtPtTMax(0),
+  fHistGeneratedV0PtPtTMaxIncl(0),
+  fHistGeneratedV0PtPtTMaxJet(0),
+  fHistGeneratedV0PtPtTMaxOOJ(0),
   fHistCPGeneratedV0PtPtTMax(0),
   fHistSelectedV0PtPtTMax(0),
+//fHistSelectedV0PtPtTMaxIncl(0),
+//fHistSelectedV0PtPtTMaxJet(0),
+//  fHistSelectedV0PtPtTMaxOOJ(0),
   fHistSelectedGenV0PtPtTMax(0),
+  fHistGeneratedV0PtEta(0),
   fHistReconstructedV0PtMass(0),
   fHistSelectedV0PtMass(0),
   fHistTriggerPtRecovsPtGen(0),
@@ -229,6 +241,7 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fTreeVariableDeltaTheta(0),			       
   fTreeVariableMultiplicity(0),                   
   fTreeVariableZvertex(0),
+  fTreeVariableTriggerIndex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
   FifoShiftok(kFALSE)
@@ -252,7 +265,8 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
 										     fMCEvent(0), 
 										     fReadMCTruth(0),
 										     isEfficiency(0),
-										     fEventColl(0x0), 
+  isHybridMCTruth(0),
+  fEventColl(0x0), 
   fEvt(0x0), 
   fzVertexBins(10), 
   fnMultBins(20),	 
@@ -282,6 +296,8 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fHistPtMaxvsMultKeepV0(0), 
   fHistPtMaxvsMultSkipV0(0), 
   fHistPtMaxvsMultBefAll(0), 
+  fHistPtMaxvsMultBefAllReco(0),
+  fHistPtMaxvsMultBefAllGen(0),
   fHistZvertex(0),  
   fHistFractionSharedTPCClusters(0),
   fHistGoldenCut(0),
@@ -292,7 +308,9 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fHist_eta_phi_PtMax(0),  
   fHist_multiplicity(0),
   fHist_multiplicity_EvwTrigger(0),
-  fHistEventMult(0), 
+  fHistEventMult(0),
+  fHistTriggerFractionNum(0),
+  fHistTriggerFractionDenom(0),   
   fHistEventV0(0), 
   fHistTrack(0), 
   fHistLengthvsCrossedRowsAfterSel(0),
@@ -348,9 +366,16 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fHistCPGeneratedV0PtTMaxEta(0),
   fHistSelectedV0PtTMaxEta(0),
   fHistGeneratedV0PtPtTMax(0),
+  fHistGeneratedV0PtPtTMaxIncl(0),
+  fHistGeneratedV0PtPtTMaxJet(0),
+  fHistGeneratedV0PtPtTMaxOOJ(0),
   fHistCPGeneratedV0PtPtTMax(0),
   fHistSelectedV0PtPtTMax(0),
+//fHistSelectedV0PtPtTMaxIncl(0),
+//fHistSelectedV0PtPtTMaxJet(0),
+//  fHistSelectedV0PtPtTMaxOOJ(0),
   fHistSelectedGenV0PtPtTMax(0),
+  fHistGeneratedV0PtEta(0),
   fHistReconstructedV0PtMass(0),
   fHistSelectedV0PtMass(0),
   fHistTriggerPtRecovsPtGen(0),
@@ -422,6 +447,7 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fTreeVariableDeltaTheta(0),			       
   fTreeVariableMultiplicity(0),                   
   fTreeVariableZvertex(0),
+  fTreeVariableTriggerIndex(0),
   fTreeVariablePDGCodeTrigger(0),
   fTreeVariablePDGCodeAssoc(0),
   FifoShiftok(kFALSE)
@@ -589,7 +615,7 @@ void AliAnalysisTaskCorrelationhCasc::ProcessMCParticles(Bool_t Generated, AliAO
 	fHistGeneratedTriggerPtEta->Fill(particle->Pt(), particle->Eta(), lPercentiles);
       }
       else if(isV0==kTRUE){ //for associated particles
-	//let's check if the generated V0 comes from the same parton ad the trigger particle
+	//let's check if the generated V0 comes from the same parton as the trigger particle
 	Bool_t IsCommonParton=kFALSE;
 	for (Int_t i=1; i<50; i++){ //I start from one since last element cannot be a parton but is a hadron
 	  if (IsCommonParton==1) break;
@@ -610,6 +636,18 @@ void AliAnalysisTaskCorrelationhCasc::ProcessMCParticles(Bool_t Generated, AliAO
 	    fHistGeneratedV0PtTMaxPhi[0]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
 	    fHistGeneratedV0PtTMaxEta[0]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
 	    fHistGeneratedV0PtPtTMax[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	    fHistGeneratedV0PtEta[0]->Fill(particle->Pt(),particle->Eta(), lPercentiles );
+
+	    if(TMath::Abs(particle->Eta()-track->Eta())<1.2){
+	    fHistGeneratedV0PtPtTMaxIncl[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	    }
+	    if(TMath::Abs(particle->Eta()-track->Eta())<0.75){
+	    fHistGeneratedV0PtPtTMaxJet[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	    }
+	    if(TMath::Abs(particle->Eta()-track->Eta())<1.2 && TMath::Abs(particle->Eta()-track->Eta())>0.75){
+	    fHistGeneratedV0PtPtTMaxOOJ[0]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	    }
+
 	    if (IsCommonParton){
 	    fHistCPGeneratedV0PtTMaxPhi[0]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
 	    fHistCPGeneratedV0PtTMaxEta[0]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
@@ -621,13 +659,13 @@ void AliAnalysisTaskCorrelationhCasc::ProcessMCParticles(Bool_t Generated, AliAO
 	    fHistGeneratedV0PtTMaxPhi[1]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
 	    fHistGeneratedV0PtTMaxEta[1]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
 	    fHistGeneratedV0PtPtTMax[1]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
+	    fHistGeneratedV0PtEta[1]->Fill(particle->Pt(),particle->Eta(), lPercentiles );
 	}
 	    if (IsCommonParton){
 	    fHistCPGeneratedV0PtTMaxPhi[1]->Fill(lChargeXi*PtTriggMax,particle->Phi(), lPercentiles );
 	    fHistCPGeneratedV0PtTMaxEta[1]->Fill(lChargeXi*PtTriggMax,particle->Eta(), lPercentiles );
 	    fHistCPGeneratedV0PtPtTMax[1]->Fill(particle->Pt(),lChargeXi*PtTriggMax, lPercentiles );
 	    }
-
 	}      
       }
     }
@@ -800,6 +838,7 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariableDeltaTheta",         &fTreeVariableDeltaTheta, "fTreeVariableDeltaTheta/D");
   fSignalTree->Branch("fTreeVariableMultiplicity",       &fTreeVariableMultiplicity , "fTreeVariableMultiplicity/D");
   fSignalTree->Branch("fTreeVariableZvertex",            &fTreeVariableZvertex  , "fTreeVariableZvertex/D");
+  fSignalTree->Branch("fTreeVariableTriggerIndex",            &fTreeVariableTriggerIndex  , "fTreeVariableTriggerIndex/I");
   fSignalTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fSignalTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
 
@@ -835,6 +874,7 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fBkgTree->Branch("fTreeVariableDeltaTheta",         &fTreeVariableDeltaTheta, "fTreeVariableDeltaTheta/D");
   fBkgTree->Branch("fTreeVariableMultiplicity",       &fTreeVariableMultiplicity , "fTreeVariableMultiplicity/D");
   fBkgTree->Branch("fTreeVariableZvertex",            &fTreeVariableZvertex  , "fTreeVariableZvertex/D");
+  fBkgTree->Branch("fTreeVariableTriggerIndex",            &fTreeVariableTriggerIndex  , "fTreeVariableTriggerIndex/I");
   fBkgTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fBkgTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
   
@@ -875,6 +915,19 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistPtMaxvsMultBefAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMultBefAll->GetYaxis()->SetTitle("Centrality");
 
+
+   fHistPtMaxvsMultBefAllReco= new TH2F("fHistPtMaxvsMultBefAllReco", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 600, 0, 30, 100, 0, 100);
+  fHistPtMaxvsMultBefAllReco->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultBefAllReco->GetYaxis()->SetTitle("Centrality");
+
+
+   fHistPtMaxvsMultBefAllGen= new TH2F("fHistPtMaxvsMultBefAllGen", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 600, 0, 30, 100, 0, 100);
+  fHistPtMaxvsMultBefAllGen->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultBefAllGen->GetYaxis()->SetTitle("Centrality");
+
+  fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 600, 0, 30, 100, 0, 100);
+  fHistPtMaxvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMult->GetYaxis()->SetTitle("Centrality");
   fHistPtMaxvsMult= new TH2F("fHistPtMaxvsMult", "p_{T} and centrality distribution of charged tracks with maximum pT in events used for AC)", 600, 0, 30, 100, 0, 100); 
   fHistPtMaxvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtMaxvsMult->GetYaxis()->SetTitle("Centrality");
@@ -950,6 +1003,9 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistEventMult->GetXaxis()->SetBinLabel(22,"SelEv (ACEvents)"); //all the events used for angular correlation
   fHistEventMult->GetXaxis()->SetBinLabel(23,"All events");
   fHistEventMult->GetXaxis()->SetBinLabel(24,"AOD event");
+
+  fHistTriggerFractionNum=new TH1F("fHistTriggerFractionNum", "fHistTriggerFractionNum", 5, 0.5, 5.5); 
+  fHistTriggerFractionDenom=new TH1F("fHistTriggerFractionDenom", "fHistTriggerFractionDenom", 5, 0.5, 5.5); 
 
   fHistEventV0=new TH1F("fHistEventV0", "fHistEventV0",32, 0.5, 32.5);
   fHistEventV0->SetTitle("Number of V0 which progressively pass the listed selections");
@@ -1163,26 +1219,26 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
 
   fHistSelectedTriggerPtPhi= new TH3F*[3];
   for(Int_t j=0; j<3; j++){
-    fHistSelectedTriggerPtPhi[j]=new TH3F(Form("fHistSelectedTriggerPtPhi_%i",j), "p_{T} and #phi distribution of selected trigger particles (primary)", 300, 0, 30, 400,0, 2*TMath::Pi() ,  100, 0, 100);
+    fHistSelectedTriggerPtPhi[j]=new TH3F(Form("fHistSelectedTriggerPtPhi_%i",j), "p_{T} and #phi distribution of selected trigger particles (primary)", 600, 0, 30, 400,0, 2*TMath::Pi() ,  100, 0, 100);
     fHistSelectedTriggerPtPhi[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedTriggerPtPhi[j]->GetYaxis()->SetTitle("#phi");
   }
   fHistSelectedGenTriggerPtPhi= new TH3F*[3];
   for(Int_t j=0; j<3; j++){
-    fHistSelectedGenTriggerPtPhi[j]=new TH3F(Form("fHistSelectedGenTriggerPtPhi_%i",j), "p_{T} and #phi distribution of selected trigger particles (primary) (p_{T} and #phi generated))", 300, 0, 30, 400,0, 2*TMath::Pi() ,  100, 0, 100);
+    fHistSelectedGenTriggerPtPhi[j]=new TH3F(Form("fHistSelectedGenTriggerPtPhi_%i",j), "p_{T} and #phi distribution of selected trigger particles (primary) (p_{T} and #phi generated))", 600, 0, 30, 400,0, 2*TMath::Pi() ,  100, 0, 100);
     fHistSelectedGenTriggerPtPhi[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedGenTriggerPtPhi[j]->GetYaxis()->SetTitle("#phi");
   }
 
   fHistSelectedTriggerPtEta= new TH3F*[3];
   for(Int_t j=0; j<3; j++){
-    fHistSelectedTriggerPtEta[j]=new TH3F(Form("fHistSelectedTriggerPtEta_%i",j), "p_{T} and #eta distribution of selected trigger particles (primary)", 300, 0, 30, 400,-1.2, 1.2,  100, 0, 100);
+    fHistSelectedTriggerPtEta[j]=new TH3F(Form("fHistSelectedTriggerPtEta_%i",j), "p_{T} and #eta distribution of selected trigger particles (primary)", 600, 0, 30, 400,-1.2, 1.2,  100, 0, 100);
     fHistSelectedTriggerPtEta[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedTriggerPtEta[j]->GetYaxis()->SetTitle("#eta");
   }
   fHistSelectedGenTriggerPtEta= new TH3F*[3];
   for(Int_t j=0; j<3; j++){
-    fHistSelectedGenTriggerPtEta[j]=new TH3F(Form("fHistSelectedGenTriggerPtEta_%i",j), "p_{T} and #eta distribution of selected trigger particles (primary) (p_{T} and #eta generated))", 300, 0, 30, 400,-1.2, 1.2,  100, 0, 100);
+    fHistSelectedGenTriggerPtEta[j]=new TH3F(Form("fHistSelectedGenTriggerPtEta_%i",j), "p_{T} and #eta distribution of selected trigger particles (primary) (p_{T} and #eta generated))", 600, 0, 30, 400,-1.2, 1.2,  100, 0, 100);
     fHistSelectedGenTriggerPtEta[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedGenTriggerPtEta[j]->GetYaxis()->SetTitle("#eta");
   }
@@ -1236,6 +1292,27 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
     fHistGeneratedV0PtPtTMax[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
   }
 
+  fHistGeneratedV0PtPtTMaxIncl=new TH3F*[2];
+  for(Int_t j=0; j<2; j++){
+    fHistGeneratedV0PtPtTMaxIncl[j]=new TH3F(Form("fHistGeneratedV0PtPtTMaxIncl_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (Casc, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  100, 0, 100 );
+    fHistGeneratedV0PtPtTMaxIncl[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistGeneratedV0PtPtTMaxIncl[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+
+  fHistGeneratedV0PtPtTMaxOOJ=new TH3F*[2];
+  for(Int_t j=0; j<2; j++){
+    fHistGeneratedV0PtPtTMaxOOJ[j]=new TH3F(Form("fHistGeneratedV0PtPtTMaxOOJ_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (Casc, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  100, 0, 100 );
+    fHistGeneratedV0PtPtTMaxOOJ[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistGeneratedV0PtPtTMaxOOJ[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+
+  fHistGeneratedV0PtPtTMaxJet=new TH3F*[2];
+  for(Int_t j=0; j<2; j++){
+    fHistGeneratedV0PtPtTMaxJet[j]=new TH3F(Form("fHistGeneratedV0PtPtTMaxJet_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (Casc, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  100, 0, 100 );
+    fHistGeneratedV0PtPtTMaxJet[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistGeneratedV0PtPtTMaxJet[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+
   fHistCPGeneratedV0PtPtTMax=new TH3F*[2];
   for(Int_t j=0; j<2; j++){
     fHistCPGeneratedV0PtPtTMax[j]=new TH3F(Form("fHistCPGeneratedV0PtPtTMax_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of generated V0 particles (Casc, primary, events w T>0)", 300, 0, 30, 120, -30, 30,  100, 0, 100 );
@@ -1249,11 +1326,38 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
     fHistSelectedV0PtPtTMax[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedV0PtPtTMax[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
   }
+  /*  
+fHistSelectedV0PtPtTMaxIncl=new TH3F*[7];
+  for(Int_t j=0; j<7; j++){
+    fHistSelectedV0PtPtTMaxIncl[j]=new TH3F(Form("fHistSelectedV0PtPtTMaxIncl_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of selected V0 particles (Casc, primary, events w T>0)", 120,-30, 30, 60, 0,30,  100, 0, 100 );
+    fHistSelectedV0PtPtTMaxIncl[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistSelectedV0PtPtTMaxIncl[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+  fHistSelectedV0PtPtTMaxJet=new TH3F*[7];
+  for(Int_t j=0; j<7; j++){
+    fHistSelectedV0PtPtTMaxJet[j]=new TH3F(Form("fHistSelectedV0PtPtTMaxJet_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of selected V0 particles (Casc, primary, events w T>0)", 120,-30, 30, 60, 0,30,  100, 0, 100 );
+    fHistSelectedV0PtPtTMaxJet[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistSelectedV0PtPtTMaxJet[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+  fHistSelectedV0PtPtTMaxOOJ=new TH3F*[7];
+  for(Int_t j=0; j<7; j++){
+    fHistSelectedV0PtPtTMaxOOJ[j]=new TH3F(Form("fHistSelectedV0PtPtTMaxOOJ_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of selected V0 particles (Casc, primary, events w T>0)", 120,-30, 30, 60, 0,30,  100, 0, 100 );
+    fHistSelectedV0PtPtTMaxOOJ[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistSelectedV0PtPtTMaxOOJ[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+*/
   fHistSelectedGenV0PtPtTMax=new TH3F*[7];
   for(Int_t j=0; j<7; j++){
     fHistSelectedGenV0PtPtTMax[j]=new TH3F(Form("fHistSelectedGenV0PtPtTMax_%i",j), "p_{T} and p^{Trigg, Max}_{T} distribution of selected V0 particles (Casc, primary, events w T>0) (p_{T} generated)", 120, -30, 30, 60, 0,30,  100, 0, 100 );
     fHistSelectedGenV0PtPtTMax[j]->GetXaxis()->SetTitle("p_{T}");
     fHistSelectedGenV0PtPtTMax[j]->GetYaxis()->SetTitle("p^{Trigg, Max}_{T}");
+  }
+
+  fHistGeneratedV0PtEta=new TH3F*[2];
+  for(Int_t j=0; j<2; j++){
+    fHistGeneratedV0PtEta[j]=new TH3F(Form("fHistGeneratedV0PtEta_%i",j), "p_{T} and #eta distribution of selected V0 particles (K0s, primary, events w T>0)", 300, 0, 30, 480, -1.2,1.2,  100, 0,  100 );
+    fHistGeneratedV0PtEta[j]->GetXaxis()->SetTitle("p_{T}");
+    fHistGeneratedV0PtEta[j]->GetYaxis()->SetTitle("#eta");
   }
 
   fHistReconstructedV0PtMass=new TH3F("fHistReconstructedV0PtMass", "p_{T} and mass distribution of reconstructed V0 particles(Casc, primary, event w T>0)", 100, lLimInfMass, lLimSupMass, 160, 0, 16,  100, 0, 100);
@@ -1446,13 +1550,15 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
     } 
   }
 
-  fHistMultiplicityOfMixedEvent=new TH1F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 20, 0.5, 20.5);
+  fHistMultiplicityOfMixedEvent=new TH2F("fHistMultiplicityOfMixedEvent", "Distribution of number of events used for the mixing", 100, 0.5, 100.5, 100, 0, 100);
 
   fEventCuts.AddQAplotsToList(fOutputList);
   
   fOutputList->Add(fHistPDG);
   fOutputList->Add(fHistTrackBufferOverflow);
   fOutputList->Add(fHistEventMult);
+  fOutputList->Add(fHistTriggerFractionNum);
+  fOutputList->Add(fHistTriggerFractionDenom);
   fOutputList->Add(fHistEventV0);
   fOutputList->Add(fHistTrack); 
   fOutputList->Add(fHistLengthvsCrossedRowsAfterSel);
@@ -1509,6 +1615,8 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fOutputList->Add(fHistPtMaxvsMultSkipV0);       
   fOutputList->Add(fHistPtMaxvsMultKeepV0);       
   fOutputList->Add(fHistPtMaxvsMultBefAll);       
+  fOutputList->Add(fHistPtMaxvsMultBefAllReco);       
+  fOutputList->Add(fHistPtMaxvsMultBefAllGen);       
   fOutputList->Add(fHist_eta_phi);
   fOutputList->Add(fHist_eta_phi_PtMax);
   fOutputList->Add(fHistTriggervsMult);
@@ -1549,6 +1657,10 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
     fOutputList2->Add(fHistGeneratedV0PtTMaxPhi[j]); 
     fOutputList2->Add(fHistGeneratedV0PtTMaxEta[j]); 
     fOutputList2->Add(fHistGeneratedV0PtPtTMax[j]); 
+    fOutputList2->Add(fHistGeneratedV0PtEta[j]); 
+    fOutputList2->Add(fHistGeneratedV0PtPtTMaxIncl[j]); 
+    fOutputList2->Add(fHistGeneratedV0PtPtTMaxOOJ[j]); 
+    fOutputList2->Add(fHistGeneratedV0PtPtTMaxJet[j]); 
     fOutputList2->Add(fHistCPGeneratedV0PtTMaxPhi[j]); 
     fOutputList2->Add(fHistCPGeneratedV0PtTMaxEta[j]); 
     fOutputList2->Add(fHistCPGeneratedV0PtPtTMax[j]); 
@@ -1558,6 +1670,9 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
     fOutputList2->Add(fHistSelectedV0PtTMaxPhi[j]);
     fOutputList2->Add(fHistSelectedV0PtTMaxEta[j]);
     fOutputList2->Add(fHistSelectedV0PtPtTMax[j]);
+    //    fOutputList2->Add(fHistSelectedV0PtPtTMaxIncl[j]);
+    //    fOutputList2->Add(fHistSelectedV0PtPtTMaxJet[j]);
+    //    fOutputList2->Add(fHistSelectedV0PtPtTMaxOOJ[j]);
     fOutputList2->Add(fHistSelectedGenV0PtPtTMax[j]);
   }
  
@@ -1783,6 +1898,12 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   
   //  cout << "event has passed selection criteria.... first and second particles to be analyzed ...."<< endl;
 
+  if (lPercentiles<5)fHistTriggerFractionDenom->Fill(1);
+else  if (lPercentiles<10)fHistTriggerFractionDenom->Fill(2);
+else  if (lPercentiles<30)fHistTriggerFractionDenom->Fill(3);
+else  if (lPercentiles<50)fHistTriggerFractionDenom->Fill(4);
+else  fHistTriggerFractionDenom->Fill(5);
+
   Bool_t Generated=kTRUE; //TRUE if generated particles are analyzed
   Int_t labelPrimOrSec=0; 
   Int_t label = 0; //track label
@@ -1903,6 +2024,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   Int_t NumberFirstParticleAll=0;
   Int_t NumberFirstParticle=0;
   Int_t NumberFirstParticleAllPt=0;
+  Int_t NumberFirstParticleAllPtMC=0;
   Int_t NumberFirstParticleMC=0;
   Int_t NumberFirstParticle_finale=0;
   Int_t NumberSecondParticleRecoTrue=0;
@@ -1928,14 +2050,15 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   Float_t DCAz=-999.;
   Float_t labelPtTMax=0;
   Float_t ptTriggerMinimoDati=10000;
-  Float_t ptTriggerMassimoDati=0;
-  Float_t ptTriggerMassimoAll=0;
-  Float_t ptTriggerMassimoDatiBis=0;
+  Double_t ptTriggerMassimoDati=0;
+  Double_t ptTriggerMassimoAll=0;
+  Double_t ptTriggerMassimoDatiBis=0;
   Float_t etaTriggerMassimoDati=0;
   Float_t phiTriggerMassimoDati=0;
   Int_t   PdgCodeTrackPtMax=0;
     Int_t TriggerPdgCode = 0;
   //begin loop for trigger particles   
+    if (!(fReadMCTruth && !isEfficiency && !isHybridMCTruth)){
   for(Int_t i=0; i < iTracks; i++) {
 
     track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));        
@@ -2138,7 +2261,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 
     if(track->Pt()> fminPtj && track->Pt()<fmaxPtj){ //Here I select trigger particle with pT>fminPtj and save their characteristics
       NumberFirstParticle++;   
-      if((!fReadMCTruth)|| (fReadMCTruth && isEfficiency)){
+      if((!fReadMCTruth)|| (fReadMCTruth && isEfficiency) || (fReadMCTruth && isHybridMCTruth) ){
 	//save first particle information (leading particle)
 	fEvt->fReconstructedFirst[NumberFirstParticle-1].fCharge       = track->Charge();
 	fEvt->fReconstructedFirst[NumberFirstParticle-1].fPt           = track->Pt();
@@ -2151,17 +2274,19 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	fEvt->fReconstructedFirst[NumberFirstParticle-1].fZvertex      = lBestPrimaryVtxPos[2];
 	fEvt->fReconstructedFirst[NumberFirstParticle-1].isP           = labelPrimOrSec;
 	fEvt->fReconstructedFirst[NumberFirstParticle-1].fPDGcode      = TriggerPdgCode;
+	//	fEvt->fReconstructedFirst[NumberFirstParticle-1].fLabel        = track->GetLabel();
       }
       fHistPtvsMultBefAll->Fill(track->Pt(), lPercentiles);
     }
 
   }//end loop for trigger particles
+    }
 
   TClonesArray* AODMCTrackArray =0x0;  
   Float_t ptTriggerMinimoMC=10000;
-  Float_t ptTriggerMassimoMC=0;
-  Float_t etaTriggerMassimoMC=0;
-  Float_t phiTriggerMassimoMC=0;
+  Double_t ptTriggerMassimoMC=0;
+  Double_t etaTriggerMassimoMC=0;
+  Double_t phiTriggerMassimoMC=0;
   TriggerPdgCode=0;
   
   //begin loop for trigger particles (MC truth analysis)
@@ -2180,6 +2305,8 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	if((trParticle->Charge())==0)continue;
 	if(TMath::Abs(trParticle->Eta())>fEtaTrigger)continue; //I need to select particles within this eta range!
 	if (!(trParticle->IsPhysicalPrimary()))continue; 
+	if (!(TMath::Abs(trParticle ->GetPdgCode()) == 211 || TMath::Abs(trParticle ->GetPdgCode()) == 321|| TMath::Abs(trParticle ->GetPdgCode()) ==2212 || TMath::Abs(trParticle ->GetPdgCode()) == 11|| TMath::Abs(trParticle ->GetPdgCode()) == 13)) continue;
+	NumberFirstParticleAllPtMC++;
 	if(trParticle->Pt()<= fminPtj || trParticle->Pt()>=fmaxPtj)continue;
 	if(trParticle->Pt()< ptTriggerMinimoMC) ptTriggerMinimoMC=trParticle->Pt();
 	if(trParticle->Pt()> ptTriggerMassimoMC){
@@ -2189,7 +2316,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	  TriggerPdgCode =trParticle ->GetPdgCode();
 	}
 	NumberFirstParticleMC++;
-	if (isEfficiency) continue;	  
+	if (isEfficiency || isHybridMCTruth) continue;
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fCharge       = trParticle->Charge();
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fPt           = trParticle->Pt();
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fEta          = trParticle->Eta();
@@ -2200,17 +2327,22 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fMultiplicity = lPercentiles;
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fZvertex      = lBestPrimaryVtxPos[2];
 	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].isP           = 1;
-	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fPDGcode     = trParticle->GetPdgCode();
-
+	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fPDGcode      = trParticle->GetPdgCode();
+	//	fEvt->fReconstructedFirst[NumberFirstParticleMC-1].fLabel          = trParticle->GetLabel();
       }
     }
   }   //end loop for trigger particles (MC truth analysis)
 
+  if ((!fReadMCTruth || (fReadMCTruth &&isEfficiency) || (fReadMCTruth && isHybridMCTruth))&&  ptTriggerMassimoDati!=0 )  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoDati, lPercentiles);
+  if (fReadMCTruth && !isEfficiency &&  !isHybridMCTruth && ptTriggerMassimoMC!=0)  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoMC, lPercentiles);  
 
-  if ((!fReadMCTruth || (fReadMCTruth &&isEfficiency))&&  ptTriggerMassimoDati!=0 )  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoDati, lPercentiles);
-  if (fReadMCTruth && !isEfficiency &&  ptTriggerMassimoMC!=0)  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoMC, lPercentiles);  
   fHistPtTMinBefAll->Fill(ptTriggerMinimoDati);
   fHistPtTMinBefAllMC->Fill(ptTriggerMinimoMC);
+
+  if(fReadMCTruth){ //to determine "event loss"                                                          
+    if(ptTriggerMassimoDati!=0)  fHistPtMaxvsMultBefAllReco->Fill(ptTriggerMassimoDati, lPercentiles);
+    if(ptTriggerMassimoMC!=0)    fHistPtMaxvsMultBefAllGen ->Fill(ptTriggerMassimoMC, lPercentiles);
+  }
 
   fHistPtTMaxBefAllCfrDataMC->Fill(ptTriggerMassimoDati,ptTriggerMassimoMC);
   fHistTrigger->Fill(NumberFirstParticle);
@@ -2229,8 +2361,8 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   if(NumberFirstParticleMC!=0 && NumberFirstParticle!=0) fHistEventMult->Fill(16); 
 
   
-  if((fReadMCTruth && isEfficiency) || (!fReadMCTruth)) {NumberFirstParticleAll=NumberFirstParticle; ptTriggerMassimoAll=ptTriggerMassimoDati;}
-  else if (fReadMCTruth && !isEfficiency) {NumberFirstParticleAll=NumberFirstParticleMC; ptTriggerMassimoAll=ptTriggerMassimoMC;}
+  if( (fReadMCTruth && isHybridMCTruth) || (fReadMCTruth && isEfficiency) || (!fReadMCTruth)) {NumberFirstParticleAll=NumberFirstParticle; ptTriggerMassimoAll=ptTriggerMassimoDati;}
+  else if (fReadMCTruth && !isEfficiency && !isHybridMCTruth) {NumberFirstParticleAll=NumberFirstParticleMC; ptTriggerMassimoAll=ptTriggerMassimoMC; NumberFirstParticleAllPt = NumberFirstParticleAllPtMC;}
   if(NumberFirstParticleAll==0) fHistNumberChargedNoTrigger->Fill(lPercentiles, NumberCharged,0 );
   if(NumberFirstParticleAll!=0) fHistNumberChargedTrigger->Fill(lPercentiles, NumberCharged,ptTriggerMassimoAll );
   fHistNumberChargedAllEvents->Fill(lPercentiles, NumberCharged,ptTriggerMassimoAll );
@@ -2255,7 +2387,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   Int_t VPdgTrig[50]={0};
   Int_t VParticleTrigLabel[50]={0};
 
-  if(fReadMCTruth){
+  if(fReadMCTruth && isEfficiency){
     if(fMCEvent){
       ProcessMCParticles(Generated, trackPtTMax, labelPrimOrSec, lPercentiles, isV0, dzgPtTMax,0, VPdgTrig, VParticleTrigLabel);
     }
@@ -2280,7 +2412,12 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   fHistTrack->AddBinContent(14, NumberFirstParticle);
   fHistTrack->AddBinContent(15, NumberFirstParticleMC);
   if (fReadMCTruth && !isEfficiency)  fHistTriggerCompositionMCTruth->Fill(TriggerPdgCode,1,ptTriggerMassimoMC);
-    
+      if (lPercentiles<5)fHistTriggerFractionNum->Fill(1);
+else  if (lPercentiles<10)fHistTriggerFractionNum->Fill(2);
+else  if (lPercentiles<30)fHistTriggerFractionNum->Fill(3);
+else  if (lPercentiles<50)fHistTriggerFractionNum->Fill(4);
+else  fHistTriggerFractionNum->Fill(5);
+
   //defining variables for Cascades
   Int_t labelPrimOrSecV0=0;
 
@@ -2331,7 +2468,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 
   if(fReadMCTruth){
     if (fMCEvent){
-      ProcessMCParticles(Generated, track, labelPrimOrSec, lPercentiles, isV0, 0, ptTriggerMassimoDati, VPdgTrig, VParticleTrigLabel);
+      ProcessMCParticles(Generated, trackPtTMax, labelPrimOrSec, lPercentiles, isV0, 0, ptTriggerMassimoAll, VPdgTrig, VParticleTrigLabel);
     }
   }
   
@@ -2363,6 +2500,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   Bool_t KeepV0GlobalMC=kFALSE;
   Bool_t SkipV0GlobalMC=kFALSE;
 
+  if (!(fReadMCTruth && !isEfficiency)){
   for (Int_t iXi = 0; iXi < iCascades; iXi++) {
     fHistEventV0->Fill(1);
     
@@ -2563,7 +2701,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 
 	}
 
-	cout << "casc: " ;
+	//	cout << "casc: " ;
 	for (Int_t i=0; i<50; i++){
 	  VParticleCascLabel[i+1]=VParticleCasc[i]->GetMother();
 	  VParticleCasc[i+1] = static_cast<AliAODMCParticle*>(AODMCTrackArray-> At(TMath::Abs(VParticleCascLabel[i+1])));
@@ -2847,6 +2985,8 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     if (bachTrackXi->HasPointOnITSLayer(0) || bachTrackXi->HasPointOnITSLayer(1) ) HasPointOnSPDBach=kTRUE;
 
     if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) && !(statusTOFBach ==  AliPIDResponse::kDetPidOk) && !(HasPointOnSPDPos) && !(HasPointOnSPDNeg) && !(HasPointOnSPDBach)) {
+    // just a try 
+    //    if ( !(statusTOFPos ==  AliPIDResponse::kDetPidOk) && !(statusTOFNeg ==  AliPIDResponse::kDetPidOk) && !(statusTOFBach ==  AliPIDResponse::kDetPidOk)) {
       continue;
     }
 
@@ -2898,6 +3038,8 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 
     if(lXiRadius<XiRadius[ParticleType]) continue;
     if(lV0RadiusXi<V0RadiusXi[ParticleType]) continue;
+    //    if(lXiRadius > 34.) continue;
+    //    if(lV0RadiusXi > 34.) continue;
     fHistEventV0->Fill(17);
 
     //cosine of pointing angle                                                                                                                                  
@@ -3147,6 +3289,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     }
 
   } //end loop for cascades particles as associated
+  }
   
     //begin MC truth loop for Casc particles as associated 
   if(fReadMCTruth){
@@ -3164,10 +3307,20 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	if (!(particleV0->IsPhysicalPrimary()))continue; 
 	if(!(particleV0->Pt()> fminPtV0 && particleV0->Pt()<fmaxPtV0) )continue;
 	if (TMath::Abs(particleV0->GetPdgCode())!=PDGCodeCasc[ParticleType]) continue;
-	if ((particleV0->Pt())>=ptTriggerMassimoMC) {
-	  skipV0_MC=kTRUE;
-	  NumberSecondParticleMCNoAssoc++;
+
+	if (!isHybridMCTruth){
+	  if ((particleV0->Pt())>=ptTriggerMassimoMC) {
+	    skipV0_MC=kTRUE;
+	    NumberSecondParticleMCNoAssoc++;
+	  }
 	}
+	else {
+	  if ((particleV0->Pt())>=ptTriggerMassimoDati) {
+	    skipV0_MC=kTRUE;
+	    NumberSecondParticleMCNoAssoc++;
+	  }
+	}
+
 	//	if (skipV0_MC)      continue;
 	NumberSecondParticleMC++;
 	if (!skipV0_MC) KeepV0GlobalMC=kTRUE; //the event had at least one Xi with pT < pT trigger
@@ -3175,24 +3328,28 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 	//some events might verify both cases
 
 	if(isEfficiency) continue;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cLabelMotherBach       = particleV0->GetPdgCode();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cisPrimCasc              = 1;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassLambda         = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassXi             = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cInvMassOmega          = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cCosPointingAngleXi    = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cCosPointingAngleV0ToXi= 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cDCAXiDaughters        = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cRapCasc               = particleV0->Y();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cPt                    = particleV0->Pt();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cctau                  = 0;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cEta                   = particleV0->Eta();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cTheta                 = particleV0->Theta();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cPhi                   = particleV0->Phi();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cCharge                = particleV0->Charge();
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cAssocOrNot            = skipV0_MC;
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cIsCommonParton        = 0; //to be assigned
-	fEvt->fReconstructedSecond[NumberSecondParticle-1].cPdgCommonParton        = 0; //to be assigned
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cLabelMotherBach       = particleV0->GetPdgCode();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cisPrimCasc              = 1;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cInvMassLambda         = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cInvMassXi             = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cInvMassOmega          = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cCosPointingAngleXi    = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cCosPointingAngleV0ToXi= 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cDCAXiDaughters        = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cRapCasc               = particleV0->Y();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cPt                    = particleV0->Pt();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cctau                  = 0;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cEta                   = particleV0->Eta();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cTheta                 = particleV0->Theta();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cPhi                   = particleV0->Phi();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cCharge                = particleV0->Charge();
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cAssocOrNot            = skipV0_MC;
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cIsCommonParton        = 0; //to be assigned
+	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cPdgCommonParton        = 0; //to be assigned
+
+	//	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cLabelD1	= particleV0->GetDaughterLabel(0);
+	//	fEvt->fReconstructedSecond[NumberSecondParticleMC-1].cLabelD2	= particleV0->GetDaughterLabel(1);
+
       }
     }
   } //end MC truth loop for Casc particles as associated 
@@ -3257,8 +3414,12 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
     fEvt->fNumberCandidateFirst = NumberFirstParticle;
     fEvt->fNumberCandidateSecond = NumberSecondParticle;
   }
-  else{
+  else if (fReadMCTruth && !isEfficiency && !isHybridMCTruth) {
     fEvt->fNumberCandidateFirst = NumberFirstParticleMC;
+    fEvt->fNumberCandidateSecond = NumberSecondParticleMC;
+  }
+  else{
+    fEvt->fNumberCandidateFirst = NumberFirstParticle;
     fEvt->fNumberCandidateSecond = NumberSecondParticleMC;
   }
 
@@ -3291,13 +3452,13 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
  
   }
 
-  if (!fReadMCTruth || (fReadMCTruth && isEfficiency)){
+  if (!fReadMCTruth || (fReadMCTruth && isEfficiency) || (isHybridMCTruth)){
     fHistPtMaxvsMult->Fill(ptTriggerMassimoDati, lPercentiles);
     if (KeepV0Global)    fHistPtMaxvsMultKeepV0->Fill(ptTriggerMassimoDati, lPercentiles);
     if (SkipV0Global)    fHistPtMaxvsMultSkipV0->Fill(ptTriggerMassimoDati, lPercentiles);
     fHist_eta_phi_PtMax->Fill(phiTriggerMassimoDati, etaTriggerMassimoDati);
   }
-  if (fReadMCTruth && !isEfficiency) {
+  if (fReadMCTruth && !isEfficiency && !isHybridMCTruth) {
     fHistPtMaxvsMult->Fill(ptTriggerMassimoMC, lPercentiles);
     if (KeepV0GlobalMC)    fHistPtMaxvsMultKeepV0->Fill(ptTriggerMassimoMC, lPercentiles);
     if (SkipV0GlobalMC)    fHistPtMaxvsMultSkipV0->Fill(ptTriggerMassimoMC, lPercentiles);
@@ -3321,9 +3482,9 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   */
   
   //--------------------------------------------------------------
-  Float_t ptTriggerMassimo=0;
-  if (!fReadMCTruth || (fReadMCTruth && isEfficiency)) ptTriggerMassimo=ptTriggerMassimoDati;
-  if (fReadMCTruth && !isEfficiency) ptTriggerMassimo=ptTriggerMassimoMC;
+  Double_t ptTriggerMassimo=0;
+  if (!fReadMCTruth || (fReadMCTruth && isEfficiency) || (fReadMCTruth && isHybridMCTruth) ) ptTriggerMassimo=ptTriggerMassimoDati;
+  if (fReadMCTruth && !isEfficiency && !isHybridMCTruth) ptTriggerMassimo=ptTriggerMassimoMC;
   DoPairsh1h2((Int_t)lPercentiles, fieldsign, lBestPrimaryVtxPos[2], ptTriggerMassimo);  
 
   PostData(1, fOutputList);     
@@ -3339,7 +3500,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
 
 //----------------------------------------------------------------------------------------------------
 
-void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, int fieldsign, Double_t lBestPrimaryVtxPos, Float_t ptTriggerMassimo)  {
+void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, int fieldsign, Double_t lBestPrimaryVtxPos, Double_t ptTriggerMassimo)  {
 
   //-----------
   double DCAxyP1  = -999. ;
@@ -3389,11 +3550,75 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
   double pairKt    = 0.;
   double pTmax = 0.;
 
+  Int_t lptindex=0;
+  /*
+  Bool_t  isPDGCodepiKp;
+  Bool_t isPDGCodeDesired;
+  double ptTriggerSecond=0;
+  double ptTriggerThird=0;
+  Int_t indexTrigger=-999;
+
+
+
+  for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+    if (fEvt->fReconstructedFirst[i].fPt>ptTriggerSecond && fEvt->fReconstructedFirst[i].fPt!= ptTriggerMassimo ) ptTriggerSecond=fEvt->fReconstructedFirst[i].fPt;
+    cout <<"loop on pt " <<  fEvt->fReconstructedFirst[i].fPt<< endl;
+  }
+  cout << "pt max " << ptTriggerMassimo<< " pt second " <<  ptTriggerSecond<< endl;
+
+  for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+    if (fEvt->fReconstructedFirst[i].fPt>ptTriggerThird && fEvt->fReconstructedFirst[i].fPt!= ptTriggerMassimo && fEvt->fReconstructedFirst[i].fPt!= ptTriggerSecond ) ptTriggerThird=fEvt->fReconstructedFirst[i].fPt;
+    cout <<"loop on pt " <<  fEvt->fReconstructedFirst[i].fPt<< endl;
+  }
+  cout << "pt max " << ptTriggerMassimo<< " pt second " <<  ptTriggerSecond << " ptriggerthird " << ptTriggerThird<< endl;
+
+  for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+
+    isPDGCodepiKp    = (TMath::Abs(fEvt->fReconstructedFirst[i].fPDGcode)==211 || TMath::Abs(fEvt->fReconstructedFirst[i].fPDGcode)==2212 || TMath::Abs(fEvt->fReconstructedFirst[i].fPDGcode)==321);
+    isPDGCodeDesired=  isPDGCodepiKp ;
+
+    if (fEvt->fReconstructedFirst[i].fPt == ptTriggerMassimo && isPDGCodeDesired) {
+      indexTrigger=i; 
+      lptindex=1;
+      continue;
+    }
+  }
+
+  if (indexTrigger!=-999)  cout << fEvt->fReconstructedFirst[indexTrigger].fPt << " pdg " << fEvt->fReconstructedFirst[indexTrigger].fPDGcode<< endl;
+  if (indexTrigger==-999){
+    for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+      if (fEvt->fReconstructedFirst[i].fPt == ptTriggerSecond && isPDGCodeDesired) {
+	indexTrigger=i;
+	lptindex=2;
+	continue;
+      }
+    }
+  }
+  if (indexTrigger!=-999)  cout <<" second trigger " <<  fEvt->fReconstructedFirst[indexTrigger].fPt << " pdg " << fEvt->fReconstructedFirst[indexTrigger].fPDGcode<< endl;
+
+  if (indexTrigger==-999){
+    for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
+      if (fEvt->fReconstructedFirst[i].fPt == ptTriggerThird && isPDGCodeDesired) {
+	indexTrigger=i;
+	lptindex=3;
+	continue;
+      }
+    }
+  }
+  */
   for (int i=0; i<fEvt->fNumberCandidateFirst; i++) {
     
     //I select as trigger particle only the highest-pT one
+    /*
+    if (fReadMCTruth && !isEfficiency && !isHybridMCTruth){
+      if (i!= indexTrigger) continue;
+    }
+    else{
+      if ( fEvt->fReconstructedFirst[i].fPt <ptTriggerMassimo ) continue;
+    }
+    */
     if ( fEvt->fReconstructedFirst[i].fPt <ptTriggerMassimo ) continue;
-
+    cout <<" I got " <<  fEvt->fReconstructedFirst[i].fPt << endl;
     for (int eventNumber=0; eventNumber<fnEventsToMix+1; eventNumber++) { 
       //if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateFirst)!=0.) evmultmixed++; 
       if (!multmixedcounted && eventNumber!=0 && ((fEvt+eventNumber)->fNumberCandidateSecond)!=0.) {
@@ -3442,6 +3667,7 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableDeltaTheta             = dtheta;
 	  fTreeVariableMultiplicity	      = lPercentiles;
 	  fTreeVariableZvertex                = lBestPrimaryVtxPos;
+	  fTreeVariableTriggerIndex         = lptindex;
 	  //	  fTreeVariableisPrimaryTrigger       =  fEvt->fReconstructedFirst[i].isP ; //this should always be zero and doesn't give us the correct info
 
 	  fSignalTree->Fill();  
@@ -3481,6 +3707,7 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
 	  fTreeVariableDeltaTheta             =dtheta;      
 	  fTreeVariableMultiplicity	      = lPercentiles;
 	  fTreeVariableZvertex                = lBestPrimaryVtxPos;
+	  fTreeVariableTriggerIndex         = lptindex;
 	  //	  fTreeVariableisPrimaryTrigger       =  (fEvt+eventNumber)->fReconstructedFirst[i].isP;
        
 	  fBkgTree->Fill();  
@@ -3495,8 +3722,10 @@ void AliAnalysisTaskCorrelationhCasc::DoPairsh1h2 ( const Float_t lPercentiles, 
     
   } // end first particle loop
   
-  if  (multmixedcounted) 
-    fHistMultiplicityOfMixedEvent->Fill(evmultmixed); //tells me with how many events the mixed-event was done
+  if  (multmixedcounted){
+    fHistMultiplicityOfMixedEvent->Fill(evmultmixed,lPercentiles); //tells me with how many events the mixed-event was done
+    //    cout << "percentiles " << lPercentiles << endl;
+  }
   
 }
 

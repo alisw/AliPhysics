@@ -27,6 +27,7 @@
 //
 //------------------------------------------------------------------------------------------
 
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -223,7 +224,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),
@@ -247,7 +248,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
   fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS("")
+  fXmlFileFromCVMFS(""),
+  ffraction(-1),
+  fPtLimForDownscaling(0)
 {
   /// Default ctor
   //
@@ -391,7 +394,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
   fTimestampCut(0),
@@ -416,7 +419,9 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
   fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS("")
+  fXmlFileFromCVMFS(""),
+  ffraction(-1),
+  fPtLimForDownscaling(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -630,7 +635,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[10] = "nSigmaTOFpr";
     fCandidateVariableNames[11] = "bachelorPt";
     fCandidateVariableNames[12] = "V0positivePt";
-    fCandidateVariableNames[13] = "V0negativePt";
+    //fCandidateVariableNames[13] = "V0negativePt";
+    fCandidateVariableNames[13] = "nSigmaTOFpi";
     fCandidateVariableNames[14] = "dcaV0pos";
     fCandidateVariableNames[15] = "dcaV0neg";
     fCandidateVariableNames[16] = "v0Pt";
@@ -668,7 +674,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[48] = "origin";
     fCandidateVariableNames[49] = "nSigmaTPCpi";
     fCandidateVariableNames[50] = "nSigmaTPCka";
-    fCandidateVariableNames[51] = "bachTPCmom";
+    //fCandidateVariableNames[51] = "bachTPCmom";  // AA 15/01/2021
+    fCandidateVariableNames[51] = "nSigmaTOFka";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -684,11 +691,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[10] = "nSigmaTOFpr";
     fCandidateVariableNames[11] = "bachelorPt";
     fCandidateVariableNames[12] = "V0positivePt";
-    fCandidateVariableNames[13] = "V0negativePt";
+    //fCandidateVariableNames[13] = "V0negativePt"; // AA 15/01/2021
+    fCandidateVariableNames[13] = "nSigmaTOFka";
     fCandidateVariableNames[14] = "dcaV0pos";
     fCandidateVariableNames[15] = "dcaV0neg";
     fCandidateVariableNames[16] = "v0Pt";
-    fCandidateVariableNames[17] = "bachTPCmom";
+    //fCandidateVariableNames[17] = "bachTPCmom"; // AA 15/01/2021
+    fCandidateVariableNames[17] = "nSigmaTOFpi";
     fCandidateVariableNames[18] = "LcPt";
     fCandidateVariableNames[19] = "combinedProtonProb";
     fCandidateVariableNames[20] = "V0positiveEta";
@@ -1508,7 +1517,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
   Int_t nCascades= arrayLctopKos->GetEntriesFast();
 
   // loop over cascades to search for candidates Lc->p+K0S
-
   Int_t mcLabel = -1;
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
@@ -1722,6 +1730,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     //Printf("Yu-huuuu!!! primary vertex for Lc found!!");
     }
   */
+
+  //Downscaling for Pb-Pb data tree at low pt
+  if(ffraction > -1 && fFillTree && !fUseMCInfo && part->Pt() < fPtLimForDownscaling && fCurrentEvent%ffraction != 0) return;
+  
   Double_t invmassLc = part->InvMassLctoK0sP();
 
   AliAODv0 * v0part = part->Getv0();
@@ -2104,7 +2116,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[10] = nSigmaTOFpr;
       fCandidateVariables[11] = bachelor->Pt();
       fCandidateVariables[12] = v0pos->Pt();
-      fCandidateVariables[13] = v0neg->Pt();
+      //fCandidateVariables[13] = v0neg->Pt();
+      fCandidateVariables[13] = nSigmaTOFpi;
       fCandidateVariables[14] = v0part->Getd0Prong(0);
       fCandidateVariables[15] = v0part->Getd0Prong(1);
       fCandidateVariables[16] = v0part->Pt();
@@ -2147,7 +2160,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	fCandidateVariables[48] = -1;
       fCandidateVariables[49] = nSigmaTPCpi;
       fCandidateVariables[50] = nSigmaTPCka;
-      fCandidateVariables[51] = bachelor->GetTPCmomentum();
+      //fCandidateVariables[51] = bachelor->GetTPCmomentum();
+      fCandidateVariables[51] = nSigmaTOFka;
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
@@ -2163,11 +2177,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[10] = nSigmaTOFpr;
       fCandidateVariables[11] = bachelor->Pt();
       fCandidateVariables[12] = v0pos->Pt();
-      fCandidateVariables[13] = v0neg->Pt();
+      //fCandidateVariables[13] = v0neg->Pt();
+      fCandidateVariables[13] = nSigmaTOFka;
       fCandidateVariables[14] = v0part->Getd0Prong(0);
       fCandidateVariables[15] = v0part->Getd0Prong(1);
       fCandidateVariables[16] = v0part->Pt();
-      fCandidateVariables[17] = bachelor->GetTPCmomentum();
+      //fCandidateVariables[17] = bachelor->GetTPCmomentum();
+      fCandidateVariables[17] = nSigmaTOFpi;
       fCandidateVariables[18] = part->Pt();
       fCandidateVariables[19] = probProton;
       fCandidateVariables[20] = v0pos->Eta();
@@ -2226,6 +2242,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	inputVars[11] = nSigmaTPCpi;
 	inputVars[12] = nSigmaTPCka;
 	inputVars[13] = bachelor->GetTPCmomentum();
+      }
+      else if (fNVars == 12) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTOFpi;
+	inputVars[8] = nSigmaTOFka;
+	inputVars[9] = nSigmaTPCpr;
+	inputVars[10] = nSigmaTPCpi;
+	inputVars[11] = nSigmaTPCka;
       }
       else if (fNVars == 11) {
 	inputVars[0] = invmassK0s;

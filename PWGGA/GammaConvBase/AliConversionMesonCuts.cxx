@@ -152,7 +152,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetPtMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
-  fDoGammaSwappForBg(kFALSE),
+  fDoGammaSwappForBg(0),
   fDoWeightingInSwappBg(kFALSE),
   fGammaSwappMethodBg(0),
   fNumberOfSwappsForBg(1),
@@ -162,7 +162,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoToCloseV0sCut(kFALSE),
   fDoSharedElecCut(kFALSE),
   fDoMesonQualitySelection(kFALSE),
-  fUseMCPSmearing(kFALSE),
+  fUseMCPSmearing(0),
   fAlphaPtDepCut(kFALSE),
   fDCAGammaGammaCutOn(kFALSE),
   fDCAZMesonPrimVtxCutOn(kFALSE),
@@ -175,6 +175,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fBackgroundMode(4),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
+  fDoOutOfJet(0),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
   fEnableOmegaAPlikeCut(kFALSE),
@@ -294,6 +295,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fBackgroundMode(4),
   fDoJetAnalysis(ref.fDoJetAnalysis),
   fDoJetQA(ref.fDoJetQA),
+  fDoOutOfJet(ref.fDoOutOfJet),
   fDoIsolatedAnalysis(ref.fDoIsolatedAnalysis),
   fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
   fEnableOmegaAPlikeCut(ref.fEnableOmegaAPlikeCut),
@@ -1217,6 +1219,42 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
+
+  TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
+  TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
+  TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
+
+  // Opening Angle Cut
+  if( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
+  {
+    return kFALSE;
+  }
+
+  // Min Opening Angle
+  if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) < fMinOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) < fMinOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fMinOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  // Max Opening Angle
+  if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(omega->Pt());
+
+  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) > fMaxOpanCutMeson) &&
+    (vecPi0Gamma0.Angle(vecOmegaGamma) > fMaxOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) > fMaxOpanCutMeson) )
+  {
+    return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
   // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
   // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
@@ -1886,6 +1924,21 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     fDoHighPtHadronAnalysis = kTRUE;
     break;
+  case 6: // out of jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 1;
+    break;
+  case 7: // out of jet, only on opposite side of Jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 2;
+    break;
+  case 8: // out of jet, in "donut shape" [R, R + 0.2] around Jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 3;
+    break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
     return kFALSE;
@@ -1982,21 +2035,25 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     fSingleDaughterMinE  = 12.;
     break;
   case 19: //j
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 2.;
     break;
   case 20: //k
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 4.;
     break;
   case 21: //l
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 8.0;
     break;
   case 22: //m
-    cout<<"Warning: pT cut not defined"<<PtCut<<endl;
-    return kFALSE;
-    break;
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 9.0;
+      break;
   case 23: //n
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -2464,10 +2521,35 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 3.;
       fMassParamFunction   = 3;
       break;
-    case 30: // u // EMC-EMC - 2 sigma - gamma selection
+      // Varation for 13 TeV EDC
+    case 30: // u // EMC-EMC - 1 sigma - gamma selection
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fUseGammaSelection = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 0;
+      break;
+    case 31: // v // EMC-EMC - 3 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 0;
+      break;
+    case 32: // w // EMC-EMC - 4 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = 4.;
+      fMassParamFunction   = 0;
+      break;
+    case 33: // x // EMC-EMC - 2 sigma - gamma selection
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.;
       fSelectionNSigmaHigh = 2.;
       fMassParamFunction   = 0;
@@ -3211,7 +3293,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fBackgroundUseLikeSign      = kTRUE;
     fBackgroundUseSideband      = kFALSE;
     break;
-  case 11: // b mixed event with pi0 sideband candidates (right side of pi0 peak)
+  case 11: // b same event pi0 sideband candidates (right side of pi0 peak)
+    fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -3220,7 +3303,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.180;
     fSidebandMixingHigh         = 0.220;
     break;
-  case 12: // c mixed event with pi0 sideband candidates (left side of pi0 peak)
+  case 12: // c same event with pi0 sideband candidates (left side of pi0 peak)
+    fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -3229,7 +3313,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.01;
     fSidebandMixingHigh         = 0.05;
     break;
-  case 13: // d mixing event with pi0 sideband candidates (both sides of pi0 peak)
+  case 13: // d same event with pi0 sideband candidates (both sides of pi0 peak)
+    fBackgroundMode                  = 6;
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
     fDoBGProbability                 = kFALSE;
@@ -3241,7 +3326,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingRightLow          = 0.180;
     fSidebandMixingRightHigh         = 0.220;
     break;
-  case 14: //e mixed event with pi0 sideband candidates (right side of pi0 peak)
+  case 14: //e same event with pi0 sideband candidates (right side of pi0 peak)
+    fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -3250,7 +3336,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.600;
     fSidebandMixingHigh         = 0.650;
     break;
-  case 15: //f mixed event with pi0 sideband candidates (left side of pi0 peak)
+  case 15: //f same event with pi0 sideband candidates (left side of pi0 peak)
+    fBackgroundMode             = 6;
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -3259,7 +3346,8 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.42;
     fSidebandMixingHigh         = 0.47;
     break;
-  case 16: //g mixing event with pi0 sideband candidates (both sides of pi0 peak)
+  case 16: //g same event with pi0 sideband candidates (both sides of pi0 peak)
+    fBackgroundMode                  = 6;
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
     fDoBGProbability                 = kFALSE;
@@ -3336,50 +3424,65 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fBackgroundMode             = 3;
     break;
   case 27: // r cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
+    fBackgroundMode             = 7;
     break;
-  case 28: // s cluster swapping method with 90 degree rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+  case 28: // s cluster swapping method with 90 degree rotation angle with weighting
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
     break;
   case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 1;
     fBackgroundHandler          = 2;
   case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 4;
     fBackgroundHandler          = 2;
     break;
   case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
   case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
-    fDoGammaSwappForBg          = kTRUE;
+    fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
+    fNumberOfSwappsForBg        = 20;
+    fBackgroundHandler          = 2;
+    break;
+  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
+    fDoWeightingInSwappBg       = kFALSE;
+    fGammaSwappMethodBg         = 0;
+    fNumberOfSwappsForBg        = 1;
+    fBackgroundHandler          = 2;
+    break;
+  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
+    fDoGammaSwappForBg          = 2;
+    fDoWeightingInSwappBg       = kTRUE;
+    fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
     fBackgroundHandler          = 2;
     break;
@@ -3633,6 +3736,12 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPSigSmearing     = 0.025;
       fPSigSmearingCte  = 0.020;
       break;
+    case 17:     //h
+      fUseMCPSmearing   = 2;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.025;
+      fPSigSmearingCte  = 0.020;
+      break;
 
     default:
       AliError("Warning: UseMCPSmearing not defined");
@@ -3783,6 +3892,11 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.009;
       fPSigSmearingCte  = 0.011;
+    case 24:     //o
+      fUseMCPSmearing   = 2;
+      fPSigSmearing     = 0.000222327;
+      fPSigSmearingCte  = -0.000123638;
+
       break;
     default:
       AliError("Warning: UseMCPSmearing not defined");
@@ -4205,20 +4319,34 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     theta=acos( photon->Pz()/ photon->P());
   }
 
-  if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
-    facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
-  }
-
-  if( fPBremSmearing != 1.){
-    if(fBrem!=NULL){
-      facPBrem = fBrem->GetRandom();
+  if (fUseMCPSmearing == 1){
+    if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){
+      facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
     }
-  }
 
-  photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
-  photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
-  photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
-  photon->SetE(photon->P());
+    if( fPBremSmearing != 1.){
+      if(fBrem!=NULL){
+        facPBrem = fBrem->GetRandom();
+      }
+    }
+
+    photon->SetPx(facPBrem* (1+facPSig)* P*sin(theta)*cos(phi)) ;
+    photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
+    photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
+    photon->SetE(photon->P());
+  } else if (fUseMCPSmearing == 2) {
+    TF1* fScaling = new TF1("fScaling", "pol2", 0, 100);
+    fScaling->SetParameters(1.47693, -0.954702, 0.47791);    
+    facPSig = fRandom.Gaus(P,fScaling->GetX(fPSigSmearingCte+fPSigSmearing*P));
+    
+    photon->SetPx(facPSig*sin(theta)*cos(phi)) ;
+    photon->SetPy(facPSig*sin(theta)*sin(phi)) ;
+    photon->SetPz(facPSig*cos(theta));
+
+    photon->SetE(photon->P());
+  }
+  
+
 }
 //________________________________________________________________________
 void AliConversionMesonCuts::SmearVirtualPhoton(AliAODConversionPhoton* photon)
@@ -4426,10 +4554,27 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           break;
       }
 
-      if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
-        return kTRUE;
-      else
-        return kFALSE;
+      if (nominalRange == 0){
+        if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 1){
+        if (meson->M() > fSidebandMixingLow && meson->M() < fSidebandMixingHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 2){
+        if (meson->M() > fSidebandMixingLeftLow && meson->M() < fSidebandMixingLeftHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      } else if (nominalRange == 3){
+        if (meson->M() > fSidebandMixingRightLow && meson->M() < fSidebandMixingRightHigh)
+          return kTRUE;
+        else
+          return kFALSE;
+      }
   } else {
     if (!(meson->M() > fSelectionLow && meson->M() < fSelectionHigh))
       return kTRUE;

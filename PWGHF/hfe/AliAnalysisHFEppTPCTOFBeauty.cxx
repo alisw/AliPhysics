@@ -15,13 +15,13 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in p-p collisions   				  //
-//      															  //
-//																	  //
-//		v1.0														  //
+//      Task for Beauty analysis in p-p collisions   		      //
+//     								      //
+//								      //
+//	   							      //
 //                                                                    //
-//	    Authors 							                          //
-//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch)				      //
+//	    Author 				                      //
+//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch) //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -1904,7 +1904,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                                                                                                                                                           Double_t DCAxy = d0z0[0];                                                                                                                       Double_t DCAz = d0z0[1];
                                                                                                                                                          //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
                                                                                                                                                           if(TMath::Abs(DCAxy) > 1.0 || TMath::Abs(DCAz) > 2.0) continue;
-         
+         //cout<<"DCAxy:      "<<DCAxy<<"    "<<DCAxy*track->Charge()*signB<<"     "<<signB<<"     "<<track->GetBz()<<"     "<<fAOD->GetMagneticField()<<endl;
 
         
         ///////////////////////////
@@ -2595,25 +2595,25 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 if(TMath::Abs(pdg_mother) == 411){
                   if(TMath::Abs(pdg_gmother) == 413){
                   if(fMCparticleMother->Pt() < 30) fWeight_Dp = HistWeightDpD0->Eval(fMCparticleMother->Pt());
-                  hEleDp_WCorr_WFCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_Dp);
+                  hEleDp_WCorr_WFCorr->Fill(fPt, DCAxy*track->Charge()*signB, fDWeight*fWeight_Dp);
 		  hPtDstarDp->Fill(fMCparticleGMother->Pt(), fDWeight);///DstarDp
 		  hPtDp->Fill(fMCparticleMother->Pt(), fDWeight);///Dp
 		  hPtDp_AFCorr->Fill(fMCparticleMother->Pt(), fDWeight*fWeight_Dp);///Dp
-                  fDCAxy_pt_DstarDplusAft->Fill(fPt,DCAResCorr, fDWeight);
+                  fDCAxy_pt_DstarDplusAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }else{
                   if(fMCparticleMother->Pt() < 30) fWeight_Dp = HistWeightDpD0->Eval(fMCparticleMother->Pt());
-		  hEleDp_WCorr_WFCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_Dp);
+		  hEleDp_WCorr_WFCorr->Fill(fPt, DCAxy*track->Charge()*signB, fDWeight*fWeight_Dp);
 		  hPtDp->Fill(fMCparticleMother->Pt(), fDWeight);///Dp
 		  hPtDp_AFCorr->Fill(fMCparticleMother->Pt(), fDWeight*fWeight_Dp);///Dp
-                  fDCAxy_pt_DplusAft->Fill(fPt,DCAResCorr, fDWeight);
+                  fDCAxy_pt_DplusAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }
                   }
                 if(TMath::Abs(pdg_mother) == 421){
@@ -2625,58 +2625,58 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                    }
 
 		  if(fMCparticleGMother->Pt() < 30) fWeight_Dstar = HistWeightDstarD0->Eval(fMCparticleGMother->Pt());
-		  hEleDstar_WCorr_WFCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_Dstar);
+		  hEleDstar_WCorr_WFCorr->Fill(fPt, DCAxy*track->Charge()*signB, fDWeight*fWeight_Dstar);
 		  hPtDstarD0->Fill(fMCparticleGMother->Pt(), fDWeight);///DstarD0
 		  hPtDstarD0_AFCorr->Fill(fMCparticleGMother->Pt(), fDWeight*fWeight_Dstar);///Dp
-		  fDCAxy_pt_DstarDzeroAft->Fill(fPt,DCAResCorr, fDWeight);
+		  fDCAxy_pt_DstarDzeroAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
  
                   }else{
                   if(fMCparticleMother->Pt() < 30) fWeight_D0 = HistWeightD0->Eval(fMCparticleMother->Pt());
                   hPtD0->Fill(fMCparticleMother->Pt(), fDWeight);///D0
                   hPtD0_AFCorr->Fill(fMCparticleMother->Pt(), fDWeight*fWeight_D0);///D0
-                  hEleD0_WCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_D0);
-                  fDCAxy_pt_DzeroAft->Fill(fPt,DCAResCorr, fDWeight);// create weight for D0 to regain the actual fraction
+                  hEleD0_WCorr->Fill(fPt, DCAxy*track->Charge()*signB, fDWeight*fWeight_D0);
+                  fDCAxy_pt_DzeroAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);// create weight for D0 to regain the actual fraction
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }
                   }
                 if(TMath::Abs(pdg_mother) == 431){
                   if(TMath::Abs(pdg_gmother) == 413){
                   if(fMCparticleMother->Pt() < 30) fWeight_Ds = HistWeightDsD0->Eval(fMCparticleMother->Pt());
-		  hEleDs_WCorr_WFCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_Ds);
+		  hEleDs_WCorr_WFCorr->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight*fWeight_Ds);
 		  hPtDs->Fill(fMCparticleMother->Pt(), fDWeight);///Ds
 		  hPtDs_AFCorr->Fill(fMCparticleMother->Pt(), fDWeight*fWeight_Ds);///Ds
-                  fDCAxy_pt_DstarDsAft->Fill(fPt,DCAResCorr, fDWeight);
+                  fDCAxy_pt_DstarDsAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }
                   else{
                   if(fMCparticleMother->Pt() < 30) fWeight_Ds = HistWeightDsD0->Eval(fMCparticleMother->Pt());
-		  hEleDs_WCorr_WFCorr->Fill(fPt, DCAResCorr, fDWeight*fWeight_Ds);
+		  hEleDs_WCorr_WFCorr->Fill(fPt, DCAxy*track->Charge()*signB, fDWeight*fWeight_Ds);
 		  hPtDs->Fill(fMCparticleMother->Pt(), fDWeight);///Ds
 		  hPtDs_AFCorr->Fill(fMCparticleMother->Pt(), fDWeight*fWeight_Ds);///Ds
-                  fDCAxy_pt_DsAft->Fill(fPt,DCAResCorr, fDWeight);
+                  fDCAxy_pt_DsAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }
                   }
                   }
                   else{
-                  fDCAxy_pt_charmmesonsAft->Fill(fPt,DCAResCorr, fDWeight);
+                  fDCAxy_pt_charmmesonsAft->Fill(fPt,DCAxy*track->Charge()*signB, fDWeight);
                   hCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fDWeight);
                   hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt(),fDWeight);
                   hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt,fDWeight);
-                  fDCAxy_pt_charmaft->Fill(fPt,DCAResCorr,fDWeight);
+                  fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB,fDWeight);
                   }
 	      
                   hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
@@ -2690,7 +2690,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 				 if(TMath::Abs(pdg_mother) == 4122){ 
 					 qadca[1]=27.5; ///to check DCA prompt Lc+
 					 if(fMCparticleMother->Pt() < 30) fWeight_Lc = HistWeightLcD0->Eval(fMCparticleMother->Pt());
-					 hEleLc_WCorr_WFCorr->Fill(fPt, DCAResCorr, fWeight_Lc);
+					 hEleLc_WCorr_WFCorr->Fill(fPt, DCAxy*track->Charge()*signB, fWeight_Lc);
 				 }
 
 						
@@ -2706,24 +2706,24 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                     pdg_mother = fMCparticleMother->GetPdgCode();
                     
                     if(fIsFromMesonB){
-                    fDCAxy_pt_MesonB_beautybef->Fill(fPt,DCAResCorr);
+                    fDCAxy_pt_MesonB_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
                     }
                     if(fIsFromMesonBD){
                     
-                    fDCAxy_pt_MesonBD_beautybef->Fill(fPt,DCAResCorr);
+                    fDCAxy_pt_MesonBD_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
                     }
                     // check by Sudhir on 27 Oct 2018
                     if(fIsFromBarionB){
-                    fDCAxy_pt_BaryonB_beautybef->Fill(fPt,DCAResCorr);
+                    fDCAxy_pt_BaryonB_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
                     }
                     if(fIsFromBarionBD){
                     
-                    fDCAxy_pt_BaryonBD_beautybef->Fill(fPt,DCAResCorr);
+                    fDCAxy_pt_BaryonBD_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
                     }
                     // check by Sudhir on 27 Oct 2018
                     if(fIsFromMesonB || fIsFromMesonBD){///beauty meson 
 						qadca[1]=2.5;
-						fDCAxy_pt_beautybef->Fill(fPt,DCAResCorr);
+						fDCAxy_pt_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
 						            ///Correcting the pT spectrum
             
             if(fIsFromMesonB && (fMCparticleMother->Pt() < 50)){
@@ -2733,8 +2733,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
              // hBeautyMotherPtbef->Fill(fMCparticleMother->Pt());
               hBeautyMotherPtaft->Fill(fMCparticleMother->Pt(),fBWeight);
               hBeautyMotherPt2Daft->Fill(fMCparticleMother->Pt(),fPt,fBWeight);
-              fDCAxy_pt_MesonB_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
-              fDCAxy_pt_beautyaft->Fill(fPt,DCAResCorr, fBWeight);	
+              fDCAxy_pt_MesonB_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
+              fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);	
             }
             if(fIsFromMesonBD){
               if(fMCparticleMother->GetMother() > 0){
@@ -2747,8 +2747,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                  // hBeautyMotherPtbef->Fill(fMCparticleGMother->Pt());
                   hBeautyMotherPtaft->Fill(fMCparticleGMother->Pt(),fBWeight);
                   hBeautyMotherPt2Daft->Fill(fMCparticleGMother->Pt(),fPt,fBWeight);
-                  fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
-                  fDCAxy_pt_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
+                  fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
+                  fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
                  
                 }
                 else{
@@ -2761,8 +2761,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                  // hBeautyMotherPtbef->Fill(fMCparticleGGMother->Pt());
                   hBeautyMotherPtaft->Fill(fMCparticleGGMother->Pt(),fBWeight);
                   hBeautyMotherPt2Daft->Fill(fMCparticleGGMother->Pt(),fPt,fBWeight);
-                  fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
-                  fDCAxy_pt_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
+                  fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
+                  fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
                   }else{ 
                   if(fMCparticleGGMother->GetMother() > 0){
                     fMCparticleGGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGGMother->GetMother());
@@ -2773,8 +2773,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             	  //  hBeautyMotherPtbef->Fill(fMCparticleGGGMother->Pt());
                     hBeautyMotherPtaft->Fill(fMCparticleGGGMother->Pt(),fBWeight);
                     hBeautyMotherPt2Daft->Fill(fMCparticleGGGMother->Pt(),fPt,fBWeight);
-                    fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
-                    fDCAxy_pt_beautyaft->Fill(fPt,DCAResCorr, fBWeight);
+                    fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
+                    fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
                     }
                   }
                   }
@@ -2788,7 +2788,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 	if(fIsFromBarionB || fIsFromBarionBD){///beauty baryon
           if(fIsFromBarionB && (fMCparticleMother->Pt()<50)){
           fBWeight = fBcorr->Eval(fMCparticleMother->Pt());
-          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAResCorr, fBWeight);
+          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
           }
           if(fIsFromBarionBD){
           if(fMCparticleMother->GetMother() > 0){
@@ -2796,7 +2796,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
           float pdg_gmother = fMCparticleGMother->GetPdgCode();
           if((TMath::Abs(pdg_gmother)>5000 && TMath::Abs(pdg_gmother)<6000) && (fMCparticleGMother->Pt()<50)){
           fBWeight = fBcorr->Eval(fMCparticleGMother->Pt());
-          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAResCorr, fBWeight);
+          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
           }
           else{
           if(fMCparticleGMother->GetMother() > 0){
@@ -2804,7 +2804,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
           float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
           if((TMath::Abs(pdg_ggmother)>5000 && TMath::Abs(pdg_ggmother)<6000) && (fMCparticleGGMother->Pt()<50)){
           fBWeight = fBcorr->Eval(fMCparticleGGMother->Pt());
-          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAResCorr, fBWeight);
+          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
           }
           else{
           if(fMCparticleGGMother->GetMother() > 0){
@@ -2813,7 +2813,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
           if(fMCparticleGGGMother) float pdg_gggmother = fMCparticleGGGMother->GetPdgCode();
           if((TMath::Abs(pdg_gggmother)>5000 && TMath::Abs(pdg_gggmother)<6000) && (fMCparticleGGGMother->Pt()<50)){
           fBWeight = fBcorr->Eval(fMCparticleGGGMother->Pt());
-          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAResCorr, fBWeight);
+          fDCAxy_pt_beautybaryons_corr->Fill(fPt,DCAxy*track->Charge()*signB, fBWeight);
           }
           }
           }
@@ -2822,7 +2822,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
           }
           }
           qadca[1]=3.5;
-          fDCAxy_pt_beautybaryons->Fill(fPt,DCAResCorr);
+          fDCAxy_pt_beautybaryons->Fill(fPt,DCAxy*track->Charge()*signB);
           }
                 }//end of electrons from beauty
                  Double_t DCANew = DCAxy*track->Charge()*signB;
@@ -2871,6 +2871,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						//cout<<"Pdg pTy old dal2:   "<<pdg_mother<<endl;}
 					if(TMath::Abs(pdg_mother) == 22) qadca[1]=4.5;
 						//cout<<"Pdg pTy old gamma:   "<<pdg_mother<<endl;}
+					//cout<<"DCAxy:      "<<DCAxy<<"    "<<DCAxy*track->Charge()*signB<<endl;
 					/*if(PhotonicType2 == 2){ 
 						qadca[1] = 5.5; // gamma
 						cout<<"Pdg pTy 2:   "<<pdg_mother<<endl;}
@@ -2879,19 +2880,21 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						cout<<"Pdg pTy 3:   "<<pdg_mother<<endl;}*/
 					Int_t fType = GetPi0EtaType(fMCparticleMother,fMCarray);
 					if((TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221)){
-					if(TMath::Abs(motherpdg) == 321 && fType == 4){ // electrons from Dalitz 
-      					fDCAxy_pt_Dalitz2->Fill(fPt, DCAResCorr, fKPicorr->Eval(fMCparticleMother->Pt()));
+					if(/*TMath::Abs(motherpdg) == 321 && */fType == 4){ // electrons from Dalitz 
+      					//cout<<"Dalitz:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
+					fDCAxy_pt_Dalitz2->Fill(fPt, DCAxy*track->Charge()*signB, fKPicorr->Eval(fMCparticleMother->Pt()));
       					}
-					if((TMath::Abs(motherpdg) != 321 && fType == 4) || fType == 0 || fType == 1 || fType == 2 || fType == 3){
-      					fDCAxy_pt_Dalitz2->Fill(fPt, DCAResCorr);
+					if(/*(TMath::Abs(motherpdg) != 321 && fType == 4) || */fType == 0 || fType == 1 || fType == 2 || fType == 3){
+      					fDCAxy_pt_Dalitz2->Fill(fPt, DCAxy*track->Charge()*signB);
       					}
           				}
 					if(TMath::Abs(pdg_mother) == 22){
-      					if(TMath::Abs(motherpdg) == 321 && fType == 4){ // electrons from photon conversions
-      					fDCAxy_pt_Conversions2->Fill(fPt, DCAResCorr, fKPicorr->Eval(fMCparticleMother->Pt()));
+      					if(/*TMath::Abs(motherpdg) == 321 && */fType == 4){ // electrons from photon conversions
+      					//cout<<"Gamma:     "<<fKPicorr->Eval(fMCparticleMother->Pt())<<endl;
+					fDCAxy_pt_Conversions2->Fill(fPt, DCAxy*track->Charge()*signB, fKPicorr->Eval(fMCparticleMother->Pt()));
       					}
-					if((TMath::Abs(motherpdg) != 321 && fType == 4) || fType == 0 || fType == 1 || fType == 2 || fType == 3){
-      					fDCAxy_pt_Conversions2->Fill(fPt, DCAResCorr);
+					if(/*(TMath::Abs(motherpdg) != 321 && fType == 4) ||*/ fType == 0 || fType == 1 || fType == 2 || fType == 3){
+      					fDCAxy_pt_Conversions2->Fill(fPt, DCAxy*track->Charge()*signB);
       					}
 					}
 					//if(fType == 0)cout<<"Feed down from Light mesons:   "<<fType<<"    "<<DCAResCorr<<endl;

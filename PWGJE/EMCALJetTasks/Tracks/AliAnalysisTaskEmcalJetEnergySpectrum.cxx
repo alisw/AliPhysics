@@ -61,6 +61,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
+  fMimicEJData(false),
   fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
@@ -74,6 +75,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseStandardOutlierRejection(false),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
+  fEMCALClusterBias(0.),
+  fMinTimeClusterBias(-20e-9),
+  fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -87,6 +91,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
+  fMimicEJData(false),
   fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
@@ -100,9 +105,13 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseStandardOutlierRejection(false),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
+  fEMCALClusterBias(0.),
+  fMinTimeClusterBias(-20e-9),
+  fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
+  SetMakeGeneralHistograms(true);
 }
 
 AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
@@ -119,7 +128,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     double current(0.);
     for(int istep = 0; istep < 301; istep++) {
       fUserPtBinning[istep] = current;
-      current += 1; 
+      current += 1;
     }
   }
   double runmin = fUseRun1Range ? 100000. : 200000.,
@@ -180,13 +189,18 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH1("hFracPtHardPart", "Part. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
   fHistos->CreateTH1("hFracPtHardDet", "Det. level jet Pt relative to the Pt-hard of the event", 100, 0., 10.);
 
+  if(fEMCALClusterBias > 1e-5 && !this->GetClusterContainer()) {
+    std::cout << "Adding cluster bias for L0 trigger studies" << std::endl;
+    this->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class()));
+  }
+
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergySpectrum::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
-  if(!(fIsPythia || fIsHerwig)) return true;    // Only relevant for pt-hard production
+  if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
   AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);
@@ -214,6 +228,29 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(!datajets) {
     AliErrorStream() << "Jet container " << fNameJetContainer << " not found" << std::endl;
     return false;
+  }
+
+  // Trigger studies for run3
+  // Do not use "accepted" of the cluster container because the
+  // the cut will most likely select clusters after correction for
+  // the hadronic energy, which is unwanted for trigger studies
+  // (need to be non-lin. corr energy)
+  if(fEMCALClusterBias > 1e-5 && clusters) {
+    bool hasTrigger = false;
+    for(auto cluster : clusters->all()) {
+      if(cluster->GetIsExotic()) continue;
+      if(cluster->GetNonLinCorrEnergy() < fEMCALClusterBias) continue;
+      if(!fIsMC) {
+        if(cluster->GetTOF() < fMinTimeClusterBias || cluster->GetTOF() > fMaxTimeClusterBias) continue;
+      }
+      TLorentzVector ptvec;
+      cluster->GetMomentum(ptvec, fVertex);
+      if(TVector2::Phi_0_2pi(ptvec.Phi()) > 4) continue; // DCAL cluster
+      hasTrigger = true;
+    }
+    if(!hasTrigger) {
+      return false;
+    }
   }
 
   double eventCentrality = 99;   // without centrality put everything in the peripheral bin
@@ -256,7 +293,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     Double_t ptjet = j->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
       // Apply artificial (fixed) shift of the jet energy scale to det. level jets
-      ptjet += fScaleShift * ptjet; 
+      ptjet += fScaleShift * ptjet;
     }
     double datapoint[6] = {eventCentrality, ptjet, j->Eta(), TVector2::Phi_0_2pi(j->Phi()), j->NEF(), 0.};
     for(auto t : trgclusters){
@@ -269,12 +306,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
 
     // Fill QA plots - trigger cluster independent
-    // Those plots have been in before (as part of the THnSparse) but were 
+    // Those plots have been in before (as part of the THnSparse) but were
     // removed in order to reduce the memory consumption.
     fHistos->FillTH2("hQANEFPt", ptjet, j->NEF(), weight);
     fHistos->FillTH2("hQAEtaPhi", j->Eta(), j->Phi(), weight);
     TVector3 jetvec(j->Px(), j->Py(), j->Pz());
-    if(clusters){
+    if(clusters && (datajets->GetJetType() != AliJetContainer::kChargedJet)){
       auto leadcluster = j->GetLeadingCluster(clusters->GetArray());
       if(leadcluster) {
         TLorentzVector ptvec;
@@ -382,10 +419,11 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
     UInt_t triggerbits = fTriggerSelectionBits;
-    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the 
+    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the
+    if(fMimicEJData) triggerbits = AliVEvent::kINT7;                // for mimiced trigger require INT7
     if(!(fInputHandler->IsEventSelected() & triggerbits)) return false;
     if(fTriggerSelectionString.Length()) {
-      if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+      if(!fMimicEJData && !fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
       if(fRequireSubsetMB && !(fInputHandler->IsEventSelected() & fMinBiasTrigger)) return false;   // Require EMCAL trigger to be subset of the min. bias trigger (for efficiency studies)
       if((fTriggerSelectionString.Contains("EJ") || fTriggerSelectionString.Contains("EG") || fTriggerSelectionString.Contains("DJ") || fTriggerSelectionString.Contains("DG")) && fUseTriggerSelectionForData) {
         auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
@@ -412,6 +450,39 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   }
   return true;
 }
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
+  SetMCProductionType(mcprodtype);
+  SetUsePtHardBinScaling(true);
+  SetUserPtHardBinning(pthardbinning);
+  if(doMCFilter) {
+    SetMCFilter();
+    SetJetPtFactor(jetptcut);
+  }
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCMinBias(MCProductionType_t mcprodtype){
+  if(!(mcprodtype == kMCPythiaMB || mcprodtype == kMCHepMCMB)) {
+    AliErrorStream() << "MC prod type not compatible with min. bias production" << std::endl;
+  }
+  SetMCProductionType(mcprodtype);
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
+  auto detjets = GetDetJetContainer();
+  
+  detjets->SetJetPtCut(minJetPt);
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
+    detjets->SetMaxTrackPt(maxTrackPt);
+  }
+  if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kNeutralJet) {
+    detjets->SetMaxClusterPt(maxClusterPt);
+  }
+  if(minAreaPerc >= 0.) {
+    detjets->SetPercAreaCut(minAreaPerc);
+  }
+}
+
 
 AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -455,6 +526,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
 
   std::string trgstr(trigger);
   if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EMC7")) task->SetTriggerSelection(AliVEvent::kEMC7, "EMC7");
   else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
   else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
   else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
@@ -465,11 +537,11 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
   if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
-    tracks = task->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
   }
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
-    clusters = task->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
@@ -487,7 +559,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     if(partcontname == "usedefault") partcontname = "mcparticles";
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
-    
+
     //AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
     AliJetContainer::EJetType_t mcjettype = AliJetContainer::kFullJet;
     auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);

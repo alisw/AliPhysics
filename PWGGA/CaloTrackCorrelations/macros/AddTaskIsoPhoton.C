@@ -205,7 +205,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType = "AOD",
                                      Bool_t  useKinematics = kFALSE, 
                                      Bool_t  simu = kFALSE,
                                      TString calorimeter = "EMCAL", 
-                                     Bool_t  nonlin = kTRUE, Bool_t timecut = kFALSE,
+                                     Int_t  nonlin = 2, Bool_t timecut = kFALSE,
                                      Bool_t  primvtx = kFALSE, 
                                      Bool_t  notrackcut = kFALSE, 
                                      Float_t tmin = -2000, Float_t tmax = 2000,
@@ -406,7 +406,7 @@ else
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE,Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
+AliCalorimeterUtils* ConfigureCaloUtils(Int_t nonlin = 2,Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debug);

@@ -66,6 +66,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillTrackDCAHistograms()       { fFillTrackDCAHistograms = kTRUE  ; }
   void    SwitchOffFillTrackDCAHistograms()      { fFillTrackDCAHistograms = kFALSE ; }
   
+  void    SwitchOnFillClusterHistograms()       { fFillClusterHistograms = kTRUE  ; }
+  void    SwitchOffFillClusterHistograms()      { fFillClusterHistograms = kFALSE ; }
+  
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
@@ -73,6 +76,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   Bool_t  fFillEtaPhiRegionHistograms;      ///<  Fill track pT spectrum histograms in different eta-phi windows
   Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
   Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
+  Bool_t  fFillClusterHistograms;           ///< Fill TPC or ITS number oc clusters
   
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
@@ -102,6 +106,11 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
   TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality
   TH3F * fhNITSClustersCent;                //!<! Number of ITS clusters vs track pT vs centrality
+ 
+  TH2F * fhTPCChi2PerCluster;              //!<! Chi2 per TPC clusters vs track pT
+  TH2F * fhITSChi2PerCluster;              //!<! Chi2 per ITS clusters vs track pT
+  TH3F * fhTPCChi2PerClusterCent;          //!<! Chi2 per TPC clusters vs track pT vs centrality
+  TH3F * fhITSChi2PerClusterCent;          //!<! Chi2 per clusters vs track pT vs centrality
   
   TH1F * fhPtPileUp[7];                     //!<! pT distribution, pile-up defined events
   TH2F * fhPhiNeg;                          //!<! phi distribution vs pT, negative

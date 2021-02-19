@@ -37,6 +37,7 @@ public:
   virtual ~AliMESppColTask();
   
     //
+  TObjArray*   SelectedTracks(TObjArray* obj, Int_t MC, Int_t idL, Int_t idLMC, Double_t MultipOrCent);
   TObjArray*   FindLeadingObjects(TObjArray* obj, Int_t MC);                                 // Looks for leading track 
   TObjArray*   CloneTracks(TObjArray* tracks);
   void         QSortTracks(TObjArray &a, Int_t first, Int_t last);               // Sort by pT an array of AliVParticles 

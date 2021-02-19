@@ -95,7 +95,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -243,6 +243,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
   , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
@@ -269,7 +271,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -417,6 +419,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
   , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// constructor
 
@@ -1690,6 +1694,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
         fHisNentries->Fill(15);
         return;
       }
+    }
+
+    // check if charm or beauty event and reject it if only one of the two is enabled
+    if(fKeepOnlyCharmEvents || fKeepOnlyBeautyEvents)
+    {
+      Int_t nCharm = 0, nBeauty = 0;
+      for (Int_t iPart = 0; iPart < mcArray->GetEntries(); iPart++)
+      {
+        AliAODMCParticle *part = (AliAODMCParticle *)mcArray->At(iPart);
+        Int_t pdgCode = TMath::Abs(part->GetPdgCode());
+        if (pdgCode == 4)
+          nCharm++;
+        else if (pdgCode == 5)
+          nBeauty++;
+      }
+      if(fKeepOnlyCharmEvents && nBeauty > nCharm)
+        return;
+      if(fKeepOnlyBeautyEvents && nCharm > nBeauty)
+        return;
     }
   }
 

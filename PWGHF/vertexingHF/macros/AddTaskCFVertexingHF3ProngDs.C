@@ -1,7 +1,7 @@
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2, Bool_t useNtrkWeight=kFALSE, Bool_t isFineNtrkBin=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t decayOption=AliCFVertexingHF3Prong::kCountResonant, const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2, Bool_t useNtrkWeight=kFALSE, Bool_t isFineNtrkBin=kFALSE, Bool_t isFinePtBin=kFALSE)
 //AliCFContainer *AddTaskCFVertexingHF3ProngDs(const char* cutFile = "./DstoKKpiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 431, Char_t isSign = 2)
 {
 //DEFINITION OF A FEW CONSTANTS
@@ -142,7 +142,11 @@ const Float_t multmax_50_102 = 102;
 	  nbinpt_8_10  = 1 ; //bins in pt from 5 to 10 GeV
 	}
 */
-	const Int_t nbinpt = cutsDstoKKpi->GetNPtBins(); // bins in pT
+    Int_t nbinptTmp = cutsDstoKKpi->GetNPtBins();
+    if(isFinePtBin)
+        nbinptTmp = 500;
+	const Int_t nbinpt = nbinptTmp; // bins in pT
+    const Int_t nbinptDau = cutsDstoKKpi->GetNPtBins(); // bins in pT of the daughters
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
 	const Int_t nbiny  = 24 ; //bins in y
 	const Int_t nbinphi  = 18 ; //bins in phi
@@ -213,9 +217,9 @@ const Float_t multmax_50_102 = 102;
  	//iBin[4]=nbinpointing_0_4+nbinpointing_4_8+nbinpointing_8_10;
  	iBin[icT]=nbincT;
  	iBin[ipointing]=nbinpointing;
-	iBin[ipT1]=nbinpt;
-	iBin[ipT2]=nbinpt;
-	iBin[ipT3]=nbinpt;
+	iBin[ipT1]=nbinptDau;
+	iBin[ipT2]=nbinptDau;
+	iBin[ipT3]=nbinptDau;
 	iBin[izvtx]=nbinzvtx;
 	iBin[icent]=nbincent;
 	iBin[ifake]=nbinfake;
@@ -251,14 +255,23 @@ const Float_t multmax_50_102 = 102;
 	// values for bin lower bounds
 	// pt
 	Float_t* floatbinLimpT = cutsDstoKKpi->GetPtBinLimits();
-	for (Int_t ibinpT = 0 ; ibinpT<iBin[ipT]+1; ibinpT++){
-		binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT1[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT2[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-		binLimpT3[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
-	}
-	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
-	
+    for (Int_t ibinpT = 0 ; ibinpT<cutsDstoKKpi->GetNPtBins()+1; ibinpT++){
+        binLimpT1[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+        binLimpT2[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+        binLimpT3[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+    }
+    if(isFinePtBin) {
+        for(Int_t ibinpT=0; ibinpT<=nbinpt; ibinpT++) {
+            binLimpT[ibinpT] = ibinpT * 0.1;
+            printf("binLimpT[%d]=%f\n",ibinpT,binLimpT[ibinpT]);  
+        }
+    }
+    else {
+        for(Int_t ibinpT=0; ibinpT<=nbinpt; ibinpT++) {
+            binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+            printf("binLimpT[%d]=%f\n",ibinpT,binLimpT[ibinpT]);  
+        }
+    }
 	/*
 	  for(Int_t i=0; i<=nbinpt_0_4; i++) binLimpT[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbinpt_0_4*(Double_t)i ; 
 	  if (binLimpT[nbinpt_0_4] != ptmin_4_8)  {

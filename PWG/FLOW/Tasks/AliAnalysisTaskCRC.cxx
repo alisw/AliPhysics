@@ -25,6 +25,8 @@ class TString;
 class TList;
 class AliAnalysisTaskSE;
 
+#include "TList.h"
+#include "TFile.h"
 #include "Riostream.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
@@ -135,6 +137,7 @@ fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
+fZDCCalibListFinalCommonPart(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
 fAvEZDCCRbRPro(NULL),
@@ -298,6 +301,7 @@ fCRCZDC2DCutList(NULL),
 fCRCVZEROCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
+fZDCCalibListFinalCommonPart(NULL),
 fCenWeightsHist(NULL),
 fRefMultRbRPro(NULL),
 fAvEZDCCRbRPro(NULL),
@@ -432,6 +436,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
   fQC->SetUsePtWeights(fUsePtWeights);
   fQC->SetUseEtaWeights(fUseEtaWeights);
+  fQC->SetStoreQAforDiffEventPlanes(fStoreQAforDiffEventPlanes); //@shi 
   if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
   else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
   if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
@@ -472,6 +477,10 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fCRCZDCCalibList) fQC->SetCRCZDCCalibList(fCRCZDCCalibList);
     if(fCRCZDC2DCutList) fQC->SetCRCZDC2DCutList(fCRCZDC2DCutList);
     if(fCRCZDCResList) fQC->SetCRCZDCResList(fCRCZDCResList);
+    //@Shi set my ZDC calib file
+    if(fZDCCalibListFinalCommonPart) {
+		fQC->SetZDCCalibListFinalCommonPart(fZDCCalibListFinalCommonPart);
+	}
   }
   if(fCRCVZEROCalibList) fQC->SetCRCVZEROCalibList(fCRCVZEROCalibList);
   if (fQAZDCCuts) {
@@ -557,7 +566,6 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   } else {
     Printf("ERROR: Could not retrieve histogram list (QC, Task::UserCreateOutputObjects()) !!!!");
   }
-
   PostData(1,fListHistos);
 
 } // end of void AliAnalysisTaskCRC::UserCreateOutputObjects()
@@ -610,3 +618,29 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   }
 
 } // end of void AliAnalysisTaskCRC::Terminate(Option_t *)
+
+//================================================================================================================
+
+void AliAnalysisTaskCRC::NotifyRun()
+{
+  //open file
+  TGrid::Connect("alien://");
+  TString ZDCRecenterFileName = Form("alien:///alice/cern.ch/user/s/sqiu/15o_ZDCRunByRunCalib/15o_ZDCcalibVar_%d.root",fCurrentRunNumber);
+  TFile* ZDCRecenterFileRunByRun = TFile::Open(ZDCRecenterFileName, "READ");
+  
+  if(ZDCRecenterFileRunByRun) {
+    TList* ZDCRecenterListRunByRun = (TList*)(ZDCRecenterFileRunByRun->FindObjectAny("Q Vectors")); // hardcoded TList Q Vectors
+    if(ZDCRecenterListRunByRun) {
+	  fQC->SetZDCCalibListFinalRunByRun(ZDCRecenterListRunByRun);
+	} else {
+      std::cout << "ERROR: ZDCRecenterList do not exist!" << std::endl;
+      exit(1);
+    }
+  } else {
+	std::cout << "ERROR: if fStepZDCRecenter larger than 0, ZDCRecenterFile should exist!" << std::endl;
+    exit(1);
+  }
+
+  delete ZDCRecenterFileRunByRun;
+
+}

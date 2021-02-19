@@ -49,7 +49,12 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi():
   fDist23toPrim_Lc(-9999.),
   fNormd0MeasMinusExp_Lc(-9999.),
   fSumImpParProngs_Lc(-9999.),
-  fChi2OverNDF(-9999.)
+  fChi2OverNDF(-9999.),
+  fInvMassLbCut(0.3),
+  fPtLbCut(-1),
+  fImpParProdLbCut(9999.),
+  fCosPLbCut(-9999.),
+  fCosPXYLbCut(-9999.)
 {
   //
   // Default constructor
@@ -89,7 +94,12 @@ AliHFTreeHandlerLbtoLcpi::AliHFTreeHandlerLbtoLcpi(int PIDopt):
   fDist23toPrim_Lc(-9999.),
   fNormd0MeasMinusExp_Lc(-9999.),
   fSumImpParProngs_Lc(-9999.),
-  fChi2OverNDF(-9999.)
+  fChi2OverNDF(-9999.),
+  fInvMassLbCut(0.3),
+  fPtLbCut(-1),
+  fImpParProdLbCut(9999.),
+  fCosPLbCut(-9999.),
+  fCosPXYLbCut(-9999.)
 {
   //
   // Standard constructor
@@ -170,7 +180,7 @@ TTree* AliHFTreeHandlerLbtoLcpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Lc*/, AliPIDResponse* pidrespo)
+bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo/*used for Lc*/, AliPIDResponse* pidrespo, AliAODPidHF* pidhf)
 {
   fIsMCGenTree=false;
   fRunNumber=runnumber;
@@ -180,7 +190,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int even
 
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-    if(!(fCandType&kSignal)) return true;
+    if(!(fCandType&kSignal || fCandType&kRefl)) return true;
   }
   fPtGen=ptgen;
  
@@ -254,7 +264,7 @@ bool AliHFTreeHandlerLbtoLcpi::SetVariables(int runnumber, int eventID, int even
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,true,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,true,true,true,pidhf);
   if(!setpid) return false;
 
   return true;
@@ -287,4 +297,45 @@ Int_t AliHFTreeHandlerLbtoLcpi::IsLbPionSelected(TObject* obj, AliRDHFCutsLctopK
   }
   
   return 1;
+}
+
+//________________________________________________________________
+Int_t AliHFTreeHandlerLbtoLcpi::IsLbSelected(AliAODRecoDecayHF2Prong* lb) {
+
+  if (!lb){ AliWarning("No Lb AliAODRecoDecayHF2Prong object. Candidate rejected."); return 0; }
+
+  UInt_t pdgDgLbtoLcpiUInt[2] = {4122,211};
+  Double_t invmassLb = lb->InvMass(2, pdgDgLbtoLcpiUInt);
+  Double_t massLbPDG = TDatabasePDG::Instance()->GetParticle(5122)->Mass();
+  if(TMath::Abs(invmassLb-massLbPDG) > fInvMassLbCut) return 0;
+
+  Double_t ptLb = lb->Pt();
+  if(ptLb < fPtLbCut) return 0;
+
+  Double_t impparprodLb = lb->Prodd0d0();
+  if(impparprodLb > fImpParProdLbCut) return 0;
+
+  Double_t cospLb = lb->CosPointingAngle();
+  if(cospLb < fCosPLbCut) return 0;
+
+  Double_t cospxyLb = lb->CosPointingAngleXY();
+  if(cospxyLb < fCosPXYLbCut) return 0;
+
+  return 1;
+}
+
+//________________________________________________________________
+void AliHFTreeHandlerLbtoLcpi::SetLcBackgroundShapeType(bool isPr, bool isFDBplus, bool isFDB0, bool isFDLb0, bool isFDBs0) {
+
+  if(isPr)      fCandType |= kLcPrompt;
+  else          fCandType &= ~kLcPrompt;
+  if(isFDBplus) fCandType |= kLcFDBplus;
+  else          fCandType &= ~kLcFDBplus;
+  if(isFDB0)    fCandType |= kLcFDB0;
+  else          fCandType &= ~kLcFDB0;
+  if(isFDLb0)   fCandType |= kLcFDLb0;
+  else          fCandType &= ~kLcFDLb0;
+  if(isFDBs0)   fCandType |= kLcFDBs0;
+  else          fCandType &= ~kLcFDBs0;
+
 }

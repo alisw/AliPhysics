@@ -97,7 +97,9 @@ AliGenerator* AddMCEMCocktailV2(
   gener->SetWeightingMode(kNonAnalog); 	// select weighting:
                       // kNonAnalog => weight ~ dN/dp_T
                       // kAnalog    => weight ~ 1
+  Printf("I-AddMCEMCocktailV2 calls AliGenEMCocktailV2::CreateCocktail()");
   gener->CreateCocktail();
+  Printf("I-AddMCEMCocktailV2 calls AliGenEMCocktailV2::Init()");
   gener->Init();
 
   return gener;

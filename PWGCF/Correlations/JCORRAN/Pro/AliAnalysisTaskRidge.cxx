@@ -176,7 +176,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 		   0, 0.001, 0.01, 0.02,
 		0.05,   0.1,  0.5,    1};
 
-        Double1D varcentbin = {0,1,2,5,10,20,50,100};
+        Double1D varcentbin = {0,1,2,5,10,20,50,60, 70, 80, 90,100};
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
 	binCent = AxisVar("Cent",varcentbinHigh);
@@ -222,10 +222,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D jetptbin = {
 	0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
 
+	Double1D JetCorPtBin = {
+	0, 10.2191, 20.5902, 31.3062, 42.0445, 52.6048, 62.8071, 100, 1e5 };
+
 	binRho = AxisFix("Rho",300,0,30);
 
 	binLtpt = AxisVar("LPPt",ltpttrackbin);
 	binJetpT = AxisVar("JetPt",jetptbin);
+	if( fOption.Contains("CorJetPt") ){ binJetpT = AxisVar("JetPt",JetCorPtBin); }
 
 	Double1D verzbin = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
 

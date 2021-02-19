@@ -10,7 +10,9 @@ class TClonesArray;
 class TH2;
 class AliVEvent;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliEmcalTriggerOfflineSelection
@@ -254,11 +256,11 @@ protected:
   Double_t                    fResolution;                                ///< Resolution for threshold smearing
   Bool_t                      fUseSmearedEnergy;                          ///< Switch whether to use smeared or original energy
 
-  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGEROFFLINESELECTION_H */

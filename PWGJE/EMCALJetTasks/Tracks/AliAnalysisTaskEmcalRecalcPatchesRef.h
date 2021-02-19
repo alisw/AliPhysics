@@ -33,7 +33,9 @@
 
 class AliEMCALTriggerPatchInfo;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalRecalcPatchesRef : public AliAnalysisTaskEmcalTriggerBase {
 public:
@@ -109,6 +111,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalRecalcPatchesRef, 1);
 };
+
+}
 
 }
 #endif

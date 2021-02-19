@@ -30,6 +30,7 @@
 #include <iosfwd>
 #include <TNamed.h>
 #include <TString.h>
+#include "AliEmcalTriggerSelectionCuts.h"
 
 class AliEMCALTriggerPatchInfo;
 class TClonesArray;
@@ -45,7 +46,6 @@ namespace EMCAL {
 
 class AliEmcalTriggerAlias;
 class AliEmcalTriggerDecision;
-class AliEmcalTriggerSelectionCuts;
 
 /**
  * @class AliEmcalTriggerSelection
@@ -111,9 +111,10 @@ public:
    *
    * @param[in] reconstructedPatches A list of input patches, created by the trigger patch maker and read out from the
    * input event
+   * @param[in] rhocontainer Container with rho values for the given event
    * @return the trigger decision (an event is selected when it has a main patch that fired the decision)
    */
-  AliEmcalTriggerDecision * MakeDecison(const TClonesArray * const reconstructedPatches) const;
+  AliEmcalTriggerDecision * MakeDecison(const TClonesArray * const reconstructedPatches, const AliEmcalTriggerSelectionCuts::RhoForTrigger &rhocontainer) const;
 
   /**
    * @brief Output stream operator

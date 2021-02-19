@@ -24,11 +24,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepplowB13(Bool_t useMC, Bool_t isAOD, TString app
     hfecuts->CreateStandardCuts();
     if(isAOD) hfecuts->SetAODFilterBit(4);
     
-    hfecuts->SetMinNClustersTPC(TPCcl);
+    //hfecuts->SetMinNClustersTPC(TPCcl);
     hfecuts->SetMinNClustersTPCPID(TPCclPID);
     hfecuts->SetMinNClustersITS(ITScl);
-    hfecuts->SetMinRatioTPCclusters(0.6);
-    hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+    //hfecuts->SetMinRatioTPCclusters(0.6);
+    //hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
     hfecuts->SetCutITSpixel(itshitpixel);
     hfecuts->SetCheckITSLayerStatus(kFALSE);
     hfecuts->SetEtaRange(etami,etama);

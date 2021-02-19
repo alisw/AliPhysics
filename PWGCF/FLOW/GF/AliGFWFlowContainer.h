@@ -39,6 +39,7 @@ class AliGFWFlowContainer:public TNamed {
   void OverrideProfileErrors(TProfile2D *inpf);
   void ReadAndMerge(const char *infile);
   void PickAndMerge(TFile *tfi);
+  Bool_t OverrideBinsWithZero(Int_t xb1, Int_t yb1, Int_t xb2, Int_t yb2);
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
   Bool_t RandomizeProfile(Int_t nSubsets=0);
   Bool_t CreateStatisticsProfile(StatisticsType StatType, Int_t arg);

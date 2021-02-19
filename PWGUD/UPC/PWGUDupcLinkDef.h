@@ -37,4 +37,5 @@
 #pragma link C++ class Polarization+;
 #pragma link C++ class AliAnalysisTaskSatellites+;
 #pragma link C++ class AliAnalysisTaskUpcFourPi+;
+#pragma link C++ class AliAnalysisTaskUpc4Pi+;
 #endif

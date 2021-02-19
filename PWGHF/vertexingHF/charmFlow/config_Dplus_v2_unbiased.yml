@@ -31,6 +31,7 @@ AnalysisOptions:
     FixMeanSecondPeak: 0 # 0->false, 1->true, used for Ds
     FixSigmaSecondPeak: 0 # 0->false, 1->true, used for Ds
     SigmaFileName: "" # file with MC D+ peak width
+    IncludeSecondPeakV2: [] # list [0, 1, 1, 0, ...] include D+ peak in Ds v2 fit, 0->false, 1->true
     #application of ML selection
     MLSelection:
         ApplyML: 0 # 0->false, 1->true, enable only if you applied your ML model in the vn task
