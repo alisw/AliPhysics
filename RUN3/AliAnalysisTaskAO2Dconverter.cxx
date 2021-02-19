@@ -550,7 +550,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   
   // Associate branches for fEventTree
   TTree* tRun2CollInfo = CreateTree(kRun2CollInfo);
-  if (fTreeStatus[kBC]) {
+  if (fTreeStatus[kRun2CollInfo]) {
     tRun2CollInfo->Branch("fEventCuts", &run2collinfo.fEventCuts, "fEventCuts/I");
     tRun2CollInfo->Branch("fCL0", &run2collinfo.fCL0, "fCL0/I");
     tRun2CollInfo->Branch("fCL1", &run2collinfo.fCL1, "fCL1/I");
