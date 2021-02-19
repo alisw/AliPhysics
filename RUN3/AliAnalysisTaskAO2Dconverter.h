@@ -201,7 +201,7 @@ private:
   } bc; //! structure to keep trigger-related info
   
   struct {
-    Int_t fEventCuts = 0;         /// Run number
+    Int_t fEventCuts = 0;         /// integer to store event selections from AliMultSelection
     Int_t fCL0 = 0;    /// CL0
     Int_t fCL1 = 0;    /// CL1
   } run2collinfo; //! structure to keep run 2 related info 
