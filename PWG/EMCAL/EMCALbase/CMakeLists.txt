@@ -51,6 +51,7 @@ set(SRCS
   AliEmcalMCPartonInfo.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
+  AliEmcalPythiaFileHandler.cxx
   AliEmcalPythiaInfo.cxx
   AliEmcalTrackSelResultPtr.cxx
   AliEmcalTrackSelResultCombined.cxx

@@ -591,6 +591,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param[in] doUse It true use the old internal event selection instead of AliEventCuts
    */
   void                        SetUseBuiltinEventSelection(Bool_t doUse)            { fUseBuiltinEventSelection = doUse                  ; }
+
+  /**
+   * @brief Use fast method for PYTHIA cross section reading
+   * @param doRead If true the fast method is used for cross section reading
+   */
+  void                        SetReadPythiaCrossSectionFast(Bool_t doUse)          { fReadPyxsecFast = doUse                            ; } 
   
   /**
    * @brief Set pre-configured event cut object
@@ -1311,6 +1317,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Bool_t                      fUseBuiltinEventSelection;   ///< Use builtin event selection of the AliAnalysisTaskEmcal instead of AliEventCuts
+  Bool_t                      fReadPyxsecFast;             ///< Use fast method for pythia cross section reading
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
@@ -1376,7 +1383,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 21) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 22) // EMCAL base analysis task
   /// \endcond
 };
 
