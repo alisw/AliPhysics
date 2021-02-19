@@ -109,14 +109,14 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2()
       fFMDcut(kTRUE),
       fFMDcutmode(1),
       fReduceDphi(1.5707),
-      fmakehole(kFALSE),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
       fPID(kFALSE),
       fSymmetricFMD(kFALSE),
       fLikeSign(kTRUE),
       fCentType("ZNA"),
-      fprim(kTRUE),
+      fprimFMD(kTRUE),
+      fprimTPC(kTRUE),
       fcentcalib(kTRUE),
       fNEntries(0),
       lCentrality(0),
@@ -235,14 +235,14 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::AliAnalysisTaskSEpPbCorrelationsJetV2(con
       fFMDcut(kTRUE),
       fFMDcutmode(1),
       fReduceDphi(1.5707),
-      fmakehole(kFALSE),
       fAnaMode("V0AV0C"),
       fasso("Phi"),
       fPID(kFALSE),
       fSymmetricFMD(kFALSE), 
       fLikeSign(kTRUE), 
       fCentType("ZNA"),
-      fprim(kTRUE),
+      fprimFMD(kTRUE),
+      fprimTPC(kTRUE),
       fcentcalib(kTRUE),
       fNEntries(0),
       lCentrality(0),
@@ -501,7 +501,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    const Int_t imcprimbin[4]={11,55,30,10};
    Double_t binning_pt_mcprim[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
 
-   if(!fDataType && fprim){
+   if(!fDataType && fprimFMD){
 /*
      fhistmcprim=new AliTHn("fhistmcprim","fhistmcprim",1,4,imcprimbin);
      fhistmcprim->SetBinLimits(0,binning_pt_mcprim);
@@ -1036,7 +1036,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    poolmin = CentBins[0];
    poolmax = CentBins[fNCentBins];
 //===================== Particle Level Information
-   if(!fDataType && fprim)
+   if(!fDataType && fprimFMD)
    {
     AliAODMCHeader* aodMCheader=(AliAODMCHeader*)fEvent->FindListObject(AliAODMCHeader::StdBranchName());
     TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
@@ -1142,12 +1142,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
 	     nFMD_bwd_hits+=mostProbableN;
 	     if(-3.4<eta && eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
 	   }
-	 }
-
-	 if(fmakehole){
-	   if((eta>-2.9 && eta<-2.7) && (5*2*TMath::Pi()/20.<phi && 7*2*TMath::Pi()/20.>phi)) continue;
-	   if((eta>-2.7 && eta<-2.5) && (1*2*TMath::Pi()/20.<phi && 2*2*TMath::Pi()/20.>phi)) continue;
-	   if((eta>-2.1 && eta<-1.9) && (17*2*TMath::Pi()/20.<phi && 20*2*TMath::Pi()/20.>phi)) continue;
 	 }
 
 	 if (mostProbableN > 0) {
@@ -1378,7 +1372,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
     return;
    }
    //=============================================================================== primary FMD
-  if(!fDataType && fprim)
+  if(!fDataType && fprimFMD)
   {
    Int_t pdgcode=0;
    Bool_t TrIsPrim=kFALSE;
@@ -1482,13 +1476,24 @@ if(fAnaMode=="TPCTPC"){
  DumpTObjTable("End of TPC/ITS track fill");
 
  TObjArray *selectedTracksAssociated_TPC = new TObjArray; selectedTracksAssociated_TPC->SetOwner(kTRUE);
+
+ //if(fprimTPC) selectedTracksAssociated_TPC = selectedTracksMC1; 
+ //else 
+
  selectedTracksAssociated_TPC = GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated_TPC);
+
  TObjArray *selected_TPC_Pairs = new TObjArray; selected_TPC_Pairs->SetOwner(kTRUE);
 
 
- if(!fprim){
+ if(!fprimFMD){
   FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0, selected_TPC_Pairs);
   FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0,selected_TPC_Pairs);
+  DumpTObjTable("End of fill  Correlation");
+ }
+ else if(fprimTPC)
+ {
+  FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,selectedTracksMC1,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0, selected_TPC_Pairs);
+  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,selectedTracksAssociated_TPC,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0,selected_TPC_Pairs);
   DumpTObjTable("End of fill  Correlation");
  }
  else

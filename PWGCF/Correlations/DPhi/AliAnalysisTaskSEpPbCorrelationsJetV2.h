@@ -67,10 +67,10 @@ public:
   virtual void SetPtMax(Float_t mode)   {fPtMax=mode;}
   virtual void SetPtMin(Float_t mode)   {fPtMin=mode;}
   virtual void SetAssoCut(Float_t mode) {fAsscoptCut=mode;}
-  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
-  virtual void Setmcprim(Bool_t mode){fprim=mode;}
+  virtual void SetmcprimFMD(Bool_t mode){fprimFMD=mode;}
+  virtual void SetmcprimTPC(Bool_t mode){fprimTPC=mode;}
   virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
 
 
@@ -154,7 +154,6 @@ private:
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
   Double_t fReduceDphi;
-  Bool_t fmakehole;
   TString fAnaMode;
   TString fasso;
   Bool_t fPID;
@@ -162,7 +161,8 @@ private:
   Bool_t fLikeSign;
 
   TString fCentType;
-  Bool_t fprim;
+  Bool_t fprimTPC;
+  Bool_t fprimFMD;
   Bool_t fcentcalib;
   Int_t fNEntries;
   
