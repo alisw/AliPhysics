@@ -4477,6 +4477,17 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         if(aodt->Pt()<0.15) continue;
       }
 
+      if(fCaloTrackMatcher->GetRunningMode()==7){
+        // if you considered negative ID hybrid tracks, one needs to make sure
+        // that one only asks fCaloTrackMatcher->GetTrackClusterMatchingResidual()
+        // for hybrid tracks as well. Otherwise you will find multiple matches
+        // since this loop contains dublicates when not requiring Is
+        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+        if(TMath::Abs(aodt->Eta())>0.8) continue;
+        if(aodt->Pt()<0.15) continue;
+      }
+
+
     }
 
     Float_t clsPos[3] = {0.,0.,0.};
@@ -4572,7 +4583,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
-        if(!fUseTMMIPsubtraction) break;
+        if(!fUseTMMIPsubtraction) continue; // was break;
       } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
@@ -4591,6 +4602,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::CheckClusterForTrackMatch(AliVCluster* cluster){
   vector<Int_t>::iterator it;
+  //cout << "SIZE = "<< fVectorMatchedClusterIDs.size() << endl;
   it = find (fVectorMatchedClusterIDs.begin(), fVectorMatchedClusterIDs.end(), cluster->GetID());
   if (it != fVectorMatchedClusterIDs.end()) return kTRUE;
   else return kFALSE;
@@ -9560,7 +9572,7 @@ std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedTracksToCluster(AliVEvent*
 Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel){
   if(!fUseDistTrackToCluster || fUseElectronClusterCalibration) return kFALSE;
   vector<Int_t> labelsMatched = GetVectorMatchedTracksToCluster(event,cluster);
-
+  
   if((Int_t) labelsMatched.size()<1) return kFALSE;
 
   Float_t dEta = -100;
@@ -9571,7 +9583,7 @@ Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliV
   for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
     AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
     if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(currTrack->GetID(), cluster->GetID(), dEta, dPhi)) continue;
-
+   
     Float_t tempDist = TMath::Sqrt((dEta*dEta)+(dPhi*dPhi));
     if(tempDist < smallestDist){
       smallestDist = tempDist;

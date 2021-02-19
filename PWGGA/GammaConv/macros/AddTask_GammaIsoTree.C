@@ -29,6 +29,8 @@ void AddTask_GammaIsoTree(
   AliCutHandlerPCM cuts(13); // only for tokenize
   TString addTaskName = "AddTask_GammaIsoTree";
 
+  Int_t debugFlag = 0;
+
   // Default
   TString   TaskEventCutnumber                = "00010113";
   TString   TaskClusterCutnumberEMC           = "1111100010022700000";
@@ -46,7 +48,7 @@ void AddTask_GammaIsoTree(
   vector<Double_t> neutralIsoE = {0.5,1.5,2.5};
   Double_t minSignalM02 = 0.1;
   Double_t maxSignalM02 = 0.5;
-  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  Int_t trackMatcherRunningMode = 7; // CaloTrackMatcher running mode
   Bool_t backgroundTrackMatching = kFALSE; // obsolete
   Bool_t doNeutralIso            = kTRUE;
   Bool_t doChargedIso            = kTRUE;
@@ -744,6 +746,7 @@ void AddTask_GammaIsoTree(
   fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
   fQA->SetEtaCut(fEtaCut);
   fQA->SetMinPtCut(fPtCut);
+  fQA->SetDebugFlag(debugFlag);
 
   fQA->SetSignalMinM02(minSignalM02);
   fQA->SetSignalMaxM02(maxSignalM02);
