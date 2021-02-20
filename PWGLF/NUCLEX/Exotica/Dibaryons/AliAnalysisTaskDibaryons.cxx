@@ -2275,6 +2275,7 @@ void AliAnalysisTaskDibaryons::PairCleaner()
 
       AliAODv0 *v01 = (AliAODv0*)fLambdaArray->At(i);
       if(!v01) continue;
+      Bool_t removeV01 = kFALSE;
 
       for(Int_t j=i+1; j<nLambda; j++) {
 
@@ -2284,10 +2285,12 @@ void AliAnalysisTaskDibaryons::PairCleaner()
         if(v01->GetPosID() == v02->GetPosID() || v01->GetNegID() == v02->GetNegID()) {
 
           if(v01->DcaV0Daughters() < v02->DcaV0Daughters()) fLambdaArray->RemoveAt(j);
-          else                                              fLambdaArray->RemoveAt(i);
+          else removeV01 = kTRUE;
           nShared++;
         }
       }
+
+      if(removeV01) fLambdaArray->RemoveAt(i);
     }
     dynamic_cast<TH1F*>(fOutput->FindObject("hNSharedTracksLambdaLambda"))->Fill(nShared);
 
@@ -2342,6 +2345,7 @@ void AliAnalysisTaskDibaryons::PairCleaner()
 
       AliAODcascade *xi1 = (AliAODcascade*)fXiArray->At(i);
       if(!xi1) continue;
+      Bool_t removeXi1 = kFALSE;
 
       for(Int_t j=i+1; j<nXi; j++) {
 
@@ -2353,10 +2357,12 @@ void AliAnalysisTaskDibaryons::PairCleaner()
         || xi1->GetBachID() == xi2->GetBachID()) {
 
           if(xi1->DcaXiDaughters() < xi2->DcaXiDaughters()) fXiArray->RemoveAt(j);
-          else                                              fXiArray->RemoveAt(i);
+          else removeXi1 = kTRUE;
           nShared++;
         }
       }
+
+      if(removeXi1) fXiArray->RemoveAt(i);
     }
     dynamic_cast<TH1F*>(fOutput->FindObject("hNSharedTracksXiXi"))->Fill(nShared);
 
@@ -2391,6 +2397,7 @@ void AliAnalysisTaskDibaryons::PairCleaner()
 
       AliAODcascade *xi1 = (AliAODcascade*)fOmegaArray->At(i);
       if(!xi1) continue;
+      Bool_t removeXi1 = kFALSE;
 
       for(Int_t j=i+1; j<nOmega; j++) {
 
@@ -2402,14 +2409,15 @@ void AliAnalysisTaskDibaryons::PairCleaner()
         || xi1->GetBachID() == xi2->GetBachID()) {
 
           if(xi1->DcaXiDaughters() < xi2->DcaXiDaughters()) fOmegaArray->RemoveAt(j);
-          else                                              fOmegaArray->RemoveAt(i);
+          else removeXi1 = kTRUE;
           nShared++;
         }
       }
+
+      if(removeXi1) fOmegaArray->RemoveAt(i);
     }
     dynamic_cast<TH1F*>(fOutput->FindObject("hNSharedTracksOmegaOmega"))->Fill(nShared);
 
-    fProtonArray->Compress();
     fLambdaArray->Compress();
     fXiArray->Compress();
     fOmegaArray->Compress();
