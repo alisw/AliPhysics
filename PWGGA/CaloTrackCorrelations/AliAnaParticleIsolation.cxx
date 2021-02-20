@@ -5761,8 +5761,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         (photonEta         , photonPhi         ,
          excessNeEta       , excessNePhi       ,
          excessAreaNeEta   , excessAreaNePhi   ,
-         etaBandPtSumNe    , phiBandPtSumCh    ,
-         etaBandPtSumNeNorm, phiBandPtSumChNorm);
+         etaBandPtSumNe    , phiBandPtSumNe    ,
+         etaBandPtSumNeNorm, phiBandPtSumNeNorm);
 
         if ( IsEmbedingAnalysisOn () )
         {
@@ -5770,8 +5770,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           (photonEta         , photonPhi         ,
            excessNeEta       , excessNePhi       ,
            excessAreaNeEta   , excessAreaNePhi   ,
-           etaBandPtSumNeEmb    , phiBandPtSumChEmb    ,
-           etaBandPtSumNeNormEmb, phiBandPtSumChNormEmb);
+           etaBandPtSumNeEmb    , phiBandPtSumNeEmb    ,
+           etaBandPtSumNeNormEmb, phiBandPtSumNeNormEmb);
         }
 
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
