@@ -1,0 +1,131 @@
+/************************************************************************************
+ * Copyright (C) 2021, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
+#include "AliEmcalPythiaFileHandler.h"
+#include <TFile.h>
+#include <TH1.h>
+#include <TKey.h>
+#include <TList.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TProfile.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TTree.h>
+#include <memory>
+
+using namespace PWG::EMCAL;
+
+AliEmcalPythiaFileHandler *AliEmcalPythiaFileHandler::fgInstance = nullptr;
+
+AliEmcalPythiaFileHandler::AliEmcalPythiaFileHandler():
+  fCrossSectionNrials(),
+  fCurrentFile(),
+  fInitialized(false)
+{
+}
+
+AliEmcalPythiaFileHandler::~AliEmcalPythiaFileHandler() {
+  if(fgInstance) delete fgInstance;
+}
+
+AliEmcalPythiaFileHandler *AliEmcalPythiaFileHandler::Instance() {
+  if(!fgInstance) fgInstance = new AliEmcalPythiaFileHandler;
+  return fgInstance;
+}
+
+AliEmcalPythiaCrossSectionData AliEmcalPythiaFileHandler::GetCrossSectionAndNTrials(const char *filename) {
+  if(fCurrentFile != std::string(filename)) {
+    UpdateCache(filename);
+    fCurrentFile = filename;
+  } 
+  return fCrossSectionNrials;
+}
+
+void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
+  fCrossSectionNrials.fCrossSection = 0;
+  fCrossSectionNrials.fNTrials = 1;
+  fInitialized = false;
+
+  TString file(filename);
+  // Determine archive type
+  TString archivetype;
+  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+  for(auto t : *walk){
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.Contains(".zip")){
+      archivetype = tok;
+      Int_t pos = archivetype.Index(".zip");
+      archivetype.Replace(pos, archivetype.Length() - pos, "");
+    }
+  }
+  if(archivetype.Length()){
+    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
+    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+    file.Replace(pos+1,pos2-pos1,"");
+  } else {
+    // not an archive take the basename....
+    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+  }
+
+  if(file.Contains("AliAOD.root")) {
+    UpdateFromXsecHistFile(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+  } else if(file.Contains("AliESDs.root")){
+    UpdateFromXsecFile(Form("%s%s",file.Data(),"pyxsec.root"));
+  } else {
+    throw FileNotFoundException(file);
+  }
+  fInitialized = true;
+}
+
+void AliEmcalPythiaFileHandler::UpdateFromXsecFile(const char *pyxsecfile) {
+  std::unique_ptr<TFile> xsecfile(TFile::Open(pyxsecfile));
+  if(!xsecfile || xsecfile->IsZombie()) throw 1;
+  auto xtree = (TTree*)xsecfile->Get("Xsection");
+  if (!xtree) throw 2;
+  UInt_t   ntrials  = 0;
+  Double_t  xsection  = 0;
+  xtree->SetBranchAddress("xsection",&xsection);
+  xtree->SetBranchAddress("ntrials",&ntrials);
+  xtree->GetEntry(0);
+  fCrossSectionNrials.fNTrials = ntrials;
+  fCrossSectionNrials.fCrossSection = xsection;
+}
+
+void AliEmcalPythiaFileHandler::UpdateFromXsecHistFile(const char *pyxsechistfile) {
+  std::unique_ptr<TFile> xsecfile(TFile::Open(pyxsechistfile));
+  if(!xsecfile || xsecfile->IsZombie()) throw FileNotFoundException(pyxsechistfile);
+  // find the tlist we want to be independtent of the name so use the Tkey
+  auto key = static_cast<TKey *>(xsecfile->GetListOfKeys()->At(0)); 
+  if (!key) throw FileContentException(pyxsechistfile);
+  auto list = dynamic_cast<TList *>(key->ReadObj());
+  if (!list) throw FileContentException(pyxsechistfile);
+  auto xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+  // check for failure
+  if(xSecHist->GetEntries()) fCrossSectionNrials.fCrossSection = xSecHist->GetBinContent(1);
+  fCrossSectionNrials.fNTrials  = static_cast<TH1 *>(list->FindObject("h1Trials"))->GetBinContent(1);
+}

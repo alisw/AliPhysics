@@ -49,6 +49,7 @@
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
 #include "AliEmcalMCPartonInfo.h"
+#include "AliEmcalPythiaFileHandler.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
@@ -136,6 +137,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fReadPyxsecFast(false),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -259,6 +261,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fReadPyxsecFast(false),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -849,73 +852,106 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   fXsec = 0;
   fTrials = 1;
 
-  TString file(currFile);
-  // Determine archive type
-  TString archivetype;
-  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
-  for(auto t : *walk){
-    TString &tok = static_cast<TObjString *>(t)->String();
-    if(tok.Contains(".zip")){
-      archivetype = tok;
-      Int_t pos = archivetype.Index(".zip");
-      archivetype.Replace(pos, archivetype.Length() - pos, "");
+  if(fReadPyxsecFast) {
+    //
+    // Fast method:
+    // Cross section values are cached in a singleton object: The first call
+    // from any task to UpdateFile will update the cache, all consecutive calls
+    // from any other task with the same file will just use the cached value
+    //
+    using PYTHIAFileHander = PWG::EMCAL::AliEmcalPythiaFileHandler;
+    auto pythiahandler = PYTHIAFileHander::Instance();
+    try {
+      auto xsectrials = pythiahandler->GetCrossSectionAndNTrials(currFile);
+      fXsec = xsectrials.fCrossSection;
+      fTrials = xsectrials.fNTrials;
+    } catch(PYTHIAFileHander::FileNotFoundException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::FileContentException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::UninitializedException &e) {
+      AliErrorStream() << e.what() << std::endl;
     }
-  }
-  if(archivetype.Length()){
-    AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
-    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
-    Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
-    Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
-    file.Replace(pos+1,pos2-pos1,"");
-  } else {
-    // not an archive take the basename....
-    file.ReplaceAll(gSystem->BaseName(file.Data()),"");
-  }
-  AliDebugStream(1) << "File name: " << file << std::endl;
 
-  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
-
-  if (!fxsec) {
-    // next trial fetch the histgram file
-    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
-    if (!fxsec){
-      AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+    if(!fXsec) {
+      AliErrorStream() << "Cross section value from pythia file 0 - use cross section from header" << std::endl;
       fUseXsecFromHeader = true;
-      return kFALSE; // not a severe condition but inciate that we have no information
+      return kFALSE;
     }
-    else {
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) return kFALSE;
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) return kFALSE;
-      TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
-      // check for failure
-      if(!xSecHist->GetEntries()) {
-        // No cross seciton information available - fall back to raw
-        AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
-        fUseXsecFromHeader = true;
-      } else {
-        // Cross section histogram filled - take it from there
-        fXsec = xSecHist->GetBinContent(1);
-        if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
-        fUseXsecFromHeader = false;
+    return kTRUE;
+  } else {
+    //
+    // Old (slow) method: 
+    // Each task responsible itself for loading the pythia cross section
+    // from file, will lead to multiple file handles.
+    //
+    TString file(currFile);
+    // Determine archive type
+    TString archivetype;
+    std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+    for(auto t : *walk){
+      TString &tok = static_cast<TObjString *>(t)->String();
+      if(tok.Contains(".zip")){
+        archivetype = tok;
+        Int_t pos = archivetype.Index(".zip");
+        archivetype.Replace(pos, archivetype.Length() - pos, "");
       }
-      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
     }
-  } else { // no tree pyxsec.root
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) return kFALSE;
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    fTrials = ntrials;
-    fXsec = xsection;
+    if(archivetype.Length()){
+      AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+      Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
+      Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+      Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+      file.Replace(pos+1,pos2-pos1,"");
+    } else {
+      // not an archive take the basename....
+      file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+    }
+    AliDebugStream(1) << "File name: " << file << std::endl;
+
+    // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
+    std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
+
+    if (!fxsec) {
+      // next trial fetch the histgram file
+      fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+      if (!fxsec){
+        AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+        fUseXsecFromHeader = true;
+        return kFALSE; // not a severe condition but inciate that we have no information
+      } else {
+        // find the tlist we want to be independtent of the name so use the Tkey
+        TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+        if (!key) return kFALSE;
+        TList *list = dynamic_cast<TList*>(key->ReadObj());
+        if (!list) return kFALSE;
+        TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+        // check for failure
+        if(!xSecHist->GetEntries()) {
+          // No cross seciton information available - fall back to raw
+          AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
+          fUseXsecFromHeader = true;
+        } else {
+          // Cross section histogram filled - take it from there
+          fXsec = xSecHist->GetBinContent(1);
+          if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
+          fUseXsecFromHeader = false;
+        }
+        fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      }
+    } else { // no tree pyxsec.root
+      TTree *xtree = (TTree*)fxsec->Get("Xsection");
+      if (!xtree) return kFALSE;
+      UInt_t   ntrials  = 0;
+      Double_t  xsection  = 0;
+      xtree->SetBranchAddress("xsection",&xsection);
+      xtree->SetBranchAddress("ntrials",&ntrials);
+      xtree->GetEntry(0);
+      fTrials = ntrials;
+      fXsec = xsection;
+    }
+    return kTRUE;
   }
-  return kTRUE;
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
