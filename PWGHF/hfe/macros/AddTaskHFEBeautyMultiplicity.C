@@ -23,7 +23,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 
 	TProfile* multEstimatorAvgMB;
 	multEstimatorAvgMB = (TProfile*)(fEstimator->Get("mean_Trklet"))->Clone("multEstimatorAvgMB");
-	task->SetMultiProfileLHC16qt(multEstimatorAvgMB);
+
 
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -43,7 +43,8 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     // now we create an instance of your task
 
     AliAnalysisTaskHFEBeautyMultiplicity* task = new AliAnalysisTaskHFEBeautyMultiplicity(name.Data());
-    task -> SetNref(nref);
+    task->SetMultiProfileLHC16qt(multEstimatorAvgMB);
+    task->SetNref(nref);
 
 
     if(!task) return 0x0;
