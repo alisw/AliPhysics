@@ -1162,34 +1162,17 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 
   //================================================================
   if (fESEdet == 2) {
-    TFile *fSpl2 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root");
-    if (!fSpl2)
-      fSpl2 = TFile::Open("./calibSpq2TrklNoEtaCutRun2.root");
+    TGrid::Connect("alien://");
+    TFile *fSpl2 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root"); 
+//    TFile *fSpl2 = TFile::Open("./calibSpq2TrklNoEtaCutRun2.root");
   
-    if (!fSpl2) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl2 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root");
-    }
-
     if (!fSpl2){
       printf("Spline file q2 cannot be opened \n");
       return;
     }
 
-    TFile *fSpl3 = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3TrklNoEtaCutRun2.root");
-    if (!fSpl3)
-      fSpl3 = TFile::Open("./calibSpq3TrklNoEtaCutRun2.root");
-  
-    if (!fSpl3) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-    
-      fSpl3 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3TrklNoEtaCutRun2.root");
-    }
+    TFile *fSpl3 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3TrklNoEtaCutRun2.root");
+//    TFile *fSpl3 = TFile::Open("./calibSpq3TrklNoEtaCutRun2.root");
 
     if (!fSpl3){
       printf("Spline file q3 cannot be opened \n");
@@ -1202,35 +1185,18 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   }
 
   if (fESEdet == 0) {
-    TFile *fSpl2V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
-    if (!fSpl2V0A)
-      fSpl2V0A = TFile::Open("./calibSpq2V0ARun2.root");
-    
-    if (!fSpl2V0A) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
-    }
+   TGrid::Connect("alien://");
+   TFile *fSpl2V0A = fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
+// TFile *fSpl2V0A = fSpl2V0A = TFile::Open("./calibSpq2V0ARun2.root");     
     
     if (!fSpl2V0A){
       printf("Spline file V0A q2 cannot be opened \n");
       return;
     }
-    
-    TFile *fSpl3V0A = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
-    if (!fSpl3V0A)
-      fSpl3V0A = TFile::Open("./calibSpq3V0ARun2.root");
-  
-    if (!fSpl3V0A) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
-    }
 
+    TFile *fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
+//    TFile *fSpl3V0A = TFile::Open("./calibSpq3V0ARun2.root");
+ 
     if (!fSpl3V0A){
       printf("Spline file V0A q3 cannot be opened \n");
       return;
@@ -1242,35 +1208,19 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
   }
   if (fESEdet == 1) {
-    TFile *fSpl2V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
-    if (!fSpl2V0C)
-      fSpl2V0C = TFile::Open("./calibSpq2V0CRun2.root");
-    
-    if (!fSpl2V0C) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl2V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
-    }
+    TGrid::Connect("alien://");
+    TFile *fSpl2V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
+//    TFile *fSpl2V0C = TFile::Open("./calibSpq2V0CRun2.root");
     
     if (!fSpl2V0C){
       printf("Spline file V0C q2 cannot be opened \n");
       return;
     }
-    
-    TFile *fSpl3V0C = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CRun2.root");
-    if (!fSpl3V0C)
-      fSpl3V0C = TFile::Open("./calibSpq3V0CRun2.root");
-  
-    if (!fSpl3V0C) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl3V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CRun2.root");
-    }
 
+    TFile *fSpl3V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CRun2.root");
+//    TFile *fSpl3V0C = TFile::Open("./calibSpq3V0CRun2.root"); 
+    
+ 
     if (!fSpl3V0C){
       printf("Spline file V0C q3 cannot be opened \n");
       return;
@@ -1282,34 +1232,17 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
   }
   if (fESEdet == 3) {
-    TFile *fSpl2V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
-    if (!fSpl2V0AC)
-      fSpl2V0AC = TFile::Open("./calibSpq2V0CombACRun2New.root");
-    
-    if (!fSpl2V0AC) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl2V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
-    }
+    TGrid::Connect("alien://");
+    TFile *fSpl2V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
+//    TFile *fSpl2V0AC = TFile::Open("./calibSpq2V0CombACRun2New.root");
     
     if (!fSpl2V0AC){
       printf("Spline file V0AC q2 cannot be opened \n");
       return;
     }
-    
-    TFile *fSpl3V0AC = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CombACRun2New.root");
-    if (!fSpl3V0AC)
-      fSpl3V0AC = TFile::Open("./calibSpq3V0CombACRun2New.root");
-  
-    if (!fSpl3V0AC) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-      
-      fSpl3V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CombACRun2New.root");
-    }
+   
+    TFile *fSpl3V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0CombACRun2New.root");
+//    TFile *fSpl3V0AC = TFile::Open("./calibSpq3V0CombACRun2New.root");
 
     if (!fSpl3V0AC){
       printf("Spline file V0AC q3 cannot be opened \n");
@@ -1334,17 +1267,15 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       qVectResFN = "V0AC";
 
     if (fEP) qVectResFN += "_EP";
-    
-    TFile *fFileRes = (TFile*)gROOT->GetListOfFiles()->FindObject(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
-    if (!fFileRes)
-      fFileRes = TFile::Open(Form("./qVectResMuons_%s.root",qVectResFN.Data()));
+
+    TGrid::Connect("alien://");
+    TFile *fFileRes = TFile::Open(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
+//    TFile *fFileRes = TFile::Open(Form("./qVectResMuons_%s.root",qVectResFN.Data())); 
+   
 
     if (!fFileRes) {
-      if (!gGrid) {
-	TGrid::Connect("alien://");
-      }
-
-      fFileRes = TFile::Open(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
+      printf("fFileRes cannot be opened \n");
+      return; 
     }
 
     if (fAverageRes) {
@@ -2429,19 +2360,11 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
 //_____________________________________________________________________________
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
 {
-  TFile *foadb = (TFile*)gROOT->GetListOfFiles()->FindObject("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
-  if (!foadb) {
-    foadb = TFile::Open("./calibV0TrklNoEtaCutRun2.root");
-  }
-    
-  if (!foadb) {
-    if (!gGrid) {
-        TGrid::Connect("alien://");
-    }
-    
-    foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
-  }
-    
+  TGrid::Connect("alien://");
+  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
+//  TFile *foadb = TFile::Open("./calibV0TrklNoEtaCutRun2.root"); 
+
+   
     if(!foadb){
         printf("OADB V0-Trkl calibration file cannot be opened\n");
         return;

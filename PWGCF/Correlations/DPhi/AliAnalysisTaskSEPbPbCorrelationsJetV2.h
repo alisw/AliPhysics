@@ -1,7 +1,5 @@
-/*
- *****************************************************************************************/
-#ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
-#define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
+#ifndef AliAnalysisTaskSEPbPbCorrelationsJetV2_H
+#define AliAnalysisTaskSEPbPbCorrelationsJetV2_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
