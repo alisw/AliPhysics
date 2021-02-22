@@ -37,10 +37,13 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetPhiFlag                  ( Bool_t    PhiFlag )       { kPhibool = PhiFlag; };
     void                        SetKaonFlag                 ( Bool_t    KaonFlag )      { kKaonbool = KaonFlag; };
     void                        SetFilterBit                ( Int_t     FilterBit )     { kFilterBit = FilterBit; };
+    void                        SetVertexCut                ( Float_t   VertexCut )     { kVertexCut = VertexCut; };
     Bool_t                      GetMCFlag                   ( )                         { return kMCbool; };
     Bool_t                      GetPhiFlag                  ( )                         { return kPhibool; };
     Bool_t                      GetKaonFlag                 ( )                         { return kKaonbool; };
     Int_t                       GetFilterBit                ( )                         { return kFilterBit; };
+    Float_t                     GetVertexCut                ( )                         { return kVertexCut; };
+    AliAODVertex               *fGetPrimaryVertex           ( )                         { return fPrimaryVertex; };
     //
     private:
     //
@@ -55,14 +58,21 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                      kPhibool;                   // Phi tree Flag
     Bool_t                      kKaonbool;                  // Kaon tree Flag
     Int_t                       kFilterBit;                 // Filterbit
+    Float_t                     kVertexCut;                 // VertexCut
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> QC & Selection
     //
     //>->   Event Selection
     //
     Bool_t                      fIsEventCandidate           ( );
-    Bool_t                      fIsEventMultiplOK           ( );
-    AliAODVertex               *fGetPrimaryVertex           ( )                         { return fPrimaryVertex; };
+    Bool_t                      fIsEventMultiplicityAvailable ( );
+    Bool_t                      fIsEventPileUp              ( );
+    void                        fSetEventMask               ( Int_t iMaskBit );
+    void                        fSetTrueEventMask           ( Int_t iMaskBit );
+    bool                        fCheckMask                  ( Int_t iMaskBit );
+    bool                        fCheckTrueMask              ( Int_t iMaskBit );
+    void                        fStoreTruePhi               ( Int_t iMaskBit );
+    void                        fCheckINELgt0               ( );
     void                        fFillEventEnumerate         ( Int_t iIndex );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format
@@ -79,6 +89,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //>->   Track Selection
     //
     Bool_t                      fIsTrackCandidate           ( );
+    Bool_t                      fAssignTrack                ( );
     //
     AliAODTrack                *fCurrent_Track;             //! Track under scrutiny
     Int_t                       fCurrent_Track_Charge;      //! Track Charge
@@ -154,6 +165,14 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH2F                       *fQC_Kaons_DCAZ_P;           //! Analysis output list
     TH2F                       *fQC_Kaons_DCAXY_PT;         //! Analysis output list
     TH2F                       *fQC_Kaons_DCAZ_PT;          //! Analysis output list
+    TH2F                       *fQC_Kaons_P_TPCSignal_P;      //! ee
+    TH2F                       *fQC_Kaons_P_TOFSignal_P;      //! ee
+    TH2F                       *fQC_Kaons_M_TPCSignal_P;      //! ee
+    TH2F                       *fQC_Kaons_M_TOFSignal_P;      //! ee
+    TH2F                       *fQC_Kaons_P_TPCSignal_PT;      //! ee
+    TH2F                       *fQC_Kaons_P_TOFSignal_PT;      //! ee
+    TH2F                       *fQC_Kaons_M_TPCSignal_PT;      //! ee
+    TH2F                       *fQC_Kaons_M_TOFSignal_PT;      //! ee
     //
     //>->->     PID
     //
@@ -178,10 +197,20 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     // Event Variables
     //
-    UChar_t                     fMultiplicity;              //! Event Multiplicity
+    //>->   General Utilities
+    Float_t                     fMultiplicity;              //! Event Multiplicity
+    Int_t                       fCurrentRun;                //! Current Run Number
     Int_t                       fKaonLabels     [1024];     //! Kaon Labels
     Int_t                       fnPhiRec;                   //! Recordable Phi Number
     AliAODMCParticle*           fPhiRecParticles[1024];     //! Recordable Phi Labels
+    //
+    //>->->->   Data Event Mask
+    UChar_t                     fEventMask;                 //! Event Mask
+    Bool_t                      fIsINELgt0;                 //! Check the event is INEL > 0
+    //
+    //>->->->   MC Event Mask
+    UChar_t                     fTrueEventMask;             //! True Event Mask
+    Bool_t                      fIsTrueINELgt0;             //! Check the event is True INEL > 0
     //
     // Trees
     //
@@ -225,7 +254,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                    fIsPhiGen                   ( AliAODMCParticle* particle );
     Bool_t                    fIsPhiRec                   ( AliAODMCParticle* particle );
     Bool_t                    fIsPhi                      ( AliAODMCParticle* particle );
-    Bool_t                    fIsCandidateTruPhi               ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon );
+    Bool_t                    fIsCandidateTruPhi          ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon );
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> Class Definition
     //
