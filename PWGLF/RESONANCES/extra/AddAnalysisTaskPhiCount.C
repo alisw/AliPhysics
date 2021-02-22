@@ -1,7 +1,7 @@
 // TODO LIST
 // TODO: You're all set!
 
-AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, Int_t fAnalysisOption = 0, TString fName = "name" )
+AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, Int_t fAnalysisOption, TString fName = "name" )
 {
     // Analysis Manager
     AliAnalysisManager         *fAliAnlManager      =   AliAnalysisManager::GetAnalysisManager();
@@ -17,21 +17,27 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     if (!fAliAnlManager->GetInputEventHandler())    return 0x0;
     if (!fAliAnlTask)                               return 0x0;
     
-    // task Selection
-    fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAnyINT);
-    
     // Task options
     fAliAnlTask ->  SetMCFlag(MCFlag);
     fAliAnlTask ->  SetPhiFlag(PhiFlag);
     fAliAnlTask ->  SetKaonFlag(KaonFlag);
     
+    //  Standard Analysis Options
+    fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAnyINT);
+    fAliAnlTask ->  SetFilterBit(5);
+    fAliAnlTask ->  SetVertexCut(10.);
+    
     switch ( fAnalysisOption ) {
         case 1:
             fAliAnlTask -> SetFilterBit(7);
             break;
-            
+        case 2:
+            fAliAnlTask ->  SetVertexCut(9.);
+            break;
+        case 3:
+            fAliAnlTask ->  SetVertexCut(11.);
+            break;
         default:
-            fAliAnlTask -> SetFilterBit(5);
             break;
     }
     
