@@ -51,6 +51,7 @@ ClassImp(AliCaloTrackMatcher)
 AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType, Int_t runningMode) : AliAnalysisTaskSE(name),
   fClusterType(clusterType),
   fRunningMode(runningMode),
+  fNegativeTrackIDAllowed(kFALSE),
   fV0ReaderName(""),
   fCorrTaskSetting(""),
   fAnalysisTrainMode("Grid"),
@@ -80,7 +81,7 @@ AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType, In
     // Default constructor
     DefineInput(0, TChain::Class());
 
-    if( !(fRunningMode == 0 || fRunningMode == 1 || fRunningMode == 2 || fRunningMode == 5 || fRunningMode == 6) )
+    if( !(fRunningMode == 0 || fRunningMode == 1 || fRunningMode == 2 || fRunningMode == 5 || fRunningMode == 6 || fRunningMode == 7) )
       AliFatal(Form("AliCaloTrackMatcher: Running mode not defined: '%d' ! Please set a proper mode in the AddTask, returning...",fRunningMode));
 }
 
@@ -126,6 +127,18 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
   if(fListHistos != NULL){
     delete fListHistos;
     fListHistos = NULL;
+  }
+
+    if(fRunningMode == 7) fNegativeTrackIDAllowed = kTRUE;
+
+  AliInfo(Form("Running track matcher with running mode: %i",fRunningMode));
+  if(fNegativeTrackIDAllowed){
+    AliWarning("WARNING: The running mode chosen allows negative IDs! Even though this means the TM sample contains NO dublicates");
+    AliWarning("WARNING: when asking GetTrackClusterMatchingResidual(..) you need to make sure you don't ask for TM info from dublicates in your task!");
+    AliWarning("WARNING: Example 1: You loop over TPCOnly tracks in your task but the TM ran over hybrid tracks");
+    AliWarning("WARNING: Outcome 1: You will receive TM information of the corresponding hybrid track instead");
+    AliWarning("WARNING: Example 2: You loop over all tracks, not making sure the sample contains no copies");
+    AliWarning("WARNING: Outcome 2: Each double counting done in your task will return a double counted match");
   }
 
 
@@ -242,7 +255,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
   static AliESDtrackCuts *EsdTrackCuts = 0x0;
   static int prevRun = -1;
   // Using standard function for setting Cuts
-  if (esdev && (fRunningMode == 0 || fRunningMode == 6)){
+  if (esdev && (fRunningMode == 0 || fRunningMode == 6 || fRunningMode==7)){
     Int_t runNumber = fInputEvent->GetRunNumber();
     if (prevRun!=runNumber) {
       delete EsdTrackCuts;
@@ -297,7 +310,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       FillfHistControlMatches(0.,inTrack->Pt());
       AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
 
-      if(fRunningMode == 0){
+      if(fRunningMode == 0 || fRunningMode == 7){
         if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType == 1 || fClusterType == 3  || fClusterType == 4)){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
         if(TMath::Abs(inTrack->Eta())>0.3 &&  fClusterType == 2 ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
         if(inTrack->Pt()<0.5){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
@@ -310,7 +323,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         if(fRunningMode == 6){
           if(!EsdTrackCuts->AcceptTrack(esdt)) {FillfHistControlMatches(1.,inTrack->Pt()); continue;}
         }
-      }
+      } 
 
       const AliExternalTrackParam *in = esdt->GetInnerParam();
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue"); FillfHistControlMatches(1.,inTrack->Pt()); continue;}
@@ -336,6 +349,11 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         if(fRunningMode == 6){
           if(!aodt->IsHybridGlobalConstrainedGlobal()){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
         }
+      } else if(fRunningMode == 7){ // like running mode 0, but negative ID not rejected (no double counting since hybrid selection contains no dublicates)
+        if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType == 1 || fClusterType == 3  || fClusterType == 4)){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+        if(TMath::Abs(inTrack->Eta())>0.3 &&  fClusterType == 2 ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+        if(inTrack->Pt()<0.5){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+        if(!aodt->IsHybridGlobalConstrainedGlobal()){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
       }
 
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
@@ -373,7 +391,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       }
       if( TMath::Abs(eta) > 0.75 ) {
         delete trackParam;
-        FillfHistControlMatches(3.,inTrack->Pt());
+        FillfHistControlMatches(3.,inTrack->Pt());       
         continue;
       }
       // Save some time and memory in case of no DCal present
@@ -769,9 +787,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) matched++;
         }
       }
     }
@@ -828,8 +844,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
@@ -848,9 +867,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) matched++;
         }
       }
     }
@@ -863,8 +880,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
@@ -901,8 +921,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+       AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
@@ -934,13 +957,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
       Float_t tempDEta, tempDPhi;
       AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(it->second));
       if(!tempTrack) continue;
-      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){ 
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedTracks.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }
       }
     }
@@ -996,8 +1017,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
@@ -1016,9 +1040,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedClusters.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }
       }
     }
@@ -1032,8 +1054,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+       AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
@@ -1069,15 +1094,17 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
   Int_t TrackPos = -1;
   if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
     for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
-      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      AliAODTrack* currTrack  = static_cast<AliAODTrack*>(event->GetTrack(iTrack));
       if(currTrack->GetID() == trackID){
+        // even though hybrid tracks don't contain dublicates
+        // the hybrid track can share an ID with another copy if it is a copy
+        if(fRunningMode==7 &&!currTrack->IsHybridGlobalConstrainedGlobal()) continue;
         TrackPos = iTrack;
         break;
       }
     }
     if(TrackPos == -1) AliFatal(Form("AliCaloTrackMatcher: GetNMatchedClusterIDsForTrack - track (ID: '%i') cannot be retrieved from event, should be impossible as it has been used in maim task before!",trackID));
   }else TrackPos = trackID; // for ESD just take trackID
-
   vector<Int_t> tempMatchedClusters;
   multimap<Int_t,Int_t>::iterator it;
   AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(TrackPos));
@@ -1126,9 +1153,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) matched++;
         }
       }
     }
@@ -1206,9 +1231,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) matched++;
         }
       }
     }
@@ -1299,9 +1322,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedTracks.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }
       }
     }
@@ -1379,9 +1400,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *ev
         if(tempTrack->Charge()>0){
           if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiMin*=-1;
-          dPhiMax*=-1;
-          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedClusters.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (-dPhiMin > tempDPhi) && (tempDPhi > -dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }
       }
     }

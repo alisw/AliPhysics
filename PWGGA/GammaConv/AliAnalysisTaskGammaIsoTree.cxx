@@ -5174,12 +5174,29 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Float_t trackdPhi = 0;
   Float_t trackP = -1;
   Float_t trackPt = -1;
+
+  Bool_t fishyCase = kFALSE;
+  Double_t iso = isoCharged.isolationCone.at(2);
+  if(fDebug>0){
+    if(photon->Pt()>45){
+        if((photon->Pt()> 0.9*iso) && (photon->Pt()< 1.1*iso)) fishyCase = kTRUE;
+    }
+  }
+
+  Double_t trackPtOld = 0;
+  Double_t trackdEtaOld = 0;
+  Double_t trackdPhiOld = 0;
+
+  Double_t tmpR = 999999;
   
   AliAODTrack* aodt = NULL;
+  if(fishyCase && fDebug>1) cout << "--> Debug: I discovered a case where pt is corr to ISO, beginning investigation ... " << endl;
   if(fClusterCutsEMCTrackMatching->CheckClusterForTrackMatch(clus)){
+    if(fishyCase && fDebug>1) cout << "--> Debug: Found primary match" << endl;
     Int_t labelTrackClosest = -1;
     if(fClusterCutsEMCTrackMatching->GetClosestMatchedTrackToCluster(fInputEvent,clus,labelTrackClosest)){
         Int_t properLabel = labelTrackClosest;
+        if(fishyCase && fDebug>1) cout << "--> Debug: Found GetClosestMatchedTrackToCluster()" << endl;
         // if(labelTrack<0) properLabel = (-1 * labelTrack) - 1; // conversion hybrid none hybrid
         aodt = static_cast<AliAODTrack*> (fInputEvent->GetTrack(properLabel));
         if(TrackIsSelectedAOD(aodt)){
@@ -5194,7 +5211,8 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
           isConvMatch = kFALSE;
         }
     }
-  } else {
+  } else{
+    if(fishyCase && fDebug>1) cout << "--> Debug: Did not find primary match. Checking conversions for match" << endl;
     // check for conv matching
     if(!fReaderGammas) fReaderGammas    = fV0Reader->GetReconstructedGammas();
     for (Int_t conv = 0; conv < fReaderGammas->GetEntriesFast(); conv++)
@@ -5218,16 +5236,213 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
         Float_t dEtaConv = 0;
         Float_t dPhiConv = 0;
         Bool_t propagated = ((AliCaloTrackMatcher*) fClusterCutsEMCTrackMatching->GetCaloTrackMatcherInstance())->PropagateV0TrackToClusterAndGetMatchingResidual(inTrack,clus,fInputEvent,dEtaConv,dPhiConv);
+        if(fishyCase && fDebug>1) cout << "--> Debug: Checking V0 track with pt=" << inTrack->Pt() << " Propagated? " << propagated << endl;
         if (propagated){
-           trackdEta = dEtaConv;
-           trackdPhi = dPhiConv;
-           trackP = inTrack->P();
-           trackPt = inTrack->Pt();
-           isConvMatch = kTRUE;
+           Double_t r = TMath::Sqrt(dEtaConv*dEtaConv + dPhiConv*dPhiConv);
+           if(r < tmpR){ 
+              tmpR = r;
+              trackdEta = dEtaConv;
+              trackdPhi = dPhiConv;
+              trackP = inTrack->P();
+              trackPt = inTrack->Pt();
+              isConvMatch = kTRUE;
+           }
+           trackPtOld = inTrack->Pt();
+           trackdEtaOld = dEtaConv;
+           trackdPhiOld = dPhiConv;
         }
       } // end daughter loop
     } // end conv photon loop 
   } // end conv matching case
+
+  if(fishyCase && fDebug>1) {
+    Double_t etaMatchedNew = kFALSE;
+    Double_t phiMatchedNew = kFALSE;
+    Double_t etaMatchedOld = kFALSE;
+    Double_t phiMatchedOld = kFALSE;
+
+    cout << "--> Debug: mathed with track pT = " << trackPt << " before pt = " << trackPtOld << endl;
+  }
+
+  // If fishy case, do investigation and no match
+  if(fishyCase && fIsMC && (trackP<0) && fDebug>0){
+     Int_t photonlabel = -1;
+     const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
+     Double_t mcProdVtxX   = primVtxMC->GetX();
+     Double_t mcProdVtxY   = primVtxMC->GetY();
+     Double_t mcProdVtxZ   = primVtxMC->GetZ();
+     cout << "--> Debug: I found no matches!" << endl;
+     cout << "--> Debug: -----------------------------" << endl;
+     cout << "--> Debug: Photon pt = " << photon->Pt() << "Iso is = " << isoCharged.isolationCone.at(2) << endl;
+     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+     if (fAODMCTrackArray){
+        if (photon->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
+        if (photon->GetNCaloPhotonMCLabels()>0) {
+          // Check MC information
+          cout << "--> Debug: Checking MC information!" << endl;
+          photonlabel = photon->GetCaloPhotonMCLabel(0);
+          MCPhoton = (AliAODMCParticle*) fAODMCTrackArray->At(photonlabel);
+          AliAODMCParticle* MCMother = (AliAODMCParticle*) fAODMCTrackArray->At(MCPhoton->GetMother());
+          cout << "--> Debug: -> Leading PDG is = " << MCPhoton->PdgCode() << endl;
+          if(MCMother){
+            cout << "--> Debug: -> Mother PDG is = " << MCMother->GetPdgCode() << endl;
+            cout << "--> Debug: -> Mother Pt is = " << MCMother->Pt() << endl;
+            Double_t vx= MCMother->Xv();
+            Double_t vy= MCMother->Yv();
+            Double_t vz= MCMother->Zv();
+            Double_t r = TMath::Sqrt(vx*vx + vy*vy + vz*vz);
+            cout << "--> Debug: -> Mother R is = " << r << endl;
+
+            AliAODMCParticle* Daughter1 = (AliAODMCParticle*) fAODMCTrackArray->At(MCMother->GetDaughterFirst());
+            AliAODMCParticle* Daughter2 = (AliAODMCParticle*) fAODMCTrackArray->At(MCMother->GetDaughterLast());
+            cout << "--> Debug: -> Daughter 1; pos = " << MCMother->GetDaughterFirst() << " PDG = " << Daughter1->GetPdgCode() << " Pt = " << Daughter1->Pt()<< endl;
+            cout << "--> Debug: -> Daughter 2; pos = " << MCMother->GetDaughterLast()  << " PDG = " << Daughter2->GetPdgCode()<< " Pt = " << Daughter2->Pt()<<endl;
+            // Check distance and check track matching condition
+            Double_t trackEta = Daughter2->Eta();
+            Double_t trackPhi = Daughter2->Phi();
+            Double_t photonEta = photon->Eta();
+            Double_t photonPhi = photon->Phi();
+
+            Double_t deta = TMath::Abs(trackEta - photonEta);
+            Double_t dphi = TMath::Abs(trackPhi - photonPhi);
+
+          
+            cout << "--> Debug: Trying to propagate track from cone on my own ..." << endl;
+            // Check tracks on my own
+            AliAODTrack *tempTrack = 0x0;
+            AliAODTrack *tempOriginalTrack = 0x0;
+            for(Int_t t=0;t<fInputEvent->GetNumberOfTracks();t++) {
+              tempTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(t));
+              if(tempTrack){
+                if((tempTrack->Pt()< (1.2* photon->Pt())) && (tempTrack->Pt() > (photon->Pt()*0.8)) && (photon->Pt()>15.)){
+                if(TrackIsSelectedAOD(tempTrack)){
+                  cout << "--> Debug: probably found track in cone with track Pt = " << tempTrack->Pt() <<" TrackID="<<tempTrack->GetID() << endl;  
+                  vector<Int_t> matchedClus(0);
+                  Int_t id = tempTrack->GetID();
+                  matchedClus = fClusterCutsEMCTrackMatching->GetCaloTrackMatcherInstance()->GetMatchedClusterIDsForTrack(fInputEvent,id,0.4);
+                  cout << "--> Debug: Number of clusters matched to this track: " << matchedClus.size() << endl;
+                  for (Int_t c = 0; c < matchedClus.size(); c++)
+                  {
+                    cout << "--> Debug: --> cluster ID = " << matchedClus.at(c) << endl;
+                  }
+                  cout << "--> Debug: currently looking at cluster = " << clus->GetID() << endl;
+ 
+                  
+
+                  vector<Int_t> labelsMatched(0);
+                  Float_t fMaxDistTrackToClusterEta = 0.02;//0.015;
+                  Float_t fMinDistTrackToClusterPhi = -0.13;//-0.02;
+                  Float_t fMaxDistTrackToClusterPhi = 0.08;//0.05;//0.15
+                  labelsMatched = fClusterCutsEMCTrackMatching->GetCaloTrackMatcherInstance()->GetMatchedTrackIDsForCluster(fInputEvent, clus->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
+                                                                    fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+
+                  cout << "--> Debug: Number of tracks matched to this cluster:" << labelsMatched.size() << endl;
+                  if (labelsMatched.size()>0)cout << "--> Debug: matched track ID " << labelsMatched.at(0) << endl;
+                  
+                  // do own propagation
+                  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+                  tempTrack->GetPxPyPz(pxpypz);
+                  tempTrack->GetXYZ(xyz);
+                  tempTrack->GetCovarianceXYZPxPyPz(cv);
+
+                  AliExternalTrackParam* trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,tempTrack->Charge());
+
+                  AliExternalTrackParam emcParam(*trackParam);
+                  Float_t eta, phi, pt;
+                  Float_t deta2, dphi2;
+
+                  cout << "--> Debug: Starting propagation to EMCal surface with step 20 and mass 0.139" << endl;
+                  //propagate tracks to emc surfaces
+                  if (AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
+                    cout << "--> Debug: managed to Propagate" << endl;
+                    Double_t etaDiff = TMath::Abs(eta - photonEta);
+                    Double_t phiDiff = TMath::Abs(phi - photonPhi);
+                    cout << "--> Debug: etaDiff=" << etaDiff << endl;
+                    cout << "--> Debug: phiDiff=" << phiDiff << endl;
+
+                    cout << "--> Debug: eta=" << eta << endl;
+                    cout << "--> Debug: phi(deg)=" << phi*TMath::RadToDeg() << endl;
+                    Int_t nModules = fGeomEMCAL->GetNumberOfSuperModules();
+                    
+                    // Do Eta and phi on surface cut
+                    if( TMath::Abs(eta) > 0.75 ) cout << "--> Debug: Failed eta cut" << endl;
+                    if( nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())) cout << "--> Debug: failed phi cut" << endl;
+
+                    // doing propagation with 5
+                    AliExternalTrackParam trackParamTmp(emcParam);
+                    if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, clus, 0.139, 5., deta2, dphi2)){
+                      cout << "--> Debug: failed to propagate with stepsize 5" << endl;
+                    }
+
+                    Float_t dR2 = dphi2*dphi2 + deta2*deta2;
+                    if(dR2 > 0.2) cout << "--> Debug: dR2 of " << dR2 << " is bigger than 0.2! Failed." << endl;
+                    cout << "--> Debug: GetEtaOnEmCal= " << tempTrack->GetTrackEtaOnEMCal() << endl;
+                    cout << "--> Debug: nModules " << nModules;
+                    cout << "--> Debug: E/p = " << clus->E()/tempTrack->P() << endl;
+
+                    Double_t exPos[3] = {0.,0.,0.};
+                    Float_t clsPos[3] = {0.,0.,0.};
+                    clus->GetPosition(clsPos);
+                    if(!emcParam.GetXYZ(exPos)) cout << "--> Debug: Did not manage to get XYZ of cluster" << endl;
+                    Int_t clusType =1;
+                    Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
+                    if(dR > 200) cout << "--> Debug: dR of " << dR <<" is not in matching window" << endl;
+                    // conditions for run1
+                    if( clusType == 1 && nModules < 13 && ( tempTrack->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || tempTrack->GetTrackPhiOnEMCal() > 190*TMath::DegToRad())){cout << "--> Debug: Failed Phi check 1" << endl;};
+                    if( clusType == 1 && nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){cout << "--> Debug: Failed Phi on Surface" << endl;};
+                    // conditions for run2
+                    if( nModules > 12 ){
+                      if( clusType == 1 && ( tempTrack->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || tempTrack->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()) ){cout << "--> Debug: Failed Phi check 2" << endl;}
+                    }
+                  }
+                  Float_t dEtaTmp, dPhiTmp;
+                  Bool_t TMRes = fClusterCutsEMCTrackMatching->GetCaloTrackMatcherInstance()->GetTrackClusterMatchingResidual(tempTrack->GetID(),clus->GetID(),dEtaTmp,dPhiTmp);
+                  cout << "--> Debug: got GetTrackClusterMatchingResidual?" << TMRes << endl;
+                  if(!TMRes){
+                    cout << "--> Debug: --> trackID = " << tempTrack->GetID() << endl;
+                    cout << "--> Debug: --> hybrid= " << tempTrack->IsHybridGlobalConstrainedGlobal() << endl;
+                    cout << "--> Debug: --> eta = " << tempTrack->Eta() << endl;
+                  }
+                  Int_t originalID =  tempTrack->GetID();
+                  if(tempTrack->GetID()<0){
+                    originalID = ((-1) * tempTrack->GetID()) - 1; 
+                  }
+                  // find original
+                  AliAODTrack *tempOriginalTrack = 0x0;
+
+                  cout << "--> Debug: printing all tracks in event------------------------------" << endl; 
+                  for(Int_t k=0;k<fInputEvent->GetNumberOfTracks();k++) {
+                     tempOriginalTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(k));
+                     if(tempOriginalTrack){
+                        cout << k << ": original track in cone: pt=" << tempOriginalTrack->Pt() << "eta=" << tempOriginalTrack->Eta() << " phi =" << tempOriginalTrack->Phi() << " ID = " <<  tempOriginalTrack->GetID() << "Hybrid?" << tempOriginalTrack->IsHybridGlobalConstrainedGlobal()<<" IsGlobalConstrained() " << tempOriginalTrack->IsGlobalConstrained() <<endl;
+                     }
+                  }
+
+                  cout << "-----------------------------------------------------" << endl;
+                  cout << "END OF ALL TRACKS IN EVENT" << endl;
+                  cout << "-----------------------------------------------------" << endl;
+
+                  for(Int_t k=0;k<fInputEvent->GetNumberOfTracks();k++) {
+                     
+                     tempOriginalTrack = static_cast<AliAODTrack*>(fInputEvent->GetTrack(k));
+                     if(tempOriginalTrack){
+                       if(tempOriginalTrack->GetID() == originalID) break;
+                     }
+                  }
+                  cout << "--> Debug: copy track in cone: pt=" << tempTrack->Pt() << "eta=" << tempTrack->Eta() << " phi =" <<  tempTrack->Phi() << " ID = " <<  tempTrack->GetID() << "Hybrid?" <<tempTrack->IsHybridGlobalConstrainedGlobal() << " IsGlobalConstrained() " <<tempTrack->IsGlobalConstrained() <<endl;
+                  cout << "--> Debug: original track in cone: pt=" << tempOriginalTrack->Pt() << "eta=" << tempOriginalTrack->Eta() << " phi =" << tempOriginalTrack->Phi() << " ID = " <<  tempOriginalTrack->GetID() << "Hybrid?" << tempOriginalTrack->IsHybridGlobalConstrainedGlobal()<<" IsGlobalConstrained() " << tempOriginalTrack->IsGlobalConstrained() <<endl;
+                  delete trackParam;
+
+                }
+                }
+              }
+            }
+
+
+          }
+        }
+     }
+  }
   
   // ────────────────────────────────────────────────────────────────────────────────
 
@@ -5574,7 +5789,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistos(AliAODCaloCluster* clus, AliAOD
                         cout << "Daughter 1; pos = " << MCMother->GetDaughterFirst() << " PDG = " << Daughter1->GetPdgCode() << " Pt = " << Daughter1->Pt()<< endl;
                         cout << "Daughter 2; pos = " << MCMother->GetDaughterLast()  << " PDG = " << Daughter2->GetPdgCode()<< " Pt = " << Daughter2->Pt()<<endl;
                         cout << "----------------" << endl;
-                       ((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+                      //((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
                         cout << "-------------------" << endl;
                         // Check distance and check track matching condition
                         Double_t trackEta = Daughter2->Eta();

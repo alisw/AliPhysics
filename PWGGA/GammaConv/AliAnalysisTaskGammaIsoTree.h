@@ -261,6 +261,9 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetGenPtCut(Double_t pt){
       fGenPtCut = pt;
     }
+    void SetDebugFlag(Int_t debug = 1){
+      fDebug = debug;
+    }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -787,7 +790,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 34);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 35);
 
 };
 
