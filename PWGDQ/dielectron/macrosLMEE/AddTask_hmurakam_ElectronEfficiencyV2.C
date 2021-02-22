@@ -3,7 +3,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
 									   Bool_t getFromAlien = kFALSE,
 									   TString configFile="./Config_hmurakam_ElectronEfficiencyV2.C",
 									   Bool_t tofcor = kFALSE,
-									   TString year = "16")
+									   TString year = "16",
+									   Bool_t usePhiV=kTRUE,
+									   Double_t maxMee=0.14,
+									   Double_t minphiv=2.0)
 
 {
 
@@ -59,6 +62,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // Set Binning
+  // Pt
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
     for (unsigned int i = 0; i < nBinsPt+1; ++i){
@@ -70,8 +74,24 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+  // Mass
+  if (useMassVector == true) {
+    std::vector<double> massBinsVec;
+    for (unsigned int i = 0; i < nBinsPt+1; ++i){
+      massBinsVec.push_back(massBins[i]);
+    }
+    task->SetMassBins(massBinsVec);
+  }
+  else task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
+  // PairPt
+  if(usePairPtVector == true){
+    std::vector<double> pairptBinsVec;
+    for (unsigned int i = 0; i < nBinsPairPt+1; ++i){
+      pairptBinsVec.push_back(pairptBins[i]);
+    }
+    task->SetPairPtBins(pairptBinsVec);
+  }
+  else task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
 
   // Resolution File, If resoFilename = "" no correction is applied
   SetResolutionFile(year);
@@ -90,6 +110,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+
+  task->SetPhiVBinsLinear(minPhiVBin, maxPhiVBin, stepsPhiVBin);
+  task->SetFillPhiV(kFALSE);
+  task->SetPhiVCut(usePhiV,maxMee,minphiv);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
