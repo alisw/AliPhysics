@@ -19,6 +19,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/NtuplizerTask
+		    ${AliPhysics_SOURCE_DIR}/PWGGA/NtuplizerTask/GJNtuples
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -133,3 +134,6 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+# Install the macros
+install(DIRECTORY GJNtuples/macros          DESTINATION  PWGGA/NtuplizerTask/GJNtuples)
