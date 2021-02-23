@@ -859,6 +859,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     // from any task to UpdateFile will update the cache, all consecutive calls
     // from any other task with the same file will just use the cached value
     //
+    AliDebugStream(1) << "Using new method obtaining pythia cross section from file" << std::endl;
     using PYTHIAFileHander = PWG::EMCAL::AliEmcalPythiaFileHandler;
     auto pythiahandler = PYTHIAFileHander::Instance();
     try {
@@ -885,6 +886,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     // Each task responsible itself for loading the pythia cross section
     // from file, will lead to multiple file handles.
     //
+    AliDebugStream(1) << "Using old method obtaining pythia cross section from file" << std::endl;
     TString file(currFile);
     // Determine archive type
     TString archivetype;
