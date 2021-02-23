@@ -2112,12 +2112,12 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
     if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
           
-    Double_t nclusFh = atrackAsso->GetTPCNclsF();
-    Double_t TPCNCrossedRowsh = atrackAsso->GetTPCNCrossedRows();
-    Double_t RatioCrossedRowsOverFindableClustersh =0;
-    if(nclusFh !=0.0 ){RatioCrossedRowsOverFindableClustersh = TPCNCrossedRowsh/nclusFh; }
-    if(TPCNCrossedRowsh < fTPCNCrossRHad) return kFALSE;
-    if(RatioCrossedRowsOverFindableClustersh <  fRatioTPCNCrossRHad) return kFALSE;
+    Double_t nclusF = atrackAsso->GetTPCNclsF();
+    Double_t TPCNCrossedRows = atrackAsso->GetTPCNCrossedRows();
+    Double_t RatioCrossedRowsOverFindableClusters =0;
+    if(nclusFh !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
+    if(TPCNCrossedRows < fTPCNCrossRHad) continue;
+    if(RatioCrossedRowsOverFindableClusters <  fRatioTPCNCrossRHad) continue;
       
     nsigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);
     ptAsso = trackAsso->Pt();
