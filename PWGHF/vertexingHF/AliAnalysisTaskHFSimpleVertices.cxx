@@ -181,6 +181,13 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   //
   InitDefault();
 
+  for(Int_t i=0; i<5; i++){
+    fHistPtGenPrompt[i]=0x0;
+    fHistPtGenFeeddw[i]=0x0;
+    fHistPtRecoPrompt[i]=0x0;
+    fHistPtRecoFeeddw[i]=0x0;
+  }
+  
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
@@ -286,6 +293,12 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
     delete fHistCosPointLc;
+    for(Int_t i=0; i<5; i++){
+      delete fHistPtGenPrompt[i];
+      delete fHistPtGenFeeddw[i];
+      delete fHistPtRecoPrompt[i];
+      delete fHistPtRecoFeeddw[i];
+    }
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -585,6 +598,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
   fOutput->Add(fHistNEvents);
 
+
   // single track histos
   fHistPtAllTracks = new TH1F("hPtAllTracks", " All tracks ; p_{T} (GeV/c)", 100, 0, 10.);
   fHistPtSelTracks = new TH1F("hPtSelTracks", " Selected tracks ; p_{T} (GeV/c)", 100, 0, 10.);
@@ -818,6 +832,36 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistDecLenLc);
   fOutput->Add(fHistCosPointLc);
 
+  // MC gen level histos (for effic)
+  fHistPtGenPrompt[0] = new TH1F("hPtGenPromptD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenPrompt[1] = new TH1F("hPtGenPromptDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenPrompt[2] = new TH1F("hPtGenPromptDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenPrompt[3] = new TH1F("hPtGenPromptLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenPrompt[4] = new TH1F("hPtGenPromptLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenFeeddw[0] = new TH1F("hPtGenFeeddwD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenFeeddw[1] = new TH1F("hPtGenFeeddwDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenFeeddw[2] = new TH1F("hPtGenFeeddwDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenFeeddw[3] = new TH1F("hPtGenFeeddwLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtGenFeeddw[4] = new TH1F("hPtGenFeeddwLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
+  for(Int_t i=0; i<5; i++){
+    fOutput->Add(fHistPtGenPrompt[i]);
+    fOutput->Add(fHistPtGenFeeddw[i]);
+  }
+  fHistPtRecoPrompt[0] = new TH1F("hPtRecoPromptD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoPrompt[1] = new TH1F("hPtRecoPromptDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoPrompt[2] = new TH1F("hPtRecoPromptDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoPrompt[3] = new TH1F("hPtRecoPromptLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoPrompt[4] = new TH1F("hPtRecoPromptLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoFeeddw[0] = new TH1F("hPtRecoFeeddwD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoFeeddw[1] = new TH1F("hPtRecoFeeddwDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoFeeddw[2] = new TH1F("hPtRecoFeeddwDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoFeeddw[3] = new TH1F("hPtRecoFeeddwLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoFeeddw[4] = new TH1F("hPtRecoFeeddwLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
+  for(Int_t i=0; i<5; i++){
+    fOutput->Add(fHistPtRecoPrompt[i]);
+    fOutput->Add(fHistPtRecoFeeddw[i]);
+  }
+
   PostData(1,fOutput);
 
 }
@@ -836,6 +880,15 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   // AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
   // AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
 
+  Double_t centr=-1;
+  AliMultSelection* mulSel=0x0;
+  if(fSelectOnCentrality){
+    mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
+    if(mulSel){
+      centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
+    }
+  }
+  
   AliMCEvent* mcEvent = nullptr;
   if(fReadMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -848,10 +901,70 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       Printf("ERROR: Could not retrieve MC event");
       return;
     }
+    // check centrality and z vertex position, which should be selected before counting the generated signals
+    if(!fSelectOnCentrality || (mulSel && centr>=fMinCentrality && centr<=fMaxCentrality)){
+      const AliVVertex* mcVert=mcEvent->GetPrimaryVertex();
+      if(!mcVert){
+	Printf("ERROR: generated vertex not available");
+	return;
+      }
+      if(TMath::Abs(mcVert->GetZ()) < fMaxZVert){
+	Int_t nParticles=mcEvent->GetNumberOfTracks();
+	for (Int_t i=0;i<nParticles;i++){
+	  AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(i);
+	  TParticle* part = (TParticle*)mcEvent->Particle(i);
+	  if(!part || !mcPart) continue;
+	  Int_t absPdg=TMath::Abs(part->GetPdgCode());
+	  //	  Int_t pdg=part->GetPdgCode();
+	  Int_t iPart=-1;
+	  Int_t deca=0;
+	  Bool_t isGoodDecay=kFALSE;
+	  Int_t dummy[4];
+	  if(absPdg==421){
+	    iPart=0;
+	    deca=AliVertexingHFUtils::CheckD0Decay(mcEvent,i,dummy); 
+	    if(deca==1) isGoodDecay=kTRUE;
+	  }else if(absPdg==411){
+	    iPart=1;
+	    deca=AliVertexingHFUtils::CheckDplusDecay(mcEvent,i,dummy);
+	    if(deca>0) isGoodDecay=kTRUE;
+ 	  }else if(absPdg==431){
+	    iPart=2;
+	    deca=AliVertexingHFUtils::CheckDsDecay(mcEvent,i,dummy);
+	    if(deca==1) isGoodDecay=kTRUE;
+	  }else if(absPdg==4122){
+	    iPart=3;
+	    deca=AliVertexingHFUtils::CheckLcpKpiDecay(mcEvent,i,dummy);
+	    if(deca>0){
+	      iPart=3;
+	      isGoodDecay=kTRUE;
+	    }else{
+	      deca=AliVertexingHFUtils::CheckLcV0bachelorDecay(mcEvent,i,dummy);
+	      if(deca==1){
+		iPart=4;
+		isGoodDecay=kTRUE;
+	      }
+	    }
+	  }
+	  if(isGoodDecay){
+	    Double_t ptgen=part->Pt();
+	    Int_t isFromB=AliVertexingHFUtils::CheckOrigin(mcEvent,mcPart,kTRUE);
+	    if(isFromB==4){
+	      fHistPtGenPrompt[iPart]->Fill(ptgen);
+	    }else if(isFromB==5){
+	      fHistPtGenFeeddw[iPart]->Fill(ptgen);
+	    }
+	  } 
+	}
+      }
+    }
   }
+  
   Int_t pdgD0dau[2]={321,211};
   Int_t pdgJpsidau[2]={11,11};
 
+
+  
   fHistNEvents->Fill(0);
   if(fUsePhysSel){
     Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
@@ -860,11 +973,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   fHistNEvents->Fill(1);
 
   if(fSelectOnCentrality){
-    AliMultSelection* mulSel = (AliMultSelection*)esd->FindListObject("MultSelection");
-    if(mulSel){
-      Double_t centr=mulSel->GetMultiplicityPercentile(fCentrEstimator.Data());
-      if(centr<fMinCentrality || centr>fMaxCentrality) return;
-    }
+    if(centr<fMinCentrality || centr>fMaxCentrality) return;
   }
   fHistNEvents->Fill(2);
 
@@ -1037,52 +1146,59 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 		fHistInvMassD0Signal->Fill(m0b);
 		fHistInvMassD0Refl->Fill(m0);
 	      }
+	      AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
+	      if(dmes){
+		Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
+		Double_t ptgen=dmes->Pt();
+		if(orig==4) fHistPtRecoPrompt[0]->Fill(ptgen);
+		else if(orig==5) fHistPtRecoFeeddw[0]->Fill(ptgen);
+	      }
 	    }
 	  }
 	}
-        
-  if((fCandidateCutLevel>2 && jpsiSel>1)||(fCandidateCutLevel<= 2 && jpsiSel>0) ) {
-    Double_t m0 = the2Prong->InvMassJPSIee();
-    Double_t ptD = the2Prong->Pt();
-    Double_t ptDau0 = the2Prong->PtProng(0);
-    Double_t ptDau1 = the2Prong->PtProng(1);
-    Double_t ipDau0 = the2Prong->Getd0Prong(0);
-    Double_t ipDau1 = the2Prong->Getd0Prong(1);
-    Double_t d0xd0 = the2Prong->Prodd0d0();
-  //  Printf("jpsiSel xxx xxx d0xd0 xxx %f ipDau0 xxx  %f ipDau1 xxx  %f\n",d0xd0,ipDau0,ipDau1);
-    if (fSelectJpsi == 0 || jpsiSel == 1 ||jpsiSel == 2) fHistInvMassJpsi->Fill(m0);
-    fHistPtJpsi->Fill(ptD);
-    fHistPtJpsiDau0->Fill(ptDau0);
-    fHistPtJpsiDau1->Fill(ptDau1);
-    fHistImpParJpsiDau0->Fill(ipDau0);
-    fHistImpParJpsiDau1->Fill(ipDau1);
-    fHistd0Timesd0Jpsi->Fill(d0xd0);
-    fHistCosPointJpsi->Fill(the2Prong->CosPointingAngle());
-    fHistDecLenJpsi->Fill(decaylength);
-    fHistDecLenXYJpsi->Fill(decaylengthxy);
-    fHistDecLenErrJpsi->Fill(the2Prong->DecayLengthError());
-    fHistDecLenXYErrJpsi->Fill(the2Prong->DecayLengthXYError());
-    Double_t covMatrixj[6];
-    the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixj);
-    fHistCovMatPrimVXX2Prong->Fill(covMatrixj[0]);
-    the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixj);
-    fHistCovMatSecVXX2Prong->Fill(covMatrixj[0]);
-    if(fReadMC && mcEvent){
-      Int_t labJ=MatchToMC(the2Prong,443,mcEvent,2,twoTrackArray,pdgJpsidau);
-      if(labJ>=0){
-        fHistJpsiSignalVertX->Fill(trkv->GetX());
-        fHistJpsiSignalVertY->Fill(trkv->GetY());
-        fHistJpsiSignalVertZ->Fill(trkv->GetZ());
-        AliESDtrack* trDau0=(AliESDtrack*)twoTrackArray->UncheckedAt(0);
-        Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
-        AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
-        Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
-        if(pdgCode==11){
-          fHistInvMassJpsiSignal->Fill(m0);
-        }
-      }
-    }
-  }
+      
+	if((fCandidateCutLevel>2 && jpsiSel>1)||(fCandidateCutLevel<= 2 && jpsiSel>0) ) {
+	  Double_t m0 = the2Prong->InvMassJPSIee();
+	  Double_t ptD = the2Prong->Pt();
+	  Double_t ptDau0 = the2Prong->PtProng(0);
+	  Double_t ptDau1 = the2Prong->PtProng(1);
+	  Double_t ipDau0 = the2Prong->Getd0Prong(0);
+	  Double_t ipDau1 = the2Prong->Getd0Prong(1);
+	  Double_t d0xd0 = the2Prong->Prodd0d0();
+	  //  Printf("jpsiSel xxx xxx d0xd0 xxx %f ipDau0 xxx  %f ipDau1 xxx  %f\n",d0xd0,ipDau0,ipDau1);
+	  if (fSelectJpsi == 0 || jpsiSel == 1 ||jpsiSel == 2) fHistInvMassJpsi->Fill(m0);
+	  fHistPtJpsi->Fill(ptD);
+	  fHistPtJpsiDau0->Fill(ptDau0);
+	  fHistPtJpsiDau1->Fill(ptDau1);
+	  fHistImpParJpsiDau0->Fill(ipDau0);
+	  fHistImpParJpsiDau1->Fill(ipDau1);
+	  fHistd0Timesd0Jpsi->Fill(d0xd0);
+	  fHistCosPointJpsi->Fill(the2Prong->CosPointingAngle());
+	  fHistDecLenJpsi->Fill(decaylength);
+	  fHistDecLenXYJpsi->Fill(decaylengthxy);
+	  fHistDecLenErrJpsi->Fill(the2Prong->DecayLengthError());
+	  fHistDecLenXYErrJpsi->Fill(the2Prong->DecayLengthXYError());
+	  Double_t covMatrixj[6];
+	  the2Prong->GetPrimaryVtx()->GetCovMatrix(covMatrixj);
+	  fHistCovMatPrimVXX2Prong->Fill(covMatrixj[0]);
+	  the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixj);
+	  fHistCovMatSecVXX2Prong->Fill(covMatrixj[0]);
+	  if(fReadMC && mcEvent){
+	    Int_t labJ=MatchToMC(the2Prong,443,mcEvent,2,twoTrackArray,pdgJpsidau);
+	    if(labJ>=0){
+	      fHistJpsiSignalVertX->Fill(trkv->GetX());
+	      fHistJpsiSignalVertY->Fill(trkv->GetY());
+	      fHistJpsiSignalVertZ->Fill(trkv->GetZ());
+	      AliESDtrack* trDau0=(AliESDtrack*)twoTrackArray->UncheckedAt(0);
+	      Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+	      AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+	      Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+	      if(pdgCode==11){
+		fHistInvMassJpsiSignal->Fill(m0);
+	      }
+	    }
+	  }
+	}
 	delete the2Prong;
 	delete vertexAOD;
       }

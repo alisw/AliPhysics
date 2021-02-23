@@ -177,6 +177,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  TH1F* fHistPtGenPrompt[5];       //!<! histos for efficiency (prompt)
+  TH1F* fHistPtGenFeeddw[5];       //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
+  
   Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
