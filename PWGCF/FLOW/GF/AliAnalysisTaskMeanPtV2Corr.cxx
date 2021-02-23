@@ -222,7 +222,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
         fWeights[i]->SetPtBins(fNPtBins,fPtBins);
         // fWeights[i]->SetPtBins(NbinsPtForV2,binsPtForV2);
         fWeights[i]->SetName(Form("weight_%s",wNames[i].Data()));
-        fWeights[i]->Init(kFALSE,kTRUE);
+        fWeights[i]->Init(!fIsMC,fIsMC);
         fWeightList->Add(fWeights[i]);
       }
       PostData(1,fWeightList);
@@ -478,7 +478,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   fGFWSelection->AcceptVertex(fAOD);
   if(fStageSwitch==1)
-    FillWeights(fAOD, vz,l_Cent,vtxXYZ);
+    fIsMC?FillWeightsMC(fAOD, vz,l_Cent,vtxXYZ):FillWeights(fAOD, vz,l_Cent,vtxXYZ);
   if(fStageSwitch==2)
     fIsMC?FillMeanPtMC(fAOD,vz,l_Cent,vtxXYZ):FillMeanPt(fAOD, vz, l_Cent,vtxXYZ);
   if(fStageSwitch==3)
@@ -511,8 +511,8 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(fTriggerType&fSelMask)) return kFALSE;
-  if((fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
-  if((fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+  if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
+  if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
@@ -561,7 +561,7 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("Efficiency")) return 7;
   return 0;
 }
-void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   //MC generated
   AliVParticle *lPart;
   AliAODTrack *lTrack;
@@ -595,6 +595,25 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t 
   };
   PostData(1,fWeightList);
 }
+void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+  AliAODTrack *lTrack;
+  Double_t trackXYZ[3];
+  for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
+    lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+    if(!lTrack) continue;
+    Double_t trackXYZ[] = {0.,0.,0.};
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
+    Double_t leta = lTrack->Eta();
+    Double_t lpt = lTrack->Pt();
+    ((AliGFWWeights*)fWeightList->At(0))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    if(PIDIndex) ((AliGFWWeights*)fWeightList->At(PIDIndex))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+
+  };
+  PostData(1,fWeightList);
+}
+
 void AliAnalysisTaskMeanPtV2Corr::FillMeanPtCounter(Double_t pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight) {
   Double_t w = inWeight?inWeight->GetIntegratedEfficiency(pt):1;
   if(w==0) return;
