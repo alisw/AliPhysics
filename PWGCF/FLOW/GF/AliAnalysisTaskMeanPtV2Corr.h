@@ -47,6 +47,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptParticle(AliVParticle*);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FillWeightsMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPt(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
