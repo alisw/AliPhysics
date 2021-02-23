@@ -72,9 +72,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
-    void SetLightOutput                 ( Int_t flag )                                     { fDoLightOutput = flag                       ;}
-    void SetPi0EtaSwitch                ( Int_t flag )                                     { fPi0EtaSwitch = flag                       ;}
-    void SetECalibOutput                ( Bool_t flag )                                     { fDoECalibOutput = flag                      ;}
+    void SetLightOutput                 ( Int_t flag )                                      { fDoLightOutput = flag                       ;}
+    void SetPi0EtaSwitch                ( Int_t flag )                                      { fPi0EtaSwitch = flag                        ;}
+    void SetECalibOutput                ( Int_t flag )                                      { fDoECalibOutput = flag                      ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
@@ -579,7 +579,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
     Int_t                   fDoLightOutput;                                     // switch for running light output, 0 -> normal mode, 1 -> light mode, 2 -> minimum
     Int_t                   fPi0EtaSwitch;                                     // switch for running only pi0, oly eta or both, 0 -> both, 1 -> pi0, 2 -> eta
-    Bool_t                  fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
+    Int_t                   fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
