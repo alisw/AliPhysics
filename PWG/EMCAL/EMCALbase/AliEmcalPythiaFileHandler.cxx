@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include "AliEmcalPythiaFileHandler.h"
+#include "AliLog.h"
 #include <TFile.h>
 #include <TH1.h>
 #include <TKey.h>
@@ -62,15 +63,18 @@ AliEmcalPythiaCrossSectionData AliEmcalPythiaFileHandler::GetCrossSectionAndNTri
     UpdateCache(filename);
     fCurrentFile = filename;
   } 
+  AliDebugGeneralStream("AliEmcalPythiaFileHandler::GetCrossSectionAndNTrials", 2) << "Returning cached value for cross section and number of trials" << std::endl;
   return fCrossSectionNrials;
 }
 
 void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
+  AliDebugGeneralStream("AliEmcalPythiaFileHandler::GetCrossSectionAndNTrials", 1) << "New file - updating cache" << std::endl;
   fCrossSectionNrials.fCrossSection = 0;
   fCrossSectionNrials.fNTrials = 1;
   fInitialized = false;
 
   TString file(filename);
+  bool isAOD = file.Contains("AliAOD.root");
   // Determine archive type
   TString archivetype;
   std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
@@ -92,7 +96,7 @@ void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
 
-  if(file.Contains("AliAOD.root")) {
+  if(isAOD) {
     UpdateFromXsecHistFile(Form("%s%s",file.Data(),"pyxsec_hists.root"));
   } else if(file.Contains("AliESDs.root")){
     UpdateFromXsecFile(Form("%s%s",file.Data(),"pyxsec.root"));
@@ -103,6 +107,7 @@ void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
 }
 
 void AliEmcalPythiaFileHandler::UpdateFromXsecFile(const char *pyxsecfile) {
+  AliDebugGeneralStream("AliEmcalPythiaFileHandler::UpdateFromXsecFile", 1) << "Reading cross section from tree file " << pyxsecfile << " (ESD mode)" << std::endl;
   std::unique_ptr<TFile> xsecfile(TFile::Open(pyxsecfile));
   if(!xsecfile || xsecfile->IsZombie()) throw 1;
   auto xtree = (TTree*)xsecfile->Get("Xsection");
@@ -117,6 +122,7 @@ void AliEmcalPythiaFileHandler::UpdateFromXsecFile(const char *pyxsecfile) {
 }
 
 void AliEmcalPythiaFileHandler::UpdateFromXsecHistFile(const char *pyxsechistfile) {
+  AliDebugGeneralStream("AliEmcalPythiaFileHandler::UpdateFromXsecHistFile", 1) << "Reading cross section from hist file " << pyxsechistfile << " (AOD mode)" << std::endl;
   std::unique_ptr<TFile> xsecfile(TFile::Open(pyxsechistfile));
   if(!xsecfile || xsecfile->IsZombie()) throw FileNotFoundException(pyxsechistfile);
   // find the tlist we want to be independtent of the name so use the Tkey
