@@ -626,9 +626,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fEMCTPCnsig);
 
   fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0);
+  fClsEAftMatch->Sumw2();  
   fOutputList->Add(fClsEAftMatch);
   
    fClsEAftMatch_SPD = new TH2F("fClsEAftMatch_SPD", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0,300,-0.5,299.5);
+  fClsEAftMatch_SPD->Sumw2();
   fOutputList->Add(fClsEAftMatch_SPD);
   
   fClsEopAftMatch = new TH1F("fClsEopAftMatch", "EMCAL cluster energy over p distribution after track matching; Cluster E/p;counts", 100, 0.0, 2.0);
