@@ -2177,7 +2177,7 @@ void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name,  AliCalo
 void AliAnalysisTaskTaggedPhotons::FillPIDHistogramsW(const char * name,  AliCaloPhoton * p, Double_t w) const{
 
   double pt= p->Pt(); 
-  double ww=fCentWeight*p->GetWeight() ;
+  double ww=w*fCentWeight*p->GetWeight() ;
   FillHistogram(Form("%s_All_cent%d",name,fCentBin),pt,ww) ;
   if(p->IsDispOK())
     FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),pt,ww) ;
