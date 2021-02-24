@@ -46,6 +46,7 @@
 //Ludmila
 #pragma link C++ class  AliFemtoCutMonitorDphiDeta1;
 #pragma link C++ class  AliFemtoESDTrackCutPlusJets25;
+#pragma link C++ class  AliFemtoESDTrackCutMinusJets;
 //
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
 #pragma link C++ class AliFemtoCutMonitorParticleMomRes;
