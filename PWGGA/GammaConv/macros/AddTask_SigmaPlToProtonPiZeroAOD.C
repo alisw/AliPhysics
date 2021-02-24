@@ -128,6 +128,8 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   // *****************************************************************************************************
   if (trainConfig == 1){   // PHOS Standard
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311011"); 
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","21120003211311011"); // Filterbit 1<<4
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","22120003211311011"); // Filterbit 1<<8
   } else if (trainConfig == 2){   // PHOS PID
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20220003211311011"); // NCluster TPC 50
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20320003211311011"); // NCluster TPC 65
