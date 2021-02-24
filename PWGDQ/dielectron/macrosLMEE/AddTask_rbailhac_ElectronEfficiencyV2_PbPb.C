@@ -156,8 +156,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   //task->SetSmearGenerated(kFALSE); // cross check smearing the MC at single level and filling resolution maps
  // Resolution File, If resoFilename = "" no correction is applied
-  task->SetResolutionFile(resolutionFilename);
-  task->SetResolutionFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + resolutionFilename);
+  task->SetResolutionFile(resolutionFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + resolutionFilename);
   task->SetResolutionDeltaPtBinsLinear   (-10., 2., (Int_t)gROOT->ProcessLine("GetNbinsDeltaMom()"));
   task->SetResolutionRelPtBinsLinear   (0., 2.,  (Int_t)gROOT->ProcessLine("GetNbinsRelMom()"));
   task->SetResolutionEtaBinsLinear  (-0.4, 0.4, (Int_t)gROOT->ProcessLine("GetNbinsDeltaEta()"));
@@ -172,8 +171,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
-  task->SetCentralityFile(centralityFilename);
-  task->SetCentralityFileFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
+  task->SetCentralityFile(centralityFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + centralityFilename);
+
 
   // #########################################################
   // #########################################################
@@ -201,8 +200,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   
   //###############################################
   //##############################################
-  task->SetCocktailWeighting(cocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/r/rbailhac/supportFiles/" + cocktailFilename);
+  if (cocktailFilename != "") task->SetDoCocktailWeighting(kTRUE);
+  task->SetCocktailWeighting(cocktailFilename,"/alice/cern.ch/user/r/rbailhac/supportFiles/" + cocktailFilename);
+
   
   // #########################################################
   // #########################################################
