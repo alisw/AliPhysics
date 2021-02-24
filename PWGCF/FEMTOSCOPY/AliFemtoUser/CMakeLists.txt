@@ -55,6 +55,7 @@ set(SRCS
 #  Ludmila
    AliFemtoCutMonitorDphiDeta1.cxx
    AliFemtoESDTrackCutPlusJets25.cxx
+   AliFemtoESDTrackCutMinusJets.cxx
 #
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
