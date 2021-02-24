@@ -161,7 +161,11 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
     if (checkFile) {
       AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
     }
-    return path;
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(fileform == "so" || fileform == "yml" || fileform ==  "yaml"){
+      return path;
+    }
   }
 
   // check if file is on cvmfs, but still requires to set the full path (so starts with PWG or AODB)
@@ -170,7 +174,12 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
     if (path_cvmfs == "") {
       AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
     }
-    return path_cvmfs;
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(fileform == "so" || fileform == "yml" || fileform ==  "yaml"){
+      return path_cvmfs;
+    }
+    path = path_cvmfs;
   }
     
   // check if file is on alien
