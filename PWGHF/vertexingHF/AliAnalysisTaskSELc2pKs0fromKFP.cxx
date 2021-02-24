@@ -16,10 +16,10 @@
 /* $Id$ */
 
 /////////////////////////////////////////////////////////////
-// Author: Jianhui Zhu (1,2)
+// Author: Jianhui Zhu (1,2), Jeremy Wilkinson (2)
 // (1) Central China Normal University
 // (2) GSI Helmholtz Centre for Heavy Ion Research
-// E-mail: zjh@mail.ccnu.edu.cn
+// E-mail: zjh@mail.ccnu.edu.cn, jeremy.wilkinson@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <iostream>
@@ -58,6 +58,7 @@ ClassImp(AliAnalysisTaskSELc2pKs0fromKFP) // classimp: necessary for root
 AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   AliAnalysisTaskSE(),
   fIsMC(kFALSE),
+  fUseWeights(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fPID(0),
   fPIDCombined(0),
@@ -86,7 +87,10 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fWriteLcQATree(kFALSE),
   fWeight(0),
   fHistMCGen_LcPt_weight(0),
-  f2DHistMCRec_LcPt_weight(0)
+  f2DHistMCRec_LcPt_weight(0),
+  fFuncWeightPythia(0),
+  fFuncWeightFONLL5overLHC13d3(0),
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -95,6 +99,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
 AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* name, AliRDHFCutsKFP* cuts) :
   AliAnalysisTaskSE(name),
   fIsMC(kFALSE),
+  fUseWeights(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fPID(0),
   fPIDCombined(0),
@@ -123,7 +128,10 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fWriteLcQATree(kFALSE),
   fWeight(0),
   fHistMCGen_LcPt_weight(0),
-  f2DHistMCRec_LcPt_weight(0)
+  f2DHistMCRec_LcPt_weight(0),
+  fFuncWeightPythia(0),
+  fFuncWeightFONLL5overLHC13d3(0),
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -219,7 +227,19 @@ AliAnalysisTaskSELc2pKs0fromKFP::~AliAnalysisTaskSELc2pKs0fromKFP()
       delete fCounter;
       fCounter = 0;
     }
-
+    
+    if (fFuncWeightPythia) {
+      delete fFuncWeightPythia;
+      fFuncWeightPythia = 0;
+    }
+    if (fFuncWeightFONLL5overLHC13d3) {
+      delete fFuncWeightFONLL5overLHC13d3;
+      fFuncWeightFONLL5overLHC13d3 = 0;
+    }
+    if (fFuncWeightFONLL5overLHC13d3Lc) {
+      delete fFuncWeightFONLL5overLHC13d3Lc;
+      fFuncWeightFONLL5overLHC13d3Lc = 0;
+    }
 
 }
 //_____________________________________________________________________________
@@ -329,7 +349,23 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
   fPIDCombined = new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
   fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-  
+
+
+  // weight function from ratio of flat value (1/30) to pythia
+  // use to normalise to flat distribution (should lead to flat pT distribution)
+  fFuncWeightPythia = new TF1("funcWeightPythia","1./(30. *[0]*x/TMath::Power(1.+(TMath::Power((x/[1]),[3])),[2]))",0.15,30);
+  fFuncWeightPythia->SetParameters(0.36609,1.94635,1.40463,2.5);
+
+  // weight function from the ratio of the LHC13d3 MC
+  // and FONLL calculations for pp data
+  fFuncWeightFONLL5overLHC13d3 = new TF1("funcWeightFONLL5overLHC13d3","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
+  fFuncWeightFONLL5overLHC13d3->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+
+  fFuncWeightFONLL5overLHC13d3Lc = new TF1("funcWeightFONLL5overLHC13d3Lc","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,20.);
+  fFuncWeightFONLL5overLHC13d3Lc->SetParameters(5.94428e+01,1.63585e+01,9.65555e+00,6.71944e+00,8.88338e-02,2.40477e+00,-4.88649e-02,-6.78599e-01,-2.10951e-01);
+
+
+
 
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -1178,7 +1214,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Lc = new TTree(nameoutput, "Lc variables tree");
-  Int_t nVar = 35;
+  Int_t nVar = 38;
   fVar_Lc = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1223,6 +1259,10 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[32] = "nSigmaCombined_Pr"; // nSigma-combined for proton
     fVarNames[33] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
     fVarNames[34] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
+    fVarNames[35] = "weightPtFlat"; // flat pT weight for MC
+    fVarNames[36] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+    fVarNames[37] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+
   }
   if (fIsAnaLc2Lpi) {
     fVarNames[0]  = "nSigmaTPC_V0Pr"; //TPC nsigma for proton coming from Lam
@@ -1265,6 +1305,9 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[32] = "nSigmaCombined_V0Pr"; // nSigma-combined for proton from Lam decay
     fVarNames[33] = "cos_p_Lam"; // cosine pointing angle of cascade
     fVarNames[34] = "d_len_Lam"; // dlen of cascade 
+    fVarNames[35] = "weightPtFlat"; // flat pT weight for MC
+    fVarNames[36] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+    fVarNames[37] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
 
 
   }
@@ -1461,7 +1504,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst)
 {
   
-  for (Int_t i=0; i<29; i++) {
+  for (Int_t i=0; i<38; i++) {
     fVar_Lc[i] = -9999.;
   }
 
@@ -1696,6 +1739,13 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
 
   fVar_Lc[33] = cosPA_V0;
   fVar_Lc[34] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+
+  if (fIsMC && fUseWeights) { //add branches for MC pT weights
+    fVar_Lc[35] = fFuncWeightPythia->Eval(kfpLc_PV.GetPt()); // weight pT flat 
+    fVar_Lc[36] = fFuncWeightFONLL5overLHC13d3->Eval(kfpLc_PV.GetPt()); // weight pT flat 
+    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3Lc->Eval(kfpLc_PV.GetPt()); // weight pT flat 
+
+  }
 
   
   // === QA tree ===
