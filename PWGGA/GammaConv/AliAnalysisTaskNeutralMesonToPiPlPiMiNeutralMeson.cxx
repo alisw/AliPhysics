@@ -954,7 +954,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   fNeutralDecayParticleSwappCandidates        = new TList();
   fNeutralDecayParticleSwappCandidates->SetOwner(kTRUE);
 
-
   fPosPionCandidates            = new TList();
   fPosPionCandidates->SetOwner(kTRUE);
   fNegPionCandidates            = new TList();
@@ -3490,34 +3489,34 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
               if (gamma2==nullptr || thirdGammaIndex==firstGammaIndex || thirdGammaIndex==secondGammaIndex) continue;
 
               if(acceptfirstgamma){ // Pair third gamma with first gamma only when first gamma is accepted
-                std::unique_ptr<AliAODConversionMother> NDMcandswapp1(new AliAODConversionMother(gamma0swapped.get(), ((AliAODConversionPhoton*) gamma2)));
+                AliAODConversionMother* NDMcandswapp1 = new AliAODConversionMother(gamma0swapped.get(), ((AliAODConversionPhoton*) gamma2));
                 NDMcandswapp1->SetLabels(thirdGammaIndex,firstGammaIndex);
 
                 if( (! (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut())) //Not using min E cut
                   || ( (minDaughters==1) && ( (gamma0swapped->E() > minDaughterEnergy)  || (gamma2->E() > minDaughterEnergy)) ) // Or require one daughter above min E
                   || ( (minDaughters==2) && ( (gamma0swapped->E() > minDaughterEnergy)  && (gamma2->E() > minDaughterEnergy)) ) ){// require both above min E
                     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetBackgroundMode() == 7){
-                      fHistoSwappingGammaGammaInvMassPt[fiCut]->Fill(NDMcandswapp1.get()->M(),NDMcandswapp1.get()->Pt(), fWeightJetJetMC);
+                      fHistoSwappingGammaGammaInvMassPt[fiCut]->Fill(NDMcandswapp1->M(),NDMcandswapp1->Pt(), fWeightJetJetMC);
                     }
-                    if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcandswapp1.get(), 0)){
-                      fNeutralDecayParticleSwappCandidates->Add(NDMcandswapp1.get());
+                    if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcandswapp1, 0)){
+                      fNeutralDecayParticleSwappCandidates->Add(NDMcandswapp1);
                   }
                 }
               } // End of first gamma with third gamma if
 
 
               if(acceptsecondgamma){ // Pair third gamma with second gamma only when second gamma is accepted
-                std::unique_ptr<AliAODConversionMother> NDMcandswapp2(new AliAODConversionMother(gamma1swapped.get(), ((AliAODConversionPhoton*) gamma2)));
+                AliAODConversionMother* NDMcandswapp2 = new AliAODConversionMother(gamma1swapped.get(), ((AliAODConversionPhoton*) gamma2));
                 NDMcandswapp2->SetLabels(thirdGammaIndex,secondGammaIndex);
 
                 if( (! (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaMinEnergyCut())) //Not using min E cut
-                  || ( (minDaughters==1) && ( (gamma1swapped->E() > minDaughterEnergy)  || (gamma2->E() > minDaughterEnergy)) ) // Or require one daughter above min E
-                  || ( (minDaughters==2) && ( (gamma1swapped->E() > minDaughterEnergy)  && (gamma2->E() > minDaughterEnergy)) ) ){// require both above min E
+                  || ( (minDaughters==1) && ( (gamma1swapped.get()->E() > minDaughterEnergy)  || (gamma2->E() > minDaughterEnergy)) ) // Or require one daughter above min E
+                  || ( (minDaughters==2) && ( (gamma1swapped.get()->E() > minDaughterEnergy)  && (gamma2->E() > minDaughterEnergy)) ) ){// require both above min E
                     if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetBackgroundMode() == 7){
-                        fHistoSwappingGammaGammaInvMassPt[fiCut]->Fill(NDMcandswapp2.get()->M(),NDMcandswapp2.get()->Pt(), fWeightJetJetMC);
+                        fHistoSwappingGammaGammaInvMassPt[fiCut]->Fill(NDMcandswapp2->M(),NDMcandswapp2->Pt(), fWeightJetJetMC);
                     }
-                    if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcandswapp2.get(), 0)){
-                      fNeutralDecayParticleSwappCandidates->Add(NDMcandswapp2.get());
+                    if (((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(NDMcandswapp2, 0)){
+                      fNeutralDecayParticleSwappCandidates->Add(NDMcandswapp2);
                   }
                 }
               } // End of second gamma with third gamma if
