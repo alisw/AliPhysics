@@ -2,7 +2,7 @@
 //
 //  This class provides storage for event and track information which 
 //  are used for same-event as well as mixed-event analyses in AliAnalysisTaskCorrelationhhK0s
-//  Author: chiara.de.martin@cern.ch
+//  Author: marta.urioni@cern.ch
 //  was: ramona.lea@cern.ch 
 //  was: maria.nicassio@cern.ch (derived and adapted from D. Gangadharan PWGCF/FEMTOSCOPY/Chaoticity/AliChaoticityEventCollection
 //                                  and J. Salzwedel PWGCF/FEMTOSCOPY/V0LamAnalysis/AliAnalysisV0LamEventCollection) 
@@ -13,7 +13,7 @@
 
 //_____________________________________________________________________________
 // Default constructor 
-AliReconstructedFirst::AliReconstructedFirst() :
+AliReconstructedFirstK0SP::AliReconstructedFirstK0SP() :
   fPt(0),  
   fTheta(0), 
   fPhi(0), 
@@ -86,7 +86,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
 
 }
 // //_____________________________________________________________________________
-// AliReconstructedSecond::AliReconstructedSecond(const AliReconstructedSecond &obj) :
+// AliReconstructedSecondK0SP::AliReconstructedSecondK0SP(const AliReconstructedSecondK0SP &obj) :
 //   sPt(0),
 //   sEta(0),
 //   sTheta(0),
@@ -114,7 +114,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
 //   // copy constructor
 // }
 // //_____________________________________________________________________________
-// AliReconstructedSecond &AliReconstructedSecond::operator=(const AliReconstructedSecond &obj)
+// AliReconstructedSecondK0SP &AliReconstructedSecondK0SP::operator=(const AliReconstructedSecondK0SP &obj)
 // {
 //   //Assignment operator
 //   if(this == &obj) return *this;
@@ -149,7 +149,7 @@ AliReconstructedFirst::AliReconstructedFirst() :
 
 //_____________________________________________________________________________
 
-AliReconstructedFirst::~AliReconstructedFirst()
+AliReconstructedFirstK0SP::~AliReconstructedFirstK0SP()
 
 {
 
@@ -157,7 +157,7 @@ AliReconstructedFirst::~AliReconstructedFirst()
 
 //_____________________________________________________________________________
 
-AliReconstructedSecond::AliReconstructedSecond() :
+AliReconstructedSecondK0SP::AliReconstructedSecondK0SP() :
   sPt(0), 
   sTheta(0), 
   sPhi(0), 
@@ -196,7 +196,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
   // default constructor constructor
 }
 // //_____________________________________________________________________________
-// AliReconstructedFirst::AliReconstructedFirst(const AliReconstructedFirst &obj) :
+// AliReconstructedFirstK0SP::AliReconstructedFirstK0SP(const AliReconstructedFirstK0SP &obj) :
 //   fPt(0),
 //   fEta(0),
 //   fTheta(0),
@@ -224,7 +224,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
 //   // copy constructor
 // }
 // //_____________________________________________________________________________
-// AliReconstructedFirst &AliReconstructedFirst::operator=(const AliReconstructedFirst &obj)
+// AliReconstructedFirstK0SP &AliReconstructedFirstK0SP::operator=(const AliReconstructedFirstK0SP &obj)
 // {
 //   //Assignment operator
 //   if(this == &obj) return *this;
@@ -258,7 +258,7 @@ AliReconstructedSecond::AliReconstructedSecond() :
 
 //_____________________________________________________________________________
 
-AliReconstructedSecond::~AliReconstructedSecond()
+AliReconstructedSecondK0SP::~AliReconstructedSecondK0SP()
 
  {
 
@@ -378,14 +378,14 @@ AliAnalysisK0SPEventCollection::AliAnalysisK0SPEventCollection(Short_t eventBuff
 
     (fEvt + ii)->fNumberCandidateFirst = 0;
 
-    (fEvt + ii)->fReconstructedFirst = new AliReconstructedFirst[maxFirstMult];
+    (fEvt + ii)->fReconstructedFirst = new AliReconstructedFirstK0SP[maxFirstMult];
 
 
     (fEvt + ii)->fReconstructedSecond = NULL;
 
     (fEvt + ii)->fNumberCandidateSecond = 0;
 
-    (fEvt + ii)->fReconstructedSecond = new AliReconstructedSecond[maxSecondMult];
+    (fEvt + ii)->fReconstructedSecond = new AliReconstructedSecondK0SP[maxSecondMult];
 
 
   }
