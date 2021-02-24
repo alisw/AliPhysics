@@ -182,7 +182,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   hV0MultVsNumberTPCoutTracks(NULL),
-  hTPCSDDSSDClusters(NULL),
+  hTPCSDDSSDClusters_before(NULL),
   fV0ReaderName(""),
   CaloTriggerHelperName(""),
   fCorrTaskSetting(""),
@@ -324,7 +324,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   hV0MultVsNumberTPCoutTracks(NULL),
-  hTPCSDDSSDClusters(NULL),
+  hTPCSDDSSDClusters_before(NULL),
   fV0ReaderName(ref.fV0ReaderName),
   CaloTriggerHelperName(ref.CaloTriggerHelperName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
@@ -463,8 +463,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     }
 
     if (fRemovePileUpSDDSSDTPC){
-      hTPCSDDSSDClusters = new TH2F(Form("SDD+SSD clusters vs TPC clusters %s",GetCutNumber().Data()),"SDD+SSD clusters vs TPC clusters", 500, 0., 6.e+6, 500, 0., 5.e+4);
-      fHistograms->Add(hTPCSDDSSDClusters);
+      hTPCSDDSSDClusters_before = new TH2F(Form("SDD+SSD clusters vs TPC clusters %s before",GetCutNumber().Data()),"SDD+SSD clusters vs TPC clusters before", 500, 0., 6.e+6, 500, 0., 5.e+4);
+      fHistograms->Add(hTPCSDDSSDClusters_before);
     }
 
     if (fDoPileUpRejectV0MTPCout){
@@ -3498,6 +3498,10 @@ Bool_t AliConvEventCuts::IsPileUpSDDSSDTPC(AliVEvent *event)
   Int_t nCluSDDSSD = GetV0Reader()->GetSumSDDSSDClusters(event);
   Int_t nCluTPC    = GetNumberOfTPCClusters(event);
 
+  if (hTPCSDDSSDClusters_before){
+    hTPCSDDSSDClusters_before->Fill(nCluTPC, nCluSDDSSD);
+  }
+
   if (nCluSDDSSD <= fFPileUpRejectSDDSSDTPC->Eval(nCluTPC)){
     return kTRUE;
   }
@@ -3505,14 +3509,10 @@ Bool_t AliConvEventCuts::IsPileUpSDDSSDTPC(AliVEvent *event)
 }
 
 //________________________________________________________________________
-void AliConvEventCuts::FillTPCPileUpHistograms(AliVEvent *event){
+void AliConvEventCuts::FillTPCPileUpHistogram(AliVEvent *event){
 
   if (hV0MultVsNumberTPCoutTracks){
     hV0MultVsNumberTPCoutTracks->Fill(GetV0Reader()->GetNumberOfTPCoutTracks(), GetV0Multiplicity(event));
-  }
-
-  if (hTPCSDDSSDClusters){
-    hTPCSDDSSDClusters->Fill(GetNumberOfTPCClusters(event), GetV0Reader()->GetSumSDDSSDClusters(event));
   }
 }
 

@@ -2430,7 +2430,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
       if(!fDoLightOutput){
 
-        fiEventCut->FillTPCPileUpHistograms(fInputEvent);
+        fiEventCut->FillTPCPileUpHistogram(fInputEvent);
 
         if( fIsMC < 2 ){
           if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
