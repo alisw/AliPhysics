@@ -74,6 +74,8 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 
+        void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
+
     private:
         void                    DefineEvent();
         void                    DefineTreeLc_Rec();
@@ -102,6 +104,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
+        Bool_t                  fUseWeights; ///< Flag to use pT weight functions
         Bool_t                  fIsAnaLc2Lpi; ///< Flag of Lc->Lpi analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
@@ -114,11 +117,14 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TF1*                    fWeight; ///< weight of Data/MC_gen
         TH1D*                   fHistMCGen_LcPt_weight; //!<! pt of Lc after weight at gen. level
         TH2D*                   f2DHistMCRec_LcPt_weight; //!<! pt of Lc after weight at rec. level
-
+        TF1*                    fFuncWeightPythia; ///<flat pT weight vs pythia
+        TF1*                    fFuncWeightFONLL5overLHC13d3; ///< pT weight vs FONLL (D meson case)
+        TF1*                    fFuncWeightFONLL5overLHC13d3Lc; ///< pT weight vs FONLL (Lc case)
+ 
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 5);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 6);
 };
 
 #endif
