@@ -1504,11 +1504,11 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst)
 {
   
-  for (Int_t i=0; i<36; i++) {
+  for (Int_t i=0; i<38; i++) {
     fVar_Lc[i] = -9999.;
   }
 
-  for (Int_t i=0; i<38; i++) {
+  for (Int_t i=0; i<26; i++) {
     fVar_Lc_QA[i] = -9999.;
   }
 
