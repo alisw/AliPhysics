@@ -90,7 +90,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   f2DHistMCRec_LcPt_weight(0),
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc()
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -131,7 +131,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   f2DHistMCRec_LcPt_weight(0),
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc()
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
