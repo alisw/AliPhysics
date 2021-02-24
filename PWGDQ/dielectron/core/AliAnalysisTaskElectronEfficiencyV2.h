@@ -47,6 +47,8 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+  void PrintSummary();
+
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
@@ -87,6 +89,7 @@ public:
    void   SetCentralityFile(std::string filename) {fCentralityFilename = filename; }
 
   void   SetCentralityFileFromAlien(std::string filename) {fCentralityFilenameFromAlien = filename; }
+  void   SetCentralityFile(std::string filenamelocal,std::string filenamealien);
 
    // Support Histos
    void   SetSupportHistoMCSignalAndCutsetting(int nMCSignal, int nCutsetting) {fSupportMCSignal = nMCSignal; fSupportCutsetting = nCutsetting;}
@@ -94,6 +97,7 @@ public:
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
+   void   SetResolutionFile(std::string filenamelocal,std::string filenamealien);
    void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
@@ -145,6 +149,7 @@ public:
    void SetDoCocktailWeighting(bool doCocktailWeight) { fDoCocktailWeighting = doCocktailWeight; }
    void SetCocktailWeighting(std::string CocktailFilename) { fCocktailFilename = CocktailFilename; }
    void SetCocktailWeightingFromAlien(std::string CocktailFilenameFromAlien) { fCocktailFilenameFromAlien = CocktailFilenameFromAlien; }
+   void  SetCocktailWeighting(std::string CocktailFilenamelocal,std::string CocktailFilenamealien);
 
    // Generator related setter
    void   SetMinPtGen(double ptMin)   {fPtMinGen = ptMin;}; // Look only at particles which are above a threshold. (reduces computing time/less tracks when looking at secondaries)
