@@ -2115,7 +2115,7 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     Double_t nclusF = atrackAsso->GetTPCNclsF();
     Double_t TPCNCrossedRows = atrackAsso->GetTPCNCrossedRows();
     Double_t RatioCrossedRowsOverFindableClusters =0;
-    if(nclusFh !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
+    if(nclusF !=0.0 ){RatioCrossedRowsOverFindableClusters = TPCNCrossedRows/nclusF; }
     if(TPCNCrossedRows < fTPCNCrossRHad) continue;
     if(RatioCrossedRowsOverFindableClusters <  fRatioTPCNCrossRHad) continue;
       
