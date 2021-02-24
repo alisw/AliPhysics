@@ -178,6 +178,7 @@ fCutOnLambdaV(-1),
 fCutOnK0sV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
+fFillStep8(kFALSE),
 fSkipStep6(kFALSE),
 fSkipStep9(kTRUE),
 fRejectCentralityOutliers(kFALSE),
@@ -976,8 +977,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       if (!fSkipStep6)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
 
-      // two track cut, STEP 8
-      if (fTwoTrackEfficiencyCut > 0)
+      // two track cut, STEP 8 (fill it on request or if at least one two-track cut is on)
+      Bool_t fillStep8 = fFillStep8 || (fTwoTrackEfficiencyCut > 0) ||
+                         (fCutConversionsV > 0) || (fCutK0sV > 0) || (fCutLambdaV > 0) ||
+                         (fCutPhiV > 0) || (fCutRhoV > 0) || (fCutCustomV > 0);
+      if (fillStep8)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
       // apply correction efficiency, STEP 9 and 10
@@ -1004,7 +1008,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
                 fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0));
 
               // two track cut, STEP 8
-              if (fTwoTrackEfficiencyCut > 0)
+              if (fillStep8)
                 fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut);
 
               // apply correction efficiency, STEP 9 and 10
@@ -1325,6 +1329,11 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (fFillpT)
     weight = -1;
 
+  // Flag to fill step 8 if requested or if there are any two track cuts turned on
+  Bool_t fillStep8 = fFillStep8 || (fTwoTrackEfficiencyCut > 0) ||
+                         (fCutConversionsV > 0) || (fCutK0sV > 0) || (fCutLambdaV > 0) ||
+                         (fCutPhiV > 0) || (fCutRhoV > 0) || (fCutCustomV > 0);
+
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0) {
     if (!fSkipStep6)
@@ -1332,7 +1341,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
 
-    if (fTwoTrackEfficiencyCut > 0)
+    if (fillStep8)
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
 
     if (!fSkipStep9)
@@ -1387,7 +1396,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
           if (!fSkipStep6)
             fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, 0, -1, kTRUE);
 
-          if (fTwoTrackEfficiencyCut > 0)
+          if (fillStep8)
             fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
 
           if (!fSkipStep9)
