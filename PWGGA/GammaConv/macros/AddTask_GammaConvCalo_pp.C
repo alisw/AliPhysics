@@ -2393,6 +2393,23 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0020008932700000i280400000","2446600067012300000","0163103100000010"); // QA, -30,50ns
     cuts.AddCutPCMCalo("00010113","00200089327000001ih0400000","2446600067012300000","0163103100000010"); // QA, -30,50ns
 
+
+    //*************************************************************************************************
+    // 13 TeV PHOS Nom B. Rotation Method
+    //*************************************************************************************************
+  } else if ( trainConfig == 960){ // PHI7, Rotation Background r
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0r63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 961){ // INT7, Rotation Background r
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0r63103100000010"); //PHI7
+  } else if ( trainConfig == 962){ // PHI7, Rotation Background u
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0u63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 963){ // INT7, Rotation Background u
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0u63103100000010"); //PHI7
+  } else if ( trainConfig == 964){ // PHI7, Rotation Background v
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0v63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 965){ // INT7, Rotation Background v
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0v63103100000010"); //PHI7
+
   //*************************************************************************************************
   // 13 TeV PHOS HM trigger
   //*************************************************************************************************
