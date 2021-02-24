@@ -2354,6 +2354,12 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0474000", "0152103500000000"); // 1 - 5%
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 5 - 10%
 
+  } else if ( trainConfig == 3000){ // PCM Gamma smearing calib
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","015210d500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","0152103500000000"); // 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge3404000","015210d500000000"); // 
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
