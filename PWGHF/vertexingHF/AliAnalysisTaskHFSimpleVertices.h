@@ -30,6 +30,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
   void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
   void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
+  void SetUseKFParticleVertexer(){fSecVertexerAlgo=2;}
   void SetReadMC(Bool_t read){fReadMC=read;}
   void SetUseCandidateAnalysisCuts(){fCandidateCutLevel=2;}
   void SetUseCandidateSkimCuts(){fCandidateCutLevel=1;}

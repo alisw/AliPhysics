@@ -1448,6 +1448,28 @@ AliESDVertex* AliAnalysisTaskHFSimpleVertices::ReconstructSecondaryVertex(TObjAr
     }
     if(nVert) trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
     //   else printf("nVert = %d\n",nVert);
+  }else if(fSecVertexerAlgo==2){
+    KFParticle  dMesonVert;
+    double posmom[6],cov[21];
+    for(Int_t jt=0; jt<trkArray->GetEntriesFast(); jt++){
+      AliExternalTrackParam* trpar=(AliExternalTrackParam*)trkArray->At(jt);
+      trpar->GetXYZ(posmom);
+      trpar->GetPxPyPz(posmom+3);
+      trpar->GetCovarianceXYZPxPyPz(cov);
+      KFParticle trKFpar;
+      trKFpar.Create(posmom,cov,trpar->Charge(),0.13957); // mass of the pion for the time being
+      dMesonVert.AddDaughter(trKFpar);
+    }
+    Double_t vertChi2 = dMesonVert.GetChi2() / dMesonVert.GetNDF();
+    Double_t vertCoord[3]={dMesonVert.X(),dMesonVert.Y(),dMesonVert.Z()};
+    Double_t vertCov[6];
+    vertCov[0]=dMesonVert.GetCovariance(0,0);
+    vertCov[1]=dMesonVert.GetCovariance(0,1);
+    vertCov[2]=dMesonVert.GetCovariance(1,1);
+    vertCov[3]=dMesonVert.GetCovariance(0,2);
+    vertCov[4]=dMesonVert.GetCovariance(1,2);
+    vertCov[5]=dMesonVert.GetCovariance(2,2);
+    trkv = new AliESDVertex(vertCoord,vertCov,vertChi2,trkArray->GetEntriesFast());
   }
   if(!trkv) return 0x0;
   Double_t vertRadius2 = trkv->GetX() * trkv->GetX() + trkv->GetY() * trkv->GetY();
