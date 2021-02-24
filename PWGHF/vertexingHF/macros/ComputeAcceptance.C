@@ -25,13 +25,14 @@ enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5
 // Configuration
 Int_t fDDecay=kLcpiL;
 Double_t fPtMinDau=0.1;
+Double_t fPtMinDauSoftPi=0.06; // only for D*
 Double_t fEtaMaxDau=0.9;
 Int_t fOptionYFiducial=kPtDepY;
 Double_t fYMaxFidAccCut=0.8;
 Int_t fPtShape=kFONLL5TeV;
 TString fDecayTableFileName="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
 Int_t fDebugLevel=0;
-Int_t totTrials=100000000;
+Int_t totTrials=10000000;
 
 
 Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc);
@@ -403,50 +404,6 @@ Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y){
 
   return kTRUE;
 }
-//___________________________________________________
-Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc){
-  // count K and pi in Acc
-
-  TParticle* dmes=(TParticle*)array->At(0);
-  Double_t sumPx=0;
-  Double_t sumPy=0;
-  Double_t sumPz=0;
-  for(int j=0; j<nentries; j++){
-    TParticle * o = (TParticle*)array->At(j);
-    Int_t pdgdau=TMath::Abs(o->GetPdgCode());
-    if(fDebugLevel>0) printf("%d ",pdgdau);
-    if(pdgdau==130) {
-      if(fDebugLevel>0) printf("K0 dacaying into K0L\n");
-      return kFALSE;
-    }
-    Float_t ptdau=TMath::Sqrt(o->Px()*o->Px()+o->Py()*o->Py());      
-    Float_t etadau=o->Eta();
-    if(pdgdau==211){ 
-      nPions++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(pdgdau==321){ 
-      nKaons++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
-      if(pdgdau==211) nPionsInAcc++;
-      if(pdgdau==321) nKaonsInAcc++;
-    }
-  }
-  if(fDebugLevel>0) printf("\n");
-  if(TMath::Abs(sumPx-dmes->Px())>0.001 ||
-     TMath::Abs(sumPy-dmes->Py())>0.001 ||
-     TMath::Abs(sumPz-dmes->Pz())>0.001){
-    printf("Momentum conservation violation\n");
-    return kFALSE;
-  }
-  return kTRUE;
-}
 
 
 //___________________________________________________
@@ -461,6 +418,13 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
   for(int j=0; j<nentries; j++){
     TParticle * o = (TParticle*)array->At(j);
     Int_t pdgdau=TMath::Abs(o->GetPdgCode());
+    Int_t pdgMother = -1;
+    if(fDDecay==kDstarD0pi && j>0)
+    {
+        Int_t idxMother = o->GetFirstMother()-1;
+        TParticle *moth = (TParticle*)array->At(idxMother);
+        pdgMother = TMath::Abs(moth->GetPdgCode());
+    }
     pdgDauAll.push_back(pdgdau);
     if(fDebugLevel>0) printf("%d ",pdgdau);
     if(pdgdau==130) {
@@ -490,7 +454,7 @@ Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKao
     if(pdgdau==313) idLcResChan=2; //K*0 
     else if(pdgdau==2224) idLcResChan=3; //Delta++
     else if(pdgdau==3124) idLcResChan=1;  //Lambda1520
-    if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
+    if(TMath::Abs(etadau)<fEtaMaxDau && (ptdau>fPtMinDau || (pdgMother==413 && pdgdau==211 && ptdau>fPtMinDauSoftPi))){
       if(pdgdau==211) nPionsInAcc++;
       if(pdgdau==321) nKaonsInAcc++;
       if(pdgdau==2212) nProtonsInAcc++;
