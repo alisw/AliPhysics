@@ -87,6 +87,12 @@ bool AliExternalBDT::LoadModel(const std::string &path, int type) {
     std::cout << "Invalid empty model path string" << std::endl;
     return false;
   }
+
+  // skip steps below in case path points already to precompiled model
+  if(path.substr(path.find_last_of(".")+1,path.size()) == "so"){
+    return LoadModelLibrary(path);
+  }
+
   fModelPath = path;
   fModelName = fModelPath.substr(fModelPath.find_last_of("\\/")+1,fModelPath.size());
   int status = 0;

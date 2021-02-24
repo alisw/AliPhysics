@@ -18,6 +18,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
+#include <AliDataFile.h>
 #include "AliLog.h"
 #include "AliExternalBDT.h"
 
@@ -152,6 +153,24 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
       AliFatalClass(Form("Error file %s not found! Exit", path.data()));
     }
     return path;
+  }
+
+  // check if file is on cvmfs
+  if (path.find("/cvmfs") != std::string::npos) {
+    bool checkFile = gSystem->AccessPathName(path.c_str());
+    if (checkFile) {
+      AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
+    }
+    return path;
+  }
+
+  // check if file is on cvmfs, but still requires to set the full path (so starts with PWG or AODB)
+  if (path.rfind("PWG", 0) != std::string::npos || path.rfind("AODB", 0) != std::string::npos) {
+    std::string path_cvmfs = AliDataFile::GetFileName(path);
+    if (path_cvmfs == "") {
+      AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
+    }
+    return path_cvmfs;
   }
     
   // check if file is on alien
