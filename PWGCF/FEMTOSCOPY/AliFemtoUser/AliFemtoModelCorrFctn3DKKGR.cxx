@@ -32,8 +32,14 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR()
   , fNumeratorFakeIdeal(nullptr)
   , fDenominatorIdeal(nullptr)
   , fQgenQrec(nullptr)
+  , fQgenQrecOut(nullptr)
+  , fQgenQrecSide(nullptr)
+  , fQgenQrecLong(nullptr)
   , fKaonPDG(kFALSE)
   , fFillkT(kFALSE)
+  , fFillQgenQrecInv(kFALSE)
+  , fFillQgenQrecOutSideLong(kFALSE)
+  , fFillDpTpTvspT(kFALSE)
 {
   // Default constructor
   fNumeratorTrue = new TH3D("ModelNumTrue","ModelNumTrue",50,0.0,0.5,50,0.0,0.5,50,0.0,0.5);
@@ -45,6 +51,12 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR()
   fDenominatorIdeal = new TH3D("ModelDenIdeal","ModelDenIdeal",50,0.0,0.5,50,0.0,0.5,50,0.0,0.5);
 
   fQgenQrec = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
+  
+  fQgenQrecOut = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
+  fQgenQrecSide = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
+  fQgenQrecLong = new TH2D("QgenQrec","QgenQrec",50,0.0,0.5,50,0.0,0.5);
+
+  fDpTpTvspT = new TH2D("DpTpTvspT","DpTpTvspT",100,0.0,2.0,100,-1.0,1.0);
 
   for (int i=0;i<fNbbPairs;i++){
     auto *name = Form("fkTdists[%i]", i);
@@ -61,7 +73,12 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR()
   fDenominatorIdeal->Sumw2();
 
   fQgenQrec->Sumw2();
+  
+  fQgenQrecOut->Sumw2();
+  fQgenQrecSide->Sumw2();
+  fQgenQrecLong->Sumw2();
 
+  fDpTpTvspT->Sumw2();
 }
 //_______________________
 AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const char *title,
@@ -77,8 +94,14 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const char *title,
   , fNumeratorFakeIdeal(nullptr)
   , fDenominatorIdeal(nullptr)
   , fQgenQrec(nullptr)
+  , fQgenQrecOut(nullptr)
+  , fQgenQrecSide(nullptr)
+  , fQgenQrecLong(nullptr)
   , fKaonPDG(kFALSE)
   , fFillkT(kFALSE)
+  , fFillQgenQrecInv(kFALSE)
+  , fFillQgenQrecOutSideLong(kFALSE)
+  , fFillDpTpTvspT(kFALSE)
 {
   // Normal constructor
   char *buf;
@@ -102,6 +125,19 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const char *title,
 
   buf = Form("QgenQrec%s", title);
   fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+  
+  buf = Form("QgenQrecOut%s", title);
+  fQgenQrecOut = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+  
+  buf = Form("QgenQrecSide%s", title);
+  fQgenQrecSide = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+    
+  buf = Form("QgenQrecLong%s", title);
+  fQgenQrecLong = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,aQinvLo,aQinvHi);
+
+  buf = Form("DpTpTvspT%s", title);
+  fDpTpTvspT = new TH2D(buf,buf,100,0.0,2.0,100,-1.0,1.0);
+
   //test
   //fQgenQrec = new TH2D(buf,buf,aNbins,aQinvLo,aQinvHi,aNbins,-0.05,0.05);
 
@@ -120,6 +156,12 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const char *title,
   fDenominatorIdeal->Sumw2();
 
   fQgenQrec->Sumw2();
+  
+  fQgenQrecOut->Sumw2();
+  fQgenQrecSide->Sumw2();
+  fQgenQrecLong->Sumw2();
+
+  fDpTpTvspT->Sumw2();
 }
 
 //_______________________
@@ -133,8 +175,14 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const AliFemtoModelCorr
   , fNumeratorFakeIdeal(nullptr)
   , fDenominatorIdeal(nullptr)
   , fQgenQrec(nullptr)
+  , fQgenQrecOut(nullptr)
+  , fQgenQrecSide(nullptr)
+  , fQgenQrecLong(nullptr)
   , fKaonPDG(aCorrFctn.fKaonPDG)
   , fFillkT(aCorrFctn.fFillkT)
+  , fFillQgenQrecInv(aCorrFctn.fFillQgenQrecInv)
+  , fFillQgenQrecOutSideLong(aCorrFctn.fFillQgenQrecOutSideLong)
+  , fFillDpTpTvspT(aCorrFctn.fFillDpTpTvspT)
 {
   // Copy constructor
   fNumeratorTrue = new TH3D(*aCorrFctn.fNumeratorTrue);
@@ -146,6 +194,12 @@ AliFemtoModelCorrFctn3DKKGR::AliFemtoModelCorrFctn3DKKGR(const AliFemtoModelCorr
   fDenominatorIdeal = new TH3D(*aCorrFctn.fDenominatorIdeal);
 
   fQgenQrec = new TH2D(*aCorrFctn.fQgenQrec);
+  
+  fQgenQrecOut = new TH2D(*aCorrFctn.fQgenQrecOut);
+  fQgenQrecSide = new TH2D(*aCorrFctn.fQgenQrecSide);
+  fQgenQrecLong = new TH2D(*aCorrFctn.fQgenQrecLong);
+
+  fDpTpTvspT = new TH2D(*aCorrFctn.fDpTpTvspT);
 
   for (int i=0;i<fNbbPairs;i++) {
     fkTdists[i] = new TH1D(*aCorrFctn.fkTdists[i]);
@@ -165,6 +219,11 @@ AliFemtoModelCorrFctn3DKKGR::~AliFemtoModelCorrFctn3DKKGR()
   delete fDenominatorIdeal;
 
   delete fQgenQrec;
+  delete fQgenQrecOut;
+  delete fQgenQrecSide;
+  delete fQgenQrecLong;
+  
+  delete fDpTpTvspT;
 
   for (int i=0; i<fNbbPairs; i++) {
     delete fkTdists[i];
@@ -184,7 +243,14 @@ AliFemtoModelCorrFctn3DKKGR& AliFemtoModelCorrFctn3DKKGR::operator=(const AliFem
   *fNumeratorTrue = *aCorrFctn.fNumeratorTrue;
   *fNumeratorFake = *aCorrFctn.fNumeratorFake;
   *fDenominator = *aCorrFctn.fDenominator;
+
   *fQgenQrec = *aCorrFctn.fQgenQrec;
+
+  *fQgenQrecOut = *aCorrFctn.fQgenQrecOut;
+  *fQgenQrecSide = *aCorrFctn.fQgenQrecSide;
+  *fQgenQrecLong = *aCorrFctn.fQgenQrecLong;
+
+  *fDpTpTvspT = *aCorrFctn.fDpTpTvspT;
 
   for (int i=0; i<fNbbPairs; i++) {
     *fkTdists[i] = *aCorrFctn.fkTdists[i];
@@ -272,7 +338,37 @@ void AliFemtoModelCorrFctn3DKKGR::AddMixedPair(AliFemtoPair* aPair)
         }
     }
 
-    fQgenQrec->Fill(qinv_ideal, qinv);
+    if(fFillDpTpTvspT){
+      const AliFemtoParticle *first = aPair->Track1(),
+                             *second = aPair->Track2();
+      const AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo(),
+                                    *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+                                    
+      if(inf1 && inf2){
+
+        double px_sim = inf1->GetTrueMomentum()->x() + inf2->GetTrueMomentum()->x();
+        double py_sim = inf1->GetTrueMomentum()->y() + inf2->GetTrueMomentum()->y();
+        
+        double pT_sim = sqrt(px_sim*px_sim + py_sim*py_sim);
+
+        double px_rec = first->FourMomentum().x() + second->FourMomentum().x();
+        double py_rec = first->FourMomentum().y() + second->FourMomentum().y();
+
+        double pT_rec = sqrt(px_rec*px_rec + py_rec*py_rec);
+        
+        fDpTpTvspT->Fill(pT_sim, (pT_sim - pT_rec)/pT_sim);
+      }
+    }
+
+    if(fFillQgenQrecInv){
+      fQgenQrec->Fill(qinv_ideal, qinv);
+    }
+    if(fFillQgenQrecOutSideLong){
+      fQgenQrecOut->Fill(GetQoutTrue(aPair), aPair->QOutCMS());
+      fQgenQrecSide->Fill(GetQsideTrue(aPair), aPair->QSideCMS());
+      fQgenQrecLong->Fill(GetQlongTrue(aPair), aPair->QLongCMS());
+    }
+
   }
   //Special MC analysis for K selected by PDG code -->
   else {
@@ -286,7 +382,37 @@ void AliFemtoModelCorrFctn3DKKGR::AddMixedPair(AliFemtoPair* aPair)
     //if(qinv_ideal>0) {
       fNumeratorFakeIdeal->Fill(GetQoutTrue(aPair),GetQsideTrue(aPair),GetQlongTrue(aPair), weight);  //qOut_ideal, qSide_ideal, qLong_ideal
       fDenominatorIdeal->Fill(GetQoutTrue(aPair),GetQsideTrue(aPair),GetQlongTrue(aPair), 1.0);  //qOut_ideal, qSide_ideal, qLong_ideal
-      fQgenQrec->Fill(qinv_ideal, qinv);
+      
+      if(fFillDpTpTvspT){
+        const AliFemtoParticle *first = aPair->Track1(),
+                                *second = aPair->Track2();
+        const AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo*)first->GetHiddenInfo(),
+                                      *inf2 = (AliFemtoModelHiddenInfo*)second->GetHiddenInfo();
+        
+        if(inf1 && inf2){
+          
+          double px_sim = inf1->GetTrueMomentum()->x() + inf2->GetTrueMomentum()->x();
+          double py_sim = inf1->GetTrueMomentum()->y() + inf2->GetTrueMomentum()->y();
+          
+          double pT_sim = sqrt(px_sim*px_sim + py_sim*py_sim);
+          
+          double px_rec = first->FourMomentum().x() + second->FourMomentum().x();
+          double py_rec = first->FourMomentum().y() + second->FourMomentum().y();
+          
+          double pT_rec = sqrt(px_rec*px_rec + py_rec*py_rec);
+          
+          fDpTpTvspT->Fill(pT_sim, (pT_sim - pT_rec)/pT_sim);
+        }
+      }
+
+      if(fFillQgenQrecInv){
+        fQgenQrec->Fill(qinv_ideal, qinv);
+      }
+      if(fFillQgenQrecOutSideLong){
+        fQgenQrecOut->Fill(GetQoutTrue(aPair), aPair->QOutCMS());
+        fQgenQrecSide->Fill(GetQsideTrue(aPair), aPair->QSideCMS());
+        fQgenQrecLong->Fill(GetQlongTrue(aPair), aPair->QLongCMS());
+      }
     //}
     //test
     //if(tQinvTrue>0)fQgenQrec->Fill(tQinvTrue,tQinvTrue-aPair->QInv());
@@ -521,7 +647,18 @@ void AliFemtoModelCorrFctn3DKKGR::Write()
 {
   // Write out data histos
 
-  fQgenQrec->Write();
+  if(fFillQgenQrecInv){
+    fQgenQrec->Write();
+  }
+  if(fFillQgenQrecOutSideLong){
+    fQgenQrecOut->Write();
+    fQgenQrecSide->Write();
+    fQgenQrecLong->Write();
+  }
+
+  if(fFillDpTpTvspT){
+    fDpTpTvspT->Write();
+  }
 
   fNumeratorTrue->Write();
   fNumeratorFake->Write();
@@ -552,14 +689,25 @@ TList* AliFemtoModelCorrFctn3DKKGR::GetOutputList()
   tOutputList->Add(fNumeratorTrueIdeal);
   tOutputList->Add(fNumeratorFakeIdeal);
   tOutputList->Add(fDenominatorIdeal);
-  tOutputList->Add(fQgenQrec);
 
-    if(fFillkT)
-    {
-        for(int i=0;i<fNbbPairs;i++){
-            tOutputList->Add(fkTdists[i]);
-        }
+  if(fFillQgenQrecInv){
+    tOutputList->Add(fQgenQrec);
+  }
+  if(fFillQgenQrecOutSideLong){
+    tOutputList->Add(fQgenQrecOut);
+    tOutputList->Add(fQgenQrecSide);
+    tOutputList->Add(fQgenQrecLong);
+  }
+
+  if(fFillDpTpTvspT){
+    tOutputList->Add(fDpTpTvspT);
+  }
+
+  if(fFillkT){
+    for(int i=0;i<fNbbPairs;i++){
+      tOutputList->Add(fkTdists[i]);
     }
+  }
   return tOutputList;
 }
 void AliFemtoModelCorrFctn3DKKGR::SetKaonPDG(Bool_t aSetKaonAna)

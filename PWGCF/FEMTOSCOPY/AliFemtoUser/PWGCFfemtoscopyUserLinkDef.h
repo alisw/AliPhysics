@@ -43,6 +43,7 @@
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGR;
 #pragma link C++ class  AliFemtoModelCorrFctn3DKKGRQinv;
 #pragma link C++ class  AliFemtoModelGausLCMSFreezeOutGeneratorGR;
+#pragma link C++ class  AliFemtoModelCorrFctn3DKKGR;
 //Ludmila
 #pragma link C++ class  AliFemtoCutMonitorDphiDeta1;
 #pragma link C++ class  AliFemtoESDTrackCutPlusJets25;
