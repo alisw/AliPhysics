@@ -532,6 +532,10 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   }
 
   // Define input and output slots here
+  DefineInput(1, TList::Class());
+  DefineInput(2, TList::Class());
+  DefineInput(3, TList::Class());
+  DefineInput(4, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -1161,6 +1165,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   PostData(2, fOutputList1); 
 
   //================================================================
+/*
   if (fESEdet == 2) {
     TGrid::Connect("alien://");
     TFile *fSpl2 = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2TrklNoEtaCutRun2.root"); 
@@ -1183,30 +1188,26 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       if (!fSplQ3trk[isp]) fSplQ3trk[isp] = (TSpline3*)fSpl3->Get(Form("sp_q3Trkl_%d", isp));
     }
   }
-
+*/
   if (fESEdet == 0) {
-   TGrid::Connect("alien://");
-   TFile *fSpl2V0A = fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
-// TFile *fSpl2V0A = fSpl2V0A = TFile::Open("./calibSpq2V0ARun2.root");     
-    
-    if (!fSpl2V0A){
-      printf("Spline file V0A q2 cannot be opened \n");
+   TList *flist_Spl2V0A = dynamic_cast<TList*>(GetInputData(2));   
+   if (!flist_Spl2V0A){
+      printf("Spline list V0A q2 cannot be opened \n");
       return;
     }
 
-    TFile *fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");
-//    TFile *fSpl3V0A = TFile::Open("./calibSpq3V0ARun2.root");
- 
-    if (!fSpl3V0A){
-      printf("Spline file V0A q3 cannot be opened \n");
+   TList *flist_Spl3V0A = dynamic_cast<TList*>(GetInputData(3));  
+    if (!flist_Spl3V0A){
+      printf("Spline list V0A q3 cannot be opened \n");
       return;
     }
   
     for (Int_t isp = 0; isp < 90; isp++) {
-      if (!fSplQ2V0A[isp]) fSplQ2V0A[isp] = (TSpline3*)fSpl2V0A->Get(Form("sp_q2V0A_%d", isp));
-      if (!fSplQ3V0A[isp]) fSplQ3V0A[isp] = (TSpline3*)fSpl3V0A->Get(Form("sp_q3V0A_%d", isp));
+      if (!fSplQ2V0A[isp]) fSplQ2V0A[isp] = (TSpline3*)flist_Spl2V0A->FindObject(Form("sp_q2V0A_%d", isp));
+      if (!fSplQ3V0A[isp]) fSplQ3V0A[isp] = (TSpline3*)flist_Spl3V0A->FindObject(Form("sp_q3V0A_%d", isp));
     }
   }
+/*
   if (fESEdet == 1) {
     TGrid::Connect("alien://");
     TFile *fSpl2V0C = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CRun2.root");
@@ -1231,6 +1232,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       if (!fSplQ3V0C[isp]) fSplQ3V0C[isp] = (TSpline3*)fSpl3V0C->Get(Form("sp_q3V0C_%d", isp));
     }
   }
+*/
+/*
   if (fESEdet == 3) {
     TGrid::Connect("alien://");
     TFile *fSpl2V0AC = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0CombACRun2New.root");
@@ -1254,7 +1257,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
       if (!fSplQ3V0AC[isp]) fSplQ3V0AC[isp] = (TSpline3*)fSpl3V0AC->Get(Form("sp_q3V0AC_%d", isp));
     }
   }
-  
+*/  
+  TList *flist_Res;
   if (fUseRes) { // read resolution curves
     TString qVectResFN;
     if (fESEdet == 0)
@@ -1268,45 +1272,41 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 
     if (fEP) qVectResFN += "_EP";
 
-    TGrid::Connect("alien://");
-    TFile *fFileRes = TFile::Open(Form("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_%s.root",qVectResFN.Data()));
-//    TFile *fFileRes = TFile::Open(Form("./qVectResMuons_%s.root",qVectResFN.Data())); 
-   
-
-    if (!fFileRes) {
-      printf("fFileRes cannot be opened \n");
+    flist_Res = dynamic_cast<TList*>(GetInputData(4));
+    if (!flist_Res) {
+      printf("list_Res cannot be opened \n");
       return; 
     }
 
     if (fAverageRes) {
-      fResACv2 = (TF1*)fFileRes->Get("fResACv2");
-      fResATv2 = (TF1*)fFileRes->Get("fResATv2");
-      fResCTv2 = (TF1*)fFileRes->Get("fResCTv2");
-      fResACv2LowESE = (TF1*)fFileRes->Get("fResACv2LowESE");
-      fResATv2LowESE = (TF1*)fFileRes->Get("fResATv2LowESE");
-      fResCTv2LowESE = (TF1*)fFileRes->Get("fResCTv2LowESE");
-      fResACv2HighESE = (TF1*)fFileRes->Get("fResACv2HighESE");
-      fResATv2HighESE = (TF1*)fFileRes->Get("fResATv2HighESE");
-      fResCTv2HighESE = (TF1*)fFileRes->Get("fResCTv2HighESE");
-      fResACv3 = (TF1*)fFileRes->Get("fResACv3");
-      fResATv3 = (TF1*)fFileRes->Get("fResATv3");
-      fResCTv3 = (TF1*)fFileRes->Get("fResCTv3");
-      fResACv3LowESE = (TF1*)fFileRes->Get("fResACv3LowESE");
-      fResATv3LowESE = (TF1*)fFileRes->Get("fResATv3LowESE");
-      fResCTv3LowESE = (TF1*)fFileRes->Get("fResCTv3LowESE");
-      fResACv3HighESE = (TF1*)fFileRes->Get("fResACv3HighESE");
-      fResATv3HighESE = (TF1*)fFileRes->Get("fResATv3HighESE");
-      fResCTv3HighESE = (TF1*)fFileRes->Get("fResCTv3HighESE");
+      fResACv2 = (TF1*)flist_Res->FindObject("fResACv2");
+      fResATv2 = (TF1*)flist_Res->FindObject("fResATv2");
+      fResCTv2 = (TF1*)flist_Res->FindObject("fResCTv2");
+      fResACv2LowESE = (TF1*)flist_Res->FindObject("fResACv2LowESE");
+      fResATv2LowESE = (TF1*)flist_Res->FindObject("fResATv2LowESE");
+      fResCTv2LowESE = (TF1*)flist_Res->FindObject("fResCTv2LowESE");
+      fResACv2HighESE = (TF1*)flist_Res->FindObject("fResACv2HighESE");
+      fResATv2HighESE = (TF1*)flist_Res->FindObject("fResATv2HighESE");
+      fResCTv2HighESE = (TF1*)flist_Res->FindObject("fResCTv2HighESE");
+      fResACv3 = (TF1*)flist_Res->FindObject("fResACv3");
+      fResATv3 = (TF1*)flist_Res->FindObject("fResATv3");
+      fResCTv3 = (TF1*)flist_Res->FindObject("fResCTv3");
+      fResACv3LowESE = (TF1*)flist_Res->FindObject("fResACv3LowESE");
+      fResATv3LowESE = (TF1*)flist_Res->FindObject("fResATv3LowESE");
+      fResCTv3LowESE = (TF1*)flist_Res->FindObject("fResCTv3LowESE");
+      fResACv3HighESE = (TF1*)flist_Res->FindObject("fResACv3HighESE");
+      fResATv3HighESE = (TF1*)flist_Res->FindObject("fResATv3HighESE");
+      fResCTv3HighESE = (TF1*)flist_Res->FindObject("fResCTv3HighESE");
     }
     else {
       printf("Using resolution vs ESE...\n");
       for(Int_t i = 0; i < 5; ++i) {
-	fResACv2vsESE[i] = (TF1*)fFileRes->Get(Form("fResACv2vsESE_%d",i));
-	fResATv2vsESE[i] = (TF1*)fFileRes->Get(Form("fResATv2vsESE_%d",i));
-	fResCTv2vsESE[i] = (TF1*)fFileRes->Get(Form("fResCTv2vsESE_%d",i));
-	fResACv3vsESE[i] = (TF1*)fFileRes->Get(Form("fResACv3vsESE_%d",i));
-	fResATv3vsESE[i] = (TF1*)fFileRes->Get(Form("fResATv3vsESE_%d",i));
-	fResCTv3vsESE[i] = (TF1*)fFileRes->Get(Form("fResCTv3vsESE_%d",i));
+	fResACv2vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResACv2vsESE_%d",i));
+	fResATv2vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResATv2vsESE_%d",i));
+	fResCTv2vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResCTv2vsESE_%d",i));
+	fResACv3vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResACv3vsESE_%d",i));
+	fResATv3vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResATv3vsESE_%d",i));
+	fResCTv3vsESE[i] = (TF1*)flist_Res->FindObject(Form("fResCTv3vsESE_%d",i));
       }
     }
   }
@@ -2275,7 +2275,7 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
 	Qxtr3Cor = Qytr3Cor = 0;
       }
     }
-    
+/*    
     if (fESEdet == 2) {
       // tracklets
       Double_t Qytr2CorESE = Qy2trkcut - fQy2mTrk[zvt]->GetBinContent(iCentV0+1);
@@ -2293,7 +2293,9 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
       percq2 = percq2Tr;
       percq3 = percq3Tr;
     }
-    else if (fESEdet == 0) {
+    else
+*/
+ if (fESEdet == 0) {
       // V0A
       Double_t Qya2CorESE = Qya2 - fQy2mV0A[zvt]->GetBinContent(iCentSPD+1);
       Double_t Qxa2CorESE = Qxa2 - fQx2mV0A[zvt]->GetBinContent(iCentSPD+1);
@@ -2309,6 +2311,7 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
       percq2 = percq2V0A;
       percq3 = percq3V0A;
     }
+/*
     else if (fESEdet == 1) {
       // V0C
       Double_t Qyc2CorESE = Qyc2 - fQy2mV0C[zvt]->GetBinContent(iCentSPD+1);
@@ -2353,39 +2356,34 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
       printf("Wrong choice of ESE detector\n");
       return kFALSE;
     }
-    
+*/    
     return kTRUE;
 }
 
 //_____________________________________________________________________________
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
 {
-  TGrid::Connect("alien://");
-  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
-//  TFile *foadb = TFile::Open("./calibV0TrklNoEtaCutRun2.root"); 
-
-   
-    if(!foadb){
-        printf("OADB V0-Trkl calibration file cannot be opened\n");
+  TList *flist_contQ = dynamic_cast<TList*>(GetInputData(1));
+  if(!flist_contQ){
+        printf("OADB V0-Trkl calibration list cannot be opened\n");
         return;
-    }
+  }
+ 
     
-    if (!cont) cont = (AliOADBContainer*) foadb->Get("hMultV0BefCorPfpx");
-    if(!cont){
+  if (!cont) cont = (AliOADBContainer*) flist_contQ->FindObject("hMultV0BefCorPfpx");
+  if(!cont){
         printf("OADB object hMultV0BefCorPfpx is not available in the file\n");
         return;
-    }
-    if(!(cont->GetObject(run))){
+  }
+  if(!(cont->GetObject(run))){
         printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
         return;
-    }
-    fMultV0 = ((TH1D*) cont->GetObject(run));
-    
-    
-    
-    for (Int_t k = 0; k < 14; k++){
+  }
+  fMultV0 = ((TH1D*) cont->GetObject(run));
+       
+  for (Int_t k = 0; k < 14; k++){
         
-        if (!contQx2am[k]) contQx2am[k] = (AliOADBContainer*) foadb->Get(Form("fqxa2m_%d", k));
+        if (!contQx2am[k]) contQx2am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa2m_%d", k));
         if(!contQx2am[k]){
             printf("OADB object fqxa2m is not available in the file\n");
             return;
@@ -2397,7 +2395,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2mV0A[k]= ((TH1D*) contQx2am[k]->GetObject(run));
         
         
-        if (!contQy2am[k]) contQy2am[k] = (AliOADBContainer*) foadb->Get(Form("fqya2m_%d", k));
+        if (!contQy2am[k]) contQy2am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya2m_%d", k));
         if(!contQy2am[k]){
             printf("OADB object fqya2m is not available in the file\n");
             return;
@@ -2410,7 +2408,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         
         
         
-        if (!contQx2as[k]) contQx2as[k] = (AliOADBContainer*) foadb->Get(Form("fqxa2s_%d", k));
+        if (!contQx2as[k]) contQx2as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa2s_%d", k));
         if(!contQx2as[k]){
             printf("OADB object fqxa2s is not available in the file\n");
             return;
@@ -2422,7 +2420,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2sV0A[k]= ((TH1D*) contQx2as[k]->GetObject(run));
         
         
-        if (!contQy2as[k]) contQy2as[k] = (AliOADBContainer*) foadb->Get(Form("fqya2s_%d", k));
+        if (!contQy2as[k]) contQy2as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya2s_%d", k));
         if(!contQy2as[k]){
             printf("OADB object fqya2s is not available in the file\n");
             return;
@@ -2436,7 +2434,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         
         
         
-        if (!contQx2cm[k]) contQx2cm[k] = (AliOADBContainer*) foadb->Get(Form("fqxc2m_%d", k));
+        if (!contQx2cm[k]) contQx2cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc2m_%d", k));
         if(!contQx2cm[k]){
             printf("OADB object fqxc2m is not available in the file\n");
             return;
@@ -2448,7 +2446,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2mV0C[k]= ((TH1D*) contQx2cm[k]->GetObject(run));
         
         
-        if (!contQy2cm[k]) contQy2cm[k] = (AliOADBContainer*) foadb->Get(Form("fqyc2m_%d", k));
+        if (!contQy2cm[k]) contQy2cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc2m_%d", k));
         if(!contQy2cm[k]){
             printf("OADB object fqyc2m is not available in the file\n");
             return;
@@ -2460,7 +2458,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy2mV0C[k]= ((TH1D*) contQy2cm[k]->GetObject(run));
         
         
-        if (!contQx2cs[k]) contQx2cs[k] = (AliOADBContainer*) foadb->Get(Form("fqxc2s_%d", k));
+        if (!contQx2cs[k]) contQx2cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc2s_%d", k));
         if(!contQx2cs[k]){
             printf("OADB object fqxc2s is not available in the file\n");
             return;
@@ -2472,7 +2470,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2sV0C[k]= ((TH1D*) contQx2cs[k]->GetObject(run));
         
         
-        if (!contQy2cs[k]) contQy2cs[k] = (AliOADBContainer*) foadb->Get(Form("fqyc2s_%d", k));
+        if (!contQy2cs[k]) contQy2cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc2s_%d", k));
         if(!contQy2cs[k]){
             printf("OADB object fqyc2s is not available in the file\n");
             return;
@@ -2485,8 +2483,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         
         
         
-        
-        if (!contQx2trm[k]) contQx2trm[k] = (AliOADBContainer*) foadb->Get(Form("fqxtr2m_%d", k));
+        if (!contQx2trm[k]) contQx2trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr2m_%d", k));
         if(!contQx2trm[k]){
             printf("OADB object fqxtr2m is not available in the file\n");
             return;
@@ -2498,7 +2495,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2mTrk[k]= ((TH1D*) contQx2trm[k]->GetObject(run));
         
         
-        if (!contQy2trm[k]) contQy2trm[k] = (AliOADBContainer*) foadb->Get(Form("fqytr2m_%d", k));
+        if (!contQy2trm[k]) contQy2trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr2m_%d", k));
         if(!contQy2trm[k]){
             printf("OADB object fqytr2m is not available in the file\n");
             return;
@@ -2510,7 +2507,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy2mTrk[k]= ((TH1D*) contQy2trm[k]->GetObject(run));
         
         
-        if (!contQx2trs[k]) contQx2trs[k] = (AliOADBContainer*) foadb->Get(Form("fqxtr2s_%d", k));
+        if (!contQx2trs[k]) contQx2trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr2s_%d", k));
         if(!contQx2trs[k]){
             printf("OADB object fqxtr2s is not available in the file\n");
             return;
@@ -2522,7 +2519,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2sTrk[k]= ((TH1D*) contQx2trs[k]->GetObject(run));
         
         
-        if (!contQy2trs[k]) contQy2trs[k] = (AliOADBContainer*) foadb->Get(Form("fqytr2s_%d", k));
+        if (!contQy2trs[k]) contQy2trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr2s_%d", k));
         if(!contQy2trs[k]){
             printf("OADB object fqytr2s is not available in the file\n");
             return;
@@ -2534,9 +2531,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy2sTrk[k]= ((TH1D*) contQy2trs[k]->GetObject(run));
         
         
-        
-        
-        if (!contQx3am[k]) contQx3am[k] = (AliOADBContainer*) foadb->Get(Form("fqxa3m_%d", k));
+        if (!contQx3am[k]) contQx3am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa3m_%d", k));
         if(!contQx3am[k]){
             printf("OADB object fqxa3m is not available in the file\n");
             return;
@@ -2548,7 +2543,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3mV0A[k]= ((TH1D*) contQx3am[k]->GetObject(run));
         
         
-        if (!contQy3am[k]) contQy3am[k] = (AliOADBContainer*) foadb->Get(Form("fqya3m_%d", k));
+        if (!contQy3am[k]) contQy3am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya3m_%d", k));
         if(!contQy3am[k]){
             printf("OADB object fqya3m is not available in the file\n");
             return;
@@ -2560,7 +2555,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy3mV0A[k]= ((TH1D*) contQy3am[k]->GetObject(run));
         
         
-        if (!contQx3as[k]) contQx3as[k] = (AliOADBContainer*) foadb->Get(Form("fqxa3s_%d", k));
+        if (!contQx3as[k]) contQx3as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa3s_%d", k));
         if(!contQx3as[k]){
             printf("OADB object fqxa3s is not available in the file\n");
             return;
@@ -2572,7 +2567,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3sV0A[k]= ((TH1D*) contQx3as[k]->GetObject(run));
         
         
-        if (!contQy3as[k]) contQy3as[k] = (AliOADBContainer*) foadb->Get(Form("fqya3s_%d", k));
+        if (!contQy3as[k]) contQy3as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya3s_%d", k));
         if(!contQy3as[k]){
             printf("OADB object fqya3s is not available in the file\n");
             return;
@@ -2584,9 +2579,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy3sV0A[k]= ((TH1D*) contQy3as[k]->GetObject(run));
         
         
-        
-        
-        if (!contQx3cm[k]) contQx3cm[k] = (AliOADBContainer*) foadb->Get(Form("fqxc3m_%d", k));
+        if (!contQx3cm[k]) contQx3cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc3m_%d", k));
         if(!contQx3cm[k]){
             printf("OADB object fqxc3m is not available in the file\n");
             return;
@@ -2598,7 +2591,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3mV0C[k]= ((TH1D*) contQx3cm[k]->GetObject(run));
         
         
-        if (!contQy3cm[k]) contQy3cm[k] = (AliOADBContainer*) foadb->Get(Form("fqyc3m_%d", k));
+        if (!contQy3cm[k]) contQy3cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc3m_%d", k));
         if(!contQy3cm[k]){
             printf("OADB object fqyc3m is not available in the file\n");
             return;
@@ -2610,7 +2603,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy3mV0C[k]= ((TH1D*) contQy3cm[k]->GetObject(run));
         
         
-        if (!contQx3cs[k]) contQx3cs[k] = (AliOADBContainer*) foadb->Get(Form("fqxc3s_%d", k));
+        if (!contQx3cs[k]) contQx3cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc3s_%d", k));
         if(!contQx3cs[k]){
             printf("OADB object fqxc3s is not available in the file\n");
             return;
@@ -2622,7 +2615,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3sV0C[k]= ((TH1D*) contQx3cs[k]->GetObject(run));
         
         
-        if (!contQy3cs[k]) contQy3cs[k] = (AliOADBContainer*) foadb->Get(Form("fqyc3s_%d", k));
+        if (!contQy3cs[k]) contQy3cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc3s_%d", k));
         if(!contQy3cs[k]){
             printf("OADB object fqyc3s is not available in the file\n");
             return;
@@ -2634,9 +2627,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy3sV0C[k]= ((TH1D*) contQy3cs[k]->GetObject(run));
 
         
-        
-        
-        if (!contQx3trm[k]) contQx3trm[k] = (AliOADBContainer*) foadb->Get(Form("fqxtr3m_%d", k));
+        if (!contQx3trm[k]) contQx3trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr3m_%d", k));
         if(!contQx3trm[k]){
             printf("OADB object fqxtr3m is not available in the file\n");
             return;
@@ -2648,7 +2639,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3mTrk[k]= ((TH1D*) contQx3trm[k]->GetObject(run));
         
         
-        if (!contQy3trm[k]) contQy3trm[k] = (AliOADBContainer*) foadb->Get(Form("fqytr3m_%d", k));
+        if (!contQy3trm[k]) contQy3trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr3m_%d", k));
         if(!contQy3trm[k]){
             printf("OADB object fqytr3m is not available in the file\n");
             return;
@@ -2660,7 +2651,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy3mTrk[k]= ((TH1D*) contQy3trm[k]->GetObject(run));
         
         
-        if (!contQx3trs[k]) contQx3trs[k] = (AliOADBContainer*) foadb->Get(Form("fqxtr3s_%d", k));
+        if (!contQx3trs[k]) contQx3trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr3s_%d", k));
         if(!contQx3trs[k]){
             printf("OADB object fqxtr3s is not available in the file\n");
             return;
@@ -2672,7 +2663,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx3sTrk[k]= ((TH1D*) contQx3trs[k]->GetObject(run));
         
         
-        if (!contQy3trs[k]) contQy3trs[k] = (AliOADBContainer*) foadb->Get(Form("fqytr3s_%d", k));
+        if (!contQy3trs[k]) contQy3trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr3s_%d", k));
         if(!contQy3trs[k]){
             printf("OADB object fqytr3s is not available in the file\n");
             return;
@@ -2682,7 +2673,6 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
             return;
         }
         fQy3sTrk[k]= ((TH1D*) contQy3trs[k]->GetObject(run));
-        
     }
 
     
