@@ -132,7 +132,7 @@ ClassImp(AliAnalysisTaskGenUeVsMult) // classimp: necessary for root
 
 AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
     
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),hGenEta(0)
 
 
 {
@@ -172,7 +172,7 @@ AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskGenUeVsMult::AliAnalysisTaskGenUeVsMult(const char* name) : AliAnalysisTaskSE(name),
 	
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0)
+    fMC(0x0),fMcHandler(0x0),fMCStack(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0),fDeltaphiNS(0x0),fDeltaphiAS(0x0),fDeltaphiTS(0x0),fMultiplicyNS(0x0),fMultiplicyAS(0x0),fMultiplicyTS(0x0),hGenEta(0)
 
 
 {
@@ -270,6 +270,9 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
     fMultiplicyTS = new TH1D("fMultiplicyTS","",100,-0.5,99.5);
     fOutputList->Add(fMultiplicyTS);
     
+    hGenEta = new TH1D("hGenEta", "#eta; #eta ; Events", 20, -1.0, 1.0);
+    hGenEta->Sumw2();
+    fOutputList->Add(hGenEta);
     
     for(Int_t i=0;i<3;++i){
     pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",Nameofregions[i]),"",PtNBinSL,PtNBinS1L);
@@ -544,6 +547,8 @@ void AliAnalysisTaskGenUeVsMult::GetMultLeadingObject() {
 			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
 			if( particle->Pt() < fPtMin)continue;
 
+            hGenEta->Fill(particle->Eta());
+            
 			if (flPt<particle->Pt()){
 				flPt = particle->Pt();
 				flPhi = particle->Phi();
