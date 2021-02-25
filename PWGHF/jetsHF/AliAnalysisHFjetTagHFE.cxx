@@ -54,6 +54,7 @@
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
 
+#include "AliVertexingHFUtils.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 
@@ -1330,14 +1331,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      Int_t nAcc = 0;
 	      Double_t etaRange = 1.0;
 
-	      AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
-	      nTracklets = tracklets->GetNumberOfTracklets();
-	      for (Int_t nn = 0; nn < nTracklets; nn++) {
-		      Double_t theta = tracklets->GetTheta(nn);
-		      Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
-		      if (TMath::Abs(eta) < etaRange) nAcc++;
-	      } 
-
+	     nAcc = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD,-1.,1.));
+             if (TMath::Abs(eta) < etaRange) nAcc++;
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
