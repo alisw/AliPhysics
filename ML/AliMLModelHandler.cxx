@@ -172,11 +172,13 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
   if (path.rfind("PWG", 0) != std::string::npos || path.rfind("AODB", 0) != std::string::npos) {
     std::string path_cvmfs = AliDataFile::GetFileName(path);
     if (path_cvmfs == "") {
-      AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
+      AliFatalClass(Form("Error file %s not found on CVMFS! \n  When running locally, "
+                         "please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data"
+                         "\n  or use a different folder structure in case a path on CVMFS was not intended. Exit", path.data()));
     }
     // only skip copying for certain file types
     std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
-    if(fileform == "so" || fileform == "yml" || fileform ==  "yaml"){
+    if(path.find("root:") == std::string::npos && (fileform == "so" || fileform == "yml" || fileform ==  "yaml")){
       return path_cvmfs;
     }
     path = path_cvmfs;
