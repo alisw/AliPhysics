@@ -99,6 +99,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
+    Double_t Nref;
+    Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -194,8 +196,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fInvmassLS;
   TH2F                        *fInvmassHFuls;
   TH2F                        *fInvmassHFls;
-  TH1F                        *fLxy_uls;
   TH1F                        *fLxy_ls;
+  TH1F                        *fLxy_uls;
   TH2D                        *feJetCorr;
   THnSparse                   *HFjetCorr0;
   THnSparse                   *HFjetCorr1;
@@ -248,6 +250,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TF1                         *fFONLL_D;
   TF1                         *fFONLL_Lc;
   TF1                         *fFONLL_B;
+  TH2F                        *fzvtx_Ntrkl;
+  TH2F                        *fzvtx_Ntrkl_Corr;
+
   TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets

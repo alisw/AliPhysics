@@ -54,6 +54,7 @@
 #include "AliAODPid.h"
 #include "AliPIDResponse.h"
 
+#include "AliVertexingHFUtils.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 
@@ -92,6 +93,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   NembMCpi0(0),
   NembMCeta(0),
   NpureMCproc(0),
+  Nref(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -248,7 +250,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   iDCApTweight(kTRUE),
   iMCEtaFull(kFALSE),
   iSSlong(kFALSE),
-  fPtHardMax(0.0)
+  fPtHardMax(0.0),
+  fzvtx_Ntrkl(0),
+  fzvtx_Ntrkl_Corr(0)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -302,6 +306,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   NembMCpi0(0),
   NembMCeta(0),
   NpureMCproc(0),
+  Nref(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -458,7 +463,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   iDCApTweight(kTRUE),
   iMCEtaFull(kFALSE),
   iSSlong(kFALSE),
-  fPtHardMax(0.0)
+  fPtHardMax(0.0),
+  fzvtx_Ntrkl(0),
+  fzvtx_Ntrkl_Corr(0)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -853,11 +860,11 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fInvmassHFls = new TH2F("fInvmassHFls","HF mass;p_{T};mass",100,0,100,500,0.,5);
   fOutput->Add(fInvmassHFls);
 
-  fLxy_uls = new TH1F("fLxy_uls","HF Lxy ULS;Lxy",200,-1,1);
-  fOutput->Add(fLxy_uls);
-
   fLxy_ls = new TH1F("fLxy_ls","HF Lxy LS;Lxy",200,-1,1);
   fOutput->Add(fLxy_ls);
+
+  fLxy_uls = new TH1F("fLxy_uls","HF Lxy ULS;Lxy",200,-1,1);
+  fOutput->Add(fLxy_uls);
 
   feJetCorr = new TH2D("feJetCorr","e-jet dphi;iso;dphi",50,0,0.05,700,-3.5,3.5);
   fOutput->Add(feJetCorr);
@@ -966,7 +973,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistRho = new TH1F("fHistRho", "Rho; ", 500, 0, 500.0);
   fOutput->Add(fHistRho);
 
-  fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGfrac);
 
   fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
@@ -1018,9 +1025,12 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistHadroninJet = new TH1D("fHistHadoninJet","hadron in jet in MC",100,0,100);
   fOutput->Add(fHistHadroninJet);
-   // Prior PbPb
 
+  fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","zvertex vs n tracklet; zvtx; spd tracklets",400,-20.,20.,301,-0.5,300.5); 
+  fOutput->Add(fzvtx_Ntrkl);
 
+  fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","zvertex vs n tracklet after correction; zvtx; spd tracklets",400,-20.,20.,301,-0.5,300.5);
+  fOutput->Add (fzvtx_Ntrkl_Corr);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -1293,6 +1303,52 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
   //AliPIDResponse *fpidResponse = fInputHandler->GetPIDResponse();
   fpidResponse = fInputHandler->GetPIDResponse();
    //cout << "check PID ..." << endl;
+
+  ////////////////////////
+  /////////Multiplicity////
+  /////////////////////////
+
+  /*  Float_t lPercentiles[3];
+      TString lNames[1] = {"SPDTracklets,V0M,ZNA"}; // You can specify here the estimator you want to use
+      for(Int_t iEst=0; iEst<2; iEst++) lPercentiles[iEst] = 300;
+      AliMultSelection *MultSelection = 0x0;
+      MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+      if(MultSelection){
+      for(Int_t iEst=0; iEst<2; iEst++)
+      lPercentiles[iEst] = MultSelection->GetMultiplicityPercentile(lNames[iEst].Data()); // gives the multiplicity in percetile for the corresponding estimator.
+      }
+
+      else{
+      AliInfo("Didn't find MultSelection!");
+      }
+
+      fHist_Centrality -> Fill(lPercentiles[0]);
+      */
+      if(ippcoll)
+      {  
+	      //======================SPDTracklets============================
+	      Int_t nTracklets = 0;
+	      Int_t nAcc = 0;
+	      Double_t etaRange = 1.0;
+
+	     nAcc = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD,-1.,1.));
+	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
+
+	      //============Tracklet correction=================
+	      /*
+		 Double_t correctednAcc   = nAcc;
+		 Double_t fRefMult = Nref;
+		 Double_t WeightNtrkl = -1.;
+		 Double_t WeightZvtx = -1.;
+		 TProfile* estimatorAvg;
+		 if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
+		 if(estimatorAvg){
+	      //correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+	      }
+	      fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
+	      */
+      }
+
 
   // track
   //ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
