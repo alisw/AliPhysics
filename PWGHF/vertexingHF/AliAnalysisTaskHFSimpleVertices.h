@@ -49,7 +49,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
-  void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12);
+  void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
@@ -144,6 +144,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistInvMassJpsiSignal;        //!<!  histo with Jpsi (MC truth) inv mass
 
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
+  TH1F* fHistInvMassDplusSignal;     //!<!  histo with D+ inv mass (only signal)
   TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
   TH1F* fHistPtDplusDau0;            //!<!  histo with D+ prong pt
   TH1F* fHistPtDplusDau1;            //!<!  histo with D+ prong pt
@@ -238,7 +239,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,12);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,13);
 };
 
 

@@ -110,6 +110,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistJpsiSignalVertZ{nullptr},
   fHistInvMassJpsiSignal{nullptr},
   fHistInvMassDplus{nullptr},
+  fHistInvMassDplusSignal{nullptr},
   fHistPtDPlus{nullptr},
   fHistPtDplusDau0{nullptr},
   fHistPtDplusDau1{nullptr},
@@ -262,6 +263,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistJpsiSignalVertZ;
     delete fHistInvMassJpsiSignal;
     delete fHistInvMassDplus;
+    delete fHistInvMassDplusSignal;
     delete fHistPtDPlus;             
     delete fHistPtDplusDau0;         
     delete fHistPtDplusDau1;         
@@ -764,6 +766,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   
   // Dplus meson candidate histos
   fHistInvMassDplus = new TH1F("hInvMassDplus", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
+  fHistInvMassDplusSignal = new TH1F("hInvMassDplusSignal", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
   fHistPtDPlus = new TH1F("hPtDlpus", " ; D^{+} p_{T} (GeV/c)", 100, 0, 10.);             
   fHistPtDplusDau0 = new TH1F("hPtDplusDau0", " D^{+} prong0 ; p_{T} (GeV/c)", 100, 0, 10.);         
   fHistPtDplusDau1 = new TH1F("hPtDplusDau1", " D^{+} prong0 ; p_{T} (GeV/c)", 100, 0, 10.);         
@@ -785,6 +788,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistCovMatPrimVXX3Prong = new TH1F("hCovMatPrimVXX3Prong", " Primary Vertex ; XX element of covariant matrix (cm^2)", 100, 0., 1.0e-4);
   fHistCovMatSecVXX3Prong = new TH1F("hCovMatSecVXX3Prong", " Secondary Vertex 3-prong ; XX element of covariant matrix (cm^2)", 100, 0., 0.2);
   fOutput->Add(fHistInvMassDplus);
+  fOutput->Add(fHistInvMassDplusSignal);
   fOutput->Add(fHistPtDPlus);             
   fOutput->Add(fHistPtDplusDau0);         
   fOutput->Add(fHistPtDplusDau1);         
@@ -1088,17 +1092,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           if(fSelectD0 + fSelectD0bar > 0){
             dzeroSel = DzeroSelectionCuts(the2Prong);
           }
-    if(fSelectJpsi>0){
-      jpsiSel=JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
-    }
+          if(fSelectJpsi>0){
+            jpsiSel=JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
+          }
         }else if(fCandidateCutLevel == 1){
           dzeroSel = DzeroSkimCuts(the2Prong);
-    jpsiSel=JpsiSkimCuts(the2Prong);
-  }else if(fCandidateCutLevel == 3){
-  if(fSelectJpsi>0){
-      jpsiSel=JpsiSkimCuts(the2Prong)+JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
-    }
-  }
+          jpsiSel=JpsiSkimCuts(the2Prong);
+        }else if(fCandidateCutLevel == 3){
+          if(fSelectJpsi>0){
+            jpsiSel=JpsiSkimCuts(the2Prong)+JpsiSelectionCuts(the2Prong,track_p0,track_n0,primVtxTrk,bzkG);
+          }
+        }
        
         if(dzeroSel>0) {
           Double_t m0 = the2Prong->InvMassD0();
@@ -1216,7 +1220,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           threeTrackArray->AddAt(track_p0, 0);
           threeTrackArray->AddAt(track_n0, 1);
           threeTrackArray->AddAt(track_p1, 2);
-          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength);
+          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength,mcEvent);
           threeTrackArray->Clear();
         }
         for (Int_t iNegTrack_1 = iNegTrack_0 + 1; iNegTrack_1 < totTracks; iNegTrack_1++) {
@@ -1229,7 +1233,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           threeTrackArray->AddAt(track_n0, 0);
           threeTrackArray->AddAt(track_p0, 1);
           threeTrackArray->AddAt(track_n1, 2);
-          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength);
+          ProcessTriplet(threeTrackArray, rd4massCalc3,primVtxTrk,vertexAODp,bzkG,decaylength,mcEvent);
           threeTrackArray->Clear();
         }
       }
@@ -1249,8 +1253,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 
 
 //______________________________________________________________________________
-void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12){
+void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
   
+  Int_t pdgDplusdau[3]={321,211,211};
+
   Int_t massSel = SelectInvMassAndPt3prong(threeTrackArray, rd4massCalc3);
   if (massSel == 0) {
     threeTrackArray->Clear();
@@ -1288,7 +1294,8 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistDplusVertX->Fill(trkv3->GetX());
       fHistDplusVertY->Fill(trkv3->GetY());
       fHistDplusVertZ->Fill(trkv3->GetZ());
-      fHistInvMassDplus->Fill(the3Prong->InvMassDplus());
+      Double_t mplus=the3Prong->InvMassDplus();
+      fHistInvMassDplus->Fill(mplus);
       fHistPtDPlus->Fill(ptcand_3prong);
       fHistPtDplusDau0->Fill(the3Prong->PtProng(0));
       fHistPtDplusDau1->Fill(the3Prong->PtProng(1));
@@ -1309,6 +1316,19 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHistImpParXYDplus->Fill(the3Prong->ImpParXY());
       fHistNormIPDplus->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
       fHistoSumSqImpParDplusDau->Fill(sqSumd0Prong);
+      if(fReadMC && mcEvent){
+        Int_t labD=MatchToMC(the3Prong,411,mcEvent,3,threeTrackArray,pdgDplusdau);
+        if(labD>=0){
+          fHistInvMassDplusSignal->Fill(mplus);
+          AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
+          if(dmes){
+            Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
+            Double_t ptgen=dmes->Pt();
+            if(orig==4) fHistPtRecoPrompt[1]->Fill(ptgen);
+            else if(orig==5) fHistPtRecoFeeddw[1]->Fill(ptgen);
+          }
+        }
+      }
     }
   }
   if (massSel & (1 << kbitDs)) {
@@ -1486,7 +1506,8 @@ AliAODVertex* AliAnalysisTaskHFSimpleVertices::ConvertToAODVertex(AliESDVertex* 
   trkv->GetCovMatrix(cov); // covariance matrix
   chi2perNDF = trkv->GetChi2toNDF();
   //  double dispersion = trkv->GetDispersion();
-  AliAODVertex* vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);
+  AliAODVertex* vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, trkv->GetNContributors());
+  vertexAOD->SetNContributors(trkv->GetNContributors());
   return vertexAOD;
 }
 //______________________________________________________________________________
@@ -1762,7 +1783,7 @@ AliAODRecoDecayHF2Prong* AliAnalysisTaskHFSimpleVertices::Make2Prong(TObjArray* 
   Double_t xdummy, ydummy;
   float dcap1n1 = track_0->GetDCA(track_1, bzkG, xdummy, ydummy);
 
-  AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(secVert, px, py, pz, d0, d0err, dcap1n1);
+  AliAODRecoDecayHF2Prong* the2Prong = new AliAODRecoDecayHF2Prong(0x0, px, py, pz, d0, d0err, dcap1n1);
   AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
   the2Prong->SetOwnSecondaryVtx(ownsecv);
   return the2Prong;
@@ -1864,7 +1885,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSelectionCuts(
 Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,
                                                  Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const {
 
-  Int_t ndg=rd->GetNDaughters();
+  Int_t ndg=rd->GetOwnSecondaryVtx()->GetNContributors();
   if(!ndg) {
     AliError("No daughters available");
     return -1;
@@ -1874,7 +1895,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
     return -1;
   }
   if(ndgCk>0 && ndgCk!=ndg) {
-    AliError("Wrong number of daughter PDGs passed");
+    AliError(Form("Wrong number of daughter PDGs passed: %d requested , AliAODRecoDecay has %d",ndgCk,ndg));
     return -1;
   }
   Int_t dgLabels[10] = {0};
