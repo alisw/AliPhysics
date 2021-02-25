@@ -4767,7 +4767,9 @@ Bool_t Config_OmegaP(
     Float_t V0dDCA=1.6;
     Float_t OmegadDCA=1.4; // 1.6;
     Float_t OmegaMinDCA=0.07;
-    Float_t Omega_massTol=0.015;
+    Float_t Omega_massTol=0.001*(TrackCutsOmega%1000);
+        if(!TrackCutsOmega) {
+        Omega_massTol = 0.010;}
     Float_t Omega_massTolVeto=0.007;
     Float_t Omega_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
