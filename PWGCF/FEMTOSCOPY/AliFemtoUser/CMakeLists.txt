@@ -52,7 +52,7 @@ set(SRCS
    AliFemtoModelCorrFctn3DKKGR.cxx
    AliFemtoModelCorrFctn3DKKGRQinv.cxx
    AliFemtoModelGausLCMSFreezeOutGeneratorGR.cxx
-   AliFemtoModelCorrFctn3DKKGR.cxx
+   AliFemtoModelCorrFctn3DKKGR1.cxx
 #  Ludmila
    AliFemtoCutMonitorDphiDeta1.cxx
    AliFemtoESDTrackCutPlusJets25.cxx
