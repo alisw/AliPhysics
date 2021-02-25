@@ -153,7 +153,7 @@ private:
 
   struct {
     // Event data
-    Int_t fBCsID = 0u;       /// Index to BC table
+    Int_t fIndexBCs = 0u;       /// Index to BC table
     // Primary vertex position
     Float_t  fPosX = -999.f;       /// Primary vertex x coordinate
     Float_t  fPosY = -999.f;       /// Primary vertex y coordinate
@@ -193,7 +193,7 @@ private:
   struct {
     // Track data
 
-    Int_t   fCollisionsID = -1;    /// The index of the collision vertex in the TF, to which the track is attached
+    Int_t   fIndexCollisions = -1;    /// The index of the collision vertex in the TF, to which the track is attached
     
     uint8_t fTrackType = 0;       // Type of track: global, ITS standalone, tracklet, ...
     
@@ -268,7 +268,7 @@ private:
 
   struct {
     // MC collision
-    Int_t fBCsID = 0u;       /// Index to BC table
+    Int_t fIndexBCs = 0u;       /// Index to BC table
     Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
     Float_t fPosX = -999.f;  /// Primary vertex x coordinate from MC
     Float_t fPosY = -999.f;  /// Primary vertex y coordinate from MC
@@ -281,7 +281,7 @@ private:
 
   struct {
     // Track label to find the corresponding MC particle
-    UInt_t fLabel = 0;       /// Track label
+    UInt_t fIndexMcParticles = 0;       /// Track label
     UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                            /// Bit 0-6: mismatch at ITS layer
                            /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
@@ -290,14 +290,14 @@ private:
   
   struct {
     // Calo cluster label to find the corresponding MC particle
-    UInt_t fLabel = 0;       /// Calo label
+    UInt_t fIndexMcParticles = 0;       /// Calo label
     UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccalolabel; //! Calo labels
   
   struct {
     // MC collision label
-    UInt_t fLabel = 0;       /// Collision label
+    UInt_t fIndexMcParticles = 0;       /// Collision label
     UShort_t fLabelMask = 0; /// Bit mask to indicate collision mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccollisionlabel; //! Collision labels
@@ -305,7 +305,7 @@ private:
   struct {
     // MC particle
 
-    Int_t   fMcCollisionsID = -1;    /// The index of the MC collision vertex
+    Int_t   fIndexMcCollisions = -1;    /// The index of the MC collision vertex
 
     // MC information (modified version of TParticle
     Int_t fPdgCode    = -99999; /// PDG code of the particle
@@ -347,7 +347,7 @@ private:
   struct {
     // Calorimeter data (EMCAL & PHOS)
 
-    Int_t fBCsID = 0u;       /// Index to BC table
+    Int_t fIndexBCs = 0u;       /// Index to BC table
 
     Short_t fCellNumber = -1;     /// Cell absolute Id. number
     Float_t fAmplitude = -999.f;  /// Cell amplitude (= energy!)
@@ -358,7 +358,7 @@ private:
   
   struct {
     // Calorimeter trigger data (EMCAL & PHOS)
-    Int_t fBCsID = 0u;        /// Index to BC table
+    Int_t fIndexBCs = 0u;        /// Index to BC table
     Short_t fFastOrAbsID = - 1;   /// FastOR absolute ID
     Float_t fL0Amplitude = -1.f;  /// L0 amplitude (ADC) := Peak Amplitude
     Float_t fL0Time = -1.f;       /// L0 time
@@ -371,7 +371,7 @@ private:
   struct {
     // MUON track data
 
-    Int_t fBCsID = 0u;            /// Index to BC table
+    Int_t fIndexBCs = 0u;            /// Index to BC table
     // In case we need connection to muon clusters, activate next lines
     // Int_t   fClusterIndex;        /// The index of the associated MUON clusters
     // Int_t   fNclusters;           /// The number of MUON clusters
@@ -400,7 +400,7 @@ private:
   struct {
     // Muon cluster data
     
-    Int_t   fMuonsID = -1; /// The index of the muon track to which the clusters are attached
+    Int_t   fIndexMuons = -1; /// The index of the muon track to which the clusters are attached
     Float_t fX = -999.f;         ///< cluster X position
     Float_t fY = -999.f;         ///< cluster Y position
     Float_t fZ = -999.f;         ///< cluster Z position
@@ -411,7 +411,7 @@ private:
   } mucls;              //! structure to keep muon clusters information
 
   struct {
-    Int_t   fBCsID = 0u;                 /// Index to BC table
+    Int_t   fIndexBCs = 0u;                 /// Index to BC table
     Float_t fEnergyZEM1 = 0.f;           ///< E in ZEM1
     Float_t fEnergyZEM2 = 0.f;           ///< E in ZEM2
     Float_t fEnergyCommonZNA = 0.f;      ///< E in common ZNA PMT - high gain chain
@@ -432,7 +432,7 @@ private:
 
   struct {
     /// V0A  (32 cells in Run2, 48 cells in Run3)
-    Int_t fBCsID = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;                /// Index to BC table
     Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each channel
     Float_t fTime = 0.f;              /// Average A-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -440,14 +440,14 @@ private:
   
   struct {
     /// V0C  (32 cells in Run2)
-    Int_t fBCsID = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;                /// Index to BC table
     Float_t fAmplitude[32] = {0.f};   /// Multiplicity for each channel
     Float_t fTime = 0.f;              /// Average C-side time
   } fv0c;                             //! structure to keep V0C information
 
   struct {
     /// FT0 (12+12 channels in Run2, 96+112 channels in Run3)
-    Int_t fBCsID = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;                /// Index to BC table
     Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for each A-side channel
     Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
@@ -457,7 +457,7 @@ private:
   
   struct {
     /// FDD (AD)  
-    Int_t fBCsID = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;                /// Index to BC table
     Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
     Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
@@ -468,15 +468,15 @@ private:
   struct {
     /// V0s (Ks, Lambda)
 
-    Int_t fPosTrackID = -1; // Positive track ID
-    Int_t fNegTrackID = -1; // Negative track ID
+    Int_t fIndexTracksPos = -1; // Positive track ID
+    Int_t fIndexTracksNeg = -1; // Negative track ID
   } v0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
 
-    Int_t fV0sID = -1; // V0 ID
-    Int_t fTracksID = -1; // Bachelor track ID
+    Int_t fIndexV0s = -1; // V0 ID
+    Int_t fIndexTracks = -1; // Bachelor track ID
   } cascs;             //! structure to keep cascades information
 
   /// Offsets to convert the IDs within one collision to global IDs
