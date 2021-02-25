@@ -155,6 +155,7 @@ set(SRCS
   Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskOLD.cxx)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTaskUE.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
