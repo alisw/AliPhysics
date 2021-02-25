@@ -1332,7 +1332,6 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      Double_t etaRange = 1.0;
 
 	     nAcc = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD,-1.,1.));
-             if (TMath::Abs(eta) < etaRange) nAcc++;
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
