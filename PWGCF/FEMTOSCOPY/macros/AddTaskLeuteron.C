@@ -12,11 +12,10 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isNanoAOD = true,
   bool BruteForceDebugging = false,
   bool DeuteronSideband = false,
+  bool UpperSideband = false,
+  bool LowerSideband = false,
+  bool Signal = false,
   double thresholdTOF = 1.4,
-  double DeuteronSigmaLeft = 2.0,
-  double DeuteronSigmaRight = 4.0,
-  double AntideuteronSigmaLeft = 2.0,
-  double AntideuteronSigmaRight = 4.0,
   double Deuteron_pT_low = 0.4,
   double Deuteron_pT_up = 4.0,
   const char *CutVariation = "0"){
@@ -148,7 +147,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(0.1);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,thresholdTOF,60.0);
+  TrackCuts3->SetPID(AliPID::kDeuteron,thresholdTOF,3.0);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -180,7 +179,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetDCAVtxXY(0.1);
   TrackCuts4->SetCutSharedCls(true);
   TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,thresholdTOF,60.0);
+  TrackCuts4->SetPID(AliPID::kDeuteron,thresholdTOF,3.0);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
@@ -407,7 +406,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   if(isNanoAOD){
 
-    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft,DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
+    taskNanoAOD = new AliAnalysisTaskLeuteronNanoAOD("FemtoLeuteronNanoAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,UpperSideband,LowerSideband,Signal);
 
     if(!taskNanoAOD){				  // check if the NanoAOD task is there
       printf("taskNanoAOD not found\n");
@@ -439,7 +438,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,DeuteronSigmaLeft, DeuteronSigmaRight,AntideuteronSigmaLeft,AntideuteronSigmaRight);
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,DeuteronSideband,UpperSideband,LowerSideband,Signal);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
