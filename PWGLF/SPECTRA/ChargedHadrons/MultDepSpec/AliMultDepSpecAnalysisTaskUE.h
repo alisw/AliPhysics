@@ -1,9 +1,9 @@
 #ifndef AliMultDepSpecAnalysisTaskUE_cxx
 #define AliMultDepSpecAnalysisTaskUE_cxx
 
-#include "AliMultDepSpecAnalysisTask.h"
+#include "AliMultDepSpecAnalysisTaskOLD.h"
 
-class AliMultDepSpecAnalysisTaskUE : public AliMultDepSpecAnalysisTask
+class AliMultDepSpecAnalysisTaskUE : public AliMultDepSpecAnalysisTaskOLD
 {
 public:
   // possible axis dimensions
@@ -77,6 +77,8 @@ private:
   Hist::Hist<TH1D> fHistDiffToMCPhiLead{}; //!<! Difference Leading Track Phi and Particle Phi
 
   Hist::Hist<TH2D> fHistPlateau{}; //!<! Plateau Histogram
+  Hist::Hist<TH2D> fHistSumPt{};
+  Hist::Hist<TH2D> fHistMultCorr{};
 
   // Additional event related properties
   double fPtLead{};  //!<! Leading track pT
@@ -86,6 +88,9 @@ private:
   double fMCPhiLead{};   //!<! Leading MC particle phi
   double fMCPtOfLead{};  //!<! To leading MC track corresponding particle pT
   double fMCPhiOfLead{}; //!<! To leading MC track corresponding particle phi
+
+  double fMultMeasTot{};
+  double fSumPtMeasTot{};
 
   /// \cond CLASSIMP
   ClassDef(AliMultDepSpecAnalysisTaskUE, 1); // example of analysis
