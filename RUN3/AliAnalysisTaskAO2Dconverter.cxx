@@ -504,7 +504,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   }
 
   // Create the output directory for the current time frame
-  fOutputDir = fOutputFile->mkdir(Form("TF_%llu", tfId));
+  fOutputDir = fOutputFile->mkdir(Form("DF_%llu", tfId));
 
 
   // Associate branches for fEventTree
