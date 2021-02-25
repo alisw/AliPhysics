@@ -143,9 +143,9 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
     fOutputList->Add(fHistEffCont.GenerateHist("fHistEffCont"));
     requiredMemory += fHistEffCont.GetSize();
 
-    fHistMultCorrelation.AddAxis(centAxis);
     fHistMultCorrelation.AddAxis(multAxisNch);
     fHistMultCorrelation.AddAxis(multAxisNacc);
+    fHistMultCorrelation.AddAxis(mcWeightAxis);
     fOutputList->Add(fHistMultCorrelation.GenerateHist("fHistMultCorrelation"));
     requiredMemory += fHistEffCont.GetSize();
 
