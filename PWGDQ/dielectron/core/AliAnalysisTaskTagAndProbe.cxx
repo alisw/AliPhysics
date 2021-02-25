@@ -82,6 +82,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fMCEvent(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentrality(0),
@@ -92,6 +93,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
 	fPIDResponse(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
 	fPassingProbeTrackArray(0x0),
@@ -136,6 +143,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fMCEvent(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentrality(0),
@@ -146,6 +154,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
 	fPIDResponse(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
 	fPassingProbeTrackArray(0x0),
@@ -397,17 +411,25 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 
   }
 
-	AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
-	for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
-		for(Int_t ip=0;ip<15;ip++){//particle loop e/mu/pi/k/p
-			if(fPostPIDCntrdCorrPU[id][ip]) AliDielectronPID::SetCentroidCorrFunctionPU(id,ip,fPostPIDCntrdCorrPU[id][ip]);
-			if(fPostPIDWdthCorrPU[id][ip])  AliDielectronPID::SetWidthCorrFunctionPU(   id,ip,fPostPIDWdthCorrPU[id][ip] );
-		}
-	}
-
+  AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
+  if(fPIDCalibinPU){
+    for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
+      for(Int_t ip=0;ip<15;ip++){//particle loop e/mu/pi/k/p
+        if(fPostPIDCntrdCorrPU[id][ip]) AliDielectronPID::SetCentroidCorrFunctionPU(id,ip,fPostPIDCntrdCorrPU[id][ip]);
+        if(fPostPIDWdthCorrPU[id][ip])  AliDielectronPID::SetWidthCorrFunctionPU(   id,ip,fPostPIDWdthCorrPU[id][ip] );
+      }
+    }
+  }
+  else{
+    if(fPostPIDCntrdCorrTPC)  AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
+    if(fPostPIDWdthCorrTPC)   AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
+    if(fPostPIDCntrdCorrITS)  AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
+    if(fPostPIDWdthCorrITS)   AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
+    if(fPostPIDCntrdCorrTOF)  AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
+    if(fPostPIDWdthCorrTOF)   AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+  }
 
   PostData(1,fOutputContainer);
-
 
 }
 //________________________________________________________________________
@@ -429,6 +451,19 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 		AliInfo("event class is neither ESD nor AOD. return.");
 		return;
 	}
+
+  AliInputEventHandler *eventHandler   = nullptr;
+  AliInputEventHandler *eventHandlerMC = nullptr;
+
+  if((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){//for AOD
+    eventHandler   = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
+  }
+  else if((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliESDInputHandler::Class()){//for ESD
+    eventHandlerMC = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    eventHandler   = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  }
+  fMCEvent = (AliMCEvent*)eventHandlerMC->MCEvent();
 
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   fVertex[0] = vVertex->GetX();
@@ -659,6 +694,7 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
     AliVTrack *track = dynamic_cast<AliVTrack*>(particle);
     Int_t label = TMath::Abs(track->GetLabel());
     AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(label);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
     if(!p->IsPhysicalPrimary()) continue;
     Int_t pdg = p->GetPdgCode();
 
@@ -740,6 +776,11 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
 
 	for(Int_t itrack=0;itrack<trackMult;itrack++){
 		AliVParticle *particle = (AliVParticle*)fEvent->GetTrack(itrack);
+
+    if(fIsMC){
+      Int_t label = TMath::Abs(particle->GetLabel());
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
+    }
 
 		//reduce unnecessary IsSelected()
 		if(particle->Pt() < 0.15) continue;
