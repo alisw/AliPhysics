@@ -1192,9 +1192,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     }     
 
     
-    AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(p->GetPrimary()) ;
+    AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(label) ;
     //Look what particle left virtex
-    Int_t iparent=p->GetPrimary();
+    Int_t iparent=label;
     AliAODMCParticle * parent = prim;
     while((parent->Xv()-mcVtxX)*(parent->Xv()-mcVtxX)+
           (parent->Yv()-mcVtxY)*(parent->Yv()-mcVtxY)+
@@ -1665,19 +1665,19 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if(p2->E()>0.1){
         for(Int_t iPID=0; iPID<fNPID; iPID++){  
           if(TestPID(iPID,p1)){
-            fhReSingle[0][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+            fhReSingle[0][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
             if(p1->GetIsolationTag()&kDefISolation){
-              fhReSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+              fhReSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
             }
             if(p2->E()>0.2){
-              fhReSingle[1][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+              fhReSingle[1][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
               if(p1->GetIsolationTag()&kDefISolation){
-                fhReSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                fhReSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
               }
               if(p2->E()>0.3){
-                fhReSingle[2][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                fhReSingle[2][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                 if(p1->GetIsolationTag()&kDefISolation){
-                  fhReSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                  fhReSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                 }
               }
             }
@@ -1688,19 +1688,19 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       if(p1->E()>0.1){
         for(Int_t iPID=0; iPID<fNPID; iPID++){  
           if(TestPID(iPID,p2)){
-            fhReSingle[0][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+            fhReSingle[0][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
             if(p2->GetIsolationTag()&kDefISolation){
-              fhReSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+              fhReSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
             }
             if(p1->E()>0.2){
-              fhReSingle[1][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+              fhReSingle[1][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
               if(p2->GetIsolationTag()&kDefISolation){
-                fhReSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                fhReSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
               }
               if(p1->E()>0.3){
-                fhReSingle[2][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                fhReSingle[2][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                 if(p2->GetIsolationTag()&kDefISolation){
-                  fhReSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                  fhReSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                 }
               }
             }
@@ -1895,19 +1895,19 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	if(p2->E()>0.1){
           for(Int_t iPID=0; iPID<fNPID; iPID++){  
             if(TestPID(iPID,p1)){
-              fhMiSingle[0][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+              fhMiSingle[0][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
               if(p1->GetIsolationTag()&kDefISolation){
-                fhMiSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                fhMiSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
               }
 	      if(p2->E()>0.2){
-                fhMiSingle[1][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                fhMiSingle[1][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                 if(p1->GetIsolationTag()&kDefISolation){
-                  fhMiSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                  fhMiSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                 }
 	        if(p2->E()>0.3){
-                  fhMiSingle[2][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                  fhMiSingle[2][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                   if(p1->GetIsolationTag()&kDefISolation){
-                    fhMiSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP1,w1*w1TOF) ;  
+                    fhMiSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP1,w) ;  
                   }
                 }
               }
@@ -1918,19 +1918,19 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	if(p1->E()>0.1){
           for(Int_t iPID=0; iPID<fNPID; iPID++){  
             if(TestPID(iPID,p2)){
-              fhMiSingle[0][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+              fhMiSingle[0][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
               if(p2->GetIsolationTag()&kDefISolation){
-                fhMiSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                fhMiSingleIso[0][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
               }
 	      if(p1->E()>0.2){
-                fhMiSingle[1][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                fhMiSingle[1][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                 if(p2->GetIsolationTag()&kDefISolation){
-                  fhMiSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                  fhMiSingleIso[1][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                 }
 	        if(p1->E()>0.3){
-                  fhMiSingle[2][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                  fhMiSingle[2][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                   if(p2->GetIsolationTag()&kDefISolation){
-                    fhMiSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP2,w2*w2TOF) ;  
+                    fhMiSingleIso[2][fCentBin][iPID]->Fill(invMass,ptP2,w) ;  
                   }
                 }
               }
