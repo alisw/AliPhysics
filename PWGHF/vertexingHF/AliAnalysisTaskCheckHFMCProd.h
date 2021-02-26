@@ -8,7 +8,7 @@
 
 //*************************************************************************
 /// \class Class AliAnalysisTaskCheckHFMCProd
-/// \brief AliAnalysisTask to check MC production at ESD+Kine level
+/// \brief AliAnalysisTask to check MC production at ESD(AOD)+Kine level
 ///
 ///
 /// \author Author: F. Prino, prino@to.infn.it
@@ -22,7 +22,7 @@ class TH2F;
 class TH3F;
 class TTree;
 class TString;
-class AliESDEvent;
+class AliVEvent;
 class AliESDfriend;
 class AliESDtrackCuts;
 
@@ -122,9 +122,10 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   Double_t fYMin; /// minumum y in histograms
   Double_t fYMax; /// maximum y in histograms
   Int_t fNYBins; /// number of y bins in histograms
+  AliVEvent* fEvent; /// pointer to current event
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckHFMCProd, 10);
+  ClassDef(AliAnalysisTaskCheckHFMCProd, 11);
   /// \endcond
 };
 
