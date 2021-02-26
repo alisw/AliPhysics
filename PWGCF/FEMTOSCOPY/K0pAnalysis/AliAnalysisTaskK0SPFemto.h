@@ -2,7 +2,7 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 //NUOVO
-// Author:Ramona Lea based on M. Nicassio m.nicassio@gsi.de maria.nicassio@cern.ch
+// Author: Marta Urioni based on Ramona Lea based on M. Nicassio m.nicassio@gsi.de maria.nicassio@cern.ch
 
 #ifndef ALIANALYSISTASKK0SPFEMTO_H
 #define ALIANALYSISTASKK0SPFEMTO_H

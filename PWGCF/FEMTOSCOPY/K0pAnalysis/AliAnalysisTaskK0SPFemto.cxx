@@ -769,7 +769,7 @@ void AliAnalysisTaskK0SPFemto::UserExec(Option_t *) {
 
   int sCount = 0;
 
-  AliReconstructedSecond::MCSecondOrigin_t mcSecondOrigin = AliReconstructedSecond::kUnassigned;
+  AliReconstructedSecondK0SP::MCSecondOrigin_t mcSecondOrigin = AliReconstructedSecondK0SP::kUnassigned;
   
   Bool_t isP = kFALSE;  // particle
   Bool_t isaP = kFALSE; // anti-particle 
@@ -1066,7 +1066,7 @@ void AliAnalysisTaskK0SPFemto::UserExec(Option_t *) {
   Float_t rapidityFirst = 0.;
   int fCount = 0;
  
-  AliReconstructedFirst::MCFirstOrigin_t mcFirstOrigin =AliReconstructedFirst::kUnassigned;
+  AliReconstructedFirstK0SP::MCFirstOrigin_t mcFirstOrigin =AliReconstructedFirstK0SP::kUnassigned;
   Int_t fchargeN;
   Int_t fchargeP;
 

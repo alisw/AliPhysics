@@ -6,20 +6,20 @@
 #include "TH1.h"
 #include "TH2.h"
 
-// author: chiara.de.martin@cern.ch from
+// author: Marta Urioni  from
 // ramona.lea@cern.ch from 
 // maria.nicassio@cern.ch (derived and adapted from D. Gangadharan PWGCF/FEMTOSCOPY/Chaoticity/AliChaoticityEventCollection
 //                                             and J. Salzwedel PWGCF/FEMTOSCOPY/V0LamAnalysis/AliAnalysisV0LamEventCollection)
 
 using namespace std;
 
-class AliReconstructedFirst {
+class AliReconstructedFirstK0SP {
   
  public:
-  AliReconstructedFirst();
-  virtual ~AliReconstructedFirst();
-  /* AliReconstructedFirst(const AliReconstructedFirst &obj); */
-  /* AliReconstructedFirst & operator=(const AliReconstructedFirst &obj); */
+  AliReconstructedFirstK0SP();
+  virtual ~AliReconstructedFirstK0SP();
+  /* AliReconstructedFirstK0SP(const AliReconstructedFirstK0SP &obj); */
+  /* AliReconstructedFirstK0SP & operator=(const AliReconstructedFirstK0SP &obj); */
  
   enum MCFirstOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t fMomentum[3]; // 3 reconstructed momentum
@@ -88,18 +88,18 @@ class AliReconstructedFirst {
   Int_t      cCharge;
   Bool_t     cAssocOrNot;
  
-  ClassDef(AliReconstructedFirst, 1);   
+  ClassDef(AliReconstructedFirstK0SP, 1);   
 
 };
 
-class AliReconstructedSecond {
+class AliReconstructedSecondK0SP {
 
   
  public:
-  AliReconstructedSecond();
-  virtual ~AliReconstructedSecond();
-  /* AliReconstructedSecond(const AliReconstructedSecond &obj); */
-  /* AliReconstructedSecond & operator=(const AliReconstructedSecond &obj); */
+  AliReconstructedSecondK0SP();
+  virtual ~AliReconstructedSecondK0SP();
+  /* AliReconstructedSecondK0SP(const AliReconstructedSecondK0SP &obj); */
+  /* AliReconstructedSecondK0SP & operator=(const AliReconstructedSecondK0SP &obj); */
   
   enum MCSecondOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
   Double_t sMomentum[3]; // 3 reconstructed momentum
@@ -138,7 +138,7 @@ class AliReconstructedSecond {
   Double_t  sZvertex;  
  
 
-  ClassDef(AliReconstructedSecond, 1);   
+  ClassDef(AliReconstructedSecondK0SP, 1);   
   
 };
 
@@ -154,8 +154,8 @@ class AliAnalysisK0SPEvent {
   Int_t  fNumberCandidateSecond; 
   Double_t fPrimaryVertex[3]; //Location of the primary vertex
   
-  AliReconstructedFirst *fReconstructedFirst;
-  AliReconstructedSecond *fReconstructedSecond;
+  AliReconstructedFirstK0SP *fReconstructedFirst;
+  AliReconstructedSecondK0SP *fReconstructedSecond;
   
   ClassDef(AliAnalysisK0SPEvent, 1);
   

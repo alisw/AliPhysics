@@ -6,8 +6,8 @@
 
 #pragma link C++ class AliAnalysisK0SPEventCollection+;  
 #pragma link C++ class AliAnalysisTaskK0SPFemto+;
-#pragma link C++ class AliReconstructedFirst+;
-#pragma link C++ class AliReconstructedSecond+;
+#pragma link C++ class AliReconstructedFirstK0SP+;
+#pragma link C++ class AliReconstructedSecondK0SP+;
 #pragma link C++ class AliAnalysisK0SPEvent+;
 #pragma link C++ class AliAnalysisK0SPEventCollection+;
 
