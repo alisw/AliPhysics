@@ -51,6 +51,8 @@ public:
     kEvents = 0,
     kEventsExtra,
     kTracks,
+    kTracksCov,
+    kTracksExtra,
     kCalo,
     kCaloTrigger,
     kMuon,

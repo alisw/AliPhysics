@@ -67,9 +67,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {"O2collision", "DbgEventExtra", "O2track", "O2calo", "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc"};
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {"Collision tree", "Collision extra", "Barrel tracks", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info"};
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -561,15 +561,12 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->Branch("fTriggerMask", &bc.fTriggerMask, "fTriggerMask/l");
     tBC->SetBasketSize("*", fBasketSizeEvents);
   }
-
-  // Associate branches for fTrackTree
-  TTree *tTracks = CreateTree(kTracks);
-  if (fTreeStatus[kTracks])
-  {
+  
+  // Associate branches for the three track trees
+  TTree* tTracks = CreateTree(kTracks);
+  if (fTreeStatus[kTracks]) {
     tTracks->Branch("fIndexCollisions", &tracks.fIndexCollisions, "fIndexCollisions/I");
     tTracks->Branch("fTrackType", &tracks.fTrackType, "fTrackType/b");
-    //    tTracks->Branch("fTOFclsIndex", &tracks.fTOFclsIndex, "fTOFclsIndex/I");
-    //    tTracks->Branch("fNTOFcls", &tracks.fNTOFcls, "fNTOFcls/I");
     tTracks->Branch("fX", &tracks.fX, "fX/F");
     tTracks->Branch("fAlpha", &tracks.fAlpha, "fAlpha/F");
     tTracks->Branch("fY", &tracks.fY, "fY/F");
@@ -577,43 +574,53 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracks->Branch("fSnp", &tracks.fSnp, "fSnp/F");
     tTracks->Branch("fTgl", &tracks.fTgl, "fTgl/F");
     tTracks->Branch("fSigned1Pt", &tracks.fSigned1Pt, "fSigned1Pt/F");
-    // Modified covariance matrix
-    tTracks->Branch("fSigmaY", &tracks.fSigmaY, "fSigmaY/F");
-    tTracks->Branch("fSigmaZ", &tracks.fSigmaZ, "fSigmaZ/F");
-    tTracks->Branch("fSigmaSnp", &tracks.fSigmaSnp, "fSigmaSnp/F");
-    tTracks->Branch("fSigmaTgl", &tracks.fSigmaTgl, "fSigmaTgl/F");
-    tTracks->Branch("fSigma1Pt", &tracks.fSigma1Pt, "fSigma1Pt/F");
-    tTracks->Branch("fRhoZY", &tracks.fRhoZY, "fRhoZY/B");
-    tTracks->Branch("fRhoSnpY", &tracks.fRhoSnpY, "fRhoSnpY/B");
-    tTracks->Branch("fRhoSnpZ", &tracks.fRhoSnpZ, "fRhoSnpZ/B");
-    tTracks->Branch("fRhoTglY", &tracks.fRhoTglY, "fRhoTglY/B");
-    tTracks->Branch("fRhoTglZ", &tracks.fRhoTglZ, "fRhoTglZ/B");
-    tTracks->Branch("fRhoTglSnp", &tracks.fRhoTglSnp, "fRhoTglSnp/B");
-    tTracks->Branch("fRho1PtY", &tracks.fRho1PtY, "fRho1PtY/B");
-    tTracks->Branch("fRho1PtZ", &tracks.fRho1PtZ, "fRho1PtZ/B");
-    tTracks->Branch("fRho1PtSnp", &tracks.fRho1PtSnp, "fRho1PtSnp/B");
-    tTracks->Branch("fRho1PtTgl", &tracks.fRho1PtTgl, "fRho1PtTgl/B");
-    //
-    tTracks->Branch("fTPCInnerParam", &tracks.fTPCinnerP, "fTPCInnerParam/F");
-    tTracks->Branch("fFlags", &tracks.fFlags, "fFlags/i");
-    tTracks->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
-    tTracks->Branch("fTPCNClsFindable", &tracks.fTPCNClsFindable, "fTPCNClsFindable/b");
-    tTracks->Branch("fTPCNClsFindableMinusFound", &tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
-    tTracks->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
-    tTracks->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
-    tTracks->Branch("fTRDPattern", &tracks.fTRDPattern, "fTRDPattern/b");
-    tTracks->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
-    tTracks->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
-    tTracks->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
-    tTracks->Branch("fTOFChi2", &tracks.fTOFChi2, "fTOFChi2/F");
-    tTracks->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
-    tTracks->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
-    tTracks->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
-    tTracks->Branch("fLength", &tracks.fLength, "fLength/F");
-    tTracks->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
-    tTracks->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
-    tTracks->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
     tTracks->SetBasketSize("*", fBasketSizeTracks);
+  }
+  
+  TTree* tTracksCov = CreateTree(kTracksCov);
+  if (fTreeStatus[kTracksCov]) {
+    // Modified covariance matrix
+    tTracksCov->Branch("fSigmaY", &tracks.fSigmaY, "fSigmaY/F");
+    tTracksCov->Branch("fSigmaZ", &tracks.fSigmaZ, "fSigmaZ/F");
+    tTracksCov->Branch("fSigmaSnp", &tracks.fSigmaSnp, "fSigmaSnp/F");
+    tTracksCov->Branch("fSigmaTgl", &tracks.fSigmaTgl, "fSigmaTgl/F");
+    tTracksCov->Branch("fSigma1Pt", &tracks.fSigma1Pt, "fSigma1Pt/F");
+    tTracksCov->Branch("fRhoZY", &tracks.fRhoZY, "fRhoZY/B");
+    tTracksCov->Branch("fRhoSnpY", &tracks.fRhoSnpY, "fRhoSnpY/B");
+    tTracksCov->Branch("fRhoSnpZ", &tracks.fRhoSnpZ, "fRhoSnpZ/B");
+    tTracksCov->Branch("fRhoTglY", &tracks.fRhoTglY, "fRhoTglY/B");
+    tTracksCov->Branch("fRhoTglZ", &tracks.fRhoTglZ, "fRhoTglZ/B");
+    tTracksCov->Branch("fRhoTglSnp", &tracks.fRhoTglSnp, "fRhoTglSnp/B");
+    tTracksCov->Branch("fRho1PtY", &tracks.fRho1PtY, "fRho1PtY/B");
+    tTracksCov->Branch("fRho1PtZ", &tracks.fRho1PtZ, "fRho1PtZ/B");
+    tTracksCov->Branch("fRho1PtSnp", &tracks.fRho1PtSnp, "fRho1PtSnp/B");
+    tTracksCov->Branch("fRho1PtTgl", &tracks.fRho1PtTgl, "fRho1PtTgl/B");
+    tTracksCov->SetBasketSize("*", fBasketSizeTracks);
+  }
+
+  TTree* tTracksExtra = CreateTree(kTracksExtra);
+  if (fTreeStatus[kTracksExtra]) {
+    //Extra
+    tTracksExtra->Branch("fTPCInnerParam", &tracks.fTPCinnerP, "fTPCInnerParam/F");
+    tTracksExtra->Branch("fFlags", &tracks.fFlags, "fFlags/i");
+    tTracksExtra->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
+    tTracksExtra->Branch("fTPCNClsFindable", &tracks.fTPCNClsFindable, "fTPCNClsFindable/b");
+    tTracksExtra->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
+    tTracksExtra->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
+    tTracksExtra->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
+    tTracksExtra->Branch("fTRDPattern", &tracks.fTRDPattern, "fTRDPattern/b");
+    tTracksExtra->Branch("fITSChi2NCl", &tracks.fITSChi2NCl, "fITSChi2NCl/F");
+    tTracksExtra->Branch("fTPCChi2NCl", &tracks.fTPCChi2NCl, "fTPCChi2NCl/F");
+    tTracksExtra->Branch("fTRDChi2", &tracks.fTRDChi2, "fTRDChi2/F");
+    tTracksExtra->Branch("fTOFChi2", &tracks.fTOFChi2, "fTOFChi2/F");
+    tTracksExtra->Branch("fTPCSignal", &tracks.fTPCSignal, "fTPCSignal/F");
+    tTracksExtra->Branch("fTRDSignal", &tracks.fTRDSignal, "fTRDSignal/F");
+    tTracksExtra->Branch("fTOFSignal", &tracks.fTOFSignal, "fTOFSignal/F");
+    tTracksExtra->Branch("fLength", &tracks.fLength, "fLength/F");
+    tTracksExtra->Branch("fTOFExpMom", &tracks.fTOFExpMom, "fTOFExpMom/F");
+    tTracksExtra->Branch("fTrackEtaEMCAL", &tracks.fTrackEtaEMCAL, "fTrackEtaEMCAL/F");
+    tTracksExtra->Branch("fTrackPhiEMCAL", &tracks.fTrackPhiEMCAL, "fTrackPhiEMCAL/F");
+    tTracksExtra->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associate branches for Calo
@@ -1352,6 +1359,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     // tracks.fTOFclsIndex += tracks.fNTOFcls;
     // tracks.fNTOFcls = ntofcls_filled;
     FillTree(kTracks);
+    FillTree(kTracksCov);
+    FillTree(kTracksExtra);
     if (fTreeStatus[kTracks])
       ntrk_filled++;
   } // end loop on tracks
@@ -1449,12 +1458,15 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       }
 
       FillTree(kTracks);
-      if (fTreeStatus[kTracks])
-        ntracklet_filled++;
+      FillTree(kTracksCov);
+      FillTree(kTracksExtra);
+      if (fTreeStatus[kTracks]) ntracklet_filled++;
     }
   } // end loop on tracklets
-  eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled;
-
+  eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
+  eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
+  eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
+  
   //---------------------------------------------------------------------------
   // Calorimeter data
 
