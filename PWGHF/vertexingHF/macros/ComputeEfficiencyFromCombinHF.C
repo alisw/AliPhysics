@@ -54,8 +54,8 @@ void ComputeEfficiencyFromCombinHF(){
       printf("Read configuration from file %s\n",configFileName.Data());
       Bool_t readOK=ReadConfig(configFileName);
       if(!readOK){
-	printf("Error in reading configuration file\n");
-	return;
+        printf("Error in reading configuration file\n");
+        return;
       }
     }
   }
@@ -158,7 +158,7 @@ void ComputeEfficiencyFromCombinHF(){
     Int_t binzm10=hEventMultZvEvSel->GetXaxis()->FindBin(-9.999);
     Int_t binzp10=hEventMultZvEvSel->GetXaxis()->FindBin(9.999);
     printf("%d %f    --- %d %f\n",binzm10,hEventMultZvEvSel->GetXaxis()->GetBinLowEdge(binzm10),
-	   binzp10,hEventMultZvEvSel->GetXaxis()->GetBinUpEdge(binzp10));
+           binzp10,hEventMultZvEvSel->GetXaxis()->GetBinUpEdge(binzp10));
     TH1D* hMultAllEv=hEventMultZv->ProjectionY("hMultAllEv");
     TH1D* hMultEvZ10=hEventMultZv->ProjectionY("hMultEvZ10",binzm10,binzp10);
     TH1D* hMultEvSel=hEventMultZvEvSel->ProjectionY("hMultEvSel");
@@ -593,8 +593,8 @@ void ComputeAndWriteEff(TList* l, TString dCase, TString var3){
   if(var3=="Mult"){
     // double differential acceptance plot pt/mult
     Int_t colMult[20]={kMagenta+1,kMagenta,kBlue+1,kBlue,kBlue-9,
-		       kGreen+2,kGreen+1,kGreen,kYellow+1,kYellow,
-		       kOrange+2,kOrange+1,kRed-9,kRed,kRed+1};
+                       kGreen+2,kGreen+1,kGreen,kYellow+1,kYellow,
+                       kOrange+2,kOrange+1,kRed-9,kRed,kRed+1};
     TH1D* hAccVsPtMultBin[100];
     TH1D* hPtGenLimAccMultBin[100];
     TH1D* hPtGenAccMultBin[100];
@@ -630,30 +630,30 @@ void ComputeAndWriteEff(TList* l, TString dCase, TString var3){
       hPtGenLimAccMultBin[iBinm]->SetStats(0);
       hAccVsPtMultBin[iBinm]->SetStats(0);      
       if(hPtGenLimAccMultBin[iBinm]->GetEntries()>1000 && nhp<20){
-	gMeanPtGenLimAccVsMult->SetPoint(nhp,centmul,meanptlimacc);
-	gMeanPtGenLimAccVsMult->SetPointError(nhp,centmul-minmul,emeanptlimacc);
-	gMeanPtGenAccVsMult->SetPoint(nhp,centmul,meanptacc);
-	gMeanPtGenAccVsMult->SetPointError(nhp,centmul-minmul,emeanptacc);
-	hPtGenLimAccMultBin[iBinm]->SetLineColor(colMult[nhp]);
-	hPtGenAccMultBin[iBinm]->SetLineColor(colMult[nhp]);
-	hAccVsPtMultBin[iBinm]->SetLineColor(colMult[nhp]);
-	leg->AddEntry(hPtGenLimAccMultBin[iBinm],Form("%.0f<mult<%.0f",minmul,maxmul),"L")->SetTextColor(colMult[nhp]);
-	++nhp;
-	c2dch->cd(2);
-	gPad->SetLogy();
-	if(iBinm==0) hPtGenLimAccMultBin[iBinm]->Draw();
-	else hPtGenLimAccMultBin[iBinm]->DrawNormalized("same");
-	c2dch->cd(3);
-	gPad->SetLogy();
-	if(iBinm==0) hPtGenAccMultBin[iBinm]->Draw();
-	else hPtGenAccMultBin[iBinm]->DrawNormalized("same");
-	c2dch->cd(5);
-	if(iBinm==0){
-	  hAccVsPtMultBin[iBinm]->SetMinimum(0.2);
-	  hAccVsPtMultBin[iBinm]->SetMaximum(2.2);
-	  hAccVsPtMultBin[iBinm]->Draw();
-	}
-	else hAccVsPtMultBin[iBinm]->Draw("same");
+        gMeanPtGenLimAccVsMult->SetPoint(nhp,centmul,meanptlimacc);
+        gMeanPtGenLimAccVsMult->SetPointError(nhp,centmul-minmul,emeanptlimacc);
+        gMeanPtGenAccVsMult->SetPoint(nhp,centmul,meanptacc);
+        gMeanPtGenAccVsMult->SetPointError(nhp,centmul-minmul,emeanptacc);
+        hPtGenLimAccMultBin[iBinm]->SetLineColor(colMult[nhp]);
+        hPtGenAccMultBin[iBinm]->SetLineColor(colMult[nhp]);
+        hAccVsPtMultBin[iBinm]->SetLineColor(colMult[nhp]);
+        leg->AddEntry(hPtGenLimAccMultBin[iBinm],Form("%.0f<mult<%.0f",minmul,maxmul),"L")->SetTextColor(colMult[nhp]);
+        ++nhp;
+        c2dch->cd(2);
+        gPad->SetLogy();
+        if(iBinm==0) hPtGenLimAccMultBin[iBinm]->Draw();
+        else hPtGenLimAccMultBin[iBinm]->DrawNormalized("same");
+        c2dch->cd(3);
+        gPad->SetLogy();
+        if(iBinm==0) hPtGenAccMultBin[iBinm]->Draw();
+        else hPtGenAccMultBin[iBinm]->DrawNormalized("same");
+        c2dch->cd(5);
+        if(iBinm==0){
+          hAccVsPtMultBin[iBinm]->SetMinimum(0.2);
+          hAccVsPtMultBin[iBinm]->SetMaximum(2.2);
+          hAccVsPtMultBin[iBinm]->Draw();
+        }
+        else hAccVsPtMultBin[iBinm]->Draw("same");
       }
     }
     c2dch->cd(6);
@@ -996,48 +996,48 @@ void ComputeAndWriteEff(TList* l, TString dCase, TString var3){
   for(Int_t ibx=0; ibx<=hPtVsYVsVar3GenAcc->GetNbinsX()+1; ibx++){
     for(Int_t iby=0; iby<=hPtVsYVsVar3GenAcc->GetNbinsY()+1; iby++){
       for(Int_t ibz=0; ibz<=hPtVsYVsVar3GenAcc->GetNbinsZ()+1; ibz++){
-	Double_t pt=hPtVsYVsVar3GenAcc->GetXaxis()->GetBinCenter(ibx);
-	//	Double_t y=hPtVsYVsVar3GenAcc->GetYaxis()->GetBinCenter(iby);
-	Double_t v3=hPtVsYVsVar3GenAcc->GetZaxis()->GetBinCenter(ibz);
-	//	  printf("%f %f %f\n",pt,y,mult);
-	Int_t jPtBin=TMath::BinarySearch(nPtBins+1,binLims,pt);
-	if(jPtBin>=0 && jPtBin<nPtBins){
-	  Double_t crec=hPtVsYVsVar3Reco->GetBinContent(ibx,iby,ibz);
-	  Double_t cgen=hPtVsYVsVar3GenAcc->GetBinContent(ibx,iby,ibz);
-	  Double_t wpt=funcPtWeight->Eval(pt);
-	  countNumer[jPtBin]+=crec;
-	  countDenom[jPtBin]+=cgen;
-	  if(var3=="PtB"){
-	    Double_t w=funcPtBWeight->Eval(v3);
-	    countNumerPtBWei[jPtBin]+=crec*w;
-	    countDenomPtBWei[jPtBin]+=cgen*w;
-	    
-	  }else{
-	    Double_t w=0;
-	    if(hMultWeight){
-	      Int_t binw=hMultWeight->FindBin(v3);
-	      if(binw>=1 && binw<hMultWeight->GetNbinsX()+1){
-		w=hMultWeight->GetBinContent(binw);
-		//		printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
-	      }else{
-		if(cgen>0){
-		  printf("mult %.0f   bin %d   wei %f\n",v3,binw,w);
-		  getchar();
-		}
-	      }
-	    }else{
-	      w=1;
-	    }
-	    if(!useMultWeight) w=1;
-	    countNumerMultWei[jPtBin]+=crec*w;
-	    countDenomMultWei[jPtBin]+=cgen*w;
-	    countNumerMultPtWei[jPtBin]+=crec*w*wpt;
-	    countDenomMultPtWei[jPtBin]+=cgen*w*wpt;
-	    hMultRecoAllPtW->Fill(v3,crec*w);
-	    hMultGenAccAllPtW->Fill(v3,cgen*w);
-	    hMultGenLimAccAllPtW->Fill(v3,hPtVsYVsVar3GenLimAcc->GetBinContent(ibx,iby,ibz)*w);
-	  }
-	}
+        Double_t pt=hPtVsYVsVar3GenAcc->GetXaxis()->GetBinCenter(ibx);
+        //      Double_t y=hPtVsYVsVar3GenAcc->GetYaxis()->GetBinCenter(iby);
+        Double_t v3=hPtVsYVsVar3GenAcc->GetZaxis()->GetBinCenter(ibz);
+        //        printf("%f %f %f\n",pt,y,mult);
+        Int_t jPtBin=TMath::BinarySearch(nPtBins+1,binLims,pt);
+        if(jPtBin>=0 && jPtBin<nPtBins){
+          Double_t crec=hPtVsYVsVar3Reco->GetBinContent(ibx,iby,ibz);
+          Double_t cgen=hPtVsYVsVar3GenAcc->GetBinContent(ibx,iby,ibz);
+          Double_t wpt=funcPtWeight->Eval(pt);
+          countNumer[jPtBin]+=crec;
+          countDenom[jPtBin]+=cgen;
+          if(var3=="PtB"){
+            Double_t w=funcPtBWeight->Eval(v3);
+            countNumerPtBWei[jPtBin]+=crec*w;
+            countDenomPtBWei[jPtBin]+=cgen*w;
+            
+          }else{
+            Double_t w=0;
+            if(hMultWeight){
+              Int_t binw=hMultWeight->FindBin(v3);
+              if(binw>=1 && binw<hMultWeight->GetNbinsX()+1){
+                w=hMultWeight->GetBinContent(binw);
+                //              printf("mult %.0f   bin %d   wei %f\n",mult,binw,w);
+              }else{
+                if(cgen>0){
+                  printf("mult %.0f   bin %d   wei %f\n",v3,binw,w);
+                  getchar();
+                }
+              }
+            }else{
+              w=1;
+            }
+            if(!useMultWeight) w=1;
+            countNumerMultWei[jPtBin]+=crec*w;
+            countDenomMultWei[jPtBin]+=cgen*w;
+            countNumerMultPtWei[jPtBin]+=crec*w*wpt;
+            countDenomMultPtWei[jPtBin]+=cgen*w*wpt;
+            hMultRecoAllPtW->Fill(v3,crec*w);
+            hMultGenAccAllPtW->Fill(v3,cgen*w);
+            hMultGenLimAccAllPtW->Fill(v3,hPtVsYVsVar3GenLimAcc->GetBinContent(ibx,iby,ibz)*w);
+          }
+        }
       }
     }
   }
@@ -1286,12 +1286,12 @@ Bool_t ReadConfig(TString configName){
     else if(strstr(line,"BinLimits")){
       readok=fscanf(confFil," [ ");
       for(int j=0; j<nPtBins; j++){
-	readok=fscanf(confFil,"%f,",&x);
-	binLims[j]=x;
-	if(j>0 && binLims[j]<=binLims[j-1]){
-	  printf("ERROR in array of pt bin limits\n");
-	  return kFALSE;
-	}
+        readok=fscanf(confFil,"%f,",&x);
+        binLims[j]=x;
+        if(j>0 && binLims[j]<=binLims[j-1]){
+          printf("ERROR in array of pt bin limits\n");
+          return kFALSE;
+        }
       }
       readok=fscanf(confFil,"%f",&x);
       binLims[nPtBins]=x;
