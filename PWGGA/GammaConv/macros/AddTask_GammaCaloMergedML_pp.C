@@ -1519,9 +1519,17 @@ void AddTask_GammaCaloMergedML_pp(
     cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe22700001","0163300000000000"); // INT7  > 2 overlaps
 
 
-  // systematics pp 8 TeV no TM
+    //ML
+  } else if (trainConfig == 1540){ //TB NL, -30ns, 35ns timing cut, E/p TM, with exotic cut (F+=0.95, TCard requirement > 50GeV)
+    cuts.AddCutMergedCalo("00010113","411790106fe32200000","411790106fe92200001","0163300000000000"); // INT7
+  } else if (trainConfig == 1541){
+    cuts.AddCutMergedCalo("0008e113","411790106fe32200000","411790106fe92200001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("0008d113","411790106fe32200000","411790106fe92200001","0163300000000000"); // EG1+DG1
+  }
+
+// systematics pp 8 TeV no TM
   // MB configs
-  } else if (trainConfig == 3900){ // std
+  else if (trainConfig == 3900){ // std
     cuts.AddCutMergedCalo("00010113","1111132060032200000","1111132060g22700001","0163300000000000"); // std
   } else if (trainConfig == 3901){ // M02 var 1
     cuts.AddCutMergedCalo("00010113","1111132060g32200000","1111132060g22700001","0163300000000000"); // exotics from CF
@@ -1963,7 +1971,7 @@ void AddTask_GammaCaloMergedML_pp(
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisClusterCuts[i]        = new AliCaloPhotonCuts(isMC);
-    analysisClusterCuts[i]->SetIsPureCaloCut(2);
+    analysisClusterCuts[i]->SetIsPureCaloCut(0);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
@@ -1977,7 +1985,7 @@ void AddTask_GammaCaloMergedML_pp(
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts(isMC);
-    analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
+    analysisClusterMergedCuts[i]->SetIsPureCaloCut(0);
     analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterMergedCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
