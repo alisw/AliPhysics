@@ -8,4 +8,5 @@
 
 #pragma link C++ class AliAnalysisTaskTree_MCut+;
 #pragma link C++ class AliAnalysisTaskPbPbTree_MCut+;
+#pragma link C++ class AliAnalysisQuarkoniumTreeMC+;
 #endif
