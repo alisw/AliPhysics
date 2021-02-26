@@ -282,7 +282,7 @@ private:
   struct {
     // Track label to find the corresponding MC particle
     UInt_t fIndexMcParticles = 0;       /// Track label
-    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+    UShort_t fMcMask = 0;  /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                            /// Bit 0-6: mismatch at ITS layer
                            /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
                            /// Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
@@ -291,14 +291,14 @@ private:
   struct {
     // Calo cluster label to find the corresponding MC particle
     UInt_t fIndexMcParticles = 0;       /// Calo label
-    UShort_t fLabelMask = 0; /// Bit mask to indicate detector mismatches (bit ON means mismatch)
+    UShort_t fMcMask = 0;    /// Bit mask to indicate detector mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccalolabel; //! Calo labels
   
   struct {
     // MC collision label
     UInt_t fIndexMcParticles = 0;       /// Collision label
-    UShort_t fLabelMask = 0; /// Bit mask to indicate collision mismatches (bit ON means mismatch)
+    UShort_t fMcMask = 0;    /// Bit mask to indicate collision mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccollisionlabel; //! Collision labels
   
@@ -480,10 +480,10 @@ private:
   } cascs;             //! structure to keep cascades information
 
   /// Offsets to convert the IDs within one collision to global IDs
-  Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track IDs (used in the clusters)
-  Int_t fOffsetTrackID = 0;   ///! Offset of track IDs (used in V0s)
-  Int_t fOffsetV0ID = 0;      ///! Offset of track IDs (used in cascades)
-  Int_t fOffsetLabel = 0;     ///! Offset of track IDs (used in cascades)
+  Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track  (used in the clusters)
+  Int_t fOffsetTrack = 0;   ///! Offset of track (used in V0s)
+  Int_t fOffsetV0 = 0;      ///! Offset of V0s (used in cascades)
+  Int_t fOffsetLabel = 0;     ///! Offset of MC paritcles (used in cascades)
 
   /// Truncation
   Bool_t fTruncate = kFALSE;
