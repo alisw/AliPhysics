@@ -39,7 +39,6 @@
 #include "TFile.h"
 
 #include "AliInputEventHandler.h"
-#include "AliAODHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
@@ -52,10 +51,10 @@ Double_t CostHE_MC(AliAODMCParticle*, AliAODMCParticle*);
 Double_t CostCS_MC(AliAODMCParticle*, AliAODMCParticle*);
 Double_t PhiHE_MC(AliAODMCParticle*, AliAODMCParticle*);
 Double_t PhiCS_MC(AliAODMCParticle*, AliAODMCParticle*);
-Double_t CostHE(AliAODTrack*, AliAODTrack*);
-Double_t CostCS(AliAODTrack*, AliAODTrack*);
-Double_t PhiHE(AliAODTrack*, AliAODTrack*);
-Double_t PhiCS(AliAODTrack*, AliAODTrack*);
+Double_t CostHE_rec(AliAODTrack*, AliAODTrack*);
+Double_t CostCS_rec(AliAODTrack*, AliAODTrack*);
+Double_t PhiHE_rec(AliAODTrack*, AliAODTrack*);
+Double_t PhiCS_rec(AliAODTrack*, AliAODTrack*);
 
 ClassImp(AliAnalysisTaskQuarkoniumTreeMC)
 //__________________________________________________________________________
@@ -353,8 +352,6 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
   
   TClonesArray *mcarray = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   
-  AliAODHeader *aodheader=dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
-   
   AliAODVertex *PrimVertex =  fAODEvent->GetPrimaryVertex();
   fVertex[0]=PrimVertex->GetX();
   fVertex[1]=PrimVertex->GetY();
@@ -453,10 +450,10 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
                  fDimuCharge_rec[numdimu]= dimu->Charge();
                  fDimuMu_rec[numdimu][0]=i;  fDimuMu_rec[numdimu][1]=j;
 	  
-	         fDimuCostHE_rec[numdimu] = CostHE(mu0,mu1);
-	         fDimuPhiHE_rec[numdimu] = PhiHE(mu0,mu1);
-	         fDimuCostCS_rec[numdimu] = CostCS(mu0,mu1);
-	         fDimuPhiCS_rec[numdimu] = PhiCS(mu0,mu1);
+	         fDimuCostHE_rec[numdimu] = CostHE_rec(mu0,mu1);
+	         fDimuPhiHE_rec[numdimu] = PhiHE_rec(mu0,mu1);
+	         fDimuCostCS_rec[numdimu] = CostCS_rec(mu0,mu1);
+	         fDimuPhiCS_rec[numdimu] = PhiCS_rec(mu0,mu1);
 
                  if(mu0->GetMatchTrigger()>1 || mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=1;
                  if(mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=2;
@@ -527,7 +524,6 @@ Double_t CostHE_MC(AliAODMCParticle* Mu0, AliAODMCParticle* Mu1){
   }
   return cost;
 }
-//______________________________________________________________________________
 //______________________________________________________________________________
 Double_t PhiHE_MC(AliAODMCParticle* Mu0, AliAODMCParticle* Mu1){
   // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
@@ -722,7 +718,7 @@ Double_t PhiCS_MC(AliAODMCParticle* Mu0, AliAODMCParticle* Mu1){
 
 
 //______________________________________________________________________________
-Double_t CostHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t CostHE_rec(AliAODTrack* Mu0, AliAODTrack* Mu1){
   Double_t EBeam = 6500;
   Double_t mp = 0.93827231;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
@@ -776,7 +772,7 @@ Double_t CostHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
 }
 //______________________________________________________________________________
 //______________________________________________________________________________
-Double_t PhiHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t PhiHE_rec(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Calculation the Helicity aimuthal angle (adapted from code by R. Arnaldi)
   Double_t EBeam = 6500.;
   if(EBeam <= 0){
@@ -841,7 +837,7 @@ Double_t PhiHE(AliAODTrack* Mu0, AliAODTrack* Mu1){
    return phi;
 }
 //______________________________________________________________________________
-Double_t CostCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t CostCS_rec(AliAODTrack* Mu0, AliAODTrack* Mu1){
   Double_t EBeam = 6500.;
   Double_t mp = 0.93827231;
   Double_t pbeam = TMath::Sqrt(EBeam*EBeam - mp*mp);
@@ -903,7 +899,7 @@ Double_t CostCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
   return cost;
 }
 //______________________________________________________________________________
-Double_t PhiCS(AliAODTrack* Mu0, AliAODTrack* Mu1){
+Double_t PhiCS_rec(AliAODTrack* Mu0, AliAODTrack* Mu1){
   // Cosinus of the Collins-Soper polar decay angle
   Double_t EBeam = 6500.;
   if(EBeam <= 0){

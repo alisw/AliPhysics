@@ -33,15 +33,16 @@ class AliAnalysisTaskQuarkoniumTreeMC : public AliAnalysisTaskSE {
   AliAnalysisTaskQuarkoniumTreeMC(const AliAnalysisTaskQuarkoniumTreeMC&);
   AliAnalysisTaskQuarkoniumTreeMC& operator=(const AliAnalysisTaskQuarkoniumTreeMC&);
      
+  TTree         *fOutputTree	;      //! tree output
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)    
   const char* fkAnalysisType; //ESD or AOD based analysis
   TString fPeriod; //period
   TString fResonance; //resonance
   
-  TTree         *fOutputTree	;      //! tree output
-  
   Int_t		fNMuons_gen;		// muon tracks in the event
+  Int_t		fNDimu_gen;			// dimuons in the event
   Int_t		fNMuons_rec;		// muon tracks in the event
+  Int_t		fNDimu_rec;			// dimuons in the event
   Double_t	fVertex[3];		// x,y,z vertex
 
   Double_t	fPt_rec[100];		 // single mu pT
@@ -57,7 +58,6 @@ class AliAnalysisTaskQuarkoniumTreeMC : public AliAnalysisTaskSE {
   Int_t	        fCharge_rec[100];		// single mu charge
   Double_t	fRAtAbsEnd_rec[100];		// single mu distance from beam center at end abs
 
-  Int_t		fNDimu_gen;			// dimuons in the event
   Int_t		fDimuMu_gen[1000][2];	// reference to single mus
   Double_t	fDimuPt_gen[1000];			    // dimuon pT
   Double_t	fDimuPx_gen[1000]; 		    // dimuon px
@@ -73,7 +73,6 @@ class AliAnalysisTaskQuarkoniumTreeMC : public AliAnalysisTaskSE {
   Double_t      fDimuPhiCS_gen[1000]; // phi Collins-Soper
 
   
-  Int_t		fNDimu_rec;			// dimuons in the event
   Int_t		fDimuMu_rec[1000][2];	// reference to single mus
   Double_t	fDimuPt_rec[1000];			    // dimuon pT
   Double_t	fDimuPx_rec[1000]; 		    // dimuon px
