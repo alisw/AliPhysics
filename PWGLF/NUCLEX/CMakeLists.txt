@@ -26,13 +26,21 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
-                    $ENV{KFPARTICLE_ROOT}/include
+                    ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
 		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/CommonUtils
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
 		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
   )
+if(KFParticle_FOUND)
+  get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(${KFPARTICLE_INCLUDE_DIR})
+  add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 # Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
@@ -146,7 +154,11 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWG
 
 # Generate the ROOT map
 # Dependencies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} KFParticle)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 if(ROOT_VERSION_MAJOR EQUAL 6)
   set(LIBDEPS ${LIBDEPS} ML yaml-cpp)
 endif()
@@ -162,7 +174,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
