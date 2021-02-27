@@ -952,10 +952,11 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsTrackInTransverseRegion (AliESDtrack *track
     //DeltaPhi
     Double_t phi_ref   = TVector2::Phi_0_2pi (leading_track->Phi());
     Double_t phi_trk   = TVector2::Phi_0_2pi (track->Phi());
-    Double_t delta_phi = (180.0/TMath::Pi())*TMath::Abs(phi_ref-phi_trk);
+    Double_t delta_phi = (180.0/TMath::Pi())*TVector2::Phi_0_2pi (phi_trk-phi_ref);
     
-    if ( delta_phi>60.0 && delta_phi<120.0) isInTransverseRegion=kTRUE;
-    
+    if (delta_phi>=60.0  && delta_phi<120.0) isInTransverseRegion=kTRUE;
+    if (delta_phi>=240.0 && delta_phi<300.0) isInTransverseRegion=kTRUE;
+
     return isInTransverseRegion;
 }
 //__________________________________________________________________________________________________________________________________________________
@@ -970,9 +971,10 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsTrackInTowardRegion (AliESDtrack *track, In
     //DeltaPhi
     Double_t phi_ref   = TVector2::Phi_0_2pi (leading_track->Phi());
     Double_t phi_trk   = TVector2::Phi_0_2pi (track->Phi());
-    Double_t delta_phi = (180.0/TMath::Pi())*TMath::Abs(phi_ref-phi_trk);
-    
-    if ( delta_phi<60.0) isInTowardRegion=kTRUE;
+    Double_t delta_phi = (180.0/TMath::Pi())*TVector2::Phi_0_2pi (phi_trk-phi_ref);
+
+    if (delta_phi>=0.0   && delta_phi<60.0)   isInTowardRegion=kTRUE;
+    if (delta_phi>=300.0 && delta_phi<=360.0) isInTowardRegion=kTRUE;
     
     return isInTowardRegion;
 }
@@ -988,9 +990,9 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsTrackInAwayRegion (AliESDtrack *track, Int_
     //DeltaPhi
     Double_t phi_ref   = TVector2::Phi_0_2pi (leading_track->Phi());
     Double_t phi_trk   = TVector2::Phi_0_2pi (track->Phi());
-    Double_t delta_phi = (180.0/TMath::Pi())*TMath::Abs(phi_ref-phi_trk);
-    
-    if ( delta_phi>120.0) isInAwayRegion=kTRUE;
+    Double_t delta_phi = (180.0/TMath::Pi())*TVector2::Phi_0_2pi (phi_trk-phi_ref);
+
+    if ( delta_phi>=120.0 && delta_phi<240.0) isInAwayRegion=kTRUE;
     
     return isInAwayRegion;
 }
