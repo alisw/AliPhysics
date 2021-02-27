@@ -16,12 +16,13 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     virtual void Terminate(Option_t *option);
 
     AliEventCuts fAliEventCuts;
-    void SetAnalysisType          (const char *analysisType                    ) { fAnalysisType    = analysisType;    }
-    void SetCollidingSystem       (Int_t  collidingSystem                      ) { fCollidingSystem = collidingSystem; }
-    void SetSelectedTriggerClass  (AliVEvent::EOfflineTriggerTypes triggerType ) { fkTriggerClass   = triggerType;     }
-    void SetFilterBit             (UInt_t filterBit                            ) { fFilterBit       = filterBit;       }
-    void SetPileupCut             (Bool_t pileupCut                            ) { fPileupCut       = pileupCut;       } 
-    void SetEventMixing           (Bool_t eventMixing                          ) { fEventMixing     = eventMixing;     }
+    void SetAnalysisType          ( const char *analysisType ) { fAnalysisType    = analysisType;    }
+    void SetCollidingSystem       ( Int_t  collidingSystem   ) { fCollidingSystem = collidingSystem; }
+    void SetSelectedTriggerClass  ( UInt_t triggerType       ) { fkTriggerClass   = triggerType;     }
+    void SetFilterBit             ( UInt_t filterBit         ) { fFilterBit       = filterBit;       }
+    void SetPileupCut             ( Bool_t pileupCut         ) { fPileupCut       = pileupCut;       }
+    void SetPairCleaning          ( Bool_t pairCleaning      ) { fPairCleaning    = pairCleaning;    }
+    void SetEventMixing           ( Bool_t eventMixing       ) { fEventMixing     = eventMixing;     }
 
     void PairCleaner();
     Double_t relKcalc(TLorentzVector track1, TLorentzVector track2);
@@ -30,14 +31,15 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     typedef std::deque<TClonesArray*> EventPool;
     typedef std::vector<std::vector<EventPool>> MixingPool;
 
-    TString                 fAnalysisType;            // "ESD" or "AOD" analysis type
-    Int_t                   fCollidingSystem;         // "pp" or "pPb" colliding system
-    AliVEvent::EOfflineTriggerTypes fkTriggerClass;   // Trigger selection: kINT7, KHighMultV0, etc
+    TString                 fAnalysisType;            //  "ESD" or "AOD" analysis type
+    Int_t                   fCollidingSystem;         //  "pp", "pPb", or "PbPb" colliding system
+    UInt_t                  fkTriggerClass;           //  Trigger selection: kINT7, KHighMultV0, etc
     AliPIDResponse         *fPIDResponse;             //! PID response object
 
-    UInt_t                  fFilterBit;               // filter bit for AOD track selection
-    Bool_t                  fPileupCut;               // apply out-of-bunch pile-up cuts for daughters of V0s and Cascades
-    Bool_t                  fEventMixing;             //
+    UInt_t                  fFilterBit;               //  filter bit for AOD track selection
+    Bool_t                  fPileupCut;               //  apply out-of-bunch pile-up cuts for daughters of V0s and Cascades
+    Bool_t                  fPairCleaning;            //  perform Pair Cleaning
+    Bool_t                  fEventMixing;             //  perform Event Mixing
 
     THashList              *fOutput;                  //! User output
     AliAODTrack           **fTrackArray;              //! global track info
@@ -45,19 +47,19 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     TClonesArray           *fLambdaArray;             //! Lambda candidates
     TClonesArray           *fXiArray;                 //! Xi candidates
     TClonesArray           *fOmegaArray;              //! Omega candidates
-    const Int_t             fTrackBuffSize;           // size of the track array
-    const Int_t             fV0BuffSize;              // size of the V0 array
-    const Int_t             fCascadeBuffSize;         // size of the cascade array
+    Int_t                   fTrackBuffSize;           //  size of the track array
+    Int_t                   fV0BuffSize;              //  size of the V0 array
+    Int_t                   fCascadeBuffSize;         //  size of the cascade array
 
-    MixingPool              fProtonEMpool;            //
-    MixingPool              fLambdaEMpool;            //
-    MixingPool              fXiEMpool;                //
-    MixingPool              fOmegaEMpool;             //
+    MixingPool              fProtonEMpool;            //  event mixing pool for proton candidates
+    MixingPool              fLambdaEMpool;            //  event mixing pool for Lambda candidates
+    MixingPool              fXiEMpool;                //  event mixing pool for Xi candidates
+    MixingPool              fOmegaEMpool;             //  event mixing pool for Omega candidates
 
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 7);
+    ClassDef(AliAnalysisTaskDibaryons, 8);
 };
 
 #endif
