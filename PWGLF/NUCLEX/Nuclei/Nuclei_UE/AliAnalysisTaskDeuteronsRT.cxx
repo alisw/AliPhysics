@@ -607,7 +607,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         fESDtrackCuts_LeadingTrack -> SetMaxChi2PerClusterITS(36);
         fESDtrackCuts_LeadingTrack -> SetEtaRange(-0.8,0.8);
         fESDtrackCuts_LeadingTrack -> SetPtRange(0.15,200);
-        fESDtrackCuts_LeadingTrack -> SetMaxDCAToVertexXY(2.4);
+        //fESDtrackCuts_LeadingTrack -> SetMaxDCAToVertexXY(2.4);
+        fESDtrackCuts_LeadingTrack -> SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
         fESDtrackCuts_LeadingTrack -> SetMaxDCAToVertexZ(2);
         fESDtrackCuts_LeadingTrack -> SetDCAToVertex2D(kFALSE);
         fESDtrackCuts_LeadingTrack -> SetRequireSigmaToVertex(kFALSE);
@@ -621,6 +622,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         fESDtrackCuts_TransverseMult -> SetMaxDCAToVertexZ(3.2);
         fESDtrackCuts_TransverseMult -> SetMaxDCAToVertexXY(2.4);
         fESDtrackCuts_TransverseMult -> SetDCAToVertex2D(kTRUE);
+        fESDtrackCuts_TransverseMult -> SetEtaRange(-0.8,0.8);
+        fESDtrackCuts_TransverseMult -> SetPtRange(0.15,200);
     }
     
     
