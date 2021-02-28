@@ -1,8 +1,8 @@
 ///*******************************************************
 /// Config Description
-/// January 22, 2021 - Cristiane Jahnke
+/// February 27, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
-/// TPC calibrations for 2017 and 2018 data
+/// Flag to run with less histos when running systematic uncertainties
 ///*******************************************************
 
 //isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration
@@ -35,7 +35,7 @@ Bool_t is_TPCcalibration
 	
 	task->SetAODanalysis(isAOD);
 
-	
+    task->SetSysHistos();
     
     if(isTender) task->SetUseTender();
     if(isMultiAnalysis) task->SetMultiAnalysis();
@@ -98,9 +98,13 @@ Bool_t is_TPCcalibration
     
     task->SetTPCncls(85);//not used anymore
     //now we are using TPCncrossed rows
+    if(config==7)task->SetTPCnCrossedRows(60);
+    else if(config==8)task->SetTPCnCrossedRows(75);
+    else if(config==9)task->SetTPCnCrossedRows(80);
+    else if(config==10)task->SetTPCnCrossedRows(90);
     task->SetTPCnCrossedRows(70);
     
-    if(config==11)task->SetDCACut(0.2,0.4); //xy, z
+    if(config==11)task->SetDCACut(1.5,3.0); //xy, z
     else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
     else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
     else if(config==14)task->SetDCACut(1.0,2.0); //xy, z
@@ -109,20 +113,20 @@ Bool_t is_TPCcalibration
     
     //PID cuts
     if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
-    else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
-    else if(config==17)task->SetTPCnsigmaCut(-1.5,3.0);
+    else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);//
+    else if(config==17)task->SetTPCnsigmaCut(-2.0,3.0);//
     else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
-    else if(config==19)task->SetTPCnsigmaCut(0,3.0);
-    else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
     
-    else if(config==21)task->SetTPCnsigmaCut(-1.5,2.5);
-    else if(config==22)task->SetTPCnsigmaCut(-1.5,4.0);
+    else if(config==19)task->SetTPCnsigmaCut(-2.25,3.5);
+    else if(config==20)task->SetTPCnsigmaCut(-2.25,4.0);
+    else if(config==21)task->SetTPCnsigmaCut(-2.25,2.75);//
+    else if(config==22)task->SetTPCnsigmaCut(-2.25,3.25);//
     else task->SetTPCnsigmaCut(-2.25,3.0);
     
-	if(config==23)task->SetEoverPCut(0.75,1.3);
+	if(config==23)task->SetEoverPCut(0.78,1.3);
     else if(config==24)task->SetEoverPCut(0.85,1.3);
     else if(config==25)task->SetEoverPCut(0.9,1.3);
-    else if(config==26)task->SetEoverPCut(0.8,1.4);
+    else if(config==26)task->SetEoverPCut(0.8,1.35);
     else task->SetEoverPCut(0.8,1.3);
     
     
@@ -132,13 +136,13 @@ Bool_t is_TPCcalibration
     
     if(trigger_index==4 || trigger_index==8 || trigger_index==11){
         
-        if(config==27)task->SetEnergyCut(4.5);//eg2
-        else if(config==28)task->SetEnergyCut(5.5);//eg2
+        if(config==27)task->SetEnergyCut(4.7);//eg2
+        else if(config==28)task->SetEnergyCut(5.3);//eg2
         else task->SetEnergyCut(5);//eg2
     }
     if(trigger_index==6 || trigger_index==7 || trigger_index==10){
-        if(config==29)task->SetEnergyCut(9.5);//eg1
-        else if(config==30)task->SetEnergyCut(10.5);//eg1
+        if(config==29)task->SetEnergyCut(9.7);//eg1
+        else if(config==30)task->SetEnergyCut(10.3);//eg1
         else task->SetEnergyCut(10);//eg1
     }
     

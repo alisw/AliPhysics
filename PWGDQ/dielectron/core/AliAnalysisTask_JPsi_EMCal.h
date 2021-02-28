@@ -14,8 +14,7 @@
 //        Authors                                                     //
 //                                                                    //
 //        Cristiane Jahnke        (cristiane.jahnke@cern.ch)          //
-//        22 January, 2021 -> TPC calibrations for 2017 and 2018 data //
-//                                                                    //
+//        27 February, 2021                                           //
 ////////////////////////////////////////////////////////////////////////
 
 class TH1F;
@@ -74,6 +73,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	void SetUseTender() { fUseTender=kTRUE;};
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
+    void SetSysHistos() {fIs_sys=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
@@ -157,6 +157,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t				fIsMC;
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
+    Bool_t              fIs_sys;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
@@ -165,11 +166,11 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t              fSelect_trigger_events2;
     
     //new organization of tender using global variables
-    TString        fTenderClusterName;//
-    TString            fTenderTrackName;//
+    TString             fTenderClusterName;//
+    TString             fTenderTrackName;//
     
-    TClonesArray*         fTracks_tender;//Tender tracks
-    TClonesArray*         fCaloClusters_tender;//Tender cluster
+    TClonesArray*       fTracks_tender;//Tender tracks
+    TClonesArray*       fCaloClusters_tender;//Tender cluster
 
 
 //Used in the function FindMother
@@ -223,9 +224,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     
     //V0 corrections
     TProfile2D*        fMultEstimatorV0[1];
-    Double_t         fRefMult_V0;
+    Double_t           fRefMult_V0;
     TProfile2D*        GetEstimatorHistogram_V0(const AliAODEvent *fAOD);
-    TRandom3*        gRandom_V0;//!< random number generator
+    TRandom3*          gRandom_V0;//!< random number generator
     
 //AnalysisCuts
     
@@ -291,7 +292,6 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH1F				*fNevent;
     TH1F                *fNevent2;
     TH2F                **fTPC_vs_ITScls;
-    TH1F                *fPDG_values;
     TH1F                *fNevent_SPD_multi;
     TH1F                *fNevent_V0_multi;
     
@@ -430,6 +430,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
     
 	//generators
+    /*
 	//BB
 	TH2F				*fHist_InvMass_pt_ULS_KF_BB;
 	TH2F				*fHist_InvMass_pt_LS_KF_BB;
@@ -439,13 +440,18 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//B
 	TH2F				*fHist_InvMass_pt_ULS_KF_B;
 	TH2F				*fHist_InvMass_pt_LS_KF_B;
+     */
+    
 	//JPsi
 	TH2F				*fHist_InvMass_pt_ULS_KF_Jpsi;
 	TH2F				*fHist_InvMass_pt_LS_KF_Jpsi;
+    
+    /*
 	//BJpsi
 	TH2F				*fHist_InvMass_pt_ULS_KF_BJpsi;
 	TH2F				*fHist_InvMass_pt_LS_KF_BJpsi;
-	
+	*/
+    
 	//leg 1 on EMCal
 	TH2F				*fHist_InvMass_pt_ULS1;
 	TH2F				*fHist_InvMass_pt_LS1;
@@ -478,8 +484,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	
 	//MC efficiencies
-	TH1F				*fPtMCparticleRecoHfe1;
-	TH1F				*fPtMCparticleAllHfe1;
+	//TH1F				*fPtMCparticleRecoHfe1;
+	//TH1F				*fPtMCparticleAllHfe1;
 	TH1F				*fPtMCparticleAll_e_from_JPsi;
     TH1F                *fPtMCparticleAll_JPsi_pT;
     
