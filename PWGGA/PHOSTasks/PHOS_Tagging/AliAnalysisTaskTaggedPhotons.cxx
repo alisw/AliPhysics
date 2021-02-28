@@ -164,6 +164,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fNonlinA(1.),
   fNonlinB(0.),
   fNonlinC(1.),
+  fNonlinD(0.),
+  fNonlinE(1.),
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
@@ -223,6 +225,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fNonlinA(1.),
   fNonlinB(0.),
   fNonlinC(1.),
+  fNonlinD(0.),
+  fNonlinE(1.),
   fNPID(4),
   fMCType(kFullMC),
   fCutType(kDefCut),
@@ -1544,7 +1548,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
   for(Int_t i=0;i<n-1;i++){
     AliCaloPhoton *p1 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
     Double_t ptP1 = p1->Pt() ;
-    Double_t w1=fCentWeight*p1->GetWeight() ;
+//     Double_t w1=fCentWeight*p1->GetWeight() ;
     Double_t w1TOF = 1.; 
     if(fIsMC){ //simulate TOF cut efficiency
       w1TOF=TOFCutEff(ptP1) ; 
@@ -1562,7 +1566,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       Double_t invMass = (*p1 + *p2).M();   
       Double_t ptPi = (*p1 + *p2).Pt() ;
       Double_t ptP2 = p2->Pt() ;
-      Double_t w2=fCentWeight*p2->GetWeight() ;
+//       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
       Int_t commonParent = IsSameParent(p1,p2);
@@ -1858,8 +1862,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         Double_t ptP1 = p1->Pt() ;
         Double_t ptP2 = p2->Pt() ;
         Double_t w=fCentWeight*TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-        Double_t w1=fCentWeight*p1->GetWeight() ;
-        Double_t w2=fCentWeight*p2->GetWeight() ;
+//         Double_t w1=fCentWeight*p1->GetWeight() ;
+//         Double_t w2=fCentWeight*p2->GetWeight() ;
         Double_t w1TOF = 1.; 
         Double_t w2TOF = 1.; 
         if(fIsMC ){ //simulate TOF cut efficiency
