@@ -118,7 +118,7 @@ public:
    * @brief Check whether track is selected as any complementary (true or fake) hybrid track
    * @return True if the track is selected as complementary hybrid track, false otherwise
    */
-  Bool_t IsHybridTrackConstrained() const { return fHybridTrackType == kHybridConstrainedTrue || fHybridTrackType == kHybridConstrainedFake; }
+  Bool_t IsHybridTrackConstrained() const { return IsHybridTrackConstrainedTrue() || IsHybridTrackConstrainedFake(); }
 
   /**
    * @brief Check whether track is selected as true complementary hybrid track
