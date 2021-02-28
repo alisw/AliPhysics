@@ -62,7 +62,8 @@ public:
   void SetCentralityEstimator(Int_t est=1){fCentEstimator=est;}   //Centrality estimator, pPb: 1: V0A/C, 2: V0M, 3: ZNA/C,  4: CL1
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;  //for pp: 
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
-  void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1){ fNonlinA=a; fNonlinB=b; fNonlinC=c;}
+  void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1, Double_t d=0., Double_t e=1)
+  { fNonlinA=a; fNonlinB=b; fNonlinC=c; fNonlinD=d; fNonlinE=e;}
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
   void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   void SetJetPthardRatio(Float_t ratio=2.5){fJetPtHardFactor=ratio;}
@@ -84,7 +85,7 @@ protected:
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   Double_t TOFCutEff(Double_t x );
-  Double_t NonLinearity(Double_t e){ return e*fNonlinA*(1.- fNonlinB*TMath::Exp(-e*fNonlinC)); } 
+  Double_t NonLinearity(Double_t e){ return e*fNonlinA*(1.- fNonlinB*TMath::Exp(-e*fNonlinC))*(1.- fNonlinD*TMath::Exp(-e*fNonlinE)); } 
   
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t CalculateSphericity() ;
@@ -145,6 +146,8 @@ private:
   Double_t fNonlinA;
   Double_t fNonlinB;
   Double_t fNonlinC;
+  Double_t fNonlinD;
+  Double_t fNonlinE;
   Int_t   fNPID ;               // Number of PID cuts
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis
