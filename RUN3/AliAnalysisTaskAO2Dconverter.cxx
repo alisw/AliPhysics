@@ -1239,6 +1239,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (goldenChi2Status)
       tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;
 
+    // Uppermost 4 bits contain PID hypothesis used during tracking
+    if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15)
+      tracks.fFlags |= track->GetPIDForTracking() << 28;
+
     tracks.fITSClusterMap = track->GetITSClusterMap();
     tracks.fTPCNClsFindable = track->GetTPCNclsF();
 
