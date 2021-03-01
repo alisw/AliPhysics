@@ -182,6 +182,9 @@ AliAnalysisEmcalSoftdropHelperImpl::SoftdropResults AliAnalysisEmcalSoftdropHelp
     case kCAAlgo: reclusterizingAlgorithm = fastjet::cambridge_aachen_algorithm; break;
     case kKTAlgo: reclusterizingAlgorithm = fastjet::kt_algorithm; break;
     case kAKTAlgo: reclusterizingAlgorithm = fastjet::antikt_algorithm; break;
+    default:
+      AliErrorGeneralStream("MakeSoftdrop") << "Non-supported reclusterizer type" << std::endl;
+      throw 3;
   };
 #if FASTJET_VERSION_NUMBER >= 30302
   fastjet::Recluster reclusterizer(reclusterizingAlgorithm, 1, fastjet::Recluster::keep_only_hardest);

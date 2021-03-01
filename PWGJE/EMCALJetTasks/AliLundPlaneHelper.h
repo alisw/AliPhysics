@@ -221,7 +221,10 @@ public:
   /**
    * @brief Constructor
    */
-  AliLundPlaneData() {}
+  AliLundPlaneData():
+    fSplittings()
+  {
+  }
 
   /**
    * @brief Destructor

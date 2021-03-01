@@ -797,7 +797,7 @@ bool AliAnalysisTaskEmcalSoftDropResponse::Run()
       AliDebugStream(1) << "No part jet" << std::endl;
     }
 
-    SoftdropResults softdropDet, softdropPart;
+    SoftdropResults softdropDet = {0., 0., 0., 0., 0., 0}, softdropPart = {0., 0., 0., 0., 0., 0};
     std::vector<SoftdropResults> splittingsDet, splittingsPart;
     try {
       softdropDet = MakeSoftdrop(*detjet, detLevelJets->GetJetRadius(),false, sdsettings, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy(), fVertex, fDropMass0Jets);

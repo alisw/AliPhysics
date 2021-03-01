@@ -92,6 +92,9 @@ private:
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
 
+  AliAnalysisTaskEmcalSoftDropData(const AliAnalysisTaskEmcalSoftDropData &);
+  AliAnalysisTaskEmcalSoftDropData &operator=(const AliAnalysisTaskEmcalSoftDropData &);
+
   ClassDef(AliAnalysisTaskEmcalSoftDropData, 1)
 };
 
