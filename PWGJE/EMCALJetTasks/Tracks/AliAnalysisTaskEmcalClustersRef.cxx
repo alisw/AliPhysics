@@ -271,6 +271,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kADC: energycomp = 0; break;
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOffline: energycomp = 1; break;
             case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared: energycomp = 2; break;
+            case PWG::EMCAL::AliEmcalTriggerSelectionCuts::kEnergyRough: energycomp = 3; break;
           }
         }
       }
@@ -521,6 +522,7 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
         case 0: patche = patch->GetADCAmp(); break;
         case 1: patche = patch->GetPatchE(); break;
         case 2: patche = patch->GetSmearedEnergy(); break;
+        case 3: patche = patch->GetADCAmpGeVRough(); break;
       };
       if(patche > maxenergy) {
         maxpatch = patch;
