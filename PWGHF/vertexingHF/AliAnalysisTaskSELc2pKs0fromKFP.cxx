@@ -711,7 +711,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
   fVar_LcMCGen[ 1] = mcpart->Y();
   fVar_LcMCGen[ 2] = mcpart->Pt();
   fVar_LcMCGen[ 3] = CheckOrigin;
-  if (fUseWeights) { //add branches for MC pT weights
+  if (fUseWeights && CheckOrigin>=0) { //add branches for MC pT weights
     fVar_Lc[4] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat 
     fVar_Lc[5] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat 
     fVar_Lc[6] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat 
