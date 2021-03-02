@@ -67,9 +67,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2collinfo" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 Collision Info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -131,7 +131,7 @@ namespace
 } // namespace
 
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2collinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
 #ifdef USE_TOF_CLUST
       ,
       tofClusters()
@@ -562,6 +562,15 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->SetBasketSize("*", fBasketSizeEvents);
   }
   
+  // Associate branches for Run 2 info
+  TTree* tRun2CollInfo = CreateTree(kRun2CollInfo);
+  if (fTreeStatus[kRun2CollInfo]) {
+    tRun2CollInfo->Branch("fEventCuts", &run2collinfo.fEventCuts, "fEventCuts/I");
+    tRun2CollInfo->Branch("fCL0", &run2collinfo.fCL0, "fCL0/I");
+    tRun2CollInfo->Branch("fCL1", &run2collinfo.fCL1, "fCL1/I");
+    tRun2CollInfo->SetBasketSize("*", fBasketSizeEvents);
+  }
+  
   // Associate branches for the three track trees
   TTree* tTracks = CreateTree(kTracks);
   if (fTreeStatus[kTracks]) {
@@ -987,6 +996,39 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     bc.fTriggerMask |= 1ull << 59;
 
   FillTree(kBC);
+  
+  //---------------------------------------------------------------------------
+  // Run 2 information
+  // Get multiplicity selection
+  AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
+  if (!multSelection)
+    AliFatal("MultSelection not found in input event");
+
+  run2collinfo.fEventCuts=0; //No event selection passed, now check which passed
+  
+  if( multSelection->GetThisEventINELgtZERO() )
+    SETBIT (run2collinfo.fEventCuts, kINELgtZERO);
+  
+  if( multSelection->GetThisEventIsNotPileupInMultBins() )
+    SETBIT (run2collinfo.fEventCuts, kPileupInMultBins);
+  
+  if( multSelection->GetThisEventHasNoInconsistentVertices() )
+    SETBIT (run2collinfo.fEventCuts, kConsistencySPDandTrackVertices);
+  
+  if( multSelection->GetThisEventPassesTrackletVsCluster() )
+    SETBIT (run2collinfo.fEventCuts, kINELgtZERO);
+  
+  if( fESD->GetPrimaryVertex()->GetNContributors()>0 )
+    SETBIT (run2collinfo.fEventCuts, kNonZeroNContribs);
+  
+  if( multSelection->GetThisEventIsNotIncompleteDAQ() )
+    SETBIT (run2collinfo.fEventCuts, kIncompleteDAQ);
+  
+  run2collinfo.fCL0 = fESD->GetNumberOfITSClusters(0);
+  run2collinfo.fCL1 = fESD->GetNumberOfITSClusters(1);
+  
+  FillTree(kRun2CollInfo);
+  
   //---------------------------------------------------------------------------
   // MC kinematic tree
   // It has to be done before the reconstructed tracks,
