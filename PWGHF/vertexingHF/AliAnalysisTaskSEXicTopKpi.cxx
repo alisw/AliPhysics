@@ -207,6 +207,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fNoStdPIDcases(kFALSE)
   ,fPtSoftPionCand(0)
   ,fPtSoftPionCand_insideScLoop(0)
+  ,fKeepGenPtMC(kTRUE)
 {
   /// Default constructor
 
@@ -332,6 +333,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fNoStdPIDcases(kFALSE)
   ,fPtSoftPionCand(0)
   ,fPtSoftPionCand_insideScLoop(0)
+  ,fKeepGenPtMC(kTRUE)
 {
   /// Default constructor
 
@@ -762,8 +764,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparseSigma[7]=12;
     upEdgesSigma[7]=11.5;
   }
-  if(fReadMC){
+  if(fReadMC && fKeepGenPtMC){
     // save the generated pT for reco particles with finer binning
+    printf("\n#############################################################\n");
+    printf("ATTENTION: bins for pT axes of SigmaC sparse increased to 80\n");
+    printf("#############################################################\n");
     nbinsSparseSigma[0]=80;
     nbinsSparseSigma[10]=80;
   }
@@ -1716,7 +1721,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
 	    if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21 )) {
-	      point[0]=part->Pt();
+	      if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 	      fhSparseAnalysis->Fill(point);
 	    }
 	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
@@ -1727,7 +1732,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		      point[7] = i;
 		      if(arrayPIDpkpi[i]){
 			if(fReadMC && (converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17)) {
-			  point[0]=part->Pt();
+			  if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
         if(fNoStdPIDcases){
           if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
         }
@@ -1753,7 +1758,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
 	    if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22)) {
-	      point[0]=part->Pt();
+	      if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 	      fhSparseAnalysis->Fill(point);
 	    }
 	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
@@ -1764,7 +1769,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	        point[7] = i;
 		if(arrayPIDpikp[i]){
 		  if(fReadMC && (converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18))  {
-		    point[0]=part->Pt();
+		    if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 		    if(fNoStdPIDcases){
           if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
         }
@@ -1980,8 +1985,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	      if(TMath::Abs(pProt->GetPdgCode())==2212){
-		      pointSigma[10]=ptsigmacMC;
-		      pointSigma[0]=ptlambdacMC;
+          if(fKeepGenPtMC){ // use gen. pT for reconstructed candidates
+		        pointSigma[10]=ptsigmacMC;
+		        pointSigma[0]=ptlambdacMC;
+          }
 		      fhSparseAnalysisSigma->Fill(pointSigma);
 		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
           const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};	
@@ -2074,8 +2081,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
 		  AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 		  if(TMath::Abs(pProt->GetPdgCode())==2212){
-		    pointSigma[10]=ptsigmacMC;
-		    pointSigma[0]=ptlambdacMC;		 
+        if(fKeepGenPtMC){ // use gen. pT for reconstructed candidates
+		      pointSigma[10]=ptsigmacMC;
+		      pointSigma[0]=ptlambdacMC;
+        }	 
 		    fhSparseAnalysisSigma->Fill(pointSigma);
 		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		    pointlcsc[0]=ptlambdacMC;
@@ -2190,8 +2199,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 	      if(TMath::Abs(pProt->GetPdgCode())==2212){
-		      pointSigma[10]=ptsigmacMC;
-		      pointSigma[0]=ptlambdacMC;
+          if(fKeepGenPtMC){ // use gen. pT for reconstructed candidates
+		        pointSigma[10]=ptsigmacMC;
+		        pointSigma[0]=ptlambdacMC;
+          }
 		      fhSparseAnalysisSigma->Fill(pointSigma);
 		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
           const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};
@@ -2283,8 +2294,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
 		  AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
 		  if(TMath::Abs(pProt->GetPdgCode())==2212){
-		    pointSigma[10]=ptsigmacMC;
-		    pointSigma[0]=ptlambdacMC;
+        if(fKeepGenPtMC){ // use gen. pT for reconstructed candidates
+		      pointSigma[10]=ptsigmacMC;
+		      pointSigma[0]=ptlambdacMC;
+        }
 		    fhSparseAnalysisSigma->Fill(pointSigma);
 		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		    pointlcsc[0]=ptlambdacMC;
