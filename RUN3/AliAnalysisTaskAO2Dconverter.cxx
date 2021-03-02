@@ -836,7 +836,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     TTree *tLabels = CreateTree(kMcTrackLabel);
     if (fTreeStatus[kMcTrackLabel])
     {
-      tLabels->Branch("fIndexMcParticles", &mctracklabel.fIndexMcParticles, "fIndexMcParticles/i");
+      tLabels->Branch("fIndexMcParticles", &mctracklabel.fIndexMcParticles, "fIndexMcParticles/I");
       tLabels->Branch("fMcMask", &mctracklabel.fMcMask, "fMcMask/s");
       tLabels->SetBasketSize("*", fBasketSizeTracks);
     }
@@ -845,7 +845,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     TTree *tCaloLabels = CreateTree(kMcCaloLabel);
     if (fTreeStatus[kMcCaloLabel])
     {
-      tCaloLabels->Branch("fIndexMcParticles", &mccalolabel.fIndexMcParticles, "fIndexMcParticles/i");
+      tCaloLabels->Branch("fIndexMcParticles", &mccalolabel.fIndexMcParticles, "fIndexMcParticles/I");
       tCaloLabels->Branch("fMcMask", &mccalolabel.fMcMask, "fMcMask/s");
       tCaloLabels->SetBasketSize("*", fBasketSizeEvents);
     }
@@ -854,7 +854,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     TTree *tCollisionLabels = CreateTree(kMcCollisionLabel);
     if (fTreeStatus[kMcCaloLabel])
     {
-      tCollisionLabels->Branch("fIndexMcCollisions", &mccollisionlabel.fIndexMcCollisions, "fIndexMcCollisions/i");
+      tCollisionLabels->Branch("fIndexMcCollisions", &mccollisionlabel.fIndexMcCollisions, "fIndexMcCollisions/I");
       tCollisionLabels->Branch("fMcMask", &mccollisionlabel.fMcMask, "fMcMask/s");
       tCollisionLabels->SetBasketSize("*", fBasketSizeEvents);
     }
