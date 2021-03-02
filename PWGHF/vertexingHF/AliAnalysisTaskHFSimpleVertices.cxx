@@ -1059,8 +1059,23 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     if(oldField!=bzkG) fVertexerTracks->SetFieldkG(bzkG);
   }
   fO2Vertexer2Prong.setBz(bzkG);
+  fO2Vertexer2Prong.setPropagateToPCA(true);
+  fO2Vertexer2Prong.setMaxR(200.);
+  fO2Vertexer2Prong.setMaxDZIni(4.);
+  fO2Vertexer2Prong.setMinParamChange(1.e-3);
+  fO2Vertexer2Prong.setMinRelChi2Change(0.9);
+  fO2Vertexer2Prong.setUseAbsDCA(true);
+  
   fO2Vertexer3Prong.setBz(bzkG);
-    
+  fO2Vertexer3Prong.setPropagateToPCA(true);
+  fO2Vertexer3Prong.setMaxR(200.);
+  fO2Vertexer3Prong.setMaxDZIni(4.);
+  fO2Vertexer3Prong.setMinParamChange(1.e-3);
+  fO2Vertexer3Prong.setMinRelChi2Change(0.9);
+  fO2Vertexer3Prong.setUseAbsDCA(true);
+  
+  fO2Vertexer3Prong.setBz(bzkG);
+ 
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
