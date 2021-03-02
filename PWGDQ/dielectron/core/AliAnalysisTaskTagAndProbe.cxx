@@ -682,6 +682,7 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
   value[2] = TPCpileupM;
 
   const Int_t trackMult = fEvent->GetNumberOfTracks();
+	UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
 	UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
 
   for(Int_t itrack=0;itrack<trackMult;itrack++){
@@ -722,11 +723,11 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       value[7] = nsigma_El_TOF;
       FillSparse(fOutputContainer,"hsPID_MCEl",value);
 
-      FillHistogramTH2(fOutputContainer,"hMCElall",track->Pt(),track->Eta());
+      UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
+      if(cutmask_probe == selectedMask_probe) FillHistogramTH2(fOutputContainer,"hMCElall",track->Pt(),track->Eta());
+
       UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(particle);
-      if(cutmask_passingprobe == selectedMask_passingprobe){
-        FillHistogramTH2(fOutputContainer,"hMCElselected",track->Pt(),track->Eta());
-      }
+      if(cutmask_passingprobe == selectedMask_passingprobe) FillHistogramTH2(fOutputContainer,"hMCElselected",track->Pt(),track->Eta());
 
     }
     else if(TMath::Abs(pdg) == 211){
