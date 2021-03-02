@@ -198,6 +198,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
     fHistPtGenFeeddw[i]=0x0;
     fHistPtGenLimAccPrompt[i]=0x0;
     fHistPtGenLimAccFeeddw[i]=0x0;
+    fHistPtRecoGenPtPrompt[i]=0x0;
+    fHistPtRecoGenPtFeeddw[i]=0x0;
     fHistPtRecoPrompt[i]=0x0;
     fHistPtRecoFeeddw[i]=0x0;
   }
@@ -317,6 +319,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
       delete fHistPtGenFeeddw[i];
       delete fHistPtGenLimAccPrompt[i];
       delete fHistPtGenLimAccFeeddw[i];
+      delete fHistPtRecoGenPtPrompt[i];
+      delete fHistPtRecoGenPtFeeddw[i];
       delete fHistPtRecoPrompt[i];
       delete fHistPtRecoFeeddw[i];
     }
@@ -922,6 +926,16 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
     fOutput->Add(fHistPtGenLimAccPrompt[i]);
     fOutput->Add(fHistPtGenLimAccFeeddw[i]);
   }
+  fHistPtRecoGenPtPrompt[0] = new TH1F("hPtRecoGenPtPromptD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtPrompt[1] = new TH1F("hPtRecoGenPtPromptDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtPrompt[2] = new TH1F("hPtRecoGenPtPromptDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtPrompt[3] = new TH1F("hPtRecoGenPtPromptLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtPrompt[4] = new TH1F("hPtRecoGenPtPromptLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtFeeddw[0] = new TH1F("hPtRecoGenPtFeeddwD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtFeeddw[1] = new TH1F("hPtRecoGenPtFeeddwDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtFeeddw[2] = new TH1F("hPtRecoGenPtFeeddwDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtFeeddw[3] = new TH1F("hPtRecoGenPtFeeddwLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
+  fHistPtRecoGenPtFeeddw[4] = new TH1F("hPtRecoGenPtFeeddwLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
   fHistPtRecoPrompt[0] = new TH1F("hPtRecoPromptD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
   fHistPtRecoPrompt[1] = new TH1F("hPtRecoPromptDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
   fHistPtRecoPrompt[2] = new TH1F("hPtRecoPromptDsKKpi"," ; p_{T} (GeV/c)",40,0.,20.);
@@ -933,6 +947,8 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fHistPtRecoFeeddw[3] = new TH1F("hPtRecoFeeddwLcpKpi"," ; p_{T} (GeV/c)",40,0.,20.);
   fHistPtRecoFeeddw[4] = new TH1F("hPtRecoFeeddwLcpK0s"," ; p_{T} (GeV/c)",40,0.,20.);
   for(Int_t i=0; i<5; i++){
+    fOutput->Add(fHistPtRecoGenPtPrompt[i]);
+    fOutput->Add(fHistPtRecoGenPtFeeddw[i]);
     fOutput->Add(fHistPtRecoPrompt[i]);
     fOutput->Add(fHistPtRecoFeeddw[i]);
   }
@@ -1243,8 +1259,13 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
               if(dmes){
                 Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
                 Double_t ptgen=dmes->Pt();
-                if(orig==4) fHistPtRecoPrompt[0]->Fill(ptgen);
-                else if(orig==5) fHistPtRecoFeeddw[0]->Fill(ptgen);
+                if(orig==4){
+                  fHistPtRecoPrompt[0]->Fill(ptD);
+                  fHistPtRecoGenPtPrompt[0]->Fill(ptgen);
+                }else if(orig==5){
+                  fHistPtRecoFeeddw[0]->Fill(ptD);
+                  fHistPtRecoGenPtFeeddw[0]->Fill(ptgen);
+                }
               }
             }
           }
@@ -1415,8 +1436,13 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
           if(dmes){
             Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
             Double_t ptgen=dmes->Pt();
-            if(orig==4) fHistPtRecoPrompt[1]->Fill(ptgen);
-            else if(orig==5) fHistPtRecoFeeddw[1]->Fill(ptgen);
+            if(orig==4){
+              fHistPtRecoGenPtPrompt[1]->Fill(ptgen);
+              fHistPtRecoPrompt[1]->Fill(ptcand_3prong);
+            }else if(orig==5){
+              fHistPtRecoGenPtFeeddw[1]->Fill(ptgen);
+              fHistPtRecoFeeddw[1]->Fill(ptcand_3prong);
+            }
           }
         }
       }
