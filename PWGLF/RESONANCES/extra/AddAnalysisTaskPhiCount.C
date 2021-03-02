@@ -1,7 +1,7 @@
 // TODO LIST
 // TODO: You're all set!
 
-AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, Int_t fAnalysisOption, TString fName = "name" )
+AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, Int_t fAnalysisOption, Float_t kSgTPC_Alone = 3., Float_t kSgTPC_TOFVt = 5., Float_t kSgTOF_Veto = 3., TString fName = "name" )
 {
     // Analysis Manager
     AliAnalysisManager         *fAliAnlManager      =   AliAnalysisManager::GetAnalysisManager();
@@ -26,7 +26,9 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAnyINT);
     fAliAnlTask ->  SetFilterBit(5);
     fAliAnlTask ->  SetVertexCut(10.);
-    
+    fAliAnlTask ->  SetkSgTPC_Alone(kSgTPC_Alone);
+    fAliAnlTask ->  SetkSgTPC_TOFVt(kSgTPC_TOFVt);
+    fAliAnlTask ->  SetkSgTOF_Veto(kSgTOF_Veto);
     switch ( fAnalysisOption ) {
         case 1:
             fAliAnlTask -> SetFilterBit(7);
