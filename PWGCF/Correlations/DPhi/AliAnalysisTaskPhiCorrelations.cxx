@@ -978,8 +978,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, tracksCorrelate, weight);
 
       // two track cut, STEP 8 (fill it if at least one two-track cut is on, but skip it on request)
-      Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutK0sV > 0) ||
-                                           (fCutLambdaV > 0) || (fCutPhiV > 0) || (fCutRhoV > 0) || (fCutCustomV > 0));
+      Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutOnK0sV > 0) ||
+                                           (fCutOnLambdaV > 0) || (fCutOnPhiV > 0) || (fCutOnRhoV > 0) || (fCutOnCustomV > 0));
       if (fillStep8)
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut);
 
@@ -1329,8 +1329,8 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     weight = -1;
 
   // Flag to fill step 8 if there are any two track cuts turned on, skip it on request
-  Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutK0sV > 0) ||
-                                       (fCutLambdaV > 0) || (fCutPhiV > 0) || (fCutRhoV > 0) || (fCutCustomV > 0));
+  Bool_t fillStep8 = (!fSkipStep8) && ((fTwoTrackEfficiencyCut > 0) || (fCutConversionsV > 0) || (fCutOnK0sV > 0) ||
+                                       (fCutOnLambdaV > 0) || (fCutOnPhiV > 0) || (fCutOnRhoV > 0) || (fCutOnCustomV > 0));
 
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0) {
