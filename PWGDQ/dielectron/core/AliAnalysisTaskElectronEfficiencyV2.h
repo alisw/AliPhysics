@@ -127,6 +127,7 @@ public:
    void   SetULSandLS(Bool_t doULSandLS) {fDoULSandLS = doULSandLS;}
    void   SetDeactivateLS(Bool_t deactivateLS) {fDeactivateLS = deactivateLS;}
    void   SetKinematicCuts(double ptMin, double ptMax, double etaMin, double etaMax) {fPtMin = ptMin; fPtMax = ptMax; fEtaMin = etaMin; fEtaMax = etaMax;}
+   void   SetOpeningAngleAccCut(Bool_t op, Double_t opmin, Double_t opmax) {fOpeningAngleAccCut = op; fOpMin = opmin; fOpMax = opmax;}
    void   SetFillPhiV(Bool_t doPhiV) {fDoFillPhiV = doPhiV;}
    void   SetPhiVCut(Bool_t apply, Double_t maxMee, Double_t minphiv){fApplyPhivCut = apply; fMaxMee = maxMee; fMinPhiV = minphiv;}
 
@@ -273,6 +274,12 @@ private:
   double  fEtaMin; // Kinematic cut for pairing
   double  fEtaMax; // Kinematic cut for pairing
 
+  Bool_t fOpeningAngleAccCut; // opening angle cut in acceptance
+  Double_t fOpMin; // min
+  Double_t fOpMax; // max
+
+
+
   double  fPtMinGen;
   double  fPtMaxGen;
   double  fEtaMinGen;
@@ -394,7 +401,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 7);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 8);
 };
 
 
