@@ -166,6 +166,12 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fVertexerTracks{nullptr},
   fO2Vertexer2Prong{},
   fO2Vertexer3Prong{},
+  fVertexerPropagateToPCA(true),
+  fVertexerMaxR(200.),
+  fVertexerMaxDZIni(4.),
+  fVertexerMinParamChange(1.e-3),
+  fVertexerMinRelChi2Change(0.9),
+  fVertexerUseAbsDCA(true),
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
@@ -514,8 +520,38 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     printf("Max eta  (3 prong) = %f\n", etamax3);
     if(etamax3>0) fTrackCuts3pr->SetEtaRange(-etamax3, +etamax3);
 
+    // vertexer parameters
+    printf("--- DCAFitterN parameters ---\n");
+    Int_t b_propdca = GetJsonBool(filename.Data(),"b_propdca");
+    if(b_propdca==1){
+      fVertexerPropagateToPCA = true;
+      printf("propdca = %d\n",fVertexerPropagateToPCA);
+    }else if(b_propdca==0){
+      fVertexerPropagateToPCA = false;
+      printf("propdca = %d\n",fVertexerPropagateToPCA);
+    }    
     Double_t d_maxr = GetJsonFloat(filename.Data(), "d_maxr");
-    if(d_maxr>0) fMaxDecVertRadius2=d_maxr*d_maxr;
+    if(d_maxr>0){
+      fMaxDecVertRadius2=d_maxr*d_maxr;
+      fVertexerMaxR=d_maxr;
+      printf("maxr = %f\n",fVertexerMaxR);
+    }
+    Double_t d_maxdzini = GetJsonFloat(filename.Data(), "d_maxdzini");
+    if(d_maxdzini>0){
+      fVertexerMaxDZIni=d_maxdzini;
+      printf("maxdzini = %f\n",fVertexerMaxDZIni);
+    }
+    Double_t d_minparamchange = GetJsonFloat(filename.Data(), "d_minparamchange");
+    if(d_minparamchange>0){
+      fVertexerMinParamChange=d_minparamchange;
+      printf("minparamchange = %f\n",fVertexerMinParamChange);
+    }
+    Double_t d_minrelchi2change = GetJsonFloat(filename.Data(), "d_minrelchi2change");
+    if(d_minrelchi2change){
+      fVertexerMinRelChi2Change=d_minrelchi2change;
+      printf("minrelchi2change = %f\n",fVertexerMinRelChi2Change);
+    }
+    printf("----------------\n");
     Double_t ptMinCand = GetJsonFloat(filename.Data(), "d_pTCandMin");
     printf("Min pt Dzero cand = %f\n", ptMinCand);
     if(ptMinCand>=0.) fMinPtDzero=ptMinCand;
@@ -1059,8 +1095,21 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     if(oldField!=bzkG) fVertexerTracks->SetFieldkG(bzkG);
   }
   fO2Vertexer2Prong.setBz(bzkG);
+  fO2Vertexer2Prong.setPropagateToPCA(fVertexerPropagateToPCA);
+  fO2Vertexer2Prong.setMaxR(fVertexerMaxR);
+  fO2Vertexer2Prong.setMaxDZIni(fVertexerMaxDZIni);
+  fO2Vertexer2Prong.setMinParamChange(fVertexerMinParamChange);
+  fO2Vertexer2Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
+  fO2Vertexer2Prong.setUseAbsDCA(fVertexerUseAbsDCA);
+  
   fO2Vertexer3Prong.setBz(bzkG);
-    
+  fO2Vertexer3Prong.setPropagateToPCA(fVertexerPropagateToPCA);
+  fO2Vertexer3Prong.setMaxR(fVertexerMaxR);
+  fO2Vertexer3Prong.setMaxDZIni(fVertexerMaxDZIni);
+  fO2Vertexer3Prong.setMinParamChange(fVertexerMinParamChange);
+  fO2Vertexer3Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
+  fO2Vertexer3Prong.setUseAbsDCA(fVertexerUseAbsDCA);
+   
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
@@ -2067,10 +2116,10 @@ char* AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, c
   return value;
 }
 //______________________________________________________________________________
-bool AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key){
+int AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, const char* key){
   FILE* fj=fopen(jsonFileName,"r");
   char line[500];
-  bool value=false;
+  int value=-1;
   while(!feof(fj)){
     char* rc=fgets(line,500,fj);
     if(rc && strstr(line,key)){
@@ -2079,7 +2128,8 @@ bool AliAnalysisTaskHFSimpleVertices::GetJsonBool(const char* jsonFileName, cons
       TString temp=token;
       temp.ReplaceAll("\"","");
       temp.ReplaceAll(",","");
-      if(temp.Contains("true")) value=true;
+      if(temp.Contains("true")) value=1;
+      if(temp.Contains("false")) value=0;
       break;
     }
   }

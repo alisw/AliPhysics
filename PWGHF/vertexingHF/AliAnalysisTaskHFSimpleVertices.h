@@ -45,7 +45,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   char* GetJsonString(const char* jsonFileName, const char* key);
   int GetJsonInteger(const char* jsonFileName, const char* key);
-  bool GetJsonBool(const char* jsonFileName, const char* key);
+  int GetJsonBool(const char* jsonFileName, const char* key);
   float GetJsonFloat(const char* jsonFileName, const char* key);
   
   void InitDefault();
@@ -202,6 +202,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMaxZVert;          // cut on z vertex position
   Bool_t  fDo3Prong;           // flag yes/no for 3 prongs
   Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
+
   
   Double_t fMassDzero;         // D0 mass from PDG
   Double_t fMassJpsi;          // Jpsi mass from PDG
@@ -214,7 +215,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
   o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
   o2::vertexing::DCAFitter3 fO2Vertexer3Prong;    // o2 vertexer
-
+  Bool_t fVertexerPropagateToPCA;
+  Double_t fVertexerMaxR;
+  Double_t fVertexerMaxDZIni;
+  Double_t fVertexerMinParamChange;
+  Double_t fVertexerMinRelChi2Change;
+  Bool_t fVertexerUseAbsDCA;
   AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
   Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
@@ -246,7 +252,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,14);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,15);
 };
 
 
