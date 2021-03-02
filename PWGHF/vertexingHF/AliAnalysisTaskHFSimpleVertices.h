@@ -45,7 +45,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   char* GetJsonString(const char* jsonFileName, const char* key);
   int GetJsonInteger(const char* jsonFileName, const char* key);
-  bool GetJsonBool(const char* jsonFileName, const char* key);
+  int GetJsonBool(const char* jsonFileName, const char* key);
   float GetJsonFloat(const char* jsonFileName, const char* key);
   
   void InitDefault();
