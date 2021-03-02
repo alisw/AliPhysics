@@ -1922,9 +1922,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							if(TMath::Abs(pdgmotherxic)==5132|| TMath::Abs(pdgmotherxic)==5232 ){
 								isXicbottomfd = kTRUE;
 							}
-							if(!(TMath::Abs(pdgmotherxic)==511||TMath::Abs(pdgmotherxic)==521||TMath::Abs(pdgmotherxic)==5122||TMath::Abs(pdgmotherxic)==5132||TMath::Abs(pdgmotherxic)==5232||TMath::Abs(pdgmotherxic)==5332)){
-								isXicprompt = kTRUE;
-							}
+							else isXicprompt = kTRUE;
 						}
 
 						fHistoEleXiMassMCS->Fill(cont);
