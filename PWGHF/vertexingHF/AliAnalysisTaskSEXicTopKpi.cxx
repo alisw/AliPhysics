@@ -743,6 +743,13 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparse[4] = 50;  // finer bins for cosThPoint
     lowEdges[4] = 0.9;
   }
+  if(fReadMC){
+    // save the pT for reco particles with finer binning
+    printf("\n##############################################################\n");
+    printf("ATTENTION: bins for pT axes of LambdaC sparse increased to 120\n");
+    printf("##############################################################\n");
+    nbinsSparse[0]=120;
+  }
   if(!fFillTree)  fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
   
   // add also here the axis for Lc decay channel (MC)
@@ -764,8 +771,8 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
     nbinsSparseSigma[7]=12;
     upEdgesSigma[7]=11.5;
   }
-  if(fReadMC && fKeepGenPtMC){
-    // save the generated pT for reco particles with finer binning
+  if(fReadMC){
+    // save the pT for reco particles with finer binning
     printf("\n#############################################################\n");
     printf("ATTENTION: bins for pT axes of SigmaC sparse increased to 80\n");
     printf("#############################################################\n");
