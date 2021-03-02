@@ -354,7 +354,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     // Fill histograms for JES debugging
     int ptbminI = -1,
         ptbmaxI = -1;
-    for(int iptbin = 0; iptbin < ptbinsDebug.size() - 1; iptbin++){
+    for(std::size_t iptbin = 0; iptbin < ptbinsDebug.size() - 1; iptbin++){
       if(partjet->Pt() >= ptbinsDebug[iptbin] && partjet->Pt() < ptbinsDebug[iptbin+1]) {
         ptbminI = ptbinsDebug[iptbin];
         ptbmaxI = ptbinsDebug[iptbin+1];

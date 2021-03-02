@@ -279,7 +279,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
   }
 
   auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
-  Double_t energy, eta, phi, energyMaxEMCAL(0.), energyMaxDCAL(0.);
+  Double_t energy(-1), eta(-100.), phi(-1.), energyMaxEMCAL(0.), energyMaxDCAL(0.);
   const TList *selpatches(nullptr);
   AliVCluster *maxclusterEMCAL = nullptr,
               *maxclusterDCAL = nullptr;
@@ -303,6 +303,9 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     	AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
     	energy = clust->GetHadCorrEnergy();
     	break;
+    default:
+      energy = -1;
+      break;
     };
 
     AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
