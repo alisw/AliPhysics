@@ -188,6 +188,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtGenFeeddw[5];        //!<! histos for efficiency (from B)
   TH1F* fHistPtGenLimAccPrompt[5];  //!<! histos for efficiency (prompt)
   TH1F* fHistPtGenLimAccFeeddw[5];  //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoGenPtPrompt[5];  //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoGenPtFeeddw[5];  //!<! histos for efficiency (from B)
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
   
@@ -252,7 +254,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,15);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,16);
 };
 
 
