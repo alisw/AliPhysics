@@ -371,10 +371,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[i] = (TProfile*)fCovList->At(i);
     };
-    fCovariance = new TProfile*[8];
     for(Int_t i=0;i<4;i++) {
       fCovList->Add(new TProfile(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fCovariance[4+i] = (TProfile*)fCovList->At(i);
+      fCovariance[4+i] = (TProfile*)fCovList->At(i+4);
     };
     PostData(3,fCovList);
     fV2dPtList = new TList();
