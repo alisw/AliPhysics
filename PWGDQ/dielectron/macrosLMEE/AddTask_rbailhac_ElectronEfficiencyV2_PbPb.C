@@ -8,6 +8,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
 										const Float_t PtMax = 10.0,
 										const Float_t EtaMin = -0.8,
 										const Float_t EtaMax = +0.8,
+										const Float_t OpMin =  -1.,
+										const Float_t OpMax = 999.,
 										const Bool_t UsePtVec = kTRUE,
 										const Bool_t DoULSLS = kTRUE,
 										const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;",
@@ -77,7 +79,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup);
+  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d_Opangle%f",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup,OpMin);
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -117,6 +119,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set minimum and maximum values for pairing
   task->SetKinematicCuts(PtMin, PtMax, EtaMin, EtaMax);
+  if(OpMin > 0.) {
+    printf("Opening angle cut %f < alpha < %f\n",OpMin,OpMax);
+    task->SetOpeningAngleAccCut(kTRUE,OpMin,OpMax);
+  }
 
 
   // #########################################################
