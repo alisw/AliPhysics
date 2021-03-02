@@ -321,7 +321,7 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   for(Int_t ip=0;ip<2;ip++){
     for(Int_t ic=0;ic<3;ic++){
       for(Int_t ie=0;ie<2;ie++){
-        TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),50,0,0.5,100,0,10);
+        TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),500,0,5,100,0,10);
         h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
         h2TAP->SetYTitle("p_{T,e} (GeV/c)");
         h2TAP->Sumw2();
