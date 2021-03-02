@@ -96,7 +96,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
   fOutputList(0),
-  fOutputWeight(0),
   fListCuts(0),
   fTree_Event(0),
   fVar_Event(0),
@@ -395,8 +394,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fWriteXic0Tree(kFALSE),
   fWriteXic0MCGenTree(kFALSE),
   fWeight(0),
-  fHistMCGen_Xic0Pt_weight(0),
-  f2DHistMCRec_Xic0Pt_weight(0)
+  fWeight_up(0),
+  fWeight_dw(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -416,7 +415,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
 //  fEvNumberCounter(0),
   fAodTrackInd(0),
   fOutputList(0),
-  fOutputWeight(0),
   fListCuts(0),
   fTree_Event(0),
   fVar_Event(0),
@@ -715,8 +713,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fWriteXic0Tree(kFALSE),
   fWriteXic0MCGenTree(kFALSE),
   fWeight(0),
-  fHistMCGen_Xic0Pt_weight(0),
-  f2DHistMCRec_Xic0Pt_weight(0)
+  fWeight_up(0),
+  fWeight_dw(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -730,7 +728,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   DefineOutput(3, TTree::Class()); // event
   DefineOutput(4, TTree::Class()); // Xic0
   DefineOutput(5, TTree::Class()); // Xic0 MCGen
-  DefineOutput(6, TList::Class()); // Xic0 weight of MC pt shape
 
 }
 //_____________________________________________________________________________
@@ -740,11 +737,6 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::~AliAnalysisTaskSEXicZero2XiPifromKFP()
     if (fOutputList) {
       delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
       fOutputList = 0;
-    }
-
-    if (fOutputWeight) {
-      delete fOutputWeight;     // at the end of your task, it is deleted from memory by calling this function
-      fOutputWeight = 0;
     }
 
     if (fListCuts) {
@@ -1580,14 +1572,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   DefineTreeGenXic0();
   PostData(5, fTree_Xic0MCGen);
 
-  fOutputWeight = new TList();
-  fOutputWeight->SetOwner(kTRUE);
-  fHistMCGen_Xic0Pt_weight = new TH1D("fHistMCGen_Xic0Pt_weight", "", 11, 1., 12.);
-  f2DHistMCRec_Xic0Pt_weight = new TH2D("f2DHistMCRec_Xic0Pt_weight", "", 11, 1., 12., 495, 0.5, 50);
-  fOutputWeight->Add(fHistMCGen_Xic0Pt_weight);
-  fOutputWeight->Add(f2DHistMCRec_Xic0Pt_weight);
-  PostData(6, fOutputWeight);
-
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
@@ -1960,7 +1944,6 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
 
       if (decaytype==0) {
         FillTreeGenXic0(mcpart, CheckOrigin);
-        if (fabs(mcpart->Y())<0.8) fHistMCGen_Xic0Pt_weight->Fill(mcpart->Pt(), fWeight->Eval(mcpart->Pt()));
       }
     } // for Xic0
     // ======================================= Xi ====================================================
@@ -2114,7 +2097,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<7;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
@@ -2122,8 +2105,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
   fVar_Xic0MCGen[1] = mcpart->Pt();
   fVar_Xic0MCGen[2] = CheckOrigin;
   fVar_Xic0MCGen[3] = mcpart->GetPdgCode();
+  fVar_Xic0MCGen[4] = fWeight->Eval(mcpart->Pt());
+  fVar_Xic0MCGen[5] = fWeight_up->Eval(mcpart->Pt());
+  fVar_Xic0MCGen[6] = fWeight_dw->Eval(mcpart->Pt());
 
-  if (fWriteXic0MCGenTree && fVar_Xic0MCGen[1]>0.9999) fTree_Xic0MCGen->Fill();
+  if (fWriteXic0MCGenTree) fTree_Xic0MCGen->Fill();
 
 //  fVar_Xic0MCGen[ 0] = fCentrality;
 //  fVar_Xic0MCGen[ 1] = decaytype;
@@ -4571,7 +4557,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 42;
+  Int_t nVar = 45;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4670,6 +4656,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[40] = "DCA_Omegac0Dau_KF"; // DCA of Omegac0's daughters (calculated from KF after Omega mass constraint)
     fVarNames[41] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
   }
+  fVarNames[42] = "weight";
+  fVarNames[43] = "weight_up";
+  fVarNames[44] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4736,7 +4725,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 4;
+  Int_t nVar = 7;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -4745,12 +4734,18 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
     fVarNames[1] = "pt_Xic0";
     fVarNames[2] = "Source_Xic0";
     fVarNames[3] = "PDG_Xic0";
+    fVarNames[4] = "weight";
+    fVarNames[5] = "weight_up";
+    fVarNames[6] = "weight_dw";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
     fVarNames[1] = "pt_Omegac0";
     fVarNames[2] = "Source_Omegac0";
     fVarNames[3] = "PDG_Omegac0";
+    fVarNames[4] = "weight";
+    fVarNames[5] = "weight_up";
+    fVarNames[6] = "weight_dw";
   }
 
   /*
@@ -5158,7 +5153,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<42; i++) {
+  for (Int_t i=0; i<45; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5343,16 +5338,18 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
 
   if (fIsMC) {
     fVar_Xic0[30] = lab_Xic0;
-    if (lab_Xic0>0 && fabs(fVar_Xic0[24])<0.8 && (massK0S_Rec<=0.487614 || massK0S_Rec>=0.507614)) {
-      Int_t labelPion1 = fabs(trackPiFromXic0->GetLabel());
-      AliAODMCParticle* mcPion1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPion1));
-      AliAODMCParticle* mcXic0  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion1->GetMother()));
-      f2DHistMCRec_Xic0Pt_weight->Fill(fVar_Xic0[23], fVar_Xic0[22], fWeight->Eval(mcXic0->Pt()));
+    if (lab_Xic0>=0) {
+      Int_t labelPiFromXic0 = fabs(trackPiFromXic0->GetLabel());
+      AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
+      Int_t IndexXic0 = mcPiFromXic0->GetMother();
+      AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
+      fVar_Xic0[42] = fWeight->Eval(mcXic0->Pt());
+      fVar_Xic0[43] = fWeight_up->Eval(mcXic0->Pt());
+      fVar_Xic0[44] = fWeight_dw->Eval(mcXic0->Pt());
     }
   }
 
-  // pt(Xic0)>=1
-  if (fVar_Xic0[23]>0.9999) fTree_Xic0->Fill();
+  fTree_Xic0->Fill();
 
 
 
