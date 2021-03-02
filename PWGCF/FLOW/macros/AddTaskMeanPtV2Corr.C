@@ -40,7 +40,8 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name = "name", Bool_t I
   mgr->ConnectInput(task,0,cInput0);
   //Producing weights
   if(StageSwitch==1) {
-    AliAnalysisDataContainer *weightCont = mgr->CreateContainer("WeightList",TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    TString l_ContName=subfix.IsNull()?"":("_" + subfix);
+    AliAnalysisDataContainer *weightCont = mgr->CreateContainer(Form("WeightList%s",l_ContName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     mgr->ConnectOutput(task,1,weightCont);
     return task;
   }
