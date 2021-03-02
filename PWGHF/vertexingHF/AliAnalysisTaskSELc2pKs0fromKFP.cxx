@@ -698,7 +698,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
 
   if(!mcpart) return;
 
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<7;i++){
     fVar_LcMCGen[i] = -9999.;
   }
 
@@ -711,6 +711,11 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
   fVar_LcMCGen[ 1] = mcpart->Y();
   fVar_LcMCGen[ 2] = mcpart->Pt();
   fVar_LcMCGen[ 3] = CheckOrigin;
+  if (fUseWeights && CheckOrigin>=0) { //add branches for MC pT weights
+    fVar_Lc[4] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat 
+    fVar_Lc[5] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat 
+    fVar_Lc[6] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat 
+  }
 
   if (fWriteLcMCGenTree) fTree_LcMCGen->Fill();
 
@@ -1446,14 +1451,17 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
 {
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   fTree_LcMCGen = new TTree(nameoutput,"Lc MC variables tree");
-  Int_t nVar = 4;
+  Int_t nVar = 7;
   fVar_LcMCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
-  fVarNames[ 0]="Centrality";
-  fVarNames[ 1]="LcY";
-  fVarNames[ 2]="LcPt";
-  fVarNames[ 3]="LcSource";
+  fVarNames[ 0] = "Centrality";
+  fVarNames[ 1] = "LcY";
+  fVarNames[ 2] = "LcPt";
+  fVarNames[ 3] = "LcSource";
+  fVarNames[ 4] = "weightPtFlat"; // flat pT weight for MC
+  fVarNames[ 5] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+  fVarNames[ 6] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_LcMCGen->Branch(fVarNames[ivar].Data(),&fVar_LcMCGen[ivar],Form("%s/F",fVarNames[ivar].Data()));
@@ -1740,11 +1748,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   fVar_Lc[33] = cosPA_V0;
   fVar_Lc[34] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
 
-  if (fIsMC && fUseWeights) { //add branches for MC pT weights
-    fVar_Lc[35] = fFuncWeightPythia->Eval(kfpLc_PV.GetPt()); // weight pT flat 
-    fVar_Lc[36] = fFuncWeightFONLL5overLHC13d3->Eval(kfpLc_PV.GetPt()); // weight pT flat 
-    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3Lc->Eval(kfpLc_PV.GetPt()); // weight pT flat 
-
+  if (fIsMC && fUseWeights && lab_Lc>=0) { //add branches for MC pT weights
+    Int_t labelProton = fabs(trackBach->GetLabel());
+    AliAODMCParticle *mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
+    Int_t IndexLc = mcProton->GetMother();
+    AliAODMCParticle *mcLc = static_cast<AliAODMCParticle*>(mcArray->At(IndexLc));
+    fVar_Lc[35] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat 
+    fVar_Lc[36] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat 
+    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat 
   }
 
   
