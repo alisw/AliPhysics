@@ -221,7 +221,7 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	Double_t bin_old[8]  = {0, 1, 2, 3.2, 4.4, 6, 8, 12};
 	Double_t rapbin[21]  = {-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
 							0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
-	Double_t widebin[10] = {1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
+	Double_t widebin[11] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
 
 	fHistos->CreateTH1("Centrality","",100,0,100,"s");
 	//fHistos->CreateTH1("NumOfEvtperRun","",5000,0,5000,"s");
@@ -260,15 +260,15 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fHistos->CreateTH1("hLooseEleXiPtRS","",7,bin,"s");
 	fHistos->CreateTH1("hLooseEleXiPtWS","",7,bin,"s");
 
-	fHistos->CreateTH1("eXiFromXib","",9,widebin,"s");
-	fHistos->CreateTH1("Xib","",9,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPM","",9,widebin,9,widebin,"s");
-	fHistos->CreateTH1("eXiFromXibGen","",9,widebin,"s");
-	fHistos->CreateTH1("XibGen","",9,widebin,"s");
-	fHistos->CreateTH1("XibGen05","",9,widebin,"s");
-	fHistos->CreateTH2("XibvseXiRPMGen","",9,widebin,9,widebin,"s");
+	fHistos->CreateTH1("eXiFromXib","",10,widebin,"s");
+	fHistos->CreateTH1("Xib","",10,widebin,"s");
+	fHistos->CreateTH2("XibvseXiRPM","",10,widebin,10,widebin,"s");
+	fHistos->CreateTH1("eXiFromXibGen","",10,widebin,"s");
+	fHistos->CreateTH1("XibGen","",10,widebin,"s");
+	fHistos->CreateTH1("XibGen05","",10,widebin,"s");
+	fHistos->CreateTH2("XibvseXiRPMGen","",10,widebin,10,widebin,"s");
 
-	fHistos->CreateTH2("hXicPtRap","",9,widebin,21,rapbin,"s");
+	fHistos->CreateTH2("hXicPtRap","",10,widebin,20,rapbin,"s");
 	fHistos->CreateTH1("hTrueXic0","",7,bin,"s");
 	fHistos->CreateTH1("hTrueXic0_oldbin","",7,bin_old,"s");
 	fHistos->CreateTH1("hTrueXic0_rap8","",7,bin,"s");
@@ -285,11 +285,11 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fHistos->CreateTH1("hMCXic0AllRap","",12,0,12,"s");
 	fHistos->CreateTH2("hMCXic0vsPair","",7,bin,7,bin,"s");
 
-	fHistos->CreateTH2("hXic0vseXiRPM","",9,widebin,9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt","",9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt1","",9,widebin,"s");
-	fHistos->CreateTH1("hGenXic0Pt2","",9,widebin,"s");
-	fHistos->CreateTH1("hRecoPairPt","",9,widebin,"s");
+	fHistos->CreateTH2("hXic0vseXiRPM","",10,widebin,10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt1","",10,widebin,"s");
+	fHistos->CreateTH1("hGenXic0Pt2","",10,widebin,"s");
+	fHistos->CreateTH1("hRecoPairPt","",10,widebin,"s");
 
 	vector<TString> DecayChannel ={"e&Xi","!e&Xi","e&!Xi","!e&!Xi"};
 	auto hMCXic0Decays = fHistos->CreateTH1("hMCXic0Decays","",DecayChannel.size(), 0, DecayChannel.size());

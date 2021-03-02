@@ -105,12 +105,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPtVsPhiVsMultGenLimAccFeeddw(0x0),
   fPtVsPhiVsMultGenAccFeeddw(0x0),
   fPtVsPhiVsMultRecoFeeddw(0x0),
-  fPtVsYVsPtBGenFeeddw(0x0),
-  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
-  fPtVsYVsPtBGenLimAccFeeddw(0x0),
-  fPtVsYVsPtBGenAccFeeddw(0x0),
-  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
-  fPtVsYVsPtBRecoFeeddw(0x0),
+  fPtVsPtBVsMultGenFeeddw(0x0),
+  fPtVsPtBVsMultGenLargeAccFeeddw(0x0),
+  fPtVsPtBVsMultGenLimAccFeeddw(0x0),
+  fPtVsPtBVsMultGenAccFeeddw(0x0),
+  fPtVsPtBVsMultGenAccEvSelFeeddw(0x0),
+  fPtVsPtBVsMultRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -281,12 +281,12 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPtVsPhiVsMultGenLimAccFeeddw(0x0),
   fPtVsPhiVsMultGenAccFeeddw(0x0),
   fPtVsPhiVsMultRecoFeeddw(0x0),
-  fPtVsYVsPtBGenFeeddw(0x0),
-  fPtVsYVsPtBGenLargeAccFeeddw(0x0),
-  fPtVsYVsPtBGenLimAccFeeddw(0x0),
-  fPtVsYVsPtBGenAccFeeddw(0x0),
-  fPtVsYVsPtBGenAccEvSelFeeddw(0x0),
-  fPtVsYVsPtBRecoFeeddw(0x0),
+  fPtVsPtBVsMultGenFeeddw(0x0),
+  fPtVsPtBVsMultGenLargeAccFeeddw(0x0),
+  fPtVsPtBVsMultGenLimAccFeeddw(0x0),
+  fPtVsPtBVsMultGenAccFeeddw(0x0),
+  fPtVsPtBVsMultGenAccEvSelFeeddw(0x0),
+  fPtVsPtBVsMultRecoFeeddw(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -463,12 +463,12 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fPtVsPhiVsMultGenLimAccFeeddw;
     delete fPtVsPhiVsMultGenAccFeeddw;
     delete fPtVsPhiVsMultRecoFeeddw;
-    delete fPtVsYVsPtBGenFeeddw;
-    delete fPtVsYVsPtBGenLargeAccFeeddw;
-    delete fPtVsYVsPtBGenLimAccFeeddw;
-    delete fPtVsYVsPtBGenAccFeeddw;
-    delete fPtVsYVsPtBGenAccEvSelFeeddw;
-    delete fPtVsYVsPtBRecoFeeddw;
+    delete fPtVsPtBVsMultGenFeeddw;
+    delete fPtVsPtBVsMultGenLargeAccFeeddw;
+    delete fPtVsPtBVsMultGenLimAccFeeddw;
+    delete fPtVsPtBVsMultGenAccFeeddw;
+    delete fPtVsPtBVsMultGenAccEvSelFeeddw;
+    delete fPtVsPtBVsMultRecoFeeddw;
     delete fMassVsPtVsY;
     delete fMassVsPtVsYLSpp;
     delete fMassVsPtVsYLSmm;
@@ -756,18 +756,18 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fPtVsPhiVsMultRecoFeeddw = new TH3F("hPtVsPhiVsMultRecoFeeddw",axTitPhi.Data(),nPtBins,0.,maxPt,72,0.,2.*TMath::Pi(),nMultEstimBins,minMultEstim,maxMultEstim);
     fOutput->Add(fPtVsPhiVsMultRecoFeeddw);
 
-    fPtVsYVsPtBGenFeeddw = new TH3F("hPtVsYVsPtBGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBGenFeeddw);
-    fPtVsYVsPtBGenLargeAccFeeddw = new TH3F("hPtVsYVsPtBGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBGenLargeAccFeeddw);
-    fPtVsYVsPtBGenLimAccFeeddw = new TH3F("hPtVsYVsPtBGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBGenLimAccFeeddw);
-    fPtVsYVsPtBGenAccFeeddw = new TH3F("hPtVsYVsPtBGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBGenAccFeeddw);
-    fPtVsYVsPtBGenAccEvSelFeeddw = new TH3F("hPtVsYVsPtBGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBGenAccEvSelFeeddw);
-    fPtVsYVsPtBRecoFeeddw = new TH3F("hPtVsYVsPtBRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,100,0.,50.);
-    fOutput->Add(fPtVsYVsPtBRecoFeeddw);
+    fPtVsPtBVsMultGenFeeddw = new TH3F("hPtVsPtBVsMultGenFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultGenFeeddw);
+    fPtVsPtBVsMultGenLargeAccFeeddw = new TH3F("hPtVsPtBVsMultGenLargeAccFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultGenLargeAccFeeddw);
+    fPtVsPtBVsMultGenLimAccFeeddw = new TH3F("hPtVsPtBVsMultGenLimAccFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultGenLimAccFeeddw);
+    fPtVsPtBVsMultGenAccFeeddw = new TH3F("hPtVsPtBVsMultGenAccFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultGenAccFeeddw);
+    fPtVsPtBVsMultGenAccEvSelFeeddw = new TH3F("hPtVsPtBVsMultGenAccEvSelFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultGenAccEvSelFeeddw);
+    fPtVsPtBVsMultRecoFeeddw = new TH3F("hPtVsPtBVsMultRecoFeeddw","",nPtBins,0.,maxPt,100,0.,50.,nMultEstimBins,minMultEstim,maxMultEstim);
+    fOutput->Add(fPtVsPtBVsMultRecoFeeddw);
  }
   
   
@@ -1612,21 +1612,21 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
           }else if(orig==5){
             fPtVsYVsMultGenFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
             fPtVsPhiVsMultGenFeeddw->Fill(ptgen,phigen,fMultiplicityMC);
-            fPtVsYVsPtBGenFeeddw->Fill(ptgen,ygen,ptbmoth);
+            fPtVsPtBVsMultGenFeeddw->Fill(ptgen,ptbmoth,fMultiplicityMC);
             if(TMath::Abs(ygen)<0.5){
               fPtVsYVsMultGenLimAccFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
              fPtVsPhiVsMultGenLimAccFeeddw->Fill(ptgen,phigen,fMultiplicityMC);
-             fPtVsYVsPtBGenLimAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+             fPtVsPtBVsMultGenLimAccFeeddw->Fill(ptgen,ptbmoth,fMultiplicityMC);
               fBMohterPtGen->Fill(ptbmoth);
             }
             if(isInAcc){
               fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
               fPtVsPhiVsMultGenAccFeeddw->Fill(ptgen,phigen,fMultiplicityMC);
-              fPtVsYVsPtBGenAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+              fPtVsPtBVsMultGenAccFeeddw->Fill(ptgen,ptbmoth,fMultiplicityMC);
             }
             if(isEvSel && isInAcc){
               fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
-              fPtVsYVsPtBGenAccEvSelFeeddw->Fill(ptgen,ygen,ptbmoth);
+              fPtVsPtBVsMultGenAccEvSelFeeddw->Fill(ptgen,ptbmoth,fMultiplicityMC);
             }
           }
         }
@@ -1634,7 +1634,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
           if(orig==4) fPtVsYVsMultGenLargeAccPrompt->Fill(ptgen,ygen,fMultiplicityMC);
           else if(orig==5){
             fPtVsYVsMultGenLargeAccFeeddw->Fill(ptgen,ygen,fMultiplicityMC);
-            fPtVsYVsPtBGenLargeAccFeeddw->Fill(ptgen,ygen,ptbmoth);
+            fPtVsPtBVsMultGenLargeAccFeeddw->Fill(ptgen,ptbmoth,fMultiplicityMC);
           }
         }
       }
@@ -1699,7 +1699,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
                     Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,dmes);
                     fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicityMC);
                     fPtVsPhiVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Phi(),fMultiplicityMC);
-                    fPtVsYVsPtBRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),ptbmoth);
+                    fPtVsPtBVsMultRecoFeeddw->Fill(dmes->Pt(),ptbmoth,fMultiplicityMC);
                   }
                 }
               }else{ // if the first daughter is not a kaon, it is a reflection

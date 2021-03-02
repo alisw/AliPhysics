@@ -47,6 +47,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t AcceptParticle(AliVParticle*);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void FillWeightsMC(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void FillMeanPtCounter(Double_t l_pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPtCounterWW(const Double_t &l_pt, Double_t &l_sum, Double_t &l_count, const Double_t &inWeight); //passing by ref., considering how ofter this is called
   void FillMeanPt(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
@@ -127,6 +128,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
   AliGFWCuts *fGFWSelection;
+  AliGFWCuts *fGFWNtotSelection;
   AliGFWFlowContainer *fFC;
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
@@ -141,6 +143,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
   Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
+  Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;

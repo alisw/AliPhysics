@@ -217,12 +217,12 @@ private:
   TH3F *fPtVsPhiVsMultGenLimAccFeeddw;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsPhiVsMultGenAccFeeddw;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsPhiVsMultRecoFeeddw;       //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
-  TH3F *fPtVsYVsPtBGenFeeddw;           //!<! hist. of Y vs. Pt vs. PtB generated (all D)
-  TH3F *fPtVsYVsPtBGenLargeAccFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.9)
-  TH3F *fPtVsYVsPtBGenLimAccFeeddw;     //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.5)
-  TH3F *fPtVsYVsPtBGenAccFeeddw;        //!<! hist. of Y vs. Pt vs. PtB generated (D in acc)
-  TH3F *fPtVsYVsPtBGenAccEvSelFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsPtBRecoFeeddw;          //!<! hist. of Y vs. Pt vs. PtB generated (Reco D)
+  TH3F *fPtVsPtBVsMultGenFeeddw;           //!<! hist. of Pt vs. PtB generated (all D)
+  TH3F *fPtVsPtBVsMultGenLargeAccFeeddw;   //!<! hist. of Pt vs. PtB generated (|y|<0.9)
+  TH3F *fPtVsPtBVsMultGenLimAccFeeddw;     //!<! hist. of Pt vs. PtB generated (|y|<0.5)
+  TH3F *fPtVsPtBVsMultGenAccFeeddw;        //!<! hist. of Pt vs. PtB generated (D in acc)
+  TH3F *fPtVsPtBVsMultGenAccEvSelFeeddw;   //!<! hist. of Pt vs. PtB generated (D in acc, sel ev.)
+  TH3F *fPtVsPtBVsMultRecoFeeddw;          //!<! hist. of Pt vs. PtB generated (Reco D)
   TH3F *fMassVsPtVsY;      //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
@@ -344,7 +344,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,41); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,42); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

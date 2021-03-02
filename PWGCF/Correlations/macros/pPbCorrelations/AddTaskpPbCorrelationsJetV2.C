@@ -3,20 +3,20 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
 								       TString  fCollisiontype ="pPb",
-								       Bool_t fDataType        =kTRUE,//TRUE=real data, FALSE=MC
+								       Bool_t fDataType        =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMDA",//TPCTPC, TPCTPCFMDA, TPCTPCFMDC, FMDAFMDC, TPCFMDA, TPCFMDC
+								       TString anamode         ="TPCTPCFMDA",//TPCTPC, TPCTPCFMDA, TPCTPCFMDC, FMDAFMDC, TPCFMDA, TPCFMDC
 								       TString anacent         ="V0A",//"SPDTracklets",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
-								       Bool_t fmakehole        =kFALSE,
-                                                                       Bool_t fprim            =kFALSE,
-                                                                       Bool_t fcentcalib       =kFALSE,
+								       Bool_t fprimTPC         =kTRUE,
+                                                                       Bool_t fprimFMD         =kTRUE,
+                                                                       Bool_t fcentcalib       =kTRUE,
                                                                        Double_t fReduceDphi    =-1., // 1.5707, 0.9, -1
                                                                        Bool_t fSymmetricFMD    =kFALSE,
-                                                                       Bool_t IsLikeSign       =kTRUE,
+                                                                       Bool_t IsLikeSign       =kFALSE,
 								       Float_t fminpt          =0.5,
 								       Float_t fmaxpt          =20.0,
 								       Float_t fAsscoptCut     =0.5,
@@ -74,7 +74,6 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
   myTask->SetRunType(frun2);
   myTask->SetFMDcut(fFMDcut);
   myTask->SetFMDcutpar(fFMDcutpar);
-  myTask->Setacceptancehole(fmakehole);
   myTask->SetReduceDphi(fReduceDphi);
   myTask->SetSymmetricFMD(fSymmetricFMD);
   myTask->SetLikeSign(IsLikeSign);
@@ -90,7 +89,8 @@ AliAnalysisTaskSEpPbCorrelationsJetV2* AddTaskpPbCorrelationsJetV2(
 			    
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
-  myTask->Setmcprim(fprim);
+  myTask->SetmcprimFMD(fprimFMD);
+  myTask->SetmcprimTPC(fprimTPC);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}

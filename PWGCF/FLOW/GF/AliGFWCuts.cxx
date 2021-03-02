@@ -29,12 +29,13 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &B
     if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return 0;
   };
   if(!l_DCA) return 1<<BitShift;
-  if(l_DCA[0]>fDCAzCut) return 0;
+  if(l_DCA[2]>fDCAzCut) return 0;
   if(lDisableDCAxyCheck) return 1<<BitShift;
   Double_t DCAxycut;
   if(fFilterBit!=2) DCAxycut = 0.0105+0.0350/TMath::Power(l_Tr->Pt(),1.1);//*fDCAxyCut/7.; //TPC tracks and my ITS cuts
   else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
-  if(l_DCA[1]>DCAxycut*(fDCAxyCut/7.))
+  Double_t DCAxyValue = TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
+  if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
     return 0;
   return 1<<BitShift;
 };

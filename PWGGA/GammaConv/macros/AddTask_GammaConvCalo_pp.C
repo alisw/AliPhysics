@@ -230,7 +230,8 @@ void AddTask_GammaConvCalo_pp(
   }
   if (enableLightOutput > 1 && enableLightOutput != 4) task->SetLightOutput(1);
   else if (enableLightOutput == 4) task->SetLightOutput(2);
-  if (enableLightOutput == 5) task->SetECalibOutput(kTRUE);
+  if (enableLightOutput == 5) task->SetECalibOutput(1);
+  if (enableLightOutput == 6) task->SetECalibOutput(2);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   if(trainConfig >= 850 && trainConfig < 860) task->SetDoHBTHistoOutput(kTRUE);
@@ -2392,6 +2393,23 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0020008932700000i280400000","2446600067012300000","0163103100000010"); // QA, -30,50ns
     cuts.AddCutPCMCalo("00010113","00200089327000001ih0400000","2446600067012300000","0163103100000010"); // QA, -30,50ns
 
+
+    //*************************************************************************************************
+    // 13 TeV PHOS Nom B. Rotation Method
+    //*************************************************************************************************
+  } else if ( trainConfig == 960){ // PHI7, Rotation Background r
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0r63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 961){ // INT7, Rotation Background r
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0r63103100000010"); //PHI7
+  } else if ( trainConfig == 962){ // PHI7, Rotation Background u
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0u63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 963){ // INT7, Rotation Background u
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0u63103100000010"); //PHI7
+  } else if ( trainConfig == 964){ // PHI7, Rotation Background v
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0v63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 965){ // INT7, Rotation Background v
+    cuts.AddCutPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0v63103100000010"); //PHI7
+
   //*************************************************************************************************
   // 13 TeV PHOS HM trigger
   //*************************************************************************************************
@@ -2662,6 +2680,12 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0s63103100b00010"); // INT7 TBNL
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0t63103100b00010"); // INT7 TBNL
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0u63103100b00010"); // INT7 TBNL
+
+  } else if ( trainConfig == 2065){ // EMCAL clusters  Pi0
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100b00010"); // STD
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","016310d100b00010"); // STD
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge3404000","411790109fe30220000","0163103100b00010"); // STD
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge3404000","411790109fe30220000","016310d100b00010"); // STD
 
   } else if (trainConfig == 2070){  // EMCal+DCAL MB  TB NL tests, only TBNL (no MC finetuning)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0163103100000010"); // INT7
@@ -3965,10 +3989,10 @@ void AddTask_GammaConvCalo_pp(
     TString ClusterCutPos = cuts.GetClusterCut(i);
     ClusterCutPos = ClusterCutPos(0,1);
     TString TriggerHelperName = Form("CaloTriggerHelper_%s_%i_%i", cuts.GetEventCut(i).Data(),enableTriggerMimicking,TriggerMimickingDDLEffiFlag);
+    task->SetCaloTriggerHelperName(TriggerHelperName.Data());
+    analysisEventCuts[i]->SetCaloTriggerHelperName(TriggerHelperName.Data());
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
-      task->SetCaloTriggerHelperName(TriggerHelperName.Data());
-      analysisEventCuts[i]->SetCaloTriggerHelperName(TriggerHelperName.Data());
       if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {

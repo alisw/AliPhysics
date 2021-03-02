@@ -1095,6 +1095,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
     fHistoMotherInvMassEalpha       = new TH2F*[fnCuts];
+    if(!fDoLightOutput){
+      fHistoMotherInvMassPtCalib    = new TH2F*[fnCuts];
+      fHistoMotherBackInvMassPtCalib= new TH2F*[fnCuts];
+    }
     if(fDoMesonQA > 0){
       fHistoMotherPi0PtY            = new TH2F*[fnCuts];
       fHistoMotherEtaPtY            = new TH2F*[fnCuts];
@@ -1419,10 +1423,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoMotherInvMassEalpha[iCut]   = new TH2F("ESD_Mother_InvMass_vs_E_alpha", "ESD_Mother_InvMass_vs_E_alpha", 800, 0, 0.8, nBinsPt, arrPtBinning);
       fESDList[iCut]->Add(fHistoMotherInvMassEalpha[iCut]);
 
+      if(!fDoLightOutput){
+        fHistoMotherInvMassPtCalib[iCut]   = new TH2F("ESD_Mother_InvMass_Pt_Calib", "ESD_Mother_InvMass_Pt_Calib", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtCalib[iCut]);
+        fHistoMotherBackInvMassPtCalib[iCut]   = new TH2F("ESD_Background_InvMass_Pt_Calib", "ESD_Background_InvMass_Pt_Calib", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtCalib[iCut]);
+      }
+
       if (fIsMC > 1 || fDoCentralityFlat > 0){
         fHistoMotherInvMassPt[iCut]->Sumw2();
         fHistoMotherBackInvMassPt[iCut]->Sumw2();
         fHistoMotherInvMassEalpha[iCut]->Sumw2();
+        if(!fDoLightOutput){
+          fHistoMotherInvMassPtCalib[iCut]->Sumw2();
+          fHistoMotherBackInvMassPtCalib[iCut]->Sumw2();
+        }
       }
 
       if(fDoIsolatedAnalysis){
@@ -2430,7 +2445,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
       if(!fDoLightOutput){
 
-        fiEventCut->FillTPCPileUpHistograms(fInputEvent);
+        fiEventCut->FillTPCPileUpHistogram(fInputEvent);
 
         if( fIsMC < 2 ){
           if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
@@ -3924,10 +3939,12 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
         if((fiMesonCut->MesonIsSelected(pi0cand,kTRUE,fiEventCut->GetEtaShift()))){
           if(fDoCentralityFlat > 0){
             fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+            if(!fDoLightOutput) fHistoMotherInvMassPtCalib[fiCut]->Fill(pi0cand->M(),gamma0->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           } else {
             if(TMath::Abs(pi0cand->GetAlpha())<0.1) fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(),fWeightJetJetMC);
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+            if(!fDoLightOutput) fHistoMotherInvMassPtCalib[fiCut]->Fill(pi0cand->M(),gamma0->E(), fWeightJetJetMC);
             if(fDoIsolatedAnalysis){
               //Check if the pi0 is isolated
               Double_t Iso_E_Pi0 = 0;
@@ -4965,6 +4982,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
         if((fiMesonCut->MesonIsSelected(backgroundCandidate,kFALSE,fiEventCut->GetEtaShift()))){
           if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
           else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+          if(!fDoLightOutput){
+            if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+            else fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
+          }
           if(fDoTHnSparse){
             Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
             if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, fWeightCentrality[fiCut]*fWeightJetJetMC); //instead of weight 1
@@ -5002,6 +5023,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
           if((fiMesonCut->MesonIsSelected(backgroundCandidate,kFALSE,fiEventCut->GetEtaShift()))){
             if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+            if(!fDoLightOutput){
+              if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+              else fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(),fWeightJetJetMC);
+            }
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
               if(fDoCentralityFlat > 0) sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill, fWeightCentrality[fiCut]*fWeightJetJetMC); //instead of weight 1
@@ -5040,10 +5065,12 @@ void AliAnalysisTaskGammaConvV1::CalculateBackground(){
               if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               else{
                   if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+                  if(!fDoLightOutput) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(), fWeightJetJetMC);
                   if(fDoJetAnalysis){
                   if(fConvJetReader->GetNJets() > 0){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+                    if(!fDoLightOutput) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate->M(),currentEventGoodV0.E(), fWeightJetJetMC);
                   }
                 }
               }
@@ -5187,6 +5214,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
           if(fiMesonCut->MesonIsSelected(&backgroundCandidate,kFALSE,fiEventCut->GetEtaShift())){
             if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
             else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
+            if(!fDoLightOutput){
+              if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate.M(),gamma0->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+              else fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate.M(),gamma0->E(),fWeightJetJetMC);
+            }
             if(fDoTHnSparse){
 //               Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
               Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)psibin};
@@ -5224,6 +5255,10 @@ void AliAnalysisTaskGammaConvV1::CalculateBackgroundRP(){
             if(fiMesonCut->MesonIsSelected(&backgroundCandidate,kFALSE,fiEventCut->GetEtaShift())){
               if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(), fWeightCentrality[fiCut]*fWeightJetJetMC);
               else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
+              if(!fDoLightOutput){
+                if(fDoCentralityFlat > 0) fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate.M(),gamma0->E(), fWeightCentrality[fiCut]*fWeightJetJetMC);
+                else fHistoMotherBackInvMassPtCalib[fiCut]->Fill(backgroundCandidate.M(),gamma0->E(),fWeightJetJetMC);
+              }
               if(fDoTHnSparse){
 //                              Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
                   Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)psibin};

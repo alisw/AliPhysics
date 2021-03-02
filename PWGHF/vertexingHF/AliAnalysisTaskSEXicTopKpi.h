@@ -123,6 +123,14 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fNoStdPIDcases = rejectStdPIDcases;
   }
 
+  // set wheter to keep pT reco for MC reconstructed candidates or the generated one (default)
+  void SetKeepGenPtMC(Bool_t flag){
+    if(!fReadMC)  fKeepGenPtMC = kFALSE;
+    else{ // MC
+      fKeepGenPtMC = flag;
+    }
+  }
+
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
@@ -405,8 +413,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // bool to keep only the Bayes PID- based PID selections
   Bool_t fNoStdPIDcases;
 
+  // bool to keep pT reco for MC reconstructed candidates
+  Bool_t fKeepGenPtMC;
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,18); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,19); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

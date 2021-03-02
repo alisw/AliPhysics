@@ -82,6 +82,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fMCEvent(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentrality(0),
@@ -92,6 +93,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
 	fPIDResponse(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
 	fPassingProbeTrackArray(0x0),
@@ -107,7 +114,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fAODv0KineCuts(0x0),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fPIDCalibMode(kFALSE),
+  fPIDCalibMode(kTRUE),
   fIsMC(kFALSE)
 {
   // Constructor
@@ -136,6 +143,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fMCEvent(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentrality(0),
@@ -146,6 +154,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
 	fPIDResponse(0x0),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	fPIDCalibinPU(kTRUE),
+  fPostPIDCntrdCorrTPC(0x0),
+  fPostPIDWdthCorrTPC(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
+  fPostPIDCntrdCorrTOF(0x0),
+  fPostPIDWdthCorrTOF(0x0),
 	fTagTrackArray(0x0),
 	fProbeTrackArray(0x0),
 	fPassingProbeTrackArray(0x0),
@@ -161,7 +175,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fAODv0KineCuts(0x0),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fPIDCalibMode(kFALSE),
+  fPIDCalibMode(kTRUE),
   fIsMC(kFALSE)
 {
   // Constructor
@@ -300,31 +314,18 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 	//pair histograms
   fOutputContainer->Add(new TH2F("hPairMvsPhiV","m_{ee} vs.#varphi_{V};#varphi_{V} (rad.);m_{ee} (GeV/c^{2})",100,0,TMath::Pi(),100,0,0.1));
 
-	const Int_t Nmee = 150;
-	Double_t mee[Nmee] = {};
-	for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) + 0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
-	for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) + 1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
-
-	const Int_t NpTe = 70;
-	Double_t pTe[NpTe] = {};
-	for(Int_t i=0  ;i<10  ;i++) pTe[i] = 0.01 * (i- 0) + 0.0;//from 0.0 to 0.1 GeV/c, every 0.01 GeV/c
-	for(Int_t i=10 ;i<59;i++)   pTe[i] = 0.1  * (i-10) + 0.1;//from 0.1 to 5.0 GeV/c,evety 0.1 GeV/c
-	for(Int_t i=59 ;i<NpTe;i++) pTe[i] = 0.5  * (i-59) + 5.0;//from 5.0 to 10 GeV/c, evety 0.5 GeV/c
-
 	const TString probetype[2]  = {"Probe","PassingProbe"};
 	const TString chargetype[3]  = {"ULS","LSpp","LSnn"};
 	const TString eventtype[2] = {"same","mix"};
 
-  if(!fPIDCalibMode){
-    for(Int_t ip=0;ip<2;ip++){
-      for(Int_t ic=0;ic<3;ic++){
-        for(Int_t ie=0;ie<2;ie++){
-          TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Nmee-1,mee,NpTe-1,pTe);
-          h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
-          h2TAP->SetYTitle("p_{T,e} (GeV/c)");
-          h2TAP->Sumw2();
-          fOutputContainer->Add(h2TAP);
-        }
+  for(Int_t ip=0;ip<2;ip++){
+    for(Int_t ic=0;ic<3;ic++){
+      for(Int_t ie=0;ie<2;ie++){
+        TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),500,0,5,100,0,10);
+        h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
+        h2TAP->SetYTitle("p_{T,e} (GeV/c)");
+        h2TAP->Sumw2();
+        fOutputContainer->Add(h2TAP);
       }
     }
   }
@@ -342,14 +343,14 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   Double_t xmin_PID[Ndim_PID] = {    0,   -300,    0,  0, -1,  -5,  -5,  -5};
   Double_t xmax_PID[Ndim_PID] = {20000,   +300,10000, 10, +1,  +5,  +5,  +5};
 
-  const TString parname[8] = {"El_online","El_offline","El_bkg_online","El_bkg_offline","El","Pi","Ka","Pr"};
+  const TString parname[6] = {"El_online","El_offline","El","Pi","Ka","Pr"};
   const Double_t NSDDSSD[5]       = {0, 2.5e3, 1e+4, 1.6e+4, 1e+5};//clusters on SDD+SSD layers
   const Double_t TPCpileupZ[7]    = {-300,-75,-25,0,+25,+75,+300};//in cm (A+C)/2 average
   const Double_t TPCpileupMult[5] = {0,400,1200,3000,20000};//pileup contributors A+C sum
   const Double_t pinbin[29] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,3,4,5,6,7,8,9,10};//pin for PID calib
 
-  for(Int_t i=0;i<8;i++){
-    if(parname[i] == "El") continue;
+  for(Int_t i=0;i<6;i++){
+    //if(parname[i] == "El") continue;
     THnSparseF *hsPID = new THnSparseF(Form("hsPID_V0%s",parname[i].Data()),Form("hsPID %s;",parname[i].Data()),Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
     hsPID->SetBinEdges(0,NSDDSSD);
     hsPID->SetBinEdges(1,TPCpileupZ);
@@ -370,18 +371,18 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   //hsAll_El_TAP->SetBinEdges(0,pinbin);
   hsAll_El_TAP->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
   hsAll_El_TAP->GetAxis(1)->SetTitle("#eta_{e}");
-  hsAll_El_TAP->GetAxis(2)->SetTitle("#varphi_{e}");
+  hsAll_El_TAP->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
   fOutputContainer->Add(hsAll_El_TAP);
 
   THnSparseF *hsSel_El_TAP = new THnSparseF("hsSel_El_TAP","hs all e^{#pm} for PID eff.",Ndim,Nbin,xmin,xmax);
   //hsSel_El_TAP->SetBinEdges(0,pinbin);
   hsSel_El_TAP->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
   hsSel_El_TAP->GetAxis(1)->SetTitle("#eta_{e}");
-  hsSel_El_TAP->GetAxis(2)->SetTitle("#varphi_{e}");
+  hsSel_El_TAP->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
   fOutputContainer->Add(hsSel_El_TAP);
 
   if(fIsMC){
-    for(Int_t i=0;i<8;i++){
+    for(Int_t i=0;i<6;i++){
       if(parname[i].Contains("El_")) continue;
       THnSparseF *hsPID = new THnSparseF(Form("hsPID_MC%s",parname[i].Data()),Form("hsPID %s;",parname[i].Data()),Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
       hsPID->SetBinEdges(0,NSDDSSD);
@@ -410,8 +411,25 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 
   }
 
-  PostData(1,fOutputContainer);
+  AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
+  if(fPIDCalibinPU){
+    for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
+      for(Int_t ip=0;ip<15;ip++){//particle loop e/mu/pi/k/p
+        if(fPostPIDCntrdCorrPU[id][ip]) AliDielectronPID::SetCentroidCorrFunctionPU(id,ip,fPostPIDCntrdCorrPU[id][ip]);
+        if(fPostPIDWdthCorrPU[id][ip])  AliDielectronPID::SetWidthCorrFunctionPU(   id,ip,fPostPIDWdthCorrPU[id][ip] );
+      }
+    }
+  }
+  else{
+    if(fPostPIDCntrdCorrTPC)  AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
+    if(fPostPIDWdthCorrTPC)   AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
+    if(fPostPIDCntrdCorrITS)  AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
+    if(fPostPIDWdthCorrITS)   AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
+    if(fPostPIDCntrdCorrTOF)  AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
+    if(fPostPIDWdthCorrTOF)   AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+  }
 
+  PostData(1,fOutputContainer);
 
 }
 //________________________________________________________________________
@@ -433,6 +451,19 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 		AliInfo("event class is neither ESD nor AOD. return.");
 		return;
 	}
+
+  AliInputEventHandler *eventHandler   = nullptr;
+  AliInputEventHandler *eventHandlerMC = nullptr;
+
+  if((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){//for AOD
+    eventHandler   = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
+  }
+  else if((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliESDInputHandler::Class()){//for ESD
+    eventHandlerMC = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    eventHandler   = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  }
+  fMCEvent = (AliMCEvent*)eventHandlerMC->MCEvent();
 
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   fVertex[0] = vVertex->GetX();
@@ -472,13 +503,6 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 //		return;
 //	}
 
-	AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
-	for(Int_t id=0;id<15;id++){//detector loop TPC/ITS/TOF
-		for(Int_t ip=0;ip<15;ip++){//particle loop e/mu/pi/k/p
-			if(fPostPIDCntrdCorrPU[id][ip]) AliDielectronPID::SetCentroidCorrFunctionPU(id,ip,fPostPIDCntrdCorrPU[id][ip]);
-			if(fPostPIDWdthCorrPU[id][ip])  AliDielectronPID::SetWidthCorrFunctionPU(   id,ip,fPostPIDWdthCorrPU[id][ip] );
-		}
-	}
 
 	fTagTrackArray->Clear();
 	fProbeTrackArray->Clear();
@@ -567,9 +591,11 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
 	TList *prevEvent_pp = fEventList[1][fZvtxBin];
 
 	TrackQA();
-  if(fESDEvent)      FillV0InfoESD();
-  else if(fAODEvent) FillV0InfoAOD();
-  if(!fPIDCalibMode) CutEfficiency();
+  if(fPIDCalibMode){
+    if(fESDEvent)      FillV0InfoESD();
+    else if(fAODEvent) FillV0InfoAOD();
+  }
+  CutEfficiency();
 
   //Now we either add current events to stack or remove
   //If no electron in current event - no need to add it to mixed
@@ -656,6 +682,7 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
   value[2] = TPCpileupM;
 
   const Int_t trackMult = fEvent->GetNumberOfTracks();
+	UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
 	UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
 
   for(Int_t itrack=0;itrack<trackMult;itrack++){
@@ -668,6 +695,7 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
     AliVTrack *track = dynamic_cast<AliVTrack*>(particle);
     Int_t label = TMath::Abs(track->GetLabel());
     AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(label);
+    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
     if(!p->IsPhysicalPrimary()) continue;
     Int_t pdg = p->GetPdgCode();
 
@@ -695,11 +723,11 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       value[7] = nsigma_El_TOF;
       FillSparse(fOutputContainer,"hsPID_MCEl",value);
 
-      FillHistogramTH2(fOutputContainer,"hMCElall",track->Pt(),track->Eta());
+      UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
+      if(cutmask_probe == selectedMask_probe) FillHistogramTH2(fOutputContainer,"hMCElall",track->Pt(),track->Eta());
+
       UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(particle);
-      if(cutmask_passingprobe == selectedMask_passingprobe){
-        FillHistogramTH2(fOutputContainer,"hMCElselected",track->Pt(),track->Eta());
-      }
+      if(cutmask_passingprobe == selectedMask_passingprobe) FillHistogramTH2(fOutputContainer,"hMCElselected",track->Pt(),track->Eta());
 
     }
     else if(TMath::Abs(pdg) == 211){
@@ -720,8 +748,6 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       value[7] = nsigma_Pr_TOF;
       FillSparse(fOutputContainer,"hsPID_MCPr",value);
     }
-
-
 
   }//end of track loop
 }
@@ -751,6 +777,11 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
 
 	for(Int_t itrack=0;itrack<trackMult;itrack++){
 		AliVParticle *particle = (AliVParticle*)fEvent->GetTrack(itrack);
+
+    if(fIsMC){
+      Int_t label = TMath::Abs(particle->GetLabel());
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
+    }
 
 		//reduce unnecessary IsSelected()
 		if(particle->Pt() < 0.15) continue;
@@ -827,6 +858,14 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
 		FillHistogramTH1(fOutputContainer,"hTrackNscITS"         ,NscITS);
 		FillHistogramTH1(fOutputContainer,"hTrackChi2ITS"        ,ITSchi2);
 
+    //printf("pin = %f GeV/c , eta = %f\n",pin, track->Eta());
+    nsigma_El_TPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+    nsigma_El_ITS = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+    nsigma_El_TOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron);
+    //printf("before nsigma_El_TPC = %f\n",nsigma_El_TPC);
+    //printf("before nsigma_El_ITS = %f\n",nsigma_El_ITS);
+    //printf("before nsigma_El_TOF = %f\n",nsigma_El_TOF);
+
     nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(track,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(track,AliPID::kElectron);
     nsigma_El_ITS = (fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(track,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(track,AliPID::kElectron);
     nsigma_El_TOF = (fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(track,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(track,AliPID::kElectron);
@@ -839,9 +878,9 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
     //printf("For TPC Ka : cntrd = %f , width = %f\n",AliDielectronPID::GetCntrdCorr(track,AliPID::kKaon),AliDielectronPID::GetWdthCorr(track,AliPID::kKaon));
     //printf("For TPC Pr : cntrd = %f , width = %f\n",AliDielectronPID::GetCntrdCorr(track,AliPID::kProton),AliDielectronPID::GetWdthCorr(track,AliPID::kProton));
 
-    //printf("nsigma_El_TPC = %f\n",nsigma_El_TPC);
-    //printf("nsigma_El_ITS = %f\n",nsigma_El_ITS);
-    //printf("nsigma_El_TOF = %f\n",nsigma_El_TOF);
+    //printf("after nsigma_El_TPC = %f\n",nsigma_El_TPC);
+    //printf("after nsigma_El_ITS = %f\n",nsigma_El_ITS);
+    //printf("after nsigma_El_TOF = %f\n",nsigma_El_TOF);
 
 		FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin",pin,nsigma_El_TPC);
 		FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin",pin,nsigma_El_ITS);
@@ -1074,12 +1113,9 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
       if(HasConversionPointOnSPD(v0,legPos,legNeg)){
         FillHistogramTH2(fOutputContainer,"hV0Lxy_GammaConv",Lxy,M12);
         FillHistogramTH2(fOutputContainer,"hV0AP_GammaConv",alpha,qT);
+        FillSparse(fOutputContainer,"hsPID_V0El" ,value);
         if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_online" ,value);
         else                     FillSparse(fOutputContainer,"hsPID_V0El_offline",value);
-      }
-      else if(TMath::Abs(Lxy - 20.0) < 2.0){ //18-22cm in radius
-        if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_bkg_online" ,value);
-        else                     FillSparse(fOutputContainer,"hsPID_V0El_bkg_offline",value);
       }
 
       nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
@@ -1092,12 +1128,9 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
       value[7] = nsigma_El_TOF;
 
       if(HasConversionPointOnSPD(v0,legPos,legNeg)){
+        FillSparse(fOutputContainer,"hsPID_V0El" ,value);
         if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_online" ,value);
         else                     FillSparse(fOutputContainer,"hsPID_V0El_offline",value);
-      }
-      else if(TMath::Abs(Lxy - 20.0) < 2.0){ //18-22cm in radius
-        if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_bkg_online" ,value);
-        else                     FillSparse(fOutputContainer,"hsPID_V0El_bkg_offline",value);
       }
 
       if(TMath::Abs(nsigma_El_TPC) < 3.){//electron is pre-selected by loose 3 sigma.
@@ -1363,12 +1396,9 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
       if(HasConversionPointOnSPD(v0,legPos,legNeg)){
         FillHistogramTH2(fOutputContainer,"hV0Lxy_GammaConv",Lxy,M12);
         FillHistogramTH2(fOutputContainer,"hV0AP_GammaConv",alpha,qT);
+        FillSparse(fOutputContainer,"hsPID_V0El" ,value);
         if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_online" ,value);
         else                     FillSparse(fOutputContainer,"hsPID_V0El_offline",value);
-      }
-      else if(TMath::Abs(Lxy - 20.0) < 2.0){ //18-22cm in radius
-        if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_bkg_online" ,value);
-        else                     FillSparse(fOutputContainer,"hsPID_V0El_bkg_offline",value);
       }
 
       nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
@@ -1381,12 +1411,9 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
       value[7] = nsigma_El_TOF;
 
       if(HasConversionPointOnSPD(v0,legPos,legNeg)){
+        FillSparse(fOutputContainer,"hsPID_V0El" ,value);
         if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_online" ,value);
         else                     FillSparse(fOutputContainer,"hsPID_V0El_offline",value);
-      }
-      else if(TMath::Abs(Lxy - 20.0) < 2.0){ //18-22cm in radius
-        if(v0->GetOnFlyStatus()) FillSparse(fOutputContainer,"hsPID_V0El_bkg_online" ,value);
-        else                     FillSparse(fOutputContainer,"hsPID_V0El_bkg_offline",value);
       }
 
       if(TMath::Abs(nsigma_El_TPC) < 3.){//electron is pre-selected by loose 3 sigma.

@@ -91,6 +91,7 @@ set(SRCS
   Correlationpp/AliAnalysisTaskCorrelationhhK0s.cxx
   Correlationpp/AliAnalysisTaskCorrelationhCasc.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

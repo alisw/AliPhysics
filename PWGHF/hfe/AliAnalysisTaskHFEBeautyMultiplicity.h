@@ -42,15 +42,21 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
         void SetCentralityEstimator(const char *estimator) {fCentralityEstimator = estimator; };
 
-	void SetMultiProfileLHC16qt(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof); }
 
-	TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
+	void SetMultiProfileLHC16qt(TProfile *hprof)    { fMultiEstimatorAvg[0] = new TProfile(*hprof); }
+	void SetMultiProfileLHC16qt_MC(TProfile *hprof) { fMultiEstimatorAvg[1] = new TProfile(*hprof); }
+
+	TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD, Bool_t iData);
 	Double_t Nref;
-	void SetNref(Double_t nref) { Nref = nref; };
+	Double_t MinNtrklet;
+	Double_t MaxNtrklet;
 
-	Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
-    
-    
+	void SetNref(Double_t nref) { Nref = nref; };
+	void SetNtrkletMin(Double_t minNtrklet) { MinNtrklet = minNtrklet; };
+	void SetNtrkletMax(Double_t maxNtrklet) { MaxNtrklet = maxNtrklet; };
+
+
+
         //---- MC analysis ----//
         virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
         Bool_t                  IsPdecay(int mpid);
@@ -58,7 +64,6 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Bool_t                  IsBdecay(int mpid);
         virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 
-	TProfile* GetEstimatorHistogramMC(const AliAODEvent *fAOD);
     
     private:
         enum{
@@ -122,9 +127,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH2F* fClsEtaPhiAftMatch;     // cluster eta&phi (after track matching)
         TH2F* fClsEtaPhiAftMatchEMCin;// cluster eta&phi (after track matching inside EMCal)
         TH2F* fClsEtaPhiAftMatchEMCout;// cluster eta&phi (after track matching outside EMCal)
-        TH1F* fHistEMCTrkMatch_Eta;   // distance of EMCal cluster to its closest track (Eta)
-        TH1F* fHistEMCTrkMatch_Phi;   // distance of EMCal cluster to its closest track (Phi)
-        TH2F* fEMCTrkMatch_EtaPhi;
+        TH2F* fEMCTrkMatch_EtaPhi;    // EMCAL track matching Eta&Phi difference
         TH2F* fEMCTrkMatch_EtaPhi_AfterCut;
 
 	
@@ -242,6 +245,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*		    fHistPt_D_TrkCut7;
 	TH1F*		    fHistPt_D_TrkCut8;
 	TH1F*		    fHistPt_D_TrkCut9;
+
+	TH2F*		    fNtrkletNch;
     
     
     
@@ -249,7 +254,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         AliAnalysisTaskHFEBeautyMultiplicity(const AliAnalysisTaskHFEBeautyMultiplicity&);                // not implemented
         AliAnalysisTaskHFEBeautyMultiplicity& operator = (const AliAnalysisTaskHFEBeautyMultiplicity&);   // not implemented
 
-	TProfile*	fMultiEstimatorAvg;
+	TProfile*	fMultiEstimatorAvg[2];
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

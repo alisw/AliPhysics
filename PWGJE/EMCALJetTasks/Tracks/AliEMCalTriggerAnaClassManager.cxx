@@ -129,14 +129,14 @@ void AliEMCalTriggerAnaClassManager::SetTriggerDecision(AliEMCalTriggerAnaTrigge
  * \return True if among the selected classes we find a minimum bias trigger
  */
 bool AliEMCalTriggerAnaClassManager::HasMinBiasTrigger() const {
-  bool result = kFALSE;
+  Bool_t result = kFALSE;
   for(TIter clsiter = TIter(fSelected).Begin(); clsiter != TIter::End(); ++clsiter){
     if((static_cast<AliEMCalTriggerAnaTriggerClass *>(*clsiter))->IsMinBiasTrigger()){
       result = kTRUE;
       break;
     }
   }
-  return kTRUE;
+  return result;
 }
 
 /**

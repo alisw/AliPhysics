@@ -34,13 +34,18 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		AliAnalysisFilter *GetPIDFilter()  {return fPIDFilter;}
 
     void SetPIDCalibMode(Bool_t flag) {fPIDCalibMode = flag;}
-		void SetPIDCaibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
+		void SetPIDCalibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
 
 		void SetCentroidCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
 
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("cntrd%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
-			printf("key = %s\n",key.Data());
+			//printf("key = %s\n",key.Data());
+      fun->GetAxis(4)->SetUniqueID(var4);
+      fun->GetAxis(3)->SetUniqueID(var3);
+      fun->GetAxis(2)->SetUniqueID(var2);
+      fun->GetAxis(1)->SetUniqueID(var1);
+      fun->GetAxis(0)->SetUniqueID(var0);
 			fPostPIDCntrdCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
 			// check for corrections and add their variables to the fill map
 			printf("detID = %u , parID = %u, POST PID CORRECTION in PU added for centroids:  ",detID,parID);
@@ -52,13 +57,22 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
+      fUsedVars->SetBitNumber(var0, kTRUE);
+      fUsedVars->SetBitNumber(var1, kTRUE);
+      fUsedVars->SetBitNumber(var2, kTRUE);
+      fUsedVars->SetBitNumber(var3, kTRUE);
+      fUsedVars->SetBitNumber(var4, kTRUE);
 		}
 
 		void SetWidthCorrFunctionPU(UInt_t detID, UInt_t parID, THnBase *fun, UInt_t var0, UInt_t var1, UInt_t var2, UInt_t var3, UInt_t var4) {
 
 			// clone temporare histogram, otherwise it will not be streamed to file!
 			TString key = Form("wdth%d%d%d%d%d_%d%d",var0,var1,var2,var3,var4,detID,parID);
-
+      fun->GetAxis(4)->SetUniqueID(var4);
+      fun->GetAxis(3)->SetUniqueID(var3);
+      fun->GetAxis(2)->SetUniqueID(var2);
+      fun->GetAxis(1)->SetUniqueID(var1);
+      fun->GetAxis(0)->SetUniqueID(var0);
 			fPostPIDWdthCorrPU[detID][parID] = (THnBase*)fun->Clone(key.Data());
 			// check for corrections and add their variables to the fill map
 			printf("detID = %u , parID = %u, POST PID CORRECTION IN PU added for widths:  ",detID,parID);
@@ -70,7 +84,156 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 				case 1: printf(" %s " ,fun->GetAxis(0)->GetName());
 			}
 			printf("\n");
+      fUsedVars->SetBitNumber(var0, kTRUE);
+      fUsedVars->SetBitNumber(var1, kTRUE);
+      fUsedVars->SetBitNumber(var2, kTRUE);
+      fUsedVars->SetBitNumber(var3, kTRUE);
+      fUsedVars->SetBitNumber(var4, kTRUE);
 		}
+
+    void SetCentroidCorrFunctionTPC(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("cntrd%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDCntrdCorrTPC = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDCntrdCorrTPC)  {
+        printf("POST TPC PID CORRECTION added for centroids:  ");
+        switch(fPostPIDCntrdCorrTPC->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDCntrdCorrTPC->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDCntrdCorrTPC->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDCntrdCorrTPC->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    } 
+
+    void SetWidthCorrFunctionTPC(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("wdth%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDWdthCorrTPC = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDWdthCorrTPC)  {
+        printf("POST TPC PID CORRECTION added for widths:  ");
+        switch(fPostPIDWdthCorrTPC->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDWdthCorrTPC->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDWdthCorrTPC->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDWdthCorrTPC->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    }
+
+    void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("cntrd%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDCntrdCorrITS = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDCntrdCorrITS)  {
+        printf("POST ITS PID CORRECTION added for centroids:  ");
+        switch(fPostPIDCntrdCorrITS->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDCntrdCorrITS->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDCntrdCorrITS->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDCntrdCorrITS->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    } 
+
+    void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("wdth%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDWdthCorrITS = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDWdthCorrITS)  {
+        printf("POST ITS PID CORRECTION added for widths:  ");
+        switch(fPostPIDWdthCorrITS->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDWdthCorrITS->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDWdthCorrITS->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDWdthCorrITS->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    }
+
+    void SetCentroidCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("cntrd%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDCntrdCorrTOF = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDCntrdCorrTOF)  {
+        printf("POST TOF PID CORRECTION added for centroids:  ");
+        switch(fPostPIDCntrdCorrTOF->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDCntrdCorrTOF->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDCntrdCorrTOF->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDCntrdCorrTOF->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    } 
+
+    void SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
+      UInt_t valType[20] = {0};
+      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      TString key = Form("wdth%d%d%d",varx,vary,varz);
+      fun->GetZaxis()->SetUniqueID(varz);
+      fun->GetYaxis()->SetUniqueID(vary);
+      fun->GetXaxis()->SetUniqueID(varx);
+      fPostPIDWdthCorrTOF = (TH1*)fun->Clone(key.Data());
+      // check for corrections and add their variables to the fill map
+      if(fPostPIDWdthCorrTOF)  {
+        printf("POST TOF PID CORRECTION added for widths:  ");
+        switch(fPostPIDWdthCorrTOF->GetDimension()) {
+          case 3: printf(" %s, ",fPostPIDWdthCorrTOF->GetZaxis()->GetName());
+          case 2: printf(" %s, ",fPostPIDWdthCorrTOF->GetYaxis()->GetName());
+          case 1: printf(" %s ",fPostPIDWdthCorrTOF->GetXaxis()->GetName());
+        }
+        printf("\n");
+        fUsedVars->SetBitNumber(varx, kTRUE);
+        fUsedVars->SetBitNumber(vary, kTRUE);
+        fUsedVars->SetBitNumber(varz, kTRUE);
+      }
+    }
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -116,6 +279,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliVEvent *fEvent;
     AliESDEvent *fESDEvent;
     AliAODEvent *fAODEvent;
+    AliMCEvent *fMCEvent;
     TString fEstimator;//V0[M|A|C], ZN[A|C], CL[0|1]
     AliMultSelection *fMultSelection;
     Float_t fCentrality;
@@ -129,6 +293,12 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
 		Bool_t fPIDCalibinPU;
 		THnBase *fPostPIDCntrdCorrPU[15][15];   // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
 		THnBase *fPostPIDWdthCorrPU[15][15];    // post pid correction object //multi-dimension for pileup, 3 for TPC/ITS/TOF, 5 for e/mu/pi/k/p
+    TH1 *fPostPIDCntrdCorrTPC;
+    TH1 *fPostPIDWdthCorrTPC;
+    TH1 *fPostPIDCntrdCorrITS;
+    TH1 *fPostPIDWdthCorrITS;
+    TH1 *fPostPIDCntrdCorrTOF;
+    TH1 *fPostPIDWdthCorrTOF;
 		TObjArray *fTagTrackArray;//ele or pos
 		TObjArray *fProbeTrackArray;//ele or pos
 		TObjArray *fPassingProbeTrackArray;//ele or pos
@@ -152,7 +322,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 6);
+    ClassDef(AliAnalysisTaskTagAndProbe, 8);
 };
 
 

@@ -1,5 +1,3 @@
-/*
- *****************************************************************************************/
 #ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
 #define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
 

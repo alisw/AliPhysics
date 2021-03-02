@@ -137,6 +137,19 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetEventQAPlots(Bool_t pl) { fEventCutsQAPlots = pl; }
         void                    SetppAnalysis(Bool_t pp) { fpp = pp; }
         void                    SetNMultiplicityBins(Int_t nBins) { fNMultiplicityBins = nBins; }
+        void                    SetCascadePointingAgle(Double_t pa) { fCascadePA = pa; }
+        void                    SetCascadeTransverseDecayRadius(Double_t dr) { fCascadeTransverseDecayRadius = dr; }
+        void                    SetDaughterV0DecayRadius(Double_t dr) { fDaughterV0DecayRadius = dr; }
+        void                    SetDaughterV0cosPA(Double_t pa) { fDaughterV0cosPA = pa; }
+        void                    SetDCADaughterV0PV(Double_t dca) { fDCADaughterV0PV = dca; }
+        void                    SetDCADaughterV0tracks(Double_t dca) { fDCADaughterV0tracks = dca;}
+        void                    SetDCACascadeDaughters(Double_t dca) { fDCACascadeDaughters = dca; }
+        void                    SetDaugterV0InvariantMassRange(Double_t m) { fDaugterV0InvariantMassRange = m; }
+        void                    SetCascadeProperLifetime(Double_t pl) { fCascadeProperLifetime = pl; }
+        void                    SetNSigmasTPCCascadedaughterTracks(Double_t nsig) { fNSigmasTPCCascadedaughterTracks = nsig; }
+        void                    SetDCAbachelorPV(Double_t dca) { fDCAbachelorPV = dca; }
+        void                    SetDCAbaryonDaughterPV(Double_t dca) { fDCAbaryonDaughterPV = dca; }
+        void                    SetDCAmesonDaughterPV(Double_t dca) { fDCAmesonDaughterPV = dca; }
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -292,12 +305,24 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fEventCutsQAPlots; // enable to save event QA plots
         Bool_t                  fpp; // flag pp / PbPb
         Int_t                   fNMultiplicityBins; // number of multiplicity bins
-
+        Double_t                fCascadePA; //casscade cos(PA) cut 
+        Double_t                fCascadeTransverseDecayRadius; // cascade transverse radius cut
+        Double_t                fDaughterV0DecayRadius; // cascade daughter V0 transverse decay radius cut
+        Double_t                fDaughterV0cosPA; // cascade daughter V0 cos(PA) cut
+        Double_t                fDCADaughterV0PV; // cascade DCA daughter V0 to PV cut
+        Double_t                fDCADaughterV0tracks; // cascade DCA of daughter V0 tracks cut
+        Double_t                fDCACascadeDaughters; // DCA of Cascade Daughters cut 
+        Double_t                fDaugterV0InvariantMassRange; // cascade daugter V0 invariant mass range cut
+        Double_t                fCascadeProperLifetime; // cascade proper lifetime cut
+        Double_t                fNSigmasTPCCascadedaughterTracks; // N Sigmas TPC of Cascade daughter Tracks cut
+        Double_t                fDCAbachelorPV; // DCA of cacscade bachelor track to PV cut
+        Double_t                fDCAbaryonDaughterPV; // DCA of cascade baryon daughter track to PV cut 
+        Double_t                fDCAmesonDaughterPV; // DCA of cascade meson daughter track to PV cut 
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 34);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 35);
 };
 
 class AliV0ChParticle : public AliVParticle

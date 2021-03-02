@@ -30,11 +30,13 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetZVertexMaxRange(Double_t zmax){fMaxZVert=zmax;}
   void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
   void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
+  void SetUseKFParticleVertexer(){fSecVertexerAlgo=2;}
   void SetReadMC(Bool_t read){fReadMC=read;}
   void SetUseCandidateAnalysisCuts(){fCandidateCutLevel=2;}
   void SetUseCandidateSkimCuts(){fCandidateCutLevel=1;}
   void SetUseNoCandidateCuts(){fCandidateCutLevel=0;}
-  
+  void SetUsePtDependentFiducialAcceptance(){fMaxRapidityCand=-999.;}
+  void SetMaxRapidityForFiducialAcceptance(Double_t ymax){fMaxRapidityCand=ymax;}
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
@@ -43,12 +45,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   char* GetJsonString(const char* jsonFileName, const char* key);
   int GetJsonInteger(const char* jsonFileName, const char* key);
-  bool GetJsonBool(const char* jsonFileName, const char* key);
+  int GetJsonBool(const char* jsonFileName, const char* key);
   float GetJsonFloat(const char* jsonFileName, const char* key);
   
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
-  void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12);
+  void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
   Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
@@ -58,7 +60,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
 
-
+  Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
   Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t DplusSkimCuts(AliAODRecoDecayHF3Prong* cand);
@@ -106,6 +108,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
   TH1F* fHistPtD0;                   //!<!  histo with D0 pt
+  TH2F *fHistYPtD0;                  //!<!  histo with D0 y vs pt
   TH1F* fHistPtD0Dau0;               //!<!  histo with D0 prong pt
   TH1F* fHistPtD0Dau1;               //!<!  histo with D0 prong pt
   TH1F* fHistImpParD0Dau0;           //!<!  histo with D0 prong d0
@@ -143,7 +146,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistInvMassJpsiSignal;        //!<!  histo with Jpsi (MC truth) inv mass
 
   TH1F* fHistInvMassDplus;           //!<!  histo with D+ inv mass
-  TH1F* fHistPtDPlus;                //!<!  histo with D+ pt
+  TH1F* fHistInvMassDplusSignal;     //!<!  histo with D+ inv mass (only signal)
+  TH1F* fHistPtDplus;                //!<!  histo with D+ pt
+  TH2F *fHistYPtDplus;               //!<!  histo with D+ y vs pt
   TH1F* fHistPtDplusDau0;            //!<!  histo with D+ prong pt
   TH1F* fHistPtDplusDau1;            //!<!  histo with D+ prong pt
   TH1F* fHistPtDplusDau2;            //!<!  histo with D+ prong pt
@@ -166,17 +171,28 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   TH1F *fHistInvMassDs;              //!<!  histo with Ds->KKpi inv mass
   TH1F *fHistPtDs;                   //!<!  histo with Ds pt
+  TH2F *fHistYPtDs;                  //!<!  histo with Ds y vs pt
   TH1F *fHistDecLenDs;               //!<!  histo with Ds decay length
   TH1F *fHistCosPointDs;             //!<!  histo with Ds cosine of pointing angle
 
   TH1F *fHistInvMassLc;              //!<!  histo with LcpKpi+ inv mass
   TH1F *fHistPtLc;                   //!<!  histo with LcpKpi+ pt
+  TH2F *fHistYPtLc;                  //!<!  histo with LcpKpi+ y vs pt
   TH1F *fHistPtLcDau0;               //!<!  histo with LcpKpi+ prong pt
   TH1F *fHistPtLcDau1;               //!<!  histo with LcpKpi+ prong pt
   TH1F *fHistPtLcDau2;               //!<!  histo with LcpKpi+ prong pt
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  TH1F* fHistPtGenPrompt[5];        //!<! histos for efficiency (prompt)
+  TH1F* fHistPtGenFeeddw[5];        //!<! histos for efficiency (from B)
+  TH1F* fHistPtGenLimAccPrompt[5];  //!<! histos for efficiency (prompt)
+  TH1F* fHistPtGenLimAccFeeddw[5];  //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoGenPtPrompt[5];  //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoGenPtFeeddw[5];  //!<! histos for efficiency (from B)
+  TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
+  TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
+  
   Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
@@ -188,6 +204,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fMaxZVert;          // cut on z vertex position
   Bool_t  fDo3Prong;           // flag yes/no for 3 prongs
   Double_t fMaxDecVertRadius2; // square of max radius of decay vertex
+
   
   Double_t fMassDzero;         // D0 mass from PDG
   Double_t fMassJpsi;          // Jpsi mass from PDG
@@ -200,7 +217,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   AliVertexerTracks* fVertexerTracks;             // Run-2 vertexer
   o2::vertexing::DCAFitter2 fO2Vertexer2Prong;    // o2 vertexer
   o2::vertexing::DCAFitter3 fO2Vertexer3Prong;    // o2 vertexer
-
+  Bool_t fVertexerPropagateToPCA;
+  Double_t fVertexerMaxR;
+  Double_t fVertexerMaxDZIni;
+  Double_t fVertexerMinParamChange;
+  Double_t fVertexerMinRelChi2Change;
+  Bool_t fVertexerUseAbsDCA;
   AliESDtrackCuts* fTrackCuts2pr;  // Track cut object for 2 prongs
   AliESDtrackCuts* fTrackCuts3pr;  // Track cut object for 3 prongs
   Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
@@ -223,7 +245,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
-
+  Double_t fMaxRapidityCand;          // Max rapidity cut (if -999 use pt dependent cut)
   Int_t fNPtBinsJpsi;
   Int_t fNPtBinsLc;                             // Number of pt bins
   Int_t fSelectJpsi;
@@ -232,7 +254,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,12);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,16);
 };
 
 

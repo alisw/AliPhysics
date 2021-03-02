@@ -58,6 +58,7 @@ set(SRCS
   BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
   BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
+  KaonIsospinFluctuations/task/AliAnalysisTaskFluctMCTEPOS.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
@@ -168,4 +169,4 @@ install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/I
 install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
 install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
-
+install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)

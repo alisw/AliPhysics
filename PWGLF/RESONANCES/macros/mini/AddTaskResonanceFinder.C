@@ -309,6 +309,10 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
         Config_K0Lambdastar(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
     }else if(d2==AliRsnDaughter::kLambdastar && d1==AliRsnDaughter::kKaon0){
         Config_K0Lambdastar(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
+    }else if(d1==AliRsnDaughter::kLambdastar && d2==AliRsnDaughter::kKaon){
+        Config_KxLambdastar(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
+    }else if(d2==AliRsnDaughter::kLambdastar && d1==AliRsnDaughter::kKaon){
+        Config_KxLambdastar(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
     }
  
     cerr<<"done configuring"<<endl;

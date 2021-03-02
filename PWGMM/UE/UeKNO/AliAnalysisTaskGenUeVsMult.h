@@ -96,6 +96,7 @@ private:
 	TH1D * fMultiplicyNS;
     TH1D * fMultiplicyAS;
     TH1D * fMultiplicyTS;
+    TH1D * hGenEta;                                           //! Eta distribution of Generated tracks
     
     //TH1D * fMult2[5];
 	

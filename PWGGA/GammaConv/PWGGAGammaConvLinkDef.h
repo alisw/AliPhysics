@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskGammaConvV1+;
 #pragma link C++ class AliAnalysisTaskGammaConvDalitzV1+;
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
+#pragma link C++ class AliAnalysisTaskGammaCaloMergedML+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCaloDalitzV1+;

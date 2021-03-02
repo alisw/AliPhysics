@@ -22,6 +22,7 @@ class AliGFWCuts {
   void ResetCuts();
   void PrintSetup();
   void SetupCuts(Int_t);
+  void SetEta(Double_t newval) { fEta = newval; };
   TString *GetFlagDescription(Int_t flag);
   const char *GetSystPF() { return Form("%s",fSystFlag?Form("_SystFlag%i_",fSystFlag):""); };
   Int_t GetSystFlagIndex() { return fSystFlag; };

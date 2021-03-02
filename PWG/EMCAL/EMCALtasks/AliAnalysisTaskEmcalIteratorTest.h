@@ -61,6 +61,9 @@ protected:
   TString                     fNameMCParticleContainer;     /// Name of the MC particle container
   TString                     fNameTrackContainer;          /// Name of the track container
 
+  AliAnalysisTaskEmcalIteratorTest(const AliAnalysisTaskEmcalIteratorTest &);
+  AliAnalysisTaskEmcalIteratorTest &operator=(const AliAnalysisTaskEmcalIteratorTest &);
+
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalIteratorTest, 1);
   /// \endcond

@@ -79,6 +79,7 @@ set(SRCS
     AliAnalysisTaskGammaConvV1.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaCaloMerged.cxx
+    AliAnalysisTaskGammaCaloMergedML.cxx
     AliAnalysisTaskGammaConvCalo.cxx
     AliAnalysisTaskGammaCalo.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx

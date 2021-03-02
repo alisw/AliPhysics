@@ -347,7 +347,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
   AliVTrack *checktrack(NULL);
   AliVParticle *assocMC(NULL);
-  double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
+  double etaEMCAL(0.), phiEMCAL(0.);
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
@@ -388,8 +388,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {
 
     if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
-    ptparticle = TMath::Abs(assocMC->Pt());
-    etaparticle = assocMC->Eta();
+    double ptparticle = TMath::Abs(assocMC->Pt());
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:

@@ -78,6 +78,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fNUAHist(0),
   fRunNo(0),
   fGFWSelection(0),
+  fGFWNtotSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -132,6 +133,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fNUAHist(0),
   fRunNo(0),
   fGFWSelection(0),
+  fGFWNtotSelection(0),
   fFC(0),
   fGFW(0),
   fSpectraList(0),
@@ -222,7 +224,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
         fWeights[i]->SetPtBins(fNPtBins,fPtBins);
         // fWeights[i]->SetPtBins(NbinsPtForV2,binsPtForV2);
         fWeights[i]->SetName(Form("weight_%s",wNames[i].Data()));
-        fWeights[i]->Init(kFALSE,kTRUE);
+        fWeights[i]->Init(!fIsMC,fIsMC);
         fWeightList->Add(fWeights[i]);
       }
       PostData(1,fWeightList);
@@ -296,6 +298,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChGap24","ChGap24")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChFull22","ChFull22")); //no-gap case
     oba->Add(new TNamed("ChFull24","ChFull24")); //no-gap case
+//adding v3n
+    oba->Add(new TNamed("ChGap32","ChGap32")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("ChGap34","ChGap34")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("ChFull32","ChFull32")); //no-gap case
+    oba->Add(new TNamed("ChFull34","ChFull34")); //no-gap case
 
     //Following is for PID. Let's remove it for now to save some memory
 /*    oba->Add(new TNamed("ChPos22","ChPos22"));
@@ -323,13 +330,18 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     delete oba;
     PostData(2,fFC);
     //Initializing GFW
+    /* //for v2-only
+
     Int_t pows[] = {3,0,2,0,3};
-    Int_t powsFull[] = {5,0,4,0,3};
-    Int_t powsPOI[] = {3,0,2,0,3};
+    Int_t powsFull[] = {5,0,4,0,3};*/
+    // Int_t powsPOI[] = {3,0,2,0,3};
+    //for v2{4} and v3{4}:
+    Int_t pows[] = {3,0,2,2,3,0,3};
+    Int_t powsFull[] = {5,0,4,4,3,0,3};
     fGFW = new AliGFW();
-    fGFW->AddRegion("refN",5,pows,-0.8,-fEtaV2Sep,1,1);
-    fGFW->AddRegion("refP",5,pows,fEtaV2Sep,0.8,1,1);
-    fGFW->AddRegion("mid",5,powsFull,-0.8,0.8,1,2);
+    fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
+    fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
+    fGFW->AddRegion("mid",7,powsFull,-0.8,0.8,1,2);
     //No need to do full-blown PID, limit only with charged flow
     /*
     fGFW->AddRegion("refN",5,pows,-0.8,-0.4,1,1);
@@ -354,10 +366,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     //Covariance
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new TProfile*[4];
+    fCovariance = new TProfile*[8];
     for(Int_t i=0;i<4;i++) {
       fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[i] = (TProfile*)fCovList->At(i);
+    };
+    for(Int_t i=0;i<4;i++) {
+      fCovList->Add(new TProfile(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fCovariance[4+i] = (TProfile*)fCovList->At(i+4);
     };
     PostData(3,fCovList);
     fV2dPtList = new TList();
@@ -367,6 +383,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     // delete oba;
     oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22"));
+    oba->Add(new TNamed("ChGap32","ChGap32"));
     for(Int_t j=0;j<fV2dPtMulti->GetNbinsX();j++) {
       AliGFWFlowContainer *fPV = new AliGFWFlowContainer();
       fPV->SetName(Form("v2dpt_%i",j));
@@ -454,6 +471,9 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEventCuts.SetCentralityEstimators("V0M","CL0");
     fEventCuts.SetCentralityRange(0.f,101.f);
   }
+  fGFWNtotSelection = new AliGFWCuts();
+  fGFWNtotSelection->SetupCuts(0);
+  fGFWNtotSelection->SetEta(fEtaNch);
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
@@ -478,7 +498,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   fGFWSelection->AcceptVertex(fAOD);
   if(fStageSwitch==1)
-    FillWeights(fAOD, vz,l_Cent,vtxXYZ);
+    fIsMC?FillWeightsMC(fAOD, vz,l_Cent,vtxXYZ):FillWeights(fAOD, vz,l_Cent,vtxXYZ);
   if(fStageSwitch==2)
     fIsMC?FillMeanPtMC(fAOD,vz,l_Cent,vtxXYZ):FillMeanPt(fAOD, vz, l_Cent,vtxXYZ);
   if(fStageSwitch==3)
@@ -511,8 +531,8 @@ void AliAnalysisTaskMeanPtV2Corr::Terminate(Option_t*) {
 Bool_t AliAnalysisTaskMeanPtV2Corr::CheckTrigger(Double_t lCent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(fTriggerType&fSelMask)) return kFALSE;
-  if((fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
-  if((fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+  if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) return kFALSE;
+  if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
   return kTRUE;
 };
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
@@ -543,6 +563,18 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *l
   } else return kFALSE; //DCA cut is a must for now
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 };
+Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
+  if(mtr->Pt()<ptMin) return kFALSE;
+  if(mtr->Pt()>ptMax) return kFALSE;
+  if(ltrackXYZ && vtxp) {
+    mtr->GetXYZ(ltrackXYZ);
+    ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
+    ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
+    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+  } else return kFALSE; //DCA cut is a must for now
+  if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+};
 Bool_t AliAnalysisTaskMeanPtV2Corr::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
   if(mpa->Charge()==0) return kFALSE;
@@ -561,7 +593,7 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
   if(instr.Contains("Efficiency")) return 7;
   return 0;
 }
-void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   //MC generated
   AliVParticle *lPart;
   AliAODTrack *lTrack;
@@ -595,6 +627,25 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t 
   };
   PostData(1,fWeightList);
 }
+void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
+  AliAODTrack *lTrack;
+  Double_t trackXYZ[3];
+  for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
+    lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+    if(!lTrack) continue;
+    Double_t trackXYZ[] = {0.,0.,0.};
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
+    Double_t leta = lTrack->Eta();
+    Double_t lpt = lTrack->Pt();
+    ((AliGFWWeights*)fWeightList->At(0))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+    if(fDisablePID) continue;
+    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+    if(PIDIndex) ((AliGFWWeights*)fWeightList->At(PIDIndex))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+
+  };
+  PostData(1,fWeightList);
+}
+
 void AliAnalysisTaskMeanPtV2Corr::FillMeanPtCounter(Double_t pt, Double_t &l_sum, Double_t &l_count, AliGFWWeights *inWeight) {
   Double_t w = inWeight?inWeight->GetIntegratedEfficiency(pt):1;
   if(w==0) return;
@@ -612,7 +663,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
   Double_t trackXYZ[3];
-  Double_t nTotNoTracks=0;
+  Int_t nTotNoTracks=0;
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   Int_t lPosCount=0, lNegCount=0;
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -620,9 +671,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp,nTotNoTracks)) continue;
     Double_t leta = lTrack->Eta();
-    if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+    // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
     if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
     if(TMath::Abs(leta)>fEta) continue; //<pt> calculated in fEta region
     // if(TMath::Abs(lTrack->Eta())<0.8 && lTrack->Pt()>0.2 && lTrack->Pt()<3)  nTotNoTracks++;
@@ -637,7 +688,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
   if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
   if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
-  Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
+  Double_t lMulti  = fUseNch?(1.0*nTotNoTracks):l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<4;i++) {
     if(!l_ptCount[i]) continue;
     Double_t fillWeight = fUseWeightsOne?1:l_ptCount[i];
@@ -651,7 +702,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, const Double_t
   Double_t l_ptsum[]={0,0,0,0};
   Double_t l_ptCount[]={0,0,0,0};
   Double_t trackXYZ[3];
-  Double_t nTotNoTracks=0;
+  Int_t nTotNoTracks=0;
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   Int_t lPosCount=0, lNegCount=0;
@@ -667,7 +718,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, const Double_t
     if (TMath::Abs(leta) > 0.8) continue;
     Double_t pt = lPart->Pt();
     if (pt<0.2 || pt>3.) continue;
-    if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+    if(TMath::Abs(leta)<fEtaNch) nTotNoTracks++; //Nch calculated in EtaNch region
     if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
     if(TMath::Abs(leta)>fEta) continue; //<pt> calculated in fEta region
     Double_t lpt = lPart->Pt();
@@ -677,7 +728,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPtMC(AliAODEvent *fAOD, const Double_t
   if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
   if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
-  Double_t lMulti  = fUseNch?nTotNoTracks:l_Cent; //Whatever the multiplicity is
+  Double_t lMulti  = fUseNch?(1.0*nTotNoTracks):l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<1;i++) { //No PID = index is only 1
     if(!l_ptCount[i]) continue;
     Double_t fillWeight = fUseWeightsOne?1:l_ptCount[i];
@@ -721,7 +772,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
                             {0,0,0,0}, {0,0,0,0}};
   Double_t trackXYZ[3];
   fGFW->Clear();
-  Double_t nTotNoTracks=0;
+  Int_t nTotNoTracks=0;
   Double_t ptmins[] = {0.2,0.2,0.3,0.5};
   Double_t ptmaxs[] = {10.,10.,6.0,6.0};
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
@@ -741,7 +792,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       if (TMath::Abs(leta) > 0.8) continue;
       Double_t pt = lPart->Pt();
       if (pt<0.2 || pt>3.) continue;
-      if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
+      if(TMath::Abs(leta)<fEtaNch) nTotNoTracks++; //Nch calculated in EtaNch region
       Double_t lpt = lPart->Pt();
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
         FillWPCounter(wp[0],1,lpt); //weight = 1, naturally
@@ -756,8 +807,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       if(!lTrack) continue;
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
-      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
-      if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
+      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp,nTotNoTracks)) continue;
+      // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
       Double_t p1 = lTrack->Pt();
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(p1));
@@ -776,7 +827,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
-  Double_t l_Multi = fUseNch?nTotNoTracks:l_Cent;
+  Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
   //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
   if(fUseNch && l_Multi<1) return;
   for(Int_t i=0;i<1;i++) {
@@ -797,6 +848,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
     FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -807,6 +859,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   fV2dPtMulti->Fill(l_Multi);
   // printf("Will use dpt v2 profile index %i (out of %i-1), multiplicity is %f\n",indx,fV2dPtList->GetEntries(),l_Multi);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
+  Fillv2dPtFCs(corrconfigs.at(4),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
 }
 void AliAnalysisTaskMeanPtV2Corr::ProduceALICEPublished_MptProd(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
@@ -986,6 +1039,11 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChGap24","refP {2 2} refN {-2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));
+//v3:
+  corrconfigs.push_back(GetConf("ChGap32","refP {3} refN {-3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChGap34","refP {3 3} refN {-3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));
   return;
 
   //ditch the last code for now, since we don't need PID

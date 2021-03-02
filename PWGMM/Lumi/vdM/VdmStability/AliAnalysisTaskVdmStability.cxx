@@ -580,7 +580,7 @@ void AliAnalysisTaskVdmStability::Terminate(Option_t *)
 Bool_t AliAnalysisTaskVdmStability::CheckTime(Float_t timeA, Float_t timeC){
     Float_t tV0sum = timeA + timeC;
     Float_t tV0diff = timeA - timeC;
-    return (((5. < tV0diff) && (tV0diff < 11.5)) && ((11. < tV0sum) && (tV0sum < 17.5)));
+    return (((5.5 < tV0diff) && (tV0diff < 11.5)) && ((11.5 < tV0sum) && (tV0sum < 17.5)));
 }
 
 //Timing Run

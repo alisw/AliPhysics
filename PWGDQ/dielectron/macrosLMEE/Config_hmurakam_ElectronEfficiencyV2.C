@@ -1,10 +1,12 @@
 //TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid;cutTPC3sigma_itss;cutTPChr_itss;cutTOF_itss;cutpid_itss");
-TString names("pt200_TPCTOFcombITSshared;TPCTOFreq;TPCHadRejTOFif");
+//TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid");
+//TString names("pt200_TPCTOFcombITSshared;TPCTOFreq;TPCHadRejTOFif");
+TString names("cut0");
 bool DoPairing = kTRUE;
 bool DoULSLS = kTRUE;
 
 bool GetResolutionFromAlien = kTRUE;
-std::string resoFilename = ""
+std::string resoFilename = "";
 std::string resoFilenameFromAlien = "";
 
 bool GetCentralityFromAlien = kFALSE;
@@ -23,7 +25,6 @@ const double minGenPt = 0.1;
 const double maxGenPt = 100;
 const double minGenEta = -1.5;
 const double maxGenEta =  1.5;
-
 
 // fiducial cuts
 const double minPtCut = 0.2;
@@ -46,7 +47,27 @@ const Double_t ptBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,10.0,20.0
 };
+
+
+bool usePairPtVector = true;
+const Double_t pairptBins[] = {
+  0.00,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.22,0.24,0.26,0.28,0.30,
+  0.32,0.34,0.36,0.38,0.40,0.42,0.44,0.46,0.48,0.50,0.52,0.54,0.56,0.58,0.60,0.62,
+  0.64,0.66,0.68,0.70,0.72,0.74,0.76,0.78,0.80,0.82,0.84,0.86,0.88,0.90,0.92,0.94,
+  0.96,0.98,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.20,2.30,
+  2.40,2.50,2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.40,3.50,3.60,3.70,3.80,3.90,
+  4.00,4.10,4.20,4.30,4.40,4.50,4.60,4.70,4.80,4.90,5.00,5.10,5.20,5.30,5.40,5.50,
+  5.60,5.70,5.80,5.90,6.00,6.20,6.40,6.60,6.80,7.00,7.20,7.40,7.60,7.80,8.00,8.20,
+  8.40,8.60,8.80,9.00,9.20,9.40,9.60,9.80,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0
+};
+
+bool useMassVector = true;
+const Double_t massBins[] = {
+  0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.22, 0.24, 0.26, 0.28, 0.32, 0.38, 0.54, 0.66, 0.72, 0.76, 0.78, 0.86, 0.98, 1.00, 1.02, 1.1, 1.2, 1.4, 1.64, 1.96, 2.34, 2.84, 2.95, 3.05, 3.1, 3.15, 3.3, 3.5, 3.75, 4.0, 5.0};
+
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
+const Int_t nBinsPairPt =  ( sizeof(pairptBins) / sizeof(pairptBins[0]) )-1;
+const Int_t nBinsMass =  ( sizeof(massBins) / sizeof(massBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
@@ -65,11 +86,16 @@ const double maxThetaBin =  TMath::TwoPi();
 const int    stepsThetaBin = 60;
 
 const double minMassBin = 0;
-const double maxMassBin =  5;
-const int    stepsMassBin = 500;
+const double maxMassBin =  5.;//4.
+const int    stepsMassBin = 500;//400
+
 const double minPairPtBin = 0;
 const double maxPairPtBin =  10;
 const int    stepsPairPtBin = 400;
+
+const double minPhiVBin = 0;
+const double maxPhiVBin =  TMath::Pi();
+const int    stepsPhiVBin = 90;
 
 // Binning of resolution histograms
 const int    NbinsDeltaMom    = 1200;
@@ -111,29 +137,31 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isAOD)
   //Int_t selectedPID=-1;
   //Bool_t isPrefilterCutset=kFALSE;
 
-  AliDielectronV0Cuts *noconv = new AliDielectronV0Cuts("IsGamma","IsGamma");
-  // which V0 finder you want to use
-  noconv->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll(default), kOffline or kOnTheFly
-  // add some pdg codes (they are used then by the KF package and important for gamma conversions)
-  noconv->SetPdgCodes(22,11,11); // mother, daughter1 and 2
-  // add default PID cuts (defined in AliDielectronPID)
-  // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
-  //noconv->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
-  // add the pair cuts for V0 candidates
-  noconv->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.00, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.00, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kR,                             3.0,  90.00, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
-  noconv->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
-  // selection or rejection of V0 tracks
-  noconv->SetExcludeTracks(kTRUE); 
+  // AliDielectronV0Cuts *noconv = new AliDielectronV0Cuts("IsGamma","IsGamma");
+  // // which V0 finder you want to use
+  // noconv->SetV0finder(AliDielectronV0Cuts::kAll);  // kAll(default), kOffline or kOnTheFly
+  // // add some pdg codes (they are used then by the KF package and important for gamma conversions)
+  // noconv->SetPdgCodes(22,11,11); // mother, daughter1 and 2
+  // // add default PID cuts (defined in AliDielectronPID)
+  // // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+  // //noconv->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
+  // // add the pair cuts for V0 candidates
+  // noconv->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.00, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kChi2NDF,                       0.0,  10.00, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kLegDist,                       0.0,   0.25, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kR,                             3.0,  90.00, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kPsiPair,                       0.0,   0.05, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
+  // noconv->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
+  // // selection or rejection of V0 tracks
+  // noconv->SetExcludeTracks(kTRUE); 
   
   anaFilter->AddCuts( SetupTrackCuts(cutDefinition) );
   anaFilter->AddCuts( SetupPIDcuts(cutDefinition) );
-  anaFilter->AddCuts( noconv );
+  // anaFilter->AddCuts( noconv );
   std::cout << "...cuts added!" <<std::endl; 
+
+  anaFilter->Print();
   
   return anaFilter;
 }
@@ -150,13 +178,14 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
   trackCutsDiel->SetRequireTPCRefit(kTRUE);
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-
   // pT and eta
   trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.2,   1e30);
   trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -0.8,   0.8);
+
   //primary selection
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,   1.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,   3.0);
+
   //TPC
   trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);
@@ -167,12 +196,14 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,         3.0, 100.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,       0.0,   4.5);
 
-  /* printf("Add shared cluster cut\n"); */
-  /* trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE); */
+  printf("Add shared cluster cut\n");
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);
 
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("Trackcuts","Trackcuts",AliDielectronCutGroup::kCompAND);
   trackCuts->AddCut(trackCutsAOD);
   trackCuts->AddCut(trackCutsDiel);
+
+  trackCuts->Print();
 
   return trackCuts;
 
@@ -183,25 +214,6 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
 {
 
   std::cout << "SetupPIDcuts()" <<std::endl;
-
-  AliDielectronPID *mastermind_TPC_3sigma = new AliDielectronPID("mastermind_TPC_3sigma","mastermind_TPC_3sigma");
-  AliDielectronPID *mastermind_TPC = new AliDielectronPID("mastermind_TPC","mastermind_TPC");
-  AliDielectronPID *mastermind_TOF = new AliDielectronPID("mastermind_TOF","mastermind_TOF");
-
-  // Simple PID
-  mastermind_TPC_3sigma->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-
-  //TPC electrons: includes electrons and exclude all possible other contributions using the TPC
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4.,0.0, 100., kTRUE ,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kMuon,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TPC->AddCut(AliDielectronPID::kTPC,AliPID::kProton,    -3. ,3.,0.0, 100., kTRUE, AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-
-  //TOF electrons: includes all electrons, exlcludes Pions using the TPC
-  mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3., 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TOF->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4. , 0.0 ,100., kTRUE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
-  mastermind_TOF->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
 
   AliDielectronPID *pidTPCTOFreq = new AliDielectronPID("pidTPCTOFreq","pidTPCTOFreq");
   pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
@@ -216,21 +228,20 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
   pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kIfAvailable, AliDielectronVarManager::kP);
 
   AliAnalysisCuts* fancyCut=0x0;
-
   if(cutDefinition==0){
-    printf("cutDefinition==0 pt200_TPCTOFcombITSshared\n");
+    printf("pt200_TPCTOFcombITSshared\n");
     // combine 2 cut sets with OR option
     AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
     combinedPIDcuts->AddCut(pidTPCTOFreq);
     combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
     fancyCut = combinedPIDcuts;
   }else if(cutDefinition==1){
-    printf("cutDefinition==1 TPCTOFreq\n");
+    printf("TPCTOFreq\n");
     AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
     combinedPIDcuts->AddCut(pidTPCTOFreq);
     fancyCut = combinedPIDcuts;
   }else if(cutDefinition==2){
-    printf("cutDefinition==2 TPCHadRejTOFif\n");
+    printf("TPCHadRejTOFif\n");
     AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
     combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
     fancyCut = combinedPIDcuts;
@@ -238,6 +249,7 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
     printf("no cutDefinition.");
   }
   return fancyCut;
+
 }
 
 // #########################################################
@@ -346,67 +358,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     // pair_conversion.SetMothersRelation(AliDielectronSignalMC::kSame);
     // task->AddPairMCSignal(pair_conversion);
 }
-void SetEtaCorrectionTOFMean(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim) {
-  //
-  // eta correction for the centroid and width of electron sigmas in the TOF, can be one/two/three-dimensional
-  //
-  std::cout << "Set eta correction mean for TOF\n";
-  std::string file_name = "CorrTOF_MC_07_11_2018.root";
 
-  TFile* _file = TFile::Open(file_name.c_str());
-  std::cout << _file << std::endl;
-  if (_file == 0x0){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/CorrTOF_MC_07_11_2018.root  .");
-    std::cout << "Copy TOF correction from Alien" << std::endl;
-    _file = TFile::Open("CorrTOF_MC_07_11_2018.root");
-    if(_file == 0x0) {
-      printf("Did not find the file for mean\n");
-      return;
-    }
-    else printf("Correction loaded\n");
-  }
-  else {
-    std::cout << "Correction loaded" << std::endl;
-  }
-
-  TH2D* mean = dynamic_cast<TH2D*>(_file->Get("Corrmean"));
-  if(mean) {
-    printf("Set the mean correction for TOF\n");
-    task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, mean,  corrXdim, corrYdim);
-  }
-  
-
-}
-void SetEtaCorrectionTOFRMS(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim) {
-  //
-  // eta correction for the centroid and width of electron sigmas in the TOF, can be one/two/three-dimensional
-  //
-  std::cout << "Set eta correction width for TOF\n";
-  std::string file_name = "CorrTOF_MC_07_11_2018.root";
-
-  TFile* _file = TFile::Open(file_name.c_str());
-  std::cout << _file << std::endl;
-  if (_file == 0x0){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/macrosLMEE/CorrTOF_MC_07_11_2018.root .");
-    std::cout << "Copy TOF correction from Alien" << std::endl;
-    _file = TFile::Open("CorrTOF_MC_07_11_2018.root");
-    if(_file == 0x0) {
-      printf("Did not find the file for sigma\n");
-      return;
-    }
-    else printf("correction loaded\n");
-  }
-  else {
-    std::cout << "Correction loaded" << std::endl;
-  }
-  
-  TH2D* width= dynamic_cast<TH2D*>(_file->Get("Corrsigma"));
-  if(width){
-    printf("Set the width correction for TOF\n");
-    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, width, corrXdim, corrYdim);
-  }
-
-}
 //______________________________________________________________________________________
 void SetTOFSigmaEleCorrection(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim, TString year) {
   //
@@ -459,8 +411,10 @@ void SetTOFSigmaEleCorrection(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t c
   task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histMean2DTOF,  corrXdim, corrYdim);
 
 }
-//______________________________________________________________________________________
+
+//___________________________________________________________________________________________
 void SetResolutionFile(TString year){
+
   if(year == "16"){
     resoFilename = "resolution_16.root";
     resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/resolution_16.root";
@@ -474,6 +428,7 @@ void SetResolutionFile(TString year){
     resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/resolution_18.root";
     printf("resolution_18.root\n");
   }else{
-    printf("year is not selected\n");
+    printf("year is not set\n");
   }
+
 }

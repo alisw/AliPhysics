@@ -25,7 +25,7 @@ AliAnalysisTaskCorrelationhCasc* AddTaskCorrelationhCasc(Float_t minpt=3, Float_
   fileName += Form("_PtTrigMin%.1f", minpt);
   fileName += Form("_PtTrigMax%.1f", maxpt);
 
-  TString combinedName=Form("hK0s_Task_%s", suffix.Data());
+  TString combinedName=Form("hXi_Task_%s", suffix.Data());
   AliAnalysisTaskCorrelationhCasc* task = new AliAnalysisTaskCorrelationhCasc(combinedName);   
   if(!task) return 0x0;
   //task->SelectCollisionCandidates(AliVEvent::kAnyINT);
