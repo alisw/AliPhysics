@@ -854,7 +854,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     TTree *tCollisionLabels = CreateTree(kMcCollisionLabel);
     if (fTreeStatus[kMcCaloLabel])
     {
-      tCollisionLabels->Branch("fIndexMcParticles", &mccollisionlabel.fIndexMcParticles, "fIndexMcParticles/i");
+      tCollisionLabels->Branch("fIndexMcCollisions", &mccollisionlabel.fIndexMcCollisions, "fIndexMcCollisions/i");
       tCollisionLabels->Branch("fMcMask", &mccollisionlabel.fMcMask, "fMcMask/s");
       tCollisionLabels->SetBasketSize("*", fBasketSizeEvents);
     }
@@ -1238,6 +1238,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     bool goldenChi2Status = (vertex) ? (track->GetChi2TPCConstrainedVsGlobal(vertex) > 0. && track->GetChi2TPCConstrainedVsGlobal(vertex) < 36.) : false;
     if (goldenChi2Status)
       tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;
+
+    // Uppermost 4 bits contain PID hypothesis used during tracking
+    if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15)
+      tracks.fFlags |= track->GetPIDForTracking() << 28;
 
     tracks.fITSClusterMap = track->GetITSClusterMap();
     tracks.fTPCNClsFindable = track->GetTPCNclsF();
@@ -1892,7 +1896,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   FillTree(kMcCollision);
 
   // MC collision label
-  mccollisionlabel.fIndexMcParticles = eventID;
+  mccollisionlabel.fIndexMcCollisions = eventID;
   mccollisionlabel.fMcMask = 0;
   FillTree(kMcCollisionLabel);
 

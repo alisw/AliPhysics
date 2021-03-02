@@ -299,7 +299,7 @@ private:
   
   struct {
     // MC collision label
-    UInt_t fIndexMcParticles = 0;       /// Collision label
+    UInt_t fIndexMcCollisions = 0;       /// Collision label
     UShort_t fMcMask = 0;    /// Bit mask to indicate collision mismatches (bit ON means mismatch)
                              /// bit 15: negative label sign
   } mccollisionlabel; //! Collision labels
