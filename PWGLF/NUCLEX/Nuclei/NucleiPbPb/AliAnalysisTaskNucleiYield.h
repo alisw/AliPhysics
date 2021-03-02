@@ -390,7 +390,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
   const int iTof = beta > EPS ? 1 : 0;
   float pT = track->Pt() * fCharge;
-  float p_TPC = track->GetTPCmomentum();
+  float p_TPC = track->GetTPCmomentum() * fCharge;
   float p = track->P(); 
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
