@@ -3737,15 +3737,16 @@ Bool_t Config_Xik0(
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.4; // 1.6;
     Float_t XiMinDCA=0.07;
-    Float_t Xi_massTol=0.015;
+    Float_t Xi_massTol=0.007;
     Float_t Xi_massTolVeto=0.007;
     Float_t Xi_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     Float_t V0lifetime=40.;
-
+    
+    if(TrackCutsXi/10000000) Xi_massTol=0.001*(TrackCutsXi/10000000);
     Bool_t CheckOOBP=false;//true;
-    if((TrackCutsXi/1000000)==1) CheckOOBP=true;
+    if((TrackCutsXi/1000000)%10) CheckOOBP=true;
     if((TrackCutsXi/10000)%100) V0lifetime=(TrackCutsXi/10000)%100;
     if(V0lifetime>98.5) V0lifetime=1e20;//turn off
     if((TrackCutsXi/100)%100) XiPPIDcut=((float) ((TrackCutsXi/100)%100))*0.1;
