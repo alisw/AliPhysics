@@ -68,9 +68,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2collinfo", "O2run2bcinfo" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 Collision Info", "Run 2 BC Info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -132,7 +132,7 @@ namespace
 } // namespace
 
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2collinfo(), run2bcinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2bcinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
 #ifdef USE_TOF_CLUST
       ,
       tofClusters()
@@ -545,12 +545,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->Branch("fGlobalBC", &bc.fGlobalBC, "fGlobalBC/l");
     tBC->Branch("fTriggerMask", &bc.fTriggerMask, "fTriggerMask/l");
     tBC->SetBasketSize("*", fBasketSizeEvents);
-  }
-  
-  // Associate branches for Run 2 Collision info
-  TTree* trun2collinfo = CreateTree(kRun2CollInfo);
-  if (fTreeStatus[kRun2CollInfo]) {
-    trun2collinfo->SetBasketSize("*", fBasketSizeEvents);
   }
   
   // Associate branches for Run 2 BC info
@@ -972,10 +966,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     collision.fCollisionTimeRes = AliMathBase::TruncateFloatFraction(TMath::Sqrt(9. / 10.) * TMath::Mean(10, eventTimeRes), mCollisionPositionCov); // PH bad approximation
 
     FillTree(kEvents);
-
-    //---------------------------------------------------------------------------
-    // Run 2 Collision information
-    FillTree(kRun2CollInfo);
   }
 
   //---------------------------------------------------------------------------

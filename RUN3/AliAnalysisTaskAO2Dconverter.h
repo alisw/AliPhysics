@@ -71,7 +71,6 @@ public:
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
-    kRun2CollInfo,
     kRun2BCInfo,
     kTrees
   };
@@ -210,9 +209,6 @@ private:
     ULong64_t fGlobalBC = 0u;    /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
     ULong64_t fTriggerMask = 0u; /// Trigger class mask
   } bc; //! structure to keep trigger-related info
-  
-  struct {
-  } run2collinfo; //! structure to keep run 2 only related info 
   
   struct {
     UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
