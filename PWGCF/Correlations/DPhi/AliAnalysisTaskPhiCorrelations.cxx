@@ -988,7 +988,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
         // all two track cuts disabled, STEP 9
         if (!fSkipStep9)
-          fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, bSign, .0, kTRUE);
+          fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
 
         // STEP 10
         fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
@@ -1015,7 +1015,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 
                 // all two track cuts disabled, STEP 9
                 if (!fSkipStep9)
-                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, bSign, .0, kTRUE);
+                  fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kFALSE, 0, -1, kTRUE);
 
                 // STEP 10
                 fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepCorrected, tracks, pool2->GetEvent(jMix), 1.0 / pool2->GetCurrentNEvents(), (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
@@ -1343,7 +1343,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracks, tracksCorrelate, weight, kTRUE, kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
 
     if (!fSkipStep9)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracks, tracksCorrelate, weight, kTRUE, kFALSE, 0, -1, kTRUE);
 
   }
 
@@ -1398,7 +1398,7 @@ void AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
             fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kTRUE, bSign, fTwoTrackEfficiencyCut, kTRUE);
 
           if (!fSkipStep9)
-            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kFALSE, bSign, fTwoTrackEfficiencyCut, kTRUE);
+            fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksClone, bgTracks, 1.0 / nMix, (jMix == 0), kFALSE, 0, -1, kTRUE);
 
         }
       }
