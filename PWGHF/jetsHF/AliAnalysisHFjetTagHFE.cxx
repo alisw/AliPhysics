@@ -254,8 +254,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fzvtx_Ntrkl(0),
   fzvtx_Ntrkl_Corr(0),
 	
-	//======parameter============
-	Nref(0)
+//======parameter============
+ fNref(0)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -470,8 +470,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fzvtx_Ntrkl(0),
   fzvtx_Ntrkl_Corr(0),
 	
-	//======parameter============
-	Nref(0)
+//======parameter============
+  fNref(0)
   //fmcData(kFALSE)
 {
   // Standard constructor.
