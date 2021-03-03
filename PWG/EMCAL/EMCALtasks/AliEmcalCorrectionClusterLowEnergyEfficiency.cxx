@@ -16,6 +16,7 @@ ClassImp(AliEmcalCorrectionClusterLowEnergyEfficiency);
 RegisterCorrectionComponent<AliEmcalCorrectionClusterLowEnergyEfficiency> AliEmcalCorrectionClusterLowEnergyEfficiency::reg("AliEmcalCorrectionClusterLowEnergyEfficiency");
 
 const std::map <std::string, AliEMCALRecoUtils::NCellEfficiencyFunctions> AliEmcalCorrectionClusterLowEnergyEfficiency::fgkNCellEfficiencyFunctionMap = {
+    { "kNoCorrection", AliEMCALRecoUtils::kNCeNoCorrection },
     { "kAllClusters", AliEMCALRecoUtils::kNCeAllClusters },
     { "kTestBeam", AliEMCALRecoUtils::kNCeTestBeam },
     { "kGammaAndElec", AliEMCALRecoUtils::kNCeGammaAndElec }
@@ -48,7 +49,7 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Initialize()
   AliEmcalCorrectionComponent::Initialize();
   std::string nCellFunctStr = "";
   GetProperty("nCellFunct", nCellFunctStr);
-  UInt_t nonLinFunct = fgkNCellEfficiencyFunctionMap.at(nCellFunctStr);
+  UInt_t nCellEffiFunct = fgkNCellEfficiencyFunctionMap.at(nCellFunctStr);
 
   fRejectNextToClus = false;
   GetProperty("setRejectNextToClus", fRejectNextToClus);
@@ -58,7 +59,7 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Initialize()
     fRecoUtils  = new AliEMCALRecoUtils;
 
   if (fRecoUtils) {
-    fRecoUtils->SetNCellEfficiencyFunction(nonLinFunct);
+    fRecoUtils->SetNCellEfficiencyFunction(nCellEffiFunct);
     fRecoUtils->InitNCellEfficiencyParam();
     fRecoUtils->Print("");
   }
@@ -91,6 +92,7 @@ void AliEmcalCorrectionClusterLowEnergyEfficiency::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
 {
   AliEmcalCorrectionComponent::Run();
+
   // only apply on MC clusters
   if(!fMCEvent) return kTRUE;
 
@@ -107,6 +109,7 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
       clus = static_cast<AliVCluster *>(clusIterator->second);
 
       if (!clus->IsEMCAL()) continue;
+
       if (fCreateHisto) {
         fNCellDistBefore->Fill(clus->GetNCells());
       }

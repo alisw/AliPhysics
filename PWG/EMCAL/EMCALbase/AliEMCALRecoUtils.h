@@ -100,10 +100,9 @@ public:
   enum     NCellEfficiencyFunctions
   {
     kNCeNoCorrection   = 0,
-    kNCeAllClusters   = 1,
-    kNCeGammaAndElec   = 2,
-    kNCeElectrons   = 3,
-    kNCeTestBeam   = 4
+    kNCeAllClusters    = 1,
+    kNCeTestBeam       = 2,
+    kNCeGammaAndElec   = 3
   };
 
   /// Cluster position enum list of possible algoritms
