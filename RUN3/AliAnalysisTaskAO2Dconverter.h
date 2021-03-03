@@ -71,7 +71,7 @@ public:
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
-    kRun2EventInfo,
+    kRun2CollInfo,
     kRun2BCInfo,
     kTrees
   };
@@ -213,7 +213,7 @@ private:
   struct {
     UInt_t fEventCuts = 0;             /// integer to store event selections from AliMultSelection
     Char_t fVertexType = 0;            /// type of vertex
-  } run2eventinfo; //! structure to keep run 2 only related info 
+  } run2collinfo; //! structure to keep run 2 only related info 
   
   struct {
     ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
