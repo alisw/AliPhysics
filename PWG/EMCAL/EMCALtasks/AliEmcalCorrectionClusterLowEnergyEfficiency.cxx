@@ -17,7 +17,8 @@ RegisterCorrectionComponent<AliEmcalCorrectionClusterLowEnergyEfficiency> AliEmc
 
 const std::map <std::string, AliEMCALRecoUtils::NCellEfficiencyFunctions> AliEmcalCorrectionClusterLowEnergyEfficiency::fgkNCellEfficiencyFunctionMap = {
     { "kAllClusters", AliEMCALRecoUtils::kNCeAllClusters },
-    { "kTestBeam", AliEMCALRecoUtils::kNCeTestBeam }
+    { "kTestBeam", AliEMCALRecoUtils::kNCeTestBeam },
+    { "kGammaAndElec", AliEMCALRecoUtils::kNCeGammaAndElec }
 };
 
 /**
@@ -29,7 +30,6 @@ AliEmcalCorrectionClusterLowEnergyEfficiency::AliEmcalCorrectionClusterLowEnergy
   fNCellDistAfter(0),
   fRejectNextToClus(0)
 {
-  printf("constructor AliEmcalCorrectionClusterLowEnergyEfficiency\n");
 }
 
 /**
@@ -37,7 +37,6 @@ AliEmcalCorrectionClusterLowEnergyEfficiency::AliEmcalCorrectionClusterLowEnergy
  */
 AliEmcalCorrectionClusterLowEnergyEfficiency::~AliEmcalCorrectionClusterLowEnergyEfficiency()
 {
-  printf("constructor AliEmcalCorrectionClusterLowEnergyEfficiency\n");
 }
 
 /**
@@ -92,7 +91,6 @@ void AliEmcalCorrectionClusterLowEnergyEfficiency::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
 {
   AliEmcalCorrectionComponent::Run();
-
   // only apply on MC clusters
   if(!fMCEvent) return kTRUE;
 
@@ -109,7 +107,6 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
       clus = static_cast<AliVCluster *>(clusIterator->second);
 
       if (!clus->IsEMCAL()) continue;
-
       if (fCreateHisto) {
         fNCellDistBefore->Fill(clus->GetNCells());
       }
@@ -118,7 +115,6 @@ Bool_t AliEmcalCorrectionClusterLowEnergyEfficiency::Run()
           if (fRecoUtils->GetNCellEfficiencyFunction() != AliEMCALRecoUtils::kNCeNoCorrection) {
             Bool_t isAccepted = fRecoUtils->GetIsNCellCorrected(clus, (AliVCaloCells*) fEventManager.InputEvent()->GetEMCALCells());
             if ( isAccepted ) clus->SetChi2(1);
-            else clus->SetChi2(0);
           }
         }
       }

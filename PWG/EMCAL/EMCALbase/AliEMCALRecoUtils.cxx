@@ -1640,9 +1640,14 @@ void AliEMCALRecoUtils::InitNCellEfficiencyParam()
     fNCellEfficiencyParams[0] = 0.213184;
     fNCellEfficiencyParams[1] = -0.0580118;
   }
-
+  else if (fNCellEfficiencyFunction == kNCeGammaAndElec) {
+    fNCellEfficiencyParams[0] = 0.0901375;
+    fNCellEfficiencyParams[1] = 1.28118;
+    fNCellEfficiencyParams[2] = 0.583403;
+  }
 
 }
+
 ///
 /// Artificially widen 1 cell cluster in the MC
 /// Still in testing at this point. Recommended setting:
@@ -1683,22 +1688,43 @@ Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCell
   {
     case kNCeAllClusters:
     {
+      // based on all clusters in data and MC
+      // data clusters influenced by exotics above 2 GeV
       // fNCellEfficiencyParams[0] = 2.71596e-01;
       // fNCellEfficiencyParams[1] = 1.80393;
       // fNCellEfficiencyParams[2] = 6.50026e-01;
       Float_t val = fNCellEfficiencyParams[0]*exp(
                     -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
                     ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
-      if(val < randNr) return kTRUE;
+      if(randNr < val) return kTRUE;
       else return kFALSE;
       break;
     }
+
     case kNCeTestBeam:
     {
+      // based on test beam measurements
+      // should behave like pure photon clusters
       // fNCellEfficiencyParams[0] = 0.213184;
       // fNCellEfficiencyParams[1] = -0.0580118;
       Float_t val = fNCellEfficiencyParams[0] + fNCellEfficiencyParams[1]*energy;
-      if(val < randNr) return kTRUE;
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeGammaAndElec:
+    {
+      // based on clusters which are part of a cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // fNCellEfficiencyParams[0] = 0.0901375;
+      // fNCellEfficiencyParams[1] = 1.28118;
+      // fNCellEfficiencyParams[2] = 0.583403;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
       else return kFALSE;
       break;
     }
