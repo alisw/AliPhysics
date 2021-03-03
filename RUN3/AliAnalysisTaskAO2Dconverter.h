@@ -71,7 +71,8 @@ public:
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
-    kRun2CollInfo,
+    kRun2EventInfo,
+    kRun2BCInfo,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -93,10 +94,15 @@ public:
     kAliGenToyEventHeader,
     kGenerators
   };
+  enum VertexType : int8_t {
+    VertexerTracks = 0,
+    VertexerTracksNoConstraint,
+    VertexerZ,
+    Vertexer3D
+  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
     GlobalTrack = 0,
     ITSStandalone,
-    MFTStandalone,
     Run2GlobalTrack = 254,
     Run2Tracklet = 255
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
@@ -104,6 +110,7 @@ public:
     ITSrefit = 0x1,
     TPCrefit = 0x2,
     GoldenChi2 = 0x4
+    // NOTE Highest 4 bits reservd for PID hypothesis
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
@@ -140,7 +147,8 @@ private:
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
   
-  Int_t fEventCount = 0; //! event count
+  Int_t fCollisionCount = 0; //! collision count
+  Int_t fBCCount = 0;        //! BC count
   Bool_t fTfInitialized = false; //!
   Int_t fTFCount = 0; //! count TF written
 
@@ -203,11 +211,16 @@ private:
   } bc; //! structure to keep trigger-related info
   
   struct {
-    Int_t fEventCuts = 0;         /// integer to store event selections from AliMultSelection
-    Int_t fCL0 = 0;    /// CL0
-    Int_t fCL1 = 0;    /// CL1
-  } run2collinfo; //! structure to keep run 2 related info 
+    UInt_t fEventCuts = 0;             /// integer to store event selections from AliMultSelection
+    Char_t fVertexType = 0;            /// type of vertex
+  } run2eventinfo; //! structure to keep run 2 only related info 
   
+  struct {
+    ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
+    UInt_t fSPDClustersL0 = 0;         /// number of clusters in SPD L0
+    UInt_t fSPDClustersL1 = 0;         /// number of clusters in SPD L1
+  } run2bcinfo; //! structure to keep run 2 only related info 
+
   struct {
     // Track data
 
@@ -523,7 +536,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 14);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 15);
 };
 
 #endif
