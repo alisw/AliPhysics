@@ -517,7 +517,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tEvents->Branch("fCovYY", &collision.fCovYY, "fCovYY/F");
     tEvents->Branch("fCovYZ", &collision.fCovYZ, "fCovYZ/F");
     tEvents->Branch("fCovZZ", &collision.fCovZZ, "fCovZZ/F");
-    tEvents->Branch("fFlags", &collision.fFlags, "fFlags/b");
+    tEvents->Branch("fFlags", &collision.fFlags, "fFlags/s");
     tEvents->Branch("fChi2", &collision.fChi2, "fChi2/F");
     tEvents->Branch("fNumContrib", &collision.fN, "fNumContrib/s");
     tEvents->Branch("fCollisionTime", &collision.fCollisionTime, "fCollisionTime/F");
@@ -929,7 +929,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     collision.fFlags = vertexType;
     collision.fChi2 = AliMathBase::TruncateFloatFraction(pvtx->GetChi2(), mCollisionPositionCov);
-    collision.fN = (pvtx->GetNDF() + 3) / 2;
+
+    int nContributors = (pvtx->GetNDF() + 3) / 2;
+    collision.fN = (nContributors > USHRT_MAX) ? USHRT_MAX : nContributors;
 
     Float_t eventTime[10];
     Float_t eventTimeRes[10];

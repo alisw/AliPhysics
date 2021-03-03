@@ -93,7 +93,7 @@ public:
     kAliGenToyEventHeader,
     kGenerators
   };
-  enum CollisionFlagsRun2 : uint8_t {
+  enum CollisionFlagsRun2 : uint16_t {
     Run2VertexerTracks = 0,
     Run2VertexerTracksNoConstraint,
     Run2VertexerZ,
@@ -185,7 +185,7 @@ private:
     Float_t  fCovYZ = 0.f;      /// cov[4]
     Float_t  fCovZZ = 999.f;    /// cov[5]
     // Quality parameters
-    UChar_t  fFlags = 0;        /// Vertex type
+    UShort_t  fFlags = 0;       /// Vertex type
     Float_t  fChi2 = 999.f;     /// Chi2 of the vertex
     UShort_t fN = 0u;           /// Number of contributors
 
