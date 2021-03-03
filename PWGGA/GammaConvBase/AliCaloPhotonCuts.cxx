@@ -2458,6 +2458,16 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           if (cluster->GetNCells() < fMinNCells)
             failed = kTRUE;
         }
+      } else if (fUseNCells == 8){
+        if(isMC){
+          if( cluster->GetNCells() == 1){
+            if(cluster->Chi2() == 1){
+              passedNCellSpecial = kTRUE;
+            } else {
+              failed = kTRUE;
+            }
+          }
+        }
       }
       if (fUseNLM)
         if( nLM < fMinNLM || nLM > fMaxNLM )
@@ -2612,6 +2622,22 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         // evaluate effi function and compare to random number between 1 and 2
         // if function value greater than random number, reject cluster. otherwise let it pass
         if((fRandom.Uniform(0,1) < fFuncNCellCutEfficiencyEMCal->Eval(cluster->E()) ) && isCellIso ){
+          passedSpecialNCell = kTRUE;
+        } else {
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+          return kFALSE;
+        }
+      }
+    } else {
+      if (cluster->GetNCells() < fMinNCells){
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
+        return kFALSE;
+      }
+    }
+  } else if (fUseNCells == 8){ // correction from correction framework
+    if(isMC){
+      if( cluster->GetNCells() == 1){
+        if(cluster->Chi2() == 1){ // Chi2() == 1 indicates that the cell is okay, even if it has just one cell
           passedSpecialNCell = kTRUE;
         } else {
           if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//5
@@ -6302,6 +6328,12 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x+[1]");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.207472, -0.0871395);
     break;
+    // Correction applied in Correction Framework
+    // can be accessed by the chi2() variable of the cluster
+  case 34: // y
+    if (!fUseNCells) fUseNCells=8;
+    fMinNCells=2;
+    break;
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;
@@ -9576,7 +9608,7 @@ std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedTracksToCluster(AliVEvent*
 Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel){
   if(!fUseDistTrackToCluster || fUseElectronClusterCalibration) return kFALSE;
   vector<Int_t> labelsMatched = GetVectorMatchedTracksToCluster(event,cluster);
-  
+
   if((Int_t) labelsMatched.size()<1) return kFALSE;
 
   Float_t dEta = -100;
@@ -9587,7 +9619,7 @@ Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliV
   for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
     AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
     if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(currTrack->GetID(), cluster->GetID(), dEta, dPhi)) continue;
-   
+
     Float_t tempDist = TMath::Sqrt((dEta*dEta)+(dPhi*dPhi));
     if(tempDist < smallestDist){
       smallestDist = tempDist;
