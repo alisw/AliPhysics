@@ -1343,13 +1343,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      //============Tracklet correction=================
 
 				Double_t correctednAcc   = nAcc;
-				Double_t fRefMult = Nref;
 				Double_t WeightNtrkl = -1.;
 				Double_t WeightZvtx = -1.;
 				TProfile* estimatorAvg;
 				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
 				if(estimatorAvg){
-						correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+						correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fNref));
 				}
 				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
