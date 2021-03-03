@@ -24,6 +24,8 @@ class TRandom;
 #include "TClonesArray.h"
 //#include "AliAODMCParticle"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "TProfile.h"
+
 
 class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
  public:
@@ -59,6 +61,12 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetMCeta(Bool_t MCEtaFull){iMCEtaFull = MCEtaFull;};
   void SetSS(Bool_t SSlong){iSSlong = SSlong;};
   void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
+ 
+	//Correct Ntracklet 
+	void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
+	TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
+	Double_t Nref;
+	void SetNref(Double_t nref){Nref = nref;};
 
  protected:
   void                        ExecOnce();
@@ -99,7 +107,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
-    Double_t Nref;
     Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
   // General histograms
@@ -294,6 +301,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
+	//=====Multiplicity===========
+	 TProfile* fMultiEstimatorAvg;
+	 
   //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
   ClassDef(AliAnalysisHFjetTagHFE, 12) // jet sample analysis task
 };
