@@ -929,9 +929,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     collision.fFlags = vertexType;
     collision.fChi2 = AliMathBase::TruncateFloatFraction(pvtx->GetChi2(), mCollisionPositionCov);
-
-    int nContributors = (pvtx->GetNDF() + 3) / 2;
-    collision.fN = (nContributors > USHRT_MAX) ? USHRT_MAX : nContributors;
+    collision.fN = (pvtx->GetNContributors() > USHRT_MAX) ? USHRT_MAX : pvtx->GetNContributors();
 
     Float_t eventTime[10];
     Float_t eventTimeRes[10];
