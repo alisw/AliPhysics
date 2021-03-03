@@ -94,11 +94,11 @@ public:
     kAliGenToyEventHeader,
     kGenerators
   };
-  enum VertexType : int8_t {
-    VertexerTracks = 0,
-    VertexerTracksNoConstraint,
-    VertexerZ,
-    Vertexer3D
+  enum CollisionFlagsRun2 : uint8_t {
+    Run2VertexerTracks = 0,
+    Run2VertexerTracksNoConstraint,
+    Run2VertexerZ,
+    Run2Vertexer3D
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
     GlobalTrack = 0,
@@ -186,8 +186,9 @@ private:
     Float_t  fCovYZ = 0.f;      /// cov[4]
     Float_t  fCovZZ = 999.f;    /// cov[5]
     // Quality parameters
-    Float_t  fChi2 = 999.f;             /// Chi2 of the vertex
-    UInt_t   fN = 0u;                /// Number of contributors
+    UChar_t  fFlags = 0;        /// Vertex type
+    Float_t  fChi2 = 999.f;     /// Chi2 of the vertex
+    UShort_t fN = 0u;           /// Number of contributors
 
     // The calculation of event time certainly will be modified in Run3
     // The prototype below can be switched on request
@@ -211,14 +212,13 @@ private:
   } bc; //! structure to keep trigger-related info
   
   struct {
-    UInt_t fEventCuts = 0;             /// integer to store event selections from AliMultSelection
-    Char_t fVertexType = 0;            /// type of vertex
   } run2collinfo; //! structure to keep run 2 only related info 
   
   struct {
+    UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
     ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
-    UInt_t fSPDClustersL0 = 0;         /// number of clusters in SPD L0
-    UInt_t fSPDClustersL1 = 0;         /// number of clusters in SPD L1
+    UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
+    UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
   } run2bcinfo; //! structure to keep run 2 only related info 
 
   struct {
