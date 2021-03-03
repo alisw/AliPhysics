@@ -228,7 +228,7 @@ AddAliAnalysisTaskNTGJ(TString name,
                               physics_selection_pileup_cut);
 
     // trying to reduce the memory
-    task->SelectCollisionCandidates(AliVEvent::kAny);
+    task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
   }
 
   mgr->AddTask(task);
