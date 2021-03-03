@@ -148,7 +148,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
-  ClassDef(AliAnalysisTaskDeform,1);
+  ClassDef(AliAnalysisTaskDeform,2);
 };
 
 #endif

@@ -287,7 +287,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH2D*                   fhQAEventsfMultTPCvsTOF;    //!
         TH2D*                   fhQAEventsfMultTPCvsESD;    //!
 
-        ClassDef(AliAnalysisDecorrTask, 1);
+        ClassDef(AliAnalysisDecorrTask, 2);
 };
 
 #endif
