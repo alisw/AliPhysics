@@ -1,4 +1,5 @@
 //Class for <pt>-v2 correlations
+
 #include "AliAnalysisTaskMeanPtV2Corr.h"
 #include "AliEventCuts.h"
 #include "AliAnalysisManager.h"
@@ -206,7 +207,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     SetV2dPtMultiBins(1,temp_bn);
   };
   const Int_t l_NPtBinsDefault = 25;
-  Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
+  Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.20, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
                      1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90,
                      2.00, 2.20, 2.40, 2.60, 2.80, 3.00};
   if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
@@ -630,11 +631,13 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_
 void AliAnalysisTaskMeanPtV2Corr::FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   Double_t trackXYZ[3];
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     Double_t leta = lTrack->Eta();
     Double_t lpt = lTrack->Pt();
     ((AliGFWWeights*)fWeightList->At(0))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
@@ -667,11 +670,13 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   Int_t lPosCount=0, lNegCount=0;
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     Double_t trackXYZ[] = {0.,0.,0.};
-    if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp,nTotNoTracks)) continue;
+    if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp,nTotNoTracks)) continue;
     Double_t leta = lTrack->Eta();
     // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1; //Nch calculated in EtaNch region
     if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
@@ -779,6 +784,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
   Int_t lPosCount=0, lNegCount=0;
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
   if(fIsMC) {
     TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
     Int_t nPrim = tca->GetEntries();
@@ -807,7 +814,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       if(!lTrack) continue;
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
-      if(!AcceptAODTrack(lTrack,trackXYZ,0.2,3,vtxp,nTotNoTracks)) continue;
+      if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp,nTotNoTracks)) continue;
       // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
       Double_t p1 = lTrack->Pt();
