@@ -23,6 +23,7 @@ The following correction components are available:
 - [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
 - [ClusterNonLinearityMCAfterburner](\ref AliEmcalCorrectionClusterNonLinearityMCAfterburner.h) -- This is an additional correction for MC. The effect is that the pi0 mass position is the same for data and MC. It is only defined for specific periods.
+- [ClusterLowEnergyEfficiency](\ref AliEmcalCorrectionClusterLowEnergyEfficiency.h) -- Corrects the fraction of 1 cell clusters in MC to match the data distribution. The correction will flag a percentage of the MC 1 cell clusters such that they can be used as if they have 2 cells
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
 - [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrections) -- Perform PHOS correction via an interface to the PHOS tender.
@@ -43,7 +44,7 @@ instructions on how to transition from the old correction method(s) to the new c
 corrections, and how to **test your analysis** results in the new vs. old correction method. Testing your corrections configuration
 is an extremely important step, as failure to do so could lead to incorrect results!
 
-# %Setup the Correction Task 
+# %Setup the Correction Task
 
 There are two steps:
 - [Configure the Correction Add Task](\ref configureEMCalCorrectionRunMacro)
@@ -378,14 +379,14 @@ Clusterizer_mySpecialization:
 In this example, two clusterizers are configured: ``Clusterizer`` and ``Clusterizer_mySpecializedClusterizer``. Both have the exact same
 configuration, with the exception that ``Clusterizer`` uses ``defaultCells`` for cells and ``defaultClusterContainer`` for clusters,
 while ``Clusterizer_mySpecializedClusterizer`` uses ``anotherCells`` for cells and ``anotherClusterContainer`` for clusters (note: the
-cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``). 
+cells branch would have to be created elsewhere, say with ``AliEmcalCopyCollection``).
 
 To execute these corrections, we must select them in the AddTask of the Correction Task. To do so, set the suffix argument of the AddTask
 to correspond with the specialization suffix that was set in the %YAML file. Continuing with the previous example, we would need to add:
 
 ~~~{.cxx}
 // The default argument is an empty string, so we don't have to set it here.
-AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask(); 
+AliEmcalCorrectionTask * correctionTask = AddTaskEmcalCorrectionTask();
 // Create the specialized correction task
 AliEmcalCorrectionTask * correctionTaskSpecialized = AddTaskEmcalCorrectionTask("mySpecialization");
 ~~~
@@ -607,5 +608,5 @@ of your task name in this list will determine when it is executed relative to th
 You can find an analysis tutorial presentation [here](https://indico.cern.ch/event/586577/).
 
 For more information, contact the developers <james.mulligan@yale.edu> and <raymond.ehlers@yale.edu>.
- 
+
 */
