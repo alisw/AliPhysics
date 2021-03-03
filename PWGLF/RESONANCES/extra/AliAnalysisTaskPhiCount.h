@@ -38,6 +38,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetKaonFlag                 ( Bool_t    KaonFlag )      { kKaonbool = KaonFlag; };
     void                        SetFilterBit                ( Int_t     FilterBit )     { kFilterBit = FilterBit; };
     void                        SetVertexCut                ( Float_t   VertexCut )     { kVertexCut = VertexCut; };
+    void                        SetkSgTPC_Alone             ( Float_t   kTPCSigma )     { kSgTPC_Alone = kTPCSigma; };
+    void                        SetkSgTPC_TOFVt             ( Float_t   kTPCSigma )     { kSgTPC_TOFVt = kTPCSigma; };
+    void                        SetkSgTOF_Veto              ( Float_t   kTOFSigma )     { kSgTOF_Veto = kTOFSigma; };
     Bool_t                      GetMCFlag                   ( )                         { return kMCbool; };
     Bool_t                      GetPhiFlag                  ( )                         { return kPhibool; };
     Bool_t                      GetKaonFlag                 ( )                         { return kKaonbool; };
@@ -120,6 +123,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                      fIsTOFAvailable;            //! TOF availabilty flag
     Float_t                     fBetaFromTOFSignal;         //! Particle beta from TOF signal
     Float_t                     fTPCSignal;                 //! Particle dE/dX in TPC
+    Float_t                     kSgTPC_Alone;               //! TPC Alone Sigma limit
+    Float_t                     kSgTPC_TOFVt;               //! TPC Alone Sigma limit
+    Float_t                     kSgTOF_Veto;                //! TPC Alone Sigma limit
     //
     //>->->     PID Kaons QC
     //
@@ -161,6 +167,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH1F                       *fQC_Kaons_M_TransMom;       //! Analysis output list
     TH1F                       *fQC_Kaons_M_Eta;            //! Analysis output list
     TH1F                       *fQC_Kaons_M_Phi;            //! Analysis output list
+    TH1F                       *fQC_Kaons_SigmaTPC_VETO;    //! gg
     TH2F                       *fQC_Kaons_DCAXY_P;          //! Analysis output list
     TH2F                       *fQC_Kaons_DCAZ_P;           //! Analysis output list
     TH2F                       *fQC_Kaons_DCAXY_PT;         //! Analysis output list

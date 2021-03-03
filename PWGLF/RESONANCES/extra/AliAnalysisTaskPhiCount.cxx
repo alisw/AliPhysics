@@ -24,13 +24,13 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskPhiCount)
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0)   {
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaons_SigmaTPC_VETO(0)   {
     
 }
 
 //_____________________________________________________________________________
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0)    {
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaons_SigmaTPC_VETO(0)    {
     // Define Input
     DefineInput(0, TChain::Class());
     
@@ -659,6 +659,7 @@ void        AliAnalysisTaskPhiCount::fQC_PID_Kaons( )                           
     if ( fIsTPCAvailable && fIsTOFAvailable )
     {
         fQC_Kaons_SigmaTOF_TPC  ->  Fill(fSigma_TOF,            fSigma_TPC);
+        //if ( fabs(fSigma_TOF) < kSgTOF_Veto ) fQC_Kaons_SigmaTPC_VETO  ->  Fill(fSigma_TPC);
     }
 }
 
@@ -714,15 +715,18 @@ bool        AliAnalysisTaskPhiCount::fIsKaonCandidate ( )                       
     }
     if ( fCurrentRun >= 115881 && fCurrentRun <= 139513 )   {
         // Custom 2010
-        if ( !fIsTPCAvailable || (fIsTOFAvailable && fSigma_TOF > 3) )                              return false;
-        if ( fCurrent_Track_TransMom >= 0.28 &&  fIsTOFAvailable && std::fabs(fSigma_TPC) > 5. )    return false;
-        if ( fCurrent_Track_TransMom >= 0.28 && !fIsTOFAvailable && std::fabs(fSigma_TPC) > 3. )    return false;
-        if ( fCurrent_Track_TransMom <  0.28  && std::fabs(fSigma_TPC) > 7. )                       return false;
+        if ( !fIsTPCAvailable || (fIsTOFAvailable && fSigma_TOF > kSgTOF_Veto) )                    return false;
+        if ( std::fabs(fSigma_TPC) > 7. )                                                           return false;
+        if ( fCurrent_Track_Momentum >= 0.3 && std::fabs(fSigma_TPC) > 6. )                         return false;
+        if ( fCurrent_Track_Momentum >= 0.4 )   {
+            if ( fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_TOFVt )                          return false;
+            if (!fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_Alone )                          return false;
+        }
     }   else    {
         // Standard
-        if ( !fIsTPCAvailable || ( fIsTOFAvailable && std::fabs(fSigma_TOF) >= 3 ) )                return false;
-        if (  fIsTOFAvailable && std::fabs(fSigma_TPC) > 5. )                                       return false;
-        if ( !fIsTOFAvailable && std::fabs(fSigma_TPC) > 3. )                                       return false;
+        if ( !fIsTPCAvailable || ( fIsTOFAvailable && std::fabs(fSigma_TOF) >= kSgTOF_Veto ) )      return false;
+        if (  fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_TOFVt )                             return false;
+        if ( !fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_Alone )                             return false;
         return true;
     }
     return true;
