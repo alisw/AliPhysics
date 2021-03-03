@@ -81,7 +81,9 @@ enum PdgCodeType_t {
   TList                 *fHistogramList; 
   TH2F                  *fHistdEdx;            
   TH1F                  *fHistNumEvents;       
-  TH1F			*fHistTrigger;	 	 
+  TH1F			*fHistTrigger;	
+  TH1F 	                *hInvMass4LHe;
+  TH1F 	                *hInvMass4LLH;
   Double_t              fBetheParamsHe[6];  
   Double_t              fBetheParamsT[6];
   Bool_t                fPIDCheckOnly;  
@@ -173,6 +175,7 @@ enum PdgCodeType_t {
   Float_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
   Float_t               fEDaughter4, fpDaughter4, fptDaughter4, fpxDaughter4, fpyDaughter4, fpzDaughter4, fyDaughter4, fDcaDaughter4, fDcazDaughter4, fDcaSecDaughter4;
   Float_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4, fPtUncertDaughter, fPtUncertDaughter1, fPtUncertDaughter2, fPtUncertDaughter3, fPtUncertDaughter4;
+Int_t fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
   Float_t               fDCA2B, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fDecAngle, farmalpha, farmpt;
   Float_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ;
   Float_t               fmMother, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
