@@ -39,7 +39,7 @@ class AliClusterContainer : public AliEmcalContainer {
   static const std::map <std::string, VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
 
   AliClusterContainer();
-  AliClusterContainer(const char *name); 
+  AliClusterContainer(const char *name);
   virtual ~AliClusterContainer(){;}
 
   virtual TObject *operator[] (int index) const { return GetCluster(index); }
@@ -49,6 +49,7 @@ class AliClusterContainer : public AliEmcalContainer {
   virtual Bool_t              AcceptCluster(Int_t i, UInt_t &rejectionReason)                 const;
   virtual Bool_t              AcceptCluster(const AliVCluster* vp, UInt_t &rejectionReason)   const;
   virtual Bool_t              ApplyClusterCuts(const AliVCluster* clus, UInt_t &rejectionReason) const;
+  virtual Bool_t              GetPassedSpecialNCell(const AliVCluster* clus) const;
   AliVCluster                *GetAcceptCluster(Int_t i)              const;
   AliVCluster                *GetAcceptClusterWithLabel(Int_t lab)   const;
   void                        SetClusECut(Double_t cut)                    { SetMinE(cut)     ; }
@@ -79,6 +80,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void 						            SetEmcalM02Range(Double_t min, Double_t max) { fEmcalMinM02 = min; fEmcalMaxM02 = max; }
   void                        SetEmcalMaxM02Energy(Double_t max)           { fEmcalMaxM02CutEnergy = max; }
   void                        SetMaxFractionEnergyLeadingCell(Double_t max)  { fMaxFracEnergyLeadingCell = max; }
+  void                        SetEmcalMaxNCellEfficiencyEnergy(Double_t max) { fEmcalMaxNCellEffCutEnergy = max; }
   void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
@@ -113,7 +115,7 @@ class AliClusterContainer : public AliEmcalContainer {
    */
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
 
-  
+
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   static AliEmcalContainerIndexMap <TClonesArray, AliVCluster> fgEmcalContainerIndexMap; //!<! Mapping from containers to indices
 #endif
@@ -132,13 +134,14 @@ class AliClusterContainer : public AliEmcalContainer {
   Double_t 		     fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
   Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
   Double_t         fMaxFracEnergyLeadingCell;   ///< max fraction of energy in the leading cell
+  Double_t         fEmcalMaxNCellEffCutEnergy;  ///< maximum energy that a 1 cell cluster can have to be considered for NCell efficiency
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,12);
+  ClassDef(AliClusterContainer,13);
   /// \endcond
 };
 
@@ -154,4 +157,3 @@ class AliClusterContainer : public AliEmcalContainer {
 int TestClusterContainerIterator(const AliClusterContainer *const cont, int iteratorType = 0, bool verbose = false);
 
 #endif
-
