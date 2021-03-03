@@ -115,6 +115,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask() : AliAnalysisTaskSE(),
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
     fUseOwnWeights(kFALSE),
+    fUseWeightsOne(kFALSE),
     fCurrSystFlag(0),
     fFillWeights(kFALSE),
     fNumSamples{1},
@@ -204,6 +205,7 @@ AliAnalysisDecorrTask::AliAnalysisDecorrTask(const char* name, Bool_t IsMC) : Al
     fPhiBinNum{60},
     fUseWeights3D(kTRUE),
     fUseOwnWeights(kFALSE),
+    fUseWeightsOne(kFALSE),
     fCurrSystFlag(0),
     fFillWeights(kFALSE),
     fNumSamples{1},
@@ -529,7 +531,6 @@ void AliAnalysisDecorrTask::UserCreateOutputObjects()
 
 Bool_t AliAnalysisDecorrTask::LoadWeights()
 {
-
     if(fUseOwnWeights)
     {
         if(!fUseWeights3D)
@@ -716,11 +717,13 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
     
     FillWeights();
 
-
-    if(!LoadWeights())
+    if(!fUseWeightsOne)
     {
-        AliFatal("\n\n\n\n\n\n\n\n Weights could not be loaded \n\n\n\n\n\n\n\n");
-        return;
+        if(!LoadWeights())
+        {
+            AliFatal("\n\n\n\n\n\n\n\n Weights could not be loaded \n\n\n\n\n\n\n\n");
+            return;
+        }
     }
 
     //Get centrality of event
@@ -1099,8 +1102,8 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             if (dPt < fRFPsPtMin || dPt > fRFPsPtMax) continue;
             if(fRedTracks && iPart > fTrackprevent*nPrim) continue;
             if(fAbsEtaMax > 0.0 && Abs(dEta) > fAbsEtaMax) continue;
-            //Calculating weights    
-            double dWeight = GetWeights(dPhi, dEta, dVz); //Not using NUA for MC
+            //Calculating weights
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
             
             //Filling Q-vectors for RPs
@@ -1160,7 +1163,7 @@ void AliAnalysisDecorrTask::FillRPvectors(const AliDecorrFlowCorrTask* const tas
             //double dPt = track->Pt();
 
             //Calculating weights    
-            double dWeight = GetWeights(dPhi, dEta, dVz);
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
             
             //Filling Q-vectors for RPs
@@ -1255,7 +1258,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = GetWeights(dPhi,dEta,dVz);
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
@@ -1335,7 +1338,7 @@ Int_t AliAnalysisDecorrTask::FillPOIvectors(const AliDecorrFlowCorrTask* const t
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = GetWeights(dPhi,dEta,dVz);
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
@@ -1444,7 +1447,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = GetWeights(dPhi,dEta,dVz);
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
@@ -1522,7 +1525,7 @@ void AliAnalysisDecorrTask::FillPtBvectors(const AliDecorrFlowCorrTask* const ta
             if(!bIsWithinPOI) { continue; }
 
             //Load weights
-            double dWeight = GetWeights(dPhi,dEta,dVz);
+            double dWeight = fUseWeightsOne?1.0:GetWeights(dPhi, dEta, dVz);
             if(dWeight <= 0.0) { dWeight = 1.0; }
 
             //POI with no eta gap
