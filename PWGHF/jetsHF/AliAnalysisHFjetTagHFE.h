@@ -62,17 +62,17 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetSS(Bool_t SSlong){iSSlong = SSlong;};
   void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
  
-	//Correct Ntracklet 
-	void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
-	TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
-	Double_t Nref;
-	void SetNref(Double_t nref){Nref = nref;};
+  //Correct Ntracklet 
+  void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
+  TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
+  void SetNref(Double_t nref){Nref = nref;};
 
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
   void                        CheckClusTrackMatching();
+  
 
 
   AliVEvent   *fVevent;  //!event object
@@ -97,7 +97,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fJetEtaCut; // max. centrality
     Double_t fEleEtaCut; // max. centrality
     Double_t fInvmassCut;  
-    Double_t fptAssocut;  
+    Double_t fptAssocut; 
+    Double_t Nref;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
