@@ -74,7 +74,8 @@ void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
   fInitialized = false;
 
   TString file(filename);
-  bool isAOD = file.Contains("AliAOD.root");
+  bool isAOD = file.Contains("AliAOD.root"),
+       isESD = file.Contains("AliESDs.root");
   // Determine archive type
   TString archivetype;
   std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
@@ -98,7 +99,7 @@ void AliEmcalPythiaFileHandler::UpdateCache(const char *filename){
 
   if(isAOD) {
     UpdateFromXsecHistFile(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-  } else if(file.Contains("AliESDs.root")){
+  } else if(isESD){
     UpdateFromXsecFile(Form("%s%s",file.Data(),"pyxsec.root"));
   } else {
     throw FileNotFoundException(file);
