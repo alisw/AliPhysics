@@ -65,7 +65,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   //Correct Ntracklet 
   void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
   TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
-  void SetNref(Double_t nref){Nref = nref;};
+  void SetNref(Double_t nref){fNref = nref;};
 
  protected:
   void                        ExecOnce();
@@ -98,7 +98,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fEleEtaCut; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut; 
-    Double_t Nref;
+    Double_t fNref;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
