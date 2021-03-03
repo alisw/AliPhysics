@@ -653,7 +653,7 @@ void AliAnalysisTaskNTGJ::loadPhotonNNModel()
         _keras_model_photon_discrimination = new KerasModel;
         reinterpret_cast<KerasModel *>(
             _keras_model_photon_discrimination)->
-        LoadModel("photon_discr.model");
+        LoadModel(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGGA/NtuplizerTask/GJNtuples/photon_discr.model"));
     }
 }
 
