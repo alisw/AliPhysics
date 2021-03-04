@@ -743,7 +743,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged1; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged2; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged3; 
-    std::vector<Float_t> fBuffer_TrueClusterMCIsoBckLeft; 
+    std::vector<Float_t> fBuffer_TrueClusterMCIsoBckPerp; 
     std::vector<Int_t> fBuffer_TrueClusterMCTag; 
     std::vector<Bool_t> fBuffer_TrueClusterIsConv;
     
@@ -810,7 +810,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 36);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 37);
 
 };
 
