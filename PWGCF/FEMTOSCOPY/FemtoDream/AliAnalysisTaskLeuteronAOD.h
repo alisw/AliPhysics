@@ -37,7 +37,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);	      // is called in every event -> define what to search for in the events 
     Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);      // calculate the mass^2 of the particle using TOF
     Double_t GetDeuteronMass2Mean_pp(float pT);
-    Double_t GetLimit(float pT, double mean, double sign,double offset);
+    Double_t GetLimit(float pT, double mean, double sign,double offset,double lastpar);
     Double_t GetAntideuteronMass2Mean_pp(float pT);
     virtual void Terminate(Option_t *option){};	      // is called only once -> terminates the analysis
 
