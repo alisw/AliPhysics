@@ -110,7 +110,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdTrackTPCNCrossedRowsRatioMin(0.),
   fProdTrackTPCsignalNMin(0),
   fPriTrackChi2perNDFMax(99.),
-  fPriTrackITSNclsMin(0)
+  fPriTrackITSNclsMin(0),
+  fWeight(0),
+  fWeight_up(0),
+  fWeight_dw(0)
 {
   //
   // Default Constructor
@@ -226,7 +229,10 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdTrackTPCNCrossedRowsRatioMin(source.fProdTrackTPCNCrossedRowsRatioMin),
   fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
-  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin)
+  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin),
+  fWeight(source.fWeight),
+  fWeight_up(source.fWeight_up),
+  fWeight_dw(source.fWeight_dw)
 {
   //
   // Copy constructor
@@ -298,7 +304,9 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
   fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
   fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
-
+  fWeight = source.fWeight;
+  fWeight_up = source.fWeight_up;
+  fWeight_dw = source.fWeight_dw;
 
   return *this;
 }
