@@ -24,6 +24,8 @@ class TRandom;
 #include "TClonesArray.h"
 //#include "AliAODMCParticle"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "TProfile.h"
+
 
 class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
  public:
@@ -59,12 +61,18 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetMCeta(Bool_t MCEtaFull){iMCEtaFull = MCEtaFull;};
   void SetSS(Bool_t SSlong){iSSlong = SSlong;};
   void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
+ 
+  //Correct Ntracklet 
+  void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
+  TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
+  void SetNref(Double_t nref){fNref = nref;};
 
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
   void                        CheckClusTrackMatching();
+  
 
 
   AliVEvent   *fVevent;  //!event object
@@ -89,7 +97,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fJetEtaCut; // max. centrality
     Double_t fEleEtaCut; // max. centrality
     Double_t fInvmassCut;  
-    Double_t fptAssocut;  
+    Double_t fptAssocut; 
+    Double_t fNref;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
@@ -99,7 +108,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
-    Double_t Nref;
     Double_t GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
   // General histograms
@@ -294,6 +302,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
+	//=====Multiplicity===========
+	 TProfile* fMultiEstimatorAvg;
+	 
   //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
   ClassDef(AliAnalysisHFjetTagHFE, 12) // jet sample analysis task
 };
