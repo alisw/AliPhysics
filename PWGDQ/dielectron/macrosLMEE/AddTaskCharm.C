@@ -1,4 +1,4 @@
-AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE)
+AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE)
 {
   AliAnalysisTaskCharm* task = new  AliAnalysisTaskCharm("");
   task->SetProcessType(processtype);
@@ -26,6 +26,13 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
       task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
     }
+  }
+  // Efficiency
+  gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
+  TFile fefficiency("efficiencyfile.root");
+  if (fefficiency.IsOpen()){
+    task->SetEffType(fTypeEff);
+    task->ReadEffFile(&fefficiency);
   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

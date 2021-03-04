@@ -18,6 +18,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
+    void PrintStatus();
  
     // Configuration functions   
     void SetCollisionSystem(Int_t collisionSystem){fcollisionSystem = collisionSystem;}
@@ -27,7 +28,10 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
-    void SetResFileName(TString name){ fResolDataSetName = name; }
+    void SetVPHFileName(TString name);
+    void SetDCAFileName(TString name);
+    void SetEffFileName(TString name);
+    void SetResFileName(TString name);
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
