@@ -350,6 +350,7 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
   void InitLctopK0S2016pPbBDT();
+  void InitLctopK0S2016pPbBDTLowPtAn();
   void InitLctopK0S2017pp5TeV();
   void InitLctopK0S20161718pp13TeVBDT();
 

@@ -545,7 +545,10 @@ void AliHFSystErr::Init(Int_t decay){
           else                InitLctopK0S2013pPb();
         }
         else if(fRunNumber==16 || fRunNumber==2016) {
-          if (fIsBDTAnalysis) InitLctopK0S2016pPbBDT();
+          if (fIsBDTAnalysis){
+            if (fIsLowPtAnalysis) InitLctopK0S2016pPbBDTLowPtAn();
+            else InitLctopK0S2016pPbBDT();
+          }
           else                InitLctopK0S2016pPb();
         }
       }
@@ -8818,6 +8821,67 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
   for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050); // 9.3% PDG2015
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0S2016pPbBDTLowPtAn() {
+  //
+  // Lc->pK0S syst errors. Responsible: Annalena Kalteyer
+  //  2016 p-Pb sample
+  //  Using BDTs
+  //  Low Pt Analysis
+  //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2016pPbBDTLowPtAn");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.037); // 3.7% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.06);
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.05);
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.04);
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
+  fRawYield->SetBinContent(1,0.12);
+  fRawYield->SetBinContent(2,0.10);
+  fRawYield->SetBinContent(3,0.07);
+  fRawYield->SetBinContent(4,0.07);
+  fRawYield->SetBinContent(5,0.06);
+  fRawYield->SetBinContent(6,0.06);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.08);
+
+  // BDT Selection
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
+  fCutsEff->SetBinContent(1,0.05);
+  fCutsEff->SetBinContent(2,0.07);
+  fCutsEff->SetBinContent(3,0.04);
+  fCutsEff->SetBinContent(4,0.04);
+  fCutsEff->SetBinContent(5,0.04);
+  fCutsEff->SetBinContent(6,0.04);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.04);
+  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.08);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
+  fPIDEff->SetBinContent(1,0.05);
+  for(Int_t i=2;i<=24;i++) fPIDEff->SetBinContent(i,0.00);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
+  for(Int_t i=1; i<=3;i++) fMCPtShape->SetBinContent(i,0.02); //
+  for(Int_t i=4; i<=24;i++) fMCPtShape->SetBinContent(i,0.01); //
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050); 
 
 }
 
