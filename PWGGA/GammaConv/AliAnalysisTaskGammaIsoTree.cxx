@@ -5787,7 +5787,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
       trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
       if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
       if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
-      trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight(2);
+      trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
 
       TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
       if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
