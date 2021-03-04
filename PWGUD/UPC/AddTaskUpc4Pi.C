@@ -1,6 +1,6 @@
 AliAnalysisTaskUpc4Pi *AddTaskUpc4Pi( 
     const char* outputFileName = 0,
-    const char* folderName = "4PiTree"
+    const char* folderName = "4PiTree1"
 ){
 
   //--- get the current analysis manager ---//
@@ -29,12 +29,12 @@ AliAnalysisTaskUpc4Pi *AddTaskUpc4Pi(
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   if (!outputFileName) outputFileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("4PiTree", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("4PiTree1", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Histograms", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
 
 //  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("4PiTree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:4PiCentral", AliAnalysisManager::GetCommonFileName()));
 //  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Histograms", TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:4PiCentral", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("4PiTree1", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+//  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("4PiTree1", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
   AliAnalysisDataContainer *coutput4 = NULL;
   if (isMC) coutput4 = mgr->CreateContainer("MCTree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:Rho0Central", AliAnalysisManager::GetCommonFileName()));
 
@@ -42,7 +42,7 @@ AliAnalysisTaskUpc4Pi *AddTaskUpc4Pi(
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
-  mgr->ConnectOutput(task, 3, coutput3);
+//  mgr->ConnectOutput(task, 3, coutput3);
   if (isMC) mgr->ConnectOutput(task, 4, coutput4);
   
 
