@@ -13,6 +13,7 @@
 
 #include <TH1D.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TF1.h>
 #include <TMath.h>
 #include <TGraphErrors.h>
@@ -135,10 +136,12 @@ static Double_t GetFractionError
 {
   if ( num == 0 || den == 0 ) return 0.;
   
-  //printf("\t num %e den %e numErr %e denErr %e\n",num,den,numErr,denErr);
+  Double_t err = num/den * TMath::Sqrt( ( numErr * numErr ) / ( num * num ) +
+                                        ( denErr * denErr ) / ( den * den )   );
   
-  return num/den * TMath::Sqrt( ( numErr * numErr ) / ( num * num ) + 
-                                ( denErr * denErr ) / ( den * den )   );
+  //printf("\t num %e den %e numErr %e denErr %e, num/den %f, err %e\n",num,den,numErr,denErr,num/den,err);
+
+  return err;
 }
 
 //-----------------------------------------------------------------------------
@@ -241,6 +244,83 @@ static void GetRangeIntegralAndError
   return GetRangeIntegralAndError(h, binMin, binMax, 
                                   integral, integralErr );
 }
+
+
+//-----------------------------------------------------------------------------
+/// Project TH3 with pt vs sum pt vs m02 or TH2 with pt vs m02 into pT histogram
+///  applying a linear pT dependent cut on the shower shape
+///
+/// \param h3source input TH3
+/// \param hsource input TH2 when no TH3 is passed
+/// \param m02Min absolut min value of m02
+/// \param m02Max absolute maximum value of m02
+/// \param ptDepMin apply pT dependent cut on min m02
+/// \param ptDepMax apply pT dependent cut on max m02
+/// \param gapMin additional gap to pT dep
+/// \param gapMax additional gap to pT dep
+/// \param param0 constant term
+/// \param param1 slope term
+//-----------------------------------------------------------------------------
+TH1F* M02PtDependentCut
+(
+ TH3F*   h3source = 0,
+ TH2F*   hsource  = 0,
+ Float_t m02Min   = 0.1,
+ Float_t m02Max   = 0.3,
+ Bool_t  ptDepMin = kFALSE,
+ Bool_t  ptDepMax = kTRUE,
+ Float_t gapMax   = 0.0,
+ Float_t gapMin   = 0.1,
+ Float_t param0   = 0.6,
+ Float_t param1   =-0.016
+ )
+{
+  if ( !hsource && h3source )
+    hsource = (TH2F*)h3source->Project3D("yx");
+  TH2F* temp = (TH2F*) hsource->Clone("temp"); temp->Reset();
+
+//  printf("Dep cut setting: Max %2.2f, Min %2.2f, "
+//         "dep min %d, max %d, gapMax %2.2f, gapMin %2.2f, p0 %f, p1 %f \n",
+//         m02Min,m02Max,
+//         ptDepMin,ptDepMax,
+//         gapMax,gapMin,
+//         param0,param1);
+
+  for(int i=1 ; i<(hsource->GetNbinsX())+1 ; ++i)
+  {
+    double pt = hsource->GetXaxis()->GetBinCenter(i);
+
+    Float_t max = m02Max;
+    if ( ptDepMax )
+    {
+      max = param0+param1*pt+gapMax;
+      if ( m02Max > max ) max = m02Max;
+    }
+
+    Float_t min = m02Min;
+    if ( ptDepMin )
+    {
+      min = param0+param1*pt+gapMin;
+      if ( m02Min > min ) min = m02Min;
+    }
+
+    //printf("\t pt %2.2f, min %2.2f, max %2.2f\n",pt,min,max);
+
+    for(int ii=1; ii<(hsource->GetNbinsY()); ++ii)
+    {
+      if ( min < hsource->GetYaxis()->GetBinCenter(ii)  &&  hsource->GetYaxis()->GetBinCenter(ii) < max )
+      {
+        temp ->SetBinContent(i,ii,hsource->GetBinContent(i,ii));
+        temp ->SetBinError(i,ii,hsource->GetBinError(i,ii));
+      }
+    }
+  }
+
+  TH1F* htarget = (TH1F*)temp->ProjectionX("htarget",1,-1) ;//Clone("htarget");
+  return htarget;
+}
+
+
 
 //-----------------------------------------------------------------------------
 /// When plotting multiple graphs, and need to set different ranges
