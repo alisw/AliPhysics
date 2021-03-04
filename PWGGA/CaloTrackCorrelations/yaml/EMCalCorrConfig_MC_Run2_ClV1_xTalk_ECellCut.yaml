@@ -21,7 +21,8 @@ Clusterizer:
     recalDistToBadChannels: true
     recalShowerShape: false
     remapMcAod: true
-    setCellMCLabelFromCluster: 0                    # use 2 if V1 and E cell 50 MeV
+    setCellMCLabelFromCluster: 0   # use 2 if V1 and E cell 50 MeV
+    enableFracEMCRecalc: true
 ClusterExotics:
     enabled: true
     createHistos: true
