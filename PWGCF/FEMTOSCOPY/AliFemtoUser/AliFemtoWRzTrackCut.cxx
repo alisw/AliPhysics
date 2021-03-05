@@ -1,9 +1,6 @@
 #include "AliFemtoWRzTrackCut.h"
 
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliPIDResponse.h"
-#include "AliVParticle.h"
+
 AliFemtoWRzTrackCut::AliFemtoWRzTrackCut():
   AliFemtoESDTrackCut()
   {
