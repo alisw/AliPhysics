@@ -1194,11 +1194,11 @@ void AliAnalysisTaskLMeeCocktailMC::SetResFileName(TString name)
      TObjArray* ArrResoPt=0x0;
      ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
      TObjArray* ArrResoEta=0x0;
-     ArrResoEta = (TObjArray*) fFile->Get("EtaResArr");
+     ArrResoEta = (TObjArray*) fFile->Get("EtaResArrVsPt");
      TObjArray* ArrResoPhi_Pos=0x0;
-     ArrResoPhi_Pos = (TObjArray*) fFile->Get("PhiPosResArr");
+     ArrResoPhi_Pos = (TObjArray*) fFile->Get("PhiPosResArrVsPt");
      TObjArray* ArrResoPhi_Neg=0x0;
-     ArrResoPhi_Neg = (TObjArray*) fFile->Get("PhiEleResArr");
+     ArrResoPhi_Neg = (TObjArray*) fFile->Get("PhiEleResArrVsPt");
      fArrResoPt=ArrResoPt;
      fArrResoEta=ArrResoEta;
      fArrResoPhi_Pos=ArrResoPhi_Pos;
