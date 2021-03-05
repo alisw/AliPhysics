@@ -377,14 +377,25 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
          fDimuCharge_gen[i]=mcp->Charge();
          fDimuMatch_gen[i]=0;
 	 	 
-	 Int_t daught0 = mcp->GetDaughterFirst();
-	 Int_t daught1 = mcp->GetDaughterLast(); //in muon AOD we have only the 2 muons
-	 AliAODMCParticle *mcp_daught0 = (AliAODMCParticle *)mcarray->At(daught0);
-	 AliAODMCParticle *mcp_daught1 = (AliAODMCParticle *)mcarray->At(daught1);
-	 fDimuCostHE_gen[i] = CostHE_MC(mcp_daught0,mcp_daught1);
-	 fDimuPhiHE_gen[i] = PhiHE_MC(mcp_daught0,mcp_daught1);
-	 fDimuCostCS_gen[i] = CostCS_MC(mcp_daught0,mcp_daught1);
-	 fDimuPhiCS_gen[i] = PhiCS_MC(mcp_daught0,mcp_daught1);
+	 Int_t d0 = mcp->GetDaughterFirst();
+	 Int_t d1 = mcp->GetDaughterLast(); //in muon AOD we have only the 2 muons, in AOD there might be 3 tracks
+	 Int_t daught[3];
+	 
+	 AliAODMCParticle *mcp_daught0;
+         AliAODMCParticle *mcp_daught1;
+	 Int_t j=0;
+	 for(int i=d0;i<d1;i++){
+	   mcp_daughter[i] = (AliAODMCParticle *)mcarray->At(i);
+	   if(mcp_daughter->GetPdgCode()!=13 && mcp_daughter->GetPdgCode()!=-13) continue; //skip gamma due to radiative production
+	   daught[j]=i;
+	   j++;
+	 }
+  	 AliAODMCParticle *mcp_daught0 = (AliAODMCParticle *)mcarray->At(daught[0]);
+	 AliAODMCParticle *mcp_daught1 = (AliAODMCParticle *)mcarray->At(daught[1]);
+         fDimuCostHE_gen[i] = CostHE_MC(mcp_daught0,mcp_daught1);
+         fDimuPhiHE_gen[i] = PhiHE_MC(mcp_daught0,mcp_daught1);
+         fDimuCostCS_gen[i] = CostCS_MC(mcp_daught0,mcp_daught1);
+         fDimuPhiCS_gen[i] = PhiCS_MC(mcp_daught0,mcp_daught1);
 
 	 numdimu_gen++;
        }
