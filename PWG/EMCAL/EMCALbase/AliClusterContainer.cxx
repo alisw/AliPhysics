@@ -59,7 +59,8 @@ AliClusterContainer::AliClusterContainer():
   fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX),
-  fMaxFracEnergyLeadingCell(DBL_MAX)
+  fMaxFracEnergyLeadingCell(DBL_MAX),
+  fEmcalMaxNCellEffCutEnergy(4.)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -87,7 +88,8 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX),
-  fMaxFracEnergyLeadingCell(DBL_MAX)
+  fMaxFracEnergyLeadingCell(DBL_MAX),
+  fEmcalMaxNCellEffCutEnergy(4.)
 {
   fBaseClassName = "AliVCluster";
   SetClassName("AliVCluster");
@@ -132,7 +134,7 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
  * @param i
  * @return
  */
-AliVCluster* AliClusterContainer::GetCluster(Int_t i) const 
+AliVCluster* AliClusterContainer::GetCluster(Int_t i) const
 {
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
   AliVCluster *vp = static_cast<AliVCluster*>(fClArray->At(i));
@@ -164,7 +166,7 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const
  * @param lab
  * @return
  */
-AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const 
+AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const
 {
   Int_t i = GetIndexFromLabel(lab);
   return GetCluster(i);
@@ -185,7 +187,7 @@ AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const
  * Get next accepted cluster
  * @return
  */
-AliVCluster* AliClusterContainer::GetNextAcceptCluster() 
+AliVCluster* AliClusterContainer::GetNextAcceptCluster()
 {
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -202,7 +204,7 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster()
  * Get next cluster
  * @return
  */
-AliVCluster* AliClusterContainer::GetNextCluster() 
+AliVCluster* AliClusterContainer::GetNextCluster()
 {
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -349,7 +351,7 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     rejectionReason |= kNullObject;
     return kFALSE;
   }
-  
+
   Bool_t bInAcceptance = clus->IsEMCAL();
   if (fIncludePHOS) {
     bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
@@ -381,15 +383,14 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
     rejectionReason |= kTimeCut;
     return kFALSE;
   }
-
-  if (fExoticCut && clus->GetIsExotic()) {
+  if (fExoticCut && clus->GetIsExotic() && !GetPassedSpecialNCell(clus)) {
     rejectionReason |= kExoticCut;
     return kFALSE;
   }
-  
+
   if (clus->IsEMCAL()) {
     if (clus->GetNonLinCorrEnergy() < fEmcalMaxM02CutEnergy) {
-      if(clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) {
+      if((clus->GetM02() < fEmcalMinM02 || clus->GetM02() > fEmcalMaxM02) && !GetPassedSpecialNCell(clus)) {
         rejectionReason |= kExoticCut; // Not really true, but there is a lack of leftover bits
         return kFALSE;
       }
@@ -403,7 +404,7 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
       double celltmp = fEMCALCells->GetCellAmplitude(clus->GetCellAbsId(icell));
       if(celltmp > ecellmax) ecellmax = celltmp;
     }
-    if(ecellmax/clus->E() > fMaxFracEnergyLeadingCell) {
+    if(ecellmax/clus->E() > fMaxFracEnergyLeadingCell && !GetPassedSpecialNCell(clus)) {
       rejectionReason |= kExoticCut;
       return kFALSE;
     }
@@ -415,22 +416,38 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
       return kFALSE;
     }
   }
-  
+
   if (fIncludePHOS || fIncludePHOSonly) {
     if (clus->GetType() == AliVCluster::kPHOSNeutral) {
       if (clus->GetNCells() < fPhosMinNcells) {
         rejectionReason |= kExoticCut;
         return kFALSE;
       }
-      
+
       if (clus->GetM02() < fPhosMinM02) {
         rejectionReason |= kExoticCut;
         return kFALSE;
       }
     }
   }
-  
+
   return kTRUE;
+}
+
+/**
+ * Check if cluster has only one cell but should be accepted for the analysis
+ * Only below a certain energy threshold (recommended = 4 GeV)
+ * Based on the output of AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
+ * Chi2() value is used to flag clusters that should pass the cut
+ * Clusters will only be flagged in MC, data does not change
+ * @return
+ */
+Bool_t AliClusterContainer::GetPassedSpecialNCell(const AliVCluster* clus) const
+{
+  if(!clus->IsEMCAL()) return kFALSE;
+  if(clus->GetNCells() > 1) return kFALSE;
+  if(clus->Chi2() == 1 && clus->E() < fEmcalMaxNCellEffCutEnergy) return kTRUE;
+  return kFALSE;
 }
 
 /**

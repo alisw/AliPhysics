@@ -443,7 +443,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_TrueClusterMCIsoCharged1(0), 
   fBuffer_TrueClusterMCIsoCharged2(0), 
   fBuffer_TrueClusterMCIsoCharged3(0), 
-  fBuffer_TrueClusterMCIsoBckLeft(0), 
+  fBuffer_TrueClusterMCIsoBckPerp(0), 
   fBuffer_TrueClusterMCTag(0), 
   fBuffer_TrueClusterIsConv(0),
   fBuffer_GenPhotonE(0),
@@ -883,7 +883,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_TrueClusterMCIsoCharged1(0), 
   fBuffer_TrueClusterMCIsoCharged2(0), 
   fBuffer_TrueClusterMCIsoCharged3(0), 
-  fBuffer_TrueClusterMCIsoBckLeft(0), 
+  fBuffer_TrueClusterMCIsoBckPerp(0), 
   fBuffer_TrueClusterMCTag(0), 
   fBuffer_TrueClusterIsConv(0),
   fBuffer_GenPhotonE(0),
@@ -2515,7 +2515,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fAnalysisTree->Branch("TrueCluster_MCIsoCharged1","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoCharged1);
       fAnalysisTree->Branch("TrueCluster_MCIsoCharged2","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoCharged2);
       fAnalysisTree->Branch("TrueCluster_MCIsoCharged3","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoCharged3);
-      fAnalysisTree->Branch("TrueCluster_MCIsoBckLeft","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoBckLeft);
+      fAnalysisTree->Branch("TrueCluster_MCIsoBckPerp","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoBckPerp);
       fAnalysisTree->Branch("TrueCluster_MCTag","std::vector<Int_t>",&fBuffer_TrueClusterMCTag);
       fAnalysisTree->Branch("TrueCluster_IsConv","std::vector<Bool_t>",&fBuffer_TrueClusterIsConv);
     
@@ -2799,7 +2799,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_TrueClusterMCIsoCharged1.clear(); 
   fBuffer_TrueClusterMCIsoCharged2.clear(); 
   fBuffer_TrueClusterMCIsoCharged3.clear(); 
-  fBuffer_TrueClusterMCIsoBckLeft.clear(); 
+  fBuffer_TrueClusterMCIsoBckPerp.clear(); 
   fBuffer_TrueClusterMCTag.clear();
   fBuffer_TrueClusterIsConv.clear();
     
@@ -4571,6 +4571,8 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
       isoV.backgroundRight.push_back(0.);
       isoV.backgroundBack.push_back(0.);
   }
+  if((mclabel<0) || mclabel >= fAODMCTrackArray->GetEntriesFast()) return isoV;
+  
   AliAODMCParticle *thisParticle = (AliAODMCParticle*) fAODMCTrackArray->At(mclabel);
   Double_t thisEta = thisParticle->Eta();
   Double_t thisPhi = thisParticle->Phi();
@@ -5747,7 +5749,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Double_t trueClusterMCIsoCharged1 = 0.;
   Double_t trueClusterMCIsoCharged2 = 0.;
   Double_t trueClusterMCIsoCharged3 = 0.;
-  Double_t trueClusterMCIsoBckLeft = 0.;
+  Double_t trueClusterMCIsoBckPerp = 0.;
   Int_t trueClusterIsSignal = 0;
   Bool_t trueClusterIsConv = kFALSE;
   Float_t fracLeadingLabel = 0;
@@ -5785,7 +5787,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
       trueClusterMCIsoCharged1 = mcIso.isolationCone.at(0);
       if(mcIso.isolationCone.size()>1)trueClusterMCIsoCharged2 = mcIso.isolationCone.at(1);
       if(mcIso.isolationCone.size()>2)trueClusterMCIsoCharged3 = mcIso.isolationCone.at(2);
-      trueClusterMCIsoBckLeft = mcIso.backgroundLeft.at(2);
+      trueClusterMCIsoBckPerp = mcIso.backgroundLeft.at(2) + mcIso.backgroundRight.at(2);
 
       TString headerName = fEventCuts->GetParticleHeaderName(photonlabel, fMCEvent, fInputEvent);
       if(((AliConvEventCuts*)fEventCuts)->GetSignalRejection() == 0){
@@ -5810,7 +5812,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
     fBuffer_TrueClusterMCIsoCharged1.push_back(trueClusterMCIsoCharged1); 
     fBuffer_TrueClusterMCIsoCharged2.push_back(trueClusterMCIsoCharged2); 
     fBuffer_TrueClusterMCIsoCharged3.push_back(trueClusterMCIsoCharged3); 
-    fBuffer_TrueClusterMCIsoBckLeft.push_back(trueClusterMCIsoBckLeft); 
+    fBuffer_TrueClusterMCIsoBckPerp.push_back(trueClusterMCIsoBckPerp); 
     fBuffer_TrueClusterMCTag.push_back(trueClusterIsSignal); 
     fBuffer_TrueClusterIsConv.push_back(trueClusterIsConv);
   }

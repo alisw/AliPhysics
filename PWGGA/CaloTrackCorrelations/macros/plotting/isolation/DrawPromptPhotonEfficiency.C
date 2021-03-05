@@ -78,10 +78,7 @@ void DrawPromptPhotonEfficiency()
   // Reconstructed spectra vs M02
   //-----------------------------
   
-  TString histoRecoName = Form("AnaIsolPhoton_hPtM02SumPtCone%s",coneContent.Data());
-  // ****Investigate, it should have been the prompt photon MC histogram***
-  //TString histoRecoName = Form("AnaIsolPhoton_hPtM02SumPtCone%s_MCPhotonPrompt",coneContent.Data());
-  //TString histoRecoName = Form("AnaIsolPhoton_hPtM02SumPtCone%s_MCPhoton",coneContent.Data());
+  TString histoRecoName = Form("AnaIsolPhoton_hPtM02SumPtCone%s_MCPhotonPrompt",coneContent.Data());
   TH3F * h3 = (TH3F*) f->Get(histoRecoName);
 
   //TH2F * hPromptM02Iso   =  (TH2F*) f->Get("AnaIsolPhoton_hPtLambda0Iso_MCPhotonPrompt"  ); // Reco M02 vs pT, isolated

@@ -1310,11 +1310,17 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
 	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
+
+      
+      // efficiency if any
+      Double_t efficiency_i = GetEfficiency(pp_i);
+      Double_t efficiency_j = GetEfficiency(pp_j); 
+
       // if not apply w or event w, then 1 for wm
-      ptweight2 *= wm;
-      ptweight3 *= wm;
-      ptweight4 *= wm;
-      ptweight5 *= wm;
+      ptweight2 *= wm*efficiency_i*efficiency_j;
+      ptweight3 *= wm*efficiency_i*efficiency_j;
+      ptweight4 *= wm*efficiency_i*efficiency_j;
+      ptweight5 *= wm*efficiency_i*efficiency_j;
       
 
       //--------------------------------------- ULS pairs -------------------------------------------//

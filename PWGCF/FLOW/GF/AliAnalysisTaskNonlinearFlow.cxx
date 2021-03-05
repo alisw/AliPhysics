@@ -536,6 +536,16 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	// Init the number of tracks
 	double NtrksBefore = 0;
         NtrksAfter = 0;
+	NtrksAfterGap0M = 0;
+	NtrksAfterGap0P = 0;
+	NtrksAfterGap2M = 0;
+	NtrksAfterGap2P = 0;
+	NtrksAfterGap4M = 0;
+	NtrksAfterGap4P = 0;
+	NtrksAfterGap6M = 0;
+	NtrksAfterGap6P = 0;
+	NtrksAfterGap8M = 0;
+	NtrksAfterGap8P = 0;
 	NtrksAfterGap10M = 0;
 	NtrksAfterGap10P = 0;
 	NtrksAfterGap14M = 0;
@@ -553,6 +563,26 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	double Qcos[20][20] = {0};
 	double Qsin[20][20] = {0};
+	double QcosGap0M[20][20] = {0};
+	double QsinGap0M[20][20] = {0};
+	double QcosGap0P[20][20] = {0};
+	double QsinGap0P[20][20] = {0};
+	double QcosGap2M[20][20] = {0};
+	double QsinGap2M[20][20] = {0};
+	double QcosGap2P[20][20] = {0};
+	double QsinGap2P[20][20] = {0};
+	double QcosGap4M[20][20] = {0};
+	double QsinGap4M[20][20] = {0};
+	double QcosGap4P[20][20] = {0};
+	double QsinGap4P[20][20] = {0};
+	double QcosGap6M[20][20] = {0};
+	double QsinGap6M[20][20] = {0};
+	double QcosGap6P[20][20] = {0};
+	double QsinGap6P[20][20] = {0};
+	double QcosGap8M[20][20] = {0};
+	double QsinGap8M[20][20] = {0};
+	double QcosGap8P[20][20] = {0};
+	double QsinGap8P[20][20] = {0};
 	double QcosGap10M[20][20] = {0};
 	double QsinGap10M[20][20] = {0};
 	double QcosGap10P[20][20] = {0};
@@ -645,6 +675,136 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 			{
 				Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
 				Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+			}
+		}
+
+		//..Gap > 0.0
+		if(aodTrk->Eta() < 0)
+		{
+			NtrksAfterGap0M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0)
+		{
+			NtrksAfterGap0P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+
+		//..Gap > 0.2
+		if(aodTrk->Eta() < -0.1)
+		{
+			NtrksAfterGap2M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0.1)
+		{
+			NtrksAfterGap2P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+
+		//..Gap > 0.4
+		if(aodTrk->Eta() < -0.2)
+		{
+			NtrksAfterGap4M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0.2)
+		{
+			NtrksAfterGap4P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+
+		//..Gap > 0.6
+		if(aodTrk->Eta() < -0.3)
+		{
+			NtrksAfterGap6M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0.3)
+		{
+			NtrksAfterGap6P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+
+		//..Gap > 0.8
+		if(aodTrk->Eta() < -0.4)
+		{
+			NtrksAfterGap8M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0.4)
+		{
+			NtrksAfterGap8P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
 			}
 		}
 
@@ -746,6 +906,16 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	//..calculate Q-vector for each harmonics n and power p
         correlator.FillQVector(correlator.Qvector, Qcos, Qsin); 
+        correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M); 
+        correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P); 
+        correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M); 
+        correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P); 
+        correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M); 
+        correlator.FillQVector(correlator.Qvector4P, QcosGap4P, QsinGap4P); 
+        correlator.FillQVector(correlator.Qvector6M, QcosGap6M, QsinGap6M); 
+        correlator.FillQVector(correlator.Qvector6P, QcosGap6P, QsinGap6P); 
+        correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M); 
+        correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P); 
         correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M); 
         correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P); 
         correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M); 
@@ -1163,6 +1333,26 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 		multProfile.fChcn4[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4[h]);
 
+		multProfile.fChcn4_Gap0[h] = new TProfile(Form("fChc%d{4}_Gap0%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap0[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap0[h]);
+
+		multProfile.fChcn4_Gap2[h] = new TProfile(Form("fChc%d{4}_Gap2%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap2[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap2[h]);
+
+		multProfile.fChcn4_Gap4[h] = new TProfile(Form("fChc%d{4}_Gap4%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap4[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap4[h]);
+
+		multProfile.fChcn4_Gap6[h] = new TProfile(Form("fChc%d{4}_Gap6%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap6[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap6[h]);
+
+		multProfile.fChcn4_Gap8[h] = new TProfile(Form("fChc%d{4}_Gap8%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn4_Gap8[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn4_Gap8[h]);
+
 		multProfile.fChcn4_Gap10[h] = new TProfile(Form("fChc%d{4}_Gap10%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn4_Gap10[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_Gap10[h]);
@@ -1194,6 +1384,86 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChc532->Sumw2();
 	fListOfObjects->Add(multProfile.fChc532);
 
+	multProfile.fChc422_Gap0A = new TProfile(Form("fChc422_Gap0A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap0A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap0A);
+
+	multProfile.fChc422_Gap0B = new TProfile(Form("fChc422_Gap0B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap0B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap0B);
+
+	multProfile.fChc532_Gap0A = new TProfile(Form("fChc532_Gap0A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap0A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap0A);
+
+	multProfile.fChc532_Gap0B = new TProfile(Form("fChc532_Gap0B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap0B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap0B);
+
+	multProfile.fChc422_Gap2A = new TProfile(Form("fChc422_Gap2A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap2A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap2A);
+
+	multProfile.fChc422_Gap2B = new TProfile(Form("fChc422_Gap2B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap2B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap2B);
+
+	multProfile.fChc532_Gap2A = new TProfile(Form("fChc532_Gap2A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap2A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap2A);
+
+	multProfile.fChc532_Gap2B = new TProfile(Form("fChc532_Gap2B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap2B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap2B);
+
+	multProfile.fChc422_Gap4A = new TProfile(Form("fChc422_Gap4A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap4A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap4A);
+
+	multProfile.fChc422_Gap4B = new TProfile(Form("fChc422_Gap4B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap4B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap4B);
+
+	multProfile.fChc532_Gap4A = new TProfile(Form("fChc532_Gap4A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap4A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap4A);
+
+	multProfile.fChc532_Gap4B = new TProfile(Form("fChc532_Gap4B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap4B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap4B);
+
+	multProfile.fChc422_Gap6A = new TProfile(Form("fChc422_Gap6A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap6A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap6A);
+
+	multProfile.fChc422_Gap6B = new TProfile(Form("fChc422_Gap6B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap6B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap6B);
+
+	multProfile.fChc532_Gap6A = new TProfile(Form("fChc532_Gap6A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap6A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap6A);
+
+	multProfile.fChc532_Gap6B = new TProfile(Form("fChc532_Gap6B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap6B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap6B);
+
+	multProfile.fChc422_Gap8A = new TProfile(Form("fChc422_Gap8A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap8A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap8A);
+
+	multProfile.fChc422_Gap8B = new TProfile(Form("fChc422_Gap8B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_Gap8B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_Gap8B);
+
+	multProfile.fChc532_Gap8A = new TProfile(Form("fChc532_Gap8A%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap8A->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap8A);
+
+	multProfile.fChc532_Gap8B = new TProfile(Form("fChc532_Gap8B%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_Gap8B->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_Gap8B);
+
 	multProfile.fChc422_Gap10A = new TProfile(Form("fChc422_Gap10A%s", label.Data()), "", nn, xbins);
 	multProfile.fChc422_Gap10A->Sumw2();
 	fListOfObjects->Add(multProfile.fChc422_Gap10A);
@@ -1210,10 +1480,66 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChc532_Gap10B->Sumw2();
 	fListOfObjects->Add(multProfile.fChc532_Gap10B);
 
+	multProfile.fChc422_3subL = new TProfile(Form("fChc422_3subL%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_3subL->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_3subL);
+
+	multProfile.fChc422_3subM = new TProfile(Form("fChc422_3subM%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_3subM->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_3subM);
+
+	multProfile.fChc422_3subR = new TProfile(Form("fChc422_3subR%s", label.Data()), "", nn, xbins);
+	multProfile.fChc422_3subR->Sumw2();
+	fListOfObjects->Add(multProfile.fChc422_3subR);
+
+	multProfile.fChc532_3subLA = new TProfile(Form("fChc532_3subLA%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subLA->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subLA);
+
+	multProfile.fChc532_3subLB = new TProfile(Form("fChc532_3subLB%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subLB->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subLB);
+
+	multProfile.fChc532_3subMA = new TProfile(Form("fChc532_3subMA%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subMA->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subMA);
+
+	multProfile.fChc532_3subMB = new TProfile(Form("fChc532_3subMB%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subMB->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subMB);
+
+	multProfile.fChc532_3subRA = new TProfile(Form("fChc532_3subRA%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subRA->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subRA);
+
+	multProfile.fChc532_3subRB = new TProfile(Form("fChc532_3subRB%s", label.Data()), "", nn, xbins);
+	multProfile.fChc532_3subRB->Sumw2();
+	fListOfObjects->Add(multProfile.fChc532_3subRB);
+
 	// SC(n,m): SC(3,2)
 	multProfile.fChsc3232 = new TProfile(Form("fChsc3232%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc3232);
+
+	multProfile.fChsc3232_Gap0 = new TProfile(Form("fChsc3232_Gap0%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap0->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap0);
+
+	multProfile.fChsc3232_Gap2 = new TProfile(Form("fChsc3232_Gap2%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap2->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap2);
+
+	multProfile.fChsc3232_Gap4 = new TProfile(Form("fChsc3232_Gap4%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap4->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap4);
+
+	multProfile.fChsc3232_Gap6 = new TProfile(Form("fChsc3232_Gap6%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap6->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap6);
+
+	multProfile.fChsc3232_Gap8 = new TProfile(Form("fChsc3232_Gap8%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc3232_Gap8->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc3232_Gap8);
 
 	multProfile.fChsc3232_Gap10 = new TProfile(Form("fChsc3232_Gap10%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232_Gap10->Sumw2();
@@ -1247,6 +1573,26 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChsc4242 = new TProfile(Form("fChsc4242%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc4242->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242);
+
+	multProfile.fChsc4242_Gap0 = new TProfile(Form("fChsc4242_Gap0%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap0->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap0);
+
+	multProfile.fChsc4242_Gap2 = new TProfile(Form("fChsc4242_Gap2%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap2->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap2);
+
+	multProfile.fChsc4242_Gap4 = new TProfile(Form("fChsc4242_Gap4%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap4->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap4);
+
+	multProfile.fChsc4242_Gap6 = new TProfile(Form("fChsc4242_Gap6%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap6->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap6);
+
+	multProfile.fChsc4242_Gap8 = new TProfile(Form("fChsc4242_Gap8%s", label.Data()), "# of tracks", nn, xbins);
+	multProfile.fChsc4242_Gap8->Sumw2();
+	fListOfObjects->Add(multProfile.fChsc4242_Gap8);
 
 	multProfile.fChsc4242_Gap10 = new TProfile(Form("fChsc4242_Gap10%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc4242_Gap10->Sumw2();
@@ -1304,6 +1650,15 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		double v42Re = v42.Re()/Dn2;
 		profile.fChcn2[2]->Fill(Ntrks, v42Re, Dn2);
 
+		//..v5{2} = <cos5(phi1 - phi2)>
+		TComplex v52 = correlator.Two(5, -5);
+		double v52Re = v52.Re()/Dn2;
+		profile.fChcn2[3]->Fill(Ntrks, v52Re, Dn2);
+
+		//..v6{2} = <cos6(phi1 - phi2)>
+		TComplex v62 = correlator.Two(6, -6);
+		double v62Re = v62.Re()/Dn2;
+		profile.fChcn2[4]->Fill(Ntrks, v62Re, Dn2);
 	}
 
 	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 0 && Dn2Gap10 != 0)
@@ -1322,6 +1677,16 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		TComplex v42Gap10 = correlator.TwoGap10(4, -4);
 		double v42ReGap10 = v42Gap10.Re()/Dn2Gap10;
 		profile.fChcn2_Gap10[2]->Fill(Ntrks, v42ReGap10, Dn2Gap10);
+
+		//..v5{2} with eta Gap > 1.0
+		TComplex v52Gap10 = correlator.TwoGap10(5, -5);
+		double v52ReGap10 = v52Gap10.Re()/Dn2Gap10;
+		profile.fChcn2_Gap10[3]->Fill(Ntrks, v52ReGap10, Dn2Gap10);
+
+		//..v6{2} with eta Gap > 1.0
+		TComplex v62Gap10 = correlator.TwoGap10(6, -6);
+		double v62ReGap10 = v62Gap10.Re()/Dn2Gap10;
+		profile.fChcn2_Gap10[4]->Fill(Ntrks, v62ReGap10, Dn2Gap10);
 	}
 
 	if(NtrksAfterGap14M > 0 && NtrksAfterGap14P > 0 && Dn2Gap14 != 0)
@@ -1391,8 +1756,19 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 	//..calculate 3-particle correlations
 	//................................
 	double Dn3 = correlator.Three(0, 0, 0).Re();
+	double Dn3Gap0A = correlator.ThreeGap0A(0, 0, 0).Re();
+	double Dn3Gap0B = correlator.ThreeGap0B(0, 0, 0).Re();
+	double Dn3Gap2A = correlator.ThreeGap2A(0, 0, 0).Re();
+	double Dn3Gap2B = correlator.ThreeGap2B(0, 0, 0).Re();
+	double Dn3Gap4A = correlator.ThreeGap4A(0, 0, 0).Re();
+	double Dn3Gap4B = correlator.ThreeGap4B(0, 0, 0).Re();
+	double Dn3Gap6A = correlator.ThreeGap6A(0, 0, 0).Re();
+	double Dn3Gap6B = correlator.ThreeGap6B(0, 0, 0).Re();
+	double Dn3Gap8A = correlator.ThreeGap8A(0, 0, 0).Re();
+	double Dn3Gap8B = correlator.ThreeGap8B(0, 0, 0).Re();
 	double Dn3Gap10A = correlator.ThreeGap10A(0, 0, 0).Re();
 	double Dn3Gap10B = correlator.ThreeGap10B(0, 0, 0).Re();
+	double Dn3_3sub = correlator.Three_3Sub(0,0,0).Re();
 
 	if(NtrksAfter > 2 && Dn3 != 0)
 	{
@@ -1405,6 +1781,136 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		TComplex v532 = correlator.Three(5, -3, -2);
 		double v532Re = v532.Re()/Dn3;
 		profile.fChc532->Fill(Ntrks, v532Re, Dn3);
+	}
+
+        // A-type
+	if(NtrksAfterGap0M > 0 && NtrksAfterGap0P > 1 && Dn3Gap0A != 0)
+	{
+
+		TComplex v422Gap0A = correlator.ThreeGap0A(4, -2, -2);
+		double v422Gap0ARe = v422Gap0A.Re()/Dn3Gap0A;
+		profile.fChc422_Gap0A->Fill(Ntrks, v422Gap0ARe, Dn3Gap0A);
+
+		TComplex v532Gap0A = correlator.ThreeGap0A(5, -3, -2);
+		double v532Gap0ARe = v532Gap0A.Re()/Dn3Gap0A;
+		profile.fChc532_Gap0A->Fill(Ntrks, v532Gap0ARe, Dn3Gap0A);
+	}
+
+        // B-type
+	if(NtrksAfterGap0P > 0 && NtrksAfterGap0M > 1 && Dn3Gap0B != 0)
+	{
+
+		TComplex v422Gap0B = correlator.ThreeGap0B(4, -2, -2);
+		double v422Gap0BRe = v422Gap0B.Re()/Dn3Gap0B;
+		profile.fChc422_Gap0B->Fill(Ntrks, v422Gap0BRe, Dn3Gap0B);
+
+		TComplex v532Gap0B = correlator.ThreeGap0B(5, -3, -2);
+		double v532Gap0BRe = v532Gap0B.Re()/Dn3Gap0B;
+		profile.fChc532_Gap0B->Fill(Ntrks, v532Gap0BRe, Dn3Gap0B);
+	}
+
+        // A-type
+	if(NtrksAfterGap2M > 0 && NtrksAfterGap2P > 1 && Dn3Gap2A != 0)
+	{
+
+		TComplex v422Gap2A = correlator.ThreeGap2A(4, -2, -2);
+		double v422Gap2ARe = v422Gap2A.Re()/Dn3Gap2A;
+		profile.fChc422_Gap2A->Fill(Ntrks, v422Gap2ARe, Dn3Gap2A);
+
+		TComplex v532Gap2A = correlator.ThreeGap2A(5, -3, -2);
+		double v532Gap2ARe = v532Gap2A.Re()/Dn3Gap2A;
+		profile.fChc532_Gap2A->Fill(Ntrks, v532Gap2ARe, Dn3Gap2A);
+	}
+
+        // B-type
+	if(NtrksAfterGap2P > 0 && NtrksAfterGap2M > 1 && Dn3Gap2B != 0)
+	{
+
+		TComplex v422Gap2B = correlator.ThreeGap2B(4, -2, -2);
+		double v422Gap2BRe = v422Gap2B.Re()/Dn3Gap2B;
+		profile.fChc422_Gap2B->Fill(Ntrks, v422Gap2BRe, Dn3Gap2B);
+
+		TComplex v532Gap2B = correlator.ThreeGap2B(5, -3, -2);
+		double v532Gap2BRe = v532Gap2B.Re()/Dn3Gap2B;
+		profile.fChc532_Gap2B->Fill(Ntrks, v532Gap2BRe, Dn3Gap2B);
+	}
+
+        // A-type
+	if(NtrksAfterGap4M > 0 && NtrksAfterGap4P > 1 && Dn3Gap4A != 0)
+	{
+
+		TComplex v422Gap4A = correlator.ThreeGap4A(4, -2, -2);
+		double v422Gap4ARe = v422Gap4A.Re()/Dn3Gap4A;
+		profile.fChc422_Gap4A->Fill(Ntrks, v422Gap4ARe, Dn3Gap4A);
+
+		TComplex v532Gap4A = correlator.ThreeGap4A(5, -3, -2);
+		double v532Gap4ARe = v532Gap4A.Re()/Dn3Gap4A;
+		profile.fChc532_Gap4A->Fill(Ntrks, v532Gap4ARe, Dn3Gap4A);
+	}
+
+        // B-type
+	if(NtrksAfterGap4P > 0 && NtrksAfterGap4M > 1 && Dn3Gap4B != 0)
+	{
+
+		TComplex v422Gap4B = correlator.ThreeGap4B(4, -2, -2);
+		double v422Gap4BRe = v422Gap4B.Re()/Dn3Gap4B;
+		profile.fChc422_Gap4B->Fill(Ntrks, v422Gap4BRe, Dn3Gap4B);
+
+		TComplex v532Gap4B = correlator.ThreeGap4B(5, -3, -2);
+		double v532Gap4BRe = v532Gap4B.Re()/Dn3Gap4B;
+		profile.fChc532_Gap4B->Fill(Ntrks, v532Gap4BRe, Dn3Gap4B);
+	}
+
+        // A-type
+	if(NtrksAfterGap6M > 0 && NtrksAfterGap6P > 1 && Dn3Gap6A != 0)
+	{
+
+		TComplex v422Gap6A = correlator.ThreeGap6A(4, -2, -2);
+		double v422Gap6ARe = v422Gap6A.Re()/Dn3Gap6A;
+		profile.fChc422_Gap6A->Fill(Ntrks, v422Gap6ARe, Dn3Gap6A);
+
+		TComplex v532Gap6A = correlator.ThreeGap6A(5, -3, -2);
+		double v532Gap6ARe = v532Gap6A.Re()/Dn3Gap6A;
+		profile.fChc532_Gap6A->Fill(Ntrks, v532Gap6ARe, Dn3Gap6A);
+	}
+
+        // B-type
+	if(NtrksAfterGap6P > 0 && NtrksAfterGap6M > 1 && Dn3Gap6B != 0)
+	{
+
+		TComplex v422Gap6B = correlator.ThreeGap6B(4, -2, -2);
+		double v422Gap6BRe = v422Gap6B.Re()/Dn3Gap6B;
+		profile.fChc422_Gap6B->Fill(Ntrks, v422Gap6BRe, Dn3Gap6B);
+
+		TComplex v532Gap6B = correlator.ThreeGap6B(5, -3, -2);
+		double v532Gap6BRe = v532Gap6B.Re()/Dn3Gap6B;
+		profile.fChc532_Gap6B->Fill(Ntrks, v532Gap6BRe, Dn3Gap6B);
+	}
+
+        // A-type
+	if(NtrksAfterGap8M > 0 && NtrksAfterGap8P > 1 && Dn3Gap8A != 0)
+	{
+
+		TComplex v422Gap8A = correlator.ThreeGap8A(4, -2, -2);
+		double v422Gap8ARe = v422Gap8A.Re()/Dn3Gap8A;
+		profile.fChc422_Gap8A->Fill(Ntrks, v422Gap8ARe, Dn3Gap8A);
+
+		TComplex v532Gap8A = correlator.ThreeGap8A(5, -3, -2);
+		double v532Gap8ARe = v532Gap8A.Re()/Dn3Gap8A;
+		profile.fChc532_Gap8A->Fill(Ntrks, v532Gap8ARe, Dn3Gap8A);
+	}
+
+        // B-type
+	if(NtrksAfterGap8P > 0 && NtrksAfterGap8M > 1 && Dn3Gap8B != 0)
+	{
+
+		TComplex v422Gap8B = correlator.ThreeGap8B(4, -2, -2);
+		double v422Gap8BRe = v422Gap8B.Re()/Dn3Gap8B;
+		profile.fChc422_Gap8B->Fill(Ntrks, v422Gap8BRe, Dn3Gap8B);
+
+		TComplex v532Gap8B = correlator.ThreeGap8B(5, -3, -2);
+		double v532Gap8BRe = v532Gap8B.Re()/Dn3Gap8B;
+		profile.fChc532_Gap8B->Fill(Ntrks, v532Gap8BRe, Dn3Gap8B);
 	}
 
         // A-type
@@ -1433,9 +1939,57 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		profile.fChc532_Gap10B->Fill(Ntrks, v532Gap10BRe, Dn3Gap10B);
 	}
 
+	//..3-subevent method
+	if(NtrksAfter3subL > 0 && NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn3_3sub != 0)
+	{
+		// v422
+		TComplex v422_3subL = correlator.Three_3Sub(4, -2, -2);
+		double v422_3subLRe = v422_3subL.Re()/Dn3_3sub;
+		profile.fChc422_3subL->Fill(Ntrks, v422_3subLRe, Dn3_3sub);
+
+		TComplex v422_3subM = correlator.Three_3Sub(-2, 4, -2);
+		double v422_3subMRe = v422_3subM.Re()/Dn3_3sub;
+		profile.fChc422_3subM->Fill(Ntrks, v422_3subMRe, Dn3_3sub);
+
+		TComplex v422_3subR = correlator.Three_3Sub(4, -2, -2);
+		double v422_3subRRe = v422_3subR.Re()/Dn3_3sub;
+		profile.fChc422_3subR->Fill(Ntrks, v422_3subRRe, Dn3_3sub);
+
+		// v532
+		TComplex v532_3subLA = correlator.Three_3Sub(5, -3, -2);
+		double v532_3subLARe = v532_3subLA.Re()/Dn3_3sub;
+		profile.fChc532_3subLA->Fill(Ntrks, v532_3subLARe, Dn3_3sub);
+
+		TComplex v532_3subLB = correlator.Three_3Sub(5, -2, -3);
+		double v532_3subLBRe = v532_3subLB.Re()/Dn3_3sub;
+		profile.fChc532_3subLB->Fill(Ntrks, v532_3subLBRe, Dn3_3sub);
+
+		TComplex v532_3subMA = correlator.Three_3Sub(-3, 5, -2);
+		double v532_3subMARe = v532_3subMA.Re()/Dn3_3sub;
+		profile.fChc532_3subMA->Fill(Ntrks, v532_3subMARe, Dn3_3sub);
+
+		TComplex v532_3subMB = correlator.Three_3Sub(-2, 5, -3);
+		double v532_3subMBRe = v532_3subMB.Re()/Dn3_3sub;
+		profile.fChc532_3subMB->Fill(Ntrks, v532_3subMBRe, Dn3_3sub);
+
+		TComplex v532_3subRA = correlator.Three_3Sub(-2, -3, 5);
+		double v532_3subRARe = v532_3subRA.Re()/Dn3_3sub;
+		profile.fChc532_3subRA->Fill(Ntrks, v532_3subRARe, Dn3_3sub);
+	
+		TComplex v532_3subRB = correlator.Three_3Sub(-3, -2, 5);
+		double v532_3subRBRe = v532_3subRB.Re()/Dn3_3sub;
+		profile.fChc532_3subRB->Fill(Ntrks, v532_3subRBRe, Dn3_3sub);
+	}
+
+
 	//..calculate 4-particle correlations
 	//................................
 	double Dn4 = correlator.Four(0, 0, 0, 0).Re();
+	double Dn4Gap0 = correlator.FourGap0(0, 0, 0, 0).Re();
+	double Dn4Gap2 = correlator.FourGap2(0, 0, 0, 0).Re();
+	double Dn4Gap4 = correlator.FourGap4(0, 0, 0, 0).Re();
+	double Dn4Gap6 = correlator.FourGap6(0, 0, 0, 0).Re();
+	double Dn4Gap8 = correlator.FourGap8(0, 0, 0, 0).Re();
 	double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
 	double Dn4_3subMMLR = correlator.Four_3SubMMLR(0, 0, 0, 0).Re();
 	double Dn4_3subLLMR = correlator.Four_3SubLLMR(0, 0, 0, 0).Re();
@@ -1469,6 +2023,121 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
 		double sc4242Re = sc4242.Re()/Dn4;
 		profile.fChsc4242->Fill(Ntrks, sc4242Re, Dn4);
 
+	}
+
+	if(NtrksAfterGap0M > 1 && NtrksAfterGap0P > 1 && Dn4Gap0 !=0)
+	{
+		TComplex v24Gap0 = correlator.FourGap0(2, 2, -2, -2);
+		double v24Gap0Re = v24Gap0.Re()/Dn4Gap0;
+		profile.fChcn4_Gap0[0]->Fill(Ntrks, v24Gap0Re, Dn4Gap0);
+
+		TComplex v34Gap0 = correlator.FourGap0(3, 3, -3, -3);
+		double v34Gap0Re = v34Gap0.Re()/Dn4Gap0;
+		profile.fChcn4_Gap0[1]->Fill(Ntrks, v34Gap0Re, Dn4Gap0);
+
+		TComplex v44Gap0 = correlator.FourGap0(4, 4, -4, -4);
+		double v44Gap0Re = v44Gap0.Re()/Dn4Gap0;
+		profile.fChcn4_Gap0[2]->Fill(Ntrks, v44Gap0Re, Dn4Gap0);
+
+		TComplex sc3232Gap0 = correlator.FourGap0(3, 2, -3, -2);
+		double sc3232Gap0Re = sc3232Gap0.Re()/Dn4Gap0;
+		profile.fChsc3232_Gap0->Fill(Ntrks, sc3232Gap0Re, Dn4Gap0);
+
+		TComplex sc4242Gap0 = correlator.FourGap0(4, 2, -4, -2);
+		double sc4242Gap0Re = sc4242Gap0.Re()/Dn4Gap0;
+		profile.fChsc4242_Gap0->Fill(Ntrks, sc4242Gap0Re, Dn4Gap0);
+	}
+
+	if(NtrksAfterGap2M > 1 && NtrksAfterGap2P > 1 && Dn4Gap2 !=0)
+	{
+		TComplex v24Gap2 = correlator.FourGap2(2, 2, -2, -2);
+		double v24Gap2Re = v24Gap2.Re()/Dn4Gap2;
+		profile.fChcn4_Gap2[0]->Fill(Ntrks, v24Gap2Re, Dn4Gap2);
+
+		TComplex v34Gap2 = correlator.FourGap2(3, 3, -3, -3);
+		double v34Gap2Re = v34Gap2.Re()/Dn4Gap2;
+		profile.fChcn4_Gap2[1]->Fill(Ntrks, v34Gap2Re, Dn4Gap2);
+
+		TComplex v44Gap2 = correlator.FourGap2(4, 4, -4, -4);
+		double v44Gap2Re = v44Gap2.Re()/Dn4Gap2;
+		profile.fChcn4_Gap2[2]->Fill(Ntrks, v44Gap2Re, Dn4Gap2);
+
+		TComplex sc3232Gap2 = correlator.FourGap2(3, 2, -3, -2);
+		double sc3232Gap2Re = sc3232Gap2.Re()/Dn4Gap2;
+		profile.fChsc3232_Gap2->Fill(Ntrks, sc3232Gap2Re, Dn4Gap2);
+
+		TComplex sc4242Gap2 = correlator.FourGap2(4, 2, -4, -2);
+		double sc4242Gap2Re = sc4242Gap2.Re()/Dn4Gap2;
+		profile.fChsc4242_Gap2->Fill(Ntrks, sc4242Gap2Re, Dn4Gap2);
+	}
+
+	if(NtrksAfterGap4M > 1 && NtrksAfterGap4P > 1 && Dn4Gap4 !=0)
+	{
+		TComplex v24Gap4 = correlator.FourGap4(2, 2, -2, -2);
+		double v24Gap4Re = v24Gap4.Re()/Dn4Gap4;
+		profile.fChcn4_Gap4[0]->Fill(Ntrks, v24Gap4Re, Dn4Gap4);
+
+		TComplex v34Gap4 = correlator.FourGap4(3, 3, -3, -3);
+		double v34Gap4Re = v34Gap4.Re()/Dn4Gap4;
+		profile.fChcn4_Gap4[1]->Fill(Ntrks, v34Gap4Re, Dn4Gap4);
+
+		TComplex v44Gap4 = correlator.FourGap4(4, 4, -4, -4);
+		double v44Gap4Re = v44Gap4.Re()/Dn4Gap4;
+		profile.fChcn4_Gap4[2]->Fill(Ntrks, v44Gap4Re, Dn4Gap4);
+
+		TComplex sc3232Gap4 = correlator.FourGap4(3, 2, -3, -2);
+		double sc3232Gap4Re = sc3232Gap4.Re()/Dn4Gap4;
+		profile.fChsc3232_Gap4->Fill(Ntrks, sc3232Gap4Re, Dn4Gap4);
+
+		TComplex sc4242Gap4 = correlator.FourGap4(4, 2, -4, -2);
+		double sc4242Gap4Re = sc4242Gap4.Re()/Dn4Gap4;
+		profile.fChsc4242_Gap4->Fill(Ntrks, sc4242Gap4Re, Dn4Gap4);
+	}
+
+	if(NtrksAfterGap6M > 1 && NtrksAfterGap6P > 1 && Dn4Gap6 !=0)
+	{
+		TComplex v24Gap6 = correlator.FourGap6(2, 2, -2, -2);
+		double v24Gap6Re = v24Gap6.Re()/Dn4Gap6;
+		profile.fChcn4_Gap6[0]->Fill(Ntrks, v24Gap6Re, Dn4Gap6);
+
+		TComplex v34Gap6 = correlator.FourGap6(3, 3, -3, -3);
+		double v34Gap6Re = v34Gap6.Re()/Dn4Gap6;
+		profile.fChcn4_Gap6[1]->Fill(Ntrks, v34Gap6Re, Dn4Gap6);
+
+		TComplex v44Gap6 = correlator.FourGap6(4, 4, -4, -4);
+		double v44Gap6Re = v44Gap6.Re()/Dn4Gap6;
+		profile.fChcn4_Gap6[2]->Fill(Ntrks, v44Gap6Re, Dn4Gap6);
+
+		TComplex sc3232Gap6 = correlator.FourGap6(3, 2, -3, -2);
+		double sc3232Gap6Re = sc3232Gap6.Re()/Dn4Gap6;
+		profile.fChsc3232_Gap6->Fill(Ntrks, sc3232Gap6Re, Dn4Gap6);
+
+		TComplex sc4242Gap6 = correlator.FourGap6(4, 2, -4, -2);
+		double sc4242Gap6Re = sc4242Gap6.Re()/Dn4Gap6;
+		profile.fChsc4242_Gap6->Fill(Ntrks, sc4242Gap6Re, Dn4Gap6);
+	}
+
+	if(NtrksAfterGap8M > 1 && NtrksAfterGap8P > 1 && Dn4Gap8 !=0)
+	{
+		TComplex v24Gap8 = correlator.FourGap8(2, 2, -2, -2);
+		double v24Gap8Re = v24Gap8.Re()/Dn4Gap8;
+		profile.fChcn4_Gap8[0]->Fill(Ntrks, v24Gap8Re, Dn4Gap8);
+
+		TComplex v34Gap8 = correlator.FourGap8(3, 3, -3, -3);
+		double v34Gap8Re = v34Gap8.Re()/Dn4Gap8;
+		profile.fChcn4_Gap8[1]->Fill(Ntrks, v34Gap8Re, Dn4Gap8);
+
+		TComplex v44Gap8 = correlator.FourGap8(4, 4, -4, -4);
+		double v44Gap8Re = v44Gap8.Re()/Dn4Gap8;
+		profile.fChcn4_Gap8[2]->Fill(Ntrks, v44Gap8Re, Dn4Gap8);
+
+		TComplex sc3232Gap8 = correlator.FourGap8(3, 2, -3, -2);
+		double sc3232Gap8Re = sc3232Gap8.Re()/Dn4Gap8;
+		profile.fChsc3232_Gap8->Fill(Ntrks, sc3232Gap8Re, Dn4Gap8);
+
+		TComplex sc4242Gap8 = correlator.FourGap8(4, 2, -4, -2);
+		double sc4242Gap8Re = sc4242Gap8.Re()/Dn4Gap8;
+		profile.fChsc4242_Gap8->Fill(Ntrks, sc4242Gap8Re, Dn4Gap8);
 	}
 
 	if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 1 && Dn4Gap10 !=0)
@@ -1737,8 +2406,17 @@ PhysicsProfile::PhysicsProfile() :
 		fChc532_Gap8B(nullptr),   
 		fChc422_Gap10A(nullptr), 
 		fChc422_Gap10B(nullptr), 
+		fChc422_3subL(nullptr), 
+		fChc422_3subM(nullptr), 
+		fChc422_3subR(nullptr), 
 		fChc532_Gap10A(nullptr), 
-		fChc532_Gap10B(nullptr)
+		fChc532_Gap10B(nullptr),
+		fChc532_3subLA(nullptr),
+		fChc532_3subLB(nullptr),
+		fChc532_3subMA(nullptr),
+		fChc532_3subMB(nullptr),
+		fChc532_3subRA(nullptr),
+		fChc532_3subRB(nullptr)
 {
 		memset(fChcn2, 0, sizeof(fChcn2));
 		memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));

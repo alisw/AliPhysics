@@ -403,6 +403,8 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	double mean = 0.0;
 	double limit1 = 0.0;
 	double limit2 = 0.0;
+	double buffer = 0.0;
+	double SidebandWidth = 0.2;
 
 	static std::vector<AliFemtoDreamBasePart> ProtonParticles;
 	static std::vector<AliFemtoDreamBasePart> AntiprotonParticles;
@@ -451,24 +453,26 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	      // upper sideband
 	      if(fUpperSideband){
 
-		limit1 = GetLimit(pT,mean,+1,0.24);
-		limit2 = GetLimit(pT,limit1,+1,0.24);
+		limit1 = GetLimit(pT,mean,+1,0.30,0.009);
+		buffer = GetLimit(pT,mean,+1,0.24,0.0065);
+		limit2 = GetLimit(pT,buffer,+1,SidebandWidth,0.0065);
 
 	      }
 
 	      // lower sideband
 	      if(fLowerSideband){
 
-		limit2 = GetLimit(pT,mean,-1,0.30);
-		limit1 = GetLimit(pT,limit2,-1,0.30);
+		limit2 = GetLimit(pT,mean,-1,0.36,0.009);
+		buffer = GetLimit(pT,mean,-1,0.30,0.0065);
+		limit1 = GetLimit(pT,buffer,-1,SidebandWidth,0.0065);
 
 	      }
 
 	      // signal
 	      if(fSignal){
 
-		limit1 = GetLimit(pT,mean,-1,0.30);
-		limit2 = GetLimit(pT,mean,+1,0.24);
+		limit1 = GetLimit(pT,mean,-1,0.30,0.009);
+		limit2 = GetLimit(pT,mean,+1,0.24,0.009);
 
 	      }
 
@@ -502,24 +506,26 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	      // upper sideband
 	      if(fUpperSideband){
 
-		limit1 = GetLimit(pT,mean,+1,0.24);
-		limit2 = GetLimit(pT,limit1,+1,0.24);
+		limit1 = GetLimit(pT,mean,+1,0.30,0.009);
+		buffer = GetLimit(pT,mean,+1,0.24,0.0065);
+		limit2 = GetLimit(pT,buffer,+1,SidebandWidth,0.0065);
 
 	      }
 
 	      // lower sideband
 	      if(fLowerSideband){
 
-		limit2 = GetLimit(pT,mean,-1,0.30);
-		limit1 = GetLimit(pT,limit2,-1,0.30);
+		limit2 = GetLimit(pT,mean,-1,0.36,0.009);
+		buffer = GetLimit(pT,mean,-1,0.30,0.0065);
+		limit1 = GetLimit(pT,buffer,-1,SidebandWidth,0.0065);
 
 	      }
 
 	      // signal
 	      if(fSignal){
 
-		limit1 = GetLimit(pT,mean,-1,0.30);
-		limit2 = GetLimit(pT,mean,+1,0.24);
+		limit1 = GetLimit(pT,mean,-1,0.30,0.009);
+		limit2 = GetLimit(pT,mean,+1,0.24,0.009);
 
 	      }
 
@@ -638,7 +644,7 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Mean_pp(float pT){
 }
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign, double offset){
+Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign, double offset, double lastpar){
 
   TF1 *fit = new TF1("fit","[0] + ([1] *([2] + ([3]*(x)) + ([4]*(x)*(x)) + ([5]*(x)*(x)*(x))))",1.0,4.0);
   fit->FixParameter(0,mean);
@@ -646,7 +652,7 @@ Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign
   fit->FixParameter(2,offset);
   fit->FixParameter(3,0.003);
   fit->FixParameter(4,0.002);
-  fit->FixParameter(5,0.009);
+  fit->FixParameter(5,lastpar);
 
   Double_t value = fit->Eval(pT);
   fit->Delete();

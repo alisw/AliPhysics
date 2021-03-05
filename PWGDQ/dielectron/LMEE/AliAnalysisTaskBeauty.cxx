@@ -797,6 +797,11 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
       double ptweight4 = pt_cut400(pt_i) * pt_cut400(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // pT>0.4
       double ptweight5 = pt_cutLow(pt_i) * pt_cutLow(pt_j) * pt_cutHigh(pt_i) * pt_cutHigh(pt_j); // flexible
 
+
+      // efficiency if any
+      Double_t efficiency_i = GetEfficiency(pp_i);
+      Double_t efficiency_j = GetEfficiency(pp_j); 
+
       // HFE R_AA scaling
       if (fScaleByRAA) {
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
@@ -805,10 +810,10 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
-      ptweight2 = ptweight2*eventw;
-      ptweight3 = ptweight3*eventw;
-      ptweight4 = ptweight4*eventw;
-      ptweight5 = ptweight5*eventw;
+      ptweight2 = ptweight2*eventw*efficiency_i*efficiency_j;
+      ptweight3 = ptweight3*eventw*efficiency_i*efficiency_j;
+      ptweight4 = ptweight4*eventw*efficiency_i*efficiency_j;
+      ptweight5 = ptweight5*eventw*efficiency_i*efficiency_j;
 
       //--------------------------------------- ULS pairs -------------------------------------------//
 

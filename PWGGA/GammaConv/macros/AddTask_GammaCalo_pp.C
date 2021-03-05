@@ -2497,13 +2497,13 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2061){ // EMCAL+DCAL NLM = 1-2, EG1, NL , std TM, swapping back.
     cuts.AddCutCalo("0008d113","411792106fe32220003","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
 
-  // configuration for V1 Clusterizer with 1-100 local maxima
+  // configuration for V2 Clusterizer no NCell cut
   } else if (trainConfig == 2062){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
-    cuts.AddCutCalo("00010113","411792106fe32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma
+    cuts.AddCutCalo("00010113","411792106fe30220000","0r631031000000d0"); // INT7 NL 21 + TB dir. gamma
   } else if (trainConfig == 2063){ // EMCAL+DCAL NLM = 1-100, EG2, NL , std TM, swapping back.
-    cuts.AddCutCalo("0008e113","411792106fe32220000","0r631031000000d0"); // EG2  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008e113","411792106fe30220000","0r631031000000d0"); // EG2  NL 21 + TB dir. gamma
   } else if (trainConfig == 2064){ // EMCAL+DCAL NLM = 1-100, EG1, NL , std TM, swapping back.
-    cuts.AddCutCalo("0008d113","411792106fe32220000","0r631031000000d0"); // EG1  NL 12 + TB dir. gamma
+    cuts.AddCutCalo("0008d113","411792106fe30220000","0r631031000000d0"); // EG1  NL 21 + TB dir. gamma
 
   // configuration for V1 unfold Clusterizer with 1-100 local maxima
   } else if (trainConfig == 2065){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back.
@@ -3216,6 +3216,18 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792106fj3o220000","0r631031000000d0"); // Exotics > 4 GeV
     cuts.AddCutCalo("00010113","411792106fk3o220000","0r631031000000d0"); // Exotics > 5 GeV
     cuts.AddCutCalo("00010113","411792106fl3o220000","0r631031000000d0"); // Exotics > 6 GeV
+
+    // multiple configs for different settings in the correction framework
+  } else if (trainConfig == 2513) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411792106fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2514) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411792106fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2515) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411792106fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2516) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411792106fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
+  } else if (trainConfig == 2517) { // NCellEfficiency calculated in the correction framework
+    cuts.AddCutCalo("00010113","411792106fe3y220000","0r631031000000d0"); // INT7 NL 12 + TB
 
   // 3x3 clusterizer
   } else if (trainConfig == 2520) { // 3x3 clusterizer

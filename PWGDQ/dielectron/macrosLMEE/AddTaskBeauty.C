@@ -1,4 +1,4 @@
-AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_momentum_smear="", TString versionsmearing="", Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=1e20)
+AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=1e20)
 {
   AliAnalysisTaskBeauty* task = new  AliAnalysisTaskBeauty("");
   task->SetProcessType(processtype);
@@ -14,6 +14,14 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   }
   else { // New smearing file (or no file), from AliAnalysisTaskElectronEfficiency, postprocessed by LMeeAnaFW/Resolution/MakeResolutionArray.cxx.
     task->ReadResoFile(&f);
+  }
+
+   // Efficiency
+  gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
+  TFile fefficiency("efficiencyfile.root");
+  if (fefficiency.IsOpen()){
+    task->SetEffType(fTypeEff);
+    task->ReadEffFile(&fefficiency);
   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
