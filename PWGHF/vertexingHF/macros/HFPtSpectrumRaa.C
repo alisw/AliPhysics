@@ -139,9 +139,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   if ( cc == kpp ){
     Tab = 1.;
   }
-  // Values from Alberica's twiki:
-  //   https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
-  if( (ccestimator == kV0M) && (Energy==k276) ) {
+  // Pay attention that not all values are from the same source or point in time
+  if( (ccestimator == kV0M) && (Energy==k276) ) { // values from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
     if ( cc == k07half ) {
       Tab = 24.81; TabSyst = 0.8037;
     } else if ( cc == k010 ) {
@@ -176,19 +175,18 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Tab = 0.0690; TabSyst = 0.0062;
     }
   }
-  if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
+  if( (ccestimator == kV0M) && (Energy==k5dot023) ) { //values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-04-02-ALICE_public_note.pdf
     if ( cc == k010 ) {
-      Tab = 23.07; TabSyst = 0.44;
+      Tab = 23.26; TabSyst = 0.168;
     } else if ( cc == k3050 ) {
-      Tab = 3.897; TabSyst = 0.11;
+      Tab = 3.917; TabSyst = 0.0645;
     } else if ( cc == k6080 ) {
-      Tab = 0.4173; TabSyst = 0.014;
+      Tab = 0.4188; TabSyst = 0.0106;
     }
   }
 
 
-  // pPb Glauber (A. Toia)
-  // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
+  // pPb Glauber (A. Toia) https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
   if( cc == kpPb0100 ){
     Tab = 0.098334; TabSyst = 0.0070679;
     A=208; B=1.;
