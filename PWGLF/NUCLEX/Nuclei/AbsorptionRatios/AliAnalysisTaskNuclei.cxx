@@ -80,6 +80,8 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei()
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -137,6 +139,8 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei(const char* name)
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
 {
     // constructor
     
@@ -501,7 +505,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     fMultV0->Fill(MultV0A + MultV0C);
     
     // centrality distribution
-    Float_t lPercentile = 300;
+    /*Float_t lPercentile = 300;
     AliMultSelection *MultSelection = 0x0;
     MultSelection = (AliMultSelection * ) fVEvent->FindListObject("MultSelection");
     if( !MultSelection) {
@@ -509,9 +513,11 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         AliWarning("AliMultSelection object not found!");
     }else{
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    }
+    }*/
+    float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
+    if (Multiplicity_percentile>0.1) continue;
 
-	int Nch = 0;
+    int Nch = 0;
     
     // track loop
     for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++){
