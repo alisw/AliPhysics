@@ -68,12 +68,27 @@ class AliRDHFCutsKFP : public AliRDHFCuts
       if(fPidObjPrFromV0) delete fPidObjPrFromV0;
       fPidObjPrFromV0=new AliAODPidHF(*pidProton);
       }
+  void SetWeightFunction(TF1 *weight) {
+      if (fWeight) delete fWeight;
+      fWeight=new TF1 (*weight);
+      }
+  void SetWeightFunctionUp(TF1 *weight_up) {
+      if (fWeight_up) delete fWeight_up;
+      fWeight_up=new TF1 (*weight_up);
+      }
+  void SetWeightFunctionDw(TF1 *weight_dw) {
+      if (fWeight_dw) delete fWeight_dw;
+      fWeight_dw=new TF1 (*weight_dw);
+      }
 
   AliAODPidHF* GetPidDaughter() const {return fPidObjDau;}
   AliAODPidHF* GetPidPiFromXic0() const {return fPidObjPiFromXic0;}
   AliAODPidHF* GetPidPiFromXi() const {return fPidObjPiFromXi;}
   AliAODPidHF* GetPidPiFromV0() const {return fPidObjPiFromV0;}
   AliAODPidHF* GetPidPrFromV0() const {return fPidObjPrFromV0;}
+  TF1* GetWeightFunction()   const {return fWeight;}
+  TF1* GetWeightFunctionUp() const {return fWeight_up;}
+  TF1* GetWeightFunctionDw() const {return fWeight_dw;}
 
   Bool_t SingleTrkCuts(AliAODTrack *trk);
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert, Bool_t anaOmegacZero);
@@ -258,9 +273,12 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fKFPXi_lDeltalMin;   /// l/Deltal cut of lambda reconstruction from KFParticle
   Double_t fKFPXic0_Chi2geoMax; /// chi2/ndf(geo) cut of Xic0 reconstruction from KFParticle
 
+  TF1 *fWeight; /// Weight
+  TF1 *fWeight_up; /// Weight_up
+  TF1 *fWeight_dw; /// Weight_dw
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 6);
+  ClassDef(AliRDHFCutsKFP, 7);
   /// \endcond
 };
 

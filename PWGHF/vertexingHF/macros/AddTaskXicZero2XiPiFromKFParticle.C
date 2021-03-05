@@ -72,6 +72,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
 
+    /*
     // weight
     TF1 *weight = new TF1("weight", "expo", 0., 50.);
     TF1 *weight_up = new TF1("weight_up", "expo", 0., 50.);
@@ -100,6 +101,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     task->SetWeightFunction(weight);
     task->SetWeightFunctionUp(weight_up);
     task->SetWeightFunctionDw(weight_dw);
+    */
 
     // select type of event
 //    task->SelectCollisionCandidates(AliVEvent::kAnyINT); // kAnyINT = kMB | kINT7 | kINT5 | kINT8 | kSPI7
