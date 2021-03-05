@@ -580,7 +580,38 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     }
   }
   for(Int_t cen=0; cen<fNCenBin; cen++){
-       fOutputContainer->Add(new TH1F(Form("hMC_unitEta_GammaPi0_cent%d",cen),"Spectum, |y|<0.15",nPt,ptBins)) ;
+    fOutputContainer->Add(new TH1F(Form("hMC_unitEta_GammaPi0_cent%d",cen),"Spectum, |y|<0.15",nPt,ptBins)) ;
+  }
+  for(Int_t iPID=0; iPID<fNPID; iPID++){
+    for(Int_t iEmin=0; iEmin<3; iEmin++){
+      fhReSingleTruePi0[iEmin][iPID] = new TH2F(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+                                                       "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0[iEmin][iPID]) ;
+        
+      fhReSingleTruePi0K0s[iEmin][iPID] = new TH2F(Form("hSingleTruePi0K0sInvM_Re_Emin%d_%s",
+                                                               iEmin+1,cPID[iPID]),
+                                            "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0K0s[iEmin][iPID]) ;
+      fhReSingleTruePi0Kpm[iEmin][iPID] = new TH2F(Form("hSingleTruePi0KpmInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+                                                       "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0Kpm[iEmin][iPID]) ;
+      fhReSingleTruePi0Nbar[iEmin][iPID] = new TH2F(Form("hSingleTruePi0InvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+                                                       "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0Nbar[iEmin][iPID]) ;
+      
+        
+      fhReSingleTruePi0K0sC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0K0sCorrInvM_Re_Emin%d_%s",
+                                                               iEmin+1,cPID[iPID]),
+                                            "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0K0sC[iEmin][iPID]) ;
+      fhReSingleTruePi0KpmC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0KpmCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+                                                       "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0KpmC[iEmin][iPID]) ;
+      fhReSingleTruePi0NbarC[iEmin][iPID] = new TH2F(Form("hSingleTruePi0NbarCorrInvM_Re_Emin%d_%s",iEmin+1,cPID[iPID]),
+                                                       "Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins) ;
+      fOutputContainer->Add(fhReSingleTruePi0NbarC[iEmin][iPID]) ;
+      
+    }
   }
   
   for(Int_t cen=0; cen<fNCenBin; cen++){
@@ -1569,10 +1600,17 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 //       Double_t w2=fCentWeight*p2->GetWeight() ;
       Double_t w2TOF=1.;
       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
-      Int_t commonParent = IsSameParent(p1,p2);
+      Int_t grandparent,grandParentPDG;
+      Double_t ptGrandParent=0;
+      Int_t commonParent = IsSameParent(p1,p2,grandparent);
       if(fIsMC ){ //simulate TOF cut efficiency
         w2TOF=TOFCutEff(ptP2); 
         w*=w1TOF*w2TOF; 
+        if(grandparent>-1){
+          AliAODMCParticle * tmp = ((AliAODMCParticle*)fStack->At(grandparent)) ;
+          grandParentPDG = tmp->GetPdgCode() ;
+          ptGrandParent = tmp->Pt() ;
+        }
       }
 
       Double_t nsigma1 = InPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
@@ -1582,8 +1620,119 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         for(Int_t iPID=0; iPID<fNPID; iPID++){  
           if(TestPID(iPID, p1,p2)){
             fhRe[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
-            if(commonParent==111)
+            if(commonParent==111){
               fhReTruePi0[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
+              //grandparent
+              //K0s,Kpm,Nbar
+              if(p2->E()>0.1){
+                fhReSingleTruePi0[0][iPID]->Fill(invMass,ptP1,w) ;  
+                if(grandParentPDG==130){
+                  fhReSingleTruePi0K0s[0][iPID]->Fill(invMass,ptP1,w) ; 
+                  double wcorr = DPMJETKCorr(ptGrandParent) ;
+                  fhReSingleTruePi0K0sC[0][iPID]->Fill(invMass,ptP1,w*wcorr) ; 
+                }
+                if(TMath::Abs(grandParentPDG)==321){
+                  fhReSingleTruePi0Kpm[0][iPID]->Fill(invMass,ptP1,w) ;                      
+                  double wcorr = DPMJETKCorr(ptGrandParent) ;
+                  fhReSingleTruePi0KpmC[0][iPID]->Fill(invMass,ptP1,w*wcorr) ; 
+                }
+                if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                  fhReSingleTruePi0Nbar[0][iPID]->Fill(invMass,ptP1,w) ;                      
+                  double wcorr = DPMJETpCorr(ptGrandParent) ;
+                  fhReSingleTruePi0NbarC[0][iPID]->Fill(invMass,ptP1,w*wcorr) ; 
+                }
+                if(p2->E()>0.2){
+                  fhReSingleTruePi0[1][iPID]->Fill(invMass,ptP1,w) ;  
+                  if(grandParentPDG==130){
+                    fhReSingleTruePi0K0s[1][iPID]->Fill(invMass,ptP1,w) ;                      
+                    double wcorr = DPMJETKCorr(ptGrandParent) ;
+                    fhReSingleTruePi0K0sC[1][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                  }
+                  if(TMath::Abs(grandParentPDG)==321){
+                    fhReSingleTruePi0Kpm[1][iPID]->Fill(invMass,ptP1,w) ;                      
+                    double wcorr = DPMJETKCorr(ptGrandParent) ;
+                    fhReSingleTruePi0KpmC[1][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                  }
+                  if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                    fhReSingleTruePi0Nbar[1][iPID]->Fill(invMass,ptP1,w) ;                      
+                    double wcorr = DPMJETpCorr(ptGrandParent) ;
+                    fhReSingleTruePi0NbarC[1][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                  }
+                  if(p2->E()>0.3){
+                    fhReSingleTruePi0[2][iPID]->Fill(invMass,ptP1,w) ;  
+                    if(grandParentPDG==130){
+                      fhReSingleTruePi0K0s[2][iPID]->Fill(invMass,ptP1,w) ;                      
+                      double wcorr = DPMJETKCorr(ptGrandParent) ;
+                      fhReSingleTruePi0K0sC[2][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                    }
+                    if(TMath::Abs(grandParentPDG)==321){
+                      fhReSingleTruePi0Kpm[2][iPID]->Fill(invMass,ptP1,w) ;                      
+                      double wcorr = DPMJETKCorr(ptGrandParent) ;
+                      fhReSingleTruePi0KpmC[2][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                    }
+                    if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                      fhReSingleTruePi0Nbar[2][iPID]->Fill(invMass,ptP1,w) ;                      
+                      double wcorr = DPMJETpCorr(ptGrandParent) ;
+                      fhReSingleTruePi0NbarC[2][iPID]->Fill(invMass,ptP1,w*wcorr) ;                      
+                    }
+                  }
+                }
+              }
+              if(p1->E()>0.1){
+                fhReSingleTruePi0[0][iPID]->Fill(invMass,ptP2,w) ;  
+                if(grandParentPDG==130){
+                  fhReSingleTruePi0K0s[0][iPID]->Fill(invMass,ptP2,w) ;                      
+                  double wcorr = DPMJETKCorr(ptGrandParent) ;
+                  fhReSingleTruePi0K0sC[0][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                }
+                if(TMath::Abs(grandParentPDG)==321){
+                  fhReSingleTruePi0Kpm[0][iPID]->Fill(invMass,ptP2,w) ;                      
+                  double wcorr = DPMJETKCorr(ptGrandParent) ;
+                  fhReSingleTruePi0KpmC[0][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                }
+                if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                  fhReSingleTruePi0Nbar[0][iPID]->Fill(invMass,ptP2,w) ;                      
+                  double wcorr = DPMJETpCorr(ptGrandParent) ;
+                  fhReSingleTruePi0NbarC[0][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                }
+                if(p1->E()>0.2){
+                  fhReSingleTruePi0[1][iPID]->Fill(invMass,ptP2,w) ;  
+                  if(grandParentPDG==130){
+                    fhReSingleTruePi0K0s[1][iPID]->Fill(invMass,ptP2,w) ;                      
+                    double wcorr = DPMJETKCorr(ptGrandParent) ;
+                    fhReSingleTruePi0K0sC[1][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                  }
+                  if(TMath::Abs(grandParentPDG)==321){
+                    fhReSingleTruePi0Kpm[1][iPID]->Fill(invMass,ptP2,w) ;                      
+                    double wcorr = DPMJETKCorr(ptGrandParent) ;
+                    fhReSingleTruePi0KpmC[1][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                  }
+                  if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                    fhReSingleTruePi0Nbar[1][iPID]->Fill(invMass,ptP2,w) ;                      
+                    double wcorr = DPMJETpCorr(ptGrandParent) ;
+                    fhReSingleTruePi0NbarC[1][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                  }
+                  if(p1->E()>0.3){
+                    fhReSingleTruePi0[2][iPID]->Fill(invMass,ptP2,w) ;  
+                    if(grandParentPDG==130){
+                      fhReSingleTruePi0K0s[2][iPID]->Fill(invMass,ptP2,w) ;                      
+                      double wcorr = DPMJETKCorr(ptGrandParent) ;
+                      fhReSingleTruePi0K0sC[2][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                    }
+                    if(TMath::Abs(grandParentPDG)==321){
+                      fhReSingleTruePi0Kpm[2][iPID]->Fill(invMass,ptP2,w) ;                      
+                      double wcorr = DPMJETKCorr(ptGrandParent) ;
+                      fhReSingleTruePi0KpmC[2][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                    }
+                    if(grandParentPDG==-2212 || grandParentPDG == -2112){ //nbar, pbar
+                      fhReSingleTruePi0Nbar[2][iPID]->Fill(invMass,ptP2,w) ;                      
+                      double wcorr = DPMJETpCorr(ptGrandParent) ;
+                      fhReSingleTruePi0NbarC[2][iPID]->Fill(invMass,ptP2,w*wcorr) ;                      
+                    }
+                  }
+                }
+              }              
+            }
             if(commonParent==221)
               fhReTrueEta[0][fCentBin][iPID]->Fill(invMass,ptPi,w) ;  
             if((p1->E()>0.2) && (p2->E()>0.2)){
@@ -1788,7 +1937,8 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       tag2=tag2|oldTag2 ;
       p2->SetTagInfo(tag2) ;
             
-      Bool_t trueTag=(IsSameParent(p1,p2)==111); //true tag
+      Int_t gp;
+      Bool_t trueTag=(IsSameParent(p1,p2,gp)==111); //true tag
       p1->SetUnfolded(p1->IsntUnfolded()|trueTag) ;
       p2->SetUnfolded(p2->IsntUnfolded()|trueTag) ;
       
@@ -1994,24 +2144,28 @@ Double_t AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt)const
   return TMath::Abs(m-mpi0mean)/mpi0sigma ;
 }
 //______________________________________________________________________________
-Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2)const{
+Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2, Int_t &grandparent)const{
   //Looks through parents and finds if there was commont pi0 among ancestors
 
-  if(!fIsMC)
+  if(!fIsMC){
+    grandparent=-1;  
     return 0 ; //can not say anything
-
+  }
   Int_t prim1 = p1->GetPrimary();
   while(prim1!=-1){ 
     Int_t prim2 = p2->GetPrimary();
   
     while(prim2!=-1){       
       if(prim1==prim2){
-	      return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
+        AliAODMCParticle * tmp = ((AliAODMCParticle*)fStack->At(prim1)) ;
+        grandparent = tmp->GetMother() ;
+        return tmp->GetPdgCode() ;
       }
       prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
     }
     prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
   }
+  grandparent=-1;  
   return 0 ;
 }
 //______________________________________________________________________________
@@ -3199,7 +3353,14 @@ Bool_t AliAnalysisTaskTaggedPhotons::AcceptJJevent(){
   
   return kTRUE ;
 }
-
+Double_t AliAnalysisTaskTaggedPhotons::DPMJETKCorr(Double_t x){
+  //kaon yield correction for DPMJET vs pT
+  return (1.23546+0.613098*exp(-x/4.81805))*(1.-0.796292*exp(-x/0.660332));
+}
+Double_t AliAnalysisTaskTaggedPhotons::DPMJETpCorr(Double_t x){
+  //baryon yield correction for DPMJET vs pT
+  return (1.18027+16.6995*exp(-x/2.42366))*(1.-1.00768*exp(-x/9.11308));
+}
 
 
 
