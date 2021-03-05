@@ -48,6 +48,7 @@ public:
     
     void     CreateHistosTrack(vector<TH1*> &histos);
     void     FillHistosTrack(vector<TH1*> &histos, AliAODTrack *track);
+    void     SetCentralityEstimator(int est) { fEstimator = est; }
     Float_t  GetTOFBeta(AliAODTrack *);
     Float_t  GetMass2TOF(Float_t, AliAODTrack *);
     
@@ -129,6 +130,7 @@ private:
     Bool_t        fUseTOFPidCut;
     Float_t       fMomTOFProt;
     Float_t       fMomTOFDeut;
+    Int_t	  fEstimator;
 	Bool_t		  kAnalyseAllParticles;
     
     enum {kSelectedEvents=0, kINT7selected, kDAQincomplete, kV0timing, kClusterTrackletCut, kVertexZ, kVtxNcontrib, kSPDPileUp, kVtxDisplace, kVtxRes, kNbinsEvent};
