@@ -409,10 +409,11 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     // only for cross-check: is kINT7 selected
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isINT7selected = fSelectMask and AliVEvent::kINT7;
+    /*
     if (!isINT7selected){
         PostData(1, fOutputList);
         return;
-    }
+    }*/
     fEventStat->Fill(kINT7selected);
     
     // only for cross-check: Incomplete events from DAQ
@@ -501,14 +502,14 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     
     // centrality distribution
     Float_t lPercentile = 300;
-    /*AliMultSelection *MultSelection = 0x0;
+    AliMultSelection *MultSelection = 0x0;
     MultSelection = (AliMultSelection * ) fVEvent->FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
     }else{
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    }*/
+    }
 
 	int Nch = 0;
     
