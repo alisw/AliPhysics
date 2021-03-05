@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTaskDibaryons( Int_t  collidingSystem = 0,
                                    UInt_t triggerclass    = AliVEvent::kINT7,
                                    Bool_t pileupCut       = kTRUE,
-                                   Bool_t pairCleaning    = kTRUE,
+                                   Bool_t pairCleaning    = kFALSE,
                                    Bool_t eventMixing     = kTRUE )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
