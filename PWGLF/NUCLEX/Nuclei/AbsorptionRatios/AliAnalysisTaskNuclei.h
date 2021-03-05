@@ -131,6 +131,7 @@ private:
     Float_t       fMomTOFProt;
     Float_t       fMomTOFDeut;
     Int_t	  fEstimator;
+    AliEventCuts  fEventCut;
 	Bool_t		  kAnalyseAllParticles;
     
     enum {kSelectedEvents=0, kINT7selected, kDAQincomplete, kV0timing, kClusterTrackletCut, kVertexZ, kVtxNcontrib, kSPDPileUp, kVtxDisplace, kVtxRes, kNbinsEvent};
