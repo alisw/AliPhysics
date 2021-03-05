@@ -32,6 +32,7 @@
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliRhoParameter.h"
 
 // --- CaloTrackCorr classes ---
 #include "AliAnaParticleIsolation.h"
@@ -5720,6 +5721,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       coneptsumBkgChEmb = perpConePtSumChEmb/2.;
       //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
     }
+    else if  ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+    {
+      TString nameContainer = Form("%sMC",(GetIsolationCut()->GetJetRhoTaskContainerName()).Data());
+      AliRhoParameter * outrho= (AliRhoParameter*) GetReader()->GetInputEvent()->FindListObject(nameContainer.Data());
+
+      if ( !outrho )
+        AliInfo(Form("Could not find rho MC container <%s>!",nameContainer.Data()));
+      else
+      {
+        coneptsumBkgCh = outrho->GetVal()*TMath::Pi()*coneSize*coneSize;
+        coneptsumBkgNe = 0;
+      }
+    }
     else if ( isoMethod >= AliIsolationCut::kSumBkgSubEtaBandIC ) // eta or phi band
     {
       //printf("UE band\n");
@@ -5895,6 +5909,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
         coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi*excessAreaNeEta;
     }
+
+//    printf("MC method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
+//           isoMethod, centrality, sumPtInConeCh * excessAreaChEta,
+//           coneptsumUESubChEmb,
+//           coneptsumBkgCh, coneptsumBkgCh / ( TMath::Pi() * coneSize * coneSize));
 
     // Fill the histograms
 
