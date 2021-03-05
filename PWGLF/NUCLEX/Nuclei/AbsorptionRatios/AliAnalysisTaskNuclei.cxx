@@ -505,8 +505,8 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     fMultV0->Fill(MultV0A + MultV0C);
     
     // centrality distribution
-    /*Float_t lPercentile = 300;
-    AliMultSelection *MultSelection = 0x0;
+    Float_t lPercentile = 300;
+    /*AliMultSelection *MultSelection = 0x0;
     MultSelection = (AliMultSelection * ) fVEvent->FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -516,6 +516,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     }*/
     float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
     if (Multiplicity_percentile>0.1) continue;
+    lPercentile = Multiplicity_percentile;
 
     int Nch = 0;
     
