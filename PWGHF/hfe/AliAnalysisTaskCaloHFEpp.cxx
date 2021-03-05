@@ -222,6 +222,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fHist_eff_M20(0),
 	fHist_eff_Iso(0),
         fHistWeOrg(0),
+        fHistWeOrgPos(0),
+        fHistWeOrgNeg(0),
 	fweightNtrkl(0)
 
 {
@@ -393,6 +395,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fHist_eff_M20(0),
 	fHist_eff_Iso(0),
         fHistWeOrg(0),
+        fHistWeOrgPos(0),
+        fHistWeOrgNeg(0),
 	fweightNtrkl(0)
 {
 	// constructor
@@ -520,6 +524,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
 	fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
 	fHistWeOrg        = new TH1F("fHistWeOrg","particle level W->e",90,10,100);
+	fHistWeOrgPos        = new TH1F("fHistWeOrgPos","particle level W->e plus",90,10,100);
+	fHistWeOrgNeg        = new TH1F("fHistWeOrgNeg","particle level W->e minus",90,10,100);
 
 
 
@@ -1778,6 +1784,8 @@ void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader)
 	      FindWdecay(fMCparticle,ilabelM,pdgorg);
 	      //cout << "MCcheck : pdgorg = " << pdgorg << " ; " << imc << " ; status = " << pdgStatus << endl;
 	      if(TMath::Abs(pdgorg)==24 && pdgStatus==1)fHistWeOrg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==24 && pdgStatus==1)fHistWeOrgPos->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
+	      if(pdgorg==-24 && pdgStatus==1)fHistWeOrgNeg->Fill(fMCparticle->Pt());  // W->e(status 21) -> e(status 1) same electron 
             }
  }
 
