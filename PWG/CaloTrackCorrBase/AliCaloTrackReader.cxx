@@ -122,7 +122,7 @@ fEventType(-1),
 fTaskName(""),               fCaloUtils(0x0),                 fMCUtils(0x0), 
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
-fEventCuts(1),               fUseEventCutsClass(kFALSE),
+fEventCuts(1),               fUseEventCutsClass(kFALSE),      fUseEventCutsClassQA(0),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
@@ -145,7 +145,7 @@ fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(
 fIsExoticEvent(0),           fIsBadCellEvent(0),              fIsBadMaxCellEvent(0),
 fIsTriggerMatch(0),          fIsTriggerMatchOpenCut(),
 fTriggerClusterTimeRecal(kTRUE), fRemoveUnMatchedTriggers(kTRUE),
-fDoPileUpEventRejection(kFALSE), fDoV0ANDEventSelection(kFALSE),
+fDoPileUpEventRejection(0), fDoV0ANDEventSelection(kFALSE),
 fDoVertexBCEventSelection(kFALSE),
 fDoRejectNoTrackEvents(kFALSE),
 fUseEventsWithPrimaryVertex(kFALSE),
@@ -688,7 +688,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       
       if ( fEventTrigCentral && centrality >= 10  && (fEventTriggerMask & AliVEvent::kCentral) ) 
       {
-        printf("%s\n",GetFiredTriggerClasses().Data());
+        //printf("%s\n",GetFiredTriggerClasses().Data());
         AliInfo(Form("Skip central event with centrality %2.1f",centrality));
         return kFALSE;
       }
@@ -1421,8 +1421,8 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     }
   }
 
-  if ( fUseEventCutsClass )
-    fEventCuts.AddQAplotsToList(fOutputContainer); 
+  if ( fUseEventCutsClassQA && (fUseEventCutsClass || fDoPileUpEventRejection == 2) )
+    fEventCuts.AddQAplotsToList(fOutputContainer,kTRUE);
   
   return fOutputContainer ;
 }
@@ -1993,6 +1993,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   fhNEventsAfterCut->Fill(0.5);
   
+  // Execute the AliEventCuts accept method
+  // so that we can recover the partial decissions later (Pile-up, LED)
+  // or trust the full list of cuts
+  Bool_t acceptEventCuts = kTRUE;
+  if ( fUseEventCutsClass || fDoPileUpEventRejection == 2 )
+    acceptEventCuts = fEventCuts.AcceptEvent(GetInputEvent());
+
   //-----------------------------------------------
   // Select the event depending on the trigger type
   // and other event characteristics
@@ -2070,13 +2077,21 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
-  if ( fDoPileUpEventRejection )
+  if ( fDoPileUpEventRejection > 0 )
   {
     // Do not analyze events with pileup
-    Bool_t bPileup = IsPileUpFromSPD();
+    Bool_t bPileup = kFALSE;
+    // pp and p-Pb
+    if ( fDoPileUpEventRejection == 1 )
+      bPileup = IsPileUpFromSPD();
     //IsPileupFromSPDInMultBins() // method to try
     //printf("pile-up %d, %d, %2.2f, %2.2f, %2.2f, %2.2f\n",bPileup, (Int_t) fPileUpParamSPD[0], fPileUpParamSPD[1], fPileUpParamSPD[2], fPileUpParamSPD[3], fPileUpParamSPD[4]);
-    if(bPileup) return kFALSE;
+
+    // Pb-Pb
+    if ( fDoPileUpEventRejection == 2)
+      bPileup = !fEventCuts.PassedCut(AliEventCuts::kTPCPileUp);
+
+    if ( bPileup ) return kFALSE;
     
     AliDebug(1,"Pass Pile-Up event rejection");
     
@@ -2271,9 +2286,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //-----------------------------------
   if ( fUseEventCutsClass )
   {
-    Bool_t accept = fEventCuts.AcceptEvent(GetInputEvent());
-    
-    if ( !accept ) return kFALSE;
+    if ( !acceptEventCuts ) return kFALSE;
     
     AliDebug(1,"Pass AliEventCuts!");
     
@@ -4208,6 +4221,15 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),
          fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
+  printf("Event rejection use: AliVEventCuts %d, IsSPDPileup %d\n",
+         fUseEventCutsClass, fDoPileUpEventRejection);
+  if ( fDoPileUpEventRejection == 1 )
+  {
+    printf("\t SPD parameters: ");
+    for(Int_t iparam = 0; iparam < 5; iparam++) printf(" %d) %2.2f ", iparam, fPileUpParamSPD[iparam]);
+    printf("\n");
+  }
+
   if ( fComparePtHardAndJetPt )
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f\n",fPtHardAndJetPtFactor);
   

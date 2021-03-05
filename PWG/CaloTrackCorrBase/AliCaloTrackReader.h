@@ -515,10 +515,13 @@ public:
   void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
   
   // Other event rejections criteria
-  
-  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
-  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
-  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
+  /// \param opt = 0, no rejection, 1 SPD rejection pp/pPb, 2 TPC-ITS correl PbPb
+  /// \param correl = level of TPC-ITS correlation correction, 1 rejects ~38% to 4 that rejects ~6%
+  void             SwitchOnPileUpEventRejection(Int_t opt = 1, Int_t correl = 1) {
+    fDoPileUpEventRejection = opt ;
+    if ( opt == 2 ) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,correl); }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= 0 ; }
+  Int_t            IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -538,7 +541,9 @@ public:
 
   void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
   AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
-  
+  void             SwithOnEvenCutsClassQA()                { fUseEventCutsClassQA = kTRUE  ; }
+  void             SwithOffEvenCutsClassQA()               { fUseEventCutsClassQA = kTRUE  ; }
+
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -1070,6 +1075,7 @@ public:
   
   AliEventCuts     fEventCuts;                     ///< Event selection utility
   Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
+  Bool_t           fUseEventCutsClassQA;           ///< Recover AliEventCuts class QA histograms
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
@@ -1130,7 +1136,7 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;       ///<  Analyze events where trigger patch and cluster where found or not.
   
   
-  Bool_t           fDoPileUpEventRejection;        ///<  Select pile-up events by SPD.
+  Int_t            fDoPileUpEventRejection;        ///<  Select pile-up events by SPD if 1, by TPC-ITS correl if 2.
   Bool_t           fDoV0ANDEventSelection;         ///<  Select events depending on V0AND.
   Bool_t           fDoVertexBCEventSelection;      ///<  Select events with vertex on BC=0 or -100.
   Bool_t           fDoRejectNoTrackEvents;         ///<  Reject events with no selected tracks in event.

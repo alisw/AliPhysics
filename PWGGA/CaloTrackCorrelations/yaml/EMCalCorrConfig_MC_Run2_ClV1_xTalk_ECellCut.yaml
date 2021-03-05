@@ -14,8 +14,8 @@ Clusterizer:
     clusterizer: kClusterizerv1
     cellE: 0.1
     seedE: 0.5
-    cellTimeMin: -50e-6
-    cellTimeMax:  50e-6
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
     clusterTimeLength: 1e6
     createHistos: true
     recalDistToBadChannels: true
