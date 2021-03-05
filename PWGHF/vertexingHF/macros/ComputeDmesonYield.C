@@ -54,34 +54,35 @@ Bool_t PbPbDataSyst(AliHFSystErr *syst, TH1D* heff, Double_t pt, Double_t &dataS
 
 void ComputeDmesonYield(){
 
+  // BR from PDG 2020
   TString mesName="Dzero";
   Int_t mesCode=1;
-  Double_t brat=0.0389;
+  Double_t brat=0.0395;
   TString mesSymb="D^{0}";
   Float_t ptForExtrap=36.;
   if(mesonSpecie==kDplus){
     mesName="Dplus";
     mesCode=2;
-    brat=0.0898;
+    brat=0.0938;
     mesSymb="D^{+}";
-    ptForExtrap=24.;
+    ptForExtrap=36.;
  }else if(mesonSpecie==kDstar){
     mesName="Dstar";
     mesCode=3;
-    brat=0.0389*0.677;
+    brat=0.0395*0.677;
     mesSymb="D^{*+}";
-    ptForExtrap=24.;
+    ptForExtrap=36.;
   }else if(mesonSpecie==kDs){
     mesName="Ds";
     mesCode=4;
-    brat=0.0227;
+    brat=0.0224;
     mesSymb="D_{s}^{+}";
     if(collSyst=="Pb-Pb"){
      centHypoFdOverPr=1.;
      lowHypoFdOverPr=1./3.;
      highHypoFdOverPr=3.;
     }
-    ptForExtrap=12.;
+    ptForExtrap=24.;
   }
 
   TString centralityNoDash=centrality.Data();
