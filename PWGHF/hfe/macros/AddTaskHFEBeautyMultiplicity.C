@@ -10,8 +10,8 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	TString name = "name",
 	Double_t nref = 30.1,
 	Double_t minNtrklet = 0,
-	DOuble_t maxNtrklet = 9999,
-	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorArg.root"
+	Double_t maxNtrklet = 9999,
+	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root"
 
 	)
 {
