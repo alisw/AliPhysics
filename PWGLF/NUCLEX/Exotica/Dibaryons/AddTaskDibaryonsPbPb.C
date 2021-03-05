@@ -1,8 +1,11 @@
-AliAnalysisTask *AddTaskDibaryonsPbPb( Int_t  collidingSystem = 2,
-                                       UInt_t triggerclass    = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
-                                       Bool_t pileupCut       = kTRUE,
-                                       Bool_t pairCleaning    = kTRUE,
-                                       Bool_t eventMixing     = kFALSE )
+AliAnalysisTask *AddTaskDibaryonsPbPb( Int_t  collidingSystem    = 2,
+                                       UInt_t triggerclass       = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+                                       Bool_t pileupCut          = kTRUE,
+                                       Bool_t pairCleaning       = kFALSE,
+                                       Bool_t eventMixing        = kFALSE,
+                                       Double_t nsigProton       = 3.0,
+                                       Double_t nsigV0Daughter   = 3.0,
+                                       Double_t nsigCascDaughter = 3.0 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
@@ -25,6 +28,9 @@ AliAnalysisTask *AddTaskDibaryonsPbPb( Int_t  collidingSystem = 2,
   task->SetPileupCut                (pileupCut);
   task->SetPairCleaning             (pairCleaning);
   task->SetEventMixing              (eventMixing);
+  task->SetNsigmaProton             (nsigProton);
+  task->SetNsigmaV0Daughter         (nsigV0Daughter);
+  task->SetNsigmaCascDaughter       (nsigCascDaughter);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
