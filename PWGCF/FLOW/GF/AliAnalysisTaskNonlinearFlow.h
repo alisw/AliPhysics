@@ -132,7 +132,15 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChc422_Gap10B;    //!
 		TProfile*        fChc532_Gap10A;    //!
 		TProfile*        fChc532_Gap10B;    //!
-
+		TProfile*        fChc422_3subL;    //!
+		TProfile*        fChc422_3subM;    //!
+		TProfile*        fChc422_3subR;    //!
+		TProfile*        fChc532_3subLA;    //!
+		TProfile*        fChc532_3subLB;    //!
+		TProfile*        fChc532_3subMA;    //!
+		TProfile*        fChc532_3subMB;    //!
+		TProfile*        fChc532_3subRA;    //!
+		TProfile*        fChc532_3subRB;    //!
 
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
 		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
@@ -374,6 +382,16 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		// Global variables
 		int NtrksCounter = 0;
 		int NtrksAfter = 0;
+		int NtrksAfterGap0M = 0;
+		int NtrksAfterGap0P = 0;
+		int NtrksAfterGap2M = 0;
+		int NtrksAfterGap2P = 0;
+		int NtrksAfterGap4M = 0;
+		int NtrksAfterGap4P = 0;
+		int NtrksAfterGap6M = 0;
+		int NtrksAfterGap6P = 0;
+		int NtrksAfterGap8M = 0;
+		int NtrksAfterGap8P = 0;
 		int NtrksAfterGap10M = 0;
 		int NtrksAfterGap10P = 0;
 		int NtrksAfterGap14M = 0;
@@ -390,7 +408,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		CorrelationCalculator correlator;
 
-		double xbins[3000+10];
+		double xbins[3000+10]; //!
 		int nn;
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString);

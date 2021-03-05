@@ -726,6 +726,13 @@ TComplex CorrelationCalculator::ThreeGap10_subP(int n1, int n2, int n3)
 	return formula;
 
 }
+//____________________________________________________________________
+TComplex CorrelationCalculator::Three_3Sub(int n1, int n2, int n3)
+{
+
+	TComplex formula = QsubLeft(n1,1)*QsubMiddle(n2,1)*QsubRight(n3,1);
+	return formula;
+}
 
 //____________________________________________________________________
 TComplex CorrelationCalculator::Four(int n1, int n2, int n3, int n4)

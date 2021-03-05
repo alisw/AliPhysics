@@ -89,6 +89,7 @@ class CorrelationCalculator : public TObject
     TComplex ThreeGap8B(int n1, int n2, int n3);
     TComplex ThreeGap10A(int n1, int n2, int n3);
     TComplex ThreeGap10B(int n1, int n2, int n3);
+    TComplex Three_3Sub(int n1, int n2, int n3);
 
     TComplex ThreeGap0_subM(int n1, int n2, int n3);
     TComplex ThreeGap0_subP(int n1, int n2, int n3);
