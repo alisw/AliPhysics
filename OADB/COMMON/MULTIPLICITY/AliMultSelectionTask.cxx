@@ -2352,6 +2352,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     if (sel) {
         sel->SetName(fStoredObjectName.Data());
+        AliInfo("---> Setting up input...");
+        fInput->SetupAutoVtxZCorrection(fOadbMultSelection);
         //Optimize evaluation
         sel->Setup(fInput);
     }
@@ -2439,9 +2441,11 @@ Int_t AliMultSelectionTask::SetupRunFromOADB(const AliVEvent* const esd)
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
     
     if (sel) {
-        sel->SetName(fStoredObjectName.Data());
-        //Optimize evaluation
-        sel->Setup(fInput);
+      sel->SetName(fStoredObjectName.Data());
+      AliInfo("---> Setting up input...");
+      fInput->SetupAutoVtxZCorrection(fOadbMultSelection);
+      //Optimize evaluation
+      sel->Setup(fInput);
     }
     
     AliInfo("---> Successfully set up! Inspect MultSelection:");
