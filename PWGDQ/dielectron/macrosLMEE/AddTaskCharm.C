@@ -11,7 +11,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   task->TakeptOfDCNM(takeptofDCNM);
 
   // Smearing
-  gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
+  if(file_momentum_smear.Contains("alien")) gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
   TFile f("smearingfile.root");
   if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
     task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
@@ -20,7 +20,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     task->ReadResoFile(&f);
   }
   // CNM
-  gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
+  if(file_cnm.Contains("alien")) gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
   TFile fcnm("cnmfile.root");
   if (fcnm.IsOpen()){
     if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
@@ -28,7 +28,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     }
   }
   // Efficiency
-  gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
+  if(file_efficiency.Contains("alien")) gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
   TFile fefficiency("efficiencyfile.root");
   if (fefficiency.IsOpen()){
     task->SetEffType(fTypeEff);

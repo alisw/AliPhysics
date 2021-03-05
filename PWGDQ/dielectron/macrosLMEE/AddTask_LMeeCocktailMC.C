@@ -1,4 +1,4 @@
-void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "",TString dcaFileName = "",TString vphFileName = "", Int_t version = 0) {
+void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -56,16 +56,6 @@ void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, F
   Printf("Set eff file name to %s",effFileName.Data());
   task->SetEffFileName(effFileName);
 
-  // dca file to be set always
-  Printf("Set dca file name to %s",dcaFileName.Data());
-  task->SetDCAFileName(dcaFileName);
-
-  // VPH file to be set always
-  Printf("Set VPH file name to %s",vphFileName.Data());
-  task->SetVPHFileName(vphFileName);
- 
-  task->PrintStatus();
-  
   
   //connect containers
   AliAnalysisDataContainer *coutput =
