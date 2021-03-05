@@ -54,6 +54,7 @@ Bool_t PbPbDataSyst(AliHFSystErr *syst, TH1D* heff, Double_t pt, Double_t &dataS
 
 void ComputeDmesonYield(){
 
+  // BR from PDG 2020
   TString mesName="Dzero";
   Int_t mesCode=1;
   Double_t brat=0.0395;
