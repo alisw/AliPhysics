@@ -146,7 +146,10 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileNameDCA(0),
   fFileDCA(0),
   fFileNameEff(0),
+  fFileNameEffLocal(0),
   fFileEff(0),
+  fFileNameWM(0),
+  fFileWM(0),
   fFileNameVPH(0),
   fFileVPH(0),
   fResolDataSetName(""),
@@ -261,7 +264,10 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileNameDCA(0),
   fFileDCA(0),
   fFileNameEff(0),
+  fFileNameEffLocal(0),
   fFileEff(0),
+  fFileNameWM(0),
+  fFileWM(0),
   fFileNameVPH(0),
   fFileVPH(0),
   fResolDataSetName(""),
@@ -304,8 +310,138 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fHistNEvents->Sumw2();
   fOutputContainer->Add(fHistNEvents);
 
- 
+  // Get Efficiency
+  if(fFileNameEff.Contains("alien")){
+    // file is copied from alien path to local directory
+    gSystem->Exec(Form("alien_cp %s .", fFileNameEff.Data()));
+      
+    // obtain ROOT file name only and local directory
+    TObjArray* Strings = fFileNameEff.Tokenize("/");
+    fFileNameEffLocal = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+    Printf("Set efficiency file name to %s (copied from %s)",fFileNameEffLocal.Data(),fFileNameEff.Data());
+    }
+    else{
+      fFileNameEffLocal = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_EffMult.root";
+    }
+  // Get Efficiency (and Multiplicity) weight file:
+  //fFileNameEff = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_EffMult.root";
+  fFileEff = TFile::Open(fFileNameEffLocal.Data());
+  if(!fFileEff->IsOpen()){
+   AliError(Form("Could not open Efficiency file %s",fFileNameEffLocal.Data() ));
+  }
+  fhwEffpT = (TH1F*) fFileEff->Get("fhwEffpT"); // histo: eff weight in function of pT.
 
+
+  // Get multiplicity weight file:
+  fFileNameWM = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_EffMult.root";
+  fFileWM = TFile::Open(fFileNameWM.Data());
+  if(!fFileWM->IsOpen()){
+   AliError(Form("Could not open Multiplicity weight file %s",fFileNameWM.Data() ));
+  }
+  fhwMultpT = (TH1F*) fFileWM->Get("fhwMultpT"); // histo: multiplicity weight in function of pT.
+  fhwMultmT = (TH1F*) fFileWM->Get("fhwMultmT"); // histo: multiplicity weight in function of mT.
+  fhwMultpT2 = (TH1F*) fFileWM->Get("fhwMultpT_upperlimit"); // histo: multiplicity weight in function of pT.
+  fhwMultmT2 = (TH1F*) fFileWM->Get("fhwMultmT_upperlimit"); // histo: multiplicity weight in function of mT.
+  // store those weights in the output file:
+  //fOutputContainer->Add(fhwEffpT);
+  //fOutputContainer->Add(fhwMultpT);
+  //fOutputContainer->Add(fhwMultmT);
+  //fOutputContainer->Add(fhwMultpT2);
+  //fOutputContainer->Add(fhwMultmT2);
+
+  // Get DCA templates:
+  fFileNameDCA = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_DCA.root";
+  fFileDCA = TFile::Open(fFileNameDCA.Data());
+  if(!fFileDCA->IsOpen()){
+   AliError(Form("Could not open DCA templates file %s",fFileNameDCA.Data() ));
+  }
+  fh_DCAtemplates = new TH1F*[6];
+  fh_DCAtemplates[0] = (TH1F*) fFileDCA->Get("fh_DCAtemplate1"); // histo: DCA template 0.2 < pT < 0.3 GeV/c.
+  fh_DCAtemplates[1] = (TH1F*) fFileDCA->Get("fh_DCAtemplate2"); // histo: DCA template 0.3 < pT < 0.4 GeV/c.
+  fh_DCAtemplates[2] = (TH1F*) fFileDCA->Get("fh_DCAtemplate3"); // histo: DCA template 0.4 < pT < 0.6 GeV/c.
+  fh_DCAtemplates[3] = (TH1F*) fFileDCA->Get("fh_DCAtemplate4"); // histo: DCA template 0.6 < pT < 1. GeV/c.
+  fh_DCAtemplates[4] = (TH1F*) fFileDCA->Get("fh_DCAtemplate5"); // histo: DCA template 1. < pT < 2. GeV/c.
+  fh_DCAtemplates[5] = (TH1F*) fFileDCA->Get("fh_DCAtemplate6"); // histo: DCA template pT > 2. GeV/c.
+  //for(int ii=0;ii<6;ii++) fOutputContainer->Add(fh_DCAtemplates[ii]);
+
+  //get the template for virtual photons pT (from now use 7TeV pi0 pT parametrization):
+  fFileNameVPH = "$ALICE_PHYSICS/PWG/Cocktail/parametrisations/pp_7TeV.root";
+  fFileVPH = TFile::Open(fFileNameVPH.Data());
+  if(!fFileVPH->IsOpen()){
+   AliError(Form("Could not open Virtual Photon templates file %s",fFileNameVPH.Data() ));
+  }
+  ffVPHpT = (TF1*)fFileVPH->GetDirectory("7TeV_Comb")->Get("111_pt");
+  //Build Kroll-wada for virtual photon mass parametrization:
+  Double_t KWmass = 0.;
+  Double_t  emass = (TDatabasePDG::Instance()->GetParticle(11))->Mass();
+  Int_t KWnbins = 10000;
+  Float_t KWmin   = 2.*emass;
+  Float_t KWmax         = 1.1;
+  Double_t KWbinwidth     = (KWmax - KWmin) / (Double_t)KWnbins;
+  fhKW = new TH1F("fhKW","fhKW",KWnbins,KWmin,KWmax);
+  for(Int_t ibin = 1; ibin <= KWnbins; ibin++ ){
+    KWmass     = KWmin + (Double_t)(ibin - 1) * KWbinwidth + KWbinwidth / 2.0;
+    fhKW->AddBinContent(ibin,2.*(1./137.03599911)/3./3.14159265359/KWmass
+       *sqrt(1.-4.*emass*emass/KWmass/KWmass)*(1.+2.*emass*emass/KWmass/KWmass));
+  }
+
+  // Prepare resolution file
+  //RUN1
+  if(fResolType == 1) {
+   if(fcollisionSystem<=200) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp.root";
+   if(fcollisionSystem==300) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_RespPb.root";
+   if(fcollisionSystem==400) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_ResPbPb.root";
+   if(fcollisionSystem<=200||fcollisionSystem==300||fcollisionSystem==400){
+    fFile = TFile::Open(fFileName.Data());
+    if(!fFile->IsOpen()){
+     AliError(Form("Could not open file %s",fFileName.Data() ));
+    }
+    TObjArray* arr=0x0;
+    arr = (TObjArray*) fFile->Get("ptSlices");
+    if (!arr) printf("no resolution array set! using internal parameterization. \n");
+    else      printf("using resolution array: \n");
+    fArr=arr;
+   }
+  }
+  //RUN2
+  if(fResolType == 2) {
+    if(fResolDataSetName.Contains("alien")){
+      // file is copied from alien path to local directory
+      gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
+      
+      // obtain ROOT file name only and local directory
+      TObjArray* Strings = fResolDataSetName.Tokenize("/");
+      fFileName = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+      Printf("Set resolution file name to %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data());
+    }
+    else{
+      if(fcollisionSystem==200){ //pp 13TeV
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+      }
+      else{
+	if(!fLocalRes) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+	else fFileName = fResolDataSetName;
+      }
+    }
+   fFile = TFile::Open(fFileName.Data());
+   if(!fFile->IsOpen()){
+     AliError(Form("Could not open file %s",fFileName.Data() ));
+   }
+    TObjArray* ArrResoPt=0x0;
+    ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
+    TObjArray* ArrResoEta=0x0;
+    ArrResoEta = (TObjArray*) fFile->Get("EtaResArrVsPt");
+    TObjArray* ArrResoPhi_Pos=0x0;
+    ArrResoPhi_Pos = (TObjArray*) fFile->Get("PhiPosResArrVsPt");
+    TObjArray* ArrResoPhi_Neg=0x0;
+    ArrResoPhi_Neg = (TObjArray*) fFile->Get("PhiEleResArrVsPt");
+    fArrResoPt=ArrResoPt;
+    fArrResoEta=ArrResoEta;
+    fArrResoPhi_Pos=ArrResoPhi_Pos;
+    fArrResoPhi_Neg=ArrResoPhi_Neg;
+  } 
 
   // Define the output tree
   teeTTree = new TTree("eeTTree","a simple TTree");
@@ -494,7 +630,7 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fpteevsmee_orig_wALT = new TH2F*[nInputParticles+1];
   fpteevsmee_orig_wALT[nInputParticles] = new TH2F("pteevsmee_orig_wALT","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee_orig_wALT[nInputParticles]->Sumw2();
-  if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_orig_wALT[nInputParticles]);
+  fOutputContainer->Add(fpteevsmee_orig_wALT[nInputParticles]);
   fmotherpT_orig_wALT = new TH1F*[nInputParticles+1];
   fmotherpT_orig_wALT[nInputParticles] = new TH1F("motherpT_orig_wALT","motherpT_orig_wALT",histBinPt,histMinPt,histMaxPt);
   fmotherpT_orig_wALT[nInputParticles]->Sumw2();
@@ -505,7 +641,7 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
    if(fALTweightType>0)fOutputContainer->Add(fmee_orig_wALT[i]);
    fpteevsmee_orig_wALT[i] = new TH2F(Form("pteevsmee_orig_wALT_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee_orig_wALT[i]->Sumw2();
-   if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_orig_wALT[i]);
+   fOutputContainer->Add(fpteevsmee_orig_wALT[i]);
    fmotherpT_orig_wALT[i] = new TH1F(Form("motherpT_orig_wALT_%s",fParticleListNames[i].Data()),Form("motherpT_orig_wALT_%s",fParticleListNames[i].Data()),histBinPt,histMinPt,histMaxPt);
    fmotherpT_orig_wALT[i]->Sumw2();
    if(fALTweightType>0)fOutputContainer->Add(fmotherpT_orig_wALT[i]);
@@ -517,14 +653,14 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fpteevsmee_wALT = new TH2F*[nInputParticles+1];
   fpteevsmee_wALT[nInputParticles] = new TH2F("pteevsmee_wALT","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee_wALT[nInputParticles]->Sumw2();
-  if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_wALT[nInputParticles]);
+  fOutputContainer->Add(fpteevsmee_wALT[nInputParticles]);
   for(Int_t i=0; i<nInputParticles; i++){
    fmee_wALT[i] = new TH1F(Form("mee_wALT_%s",fParticleListNames[i].Data()),Form("mee_wALT_%s",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
    fmee_wALT[i]->Sumw2();
    if(fALTweightType>0)fOutputContainer->Add(fmee_wALT[i]);
    fpteevsmee_wALT[i] = new TH2F(Form("pteevsmee_wALT_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee_wALT[i]->Sumw2();
-   if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_wALT[i]);
+   fOutputContainer->Add(fpteevsmee_wALT[i]);
   }
 
   fULS_orig = new TH2F("ULS_orig","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
@@ -814,27 +950,20 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         fID=motherParticle->PdgCode();
         fweight=particle->Particle()->GetWeight(); //get particle weight from generator
 
-
-	//get multiplicity based weight:
-	fwMultpT = 1.;
-	fwMultpT2 = 1.;
-	fwMultmT = 1.;
-	fwMultmT2 = 1.;
-	if(fALTweightType > 0) {
-	  int iwbin=fhwMultpT->FindBin(fmotherpt);
-	  fwMultpT=fhwMultpT->GetBinContent(iwbin); //pT weight
-	  fwMultpT2=fhwMultpT2->GetBinContent(iwbin); //pT weight
-	  double min_mT=fhwMultmT->GetBinLowEdge(1); // consider as minimum valid mT value the edge of the weight histo.
-	  if(fmothermt>min_mT){
-	    iwbin=fhwMultmT->FindBin(fmothermt);
-	    fwMultmT = fhwMultmT->GetBinContent(iwbin); //mT weight
-	    fwMultmT2 = fhwMultmT2->GetBinContent(iwbin); //mT weight
-	  }else{
-	    printf("AliAnalysisTaskLMeeCocktailMC ERROR = Generated particle with mT < Pion mass cannot be weighted \n");
-	    fwMultmT = 0.;
-	    fwMultmT2 = 0.;
-	  }
-	}
+        //get multiplicity based weight:
+        int iwbin=fhwMultpT->FindBin(fmotherpt);
+        fwMultpT=fhwMultpT->GetBinContent(iwbin); //pT weight
+        fwMultpT2=fhwMultpT2->GetBinContent(iwbin); //pT weight
+        double min_mT=fhwMultmT->GetBinLowEdge(1); // consider as minimum valid mT value the edge of the weight histo.
+        if(fmothermt>min_mT){
+         iwbin=fhwMultmT->FindBin(fmothermt);
+         fwMultmT = fhwMultmT->GetBinContent(iwbin); //mT weight
+         fwMultmT2 = fhwMultmT2->GetBinContent(iwbin); //mT weight
+        }else{
+         printf("AliAnalysisTaskLMeeCocktailMC ERROR = Generated particle with mT < Pion mass cannot be weighted \n");
+         fwMultmT = 0.;
+         fwMultmT2 = 0.;
+        }
 
         //Which ALT weight to use?:
         Double_t fwALT = fwEffpT; //by default use pt efficiency weight
@@ -853,13 +982,13 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
           if(hindex[jj]>-1){
            fmee_orig[hindex[jj]]->Fill(ee_orig.M(), fweight);
            if(fALTweightType == 1||fALTweightType == 11) {fmotherpT_orig[hindex[jj]]->Fill(fmothermt,fweight);
-           }else if(fALTweightType == 2||fALTweightType == 22) {fmotherpT_orig[hindex[jj]]->Fill(fmotherpt,fweight);}
+           }else if(fALTweightType == 2||fALTweightType == 22||fALTweightType == 0) {fmotherpT_orig[hindex[jj]]->Fill(fmotherpt,fweight);}
            fpteevsmee_orig[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), fweight);
            fphi_orig[hindex[jj]]->Fill(ee_orig.Phi(), fweight);
            frap_orig[hindex[jj]]->Fill(ee_orig.Rapidity(), fweight);
            fmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(), fweight*fwALT);
            if(fALTweightType == 1||fALTweightType == 11) {fmotherpT_orig_wALT[hindex[jj]]->Fill(fmothermt,fweight*fwALT);
-           }else if(fALTweightType == 2||fALTweightType == 22) {fmotherpT_orig_wALT[hindex[jj]]->Fill(fmotherpt,fweight*fwALT);}
+           }else if(fALTweightType == 2||fALTweightType == 22||fALTweightType == 0) {fmotherpT_orig_wALT[hindex[jj]]->Fill(fmotherpt,fweight*fwALT);}
            fpteevsmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), fweight*fwALT);
            if(fpass){
             fmee[hindex[jj]]->Fill(ee.M(), fweight);
@@ -1124,7 +1253,7 @@ TLorentzVector AliAnalysisTaskLMeeCocktailMC::ApplyResolution(TLorentzVector vec
   return resvec;
 }
 
-//____________________________________________________________________________
+
 Double_t AliAnalysisTaskLMeeCocktailMC::PhiV(TLorentzVector e1, TLorentzVector e2)
 {
   Double_t outPhiV;
@@ -1141,204 +1270,5 @@ Double_t AliAnalysisTaskLMeeCocktailMC::PhiV(TLorentzVector e1, TLorentzVector e
   outPhiV=w.Angle(wc);
   return outPhiV;
 }
-//________________________________________________________________________
-void AliAnalysisTaskLMeeCocktailMC::SetResFileName(TString name)
-{
-
-   fResolDataSetName = name;
-
-   
-   // Prepare resolution file
-   //RUN1
-   if(fResolType == 1) {
-     if(fcollisionSystem<=200) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp.root";
-     if(fcollisionSystem==300) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_RespPb.root";
-     if(fcollisionSystem==400) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_ResPbPb.root";
-     if(fcollisionSystem<=200||fcollisionSystem==300||fcollisionSystem==400){
-       fFile = TFile::Open(fFileName.Data());
-       if(!fFile->IsOpen()){
-	 AliError(Form("Could not open file %s",fFileName.Data() ));
-       }
-       TObjArray* arr=0x0;
-       arr = (TObjArray*) fFile->Get("ptSlices");
-       if (!arr) printf("no resolution array set! using internal parameterization. \n");
-       else      printf("using resolution array: \n");
-       fArr=arr;
-     }
-   }
-   //RUN2
-   if(fResolType == 2) {
-     if(fResolDataSetName.Contains("alien")){
-       // file is copied from alien path to local directory
-       gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
-       
-       // obtain ROOT file name only and local directory
-       TObjArray* Strings = fResolDataSetName.Tokenize("/");
-       fFileName = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
-       
-       Printf("Set resolution file name to %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data());
-     }
-     else{
-       if(fcollisionSystem==200){ //pp 13TeV
-	 fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
-       }
-       else{
-	 if(!fLocalRes) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
-	 else fFileName = fResolDataSetName;
-       }
-     }
-     fFile = TFile::Open(fFileName.Data());
-     if(!fFile->IsOpen()){
-       AliError(Form("Could not open file %s",fFileName.Data() ));
-     }
-     TObjArray* ArrResoPt=0x0;
-     ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
-     TObjArray* ArrResoEta=0x0;
-     ArrResoEta = (TObjArray*) fFile->Get("EtaResArrVsPt");
-     TObjArray* ArrResoPhi_Pos=0x0;
-     ArrResoPhi_Pos = (TObjArray*) fFile->Get("PhiPosResArrVsPt");
-     TObjArray* ArrResoPhi_Neg=0x0;
-     ArrResoPhi_Neg = (TObjArray*) fFile->Get("PhiEleResArrVsPt");
-     fArrResoPt=ArrResoPt;
-     fArrResoEta=ArrResoEta;
-     fArrResoPhi_Pos=ArrResoPhi_Pos;
-     fArrResoPhi_Neg=ArrResoPhi_Neg;
-   } 
 
 
-   
-}
-//________________________________________________________________________
-void AliAnalysisTaskLMeeCocktailMC::SetEffFileName(TString name)
-{
-
-
-  if(name!="") fFileNameEff = name;
-  else fFileNameEff = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_EffMult.root";
-
-
-  // Get Efficiency (and Multiplicity) weight file:
-  fFileEff = TFile::Open(fFileNameEff.Data());
-  if(!fFileEff->IsOpen()){
-   AliError(Form("Could not open Efficiency and Multiplicity weight file %s",fFileNameEff.Data() ));
-  }
-  fhwEffpT = (TH1F*) fFileEff->Get("fhwEffpT"); // histo: eff weight in function of pT.
-  if(!fhwEffpT) AliError("Could not find eff pt histogram");
-
-  
-  if(fALTweightType > 0)
-    {
-
-      printf("Multiplicity weighting on\n");
-      
-      fhwMultpT = (TH1F*) fFileEff->Get("fhwMultpT"); // histo: multiplicity weight in function of pT.
-      if(!fhwMultpT) AliError("Could not find multiplicity histogram fhwMultpT");
-
-	
-      fhwMultmT = (TH1F*) fFileEff->Get("fhwMultmT"); // histo: multiplicity weight in function of mT.
-      if(!fhwMultmT) AliError("Could not find multiplicity histogram fhwMultmT");
-      
-      fhwMultpT2 = (TH1F*) fFileEff->Get("fhwMultpT_upperlimit"); // histo: multiplicity weight in function of pT.
-      if(!fhwMultpT2) AliError("Could not find multiplicity histogram fhwMultpT2");
-      
-      fhwMultmT2 = (TH1F*) fFileEff->Get("fhwMultmT_upperlimit"); // histo: multiplicity weight in function of mT.
-      if(!fhwMultmT2) AliError("Could not find multiplicity histogram fhwMultmT2");
-      
-
-    }
-
-
-}
-//________________________________________________________________________
-void AliAnalysisTaskLMeeCocktailMC::SetDCAFileName(TString name)
-{
-
-  
-  if(name!="") fFileNameDCA = name;
-  else fFileNameDCA = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_DCA.root";
-
-
-  fFileDCA = TFile::Open(fFileNameDCA.Data());
-  if(!fFileDCA->IsOpen()){
-   AliError(Form("Could not open DCA templates file %s",fFileNameDCA.Data() ));
-  }
-  fh_DCAtemplates = new TH1F*[6];
-  fh_DCAtemplates[0] = (TH1F*) fFileDCA->Get("fh_DCAtemplate1"); // histo: DCA template 0.2 < pT < 0.3 GeV/c.
-  fh_DCAtemplates[1] = (TH1F*) fFileDCA->Get("fh_DCAtemplate2"); // histo: DCA template 0.3 < pT < 0.4 GeV/c.
-  fh_DCAtemplates[2] = (TH1F*) fFileDCA->Get("fh_DCAtemplate3"); // histo: DCA template 0.4 < pT < 0.6 GeV/c.
-  fh_DCAtemplates[3] = (TH1F*) fFileDCA->Get("fh_DCAtemplate4"); // histo: DCA template 0.6 < pT < 1. GeV/c.
-  fh_DCAtemplates[4] = (TH1F*) fFileDCA->Get("fh_DCAtemplate5"); // histo: DCA template 1. < pT < 2. GeV/c.
-  fh_DCAtemplates[5] = (TH1F*) fFileDCA->Get("fh_DCAtemplate6"); // histo: DCA template pT > 2. GeV/c.
-
-
-
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskLMeeCocktailMC::SetVPHFileName(TString name)
-{
-
-  if(name!="") fFileNameVPH = name;
-  else fFileNameVPH = "$ALICE_PHYSICS/PWG/Cocktail/parametrisations/pp_7TeV.root";
-
-  fFileVPH = TFile::Open(fFileNameVPH.Data());
-  if(!fFileVPH->IsOpen()){
-   AliError(Form("Could not open Virtual Photon templates file %s",fFileNameVPH.Data() ));
-  }
-  ffVPHpT = (TF1*)fFileVPH->GetDirectory("7TeV_Comb")->Get("111_pt");
-  //Build Kroll-wada for virtual photon mass parametrization:
-  Double_t KWmass = 0.;
-  Double_t  emass = (TDatabasePDG::Instance()->GetParticle(11))->Mass();
-  Int_t KWnbins = 10000;
-  Float_t KWmin   = 2.*emass;
-  Float_t KWmax         = 1.1;
-  Double_t KWbinwidth     = (KWmax - KWmin) / (Double_t)KWnbins;
-  fhKW = new TH1F("fhKW","fhKW",KWnbins,KWmin,KWmax);
-  for(Int_t ibin = 1; ibin <= KWnbins; ibin++ ){
-    KWmass     = KWmin + (Double_t)(ibin - 1) * KWbinwidth + KWbinwidth / 2.0;
-    fhKW->AddBinContent(ibin,2.*(1./137.03599911)/3./3.14159265359/KWmass
-       *sqrt(1.-4.*emass*emass/KWmass/KWmass)*(1.+2.*emass*emass/KWmass/KWmass));
-  }
-
-}
-//_______________________________________________________________________________
-void AliAnalysisTaskLMeeCocktailMC::PrintStatus()
-{
-
-  printf("///// Status resolution ////////\n");
-  printf("resolution from %s\n",fFileName.Data());
-  if(fResolType==1) {
-    printf("Resolution type 1\n");
-    if(!fArr) printf("Issue no resolution array\n");
-  }
-  if(fResolType==2) {
-    printf("Resolution type 2\n");
-    if(!fArrResoPt) printf("Issue no pt resolution array\n");
-    if(!fArrResoEta) printf("Issue no eta resolution array\n");
-    if(!fArrResoPhi_Pos) printf("Issue no phi_pos resolution array\n");
-    if(!fArrResoPhi_Neg) printf("Issue no phi_neg resolution array\n");
-  }
-
-  printf("///// Status Efficiency ////////\n");
-  printf("efficiency from %s\n",fFileNameEff.Data());
-  if(!fhwEffpT) printf("Issue no efficiency as a function of pt\n");
-  if(fALTweightType==0){
-    printf("Efficiency as a function of pt used\n");
-  }
-  if(fALTweightType>0){
-    printf("Multiplicity weighting used\n");
-    if(!fhwMultpT) printf("Issue no fhwMultpT\n");
-    if(!fhwMultpT2) printf("Issue no fhwMultpT2\n");
-    if(!fhwMultmT) printf("Issue no fhwMultmT\n");
-    if(!fhwMultmT2) printf("Issue no fhwMultmT2\n");
-  }
-
-  printf("///// Status DCA ////////");
-  printf("DCA from %s\n",fFileNameDCA.Data());
-
-  printf("///// Status VPH ////////");
-  printf("VPH from %s\n",fFileNameVPH.Data());
-  
-  
-
-}

@@ -7,7 +7,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   task->SetApplyEventw(applyeventw);
 
   // smearing
-  gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
+  if(file_momentum_smear.Contains("alien")) gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
   TFile f("smearingfile.root");
   if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
     task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
@@ -17,7 +17,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   }
 
    // Efficiency
-  gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
+  if(file_efficiency.Contains("alien")) gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
   TFile fefficiency("efficiencyfile.root");
   if (fefficiency.IsOpen()){
     task->SetEffType(fTypeEff);

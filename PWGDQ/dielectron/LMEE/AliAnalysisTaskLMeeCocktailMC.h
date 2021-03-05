@@ -18,7 +18,6 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
-    void PrintStatus();
  
     // Configuration functions   
     void SetCollisionSystem(Int_t collisionSystem){fcollisionSystem = collisionSystem;}
@@ -28,11 +27,9 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
-    void SetVPHFileName(TString name);
-    void SetDCAFileName(TString name);
-    void SetEffFileName(TString name);
-    void SetResFileName(TString name);
+    void SetResFileName(TString name){ fResolDataSetName = name; }
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
+    void SetEffFileName(TString name){ fFileNameEff = name; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -153,8 +150,11 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFile;        //! Pointer to input file
     TString     fFileNameDCA;    // Name of the input file (DCA)
     TFile*      fFileDCA;        //! Pointer to input file
-    TString     fFileNameEff;    // Name of the input file (Eff weight)
+    TString     fFileNameEff;    // Name of the input file (Eff)
+    TString     fFileNameEffLocal;    // Name of the input file (Eff)
     TFile*      fFileEff;        //! Pointer to input file
+    TString     fFileNameWM;    // Name of the input file (weight multiplicity)
+    TFile*      fFileWM;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
     TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data

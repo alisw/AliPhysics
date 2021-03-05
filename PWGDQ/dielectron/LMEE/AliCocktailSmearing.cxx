@@ -142,17 +142,26 @@ void AliCocktailSmearing::ReadEffFile(TFile *fEff)
     if(fUseEffType==0) {
       effPt = (TH1F *) fEff->Get("fhwEffpT");
       if(!effPt) printf("No efficiency histogram found\n");
-      else fheffPt = effPt;
+      else {
+	fheffPt = effPt;
+	fheffPt->SetDirectory(0);
+      }
     }
     if(fUseEffType==1) {
       effPtEta = (TH2F *) fEff->Get("fhwEffpTeta");
       if(!effPtEta) printf("No efficiency histogram found\n");
-      else fheffPtEta = effPtEta;
+      else {
+	fheffPtEta = effPtEta;
+	fheffPtEta->SetDirectory(0);
+      }
     }
     if(fUseEffType==2) {
       effPtEtaPhi = (TH3F *) fEff->Get("fhwEffpTetaphi");
       if(!effPtEtaPhi) printf("No efficiency histogram found\n");
-      else fheffPtEtaPhi = effPtEtaPhi;
+      else {
+	fheffPtEtaPhi = effPtEtaPhi;
+	fheffPtEtaPhi->SetDirectory(0);
+      }
     }
   }
   else Printf("no efficiency file given!");
