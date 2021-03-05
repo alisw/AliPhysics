@@ -80,9 +80,6 @@ public:
   
   //Helper
   Float_t MinVal( Float_t A, Float_t B );
-  
-  //calibrate vertex dependecy
-  Float_t VtxCorrection(Float_t vtxZ);
    
   Bool_t VarDoAutocalib[AliMultInput::kNVariables]; //! Do auto vertex Z calib or not: master switch
   
