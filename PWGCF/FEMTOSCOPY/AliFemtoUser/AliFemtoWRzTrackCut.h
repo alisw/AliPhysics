@@ -26,9 +26,10 @@ public:
    void SetMostProbableDeuteron();
    void SetNsigmaRejection(float SetNsigmaRejection = 3.0);
    void SetfNSigmaMass(float SetNsigmass = -1);
+
 private:
-   bool  fdEdxcut;        // true - if nsigma selection plus the Contour Method 
-   float maxmom;        // max momentum - for dEdx cut
+   bool  fdEdxcut;         // true - if nsigma selection plus the Contour Method 
+   float fmaxmom;           // max momentum - for dEdx cut
    float fNsigmaRejection; // nSigmafor the EXCLUSIVE PID cut
    float fNSigmaMass;
 
@@ -36,14 +37,13 @@ private:
    bool IsPionNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF);
    bool IsProtonNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF);
    bool IsElectronNSigmaRejection(float mom, float nsigmaTPE);
-
    bool IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom);
    bool IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
 
 };
 
 inline void AliFemtoWRzTrackCut::SetdEdxcut(bool coumet) { fdEdxcut = coumet; }
-inline void AliFemtoWRzTrackCut::SetMaxmom(float maxm) { maxmom = maxm; }
+inline void AliFemtoWRzTrackCut::SetMaxmom(float maxm) { fmaxmom = maxm; }
 inline void AliFemtoWRzTrackCut::SetMostProbableDeuteron() { fMostProbable = 13; }
 inline void AliFemtoWRzTrackCut::SetNsigmaRejection(float SetNsigmaRejection) { fNsigmaRejection = SetNsigmaRejection; }
 inline void AliFemtoWRzTrackCut::SetfNSigmaMass(float SetNsigmass) { fNSigmaMass = SetNsigmass; }

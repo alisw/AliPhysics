@@ -1,12 +1,16 @@
 #include "AliFemtoWRzTrackCut.h"
 
-
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliPIDResponse.h"
+#include "AliVParticle.h"
 AliFemtoWRzTrackCut::AliFemtoWRzTrackCut():
   AliFemtoESDTrackCut()
   {
      fdEdxcut = true ;
      fNsigmaRejection = 3.0;
      fNSigmaMass = -1;
+     fmaxmom = 4;
   }
 
 AliFemtoWRzTrackCut::AliFemtoWRzTrackCut(const AliFemtoWRzTrackCut &aCut) : AliFemtoESDTrackCut(aCut)
@@ -226,8 +230,9 @@ bool AliFemtoWRzTrackCut::Pass( const AliFemtoTrack* track)
       else if (fMostProbable == 14) { //cut on Nsigma, EXCLUSIVE PID -- deuteron 
         if ( IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE()) )
           imost = 14;
-        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), 4) )
+        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
           imost = 0;
+
       }
     }
 
@@ -312,9 +317,7 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
            return true;
          else{
            //test
-           if(mom<1.3 && TMath::Abs(nsigmaTPCD) < fNsigma)
-             return true;
-           else if(mom>=1.3 && TMath::Abs(nsigmaTPCD-0.5) < 1.5)
+           if(nsigmaTPCD > (6*mom-9.3))
              return true;
          }
      }
