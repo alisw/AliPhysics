@@ -94,10 +94,13 @@ public:
     kGenerators
   };
   enum CollisionFlagsRun2 : uint16_t {
-    Run2VertexerTracks = 0,
-    Run2VertexerTracksNoConstraint,
-    Run2VertexerZ,
-    Run2Vertexer3D
+    Run2VertexerTracks = 0x1,
+    Run2VertexerZ = 0x2,
+    Run2Vertexer3D = 0x4,
+    // upper 8 bits for flags
+    Run2VertexerTracksWithConstraint = 0x10,
+    Run2VertexerTracksOnlyFitter = 0x20,
+    Run2VertexerTracksMultiVertex = 0x40
   }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
     GlobalTrack = 0,

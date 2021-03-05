@@ -888,23 +888,34 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   // Decide if vertex should be written
   // Primary vertex
-  Bool_t fillCollision = kFALSE;
   const AliESDVertex *pvtx = fESD->GetPrimaryVertex();
   UChar_t vertexType = 0;
 
   TString title(pvtx->GetTitle());
   if (pvtx->IsFromVertexer3D()) {
     vertexType = Run2Vertexer3D;
-    fillCollision = kTRUE;
   } else if (pvtx->IsFromVertexerZ()) {
     vertexType = Run2VertexerZ;
+  } else if (title.Contains("VertexerTracks")) {
+    if (pvtx->GetNContributors() >= 2) {
+      vertexType = Run2VertexerTracks;
+      if (title.Contains("WithConstraint"))
+        vertexType |= Run2VertexerTracksWithConstraint;
+      if (title.Contains("OnlyFitter"))
+        vertexType |= Run2VertexerTracksOnlyFitter;
+      if (title.Contains("MV"))
+        vertexType |= Run2VertexerTracksMultiVertex;
+    }
+  } else {
+    AliWarning(Form("Unknown vertexer type: %s", title.Data()));
+  }
+
+  Bool_t fillCollision = kFALSE;
+  if (vertexType > 0) {
     fillCollision = kTRUE;
-  } else if (title.Contains("VertexerTracksWithConstraint") && pvtx->GetNContributors() >= 2) {
-    vertexType = Run2VertexerTracks;
-    fillCollision = kTRUE;
-  } else if (title.Contains("VertexerTracksNoConstraint") && pvtx->GetNContributors() >= 2) {
-    vertexType = Run2VertexerTracksNoConstraint;
-    fillCollision = kTRUE;
+    AliInfo(Form("Event with vertex %s and %d contributors: accepted as vertex type %d", title.Data(), pvtx->GetNContributors(), vertexType));
+  } else {
+    AliInfo(Form("Event with vertex %s and %d contributors: rejected", title.Data(), pvtx->GetNContributors()));
   }
 
   //---------------------------------------------------------------------------
