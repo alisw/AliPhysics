@@ -392,78 +392,80 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
 
   fNDimu_gen=numdimu_gen;     
 
+  Int_t numdimu = 0;
+  Int_t nummu = 0;
+
+//----------------------------------------------------------
+// read muon tracks from AliAOD.root (not AliAOD.Muons.root)
+//----------------------------------------------------------  
  
-    //------------------------------------------------------------------------- 
-    // uncomment if reading AliMuonAODs (in PbPb)
-    //-------------------------------------------------------------------------
-    Int_t numdimu = 0;
-    Int_t nummu = 0;
-    TRefArray *mutracks = new TRefArray();
-    Int_t nmuons = fAODEvent->GetMuonTracks(mutracks);
-    for (Int_t i=0;i<nmuons;i++){
-      AliAODTrack *mu0=(AliAODTrack*)mutracks->At(i); 
-      
-      if(mu0->GetLabel()== -1) {
-        printf("negative label\n");
-        continue;
-      }	
-      AliAODMCParticle *mctrack0 = (AliAODMCParticle*) mcarray->At(mu0->GetLabel());     
-      Int_t mum_num0 = mctrack0->GetMother();
-      if(mu0->GetLabel() != mctrack0->GetLabel())continue;
-	if(mctrack0->GetMother()<0) continue;
- 	  AliAODMCParticle *mcpart0 = (AliAODMCParticle *)mcarray->At(mum_num0);
- 	  if(mcpart0->GetPdgCode()==PDGCode){
-           fCharge_rec[i] = mu0->Charge();
-           fPt_rec[i] = mu0->Pt();
-           fPx_rec[i] = mu0->Px();
-           fPy_rec[i] = mu0->Py();
-           fPz_rec[i] = mu0->Pz();
-           fY_rec[i]  = mu0->Y();
-           fEta_rec[i]= mu0->Eta();
-           fE_rec[i] = mu0->E();
-           fMatchTrig_rec[i]   = mu0->GetMatchTrigger();
-           fMatchTrigChi2_rec[i]= mu0->GetChi2MatchTrigger();
-           fRAtAbsEnd_rec[i]=mu0->GetRAtAbsorberEnd();
-	   
-           for(Int_t j=i+1;j<nmuons;j++){
-             AliAODTrack *mu1=(AliAODTrack*)mutracks->At(j);
-             AliAODDimuon *dimu=new AliAODDimuon(mu0,mu1);
-	     if(mu1->GetLabel()== -1) {
-               printf("negative label\n");
-              continue;
-             }	
+  Int_t ntracks = fAODEvent->GetNumberOfTracks();   
+  for (Int_t i=0;i<ntracks;i++){
+       
+    AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
+    if(mu0->GetLabel()== -1) {
+      printf("negative label\n");
+      continue;
+    }	
+    AliAODMCParticle *mctrack0 = (AliAODMCParticle*) mcarray->At(mu0->GetLabel());     
+    Int_t mum_num0 = mctrack0->GetMother();
+    if(mu0->GetLabel() != mctrack0->GetLabel())continue;
+    if(mctrack0->GetMother()<0) continue;
+    AliAODMCParticle *mcpart0 = (AliAODMCParticle *)mcarray->At(mum_num0);
+    if(mcpart0->GetPdgCode()==PDGCode){
+      fCharge_rec[i] = mu0->Charge();
+      fPt_rec[i] = mu0->Pt();
+      fPx_rec[i] = mu0->Px();
+      fPy_rec[i] = mu0->Py();
+      fPz_rec[i] = mu0->Pz();
+      fY_rec[i]  = mu0->Y();
+      fEta_rec[i]= mu0->Eta();
+      fE_rec[i] = mu0->E();
+      fMatchTrig_rec[i]   = mu0->GetMatchTrigger();
+      fMatchTrigChi2_rec[i]= mu0->GetChi2MatchTrigger();
+      fRAtAbsEnd_rec[i]=mu0->GetRAtAbsorberEnd();
+     
+      if (!mu0->IsMuonTrack()) continue;
+      for(Int_t j=i+1;j<ntracks;j++){
+	 AliAODTrack *mu1=(AliAODTrack*)fAODEvent->GetTrack(j);
+	 if (!mu1->IsMuonTrack()) continue;
+	 AliAODDimuon *dimu=new AliAODDimuon(mu0,mu1);
+	 if(mu1->GetLabel()== -1) {
+           printf("negative label\n");
+           continue;
+          }	
 
-	    AliAODMCParticle *mctrack1 = (AliAODMCParticle*) mcarray->At(mu1->GetLabel());     
- 	    Int_t mum_num1 = mctrack1->GetMother();
+	  AliAODMCParticle *mctrack1 = (AliAODMCParticle*) mcarray->At(mu1->GetLabel());     
+ 	  Int_t mum_num1 = mctrack1->GetMother();
 
-	    if(mu1->GetLabel() != mctrack1->GetLabel())continue;
-	      if(mctrack1->GetMother()<0) continue;
-		AliAODMCParticle *mcpart1 = (AliAODMCParticle *)mcarray->At(mum_num1);
- 	        if(mcpart1->GetPdgCode()==PDGCode){
-      	   
-                 fDimuMass_rec[numdimu] = dimu->Mass();
-                 fDimuPt_rec[numdimu] = dimu->Pt();
-                 fDimuPx_rec[numdimu] = dimu->Px();
-                 fDimuPy_rec[numdimu] = dimu->Py();
-                 fDimuPz_rec[numdimu] = dimu->Pz();
-                 fDimuY_rec[numdimu] = dimu->Y();
-                 fDimuCharge_rec[numdimu]= dimu->Charge();
-                 fDimuMu_rec[numdimu][0]=i;  fDimuMu_rec[numdimu][1]=j;
-	  
-	         fDimuCostHE_rec[numdimu] = CostHE_rec(mu0,mu1);
-	         fDimuPhiHE_rec[numdimu] = PhiHE_rec(mu0,mu1);
-	         fDimuCostCS_rec[numdimu] = CostCS_rec(mu0,mu1);
-	         fDimuPhiCS_rec[numdimu] = PhiCS_rec(mu0,mu1);
-
-                 if(mu0->GetMatchTrigger()>1 || mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=1;
-                 if(mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=2;
+	  if(mu1->GetLabel() != mctrack1->GetLabel())continue;
+	    if(mctrack1->GetMother()<0) continue;
+	      AliAODMCParticle *mcpart1 = (AliAODMCParticle *)mcarray->At(mum_num1);
+ 	      if(mcpart1->GetPdgCode()==PDGCode){
+      	 
+               fDimuMass_rec[numdimu] = dimu->Mass();
+               fDimuPt_rec[numdimu] = dimu->Pt();
+               fDimuPx_rec[numdimu] = dimu->Px();
+               fDimuPy_rec[numdimu] = dimu->Py();
+               fDimuPz_rec[numdimu] = dimu->Pz();
+               fDimuY_rec[numdimu] = dimu->Y();
+               fDimuCharge_rec[numdimu]= dimu->Charge();
+               fDimuMu_rec[numdimu][0]=i;  fDimuMu_rec[numdimu][1]=j;
 	
-                 numdimu++;      
-              }
-              delete dimu;
+	       fDimuCostHE_rec[numdimu] = CostHE_rec(mu0,mu1);
+	       fDimuPhiHE_rec[numdimu] = PhiHE_rec(mu0,mu1);
+	       fDimuCostCS_rec[numdimu] = CostCS_rec(mu0,mu1);
+	       fDimuPhiCS_rec[numdimu] = PhiCS_rec(mu0,mu1);
+
+               if(mu0->GetMatchTrigger()>1 || mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=1;
+               if(mu0->GetMatchTrigger()>1 && mu1->GetMatchTrigger()>1) fDimuMatch_rec[numdimu]=2;
+	
+               numdimu++;      
             }
-            nummu++;
+            delete dimu;
           }
+          nummu++;
+        }
        }
        fNMuons_rec =nummu;
        fNDimu_rec=numdimu;     
