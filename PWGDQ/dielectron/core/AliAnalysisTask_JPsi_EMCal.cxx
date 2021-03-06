@@ -23,7 +23,7 @@
 //	    Authors 							                          //
 //		                                                              //
 //		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
-//      27 February, 2021                                           //
+//                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
 #include "TChain.h"
@@ -2350,11 +2350,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     if(cphi<3.9){
                         fEtaPhi_emcal->Fill(cphi,ceta);
                         fECluster_pure_emcal->Fill(clust->E());
-                    
                     }
-				
                     //dcal
-                
                     if(cphi>=3.9){
                         fEtaPhi_dcal->Fill(cphi,ceta);
                         fECluster_pure_dcal->Fill(clust->E());
@@ -3228,8 +3225,9 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 if(cphi > 4.53 && cphi < 5.708){
                                     fECluster_dcal[2]->Fill(fClus2->E());
                                 }
-                                fIsTrack2Emcal=kTRUE;
                             }
+                            
+                            fIsTrack2Emcal=kTRUE;
                         }
 					}
 					
