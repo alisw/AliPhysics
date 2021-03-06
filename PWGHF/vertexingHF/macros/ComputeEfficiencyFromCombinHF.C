@@ -44,8 +44,9 @@ void ComputeAndWriteEff(TList* l, TString dCase);
 void ComputeAndWriteEffOld(TList* l, TString dCase, TString var3="Mult");
 Bool_t ReadConfig(TString configName);
 
-void ComputeEfficiencyFromCombinHF(){
+void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
+  if(configInput!="") configFileName=configInput.Data();
 
   if(configFileName.Length()>0){
     if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
