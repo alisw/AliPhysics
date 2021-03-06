@@ -1,18 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: R. Haake                                                       *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
+/************************************************************************************
+ * Copyright (C) 2016, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <iostream>
 #include "TList.h"
 #include "TH1.h"
@@ -27,7 +38,6 @@
 
 ClassImp(AliEmcalList)
 
-/// \brief constructor
 //________________________________________________________________________
 AliEmcalList::AliEmcalList() : TList(), 
   fUseScaling(kFALSE),
@@ -36,7 +46,6 @@ AliEmcalList::AliEmcalList() : TList(),
 {
 }
 
-/// \brief Overridden ::Merge function
 //________________________________________________________________________
 Long64_t AliEmcalList::Merge(TCollection *hlist)
 {
@@ -86,7 +95,6 @@ Long64_t AliEmcalList::Merge(TCollection *hlist)
   return hlist->GetEntries() + 1;
 }
 
-/// \brief Function that does the scaling of all histograms in hlist recursively
 //________________________________________________________________________
 void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor)
 {
@@ -146,7 +154,6 @@ void AliEmcalList::ScaleAllHistograms(TCollection *hlist, Double_t scalingFactor
   }
 }
 
-/// \brief Helper function scaling factor
 //________________________________________________________________________
 Double_t AliEmcalList::GetScalingFactor(const TH1* xsection, const TH1* ntrials) const
 {
@@ -167,8 +174,6 @@ Double_t AliEmcalList::GetScalingFactor(const TH1* xsection, const TH1* ntrials)
   return scalingFactor;
 }
 
-/// \brief Helper function to determine whether we are in last merge step
-/// \param collection Collection of AliEmcalList objects
 //________________________________________________________________________
 Bool_t AliEmcalList::IsLastMergeLevel(const TCollection* collection) const 
 {
@@ -187,15 +192,6 @@ Bool_t AliEmcalList::IsLastMergeLevel(const TCollection* collection) const
   return kFALSE;
 }
 
-/// \brief Helper function checking whether type is supported for scaling
-///
-/// Supported types are: 
-///  - all TH1-derived / THnBase-derived histograms
-///  - objects inheriting from RooUnfoldResponse if AliPhysics is built with
-///    RooUnfold support
-///
-/// \param scaleobject Object for which to deterime scaling support
-/// \return true if object can be scaled, false otherwise
 //________________________________________________________________________
 bool AliEmcalList::IsScalingSupported(const TObject *scaleobject) const {
   if(scaleobject->InheritsFrom(TH1::Class()) || scaleobject->InheritsFrom(THnBase::Class())) return true;
@@ -205,9 +201,6 @@ bool AliEmcalList::IsScalingSupported(const TObject *scaleobject) const {
   return false;
 }
 
-/// \brief Helper function that returns the bin in a TH1 that is filled
-/// \param hist  Histogram
-/// \return bin number that is filled. If no or more than one bin is filled, 0.
 //________________________________________________________________________
 Int_t AliEmcalList::GetFilledBinNumber(const TH1* hist) const
 {

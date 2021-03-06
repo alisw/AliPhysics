@@ -75,9 +75,7 @@
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcal);
-/// \endcond
 
 AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() : 
   AliAnalysisTaskSE("AliAnalysisTaskEmcal"),
