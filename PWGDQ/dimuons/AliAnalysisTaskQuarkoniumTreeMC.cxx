@@ -381,11 +381,10 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
 	 Int_t d1 = mcp->GetDaughterLast(); //in muon AOD we have only the 2 muons, in AOD there might be 3 tracks
 	 Int_t daught[3];
 	 
-	 AliAODMCParticle *mcp_daught0;
-         AliAODMCParticle *mcp_daught1;
+	 AliAODMCParticle *mcp_daughter;
 	 Int_t j=0;
 	 for(int i=d0;i<d1;i++){
-	   mcp_daughter[i] = (AliAODMCParticle *)mcarray->At(i);
+	   mcp_daughter = (AliAODMCParticle *) mcarray->At(i);
 	   if(mcp_daughter->GetPdgCode()!=13 && mcp_daughter->GetPdgCode()!=-13) continue; //skip gamma due to radiative production
 	   daught[j]=i;
 	   j++;
