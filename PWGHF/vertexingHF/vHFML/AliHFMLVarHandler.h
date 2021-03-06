@@ -19,6 +19,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODPidHF.h"
 #include "AliPIDCombined.h"
+#include "AliAODEvent.h"
 
 class AliHFMLVarHandler : public TObject
 {
@@ -66,12 +67,16 @@ class AliHFMLVarHandler : public TObject
         void SetIsSignalWoQuark(bool isSignalWoQuark);
         void SetBeautyMotherPt(double ptB) {fPtBMother = ptB;}
         void FillTree();
-        
+
+        //to be called for each event
+        void SetGlobalEventVariables(AliAODEvent* event);
+
         //common methods
         void SetOptPID(int PIDopt) {fPidOpt = PIDopt;}
         void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
+        void SetFillGlobalEventVariables(bool filltrkl = true) {fEnableNtracklets = filltrkl;}
 
     protected:  
         //constant variables
@@ -85,6 +90,7 @@ class AliHFMLVarHandler : public TObject
         void AddCommonDmesonVarBranches();
         void AddSingleTrackBranches();
         void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+        void AddGlobalEventVarBranches();
         bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
         bool SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidhf, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     
@@ -117,9 +123,11 @@ class AliHFMLVarHandler : public TObject
         bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
         float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
         AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
+        bool fEnableNtracklets = false;                                /// Flag to add Ntracklets in tree
+        int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 3); ///
+    ClassDef(AliHFMLVarHandler, 4); ///
     /// \endcond
 };
 #endif
