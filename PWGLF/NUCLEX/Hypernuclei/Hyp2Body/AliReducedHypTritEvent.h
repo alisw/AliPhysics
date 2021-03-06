@@ -53,10 +53,18 @@ private:
   Int_t					 fKink;						 //< kink doughters
   Int_t					 fTPCrefit;				 //< TPC refit
   Float_t        fGeoLength;       //< geometric length cut
-
+	Int_t					 fTRDvalid;	       //< has valid TRD track
+	Int_t					 fTRDtrigHNU;	     //< HNU fired by track
+	Int_t					 fTRDtrigHQU;			 //< HQU fired by track
+	Int_t					 fTRDPid;					 //< PID value of TRD track
+	Int_t	 				 fTRDnTracklets;	 //< number of TRD tracklets
+	Int_t	         fTRDPt;           //< Pt of TRD track
+	Int_t	         fTRDLayerMask;		 //< TRD track layer mask
+	Float_t	       fTRDSagitta;			 //< sagitta value of TRD track
+	
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 5)
+ClassDef(AliReducedHypTritTrack, 6)
 };
 
 class AliReducedHypTritV0 : public TObject {
