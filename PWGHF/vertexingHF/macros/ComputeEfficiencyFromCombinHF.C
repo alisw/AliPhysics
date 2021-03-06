@@ -486,8 +486,8 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   }
 
 
-  TCanvas* c1a=new TCanvas(Form("c1a%s",dCase.Data()),Form("%s - AccVsPt",dCase.Data()),1200,600);
-  c1a->Divide(2,1);
+  TCanvas* c1a=new TCanvas(Form("c1a%s",dCase.Data()),Form("%s - AccVsPt",dCase.Data()),1500,600);
+  c1a->Divide(3,1);
   c1a->cd(1);
   gPad->SetLogy();
   hPtGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -545,45 +545,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   te->SetNDC();
   te->SetTextColor(hEffVsPt->GetLineColor());
   te->Draw();
-
-  
-  TCanvas* c1e=new TCanvas(Form("c1e%s",dCase.Data()),Form("%s - EffVsPt",dCase.Data()),1200,600);
-  c1e->Divide(2,1);
-  c1e->cd(1);
-  gPad->SetLogy();
-  hPtGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  hPtGenLimAcc->GetYaxis()->SetTitle("Entries");
-  hPtGenLimAcc->SetLineColor(1);
-  hPtGenLimAcc->Draw();
-  gPad->Update();
-  TPaveStats *st11=(TPaveStats*)hPtGenLimAcc->GetListOfFunctions()->FindObject("stats");
-  st11->SetY1NDC(0.7);
-  st11->SetY2NDC(0.89);
-  hPtGenAcc->SetLineColor(2);
-  hPtGenAcc->Draw("sames");
-  gPad->Update();
-  TPaveStats *st12=(TPaveStats*)hPtGenAcc->GetListOfFunctions()->FindObject("stats");
-  st12->SetY1NDC(0.5);
-  st12->SetY2NDC(0.69);
-  st12->SetTextColor(2);
-  if(hPtGenAccEvSel){
-    hPtGenAccEvSel->SetLineColor(6);
-    hPtGenAccEvSel->Draw("sames");
-    gPad->Update();
-    TPaveStats *st12s=(TPaveStats*)hPtGenAccEvSel->GetListOfFunctions()->FindObject("stats");
-    st12s->SetY1NDC(0.3);
-    st12s->SetY2NDC(0.49);
-    st12s->SetTextColor(6);
-  }
-  hPtReco->SetLineColor(4);
-  hPtReco->Draw("sames");
-  gPad->Update();
-  TPaveStats *st3=(TPaveStats*)hPtReco->GetListOfFunctions()->FindObject("stats");
-  st3->SetY1NDC(0.1);
-  st3->SetY2NDC(0.29);
-  st3->SetTextColor(4);
-  gPad->Modified();
-  c1e->cd(2);
+  c1a->cd(3);
   TLatex* t1=new TLatex(6.,0.25,"GenAccInEvSel / GenAcc");
   t1->SetTextColor(6);
   if(hPtGenAccEvSel){
@@ -599,7 +561,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   TLatex* t3=new TLatex(6.,0.15,"Reco / GenAcc");
   t3->SetTextColor(4);
   t3->Draw();
-  c1e->SaveAs(Form("figures/EfficVsPt_%s_%s.eps",suffix.Data(),dCase.Data()));
+  c1a->SaveAs(Form("figures/EfficVsPt_%s_%s.eps",suffix.Data(),dCase.Data()));
 
 
   TH1D* hVar2RecoAllPt=h3dReco->ProjectionY(Form("hVar2Reco%s",dCase.Data()));
