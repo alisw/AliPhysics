@@ -383,7 +383,7 @@ void AliAnalysisTaskQuarkoniumTreeMC::UserExec(Option_t *)
 	 
 	 AliAODMCParticle *mcp_daughter;
 	 Int_t j=0;
-	 for(int i=d0;i<d1;i++){
+	 for(int i=d0;i<=d1;i++){
 	   mcp_daughter = (AliAODMCParticle *) mcarray->At(i);
 	   if(mcp_daughter->GetPdgCode()!=13 && mcp_daughter->GetPdgCode()!=-13) continue; //skip gamma due to radiative production
 	   daught[j]=i;
