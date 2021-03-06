@@ -76,7 +76,7 @@ class AliHFMLVarHandler : public TObject
         void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
-        void SetFillGlobalEventVariables(bool filltrkl = true) {fEnableNtracklets = filltrkl;}
+        void SetAddGlobalEventVariables(bool filltrkl = true) {fEnableNtracklets = filltrkl;}
 
     protected:  
         //constant variables
