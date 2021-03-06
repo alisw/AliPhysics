@@ -48,10 +48,10 @@ class AliIsolationCut : public TObject {
                     kSumPtFracIC ,           ///< Isolated if sum pt particle in cone < fPtFraction*pt Candidate 
                     kSumDensityIC,           ///< Isolated if sum pt particle in cone < fPtFraction* cell density, old not to be used
                     kSumBkgSubIC ,           ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in perpendicular cones.
+                    kSumBkgSubJetRhoIC,      ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in Jet using tasks EMCalJetFinderBackground which and JetRhoSparseTask.
                     kSumBkgSubEtaBandIC ,    ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in eta band. 
                                              ///< Caveat, jet contributors might still be in band and bias.
                     kSumBkgSubPhiBandIC      ///< Same as kSumPtIC, but sum pt particle in cone subtracted from UE estimated in phi band. 
-                                             ///< For comparisons and studies, not to be used, need to restric phi coverage.
                    } ;
 
   enum partInCone { kNeutralAndCharged = 0,  ///< Consider tracks and neutral calorimeter clusters in cone for isolation decission.
@@ -204,6 +204,9 @@ class AliIsolationCut : public TObject {
   void       SwitchOnConeFillExcessCorrHisto ()                { fFillFractionExcessHistograms = kTRUE  ; }
   void       SwitchOffConeFillExcessCorrHisto()                { fFillFractionExcessHistograms = kFALSE ; }
 
+  void       SetJetRhoTaskContainerName(TString name)          { fJetRhoTaskName = name ; }
+  TString    GetJetRhoTaskContainerName()                const { return fJetRhoTaskName ; }
+
  private:
 
   Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
@@ -248,6 +251,8 @@ class AliIsolationCut : public TObject {
   
   Float_t    fNeutralOverChargedRatio[4];              ///< Ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction. Might depend on centrality. Parameters of third order polynomial.
   
+  TString    fJetRhoTaskName;                          ///< Name of the container of the jet rho task calculation
+
   Int_t      fDebug;                                   ///< Debug level.
 
   TLorentzVector fMomentum;                            //!<! Momentum of cluster, temporal object.
@@ -307,9 +312,15 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPtInPerpCone ;                            //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90).
   TH2F *   fhPerpConeSumPt ;                           //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90).
   TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
-  TH2F *   fhConeSumPtVSPerpCone;                      //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.=
+  TH2F *   fhConeSumPtVSPerpCone;                      //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.
   TH3F *   fhPerpConeSumPtTrigEtaPhi;                  //!<! Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger.
   
+  // Jet Rho
+
+  TH2F *   fhJetRhoSumPt ;                             //!<! Charged sum Pt in cone using Jet tools Rho calculation
+  TH2F *   fhConeSumPtVSJetRho;                        //!<! Charged sum pT in cone vs bkg to subtract from Jet Rho
+  TH3F *   fhJetRhoSumPtTrigEtaPhi;                    //!<! Charged Jet Rho, per eta-phi bin of trigger.
+
   // UE bands
   
   TH2F *   fhEtaBandClusterPt ;                        //!<! pT in Eta band to estimate UE in cone, only clusters.
@@ -401,6 +412,11 @@ class AliIsolationCut : public TObject {
   /// Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger vs centrality.
   TH3F **  fhPerpConeSumPtTrigEtaPhiCent;              //![fNCentBins]
 
+  // Jet Rho
+  TH3F *   fhJetRhoSumPtCent ;                       //!<! Charged Sum Pt in cone with Jet Rho calculations.
+  /// Charged jet Rho sum pT per eta-phi bin of trigger vs centrality.
+  TH3F **  fhJetRhoSumPtTrigEtaPhiCent;              //![fNCentBins]
+
   // UE bands
   TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
   TH3F *   fhConeSumPtUEBandNormTrackCent;             //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
@@ -427,7 +443,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,20) ;
+  ClassDef(AliIsolationCut,21) ;
   /// \endcond
 
 } ;

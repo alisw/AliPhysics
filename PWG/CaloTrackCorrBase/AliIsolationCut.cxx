@@ -26,6 +26,7 @@
 #include "AliVCluster.h"
 #include "AliMixedEvent.h"
 #include "AliLog.h"
+#include "AliRhoParameter.h"
 
 // --- CaloTrackCorrelations --- 
 #include "AliCaloTrackReader.h"
@@ -53,6 +54,7 @@ fPtThreshold(0.),    fPtThresholdMax(10000.),
 fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fSumPtThresholdGap(0.),
 fPtFraction(0.),     fICMethod(0),                  fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
+fJetRhoTaskName(""),
 fDebug(0),           fMomentum(),                   fTrackVector(),
 fEMCEtaSize(-1),     fEMCPhiMin(-1),                fEMCPhiMax(-1),
 fTPCEtaSize(-1),     fTPCPhiSize(-1),
@@ -80,6 +82,8 @@ fhEtaPhiInConeCluster(0),                   fhEtaPhiInConeTrack(0),
 fhPtInPerpCone(0),                          fhPerpConeSumPt(0),
 fhEtaPhiInPerpCone(0),                      fhConeSumPtVSPerpCone(0), 
 fhPerpConeSumPtTrigEtaPhi(0),
+fhJetRhoSumPt(0),                           fhConeSumPtVSJetRho(0),
+fhJetRhoSumPtTrigEtaPhi(0),
 fhEtaBandClusterPt(0),                      fhPhiBandClusterPt(0),
 fhEtaBandTrackPt(0),                        fhPhiBandTrackPt(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
@@ -112,6 +116,7 @@ fhConeSumPtUESubTrigEtaPhiCent(0),
 fhConeSumPtUESubTrackTrigEtaPhiCent(0),     fhConeSumPtUESubClusterTrigEtaPhiCent(0),
 fhPerpConeSumPtCent (0),                    fhPtInPerpConeCent(0),
 fhPerpConeSumPtTrigEtaPhiCent(0),
+fhJetRhoSumPtCent (0),                      fhJetRhoSumPtTrigEtaPhiCent(0),
 fhConeSumPtUEBandNormClusterCent(0),        fhConeSumPtUEBandNormTrackCent(0),
 fhConeSumPtEtaBandUEClusterCent(0),         fhConeSumPtPhiBandUEClusterCent(0), 
 fhConeSumPtEtaBandUETrackCent(0),           fhConeSumPtPhiBandUETrackCent(0),
@@ -1990,6 +1995,39 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       }
     } // perpendicular
     
+    if ( fICMethod == kSumBkgSubJetRhoIC && !fFillHighMultHistograms )
+    {
+      fhJetRhoSumPt  = new TH2F
+      ("hJetRhoPtSum",
+       Form("Jet #rho #it{R}^{2} #pi, #it{R} =  %2.2f",fConeSize),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhJetRhoSumPt->SetYTitle("#rho #it{R}^{2} #pi (GeV/#it{c})");
+      fhJetRhoSumPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhJetRhoSumPt) ;
+
+      fhConeSumPtVSJetRho = new TH2F
+      ("hConeSumPtVSJetRho",
+       Form("Jet #rho #it{R}^{2} #pi versus #Sigma #it{p}_{T}, R=%2.2f",fConeSize),
+       nptsumbins,ptsummin,ptsummax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtVSJetRho->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtVSJetRho->SetYTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtVSJetRho);
+
+      if ( fFillEtaPhiHistograms )
+      {
+        fhJetRhoSumPtTrigEtaPhi = new TH3F
+        ("hJetRhoSumPtTrigEtaPhi",
+         "Trigger #eta vs #varphi, Jet #rho #it{R}^{2} #pi",
+         etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+        fhJetRhoSumPtTrigEtaPhi->SetZTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
+        fhJetRhoSumPtTrigEtaPhi->SetXTitle("#eta_{trigger}");
+        fhJetRhoSumPtTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+        outputContainer->Add(fhJetRhoSumPtTrigEtaPhi) ;
+      }
+    }
+
     // UE bands
     if ( !fFillHighMultHistograms  )
     {
@@ -2520,6 +2558,38 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         }
       }
       
+      if ( fICMethod == kSumBkgSubJetRhoIC )
+      {
+        fhJetRhoSumPtCent  = new TH3F
+        ("hJetRhoPtSumCent",
+         Form("Jet #rho #it{R}^{2} #pi, #it{R} =  %2.2f",fConeSize),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+        fhJetRhoSumPtCent->SetYTitle("Jet #rho #it{R}^{2} #pi(GeV/#it{c})");
+        fhJetRhoSumPtCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhJetRhoSumPtCent->SetZTitle("Centrality (%)");
+        outputContainer->Add(fhJetRhoSumPtCent) ;
+
+        if ( fFillEtaPhiHistograms )
+        {
+          fhJetRhoSumPtTrigEtaPhiCent = new TH3F*[fNCentBins] ;
+          for(Int_t icen = 0; icen < fNCentBins; icen++)
+          {
+            fhJetRhoSumPtTrigEtaPhiCent[icen]  = new TH3F
+            (Form("hJetRhoPtSumTrigEtaPhi_Cen%d",icen),
+             Form("Jet #rho #it{R}^{2} #pi %s, cen bin %d",parTitleR.Data(),icen),
+             etaBinsArray.GetSize()  -1, etaBinsArray.GetArray(),
+             phiBinsArray.GetSize()  -1, phiBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhJetRhoSumPtTrigEtaPhiCent[icen]->SetZTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
+            fhJetRhoSumPtTrigEtaPhiCent[icen]->SetXTitle("#eta_{trigger}");
+            fhJetRhoSumPtTrigEtaPhiCent[icen]->SetYTitle("#varphi_{trigger} (rad)");
+            outputContainer->Add(fhJetRhoSumPtTrigEtaPhiCent[icen]) ;
+          }
+        }
+      }
+
       if ( fICMethod >= kSumBkgSubEtaBandIC )
       {
         if ( fPartInCone != kOnlyCharged )
@@ -2820,6 +2890,10 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fICMethod=%d;",fICMethod) ;
   parList+=onePar ;
+  if ( fICMethod == kSumBkgSubJetRhoIC )
+  {
+    snprintf(onePar,buffersize,"fJetRhoTaskName=%s",fJetRhoTaskName.Data());
+  }
   snprintf(onePar,buffersize,"fPartInCone=%d;",fPartInCone) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fFracIsThresh=%i;",fFracIsThresh) ;
@@ -2863,6 +2937,8 @@ void AliIsolationCut::InitParameters()
   fFracIsThresh         = 1;
   fDistMinToTrigger     = -1.; // no effect
   
+  fJetRhoTaskName       = "Rho";
+
   // Ratio charged to neutral
   // Based on pPb analysis, Erwann Masson Thesis 
   // Use eta band for charged and neutrals for estimation.
@@ -2934,7 +3010,8 @@ void  AliIsolationCut::MakeIsolationCut
   Float_t perpPtSumTrack      = 0;
   Float_t etaBandPtSumCluster = 0;
   Float_t phiBandPtSumCluster = 0;
-  
+  Float_t rhoPtSumTrack       = 0.;
+
   nPart     = 0 ;
   nfrac     = 0 ;
   isolated  = kFALSE;
@@ -3148,6 +3225,42 @@ void  AliIsolationCut::MakeIsolationCut
         }
       } // fill perp cone histograms
     } // UE subtraction by perpendicular cones
+    else if ( fICMethod == kSumBkgSubJetRhoIC )
+    {
+      AliRhoParameter * outrho = (AliRhoParameter*) reader->GetInputEvent()->FindListObject(fJetRhoTaskName);
+
+      if ( !outrho )
+        AliInfo(Form("Could not find rho container <%s>!",fJetRhoTaskName.Data()));
+      else
+      {
+        rhoPtSumTrack = outrho->GetVal() * TMath::Pi() * fConeSize * fConeSize;
+
+        coneptsumBkgTrk = rhoPtSumTrack;
+        if ( fPartInCone == kNeutralAndCharged || fPartInCone == kOnlyNeutral )
+          coneptsumBkgCls = rhoPtSumTrack*GetNeutralOverChargedRatio(centrality);
+        //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
+
+        // Add to candidate object (put for the moment in the perp cone energy container)
+        pCandidate->SetChargedPtSumInPerpCone(rhoPtSumTrack);
+
+        if ( fFillHistograms )
+        {
+          if ( fFillHighMultHistograms )
+          {
+            fhJetRhoSumPtCent->Fill(ptC, rhoPtSumTrack, centrality, histoWeight);
+            if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt  && cenBin < fNCentBins && cenBin >= 0 )
+              fhJetRhoSumPtTrigEtaPhiCent[cenBin]->Fill(etaC, phiC, rhoPtSumTrack, histoWeight);
+          }
+          else
+          {
+            fhJetRhoSumPt->Fill(ptC, rhoPtSumTrack, histoWeight);
+            fhConeSumPtVSJetRho->Fill(coneptsumTrack * excessAreaTrkEta, rhoPtSumTrack, histoWeight);
+            if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+              fhJetRhoSumPtTrigEtaPhi->Fill(etaC, phiC, rhoPtSumTrack, histoWeight);
+          }
+        }
+      }
+    }
     else if ( fICMethod >= kSumBkgSubEtaBandIC ) // eta or phi band
     {
       //printf("UE band\n");
@@ -3317,6 +3430,11 @@ void  AliIsolationCut::MakeIsolationCut
     coneptsumUESubCluster -= coneptsumBkgCls;
     coneptsumUESubTrack   -= coneptsumBkgTrk;
     
+//    printf("method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
+//           fICMethod, centrality, coneptsumTrack * excessAreaTrkEta,
+//           coneptsumTrack * excessAreaTrkEta - coneptsumBkgTrk,
+//           coneptsumBkgTrk, coneptsumBkgTrk / ( TMath::Pi() * fConeSize * fConeSize));
+
     // Calculated in case of fICMethod == kSumBkgSubEtaBandIC, 
     // reset excess areas to 1 if not used in final result.
     if ( !fMakeConeExcessCorr )
@@ -3482,6 +3600,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("**** Print %s %s **** \n", GetName(), GetTitle() ) ;
 
   printf("IC method          =     %d\n",    fICMethod   ) ;
+  if ( fICMethod == kSumBkgSubJetRhoIC )
+    printf("jet rho task name = %s\n",fJetRhoTaskName.Data());
   printf("Cone Size          =     %1.2f\n", fConeSize   ) ;
   printf("Cone Size UE Gap   =     %1.2f\n", fConeSizeBandGap ) ;
   printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold, fPtThresholdMax) ;
