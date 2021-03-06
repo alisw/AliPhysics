@@ -80,7 +80,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
   Double_t                fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
-
+	Int_t 									fYear;						
+	 
   void MCStackLoop(AliMCEvent* mcEvent);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos, AliMCEvent* mcEvent);
@@ -91,11 +92,12 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Bool_t McCuts(const AliReducedHypTritV0& v0, const AliReducedHypTritTrack& he, const AliReducedHypTritTrack& pi);
   Double_t GeoLength(const AliESDtrack& track);
 	void SetBetheBlochParams(Int_t runNumber);
+	Double_t SetTRDtrack(const AliESDtrack* esdTrack, AliReducedHypTritTrack* reducedTrack);
   AliAnalysisTaskHypTritEventTree(const AliAnalysisTaskHypTritEventTree&);
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 4);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 5);
   /// \endcond
 };
 #endif

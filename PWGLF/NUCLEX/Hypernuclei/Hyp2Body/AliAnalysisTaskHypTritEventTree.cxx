@@ -29,6 +29,9 @@
 #include "TPDGCode.h"
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskHypTritEventTree.h"
+#include "AliTRDonlineTrackMatching.h"
+#include "AliCDBManager.h"
+#include "AliGeomManager.h"
 #include "AliReducedHypTritEvent.h"
 
 using namespace std;
@@ -74,7 +77,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fTriggerMask(0),
   fBetheSplines(kFALSE),
   fBetheParamsHe(),
-  fBetheParamsT() {
+  fBetheParamsT(),
+  fYear(0) {
 
   }
 
@@ -116,7 +120,8 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fTriggerMask(),
   fBetheSplines(kFALSE),
   fBetheParamsHe(),
-  fBetheParamsT()
+  fBetheParamsT(),
+  fYear(0)
   {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -269,6 +274,17 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 
   Int_t runNumber = fESDevent->GetRunNumber();
   SetBetheBlochParams(runNumber);
+  
+	AliCDBManager *cdbMgr = AliCDBManager::Instance();
+	if (fMCtrue) {
+		cdbMgr->SetDefaultStorage("MC","Full");
+	}
+	else {
+		cdbMgr->SetDefaultStorage (Form("alien://Folder=/alice/data/%d/OCDB", fYear));
+	}
+	cdbMgr->SetRun(runNumber);
+	AliGeomManager::LoadGeometry();
+  
   TriggerSelection(mcEvent);
   SetMultiplicity();
   fHistNumEvents->Fill(1);
@@ -497,6 +513,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fKink = trackP.GetKinkIndex(0) > 0; 
     reducedHe->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
     reducedPi->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;  
+		SetTRDtrack(&trackN, reducedHe);
+		SetTRDtrack(&trackP, reducedPi);
   }
   if (charge > 0) {
     reducedHe->fP = fMomPos;
@@ -533,6 +551,8 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fKink = trackN.GetKinkIndex(0) > 0;
     reducedHe->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
     reducedPi->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;  
+		SetTRDtrack(&trackP, reducedHe);
+		SetTRDtrack(&trackN, reducedPi);
   }
   
   if (fMCtrue && ((typePos == AliPID::kHe3 && typeNeg == AliPID::kPion) || (typePos == AliPID::kPion && typeNeg == AliPID::kHe3))) {
@@ -756,6 +776,7 @@ Double_t AliAnalysisTaskHypTritEventTree::GeoLength(const AliESDtrack& track) {
 void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
 	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
+		fYear = 2016;
 		if(!fMCtrue) { // Data
 			// LHC16 + LHC18
 			// Triton
@@ -827,6 +848,7 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 		}
 	}
 	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
+		fYear = 2017;
 		if(!fMCtrue) {
 			//LHC17 Data
 			// He3
@@ -863,6 +885,7 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	}
 	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
 		if(!fMCtrue) {
+			fYear = 2018;
 			// LHC16 + LHC18
 			// He3
 			fBetheParamsT[0] = 0.427978;
@@ -897,3 +920,80 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 		}
 	}
 }
+//_____________________________________________________________________________
+
+Double_t AliAnalysisTaskHypTritEventTree::SetTRDtrack(const AliESDtrack* track, AliReducedHypTritTrack* reducedTrack) {
+
+		AliESDtrack* esdTrack = (AliESDtrack*) track; 
+		reducedTrack->fTRDvalid = 0;
+		reducedTrack->fTRDtrigHNU = 0;
+		reducedTrack->fTRDtrigHQU = 0;
+		reducedTrack->fTRDPid = 0;
+		reducedTrack->fTRDnTracklets = 0;
+		reducedTrack->fTRDPt = 0;
+		reducedTrack->fTRDLayerMask = 0;
+		reducedTrack->fTRDSagitta = -1;
+
+    if(!esdTrack) {
+        return 0;
+    }
+
+    if(fESDevent->GetNumberOfTrdTracks() == 0) {
+        return 0;
+    }
+    
+    AliESDTrdTrack* bestGtuTrack = 0x0;
+    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
+    
+    Double_t esdPt = esdTrack->GetSignedPt();
+    Double_t mag = fESDevent->GetMagneticField();
+    Double_t currentMatch = 0;
+    Double_t bestMatch = 0;
+
+    for (Int_t i = 0; i < fESDevent->GetNumberOfTrdTracks(); i++) {
+
+        AliESDTrdTrack* gtuTrack= fESDevent->GetTrdTrack ( i );
+        Double_t gtuPt = gtuTrack->Pt();
+        if (mag > 0.) gtuPt = gtuPt * (-1.0);
+
+        Double_t ydist;
+        Double_t zdist;
+
+        if (matching->EstimateTrackDistance(esdTrack, gtuTrack, mag, &ydist, &zdist) == 0) {
+        	currentMatch = matching->RateTrackMatch(ydist, zdist, esdPt, gtuPt);
+				}
+				
+        if (currentMatch > bestMatch) {
+            bestMatch = currentMatch;
+            bestGtuTrack = gtuTrack;
+        }
+    }
+    
+    if (!bestGtuTrack) {
+    	return 0;
+    }
+    
+    reducedTrack->fTRDvalid = 1;
+		reducedTrack->fTRDPid = bestGtuTrack->GetPID();
+		reducedTrack->fTRDnTracklets = bestGtuTrack->GetNTracklets();
+		reducedTrack->fTRDPt = (TMath::Abs(bestGtuTrack->GetPt()));
+		reducedTrack->fTRDLayerMask =  bestGtuTrack->GetLayerMask();
+		reducedTrack->fTRDSagitta = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());	
+		
+		if((bestGtuTrack->GetPID() >= 255 && bestGtuTrack->GetNTracklets() == 4) || 
+			(bestGtuTrack->GetPID() >= 235 && bestGtuTrack->GetNTracklets() > 4)) {
+						reducedTrack->fTRDtrigHNU = 1;
+		}		
+
+			if (TMath::Abs(bestGtuTrack->GetPt()) >= 256 &&
+				bestGtuTrack->GetPID() >= 130 && bestGtuTrack->GetNTracklets() >= 5 && (bestGtuTrack->GetLayerMask() & 1) ){	
+				Float_t sag = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+							reducedTrack->fTRDtrigHQU = 1;
+				 	}
+			}	
+
+    return bestMatch;
+
+}
+//_____________________________________________________________________________
