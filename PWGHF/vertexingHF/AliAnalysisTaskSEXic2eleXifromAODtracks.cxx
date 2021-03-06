@@ -3285,8 +3285,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
     }
 	}
 
-	if(!fWriteEachVariableTree) return;
+	if(fWriteEachVariableTree) return;
 
+    /*
 	for(Int_t i=0;i<26;i++){
 		fCandidateCascVariables[i] = -9999.;
 	}
@@ -3318,40 +3319,43 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   fCandidateSingleVariables[15] = casc->DecayLengthV0();
 
   fSingleVariablesTree->Fill();
+    */
+    
 
-//  fCandidateCascVariables[ 0] = fCentrality;
-//  fCandidateCascVariables[ 1] = casc->MassXi();
-//  fCandidateCascVariables[ 2] = momcasc_new[0];//casc->MomXiX();
-//  fCandidateCascVariables[ 3] = momcasc_new[1];//casc->MomXiY();
-//  fCandidateCascVariables[ 4] = momcasc_new[2];//casc->MomXiZ();
-//	if(casc->ChargeXi()<0)
-//		fCandidateCascVariables[ 5] = casc->MassLambda();
-//	else
-//		fCandidateCascVariables[ 5] = casc->MassAntiLambda();
-//
-//  fCandidateCascVariables[ 6] = casc->DcaXiDaughters();
-//  fCandidateCascVariables[ 7] = casc->DcaV0Daughters();
-//  fCandidateCascVariables[ 8] = casc->DecayLengthXi(posVtx[0],posVtx[1],posVtx[2]);
-//  fCandidateCascVariables[ 9] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
-//  fCandidateCascVariables[10] = casc->DcaV0ToPrimVertex();
-//  fCandidateCascVariables[11] = casc->DcaPosToPrimVertex();
-//  fCandidateCascVariables[12] = casc->DcaNegToPrimVertex();
-//  fCandidateCascVariables[13] = casc->DcaBachToPrimVertex();
-//  fCandidateCascVariables[14] = casc->DecayLengthV0();
-//  fCandidateCascVariables[15] = casc->CosPointingAngle(casc->GetDecayVertexXi());
-//  fCandidateCascVariables[16] = casc->ChargeXi();
-//  fCandidateCascVariables[17] = xipdgcode;
-//  fCandidateCascVariables[18] = ximotherpdgcode;
-//  fCandidateCascVariables[19] = mcxipx;
-//  fCandidateCascVariables[20] = mcxipy;
-//  fCandidateCascVariables[21] = mcxipz;
-//  fCandidateCascVariables[22] = labcasc;
-//  fCandidateCascVariables[23] = fRunNumber;
-//  fCandidateCascVariables[24] = fVtxZ;
-//  fCandidateCascVariables[25] = fEvNumberCounter;
-//
-//
-//	fCascVariablesTree->Fill();
+  fCandidateCascVariables[ 0] = fCentrality;
+  fCandidateCascVariables[ 1] = casc->MassXi();
+  fCandidateCascVariables[ 2] = momcasc_new[0];//casc->MomXiX();
+  fCandidateCascVariables[ 3] = momcasc_new[1];//casc->MomXiY();
+  fCandidateCascVariables[ 4] = momcasc_new[2];//casc->MomXiZ();
+	if(casc->ChargeXi()<0)
+		fCandidateCascVariables[ 5] = casc->MassLambda();
+	else
+		fCandidateCascVariables[ 5] = casc->MassAntiLambda();
+
+  fCandidateCascVariables[ 6] = casc->DcaXiDaughters();
+  fCandidateCascVariables[ 7] = casc->DcaV0Daughters();
+  fCandidateCascVariables[ 8] = casc->DecayLengthXi(posVtx[0],posVtx[1],posVtx[2]);
+  fCandidateCascVariables[ 9] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
+  fCandidateCascVariables[10] = casc->DcaV0ToPrimVertex();
+  fCandidateCascVariables[11] = casc->DcaPosToPrimVertex();
+  fCandidateCascVariables[12] = casc->DcaNegToPrimVertex();
+  fCandidateCascVariables[13] = casc->DcaBachToPrimVertex();
+  fCandidateCascVariables[14] = casc->DecayLengthV0();
+  fCandidateCascVariables[15] = casc->CosPointingAngle(casc->GetDecayVertexXi());
+  fCandidateCascVariables[16] = casc->ChargeXi();
+  fCandidateCascVariables[17] = xipdgcode;
+  fCandidateCascVariables[18] = ximotherpdgcode;
+  fCandidateCascVariables[19] = mcxipx;
+  fCandidateCascVariables[20] = mcxipy;
+  fCandidateCascVariables[21] = mcxipz;
+  fCandidateCascVariables[22] = labcasc;
+  fCandidateCascVariables[23] = fRunNumber;
+  fCandidateCascVariables[24] = fVtxZ;
+  fCandidateCascVariables[25] = fEvNumberCounter;
+
+
+	fCascVariablesTree->Fill();
+
 }
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineMCTreeVariables() 
