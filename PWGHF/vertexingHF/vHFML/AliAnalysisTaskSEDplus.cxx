@@ -1364,7 +1364,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
               if (fDoSparse)
               {
                 if (isPrimary)
-                  fSparseCutVars[1]->Fill(arrayForSparse.data());
+                  fSparseCutVars[1]->Fill(arrayForSparseFD.data());
                 else if (isFeeddown)
                 {
                   fSparseCutVars[2]->Fill(arrayForSparseFD.data());
@@ -1723,23 +1723,22 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
     nVarForSparseFD += 2;
   }
 
-  //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
+  //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for MC also ptB)
   fSparseCutVars[0] = new THnSparseF("hMassPtCutVarsAll", "Mass vs. pt vs. cut vars - All", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
-  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt", "Mass vs. pt vs. cut vars - promptD", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
+  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt", "Mass vs. pt vs. cut vars - promptD", nVarForSparseFD, nBinsRecoVecFD.data(), xminRecoVecFD.data(), xmaxRecoVecFD.data());
   fSparseCutVars[2] = new THnSparseF("hMassPtCutVarsBfeed", "Mass vs. pt vs. cut vars - DfromB", nVarForSparseFD, nBinsRecoVecFD.data(), xminRecoVecFD.data(), xmaxRecoVecFD.data());
 
-  for (Int_t iHisto = 0; iHisto < 2; iHisto++)
-  {
-    for (Int_t iax = 0; iax < nVarForSparse; iax++)
-    {
-      fSparseCutVars[iHisto]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-    }
-    fOutput->Add(fSparseCutVars[iHisto]);
-  }
+  for (Int_t iax = 0; iax < nVarForSparse; iax++)
+    fSparseCutVars[0]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+
   for (Int_t iax = 0; iax < nVarForSparseFD; iax++)
   {
+    fSparseCutVars[1]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
     fSparseCutVars[2]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
   }
+
+  fOutput->Add(fSparseCutVars[0]);
+  fOutput->Add(fSparseCutVars[1]);
   fOutput->Add(fSparseCutVars[2]);
 }
 
