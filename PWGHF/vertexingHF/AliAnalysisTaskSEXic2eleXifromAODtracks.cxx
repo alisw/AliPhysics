@@ -3287,10 +3287,12 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 
 	if(fWriteEachVariableTree) return;
 
-    /*
+    
 	for(Int_t i=0;i<26;i++){
 		fCandidateCascVariables[i] = -9999.;
 	}
+     
+      /*
 	for(Int_t i=0;i<16;i++){
 		fCandidateSingleVariables[i] = -9999.;
 	}
