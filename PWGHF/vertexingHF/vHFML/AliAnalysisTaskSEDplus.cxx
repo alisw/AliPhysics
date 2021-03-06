@@ -699,6 +699,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   else
     maxmult = 200;
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries", 200, 0., maxmult);
+  fSPDMultCand = new TH1F("hSPDMultCand", "Tracklets multiplicity; Tracklets ; Entries", 200, 0., maxmult);
+  fSPDMultCandInMass = new TH1F("hSPDMultCandInMass", "Tracklets multiplicity; Tracklets ; Entries", 200, 0., maxmult);
   fOutput->Add(fPtVsMassNoPid);
   fOutput->Add(fPtVsMass);
   fOutput->Add(fPtVsMassPlus);
@@ -712,6 +714,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fPhiEtaCand);
   fOutput->Add(fPhiEtaCandSigReg);
   fOutput->Add(fSPDMult);
+  fOutput->Add(fSPDMultCand);
+  fOutput->Add(fSPDMultCandInMass);
 
   fDaughterClass = new TH1F("hDaughterClass", "", 10, -0.5, 9.5);
   fDaughterClass->GetXaxis()->SetBinLabel(1, "AliAODTrack - good ID");
@@ -784,6 +788,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
         fMLhandler->SetFillOnlySignal();
       fMLhandler->SetFillBeautyMotherPt();
     }
+    fMLhandler->SetAddGlobalEventVariables(fAddNtracklets);
     fMLtree = fMLhandler->BuildTree("treeMLDplus", "treeMLDplus");
     fMLtree->SetMaxVirtualSize(1.e+8);
     PostData(4, fMLtree);
@@ -956,6 +961,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
   Int_t index;
   Int_t pdgDgDplustoKpipi[3] = {321, 211, 211};
 
+  if(fAddNtracklets)
+    fMLhandler->SetGlobalEventVariables(aod);
+
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
   // in order to reduce the size of the file
@@ -976,7 +984,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
   { //Standard analysis
     // Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};//TO REMOVE
     //Double_t *cutsDplus = new (Double_t*)fRDCuts->GetCuts();
-    Int_t nSelectednopid = 0, nSelected = 0;
+    Int_t nSelectednopid = 0, nSelected = 0, nSelectedInMass = 0;
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++)
     {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong *)array3Prong->UncheckedAt(i3Prong);
@@ -1306,6 +1314,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
             nSelected++;
             fPtVsMass->Fill(invMass, ptCand);
             fMassHist[index]->Fill(invMass);
+            if(TMath::Abs(invMass-TDatabasePDG::Instance()->GetParticle(411)->Mass()) < 0.02)
+                nSelectedInMass++;
             if (d->GetCharge() > 0)
             {
               fPtVsMassPlus->Fill(invMass, ptCand);
@@ -1354,7 +1364,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
               if (fDoSparse)
               {
                 if (isPrimary)
-                  fSparseCutVars[1]->Fill(arrayForSparse.data());
+                  fSparseCutVars[1]->Fill(arrayForSparseFD.data());
                 else if (isFeeddown)
                 {
                   fSparseCutVars[2]->Fill(arrayForSparseFD.data());
@@ -1448,6 +1458,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
     }
     fCounter->StoreCandidates(aod, nSelectednopid, kTRUE);
     fCounter->StoreCandidates(aod, nSelected, kFALSE);
+
+    //fill histograms with Ntracklets for events with at least one D+ candidate
+    if(nSelected > 0)
+    {
+        fSPDMultCand->Fill(tracklets);
+        if(nSelectedInMass > 0)
+            fSPDMultCandInMass->Fill(tracklets);
+    }
   }
 
   delete vHF;
@@ -1705,23 +1723,22 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
     nVarForSparseFD += 2;
   }
 
-  //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
+  //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for MC also ptB)
   fSparseCutVars[0] = new THnSparseF("hMassPtCutVarsAll", "Mass vs. pt vs. cut vars - All", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
-  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt", "Mass vs. pt vs. cut vars - promptD", nVarForSparse, nBinsRecoVec.data(), xminRecoVec.data(), xmaxRecoVec.data());
+  fSparseCutVars[1] = new THnSparseF("hMassPtCutVarsPrompt", "Mass vs. pt vs. cut vars - promptD", nVarForSparseFD, nBinsRecoVecFD.data(), xminRecoVecFD.data(), xmaxRecoVecFD.data());
   fSparseCutVars[2] = new THnSparseF("hMassPtCutVarsBfeed", "Mass vs. pt vs. cut vars - DfromB", nVarForSparseFD, nBinsRecoVecFD.data(), xminRecoVecFD.data(), xmaxRecoVecFD.data());
 
-  for (Int_t iHisto = 0; iHisto < 2; iHisto++)
-  {
-    for (Int_t iax = 0; iax < nVarForSparse; iax++)
-    {
-      fSparseCutVars[iHisto]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-    }
-    fOutput->Add(fSparseCutVars[iHisto]);
-  }
+  for (Int_t iax = 0; iax < nVarForSparse; iax++)
+    fSparseCutVars[0]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+
   for (Int_t iax = 0; iax < nVarForSparseFD; iax++)
   {
+    fSparseCutVars[1]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
     fSparseCutVars[2]->GetAxis(iax)->SetTitle(axTitFD[iax].Data());
   }
+
+  fOutput->Add(fSparseCutVars[0]);
+  fOutput->Add(fSparseCutVars[1]);
   fOutput->Add(fSparseCutVars[2]);
 }
 

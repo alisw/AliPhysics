@@ -108,6 +108,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
         AliError("fReadMC has to be kTRUE");
     }
   }
+  void SetMLTreeAddNtracklets(Bool_t flag = kTRUE) {fAddNtracklets = flag;}
 
   void EnableMLTreeEvtSampling(Float_t fractokeep, ULong_t seed) {
     fEnableEvtSampling = kTRUE;
@@ -186,9 +187,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F** fCosxy = nullptr;                                            //!<! hist. for Cosxy (topol+PID)
   TH2F *fCorreld0Kd0pi[3] = {};                                       //!<! hist. for d0k*d0pi vs. d0k*d0pi (topol+PID)
   TH2F *fHistCentrality[3] = {};                                      //!<! hist. for cent distr (all,sel ev, )
-  THnSparseF *fHistMassPtImpPar[5] = {};                              //!<! histograms for impact parameter
-  THnSparseF *fSparseCutVars[3] = {};                                 //!<! histograms for cut variation study
-  THnSparseF *fHistTrackVar = nullptr;                                //!<! histograms for track cuts study
+  THnSparseF *fHistMassPtImpPar[5] = {};                              //!<! hist. for impact parameter
+  THnSparseF *fSparseCutVars[3] = {};                                 //!<! hist. for cut variation study
+  THnSparseF *fHistTrackVar = nullptr;                                //!<! hist. for track cuts study
   THnSparseF *fMCAccPrompt = nullptr;                                 //!<! histo for StepMCAcc for Dplus prompt (pt,y,ptB)
   THnSparseF *fMCAccBFeed = nullptr;                                  //!<! histo for StepMCAcc for Dplus FD (pt,y,ptB)
   TH2F *fPtVsMassNoPid = nullptr;                                     //!<! hist. of pt vs. mass (w/o PID)
@@ -204,6 +205,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fPhiEtaCand = nullptr;                                        //!<! hist. with eta/phi distribution of candidates
   TH2F *fPhiEtaCandSigReg = nullptr;                                  //!<! hist. eta/phi of candidates in D+ mass region
   TH1F *fSPDMult = nullptr;                                           //!<! hist. of spd mult
+  TH1F *fSPDMultCand = nullptr;                                       //!<! hist. of spd mult for events with D+ candidates
+  TH1F *fSPDMultCandInMass = nullptr;                                 //!<! hist. of spd mult for events with D+ candidates in the mass range
   TH1F* fDaughterClass = nullptr;                                     //!<! hist
   TH1F* fDeltaID = nullptr;                                           //!<! hist
   TH2F* fIDDauVsIDTra = nullptr;                                      //!<! hist
@@ -265,6 +268,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
   Bool_t fAddImpParProdProngs = kFALSE;                               /// option to store d0K*d0pi1 and d0K*d0pi2 variables
+  Bool_t fAddNtracklets = kFALSE;                                     /// option to add Ntracklets 
   Bool_t fFillOnlySignal = kFALSE;                                    /// option to store only signal when using MC
   Bool_t fUseMinimalVarForSparse = kFALSE;                            /// flag to keep only inv. mass, pt and prob. in the sparse
 
@@ -276,7 +280,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fMaxCandPtSampling = 0.;                                    /// maximun candidate pt to apply sampling
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,38); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,39); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

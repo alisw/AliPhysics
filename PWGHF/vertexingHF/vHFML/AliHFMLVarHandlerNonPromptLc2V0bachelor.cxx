@@ -74,6 +74,8 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
 
     //set common variables
     AddCommonDmesonVarBranches();
+    //set global event variables
+    AddGlobalEventVarBranches();
     //set single-track variables
     if(fAddSingleTrackVar)
         AddSingleTrackBranches();
