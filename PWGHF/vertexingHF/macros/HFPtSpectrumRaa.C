@@ -139,43 +139,45 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   if ( cc == kpp ){
     Tab = 1.;
   }
-  // Pay attention that not all values are from the same source or point in time
-  if( (ccestimator == kV0M) && (Energy==k276) ) { // values from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
+  // all values from A. Toia's https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-04-02-ALICE_public_note.pdf
+  // PbPb at 2.76 TeV
+  if( (ccestimator == kV0M) && (Energy==k276) ) {
     if ( cc == k07half ) {
-      Tab = 24.81; TabSyst = 0.8037;
+      Tab = 24.81; TabSyst = 0.8037; // value from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies (not present in latest AN)
     } else if ( cc == k010 ) {
-      Tab = 23.48; TabSyst = 0.97;
+      Tab = 23.37; TabSyst = 0.2;
     } else if ( cc == k1020 ) {
-      Tab = 14.4318; TabSyst = 0.5733;
+      Tab = 14.53; TabSyst = 0.2;
     } else if ( cc == k020 ) {
-      Tab = 18.93; TabSyst = 0.74;
+      Tab = 18.95; TabSyst = 0.19;
     } else if ( cc == k1030 ) {
-      Tab = 11.4; TabSyst = 0.36;
+      Tab = 11.4; TabSyst = 0.36; // value from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies (not present in latest AN)
     } else if ( cc == k2040 ) {
-      Tab = 6.86; TabSyst = 0.28;
+      Tab = 7.109; TabSyst = 0.15;
     } else if ( cc == k2030 ) {
-      Tab = 8.73769; TabSyst = 0.370219;
+      Tab = 8.96; TabSyst = 0.17;
     } else if ( cc == k3040 ) {
-      Tab = 5.02755; TabSyst = 0.22099;
+      Tab = 5.259; TabSyst = 0.14;
     } else if ( cc == k4050 ) {
-      Tab = 2.68327; TabSyst = 0.137073;
+      Tab = 2.857; TabSyst = 0.084;
     } else if ( cc == k3050 ) {
-      Tab = 3.87011; TabSyst = 0.183847;
+      Tab = 4.058; TabSyst = 0.11;
     } else if ( cc == k4060 ) {
-      Tab = 2.00;  TabSyst= 0.11;
+      Tab = 2.143;  TabSyst= 0.07;
     } else if ( cc == k4080 ) {
-      Tab = 1.20451; TabSyst = 0.071843;
+      Tab = 1.20451; TabSyst = 0.071843; // value from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies (not present in latest AN)
     } else if ( cc == k5060 ) {
-      Tab = 1.32884; TabSyst = 0.0929536;
+      Tab = 1.427; TabSyst = 0.058;
     } else if ( cc == k6080 ) {
-      Tab = 0.419; TabSyst = 0.033;
+      Tab = 0.4505; TabSyst = 0.026;
     } else if ( cc == k5080 ) {
-      Tab = 0.719; TabSyst = 0.054;
+      Tab = 0.719; TabSyst = 0.054; // value from A. Toia's twiki: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies (not present in latest AN)
     } else if ( cc == k80100 ){
-      Tab = 0.0690; TabSyst = 0.0062;
+      Tab = 0.05959; TabSyst = 0.0028;
     }
   }
-  if( (ccestimator == kV0M) && (Energy==k5dot023) ) { //values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-04-02-ALICE_public_note.pdf
+  // PbPb at 5.02 TeV
+  if( (ccestimator == kV0M) && (Energy==k5dot023) ) { 
     if ( cc == k010 ) {
       Tab = 23.26; TabSyst = 0.168;
     } else if ( cc == k3050 ) {
@@ -185,24 +187,23 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     }
   }
 
-
-  // pPb Glauber (A. Toia) https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
+  // pPb at 5.02 TeV 
   if( cc == kpPb0100 ){
-    Tab = 0.098334; TabSyst = 0.0070679;
+    Tab = 0.09923; TabSyst = 0.0017;
     A=208; B=1.;
   }
   else if( ccestimator == kV0A ){
     if ( cc == kpPb020 ) {
-      Tab = 0.183; TabSyst = 0.006245;
+      Tab = 0.181; TabSyst = 0.00898;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.134; TabSyst = 0.004899;
+      Tab = 0.1345; TabSyst = 0.00624;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.092; TabSyst = 0.004796;
+      Tab = 0.09496; TabSyst = 0.00357;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.041; TabSyst = 0.008832;
+      Tab = 0.04334; TabSyst = 0.00138;
     }
   }
-  else if( ccestimator == kZNA ){//values from https://alice-notes.web.cern.ch/system/files/notes/public/711/2019-03-05-ALICE_public_note.pdf
+  else if( ccestimator == kZNA ){ // values from the "hybrid method"
     if ( cc == kpPb010 ) {
       Tab = 0.172; TabSyst = 0.012;
     } else if ( cc == kpPb1020 ) {
@@ -217,13 +218,13 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   else if( ccestimator == kCL1 ){
     if ( cc == kpPb020 ) {
-      Tab = 0.19; TabSyst = 0.007;
+      Tab = 0.1901; TabSyst = 0.00913;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.136; TabSyst = 0.005;
+      Tab = 0.1377; TabSyst = 0.00599;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.088; TabSyst = 0.005;
+      Tab = 0.0928; TabSyst = 0.0037;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.0369; TabSyst = 0.0085;
+      Tab = 0.03881; TabSyst = 0.00181;
     }
   }
 
