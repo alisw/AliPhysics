@@ -9,6 +9,7 @@ EfficiencyWeights:
     MultWeiFile: 
     HistoWeiName: 
     PtDWei: FONLL5overLHC20g2
+    PtBWei: FONLL5overLHC20g2
 PtBins:
     NumOfPtBins: 14
     BinLimits: [ 0.,0.5,1.,1.5,2.,2.5,3.,3.5,4.,5.,6.,7.,8.,10.,12. ]
