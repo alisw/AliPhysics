@@ -481,6 +481,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
   //Write copies of the vertex-Z histos for cross-checks at this stage already
   for(Int_t iRun=0; iRun<lNRuns; iRun++) {
     for(Int_t iVar=0; iVar<AliMultInput::kNVariables; iVar++) {
+      if(lRunStats[iRun] < 5.0e+5 ) hCalibVtx[iRun][iVar]->Rebin(2);
+      if(lRunStats[iRun] < 1.5e+5 ) hCalibVtx[iRun][iVar]->Rebin(2);
       if(VarDoAutocalib[iVar])
         hCalibVtx[iRun][iVar] -> Write(Form("Debug_VertexZ_RunIdx%i_VarIdx%i",iRun,iVar));
     }
@@ -566,7 +568,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         
         timer->Start ( kFALSE );
         Double_t secondsperstep = time / ( Double_t ) ( iEntry+1 );
-        Double_t secondsleft = ( Double_t ) ( fTree->GetEntries()-iEntry-1 ) * secondsperstep;
+        Double_t secondsleft = ( Double_t ) ( ntot-iEntry-1 ) * secondsperstep;
         Long_t minutesleft = ( Long_t ) ( secondsleft / 60. );
         secondsleft = ( Double_t ) ( ( Long_t ) ( secondsleft ) % 60 );
         cout << minutesleft << "min " << secondsleft << "s ] [ Speed: "<<lEventsPerSecond<<" events/s ]" << flush;
@@ -675,7 +677,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         
         timer->Start ( kFALSE );
         Double_t secondsperstep = time / ( Double_t ) ( iEntry+1 );
-        Double_t secondsleft = ( Double_t ) ( fTree->GetEntries()-iEntry-1 ) * secondsperstep;
+        Double_t secondsleft = ( Double_t ) ( ntot-iEntry-1 ) * secondsperstep;
         Long_t minutesleft = ( Long_t ) ( secondsleft / 60. );
         secondsleft = ( Double_t ) ( ( Long_t ) ( secondsleft ) % 60 );
         cout << minutesleft << "min " << secondsleft << "s ] [ Speed: "<<lEventsPerSecond<<" events/s ]" << flush;
