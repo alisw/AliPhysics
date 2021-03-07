@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2013, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <algorithm>
 #include <cfloat>
 #include <iostream>
@@ -27,9 +39,7 @@
 
 #include "AliClusterContainer.h"
 
-/// \cond CLASSIMP
 ClassImp(AliClusterContainer);
-/// \endcond
 
 // string to enum map for use with the %YAML config
 const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliClusterContainer::fgkClusterEnergyTypeMap = {
@@ -42,9 +52,6 @@ const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliClusterContain
 // Properly instantiate the object
 AliEmcalContainerIndexMap <TClonesArray, AliVCluster> AliClusterContainer::fgEmcalContainerIndexMap;
 
-/**
- * Default constructor.
- */
 AliClusterContainer::AliClusterContainer():
   AliEmcalContainer(),
   fEMCALCells(nullptr),
@@ -70,10 +77,6 @@ AliClusterContainer::AliClusterContainer():
   }
 }
 
-/**
- * Standard constructor.
- * @param name Name of the array connected to this container
- */
 AliClusterContainer::AliClusterContainer(const char *name):
   AliEmcalContainer(name),
   fEMCALCells(nullptr),
@@ -99,11 +102,7 @@ AliClusterContainer::AliClusterContainer(const char *name):
   }
 }
 
-/**
- * Get the leading cluster; use e if "e" is contained in opt (otherwise et)
- * @param opt
- * @return
- */
+
 AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
 {
   TString option(opt);
@@ -129,12 +128,7 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
   return clusterMax.second;
 }
 
-/**
- * Get i^th cluster in array
- * @param i
- * @return
- */
-AliVCluster* AliClusterContainer::GetCluster(Int_t i) const
+AliVCluster* AliClusterContainer::GetCluster(Int_t i) const 
 {
   if(i<0 || i>fClArray->GetEntriesFast()) return 0;
   AliVCluster *vp = static_cast<AliVCluster*>(fClArray->At(i));
@@ -142,11 +136,6 @@ AliVCluster* AliClusterContainer::GetCluster(Int_t i) const
 
 }
 
-/**
- * Return pointer to cluster if cluster is accepted
- * @param i
- * @return
- */
 AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const
 {
   AliVCluster *vc = GetCluster(i);
@@ -161,33 +150,19 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const
   }
 }
 
-/**
- * Get particle with label lab in array
- * @param lab
- * @return
- */
-AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const
+AliVCluster* AliClusterContainer::GetClusterWithLabel(Int_t lab) const 
 {
   Int_t i = GetIndexFromLabel(lab);
   return GetCluster(i);
 }
 
-/**
- * Get particle with label lab in array
- * @param lab
- * @return
- */
 AliVCluster* AliClusterContainer::GetAcceptClusterWithLabel(Int_t lab) const
 {
   Int_t i = GetIndexFromLabel(lab);
   return GetAcceptCluster(i);
 }
 
-/**
- * Get next accepted cluster
- * @return
- */
-AliVCluster* AliClusterContainer::GetNextAcceptCluster()
+AliVCluster* AliClusterContainer::GetNextAcceptCluster() 
 {
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -200,11 +175,7 @@ AliVCluster* AliClusterContainer::GetNextAcceptCluster()
   return c;
 }
 
-/**
- * Get next cluster
- * @return
- */
-AliVCluster* AliClusterContainer::GetNextCluster()
+AliVCluster* AliClusterContainer::GetNextCluster() 
 {
   const Int_t n = GetNEntries();
   AliVCluster *c = 0;
@@ -271,46 +242,24 @@ Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, const AliVCluster* 
   return kTRUE;
 }
 
-/**
- * Get momentum of the i^th particle in array
- * @param mom
- * @param i
- * @return
- */
 Bool_t AliClusterContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   AliVCluster *vc = GetCluster(i);
   return GetMomentum(mom, vc);
 }
 
-/**
- * Get momentum of the next particle in array
- * @param mom
- * @return
- */
 Bool_t AliClusterContainer::GetNextMomentum(TLorentzVector &mom)
 {
   AliVCluster *vc = GetNextCluster();
   return GetMomentum(mom, vc);
 }
 
-/**
- * Get momentum of the i^th particle in array
- * @param mom
- * @param i
- * @return
- */
 Bool_t AliClusterContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
   AliVCluster *vc = GetAcceptCluster(i);
   return GetMomentum(mom, vc);
 }
 
-/**
- * Get momentum of the next accepted particle in array
- * @param mom
- * @return
- */
 Bool_t AliClusterContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
   AliVCluster *vc = GetNextAcceptCluster();
@@ -339,12 +288,6 @@ Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus, UInt_t &rejec
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-/**
- * Return true if cluster is accepted.
- * @param clus The cluster to which the cuts will be applied
- * @param rejectionReason Contains the bit specifying the rejection reason
- * @return True if the cluster is accepted.
- */
 Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &rejectionReason) const
 {
   if (!clus) {
@@ -434,14 +377,6 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
   return kTRUE;
 }
 
-/**
- * Check if cluster has only one cell but should be accepted for the analysis
- * Only below a certain energy threshold (recommended = 4 GeV)
- * Based on the output of AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
- * Chi2() value is used to flag clusters that should pass the cut
- * Clusters will only be flagged in MC, data does not change
- * @return
- */
 Bool_t AliClusterContainer::GetPassedSpecialNCell(const AliVCluster* clus) const
 {
   if(!clus->IsEMCAL()) return kFALSE;
@@ -450,10 +385,6 @@ Bool_t AliClusterContainer::GetPassedSpecialNCell(const AliVCluster* clus) const
   return kFALSE;
 }
 
-/**
- * Get number of accepted particles
- * @return
- */
 Int_t AliClusterContainer::GetNAcceptedClusters() const
 {
   UInt_t rejectionReason = 0;
@@ -465,11 +396,6 @@ Int_t AliClusterContainer::GetNAcceptedClusters() const
   return nClus;
 }
 
-/**
- * Get the energy cut of the applied on cluster energy of type t
- * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
- * @return Cluster energy cut
- */
 Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -480,11 +406,6 @@ Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
   }
 }
 
-/**
- * Set the energy cut of the applied on cluster energy of type t
- * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
- * @param cut Cluster energy cut
- */
 void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -495,14 +416,6 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
   }
 }
 
-/**
- * Connect the container to the array with content stored inside the virtual event.
- * The object name in the event must match the name given in the constructor.
- *
- * Additionally register the array into the index map and connect EMCAL cells
- *
- * @param event Input event containing the array with content.
- */
 void AliClusterContainer::SetArray(const AliVEvent * event)
 {
   AliEmcalContainer::SetArray(event);
@@ -514,38 +427,18 @@ void AliClusterContainer::SetArray(const AliVEvent * event)
   fgEmcalContainerIndexMap.RegisterArray(GetArray());
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliClusterIterableContainer AliClusterContainer::all() const {
   return AliClusterIterableContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliClusterIterableContainer AliClusterContainer::accepted() const {
   return AliClusterIterableContainer(this, true);
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliClusterIterableMomentumContainer AliClusterContainer::all_momentum() const {
   return AliClusterIterableMomentumContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliClusterIterableMomentumContainer AliClusterContainer::accepted_momentum() const {
   return AliClusterIterableMomentumContainer(this, true);
 }
