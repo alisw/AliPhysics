@@ -28,6 +28,7 @@
 #define __ALIANALYSISTASKEMCALTRIGGERNORMALIZATION_H__
 
 #include "AliAnalysisTaskEmcal.h"
+#include <array>
 #include <exception>
 #include <string>
 #include <vector>
@@ -91,12 +92,59 @@ class AliAnalysisTaskEmcalTriggerNormalization : public AliAnalysisTaskEmcal {
 public:
 
   /**
+   * @enum TriggerCluster_t
+   * @brief Numerical index for the trigger cluster selection
+   */
+  enum TriggerCluster_t {
+    kTrgClusterANY,             ///< Any trigger cluster
+    kTrgClusterCENT,            ///< CENT cluster (non-exclusive)
+    kTrgClusterCENTNOTRD,       ///< CENTNOTRD cluster (non-exclusive)
+    kTrgClusterCALO,            ///< CALO cluster (non-exclusive)
+    kTrgClusterCALOFAST,        ///< CALOFAST cluster (non-exclusive)
+    kTrgClusterCENTBOTH,        ///< CENT and CENTNOTRD
+    kTrgClusterOnlyCENT,        ///< CENT cluster (exclusive)
+    kTrgClusterOnlyCENTNOTRD,   ///< CENTNOTRD cluster (exclusive)
+    kTrgClusterCALOBOTH,        ///< CALO and CALOFAST cluster
+    kTrgClusterOnlyCALO,        ///< CALO cluster (exclusive)
+    kTrgClusterOnlyCALOFAST,    ///< CALOFAST cluster (exclusive)
+    kTrgClusterCENTNOPMD,       ///< CENTNOPMD cluster (non-exclusive)
+    kTrgClusterALL,             ///< ALL cluster (CENT+MUON, non-exclusive)
+    kTrgClusterALLNOTRD,        ///< ALLNOTRD cluster
+    kTrgClusterALLBOTH,         ///< ALL and ALLNOTRD cluster
+    kTrgClusterOnlyALL,         ///< ALL cluster (exclusive)
+    kTrgClusterOnlyALLNOTRD,    ///< ALLNOTRD cluster (non-exclusive)
+    kTrgClusterN                ///< Number of trigger clusters
+  };
+
+  /**
+   * @brief Get the trigger cluster labels for a given trigger cluster index
+   * @param index Index representation of the trigger cluster
+   * @return std::string label of the trigger cluster
+   */
+  static std::string GetTriggerClusterLabels(TriggerCluster_t &index) { return fgkTriggerClusterLabels[int(index)]; }
+
+  /**
+   * @brief Get the trigger cluster labels for a given trigger cluster index
+   * @param index Index representation of the trigger cluster
+   * @return std::string label of the trigger cluster
+   */
+  static std::string GetTriggerClusterLabels(int &index) { return fgkTriggerClusterLabels[index]; }
+
+  /**
+   * @brief get the trigger cluster index from a given trigger cluster label
+   * @param triggerclustername Label of the trigger cluster
+   * @return Index of the trigger cluster (-1 if label is unknown) 
+   */
+  static int GetIndexFromTriggerClusterLabel(EMCAL_STRINGVIEW triggerclustername);
+
+  /**
    * @brief Constructor (for ROOT I/O), not to be used by the user
    */
   AliAnalysisTaskEmcalTriggerNormalization();
 
   /**
    * @brief Named constructor, fully initializing the object
+   * @param name Name of the task
    * 
    * Attention: Constructor does not set default values for the trigger
    * cluster, the min. bias reference trigger, and the L0 trigger used
@@ -112,120 +160,37 @@ public:
 
 
   /**
-   * @brief Set the trigger cluster for which the luminosity is estimated
-   * 
-   * Function must be called by the user. If not called, Run will throw
-   * a TriggerClusterNotSetException.
-   * 
-   * @param triggercluster Name of the trigger cluster
-   */
-  void SetTriggerCluster(const char *triggercluster) { fTriggerCluster = triggercluster; } 
-
-  /**
-   * @brief Set the trigger cluster used for EMCAL trigger classes
-   * 
-   * This function is optional and needed only in rare cases (i.e. PbPb 2015 where the EMCAL was 
-   * in the CENTNOPMD cluster, the luminosity however is estimated for the CENT cluster, and both
-   * clusters have the same livetime). If not specified, the cluster specified in SetTriggerCluster
-   * is used for both min. bias and EMCAL triggers.
-   * 
-   * @param triggercluster Name of the trigger cluster
-   */
-  void SetTriggerClusterEMCAL(const char *triggercluster) { fTriggerClusterEMCAL = triggercluster; }
-
-  /**
-   * @brief Set the L0 trigger used for the EMCAL L1
-   * 
-   * Function must be called by the user. If not called, Run will throw a 
-   * L0TriggerNotSetException
-   * 
-   * @param trigger Name of the L0 trigger used for EMCAL L1
-   */
-  void SetL0TriggerEMCAL(const char *trigger) { fEMCALL0trigger = trigger; }
-
-  /**
    * @brief Specify min. bias reference trigger
+   * @param triggerclass Min. bias reference trigger class
    * 
    * Function must be called by the user. If not called, Run will throw a 
    * MBTriggerNotSetException. If different min. bias triggers were used
    * during a period, multiple triggers can be defined. Any of the triggers
    * will be used to calculate the downscale corrected number of min. bias
    * events.
-   * 
-   * @param triggerclass Min. bias reference trigger class
    */
   void AddMBTriggerClass(const char *triggerclass) { fMBTriggerClasses.emplace_back(triggerclass); }
 
   /**
    * @brief Request normalization as function of mulitplicity for p-Pb
+   * @param doRequest If true the multiplicity percentile is requested for pPb
    * 
    * Attention: Relies on AliMultiplicitySelection. If not found an exception 
    * is raised.
-   * 
-   * @param doRequest If true the multiplicity percentile is requested for pPb
    */
   void SetRequestCentralityForpPb(Bool_t doRequest) { fUseCentralityForpPb = doRequest; }
 
   /**
    * @brief Configure normalization task and add it to the analysis manager
+   * @param name Name of the task
    * 
    * Configuring input and output slot, and adding the task to the analysis manager.
    * Attention: The function does not set default values for the trigger
    * cluster, the min. bias reference trigger, and the L0 trigger used
    * for EMCAL L0. Users must defined them. If not set, the Run method
    * will throw exceptions for each of them not set. 
-   * 
-   * @param name Name of the task
    */
   static AliAnalysisTaskEmcalTriggerNormalization *AddTaskEmcalTriggerNormalization(const char *name);
-
-  /**
-   * @class TriggerClusterNotSetException
-   * @brief Exception handling trigger cluster not set error
-   */
-  class TriggerClusterNotSetException : public std::exception {
-  public:
-
-    /**
-     * @brief Constructor
-     */
-    TriggerClusterNotSetException() {}
-
-    /**
-     * @brief Destructor
-     */
-    virtual ~TriggerClusterNotSetException() throw() {}
-
-    /**
-     * @brief Create error message
-     * @return error message
-     */
-    virtual const char *what() const throw() { return "Trigger cluster not set."; }
-  };
-
-  /**
-   * @class L0TriggerNotSetException
-   * @brief Excepiton handling L0 trigger for EMCAL not set error
-   */
-  class L0TriggerNotSetException : public std::exception {
-  public:
-
-    /**
-     * @brief Constructor
-     */
-    L0TriggerNotSetException() {}
-
-    /**
-     * @brief Destructor
-     */
-    virtual ~L0TriggerNotSetException() {}
-
-    /**
-     * @brief Create error message
-     * @return error message
-     */
-    virtual const char *what() const throw() { return "L0 trigger not defined."; }
-  };
 
   /**
    * @class MBTriggerNotSetException
@@ -286,35 +251,53 @@ protected:
 
   /**
    * @brief Perform action for selected events
+   * @throw TriggerClusterNotSetException if the trigger cluster is not specified
+   * @throw MBTriggerNotSetException if the min. bias reference trigger is not specified
+   * @throw CentralityNotSetException if PbPb and the tasks fails reading the multiplicity object
    * 
    * Calculating the trigger weights for the min. bias reference trigger
    * and the EMCAL triggers and filling the normalization histogram.
-   * 
-   * @throw TriggerClusterNotSetException if the trigger cluster is not specified
-   * @throw L0TriggerNotSetException if the L0 trigger for EMCAL is not defined
-   * @throw MBTriggerNotSetException if the min. bias reference trigger is not specified
-   * @throw CentralityNotSetException if PbPb and the tasks fails reading the multiplicity object
    */
   virtual bool Run();
 
   /**
    * @brief Performing run-dependent initialization
+   * @param newrun New run
    * 
    * Loading downscale factors from the OCDB for the new run
-   * 
-   * @param newrun New run
    */
   virtual void RunChanged(int newrun);
 
-  std::string MatchTrigger(EMCAL_STRINGVIEW triggerstring, const std::vector<std::string> &triggers, EMCAL_STRINGVIEW triggercluster) const;
+#if (defined(__CINT_) && !defined(__CLING__)) || (defined(__MAKECINT__) && !defined(__ROOTCLING__))
+  // ROOT5 function headers
+  std::vector<PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
+  std::vector<PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> GetTriggerClustersANY() const { return {kTrgClusterANY}; }
+#else
+  // ROOT6 function headers
+  std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
+  std::vector<TriggerCluster_t> GetTriggerClustersANY() const { return {kTrgClusterANY}; }
+#endif
+
+  /**
+   * @brief Find fired trigger(es) class within an event trigger string
+   * @param triggerstring Event trigger string to be parsed
+   * @param triggers Trigger classes to be matched within 
+   * @return Full trigger class string matched 
+   */
+  std::string MatchTrigger(EMCAL_STRINGVIEW triggerstring, const std::vector<std::string> &triggers) const;
+
+  /**
+   * @brief Reset downscale factor cache for all EMCAL triggers
+   */
+  void ResetDownscaleFactors();
 
 private:
-  THistManager             *fHistos;                ///< List of histograms
-  std::string               fTriggerCluster;        ///< Trigger cluster       
-  std::string               fTriggerClusterEMCAL;   ///< Cluster of the EMCAL triggers (if different)
-  std::string               fEMCALL0trigger;        ///< L0 trigger required for L1
-  std::vector<std::string>  fMBTriggerClasses;      ///< List of valid min. bias trigger classes
-  Bool_t                    fUseCentralityForpPb;   ///< Request centrality also for p-Pb (from AliMultiplicitySelection)
+  static const std::array<std::string, TriggerCluster_t::kTrgClusterN> fgkTriggerClusterLabels;   ///< Labels of the trigger cluster
+  THistManager                         *fHistos;                    ///< List of histograms
+  std::vector<std::string>              fMBTriggerClasses;          ///< List of valid min. bias trigger classes
+  std::map<std::string, std::string>    fCacheTriggerClasses;       ///< List of trigger classes available for run
+  std::map<std::string, double>         fCacheDownscaleFactors;     ///< Cache for downscale factor for a given run
+  Bool_t                                fUseCentralityForpPb;       ///< Request centrality also for p-Pb (from AliMultiplicitySelection)
 
   AliAnalysisTaskEmcalTriggerNormalization(const AliAnalysisTaskEmcalTriggerNormalization &);
   AliAnalysisTaskEmcalTriggerNormalization &operator=(const AliAnalysisTaskEmcalTriggerNormalization &);
