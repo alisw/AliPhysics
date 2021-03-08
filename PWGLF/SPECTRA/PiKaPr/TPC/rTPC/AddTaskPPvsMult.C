@@ -15,6 +15,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		////		Bool_t LowpT = kFALSE,
 		////		Bool_t MakePid = kFALSE,
 		const char* Period  = "16g",
+		int Ncl = 70,
 		int TrkCutMode = 0
 		)   
 {
@@ -62,7 +63,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	//	else
 	//		task->SetAnalysisPbPb(kFALSE);
 
-	task->SetNcl(70);
+	task->SetNcl(Ncl);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 	//	task->SetVtxCut(10.0);
