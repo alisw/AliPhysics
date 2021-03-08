@@ -28,8 +28,6 @@
 #define __ALIANALYSISTASKEMCALTRIGGERNORMALIZATION_H__
 
 #include "AliAnalysisTaskEmcal.h"
-#include <array>
-#include <exception>
 #include <string>
 #include <vector>
 
@@ -292,7 +290,7 @@ protected:
   void ResetDownscaleFactors();
 
 private:
-  static const std::array<std::string, TriggerCluster_t::kTrgClusterN> fgkTriggerClusterLabels;   ///< Labels of the trigger cluster
+  static const std::vector<std::string> fgkTriggerClusterLabels;   ///< Labels of the trigger cluster
   THistManager                         *fHistos;                    ///< List of histograms
   std::vector<std::string>              fMBTriggerClasses;          ///< List of valid min. bias trigger classes
   std::map<std::string, std::string>    fCacheTriggerClasses;       ///< List of trigger classes available for run
