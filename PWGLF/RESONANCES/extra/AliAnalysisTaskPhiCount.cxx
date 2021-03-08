@@ -535,7 +535,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventPileUp()                           
 
 //_____________________________________________________________________________
 
-void        AliAnalysisTaskPhiCount::fCheckINELgt0()                            {
+bool        AliAnalysisTaskPhiCount::fCheckINELgt0( AliAODMCParticle )                            {
     if ( fCheckMask(3) )   return;
     if ( !fCurrent_Track->IsPrimaryCandidate() ) return;
     if ( !(fCurrent_Track_Charge   !=  0) ) return;
@@ -717,8 +717,7 @@ bool        AliAnalysisTaskPhiCount::fIsKaonCandidate ( )                       
         // Custom 2010
         if ( !fIsTPCAvailable || (fIsTOFAvailable && fSigma_TOF > kSgTOF_Veto) )                    return false;
         if ( std::fabs(fSigma_TPC) > 7. )                                                           return false;
-        if ( fCurrent_Track_Momentum >= 0.3 && std::fabs(fSigma_TPC) > 6. )                         return false;
-        if ( fCurrent_Track_Momentum >= 0.4 )   {
+        if ( fCurrent_Track_Momentum >= 0.28 )   {
             if ( fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_TOFVt )                          return false;
             if (!fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_Alone )                          return false;
         }
@@ -912,9 +911,14 @@ void        AliAnalysisTaskPhiCount::fStoreTruePhi ( Int_t iMaskBit )           
     // Loop over all primary MC particle
     if ( !kMCbool ) return;
     Int_t           nTrack(AODMCTrackArray->GetEntriesFast());
+    Bool_t          fINELgt0    =   false;
     for ( Int_t iTrack(0); iTrack < nTrack; iTrack++ )
     {
         AliAODMCParticle* fPhiTru = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTrack));
+        
+        if ( !fINELgt0 )    {
+            
+        }
         
         if ( !fIsPhi( fPhiTru ) ) continue;
         
