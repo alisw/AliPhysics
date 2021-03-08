@@ -137,12 +137,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
                                                  AliFemtoDreamBasePart &part1,
                                                  int PDGPart1,
                                                  AliFemtoDreamBasePart &part2,
-                                                 int PDGPart2) {
+                                                 int PDGPart2, float PartSumPtLimit1 = 0.0, float PartSumPtLimit2 = 999.0) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
     AliError("Invalid PDG Code");
   }
   bool fillHists = fWhichPairs.at(iHC);
-  TLorentzVector PartOne, PartTwo;
+  TLorentzVector PartOne, PartTwo, PartSum;
   TVector3 Part1Momentum = part1.GetMomentum();
   TVector3 Part2Momentum = part2.GetMomentum();
 // Even if the Daughter tracks were switched up during PID doesn't play a role
@@ -152,8 +152,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
-
+  PartSum = PartOne + PartTwo;
+  float PartSumPt = PartSum.Pt();
   float RelativeK = RelativePairMomentum(PartOne, PartTwo);
+
+  if((PartSumPt > PartSumPtLimit1) && (PartSumPt < PartSumPtLimit2)){
+
   fHists->FillSameEventDist(iHC, RelativeK);
   if (fHists->GetDoMultBinning()) {
     fHists->FillSameEventMultDist(iHC, Mult + 1, RelativeK);
@@ -207,6 +211,7 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     }
   }
   return RelativeK;
+  }
 }
 
 void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,
