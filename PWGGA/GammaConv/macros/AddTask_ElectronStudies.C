@@ -28,7 +28,7 @@ void AddTask_ElectronStudies(
 
 
 
-  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  Int_t trackMatcherRunningMode = 7; // CaloTrackMatcher running mode
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();

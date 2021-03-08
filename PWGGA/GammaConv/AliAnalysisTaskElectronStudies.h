@@ -194,6 +194,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     Int_t                       fTrackMatcherRunningMode; // CaloTrackMatcher running mode
 
     Float_t                     fIsoMaxRadius; //
+    Float_t                     fConversionTrackMatchR; // maximum dR at which conv photon is considered matched
     // tree
     UShort_t              fBuffer_NPrimaryTracks;
     UShort_t              fBuffer_NClus;
@@ -235,7 +236,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     void ProcessCaloPhotons();
     void ProcessTracks(); // only needed for track effi
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
-    void ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0);
+    void ProcessMatchedTrack(AliAODTrack* track, AliAODCaloCluster* clus, Bool_t isV0, Float_t dEtaV0 = 99, Float_t dPhiV0 = 99);
     void ProcessMCParticles();
     void ProcessTrackMatching(AliAODCaloCluster* clus);
     Bool_t IsMatchedWithConv(AliAODCaloCluster* clus, AliCaloPhotonCuts* cuts);
@@ -254,7 +255,7 @@ class AliAnalysisTaskElectronStudies : public AliAnalysisTaskSE{
     std::pair<Double_t,Double_t> ProcessChargedIsolation(AliAODTrack* track);
     AliAnalysisTaskElectronStudies(const AliAnalysisTaskElectronStudies&); // Prevent copy-construction
     AliAnalysisTaskElectronStudies& operator=(const AliAnalysisTaskElectronStudies&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskElectronStudies, 11);
+    ClassDef(AliAnalysisTaskElectronStudies, 12);
 
 };
 
