@@ -930,7 +930,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
       return;
     // events not passing the centrality selection can be removed immediately.
 
-    FillMCAcceptanceHistos(arrayMC, mcHeader);
+    FillMCAcceptanceHistos(arrayMC, mcHeader, tracklets);
   }
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   //TString trigclass=aod->GetFiredTriggerClasses();
@@ -1771,41 +1771,45 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
 {
   /// Histos for MC Acceptance histos
 
-  const Int_t nVarPrompt = 2;
-  const Int_t nVarFD = 3;
-
   Int_t nptbins = 140;
   Double_t ptmin = 0.;
   Double_t ptmax = 70.;
   if (fUseFinPtBinsForSparse)
     nptbins = 700;
 
-  Int_t nbinsPrompt[nVarPrompt] = {nptbins, 100};
-  Int_t nbinsFD[nVarFD] = {nptbins, 100, nptbins};
+  Double_t maxmult = 200;
+  if (fSystem == kPbPb)
+    maxmult = 5000;
 
-  Double_t xminPrompt[nVarPrompt] = {ptmin, -1.};
-  Double_t xmaxPrompt[nVarPrompt] = {ptmax, 1.};
+  Int_t nbinsPrompt[kVarForSparseAcc] = {nptbins, 100, 1, 200};
+  Int_t nbinsFD[kVarForSparseAcc] = {nptbins, 100, nptbins, 200};
 
-  Double_t xminFD[nVarFD] = {ptmin, -1., ptmin};
-  Double_t xmaxFD[nVarFD] = {ptmax, 1., ptmax};
+  Double_t xminPrompt[kVarForSparseAcc] = {ptmin, -1., ptmin, 0.};
+  Double_t xmaxPrompt[kVarForSparseAcc] = {ptmax, 1., ptmax, 0.};
+
+  Double_t xminFD[kVarForSparseAcc] = {ptmin, -1., ptmin, maxmult};
+  Double_t xmaxFD[kVarForSparseAcc] = {ptmax, 1., ptmax, maxmult};
 
   //pt, y
   fMCAccPrompt = new THnSparseF("hMCAccPrompt", "kStepMCAcceptance pt vs. y - promptD", kVarForSparseAcc, nbinsPrompt, xminPrompt, xmaxPrompt);
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
+  fMCAccPrompt->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
+  fMCAccPrompt->GetAxis(3)->SetTitle("N_{tracklets}");
 
   //pt,y,ptB
-  fMCAccBFeed = new THnSparseF("hMCAccBFeed", "kStepMCAcceptance pt vs. y vs. ptB - DfromB", kVarForSparseAccFD, nbinsFD, xminFD, xmaxFD);
+  fMCAccBFeed = new THnSparseF("hMCAccBFeed", "kStepMCAcceptance pt vs. y vs. ptB - DfromB", kVarForSparseAcc, nbinsFD, xminFD, xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
   fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
+  fMCAccBFeed->GetAxis(3)->SetTitle("N_{tracklets}");
 
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader)
+void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets)
 {
   /// Fill MC acceptance histos for cuts study
 
@@ -1846,7 +1850,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
         {
           //fill histo for prompt
-          Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y()};
+          Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), -1., static_cast<Double_t>(tracklets)};
           fMCAccPrompt->Fill(arrayMCprompt);
         }
         //for FD
@@ -1854,7 +1858,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
         {
           Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
           //fill histo for FD
-          Double_t arrayMCFD[kVarForSparseAccFD] = {mcPart->Pt(), mcPart->Y(), ptB};
+          Double_t arrayMCFD[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), ptB, static_cast<Double_t>(tracklets)};
           fMCAccBFeed->Fill(arrayMCFD);
         }
         else
