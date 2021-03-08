@@ -589,9 +589,9 @@ void AliAnalysisTaskStrVsMult_BumpStudies::UserExec(Option_t *)
           int labMothNegDaught = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(nTrack->GetLabel())))->GetMother();
           pdgV0 = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))-> PdgCode();
           physprim = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))->IsPhysicalPrimary();
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-211 && labMothPosDaught==labMothNegDaught && pdgV0==310)) assFlag[kk0s] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==2212 && pdgNegDaught==-211 && labMothPosDaught==labMothNegDaught && pdgV0==3122)) assFlag[klam] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-2212 && labMothPosDaught==labMothNegDaught && pdgV0==-3122)) assFlag[kalam] = kFALSE;
+          if(fisMCantiassoc && pdgV0==310) assFlag[kk0s] = kFALSE;
+          if(fisMCantiassoc && pdgV0==3122) assFlag[klam] = kFALSE;
+          if(fisMCantiassoc && pdgV0==-3122) assFlag[kalam] = kFALSE;
           //Feeddown matrix
           if(fParticleAnalysisStatus[klam] && !physprim){
             int labMothV0 = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))->GetMother();
@@ -685,9 +685,9 @@ void AliAnalysisTaskStrVsMult_BumpStudies::UserExec(Option_t *)
           int labMothNegDaught = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(nTrack->GetLabel())))->GetMother();
           pdgV0 = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))-> GetPdgCode();
           physprim = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))->IsPhysicalPrimary();
-          if(fisMCantiassoc && (pdgPosDaught==2212 && pdgNegDaught==-211 && labMothPosDaught==labMothNegDaught && pdgV0==3122)) assFlag[klam] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-2212 && labMothPosDaught==labMothNegDaught && pdgV0==-3122)) assFlag[kalam] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-211 && labMothPosDaught==labMothNegDaught && pdgV0==310)) assFlag[kk0s] = kFALSE;
+          if(fisMCantiassoc && pdgV0==3122) assFlag[klam] = kFALSE;
+          if(fisMCantiassoc && pdgV0==-3122) assFlag[kalam] = kFALSE;
+          if(fisMCantiassoc && pdgV0==310) assFlag[kk0s] = kFALSE;
           //Feeddown matrix
           if(fParticleAnalysisStatus[klam] && !physprim){
             int labMothV0 = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))->GetMother();
@@ -856,10 +856,10 @@ void AliAnalysisTaskStrVsMult_BumpStudies::UserExec(Option_t *)
           pdgV0 = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))-> PdgCode();
           pdgCasc = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothBach)))-> PdgCode();
           physprim = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothBach)))->IsPhysicalPrimary();
-          if(fisMCantiassoc && (pdgPosDaught==2212 && pdgNegDaught==-211 && pdgBachelor==-211 && labMothPosDaught==labMothNegDaught && pdgV0==3122 && labMothV0==labMothBach && pdgCasc==3312)) assFlag[kxim] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-2212 && pdgBachelor==211 && labMothPosDaught==labMothNegDaught && pdgV0==-3122 && labMothV0==labMothBach && pdgCasc==-3312)) assFlag[kxip] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==2212 && pdgNegDaught==-211 && pdgBachelor==-321 && labMothPosDaught==labMothNegDaught && pdgV0==3122 && labMothV0==labMothBach && pdgCasc==3334)) assFlag[komm] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-2212 && pdgBachelor==321 && labMothPosDaught==labMothNegDaught && pdgV0==-3122 && labMothV0==labMothBach && pdgCasc==-3334)) assFlag[komp] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==3312) assFlag[kxim] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==-3312) assFlag[kxip] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==3334) assFlag[komm] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==-3334) assFlag[komp] = kFALSE;
         }
 
       } else {
@@ -973,10 +973,10 @@ void AliAnalysisTaskStrVsMult_BumpStudies::UserExec(Option_t *)
           pdgV0 = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothPosDaught)))-> PdgCode();
           pdgCasc = ((AliAODMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothBach)))-> PdgCode();
           physprim = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(labMothBach)))->IsPhysicalPrimary();
-          if(fisMCantiassoc && (pdgPosDaught==2212 && pdgNegDaught==-211 && pdgBachelor==-211 && labMothPosDaught==labMothNegDaught && pdgV0==3122 && labMothV0==labMothBach && pdgCasc==3312)) assFlag[kxim] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught!=211 && pdgNegDaught==-2212 && pdgBachelor==211 && labMothPosDaught==labMothNegDaught && pdgV0==-3122 && labMothV0!=labMothBach && pdgCasc!=-3312)) assFlag[kxip] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught!=2212 && pdgNegDaught==-211 && pdgBachelor==-321 && labMothPosDaught==labMothNegDaught && pdgV0==3122 && labMothV0==labMothBach && pdgCasc==3334)) assFlag[komm] = kFALSE;
-          if(fisMCantiassoc && (pdgPosDaught==211 && pdgNegDaught==-2212 && pdgBachelor==321 && labMothPosDaught==labMothNegDaught && pdgV0==-3122 && labMothV0==labMothBach && pdgCasc==-3334)) assFlag[komp] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==3312) assFlag[kxim] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==-3312) assFlag[kxip] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==3334) assFlag[komm] = kFALSE;
+          if(fisMCantiassoc && pdgCasc==-3334) assFlag[komp] = kFALSE;
         }
 
       }
