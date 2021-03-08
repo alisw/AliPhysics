@@ -16,6 +16,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliEventCuts.h"
 #include "AliAnalysisUtils.h"
 //#include "AliMultSelection.h"
 #include "AliTrackReference.h"
@@ -80,6 +81,8 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei()
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -137,6 +140,8 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei(const char* name)
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
+,fEventCut(false)
+,fEstimator(0)
 {
     // constructor
     
@@ -409,10 +414,16 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     // only for cross-check: is kINT7 selected
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isINT7selected = fSelectMask and AliVEvent::kINT7;
+    //Make sure that the HighMultTrigger is selected, which is added in the addTask macro
+	if (!fSelectMask) {
+		PostData(1, fOutputList);
+		return;
+	}
+    /*
     if (!isINT7selected){
         PostData(1, fOutputList);
         return;
-    }
+    }*/
     fEventStat->Fill(kINT7selected);
     
     // only for cross-check: Incomplete events from DAQ
@@ -509,8 +520,14 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     }else{
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
     }*/
+    float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
+    if (Multiplicity_percentile>0.1) {
+		PostData(1, fOutputList);
+		return;
+	}
+    lPercentile = Multiplicity_percentile;
 
-	int Nch = 0;
+    int Nch = 0;
     
     // track loop
     for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++){
