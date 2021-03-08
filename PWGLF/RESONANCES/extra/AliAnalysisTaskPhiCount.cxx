@@ -716,7 +716,7 @@ bool        AliAnalysisTaskPhiCount::fIsKaonCandidate ( )                       
     }
     if ( fCurrentRun >= 115881 && fCurrentRun <= 139513 )   {
         // Custom 2010
-        if ( !fIsTPCAvailable || (fIsTOFAvailable && fSigma_TOF > kSgTOF_Veto) )                    return false;
+        if ( !fIsTPCAvailable || (fIsTOFAvailable && std::fabs(fSigma_TOF) > kSgTOF_Veto) )         return false;
         if ( std::fabs(fSigma_TPC) > 7. )                                                           return false;
         if ( fCurrent_Track_Momentum >= 0.28 )   {
             if ( fIsTOFAvailable && std::fabs(fSigma_TPC) > kSgTPC_TOFVt )                          return false;
