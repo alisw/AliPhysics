@@ -16,6 +16,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliEventCuts.h"
 #include "AliAnalysisUtils.h"
 //#include "AliMultSelection.h"
 #include "AliTrackReference.h"
