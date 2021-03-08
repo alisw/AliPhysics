@@ -75,7 +75,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     bool                        fCheckMask                  ( Int_t iMaskBit );
     bool                        fCheckTrueMask              ( Int_t iMaskBit );
     void                        fStoreTruePhi               ( Int_t iMaskBit );
-    void                        fCheckINELgt0               ( );
+    bool                        fCheckINELgt0               ( AliAODMCParticle* );
     void                        fFillEventEnumerate         ( Int_t iIndex );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format

@@ -277,9 +277,6 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
         // Check the Track exists
         if ( !fAssignTrack() )     continue;
         
-        // Check the event type
-        fCheckINELgt0();
-        
         // Check the track has due requirements
         if ( !fIsTrackCandidate() ) continue;
         
@@ -535,13 +532,15 @@ bool        AliAnalysisTaskPhiCount::fIsEventPileUp()                           
 
 //_____________________________________________________________________________
 
-bool        AliAnalysisTaskPhiCount::fCheckINELgt0( AliAODMCParticle )                            {
-    if ( fCheckMask(3) )   return;
-    if ( !fCurrent_Track->IsPrimaryCandidate() ) return;
-    if ( !(fCurrent_Track_Charge   !=  0) ) return;
-    if ( !(TMath::Abs(fCurrent_Track_Eta) <= 1) ) return;
+bool        AliAnalysisTaskPhiCount::fCheckINELgt0( AliAODMCParticle* fCurrent_Particle )                            {
+    if ( fCheckTrueMask(3) )   return true;
+    if ( !fCurrent_Particle->IsPrimary() ) return false;
+    if ( !(fCurrent_Particle->Charge()   !=  0) ) return false;
+    if ( !(TMath::Abs(fCurrent_Particle->Eta()) <= 1) ) return false;
     fQC_Event_Enumerate->Fill(11);
     fSetEventMask(3);
+    fSetTrueEventMask(3);
+    return true;
 }
 
 //_____________________________________________________________________________
@@ -659,7 +658,7 @@ void        AliAnalysisTaskPhiCount::fQC_PID_Kaons( )                           
     if ( fIsTPCAvailable && fIsTOFAvailable )
     {
         fQC_Kaons_SigmaTOF_TPC  ->  Fill(fSigma_TOF,            fSigma_TPC);
-        //if ( fabs(fSigma_TOF) < kSgTOF_Veto ) fQC_Kaons_SigmaTPC_VETO  ->  Fill(fSigma_TPC);
+        if ( fabs(fSigma_TOF) < kSgTOF_Veto ) fQC_Kaons_SigmaTPC_VETO  ->  Fill(fSigma_TPC);
     }
 }
 
@@ -911,14 +910,11 @@ void        AliAnalysisTaskPhiCount::fStoreTruePhi ( Int_t iMaskBit )           
     // Loop over all primary MC particle
     if ( !kMCbool ) return;
     Int_t           nTrack(AODMCTrackArray->GetEntriesFast());
-    Bool_t          fINELgt0    =   false;
     for ( Int_t iTrack(0); iTrack < nTrack; iTrack++ )
     {
         AliAODMCParticle* fPhiTru = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(iTrack));
         
-        if ( !fINELgt0 )    {
-            
-        }
+        fCheckINELgt0( fPhiTru );
         
         if ( !fIsPhi( fPhiTru ) ) continue;
         
