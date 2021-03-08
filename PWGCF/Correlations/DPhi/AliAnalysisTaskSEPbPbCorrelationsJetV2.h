@@ -1,5 +1,6 @@
-#ifndef AliAnalysisTaskSEPbPbCorrelationsJetV2_H
-#define AliAnalysisTaskSEPbPbCorrelationsJetV2_H
+#ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
+#define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
+
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
