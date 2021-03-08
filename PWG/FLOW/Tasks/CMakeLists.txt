@@ -46,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
   AliAnalysisTaskCRCZDC.cxx 
+  AliAnalysisTaskQvec.cxx
   AliAnalysisTaskCumulants.cxx
   AliAnalysisTaskQCumulants.cxx 
   AliAnalysisTaskLeeYangZeros.cxx 
