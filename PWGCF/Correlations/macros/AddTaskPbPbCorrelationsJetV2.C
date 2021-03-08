@@ -14,12 +14,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetRemovePileup(kTRUE);
   task->SetRemovePileup2(kTRUE);
   task->SetRemovePileup3(kTRUE);
-  task->SetESEcuts(20.,80.); // do binning !!!!
-  task->SetESEdet(0); // 0 - V0A, 1 - V0C, 2 - tracklets, 3 - V0A+V0C
   task->SetUseRes(kTRUE);
   task->SetAverageRes(kFALSE); // this is really needed
-
-  task->SetEP(kFALSE); // do EP analysis instead of SP
 
   task->SetMinHardPt(3.0);
   
@@ -53,38 +49,34 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   Double_t etaLimits[nBinEta+1] = {-4.5, -4., -3.5, -3.0, -2.5, -2.0};
   task->SetEtaBinning(nBinEta, etaLimits);
 
-  mgr->AddTask(task);
 
 // Input File
 
   TGrid::Connect("alien://");
   TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
-  TFile *fSpl2V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq2V0ARun2.root");
-  TFile *fSpl3V0A = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibSpq3V0ARun2.root");   
   TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
-/*
-  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0TrklNoEtaCutRun2.root");
-  TFile *fSpl2V0A = TFile::Open("./Convert_EP_Calibration/calibSpq2V0ARun2.root");
-  TFile *fSpl3V0A = TFile::Open("./Convert_EP_Calibration/calibSpq3V0ARun2.root");
-  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
-*/
-  if(!foadb || !fSpl2V0A || !fSpl3V0A || !fFileRes)
+
+//  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0TrklNoEtaCutRun2.root");
+//  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
+
+  if(!foadb || !fFileRes)
   {
    printf("ERROR: Required files are not found!\n");
   }
 
   TList *list_contQ   = (TList*)foadb->Get("list_contQ");  
-  TList *list_Spl2V0A = (TList*)fSpl2V0A->Get("list_q2V0A");
-  TList *list_Spl3V0A = (TList*)fSpl3V0A->Get("list_q3V0A");
   TList *list_Res     = (TList*)fFileRes->Get("list_Res");
 
-  if(!list_contQ || !list_Spl2V0A || !list_Spl3V0A || !list_Res)
+  if(!list_contQ || !list_Res)
   {
    printf("ERROR: No lists are not found!\n");
   }
-
   
+  task->SetListContQ(list_contQ);
+  task->SetListRes(list_Res);  
 
+  mgr->AddTask(task);
+/*
   // create input container
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("contQ",
                                     TList::Class(),
@@ -104,7 +96,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
   cinput4->SetData(list_Res);
-
+*/
  
   // create output container
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
@@ -120,10 +112,6 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
   // finaly connect input and output
   mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
-  mgr->ConnectInput(task, 1, cinput1);
-  mgr->ConnectInput(task, 2, cinput2);
-  mgr->ConnectInput(task, 3, cinput3);
-  mgr->ConnectInput(task, 4, cinput4);
   mgr->ConnectOutput(task, 1, output);
   mgr->ConnectOutput(task, 2, output1);
   
