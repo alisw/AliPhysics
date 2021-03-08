@@ -261,9 +261,9 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
   TFile* outup=new TFile(Form("outputEff%s.root",suffix.Data()),"update");
   outup->ls();
-  TH1D* hEffPr=(TH1D*)outup->Get("hEffPromptVsPtNoWeight");
-  TH1D* hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtNoWeight");
-  if(ptBWeight!="") hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtPtBWeight");
+  TH1D* hEffPr=(TH1D*)outup->Get("hEffPromptVsPtMultAndPtWeight");
+  TH1D* hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtMultWeight");
+  if(ptBWeight!="") hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtMultAndPtBWeight");
   hEffFd->SetLineColor(kGray+1);
   hEffFd->SetMarkerColor(kGray+1);
   hEffFd->SetMarkerStyle(24);
