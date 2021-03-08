@@ -278,10 +278,20 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
-
+  void SetSummedPtCut(float limit1, float limit2){
+    fSummedPtLimit1 = limit1;
+    fSummedPtLimit2 = limit2;
+  }
+  float GetSummedPtLimit1(){
+    return fSummedPtLimit1;
+  }
+  float GetSummedPtLimit2(){
+    return fSummedPtLimit2;
+  }
   static std::vector<float> GetDefaultZbins();
   static std::vector<int> GetHMMultBins();
   static std::vector<int> GetMBMultBins();
+
 
  private:
   bool fMultBinning;            //
@@ -323,6 +333,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
   bool fCoutVariables;
+  float fSummedPtLimit1;
+  float fSummedPtLimit2;
   ClassDef(AliFemtoDreamCollConfig,17);
 };
 

@@ -47,7 +47,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(false) {
+      fCoutVariables(false),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
   //should not be used, since we need a name to deal with root objects
 }
 
@@ -92,7 +94,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
-      fCoutVariables(config.fCoutVariables) {
+      fCoutVariables(config.fCoutVariables),
+      fSummedPtLimit1(config.fSummedPtLimit1),
+      fSummedPtLimit2(config.fSummedPtLimit2) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
@@ -137,7 +141,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(QACouts) {
+      fCoutVariables(QACouts),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     const AliFemtoDreamCollConfig& config) {
@@ -182,6 +188,8 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
     this->fCoutVariables = config.fCoutVariables;
+    this->fSummedPtLimit1 = config.fSummedPtLimit1;
+    this->fSummedPtLimit2 = config.fSummedPtLimit2;
   }
   return *this;
 }
