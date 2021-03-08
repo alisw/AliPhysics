@@ -154,15 +154,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void CreateMCAcceptanceHistos();
 
   Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t tracklets);
 
   enum
   {
     kVarForSparse = 13,
     kVarForSparseFD = 14,
     knVarForSparseMLMinimal = 3,
-    kVarForSparseAcc = 2,
-    kVarForSparseAccFD = 3,
+    kVarForSparseAcc = 4,
     kVarForTrackSparse = 7,
     kVarForImpPar = 3
   };
