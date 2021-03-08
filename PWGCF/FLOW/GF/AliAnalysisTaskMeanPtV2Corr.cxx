@@ -305,6 +305,15 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChFull32","ChFull32")); //no-gap case
     oba->Add(new TNamed("ChFull34","ChFull34")); //no-gap case
 
+    oba->Add(new TNamed("LM22","LM22")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("MR22","MR22")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("LR22","LR22")); //for gap (|eta|>0.4) case
+
+    oba->Add(new TNamed("LLMR24","LLMR24")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("LMMR24","LMMR24")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("LMRR24","LMRR24")); //for gap (|eta|>0.4) case
+
+
     //Following is for PID. Let's remove it for now to save some memory
 /*    oba->Add(new TNamed("ChPos22","ChPos22"));
     oba->Add(new TNamed("ChPos24","ChPos24"));
@@ -342,6 +351,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
+    if(fEtaV2Sep>=0)
+      fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
     fGFW->AddRegion("mid",7,powsFull,-0.8,0.8,1,2);
     //No need to do full-blown PID, limit only with charged flow
     /*
@@ -783,7 +794,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
-  Int_t lPosCount=0, lNegCount=0;
+  Int_t lPosCount=0, lNegCount=0, lMidCount=0;
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   if(fIsMC) {
@@ -816,7 +827,9 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       Double_t trackXYZ[] = {0.,0.,0.};
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp,nTotNoTracks)) continue;
       // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
-      if(leta<-fEtaV2Sep) lNegCount++; else if(leta>fEtaV2Sep) lPosCount++;
+      if(leta<-fEtaV2Sep) lNegCount++;
+      if(leta>fEtaV2Sep) lPosCount++;
+      if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t p1 = lTrack->Pt();
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(p1));
       if(weff==0) continue;
@@ -832,6 +845,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
   if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
+  if(fConsistencyFlag&8) if(lMidCount<2) return; //If less than 2 particles in mid, reject. Relevant, if calculating v24{3-sub}
+
   if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
   Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
@@ -1002,12 +1017,14 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   PostData(1,fEfficiencyList);
 }
 
-Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn) {
+Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  if(debug) printf("FillFCs: dnx = %f\n",dnx);
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    if(debug) printf("FillFCs: val = %f\n",val);
     if(TMath::Abs(val)<1)
       fFC->FillProfile(corconf.Head.Data(),cent,val,fUseWeightsOne?1:dnx,rndmn);
     return kTRUE;
@@ -1051,6 +1068,15 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChGap34","refP {3 3} refN {-3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));
+//v24 3-sub
+  if(fEtaV2Sep<0) return; //if eta < 0, then pos & neg are w/o SE and thus doesn't make sense to calculate v24
+  corrconfigs.push_back(GetConf("LM22","refP {2} subMid {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("MR22","subMid {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("LR22","refP {2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("LLMR24","refP {2 2} subMid {-2} refN {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("LMMR24","refP {2} subMid {-2 -2} refN {2}", kFALSE));
+  corrconfigs.push_back(GetConf("LMRR24","refP {2} subMid {2} refN {-2 -2}", kFALSE));
+
   return;
 
   //ditch the last code for now, since we don't need PID
