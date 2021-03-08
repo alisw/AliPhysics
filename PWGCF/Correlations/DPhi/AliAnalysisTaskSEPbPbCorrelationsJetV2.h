@@ -1,7 +1,6 @@
 #ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
 #define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
 
-
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include "AliAODEvent.h"
