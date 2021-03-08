@@ -103,14 +103,14 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		utils(0x0),
 		fAnalysisType("ESD"),
 		fAnalysisMC(kFALSE),
-		fAnalysisPbPb(kFALSE),
+		///fAnalysisPbPb(kFALSE),
 		fRandom(0x0),
 		fVtxCut(0x0),
 		fNcl(70),
 		fEtaCut(0.9),
 		cent(3),
-		fMinCent(0.0),
-		fMaxCent(100.0),
+		//fMinCent(0.0),
+		//fMaxCent(100.0),
 		fDeDxMIPMin(40),
 		fDeDxMIPMax(60),
 		fdEdxHigh(200),
@@ -127,8 +127,9 @@ ClassImp(AliAnalysisTaskPPvsMult)
 		fEvents(0x0),
 		fVtxMC(0x0),
 		fdEdxCalibrated(0x0),
-		fMakePid(0x0),
-		fLowPt(0x0),
+		fTrackCuts(0),
+		////		fMakePid(0x0),
+		////		fLowPt(0x0),
 		fLHC16l(0x0),
 		fcent(0x0),
 		fcentAfterPrimaries(0x0),
@@ -259,14 +260,14 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	utils(0x0),
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
-	fAnalysisPbPb(kFALSE),
+	////fAnalysisPbPb(kFALSE),
 	fRandom(0x0),
 	fVtxCut(0x0),
 	fNcl(70),
 	fEtaCut(0.9),
 	cent(3),
-	fMinCent(0.0),
-	fMaxCent(100.0),
+	//fMinCent(0.0),
+	//fMaxCent(100.0),
 	fDeDxMIPMin(40),
 	fDeDxMIPMax(60),
 	fdEdxHigh(200),
@@ -283,8 +284,9 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 	fEvents(0x0),
 	fVtxMC(0x0),
 	fdEdxCalibrated(0x0),
-	fMakePid(0x0),
-	fLowPt(0x0),
+	fTrackCuts(0),
+	////fMakePid(0x0),
+	////fLowPt(0x0),
 	fLHC16l(0x0),
 	fcent(0x0),
 	fcentAfterPrimaries(0x0),
@@ -404,9 +406,15 @@ AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult(const char *name):
 
 
 AliAnalysisTaskPPvsMult::~AliAnalysisTaskPPvsMult() {
+
 	//
 	// Destructor
 	//
+
+	if(fListOfObjects) {
+		delete fListOfObjects;
+		fListOfObjects = 0x0;
+	}
 
 }
 
@@ -437,23 +445,51 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 		fTrackFilterGolden = new AliESDtrackCuts("fTrackFilterGolden");
 
 		// TPC
-		fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+		//fTrackFilterGolden->SetMinNCrossedRowsTPC(70); // Varied for track selection
 		fTrackFilterGolden->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-		fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+		//fTrackFilterGolden->SetMaxChi2PerClusterTPC(4); // Varied for track selection
 		fTrackFilterGolden->SetAcceptKinkDaughters(kFALSE);
 		fTrackFilterGolden->SetRequireTPCRefit(kTRUE);
 		// ITS
 		fTrackFilterGolden->SetRequireITSRefit(kTRUE);
 		fTrackFilterGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 		//fTrackFilterGolden->SetMaxChi2TPCConstrainedGlobal(36);
-		fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		//fTrackFilterGolden->SetMaxDCAToVertexZ(2); // Varied for track selection
 		fTrackFilterGolden->SetDCAToVertex2D(kFALSE);
 		fTrackFilterGolden->SetRequireSigmaToVertex(kFALSE);
 		fTrackFilterGolden->SetMaxChi2PerClusterITS(36);
 
+		printf("fTrackCuts - %d\n",fTrackCuts);
+
+		if(fTrackCuts==0){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==1){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(80);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==2){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(5);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else if(fTrackCuts==3){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(3);
+		}else if(fTrackCuts==4){
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(60);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(2);
+		}else{
+			fTrackFilterGolden->SetMinNCrossedRowsTPC(70);
+			fTrackFilterGolden->SetMaxChi2PerClusterTPC(4);
+			fTrackFilterGolden->SetMaxDCAToVertexZ(1);
+		}
+
 	}
 
-	//OpenFile(1);
+	OpenFile(1);
 	fListOfObjects = new TList();
 	fListOfObjects->SetOwner(kTRUE);
 
@@ -688,45 +724,45 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 			  fListOfObjects->Add(pPlateauVsPhi[i][j]);
 			  }*/
 
-			if(fMakePid){
-				fListOfObjects->Add(hPt_TPC[i]);	
-				if(fLowPt){
-					fListOfObjects->Add(hPtneg_TPC[i]);
-					fListOfObjects->Add(hPtpos_TPC[i]);
-					fListOfObjects->Add(hPtneg_TOF[i]);
-					fListOfObjects->Add(hPtpos_TOF[i]);
+			////			if(fMakePid){
+			fListOfObjects->Add(hPt_TPC[i]);	
+			////				if(fLowPt){
+			fListOfObjects->Add(hPtneg_TPC[i]);
+			fListOfObjects->Add(hPtpos_TPC[i]);
+			fListOfObjects->Add(hPtneg_TOF[i]);
+			fListOfObjects->Add(hPtpos_TOF[i]);
 
-				}
+			///				}
 
-				for(Int_t j=0; j<nHists; ++j){
-					if(fLowPt){
-						fListOfObjects->Add(hnSigmaPiPos[i][j]);
-						fListOfObjects->Add(hnSigmaPiNeg[i][j]);	
-						fListOfObjects->Add(hnSigmaKPos[i][j]);
-						fListOfObjects->Add(hnSigmaKNeg[i][j]);
-						fListOfObjects->Add(hnSigmaPPos[i][j]);
-						fListOfObjects->Add(hnSigmaPNeg[i][j]);
-						fListOfObjects->Add(hBetavsPpos[i][j]);
-						fListOfObjects->Add(hBetavsPneg[i][j]);
-						fListOfObjects->Add(hPtpos_TPC_Eta[i][j]);
-						fListOfObjects->Add(hPtneg_TPC_Eta[i][j]);
-						fListOfObjects->Add(hPtpos_TOF_Eta[i][j]);
-						fListOfObjects->Add(hPtneg_TOF_Eta[i][j]);
-						fListOfObjects->Add(hPpos_TOF_Eta[i][j]);
-						fListOfObjects->Add(hPneg_TOF_Eta[i][j]);
-					}
+			for(Int_t j=0; j<nHists; ++j){
+				//					if(fLowPt){
+				fListOfObjects->Add(hnSigmaPiPos[i][j]);
+				fListOfObjects->Add(hnSigmaPiNeg[i][j]);	
+				fListOfObjects->Add(hnSigmaKPos[i][j]);
+				fListOfObjects->Add(hnSigmaKNeg[i][j]);
+				fListOfObjects->Add(hnSigmaPPos[i][j]);
+				fListOfObjects->Add(hnSigmaPNeg[i][j]);
+				fListOfObjects->Add(hBetavsPpos[i][j]);
+				fListOfObjects->Add(hBetavsPneg[i][j]);
+				fListOfObjects->Add(hPtpos_TPC_Eta[i][j]);
+				fListOfObjects->Add(hPtneg_TPC_Eta[i][j]);
+				fListOfObjects->Add(hPtpos_TOF_Eta[i][j]);
+				fListOfObjects->Add(hPtneg_TOF_Eta[i][j]);
+				fListOfObjects->Add(hPpos_TOF_Eta[i][j]);
+				fListOfObjects->Add(hPneg_TOF_Eta[i][j]);
+				///					}
 
-					fListOfObjects->Add(hPtVsP[i][j]);
-					fListOfObjects->Add(histPiV0[i][j]);
-					//					fListOfObjects->Add(histpPiV0[i][j]);
-					//					fListOfObjects->Add(histpPV0[i][j]);
-					//					fListOfObjects->Add(histpPiTof[i][j]);
-					fListOfObjects->Add(histPiTof[i][j]);
-					fListOfObjects->Add(histEV0[i][j]);
-					fListOfObjects->Add(histPV0[i][j]);
-					fListOfObjects->Add(hDeDxVsP[i][j]);
-				}
-			} //	if(MakePID) 
+				fListOfObjects->Add(hPtVsP[i][j]);
+				fListOfObjects->Add(histPiV0[i][j]);
+				//					fListOfObjects->Add(histpPiV0[i][j]);
+				//					fListOfObjects->Add(histpPV0[i][j]);
+				//					fListOfObjects->Add(histpPiTof[i][j]);
+				fListOfObjects->Add(histPiTof[i][j]);
+				fListOfObjects->Add(histEV0[i][j]);
+				fListOfObjects->Add(histPV0[i][j]);
+				fListOfObjects->Add(hDeDxVsP[i][j]);
+			}
+			////			} //	if(MakePID) 
 		} //	Cent
 	} //	!fAnalysisMC
 
@@ -879,6 +915,7 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		return;
 	}
 
+	printf("flag0\n");
 	fEvents->Fill(0.5,11);
 
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
@@ -887,6 +924,7 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		return;
 	fEvents->Fill(1.5,11);
 
+	printf("flag1\n");
 	Float_t V0MPer  = -1;
 	Float_t MultBin = -1;
 
@@ -902,10 +940,13 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		}
 	}
 
+	printf("flag2\n");
 	Int_t INEL = -1;
 	INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
 	if( INEL < 1 )
 		return;
+
+	printf("flag3\n");
 
 	fEvents->Fill(2.5,MultBin);
 	fEvents->Fill(2.5,11);
@@ -913,11 +954,15 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
 		return;
 
+	printf("flag4\n");
+
 	fEvents->Fill(3.5,MultBin);
 	fEvents->Fill(3.5,11);
 
 	if( fESD->IsPileupFromSPDInMultBins() )
 		return;
+
+	printf("flag5\n");
 
 	fEvents->Fill(4.5,MultBin);
 	fEvents->Fill(4.5,11);
@@ -1043,57 +1088,57 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 void AliAnalysisTaskPPvsMult::AnalyzeESD(AliESDEvent* esdEvent)
 {
 
-	Float_t centrality = -10;
-	if(fAnalysisPbPb){
-		centrality = fEventCuts.GetCentrality(); /// Centrality calculated with the default estimator (V0M for LHC15o)
+	//	Float_t centrality = -10;
+	//	if(fAnalysisPbPb){
+	//		centrality = fEventCuts.GetCentrality(); /// Centrality calculated with the default estimator (V0M for LHC15o)
 
-		if((centrality>fMaxCent)||(centrality<fMinCent))return;
-		for(Int_t icent = 0; icent < nCent; ++icent){
-			if(centrality > CentMin[icent] && centrality <= CentMax[icent]){
-				cent = icent;
-				fcent->Fill(icent+1);
-				ProduceArrayTrksESD( esdEvent, cent );
-				ProduceArrayV0ESD( esdEvent, cent );
+	//		if((centrality>fMaxCent)||(centrality<fMinCent))return;
+	//		for(Int_t icent = 0; icent < nCent; ++icent){
+	//			if(centrality > CentMin[icent] && centrality <= CentMax[icent]){
+	//				cent = icent;
+	//				fcent->Fill(icent+1);
+	//				ProduceArrayTrksESD( esdEvent, cent );
+	//				ProduceArrayV0ESD( esdEvent, cent );
 
-				if(fAnalysisMC)
-					ProcessMCTruthESD(cent);
-			}
-		}
+	//				if(fAnalysisMC)
+	//					ProcessMCTruthESD(cent);
+	//			}
+	//		}
 
-		fcent->Fill(11);
+	//		fcent->Fill(11);
 
+	//	}
+
+	//	else{
+
+	Float_t V0MPercentile = -1;
+	Float_t V0APercentile = -1;
+	Float_t ADMPercentile = -1;
+
+	AliMultSelection *MultSelection = (AliMultSelection*) esdEvent -> FindListObject("MultSelection");
+	if(MultSelection-> IsEventSelected()){
+		V0MPercentile = MultSelection->GetMultiplicityPercentile("V0M",false);
+		V0APercentile = MultSelection->GetMultiplicityPercentile("V0A",false);
+		ADMPercentile = MultSelection->GetMultiplicityPercentile("ADM",false);
 	}
 
-	else{
+	if((V0MPercentile>100)||(V0MPercentile<0))return;
+	for(Int_t icent = 0; icent < (nCent-1); ++icent){
+		if(V0MPercentile > CentMin[icent] && V0MPercentile <= CentMax[icent]){
+			cent = icent;
+			fcent->Fill(icent+1);
+			ProduceArrayTrksESD( esdEvent, cent );
+			ProduceArrayV0ESD( esdEvent, cent );
 
-		Float_t V0MPercentile = -1;
-		Float_t V0APercentile = -1;
-		Float_t ADMPercentile = -1;
-
-		AliMultSelection *MultSelection = (AliMultSelection*) esdEvent -> FindListObject("MultSelection");
-		if(MultSelection-> IsEventSelected()){
-			V0MPercentile = MultSelection->GetMultiplicityPercentile("V0M",false);
-			V0APercentile = MultSelection->GetMultiplicityPercentile("V0A",false);
-			ADMPercentile = MultSelection->GetMultiplicityPercentile("ADM",false);
+			if(fAnalysisMC)
+				ProcessMCTruthESD(cent);
 		}
-
-		if((V0MPercentile>100)||(V0MPercentile<0))return;
-		for(Int_t icent = 0; icent < (nCent-1); ++icent){
-			if(V0MPercentile > CentMin[icent] && V0MPercentile <= CentMax[icent]){
-				cent = icent;
-				fcent->Fill(icent+1);
-				ProduceArrayTrksESD( esdEvent, cent );
-				ProduceArrayV0ESD( esdEvent, cent );
-
-				if(fAnalysisMC)
-					ProcessMCTruthESD(cent);
-			}
-		}
-
-		fcent->Fill(11);
-
-
 	}
+
+	fcent->Fill(11);
+
+
+	//	}
 
 
 
