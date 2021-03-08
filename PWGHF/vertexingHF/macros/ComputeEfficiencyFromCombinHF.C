@@ -91,6 +91,12 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   }else if(ptDWeight=="FONLL5overLHC20g2"){
     funcPtWeight=new TF1("funcPtWeight","[0]+[1]*x+[2]*TMath::Exp(-(x-[3])*(x-[3])/2/[4]/[4])+[5]*TMath::Exp(-(x-[6])*(x-[6])/2/[7]/[7])+[8]*TMath::Exp(-x/[9])",0.,40.);
     funcPtWeight->SetParameters(-1.604e+00,7.346e-02,5.901e-01,1.279e+01,4.785e+00,2.508e+00,2.051e+00,5.081e+00,7.675e-01,2.037e-01);
+  }else if(ptDWeight=="DATA010overLHC20g2a"){
+    funcPtWeight=new TF1("funcPtWeight","[0]+[1]*x+[2]*TMath::Exp(-(x-[3])*(x-[3])/2/[4]/[4])+[5]*TMath::Exp(-(x-[6])*(x-[6])/2/[7]/[7])+[8]*TMath::Exp(-x/[9])",0.,25.);
+    funcPtWeight->SetParameters(5.890e-02,-2.140e-03,4.851e-01,-1.162e+00,4.878e+00,7.749e-01,2.108e+00,1.314e+00,6.717e-01,2.573e-01,2.573e-01);
+  }else if(ptDWeight=="DATA3050overLHC20g2b"){
+    funcPtWeight=new TF1("funcPtWeight","[0]+[1]*x+[2]*TMath::Exp(-(x-[3])*(x-[3])/2/[4]/[4])+[5]*TMath::Exp(-(x-[6])*(x-[6])/2/[7]/[7])+[8]*TMath::Exp(-x/[9])",0.,25.);
+    funcPtWeight->SetParameters(9.774e-02,-3.386e-03,6.433e-01,7.425e-01,4.889e+00,4.575e-01,2.223e+00,1.254e+00,5.560e-01,2.083e-01,2.083e-01);
   }else{
     funcPtWeight=new TF1("funcPtWeight","[0]");
     funcPtWeight->SetParameter(0,1.);
