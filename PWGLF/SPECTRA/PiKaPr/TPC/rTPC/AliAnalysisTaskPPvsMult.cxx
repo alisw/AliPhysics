@@ -915,7 +915,6 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		return;
 	}
 
-	printf("flag0\n");
 	fEvents->Fill(0.5,11);
 
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
@@ -924,7 +923,6 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		return;
 	fEvents->Fill(1.5,11);
 
-	printf("flag1\n");
 	Float_t V0MPer  = -1;
 	Float_t MultBin = -1;
 
@@ -940,13 +938,11 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 		}
 	}
 
-	printf("flag2\n");
 	Int_t INEL = -1;
 	INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
 	if( INEL < 1 )
 		return;
 
-	printf("flag3\n");
 
 	fEvents->Fill(2.5,MultBin);
 	fEvents->Fill(2.5,11);
@@ -954,7 +950,6 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
 		return;
 
-	printf("flag4\n");
 
 	fEvents->Fill(3.5,MultBin);
 	fEvents->Fill(3.5,11);
@@ -962,7 +957,6 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 	if( fESD->IsPileupFromSPDInMultBins() )
 		return;
 
-	printf("flag5\n");
 
 	fEvents->Fill(4.5,MultBin);
 	fEvents->Fill(4.5,11);
