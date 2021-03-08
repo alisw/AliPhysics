@@ -3798,7 +3798,25 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
   AliAODTrack *fCurrentTrack = NULL;
   for(Int_t t=0;t<fInputEvent->GetNumberOfTracks();t++){
       fCurrentTrack = static_cast<AliAODTrack*> (fInputEvent->GetTrack(t));
+      if(!fCurrentTrack) continue;
+      TLorentzVector v4track;
+      v4track.SetPxPyPzE(fCurrentTrack->Px(),fCurrentTrack->Py(),fCurrentTrack->Pz(),fCurrentTrack->E());
+      Double_t eta = v4track.Eta();
+      Double_t phi = v4track.Phi();
+      if (phi < 0) phi += 2*TMath::Pi();
+      if(TrackIsSelectedAOD(fCurrentTrack,kTRUE)){
+          fTrackPtHybridOnlyPosID->Fill(fCurrentTrack->Pt(),fWeightJetJetMC);
+          fTrackEtaHybridOnlyPosID->Fill(eta,fWeightJetJetMC);
+          fTrackPhiHybridOnlyPosID->Fill(phi,fWeightJetJetMC);
+      }
+
       if(!TrackIsSelectedAOD(fCurrentTrack)) continue;
+    
+
+      // for QA to check for dead TPC sectors
+      fTrackPt->Fill(fCurrentTrack->Pt(),fWeightJetJetMC);
+      fTrackEta->Fill(eta,fWeightJetJetMC);
+      fTrackPhi->Fill(phi,fWeightJetJetMC);
       prim++;
   }
   fBuffer_EventNPrimaryTracks = prim;
@@ -4232,19 +4250,7 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster
         Double_t trackPhi = v4track.Phi();
         if (trackPhi < 0) trackPhi += 2*TMath::Pi();
 
-        if(TrackIsSelectedAOD(aodt,kTRUE)){
-           fTrackPtHybridOnlyPosID->Fill(aodt->Pt(),fWeightJetJetMC);
-           fTrackEtaHybridOnlyPosID->Fill(trackEta,fWeightJetJetMC);
-           fTrackPhiHybridOnlyPosID->Fill(trackPhi,fWeightJetJetMC);
-        }
-
         if(!TrackIsSelectedAOD(aodt)) continue;
-      
-
-        // for QA to check for dead TPC sectors
-        fTrackPt->Fill(aodt->Pt(),fWeightJetJetMC);
-        fTrackEta->Fill(trackEta,fWeightJetJetMC);
-        fTrackPhi->Fill(trackPhi,fWeightJetJetMC);
 
         Double_t dEta = trackEta - clusterEta;
         Double_t dPhi = trackPhi - clusterPhi;
