@@ -64,11 +64,13 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_ptHard(),
     fh_dijetInvM(),
     fh_dijetInvMTrunc(),
+    fh_dijetInvMTrunc2(),
     fh_dijetPtPair(),
     fh_dijetDeltaPhi(),
     fh_dijetPtPairDeltaPhiCut(),
     fh_dijetInvMDeltaPhiCut(),
     fh_dijetInvMDeltaPhiCutTrunc(),
+    fh_dijetInvMDeltaPhiCutTrunc2(),
     fh_dijetDeltaPhiWithCut(),
     fh_responseInfo(),
     fh_jetResponseDeltaR(),
@@ -84,8 +86,10 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaPtResponseEvery_ALICE(),
     fh_dijetResponse(),
     fh_dijetResponseTrunc(),
+    fh_dijetResponseTrunc2(),
     fh_dijetResponseDeltaPhiCut(),
-    fh_dijetResponseDeltaPhiCutTrunc()
+    fh_dijetResponseDeltaPhiCutTrunc(),
+    fh_dijetResponseDeltaPhiCutTrunc2()
 {
 
 }
@@ -128,11 +132,13 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_ptHard(obj.fh_ptHard),
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetInvMTrunc(obj.fh_dijetInvMTrunc),
+    fh_dijetInvMTrunc2(obj.fh_dijetInvMTrunc2),
     fh_dijetPtPair(obj.fh_dijetPtPair),
     fh_dijetDeltaPhi(obj.fh_dijetDeltaPhi),
     fh_dijetPtPairDeltaPhiCut(obj.fh_dijetPtPairDeltaPhiCut),
     fh_dijetInvMDeltaPhiCut(obj.fh_dijetInvMDeltaPhiCut),
     fh_dijetInvMDeltaPhiCutTrunc(obj.fh_dijetInvMDeltaPhiCutTrunc),
+    fh_dijetInvMDeltaPhiCutTrunc2(obj.fh_dijetInvMDeltaPhiCutTrunc2),
     fh_dijetDeltaPhiWithCut(obj.fh_dijetDeltaPhiWithCut),
     fh_responseInfo(obj.fh_responseInfo),
     fh_jetResponseDeltaR(obj.fh_jetResponseDeltaR),
@@ -148,8 +154,10 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaPtResponseEvery_ALICE(obj.fh_deltaPtResponseEvery_ALICE),
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseTrunc(obj.fh_dijetResponseTrunc),
+    fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
     fh_dijetResponseDeltaPhiCut(obj.fh_dijetResponseDeltaPhiCut),
-    fh_dijetResponseDeltaPhiCutTrunc(obj.fh_dijetResponseDeltaPhiCutTrunc)
+    fh_dijetResponseDeltaPhiCutTrunc(obj.fh_dijetResponseDeltaPhiCutTrunc),
+    fh_dijetResponseDeltaPhiCutTrunc2(obj.fh_dijetResponseDeltaPhiCutTrunc2)
 {
     // copy constructor
 }
@@ -399,6 +407,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin << fJetBin
         << "END" ;
 
+    fh_dijetInvMTrunc2
+        << TH1D("h_dijetInvMTrunc2", "h_dijetInvMTrunc2", 100, 30, 530)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
     fh_dijetPtPair
         //<< TH1D("h_dijetPtPair", "h_dijetPtPair", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek )
         << TH1D("h_dijetPtPair", "h_dijetPtPair", NBINSDijet, logBinsXDijet )
@@ -423,6 +436,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetInvMDeltaPhiCutTrunc
         << TH1D("h_dijetInvMDeltaPhiCutTrunc", "h_dijetInvMDeltaPhiCutTrunc", 50, 30, 280)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_dijetInvMDeltaPhiCutTrunc2
+        << TH1D("h_dijetInvMDeltaPhiCutTrunc2", "h_dijetInvMDeltaPhiCutTrunc2", 100, 30, 530)
         << fHistCentBin << fJetBin
         << "END" ;
 
@@ -491,12 +509,20 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH2D("h_dijetResponseTrunc", "h_dijetResponseTrunc", 50, 30, 280, 50, 30, 280)
         << "END" ;
 
+    fh_dijetResponseTrunc2
+        << TH2D("h_dijetResponseTrunc2", "h_dijetResponseTrunc2", 100, 30, 530, 100, 30, 530)
+        << "END" ;
+
     fh_dijetResponseDeltaPhiCut
         << TH2D("h_dijetResponseDeltaPhiCut", "h_dijetResponseDeltaPhiCut", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
         << "END" ;
 
     fh_dijetResponseDeltaPhiCutTrunc
         << TH2D("h_dijetResponseDeltaPhiCutTrunc", "h_dijetResponseDeltaPhiCutTrunc", 50, 30, 280, 50, 30, 280)
+        << "END" ;
+
+    fh_dijetResponseDeltaPhiCutTrunc2
+        << TH2D("h_dijetResponseDeltaPhiCutTrunc2", "h_dijetResponseDeltaPhiCutTrunc2", 100, 30, 530, 100, 30, 530)
         << "END" ;
 }
 
