@@ -1,6 +1,6 @@
 //used to instantiate an object of the task,define input and output and connect it to manager
 
-AliAnalysisTaskCorrelationhhK0s* AddTaskCorrelationhhK0s(Float_t minpt=3, Float_t maxpt=15, Bool_t ishhCorr,bool isLocal=kTRUE, bool isMC=kTRUE, bool isEff=kTRUE, bool isHybridMCTr = kTRUE, Int_t EvtToMix=50, Float_t EtaTrigger=0.8, Float_t EtahAssoc=0.8,Float_t EtaV0Assoc=0.8, Int_t FilterBitValue=128, Int_t year=2010, TString AssocParticle="K0s", TString suffix = ""){
+AliAnalysisTaskCorrelationhhK0s* AddTaskCorrelationhhK0s(Float_t minpt=3, Float_t maxpt=15, Bool_t ishhCorr,bool isLocal=kTRUE, bool isMC=kTRUE, bool isEff=kTRUE, bool isHybridMCTr = kTRUE, Int_t EvtToMix=50, Float_t EtaTrigger=0.8, Float_t EtahAssoc=0.8,Float_t EtaV0Assoc=0.8, Int_t FilterBitValue=128, Int_t year=2010, TString AssocParticle="K0s", Bool_t isHM =0, TString suffix = ""){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -42,6 +42,7 @@ AliAnalysisTaskCorrelationhhK0s* AddTaskCorrelationhhK0s(Float_t minpt=3, Float_
    task->SetEtaV0Assoc(EtaV0Assoc);
    task->SetFilterBit(FilterBitValue);
    task->SetYear(year);
+   task->SetHM(isHM);
    task->SetAssocParticle(AssocParticle);
 
   mgr->AddTask(task);
