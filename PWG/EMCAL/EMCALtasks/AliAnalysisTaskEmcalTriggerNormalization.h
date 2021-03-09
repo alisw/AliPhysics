@@ -66,25 +66,47 @@ namespace EMCAL {
  * is filled as function of the centrality percentile. Users have to rebin into centrality
  * classes according to their definition of the centrality classes.
  * 
+ * # Trigger normalization based on trigger luminosity
+ * 
+ * In addtion the task creates a histogram hTriggerLuminosity which measures the luminosity
+ * for the different triggers based on the CENT cluster inspected luminosity and the trigger
+ * livetime from downscaling. In order to obtain the full luminosity of the trigger the
+ * trigger luminosity needs to be corrected to the various trigger clusters. For each trigger
+ * class a corresponding counter counts the events in the various trigger classes. Triggers
+ * which are either not downscaled (i.e. high-threshold triggers) or synchronized with min. bias
+ * (i.e. EMC7) can be used to calculate the trigger cluster luminosities in other trigger
+ * clusters based on the luminosity of the CENT cluster. Which trigger class to use depends 
+ * on the various datasets. The following examples can be used for the various datasets:
+ * 
+ * | Dataset       | Conversion trigger cluster | Trigger classes    |
+ * |---------------|----------------------------|--------------------|
+ * | pp 13 TeV     | CENT->CENTNOTRD            | EJ1, EG1, DJ1, DG1 |
+ * | p-Pb 8.16 TeV | CENT->CENTNOPMD            | EMC7, DMC7         |
+ * | p-Pb 8.16 TeV | CENTNOPMD->CENTNOTRD       | EJ1, EG1, DJ1, DG1 |
+ * 
  * # Basic task configuration
  * 
- * A static Add function performs the basic task configuration. However for the 
- * luminosity determination the trigger cluster (and if different the EMCAL trigger
- * cluster), as well as the L0 trigger and the min. bias ref trigger have to be
- * defined by the user. In case one of them not set the Run method will throw 
- * an exception signaling the missing setting.
+ * A static Add function performs the basic task configuration. The tasks configures itself
+ * automatically based on the run number. Only datasets which were taken in the rare
+ * trigger mode are supported. These inlude all periods staring from p-Pb 2013, with the 
+ * exception of pp 2015 as in these datasets the trigger was in development but still 
+ * enabled. Running the task on unsupported datasets will lead to an AliFatal.
  * 
- * The following example configures the task for pp, \f$\sqrt{s} = 13 TeV\f$:
+ * The following example configures the task for any known dataset:
  * 
  * ~~~.{cxx}
  * auto normtask = PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization::AddTaskEmcalTriggerNormalization("normatask");
- * normtask->SetTriggerCluster("CENT");       // Matching for INT7 and EMCAL triggers
- * normtask->SetL0TriggerEMCAL("EMC7");
- * normtask->AddMBTriggerClass("INT7");
  * ~~~
  * 
- * Attention: The task must run only on runs where the EMCAL was included and was 
- * a trigger detector.
+ * Attention: The task will skip calculating the luminosity for runs for which the EMCAL
+ * was not a trigger detector. Also the normalization histograms and the trigger cluster
+ * counters are not filled for these runs. Only the min. bias luminosity (non-downscaled)
+ * is counted.
+ * 
+ * Attention: Task needs access to the OCDB, therefore a the CDB connect task is required
+ * to be included in train runs or local / grid analyses.
+ * 
+ * Attention: The task must run on data only - MC is not supported.
  */
 class AliAnalysisTaskEmcalTriggerNormalization : public AliAnalysisTaskEmcal {
 public:
@@ -266,6 +288,23 @@ protected:
    */
   virtual void RunChanged(int newrun);
 
+  /**
+   * @brief Initialize task settings at the beginning of the event loop
+   * 
+   * Initialization is done based on the run number of the first event. The
+   * following datasets are supported:
+   * 
+   * - 2013 p-Pb at 5.02 TeV (LHC13b-f)
+   * - 2015 Pb-Pb at 5.02 TeV (LHC15o)
+   * - 2016-2018 pp at 13 TeV (LHC16d-p, LHC17c-o, LHC17r, LHC18b-p)
+   * - 2016 p-Pb at 5.02 TeV (LHC16q+t, note: EMCAL triggers were just a subset of min. bias)
+   * - 2016 p-Pb at 8.16 TeV (LHC16r-s)
+   * - 2017 pp at 5.02 TeV (LHC17q-r, note: EMCAL triggers were running only in CALOFAST cluster)
+   * 
+   * In case an unsupported dataset is requested the processing stops with AliFatal
+   */
+  virtual void UserExecOnce(); 
+
 #if (defined(__CINT_) && !defined(__CLING__)) || (defined(__MAKECINT__) && !defined(__ROOTCLING__))
   // ROOT5 function headers
   std::vector<PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
@@ -289,6 +328,49 @@ protected:
    */
   void ResetDownscaleFactors();
 
+  /**
+   * @brief Check whether run number is from a p-Pb run from 2013
+   * @param runnumber Run number to check
+   * @return true in case runs from p-Pb 2013 are processed, false otherwise 
+   */
+  inline bool IsRun1pPb5TeV(int runnumber) const;
+
+  /**
+   * @brief Check whether the run number is from a pp run at 13 TeV from 2016-2018
+   * @param runnumber Run number to check
+   * @return true in case runs from pp 2016-2018 at 13 TeV are processed, false otherwise
+   */
+  inline bool IsRun2pp13TeV(int runnumber) const;
+
+  /**
+   * @brief Check whether the run number is from a pp run at 5.02 TeV from 2017
+   * @param runnunber Run number to check
+   * @return true in case runs from pp 2017 at 5.02 TeV are processed, false otherwise
+   */
+  inline bool IsRun2pp5TeV(int runnunber) const;
+
+  /**
+   * @brief Check whether the run number is from a p-Pb run at 5.02 TeV from 2016
+   * @param runnunber Run number to check
+   * @return true in case runs from p-Pb 2016 at 5.02 TeV are processed, false otherwise
+   */
+  inline bool IsRun2pPb5TeV(int runnumber) const;
+
+  /**
+   * @brief Check whether the run number is from a p-Pb run at 8.16 TeV from 2016
+   * @param runnunber Run number to check
+   * @return true in case runs from p-Pb 2016 at 8.16 TeV are processed, false otherwise
+   */
+  inline bool IsRun2pPb8TeV(int runnumber) const;
+
+  /**
+   * @brief Check whether the run number is from Pb-Pb run at 5.02 TeV from 2015 or 2018
+   * @param runnunber Run number to check
+   * @return true in case runs from Pb-Pb 2015 or 2018 at 5.02 TeV are processed, false otherwise
+   */
+  inline bool IsRun2PbPb5TeV2015(int runnumber) const;
+
+
 private:
   static const std::vector<std::string> fgkTriggerClusterLabels;   ///< Labels of the trigger cluster
   THistManager                         *fHistos;                    ///< List of histograms
@@ -302,6 +384,34 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalTriggerNormalization, 1);
 };
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun1pPb5TeV(int runnumber) const {
+  return runnumber >= 195344 && runnumber <= 197388;              // LHC13b-f
+}
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun2pp13TeV(int runnumber) const {
+  return (runnumber >= 252235 && runnumber <= 264347) ||                                                  // LHC16d - LHC16r
+         (runnumber >= 270581 && runnumber <= 281961) || (runnumber >= 282528 && runnumber <= 282704) ||  // LHC17c - LHC17o, LHC17r 
+         (runnumber >= 285009 && runnumber <= 294925);                                                    // LHC18b - LHC18p
+}
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun2pp5TeV(int runnunber) const {
+  return (runnunber >= 282008 && runnunber <= 282441);
+}
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun2pPb5TeV(int runnumber) const {
+  return (runnumber >= 265309 && runnumber <= 265525) ||           // LHC16q
+         (runnumber >= 267163 && runnumber <= 267166);             // LHC16t
+}
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun2pPb8TeV(int runnumber) const {
+  return runnumber >= 265589 && runnumber <= 267131;               // LHC16r-s
+}
+
+bool AliAnalysisTaskEmcalTriggerNormalization::IsRun2PbPb5TeV2015(int runnumber) const {
+  return (runnumber >= 244824 && runnumber <= 246994) ||            // LHC15o
+         (runnumber >= 295585 && runnumber <= 296690);              // LHC18q+r
+}
 
 }
 

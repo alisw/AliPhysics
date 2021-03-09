@@ -107,6 +107,44 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
   PostData(1, fOutput);
 }
 
+void AliAnalysisTaskEmcalTriggerNormalization::UserExecOnce() {
+  auto runnumber = fInputEvent->GetRunNumber();
+  if(runnumber < 195344) {
+    AliFatal("Task not supported for datasets prior to LHC13b");
+  } else if(IsRun1pPb5TeV(runnumber)) {
+    // Configure for p-Pb 5 TeV from 2013
+    AliInfoStream() << "Configuring for p-Pb 5.02 TeV from 2013 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+    SetForceBeamType(kpA);
+  } else if(IsRun2pp13TeV(runnumber)) {
+    // Configure for pp 13 TeV from 2016 - 2018 (not supporting 2015 as trigger is not active)
+    AliInfoStream() << "Configuring for pp 13 TeV from 2016 - 2018 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+  } else if(IsRun2pp5TeV(runnumber)) {
+    // Configure for pp 5 TeV from 2017
+    AliInfoStream() << "Configuring for pp 5.02 TeV from 2017 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+  } else if(IsRun2pPb5TeV(runnumber)) {
+    // Configure for p-Pb 5 TeV from 2016
+    AliInfoStream() << "Configuring for p-Pb 5.02 TeV from 2016 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+    SetForceBeamType(kpA);
+  } else if(IsRun2pPb8TeV(runnumber)) {
+    // Configure for p-Pb 8 TeV from 2016
+    AliInfoStream() << "Configuring for p-Pb 8.16 TeV from 2016 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+    SetForceBeamType(kpA);
+  } else if(IsRun2PbPb5TeV2015(runnumber)) {
+    // Condfigure for PbPb 8 TeV from 2018
+    AliInfoStream() << "Configuring for Pb-Pb 5.02 TeV from 2015 or 2018 ..." << std::endl;
+    AddMBTriggerClass("INT7");
+    AddMBTriggerClass("INT7ZAC");
+    SetForceBeamType(kAA);
+  } else {
+    AliFatal(Form("Dataset corresponding to run number %d not supported", runnumber));
+  }
+}
+
 Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   if(!fMBTriggerClasses.size()) throw MBTriggerNotSetException();
 
