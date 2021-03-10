@@ -39,7 +39,7 @@
 class AliFlowAnalysisQvecEvent {
  public:
   AliFlowAnalysisQvecEvent();
-  ~AliFlowAnalysisQvecEvent();
+  virtual ~AliFlowAnalysisQvecEvent();
   void setRunNum( Int_t runNum ) { this->fRunNum = runNum; }
   Int_t getRunNum() { return fRunNum; }
   void setCentrality( Double_t centrality ) { this->fCentrality = centrality; }
