@@ -26,11 +26,11 @@ class AliHFMLVarHandler : public TObject
     public:
     
         enum candtype {
-            kSignal = BIT(0),
-            kBkg    = BIT(1),
-            kPrompt = BIT(2),
-            kFD     = BIT(3),
-            kRefl   = BIT(4),
+            kSignal        = BIT(0),
+            kBkg           = BIT(1),
+            kPrompt        = BIT(2),
+            kFD            = BIT(3),
+            kRefl          = BIT(4),
             kSignalWoQuark = BIT(5) //up to BIT(8) included for general flags, following BITS particle-specific
         };
     
@@ -66,6 +66,7 @@ class AliHFMLVarHandler : public TObject
         void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
         void SetIsSignalWoQuark(bool isSignalWoQuark);
         void SetBeautyMotherPt(double ptB) {fPtBMother = ptB;}
+        void SetBeautyMotherPDG(double pdg) {fPDGBMother = pdg;}
         void FillTree();
 
         //to be called for each event
@@ -76,6 +77,7 @@ class AliHFMLVarHandler : public TObject
         void SetAddSingleTrackVars(bool add = true) {fAddSingleTrackVar = add;}
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
+        void SetFillBeautyMotherPDG(bool fillopt = true) {fEnableBMotherPDG = fillopt;}
         void SetAddGlobalEventVariables(bool filltrkl = true) {fEnableNtracklets = filltrkl;}
 
     protected:  
@@ -122,12 +124,14 @@ class AliHFMLVarHandler : public TObject
         float fPIDrawVector[knMaxProngs][knMaxDet4Pid];                                 /// raw PID variables
         bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
         float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
+        bool fEnableBMotherPDG = false;                                /// enable filling of B-mother PDG
+        bool fPDGBMother = 0;                                          /// B-mother PDG for feed-down
         AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
         bool fEnableNtracklets = false;                                /// Flag to add Ntracklets in tree
         int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 4); ///
+    ClassDef(AliHFMLVarHandler, 5); ///
     /// \endcond
 };
 #endif
