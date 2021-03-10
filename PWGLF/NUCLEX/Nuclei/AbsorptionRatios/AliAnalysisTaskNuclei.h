@@ -44,6 +44,7 @@ public:
     void     SetUseTOFPidCut(Bool_t useTOFPidCut)        {fUseTOFPidCut = useTOFPidCut;}
     void     SetMomForTOFanaProt(Float_t momTOFprot)     {fMomTOFProt = momTOFprot;}
     void     SetMomForTOFanaDeut(Float_t momTOFdeut)     {fMomTOFDeut = momTOFdeut;}
+    void	 SetfYlimitFlag(Bool_t setFlag)				 {if (setFlag) {fYlimit=1};}
 	void	 SetAnalyseAllParticles(Bool_t doAnalyse)	 {kAnalyseAllParticles = doAnalyse;} // Call this function with argument kTRUE in the AddTask macro in order to run the analysis for protons and deuterons as well. 
     
     void     CreateHistosTrack(vector<TH1*> &histos);
