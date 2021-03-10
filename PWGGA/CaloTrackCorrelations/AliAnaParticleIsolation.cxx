@@ -5013,6 +5013,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t isoMethod      = GetIsolationCut()->GetICMethod();
   Float_t coneSize     = GetIsolationCut()->GetConeSize();
   Float_t coneSizeGap  = GetIsolationCut()->GetConeSizeBandGap();
+  Float_t coneMinDist  = GetIsolationCut()->GetMinDistToTrigger();
 
   Float_t centrality   = GetEventCentrality();
   
@@ -5380,10 +5381,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       // In cone
       //
-      if ( dR < GetIsolationCut()->GetMinDistToTrigger() )
+      if ( dR < coneMinDist )
         continue;
       
-      if ( dR > GetIsolationCut()->GetConeSize() )
+      if ( dR > coneSize )
         continue;
       
       if ( fFillTrackOriginHistograms && 
@@ -5715,10 +5716,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     if ( isoMethod == AliIsolationCut::kSumBkgSubIC )
     {
-      coneptsumBkgCh = perpConePtSumCh/2.;
-      coneptsumBkgNe = perpConePtSumNe/2.;
+      // 2 cones, scale energy to 1 cone
+      Float_t scaleDown = 0.5;
 
-      coneptsumBkgChEmb = perpConePtSumChEmb/2.;
+      // If there is a central hole in the trigger particle cone, scaledown the perp cone energy
+      if ( GetIsolationCut()->GetMinDistToTrigger() > 0 )
+      {
+        scaleDown *= (coneSize*coneSize - coneMinDist*coneMinDist) / (coneSize*coneSize);
+      }
+
+      coneptsumBkgCh = perpConePtSumCh*scaleDown;
+      coneptsumBkgNe = perpConePtSumNe*scaleDown;
+      coneptsumBkgChEmb = perpConePtSumChEmb*scaleDown;
+
       //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
     }
     else if  ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
@@ -5730,7 +5740,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         AliInfo(Form("Could not find rho MC container <%s>!",nameContainer.Data()));
       else
       {
-        coneptsumBkgCh = outrho->GetVal()*TMath::Pi()*coneSize*coneSize;
+        Float_t coneSize2 = coneSize * coneSize;
+        // If there is a central hole in the trigger particle cone, recalculate background cone area
+        if ( coneMinDist > 0 )
+          coneSize2 -= coneMinDist*coneMinDist;
+
+        coneptsumBkgCh = outrho->GetVal() * TMath::Pi() * coneSize2;
         coneptsumBkgNe = 0;
       }
     }
