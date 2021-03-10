@@ -21,6 +21,7 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     fAliAnlTask ->  SetMCFlag(MCFlag);
     fAliAnlTask ->  SetPhiFlag(PhiFlag);
     fAliAnlTask ->  SetKaonFlag(KaonFlag);
+    fAliAnlTask ->  SetfRunName(fName);
     
     //  Standard Analysis Options
     fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAnyINT);

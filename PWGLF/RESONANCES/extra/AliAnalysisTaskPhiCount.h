@@ -31,7 +31,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
                                 AliAnalysisTaskPhiCount     ( const AliAnalysisTaskPhiCount& );
     AliAnalysisTaskPhiCount&    operator =                  ( const AliAnalysisTaskPhiCount& );
     //
-    // Setters
+    // Setters & Getters
     //
     void                        SetMCFlag                   ( Bool_t    MCFlag )        { kMCbool = MCFlag; };
     void                        SetPhiFlag                  ( Bool_t    PhiFlag )       { kPhibool = PhiFlag; };
@@ -41,6 +41,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetkSgTPC_Alone             ( Float_t   kTPCSigma )     { kSgTPC_Alone = kTPCSigma; };
     void                        SetkSgTPC_TOFVt             ( Float_t   kTPCSigma )     { kSgTPC_TOFVt = kTPCSigma; };
     void                        SetkSgTOF_Veto              ( Float_t   kTOFSigma )     { kSgTOF_Veto = kTOFSigma; };
+    void                        SetfRunName                 ( TString   kRunName )      { fRunName = kRunName; };
     Bool_t                      GetMCFlag                   ( )                         { return kMCbool; };
     Bool_t                      GetPhiFlag                  ( )                         { return kPhibool; };
     Bool_t                      GetKaonFlag                 ( )                         { return kKaonbool; };
@@ -57,11 +58,12 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        fSetZero                    ( );
     Double_t                   *fGetDCA                     ( );
     //
-    Bool_t                      kMCbool;                    // MC Flag
-    Bool_t                      kPhibool;                   // Phi tree Flag
-    Bool_t                      kKaonbool;                  // Kaon tree Flag
-    Int_t                       kFilterBit;                 // Filterbit
-    Float_t                     kVertexCut;                 // VertexCut
+    Bool_t                      kMCbool;                    //  MC Flag
+    Bool_t                      kPhibool;                   //  Phi tree Flag
+    Bool_t                      kKaonbool;                  //  Kaon tree Flag
+    Int_t                       kFilterBit;                 //  Filterbit
+    Float_t                     kVertexCut;                 //  VertexCut
+    TString                     fRunName;                   //  MultiRun name
     //
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> QC & Selection
     //
