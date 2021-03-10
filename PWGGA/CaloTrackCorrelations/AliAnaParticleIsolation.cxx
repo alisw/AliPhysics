@@ -5720,7 +5720,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       Float_t scaleDown = 0.5;
 
       // If there is a central hole in the trigger particle cone, scaledown the perp cone energy
-      if ( GetIsolationCut()->GetMinDistToTrigger() > 0 )
+      if ( coneMinDist > 0 )
       {
         scaleDown *= (coneSize*coneSize - coneMinDist*coneMinDist) / (coneSize*coneSize);
       }
@@ -6142,8 +6142,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if(mcIndex == kmcPrimPi0Decay)
         {
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6158,8 +6158,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6173,8 +6173,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         else // eta decay
         {
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCEtaDecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6189,8 +6189,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCEtaDecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6246,8 +6246,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6259,8 +6259,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6277,8 +6277,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCEtaDecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCEtaDecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6290,8 +6290,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
