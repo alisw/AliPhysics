@@ -83,6 +83,7 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei()
 ,fTrackCuts(0)
 ,fEventCut(false)
 ,fEstimator(0)
+,fYlimit(-999)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -142,6 +143,7 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei(const char* name)
 ,fTrackCuts(0)
 ,fEventCut(false)
 ,fEstimator(0)
+,fYlimit(-999)
 {
     // constructor
     
@@ -546,6 +548,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         if (trackP < fLowPCut || trackP > fHighPCut)      continue;
         if (TMath::Abs(trackEta) > fEtaCut)               continue;
         if (track->GetITSNcls() < fMinClIts)              continue;
+	if (fYlimit>0 && TMath::Abs(track->Y())>0.5)	  continue; //If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.5
 
 
         
