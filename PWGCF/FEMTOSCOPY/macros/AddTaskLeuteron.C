@@ -33,6 +33,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   double Lambda_eta_daughters = 0.8,
   double Lambda_nClusterTPC_daughters = 70,
   double Lambda_nSigma_daughters = 5.0,
+  double PairPtLowerLimit = 0.0,
+  double PairPtUpperLimit = 999.0,
   const char *CutVariation = "0"){
 
   // isHighMultV0:
@@ -426,7 +428,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMixingDepth(10);					  // the number of saved events for the event mixing
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
-
+  config->SetSummedPtCut(PairPtLowerLimit,PairPtUpperLimit);
   
   if(fullBlastQA){
     config->SetPtQA(true);
