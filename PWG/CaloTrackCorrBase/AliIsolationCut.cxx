@@ -3200,6 +3200,10 @@ void  AliIsolationCut::MakeIsolationCut
     
     if ( fICMethod == kSumBkgSubIC )
     {
+      // If there is a central hole in the trigger particle cone, scaledown the perp cone energy
+      if ( fDistMinToTrigger > 0 )
+        perpPtSumTrack *= (fConeSize*fConeSize - fDistMinToTrigger*fDistMinToTrigger) / (fConeSize*fConeSize);
+
       coneptsumBkgTrk = perpPtSumTrack;
       if ( fPartInCone == kNeutralAndCharged || fPartInCone == kOnlyNeutral )
         coneptsumBkgCls = perpPtSumTrack*GetNeutralOverChargedRatio(centrality);
@@ -3233,7 +3237,12 @@ void  AliIsolationCut::MakeIsolationCut
         AliInfo(Form("Could not find rho container <%s>!",fJetRhoTaskName.Data()));
       else
       {
-        rhoPtSumTrack = outrho->GetVal() * TMath::Pi() * fConeSize * fConeSize;
+        Float_t coneSize2 = fConeSize * fConeSize;
+        // If there is a central hole in the trigger particle cone, recalculate background cone area
+        if ( fDistMinToTrigger > 0 )
+          coneSize2 -= fDistMinToTrigger*fDistMinToTrigger;
+
+        rhoPtSumTrack = outrho->GetVal() * TMath::Pi() * coneSize2;
 
         coneptsumBkgTrk = rhoPtSumTrack;
         if ( fPartInCone == kNeutralAndCharged || fPartInCone == kOnlyNeutral )
