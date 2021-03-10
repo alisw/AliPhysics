@@ -1062,8 +1062,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             }
             else
             {
-              var4nSparse = {invMass_KKpi, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, ptB};
+              var4nSparse = {invMass_KKpi, ptCand, ptB, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
               var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
             }
 
@@ -1141,8 +1141,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             }
             else
             {
-              var4nSparse = {invMass_piKK, ptCand, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
-                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000, ptB};
+              var4nSparse = {invMass_piKK, ptCand, ptB, deltaMassKK * 1000, dlen * 1000, dlenxy * 1000, normdlxy, cosp * 100,
+                            cospxy * 100, sigvert * 1000, cosPiDs * 10, cosPiKPhi * 10, TMath::Abs(normIP), absimpparxy * 10000};
               var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
             }
 
@@ -1719,11 +1719,11 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
                                "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", 
                                "ML model output 0", "ML model output 1", "ML model output 2"};
 
-  std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nPtBins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-  std::vector<Double_t> xminRecoMC = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-  std::vector<Double_t> xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fPtLimits[fNPtBins], fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
-  std::vector<TString> axisMC = {"invMassDsAllPhi", "#it{p}_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
-                                 "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "p_{T}^{B} (GeV/c)",
+  std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+  std::vector<TString> axisMC = {"invMassDsAllPhi", "#it{p}_{T}", "p_{T}^{B} (GeV/c)", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
+                                 "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}",
                                  "ML model output 0", "ML model output 1", "ML model output 2"};
 
   if (fSystem == kPbPb) {
@@ -1734,18 +1734,18 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     xminReco = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-    nBinsRecoMC = {nInvMassBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, nPtBins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-    xminRecoMC = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fPtLimits[fNPtBins], fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
   else if (fSystem == kUpgr) {
     nBinsReco = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     xminReco = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     xmaxReco = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-    nBinsRecoMC = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, nPtBins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-    xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fPtLimits[fNPtBins], fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
 
   if (fApplyML && fUseMinimalVarForSparse) {
@@ -1754,10 +1754,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       xminReco = {xminReco[0], xminReco[1], xminReco[13], xminReco[14], xminReco[15]};
       xmaxReco = {xmaxReco[0], xmaxReco[1], xmaxReco[13], xmaxReco[14], xmaxReco[15]};
 
-      axisMC = {axisMC[0], axisMC[1], axisMC[13], axisMC[14], axisMC[15], axisMC[16]};
-      nBinsRecoMC = {nBinsRecoMC[0], nBinsRecoMC[1], nBinsRecoMC[13], nBinsRecoMC[14], nBinsRecoMC[15], nBinsRecoMC[16]};
-      xminRecoMC = {xminRecoMC[0], xminRecoMC[1], xminRecoMC[13], xminRecoMC[14], xminRecoMC[15], xminRecoMC[16]};
-      xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[13], xmaxRecoMC[14], xmaxRecoMC[15], xmaxRecoMC[16]};
+      axisMC = {axisMC[0], axisMC[1], axisMC[2], axisMC[14], axisMC[15], axisMC[16]};
+      nBinsRecoMC = {nBinsRecoMC[0], nBinsRecoMC[1], nBinsRecoMC[2], nBinsRecoMC[14], nBinsRecoMC[15], nBinsRecoMC[16]};
+      xminRecoMC = {xminRecoMC[0], xminRecoMC[1], xminRecoMC[2], xminRecoMC[14], xminRecoMC[15], xminRecoMC[16]};
+      xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[2], xmaxRecoMC[14], xmaxRecoMC[15], xmaxRecoMC[16]};
   }
 
   Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
