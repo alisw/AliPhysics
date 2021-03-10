@@ -132,6 +132,7 @@ private:
     Float_t       fMomTOFDeut;
     Int_t	  fEstimator;
     AliEventCuts  fEventCut;
+	Int_t		  fYlimit = -999; //!switch for rapidity cut
 	Bool_t		  kAnalyseAllParticles;
     
     enum {kSelectedEvents=0, kINT7selected, kDAQincomplete, kV0timing, kClusterTrackletCut, kVertexZ, kVtxNcontrib, kSPDPileUp, kVtxDisplace, kVtxRes, kNbinsEvent};
