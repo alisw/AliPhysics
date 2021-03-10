@@ -1239,7 +1239,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
           {
           bool isOnly=kTRUE;
           //Check if other contributions from same primary?
-          uint iL=1;
+          UInt_t iL=1;
           while(iL<p->GetCluster()->GetNLabels()){
             AliAODMCParticle * testPrim1=prim ;
             bool isSame=kFALSE;
