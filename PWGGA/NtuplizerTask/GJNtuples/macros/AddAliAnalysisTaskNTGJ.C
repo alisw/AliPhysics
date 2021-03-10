@@ -1,13 +1,3 @@
-#ifdef __CLING__
-R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
-#include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
-#include <PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C>
-#include <PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C>
-#include <OADB/macros/AddTaskPhysicsSelection.C>
-#include <PWGPP/PilotTrain/AddTaskCDBconnect.C>
-#include <PWG/EMCAL/macros/AddTaskEmcalEmbeddingHelper.C>
-#endif // __CLING__
-
 AliAnalysisTaskNTGJ *
 AddAliAnalysisTaskNTGJ(TString name,
                        TString emcal_correction_filename,
@@ -47,99 +37,7 @@ AddAliAnalysisTaskNTGJ(TString name,
   fprintf(stderr, "%s:%d: skim_cluster_min_e = %f\n", __FILE__,
           __LINE__, skim_cluster_min_e);
 
-  // ask Dhruv why this is necessary
-#ifndef __CLING__
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/"
-                   "AddTaskCDBconnect.C");
-#endif // __CLING__
-  AliTaskCDBconnect* taskCDB = AddTaskCDBconnect();
-  taskCDB->SetFallBackToRaw(kTRUE);
-
-  if (mult_selection) {
-#ifndef __CLING__
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/"
-                     "macros/AddTaskMultSelection.C");
-#endif // __CLING__
-
-    AliMultSelectionTask *mult_selection_task =
-      AddTaskMultSelection(kFALSE);
-  }
-
-  if (is_embed) {
-#ifndef __CLING__
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/"
-                     "macros/AddTaskEmcalEmbeddingHelper.C");
-#endif // __CLING__
-
-    // Create the Embedding Helper
-    AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AddTaskEmcalEmbeddingHelper();
-    // Set the file pattern. This example uses ptHardBin 4 of LHC12a15e_fix.
-    // The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
-    // See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
-    // For the grid. Include "alien://" and don't use this locally!! It will be very slow and cause strain on the grid!
-    if (embed_grid_file_pattern != "") {
-      embeddingHelper->SetFilePattern(embed_grid_file_pattern);
-    }
-    // For local use. File should be formatted the same as the normal list of input files (one filename per line).
-    // Again, don't use AliEn locally!! It will be very slow and cause strain on the grid!
-    if (embed_local_file_list != "") {
-      embeddingHelper->SetFileListFilename(embed_local_file_list);
-    }
-    // If the embedded file is an ESD, then set:
-    // embeddingHelper->SetESD();
-    embeddingHelper->SetAOD();
-    // Add additional configure as desired.
-    // For some examples...
-    // ... randomly select which file to start from:
-    embeddingHelper->SetRandomFileAccess(kTRUE);
-    // ... Start from a random event within each file
-    embeddingHelper->SetRandomEventNumberAccess(kTRUE);
-    // ... Set pt hard bin properties
-    // embeddingHelper->SetPtHardBin(1);
-    // embeddingHelper->SetNPtHardBins(11);
-    // etc..
-    // As your last step, always initialize the helper!
-    embeddingHelper->Initialize();
-  }
-
-  if (emcal_correction_filename != "") {
-#ifndef __CLING__
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/"
-                     "AddTaskEmcalCorrectionTask.C");
-#endif // __CLING__
-
-    if (is_embed) {
-      // To store the 3 corrections tasks
-      TObjArray correctionTasks;
-      // Create the 3 needed correction tasks
-      // These handle the cell corrections to the input data
-      // Selecting all corrections with "_data" in the name
-      correctionTasks.Add(AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask("data"));
-      // These handle the cell corrections to the embedded data
-      // Selecting all corrections with "_embed" in the name
-      correctionTasks.Add(AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask("embed"));
-      // These handle the cluster corrections to the combined (input + embedded) data
-      // Selecting all corrections with "_combined" in the name
-      // It is important that combined is last!
-      correctionTasks.Add(AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask("combined"));
-
-      // Loop over all of the correction tasks to configure them the same
-      AliEmcalCorrectionTask * temp_correction_task = 0;
-      TIter next(&correctionTasks);
-      while ((temp_correction_task = static_cast<AliEmcalCorrectionTask*>(next())))
-      {
-        temp_correction_task->SetUserConfigurationFilename(emcal_correction_filename.Data());
-        temp_correction_task->Initialize();
-      }
-    } else {
-      AliEmcalCorrectionTask *correction_task =
-        AddTaskEmcalCorrectionTask();
-
-      correction_task->SetUserConfigurationFilename(emcal_correction_filename.Data());
-      correction_task->Initialize();
-    }
-  }
-
+ 
   AliAnalysisTaskNTGJ *task =
     new AliAnalysisTaskNTGJ(name.Data());
 
@@ -158,7 +56,7 @@ AddAliAnalysisTaskNTGJ(TString name,
 
   // by default, AliTrackContainer uses fTrackFilterType AliEmcalTrackSelection::kHybridTracks
   // if we want to change this, we need to do SetTrackFilterType for each track container
-  // to find the appropriate number, look at http://alidoc.cern.ch/AliPhysics/master/class_ali_emcal_track_selection.html#a6c49adca402b67f481fa75a41f758444a237b6bd38b4e5e6e0300a4181065c872
+  
   AliTrackContainer * datatrackContainer = new AliTrackContainer("usedefault");
   if (track_cuts_period != "") {
     datatrackContainer->SetTrackCutsPeriod(track_cuts_period);
