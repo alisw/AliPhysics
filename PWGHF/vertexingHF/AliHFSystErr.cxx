@@ -8364,7 +8364,7 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05);
 
-  // Tracking efficiency (+++ Old! From coarser bins analysis +++)
+  // Tracking efficiency (+++ From coarser bins analysis +++)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,0.045);
   for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
@@ -8375,27 +8375,29 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,0.15);//1-2
-  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.09); // 1-2
-  for(Int_t i=3;i<=5;i++) fRawYield->SetBinContent(i,0.03); // from 2-3 to 4-5
-  for(Int_t i=6;i<=12;i++) fRawYield->SetBinContent(i,0.06); // from 6-7 to 10-12
-  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10); // 12-24
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.11); // 1-2
+  for(Int_t i=3;i<=7;i++) fRawYield->SetBinContent(i,0.04); // from 2-3 to 6-7
+  for(Int_t i=8;i<=12;i++) fRawYield->SetBinContent(i,0.08); // from 7-8 to 10-12
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.09); // 12-24
 
+  // topological selection
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   fCutsEff->SetBinContent(1,0.15);//1-2
   for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.15); // 1-2
   for(Int_t i=3;i<=5;i++) fCutsEff->SetBinContent(i,0.13); // 2-3
-  for(Int_t i=6;i<=10;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4 to 8-10
-  for(Int_t i=11;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10-12, 12-24
+  for(Int_t i=6;i<=24;i++) fCutsEff->SetBinContent(i,0.08); // from 3-4
 
   // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
 
-  // MC dN/dpt (+++ Old! From coarser bins analysis +++)
+  // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  fMCPtShape->SetBinContent(1,0.02);
-  fMCPtShape->SetBinContent(2,0.02);
-  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 2-24
+  fMCPtShape->SetBinContent(1,0.04);
+  fMCPtShape->SetBinContent(2,0.04);  // 1-2
+  fMCPtShape->SetBinContent(3,0.02);  // 2-3
+  fMCPtShape->SetBinContent(4,0.01);  // 3-4
+  for(Int_t i=5;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 4-24
 
   // BR
   fBR= new TH1F("fBR","fBR",24,0,24);
@@ -10941,16 +10943,16 @@ void AliHFSystErr::InitLctopKpiFromScpp13TeV201620172018() {
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
   fMCPtShape->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fMCPtShape->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fMCPtShape->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fMCPtShape->SetBinContent( 4,0.02);  //   4-5 GeV/c
-  fMCPtShape->SetBinContent( 5,0.02);  //   5-6 GeV/c
-  fMCPtShape->SetBinContent( 6,0.01);  //   6-7 GeV/c
-  fMCPtShape->SetBinContent( 7,0.01);  //   7-8 GeV/c
-  fMCPtShape->SetBinContent( 8,0.01);  //   8-9 GeV/c
-  fMCPtShape->SetBinContent( 9,0.01);  //  9-10 GeV/c
-  fMCPtShape->SetBinContent(10,0.01);  // 10-11 GeV/c
-  fMCPtShape->SetBinContent(11,0.01);  // 11-12 GeV/c
+  fMCPtShape->SetBinContent( 2,0.10);  //   2-3 GeV/c
+  fMCPtShape->SetBinContent( 3,0.10);  //   3-4 GeV/c
+  fMCPtShape->SetBinContent( 4,0.04);  //   4-5 GeV/c
+  fMCPtShape->SetBinContent( 5,0.04);  //   5-6 GeV/c
+  fMCPtShape->SetBinContent( 6,0.00);  //   6-7 GeV/c
+  fMCPtShape->SetBinContent( 7,0.00);  //   7-8 GeV/c
+  fMCPtShape->SetBinContent( 8,0.00);  //   8-9 GeV/c
+  fMCPtShape->SetBinContent( 9,0.00);  //  9-10 GeV/c
+  fMCPtShape->SetBinContent(10,0.00);  // 10-11 GeV/c
+  fMCPtShape->SetBinContent(11,0.00);  // 11-12 GeV/c
   if(nbins==23 && 23.9<upedge_pt && upedge_pt<24.1) for(Int_t i=12;i<=nbins;i++)  fMCPtShape->SetBinContent(i,0.00);  // from 12 to 24 GeV/c (dummy)
 
   return;
@@ -11040,12 +11042,12 @@ void AliHFSystErr::InitScpp13TeV201620172018() {
   // MC pt-shape
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nbins,1,upedge_pt);
   fMCPtShape->SetBinContent( 1,0.00);  //   1-2 GeV/c (dummy)
-  fMCPtShape->SetBinContent( 2,0.05);  //   2-3 GeV/c
-  fMCPtShape->SetBinContent( 3,0.05);  //   3-4 GeV/c
-  fMCPtShape->SetBinContent( 4,0.02);  //   4-5 GeV/c
-  fMCPtShape->SetBinContent( 5,0.02);  //   5-6 GeV/c
-  fMCPtShape->SetBinContent( 6,0.01);  //   6-7 GeV/c
-  fMCPtShape->SetBinContent( 7,0.01);  //   7-8 GeV/c
+  fMCPtShape->SetBinContent( 2,0.10);  //   2-3 GeV/c
+  fMCPtShape->SetBinContent( 3,0.10);  //   3-4 GeV/c
+  fMCPtShape->SetBinContent( 4,0.04);  //   4-5 GeV/c
+  fMCPtShape->SetBinContent( 5,0.04);  //   5-6 GeV/c
+  fMCPtShape->SetBinContent( 6,0.00);  //   6-7 GeV/c
+  fMCPtShape->SetBinContent( 7,0.00);  //   7-8 GeV/c
   fMCPtShape->SetBinContent( 8,0.00);  //   8-9 GeV/c
   fMCPtShape->SetBinContent( 9,0.00);  //  9-10 GeV/c
   fMCPtShape->SetBinContent(10,0.00);  // 10-11 GeV/c
