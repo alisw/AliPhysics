@@ -41,6 +41,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetkSgTPC_Alone             ( Float_t   kTPCSigma )     { kSgTPC_Alone = kTPCSigma; };
     void                        SetkSgTPC_TOFVt             ( Float_t   kTPCSigma )     { kSgTPC_TOFVt = kTPCSigma; };
     void                        SetkSgTOF_Veto              ( Float_t   kTOFSigma )     { kSgTOF_Veto = kTOFSigma; };
+    void                        SetfRunName                 ( TString   kRunName )      { fRunName = kRunName; };
     Bool_t                      GetMCFlag                   ( )                         { return kMCbool; };
     Bool_t                      GetPhiFlag                  ( )                         { return kPhibool; };
     Bool_t                      GetKaonFlag                 ( )                         { return kKaonbool; };
