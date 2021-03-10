@@ -548,7 +548,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         if (trackP < fLowPCut || trackP > fHighPCut)      continue;
         if (TMath::Abs(trackEta) > fEtaCut)               continue;
         if (track->GetITSNcls() < fMinClIts)              continue;
-	if (fYlimit>0 && TMath::Abs(track->Y())>0.5)	  continue; //If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.5
+	if (TMath::Abs(track->Y())>fYlimit)		  continue; //If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.5
 
 
         
