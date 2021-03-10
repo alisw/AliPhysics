@@ -494,6 +494,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       if(fFillOnlySignal)
         fMLhandler->SetFillOnlySignal();
       fMLhandler->SetFillBeautyMotherPt();
+      fMLhandler->SetFillBeautyMotherPDG();
     }
     fMLtree = fMLhandler->BuildTree("treeMLDs", "treeMLDs");
     fMLtree->SetMaxVirtualSize(1.e+8);
@@ -841,6 +842,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     Bool_t isCandInjected = kFALSE;
     Float_t trueImpParDsFromB = 99999.;
     Float_t ptB = -999.;
+    Int_t pdgBmother = 0;
 
     if (fReadMC)
     {
@@ -906,7 +908,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
         orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
         origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kFALSE);
         if(orig == 5 || origWoQuark==5)
-           ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDs);
+           ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC,partDs,pdgBmother);
       }
     }
 
@@ -1250,6 +1252,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             }
           }          
           fMLhandler->SetBeautyMotherPt(ptB);
+          fMLhandler->SetBeautyMotherPDG(pdgBmother);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
@@ -1295,6 +1298,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
             }
           }
           fMLhandler->SetBeautyMotherPt(ptB);
+          fMLhandler->SetBeautyMotherPDG(pdgBmother);
         }
 
         fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, isrefl);
@@ -1506,17 +1510,24 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
       AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
 
+      Int_t deca = 0;
+      Bool_t isGoodDecay = kFALSE;
+      Int_t labDau[3] = {-1, -1, -1};
+      Bool_t isFidAcc = kFALSE;
+      Bool_t isDaugInAcc = kFALSE;
+
+      Int_t orig = 0, origWoQuark = 0;
+
+      Double_t ptB = -1;
+      Int_t pdgBmother = 0, Borigin = -1; // Borigin: 1=B0, 2=B+, 3=Bs, 4=Lb, 5=other
+
+      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
+
       if (TMath::Abs(mcPart->GetPdgCode()) == 431)
       {
-        Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
-        Int_t origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-
-        Int_t deca = 0;
-        Bool_t isGoodDecay = kFALSE;
-        Int_t labDau[3] = {-1, -1, -1};
-        Bool_t isFidAcc = kFALSE;
-        Bool_t isDaugInAcc = kFALSE;
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        origWoQuark = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kFALSE); //Prompt = 4, FeedDown = 5 --> w/o requiring the quark
+        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         deca = AliVertexingHFUtils::CheckDsDecay(arrayMC, mcPart, labDau);
         if (deca == 1)
@@ -1534,6 +1545,29 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
 
           if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid)<0.5))
           {
+            if(orig == 5 || origWoQuark == 5)
+            {
+              ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, mcPart, pdgBmother);
+              switch(TMath::Abs(pdgBmother))
+              {
+                case 511:
+                  Borigin = 1;
+                break;
+                case 521:
+                  Borigin = 2;
+                break;
+                case 531:
+                  Borigin = 3;
+                break;
+                case 5122:
+                  Borigin = 4;
+                break;
+                default:
+                  Borigin = 5;
+                break;
+              }
+            }
+
             if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
             {
               Double_t var4nSparseAcc[knVarForSparseAcc] = {pt, rapid * 10};            
@@ -1541,8 +1575,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             }
             else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};            
               fnSparseMC[1]->Fill(var4nSparseAcc);
             }
             else { //no quark found
@@ -1555,8 +1588,7 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
                 }
                 else if (origWoQuark == 5 && !isParticleFromOutOfBunchPileUpEvent)
                 {
-                  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};            
+                  Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};            
                   fnSparseMC[6]->Fill(var4nSparseAcc);
                 }
               }
@@ -1566,14 +1598,8 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
       }
       if (fFillSparseDplus && TMath::Abs(mcPart->GetPdgCode()) == 411)
       {
-        Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
-        Bool_t isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
-
-        Int_t deca = 0;
-        Bool_t isGoodDecay = kFALSE;
-        Int_t labDau[3] = {-1, -1, -1};
-        Bool_t isFidAcc = kFALSE;
-        Bool_t isDaugInAcc = kFALSE;
+        orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, kTRUE); //Prompt = 4, FeedDown = 5
+        isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iPart, mcHeader, arrayMC);
 
         deca = AliVertexingHFUtils::CheckDplusKKpiDecay(arrayMC, mcPart, labDau);
         if (deca == 1)
@@ -1598,8 +1624,26 @@ void AliAnalysisTaskSEDs::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHead
             }
             if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
             {
-              Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB};
+              ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, mcPart, pdgBmother);
+              switch(TMath::Abs(pdgBmother))
+              {
+                case 511:
+                  Borigin = 1;
+                break;
+                case 521:
+                  Borigin = 2;
+                break;
+                case 531:
+                  Borigin = 3;
+                break;
+                case 5122:
+                  Borigin = 4;
+                break;
+                default:
+                  Borigin = 5;
+                break;
+              }
+              Double_t var4nSparseAcc[knVarForSparseAccFD] = {pt, rapid * 10, ptB, static_cast<Double_t>(Borigin)};
               fnSparseMCDplus[1]->Fill(var4nSparseAcc);
             }
           }
@@ -1708,9 +1752,13 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
   Int_t nSparseAxesMC = nSparseAxes + 1;
 
   Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
-  if (fUseFinPtBinsForSparse)
+  Int_t nPtBBins = 300;
+  Double_t ptBmax = 150.;
+  if (fUseFinPtBinsForSparse) {
     nPtBins = nPtBins*10;
-  
+    nPtBBins = 1500;
+  }
+
   // use pp for default values
   std::vector<Int_t> nBinsReco = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
   std::vector<Double_t> xminReco = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
@@ -1719,9 +1767,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
                                "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", 
                                "ML model output 0", "ML model output 1", "ML model output 2"};
 
-  std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Int_t> nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
   std::vector<Double_t> xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-  std::vector<Double_t> xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+  std::vector<Double_t> xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], ptBmax, 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   std::vector<TString> axisMC = {"invMassDsAllPhi", "#it{p}_{T}", "p_{T}^{B} (GeV/c)", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP",
                                  "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}",
                                  "ML model output 0", "ML model output 1", "ML model output 2"};
@@ -1734,18 +1782,18 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     xminReco = {minMass, 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     xmaxReco = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 15, 10, 10, 10, 10, 10, 14, 6, 6, 12, 30, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 95., 95., 0., 7., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], ptBmax, 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
   else if (fSystem == kUpgr) {
     nBinsReco = {nInvMassBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     xminReco = {minMass, 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     xmaxReco = {maxMass, fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    nBinsRecoMC = {nInvMassBins, nPtBins, nPtBBins, 40, 120, 120, 50, 60, 60, 30, 12, 12, 20, 100, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     xminRecoMC = {minMass, 0., 0., 0., 0., 0., 0., 0.97, 0.97, 0., 0.7, 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], fPtLimits[fNPtBins], 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    xmaxRecoMC = {maxMass, fPtLimits[fNPtBins], ptBmax, 20., 1200., 1200., 25., 1., 1., 150., 1., 0.3, 5., 50., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   }
 
   if (fApplyML && fUseMinimalVarForSparse) {
@@ -1760,9 +1808,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[2], xmaxRecoMC[14], xmaxRecoMC[15], xmaxRecoMC[16]};
   }
 
-  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBins};
-  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0.};
-  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., fPtLimits[fNPtBins]};
+  Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBBins, 5};
+  Double_t xminAcc[knVarForSparseAccFD] = {0., -10., 0., 0.5};
+  Double_t xmaxAcc[knVarForSparseAccFD] = {fPtLimits[fNPtBins], 10., ptBmax, 5.5};
 
   if (fReadMC)
   {
@@ -1777,8 +1825,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
       fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
       fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-      if(iHist==1)
+      if(iHist==1) {
         fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+        fnSparseMC[iHist]->GetAxis(3)->SetTitle("B species");
+      }
       fOutput->Add(fnSparseMC[iHist]);
 
       //Dplus
@@ -1788,8 +1838,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fnSparseMCDplus[iHist] = new THnSparseF(Form("fnSparseAccDplus_%s", label[iHist].Data()), titleSparse.Data(), (iHist == 0) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMCDplus[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMCDplus[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        if(iHist==1)
+        if(iHist==1) {
             fnSparseMCDplus[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+            fnSparseMCDplus[iHist]->GetAxis(3)->SetTitle("B species");
+        }
         fOutput->Add(fnSparseMCDplus[iHist]);
       }
     }
@@ -1821,8 +1873,10 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
         fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAccWoQuark_%s", label[iHist - 5].Data()), titleSparse.Data(), (iHist == 5) ? knVarForSparseAcc : knVarForSparseAccFD, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
-        if(iHist==6)
+        if(iHist==6) {
             fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
+            fnSparseMC[iHist]->GetAxis(3)->SetTitle("B species");
+        }
         fOutput->Add(fnSparseMC[iHist]);
       }
     }

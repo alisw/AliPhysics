@@ -161,7 +161,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
     kVarForSparse = 13,
     kVarForSparseFD = 14,
     knVarForSparseMLMinimal = 3,
-    kVarForSparseAcc = 4,
+    kVarForSparseAcc = 5,
     kVarForTrackSparse = 7,
     kVarForImpPar = 3
   };
