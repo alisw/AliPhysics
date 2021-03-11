@@ -24,7 +24,7 @@ public:
    void SetMostProbableDeuteron();
    void SetNsigmaRejection(float nsigmaRejection = 3.0);
    void SetfNSigmaMass(float nsigmass = -1);
-   void SetBasicSel(bool fBasicSelection = true);
+   void SetBasicSel(bool basSel = true);
 
 private:
    bool  fdEdxcut;         // true - if nsigma selection plus the Contour Method 
@@ -44,7 +44,7 @@ private:
 
 inline void AliFemtoWRzTrackCut::SetdEdxcut(bool coumet) { fdEdxcut = coumet; }
 inline void AliFemtoWRzTrackCut::SetMaxmom(float maxm) { fmaxmom = maxm; }
-inline void AliFemtoWRzTrackCut::SetMostProbableDeuteron() { fMostProbable = 13; }
+inline void AliFemtoWRzTrackCut::SetMostProbableDeuteron() { fMostProbable = 14; }
 inline void AliFemtoWRzTrackCut::SetNsigmaRejection(float nsigmaRejection) { fNsigmaRejection = nsigmaRejection; }
 inline void AliFemtoWRzTrackCut::SetfNSigmaMass(float nsigmass) { fNSigmaMass = nsigmass; }
 inline void AliFemtoWRzTrackCut::SetBasicSel(bool basSel) { fBasicSelection = basSel; }
