@@ -1,3 +1,11 @@
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C>
+#include <OADB/macros/AddTaskPhysicsSelection.C>
+#include <PWG/EMCAL/macros/AddTaskEmcalEmbeddingHelper.C>
+#endif // __CLING__
+
+
 AliAnalysisTaskNTGJ *
 AddAliAnalysisTaskNTGJ(TString name,
                        TString emcal_correction_filename,
@@ -141,15 +149,6 @@ AddAliAnalysisTaskNTGJ(TString name,
                                           AliAnalysisManager::
                                           kOutputContainer,
                                           filename.Data()));
-
-  AliAnalysisAlien *plugin =static_cast<AliAnalysisAlien *>(mgr->GetGridHandler());
-
-  if (plugin != NULL) {
-    task->SetAliROOTVersion(plugin->GetAliROOTVersion());
-    task->SetAliPhysicsVersion(plugin->GetAliPhysicsVersion());
-    task->SetGridDataDir(plugin->GetGridDataDir());
-    task->SetGridDataPattern(plugin->GetDataPattern());
-  }
 
   return task;
 }
