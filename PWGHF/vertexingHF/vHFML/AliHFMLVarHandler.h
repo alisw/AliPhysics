@@ -125,13 +125,13 @@ class AliHFMLVarHandler : public TObject
         bool fEnableBMotherPt = false;                                 /// enable filling of B-mother pT
         float fPtBMother = -999.;                                      /// B-mother pT for feed-down (ML only)
         bool fEnableBMotherPDG = false;                                /// enable filling of B-mother PDG
-        bool fPDGBMother = 0;                                          /// B-mother PDG for feed-down
+        int fPDGBMother = 0;                                           /// B-mother PDG for feed-down
         AliPIDCombined* fPIDCombined = nullptr;                        //!<! object for combined PID probability (bayesian)
         bool fEnableNtracklets = false;                                /// Flag to add Ntracklets in tree
         int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 5); ///
+    ClassDef(AliHFMLVarHandler, 6); ///
     /// \endcond
 };
 #endif
