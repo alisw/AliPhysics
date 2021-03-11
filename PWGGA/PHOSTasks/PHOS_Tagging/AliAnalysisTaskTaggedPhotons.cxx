@@ -89,6 +89,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fIsMC(0),
   fIsFastMC(0),
   fIsMCWithPileup(0),
+  fDefTof(true),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(0.),
@@ -158,6 +159,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fIsMC(0),
   fIsFastMC(0),
   fIsMCWithPileup(0),
+  fDefTof(true),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -222,6 +224,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fIsMC(0),
   fIsFastMC(0),
   fIsMCWithPileup(0),
+  fDefTof(true),
   fRP(0.),
   fJetPtHardFactor(2.5),
   fZmax(-60.),
@@ -3067,12 +3070,19 @@ Double_t AliAnalysisTaskTaggedPhotons::TOFCutEff(Double_t x ){
                          (-4.39257e+00*x+2.25503e+00*x*x+x*x*x)/(2.37160e+00*x-6.93786e-01*x*x+x*x*x) ;
      }
   }
-  if(TMath::Abs(fTimeCut-30.e-9)<0.01*30.e-9){  
-    //Improved param for E<0.2 GeV (07.07.2020)  
-    if(x>1.6)x=1.6;
-    if(x<0.14)x=0.14;
-    return TMath::Exp((6.24104e+05-6.40577e+06*x+1.25640e+07*x*x-9.59211e+06*x*x*x+2.53582e+06*x*x*x*x)/(1.-2.34722e+06*x+1.68667e+07*x*x)) ;
-      
+  if(TMath::Abs(fTimeCut-30.e-9)<0.01*30.e-9){ 
+    if(fDefTof){  
+      //Improved param for E<0.2 GeV (07.07.2020)  
+      if(x>1.6)x=1.6;
+      if(x<0.14)x=0.14;
+      return TMath::Exp((6.24104e+05-6.40577e+06*x+1.25640e+07*x*x-9.59211e+06*x*x*x+2.53582e+06*x*x*x*x)/(1.-2.34722e+06*x+1.68667e+07*x*x)) ;
+    }
+    else{ //alternatice param        
+      //another param 11.03.2021
+      if(x>1.6)x=1.6;
+      return 1./(1.+TMath::Exp((4.83230e+01-8.89758e+01*x+1.10897e+03*x*x-5.73755e+03*x*x*x-1.43777e+03*x*x*x*x)/
+            (1.-1.23667e+02*x+1.07255e+03*x*x+5.87221e+02*x*x*x))) ;
+    }
   }
   if(TMath::Abs(fTimeCut-100.e-9)<0.01*100.e-9){
     //parameterization 01.08.2020   
