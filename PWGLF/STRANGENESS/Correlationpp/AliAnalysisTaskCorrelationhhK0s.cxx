@@ -38,7 +38,6 @@
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
 
-
 class AliAnalysisTaskCorrelationhhK0s;   
 using namespace std;          
 ClassImp(AliAnalysisTaskCorrelationhhK0s) 
@@ -83,6 +82,8 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s() :AliAnalysisT
   fHistPtTMaxBefAllCfrDataMC(0),
   fHistPtTMinBefAll(0),
   fHistPtTMinBefAllMC(0),
+  fHistPtMaxvsMultBefRSelection(0),
+  fHistPtMaxvsMultAfterRSelection(0),
   fHistPtvsMult(0), 
   fHistPtvsMultBefAll(0), 
   fHistPtMaxvsMult(0), 
@@ -290,6 +291,8 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s(const char* nam
   fHistPtTMaxBefAllCfrDataMC(0), 
   fHistPtTMinBefAll(0),
   fHistPtTMinBefAllMC(0),
+  fHistPtMaxvsMultBefRSelection(0),
+  fHistPtMaxvsMultAfterRSelection(0),
   fHistPtvsMult(0), 
   fHistPtvsMultBefAll(0), 
   fHistPtMaxvsMult(0), 
@@ -606,7 +609,7 @@ void AliAnalysisTaskCorrelationhhK0s::ProcessMCParticles(Bool_t Generated, AliAO
 
 	  //OPTION 1: remove generated K0s which are mothers to the h of the considered event
 	  if (Condition1Gen)  {	    
-	    //continue;
+	    continue;
 	  }
 
 	  //OPTION 2: calculate efficiency starting from events with a PRIMARY trigger particle
@@ -867,6 +870,14 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
 
   fHistPtTMinBefAllMC = new TH1F("fHistPtTMinBefAllMC", "p_{T} distribution of true trigger particle with Pt minimum in the event", 300, 0, 30); 
   fHistPtTMinBefAllMC->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+
+  fHistPtMaxvsMultBefRSelection = new TH2F("fHistPtMaxvsMultBefRSelection", "p_{T} distribution of selected reco triggers (possibly also K0s daughters)", 300, 0, 30,   NumBinsMult, 0, UpperLimitMult); 
+  fHistPtMaxvsMultBefRSelection->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultBefRSelection->GetYaxis()->SetTitle("Centrality");
+
+  fHistPtMaxvsMultAfterRSelection = new TH2F("fHistPtMaxvsMultAfterRSelection", "p_{T} distribution of selected reco triggers (no K0s daughters)", 300, 0, 30,  NumBinsMult, 0, UpperLimitMult); 
+  fHistPtMaxvsMultAfterRSelection->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultAfterRSelection->GetYaxis()->SetTitle("Centrality");
 
   fHistPtvsMultBefAll= new TH2F("fHistPtvsMultBefAll", "p_{T} and centrality distribution of charged tracks in events w T>0", 300, 0, 30, NumBinsMult, 0, UpperLimitMult); 
   fHistPtvsMultBefAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1540,7 +1551,9 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fOutputList->Add(fHistPthAssoc);     
   fOutputList->Add(fHistPtTMaxBefAllCfrDataMC);
   fOutputList->Add(fHistPtTMinBefAll);     
-  fOutputList->Add(fHistPtTMinBefAllMC);     
+  fOutputList->Add(fHistPtTMinBefAllMC);   
+  fOutputList->Add(fHistPtMaxvsMultBefRSelection);
+  fOutputList->Add(fHistPtMaxvsMultAfterRSelection);
   fOutputList->Add(fHistPtvsMult);       
   fOutputList->Add(fHistPtvsMultBefAll);       
   fOutputList->Add(fHistPtMaxvsMult);       
@@ -2228,6 +2241,32 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       }
 
     }//end loop for trigger particles
+
+    //selection for hybrid --- Condition2 in the HybridMCTruth section should be overridden by this******************************************
+    if(fReadMCTruth && isHybridMCTruth){
+      if (fMCEvent){
+	  TClonesArray* AODMCTrackArrayTrigger =0x0;
+	  AODMCTrackArrayTrigger = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+	  AliAODMCParticle* particleTrigger = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigger->At(TMath::Abs(labelPtTMax)));
+	  Int_t labelTriggerMother = particleTrigger->GetMother();
+	  AliAODMCParticle* particleTriggerMother = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigger->At(TMath::Abs(labelTriggerMother)));
+	  Bool_t Condition2OnTrigger = (!(particleTrigger->IsPhysicalPrimary()) && (particleTriggerMother->GetPdgCode()) == 310);
+	//remove trigger particles (and therefore events) where the trigger is the daugther of a K0s 
+	  fHistPtMaxvsMultBefRSelection->Fill(ptTriggerMassimoDati, lPercentiles);
+	  if (Condition2OnTrigger){
+	    PostData(1, fOutputList);
+	    PostData(2, fSignalTree );
+	    PostData(3, fBkgTree);
+	    PostData(4, fOutputList2);  
+	    PostData(5, fOutputList3);     
+	    PostData(6, fOutputList4);
+	    // cout  << "event does not have Trigger particles " << endl;          
+	    return;
+	  }
+	  fHistPtMaxvsMultAfterRSelection->Fill(ptTriggerMassimoDati, lPercentiles);
+      }
+    }
+    //*************************************
   }//done only if not MC truth
 
   TClonesArray* AODMCTrackArray =0x0;  
@@ -2716,7 +2755,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     isV0=kTRUE;
     Generated=kTRUE;
 
-    if(fReadMCTruth){
+    if(fReadMCTruth && isEfficiency){
       if (fMCEvent){
 	ProcessMCParticles(Generated, trackPtTMax, labelPrimOrSec, lPercentiles, isV0, 0, ptTriggerMassimoAll, fIshhCorr, VPdgTrig, VParticleTrigLabel);
       }
@@ -3263,7 +3302,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       } //end loop for K0s particles as associated
     } // done only if not MC truth  
 
-    //    cout << " beginning loop for associated particles (MCtruth) " << endl;
+    cout << " beginning loop for associated particles (MCtruth) " << endl;
     //begin MC truth loop for K0s particles as associated 
     if(fReadMCTruth){
       if (fMCEvent){
@@ -3296,26 +3335,26 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  Int_t labelTriggerMother = particleTrigger->GetMother();
 	  particleTriggerMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(labelTriggerMother)));
 
-	  fHistEventV0->Fill(29); 
-	  fHistEventV0Pt->Fill(1, particleV0->Pt()); 
-
 	  if (isHybridMCTruth){
 	    Bool_t Condition1 = (particleTrigger->GetLabel() == particlePos->GetLabel() && TMath::Abs(particleTrigger->Pt() - particlePos->Pt()) < 0.00001) || (particleTrigger->GetLabel() == particleNeg->GetLabel() && TMath::Abs( particleTrigger->Pt() - particleNeg->Pt()) <0.00001 );
 	    Bool_t Condition2 = (!(particleTrigger->IsPhysicalPrimary()) && (particleTriggerMother->GetPdgCode()) == 310);
+
+	    fHistEventV0->Fill(29); 
+	    fHistEventV0Pt->Fill(1, particleV0->Pt()); 
+
 	    if (Condition1)  {	    
 	      fHistEventV0Pt->Fill(2, particleV0->Pt()); 
-	      continue; //to avoid autocorrelations when pT, K0s > pt,Trigg
+	      //continue; 
+	      //to avoid autocorrelations when pT, K0s > pt,Trigg
 	      //it actually makes the fraction of non-primary trigger particles at pt,K0s > 3 GeV/c as the fraction at lower pt values
 	    }
-	    //option alternative to the one above: not only I reject hK0s such that K0s->h but also all the other K0s associated to that h
-	    else{
+	    else  {
 	      fHistEventV0->Fill(30); 
 	    }
 
 	    if (Condition2){
 	      fHistEventV0Pt->Fill(3, particleV0->Pt());  
-	      //	      cout << "\n\n*************************************************************************\n" <<  particleTrigger->GetPdgCode() << " label " << particleTrigger->GetLabel() << " (pt : " << particleTrigger->Pt() << ") label mother " << particleTriggerMother->GetLabel() << " labels daughter K0s " << labelNeg << " (alt. label " << 	  particleNeg->GetLabel() << ") (pt: "<< particleNeg->Pt()<< ") " << labelPos << " (alt. label " << 	  particlePos->GetLabel() << ") (pt: " << particlePos->Pt()<< ") " <<endl;
-	      //	      cout << "condition1 " << Condition1 << endl;
+	      //option alternative to the one above: not only I reject hK0s such that K0s->h but also all the other K0s associated to that h
 	      //continue;
 	      
 	    }
