@@ -831,6 +831,10 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
+	  
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08->Fill(mass,eventw);
@@ -838,7 +842,6 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta08_pt400->Fill(mass,ptweight4); // pt>0.4
             // 2D:
             hMeePtee_ULS_eta08->Fill(mass,pt_pair,eventw);
-	    hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5);  // flexible
             hMeePtee_ULS_eta08_pt200->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_ULS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_ULS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
@@ -863,13 +866,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035_be->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc_be->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08_be->Fill(mass,eventw);
             hMee_ULS_eta08_pt200_be->Fill(mass,ptweight2);  // pt>0.2
             hMee_ULS_eta08_pt400_be->Fill(mass,ptweight4); // pt>0.4
             hMeePtee_ULS_eta08_be->Fill(mass,pt_pair,eventw);
-	    hMeePtee_ULS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
             hMeePtee_ULS_eta08_pt200_be->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_ULS_eta08_pt400_be->Fill(mass,pt_pair,ptweight4); // pt>0.4
           } //  |eta|<0.8
@@ -887,13 +892,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_ULS_eta035_bce->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_ULS_eta035_phenixacc_bce->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_ULS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible 
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_ULS_eta08_bce->Fill(mass,eventw);
             hMee_ULS_eta08_pt200_bce->Fill(mass,ptweight2);  // pt>0.2
             hMee_ULS_eta08_pt400_bce->Fill(mass,ptweight4); // pt>0.4
             hMeePtee_ULS_eta08_bce->Fill(mass,pt_pair,eventw);
-	    hMeePtee_ULS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible
             hMeePtee_ULS_eta08_pt200_bce->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_ULS_eta08_pt400_bce->Fill(mass,pt_pair,ptweight4); // pt>0.4
           } //  |eta|<0.8
@@ -919,6 +926,9 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08->Fill(mass,eventw);
@@ -926,7 +936,6 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta08_pt400->Fill(mass,ptweight4); // pt>0.4
             // 2D:
             hMeePtee_LS_eta08->Fill(mass,pt_pair,eventw);
-	    hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // flexible
             hMeePtee_LS_eta08_pt200->Fill(mass,pt_pair,ptweight2); // pt>0.2
             hMeePtee_LS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_LS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
@@ -950,13 +959,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035_be->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc_be->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08_be->Fill(mass,eventw);
             hMee_LS_eta08_pt200_be->Fill(mass,ptweight2);  // pt>0.2
             hMee_LS_eta08_pt400_be->Fill(mass,ptweight4); // pt>0.4
             hMeePtee_LS_eta08_be->Fill(mass,pt_pair,eventw);
-	    hMeePtee_LS_eta_pt_be->Fill(mass,pt_pair,ptweight5);  // flexible
             hMeePtee_LS_eta08_pt200_be->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_LS_eta08_pt400_be->Fill(mass,pt_pair,ptweight4); // pt>0.4
           } // |eta|<0.8
@@ -974,13 +985,15 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMee_LS_eta035_bce->Fill(mass,eventw);
             if(Inphenixacc(phio_i,pto_i,pid_i) && Inphenixacc(phio_j,pto_j,pid_j)) hMee_LS_eta035_phenixacc_bce->Fill(mass,eventw);
           }
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
+	    hMeePtee_LS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible
+	  }
           // Cut on smeared variables for ALICE acceptance
           if(fabs(eta_i)<EtaCut  && fabs(eta_j)<EtaCut)  {
             hMee_LS_eta08_bce->Fill(mass,eventw);
             hMee_LS_eta08_pt200_bce->Fill(mass,ptweight2);  // pt>0.2
             hMee_LS_eta08_pt400_bce->Fill(mass,ptweight4); // pt>0.4
             hMeePtee_LS_eta08_bce->Fill(mass,pt_pair,eventw);
-	    hMeePtee_LS_eta_pt_bce->Fill(mass,pt_pair,ptweight5);  // flexible
             hMeePtee_LS_eta08_pt200_bce->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_LS_eta08_pt400_bce->Fill(mass,pt_pair,ptweight4); // pt>0.4
           } // |eta|<0.8

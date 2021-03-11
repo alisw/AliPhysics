@@ -1345,7 +1345,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
           }//|eta|<0.35
           //_________________________________________________________
 
-	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_i) && (eta_i < fEtamax))  {
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
             hMeePtee_ULS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
 	  }
 	  
@@ -1411,7 +1411,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
           }//|eta|<0.35
           //_________________________________________________________
 	  
-	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_i) && (eta_i < fEtamax))  {
+	  if((fEtamin < eta_i) && (eta_i < fEtamax)  && (fEtamin < eta_j) && (eta_j < fEtamax))  {
             hMeePtee_LS_eta_pt->Fill(mass,pt_pair,ptweight5); // pt>fptmin
 	  }
 
