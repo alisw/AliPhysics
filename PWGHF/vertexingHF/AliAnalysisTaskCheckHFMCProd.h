@@ -86,6 +86,10 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F*  fHistYPtAllDecay[5];   //!<! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel  
   TH2F*  fHistYPtPromptAllDecay[5];   //!<! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel  
   TH2F*  fHistYPtFeeddownAllDecay[5];   //!<! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc, no selection on decay channel
+  TH2F*  fHistPtDDecLenPrompt[5];
+  TH2F*  fHistPtDDecLenXYPrompt[5];
+  TH3F*  fHistPtDPtBDecLenFeeddown[5];
+  TH3F*  fHistPtDPtBDecLenXYFeeddown[5];
   TH2F*  fHistYPtPrompt[5];   //!<! histo of y vs. pt from prompt D0, D+, D*, Ds, Lc
   TH2F*  fHistYPtFeeddown[5]; //!<! histo of y vs. pt from feeddown D0, D+, D*, Ds, Lc
   TH2F* fHistYPtD0byDecChannel[2]; //!<! histo of y vs. pt for D0->Kpi and D0->Kpipipi
@@ -93,6 +97,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   TH2F* fHistYPtDsbyDecChannel[2]; //!<! histo of y vs. pt for Ds->phipi and Ds->K0*K
   TH1F* fHistOriginPrompt;    //!<! histo of D production point (prompt)
   TH1F* fHistOriginFeeddown;  //!<! histo of D production point (feeddown)
+  TH2F* fHistPtBDecLenBXYFeeddown;  //!<! histo of D production point vs ptB
   TH1F* fHistMotherID;        //!<! histo of mother ID
   TH1F* fHistDSpecies;          //!<! histo of D hadron species
   TH1F* fHistBSpecies;          //!<! histo of B hadron species
@@ -125,7 +130,7 @@ class AliAnalysisTaskCheckHFMCProd : public AliAnalysisTaskSE {
   AliVEvent* fEvent; /// pointer to current event
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckHFMCProd, 11);
+  ClassDef(AliAnalysisTaskCheckHFMCProd, 12);
   /// \endcond
 };
 
