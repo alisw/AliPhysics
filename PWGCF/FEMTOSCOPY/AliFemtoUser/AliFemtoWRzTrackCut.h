@@ -3,8 +3,6 @@
 // AliFemtoWRzTrackCut: An extension to AliFemtoESDTrackCut              //
 // dedicated to analysis with deuterons in PbPb                          //
 //                                                                       //
-//UWAGA!This class has not been tested on the whole stat. This information//
-//will be deleted with the next commit (after the final check)           //
 ///////////////////////////////////////////////////////////////////////////
 
 #ifndef AliFemtoWRzTrackCut_hh
@@ -24,14 +22,16 @@ public:
    void SetdEdxcut(bool coumet = true);
    void SetMaxmom(float maxm = 4.0);
    void SetMostProbableDeuteron();
-   void SetNsigmaRejection(float SetNsigmaRejection = 3.0);
-   void SetfNSigmaMass(float SetNsigmass = -1);
+   void SetNsigmaRejection(float nsigmaRejection = 3.0);
+   void SetfNSigmaMass(float nsigmass = -1);
+   void SetBasicSel(bool basSel = true);
 
 private:
    bool  fdEdxcut;         // true - if nsigma selection plus the Contour Method 
    float fmaxmom;           // max momentum - for dEdx cut
    float fNsigmaRejection; // nSigmafor the EXCLUSIVE PID cut
    float fNSigmaMass;
+   bool  fBasicSelection;  //true- simple analysis, false - analysis with addit. constraints in tpc only selection
 
    bool IsKaonNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF);
    bool IsPionNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF);
@@ -44,8 +44,8 @@ private:
 
 inline void AliFemtoWRzTrackCut::SetdEdxcut(bool coumet) { fdEdxcut = coumet; }
 inline void AliFemtoWRzTrackCut::SetMaxmom(float maxm) { fmaxmom = maxm; }
-inline void AliFemtoWRzTrackCut::SetMostProbableDeuteron() { fMostProbable = 13; }
-inline void AliFemtoWRzTrackCut::SetNsigmaRejection(float SetNsigmaRejection) { fNsigmaRejection = SetNsigmaRejection; }
-inline void AliFemtoWRzTrackCut::SetfNSigmaMass(float SetNsigmass) { fNSigmaMass = SetNsigmass; }
-
+inline void AliFemtoWRzTrackCut::SetMostProbableDeuteron() { fMostProbable = 14; }
+inline void AliFemtoWRzTrackCut::SetNsigmaRejection(float nsigmaRejection) { fNsigmaRejection = nsigmaRejection; }
+inline void AliFemtoWRzTrackCut::SetfNSigmaMass(float nsigmass) { fNSigmaMass = nsigmass; }
+inline void AliFemtoWRzTrackCut::SetBasicSel(bool basSel) { fBasicSelection = basSel; }
 #endif

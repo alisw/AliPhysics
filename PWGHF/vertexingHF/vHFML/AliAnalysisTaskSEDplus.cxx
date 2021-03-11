@@ -787,6 +787,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
       if(fFillOnlySignal)
         fMLhandler->SetFillOnlySignal();
       fMLhandler->SetFillBeautyMotherPt();
+      fMLhandler->SetFillBeautyMotherPDG();
     }
     fMLhandler->SetAddGlobalEventVariables(fAddNtracklets);
     fMLtree = fMLhandler->BuildTree("treeMLDplus", "treeMLDplus");
@@ -1145,6 +1146,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
       Bool_t isFeeddown = kFALSE;
       Float_t trueImpParXY = 0.;
       Double_t ptB = -1.5;
+      Int_t pdgBmother = 0;
       Bool_t isCandInjected = kFALSE;
       if (fReadMC)
       {
@@ -1163,7 +1165,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
             isPrimary = kFALSE;
             isFeeddown = kTRUE;
             trueImpParXY = GetTrueImpactParameter(mcHeader, arrayMC, partDp) * 10000.;
-            ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, partDp);
+            ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, partDp, pdgBmother);
           }
         }
       }
@@ -1440,6 +1442,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t * /*option*/)
                   isbkg = kTRUE;
               }
               fMLhandler->SetBeautyMotherPt(ptB);
+              fMLhandler->SetBeautyMotherPDG(pdgBmother);
             }
 
             fMLhandler->SetCandidateType(issignal, isbkg, isprompt, isFD, kFALSE);
@@ -1662,6 +1665,12 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
   if (fUseFinPtBinsForSparse)
     nptbins = 700;
 
+  Int_t nptBbins = 300;
+  Double_t ptBmin = 0.;
+  Double_t ptBmax = 150.;
+  if (fUseFinPtBinsForSparse)
+    nptBbins = 1500;
+
   Int_t nselbins = 2;
   Double_t minsel = 0.5;
   Double_t maxsel = 2.5;
@@ -1674,9 +1683,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
   std::vector<Double_t> xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
   std::vector<Double_t> xmaxRecoVec = {fUpmasslimit, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-  std::vector<Int_t> nBinsRecoVecFD = {nmassbins, nptbins, nptbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-  std::vector<Double_t> xminRecoVecFD = {fLowmasslimit, ptmin, ptmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-  std::vector<Double_t> xmaxRecoVecFD = {fUpmasslimit, ptmax, ptmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+  std::vector<Int_t> nBinsRecoVecFD = {nmassbins, nptbins, nptBbins, 60, nselbins, 10, 30, 100, 30, 70, 70, 30, 40, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+  std::vector<Double_t> xminRecoVecFD = {fLowmasslimit, ptmin, ptBmin, 0., minsel, 0.3, 0.010, 0.9, 0.97, 0., 0., 0., -10., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+  std::vector<Double_t> xmaxRecoVecFD = {fUpmasslimit, ptmax, ptBmax, 300., maxsel, 1.3, 0.040, 1., 1., 0.7, 0.7, 30., 10., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
   std::vector<TString> axTit = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})",
                                 "cos(#theta_{P}^{xy})", "decL (cm)", "decL XY (cm)", "Norm decL XY", "Norm max d0-d0exp", "ML response 0", "ML response 1", "ML response 2"};
   std::vector<TString> axTitFD = {"M_{K#pi#pi} (GeV/c^{2})", "p_{T} (GeV/c)", "p_{T}^{B} (GeV/c)", "Imp Par (#mum)", "passTopolPID", "min. daughter p_{T} (GeV/c)", "sigmaVertex", "cos(#theta_{P})",
@@ -1690,9 +1699,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
       xminRecoVec = {fLowmasslimit, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
       xmaxRecoVec = {fUpmasslimit, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
-      nBinsRecoVecFD = {nmassbins, nptbins, nptbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-      xminRecoVecFD = {fLowmasslimit, ptmin, ptmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-      xmaxRecoVecFD = {fUpmasslimit, ptmax, ptmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+      nBinsRecoVecFD = {nmassbins, nptbins, nptBbins, 18, nselbins, 10, 14, 30, 30, 35, 35, 30, 12, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+      xminRecoVecFD = {fLowmasslimit, ptmin, ptBmin, 0., minsel, 0.4, 0.012, 0.97, 0.97, 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+      xmaxRecoVecFD = {fUpmasslimit, ptmax, ptBmax, 180., maxsel, 1.4, 0.040, 1., 1., 0.35, 0.35, 30., 6., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
     }
 
     if (!fApplyML)
@@ -1777,18 +1786,24 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
   if (fUseFinPtBinsForSparse)
     nptbins = 700;
 
+  Int_t nptBbins = 300;
+  Double_t ptBmin = 0.;
+  Double_t ptBmax = 150.;
+  if (fUseFinPtBinsForSparse)
+    nptBbins = 1500;
+
   Double_t maxmult = 200;
   if (fSystem == kPbPb)
     maxmult = 5000;
 
-  Int_t nbinsPrompt[kVarForSparseAcc] = {nptbins, 100, 1, 200};
-  Int_t nbinsFD[kVarForSparseAcc] = {nptbins, 100, nptbins, 200};
+  Int_t nbinsPrompt[kVarForSparseAcc] = {nptbins, 100, 1, 1, 200};
+  Int_t nbinsFD[kVarForSparseAcc] = {nptbins, 100, nptBbins, 0, 200};
 
-  Double_t xminPrompt[kVarForSparseAcc] = {ptmin, -1., ptmin, 0.};
-  Double_t xmaxPrompt[kVarForSparseAcc] = {ptmax, 1., ptmax, 0.};
+  Double_t xminPrompt[kVarForSparseAcc] = {ptmin, -1., ptBmin, 0., 0.};
+  Double_t xmaxPrompt[kVarForSparseAcc] = {ptmax, 1., ptBmax, 0., 0.};
 
-  Double_t xminFD[kVarForSparseAcc] = {ptmin, -1., ptmin, maxmult};
-  Double_t xmaxFD[kVarForSparseAcc] = {ptmax, 1., ptmax, maxmult};
+  Double_t xminFD[kVarForSparseAcc] = {ptmin, -1., ptBmin, 5.5, maxmult};
+  Double_t xmaxFD[kVarForSparseAcc] = {ptmax, 1., ptBmax, 5.5, maxmult};
 
   //pt, y
   fMCAccPrompt = new THnSparseF("hMCAccPrompt", "kStepMCAcceptance pt vs. y - promptD", kVarForSparseAcc, nbinsPrompt, xminPrompt, xmaxPrompt);
@@ -1796,6 +1811,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
   fMCAccPrompt->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
   fMCAccPrompt->GetAxis(3)->SetTitle("N_{tracklets}");
+  fMCAccPrompt->GetAxis(4)->SetTitle("B species");
 
   //pt,y,ptB
   fMCAccBFeed = new THnSparseF("hMCAccBFeed", "kStepMCAcceptance pt vs. y vs. ptB - DfromB", kVarForSparseAcc, nbinsFD, xminFD, xmaxFD);
@@ -1803,6 +1819,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
   fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
   fMCAccBFeed->GetAxis(3)->SetTitle("N_{tracklets}");
+  fMCAccBFeed->GetAxis(4)->SetTitle("B species");
 
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
@@ -1850,15 +1867,34 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
         {
           //fill histo for prompt
-          Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), -1., static_cast<Double_t>(tracklets)};
+          Double_t arrayMCprompt[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), -1., -1., static_cast<Double_t>(tracklets)};
           fMCAccPrompt->Fill(arrayMCprompt);
         }
         //for FD
         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
         {
-          Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
+          Int_t pdgBmother = 0, Borigin = 0;
+          Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPtAndPDG(arrayMC, mcPart, pdgBmother);
+          switch(TMath::Abs(pdgBmother))
+          {
+            case 511:
+              Borigin = 1;
+            break;
+            case 521:
+              Borigin = 2;
+            break;
+            case 531:
+              Borigin = 3;
+            break;
+            case 5122:
+              Borigin = 4;
+            break;
+            default:
+              Borigin = 5;
+            break;
+          }
           //fill histo for FD
-          Double_t arrayMCFD[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), ptB, static_cast<Double_t>(tracklets)};
+          Double_t arrayMCFD[kVarForSparseAcc] = {mcPart->Pt(), mcPart->Y(), ptB, static_cast<Double_t>(Borigin), static_cast<Double_t>(tracklets)};
           fMCAccBFeed->Fill(arrayMCFD);
         }
         else

@@ -868,6 +868,35 @@ Bool_t AliVertexingHFUtils::IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* t
   return kFALSE;
 }
 //____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart){
+  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt (ESD case)
+
+  Int_t pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPart->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma =0;
+  while (mother >=0 ){
+    istep++;
+    AliMCParticle* mcGranma = (AliMCParticle*)mcEvent->GetTrack(mother);
+    if (mcGranma){
+      TParticle* partGranma = mcGranma->Particle();
+      if(partGranma) pdgGranma = partGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	return mcGranma->Pt();
+      }
+      if(abspdgGranma==4) return -999.;
+      if(abspdgGranma==5) return -1.;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return -999.;
+}
+//____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
   /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
 
