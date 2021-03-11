@@ -2115,7 +2115,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   namedataset.ToLower();
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
   MCProductionType_t prodtype = MCProductionType_t::kNoMC;
-  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4"};
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8"};
   std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
