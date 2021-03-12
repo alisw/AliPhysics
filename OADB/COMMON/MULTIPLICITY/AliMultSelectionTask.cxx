@@ -3076,6 +3076,7 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
   if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
   if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
   if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+  if ( lProductionName.Contains("LHC21b6_fast") ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
   
   if ( lProductionName.Contains("LHC17d13") || lProductionName.Contains("LHC17d15") ) {
     if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
