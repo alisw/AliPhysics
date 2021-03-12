@@ -109,7 +109,7 @@ class AliIsolationCut : public TObject {
 
   Float_t    CalculateExcessAreaFraction(Float_t excess, Float_t gap = 0) const ;
 
-  void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC,
+  void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC, Int_t det,
                                                               Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
                                                               Float_t & excessClsEta, Float_t & excessAreaClsEta, 
                                                               Float_t & excessClsPhi, Float_t & excessAreaClsPhi) const ;

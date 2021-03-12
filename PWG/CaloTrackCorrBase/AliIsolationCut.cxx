@@ -1107,12 +1107,13 @@ Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess, Float_t gap
 /// If isolation cone are is outside a detector, calculate the area in excess.
 /// \param etaC: Candidate pseudorapidity.
 /// \param phiC: Candidate azimuthal angle
+/// \param det: Detector used
 /// \param excessAreaTrkEta: cone excess out of TPC pseudo rapidity
 /// \param excessAreaClsEta: cone excess out of EMC pseudo rapidity
 /// \param excessAreaClsPhi: cone excess out of EMC azimuthal angle
 //________________________________________________________________________
 void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
-( Float_t etaC, Float_t phiC, 
+( Float_t etaC, Float_t phiC, Int_t det,
   Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
   Float_t & excessClsEta, Float_t & excessAreaClsEta, 
   Float_t & excessClsPhi, Float_t & excessAreaClsPhi  ) const
@@ -1121,24 +1122,34 @@ void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
   excessClsEta = 0;
   excessClsPhi = 0;
   
-  if ( TMath::Abs(etaC)+fConeSize > fTPCEtaSize/2. )
-    excessTrkEta = TMath::Abs(etaC) + fConeSize - fTPCEtaSize/2.;
-  
-  if ( TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2. )
-    excessClsEta = TMath::Abs(etaC) + fConeSize - fEMCEtaSize/2.;
+  if ( fPartInCone != kOnlyNeutral )
+  {
+    if ( TMath::Abs(etaC)+fConeSize > fTPCEtaSize/2. )
+      excessTrkEta = TMath::Abs(etaC) + fConeSize - fTPCEtaSize/2.;
     
-  if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
-    excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
-  else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMin )
-    excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
-  
-  if( excessTrkEta < 0 || excessClsEta < 0 || excessClsPhi < 0 )
-    AliInfo(Form("Fix negative excess: trk eta %f, cls eta %f, cls phi %f",
-           excessTrkEta,excessClsEta,excessClsPhi));
-  
-  excessAreaTrkEta = CalculateExcessAreaFraction(excessTrkEta);
-  excessAreaClsEta = CalculateExcessAreaFraction(excessClsEta);
-  excessAreaClsPhi = CalculateExcessAreaFraction(excessClsPhi);
+    if ( excessTrkEta < 0 )
+      AliInfo(Form("Fix negative excess: trk eta %f",excessTrkEta));
+
+    excessAreaTrkEta = CalculateExcessAreaFraction(excessTrkEta);
+  }
+
+  if ( fPartInCone != kOnlyCharged && det == AliCaloTrackReader::kEMCAL )
+  {
+    if ( TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2. )
+      excessClsEta = TMath::Abs(etaC) + fConeSize - fEMCEtaSize/2.;
+
+    if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
+      excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
+    else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMin )
+      excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+
+    if ( excessClsEta < 0 || excessClsPhi < 0 )
+      AliInfo(Form("Fix negative excess: cls eta %f, cls phi %f",
+                   excessClsEta,excessClsPhi));
+
+    excessAreaClsEta = CalculateExcessAreaFraction(excessClsEta);
+    excessAreaClsPhi = CalculateExcessAreaFraction(excessClsPhi);
+  }
 }
 
 //_________________________________________________________________________________
@@ -3065,6 +3076,7 @@ void  AliIsolationCut::MakeIsolationCut
   if ( fMakeConeExcessCorr )
   {
     CalculateExcessAreaFractionForChargedAndNeutral(etaC, phiC, 
+                                                    pCandidate->GetDetectorTag(),
                                                     excessTrkEta, excessAreaTrkEta, 
                                                     excessClsEta, excessAreaClsEta, 
                                                     excessClsPhi, excessAreaClsPhi);
