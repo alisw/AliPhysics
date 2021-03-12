@@ -74,7 +74,7 @@ protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
   Int_t   GetFiducialArea(const Float_t * pos)const ;                           //what kind of fiducial area hit the photon
-  Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2) const; //Check MC genealogy; return PDG of parent
+  Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2,Int_t &iGrandPa) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   Double_t  InPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
@@ -94,6 +94,8 @@ protected:
   Double_t CalculateSphericity() ;
   Double_t CalculateSpherocity() ;
   Bool_t AcceptJJevent() ;
+  Double_t DPMJETKCorr(Double_t pt) ;
+  Double_t DPMJETpCorr(Double_t pt) ;
   
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
@@ -174,7 +176,14 @@ private:
   TH1F * fhPiIsolation[20][10] ;  //!
   TH2F * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
   TH2F * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
-  
+  TH2F * fhReSingleTruePi0[3][8];
+  TH2F * fhReSingleTruePi0K0s[3][8];
+  TH2F * fhReSingleTruePi0Kpm[3][8];
+  TH2F * fhReSingleTruePi0Nbar[3][8];
+  TH2F * fhReSingleTruePi0K0sC[3][8];
+  TH2F * fhReSingleTruePi0KpmC[3][8];
+  TH2F * fhReSingleTruePi0NbarC[3][8];
+
   TH2F * fhQAAllEpartn ;    //!
   TH2F * fhQAAllzpartn ;    //!
   TH2F * fhQAAllxpartn ;    //!
