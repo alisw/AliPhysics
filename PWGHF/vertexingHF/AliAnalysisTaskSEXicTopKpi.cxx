@@ -208,6 +208,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fPtSoftPionCand(0)
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
+  ,fAbsValueScCharge(-1)
 {
   /// Default constructor
 
@@ -334,6 +335,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fPtSoftPionCand(0)
   ,fPtSoftPionCand_insideScLoop(0)
   ,fKeepGenPtMC(kTRUE)
+  ,fAbsValueScCharge(-1)
 {
   /// Default constructor
 
@@ -552,6 +554,14 @@ void AliAnalysisTaskSEXicTopKpi::Init()
   // Post the data
   //  PostData(4,copyfCuts);
 
+  printf("\n\n===== fAbsValueScCharge value: %d\n",fAbsValueScCharge);
+  if(fAbsValueScCharge==-1)     printf("===== keeping all the Sc candidates (charge 0 and ++)\n\n");
+  else if(fAbsValueScCharge==0) printf("===== keeping only Sc0 candidates\n\n");
+  else if(fAbsValueScCharge==2) printf("===== keeping only Sc++ candidates\n\n");
+  else{
+    printf("===== !!! INPUT VALUE NOT VALID !!! Putting it to -1 (keep both Sc0 and Sc++)\n\n");
+    fAbsValueScCharge = -1;
+  }
 
   return;
 }
@@ -1450,9 +1460,16 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	    if(pdgLcMum==4112 || pdgLcMum==4222){
 	      isFromSigmaC=kTRUE;
+        if(fAbsValueScCharge>-1){
+          // We want a specific case!
+          // if fAbsValueScCharge>-1, it means that we want to take either only Sc0 or only Sc++
+          if(fAbsValueScCharge==0 && pdgLcMum==4112)        isFromSigmaC=kTRUE;   // Sc0
+          else if(fAbsValueScCharge==2 && pdgLcMum==4222)   isFromSigmaC=kTRUE;   // Sc++
+          else                                              isFromSigmaC=kFALSE;
+        }
 	      //fhistMCSpectrumAccSc->Fill(mcpartMum->Pt(),kRecoLc,checkOrigin);
         const Double_t arr_FillkRecoLc_Sc[4] = {mcpartMum->Pt(), kRecoLc, (Double_t)checkOrigin,(Double_t)decay_channel};	      
-	      fhistMCSpectrumAccSc->Fill(arr_FillkRecoLc_Sc);	      
+	      if(isFromSigmaC)  fhistMCSpectrumAccSc->Fill(arr_FillkRecoLc_Sc);	      
 	      pointlcsc[0]=part->Pt();
 	      pointlcsc[1]=kReco;
 	      pointlcsc[2]=checkOrigin;
@@ -1460,7 +1477,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      pointlcsc[4]=mcpartMum->Pt();
 	      pointlcsc[5]=mcpartMum->Y();
         pointlcsc[6]=decay_channel;
-	      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+	      if(isFromSigmaC)  fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 	    }
 	  }
 	}
@@ -1919,10 +1936,31 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     if(fDebug > 1){
       Printf("4plet ok, mass hypo is %d, mass1: %f, mass2: %f",massHypothesis,(massHypothesis==1||massHypothesis==3) ? mass1 : 0,(massHypothesis==2||massHypothesis==3) ? mass2:0);
     }
+
+    //  Check the value of the SigmaC candidate electric charge
+    Int_t candSc_charge = 99.;
+    Int_t ch_3prong = io3Prong->Charge();
+    Int_t ch_softPi = tracksoft->Charge();
+    if(( ch_3prong>0 && ch_softPi>0 ) || (ch_3prong<0 && ch_softPi<0)){ // Sc++ candidate
+      //printf("### charge cand.: %d   charge softPi: %d\n",ch_3prong,ch_softPi);
+      candSc_charge = 2;
+    }
+    else{ // Sc0 candidate
+      candSc_charge = 0;
+    }
+
+    // Define the boolean for the Sc sparse filling according to the candidate charge
+    // It is always true if we do not ask for specific charges (fAbsValueScCharge==-1)
+    Bool_t do_fillSparse = kTRUE;
+    if(fAbsValueScCharge>-1){
+      do_fillSparse = (fAbsValueScCharge == candSc_charge); // true if equal, false otherwise
+    }
+
+
     
     //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kReco,checkorigin);
     const Double_t arr_FillkReco_Sc[4] = {ptsigmacMC,kReco,(Double_t)checkorigin,(Double_t)decay_channel};
-    fhistMCSpectrumAccSc->Fill(arr_FillkReco_Sc);
+    if(do_fillSparse) fhistMCSpectrumAccSc->Fill(arr_FillkReco_Sc);
     pointlcsc[0]=ptlambdacMC;
     pointlcsc[1]=kReco;
     pointlcsc[2]=checkorigin;
@@ -1930,7 +1968,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
     pointlcsc[4]=ptsigmacMC;
     pointlcsc[5]=ysigmacMC;
     pointlcsc[6]=decay_channel;
-    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+    if(do_fillSparse) fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
     Double_t psoft[3],psoftOrig[3];
     tracksoft->PxPyPz(psoftOrig);
     psoft[0]=psoftOrig[0];
@@ -1987,7 +2025,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	  pointSigma[1]=deltaM;	       
 	  pointSigma[10]=lsum.Pt();
 	  if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==1 || resp_onlyPID==3) )  {
-	    if(!pSigmaC) fhSparseAnalysisSigma->Fill(pointSigma);
+	    if(!pSigmaC) {if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);}
 	    else {
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
@@ -1996,10 +2034,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		        pointSigma[10]=ptsigmacMC;
 		        pointSigma[0]=ptlambdacMC;
           }
-		      fhSparseAnalysisSigma->Fill(pointSigma);
+		      if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);
 		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
           const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};	
-          fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);      
+          if(do_fillSparse) fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);      
 		      pointlcsc[0]=ptlambdacMC;
 		      pointlcsc[1]=kRecoPID;
 		      pointlcsc[2]=checkorigin;
@@ -2007,7 +2045,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		      pointlcsc[4]=ptsigmacMC;
 		      pointlcsc[5]=ysigmacMC;
           pointlcsc[6]=decay_channel;
-		      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		      if(do_fillSparse) fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 
           //
           //  Sc peak in MC
@@ -2082,7 +2120,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      pointSigma[7]=k;
 	      if(arrayPIDselPkPi[k]){
 		if(!pSigmaC){
-		  fhSparseAnalysisSigma->Fill(pointSigma);	    
+		  if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);	    
 		}
 		else {
 		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(0);
@@ -2092,7 +2130,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		      pointSigma[10]=ptsigmacMC;
 		      pointSigma[0]=ptlambdacMC;
         }	 
-		    fhSparseAnalysisSigma->Fill(pointSigma);
+		    if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);
 		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		    pointlcsc[0]=ptlambdacMC;
 		    pointlcsc[1]=kRecoPID;
@@ -2101,7 +2139,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[4]=ptsigmacMC;
 		    pointlcsc[5]=ysigmacMC;
         pointlcsc[6]=decay_channel;
-		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		    if(do_fillSparse) fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 
         //
         //  Sc peak in MC
@@ -2201,7 +2239,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	  pointSigma[1]=deltaM;
 	  pointSigma[10]=lsum.Pt(); // not needed
 	  if(fhSparseAnalysisSigma && !fExplore_PIDstdCuts && (resp_onlyPID==2 || resp_onlyPID==3)) {
-	    if(!pSigmaC)fhSparseAnalysisSigma->Fill(pointSigma);	    
+	    if(!pSigmaC)  {if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);}  
 	    else {
 	      AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
 	      AliAODMCParticle* pProt=(AliAODMCParticle*)fmcArray->At(TMath::Abs(trkd->GetLabel()));
@@ -2210,10 +2248,10 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		        pointSigma[10]=ptsigmacMC;
 		        pointSigma[0]=ptlambdacMC;
           }
-		      fhSparseAnalysisSigma->Fill(pointSigma);
+		      if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);
 		      //fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);
           const Double_t arr_FillkRecoPID_Sc[4] = {ptsigmacMC,kRecoPID,(Double_t)checkorigin,(Double_t)decay_channel};
-          fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);
+          if(do_fillSparse) fhistMCSpectrumAccSc->Fill(arr_FillkRecoPID_Sc);
 		      pointlcsc[0]=ptlambdacMC;
 		      pointlcsc[1]=kRecoPID;
 		      pointlcsc[2]=checkorigin;
@@ -2221,7 +2259,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		      pointlcsc[4]=ptsigmacMC;
 		      pointlcsc[5]=ysigmacMC;
           pointlcsc[6]=decay_channel;
-		      fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		      if(do_fillSparse) fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 
           //
           //  Sc peak in MC
@@ -2295,7 +2333,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 	      pointSigma[7]=k;
 	      if(arrayPIDselPikP[k]){
 		if(!pSigmaC){
-		  fhSparseAnalysisSigma->Fill(pointSigma);	    
+		  if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);	    
 		}
 		else{
 		  AliAODTrack *trkd=(AliAODTrack*)io3Prong->GetDaughter(2);
@@ -2305,7 +2343,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		      pointSigma[10]=ptsigmacMC;
 		      pointSigma[0]=ptlambdacMC;
         }
-		    fhSparseAnalysisSigma->Fill(pointSigma);
+		    if(do_fillSparse) fhSparseAnalysisSigma->Fill(pointSigma);
 		    //		  fhistMCSpectrumAccSc->Fill(ptsigmacMC,kRecoPID,checkorigin);	      
 		    pointlcsc[0]=ptlambdacMC;
 		    pointlcsc[1]=kRecoPID;
@@ -2314,7 +2352,7 @@ void AliAnalysisTaskSEXicTopKpi::SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,Al
 		    pointlcsc[4]=ptsigmacMC;
 		    pointlcsc[5]=ysigmacMC;
         pointlcsc[6]=decay_channel;
-		    fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
+		    if(do_fillSparse) fhistMCSpectrumAccLcFromSc->Fill(pointlcsc);
 
         //
         //  Sc peak in MC
@@ -3441,6 +3479,13 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverGenParticles(){
 	    mcpartMum=(AliAODMCParticle*)fmcArray->At(indSc); 
 	    Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	    if(pdgLcMum==4112 || pdgLcMum==4222)isFromSigmaC=kTRUE;
+      if(fAbsValueScCharge>-1){
+        // We want a specific case!
+        // if fAbsValueScCharge>-1, it means that we want to take either only Sc0 or only Sc++
+        if(fAbsValueScCharge==0 && pdgLcMum==4112)        isFromSigmaC=kTRUE;   // Sc0
+        else if(fAbsValueScCharge==2 && pdgLcMum==4222)   isFromSigmaC=kTRUE;   // Sc++
+        else                                              isFromSigmaC=kFALSE;
+      }
 	  }
 	  //Double_t pointLcSc[6];
 	  Double_t pointLcSc[7];  // adding axis for Lc decay channel (MC)
@@ -3757,6 +3802,13 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
 	   mcpartMum=(AliAODMCParticle*)fmcArray->At(indSc); 
 	   Int_t pdgLcMum=TMath::Abs(mcpartMum->GetPdgCode());
 	   if(pdgLcMum==4112 || pdgLcMum==4222)isFromSigmaC=kTRUE;
+     if(fAbsValueScCharge>-1){
+        // We want a specific case!
+        // if fAbsValueScCharge>-1, it means that we want to take either only Sc0 or only Sc++
+        if(fAbsValueScCharge==0 && pdgLcMum==4112)        isFromSigmaC=kTRUE;   // Sc0
+        else if(fAbsValueScCharge==2 && pdgLcMum==4222)   isFromSigmaC=kTRUE;   // Sc++
+        else                                              isFromSigmaC=kFALSE;
+     }
 	 }
 	 //Double_t pointLcSc[6];
 	 Double_t pointLcSc[7]; // adding axis for Lc decay channel (MC)
