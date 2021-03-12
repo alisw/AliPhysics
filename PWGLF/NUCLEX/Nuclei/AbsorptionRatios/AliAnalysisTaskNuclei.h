@@ -52,6 +52,7 @@ public:
     void     SetCentralityEstimator(int est) { fEstimator = est; }
     Float_t  GetTOFBeta(AliAODTrack *);
     Float_t  GetMass2TOF(Float_t, AliAODTrack *);
+	AliEventCuts  fEventCut;
     
 private:
     // transient members are not streamed
@@ -132,7 +133,7 @@ private:
     Float_t       fMomTOFProt;
     Float_t       fMomTOFDeut;
     Int_t	  fEstimator;
-    AliEventCuts  fEventCut;
+    
 	Float_t		  fYlimit = -999; //!switch for rapidity cut
 	Bool_t		  kAnalyseAllParticles;
     
