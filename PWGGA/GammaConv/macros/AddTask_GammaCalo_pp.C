@@ -3242,6 +3242,29 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe30220001","0r631031000000d0"); // No NCell cut, 1NLM
     cuts.AddCutCalo("00010113","411792109fe30220002","0r631031000000d0"); // No NCell cut, 2NLM
 
+    // different clusterization settings
+  } else if (trainConfig == 2530) { //S500 A90
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2531) { //S500 A95
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2532) { //S500 A100
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2533) { //S500 A105
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2534) { //S500 A110
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2535) { //S475 A95  // 5% downwards of seed and aggregeation
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+  } else if (trainConfig == 2536) {  //S490 A98  // 2% downwards of seed and aggregeation
+    cuts.AddCutCalo("00010113","411792109fe32220000","0r631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411792109fe30220000","0r631031000000d0"); // no NCell
+
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
