@@ -79,7 +79,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d_Opangle%f",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup,OpMin);
+  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup);
+  if(OpMin > 0.) appendix += "_Op";
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -266,19 +267,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
     
     if(hs_mean_ITS_El) {
       cout<<"Adding mean ITS PID correction" <<endl;
-      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_mean_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_mean_ITS_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_mean_TOF_El) {
       cout<<"Adding mean TOF PID correction" <<endl;
-      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_mean_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_mean_TOF_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_width_ITS_El) {
       cout<<"Adding width ITS PID correction" <<endl;
-      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_width_ITS_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, hs_width_ITS_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     }
     if(hs_width_TOF_El) {
       cout<<"Adding width TOF PID correction" <<endl;
-      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_width_TOF_El, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+      task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, hs_width_TOF_El, AliDielectronVarManager::kPIn, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     } 
   }
   
