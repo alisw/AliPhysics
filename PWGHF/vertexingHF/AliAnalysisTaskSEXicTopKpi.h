@@ -131,6 +131,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     }
   }
 
+  // integer to keep only SigmaC candidate with 0 or ++ charge
+  void SetAbsValueScCharge(Int_t value){
+    fAbsValueScCharge = value;
+  }
+
   void SetLcMassWindowForSigmaC(Double_t massrange){fLcMassWindowForSigmaC=massrange;}
   void SetSigmaCDeltaMassWindow(Double_t maxDeltaM){fSigmaCDeltaMassWindow=maxDeltaM;}
   void SetOnTheFlyLcCandidatesForSigmaC(Bool_t onthefly){fSigmaCfromLcOnTheFly=onthefly;}
@@ -416,8 +421,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // bool to keep pT reco for MC reconstructed candidates
   Bool_t fKeepGenPtMC;
 
+  // integer to keep only SigmaC candidate with 0 or ++ charge
+  Int_t fAbsValueScCharge;  // -1: keep both Sc0, Sc++;   0: keep only Sc0;   2: keep only Sc++
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,19); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,20); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
