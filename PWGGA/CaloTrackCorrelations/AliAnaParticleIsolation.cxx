@@ -5669,10 +5669,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Float_t excessNePhi     = 0;
     if ( GetIsolationCut()->IsConeExcessCorrected() )
     {
-      GetIsolationCut()->CalculateExcessAreaFractionForChargedAndNeutral(photonEta  , photonPhi,
-                                                                         excessChEta, excessAreaChEta,
-                                                                         excessNeEta, excessAreaNeEta,
-                                                                         excessNePhi, excessAreaNePhi);
+      GetIsolationCut()->CalculateExcessAreaFractionForChargedAndNeutral
+      (photonEta  , photonPhi, GetCalorimeter(),
+       excessChEta, excessAreaChEta,
+       excessNeEta, excessAreaNeEta,
+       excessNePhi, excessAreaNePhi);
       sumPtInConeCh *= excessAreaChEta ;
       sumPtInConeNe *= (excessAreaNeEta*excessAreaNePhi) ;
 
@@ -5773,7 +5774,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
-        if      ( GetCalorimeterString() != "EMCAL" )
+        if      ( GetCalorimeter() != kEMCAL )
           checkClustersBand = kFALSE;
         // if declared as emcal because analyze all calo together
         // but within phos/dcal phi acceptance
