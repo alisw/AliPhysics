@@ -117,6 +117,9 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fPtMin(0.),
   fPtMax(40.),
   fNPtBins(40),
+  fPtMinB(0.),
+  fPtMaxB(40.),
+  fNPtBinsB(40),
   fYMin(-2.),
   fYMax(2.),
   fNYBins(40),
@@ -231,11 +234,11 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistYPtPrompt[3] = new TH2F("hyptDsprompt","Ds - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
   fHistYPtPrompt[4] = new TH2F("hyptLcprompt","Lc - Prompt",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
 
-  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
-  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[0] = new TH2F("hyptB0AllDecay","B0 - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[1] = new TH2F("hyptBplusAllDecay","Bplus - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[2] = new TH2F("hyptBstarAllDecay","Bstar - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[3] = new TH2F("hyptBsAllDecay","Bs - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
+  fHistBYPtAllDecay[4] = new TH2F("hyptLbAllDecay","LB - All",fNPtBinsB, fPtMinB, fPtMaxB, fNYBins, fYMin, fYMax);
 
   fHistYPtAllDecay[0] = new TH2F("hyptD0AllDecay","D0 - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
   fHistYPtAllDecay[1] = new TH2F("hyptDplusAllDecay","Dplus - All",fNPtBins, fPtMin, fPtMax, fNYBins, fYMin, fYMax);
