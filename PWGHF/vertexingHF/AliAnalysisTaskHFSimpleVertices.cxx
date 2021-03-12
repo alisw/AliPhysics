@@ -178,6 +178,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fNPtBins(25),
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
+  fMinPtDplus(0.),
+  fMaxPtDplus(9999.),
   fMinPtJpsi(0.),
   fMaxPtJpsi(9999.),
   fCandidateCutLevel(1),
@@ -185,8 +187,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fSelectD0bar(1),
   fMinPt3Prong(0.),
   fMaxRapidityCand(-999.),
+  fNPtBinsDplus(12),
   fNPtBinsJpsi(9),
   fNPtBinsLc(10),
+  fSelectDplus(1),
   fSelectJpsi(1),
   fSelectLcpKpi(1)
 {
@@ -423,8 +427,32 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
    }
   }
 
+  fNPtBinsDplus = 12;
+  Double_t defaultPtBinsDplus[13] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36.};
+  for (Int_t ib = 0; ib < fNPtBinsDplus + 1; ib++)
+    fPtBinLimsDplus[ib] = defaultPtBinsDplus[ib];
+
+  Double_t defaultDplusCuts[12][kNCutVarsDplus] =
+    {{0.2, 0.3, 0.3, 0.07, 6., 0.96, 0.985, 2.5},  /* 1<pt<2   */
+     {0.2, 0.3, 0.3, 0.07, 5., 0.96, 0.985, 2.5},  /* 2<pt<3   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.980, 2.5},  /* 3<pt<4   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 4<pt<5   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 5<pt<6   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 6<pt<7   */
+     {0.2, 0.3, 0.3, 0.10, 5., 0.96, 0.000, 2.5},  /* 7<pt<8   */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 8<pt<10  */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 10<pt<12 */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 12<pt<16 */
+     {0.2, 0.3, 0.3, 0.12, 5., 0.96, 0.000, 2.5},  /* 16<pt<24 */
+     {0.2, 0.3, 0.3, 0.20, 5., 0.94, 0.000, 2.5}}; /* 24<pt<36 */
+  for(Int_t ib=0; ib<fNPtBinsDplus; ib++){
+   for(Int_t jc=0; jc<kNCutVarsDplus; jc++){
+     fDplusCuts[ib][jc]=defaultDplusCuts[ib][jc];
+   }
+  }
+
   fNPtBinsLc = 10;
-  Double_t defaultPtBinsLc[11] = {0.,  1.0, 2.0,  3.0,  4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
+  Double_t defaultPtBinsLc[11] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
   for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
     fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
   
@@ -488,6 +516,9 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     Int_t selectD0bar = GetJsonInteger(filename.Data(), "d_selectionFlagD0bar");
     printf("d_selectionFlagD0bar = %d\n",selectD0bar);
     if(selectD0>=0) fSelectD0bar=selectD0bar;
+    Int_t selectDplus = GetJsonInteger(filename.Data(), "d_selectionFlagDPlus");
+    printf("d_selectionFlagDplus = %d\n",selectDplus);
+    if(selectDplus>=0) fSelectDplus=selectDplus;
     Int_t selectJpsi = GetJsonInteger(filename.Data(), "d_selectionFlagJpsi");
     printf("d_selectionFlagJpsi = %d\n",selectJpsi);
     if(selectJpsi>=0) fSelectJpsi=selectJpsi;
@@ -1394,7 +1425,9 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   
   if (massSel & (1 << kbitDplus)) {
     Int_t dplusSel = 1;
-    if(fCandidateCutLevel >= 1){
+    if(fCandidateCutLevel == 2 && fSelectDplus > 0){
+      dplusSel = DplusSelectionCuts(the3Prong, bzkG);
+    }else if(fCandidateCutLevel == 1){
       dplusSel = DplusSkimCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(411);
@@ -1753,6 +1786,27 @@ Int_t AliAnalysisTaskHFSimpleVertices::DplusSkimCuts(AliAODRecoDecayHF3Prong* ca
   if (cand->CosPointingAngle() < fDplusSkimCuts[3]) return 0;
   if (cand->DecayLength2() < fDplusSkimCuts[4]*fDplusSkimCuts[4]) return 0;
   
+  return 1;
+}
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFSimpleVertices::DplusSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG)
+{
+  Double_t ptCand = cand->Pt();
+  if (ptCand < fMinPtDplus || ptCand > fMaxPtDplus) return 0;
+  Int_t jPtBin = GetPtBin(ptCand);
+  if (jPtBin==-1) return 0;
+  if (cand->Pt2Prong(0) < fDplusCuts[jPtBin][1] * fDplusCuts[jPtBin][1] ||
+      cand->Pt2Prong(1) < fDplusCuts[jPtBin][2] * fDplusCuts[jPtBin][2] ||
+      cand->Pt2Prong(2) < fDplusCuts[jPtBin][1] * fDplusCuts[jPtBin][1])
+      return 0;
+  if (TMath::Abs(cand->InvMassDplus() - fMassDplus) > fDplusCuts[jPtBin][0]) return 0; 
+  if (cand->DecayLength() < fDplusCuts[jPtBin][3]) return 0;
+  if (cand->NormalizedDecayLengthXY() < fDplusCuts[jPtBin][4]) return 0;
+  if (cand->CosPointingAngle() < fDplusCuts[jPtBin][5]) return 0;
+  if (cand->CosPointingAngleXY() < fDplusCuts[jPtBin][6]) return 0;
+  Double_t dd0max = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bzkG);
+  if(TMath::Abs(dd0max) > fDplusCuts[jPtBin][7]) return 0;
+
   return 1;
 }
 //______________________________________________________________________________

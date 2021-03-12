@@ -67,6 +67,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t DsSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t LcSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
+  Int_t DplusSelectionCuts(AliAODRecoDecayHF3Prong *cand, Double_t bzkG);
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand,AliESDtrack* trk_p,AliESDtrack* trk_n,AliESDVertex* primvtx,float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong *cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent,Int_t ndgCk, const TObjArray *trkArray, const Int_t *pdgDg) const;
@@ -75,7 +76,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   enum ESelBits3prong {kbitDplus = 0,kbitDs,kbitLc};
   enum {kMaxNPtBins = 100, kNCutVarsDzero=11};
   enum {kMaxNPtBinsJpsi = 9, kNCutVarsJpsi=4};
-  enum { kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
+  enum {kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
+  enum {kMaxNPtBinsDplus = 50, kNCutVarsDplus = 8};
 
   TList*  fOutput;                   //!<!  list of output histos
   TH1F* fHistNEvents;                //!<!  histo with N of events
@@ -232,6 +234,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLims[kMaxNPtBins];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
   Double_t fMaxPtDzero;               // D0 max pt
+  Double_t fMinPtDplus;               // D+ min pt
+  Double_t fMaxPtDplus;               // D+ max pt
   Double_t fMinPtJpsi;                // Jpsi min pt
   Double_t fMaxPtJpsi;                // Jpsi max pt
   Int_t    fCandidateCutLevel;        // Cuts: 0 = no, 1 = skim, 2 = analysis
@@ -241,20 +245,24 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fDsSkimCuts[5];            // D0 skimming cuts
   Double_t fLcSkimCuts[5];            // D0 skimming cuts
   Double_t fDzeroCuts[kMaxNPtBins][kNCutVarsDzero]; // D0 cuts
+  Double_t fDplusCuts[kMaxNPtBinsDplus][kNCutVarsDplus]; // D+ cuts
   Double_t fJpsiCuts[kMaxNPtBinsJpsi][kNCutVarsJpsi]; // Jpsi cuts
   Int_t fSelectD0;                    // flag to activate cuts for D0
   Int_t fSelectD0bar;                 // flag to activate cuts for D0bar
   Double_t fMinPt3Prong;              // Min pt for 3 prong candidate
   Double_t fMaxRapidityCand;          // Max rapidity cut (if -999 use pt dependent cut)
-  Int_t fNPtBinsJpsi;
-  Int_t fNPtBinsLc;                             // Number of pt bins
-  Int_t fSelectJpsi;
-  Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBins+1] limits of pt bins
-  Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];
+  Int_t fNPtBinsDplus;                          // Number of pt bins Dplus
+  Int_t fNPtBinsJpsi;                           // Number of pt bins Jpsi
+  Int_t fNPtBinsLc;                             // Number of pt bins Lc
+  Int_t fSelectDplus;                           // flag to activate cuts for Dplus
+  Int_t fSelectJpsi;                            // flag to activate cuts for Jpsi
+  Double_t fPtBinLimsDplus[kMaxNPtBinsDplus];   // [fNPtBinsDplus+1] limits of pt bins
+  Double_t fPtBinLimsLc[kMaxNPtBinsLc];         // [fNPtBinsLc+1] limits of pt bins
+  Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,16);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,17);
 };
 
 
