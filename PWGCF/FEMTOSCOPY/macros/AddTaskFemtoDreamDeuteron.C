@@ -6,6 +6,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
     bool SystematicLowpT = false,//3
     bool SidebandStudy = false, //4
     bool SystematicFullpT = false,//5
+    bool ITSPID = false,//6,
     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -51,6 +52,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   PDGParticles.push_back(2212);
   PDGParticles.push_back(1000010020);
   PDGParticles.push_back(1000010020);
+
+// if we need ITS?
+    TrackCutsDeuteronDCA->SetITSnSigmaCut(ITSPID);
+    TrackCutsAntiDeuteronDCA->SetITSnSigmaCut(ITSPID);
+
   std::vector<bool> closeRejection;
  // std::vector<float> mTBins;
 //  mTBins.push_back(1.14);
