@@ -215,9 +215,11 @@ class AliFemtoDreamTrackCuts {
     fPIDPITSThreshold = pITSThresh;
     fNSigValueITSmin = sigValITSmin;
     fNSigValueITSmax = sigValITSmax;
-    fdoITSnSigmaCut = kTRUE;
   }
   ;
+  void SetITSnSigmaCut(bool ITScut) {
+    fdoITSnSigmaCut = ITScut;
+  }
   void SetCutTOFInvMass(bool cutit = false) {
     fTOFInvMassCut = cutit;
    }
