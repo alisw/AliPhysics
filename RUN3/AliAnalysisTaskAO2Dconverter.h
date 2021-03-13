@@ -7,6 +7,7 @@
 
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliESDMuonTrack.h"
 #include "AliEventCuts.h"
 
 #include <TString.h>
@@ -53,9 +54,10 @@ public:
     kTracks,
     kTracksCov,
     kTracksExtra,
+    kFwdTrack,
+    // kFwdTrackCov,
     kCalo,
     kCaloTrigger,
-    kMuon,
     kMuonCls,
     kZdc,
     kFV0A,
@@ -398,34 +400,26 @@ private:
     Char_t fCaloType = -1;            /// Calorimeter type (-1 is undefined, 0 is PHOS, 1 is EMCAL)
   } calotrigger;                  //! structure to keep calo trigger info
 
-  struct {
-    // MUON track data
+  struct FwdTrackPars {   /// Forward track parameters
+    Int_t fIndexBCs = 0u; /// Index to BC table
+    Int_t fTrackType = 3; /// MuonStandaloneTrack on ForwardTrackTypeEnum (O2 Framework/DataTypes.h)
+    Float_t fX = -999.f;
+    Float_t fY = -999.f;
+    Float_t fZ = -999.f;
+    Float_t fPhi = -999.f;
+    Float_t fTgl = -999.f;
+    Float_t fSigned1Pt = -999.f;
+    Int_t fNClusters = -1;
+    Float_t fPDca = -999.f;
+    Float_t fRAtAbsorberEnd = -999.f;
+    Float_t fChi2 = -999.f;
+    Float_t fChi2MatchMCHMID = -999.f;
+    Float_t fChi2MatchMCHMFT = -999.f;
+    Float_t fMatchScoreMCHMFT = -999.f;
+    Int_t fMatchMFTTrackID = -1;
+    Int_t fMatchMCHTrackID = -1;
 
-    Int_t fIndexBCs = 0u;            /// Index to BC table
-    // In case we need connection to muon clusters, activate next lines
-    // Int_t   fClusterIndex;        /// The index of the associated MUON clusters
-    // Int_t   fNclusters;           /// The number of MUON clusters
-
-    /// Parameters at vertex
-    Float_t fInverseBendingMomentum = 0.f; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
-    Float_t fThetaX = -999.f;              ///< Angle of track at vertex in X direction (rad)
-    Float_t fThetaY = -999.f;              ///< Angle of track at vertex in Y direction (rad)
-    Float_t fZMu = -999.f;                 ///< Z coordinate (cm)
-    Float_t fBendingCoor = -999.f;         ///< bending coordinate (cm)
-    Float_t fNonBendingCoor = -999.f;      ///< non bending coordinate (cm)
-
-    /// Reduced covariance matrix of UNCORRECTED track parameters, ordered as follow:      <pre>
-    /// [0] =  <X,X>
-    /// [1] =<X,ThetaX>  [2] =<ThetaX,ThetaX>
-    /// [3] =  <X,Y>     [4] =  <Y,ThetaX>     [5] =  <Y,Y>
-    /// [6] =<X,ThetaY>  [7] =<ThetaX,ThetaY>  [8] =<Y,ThetaY>  [9] =<ThetaY,ThetaY>
-    /// [10]=<X,InvP_yz> [11]=<ThetaX,InvP_yz> [12]=<Y,InvP_yz> [13]=<ThetaY,InvP_yz> [14]=<InvP_yz,InvP_yz>  </pre>
-    Float_t fCovariances[15] = {-999.}; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
-
-    /// Global tracking info
-    Float_t fChi2 = 999.f;                ///< chi2 in the MUON track fit
-    Float_t fChi2MatchTrigger = 999.f;    ///< chi2 of trigger/track matching
-  } muons;                        //! structure to keep muons information
+  } fwdtracks; //! structure to keep forward tracks parameters
 
   struct {
     // Muon cluster data
@@ -534,7 +528,9 @@ private:
   /// Pointer to the output file
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
-  
+
+  FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks between RUN2 and RUN3 coordinates
+
   ClassDef(AliAnalysisTaskAO2Dconverter, 15);
 };
 
