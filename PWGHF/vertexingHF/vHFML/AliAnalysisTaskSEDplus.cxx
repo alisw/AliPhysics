@@ -1797,12 +1797,12 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
     maxmult = 5000;
 
   Int_t nbinsPrompt[kVarForSparseAcc] = {nptbins, 100, 1, 1, 200};
-  Int_t nbinsFD[kVarForSparseAcc] = {nptbins, 100, nptBbins, 0, 200};
+  Int_t nbinsFD[kVarForSparseAcc] = {nptbins, 100, nptBbins, 5, 200};
 
-  Double_t xminPrompt[kVarForSparseAcc] = {ptmin, -1., ptBmin, 0., 0.};
-  Double_t xmaxPrompt[kVarForSparseAcc] = {ptmax, 1., ptBmax, 0., 0.};
+  Double_t xminPrompt[kVarForSparseAcc] = {ptmin, -1., ptBmin, 0.5, 0.};
+  Double_t xmaxPrompt[kVarForSparseAcc] = {ptmax, 1., ptBmax, 5.5, maxmult};
 
-  Double_t xminFD[kVarForSparseAcc] = {ptmin, -1., ptBmin, 5.5, maxmult};
+  Double_t xminFD[kVarForSparseAcc] = {ptmin, -1., ptBmin, 0.5, 0.};
   Double_t xmaxFD[kVarForSparseAcc] = {ptmax, 1., ptBmax, 5.5, maxmult};
 
   //pt, y
