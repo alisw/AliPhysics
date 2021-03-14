@@ -35,6 +35,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   double Lambda_nSigma_daughters = 5.0,
   double PairPtLowerLimit = 0.0,
   double PairPtUpperLimit = 999.0,
+  bool DoITSPID = false,
   const char *CutVariation = "0"){
 
   // isHighMultV0:
@@ -169,6 +170,11 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
 
+  if(DoITSPID){
+    TrackCuts3->SetCutITSPID(Deuteron_thresholdTOF,-2.0,1e30);
+  }
+
+
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Deuteron (TrackCuts3) set\n");
@@ -200,6 +206,10 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
+
+  if(DoITSPID){
+    TrackCuts4->SetCutITSPID(Deuteron_thresholdTOF,-2.0,1e30);
+  }
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antideuteron (TrackCuts4) set\n");
