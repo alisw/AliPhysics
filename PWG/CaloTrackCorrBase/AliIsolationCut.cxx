@@ -85,16 +85,16 @@ fhPerpConeSumPtTrigEtaPhi(0),
 fhJetRhoSumPt(0),                           fhConeSumPtVSJetRho(0),
 fhJetRhoSumPtTrigEtaPhi(0),
 fhEtaBandClusterPt(0),                      fhPhiBandClusterPt(0),
-fhEtaBandTrackPt(0),                        fhPhiBandTrackPt(0),
+fhEtaBandTrackPt(0),                        fhPhiBandTrackPt(0)           , fhPerpBandTrackPt(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
-fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0),
+fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0)  , fhConeSumPtPerpBandUETrack(0),
 fhEtaBandClusterEtaPhi(0),                  fhPhiBandClusterEtaPhi(0),
-fhEtaBandTrackEtaPhi(0),                    fhPhiBandTrackEtaPhi(0),
+fhEtaBandTrackEtaPhi(0),                    fhPhiBandTrackEtaPhi(0)       , fhPerpBandTrackEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhi(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhi(0),
-fhConeSumPtEtaBandUETrackTrigEtaPhi(0),     fhConeSumPtPhiBandUETrackTrigEtaPhi(0),
+fhConeSumPtEtaBandUETrackTrigEtaPhi(0),     fhConeSumPtPhiBandUETrackTrigEtaPhi(0), fhConeSumPtPerpBandUETrackTrigEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhiCent(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhiCent(0),
-fhConeSumPtEtaBandUETrackTrigEtaPhiCent(0),     fhConeSumPtPhiBandUETrackTrigEtaPhiCent(0),
-fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
+fhConeSumPtEtaBandUETrackTrigEtaPhiCent(0),     fhConeSumPtPhiBandUETrackTrigEtaPhiCent(0), fhConeSumPtPerpBandUETrackTrigEtaPhiCent(0),
+fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0), fhConeSumPtVSUETracksPerpBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
 fhConeSumPtUEBandNormCluster(0),            fhConeSumPtUEBandNormTrack(0), 
 fhFractionTrackOutConeEta(0),               fhFractionTrackOutConeEtaTrigEtaPhi(0),
@@ -119,9 +119,9 @@ fhPerpConeSumPtTrigEtaPhiCent(0),
 fhJetRhoSumPtCent (0),                      fhJetRhoSumPtTrigEtaPhiCent(0),
 fhConeSumPtUEBandNormClusterCent(0),        fhConeSumPtUEBandNormTrackCent(0),
 fhConeSumPtEtaBandUEClusterCent(0),         fhConeSumPtPhiBandUEClusterCent(0), 
-fhConeSumPtEtaBandUETrackCent(0),           fhConeSumPtPhiBandUETrackCent(0),
+fhConeSumPtEtaBandUETrackCent(0),           fhConeSumPtPhiBandUETrackCent(0),  fhConeSumPtPerpBandUETrackCent(0),
 fhEtaBandClusterPtCent(0),                  fhPhiBandClusterPtCent(0),
-fhEtaBandTrackPtCent(0),                    fhPhiBandTrackPtCent(0),
+fhEtaBandTrackPtCent(0),                    fhPhiBandTrackPtCent(0),           fhPerpBandTrackPtCent(0),
 fhConeSumPtUEBandSubClustervsTrackCent(0),
 fhBandClustervsTrackCent(0),                fhBandNormClustervsTrackCent(0)
 {
@@ -551,6 +551,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
 /// \param etaBandPtSumTrack: sum of tracks in eta band, same phi as candidate
 /// \param phiBandPtSumTrack: sum of tracks in phi band, same eta as candidate (not useful need to restrict it)
 /// \param perpConePtSumTrack: sum of tracks in perpendicular cones in phi, return result divided by 2
+/// \param perpBandPtSumTrack: sum of tracks in perpendicular  eta band, return result divided by 2
 /// \param histoWeight: Histograms weight (event, pt depedent)
 /// \param centrality:Centrality percentile
 /// \param cenBin: Assigned centrality bin with defined range elsewhere
@@ -563,8 +564,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
  Int_t   & nPart            , Int_t   & nfrac,
  Float_t & coneptsumTrack   , Float_t & coneptLeadTrack,
  Float_t & etaBandPtSumTrack, Float_t & phiBandPtSumTrack,
- Float_t & perpConePtSumTrack, Double_t histoWeight, 
- Float_t   centrality       ,  Int_t    cenBin 
+ Float_t & perpConePtSumTrack,Float_t & perpBandPtSumTrack,
+ Double_t  histoWeight      ,
+ Float_t   centrality       , Int_t    cenBin
 ) 
 {  
   if ( fPartInCone == kOnlyNeutral ) return ;
@@ -768,6 +770,29 @@ void AliIsolationCut::CalculateTrackSignalInCone
       }
     }
     
+    if ( fICMethod == kSumBkgSubPerpBandIC )
+    {
+      Double_t dPhiPlu = dPhi + TMath::PiOver2();
+      Double_t dPhiMin = dPhi - TMath::PiOver2();
+
+      if ( TMath::Abs(dPhiPlu) < fConeSize ||
+           TMath::Abs(dPhiMin) < fConeSize   )
+      {
+        perpBandPtSumTrack += ptTrack;
+
+        if ( fFillHistograms )
+        {
+          if ( fFillHighMultHistograms )
+            fhPerpBandTrackPtCent->Fill(ptTrig, ptTrack, centrality, histoWeight);
+          else
+            fhPerpBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
+
+          if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+            fhPerpBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
+        }
+      } // perp eta band
+    }
+
     //-------------------------------------------------------------
     // ** For the isolated particle **
     //-------------------------------------------------------------
@@ -869,9 +894,10 @@ void AliIsolationCut::CalculateTrackSignalInCone
     
   }// charged particle loop
 
-  // 2 perpendicular cones added, divide by 2 total amount of energy.
+  // 2 perpendicular cones/bands added, divide by 2 total amount of energy.
   perpConePtSumTrack /= 2;
-  
+  perpBandPtSumTrack /= 2;
+
   if ( fFillHistograms )
   {
     if ( fPartInCone == kNeutralAndCharged )
@@ -906,6 +932,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
         if ( fICMethod == kSumBkgSubPhiBandIC )
           fhConeSumPtPhiBandUETrackCent->Fill(ptTrig, phiBandPtSumTrack , centrality, histoWeight);
 
+        if ( fICMethod == kSumBkgSubPerpBandIC )
+          fhConeSumPtPerpBandUETrackCent->Fill(ptTrig,perpBandPtSumTrack , centrality, histoWeight);
+
         if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt && cenBin < fNCentBins && cenBin >= 0 )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
@@ -913,6 +942,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
 
           if ( fICMethod == kSumBkgSubPhiBandIC )
             fhConeSumPtPhiBandUETrackTrigEtaPhiCent[cenBin]->Fill(etaTrig, phiTrig, phiBandPtSumTrack, histoWeight);
+
+          if ( fICMethod == kSumBkgSubPerpBandIC )
+            fhConeSumPtPerpBandUETrackTrigEtaPhiCent[cenBin]->Fill(etaTrig, phiTrig,perpBandPtSumTrack, histoWeight);
         }
       }
       else
@@ -929,6 +961,12 @@ void AliIsolationCut::CalculateTrackSignalInCone
           fhConeSumPtVSUETracksPhiBand->Fill(coneptsumTrack, phiBandPtSumTrack, histoWeight);
         }
 
+        if ( fICMethod == kSumBkgSubPerpBandIC )
+        {
+          fhConeSumPtPerpBandUETrack->Fill(ptTrig,perpBandPtSumTrack , histoWeight);
+          fhConeSumPtVSUETracksPerpBand->Fill(coneptsumTrack,perpBandPtSumTrack, histoWeight);
+        }
+
         if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
@@ -936,6 +974,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
 
           if ( fICMethod == kSumBkgSubPhiBandIC )
             fhConeSumPtPhiBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSumTrack, histoWeight);
+
+          if ( fICMethod == kSumBkgSubPerpBandIC )
+            fhConeSumPtPerpBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig,perpBandPtSumTrack, histoWeight);
         }
       }
     } // UE sub
@@ -960,10 +1001,12 @@ void AliIsolationCut::CalculateUEBandClusterNormalization
  Float_t & etaUEptsumClusterNorm, Float_t & phiUEptsumClusterNorm) const
 {
   // Cone area
-  Float_t coneArea = fConeSize*fConeSize*TMath::Pi(); // Area = pi R^2, isolation cone area
+  // Area = pi R^2, isolation cone area
+  Float_t coneArea = fConeSize*fConeSize*TMath::Pi();
   if ( fDistMinToTrigger > 0 ) coneArea -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
-  Float_t coneAreaGap = (fConeSize + fConeSizeBandGap)*(fConeSize + fConeSizeBandGap)*TMath::Pi(); // Area = pi R^2, isolation cone area
+  // Area = pi (R-gap)^2, isolation cone area
+  Float_t coneAreaGap = (fConeSize + fConeSizeBandGap)*(fConeSize + fConeSizeBandGap)*TMath::Pi();
   if ( fDistMinToTrigger > 0 ) coneAreaGap -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   Float_t fEMCPhiSize = fEMCPhiMax-fEMCPhiMin;
@@ -1025,14 +1068,16 @@ void AliIsolationCut::CalculateUEBandTrackNormalization
  Float_t   etaC               ,  
  Float_t   excessEta          ,          
  Float_t   excessAreaEta      ,         
- Float_t   etaUEptsumTrack    ,  Float_t   phiUEptsumTrack,
- Float_t & etaUEptsumTrackNorm,  Float_t & phiUEptsumTrackNorm) const
+ Float_t   etaUEptsumTrack    ,  Float_t   phiUEptsumTrack,     Float_t   perpUEptsumTrack,
+ Float_t & etaUEptsumTrackNorm,  Float_t & phiUEptsumTrackNorm, Float_t & perpUEptsumTrackNorm ) const
 {
   // Cone area
-  Float_t coneArea = fConeSize*fConeSize*TMath::Pi(); // Area = pi R^2, isolation cone area
+  // Area = pi R^2, isolation cone area
+  Float_t coneArea = fConeSize*fConeSize*TMath::Pi();
   if ( fDistMinToTrigger > 0 ) coneArea -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
-  Float_t coneAreaGap = (fConeSize + fConeSizeBandGap)*(fConeSize + fConeSizeBandGap)*TMath::Pi(); // Area = pi R^2, isolation cone area
+  // Area = pi ((R+gap)^2), isolation cone area
+  Float_t coneAreaGap = (fConeSize + fConeSizeBandGap)*(fConeSize + fConeSizeBandGap)*TMath::Pi();
   if ( fDistMinToTrigger > 0 ) coneAreaGap -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   Float_t excessEtaGap = excessEta;
@@ -1053,6 +1098,7 @@ void AliIsolationCut::CalculateUEBandTrackNormalization
   
   // Area of band, rectangle minus isolation region
   //
+  Float_t perpBandArea=   2* fConeSize                                    * fTPCEtaSize - coneArea;
   Float_t etaBandArea =   2*(fConeSize+fConeSizeBandGap)                  * fTPCEtaSize - coneAreaGap;
   Float_t phiBandArea = ( 2*(fConeSize+fConeSizeBandGap) - excessEtaGap ) * fTPCPhiSize - coneAreaGap;
   
@@ -1065,13 +1111,16 @@ void AliIsolationCut::CalculateUEBandTrackNormalization
   // pi * R^2 / (2 R * 1.6)  -  trigger cone
   if ( etaBandArea > 0 ) 
     etaUEptsumTrackNorm = etaUEptsumTrack * ( coneArea / etaBandArea ); 
+
+  if ( perpBandArea > 0 )
+    perpUEptsumTrackNorm = perpUEptsumTrack * ( coneArea / perpBandArea );
   
 //  printf("track band area: cone Area %2.2f, Gap Area eta %2.2f phi %2.2f, EMC eta size %2.2f, EMC phi size %2.2f\n"
 //          "etaBandArea %2.2f phiBandArea %2.2f, norm factor phi %2.2f, norm factor eta %2.2f\n",
 //          coneArea, coneAreaEta, coneAreaPhi, fTPCEtaSize,fTPCPhiSize,
 //          etaBandArea,phiBandArea,coneArea/phiBandArea,coneArea/etaBandArea);
   
-  if ( etaBandArea < 0 || phiBandArea < 0 )
+  if ( etaBandArea < 0 || phiBandArea < 0 || perpBandArea < 0 )
     printf("Negative track band area: cone Area %2.2f, Gap Area eta %2.2f, TPC eta size %2.2f, TPC phi size %2.2f\n",
            coneArea, coneAreaGap, fTPCEtaSize, fTPCPhiSize);
 }
@@ -2063,6 +2112,17 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
         outputContainer->Add(fhPhiBandTrackPt) ;
       }
+
+      if ( fICMethod == kSumBkgSubPerpBandIC )
+      {
+        fhPerpBandTrackPt  = new TH2F
+        ("hPerpBandTrackPt",
+         Form("Tracks in #perp #eta band out of cone #it{R} = %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPerpBandTrackPt->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+        fhPerpBandTrackPt->SetYTitle("#it{p}_{T}^{track-band} (GeV/#it{c})");
+        outputContainer->Add(fhPerpBandTrackPt) ;
+      }
     }
     
     if ( fFillEtaPhiHistograms )
@@ -2088,6 +2148,17 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandTrackEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhPhiBandTrackEtaPhi) ;
       }
+
+      if ( fICMethod == kSumBkgSubPerpBandIC )
+      {
+        fhPerpBandTrackEtaPhi  = new TH2F
+        ("hPerpBandTrackEtaPhi",
+         Form("#eta vs #varphi of tracks in #perp #eta band isolation cone for #it{R} =  %2.2f",fConeSize),
+         netabins,-1,1,nphibins,0,TMath::TwoPi());
+        fhPerpBandTrackEtaPhi->SetXTitle("#eta");
+        fhPerpBandTrackEtaPhi->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhPerpBandTrackEtaPhi) ;
+      }
     }
     
     if ( fICMethod >= kSumBkgSubEtaBandIC )
@@ -2098,7 +2169,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         {
           fhConeSumPtEtaBandUETrack  = new TH2F
           ("hConePtSumEtaBandUETrack",
-           "#Sigma track #it{p}_{T} in UE Eta Band",
+           "#Sigma track #it{p}_{T} in UE #eta Band",
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtEtaBandUETrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtEtaBandUETrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
@@ -2117,7 +2188,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         {
           fhConeSumPtPhiBandUETrack  = new TH2F
           ("hConePtSumPhiBandUETrack",
-           "#Sigma track #it{p}_{T} in UE Phi Band",
+           "#Sigma track #it{p}_{T} in UE #varphi Band",
            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
           fhConeSumPtPhiBandUETrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtPhiBandUETrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
@@ -2132,13 +2203,32 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           outputContainer->Add(fhConeSumPtVSUETracksPhiBand);
         }
 
+        if ( fICMethod == kSumBkgSubPerpBandIC )
+        {
+          fhConeSumPtPerpBandUETrack  = new TH2F
+          ("hConePtSumPerpBandUETrack",
+           "#Sigma track #it{p}_{T} in UE #perp #eta Band",
+           nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+          fhConeSumPtPerpBandUETrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtPerpBandUETrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtPerpBandUETrack) ;
+
+          fhConeSumPtVSUETracksPerpBand  = new TH2F
+          ("hConeSumPtVSUETracksPerpBand",
+           Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in #perp #eta band for tracks (before normalization), R=%2.2f",fConeSize),
+           nptsumbins,ptsummin,ptsummax,8*nptsumbins,ptsummin,8*ptsummax);
+          fhConeSumPtVSUETracksPerpBand->SetXTitle("#Sigma #it{p}_{T} cone (GeV/#it{c})");
+          fhConeSumPtVSUETracksPerpBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtVSUETracksPerpBand);
+        }
+
         if ( fFillEtaPhiHistograms )
         {
           if ( fICMethod == kSumBkgSubEtaBandIC )
           {
             fhConeSumPtEtaBandUETrackTrigEtaPhi  = new TH3F
             ("hConePtSumEtaBandUETrackTrigEtaPhi",
-             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Eta Band",
+             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE #eta Band",
              etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
              phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
              sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
@@ -2152,7 +2242,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           {
             fhConeSumPtPhiBandUETrackTrigEtaPhi  = new TH3F
             ("hConePtSumPhiBandUETrackTrigEtaPhi",
-             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE Phi Band",
+             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE #varphi Band",
              etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
              phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
              sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
@@ -2160,6 +2250,20 @@ TList * AliIsolationCut::GetCreateOutputObjects()
             fhConeSumPtPhiBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
             fhConeSumPtPhiBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
             outputContainer->Add(fhConeSumPtPhiBandUETrackTrigEtaPhi) ;
+          }
+
+          if ( fICMethod == kSumBkgSubPerpBandIC )
+          {
+            fhConeSumPtPerpBandUETrackTrigEtaPhi  = new TH3F
+            ("hConePtSumPerpBandUETrackTrigEtaPhi",
+             "Trigger #eta vs #varphi, #Sigma track #it{p}_{T} in UE #perp #eta Band",
+             etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
+             phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+            fhConeSumPtPerpBandUETrackTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T}");
+            fhConeSumPtPerpBandUETrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
+            fhConeSumPtPerpBandUETrackTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+            outputContainer->Add(fhConeSumPtPerpBandUETrackTrigEtaPhi) ;
           }
         }
 
@@ -2671,6 +2775,24 @@ TList * AliIsolationCut::GetCreateOutputObjects()
               outputContainer->Add(fhConeSumPtPhiBandUETrackTrigEtaPhiCent[icen]) ;
             }
           }
+
+          if ( fICMethod == kSumBkgSubPerpBandIC )
+          {
+            fhConeSumPtPerpBandUETrackTrigEtaPhiCent = new TH3F*[fNCentBins] ;
+            for(Int_t icen = 0; icen < fNCentBins; icen++)
+            {
+              fhConeSumPtPerpBandUETrackTrigEtaPhiCent[icen]  = new TH3F
+              (Form("hConePtSumPerpBandUETrackTrigEtaPhi_Cen%d",icen),
+               Form("Trigger #eta vs #varphi, #Sigma cluster #it{p}_{T} in UE #perp #eta Band, cen %d",icen),
+               etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
+               phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+              fhConeSumPtPerpBandUETrackTrigEtaPhiCent[icen]->SetZTitle("#Sigma #it{p}_{T}");
+              fhConeSumPtPerpBandUETrackTrigEtaPhiCent[icen]->SetXTitle("#eta_{trigger}");
+              fhConeSumPtPerpBandUETrackTrigEtaPhiCent[icen]->SetYTitle("#varphi_{trigger} (rad)");
+              outputContainer->Add(fhConeSumPtPerpBandUETrackTrigEtaPhiCent[icen]) ;
+            }
+          }
         } // tracks
 
         if ( fPartInCone != kOnlyCharged )
@@ -2782,7 +2904,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhEtaBandTrackPtCent  = new TH3F
           ("hEtaBandTrackPtCent",
            Form("Tracks in #eta band out of cone #it{R} =  %2.2f",fConeSize),
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
            ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
            cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhEtaBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
@@ -2796,13 +2918,27 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhPhiBandTrackPtCent  = new TH3F
           ("hPhiBandTrackPtCent",
            Form("Tracks in #varphi band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
            ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
            cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhPhiBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
           fhPhiBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
           fhPhiBandTrackPtCent->SetZTitle("Centrality (%)");
           outputContainer->Add(fhPhiBandTrackPtCent) ;
+        }
+
+        if ( fICMethod == kSumBkgSubPerpBandIC )
+        {
+          fhPerpBandTrackPtCent  = new TH3F
+          ("hPerpBandTrackPtCent",
+           Form("Tracks in #perp #eta band out of cone #it{R} = %2.2f and half TPC, #pm #pi",fConeSize),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+          fhPerpBandTrackPtCent->SetXTitle("#it{p}_{T}^{trig} (GeV/#it{c})");
+          fhPerpBandTrackPtCent->SetYTitle("#it{p}_{T}^{cluster-band} (GeV/#it{c})");
+          fhPerpBandTrackPtCent->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhPerpBandTrackPtCent) ;
         }
       }
       
@@ -2812,8 +2948,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         {
           fhConeSumPtEtaBandUETrackCent  = new TH3F
           ("hConePtSumEtaBandUETrackCent",
-           "#Sigma track #it{p}_{T} in UE Eta Band",
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           "#Sigma track #it{p}_{T} in UE #eta Band",
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
            cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhConeSumPtEtaBandUETrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -2826,14 +2962,28 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         {
           fhConeSumPtPhiBandUETrackCent  = new TH3F
           ("hConePtSumPhiBandUETrackCent",
-           "#Sigma track #it{p}_{T} UE Phi Band",
-           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           "#Sigma track #it{p}_{T} UE #varphi Band",
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
            cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
           fhConeSumPtPhiBandUETrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           fhConeSumPtPhiBandUETrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
           fhConeSumPtPhiBandUETrackCent->SetZTitle("Centrality (%)");
           outputContainer->Add(fhConeSumPtPhiBandUETrackCent) ;
+        }
+
+        if ( fICMethod == kSumBkgSubPerpBandIC )
+        {
+          fhConeSumPtPerpBandUETrackCent  = new TH3F
+          ("hConePtSumPerpBandUETrackCent",
+           "#Sigma track #it{p}_{T} UE #perp #eta Band",
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+           cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
+          fhConeSumPtPerpBandUETrackCent->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtPerpBandUETrackCent->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+          fhConeSumPtPerpBandUETrackCent->SetZTitle("Centrality (%)");
+          outputContainer->Add(fhConeSumPtPerpBandUETrackCent) ;
         }
       }
 
@@ -3018,6 +3168,7 @@ void  AliIsolationCut::MakeIsolationCut
   
   Float_t etaBandPtSumTrack   = 0;
   Float_t phiBandPtSumTrack   = 0;
+  Float_t perpBandPtSumTrack  = 0;
   Float_t perpPtSumTrack      = 0;
   Float_t etaBandPtSumCluster = 0;
   Float_t phiBandPtSumCluster = 0;
@@ -3042,7 +3193,8 @@ void  AliIsolationCut::MakeIsolationCut
                                 nPart              , nfrac,
                                 coneptsumTrack     , coneptLeadTrack,
                                 etaBandPtSumTrack  , phiBandPtSumTrack,
-                                perpPtSumTrack     , histoWeight, 
+                                perpPtSumTrack     , perpBandPtSumTrack,
+                                histoWeight,
                                 centrality         , cenBin);
 
   CalculateCaloSignalInCone    (pCandidate         , reader,
@@ -3287,6 +3439,7 @@ void  AliIsolationCut::MakeIsolationCut
       //printf("UE band\n");
       Float_t  etaBandPtSumTrackNorm   = 0;
       Float_t  phiBandPtSumTrackNorm   = 0;
+      Float_t  perpBandPtSumTrackNorm  = 0;
       Float_t  etaBandPtSumClusterNorm = 0;
       Float_t  phiBandPtSumClusterNorm = 0;
       
@@ -3365,15 +3518,17 @@ void  AliIsolationCut::MakeIsolationCut
 
       if ( fPartInCone != kOnlyNeutral )
       {
-        CalculateUEBandTrackNormalization(etaC                 ,
-                                          excessTrkEta         ,    
-                                          excessAreaTrkEta     ,    
-                                          etaBandPtSumTrack    , phiBandPtSumTrack,
-                                          etaBandPtSumTrackNorm, phiBandPtSumTrackNorm);
+        CalculateUEBandTrackNormalization
+        (etaC                 ,
+         excessTrkEta         ,
+         excessAreaTrkEta     ,
+         etaBandPtSumTrack    , phiBandPtSumTrack    , perpBandPtSumTrack,
+         etaBandPtSumTrackNorm, phiBandPtSumTrackNorm, perpBandPtSumTrackNorm);
         
         // Add to candidate object the normalized band energy
         pCandidate->SetChargedPtSumEtaBand(etaBandPtSumTrackNorm);
         pCandidate->SetChargedPtSumPhiBand(phiBandPtSumTrackNorm);
+        pCandidate->SetChargedPtSumInPerpCone(perpBandPtSumTrackNorm); // ADD CORRESPONDING METHOD
 
         if      ( fICMethod == kSumBkgSubEtaBandIC )
         {
@@ -3384,6 +3539,11 @@ void  AliIsolationCut::MakeIsolationCut
         {
           coneptsumBkgTrkRaw = phiBandPtSumTrack; 
           coneptsumBkgTrk    = phiBandPtSumTrackNorm; 
+        }
+        else  if( fICMethod == kSumBkgSubPerpBandIC )
+        {
+          coneptsumBkgTrkRaw = perpBandPtSumTrack;
+          coneptsumBkgTrk    = perpBandPtSumTrackNorm;
         }
         
         coneptsumTrackSub  = coneptsumTrack - coneptsumBkgTrk;
@@ -3451,10 +3611,10 @@ void  AliIsolationCut::MakeIsolationCut
     coneptsumUESubCluster -= coneptsumBkgCls;
     coneptsumUESubTrack   -= coneptsumBkgTrk;
     
-//    printf("method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
-//           fICMethod, centrality, coneptsumTrack * excessAreaTrkEta,
-//           coneptsumTrack * excessAreaTrkEta - coneptsumBkgTrk,
-//           coneptsumBkgTrk, coneptsumBkgTrk / ( TMath::Pi() * fConeSize * fConeSize));
+    printf("method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
+           fICMethod, centrality, coneptsumTrack * excessAreaTrkEta,
+           coneptsumTrack * excessAreaTrkEta - coneptsumBkgTrk,
+           coneptsumBkgTrk, coneptsumBkgTrk / ( TMath::Pi() * fConeSize * fConeSize));
 
     // Calculated in case of fICMethod == kSumBkgSubEtaBandIC, 
     // reset excess areas to 1 if not used in final result.
