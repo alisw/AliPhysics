@@ -1207,9 +1207,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
         twoTrackArray->Clear();
         continue;
       }
-      fHist2ProngVertX->Fill(trkv->GetX());
-      fHist2ProngVertY->Fill(trkv->GetY());
-      fHist2ProngVertZ->Fill(trkv->GetZ());
       
       double deltax = trkv->GetX() - primVtxTrk->GetX();
       double deltay = trkv->GetY() - primVtxTrk->GetY();
@@ -1269,6 +1266,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           fHistCovMatPrimVXX2Prong->Fill(covMatrix[0]);
           the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrix);
           fHistCovMatSecVXX2Prong->Fill(covMatrix[0]);
+          fHist2ProngVertX->Fill(trkv->GetX());
+          fHist2ProngVertY->Fill(trkv->GetY());
+          fHist2ProngVertZ->Fill(trkv->GetZ());
           if(fReadMC && mcEvent){
             Int_t labD=MatchToMC(the2Prong,421,mcEvent,2,twoTrackArray,pdgD0dau);
             if(labD>=0){
@@ -1328,6 +1328,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
           fHistCovMatPrimVXX2Prong->Fill(covMatrixj[0]);
           the2Prong->GetSecondaryVtx()->GetCovMatrix(covMatrixj);
           fHistCovMatSecVXX2Prong->Fill(covMatrixj[0]);
+          fHist2ProngVertX->Fill(trkv->GetX());
+          fHist2ProngVertY->Fill(trkv->GetY());
+          fHist2ProngVertZ->Fill(trkv->GetZ());
           if(fReadMC && mcEvent){
             Int_t labJ=MatchToMC(the2Prong,443,mcEvent,2,twoTrackArray,pdgJpsidau);
             if(labJ>=0){
