@@ -69,6 +69,7 @@ public:
   void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
   void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
+  void SetFillHistosWeighted(bool doFill)          { fFillHistosWeighted = doFill; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
@@ -118,6 +119,7 @@ private:
   TString                       fNameJetContainer;              ///< Name of the jet container 
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
+  Bool_t                        fFillHistosWeighted;            ///< Fill histograms with cross section weight
   Bool_t                        fUseRun1Range;                  ///< Use run1 run range for trending plots     
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
