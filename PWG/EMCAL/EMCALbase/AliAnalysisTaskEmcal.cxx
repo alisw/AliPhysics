@@ -2336,6 +2336,15 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
 }
 
+double AliAnalysisTaskEmcal::GetCrossSectionFromHeader() const {
+  double crosssection = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) crosssection = fPythiaHeader->GetXsection();
+    if(fIsHepMC && fHepMCHeader) crosssection = fHepMCHeader->sigma_gen();
+  }
+  return crosssection;
+}
+
 AliAODInputHandler* AliAnalysisTaskEmcal::AddAODHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
