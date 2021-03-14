@@ -5197,6 +5197,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     Float_t etaBandPtSumCh  = 0. ;
     Float_t phiBandPtSumCh  = 0. ;
+    Float_t perpBandPtSumCh = 0. ;
+    Float_t perpBandPtSumNe = 0. ;
     Float_t perpConePtSumCh = 0. ;
     Float_t perpConePtSumNe = 0. ;
 
@@ -5346,6 +5348,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       {
         if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
         {
+          // Within perpendicular eta cone size
+          Double_t dPhiPlu = dPhi + TMath::PiOver2();
+          Double_t dPhiMin = dPhi - TMath::PiOver2();
+          if ( TMath::Abs(dPhiPlu) < coneSize ||
+               TMath::Abs(dPhiMin) < coneSize    ) 
+          {
+            if ( partInConeCharge > 0 )
+              perpBandPtSumCh += partInConePt;
+            else 
+              perpBandPtSumNe += partInConePt;
+          } // perp eta band
+
           // Phi band
           //
           Bool_t takeIt = kTRUE;
@@ -5434,6 +5448,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     Float_t etaBandPtSumChEmb  = 0. ;
     Float_t phiBandPtSumChEmb  = 0. ;
+    Float_t perpBandPtSumChEmb = 0. ;
     Float_t perpConePtSumChEmb = 0. ;
 
     Float_t etaBandPtSumNeEmb  = 0. ;
@@ -5594,8 +5609,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
           if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
           {
-            // Phi band
-            //
+            // Within perpendicular eta cone size
+            Double_t dPhiPlu = dPhi + TMath::PiOver2();
+            Double_t dPhiMin = dPhi - TMath::PiOver2();
+            if ( TMath::Abs(dPhiPlu) < coneSize ||
+                 TMath::Abs(dPhiMin) < coneSize    ) 
+            {
+              perpBandPtSumChEmb += partInConePt;
+            } // perp eta band
+
             Bool_t takeIt = kTRUE;
 
             // Look only half TPC with respect candidate, avoid opposite side jet
@@ -5650,6 +5672,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       etaBandPtSumNeEmb+=etaBandPtSumNe;
       phiBandPtSumNeEmb+=phiBandPtSumNe;
 
+      perpBandPtSumChEmb+=perpBandPtSumCh;
       perpConePtSumChEmb+=perpConePtSumCh;
     }
     ///////END ISO EMBED DATA/////////////////////////
@@ -5755,10 +5778,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       //printf("UE band\n");
       Float_t  etaBandPtSumChNorm = 0;
       Float_t  phiBandPtSumChNorm = 0;
+      Float_t  perpBandPtSumChNorm = 0;
       Float_t  etaBandPtSumNeNorm = 0;
       Float_t  phiBandPtSumNeNorm = 0;
       Float_t  etaBandPtSumChNormEmb = 0;
       Float_t  phiBandPtSumChNormEmb = 0;
+      Float_t  perpBandPtSumChNormEmb = 0;
       Float_t  etaBandPtSumNeNormEmb = 0;
       Float_t  phiBandPtSumNeNormEmb = 0;
       //Float_t  coneptsumChSub     = 0 ;
@@ -5830,21 +5855,25 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       //printf("Pass cluster\n");
 
+      // 2 perp bands, divide by 2
+      perpBandPtSumCh    /= 2.;
+      perpBandPtSumChEmb /= 2.;
+
       if ( partInConeType != AliIsolationCut::kOnlyNeutral )
       {
         GetIsolationCut()->CalculateUEBandTrackNormalization
         (photonEta         ,
          excessChEta       , excessAreaChEta,
-         etaBandPtSumCh    , phiBandPtSumCh,
-         etaBandPtSumChNorm, phiBandPtSumChNorm);
+         etaBandPtSumCh    , phiBandPtSumCh    , perpBandPtSumCh,
+         etaBandPtSumChNorm, phiBandPtSumChNorm, perpBandPtSumChNorm);
 
         if ( IsEmbedingAnalysisOn() )
         {
           GetIsolationCut()->CalculateUEBandTrackNormalization
           (photonEta         ,
            excessChEta       , excessAreaChEta,
-           etaBandPtSumChEmb    , phiBandPtSumChEmb,
-           etaBandPtSumChNormEmb, phiBandPtSumChNormEmb);
+           etaBandPtSumChEmb    , phiBandPtSumChEmb    , perpBandPtSumChEmb,
+           etaBandPtSumChNormEmb, phiBandPtSumChNormEmb, perpBandPtSumChNormEmb);
         }
 
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
@@ -5858,6 +5887,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           //coneptsumBkgChRaw = phiBandPtSumCh;
           coneptsumBkgCh    = phiBandPtSumChNorm;
           coneptsumBkgChEmb = phiBandPtSumChNormEmb;
+        }
+        else  if( isoMethod == AliIsolationCut::kSumBkgSubPerpBandIC )
+        {
+          //coneptsumBkgChRaw = perpBandPtSumCh;
+          coneptsumBkgCh    = perpBandPtSumChNorm;
+          coneptsumBkgChEmb = perpBandPtSumChNormEmb;
         }
 
         //coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
