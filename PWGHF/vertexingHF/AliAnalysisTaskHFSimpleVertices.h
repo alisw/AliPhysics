@@ -97,15 +97,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPrimVertX;              //!<!  histo of prim vertex x
   TH1F* fHistPrimVertY;              //!<!  histo of prim vertex y
   TH1F* fHistPrimVertZ;              //!<!  histo of prim vertex z
-  TH1F* fHist2ProngVertX;            //!<!  histo of D0 vertex x
-  TH1F* fHist2ProngVertY;            //!<!  histo of D0 vertex y
-  TH1F* fHist2ProngVertZ;            //!<!  histo of D0 vertex z
-  TH1F* fHistDplusVertX;             //!<!  histo of D+ vertex x
-  TH1F* fHistDplusVertY;             //!<!  histo of D+ vertex y
-  TH1F* fHistDplusVertZ;             //!<!  histo of D+ vertex z
-  TH1F *fHistLcpKpiVertX;            //!<!  histo of LcpKpi+ vertex x
-  TH1F *fHistLcpKpiVertY;            //!<!  histo of LcpKpi+ vertex y
-  TH1F *fHistLcpKpiVertZ;            //!<!  histo of LcpKpi+ vertex z
+  TH1F* fHist2ProngVertX;            //!<!  histo of 2-prong vertex x
+  TH1F* fHist2ProngVertY;            //!<!  histo of 2-prong vertex y
+  TH1F* fHist2ProngVertZ;            //!<!  histo of 2-prong vertex z
+  TH1F* fHist3ProngVertX;           //!<!  histo of 3-prong vertex x
+  TH1F* fHist3ProngVertY;           //!<!  histo of 3-prong vertex y
+  TH1F* fHist3ProngVertZ;           //!<!  histo of 3-prong vertex z
   TH1F *fHistDist12LcpKpi;           //!<!  histo of LcpKpi+ distance between primary and secondary vertex reconstructed from the pair of tracks
 
   TH1F* fHistInvMassD0;              //!<!  histo with D0 inv mass
