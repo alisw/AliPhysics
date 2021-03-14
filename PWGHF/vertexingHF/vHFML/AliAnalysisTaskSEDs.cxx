@@ -1822,9 +1822,9 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
       xmaxReco = {xmaxReco[0], xmaxReco[1], xmaxReco[13], xmaxReco[14], xmaxReco[15]};
 
       axisMC = {axisMC[0], axisMC[1], axisMC[2], axisMC[3], axisMC[14], axisMC[15], axisMC[16]};
-      nBinsRecoMC = {nBinsRecoMC[0], nBinsRecoMC[1], nBinsRecoMC[2], nBinsRecoMC[3], nBinsRecoMC[14], nBinsRecoMC[15], nBinsRecoMC[16]};
-      xminRecoMC = {xminRecoMC[0], xminRecoMC[1], xminRecoMC[2], xminRecoMC[3], xminRecoMC[14], xminRecoMC[15], xminRecoMC[16]};
-      xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[2], xmaxRecoMC[3], xmaxRecoMC[14], xmaxRecoMC[15], xmaxRecoMC[16]};
+      nBinsRecoMC = {nBinsRecoMC[0], nBinsRecoMC[1], nBinsRecoMC[2], nBinsRecoMC[3], nBinsRecoMC[15], nBinsRecoMC[16], nBinsRecoMC[17]};
+      xminRecoMC = {xminRecoMC[0], xminRecoMC[1], xminRecoMC[2], xminRecoMC[3], xminRecoMC[15], xminRecoMC[16], xminRecoMC[17]};
+      xmaxRecoMC = {xmaxRecoMC[0], xmaxRecoMC[1], xmaxRecoMC[2], xmaxRecoMC[3], xmaxRecoMC[15], xmaxRecoMC[16], xmaxRecoMC[17]};
   }
 
   Int_t nBinsAcc[knVarForSparseAccFD] = {nPtBins, 20, nPtBBins, 5};
