@@ -3611,10 +3611,10 @@ void  AliIsolationCut::MakeIsolationCut
     coneptsumUESubCluster -= coneptsumBkgCls;
     coneptsumUESubTrack   -= coneptsumBkgTrk;
     
-    printf("method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
-           fICMethod, centrality, coneptsumTrack * excessAreaTrkEta,
-           coneptsumTrack * excessAreaTrkEta - coneptsumBkgTrk,
-           coneptsumBkgTrk, coneptsumBkgTrk / ( TMath::Pi() * fConeSize * fConeSize));
+//    printf("method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
+//           fICMethod, centrality, coneptsumTrack * excessAreaTrkEta,
+//           coneptsumTrack * excessAreaTrkEta - coneptsumBkgTrk,
+//           coneptsumBkgTrk, coneptsumBkgTrk / ( TMath::Pi() * fConeSize * fConeSize));
 
     // Calculated in case of fICMethod == kSumBkgSubEtaBandIC, 
     // reset excess areas to 1 if not used in final result.
