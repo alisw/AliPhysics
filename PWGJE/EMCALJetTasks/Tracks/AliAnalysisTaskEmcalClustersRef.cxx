@@ -85,6 +85,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fUseExclusiveTriggers(true),
     fFillTriggerClusters(true),
     fMonitorEtaPhi(false),
+    fFillXsecWeighted(false),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -106,6 +107,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fUseExclusiveTriggers(true),
     fFillTriggerClusters(true),
     fMonitorEtaPhi(false),
+    fFillXsecWeighted(false),
     fClusterTimeRange(-50e-6, 50e-6),
     fTriggerClusters(),
     fRequiredOverlaps(),
@@ -278,6 +280,12 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     }
   }
 
+  // Get cross section weight from header (if requested)
+  double mcweight = 1.;
+  if(fFillXsecWeighted) {
+    mcweight = GetCrossSectionFromHeader();
+  }
+
   auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
   Double_t energy(-1), eta(-100.), phi(-1.), energyMaxEMCAL(0.), energyMaxDCAL(0.);
   const TList *selpatches(nullptr);
@@ -287,7 +295,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
-    if(!fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
+    if(!fMCEvent && !fClusterTimeRange.IsInRange(clust->GetTOF())) continue;    // Always prevent time cut from being applied in simulation
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
@@ -482,6 +490,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     for(const auto & trg : combinedtriggers){
       if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
       auto weight = GetTriggerWeight(trg.Data());
+      weight *= mcweight;
       for(auto trgclust : fTriggerClusters) {
         maxpoint[indexTrgCluster] = trgclust;
         fHistos->FillTHnSparse("hClusterTHnSparseMax" + trg, maxpoint.data(), weight);
@@ -499,6 +508,9 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   auto hasTriggerPatch = matchedPatches.size() > 0;
   Int_t supermoduleID = -1;
   Double_t weight = GetTriggerWeight(triggerclass.Data());
+  if(fFillXsecWeighted) {
+    weight *= GetCrossSectionFromHeader();
+  }
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
 
   fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
