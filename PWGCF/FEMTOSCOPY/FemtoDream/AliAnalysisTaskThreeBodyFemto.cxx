@@ -1386,10 +1386,10 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
               if(DoThisPair12==11){ 
                 Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
               }
-              if(DoThisPair12==23){ 
+              if(DoThisPair23==11){ 
                 Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
               }
-              if(DoThisPair12==31){ 
+              if(DoThisPair31==11){ 
                 Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
               }
             }
