@@ -832,21 +832,29 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       Double_t distToVertXY = TMath::Sqrt(distx * distx + disty * disty);
       AliVParticle* mcDau0 = nullptr;
       Int_t iDau0=mcPart->GetDaughterFirst();
-      if(isESD) mcDau0 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iDau0));
-      else mcDau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iDau0));
-      Double_t decdistx= mcDau0->Xv() - mcVtx[0];
-      Double_t decdisty  = mcDau0->Yv() - mcVtx[1];
-      Double_t decdistz = mcDau0->Zv() - mcVtx[2];
-      Double_t declen3D=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty + decdistz * decdistz);
-      Double_t declenXY=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty);
+      if(iDau0>=0){
+	if(isESD) mcDau0 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iDau0));
+	else mcDau0 = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iDau0));
+      }
+      Double_t declen3D=-9999.;
+      Double_t declenXY=-9999.;
+      if(mcDau0){
+	Double_t decdistx= mcDau0->Xv() - mcVtx[0];
+	Double_t decdisty  = mcDau0->Yv() - mcVtx[1];
+	Double_t decdistz = mcDau0->Zv() - mcVtx[2];
+	declen3D=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty + decdistz * decdistz);
+	declenXY=TMath::Sqrt(decdistx * decdistx + decdisty * decdisty);
+      }
       fHistMotherID->Fill(mcPart->GetMother());
       Int_t iFromB = isESD ? AliVertexingHFUtils::CheckOrigin(mcEvent, dynamic_cast<AliMCParticle*>(mcPart), fSearchUpToQuark) : AliVertexingHFUtils::CheckOrigin(arrayMC, dynamic_cast<AliAODMCParticle*>(mcPart), fSearchUpToQuark);
       if (iFromB == 4)
       {
         fHistYPtPromptAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginPrompt->Fill(distToVert);
-	fHistPtDDecLenPrompt[iSpecies]->Fill(pt,declen3D);
-	fHistPtDDecLenXYPrompt[iSpecies]->Fill(pt,declenXY);
+	if(mcDau0){
+	  fHistPtDDecLenPrompt[iSpecies]->Fill(pt,declen3D);
+	  fHistPtDDecLenXYPrompt[iSpecies]->Fill(pt,declenXY);
+	}
       }
       else if (iFromB == 5)
       {
@@ -854,8 +862,10 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
         fHistYPtFeeddownAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginFeeddown->Fill(distToVert);
 	fHistPtBDecLenBXYFeeddown->Fill(ptB,distToVertXY);
- 	fHistPtDPtBDecLenFeeddown[iSpecies]->Fill(pt,ptB,declen3D);
-	fHistPtDPtBDecLenXYFeeddown[iSpecies]->Fill(pt,ptB,declenXY);
+	if(mcDau0){
+	  fHistPtDPtBDecLenFeeddown[iSpecies]->Fill(pt,ptB,declen3D);
+	  fHistPtDPtBDecLenXYFeeddown[iSpecies]->Fill(pt,ptB,declenXY);
+	}
       }
 
       if (iPart < 0)
