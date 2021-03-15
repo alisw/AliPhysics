@@ -430,6 +430,12 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fConeptsumClusterSubPhiBandPerMinCut[icut] = 0;
     fConeNClusterSubPhiBandPerMinCut    [icut] = 0;
   }
+
+  for(Int_t icut = 0; icut < 4; icut++)
+  {
+    fhSpherocityMinPtM02SumPtCone       [icut] = 0;
+    fhSpherocityMinPtM02SumPtConeCharged[icut] = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -1285,7 +1291,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       if ( GetReader()->IsEventSpherocityCalculated()  )
       {
         fhSpherocityM02SumPtCone = new TH3F
-        ("hSpherocityM02SumPtCone",Form("%s",parTitleR.Data()),
+        (Form("hSpherocityM02SumPtCone_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
+         Form("%s",parTitleR.Data()),
           soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
           ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
          sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
@@ -1293,6 +1300,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhSpherocityM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
         fhSpherocityM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         outputContainer->Add(fhSpherocityM02SumPtCone) ;
+
+        if ( GetReader()->IsEventSpherocityMinPtStudied() )
+        {
+          for(Int_t i = 0; i < 4; i++)
+          {
+            fhSpherocityMinPtM02SumPtCone[i] = new TH3F
+            (Form("hSpherocityM02SumPtCone_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
+             Form("%s",parTitleR.Data()),
+              soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhSpherocityMinPtM02SumPtCone[i]->SetXTitle("Spherocity");
+            fhSpherocityMinPtM02SumPtCone[i]->SetYTitle("#sigma_{long}^{2}");
+            fhSpherocityMinPtM02SumPtCone[i]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhSpherocityMinPtM02SumPtCone[i]) ;
+          }
+        }
       }
     }
     else 
@@ -1300,7 +1324,11 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       //printf("*** N centrality bins %d\n",GetNCentrBin());
       fhPtM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
       if ( GetReader()->IsEventSpherocityCalculated()  )
+      {
         fhSpherocityM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
+        if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          fhSpherocityMinPtM02SumPtConeCent = new TH3F*[GetNCentrBin()*4] ;
+      }
       for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
       {
         fhPtM02SumPtConeCent[icent] = new TH3F
@@ -1317,7 +1345,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         if ( GetReader()->IsEventSpherocityCalculated()  )
         {
           fhSpherocityM02SumPtConeCent[icent] = new TH3F
-          (Form("hSpherocityM02SumPtCone_Cent%d",icent),
+          (Form("hSpherocityM02SumPtCone_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPt()),
            Form("%s, centrality bin %d",parTitleR.Data(), icent),
             soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
@@ -1326,6 +1354,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhSpherocityM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
           fhSpherocityM02SumPtConeCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
           outputContainer->Add(fhSpherocityM02SumPtConeCent[icent]) ;
+
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              Int_t index = icent*4+i;
+              fhSpherocityMinPtM02SumPtConeCent[index] = new TH3F
+              (Form("hSpherocityM02SumPtCone_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPtCuts(i)),
+               Form("%s, centrality bin %d",parTitleR.Data(), icent),
+                soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetXTitle("Spherocity");
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetYTitle("#sigma_{long}^{2}");
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+              outputContainer->Add(fhSpherocityMinPtM02SumPtConeCent[index]) ;
+            }
+          }
         }
       }
     }
@@ -1347,7 +1393,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         if ( GetReader()->IsEventSpherocityCalculated()  )
         {
           fhSpherocityM02SumPtConeCharged = new TH3F
-          ("hSpherocityM02SumPtConeCharged",Form("%s",parTitleR.Data()),
+          (Form("hSpherocityM02SumPtConeCharged_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
+           Form("%s",parTitleRCh.Data()),
             soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
            sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
@@ -1355,6 +1402,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhSpherocityM02SumPtConeCharged->SetYTitle("#sigma_{long}^{2}");
           fhSpherocityM02SumPtConeCharged->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
           outputContainer->Add(fhSpherocityM02SumPtConeCharged) ;
+
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              fhSpherocityMinPtM02SumPtConeCharged[i] = new TH3F
+              (Form("hSpherocityM02SumPtConeCharged_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
+               Form("%s",parTitleRCh.Data()),
+                soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetXTitle("Spherocity");
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetYTitle("#sigma_{long}^{2}");
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+              outputContainer->Add(fhSpherocityMinPtM02SumPtConeCharged[i]) ;
+            }
+          }
         }
       }
       else
@@ -1362,7 +1426,11 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         //printf("*** N centrality bins %d\n",GetNCentrBin());
         fhPtM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()] ;
         if ( GetReader()->IsEventSpherocityCalculated()  )
+        {
           fhSpherocityM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()] ;
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            fhSpherocityMinPtM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()*4] ;
+        }
         for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
         {
           fhPtM02SumPtConeChargedCent[icent] = new TH3F
@@ -1379,8 +1447,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           if ( GetReader()->IsEventSpherocityCalculated()  )
           {
             fhSpherocityM02SumPtConeChargedCent[icent] = new TH3F
-            (Form("hSpherocityM02SumPtCone_Cent%d",icent),
-             Form("%s, centrality bin %d",parTitleR.Data(), icent),
+            (Form("hSpherocityM02SumPtConeCharged_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPt()),
+             Form("%s, centrality bin %d",parTitleRCh.Data(), icent),
               soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
               ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
              sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
@@ -1388,6 +1456,24 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhSpherocityM02SumPtConeChargedCent[icent]->SetYTitle("#sigma_{long}^{2}");
             fhSpherocityM02SumPtConeChargedCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
             outputContainer->Add(fhSpherocityM02SumPtConeChargedCent[icent]) ;
+
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                Int_t index = icent*4+i;
+                fhSpherocityMinPtM02SumPtConeChargedCent[index] = new TH3F
+                (Form("hSpherocityM02SumPtConeCharged_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPtCuts(i)),
+                 Form("%s, centrality bin %d",parTitleRCh.Data(), icent),
+                  soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                  ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+                 sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetXTitle("Spherocity");
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetYTitle("#sigma_{long}^{2}");
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+                outputContainer->Add(fhSpherocityMinPtM02SumPtConeChargedCent[index]) ;
+              }
+            }
           }
         } // cen loop
       } // high mult
@@ -4706,14 +4792,34 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       if ( !IsHighMultiplicityAnalysisOn() )
       {
         fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+
         if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+        {
           fhSpherocityM02SumPtCone->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              fhSpherocityMinPtM02SumPtCone[i]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsum, GetEventWeight()*weightTrig);
+            }
+          }
+        }
       }
       else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
       {
         fhPtM02SumPtConeCent[icent]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
         if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+        {
           fhSpherocityM02SumPtConeCent[icent]->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              Int_t index = icent*4+i;
+              fhSpherocityMinPtM02SumPtConeCent[index]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsum, GetEventWeight()*weightTrig);
+            }
+          }
+        }
       }
       
       if ( partInCone == AliIsolationCut::kNeutralAndCharged )
@@ -4722,13 +4828,33 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         {
           fhPtM02SumPtConeCharged->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
           if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
-            fhSpherocityM02SumPtConeCharged->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          {
+            fhSpherocityM02SumPtConeCharged->Fill(GetReader()->GetEventSpherocity(), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                fhSpherocityMinPtM02SumPtConeCharged[i]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+              }
+            }
+          }
         }
         else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
         {
           fhPtM02SumPtConeChargedCent[icent]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
           if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
-            fhSpherocityM02SumPtConeChargedCent[icent]->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          {
+            fhSpherocityM02SumPtConeChargedCent[icent]->Fill(GetReader()->GetEventSpherocity(), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                Int_t index = icent*4+i;
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+              }
+            }
+          }
         }
       }
 
