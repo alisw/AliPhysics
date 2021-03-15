@@ -1810,16 +1810,16 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos()
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
   fMCAccPrompt->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
-  fMCAccPrompt->GetAxis(3)->SetTitle("N_{tracklets}");
-  fMCAccPrompt->GetAxis(4)->SetTitle("B species");
+  fMCAccPrompt->GetAxis(3)->SetTitle("B species");
+  fMCAccPrompt->GetAxis(4)->SetTitle("N_{tracklets}");
 
   //pt,y,ptB
   fMCAccBFeed = new THnSparseF("hMCAccBFeed", "kStepMCAcceptance pt vs. y vs. ptB - DfromB", kVarForSparseAcc, nbinsFD, xminFD, xmaxFD);
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
   fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
-  fMCAccBFeed->GetAxis(3)->SetTitle("N_{tracklets}");
-  fMCAccBFeed->GetAxis(4)->SetTitle("B species");
+  fMCAccBFeed->GetAxis(3)->SetTitle("B species");
+  fMCAccBFeed->GetAxis(4)->SetTitle("N_{tracklets}");
 
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
