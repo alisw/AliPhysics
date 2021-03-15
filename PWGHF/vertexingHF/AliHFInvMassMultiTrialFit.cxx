@@ -265,7 +265,7 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
       }
     }
   }
-  fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:sigfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy",128000);
+  fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:sigfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy:sgn:ersgn:bkg:erbkg",128000);
   fNtupleMultiTrials->SetDirectory(nullptr);
   fNtupleBinCount = new TNtuple(Form("ntuBinCount%s",fSuffix.Data()),Form("ntuBinCount%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:sigfunc:confsig:confmean:chi2:nSigmaBC:rawyBC0:erawyBC0:rawyBC1:erawyBC1",128000);
   fNtupleBinCount->SetDirectory(nullptr);
@@ -286,7 +286,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 
   fMinYieldGlob=999999.;
   fMaxYieldGlob=0.;
-  Float_t xnt[16];
+  Float_t xnt[20];
   Float_t xntBC[14];
 
   for(Int_t ir=0; ir<fNumOfRebinSteps; ir++){
@@ -432,6 +432,8 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		  Double_t erSignif=0.;
 		  Double_t bkg=0.;
 		  Double_t erbkg=0.;
+		  Double_t sgn=0.;
+		  Double_t ersgn=0.;
 		  Double_t bkgBEdge=0;
 		  Double_t erbkgBEdge=0;
 		  if(typeb<kNBkgFuncCases){
@@ -448,6 +450,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		    ry=fitter->GetRawYield();
 		    ery=fitter->GetRawYieldError();
 		    fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
+		    fitter->Signal(fnSigmaForBkgEval,sgn,ersgn);
 		    Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
 		    Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
 		    fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
@@ -470,6 +473,10 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		    xnt[13]=esigma;
 		    xnt[14]=ry;
 		    xnt[15]=ery;
+		    xnt[16]=sgn;
+		    xnt[17]=ersgn;
+		    xnt[18]=bkg;
+		    xnt[19]=erbkg;
 		    fHistoRawYieldDistAll->Fill(ry);
 		    fHistoRawYieldTrialAll->SetBinContent(globBin,ry);
 		    fHistoRawYieldTrialAll->SetBinError(globBin,ery);
