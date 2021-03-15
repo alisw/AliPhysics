@@ -607,29 +607,40 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetStageSwitch(TString instr) {
 }
 void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   //MC generated
-  AliVParticle *lPart;
   AliAODTrack *lTrack;
+  // AliVParticle *lPart;
   Double_t trackXYZ[3];
   Double_t dummyDouble[] = {0.,0.};
-  TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
-  for(Int_t i=0;i<tca->GetEntries();i++) {
-    lPart = (AliAODMCParticle*)tca->At(i);
-    if(!AcceptParticle(lPart)) continue;
-    if(!fGFWSelection->AcceptParticle(lPart,0,ptMin,ptMax)) continue;
+  TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+  Int_t nPrim = tca->GetEntries();
+  AliVParticle *lPart;
+  Int_t partNotFetched=0;
+  for (Int_t ipart = 0; ipart < nPrim; ipart++) {
+    lPart = (AliAODMCParticle*)tca->At(ipart);
+    if (!lPart) { continue; };
+    /* get particlePDG */
+    Int_t pdgcode = TMath::Abs(lPart->PdgCode());
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    if (TMath::Abs(lPart->Eta()) > fEta) continue;
+    Double_t pt = lPart->Pt();
+    if (pt<ptMin || pt>ptMax) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
-    Int_t pdgCode = TMath::Abs(lPart->PdgCode());
-    if(pdgCode==211) fWeights[1]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
-    if(pdgCode==321) fWeights[2]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
-    if(pdgCode==2212) fWeights[3]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
-
+    if(fDisablePID) continue;
+    if(pdgcode==211) fWeights[1]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
+    if(pdgcode==321) fWeights[2]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
+    if(pdgcode==2212) fWeights[3]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,2);
   };
+
   //MC reconstructed
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
-    lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
+    lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
+    if(!lPart) continue;
+    if(!lPart->IsPhysicalPrimary()) continue;
     if(TMath::Abs(lTrack->Eta())>fEta) continue;
     if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
     fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
