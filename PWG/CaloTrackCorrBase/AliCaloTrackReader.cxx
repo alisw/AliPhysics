@@ -160,6 +160,7 @@ fVertexBC(-200),             fRecalculateVertexBC(0),
 fUseAliCentrality(0),        fMultWithEventSel(0),
 fCentralityClass(""),        fCentralityOpt(0),
 fEventPlaneMethod(""),
+fSpherocity(-10),            fCalculateSpherocity(0),
 fFillInputNonStandardJetBranch(kFALSE),
 fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJetBranchName("jets"),
 fFillInputBackgroundJetBranch(kFALSE), 
@@ -489,6 +490,69 @@ Bool_t  AliCaloTrackReader::RejectEventWithTriggerBit(UInt_t trigFired)
   }
   
   return kTRUE ; // accept the event
+}
+
+//_____________________________________________
+/// Calculate spherocity of the event
+/// Adapted from PWGLF/SPECTRA/Spherocity/AliSpherocityUtils.cxx
+/// Input if the list of filtered tracks fCTSTracks
+//____________________________________________________________________
+Float_t AliCaloTrackReader::CalculateEventSpherocity( )
+{
+  Float_t pFull      = 0;
+  Float_t spherocity = 2;
+  Float_t sizeStep   = 0.1;
+  Int_t   nrec       = fCTSTracks->GetEntries();
+
+  // Computing total pt
+  Float_t sumpt = 0;
+  for(int i1 = 0; i1 < nrec; ++i1)
+  {
+    AliVTrack * track = (AliVTrack*) fCTSTracks->At(i1);
+    sumpt += track->Pt();
+  }
+
+  // Getting thrust
+  for(Int_t i = 0; i < 360/(sizeStep); ++i)
+  {
+    Float_t numerator = 0;
+    Float_t phiparam  = 0;
+    Float_t nx = 0;
+    Float_t ny = 0;
+
+    phiparam=( (TMath::Pi()) * i * sizeStep ) / 180.; // parametrization of the angle
+    nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+    ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+
+    for(int i1 = 0; i1 < nrec; ++i1)
+    {
+      AliVTrack * track = (AliVTrack*) fCTSTracks->At(i1);
+      Float_t phi = track->Phi();
+      Float_t pt  = track->Pt();
+
+      Float_t pxA = pt * TMath::Cos( phi );
+      Float_t pyA = pt * TMath::Sin( phi );
+
+      // product between p proyection in XY plane and the unitary vector
+      numerator += TMath::Abs( ny * pxA - nx * pyA );
+    }
+
+    pFull = TMath::Power( (numerator / sumpt), 2 );
+
+    // Maximization of pFull
+    if ( pFull < spherocity )
+    {
+      spherocity = pFull;
+    }
+  }
+
+  Float_t finalSpherocity = ((spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+
+  AliDebug(1,Form("Cen %d, nTrack %d Spherocity %f\n",
+                  GetEventCentrality(), nrec, finalSpherocity));
+
+  return finalSpherocity;
+
 }
 
 //_____________________________________________
@@ -1383,6 +1447,26 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
         }
       }
     }
+
+    if ( fCalculateSpherocity )
+    {
+      if ( !fHistoCentDependent )
+      {
+        fhSpherocity = new TH1F
+        ("hSpherocity","Spherocity", 120, -0.1, 1.1);
+        fhSpherocity->SetXTitle("Spherocity");
+        fOutputContainer->Add(fhSpherocity);
+      }
+      else
+      {
+        fhSpherocityCen = new TH2F
+        ("hSpherocityCen","Spherocity vs Centrality",
+         120, -0.1, 1.1, 120, -10, 110);
+        fhSpherocityCen->SetXTitle("Spherocity");
+        fhSpherocityCen->SetYTitle("Centrality (%)");
+        fOutputContainer->Add(fhSpherocityCen);
+      }
+    }
   }
   
   if ( fComparePtHardAndJetPt )
@@ -1395,13 +1479,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   }
 
   if ( fComparePtHardAndPromptPhotonPt )
-   {
-     fhPtHardPromptPhotonPtRatio = new TH1F
-     ("hPtHardPtPromptPhotonPtRatio","Generated prompt #gamma #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
-     fhPtHardPromptPhotonPtRatio->SetYTitle("# events");
-     fhPtHardPromptPhotonPtRatio->SetXTitle("#it{p}_{T}^{prompt #gamma} / #it{p}_{T}^{hard}");
-     fOutputContainer->Add(fhPtHardPromptPhotonPtRatio);
-   }
+  {
+    fhPtHardPromptPhotonPtRatio = new TH1F
+    ("hPtHardPtPromptPhotonPtRatio","Generated prompt #gamma #it{p}_{T} / #it{p}_{T}^{hard}",100,0,10);
+    fhPtHardPromptPhotonPtRatio->SetYTitle("# events");
+    fhPtHardPromptPhotonPtRatio->SetXTitle("#it{p}_{T}^{prompt #gamma} / #it{p}_{T}^{hard}");
+    fOutputContainer->Add(fhPtHardPromptPhotonPtRatio);
+  }
 
   if ( fComparePtHardAndClusterPt )
   {
@@ -2293,6 +2377,15 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     fhNEventsAfterCut->Fill(21.5);
   }
   
+  if ( fCalculateSpherocity && fFillCTS )
+  {
+    fSpherocity = CalculateEventSpherocity();
+    if ( !fHistoCentDependent )
+      fhSpherocity->Fill(fSpherocity);
+    else
+      fhSpherocityCen->Fill(fSpherocity,GetEventCentrality());
+  }
+
   //-----------------------------------
   // Get and filter calorimeter data
   //-----------------------------------

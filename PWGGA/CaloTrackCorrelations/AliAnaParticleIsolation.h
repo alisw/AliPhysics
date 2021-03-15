@@ -348,6 +348,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtM02SumPtConeCharged;                    //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, charged in cone
   TH3F *   fhPtM02SumPtConeChargedMC[fgkNmcTypes];     //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle, charged in cone
   
+  TH3F *   fhSpherocityM02SumPtCone;                   //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02, pT > 10 GeV
+  TH3F *   fhSpherocityM02SumPtConeCharged;            //!<!  ABCD Spherocity vs sum(ET)+sum(pT) cone vs M02 charged in cone, pT > 10 GeV
+
   /// ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone vs centrality
   TH3F **  fhPtM02SumPtConeCent;                       //![GetNCentrBin()] 
   
@@ -362,6 +365,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   /// Different centrality bins and MC particle type origin
   TH3F **  fhPtM02SumPtConeChargedCentMC;              //![GetNCentrBin()*fNumberMCParticleCases] 
   
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeCent;             //![GetNCentrBin()]
+
+  /// ABCD TH3F histogram Spherocity, Shower Shape and sum(ET)+sum(pT) cone vs centrality, charged particles in cone, pt > 10 GeV
+  TH3F **  fhSpherocityM02SumPtConeChargedCent;      //![GetNCentrBin()]
 
   TH2F *   fhConeSumPtM02Cut[2] ;                      //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters
   TH2F *   fhConeSumPtM02CutMC[fgkNmcTypes][2] ;       //!<! Cluster and tracks Sum Pt in the cone for wide or narrow clusters, per MC particle

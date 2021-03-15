@@ -610,6 +610,13 @@ public:
   void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
+  // Spherocity
+  Float_t          CalculateEventSpherocity();
+  Float_t          GetEventSpherocity()                    { return fSpherocity            ; }
+  void             SwitchOnEventSpherocityCalculation()    { fCalculateSpherocity = kTRUE  ; }
+  void             SwitchOffEventSpherocityCalculation()   { fCalculateSpherocity = kFALSE ; }
+  Bool_t           IsEventSpherocityCalculated()           { return fCalculateSpherocity   ; }
+
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -1177,6 +1184,12 @@ public:
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
 
+  // Event spherocity
+  Float_t          fSpherocity ;                   ///<  Event spherocity
+  Bool_t           fCalculateSpherocity ;          ///<  Activate or not event spherocity calculation
+  TH1F *           fhSpherocity;                   ///< Spherocity control histogram
+  TH2F *           fhSpherocityCen;                ///< Spherocity vs centrality control histogram
+
   // Jets
   Bool_t           fFillInputNonStandardJetBranch; ///<  Flag to use data from non standard jets.
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
@@ -1257,7 +1270,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,95) ;
+  ClassDef(AliCaloTrackReader,96) ;
   /// \endcond
 
 } ;
