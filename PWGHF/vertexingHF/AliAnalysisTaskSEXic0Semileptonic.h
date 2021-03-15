@@ -96,7 +96,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		Bool_t StandardCutFlag(AliAODTrack *track, AliAODcascade *casc,
 				               Bool_t e_reco, Bool_t e_pid, Bool_t Xi_reco, Bool_t Xi_pid);
 
-    void CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t &c_flag, Bool_t &b_flag);
+    void CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t searchUpToQuark, Bool_t &c_flag, Bool_t &b_flag);
 
 		//kimc
 		//*************************************************

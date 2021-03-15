@@ -641,7 +641,7 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterTrack(AliAODTrack * track, Int_t
 			if (mother_e_label>0)
 			{
 				AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(mother_e_label);
-				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,c_flag,b_flag);
+				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
 			}
 		}
 	}//IsMC
@@ -712,7 +712,7 @@ Bool_t AliAnalysisTaskSEXic0Semileptonic::FilterElectron(
 			if (mother_e_label>0)
 			{
 				AliAODMCParticle* mcXic0 = (AliAODMCParticle*) fMC->GetTrack(mother_e_label);
-				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,c_flag,b_flag);
+				if (TMath::Abs(mcXic0->GetPdgCode())==4132) CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
 			}
 		}
 	}
@@ -959,7 +959,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillMCXic0(AliAODMCParticle *mcpart)
 
 	if(e_flag && xi_flag)
 	{
-		CheckOrigin(fMC,mcpart,c_flag,b_flag);
+		CheckOrigin(fMC,mcpart,kTRUE,c_flag,b_flag);
 
 		if (b_flag)
 		{
@@ -1231,7 +1231,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillPairEleXi(AliAODcascade *casc, AliAO
 
 				if(elab>0 && Xilab>0)
 				{
-					CheckOrigin(fMC,mcXic0,c_flag,b_flag);
+					CheckOrigin(fMC,mcXic0,kTRUE,c_flag,b_flag);
 
 					AliAODMCParticle* mcXi = (AliAODMCParticle*) fMC->GetTrack(Xilab);
 					AliAODMCParticle* mce = (AliAODMCParticle*) fMC->GetTrack(elab);
@@ -1357,7 +1357,7 @@ void AliAnalysisTaskSEXic0Semileptonic::FillXiHistFromPromptNonPrompt(Bool_t IsM
 		if (TMath::Abs(mcdau->GetPdgCode())==3312) xi_flag = kTRUE;
 	}
 
-	if (e_flag && xi_flag) CheckOrigin(fMC,mcXic0,Xic_flag,Xib_flag);
+	if (e_flag && xi_flag) CheckOrigin(fMC,mcXic0,kTRUE,Xic_flag,Xib_flag);
 
 	Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
 	if (Total_Xic0_flag) fHistos->FillTH1("hDCAV0PrToPrimVertex",lDcaPosToPrimVertex);
@@ -1841,10 +1841,9 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineEventTree()
 	return;
 }//DefineEventTree
 
-void AliAnalysisTaskSEXic0Semileptonic::CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t &c_flag, Bool_t &b_flag){
-	//from AliVertexingHFUtils
+void AliAnalysisTaskSEXic0Semileptonic::CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t searchUpToQuark, Bool_t &c_flag, Bool_t &b_flag){
+	//  from AliVertexingHFUtils
   /// checking whether the mother of the particles come from a charm or a bottom quark
-
   Int_t pdgGranma = 0;
   Int_t mother = 0;
   mother = mcPart->GetMother();
@@ -1870,18 +1869,9 @@ void AliAnalysisTaskSEXic0Semileptonic::CheckOrigin(AliMCEvent* mcEvent, AliAODM
     }
   }
 
-	if(!isQuarkFound){
-		if(isFromB) b_flag = kTRUE;
-		else {
-			Int_t dummyMother = 0;
-			dummyMother = mcPart->GetMother();
-			if(dummyMother == -1) c_flag = kTRUE;
-		}
-	}
-	else{
-		if(isFromB) b_flag = kTRUE;
-		else c_flag = kTRUE;
-	}
+	if(searchUpToQuark && !isQuarkFound) return;
+	if(isFromB) b_flag = kTRUE;
+ 	else c_flag = kTRUE;
 
 	return;
 }
