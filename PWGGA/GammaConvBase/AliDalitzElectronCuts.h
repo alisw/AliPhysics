@@ -121,7 +121,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t dEdxCuts(AliVTrack * track);
   Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
   Bool_t RejectSharedElecGamma(TList *photons, Int_t indexEle);
-  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi );
+  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi , Double_t pT);
   Bool_t MassCut(Double_t pi0CandidatePt,Double_t vphotonCandidateMass);
 
   // Event Cuts
@@ -190,6 +190,13 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
   Double_t fDeltaPhiCutMax;
+  Int_t    fDoDifferentCut;
+  Double_t* fPsiPairCutArray;
+  Double_t* fDeltaPhiCutArray;
+  Double_t* fpTDependanceCutArray;
+  Double_t* fPsiPairpTDependanceCut;
+  Double_t* fDeltaPhipTDependanceCutMin;
+  Double_t* fDeltaPhipTDependanceCutMax;
   Double_t fMaxDCAVertexz;
   Double_t fMaxDCAVertexxy;
   TString fDCAVertexPt;//Conversion from coordenates to momentum.
