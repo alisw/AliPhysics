@@ -94,6 +94,7 @@ fhSpherocityM02SumPtCone(0),     fhSpherocityM02SumPtConeCharged(0),
 fhPtM02SumPtConeCent(0x0),       fhPtM02SumPtConeChargedCent(0x0),          
 fhPtM02SumPtConeCentMC(0x0),     fhPtM02SumPtConeChargedCentMC(0x0),
 fhSpherocityM02SumPtConeCent(0x0), fhSpherocityM02SumPtConeChargedCent(0x0),
+fhSpherocityMinPtM02SumPtConeCent(0x0), fhSpherocityMinPtM02SumPtConeChargedCent(0x0),
 fhConeSumPtExoTrigger(0),        fhConeSumPtClusterExoTrigger(0),            fhConeSumPtTrackExoTrigger(0),                      
 
 fhPtPrimMCPi0DecayPairOutOfCone(0),
