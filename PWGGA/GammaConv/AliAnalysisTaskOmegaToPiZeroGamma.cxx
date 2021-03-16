@@ -4957,6 +4957,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
         {
           if ( ( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->UseGammaSelection() ) && (dropOutGammas_CALOBack.find(iOrgGamma) != dropOutGammas_CALOBack.end() ) ) {continue;}
           if( (iOrgGamma == backClusterIndex[0]) || (iOrgGamma == backClusterIndex[1]) || (iOrgGamma == backClusterIndex[2]) ) continue;
+          if(iOrgGamma == (kCurrentPi0Candidate->GetLabel(1) ) ) continue;
           AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(iOrgGamma));
           if (gamma2==NULL || !(gamma2->GetIsCaloPhoton())) continue;
           AliAODConversionMother backgroundCandidate = AliAODConversionMother(kCurrentPi0Candidate,gamma2);
