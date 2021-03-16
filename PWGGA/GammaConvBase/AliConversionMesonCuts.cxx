@@ -3901,6 +3901,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
       fPBremSmearing    = 1.;
       fPSigSmearing     = 0.009;
       fPSigSmearingCte  = 0.011;
+      break;
     case 24:     //o
       fUseMCPSmearing   = 2;
       fPSigSmearing     = 6.46806e-07;
