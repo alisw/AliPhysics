@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
-#define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2
+#ifndef ALIANALYSISTASKSEPBPBCORRELATIONSJETV2_H
+#define ALIANALYSISTASKSEPBPBCORRELATIONSJETV2_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -19,7 +19,6 @@
 #include "TGrid.h"
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
-
 
 class AliEventPoolManager;
 class AliOADBContainer;
@@ -68,11 +67,15 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void FillHistogramsV2(Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
 			Double_t resA2, Double_t resC2, Double_t resT2,
 			Int_t index);
-    void FillHistogramsdPhidEta(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
-			      Double_t resA2, Double_t resC2, Double_t resT2,
-			      Double_t resA3, Double_t resC3, Double_t resT3);
-  void FillHistogramsdPhidEtaMixed(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
-				   TObjArray *mixedTracks);
+
+  void FillHistogramsdPhidEta(TObjArray *selectedArray, Int_t centrality,Double_t percentile,Int_t zvtxBin,
+                                                   Double_t resA2, Double_t resC2, Double_t resT2,
+                                                   Double_t resA3, Double_t resC3, Double_t resT3);
+  void FillHistogramsdPhidEtaMixed(TObjArray *selectedArray, Double_t percentile,Int_t zvtxBin);
+
+  TObjArray* CloneTrack(TObjArray*selectedTrackArray);
+
+  TObjArray *GetAcceptedTracks(AliAODEvent *fAOD, TObjArray*tracks);
   Int_t GetCentBin();
   Int_t GetCentBin(Double_t percentile);
   Int_t GetZvtxBin(Double_t zvtx);
@@ -195,7 +198,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   TList *fOutputList;  //!
   TList *fOutputList1; //!
   TList *flist_contQ;  //! list_contQ
-  TList *flist_Res;    //! list_Res;
+  TList *flist_Res;    //! list_Res
 
   Int_t   fRunN; //!
   Float_t fv0mult; //!

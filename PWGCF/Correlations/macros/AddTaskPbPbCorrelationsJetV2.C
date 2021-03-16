@@ -76,27 +76,18 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetListRes(list_Res);  
 
   mgr->AddTask(task);
-/*
-  // create input container
+
+ // create input container
   AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("contQ",
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
   cinput1->SetData(list_contQ);
-  AliAnalysisDataContainer *cinput2 = mgr->CreateContainer("q2V0A",
-                                    TList::Class(),
-                                    AliAnalysisManager::kInputContainer);
-  cinput2->SetData(list_Spl2V0A);
   
-  AliAnalysisDataContainer *cinput3 = mgr->CreateContainer("q3V0A",
+  AliAnalysisDataContainer *cinput2 = mgr->CreateContainer("Res",
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
-  cinput3->SetData(list_Spl3V0A);
- 
-  AliAnalysisDataContainer *cinput4 = mgr->CreateContainer("Res",
-                                    TList::Class(),
-                                    AliAnalysisManager::kInputContainer);
-  cinput4->SetData(list_Res);
-*/
+  cinput2->SetData(list_Res);
+
  
   // create output container
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
@@ -112,6 +103,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
   // finaly connect input and output
   mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
+  mgr->ConnectInput(task, 1, cinput1);
+  mgr->ConnectInput(task, 2, cinput2);
   mgr->ConnectOutput(task, 1, output);
   mgr->ConnectOutput(task, 2, output1);
   
