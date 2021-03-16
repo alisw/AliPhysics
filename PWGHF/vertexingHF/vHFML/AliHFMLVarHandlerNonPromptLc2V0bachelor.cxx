@@ -100,7 +100,9 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     fTreeVar->Branch(massK0sname.Data(), &fMassK0s);
     fTreeVar->Branch(massLname.Data(), &fMassL);
     fTreeVar->Branch("dca_V0", &fDCAV0);
+    fTreeVar->Branch("dca_V0_xy", &fDCAV0XY);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
+    fTreeVar->Branch("imp_par_V0_xy", &fImpParV0XY);
     fTreeVar->Branch("d_len_V0", &fDecayLengthV0);
     fTreeVar->Branch("armenteros_V0", &fArmqTOverAlphaV0);
     fTreeVar->Branch("ctau_K0s", &fcTauK0s);
@@ -297,7 +299,17 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fPtV0 = KFV0.GetPt();
         fcTauK0s = fDecayLengthV0 * massK0s / fPtV0;
         fcTauL = fDecayLengthV0 * massL / fPtV0;
-        fDCAV0 = KFV0.GetDStoPoint(posF, covF);
+        
+        float dcaPointV0[3], dcaPointV0Cov[3];
+        KFV0.GetParametersAtPoint(posF, covF, dcaPointV0, dcaPointV0Cov);
+        float dcaV02xy = 0;
+        for(int i = 0; i < 2; i++){
+            dcaV02xy += (dcaPointV0[i] - pos[i]) * (dcaPointV0[i] - pos[i]);
+        }
+        fDCAV0XY = TMath::Sqrt(dcaV02xy);
+        fDCAV0 = TMath::Sqrt(dcaV02xy + (dcaPointV0[2] - pos[2]) * (dcaPointV0[2] - pos[2]));
+        fImpParV0XY = KFV0.GetDistanceFromVertexXY(primVertKF);
+        
         fCosPV0 = AliVertexingHFUtils::CosPointingAngleFromKF(KFV0, primVertKF);
 
         // Armenteros qT/|alpha|
@@ -326,7 +338,16 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fDecayLength = AliVertexingHFUtils::DecayLengthFromKF(KFLc, primVertKF);
         fDecayLengthXY = AliVertexingHFUtils::DecayLengthXYFromKF(KFLc, primVertKF);
         fNormDecayLengthXY = AliVertexingHFUtils::ldlXYFromKF(KFLc, primVertKF);
-        fDCA = KFLc.GetDStoPoint(posF, covF);
+
+        float dcaPoint[3], dcaPointCov[3];
+        KFLc.GetParametersAtPoint(posF, covF, dcaPoint, dcaPointCov);
+        float dca2xy = 0;
+        for(int i = 0; i < 2; i++){
+            dca2xy += (dcaPoint[i] - pos[i]) * (dcaPoint[i] - pos[i]);
+        }
+        fDCAXY = TMath::Sqrt(dca2xy);
+        fDCA = TMath::Sqrt(dca2xy + (dcaPoint[2] - pos[2]) * (dcaPoint[2] - pos[2]));
+        
         float massLcReco = 0., massLcRecoUnc = 0.;
         KFLc.GetMass(massLcReco, massLcRecoUnc);
         fInvMass = massLcReco;

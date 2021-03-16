@@ -122,6 +122,7 @@ void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("cos_p_xy", &fCosPXY);
     fTreeVar->Branch("imp_par_xy", &fImpParXY);
     fTreeVar->Branch("dca", &fDCA);
+    fTreeVar->Branch("dca_xy", &fDCAXY);
     if(fEnableBMotherPt)
         fTreeVar->Branch("pt_B", &fPtBMother);
     if(fEnableBMotherPDG)
