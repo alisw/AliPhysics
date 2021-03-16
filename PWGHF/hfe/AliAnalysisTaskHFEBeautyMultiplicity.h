@@ -54,6 +54,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetNref(Double_t nref) { Nref = nref; };
 	void SetNtrkletMin(Double_t minNtrklet) { MinNtrklet = minNtrklet; };
 	void SetNtrkletMax(Double_t maxNtrklet) { MaxNtrklet = maxNtrklet; };
+	void SetWeightNtrklet(TH1D* hWeight){ fweightNtrkl = new TH1D(*hWeight); };
 
 
 
@@ -247,6 +248,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*		    fHistPt_D_TrkCut9;
 
 	TH2F*		    fNtrkletNch;
+	TH2F*		    fNtrkletNch_Corr;
+	TH1F*		    fNtrklet_Corr;
     
     
     
@@ -255,6 +258,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         AliAnalysisTaskHFEBeautyMultiplicity& operator = (const AliAnalysisTaskHFEBeautyMultiplicity&);   // not implemented
 
 	TProfile*	fMultiEstimatorAvg[2];
+	TH1D*		fweightNtrkl;
 
         ClassDef(AliAnalysisTaskHFEBeautyMultiplicity, 1);
 };

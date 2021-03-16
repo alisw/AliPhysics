@@ -62,15 +62,15 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 
 
 
-/*
+
     //---- Get weight for N tracklet
-    TH1D* WeightNtrklet = (TH1D*)fEstimator->Get("weightNtrklet")->Clone("WeightNtrklet");
+    TH1D* WeightNtrklet = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("WeightNtrklet");
     if(!WeightNtrklet){
 	    AliFatal("Multiplicity estimator for weight not found! Please check your estimator file.\n");
 	    return;
     }
     task->SetWeightNtrklet(WeightNtrklet);
-*/
+
 
 
 
