@@ -84,6 +84,9 @@ class AliAnalysisTaskGenMcKno : public AliAnalysisTaskSE { //
 		TH1D * fMultTS;
 		TH1D * fptL;
 
+		TH2D * fHistNchTSVsV0M;
+		TH2D * fHistNchTSVsV0A;
+
 		TH2D * fHistPtVsNchNS[12][5];
 		TH2D * fHistPtVsNchAS[12][5];
 		TH2D * fHistPtVsNchTS[12][5];

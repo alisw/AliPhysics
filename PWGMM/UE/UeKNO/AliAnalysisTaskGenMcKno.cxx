@@ -101,6 +101,8 @@ ClassImp( AliAnalysisTaskGenMcKno )
 		fDphiTS(0x0),
 		fMultTS(0x0),
 		fptL(0x0),
+                fHistNchTSVsV0M(0x0),
+                fHistNchTSVsV0A(0x0),
 		fListOfObjects(0)
 {
 
@@ -145,6 +147,8 @@ AliAnalysisTaskGenMcKno::AliAnalysisTaskGenMcKno(const char *name):
 	fDphiAS(0x0),
 	fDphiTS(0x0),
 	fMultTS(0x0),
+	fHistNchTSVsV0M(0x0),
+        fHistNchTSVsV0A(0x0),
 	fptL(0x0),
 	fListOfObjects(0)
 {
@@ -240,6 +244,13 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 
 		}
 	}
+
+	fHistNchTSVsV0M=0;
+        fHistNchTSVsV0M=new TH2D("fHistNchTSVsV0M", "Generated NchTS distribution vs V0M",nTSBins, TSBins,nTSBins, TSBins);
+
+	fHistNchTSVsV0A=0;
+        fHistNchTSVsV0A=new TH2D("fHistNchTSVsV0A", "Generated NchTS distribution vs V0A",nTSBins, TSBins,nTSBins, TSBins);
+	
 	for(Int_t i=0; i<5; ++i){
 
 		fMult[i] = 0;
@@ -254,6 +265,8 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 		fListOfObjects->Add(fMult2[i]);
 
 	}
+
+	
 
 
 	// ### List of outputs
@@ -313,6 +326,8 @@ void AliAnalysisTaskGenMcKno::UserExec(Option_t *){
 	if(fIsInel0){
 		for(Int_t i=0;i<5;++i)
 			fMult[i]->Fill(mult_estimators[i]);
+		fHistNchTSVsV0M->Fill(mult_estimators[0],mult_estimators[2]);
+		fHistNchTSVsV0A->Fill(mult_estimators[0],mult_estimators[3]);
 	}
 
 	// RT analysis, here a cut on pTleading is applied
