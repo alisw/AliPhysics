@@ -39,6 +39,7 @@ set(SRCS
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
+  AliAnalysisTaskPIDFlowCorr.cxx
   AliAnalysisTaskMeanPtV2Corr.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowWithSphericity.cxx
