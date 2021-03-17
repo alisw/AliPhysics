@@ -8849,7 +8849,7 @@ void AliHFSystErr::InitLctopK0S2016pPbBDTLowPtAn() {
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  fRawYield->SetBinContent(1,0.12);
+  fRawYield->SetBinContent(1,0.11);
   fRawYield->SetBinContent(2,0.10);
   fRawYield->SetBinContent(3,0.07);
   fRawYield->SetBinContent(4,0.07);
@@ -8862,12 +8862,12 @@ void AliHFSystErr::InitLctopK0S2016pPbBDTLowPtAn() {
   // BDT Selection
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
   fCutsEff->SetBinContent(1,0.05);
-  fCutsEff->SetBinContent(2,0.07);
+  fCutsEff->SetBinContent(2,0.06);
   fCutsEff->SetBinContent(3,0.04);
   fCutsEff->SetBinContent(4,0.04);
   fCutsEff->SetBinContent(5,0.04);
   fCutsEff->SetBinContent(6,0.04);
-  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.04);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.08);
 
@@ -8878,7 +8878,7 @@ void AliHFSystErr::InitLctopK0S2016pPbBDTLowPtAn() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=3;i++) fMCPtShape->SetBinContent(i,0.02); //
+  for(Int_t i=1; i<=3;i++) fMCPtShape->SetBinContent(i,0.01); //
   for(Int_t i=4; i<=24;i++) fMCPtShape->SetBinContent(i,0.01); //
 
   // Branching ratio

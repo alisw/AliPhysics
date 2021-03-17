@@ -198,6 +198,8 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * Pseudorapidity distribution of the many muons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fThetaMuonH;        //!
+        TH1F*                   fPhiMuonH;          //!
 
                                 /**
                                  * Pt distribution of the many muons.
@@ -1531,14 +1533,29 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *     emission class to suppress the
                                  *     feed-down contribution and the
                                  *     incoherent component too!!
+                                 *
+                                 * v2: range [0, 2*TMath::Pi()]
                                  */
         TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];           //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];      //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsHv2[25];         //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsHv2[25];    //!
+        TH1F*                   fPtOnlyCosThetaHeFrameTwentyfiveBinsH[25];      //!
 
         TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];           //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];      //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsHv2[25];         //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsHv2[25];    //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsIncohH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsIncohH[25]; //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsIncohH[25]; //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsIncohH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsIncohH[25]; //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsIncohH[25]; //!
 
         TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBins0N0NH[25];       //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBins0N0NH[25];  //!
@@ -1547,6 +1564,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBins0N0NH[25];       //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBins0N0NH[25];  //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBins0N0NH[25];  //!
+
+
+
+
+
+
+        TH2F*                   fCosThetaAndPhiHelicityFrameH;                       //!
+        TH2F*                   fCosThetaAndPhiCsFrameH;                             //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameRapidityH[6];            //!
+        TH2F*                   fCosThetaAndPhiCsFrameRapidityH[6];                  //!
+
 
         //_______________________________
         // CUTS
@@ -1608,7 +1636,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 45);
+        ClassDef(AliAnalysisTaskUPCforward, 50);
 };
 
 #endif

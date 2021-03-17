@@ -238,7 +238,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_D_TrkCut8(0),
     fHistPt_D_TrkCut9(0),
 
-    fNtrkletNch(0)
+    fNtrkletNch(0),
+    fweightNtrkl(0),
+    fNtrklet_Corr(0),
+    fNtrkletNch_Corr(0)
 
 
 
@@ -427,7 +430,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_D_TrkCut8(0),
     fHistPt_D_TrkCut9(0),
 
-    fNtrkletNch(0)
+    fNtrkletNch(0),
+    fweightNtrkl(0),
+    fNtrklet_Corr(0),
+    fNtrkletNch_Corr(0)
 
 
 {
@@ -441,6 +447,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
                                         // make changes to your AddTask macro!
 					//
     for(int i=0; i<2; i++) fMultiEstimatorAvg[i] = 0;  // TProfile
+    
+    if(fweightNtrkl) delete fweightNtrkl;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskHFEBeautyMultiplicity::~AliAnalysisTaskHFEBeautyMultiplicity()
@@ -990,6 +998,15 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtrkletNch = new TH2F("fNtrkletNch","N tracklet (after correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
     fOutputList->Add(fNtrkletNch);
 
+  //Tracklet (corrected)
+    fNtrklet_Corr = new TH1F("fNtrklet_Corr","N_{tracklet} after correction; tracklet; counts", 301, -0.5, 300.5);
+    fOutputList->Add(fNtrklet_Corr);
+
+  //Tracklet vs. N charged (corrected)
+    fNtrkletNch_Corr = new TH2F("fNtrkletNch_Corr","N tracklet (after weight correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
+    fOutputList->Add(fNtrkletNch_Corr);
+
+
     
 
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1192,14 +1209,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 
 //______________________________ tracklet -> N charge ______________________________
+    fNtrkletNch->Fill(correctednAcc,Nch);
     
     if(fMCarray){
-	    fNtrkletNch->Fill(correctednAcc,Nch);
-
-//	    WeightZvertex = fCorrZvtx->Eval(Zvertex);
-//	    WeightNtrklet = fweightNtrklet->GetBinContent(fweightNtrklet->FindBin(correctednAcc));
-//	    fNtrkletNch_Corr->Fill(correctednAcc,Nch,WeightNtrklet);
-//	
+	    WeightNtrklet = fweightNtrkl->GetBinContent(fweightNtrkl->FindBin(correctednAcc));
+	    fNtrklet_Corr->Fill(correctednAcc, WeightNtrklet);
+	    fNtrkletNch_Corr->Fill(correctednAcc,Nch,WeightNtrklet);
+	
     }
 
 

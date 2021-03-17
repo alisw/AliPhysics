@@ -69,6 +69,9 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   void    SwitchOnFillClusterHistograms()       { fFillClusterHistograms = kTRUE  ; }
   void    SwitchOffFillClusterHistograms()      { fFillClusterHistograms = kFALSE ; }
   
+  void    SwitchOnFillTOFHistograms()           { fFillTOFHistograms = kTRUE  ; }
+  void    SwitchOffFillTOFHistograms()          { fFillTOFHistograms = kFALSE ; }
+
  private:
   
   Bool_t  fFillTrackBCHistograms;           ///<  Fill histograms for tracks with TOF BC=0 or not related histograms
@@ -77,6 +80,7 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   Bool_t  fFillTrackMultHistograms;         ///<  Fill track pT spectrum histograms vs track multiplicity or track sum pt
   Bool_t  fFillTrackDCAHistograms;          ///<  Fill track DCA histograms 
   Bool_t  fFillClusterHistograms;           ///< Fill TPC or ITS number oc clusters
+  Bool_t  fFillTOFHistograms;               ///< Fill TOF related histograms
   
   TLorentzVector fMomentum;                 //!<! Temporary momentum container
   
@@ -102,6 +106,11 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhSumPtTracksCent;                 //!<! Track sum pT distribution per event, different pT cuts per centrality
   TH2F * fhPtCent;                          //!<! pT distribution, per centrality
   
+  TH2F * fhPtSpherocity;                    //!<! pT vs spherocity
+  TH3F * fhPtSpherocityCent;                //!<! pT vs spherocity, per centrality
+  TH2F * fhPtSpherocityMinPt[4];            //!<! pT vs spherocity, different min pT cut
+  TH3F * fhPtSpherocityMinPtCent[4];        //!<! pT vs spherocity, different min pT cut, per centrality
+
   TH2F * fhNTPCClusters;                    //!<! Number of TPC clusters vs track pT
   TH2F * fhNITSClusters;                    //!<! Number of ITS clusters vs track pT
   TH3F * fhNTPCClustersCent;                //!<! Number of TPC clusters vs track pT vs centrality

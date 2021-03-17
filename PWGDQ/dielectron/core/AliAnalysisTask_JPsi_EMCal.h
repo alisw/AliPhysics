@@ -14,7 +14,7 @@
 //        Authors                                                     //
 //                                                                    //
 //        Cristiane Jahnke        (cristiane.jahnke@cern.ch)          //
-//        27 February, 2021                                           //
+//                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
 class TH1F;
@@ -35,11 +35,18 @@ class AliSelectNonHFE;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
+//trigger simulation
+//for trigger simulation
+class AliEmcalTriggerDecisionContainer;
+class AliAnalysisTaskEmcalTriggerSelection;
+class AliEmcalTriggerMakerTask;
+
 
 //______________________________________________________________________
 //Library
 #include "AliAnalysisTaskSE.h"
 #include "AliLog.h"
+//#include "AliEmcalTriggerDecisionContainer.h"
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -59,6 +66,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
+    void DoTriggerSimulation() {fIsTriggerSimulation = kTRUE;};
 	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	
@@ -155,6 +163,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 
     Bool_t				fIsMC;
+    Bool_t              fIsTriggerSimulation;
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fIs_sys;

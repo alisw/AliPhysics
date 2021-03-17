@@ -23,9 +23,12 @@
 
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
+#include "AliAnalysisTaskSEpPbCorrelationsYS.h"
+
 
 ClassImp(AliAnalysisTaskSEPbPbCorrelationsJetV2)
-ClassImp(AliBasicParticleST)
+ClassImp(AliAssociatedTrackYS)
+
 
  AliOADBContainer *AliAnalysisTaskSEPbPbCorrelationsJetV2::cont = NULL;
  AliOADBContainer *AliAnalysisTaskSEPbPbCorrelationsJetV2::contQx2am[14] = { NULL };
@@ -186,7 +189,10 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
     fQx2mV0C[i] = fQy2mV0C[i] = fQx2sV0C[i] = fQy2sV0C[i] = NULL;
     fQx2mTrk[i] = fQy2mTrk[i] = fQx2sTrk[i] = fQy2sTrk[i] = NULL;
   }
-   
+
+ //flist_Res = new TList();
+ //flist_contQ = new TList();  
+ 
 }
 
 
@@ -333,8 +339,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
     fQx2mV0C[i] = fQy2mV0C[i] = fQx2sV0C[i] = fQy2sV0C[i] = NULL;
     fQx2mTrk[i] = fQy2mTrk[i] = fQx2sTrk[i] = fQy2sTrk[i] = NULL;
   }
+  //flist_Res = new TList();
+  //flist_contQ = new TList();
   
   // Define input and output slots here
+  DefineInput(1, TList::Class());
+  DefineInput(2, TList::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -348,6 +358,13 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::~AliAnalysisTaskSEPbPbCorrelationsJetV2(
 
   if (fOutputList1  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
     delete fOutputList1;
+
+  if (flist_contQ  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+    delete flist_contQ;
+
+  if (flist_Res  && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+    delete flist_Res;
+
 }
 
 //___________________________________________________________________________
@@ -674,11 +691,12 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   PostData(2, fOutputList1); 
 
   //================================================================
-   
-    if (!flist_Res) {
+  flist_Res = dynamic_cast<TList*>(GetInputData(2));   
+ 
+  if (!flist_Res) {
       printf("list_Res cannot be opened \n");
       return; 
-    }
+  }
 
   fResACv2 = (TF1*)flist_Res->FindObject("fResACv2");
   fResATv2 = (TF1*)flist_Res->FindObject("fResATv2");
@@ -698,7 +716,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fV0MultOfOnCut = new TF1("fV0MultOfOnCut", "[0]+[1]*x - 5.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
   fV0MultOfOnCut->SetParameters(parV0);
 
-  ftrk = new TClonesArray("AliBasicParticleST",500);
+  ftrk = new TClonesArray("AliAssociatedTrackYS",500);
   
   const Int_t nzvtx = 10;
   Double_t zvtxbins[nzvtx+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
@@ -854,98 +872,36 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   Int_t zvtxBin = GetZvtxBin(fzvtx);
 
   fHistV0CVsCent->Fill(percentile,fAOD->GetVZEROData()->GetMTotV0C());
+
+  fHistNtrVsCent->Fill(percentile,nTracks);
+ 
+  // Calculate the q vect resolutions
+  Double_t resA2=1.,resC2=1.,resT2=1.;
+  Double_t resA3=1.,resC3=1.,resT3=1.;
+  if (fUseRes) CalcResolutions(percentile, resA2, resC2, resT2);
+
+  TObjArray *selectedTrackArray = new TObjArray; selectedTrackArray->SetOwner(kTRUE);
   
-  ProcessEvent(percentile, centBin, zvtxBin);
+  selectedTrackArray = GetAcceptedTracks(fAOD,selectedTrackArray); 
+  
+  FillHistogramsdPhidEta(selectedTrackArray,centBin,percentile,zvtxBin,
+                             resA2, resC2, resT2,
+                             resA3, resC3, resT3); 
+  
+  FillHistogramsdPhidEtaMixed(selectedTrackArray, percentile, zvtxBin);
+ 
+  Double_t Qv0aQv0c2  = Qxa2Cor*Qxc2Cor  + Qya2Cor*Qyc2Cor;
+  Double_t Qv0aQtrkl2 = Qxa2Cor*Qxtr2Cor + Qya2Cor*Qytr2Cor;
+  Double_t Qv0cQtrkl2 = Qxc2Cor*Qxtr2Cor + Qyc2Cor*Qytr2Cor;
+
+  fHistACv2->Fill(percentile, Qv0aQv0c2);
+  fHistATv2->Fill(percentile, Qv0aQtrkl2);
+  fHistCTv2->Fill(percentile, Qv0cQtrkl2);
 
   PostData(1, fOutputList); 
   PostData(2, fOutputList1); 
 }
 
-
-void AliAnalysisTaskSEPbPbCorrelationsJetV2::ProcessEvent(Double_t percentile, Int_t centBin, Int_t zvtxBin)
-{
-  AliCodeTimerAuto("",0);
-
-  ftrk->Clear();
-  
-  const Int_t nTracks = fAOD->GetNumberOfTracks();
-  fHistNtrVsCent->Fill(percentile,nTracks);
-
-  // Calculate the q vect resolutions
-  Double_t resA2=1.,resC2=1.,resT2=1.,resA2LowESE=1.,resC2LowESE=1.,resT2LowESE=1.,resA2HighESE=1.,resC2HighESE=1.,resT2HighESE=1.; 
-  Double_t resA3=1.,resC3=1.,resT3=1.,resA3LowESE=1.,resC3LowESE=1.,resT3LowESE=1.,resA3HighESE=1.,resC3HighESE=1.,resT3HighESE=1.; 
-  if (fUseRes) CalcResolutions(percentile,
-			       resA2, resC2, resT2);
-
-  // check if mixed event pool is ready
-  AliEventPool* pool = fPoolMgr->GetEventPool(percentile,fzvtx);
-  Bool_t poolReady = (pool->IsReady() || pool->NTracksInPool() > 5000 || pool->GetCurrentNEvents() > 5);
-
-  fHistCentVsZ->Fill(fzvtx,percentile);
-  if (poolReady) fHistCentVsZMixed->Fill(fzvtx,percentile,pool->GetCurrentNEvents());
-
-  
-  for (Int_t iTr=0; iTr<nTracks; iTr++) {
-    AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
-    if (!track) continue;
-    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
-      // same event
-      FillHistogramsdPhidEta(iTr,track->Charge(),track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
-			     resA2, resC2, resT2,
-			     resA3, resC3, resT3);
-      
-      // Add tracklet to the array for mixing pool
-      new ((*ftrk)[ftrk->GetEntriesFast()]) AliBasicParticleST(track->Eta(),track->Phi(),track->Pt(),track->Charge());
-
-      // mixed events
-      if (poolReady) {
-	for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) { // loop over mixed events
-	  TObjArray *mixedTracks = pool->GetEvent(jMix);
-	  FillHistogramsdPhidEtaMixed(iTr,track->Charge(),track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
-				      mixedTracks);
-	}
-      }
-      // end of mixed events
-    }
-  }
-
-
-  // update event mixing pool
-  pool->UpdatePool(ftrk);
-
-  ////////////////////////////////////////////////////////////////////
-  Int_t nhard = 0;
-  Double_t phihard[nTracks], etahard[nTracks];
-  Int_t indexhard[nTracks];
-  for (Int_t iTr=0; iTr<nTracks; iTr++) {
-    AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
-    if (!track) continue;
-    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70 && track->Pt() >= fMinHardPt) {
-      phihard[nhard] = track->Phi();
-      etahard[nhard] = track->Eta();
-      indexhard[nhard] = iTr;
-      nhard++;
-    }
-  }  
-  
-  for (Int_t iTr=0; iTr<nTracks; iTr++) {
-    AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
-    if (!track) continue;
-    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.4 && track->GetTPCNcls() >= 70) {
-      FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
-		       resA2, resC2, resT2, 0);
-    }
-  }
-
-  Double_t Qv0aQv0c2  = Qxa2Cor*Qxc2Cor  + Qya2Cor*Qyc2Cor;
-  Double_t Qv0aQtrkl2 = Qxa2Cor*Qxtr2Cor + Qya2Cor*Qytr2Cor;
-  Double_t Qv0cQtrkl2 = Qxc2Cor*Qxtr2Cor + Qyc2Cor*Qytr2Cor;
-    
-  fHistACv2->Fill(percentile, Qv0aQv0c2);
-  fHistATv2->Fill(percentile, Qv0aQtrkl2);
-  fHistCTv2->Fill(percentile, Qv0cQtrkl2);
-
-}
 
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsV2(Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
 					     Double_t resA2, Double_t resC2, Double_t resT2,
@@ -956,86 +912,114 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsV2(Double_t pt,Double
  fHistSP2A[centrality][zvtxBin][index]->Fill(pt,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
 }
 
-void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
+void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *selectedArray, Int_t centrality,Double_t percentile,Int_t zvtxBin,
 						   Double_t resA2, Double_t resC2, Double_t resT2,
 						   Double_t resA3, Double_t resC3, Double_t resT3)
 {
-  Int_t ptBin = fPtTrigAxis->FindBin(pt);
+ Double_t binscont_trig[3];
+ Double_t binscont[6];
+
+ for(Int_t i = 0; i < selectedArray->GetEntriesFast(); i++) {
+  AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(i);
+  if (!trigger)    continue;
+  Int_t trigID = trigger->GetID();
+  Double_t triggerPt = trigger->Pt();
+  Double_t triggerEta = trigger->Eta();
+  Double_t triggerPhi = trigger->Phi();
+
+  Int_t ptBin = fPtTrigAxis->FindBin(triggerPt);
   if (ptBin<1 || ptBin>fNbinsPtTrig) return;
 
-  Double_t u2x = TMath::Cos(2.*phi);
-  Double_t u2y = TMath::Sin(2.*phi);
-
-  Double_t u3x = TMath::Cos(3.*phi);
-  Double_t u3y = TMath::Sin(3.*phi);
-
-  Double_t binscont_trig[3];
-  binscont_trig[0] = pt; 
+  binscont_trig[0] = triggerPt;
   binscont_trig[1] = fzvtx;
   binscont_trig[2] = percentile;
   fHistTrig->Fill(binscont_trig,0);
 
-  Double_t binscont[6];
+  Double_t u2x = TMath::Cos(2.*triggerPhi);
+  Double_t u2y = TMath::Sin(2.*triggerPhi);
 
-
-  const Int_t nTracks = fAOD->GetNumberOfTracks();
-  for (Int_t iTr=0; iTr<nTracks; iTr++) {
-    AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
-    if (!track) continue;
-    if (iTr == trIndex) continue;
-    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
-      // Get assoc pt bin
-      Int_t assocPtBin = fPtAssocAxis->FindBin(track->Pt());
-      if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;
-      Double_t dphi = phi - track->Phi();
-      if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
-      if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();
-      Double_t deta = eta - track->Eta();
-      fHistSP2AdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
-      binscont[0] = dphi;
-      binscont[1] = deta;
-      binscont[2] = fzvtx;
-      binscont[3] = pt;
-      binscont[4] = track->Pt();
-      binscont[5] = percentile;
-      fHistdPhidEtaPt->Fill(binscont,0);
-      // fill same-sign track pair histos
-      if (charge*track->Charge()>0) {
-	fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
-        fHistdPhidEtaPt_SS->Fill(binscont,0);
-      }
-    }
+  for (Int_t j = 0; j < selectedArray->GetEntriesFast(); j++) {
+   AliAssociatedTrackYS *associate = (AliAssociatedTrackYS*)selectedArray->At(j); 
+   if (!associate) continue;
+   //if (associate->Pt()<0.5) continue;
+   if (trigID == associate->GetID())  continue;   
+   Int_t assocPtBin = fPtAssocAxis->FindBin(associate->Pt());
+   if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;  
+   Double_t dphi = triggerPhi - associate->Phi();
+   if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
+   if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();
+   Double_t deta = triggerEta - associate->Eta();
+   fHistSP2AdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
+   binscont[0] = dphi;
+   binscont[1] = deta;
+   binscont[2] = fzvtx;
+   binscont[3] = triggerPt;
+   binscont[4] = associate->Pt();
+   binscont[5] = percentile;
+   fHistdPhidEtaPt->Fill(binscont,0);
+   if (trigger->Charge()*associate->Charge()>0) {
+     fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
+     fHistdPhidEtaPt_SS->Fill(binscont,0);
+   }
   }
+ }
 }
 
-void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(Int_t trIndex, Short_t charge, Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin, TObjArray *mixedTracks)
+void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(TObjArray *selectedArray, Double_t percentile,Int_t zvtxBin)
 {
-  Double_t binscont[6];
-
-  Int_t ptBin = fPtTrigAxis->FindBin(pt);
-  if (ptBin<1 || ptBin>fNbinsPtTrig) return;
-  for (Int_t iTr=0; iTr<mixedTracks->GetEntriesFast(); iTr++) {
-    AliBasicParticleST *track = (AliBasicParticleST*) mixedTracks->UncheckedAt(iTr);
-    // Get assoc pt bin
-    Int_t assocPtBin = fPtAssocAxis->FindBin(track->Pt());
-    if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;
-    Double_t dphi = phi - track->Phi();
-    if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
-    if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();
-    Double_t deta = eta - track->Eta();
-
-    binscont[0] = dphi;
-    binscont[1] = deta;
-    binscont[2] = fzvtx;
-    binscont[3] = pt;
-    binscont[4] = track->Pt();
-    binscont[5] = percentile;
-    fHistdPhidEtaPt_Mixed->Fill(binscont,0);  
-  
-    if (charge*track->Charge()>0) {
-      fHistdPhidEtaPt_Mixed_SS->Fill(binscont,0);  
-    }
+  // check if mixed event pool is ready
+  AliEventPool* pool = fPoolMgr->GetEventPool(percentile,fzvtx);
+  if (!pool){
+    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", percentile,
+                  fzvtx));
   }
+  
+  Bool_t poolReady = (pool->IsReady() || pool->NTracksInPool() > 5000 || pool->GetCurrentNEvents() > 5);
+    
+  Double_t binscont[6];
+  if(poolReady)
+  {
+   fHistCentVsZMixed->Fill(fzvtx,percentile,pool->GetCurrentNEvents());
+   for(Int_t j = 0; j < selectedArray->GetEntriesFast(); ++j) {
+    AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(j);
+    Double_t triggerPt = trigger->Pt();
+    Double_t triggerEta = trigger->Eta();
+    Double_t triggerPhi = trigger->Phi();
+ 
+    Int_t ptBin = fPtTrigAxis->FindBin(triggerPt);
+    if (ptBin<1 || ptBin>fNbinsPtTrig) return;
+    
+    for(Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
+     TObjArray *mixEvents = pool->GetEvent(jMix);
+     for (Int_t jTrk=0; jTrk<mixEvents->GetEntriesFast(); jTrk++) {       
+      AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*)mixEvents->At(jTrk);
+
+      Int_t assocPtBin = fPtAssocAxis->FindBin(associate->Pt());
+      if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;
+
+      Double_t dphi = triggerPhi - associate->Phi();
+      if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
+      if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();   
+         
+      binscont[0] = dphi;
+      binscont[1] = triggerEta - associate->Eta();
+      binscont[2] = fzvtx;
+      binscont[3] = triggerPt;
+      binscont[4] = associate->Pt();
+      binscont[5] = percentile;
+      fHistdPhidEtaPt_Mixed->Fill(binscont,0);
+   
+      if (trigger->Charge()*associate->Charge()>0) {
+       fHistdPhidEtaPt_Mixed_SS->Fill(binscont,0);
+      }
+     }
+    }
+   }
+  }
+   
+  TObjArray* tracksClone=CloneTrack(selectedArray);
+  pool->UpdatePool(tracksClone);
+
 }
 
 //====================================================================================================================================================
@@ -1395,8 +1379,7 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
 //_____________________________________________________________________________
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
 {
-  //TList *flist_contQ = dynamic_cast<TList*>(GetInputData(1));
-  
+  flist_contQ = dynamic_cast<TList*>(GetInputData(1));
           
   if(!flist_contQ){
         printf("OADB V0-Trkl calibration list cannot be opened\n");
@@ -1576,3 +1559,33 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::CalcResolutions(Double_t percentile
 	resT2 = TMath::Sqrt(at2*ct2/ac2);
       }
 }
+
+TObjArray *AliAnalysisTaskSEPbPbCorrelationsJetV2::GetAcceptedTracks(AliAODEvent *fAOD, TObjArray*tracks)
+{
+ Int_t nTracks = fAOD->GetNumberOfTracks();
+ for (Int_t i = 0; i < nTracks; i++) {
+  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(i));
+  if (!aodTrack)      continue;  
+  if (aodTrack->Charge() == 0)      continue;
+  if (aodTrack->TestFilterBit(768) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= 70) {
+   tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, 0, 1));
+  }
+ }
+ return tracks;
+}
+
+TObjArray* AliAnalysisTaskSEPbPbCorrelationsJetV2::CloneTrack(TObjArray*selectedTrackArray){
+  TObjArray *tracksClone = new TObjArray;
+  tracksClone->SetOwner(kTRUE);
+
+  for (Int_t i = 0; i < selectedTrackArray->GetEntriesFast(); i++) {
+    AliAssociatedTrackYS *particle =  (AliAssociatedTrackYS *)selectedTrackArray->At(i);
+    tracksClone->Add(new AliAssociatedTrackYS(particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
+                                              particle->GetID(), particle->GetIDFirstDaughter(),
+                                              particle->GetIDSecondDaughter(), particle->WhichCandidate(),
+                                              particle->Multiplicity()));
+  }
+
+  return tracksClone;
+}
+
