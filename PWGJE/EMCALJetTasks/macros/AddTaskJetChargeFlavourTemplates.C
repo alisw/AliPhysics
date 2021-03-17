@@ -32,16 +32,11 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
       return NULL;
     }
 
-  TString wagonName1 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-  TString wagonName2 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+  TString wagonName1 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%s_%s",njetsData,trigClass.Data(),tag.Data(), suffix);
+  TString wagonName2 = Form("AliAnalysisTaskJetChargeFlavourTemplates_%s_TC%s%sTree_%s",njetsData,trigClass.Data(),tag.Data(), suffix);
 
-	TString combinedName1;
-	combinedName1.Form(wagonName1.Data(), suffix);
-
-	TString combinedName2;
-	combinedName2.Form(wagonName2.Data(), suffix);
   //Configure jet tagger task
-  AliAnalysisTaskJetChargeFlavourTemplates *task = new AliAnalysisTaskJetChargeFlavourTemplates(combinedName1.Data());
+  AliAnalysisTaskJetChargeFlavourTemplates *task = new AliAnalysisTaskJetChargeFlavourTemplates(wagonName1.Data());
 
   task->SetJetRadius(R);
 
@@ -93,8 +88,8 @@ AliAnalysisTaskJetChargeFlavourTemplates* AddTaskJetChargeFlavourTemplates(
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
-  TString contName1(combinedName1);
-  TString contName2(combinedName2);
+  TString contName1(wagonName1);
+  TString contName2(wagonName2);
 
 
 
