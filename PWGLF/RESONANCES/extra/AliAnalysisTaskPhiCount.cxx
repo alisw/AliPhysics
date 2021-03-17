@@ -24,13 +24,13 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskPhiCount)
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaons_SigmaTPC_VETO_P(0) ,fQC_Kaons_SigmaTPC_VETO_PT(0)     {
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaon2_SigmaTPC_VETO_P(0) ,fQC_Kaon2_SigmaTPC_VETO_PT(0), fQC_Kaon2_SigmaTPC_P(0), fQC_Kaon2_SigmaTPC_PT(0), fQC_Kaon2_SigmaTOF_P(0), fQC_Kaon2_SigmaTOF_PT(0)    {
     
 }
 
 //_____________________________________________________________________________
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaons_SigmaTPC_VETO_P(0) ,fQC_Kaons_SigmaTPC_VETO_PT(0)    {
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fQC_Event_Enumerate(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Event_Enum_Mult(0), fQC_Tracks_P_Momentum(0), fQC_Tracks_P_TransMom(0), fQC_Tracks_P_Eta(0), fQC_Tracks_P_Phi(0), fQC_Tracks_M_Momentum(0), fQC_Tracks_M_TransMom(0), fQC_Tracks_M_Eta(0), fQC_Tracks_M_Phi(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_PT(0), fQC_Kaons_P_Momentum(0), fQC_Kaons_P_TransMom(0), fQC_Kaons_P_Eta(0), fQC_Kaons_P_Phi(0),fQC_Kaons_M_Momentum(0), fQC_Kaons_M_TransMom(0), fQC_Kaons_M_Eta(0), fQC_Kaons_M_Phi(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_PT(0), fQC_PID_SignalTPC_P(0), fQC_PID_SignalTOF_P(0), fQC_PID_SignalTPC_PT(0), fQC_PID_SignalTOF_PT(0), fQC_Kaons_SigmaTPC_P(0), fQC_Kaons_SigmaTOF_P(0), fQC_Kaons_SigmaTPC_PT(0), fQC_Kaons_SigmaTOF_PT(0), fQC_Kaons_SigmaTOF_TPC(0), fQC_Kaons_SignalTPC_P(0), fQC_Kaons_SignalTOF_P(0), fQC_Kaons_SignalTPC_PT(0), fQC_Kaons_SignalTOF_PT(0), fMultiplicity(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kSgTPC_Alone(5.), kSgTOF_Veto(3.), kSgTPC_TOFVt(3.), fQC_Kaon2_SigmaTPC_VETO_P(0) ,fQC_Kaon2_SigmaTPC_VETO_PT(0), fQC_Kaon2_SigmaTPC_P(0), fQC_Kaon2_SigmaTPC_PT(0), fQC_Kaon2_SigmaTOF_P(0), fQC_Kaon2_SigmaTOF_PT(0)     {
     // Define Input
     DefineInput(0, TChain::Class());
     
@@ -177,17 +177,22 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQCOutputList->Add(fQC_PID_SignalTOF_PT);
     
     //>->->     Kaons
-    fQC_Kaons_SigmaTPC_P        = new TH2F("fQC_Kaons_SigmaTPC_P",      "#sigma_{TPC}(K) Response",                     100, 0., 10., 100, -10, 10);
-    fQC_Kaons_SigmaTOF_P        = new TH2F("fQC_Kaons_SigmaTOF_P",      "#sigma_{TOF}(K) Response",                     100, 0., 10., 100, -10, 10);
-    fQC_Kaons_SigmaTPC_PT       = new TH2F("fQC_Kaons_SigmaTPC_PT",     "#sigma_{TPC}(K) Response",                     100, 0., 10., 100, -10, 10);
-    fQC_Kaons_SigmaTOF_PT       = new TH2F("fQC_Kaons_SigmaTOF_PT",     "#sigma_{TOF}(K) Response",                     100, 0., 10., 100, -10, 10);
+    fQC_Kaons_SigmaTPC_P        = new TH2F("fQC_Kaons_SigmaTPC_P",      "#sigma_{TPC}(K) Response",                     1000, 0., 10., 100, -10, 10);
+    fQC_Kaons_SigmaTOF_P        = new TH2F("fQC_Kaons_SigmaTOF_P",      "#sigma_{TOF}(K) Response",                     1000, 0., 10., 100, -10, 10);
+    fQC_Kaons_SigmaTPC_PT       = new TH2F("fQC_Kaons_SigmaTPC_PT",     "#sigma_{TPC}(K) Response",                     1000, 0., 10., 100, -10, 10);
+    fQC_Kaons_SigmaTOF_PT       = new TH2F("fQC_Kaons_SigmaTOF_PT",     "#sigma_{TOF}(K) Response",                     1000, 0., 10., 100, -10, 10);
     fQC_Kaons_SigmaTOF_TPC      = new TH2F("fQC_Kaons_SigmaTOF_TPC",    "#sigma_{TPC}(K) vs #sigma_{TOF}(K) Response",  100, -10., 10., 100, -10, 10);
     fQC_Kaons_SignalTPC_P       = new TH2F("fQC_Kaons_SignalTPC_P",     "TPC Response",                                 400, 0.15, 10., 100, 0., 500.);
     fQC_Kaons_SignalTOF_P       = new TH2F("fQC_Kaons_SignalTOF_P",     "TOF Response",                                 400, 0.15, 10., 120, 0., 1.2);
     fQC_Kaons_SignalTPC_PT      = new TH2F("fQC_Kaons_SignalTPC_PT",    "TPC Response",                                 400, 0.15, 10., 100, 0., 500.);
     fQC_Kaons_SignalTOF_PT      = new TH2F("fQC_Kaons_SignalTOF_PT",    "TOF Response",                                 400, 0.15, 10., 120, 0., 1.2);
-    fQC_Kaons_SigmaTPC_VETO_PT  = new TH2F("fQC_Kaons_SigmaTPC_VETO_PT","TOF Response",                                 400, 0.15, 10., 120, 0., 1.2);
-    fQC_Kaons_SigmaTPC_VETO_P   = new TH2F("fQC_Kaons_SigmaTPC_VETO_P", "TOF Response",                                 400, 0.15, 10., 120, 0., 1.2);
+    fQC_Kaon2_SigmaTPC_VETO_PT  = new TH2F("fQC_Kaon2_SigmaTPC_VETO_PT","TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTPC_VETO_P   = new TH2F("fQC_Kaon2_SigmaTPC_VETO_P", "TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTPC_P        = new TH2F("fQC_Kaon2_SigmaTPC_P",      "TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTPC_PT       = new TH2F("fQC_Kaon2_SigmaTPC_PT",     "TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTOF_P        = new TH2F("fQC_Kaon2_SigmaTOF_P",      "TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTOF_PT       = new TH2F("fQC_Kaon2_SigmaTOF_PT",     "TOF Response",                                 1000, 0., 10., 100, -10, 10);
+    fQC_Kaon2_SigmaTOF_TPC      = new TH2F("fQC_Kaon2_SigmaTOF_TPC",    "#sigma_{TPC}(K) vs #sigma_{TOF}(K) Response",  100, -10., 10., 100, -10, 10);
     fQCOutputList->Add(fQC_Kaons_SigmaTPC_P);
     fQCOutputList->Add(fQC_Kaons_SigmaTOF_P);
     fQCOutputList->Add(fQC_Kaons_SigmaTPC_PT);
@@ -197,8 +202,13 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQCOutputList->Add(fQC_Kaons_SignalTOF_P);
     fQCOutputList->Add(fQC_Kaons_SignalTPC_PT);
     fQCOutputList->Add(fQC_Kaons_SignalTOF_PT);
-    fQCOutputList->Add(fQC_Kaons_SigmaTPC_VETO_P);
-    fQCOutputList->Add(fQC_Kaons_SigmaTPC_VETO_PT);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTPC_VETO_P);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTPC_VETO_PT);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTPC_P);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTPC_PT);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTOF_P);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTOF_PT);
+    fQCOutputList->Add(fQC_Kaon2_SigmaTOF_TPC);
     
     PostData(2, fQCOutputList);
     
@@ -661,18 +671,22 @@ void        AliAnalysisTaskPhiCount::fQC_PID_Kaons( )                           
     if ( fIsTPCAvailable && fIsTOFAvailable )
     {
         fQC_Kaons_SigmaTOF_TPC  ->  Fill(fSigma_TOF,            fSigma_TPC);
-        if ( fabs(fSigma_TOF) < kSgTOF_Veto ) fQC_Kaons_SigmaTPC_VETO_P  ->  Fill(fCurrent_Track_Momentum,   fSigma_TPC);
-        if ( fabs(fSigma_TOF) < kSgTOF_Veto ) fQC_Kaons_SigmaTPC_VETO_PT  ->  Fill(fCurrent_Track_TransMom,   fSigma_TPC);
     }
 }
 
 //_____________________________________________________________________________
 
 void        AliAnalysisTaskPhiCount::fQC_PID_Sel_Kaons( )                       {
+    
+    auto fSigma_TOF     = (fPIDResponse->NumberOfSigmasTOF(fCurrent_Track,AliPID::kKaon));
+    auto fSigma_TPC     = (fPIDResponse->NumberOfSigmasTPC(fCurrent_Track,AliPID::kKaon));
+    
     // PID Signal histograms
     if ( fIsTPCAvailable )    {
-        fQC_Kaons_SignalTPC_P    ->  Fill(fCurrent_Track_Momentum,  fTPCSignal);
-        fQC_Kaons_SignalTPC_PT   ->  Fill(fCurrent_Track_TransMom,  fTPCSignal);
+        fQC_Kaons_SignalTPC_P   ->  Fill(fCurrent_Track_Momentum,  fTPCSignal);
+        fQC_Kaons_SignalTPC_PT  ->  Fill(fCurrent_Track_TransMom,  fTPCSignal);
+        fQC_Kaon2_SigmaTPC_P    ->  Fill(fCurrent_Track_Momentum,  fSigma_TPC);
+        fQC_Kaon2_SigmaTPC_PT   ->  Fill(fCurrent_Track_TransMom,  fSigma_TPC);
         if ( fCurrent_Track->Charge() < 0. )    {
             fQC_Kaons_M_TPCSignal_P     ->  Fill(fCurrent_Track_Momentum,fTPCSignal);
             fQC_Kaons_M_TPCSignal_PT    ->  Fill(fCurrent_Track_TransMom,fTPCSignal);
@@ -683,8 +697,10 @@ void        AliAnalysisTaskPhiCount::fQC_PID_Sel_Kaons( )                       
         }
     }
     if ( fIsTOFAvailable )    {
-        fQC_Kaons_SignalTOF_P    ->  Fill(fCurrent_Track_Momentum,  fBetaFromTOFSignal);
-        fQC_Kaons_SignalTOF_PT   ->  Fill(fCurrent_Track_TransMom,  fBetaFromTOFSignal);
+        fQC_Kaons_SignalTOF_P   ->  Fill(fCurrent_Track_Momentum,  fBetaFromTOFSignal);
+        fQC_Kaons_SignalTOF_PT  ->  Fill(fCurrent_Track_TransMom,  fBetaFromTOFSignal);
+        fQC_Kaon2_SigmaTOF_P    ->  Fill(fCurrent_Track_Momentum,  fSigma_TOF);
+        fQC_Kaon2_SigmaTOF_PT   ->  Fill(fCurrent_Track_TransMom,  fSigma_TOF);
         if ( fCurrent_Track->Charge() < 0. )    {
             fQC_Kaons_M_TOFSignal_P     ->  Fill(fCurrent_Track_Momentum,fBetaFromTOFSignal);
             fQC_Kaons_M_TOFSignal_PT    ->  Fill(fCurrent_Track_TransMom,fBetaFromTOFSignal);
@@ -693,6 +709,11 @@ void        AliAnalysisTaskPhiCount::fQC_PID_Sel_Kaons( )                       
             fQC_Kaons_P_TOFSignal_P     ->  Fill(fCurrent_Track_Momentum,fBetaFromTOFSignal);
             fQC_Kaons_P_TOFSignal_PT    ->  Fill(fCurrent_Track_TransMom,fBetaFromTOFSignal);
         }
+    }
+    if ( fIsTPCAvailable && fIsTOFAvailable )   {
+        fQC_Kaon2_SigmaTPC_VETO_P       ->  Fill(fCurrent_Track_Momentum,   fSigma_TPC);
+        fQC_Kaon2_SigmaTPC_VETO_PT      ->  Fill(fCurrent_Track_TransMom,   fSigma_TPC);
+        fQC_Kaon2_SigmaTOF_TPC          ->  Fill(fSigma_TOF,                fSigma_TPC);
     }
 }
 
