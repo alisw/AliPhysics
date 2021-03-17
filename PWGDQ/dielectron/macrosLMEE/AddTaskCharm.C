@@ -11,28 +11,43 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   task->TakeptOfDCNM(takeptofDCNM);
 
   // Smearing
-  if(file_momentum_smear.Contains("alien")) gSystem->Exec(Form("alien_cp %s smearingfile.root",file_momentum_smear.Data()));
-  TFile f("smearingfile.root");
-  if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
-    task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
-  }
-  else { // New smearing file (or no file), from AliAnalysisTaskElectronEfficiency, postprocessed by LMeeAnaFW/Resolution/MakeResolutionArray.cxx.
-    task->ReadResoFile(&f);
+  if(file_momentum_smear.Contains("alien")) {
+    gSystem->Exec(Form("alien_cp %s .",file_momentum_smear.Data()));
+    TObjArray* Strings = file_momentum_smear.Tokenize("/");
+    TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+    printf("Resolution file is %s copied from %s\n",namefile.Data(),file_momentum_smear.Data());
+    TFile f(namefile.Data());
+    if (f.IsOpen() && ((TObjArray*)f.Get("ptSlices"))!=0x0) { // Old smearing file, only momentum.
+      task->SetResolutionP((TObjArray*)f.Get("ptSlices"), kFALSE);
+    }
+    else { // New smearing file (or no file), from AliAnalysisTaskElectronEfficiency, postprocessed by LMeeAnaFW/Resolution/MakeResolutionArray.cxx.
+      task->ReadResoFile(&f);
+    }
   }
   // CNM
-  if(file_cnm.Contains("alien")) gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
-  TFile fcnm("cnmfile.root");
-  if (fcnm.IsOpen()){
-    if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
-      task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+  if(file_cnm.Contains("alien")) {
+    gSystem->Exec(Form("alien_cp %s cnmfile.root",file_cnm.Data()));
+    TObjArray* Strings = file_cnm.Tokenize("/");
+    TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+    printf("CNM file is %s copied from %s\n",namefile.Data(),file_cnm.Data());
+    TFile fcnm(namefile.Data());
+    if (fcnm.IsOpen()){
+      if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
+	task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+      }
     }
   }
   // Efficiency
-  if(file_efficiency.Contains("alien")) gSystem->Exec(Form("alien_cp %s efficiencyfile.root",file_efficiency.Data()));
-  TFile fefficiency("efficiencyfile.root");
-  if (fefficiency.IsOpen()){
-    task->SetEffType(fTypeEff);
-    task->ReadEffFile(&fefficiency);
+  if(file_efficiency.Contains("alien")) {
+    gSystem->Exec(Form("alien_cp %s .",file_efficiency.Data()));
+    TObjArray* Strings = file_efficiency.Tokenize("/");
+    TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+    printf("Efficiency file is %s copied from %s\n",namefile.Data(),file_efficiency.Data());
+    TFile fefficiency(namefile.Data());
+    if (fefficiency.IsOpen()){
+      task->SetEffType(fTypeEff);
+      task->ReadEffFile(&fefficiency);
+    }
   }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
