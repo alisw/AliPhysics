@@ -8,7 +8,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       const Bool_t isMix = kTRUE,
 					       const Int_t Nmix   = 10,
 					       const TString outputFileName="LMEE.root",
-					       Int_t rejpileup = 1
+					       Int_t rejpileup = 1,
+					       Int_t version = 0
 					       )
 {
 
@@ -50,7 +51,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d",CenMin,CenMax,triggername.Data(),rejpileup);
+  appendix += TString::Format("Cen%d_%d_%s_rejpileup%d_%d",CenMin,CenMax,triggername.Data(),rejpileup,version);
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
