@@ -1739,7 +1739,7 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses()
     nBinsRecoVecFD = {nBinsRecoVecFD[0], nBinsRecoVecFD[1], nBinsRecoVecFD[2], nBinsRecoVecFD[3], nBinsRecoVecFD[14], nBinsRecoVecFD[15], nBinsRecoVecFD[16]};
     xminRecoVecFD = {xminRecoVecFD[0], xminRecoVecFD[1], xminRecoVecFD[2], xminRecoVecFD[3], xminRecoVecFD[14], xminRecoVecFD[15], xminRecoVecFD[16]};
     xmaxRecoVecFD = {xmaxRecoVecFD[0], xmaxRecoVecFD[1], xmaxRecoVecFD[2], xmaxRecoVecFD[3], xmaxRecoVecFD[14], xmaxRecoVecFD[15], xmaxRecoVecFD[16]};
-    axTitFD = {axTitFD[0], axTitFD[1], axTitFD[2], axTitFD[3], axTitFD[14], axTitFD[16], axTitFD[16]};
+    axTitFD = {axTitFD[0], axTitFD[1], axTitFD[2], axTitFD[3], axTitFD[14], axTitFD[15], axTitFD[16]};
 
     nVarForSparse = knVarForSparseMLMinimal;
     nVarForSparseFD = knVarForSparseMLMinimal+2;
