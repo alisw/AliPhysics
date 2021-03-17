@@ -114,7 +114,6 @@ class AliHFMLVarHandler : public TObject
         float fCosPXY = -999.;                                         /// candidate cosine of pointing angle in the transcverse plane
         float fImpParXY = -999.;                                       /// candidate impact parameter in the transverse plane
         float fDCA = -999.;                                            /// DCA of candidates
-        float fDCAXY = -999.;                                          /// DCA of candidates in xy plane
         float fPtProng[knMaxProngs] = {-999., -999., -999., -999.};    /// prong pt
         float fTPCPProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong TPC momentum
         int fNTPCclsPidProng[knMaxProngs] = {-999, -999, -999, -999};  /// prong track number of clusters in TPC used for PID
@@ -132,7 +131,7 @@ class AliHFMLVarHandler : public TObject
         int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 6); ///
+    ClassDef(AliHFMLVarHandler, 7); ///
     /// \endcond
 };
 #endif

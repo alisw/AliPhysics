@@ -99,6 +99,7 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     fTreeVar->Branch("signd0", &fsignd0);
     fTreeVar->Branch(massK0sname.Data(), &fMassK0s);
     fTreeVar->Branch(massLname.Data(), &fMassL);
+    fTreeVar->Branch("dca_xy", &fDCAXY);
     fTreeVar->Branch("dca_V0", &fDCAV0);
     fTreeVar->Branch("dca_V0_xy", &fDCAV0XY);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
@@ -300,7 +301,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fcTauK0s = fDecayLengthV0 * massK0s / fPtV0;
         fcTauL = fDecayLengthV0 * massL / fPtV0;
         
-        float dcaPointV0[3], dcaPointV0Cov[3];
+        float dcaPointV0[8], dcaPointV0Cov[36];
         KFV0.GetParametersAtPoint(posF, covF, dcaPointV0, dcaPointV0Cov);
         float dcaV02xy = 0;
         for(int i = 0; i < 2; i++){
@@ -339,7 +340,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         fDecayLengthXY = AliVertexingHFUtils::DecayLengthXYFromKF(KFLc, primVertKF);
         fNormDecayLengthXY = AliVertexingHFUtils::ldlXYFromKF(KFLc, primVertKF);
 
-        float dcaPoint[3], dcaPointCov[3];
+        float dcaPoint[8], dcaPointCov[36];
         KFLc.GetParametersAtPoint(posF, covF, dcaPoint, dcaPointCov);
         float dca2xy = 0;
         for(int i = 0; i < 2; i++){

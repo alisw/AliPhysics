@@ -52,6 +52,7 @@ class AliHFMLVarHandlerNonPromptLc2V0bachelor : public AliHFMLVarHandler
         float fMassL = -999.;                                            /// mass of the ppi in case of piL hypothesis
         float fImpParV0 = -999.;                                         /// impact parameter of V0
         float fDecayLengthV0 = -999.;                                    /// decay length of V0
+        float fDCAXY = -999.;                                            /// DCA of candidates in xy plane
         float fDCAV0 = -999.;                                            /// DCA V0 prongs
         float fDCAV0XY = -999.;                                          /// DCA V0 prongs
         float fImpParV0XY = -999.;                                       /// DCA V0 prongs
