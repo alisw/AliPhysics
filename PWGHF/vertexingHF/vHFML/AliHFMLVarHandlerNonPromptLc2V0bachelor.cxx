@@ -99,9 +99,7 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     fTreeVar->Branch("signd0", &fsignd0);
     fTreeVar->Branch(massK0sname.Data(), &fMassK0s);
     fTreeVar->Branch(massLname.Data(), &fMassL);
-    fTreeVar->Branch("dca_xy", &fDCAXY);
     fTreeVar->Branch("dca_V0", &fDCAV0);
-    fTreeVar->Branch("dca_V0_xy", &fDCAV0XY);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
     fTreeVar->Branch("imp_par_V0_xy", &fImpParV0XY);
     fTreeVar->Branch("d_len_V0", &fDecayLengthV0);
@@ -303,12 +301,11 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
         
         float dcaPointV0[8], dcaPointV0Cov[36];
         KFV0.GetParametersAtPoint(posF, covF, dcaPointV0, dcaPointV0Cov);
-        float dcaV02xy = 0;
-        for(int i = 0; i < 2; i++){
-            dcaV02xy += (dcaPointV0[i] - pos[i]) * (dcaPointV0[i] - pos[i]);
+        float dcaV02 = 0;
+        for(int i = 0; i < 3; i++){
+            dcaV02 += (dcaPointV0[i] - pos[i]) * (dcaPointV0[i] - pos[i]);
         }
-        fDCAV0XY = TMath::Sqrt(dcaV02xy);
-        fDCAV0 = TMath::Sqrt(dcaV02xy + (dcaPointV0[2] - pos[2]) * (dcaPointV0[2] - pos[2]));
+        fDCAV0 = TMath::Sqrt(dcaV02);
         fImpParV0XY = KFV0.GetDistanceFromVertexXY(primVertKF);
         
         fCosPV0 = AliVertexingHFUtils::CosPointingAngleFromKF(KFV0, primVertKF);
@@ -342,12 +339,11 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
 
         float dcaPoint[8], dcaPointCov[36];
         KFLc.GetParametersAtPoint(posF, covF, dcaPoint, dcaPointCov);
-        float dca2xy = 0;
-        for(int i = 0; i < 2; i++){
-            dca2xy += (dcaPoint[i] - pos[i]) * (dcaPoint[i] - pos[i]);
+        float dca2 = 0;
+        for(int i = 0; i < 3; i++){
+            dca2 += (dcaPoint[i] - pos[i]) * (dcaPoint[i] - pos[i]);
         }
-        fDCAXY = TMath::Sqrt(dca2xy);
-        fDCA = TMath::Sqrt(dca2xy + (dcaPoint[2] - pos[2]) * (dcaPoint[2] - pos[2]));
+        fDCA = TMath::Sqrt(dca2);
         
         float massLcReco = 0., massLcRecoUnc = 0.;
         KFLc.GetMass(massLcReco, massLcRecoUnc);
