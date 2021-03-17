@@ -4374,11 +4374,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
          fRejectEMCalTriggerEventsL1HighWithL1Low,fAcceptEventsWithBit.GetSize(),
          fRejectEventsWithBit.GetSize(),fRemoveCentralityTriggerOutliers);
   
-  printf("Event rejection use: AliVEventCuts %d, IsSPDPileup %d\n",
+  printf("Event rejection use: AliVEventCuts %d, Pileup %d\n",
          fUseEventCutsClass, fDoPileUpEventRejection);
   if ( fDoPileUpEventRejection == 1 )
   {
-    printf("\t SPD parameters: ");
+    printf("\t Pileup SPD parameters: ");
     for(Int_t iparam = 0; iparam < 5; iparam++) printf(" %d) %2.2f ", iparam, fPileUpParamSPD[iparam]);
     printf("\n");
   }
