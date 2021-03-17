@@ -1567,7 +1567,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fTrueList[iCut]->Add(fHistoTrueDalitzPlot[iCut]);
         }
         if(fDoMesonQA & 0b100000000) {
-          fHistoTrueOmegaPtPi0Pt[iCut] = new TH2F("True_OmegaPt_Pi0Pt","True_OmegaPt_Pi0Pt",200,0,20,nBinsPt, arrPtBinning);
+          fHistoTrueOmegaPtPi0Pt[iCut] = new TH2F("True_OmegaPt_Pi0Pt","True_OmegaPt_Pi0Pt",nBinsPt, arrPtBinning,200,0,20);
           fHistoTrueOmegaPtPi0Pt[iCut]->SetXTitle("#omega p_{T}(GeV/c)");
           fHistoTrueOmegaPtPi0Pt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
           fTrueList[iCut]->Add(fHistoTrueOmegaPtPi0Pt[iCut]);
