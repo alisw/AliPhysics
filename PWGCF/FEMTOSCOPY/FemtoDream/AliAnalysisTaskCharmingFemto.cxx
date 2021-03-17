@@ -630,7 +630,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fHistDplusInvMassPtSel = new TH2F(
         "fHistDplusInvMassPtSel",
         "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-        10, 100, 1.57, 2.17);
+        10, 100, 1.77, 1.97);
     fDChargedHistList->Add(fHistDplusInvMassPtSel);
     fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDplusEta);
@@ -676,7 +676,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fHistDminusInvMassPt = new TH2F(
       "fHistDminusInvMassPt",
       "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-      10, 100, 1.57, 2.17);
+      10, 100, 1.77, 1.97);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
     fHistDminusInvMassPtSel = new TH2F(
