@@ -872,6 +872,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   Int_t zvtxBin = GetZvtxBin(fzvtx);
 
   fHistV0CVsCent->Fill(percentile,fAOD->GetVZEROData()->GetMTotV0C());
+  
+  //ProcessEvent(percentile, centBin, zvtxBin);
 
   fHistNtrVsCent->Fill(percentile,nTracks);
  
@@ -880,16 +882,26 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   Double_t resA3=1.,resC3=1.,resT3=1.;
   if (fUseRes) CalcResolutions(percentile, resA2, resC2, resT2);
 
+//=================
   TObjArray *selectedTrackArray = new TObjArray; selectedTrackArray->SetOwner(kTRUE);
-  
   selectedTrackArray = GetAcceptedTracks(fAOD,selectedTrackArray); 
-  
+ 
+ 
   FillHistogramsdPhidEta(selectedTrackArray,centBin,percentile,zvtxBin,
                              resA2, resC2, resT2,
                              resA3, resC3, resT3); 
   
   FillHistogramsdPhidEtaMixed(selectedTrackArray, percentile, zvtxBin);
  
+  for (Int_t iTr=0; iTr<nTracks; iTr++) {
+    AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
+    if (!track) continue;
+    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
+      FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
+		       resA2, resC2, resT2, 0);
+    }
+  }
+
   Double_t Qv0aQv0c2  = Qxa2Cor*Qxc2Cor  + Qya2Cor*Qyc2Cor;
   Double_t Qv0aQtrkl2 = Qxa2Cor*Qxtr2Cor + Qya2Cor*Qytr2Cor;
   Double_t Qv0cQtrkl2 = Qxc2Cor*Qxtr2Cor + Qyc2Cor*Qytr2Cor;
@@ -898,6 +910,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   fHistATv2->Fill(percentile, Qv0aQtrkl2);
   fHistCTv2->Fill(percentile, Qv0cQtrkl2);
 
+  selectedTrackArray->Clear();
+  delete selectedTrackArray;
   PostData(1, fOutputList); 
   PostData(2, fOutputList1); 
 }
@@ -920,7 +934,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
  Double_t binscont[6];
 
  for(Int_t i = 0; i < selectedArray->GetEntriesFast(); i++) {
-  AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(i);
+  AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(i);  
   if (!trigger)    continue;
   Int_t trigID = trigger->GetID();
   Double_t triggerPt = trigger->Pt();
@@ -928,7 +942,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
   Double_t triggerPhi = trigger->Phi();
 
   Int_t ptBin = fPtTrigAxis->FindBin(triggerPt);
-  if (ptBin<1 || ptBin>fNbinsPtTrig) return;
+
+  if (ptBin<1 || ptBin>fNbinsPtTrig) continue;
 
   binscont_trig[0] = triggerPt;
   binscont_trig[1] = fzvtx;
@@ -987,7 +1002,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(TObjArr
     Double_t triggerPhi = trigger->Phi();
  
     Int_t ptBin = fPtTrigAxis->FindBin(triggerPt);
-    if (ptBin<1 || ptBin>fNbinsPtTrig) return;
+    if (ptBin<1 || ptBin>fNbinsPtTrig) continue;
     
     for(Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
      TObjArray *mixEvents = pool->GetEvent(jMix);
