@@ -41,6 +41,7 @@ struct MiniCascade {
   bool matter;
   bool hasTOFhit;
   bool hasITSrefit;
+  bool isOmega;
 };
 
 struct MiniCascadeMC : public MiniCascade {

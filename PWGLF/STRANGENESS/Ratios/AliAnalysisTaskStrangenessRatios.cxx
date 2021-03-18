@@ -250,6 +250,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
       fRecCascade->competingMass = std::abs(casc->MassXi() - kXiMass);
       if (IsTopolSelected(true)) {
+        fRecCascade->isOmega = true;
         fTree->Fill();
       }
       else if(fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade==kOmegaPdg)){
@@ -262,6 +263,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
       fRecCascade->competingMass = std::abs(casc->MassOmega() - kOmegaMass);
       if (IsTopolSelected(false)) {
+        fRecCascade->isOmega = false;
         fTree->Fill();
       }
       else if(fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade==kXiPdg)){
