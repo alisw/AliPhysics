@@ -47,6 +47,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fExtendV0MAcceptance(kTRUE),
   fIsMC(kFALSE),
   fMCEvent(0),
+  fRndm(0),
   fPtAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
@@ -102,6 +103,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fExtendV0MAcceptance(kTRUE),
   fIsMC(IsMC),
   fMCEvent(0),
+  fRndm(0),
   fPtAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
@@ -258,6 +260,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(1,fMPTList);
   };
   if(fStageSwitch==3) {
+    fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
     fMPTList = (TList*)GetInputData(1);
     if(!fMPTList) AliFatal("Could not fetch input mean pT list!\n");
@@ -283,10 +286,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
-    fptvar = new TProfile*[4];
+    fptvar = new AliProfileBS*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fptvar[i] = (TProfile*)fptVarList->At(i);
+      fptVarList->Add(new AliProfileBS(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fptvar[i] = (AliProfileBS*)fptVarList->At(i);
+      fptvar[i]->InitializeSubsamples(10);
     }
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
@@ -336,7 +340,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
     // fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
-    fFC->Initialize(oba,fNMultiBins,fMultiBins);
+    fFC->Initialize(oba,fNMultiBins,fMultiBins,10);
     delete oba;
     PostData(2,fFC);
     //Initializing GFW
@@ -378,14 +382,16 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     //Covariance
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new TProfile*[8];
+    fCovariance = new AliProfileBS*[8];
     for(Int_t i=0;i<4;i++) {
-      fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fCovariance[i] = (TProfile*)fCovList->At(i);
+      fCovList->Add(new AliProfileBS(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fCovariance[i] = (AliProfileBS*)fCovList->At(i);
+      fCovariance[i]->InitializeSubsamples(10);
     };
     for(Int_t i=0;i<4;i++) {
-      fCovList->Add(new TProfile(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fCovariance[4+i] = (TProfile*)fCovList->At(i+4);
+      fCovList->Add(new AliProfileBS(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fCovariance[4+i] = (AliProfileBS*)fCovList->At(i+4);
+      fCovariance[4+i]->InitializeSubsamples(10);
     };
     PostData(3,fCovList);
     fV2dPtList = new TList();
@@ -432,10 +438,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fmPT[i] = (TProfile*)fMPTList->At(i);
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
-    fptvar = new TProfile*[4];
+    fptvar = new AliProfileBS*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fptvar[i] = (TProfile*)fptVarList->At(i);
+      fptVarList->Add(new AliProfileBS(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fptvar[i] = (AliProfileBS*)fptVarList->At(i);
     };
     PostData(1,fptVarList);
   };
@@ -863,25 +869,26 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
   Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
   //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
   if(fUseNch && l_Multi<1) return;
+  Double_t l_Random = fRndm->Rndm();
   for(Int_t i=0;i<1;i++) {
     if(!wp[i][0]) continue;
     outVals[i][0] = fmPT[i]->GetBinContent(fmPT[i]->FindBin(l_Multi));
     CalculateMptValues(outVals[i],wp[i]);
     Double_t ptvarw = fUseWeightsOne?1:outVals[i][2];
     if(outVals[i][2]!=0)
-      fptvar[i]->Fill(l_Multi,outVals[i][1]/outVals[i][2],ptvarw);
+      fptvar[i]->FillProfile(l_Multi,outVals[i][1]/outVals[i][2],ptvarw,l_Random);
   };
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-    Bool_t filled = FillFCs(corrconfigs.at(l_ind),l_Multi,0);
+    Bool_t filled = FillFCs(corrconfigs.at(l_ind),l_Multi,l_Random);
   };
   PostData(2,fFC);
   for(Int_t i=0;i<1;i++) {
-    FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
-    FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0]);
+    FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
+    FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -1056,14 +1063,14 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::Fillv2dPtFCs(const AliGFW::CorrConfig &corco
   return kTRUE;
 };
 
-Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(TProfile *target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt) {
+Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(AliProfileBS *target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
     if(TMath::Abs(val)<1)
-      target->Fill(cent,val*d_mpt,fUseWeightsOne?1:dnx*dw_mpt);
+      target->FillProfile(cent,val*d_mpt,fUseWeightsOne?1:dnx*dw_mpt,l_rndm);
     return kTRUE;
   };
   return kTRUE;
