@@ -53,11 +53,11 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk,AliAODEvent *event, TClonesArray *mcArray);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk,AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillElectronROOTObjects(AliAODTrack *trk, AliAODEvent *event, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, AliAODEvent *event, TClonesArray *mcArray);
-  void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
-  void MakeMCAnalysis(TClonesArray *mcArray);
+  void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype,TClonesArray *mcArray);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
@@ -74,7 +74,7 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
-  AliAODRecoCascadeHF* MakeCascadeHF(AliAODcascade *casc, AliAODTrack *trk,  AliAODEvent *aod, AliAODVertex *vert);
+  AliAODRecoCascadeHF* MakeCascadeHF(AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod);
   Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgarray_ele, Int_t *pdgarray_casc, Int_t *labelarray_ele, Int_t *labelarray_casc,  Int_t &ngen_ele, Int_t &ngen_casc);
   Int_t MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const;
@@ -238,7 +238,7 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,5); /// class for Omegac->e Omega
+  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,6); /// class for Omegac->e Omega
   /// \endcond
 };
 #endif

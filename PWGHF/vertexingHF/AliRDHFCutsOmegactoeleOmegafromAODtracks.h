@@ -38,7 +38,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Bool_t IsSelectedeID(AliAODTrack* trk);
   Bool_t IsSelectedCustomizedeID(AliAODTrack* trk);
-  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk);
+  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk, AliAODTrack *trkpid);
   Bool_t IsSelectedCombinedeID(AliAODTrack* trk);
 
   void SetPIDStrategy(EPIDStrategy pidStrategy){fPIDStrategy=pidStrategy;}
@@ -46,8 +46,8 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   void SetCombinedPIDThreshold(Double_t a){fCombinedPIDThreshold=a;}
   Double_t GetCombinedPIDThreshold(){return fCombinedPIDThreshold;}
 
-  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODVertex *primvert);
-  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *primvert);
+  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid,AliAODVertex *primvert);
+  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk,AliAODTrack *trkpid, AliAODVertex *primvert);
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
   Bool_t TagConversions(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
   Bool_t TagConversionsSameSign(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
@@ -216,7 +216,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   Double_t fEleOmegaMassMax; /// e-Omega mass max
     
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsOmegactoeleOmegafromAODtracks,3);
+  ClassDef(AliRDHFCutsOmegactoeleOmegafromAODtracks,4);
   /// \endcond
 };
 
