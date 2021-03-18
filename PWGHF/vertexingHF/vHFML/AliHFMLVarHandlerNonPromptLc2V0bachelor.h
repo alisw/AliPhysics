@@ -53,7 +53,6 @@ class AliHFMLVarHandlerNonPromptLc2V0bachelor : public AliHFMLVarHandler
         float fImpParV0 = -999.;                                         /// impact parameter of V0
         float fDecayLengthV0 = -999.;                                    /// decay length of V0
         float fDCAV0 = -999.;                                            /// DCA V0 prongs
-        float fImpParV0XY = -999.;                                       /// DCA V0 prongs
         float fPtV0 = -999.;                                             /// pT of V0
         float fcTauK0s = -999.;                                          /// cTau of K0s
         float fcTauL = -999.;                                            /// cTau of L

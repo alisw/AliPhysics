@@ -101,7 +101,6 @@ TTree* AliHFMLVarHandlerNonPromptLc2V0bachelor::BuildTree(TString name, TString 
     fTreeVar->Branch(massLname.Data(), &fMassL);
     fTreeVar->Branch("dca_V0", &fDCAV0);
     fTreeVar->Branch("imp_par_V0", &fImpParV0);
-    fTreeVar->Branch("imp_par_V0_xy", &fImpParV0XY);
     fTreeVar->Branch("d_len_V0", &fDecayLengthV0);
     fTreeVar->Branch("armenteros_V0", &fArmqTOverAlphaV0);
     fTreeVar->Branch("ctau_K0s", &fcTauK0s);
@@ -306,7 +305,7 @@ bool AliHFMLVarHandlerNonPromptLc2V0bachelor::SetVariables(AliAODRecoDecayHF* ca
             dcaV02 += (dcaPointV0[i] - pos[i]) * (dcaPointV0[i] - pos[i]);
         }
         fDCAV0 = TMath::Sqrt(dcaV02);
-        fImpParV0XY = KFV0.GetDistanceFromVertexXY(primVertKF);
+        fImpParV0 = KFV0.GetDistanceFromVertexXY(primVertKF);
         
         fCosPV0 = AliVertexingHFUtils::CosPointingAngleFromKF(KFV0, primVertKF);
 

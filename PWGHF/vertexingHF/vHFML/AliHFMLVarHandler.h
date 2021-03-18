@@ -131,7 +131,7 @@ class AliHFMLVarHandler : public TObject
         int fNtracklets = -1;                                          /// Number of trackles in |eta|<1
 
     /// \cond CLASSIMP
-    ClassDef(AliHFMLVarHandler, 7); ///
+    ClassDef(AliHFMLVarHandler, 6); ///
     /// \endcond
 };
 #endif
