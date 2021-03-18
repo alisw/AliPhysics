@@ -6065,10 +6065,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       //printf("Pass cluster\n");
 
-      // 2 perp bands, divide by 2
-      perpBandPtSumCh    /= 2.;
-      perpBandPtSumChEmb /= 2.;
-
       if ( partInConeType != AliIsolationCut::kOnlyNeutral )
       {
         GetIsolationCut()->CalculateUEBandTrackNormalization
