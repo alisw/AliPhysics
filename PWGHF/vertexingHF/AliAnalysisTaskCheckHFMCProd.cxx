@@ -851,7 +851,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       {
         fHistYPtPromptAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginPrompt->Fill(distToVert);
-	if(mcDau0){
+	if(mcDau0 && TMath::Abs(rapid)<0.8){
 	  fHistPtDDecLenPrompt[iSpecies]->Fill(pt,declen3D);
 	  fHistPtDDecLenXYPrompt[iSpecies]->Fill(pt,declenXY);
 	}
@@ -861,8 +861,8 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	Double_t ptB= isESD ? AliVertexingHFUtils::GetBeautyMotherPt(mcEvent, dynamic_cast<AliMCParticle*>(mcPart)) : AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, dynamic_cast<AliAODMCParticle*>(mcPart));
         fHistYPtFeeddownAllDecay[iSpecies]->Fill(pt, rapid);
         fHistOriginFeeddown->Fill(distToVert);
-	fHistPtBDecLenBXYFeeddown->Fill(ptB,distToVertXY);
-	if(mcDau0){
+	if(TMath::Abs(rapid)<0.8) fHistPtBDecLenBXYFeeddown->Fill(ptB,distToVertXY);
+	if(mcDau0 && TMath::Abs(rapid)<0.8){
 	  fHistPtDPtBDecLenFeeddown[iSpecies]->Fill(pt,ptB,declen3D);
 	  fHistPtDPtBDecLenXYFeeddown[iSpecies]->Fill(pt,ptB,declenXY);
 	}
