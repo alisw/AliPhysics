@@ -507,7 +507,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree* tOrigin = CreateTree(kOrigin);
   if (fTreeStatus[kOrigin]) {
     tOrigin->Branch("fDataframeID", &origin.fDataframeID, "fDataframeID/l");
-    tOrigin->SetBasketSize("*", 8);
     origin.fDataframeID = tfId;
     FillTree(kOrigin);
   }
