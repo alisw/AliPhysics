@@ -894,9 +894,8 @@ void AliIsolationCut::CalculateTrackSignalInCone
     
   }// charged particle loop
 
-  // 2 perpendicular cones/bands added, divide by 2 total amount of energy.
+  // 2 perpendicular cones added, divide by 2 total amount of energy.
   perpConePtSumTrack /= 2;
-  perpBandPtSumTrack /= 2;
 
   if ( fFillHistograms )
   {
@@ -1098,7 +1097,7 @@ void AliIsolationCut::CalculateUEBandTrackNormalization
   
   // Area of band, rectangle minus isolation region
   //
-  Float_t perpBandArea=   2* fConeSize                                    * fTPCEtaSize - coneArea;
+  Float_t perpBandArea=   4* fConeSize                                    * fTPCEtaSize - coneArea;
   Float_t etaBandArea =   2*(fConeSize+fConeSizeBandGap)                  * fTPCEtaSize - coneAreaGap;
   Float_t phiBandArea = ( 2*(fConeSize+fConeSizeBandGap) - excessEtaGap ) * fTPCPhiSize - coneAreaGap;
   
