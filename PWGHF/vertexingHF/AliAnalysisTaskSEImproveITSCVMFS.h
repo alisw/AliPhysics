@@ -40,7 +40,7 @@ public:
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdatePulls(Bool_t opt=kTRUE){fUpdatePulls=opt;}
-  void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
+  void SetMimicData(Bool_t opt=kTRUE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
   void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
   void SetImproverSuffix(TString suffix="central") {fImproverSuffix=suffix;}
