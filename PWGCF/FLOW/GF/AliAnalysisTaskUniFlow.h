@@ -657,7 +657,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 26);
+      ClassDef(AliAnalysisTaskUniFlow, 27);
 };
 
 #endif
