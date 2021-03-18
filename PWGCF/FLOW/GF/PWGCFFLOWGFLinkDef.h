@@ -16,6 +16,7 @@
 #pragma link C++ class AliGFW+;
 #pragma link C++ class AliGFWWeights+;
 #pragma link C++ class AliProfileSubset+;
+#pragma link C++ class AliProfileBS+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
 #pragma link C++ class AliAnalysisTaskUniFlow+;

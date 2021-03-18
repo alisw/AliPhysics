@@ -283,10 +283,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     // if(!LoadMyWeights(0)) return; //Loading run-avg NUA weights
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
-    fptvar = new TProfile*[4];
+    fptvar = new AliProfileBS*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fptvar[i] = (TProfile*)fptVarList->At(i);
+      fptVarList->Add(new AliProfileBS(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fptvar[i] = (AliProfileBS*)fptVarList->At(i);
     }
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
@@ -378,14 +378,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     //Covariance
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new TProfile*[8];
+    fCovariance = new AliProfileBS*[8];
     for(Int_t i=0;i<4;i++) {
-      fCovList->Add(new TProfile(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fCovariance[i] = (TProfile*)fCovList->At(i);
+      fCovList->Add(new AliProfileBS(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fCovariance[i] = (AliProfileBS*)fCovList->At(i);
     };
     for(Int_t i=0;i<4;i++) {
-      fCovList->Add(new TProfile(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fCovariance[4+i] = (TProfile*)fCovList->At(i+4);
+      fCovList->Add(new AliProfileBS(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fCovariance[4+i] = (AliProfileBS*)fCovList->At(i+4);
     };
     PostData(3,fCovList);
     fV2dPtList = new TList();
@@ -432,10 +432,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fmPT[i] = (TProfile*)fMPTList->At(i);
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
-    fptvar = new TProfile*[4];
+    fptvar = new AliProfileBS*[4];
     for(Int_t i=0;i<4;i++) {
-      fptVarList->Add(new TProfile(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
-      fptvar[i] = (TProfile*)fptVarList->At(i);
+      fptVarList->Add(new AliProfileBS(Form("ptvar_%s",spNames[i].Data()),Form("ptvar_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
+      fptvar[i] = (AliProfileBS*)fptVarList->At(i);
     };
     PostData(1,fptVarList);
   };

@@ -9,6 +9,7 @@
 #include "AliMCEvent.h"
 #include "AliGFWCuts.h"
 #include "TString.h"
+#include "AliProfileBS.h"
 
 class TList;
 class TH1D;
@@ -117,10 +118,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
-  TProfile **fptvar; //!
+  AliProfileBS **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
-  TProfile **fCovariance; //!
+  AliProfileBS **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType;
   TList *fWeightList; //!
