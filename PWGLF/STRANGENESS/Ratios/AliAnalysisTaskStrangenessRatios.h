@@ -90,8 +90,7 @@ private:
   AliAnalysisTaskStrangenessRatios &operator=(const AliAnalysisTaskStrangenessRatios &source);
 
   TList*          fList = nullptr;             //!<! List of the output histograms
-  TTree*          fTreeXi = nullptr;           //!<! Tree for Xis
-  TTree*          fTreeOmega = nullptr;        //!<! Tree for Omegas
+  TTree*          fTree = nullptr;           //!<! Tree for Xis and Omegas
 
   MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
