@@ -72,10 +72,8 @@ AliAnalysisTaskStrangenessRatios::~AliAnalysisTaskStrangenessRatios()
     return;
   if (fList)
     delete fList;
-  if (fTreeXi)
-    delete fTreeXi;
-  if (fTreeOmega)
-    delete fTreeOmega;
+  if (fTree)
+    delete fTree;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
@@ -93,24 +91,19 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
   fRecCascade = fMC ? &fGenCascade : new MiniCascade;
 
   OpenFile(2);
-  fTreeXi = new TTree("XiTree", "Xi Tree");
-  OpenFile(3);
-  fTreeOmega = new TTree("OmegaTree", "Omega Tree");
+  fTree = new TTree("XiOmegaTree", "Xi and Omega Tree");
 
   if (fMC)
   {
-    fTreeXi->Branch("MiniCascadeMC", &fGenCascade);
-    fTreeOmega->Branch("MiniCascadeMC", &fGenCascade);
+    fTree->Branch("MiniCascadeMC", &fGenCascade);
     fMCEvent = MCEvent();
   }
   else
   {
-    fTreeXi->Branch("MiniCascade", fRecCascade);
-    fTreeOmega->Branch("MiniCascade", fRecCascade);
+    fTree->Branch("MiniCascade", fRecCascade);
   }
 
-  PostData(2, fTreeXi);
-  PostData(3, fTreeOmega);
+  PostData(2, fTree);
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -124,8 +117,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   if (!fEventCut.AcceptEvent(ev))
   {
     PostData(1, fList);
-    PostData(2, fTreeXi);
-    PostData(3, fTreeOmega);
+    PostData(2, fTree);
     return;
   }
 
@@ -177,6 +169,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       continue;
     }
 
+    int labMothBac = -9999;
+    int pdgCascade = -1;
     if (fMC) {
       fGenCascade.pdg = 0;
       auto posPart = (AliAODMCParticle*)fMCEvent->GetTrack(std::abs(pTrackCasc->GetLabel()));
@@ -185,15 +179,15 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       // Check lambda
       int labMothPos = posPart->GetMother();
       int labMothNeg = negPart->GetMother();
-      int labMothBac = bacPart->GetMother();
+      labMothBac = bacPart->GetMother();
       auto lambda = (AliAODMCParticle*)fMCEvent->GetTrack(labMothNeg);
+      auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(labMothBac);
+      if (!cascade) {
+        continue;
+      }
+      pdgCascade = std::abs(cascade->GetPdgCode());
       if (lambda && labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg) {
         int labMothLam = lambda->GetMother();
-        auto cascade = (AliAODMCParticle*)fMCEvent->GetTrack(labMothBac);
-        if (!cascade) {
-          continue;
-        }
-        int pdgCascade = std::abs(cascade->GetPdgCode());
         if (labMothLam == labMothBac && (pdgCascade == kXiPdg || pdgCascade == kOmegaPdg)) {
           fGenCascade.pdg = cascade->GetPdgCode();
           fGenCascade.ptMC = cascade->Pt();
@@ -211,7 +205,6 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
 
     fRecCascade->matter = casc->AlphaV0() > 0;
-
     fRecCascade->tpcNsigmaV0Pi = fPID->NumberOfSigmasTPC(fRecCascade->matter ? nTrackCasc : pTrackCasc, AliPID::kPion);
     fRecCascade->tpcNsigmaV0Pr = fPID->NumberOfSigmasTPC(fRecCascade->matter ? pTrackCasc : nTrackCasc, AliPID::kProton);
 
@@ -257,7 +250,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
       fRecCascade->competingMass = std::abs(casc->MassXi() - kXiMass);
       if (IsTopolSelected(true)) {
-        fTreeOmega->Fill();
+        fTree->Fill();
+      }
+      else if(fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade==kOmegaPdg)){
+          checkedLabel.erase(std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac)); //checked particles that didn't pass the topological cut (have to be filled later)
       }
     }
     if (std::abs(casc->MassXi() - kXiMass) * 1000 < 30) {
@@ -266,7 +262,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
       fRecCascade->competingMass = std::abs(casc->MassOmega() - kOmegaMass);
       if (IsTopolSelected(false)) {
-        fTreeXi->Fill();
+        fTree->Fill();
+      }
+      else if(fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade==kXiPdg)){
+          checkedLabel.erase(std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac)); //checked particles that didn't pass the topological cut (have to be filled later)
       }
     }
   }
@@ -299,14 +298,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         }
       }
       fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * track->M() / track->P();
-      (pdg == kXiPdg ? fTreeXi : fTreeOmega)->Fill();
+      fTree->Fill();
     }
   }
 
   //  Post output data.
   PostData(1, fList);
-  PostData(2, fTreeXi);
-  PostData(3, fTreeOmega);
+  PostData(2, fTree);
 }
 
 AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool isMC, TString tskname, TString suffix)
