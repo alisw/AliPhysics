@@ -1097,7 +1097,7 @@ void AliIsolationCut::CalculateUEBandTrackNormalization
   
   // Area of band, rectangle minus isolation region
   //
-  Float_t perpBandArea=   4* fConeSize                                    * fTPCEtaSize - coneArea;
+  Float_t perpBandArea=   4* fConeSize                                    * fTPCEtaSize ;
   Float_t etaBandArea =   2*(fConeSize+fConeSizeBandGap)                  * fTPCEtaSize - coneAreaGap;
   Float_t phiBandArea = ( 2*(fConeSize+fConeSizeBandGap) - excessEtaGap ) * fTPCPhiSize - coneAreaGap;
   
