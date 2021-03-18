@@ -200,10 +200,10 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     THnSparseF                        **sESDMotherBackInvMassPtZM;
     TH1F                              **hESDInvMassElectronPositronPi0;
     TH1F                              **hESDInvMassElectronPositronPi0MC;
-//     TH1F                              **hESDInvMassElectronPositronPi0Background;
+    TH1F                              **hESDInvMassElectronPositronPi0Background;
     TH1F                              **hESDInvMassElectronPositronEta;
     TH1F                              **hESDInvMassElectronPositronEtaMC;
-//     TH1F                              **hESDInvMassElectronPositronEtaBackground;
+    TH1F                              **hESDInvMassElectronPositronEtaBackground;
     TH2F                              **hESDMotherPi0PtY;
     TH2F                              **hESDMotherPi0PtAlpha;
     TH2F                              **hESDMotherPi0PtOpenAngle;
