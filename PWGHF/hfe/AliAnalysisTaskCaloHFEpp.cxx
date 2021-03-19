@@ -1299,8 +1299,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         //cout << "icaliso = " << icaliso << endl;
 
 			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
-			if(icaliso && TrkPt>15.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
-			if(icaliso && TrkPt>15.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
+			if(icaliso && TrkPt>10.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
+			if(icaliso && TrkPt>10.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
 			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
                         //cout << "IsoEnergy = " << IsoEnergy << endl;
                         //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
