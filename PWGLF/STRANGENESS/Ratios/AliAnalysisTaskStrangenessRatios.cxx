@@ -367,11 +367,11 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
       fRecCascade->cosPAV0 > fCutCosPAV0 &&
       fRecCascade->dcaV0prPV > fCutDCAV0prToPV &&
       std::abs(Eta2y(fRecCascade->pt, isOmega ? kOmegaMass : kXiMass, fRecCascade->eta)) < fCutY &&
-      fRecCascade->tpcNsigmaBach < fCutNsigmaTPC &&
-      fRecCascade->tpcNsigmaV0Pr < fCutNsigmaTPC &&
-      fRecCascade->tpcNsigmaV0Pi < fCutNsigmaTPC &&
+      std::abs(fRecCascade->tpcNsigmaBach) < fCutNsigmaTPC &&
+      std::abs(fRecCascade->tpcNsigmaV0Pr) < fCutNsigmaTPC &&
+      std::abs(fRecCascade->tpcNsigmaV0Pi) < fCutNsigmaTPC &&
       fRecCascade->ct < fCutCt * kcTau[isOmega] &&
-      fRecCascade->competingMass > fCutCompetingMass &&
+      fRecCascade->competingMass > fCutCompetingMass[isOmega] &&
       fRecCascade->tpcClBach > fCutTPCclu &&
       fRecCascade->tpcClV0Pi > fCutTPCclu &&
       fRecCascade->tpcClV0Pr > fCutTPCclu;
