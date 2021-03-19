@@ -520,7 +520,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistTPCchi2[iCut]);
 		fHistITSCluster[iCut] = new TH1F("fHistITSCluster", "fHistITSCluster;#it{N}_{Cluster TPC};", 10, 0., 10.);
 		fAODList[iCut]->Add(fHistITSCluster[iCut]);
-		fHistITSchi2[iCut] = new TH1F("fHistITSchi2", "fHistITSchi2;#chi^{2};", 100, 0., 10.);
+		fHistITSchi2[iCut] = new TH1F("fHistITSchi2", "fHistITSchi2;#chi^{2};", 100, 0., 100.);
 		fAODList[iCut]->Add(fHistITSchi2[iCut]);
 		fHistTPCClusterwCut[iCut] = new TH1F("fHistTPCClusterwCut", "fHistTPCClusterwCut;#it{N}_{Cluster TPC};", 120, 50., 170.);
 		fAODList[iCut]->Add(fHistTPCClusterwCut[iCut]);
@@ -528,7 +528,7 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistTPCchi2wCut[iCut]);
 		fHistITSClusterwCut[iCut] = new TH1F("fHistITSClusterwCut", "fHistITSClusterwCut;#it{N}_{Cluster TPC};", 10, 0., 10.);
 		fAODList[iCut]->Add(fHistITSClusterwCut[iCut]);
-		fHistITSchi2wCut[iCut] = new TH1F("fHistITSchi2wCut", "fHistITSchi2wCut;#chi^{2};", 100, 0., 10.);
+		fHistITSchi2wCut[iCut] = new TH1F("fHistITSchi2wCut", "fHistITSchi2wCut;#chi^{2};", 100, 0., 100.);
 		fAODList[iCut]->Add(fHistITSchi2wCut[iCut]);
 		fHistSigmaMassPtWoPodCut[iCut] = new TH2F("fHistSigmaMassPtWoPodCut", ";#it{m}_{inv} (GeV/#it{c^{2}});#it{p}_{T} (GeV/#it{c})", 100, 1.1, 1.6, 40, 0., 10.);
 		fAODList[iCut]->Add(fHistSigmaMassPtWoPodCut[iCut]);
@@ -655,11 +655,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 			fHistTPCClusterTrue[iCut] = new TH1F("fHistTPCClusterTrue", "fHistTPCClusterTrue;#it{N}_{Cluster TPC};", 120, 50., 170.);
 			fHistTPCchi2True[iCut] = new TH1F("fHistTPCchi2True", "fHistTPCchi2True;#chi^{2};", 100, 0., 10.);
 			fHistITSClusterTrue[iCut] = new TH1F("fHistITSClusterTrue", "fHistITSClusterTrue;#it{N}_{Cluster TPC};", 10, 0., 10.);
-			fHistITSchi2True[iCut] = new TH1F("fHistITSchi2True", "fHistITSchi2True;#chi^{2};", 100, 0., 10.);
+			fHistITSchi2True[iCut] = new TH1F("fHistITSchi2True", "fHistITSchi2True;#chi^{2};", 100, 0., 100.);
 			fHistTPCClusterTruewCut[iCut] = new TH1F("fHistTPCClusterTruewCut", "fHistTPCClusterTruewCut;#it{N}_{Cluster TPC};", 120, 50., 170.);
 			fHistTPCchi2TruewCut[iCut] = new TH1F("fHistTPCchi2TruewCut", "fHistTPCchi2TruewCut;#chi^{2};", 100, 0., 10.);
 			fHistITSClusterTruewCut[iCut] = new TH1F("fHistITSClusterTruewCut", "fHistITSClusterTruewCut;#it{N}_{Cluster TPC};", 10, 0., 10.);
-			fHistITSchi2TruewCut[iCut] = new TH1F("fHistITSchi2TruewCut", "fHistITSchi2TruewCut;#chi^{2};", 100, 0., 10.);
+			fHistITSchi2TruewCut[iCut] = new TH1F("fHistITSchi2TruewCut", "fHistITSchi2TruewCut;#chi^{2};", 100, 0., 100.);
 			fHistThetaPhiTrueSigmaPl[iCut] = new TH2F("fHistThetaPhiTrueSigmaPl", "fHistThetaPhiTrueSigmaPl;#theta ; #phi", 50, -1., 4. ,100, 0., 2*TMath::Pi());
 			fHistGenSigmaPt[iCut] = new TH1F("fHistGenSigmaPt", "fHistGenSigmaPt;#it{p}_{T,Sigma} (GeV/#it{c});Yield", 120, 0, 30);
 			fHistGenSigmaPerEvent[iCut] = new TH1F("fHistGenSigmaPerEvent", "fHistGenSigmaPerEvent;N;Yield", 11, -0.5, 10.5);

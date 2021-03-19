@@ -447,7 +447,7 @@ Bool_t AliCaloSigmaCuts::SetChi2ITSCut(Int_t Chi2ITSCut){
   // Set Cut
   switch(Chi2ITSCut){
   case 0:
-    fChi2ITS = 10.;
+    fChi2ITS = 100.;
     break;
   case 1:
     fChi2ITS = 3.;
@@ -637,9 +637,9 @@ Bool_t AliCaloSigmaCuts::SetAmenterosCut(Int_t AmenterosCut){
   // Set Cut
   switch(AmenterosCut){
   case 0:
-    fMaxAlpha = 10.;
+    fMaxAlpha = 100.;
     fMinAlpha = 0.;
-    fQt = 10.;
+    fQt = 100.;
     break;
   case 1:
     fMaxAlpha = 1.02;
