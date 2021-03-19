@@ -723,6 +723,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   static AliESDInputHandler*  AddESDHandler();
 
+  /**
+   * @brief Add a ESD handler to the analysis manager
+   * @return pointer to the new ESD handler
+   */
+  static AliMCEventHandler* AddMCEventHandler();
+
  protected:
   /**
    * @brief Load PYTHIA parton info
