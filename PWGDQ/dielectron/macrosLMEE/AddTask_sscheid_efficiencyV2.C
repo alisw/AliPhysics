@@ -22,8 +22,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_sscheid_efficiencyV2(TString name =
   // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   //Load updated macros from private ALIEN path
-  if (getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))) { configBasePath=Form("%s/",gSystem->pwd());
+  if (!gSystem->AccessPathName(configFile))
+  {
+    printf("file already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
   }
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))) )
+  {
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+
   TString configFilePath(configBasePath+configFile);
   // #########################################################
   // #########################################################
