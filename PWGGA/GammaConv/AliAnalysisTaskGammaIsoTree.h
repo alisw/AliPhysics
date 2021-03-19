@@ -808,9 +808,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t IsWithinRadiusEMCal(Double_t eta, Double_t phi, Double_t riso);
     Bool_t IsWithinRadiusTPC(Double_t eta, Double_t phi, Double_t riso);
     Int_t GetProperLabel(AliAODMCParticle* mcpart);
+    Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 37);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 38);
 
 };
 

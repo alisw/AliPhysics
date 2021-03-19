@@ -2837,8 +2837,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessConversionPhotons(){
 
 
     if(!fConvCuts->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
-    Bool_t isWithinTPC =IsWithinRadiusTPC(PhotonCandidate->Eta(),PhotonCandidate->Phi(),fExclusionRadius);
-    if(!isWithinTPC) continue;
     if(fIsFromDesiredHeader){
       // new((*fConversionCandidates)[pos]) AliAODConversionPhoton(*PhotonCandidate);
 
@@ -3722,14 +3720,6 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      }
 
       // AliInfo(Form("photoncandidate (second check) %i \t E=%f \n",c,PhotonCandidate->E()));
-
-     // Only consider clusters that allow for a cone of 0.4 with tracking
-     Bool_t isWithinTPC =IsWithinRadiusTPC(PhotonCandidate->Eta(),PhotonCandidate->Phi(),fExclusionRadius);
-    if(!isWithinTPC){
-      if(tmpvec)  delete tmpvec;
-      if(PhotonCandidate) delete PhotonCandidate;
-      continue;
-     }
      if(fUseHistograms) FillCaloHistosPurity(clus,PhotonCandidate,isoCharged.isolationCone,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
      
      if(!fUseHistograms) {
@@ -3935,8 +3925,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessMCParticles(){
       
       // in EMC acceptance and not gamma as mother to avoid double counting
       // this should only count photon highest up the chain, technically could have wrong pT
-      Bool_t isWithinTPC =IsWithinRadiusTPC(particle->Eta(),particle->Phi(),fExclusionRadius);
-      if (fClusterCutsEMC->ClusterIsSelectedAODMC(particle,fAODMCTrackArray) && isWithinTPC)
+      if (fClusterCutsEMC->ClusterIsSelectedAODMC(particle,fAODMCTrackArray))
       {
          // if(!particle->IsPhysicalPrimary()) AliInfo("none physical primary selected!");
          isoValues mcIso;
@@ -4292,6 +4281,18 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster
         }
 
     }
+    
+    Float_t cf = 1; 
+    // Correct isolation for curren position in eta in case cone does not fit
+    for (Int_t r : fTrackIsolationR)
+    {
+        cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
+        isoV.isolationCone.at(r) /= cf;
+        isoV.backgroundLeft.at(r) /= cf;
+        isoV.backgroundRight.at(r) /= cf;
+        isoV.backgroundBack.at(r) /= cf;
+    }
+
     if(fUseHistograms) fHistoChargedIso->Fill(isoV.isolationCone.at(0)); // debug only
     return isoV;
 }
@@ -4681,6 +4682,16 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
       }
 
 
+  }
+  Float_t cf = 1; 
+  // Correct isolation for curren position in eta in case cone does not fit
+  for (Int_t r : fTrackIsolationR)
+  {
+      cf = CalculateIsoCorrectionFactor(thisEta, fEtaCut, fTrackIsolationR.at(r));
+      isoV.isolationCone.at(r) /= cf;
+      isoV.backgroundLeft.at(r) /= cf;
+      isoV.backgroundRight.at(r) /= cf;
+      isoV.backgroundBack.at(r) /= cf;
   }
   return isoV;
 }
@@ -5589,8 +5600,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
               MCPhoton = Mother;
             }
          }
-        Bool_t isWithinTPC =IsWithinRadiusTPC(MCPhoton->Eta(),MCPhoton->Phi(),fExclusionRadius);
-        if (fClusterCutsEMC->ClusterIsSelectedAODMC(MCPhoton,fAODMCTrackArray) && isWithinTPC){
+        if (fClusterCutsEMC->ClusterIsSelectedAODMC(MCPhoton,fAODMCTrackArray)){
           if(isPrimary){
             isTruePhoton = kTRUE;
             if(photon->IsLargestComponentElectron() && photon->IsConversion()){
@@ -6464,4 +6474,28 @@ Int_t AliAnalysisTaskGammaIsoTree::GetProperLabel(AliAODMCParticle* mcpart){
     }
   }
   return label;
+}
+
+Float_t AliAnalysisTaskGammaIsoTree::CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r){
+  Float_t frac = 1.;
+
+  // distance of cluster eta to detector limit eta
+  Double_t distanceEta = TMath::Abs(maxEta) - TMath::Abs(cEta);
+  
+  // if cluster is further away from border than r, no need to carry on. Everything fits
+  if(distanceEta > r) return frac;
+
+  // calculate angle 
+  Double_t angleBeta = 2* TMath::ACos(distanceEta/r);
+
+  // calculate sector of circle
+  Double_t areaExcess = 0.5 * r * r * (angleBeta - TMath::Sin(angleBeta));
+
+  // calculate fraction of are covered
+  Double_t totalArea = TMath::Pi()*r*r;
+  Double_t coveredArea = totalArea - areaExcess;
+
+  frac = coveredArea/totalArea;
+
+  return frac;
 }
