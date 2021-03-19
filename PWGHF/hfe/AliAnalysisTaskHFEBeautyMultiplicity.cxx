@@ -1973,9 +1973,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
             }
         }
     }
-
     
-    for(int imc=0; imc < fMCarray->GetEntries(); imc++)
+    cout << "-----------------------" << endl;
+    cout << "GetEntries     : " << fMCarray->GetEntries()     << endl;
+    cout << "GetEntriesFast : " << fMCarray->GetEntriesFast() << endl;
+
+    //for(int imc=0; imc < fMCarray->GetEntries(); imc++)	// PYTHIA & GEANT ?
+    for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles
     {
         Bool_t iEnhance = kFALSE;
         if(imc >= NpureMC) iEnhance = kTRUE;
@@ -1987,7 +1991,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
         Double_t pdgEta = fMCparticle->Eta();                   // eta
         Double_t pTtrue = fMCparticle->Pt();                    // Pt
         Int_t chargetrue = fMCparticle->Charge();               // charge
-        Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();   // ?
+        Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();   // primary particles
         
         //Get N Charge
         if(chargetrue!=0 && TMath::Abs(pdgEta)<1.0 && isPhysPrim) Nch++;
