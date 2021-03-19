@@ -53,6 +53,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   void ProcessPhotons();
   void ProcessMCPhotons();
   void FillMCHistograms(Int_t eventPos);
+  void ProcessPrimaryCandidates();
   Int_t CountTracks08();
   Int_t CountTracks08pt200();
   Int_t CountTracks08pt300();
@@ -96,6 +97,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   AliMCEvent*       fMCEvent;	                //
   Int_t             fnCuts;                       //
   Int_t             fiCut;                        //
+  AliConvEventCuts*                 fiEventCut;   //!
+  AliConversionPhotonCuts*          fiPhotonCut;  //!
   Int_t             fDoDeDxMaps;                  //
   Int_t             fDoMultWeights;               //
   Double_t          fWeightMultMC;                //
@@ -114,7 +117,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH1F**            hNGoodESDTracksEta08_14;      //!
   TH1F**            fHistoNV0Tracks;              //!
   TH1F**            fHistoNV0TracksWeighted;      //!
-  
+  TH1F**            fHistoESDPrimaryParticlePt;   //!
   TH2F**            hESDConversionRPhi;           //!
   TH2F**            hESDConversionRPhiFromConv;   //!
   TH2F**            hESDConversionRZ;             //!
@@ -132,11 +135,12 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH2F**            hElectronRNSigmadEdx;         //!
   TH2F**            hPositronRdEdx;               //!
   TH2F**            hPositronRNSigmadEdx;         //!
-  
+  TH2F**            fHistoMCPrimaryPtvsSource;    //!
+  TH1F**            fHistoMCPhysicalPrimaryPt;    //!
   TH2F**            hMCConversionRPhi;            //!
   TH2F**            hMCConversionRPhiFromConv;    //!
   TH2F**            hMCConversionRPt;             //!
-  TH2F**            hMCConversionWOWeightRPt;             //!
+  TH2F**            hMCConversionWOWeightRPt;     //!
   TH2F**            hMCConversionREta;            //!
   TH1F**            hMCConversionRRejSmall;       //!
   TH1F**            hMCConversionRRejLarge;       //!
@@ -144,13 +148,13 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH1F**            hMCAllGammaWOWeightPt;        //!
   TH2F**            hMCAllSecondaryGammaPt;       //!
   TH3F**            hMCSecondaryConvGammaPtR;      //!
-  
-  
+  TH1F**            fHistoMCTruePhysicalPrimaryPt;   //!
+  TH1F**            fHistoMCTruePhysicalPrimaryMCPt; //!
   TH2F**            hMCTrueConversionRPhi;        //!
   TH2F**            hMCTrueConversionRPhiFromConv;//!
   TH2F**            hMCTrueConversionRZ;          //!
   TH2F**            hMCTrueConversionRPt;         //!
-  TH2F**            hMCTrueConversionWOWeightRPt;         //!
+  TH2F**            hMCTrueConversionWOWeightRPt; //!
   TH2F**            hMCTrueConversionRPtMCRPt;    //!
   TH2F**            hMCTrueConversionWOWeightRPtMCRPt;    //!
   TH2F**            hMCTrueConversionREta;        //!
@@ -158,7 +162,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   TH1F**            hMCTrueConversionPsiPair;     //!
   TH1F**            hMCTrueConversionChi2;        //!
   TH1F**            hMCTrueConversionMass;        //!
-  TH2F**            hMCTrueConversionAsymP;          //!
+  TH2F**            hMCTrueConversionAsymP;       //!
   TH1F**            hMCTrueConversionRRejSmall;   //!
   TH1F**            hMCTrueConversionRRejLarge;   //!
   TH2F**            hMCTruePrimConversionRPt;     //!
@@ -191,7 +195,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
   AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
   
   
-  ClassDef(AliAnalysisTaskMaterialHistos, 25);
+  ClassDef(AliAnalysisTaskMaterialHistos, 26);
 };
 
 #endif
