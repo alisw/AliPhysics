@@ -844,14 +844,14 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
 
   // extra variables for c-deuteron
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[49];
+    var = new Float_t[50];
     Short_t resp;
-    TString varNames[50]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","massHypoFilt_respCuts_respPID"};
+    TString varNames[51]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","massHypoFilt_respCuts_respPID"};
     fTreeVar=new TTree("T","tree with variables");
-    for(Int_t k=0;k<49;k++){
+    for(Int_t k=0;k<50;k++){
       fTreeVar->Branch(varNames[k].Data(),&var[k]);
     }
-    fTreeVar->Branch(varNames[49].Data(),&resp);
+    fTreeVar->Branch(varNames[50].Data(),&resp);
   } else{
     var = new Float_t[33];
     Short_t resp;
@@ -1182,13 +1182,13 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 
   // c-deuteron has a few extra variables
   if(fIsCdeuteronAnalysis){
-    var = new Float_t[49];
-    TString varNames[50]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","massHypoFilt_respCuts_respPID"};
+    var = new Float_t[50];
+    TString varNames[51]={"pt","pAngle","lxy","nlxy","ptP","ptK","ptPi","vtxchi2","sigmaVtx","sumd02","dca1","dca2","dca3","nd01","nd02","nd03","d0Lc","cosThetaStar1","cosThetaStar2","m_pKpi","m_piKp","flagMC","w_FromLc_toXic","nSig_TPC_prot_0","nSig_TOF_prot_0","nSig_TPC_pion_0","nSig_TOF_pion_0","nSig_TPC_kaon_1","nSig_TOF_kaon_1","nSig_TPC_prot_2","nSig_TOF_prot_2","nSig_TPC_pion_2","nSig_TOF_pion_2","decayL","ndecayL","dist12","dca","pAngleXY","massHypo","cDeutMCpt","deutMCptTrk0","deutMCptTrk1","deutMCptTrk2","deutStatusTrk0","deutStatusTrk1","deutStatusTrk2","pdgMotherTrk0","pdgMotherTrk1","pdgMotherTrk2","eventImpactParameter","massHypoFilt_respCuts_respPID"};
     if(fFillTree){
-      for(Int_t k=0;k<49;k++){
+      for(Int_t k=0;k<50;k++){
         fTreeVar->SetBranchAddress(varNames[k].Data(),&var[k]);
       }
-      fTreeVar->SetBranchAddress(varNames[49].Data(),&resp);
+      fTreeVar->SetBranchAddress(varNames[50].Data(),&resp);
     }
   } else{
     var = new Float_t[33];
@@ -2942,7 +2942,7 @@ void AliAnalysisTaskSEXicTopKpi::FillTree(AliAODRecoDecayHF3Prong *cand,Int_t ma
         }
       }
     }
-
+    varPointer[49] = mcHeader->GetImpactParameter();
   }
 
   fTreeVar->Fill();
@@ -3081,6 +3081,9 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
         AliAODMCParticle *mcpart=(AliAODMCParticle*)mcArray->At(label);
         Int_t pdg=TMath::Abs(mcpart->GetPdgCode());
         if(isBkgTrackInjected && pdg!=1000010020) continue; 
+        // if looking at bkg, keep only a small percentage of available tracks (5%)
+        Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
+        if( TMath::Abs(pt_track-int(pt_track))>fRejFactorBkgUpgrade ) continue;
       }
     }
     if(fIsXicUpgradeAnalysis && fReadMC) {
