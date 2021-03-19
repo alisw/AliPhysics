@@ -54,6 +54,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
+  fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
   fCellsSingleChannelRecalibrated(kFALSE),fSingleChannelRecalibration(kFALSE),    fEMCALSingleChannelRecalibrationFactors(nullptr),
   fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(nullptr),       fLowGain(kFALSE),
@@ -108,6 +109,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
   fUseShaperNonlin(reco.fUseShaperNonlin),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
+  fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
   fRecalibration(reco.fRecalibration),                       fUse1Drecalib(reco.fUse1Drecalib),
   fEMCALRecalibrationFactors(NULL),
@@ -153,12 +155,13 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutRequireITSStandAlone(reco.fCutRequireITSStandAlone),   fCutRequireITSpureSA(reco.fCutRequireITSpureSA),
   fNMCGenerToAccept(reco.fNMCGenerToAccept),                 fMCGenerToAcceptForTrack(reco.fMCGenerToAcceptForTrack)
 {
-  for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ;
-                                    fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
-  for (Int_t i = 0; i < 10  ; i++){ fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
-  for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
-  for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
-  for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; }
+  for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]         = reco.fMisalRotShift[i]         ;
+                                    fMisalTransShift[i]       = reco.fMisalTransShift[i]       ; }
+  for (Int_t i = 0; i < 10 ; i++) { fNonLinearityParams[i]    = reco.fNonLinearityParams[i]    ; }
+  for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]     = reco.fSmearClusterParam[i]     ; }
+  for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
+  for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
+  for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -203,6 +206,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; }
   for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
+  for (Int_t i = 0; i < 10  ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
 
   fParticleType              = reco.fParticleType;
   fPosAlgo                   = reco.fPosAlgo;
@@ -213,6 +217,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fNonLinearThreshold        = reco.fNonLinearThreshold;
   fUseShaperNonlin           = reco.fUseShaperNonlin;
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
+  fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
   fCellsRecalibrated         = reco.fCellsRecalibrated;
   fRecalibration             = reco.fRecalibration;
@@ -455,7 +460,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   // Recalibrate time
   time = cells->GetCellTime(absID);
 
-  if (IsTimeECorrectionOn()) 
+  if (IsTimeECorrectionOn())
     CorrectCellTimeVsE(amp, time, isLowGain);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
 
@@ -699,6 +704,89 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
   if ( ecell4 < cellMinEn || w4 <= 0 ) ecell4 = 0 ;
 
   return ecell1+ecell2+ecell3+ecell4;
+}
+
+
+///
+/// Check if a cell is next to a cluster. Only the 4 direct neighboring cells are considered
+/// Used in number of cell efficiency calculation.
+/// cells that are directly next to a cluster are not considered for this correction
+/// very similar to function GetECross
+///
+/// \param absID: controlled cell absolute ID number
+/// \param Ethresh: aggregation threshold
+/// \param cells: full list of cells
+///
+/// \return true if the cell is next to a cell  above the aggregation threshold
+///
+//___________________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsCellNextToCluster(Int_t absID, Float_t eThresh, AliVCaloCells* cells, Int_t bc){
+
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+
+  if(!geom)
+  {
+    AliError("No instance of the geometry is available");
+    return -1;
+  }
+
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+  geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta);
+  geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+
+  // Get close cells index, energy and time, not in corners
+
+  Int_t absID1 = -1;
+  Int_t absID2 = -1;
+
+  if ( iphi < AliEMCALGeoParams::fgkEMCALRows-1) absID1 = geom->GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  if ( iphi > 0 )                                absID2 = geom->GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+
+  // check the first two cells
+  Float_t  ecell1  = 0, ecell2  = 0;
+  Double_t tcell1  = 0, tcell2  = 0;
+
+  AcceptCalibrateCell(absID1,bc, ecell1,tcell1,cells);
+  AcceptCalibrateCell(absID2,bc, ecell2,tcell2,cells);
+
+  if(ecell1 > eThresh) return kTRUE;
+  if(ecell2 > eThresh) return kTRUE;
+
+  // In case of cell in eta = 0 border, depending on SM shift the cross cell index
+
+  Int_t absID3 = -1;
+  Int_t absID4 = -1;
+
+  if ( ieta == AliEMCALGeoParams::fgkEMCALCols-1 && !(imod%2) )
+  {
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod+1, iphi, 0);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta-1);
+  }
+  else if ( ieta == 0 && imod%2 )
+  {
+    absID3 = geom-> GetAbsCellIdFromCellIndexes(imod,   iphi, ieta+1);
+    absID4 = geom-> GetAbsCellIdFromCellIndexes(imod-1, iphi, AliEMCALGeoParams::fgkEMCALCols-1);
+  }
+  else
+  {
+    if ( ieta < AliEMCALGeoParams::fgkEMCALCols-1 )
+      absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+    if ( ieta > 0 )
+      absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
+  }
+
+
+  Float_t  ecell3  = 0, ecell4  = 0;
+  Double_t tcell3  = 0, tcell4  = 0;
+
+  AcceptCalibrateCell(absID3,bc, ecell3,tcell3,cells);
+  AcceptCalibrateCell(absID4,bc, ecell4,tcell4,cells);
+
+  if(ecell1 > eThresh) return kTRUE;
+  if(ecell2 > eThresh) return kTRUE;
+
+  // all 4 neighbours were checked, cell is not next to cluster
+  return kFALSE;
 }
 
 //________________________________________________________________________________________
@@ -1535,6 +1623,116 @@ if (fNonLinearityFunction == kPCMv1) {
  }
 }
 
+
+///
+/// Initialising number of cell efficiency Parameters for the different
+/// parametrizations available, defined in enum NCellEfficiencyFunctions
+///
+//__________________________________________________
+void AliEMCALRecoUtils::InitNCellEfficiencyParam()
+{
+  if (fNCellEfficiencyFunction == kNCeAllClusters) {
+    fNCellEfficiencyParams[0] = 2.71596e-01;
+    fNCellEfficiencyParams[1] = 1.80393;
+    fNCellEfficiencyParams[2] = 6.50026e-01;
+  }
+  else if (fNCellEfficiencyFunction == kNCeTestBeam) {
+    fNCellEfficiencyParams[0] = 0.213184;
+    fNCellEfficiencyParams[1] = -0.0580118;
+  }
+  else if (fNCellEfficiencyFunction == kNCeGammaAndElec) {
+    fNCellEfficiencyParams[0] = 0.0901375;
+    fNCellEfficiencyParams[1] = 1.28118;
+    fNCellEfficiencyParams[2] = 0.583403;
+  }
+
+}
+
+///
+/// Artificially widen 1 cell cluster in the MC
+/// Still in testing at this point. Recommended setting:
+///
+/// \return true if cluster should be widened
+///
+//____________________________________________________________________________
+Bool_t AliEMCALRecoUtils::GetIsNCellCorrected(AliVCluster* cluster, AliVCaloCells* cells, Bool_t correctNextToClus)
+{
+
+  // cells = (AliVCaloCells*)event->GetEMCALCells();
+
+  if (!cluster)
+  {
+    AliInfo("Cluster pointer null!");
+    return 0;
+  }
+
+  Float_t energy = cluster->E();
+  if (energy < 0.100)
+  {
+    // Clusters with less than 100 MeV or negative are not possible
+    AliInfo(Form("Too low cluster energy for number of cells correction!, E = %f < 0.100 GeV",energy));
+    return 0;
+  }
+  else if(energy > 10.)
+  {
+    AliInfo(Form("Too high cluster energy!, E = %f GeV, do not apply number of cells correction",energy));
+    return 0;
+  }
+
+  if(correctNextToClus){
+    if(IsCellNextToCluster(cluster->GetCellAbsId(0), 0.100 ,cells)) return kFALSE;
+  }
+
+  Float_t randNr = fRandom.Rndm();
+  switch (fNCellEfficiencyFunction)
+  {
+    case kNCeAllClusters:
+    {
+      // based on all clusters in data and MC
+      // data clusters influenced by exotics above 2 GeV
+      // fNCellEfficiencyParams[0] = 2.71596e-01;
+      // fNCellEfficiencyParams[1] = 1.80393;
+      // fNCellEfficiencyParams[2] = 6.50026e-01;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeTestBeam:
+    {
+      // based on test beam measurements
+      // should behave like pure photon clusters
+      // fNCellEfficiencyParams[0] = 0.213184;
+      // fNCellEfficiencyParams[1] = -0.0580118;
+      Float_t val = fNCellEfficiencyParams[0] + fNCellEfficiencyParams[1]*energy;
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+
+    case kNCeGammaAndElec:
+    {
+      // based on clusters which are part of a cluster pair with a mass of: [M(Pi0) - 0.05;M(Pi0) + 0.02]
+      // mostly photon clusters and electron(conversion) clusters (purity about 95%)
+      // exotics should be nearly cancled by that
+      // fNCellEfficiencyParams[0] = 0.0901375;
+      // fNCellEfficiencyParams[1] = 1.28118;
+      // fNCellEfficiencyParams[2] = 0.583403;
+      Float_t val = fNCellEfficiencyParams[0]*exp(
+                    -0.5*((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2])*
+                    ((energy-fNCellEfficiencyParams[1])/fNCellEfficiencyParams[2]));
+      if(randNr < val) return kTRUE;
+      else return kFALSE;
+      break;
+    }
+  }
+
+  return kFALSE;
+}
+
 ///
 /// Set the type of channels to be declared as bad
 /// \param all  : all cases are bad, default true
@@ -2040,6 +2238,9 @@ void AliEMCALRecoUtils::InitParameters()
   fSmearClusterParam[0] = 0.07; // * sqrt E term
   fSmearClusterParam[1] = 0.00; // * E term
   fSmearClusterParam[2] = 0.00; // constant
+
+  // number of cell efficiency
+  for (Int_t i = 0; i < 10  ; i++) fNCellEfficiencyParams[i] = 0.;
 }
 
 ///
@@ -2313,7 +2514,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   Float_t frac     = 0;
   Int_t   absIdMax = -1;
   Float_t emax    = 0.;
-  
+
   // Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
   for (Int_t icell = 0; icell < ncells; icell++){
     absId = index[icell];
@@ -2415,10 +2616,10 @@ Float_t AliEMCALRecoUtils::CorrectShaperNonLin(Float_t Emeas, Float_t EcalibHG)
 
 ///
 /// Correct Slewing for each channel
-/// 
+///
 /// \param energy: cell energy
 /// \param celltime: cell time to be returned calibrated
-/// \param isLowGain: low gain cell 
+/// \param isLowGain: low gain cell
 void AliEMCALRecoUtils::CorrectCellTimeVsE(Double_t energy, Double_t & celltime, Bool_t isLowGain) const
 {
   Double_t offset = 0;        // in ns
@@ -2433,14 +2634,14 @@ void AliEMCALRecoUtils::CorrectCellTimeVsE(Double_t energy, Double_t & celltime,
 }
 
 ///
-/// energy dependent time offset for low gain 
+/// energy dependent time offset for low gain
 /// returns slewing for low gain at certain cell energy
 /// \param energy: cell energy
 ///
 Double_t AliEMCALRecoUtils::GetLowGainSlewing (Double_t energy) const
 {
   Double_t offset = 0;
-  
+
   if (energy > 14 && energy <= 80){
     offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
   } else if (energy <= 14) {
@@ -3044,7 +3245,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
         etai=(Double_t)ieta;
         phii=(Double_t)iphi;
       } else if( fShowerShapeCellLocationType == 1 ) {  // Cell angle location
-      
+
         geom->EtaPhiFromIndex(absId, etai, phii);
         etai *= TMath::RadToDeg(); // change units to degrees instead of radians
         phii *= TMath::RadToDeg(); // change units to degrees instead of radians
@@ -3112,7 +3313,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
         etai=(Double_t)ieta;
         phii=(Double_t)iphi;
       } else if( fShowerShapeCellLocationType == 1 ) {  // Cell angle location
-      
+
         geom->EtaPhiFromIndex(absId, etai, phii);
         etai *= TMath::RadToDeg(); // change units to degrees instead of radians
         phii *= TMath::RadToDeg(); // change units to degrees instead of radians
@@ -3201,7 +3402,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     AliInfo("Cluster pointer null!");
     return;
   }
-  
+
   Double_t eCell   = 0.;
   Double_t tCell   = 0.;
   Bool_t   shared  = kFALSE;
@@ -3213,7 +3414,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   Int_t   iSupModMax = -1;
   Int_t   iphiMax    = -1;
   Int_t   ietaMax    = -1;
-  
+
   Int_t    iSupMod = -1;
   Int_t    iTower  = -1;
   Int_t    iIphi   = -1;
@@ -3222,7 +3423,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   Int_t    ieta    = -1;
   Double_t etai    = -1.;
   Double_t phii    = -1.;
-  
+
   Int_t    nstat   = 0 ;
   Float_t  wtot    = 0.;
   Double_t w       = 0.;
@@ -3237,7 +3438,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   UShort_t cellsAbsIdNxN[nCellsFix];
   Bool_t   cellsNeighNxN[nCellsFix];
   Float_t  cellsEnerNxN [nCellsFix];
-  
+
   Int_t nCells = 0;
   shared = kFALSE;
   for(Int_t ietadiff = -cellDiff; ietadiff <= cellDiff; ietadiff++)
@@ -3248,33 +3449,33 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
       Int_t iSM   = iSupModMax;
 
       iphi = iphiMax+iphidiff;
-      ieta = ietaMax+ietadiff; 
+      ieta = ietaMax+ietadiff;
       if      ( ieta >= 48 && (iSupModMax%2) )
       {
-        iSM    = iSupModMax+1; 
+        iSM    = iSupModMax+1;
         ieta  -= AliEMCALGeoParams::fgkEMCALCols;
-        shared = kTRUE; 
+        shared = kTRUE;
       }
       else if ( ieta <   0 && !(iSupModMax%2) )
-      { 
-        iSM    = iSupModMax-1; 
+      {
+        iSM    = iSupModMax-1;
         ieta  += AliEMCALGeoParams::fgkEMCALCols;
-        shared = kTRUE; 
+        shared = kTRUE;
       }
-      
+
       if ( iphi < 24 && iphi >= 0 &&
            ieta < 48 && ieta >= 0    )
       {
-        absId = geom->GetAbsCellIdFromCellIndexes(iSM, iphi, ieta); 
+        absId = geom->GetAbsCellIdFromCellIndexes(iSM, iphi, ieta);
       }
-      
+
       if ( absId <= 0 )
       {
         //printf("Not found: max  absId %d, sm %d, ieta %d, iphi %d, diff eta %d, diff phi %d\n",
         //       absIdMax,iSupModMax, ietaMax, iphiMax, ietadiff,iphidiff);
         continue;
       }
-      
+
 //        if ( shared )
 //        {
 //          printf("max  sm %d, ieta %d, iphi %d, absId %d\n",iSupModMax, ietaMax, iphiMax, absIdMax);
@@ -3283,14 +3484,14 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 //          geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 //          printf("\t Check: ism %d, ieta %d\n",iSupMod,ieta);
 //        }
-      
+
       eCell  = cells->GetCellAmplitude(absId);
       tCell  = cells->GetCellTime     (absId);
       tCell*=1e9;
       tCell-=fConstantTimeShift;
-      
-      if ( absId >= 0 && 
-          eCell > cellEcut && 
+
+      if ( absId >= 0 &&
+          eCell > cellEcut &&
           TMath::Abs(tCell) < cellTimeCut  )
       {
         energy += eCell;
@@ -3302,24 +3503,24 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
         nCells++;
         //printf("Add %d, absId (%d,%d), cell (%f,%f)\n",nCells-1,absId,cellsAbsIdNxN[nCells-1],cellsEnerNxN [nCells-1], eCell);
       }
-      
+
     } // iphidiff
   } // ietadiff
-  
+
   if ( energy < cellEcut ) return;
 
 //  if ( cluster->E() > 10 )
 //  {
 //    printf("Cluster E (%2.2f,%2.2f), ncells (%d,%d), shared %d\n",
 //           cluster->E(), energy, cluster->GetNCells(),nCells, shared);
-//    
+//
 //    for(Int_t icell = 0; icell < cluster->GetNCells(); icell++)
 //    {
 //      Int_t   id = cluster->GetCellAbsId(icell);
 //      Float_t ec = cells->GetCellAmplitude(id);
 //      printf("\t Org cell %d, absId %d en %f\n",icell, id, ec);
 //    }
-//    
+//
 //    for(Int_t icell = 0; icell < nCells; icell++)
 //    {
 //      Int_t   id = cellsAbsIdNxN[icell];
@@ -3327,7 +3528,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 //      printf("\t NxN cell %d, absId %d en %f\n",icell, id, ec);
 //    }
 //  }
-  
+
   // Tag the cells neighbour to absIdMax cell
   // and neighobours to those, from inner cells to outer cells
   //
@@ -3454,7 +3655,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   l0 = 0;  l1 = 0;
   disp = 0; dEta = 0; dPhi = 0;
   sEta = 0; sPhi = 0; sEtaPhi = 0;
-  
+
   // Loop on cells to calculate weights and shower shape terms parameters
   //
   for (Int_t iDigit=0; iDigit < nCells; iDigit++)
@@ -3463,21 +3664,21 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 
     // Get from the absid the supermodule, tower and eta/phi numbers
     Int_t absId = cellsAbsIdNxN[iDigit];
-    
+
     geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
-    
+
     eCell  = cells->GetCellAmplitude(absId);
     tCell  = cells->GetCellTime     (absId);
     tCell*=1e9;
     tCell-=fConstantTimeShift;
-    
+
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
     // C Side impair SM, nSupMod%2=1; A side pair SM, nSupMod%2=0
     if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
-    
+
     w  = GetCellWeight(eCell, energy);
-    
+
     // Cell index
     if     ( fShowerShapeCellLocationType == 0 )
     {
@@ -3494,7 +3695,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     else
     {
       geom->GetGlobal(absId,pGlobal);
-      
+
       // Cell x-z location
       if( fShowerShapeCellLocationType == 2 )
       {
@@ -3508,12 +3709,12 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
         phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]);
       }
     }
-    
+
     if (w > 0.0)
     {
       wtot += w ;
       nstat++;
-      
+
       // Shower shape
       sEta     += w * etai * etai ;
       etaMean  += w * etai ;
@@ -3525,7 +3726,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   } // cell loop
 
   //printf("sEta %f sPhi %f etaMean %f phiMean %f sEtaPhi %f wtot %f\n",sEta,sPhi,etaMean,phiMean,sEtaPhi, wtot);
-  
+
   if ( wtot <= 0 && nstat <= 1)
   {
     l0   = 0. ;
@@ -3535,11 +3736,11 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     AliDebug(2,Form("Wrong weight %f\n", wtot));
     return;
   }
-  
+
   // Normalize to the weight
   etaMean /= wtot ;
   phiMean /= wtot ;
-  
+
   // Loop on cells to calculate dispersion
   for (Int_t iDigit=0; iDigit < nCells; iDigit++)
   {
@@ -3550,7 +3751,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
 
     geom->GetCellIndex(absId,iSupMod,iTower,iIphi,iIeta);
     geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
-    
+
     eCell  = cells->GetCellAmplitude(absId);
     tCell  = cells->GetCellTime     (absId);
     tCell*=1e9;
@@ -3561,7 +3762,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     if (shared && iSupMod%2) ieta+=AliEMCALGeoParams::fgkEMCALCols;
 
     w  = GetCellWeight(eCell,energy);
-    
+
     // Cell index
     if     ( fShowerShapeCellLocationType == 0 )
     {
@@ -3578,7 +3779,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
     else
     {
       geom->GetGlobal(absId,pGlobal);
-      
+
       // Cell x-z location
       if( fShowerShapeCellLocationType == 2 )
       {
@@ -3592,14 +3793,14 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
         phii = TMath::Sqrt(pGlobal[0]*pGlobal[0]+pGlobal[1]*pGlobal[1]);
       }
     }
-    
+
     if (w > 0.0)
     {
       disp +=  w *((etai-etaMean)*(etai-etaMean)+(phii-phiMean)*(phii-phiMean));
       dEta +=  w * (etai-etaMean)*(etai-etaMean) ;
       dPhi +=  w * (phii-phiMean)*(phii-phiMean) ;
     }
-    
+
   }// cell loop
 
   // Normalize to the weigth and set shower shape parameters
@@ -3610,11 +3811,11 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersNxNCells
   sEta    /= wtot ;
   sPhi    /= wtot ;
   sEtaPhi /= wtot ;
-  
+
   sEta    -= etaMean * etaMean ;
   sPhi    -= phiMean * phiMean ;
   sEtaPhi -= etaMean * phiMean ;
-  
+
   l0 = (0.5 * (sEta + sPhi) + TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
   l1 = (0.5 * (sEta + sPhi) - TMath::Sqrt( 0.25 * (sEta - sPhi) * (sEta - sPhi) + sEtaPhi * sEtaPhi ));
 
@@ -4962,6 +5163,10 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
   printf("\tNon linearity function %d, parameters:\n", fNonLinearityFunction);
   if (fNonLinearityFunction != 3) // print only if not kNoCorrection
     for (Int_t i=0; i<10; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
+
+  printf("\tNCell efficiency function %d, parameters:\n", fNCellEfficiencyFunction);
+  if (fNCellEfficiencyFunction != 0) // print only if not kNoCorrection
+    for (Int_t i=0; i<10; i++) printf("param[%d]=%f\n",i, fNCellEfficiencyParams[i]);
 
   printf("\tPosition Recalculation option %d, Particle Type %d, fW0 %2.2f, Recalibrate Data %d \n",fPosAlgo,fParticleType,fW0, fRecalibration);
 

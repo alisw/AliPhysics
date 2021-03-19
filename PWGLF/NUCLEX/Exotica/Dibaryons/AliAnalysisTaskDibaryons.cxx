@@ -39,8 +39,11 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons():
   fPIDResponse(0x0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fPairCleaning(kTRUE),
+  fPairCleaning(kFALSE),
   fEventMixing(kTRUE),
+  fNsigProton(3.0),
+  fNsigV0Daughter(5.0),
+  fNsigCascDaughter(4.0),
   fOutput(0x0),
   fTrackArray(0x0),
   fProtonArray(0x0),
@@ -67,8 +70,11 @@ AliAnalysisTaskDibaryons::AliAnalysisTaskDibaryons(const char *name):
   fPIDResponse(0x0),
   fFilterBit(0),
   fPileupCut(kTRUE),
-  fPairCleaning(kTRUE),
+  fPairCleaning(kFALSE),
   fEventMixing(kTRUE),
+  fNsigProton(3.0),
+  fNsigV0Daughter(5.0),
+  fNsigCascDaughter(4.0),
   fOutput(0x0),
   fTrackArray(0x0),
   fProtonArray(0x0),
@@ -769,7 +775,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
     // proton PID
     if(p < 0.75) { // for p < 0.75 use TPC only
       if(!isthereTPC) continue;
-      if(TMath::Abs(nSigmaTPCproton) > 3.) continue;
+      if(TMath::Abs(nSigmaTPCproton) > fNsigProton) continue;
     }
     else if(p > 0.75) { // for p > 0.75 use TPC & TOF
       if(!isthereTPC || !isthereTOF) continue;
@@ -781,7 +787,7 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(nSigmaTPCTOFproton > nSigmaTPCTOFelectron) continue;
 
       dynamic_cast<TH2F*>(fOutput->FindObject("hProtonNsigmaTPCvsTOFwCuts"))->Fill(nSigmaTPCproton,nSigmaTOFproton);
-      if(nSigmaTPCTOFproton > 3.) continue;
+      if(nSigmaTPCTOFproton > fNsigProton) continue;
     }
 
     if(charge > 0.) {
@@ -896,10 +902,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusNegTPC != AliPIDResponse::kDetPidOk) continue;
 
       // Daughter track PID using TPC
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion  )) < 5.0) isPosPion   = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton)) < 5.0) isNegProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion  )) < 5.0) isNegPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < fNsigV0Daughter) isPosProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion  )) < fNsigV0Daughter) isPosPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton)) < fNsigV0Daughter) isNegProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion  )) < fNsigV0Daughter) isNegPion   = kTRUE;
 
       // Calculate the invariant mass
       esdV0->ChangeMassHypothesis(3122);
@@ -972,10 +978,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusNegTPC != AliPIDResponse::kDetPidOk) continue;
 
       // Daughter track PID using TPC
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < 5.0) isPosProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion  )) < 5.0) isPosPion   = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton)) < 5.0) isNegProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion  )) < 5.0) isNegPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton)) < fNsigV0Daughter) isPosProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion  )) < fNsigV0Daughter) isPosPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton)) < fNsigV0Daughter) isNegProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion  )) < fNsigV0Daughter) isNegPion   = kTRUE;
 
       // Calculate the invariant mass
       invMassLambda     = aodV0->MassLambda();
@@ -1170,12 +1176,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusNegTPC  != AliPIDResponse::kDetPidOk) continue;
 
       // Bachelor and daughter track PID using TPC
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kPion)) < 4.0) isBachelorPion = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton )) < 4.0) isPosProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion   )) < 4.0) isPosPion   = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton )) < 4.0) isNegProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion   )) < 4.0) isNegPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < fNsigCascDaughter) isBachelorKaon = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kPion)) < fNsigCascDaughter) isBachelorPion = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton )) < fNsigCascDaughter) isPosProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion   )) < fNsigCascDaughter) isPosPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton )) < fNsigCascDaughter) isNegProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion   )) < fNsigCascDaughter) isNegPion   = kTRUE;
 
       // Calculate the invariant mass
       invMassLambdaAsCascDghter = esdXi->GetEffMass();
@@ -1266,12 +1272,12 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
       if(statusNegTPC  != AliPIDResponse::kDetPidOk) continue;
 
       // Bachelor and daughter track PID using TPC
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < 4.0) isBachelorKaon = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kPion)) < 4.0) isBachelorPion = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton )) < 4.0) isPosProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion   )) < 4.0) isPosPion   = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton )) < 4.0) isNegProton = kTRUE;
-      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion   )) < 4.0) isNegPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kKaon)) < fNsigCascDaughter) isBachelorKaon = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(bachTrack,AliPID::kPion)) < fNsigCascDaughter) isBachelorPion = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kProton )) < fNsigCascDaughter) isPosProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack,AliPID::kPion   )) < fNsigCascDaughter) isPosPion   = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kProton )) < fNsigCascDaughter) isNegProton = kTRUE;
+      if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack,AliPID::kPion   )) < fNsigCascDaughter) isNegPion   = kTRUE;
 
       // Calculate the invariant mass
       if(chargeXi < 0.) {
@@ -1753,6 +1759,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         AliAODv0 *v0 = (AliAODv0*)fLambdaArray->At(j);
         if(!v0) continue;
 
+        if(trackID == v0->GetPosID()) continue;
+        if(trackID == v0->GetNegID()) continue;
+
         TLorentzVector trackProton, trackLambda, trackSum;
 
         trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
@@ -1780,6 +1789,9 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         AliAODv0 *v02 = (AliAODv0*)fLambdaArray->At(j);
         if(!v02) continue;
+
+        if(v01->GetPosID() == v02->GetPosID()) continue;
+        if(v01->GetNegID() == v02->GetNegID()) continue;
 
         TLorentzVector trackLambda1, trackLambda2, trackSum;
 
@@ -1812,6 +1824,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         AliAODcascade *xi = (AliAODcascade*)fXiArray->At(j);
         if(!xi) continue;
 
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
+
         TLorentzVector trackProton, trackXi, trackSum;
 
         trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
@@ -1843,6 +1859,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         AliAODcascade *xi = (AliAODcascade*)fOmegaArray->At(j);
         if(!xi) continue;
 
+        if(trackID == xi->GetBachID()) continue;
+        if(trackID == xi->GetPosID()) continue;
+        if(trackID == xi->GetNegID()) continue;
+
         TLorentzVector trackProton, trackOmega, trackSum;
 
         trackProton.SetXYZM(track->Px(),track->Py(),track->Pz(),massProton);
@@ -1870,6 +1890,10 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         AliAODcascade *xi = (AliAODcascade*)fXiArray->At(j);
         if(!xi) continue;
+
+        if(v0->GetPosID() == xi->GetPosID()) continue;
+        if(v0->GetNegID() == xi->GetNegID()) continue;
+        if(v0->GetNegID() == xi->GetBachID()) continue;
 
         TLorentzVector trackLambda, trackXi, trackSum;
 
@@ -1899,6 +1923,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
         AliAODcascade *xi2 = (AliAODcascade*)fOmegaArray->At(j);
         if(!xi2) continue;
 
+        if(xi1->GetPosID() == xi2->GetPosID()) continue;
+        if(xi1->GetNegID() == xi2->GetNegID()) continue;
+        if(xi1->GetNegID() == xi2->GetBachID()) continue;
+        if(xi1->GetBachID() == xi2->GetNegID()) continue;
+
         TLorentzVector trackXi, trackOmega, trackSum;
 
         trackXi.SetXYZM(xi1->Px(),xi1->Py(),xi1->Pz(),massXi);
@@ -1925,6 +1954,11 @@ void AliAnalysisTaskDibaryons::UserExec(Option_t *option)
 
         AliAODcascade *xi2 = (AliAODcascade*)fOmegaArray->At(j);
         if(!xi2) continue;
+
+        if(xi1->GetPosID() == xi2->GetPosID()) continue;
+        if(xi1->GetNegID() == xi2->GetNegID()) continue;
+        if(xi1->GetNegID() == xi2->GetBachID()) continue;
+        if(xi1->GetBachID() == xi2->GetNegID()) continue;
 
         TLorentzVector trackOmega1, trackOmega2, trackSum;
 

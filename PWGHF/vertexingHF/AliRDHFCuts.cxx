@@ -543,23 +543,14 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
     }
 
-    // force recomputation of TOF Nsigma with tune-on-data to have latest development of tail parametrisation in old AODs
-    if(isMC) {
-      for(Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
-        AliVTrack* track=dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
-        if(!track || track->GetTOFsignalTunedOnData() > 99999) continue;
-        track->SetTOFsignalTunedOnData(100000);
-      }
-    }
-    else { // apply TPC postcalibration
+    if(!isMC) { // apply TPC postcalibration
       if(fEnableNsigmaTPCDataCorr) {
-
         Bool_t isPass1 = kFALSE;
         TTree *treeAOD = inputHandler->GetTree();
         TString currentFile = treeAOD->GetCurrentFile()->GetName();
         if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
           isPass1 = kTRUE;
-
+        AliInfo(Form("Path used to load correct TPC PID postcalibrations: %s", currentFile.Data()));
         fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr,isPass1);
       }
     }

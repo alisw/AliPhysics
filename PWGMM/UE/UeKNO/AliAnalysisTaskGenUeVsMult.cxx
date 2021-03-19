@@ -107,6 +107,7 @@ const Char_t * NameOfEstimtr[4] = {"Eta08","V0M","V0A","Eta10"};
 
 
 const Int_t NchNBins = 100;
+const Int_t nMultiBins=500;
 Double_t nchbiNs[NchNBins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
 
 const Int_t PtNBinS = 36;
@@ -302,10 +303,18 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
 			pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",Nameofregions[i]),"",PtNBinSL,PtNBinS1L);
 			fOutputList->Add(pSumPtTrue[i]);
 		}
+    
+    Double_t MultiBins[nMultiBins+1]={0x0};
+    for(Int_t i=0;i<nMultiBins;++i){
+        MultiBins[i]=i*1.0-0.5;
+    }
+    MultiBins[nMultiBins]=499.5;
+    
+    
     for(Int_t i=0; i<4; ++i){
 
         fMult[i] = 0;
-        fMult[i] = new TH1D(Form("fMult_%s",NameOfEstimtr[i]),Form("%s; Nch; #eta",NameOfEstimtr[i]),700,-0.5,699.5);
+        fMult[i] = new TH1D(Form("fMult_%s",NameOfEstimtr[i]),Form("%s; Nch; #eta",NameOfEstimtr[i]),nMultiBins, MultiBins);
         fOutputList->Add(fMult[i]);
 
     }
@@ -316,15 +325,15 @@ void AliAnalysisTaskGenUeVsMult::UserCreateOutputObjects()
       //  for(Int_t i_pid=0; i_pid<12; ++i_pid){
 
             fHistPtLeadingVsNchNS[i_est]=0;
-            fHistPtLeadingVsNchNS[i_est]=new TH3D(Form("fHistPtLeadingVsNchNS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution NS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),NchNBins,nchbiNs,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+            fHistPtLeadingVsNchNS[i_est]=new TH3D(Form("fHistPtLeadingVsNchNS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution NS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
             fOutputList->Add(fHistPtLeadingVsNchNS[i_est]);
 
             fHistPtLeadingVsNchAS[i_est]=0;
-            fHistPtLeadingVsNchAS[i_est]=new TH3D(Form("fHistPtLeadingVsNchAS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution AS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),NchNBins,nchbiNs,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+            fHistPtLeadingVsNchAS[i_est]=new TH3D(Form("fHistPtLeadingVsNchAS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution AS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
              fOutputList->Add(fHistPtLeadingVsNchAS[i_est]);
 
             fHistPtLeadingVsNchTS[i_est]=0;
-            fHistPtLeadingVsNchTS[i_est]=new TH3D(Form("fHistPtLeadingVsNchTS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution TS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),NchNBins,nchbiNs,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
+            fHistPtLeadingVsNchTS[i_est]=new TH3D(Form("fHistPtLeadingVsNchTS_%s",NameOfEstimtr[i_est]), Form("Generated #it{p}_{T} distribution TS_%s; %s;#it{p}_{T}^{leading};Nch",NameOfEstimtr[i_est],NameOfEstimtr[i_est]),nMultiBins, MultiBins,PtNBinSL,PtNBinS1L,PtNBinS,PtNBinS1);
             fOutputList->Add(fHistPtLeadingVsNchTS[i_est]);
 
        // }

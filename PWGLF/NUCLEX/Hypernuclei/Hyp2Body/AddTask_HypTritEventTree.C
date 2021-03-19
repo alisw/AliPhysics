@@ -16,9 +16,9 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7 
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("histograms", TList::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput2 =
-    mgr->CreateContainer("tree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+    mgr->CreateContainer("tree3LH", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput3 =
-    mgr->CreateContainer("tree_mc", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+    mgr->CreateContainer("tree3LHGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);

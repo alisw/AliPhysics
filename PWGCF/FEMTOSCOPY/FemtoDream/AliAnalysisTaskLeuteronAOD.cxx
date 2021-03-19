@@ -15,10 +15,9 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fIsMC(false),
   fIsHighMultV0(true),
   fBruteForceDebugging(false),
-  fDeuteronSideband(false),
-  fUpperSideband(false),
-  fLowerSideband(false),
-  fSignal(false),
+  fisSidebandSignal(false),
+  fisUpperSideband(false),
+  fisLowerSideband(false),
   fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
@@ -52,14 +51,13 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool DeuteronSideband, bool UpperSideband, bool LowerSideband, bool Signal):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
-  fDeuteronSideband(DeuteronSideband),
-  fUpperSideband(UpperSideband),
-  fLowerSideband(LowerSideband),
-  fSignal(Signal),
+  fisSidebandSignal(isSidebandSignal),
+  fisUpperSideband(isUpperSideband),
+  fisLowerSideband(isLowerSideband),
   fTrackBufferSize(2000),
   fEventList(nullptr),
   fProtonList(nullptr),
@@ -403,6 +401,8 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	double mean = 0.0;
 	double limit1 = 0.0;
 	double limit2 = 0.0;
+	double buffer = 0.0;
+	double SidebandWidth = 0.2;
 
 	static std::vector<AliFemtoDreamBasePart> ProtonParticles;
 	static std::vector<AliFemtoDreamBasePart> AntiprotonParticles;
@@ -442,33 +442,35 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  if(fTrackCutsPart3->isSelected(fTrack)){
 
 	    // deuterons (sideband analysis)
-	    if(fDeuteronSideband){
+	    if((fisSidebandSignal == true) || (fisLowerSideband == true) || (fisUpperSideband == true)){
 
 	      mass2 = CalculateMassSqTOF(fTrack); 
 	      pT = fTrack->GetPt();
 	      mean = GetDeuteronMass2Mean_pp(pT);
 
 	      // upper sideband
-	      if(fUpperSideband){
+	      if(fisUpperSideband){
 
-		limit1 = GetLimit(pT,mean,+1,0.24);
-		limit2 = GetLimit(pT,limit1,+1,0.24);
+		limit1 = GetLimit(pT,mean,+1,0.30,0.009);
+		buffer = GetLimit(pT,mean,+1,0.24,0.0065);
+		limit2 = GetLimit(pT,buffer,+1,SidebandWidth,0.0065);
 
 	      }
 
 	      // lower sideband
-	      if(fLowerSideband){
+	      if(fisLowerSideband){
 
-		limit2 = GetLimit(pT,mean,-1,0.30);
-		limit1 = GetLimit(pT,limit2,-1,0.30);
+		limit2 = GetLimit(pT,mean,-1,0.36,0.009);
+		buffer = GetLimit(pT,mean,-1,0.30,0.0065);
+		limit1 = GetLimit(pT,buffer,-1,SidebandWidth,0.0065);
 
 	      }
 
 	      // signal
-	      if(fSignal){
+	      if(fisSidebandSignal){
 
-		limit1 = GetLimit(pT,mean,-1,0.30);
-		limit2 = GetLimit(pT,mean,+1,0.24);
+		limit1 = GetLimit(pT,mean,-1,0.30,0.009);
+		limit2 = GetLimit(pT,mean,+1,0.24,0.009);
 
 	      }
 
@@ -493,33 +495,35 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  if(fTrackCutsPart4->isSelected(fTrack)){
 
 	    // antideuterons (sideband only)
-	    if(fDeuteronSideband){
+	    if((fisSidebandSignal == true) || (fisLowerSideband == true) || (fisUpperSideband == true)){
 
 	      mass2 = CalculateMassSqTOF(fTrack); 
 	      pT = fTrack->GetPt();
 	      mean = GetAntideuteronMass2Mean_pp(pT);
 
 	      // upper sideband
-	      if(fUpperSideband){
+	      if(fisUpperSideband){
 
-		limit1 = GetLimit(pT,mean,+1,0.24);
-		limit2 = GetLimit(pT,limit1,+1,0.24);
+		limit1 = GetLimit(pT,mean,+1,0.30,0.009);
+		buffer = GetLimit(pT,mean,+1,0.24,0.0065);
+		limit2 = GetLimit(pT,buffer,+1,SidebandWidth,0.0065);
 
 	      }
 
 	      // lower sideband
-	      if(fLowerSideband){
+	      if(fisLowerSideband){
 
-		limit2 = GetLimit(pT,mean,-1,0.30);
-		limit1 = GetLimit(pT,limit2,-1,0.30);
+		limit2 = GetLimit(pT,mean,-1,0.36,0.009);
+		buffer = GetLimit(pT,mean,-1,0.30,0.0065);
+		limit1 = GetLimit(pT,buffer,-1,SidebandWidth,0.0065);
 
 	      }
 
 	      // signal
-	      if(fSignal){
+	      if(fisSidebandSignal){
 
-		limit1 = GetLimit(pT,mean,-1,0.30);
-		limit2 = GetLimit(pT,mean,+1,0.24);
+		limit1 = GetLimit(pT,mean,-1,0.30,0.009);
+		limit2 = GetLimit(pT,mean,+1,0.24,0.009);
 
 	      }
 
@@ -638,7 +642,7 @@ Double_t AliAnalysisTaskLeuteronAOD::GetDeuteronMass2Mean_pp(float pT){
 }
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign, double offset){
+Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign, double offset, double lastpar){
 
   TF1 *fit = new TF1("fit","[0] + ([1] *([2] + ([3]*(x)) + ([4]*(x)*(x)) + ([5]*(x)*(x)*(x))))",1.0,4.0);
   fit->FixParameter(0,mean);
@@ -646,7 +650,7 @@ Double_t AliAnalysisTaskLeuteronAOD::GetLimit(float pT, double mean, double sign
   fit->FixParameter(2,offset);
   fit->FixParameter(3,0.003);
   fit->FixParameter(4,0.002);
-  fit->FixParameter(5,0.009);
+  fit->FixParameter(5,lastpar);
 
   Double_t value = fit->Eval(pT);
   fit->Delete();

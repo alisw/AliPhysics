@@ -70,7 +70,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   AliAnalysisTaskEmcalJet("AliAnalysisHFjetTagHFE", kTRUE),
   fVevent(0),
   fMultSelection(0),
-  ftrack(0),
+  fMultiEstimatorAvg(0),
+	ftrack(0),
   fCaloClusters(0),
   fMCheader(0),
   fpidResponse(0),
@@ -93,7 +94,6 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   NembMCpi0(0),
   NembMCeta(0),
   NpureMCproc(0),
-  Nref(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -252,7 +252,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   iSSlong(kFALSE),
   fPtHardMax(0.0),
   fzvtx_Ntrkl(0),
-  fzvtx_Ntrkl_Corr(0)
+  fzvtx_Ntrkl_Corr(0),
+	
+//======parameter============
+ fNref(0)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -283,6 +286,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fVevent(0),
   fMultSelection(0),
+	fMultiEstimatorAvg(0),
   ftrack(0),
   fCaloClusters(0),
   fMCheader(0),
@@ -306,7 +310,6 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   NembMCpi0(0),
   NembMCeta(0),
   NpureMCproc(0),
-  Nref(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -465,7 +468,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   iSSlong(kFALSE),
   fPtHardMax(0.0),
   fzvtx_Ntrkl(0),
-  fzvtx_Ntrkl_Corr(0)
+  fzvtx_Ntrkl_Corr(0),
+	
+//======parameter============
+  fNref(0)
   //fmcData(kFALSE)
 {
   // Standard constructor.
@@ -1335,18 +1341,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
 	      //============Tracklet correction=================
-	      /*
-		 Double_t correctednAcc   = nAcc;
-		 Double_t fRefMult = Nref;
-		 Double_t WeightNtrkl = -1.;
-		 Double_t WeightZvtx = -1.;
-		 TProfile* estimatorAvg;
-		 if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
-		 if(estimatorAvg){
-	      //correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
-	      }
-	      fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
-	      */
+
+				Double_t correctednAcc   = nAcc;
+				Double_t WeightNtrkl = -1.;
+				Double_t WeightZvtx = -1.;
+				TProfile* estimatorAvg;
+				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
+				if(estimatorAvg){
+						correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fNref));
+				}
+				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
+
       }
 
 
@@ -2905,6 +2910,10 @@ void AliAnalysisHFjetTagHFE::dJetHad(AliAODTrack *asstrack, Double_t jetpT, Doub
       }
 }
 
+TProfile* AliAnalysisHFjetTagHFE::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
+		return fMultiEstimatorAvg;
+}
 
 //________________________________________________________________________
 void AliAnalysisHFjetTagHFE::Terminate(Option_t *) 

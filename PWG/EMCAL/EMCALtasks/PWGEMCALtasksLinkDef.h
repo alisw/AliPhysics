@@ -47,6 +47,7 @@
 #pragma link C++ class  AliEmcalCorrectionClusterizer+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
 #pragma link C++ class  AliEmcalCorrectionClusterNonLinearityMCAfterburner+;
+#pragma link C++ class  AliEmcalCorrectionClusterLowEnergyEfficiency+;
 #pragma link C++ class  AliEmcalCorrectionClusterExotics+;
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;

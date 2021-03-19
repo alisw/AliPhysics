@@ -105,6 +105,11 @@ void AliHFMLVarHandler::SetIsSignalWoQuark(bool isSignalWoQuark) {
         fCandType &= ~kSignalWoQuark;
 }
 
+void AliHFMLVarHandler::SetGlobalEventVariables(AliAODEvent* event) {
+    if(fEnableNtracklets)
+        fNtracklets = static_cast<int>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(event,-1.,1.));
+}
+
 //________________________________________________________________
 void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("cand_type", &fCandType);
@@ -119,7 +124,9 @@ void AliHFMLVarHandler::AddCommonDmesonVarBranches() {
     fTreeVar->Branch("dca", &fDCA);
     if(fEnableBMotherPt)
         fTreeVar->Branch("pt_B", &fPtBMother);
-} 
+    if(fEnableBMotherPDG)
+        fTreeVar->Branch("pdg_B", &fPDGBMother);
+}
 
 //________________________________________________________________
 void AliHFMLVarHandler::AddSingleTrackBranches() {
@@ -195,6 +202,12 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
             }
         }
     }
+}
+
+//________________________________________________________________
+void AliHFMLVarHandler::AddGlobalEventVarBranches() {
+    if(fEnableNtracklets)
+        fTreeVar->Branch("n_trkl", &fNtracklets);
 }
 
 //________________________________________________________________

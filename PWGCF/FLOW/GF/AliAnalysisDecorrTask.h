@@ -66,6 +66,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Fill histograms for weights calculations
         Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
         Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
+        void                    SetUseWeightsOne(Bool_t useOne) { fUseWeightsOne = useOne; }
         void                    SetCurrSystFlag(int sys) { fCurrSystFlag = sys; }
         //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
         void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
@@ -264,6 +265,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Int_t                   fPhiBinNum;
         Bool_t                  fUseWeights3D;
         Bool_t                  fUseOwnWeights;
+        Bool_t                  fUseWeightsOne;
         int                     fCurrSystFlag;
         Bool_t                  fFillWeights;
         Int_t                   fNumSamples;        //Number of samples for bootstrapping
@@ -285,7 +287,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH2D*                   fhQAEventsfMultTPCvsTOF;    //!
         TH2D*                   fhQAEventsfMultTPCvsESD;    //!
 
-        ClassDef(AliAnalysisDecorrTask, 1);
+        ClassDef(AliAnalysisDecorrTask, 2);
 };
 
 #endif

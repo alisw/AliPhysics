@@ -12,9 +12,19 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   Int_t       leadhadtype        = 0,
   const char *suffix             = "",
   Bool_t     iMC                 = kFALSE,
-  Bool_t     iNarrowEta          = kFALSE
+  Bool_t     iNarrowEta          = kFALSE,
+	TString estimatorFilename = "alien:///alice/cern.ch/user/m/meshita/Multiplicity_pp13/estimator.root",
+	Double_t nref = 12
+	
 )
-{  
+{ 
+	 TFile *fEstimator = TFile::Open(estimatorFilename.Data());
+	 if(!fEstimator){
+			 return 0x0;
+	 }
+
+	 TProfile *multEstimatorAvgMB;
+	  multEstimatorAvgMB = (TProfile*)(fEstimator->Get("Trkl_mean"))->Clone("multEstimatorAvgMB");
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -97,7 +107,10 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   }
 
   AliAnalysisHFjetTagHFE* jetTask = new AliAnalysisHFjetTagHFE(name);
-  jetTask->SetVzRange(-10,10);
+  jetTask->SetMultiProfileLHC16(multEstimatorAvgMB);
+	jetTask->SetNref(nref);
+
+	jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
   Double_t JetEta = 0.9-jetradius;
@@ -169,7 +182,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
      
       if (jetContMC) {
       //jetCont->SetRhoName(nrho);
-      //if(jetradius==0.3)jetareacut=0.2;
+       //if(jetradius==0.3)jetareacut=0.2;
       jetContMC->SetJetAreaCut(jetareacut);
       jetContMC->SetJetPtCut(jetptcut);
       jetContMC->ConnectParticleContainer(trackContMC);

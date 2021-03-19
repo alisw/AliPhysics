@@ -1,4 +1,4 @@
-AliAnalysisTaskQuarkoniumTreeMC *AddTaskQuarkoniumTreeMC_Grid(Int_t run, TString resonance){
+AliAnalysisTaskQuarkoniumTreeMC *AddTaskQuarkoniumTreeMC_Grid(TString resonance){
 
 //****************************************************************************************
 // Add task class.
@@ -17,8 +17,8 @@ AliAnalysisTaskQuarkoniumTreeMC *AddTaskQuarkoniumTreeMC_Grid(Int_t run, TString
    }   
    TString fnameout_norun;
    TString fnameout;
-   fnameout_norun = "MC%sTree_%d.root";
-   fnameout.Form(fnameout_norun.Data(), resonance.Data(),run);
+   fnameout_norun = "MC%sTree.root";
+   fnameout.Form(fnameout_norun.Data(), resonance.Data());
    printf("Fnameout = %s\n",fnameout.Data());
  
    

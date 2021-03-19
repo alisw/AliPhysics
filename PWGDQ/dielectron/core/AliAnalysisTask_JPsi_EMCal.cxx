@@ -23,7 +23,7 @@
 //	    Authors 							                          //
 //		                                                              //
 //		Cristiane Jahnke		(cristiane.jahnke@cern.ch)		      //
-//      27 February, 2021                                           //
+//                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
 #include "TChain.h"
@@ -40,7 +40,6 @@
 #include <TRandom3.h>
 #include "TProfile.h"
 #include "TProfile2D.h"
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -98,6 +97,12 @@
 #include "AliESDUtils.h"
 #include "AliAnalysisUtils.h"
 
+//trigger simulation
+//for trigger simulation
+#include "AliEmcalTriggerDecisionContainer.h"
+#include "AliAnalysisTaskEmcalTriggerSelection.h"
+#include "AliEmcalTriggerMakerTask.h"
+
 //______________________________________________________________________
 
 //______________________________________________________________________
@@ -108,6 +113,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
   : AliAnalysisTaskSE(name)
 
 ,fIsMC(0)
+,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fIs_sys(kTRUE)
@@ -488,6 +494,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTask_JPsi_EMCal")
 
 ,fIsMC(0)
+,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fIs_sys(kTRUE)
@@ -941,7 +948,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 //Store the number of events
 	//Define the histo
-	fNevent = new TH1F("fNevent","Number of Events",30,-0.5,29.5);
+	fNevent = new TH1F("fNevent","Number of Events",35,-0.5,34.5);
     //fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
     
    
@@ -1535,6 +1542,21 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	}
 	
 	fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+    
+    if(fIsMC && fIsTriggerSimulation){
+        //printf("Inside trigger decision - beginning \n");
+        auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+        bool eg1 = triggerdecision->IsEventSelected("EG1"),
+        dg1 = triggerdecision->IsEventSelected("DG1"),
+        eg2 = triggerdecision->IsEventSelected("EG2"),
+        dg2 = triggerdecision->IsEventSelected("DG2");
+        
+        //printf("Inside trigger decision - end \n");
+        if(eg1 || dg1 )fNevent->Fill(34);
+        if(eg2 || dg2 )fNevent->Fill(33);
+    }
+    
+    
 	
 	if(!fVevent) 
 	{
@@ -2350,11 +2372,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                     if(cphi<3.9){
                         fEtaPhi_emcal->Fill(cphi,ceta);
                         fECluster_pure_emcal->Fill(clust->E());
-                    
                     }
-				
                     //dcal
-                
                     if(cphi>=3.9){
                         fEtaPhi_dcal->Fill(cphi,ceta);
                         fECluster_pure_dcal->Fill(clust->E());
@@ -3228,8 +3247,9 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 if(cphi > 4.53 && cphi < 5.708){
                                     fECluster_dcal[2]->Fill(fClus2->E());
                                 }
-                                fIsTrack2Emcal=kTRUE;
                             }
+                            
+                            fIsTrack2Emcal=kTRUE;
                         }
 					}
 					

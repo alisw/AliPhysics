@@ -64,6 +64,9 @@ public:
   void SetMultiplicityBins(TArrayI *ar){fNCenBin=ar->GetSize() ; fCenBinEdges.Set(ar->GetSize(),ar->GetArray());} //for pp: 
   void SetNonLinearity(Double_t a=1., Double_t b=0., Double_t c=1, Double_t d=0., Double_t e=1)
   { fNonlinA=a; fNonlinB=b; fNonlinC=c; fNonlinD=d; fNonlinE=e;}
+  void SetEminCut(Float_t emin=0.1){fEminCut=emin;}
+  void SetTimeEffCut(bool c){fDefTof=c;}
+  void SetUnsmear(Double_t a=1., Double_t b=0.){ fUnsmA=a; fUnsmB=b;}
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
   void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   void SetJetPthardRatio(Float_t ratio=2.5){fJetPtHardFactor=ratio;}
@@ -71,7 +74,7 @@ protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
   Int_t   GetFiducialArea(const Float_t * pos)const ;                           //what kind of fiducial area hit the photon
-  Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2) const; //Check MC genealogy; return PDG of parent
+  Int_t   IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2,Int_t &iGrandPa) const; //Check MC genealogy; return PDG of parent
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   Double_t  InPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
@@ -86,11 +89,13 @@ protected:
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   Double_t TOFCutEff(Double_t x );
   Double_t NonLinearity(Double_t e){ return e*fNonlinA*(1.- fNonlinB*TMath::Exp(-e*fNonlinC))*(1.- fNonlinD*TMath::Exp(-e*fNonlinE)); } 
-  
+  Double_t Unsmear(Double_t e, Double_t eMC) ;
   Bool_t   SelectCentrality(AliVEvent * event) ;
   Double_t CalculateSphericity() ;
   Double_t CalculateSpherocity() ;
   Bool_t AcceptJJevent() ;
+  Double_t DPMJETKCorr(Double_t pt) ;
+  Double_t DPMJETpCorr(Double_t pt) ;
   
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
@@ -132,6 +137,7 @@ private:
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
   Bool_t fIsMCWithPileup; //Special MC production with pileup
+  Bool_t fDefTof;         // default tof cut eff param or alternative to sys error estimate
   Double_t fRP;           //! Reaction plane orientation
   Float_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   
@@ -142,12 +148,15 @@ private:
   Float_t fPhimin ;             //full calorimeter
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
+  Float_t fEminCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights in MC
   Double_t fNonlinA;
   Double_t fNonlinB;
   Double_t fNonlinC;
   Double_t fNonlinD;
   Double_t fNonlinE;
+  Double_t fUnsmA ;
+  Double_t fUnsmB ;
   Int_t   fNPID ;               // Number of PID cuts
   mcType  fMCType ;             // Type of MC production: full, single g,pi0,eta,
   cutType fCutType;             // Type of cluster cuts used in analysis
@@ -167,7 +176,14 @@ private:
   TH1F * fhPiIsolation[20][10] ;  //!
   TH2F * fhReTruePi0[3][10][8];   //! Real, true pi0: (Emin cut, Centrality, PID cut)
   TH2F * fhReTrueEta[3][10][8];   //! Real, true eta: (Emin cut, Centrality, PID cut)
-  
+  TH2F * fhReSingleTruePi0[3][8];
+  TH2F * fhReSingleTruePi0K0s[3][8];
+  TH2F * fhReSingleTruePi0Kpm[3][8];
+  TH2F * fhReSingleTruePi0Nbar[3][8];
+  TH2F * fhReSingleTruePi0K0sC[3][8];
+  TH2F * fhReSingleTruePi0KpmC[3][8];
+  TH2F * fhReSingleTruePi0NbarC[3][8];
+
   TH2F * fhQAAllEpartn ;    //!
   TH2F * fhQAAllzpartn ;    //!
   TH2F * fhQAAllxpartn ;    //!

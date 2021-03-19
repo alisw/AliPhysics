@@ -136,4 +136,5 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
-install(DIRECTORY GJNtuples/macros          DESTINATION  PWGGA/NtuplizerTask/GJNtuples)
+#install(DIRECTORY GJNtuples/macros          DESTINATION  PWGGA/NtuplizerTask/GJNtuples)
+install(DIRECTORY GJNtuples          DESTINATION  PWGGA/NtuplizerTask)

@@ -53,6 +53,7 @@
 ///                  kApprox --> no cut on y(D) and normalisation ot xsec of B in |y|<0.5
 ///                  kAccurate --> generate B in |yB|<1, cut on |yD|<0.5, count B in |yB|<0.5 for normalisation to xsec
 ///   writeTree = flag to control writing of Tree of decay kinematics
+///   enableXib = flag to enable Xib decays to check BRs of Xib->Hc. They do not modify the standard b-hadron FF, and Xib FF(b->Xib) are always assumed to be 0
 
 enum dec
 {
@@ -97,12 +98,13 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
 		      TString fileNameFONLLdstar="FONLL-Dstar-dsdpt-sqrts5020-100GeV-50MeVbins.txt",
 		      Int_t opt4ff=kppbar,
 		      Int_t optForNorm=kAccurate,
-		      Bool_t writeTree=kFALSE){
+		      Bool_t writeTree=kFALSE,
+              Bool_t enableXib=kFALSE){
 
-  const Int_t nBeautyHadSpecies=4;
-  Int_t pdgArrB[nBeautyHadSpecies]={511,521,531,5122};
-  TString bhadrname[nBeautyHadSpecies]={"B0","Bplus","Bs","Lb"};
-  Double_t fracB[4]={0.408,0.408,0.100,0.084};
+  const Int_t nBeautyHadSpecies=6;
+  Int_t pdgArrB[nBeautyHadSpecies]={511,521,531,5122,5132,5232};
+  TString bhadrname[nBeautyHadSpecies]={"B0","Bplus","Bs","Lb","Xibminus","Xib0"};
+  Double_t fracB[nBeautyHadSpecies]={0.408,0.408,0.100,0.084,0.,0.};
   TF1 *fracU[15];
   TF1 *fracBs[15];
   TF1 *fracLb[15];
@@ -114,12 +116,16 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     fracB[1]=0.344;
     fracB[2]=0.115;
     fracB[3]=0.198;
+    fracB[4]=0.;
+    fracB[5]=0.;
   }else if(opt4ff==kee){
     // e+e- fractions from PDG 2020 https://pdg.lbl.gov/2020/tables/contents_tables.html
     fracB[0]=0.408;
     fracB[1]=0.408;
     fracB[2]=0.100;
     fracB[3]=0.084;
+    fracB[4]=0.;
+    fracB[5]=0.;
   }
   else if(opt4ff>=kLHCbCent){
     // pt-dependent fractions - evaluate when b hadron pt is calculated in the gen. loop
@@ -128,6 +134,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     fracB[1]=0.;
     fracB[2]=0.;
     fracB[3]=0.;    
+    fracB[4]=0.;    
+    fracB[5]=0.;    
 
     // FF uncertainty defined as the envelope of the variations of the fit parameters in LHCb paper
     // ipar=0 : central
@@ -197,11 +205,11 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     }
   }
 
-  const Int_t nCharmHadSpecies=5;
-  Int_t pdgArrC[nCharmHadSpecies]={421,411,431,4122,413};
-  TString chadrname[nCharmHadSpecies]={"D0","Dplus","Ds","Lc","Dstar"};
-  Double_t fracC[nCharmHadSpecies]={0.542,0.225,0.092,0.057,0.236}; // Values from e+e- ARXIV:1404.3888 (D0, D+, Ds, Lc, D*+)
-  Int_t cols[nCharmHadSpecies]={2,4,kGreen+1,kMagenta+1,kYellow+1};
+  const Int_t nCharmHadSpecies=7;
+  Int_t pdgArrC[nCharmHadSpecies]={421,411,431,4122,413,4232,4132};
+  TString chadrname[nCharmHadSpecies]={"D0","Dplus","Ds","Lc","Dstar","Xicplus","Xic0"};
+  Double_t fracC[nCharmHadSpecies]={0.542,0.225,0.092,0.057,0.236,0.,0.}; // Values from e+e- ARXIV:1404.3888 (D0, D+, Ds, Lc, D*+)
+  Int_t cols[nCharmHadSpecies]={kRed+1,kAzure+4,kGreen+2,kMagenta+1,kYellow+1,kOrange+7,kBlack};
   
   Int_t nPtBins=2001;
   Double_t ptmin=0.;
@@ -280,7 +288,7 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     }
   }
 
-  
+
   TH1D** hnonpromptDorigin=new TH1D*[nCharmHadSpecies];
   TH1D** hnonpromptDpt=new TH1D*[nCharmHadSpecies];
   TH2D** hnonpromptDptByOrigin=new TH2D*[nCharmHadSpecies];
@@ -412,6 +420,20 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
       pdgB=pdgArrB[3];
       iBhad=3;
     }
+    Double_t rndXib = 999.;
+    if(enableXib) {
+      // for a small fraction substitute "standard" Bhadrons with Xib- or Xib0 to check BRs
+      rndXib=gener->Rndm();
+      if(rndXib < 0.05) {
+        iBhad=4;
+        pdgB=pdgArrB[4];
+      }
+      else if(rndXib >= 0.05 && rndXib < 0.10) {
+        iBhad=5;
+        pdgB=pdgArrB[5];
+      }
+    }
+
     hBhadDau[iBhad]->Fill(-1);
     
     Double_t mass=db->GetParticle(pdgB)->Mass();
@@ -425,8 +447,8 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
     Double_t E=TMath::Sqrt(mass*mass+pB*pB);
     vec->SetPxPyPzE(px,py,pz,E);
     pdec->Decay(pdgB,vec);
-    if(optForNorm==kApprox) countB+=1.;
-    else if(optForNorm==kAccurate && TMath::Abs(yB)<0.5) countB+=1.;
+    if(optForNorm==kApprox && rndXib > 0.1) countB+=1.;
+    else if(optForNorm==kAccurate && TMath::Abs(yB)<0.5 && rndXib > 0.1) countB+=1.;
     Int_t nentries = pdec->ImportParticles(array);
     //    TParticle* bmes=(TParticle*)array->At(0);
 
@@ -514,9 +536,10 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   TH1D* hnonpromptDsKKpipt=(TH1D*)hnonpromptDpt[2]->Clone("hnonpromptDsKKpipt");
   hnonpromptDsKKpipt->Scale(0.0227);
   hnonpromptDsKKpipt->GetYaxis()->SetTitle("d#sigma/dp_{T}xBR (#mub/GeV)");
-    
+
+  gStyle->SetPadLeftMargin(0.14);
   TCanvas* c1=new TCanvas("c1","B mother",1500,900);
-  c1->Divide(2,2);
+  c1->Divide(4,2);
   c1->cd(1);
   hnonpromptDorigin[0]->Draw();
   c1->cd(2);
@@ -525,6 +548,12 @@ void ComputeBtoDdecay(Int_t nGener=10000000,
   hnonpromptDorigin[2]->Draw();
   c1->cd(4);
   hnonpromptDorigin[3]->Draw();
+  c1->cd(5);
+  hnonpromptDorigin[4]->Draw();
+  c1->cd(6);
+  hnonpromptDorigin[5]->Draw();
+  c1->cd(7);
+  hnonpromptDorigin[6]->Draw();
 
   TString decayerName = "";
   if(decayer==kPythia6) decayerName="Pythia6";

@@ -33,6 +33,7 @@
 #include "AliAnalysisTaskAO2Dconverter.h"
 #include "AliVHeader.h"
 #include "COMMON/MULTIPLICITY/AliMultSelection.h"
+#include "limits.h"
 
 #include "AliESDCaloCells.h"
 #include "AliESDCaloTrigger.h"
@@ -67,9 +68,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2collinfo" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 Collision Info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -131,7 +132,7 @@ namespace
 } // namespace
 
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2collinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2bcinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
 #ifdef USE_TOF_CLUST
       ,
       tofClusters()
@@ -283,7 +284,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     skip_event = true;
   }
 
-  // Skip TPC pileup events if requested, but don't skip event since it may affect physics
+  // Check for TPC pileup events if requested, but don't skip event since it may affect physics
   if (fSkipTPCPileup && !fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
   {
     fHistPileupEvents->Fill(kPileupRejType[1], 1);
@@ -344,24 +345,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   if (!pvtx)
   {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
-  }
-  TString title = pvtx->GetTitle();
-
-  // bypass vertex selection for muon triggers
-  Bool_t applyVertexSelection = kTRUE;
-  if (fESD->GetFiredTriggerClasses().Contains("-MUON"))
-    applyVertexSelection = kFALSE; // MUON cluster
-  if (fESD->GetFiredTriggerClasses().Contains("-MUFAST"))
-    applyVertexSelection = kFALSE; // MUFAST cluster
-  if (fESD->GetFiredTriggerClasses().Contains("CMUP"))
-    applyVertexSelection = kFALSE; // MUON UPC including semiforward
-
-  if (applyVertexSelection)
-  {
-    if (pvtx->IsFromVertexer3D() || pvtx->IsFromVertexerZ())
-      return;
-    if (pvtx->GetNContributors() < 2)
-      return;
   }
 
   // Fill centrality QA plots
@@ -500,7 +483,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 {
   // Reset the event count
   fTFCount++;
-  fEventCount = 0;
+  fCollisionCount = 0;
+  fBCCount = 0;
   fTfInitialized = true;
 
   // Reset the offsets
@@ -533,8 +517,9 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tEvents->Branch("fCovYY", &collision.fCovYY, "fCovYY/F");
     tEvents->Branch("fCovYZ", &collision.fCovYZ, "fCovYZ/F");
     tEvents->Branch("fCovZZ", &collision.fCovZZ, "fCovZZ/F");
+    tEvents->Branch("fFlags", &collision.fFlags, "fFlags/s");
     tEvents->Branch("fChi2", &collision.fChi2, "fChi2/F");
-    tEvents->Branch("fNumContrib", &collision.fN, "fNumContrib/i");
+    tEvents->Branch("fNumContrib", &collision.fN, "fNumContrib/s");
     tEvents->Branch("fCollisionTime", &collision.fCollisionTime, "fCollisionTime/F");
     tEvents->Branch("fCollisionTimeRes", &collision.fCollisionTimeRes, "fCollisionTimeRes/F");
     tEvents->Branch("fCollisionTimeMask", &collision.fCollisionTimeMask, "fCollisionTimeMask/b");
@@ -562,15 +547,16 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->SetBasketSize("*", fBasketSizeEvents);
   }
   
-  // Associate branches for Run 2 info
-  TTree* tRun2CollInfo = CreateTree(kRun2CollInfo);
-  if (fTreeStatus[kRun2CollInfo]) {
-    tRun2CollInfo->Branch("fEventCuts", &run2collinfo.fEventCuts, "fEventCuts/I");
-    tRun2CollInfo->Branch("fCL0", &run2collinfo.fCL0, "fCL0/I");
-    tRun2CollInfo->Branch("fCL1", &run2collinfo.fCL1, "fCL1/I");
-    tRun2CollInfo->SetBasketSize("*", fBasketSizeEvents);
+  // Associate branches for Run 2 BC info
+  TTree* tRun2BCInfo = CreateTree(kRun2BCInfo);
+  if (fTreeStatus[kRun2BCInfo]) {
+    tRun2BCInfo->Branch("fEventCuts", &run2bcinfo.fEventCuts, "fEventCuts/i");
+    tRun2BCInfo->Branch("fTriggerMaskNext50", &run2bcinfo.fTriggerMaskNext50, "fTriggerMaskNext50/l");
+    tRun2BCInfo->Branch("fSPDClustersL0", &run2bcinfo.fSPDClustersL0, "fSPDClustersL0/s");
+    tRun2BCInfo->Branch("fSPDClustersL1", &run2bcinfo.fSPDClustersL1, "fSPDClustersL1/s");
+    tRun2BCInfo->SetBasketSize("*", fBasketSizeEvents);
   }
-  
+
   // Associate branches for the three track trees
   TTree* tTracks = CreateTree(kTracks);
   if (fTreeStatus[kTracks]) {
@@ -874,12 +860,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 
 void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 {
-  // Event counter
-  Int_t eventID = fEventCount++;
-
-  // Primary vertex
-  const AliESDVertex *pvtx = fESD->GetPrimaryVertex();
-
   // Configuration of the PID response
   AliPIDResponse *PIDResponse = (AliPIDResponse *)((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
@@ -900,65 +880,104 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     PIDResponse->SetCurrentMCEvent(MCEvt); //Set The PID response on the current MC event
   }
 
-  //---------------------------------------------------------------------------
-  // Collision data
-
   // Adjust start indices for this event in all trees by adding the number of entries of the previous event
-  for (auto i = 0; i < kTrees; ++i)
+  for (auto i = 0; i < kTrees; ++i) {
     eventextra.fStart[i] += eventextra.fNentries[i];
-
-  eventextra.fNentries[kEvents] = 1; // one entry per vertex
-  collision.fIndexBCs = eventID;
-  collision.fPosX = AliMathBase::TruncateFloatFraction(pvtx->GetX(), mCollisionPosition);
-  collision.fPosY = AliMathBase::TruncateFloatFraction(pvtx->GetY(), mCollisionPosition);
-  collision.fPosZ = AliMathBase::TruncateFloatFraction(pvtx->GetZ(), mCollisionPosition);
-
-  Double_t covmatrix[6];
-  pvtx->GetCovMatrix(covmatrix);
-
-  collision.fCovXX = AliMathBase::TruncateFloatFraction(covmatrix[0], mCollisionPositionCov);
-  collision.fCovXY = AliMathBase::TruncateFloatFraction(covmatrix[1], mCollisionPositionCov);
-  collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
-  collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
-  collision.fCovYZ = AliMathBase::TruncateFloatFraction(covmatrix[4], mCollisionPositionCov);
-  collision.fCovZZ = AliMathBase::TruncateFloatFraction(covmatrix[5], mCollisionPositionCov);
-
-  collision.fChi2 = AliMathBase::TruncateFloatFraction(pvtx->GetChi2(), mCollisionPositionCov);
-  collision.fN = (pvtx->GetNDF() + 3) / 2;
-
-  Float_t eventTime[10];
-  Float_t eventTimeRes[10];
-  Double_t eventTimeWeight[10];
-
-  for (Int_t i = 0; i < TOFResponse.GetNmomBins(); i++)
-  {
-    if (i >= 10)
-      AliFatal("Index is too high!");
-    Float_t mom = (TOFResponse.GetMinMom(i) + TOFResponse.GetMaxMom(i)) / 2.f;
-    eventTime[i] = TOFResponse.GetStartTime(mom) * 1.e-3;       // ps to ns
-    eventTimeRes[i] = TOFResponse.GetStartTimeRes(mom) * 1.e-3; // ps to ns
-    eventTimeWeight[i] = 1. / (eventTimeRes[i] * eventTimeRes[i]);
-
-    //PH The part below is just a place holder
-    if (TOFResponse.GetStartTimeMask(mom) & 0x1)
-      SETBIT(collision.fCollisionTimeMask, 0);
-    else
-      CLRBIT(collision.fCollisionTimeMask, 0);
-    //
-    if (TOFResponse.GetStartTimeMask(mom) & 0x2)
-      SETBIT(collision.fCollisionTimeMask, 1);
-    else
-      CLRBIT(collision.fCollisionTimeMask, 1);
-    //
-    if (TOFResponse.GetStartTimeMask(mom) & 0x3)
-      SETBIT(collision.fCollisionTimeMask, 2);
-    else
-      CLRBIT(collision.fCollisionTimeMask, 2);
+    eventextra.fNentries[i] = 0;
   }
 
-  // Recalculate unique event time and its resolution
-  collision.fCollisionTime = AliMathBase::TruncateFloatFraction(TMath::Mean(10, eventTime, eventTimeWeight), mCollisionPosition);                 // Weighted mean of times per momentum interval
-  collision.fCollisionTimeRes = AliMathBase::TruncateFloatFraction(TMath::Sqrt(9. / 10.) * TMath::Mean(10, eventTimeRes), mCollisionPositionCov); // PH bad approximation
+  // Decide if vertex should be written
+  // Primary vertex
+  const AliESDVertex *pvtx = fESD->GetPrimaryVertex();
+  UChar_t vertexType = 0;
+
+  TString title(pvtx->GetTitle());
+  if (pvtx->IsFromVertexer3D()) {
+    vertexType = Run2Vertexer3D;
+  } else if (pvtx->IsFromVertexerZ()) {
+    vertexType = Run2VertexerZ;
+  } else if (title.Contains("VertexerTracks")) {
+    if (pvtx->GetNContributors() >= 2) {
+      vertexType = Run2VertexerTracks;
+      if (title.Contains("WithConstraint"))
+        vertexType |= Run2VertexerTracksWithConstraint;
+      if (title.Contains("OnlyFitter"))
+        vertexType |= Run2VertexerTracksOnlyFitter;
+      if (title.Contains("MV"))
+        vertexType |= Run2VertexerTracksMultiVertex;
+    }
+  } else {
+    AliWarning(Form("Unknown vertexer type: %s", title.Data()));
+  }
+
+  Bool_t fillCollision = kFALSE;
+  if (vertexType > 0) {
+    fillCollision = kTRUE;
+    AliInfo(Form("Event with vertex %s and %d contributors: accepted as vertex type %d", title.Data(), pvtx->GetNContributors(), vertexType));
+  } else {
+    AliInfo(Form("Event with vertex %s and %d contributors: rejected", title.Data(), pvtx->GetNContributors()));
+  }
+
+  //---------------------------------------------------------------------------
+  // Collision data
+  if (fillCollision) 
+  {
+    eventextra.fNentries[kEvents] = 1; // one entry per vertex
+    collision.fIndexBCs = fBCCount;
+    collision.fPosX = AliMathBase::TruncateFloatFraction(pvtx->GetX(), mCollisionPosition);
+    collision.fPosY = AliMathBase::TruncateFloatFraction(pvtx->GetY(), mCollisionPosition);
+    collision.fPosZ = AliMathBase::TruncateFloatFraction(pvtx->GetZ(), mCollisionPosition);
+
+    Double_t covmatrix[6];
+    pvtx->GetCovMatrix(covmatrix);
+
+    collision.fCovXX = AliMathBase::TruncateFloatFraction(covmatrix[0], mCollisionPositionCov);
+    collision.fCovXY = AliMathBase::TruncateFloatFraction(covmatrix[1], mCollisionPositionCov);
+    collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
+    collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
+    collision.fCovYZ = AliMathBase::TruncateFloatFraction(covmatrix[4], mCollisionPositionCov);
+    collision.fCovZZ = AliMathBase::TruncateFloatFraction(covmatrix[5], mCollisionPositionCov);
+
+    collision.fFlags = vertexType;
+    collision.fChi2 = AliMathBase::TruncateFloatFraction(pvtx->GetChi2(), mCollisionPositionCov);
+    collision.fN = (pvtx->GetNContributors() > USHRT_MAX) ? USHRT_MAX : pvtx->GetNContributors();
+
+    Float_t eventTime[10];
+    Float_t eventTimeRes[10];
+    Double_t eventTimeWeight[10];
+
+    for (Int_t i = 0; i < TOFResponse.GetNmomBins(); i++)
+    {
+      if (i >= 10)
+        AliFatal("Index is too high!");
+      Float_t mom = (TOFResponse.GetMinMom(i) + TOFResponse.GetMaxMom(i)) / 2.f;
+      eventTime[i] = TOFResponse.GetStartTime(mom) * 1.e-3;       // ps to ns
+      eventTimeRes[i] = TOFResponse.GetStartTimeRes(mom) * 1.e-3; // ps to ns
+      eventTimeWeight[i] = 1. / (eventTimeRes[i] * eventTimeRes[i]);
+
+      //PH The part below is just a place holder
+      if (TOFResponse.GetStartTimeMask(mom) & 0x1)
+        SETBIT(collision.fCollisionTimeMask, 0);
+      else
+        CLRBIT(collision.fCollisionTimeMask, 0);
+      //
+      if (TOFResponse.GetStartTimeMask(mom) & 0x2)
+        SETBIT(collision.fCollisionTimeMask, 1);
+      else
+        CLRBIT(collision.fCollisionTimeMask, 1);
+      //
+      if (TOFResponse.GetStartTimeMask(mom) & 0x3)
+        SETBIT(collision.fCollisionTimeMask, 2);
+      else
+        CLRBIT(collision.fCollisionTimeMask, 2);
+    }
+
+    // Recalculate unique event time and its resolution
+    collision.fCollisionTime = AliMathBase::TruncateFloatFraction(TMath::Mean(10, eventTime, eventTimeWeight), mCollisionPosition);                 // Weighted mean of times per momentum interval
+    collision.fCollisionTimeRes = AliMathBase::TruncateFloatFraction(TMath::Sqrt(9. / 10.) * TMath::Mean(10, eventTimeRes), mCollisionPositionCov); // PH bad approximation
+
+    FillTree(kEvents);
+  }
 
   //---------------------------------------------------------------------------
   // BC data
@@ -971,63 +990,43 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     evtid = (ULong64_t(fESD->GetTimeStamp()) << 32) + ULong64_t((fESD->GetNumberOfTPCClusters() << 5) | (fESD->GetNumberOfTPCTracks()));
   }
   bc.fGlobalBC = evtid;
-
   bc.fTriggerMask = fESD->GetTriggerMask();
-  TString firedClasses = fESD->GetFiredTriggerClasses();
-  if (firedClasses.Contains("CINT7-B-NOPF-CENTNOTRD"))
-    bc.fTriggerMask |= 1ull << 50;
-  if (firedClasses.Contains("CCUP8-B-NOPF-CENTNOTRD"))
-    bc.fTriggerMask |= 1ull << 51;
-  if (firedClasses.Contains("CCUP9-B-NOPF-CENTNOTRD"))
-    bc.fTriggerMask |= 1ull << 52;
-  if (firedClasses.Contains("CMUP10-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 53;
-  if (firedClasses.Contains("CMUP11-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 54;
-  if (firedClasses.Contains("CINT7-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 55;
-  if (firedClasses.Contains("CMSL7-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 56;
-  if (firedClasses.Contains("CMLL7-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 57;
-  if (firedClasses.Contains("CMUL7-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 58;
-  if (firedClasses.Contains("CMSH7-B-NOPF-MUFAST"))
-    bc.fTriggerMask |= 1ull << 59;
-
+  // NOTE upper 64 bit of trigger classes stored few lines below in run2bcinfo.fTriggerMaskNext50
   FillTree(kBC);
   
   //---------------------------------------------------------------------------
-  // Run 2 information
+  // Run 2 BC information
+  run2bcinfo.fTriggerMaskNext50 = fESD->GetTriggerMaskNext50();
+  run2bcinfo.fSPDClustersL0 = (fESD->GetNumberOfITSClusters(0) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(0);
+  run2bcinfo.fSPDClustersL1 = (fESD->GetNumberOfITSClusters(1) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(1);
+  run2bcinfo.fEventCuts = 0;
+  
   // Get multiplicity selection
   AliMultSelection *multSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
   if (!multSelection)
     AliFatal("MultSelection not found in input event");
-
-  run2collinfo.fEventCuts=0; //No event selection passed, now check which passed
   
   if( multSelection->GetThisEventINELgtZERO() )
-    SETBIT (run2collinfo.fEventCuts, kINELgtZERO);
+    SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
   
   if( multSelection->GetThisEventIsNotPileupInMultBins() )
-    SETBIT (run2collinfo.fEventCuts, kPileupInMultBins);
+    SETBIT (run2bcinfo.fEventCuts, kPileupInMultBins);
   
   if( multSelection->GetThisEventHasNoInconsistentVertices() )
-    SETBIT (run2collinfo.fEventCuts, kConsistencySPDandTrackVertices);
+    SETBIT (run2bcinfo.fEventCuts, kConsistencySPDandTrackVertices);
   
   if( multSelection->GetThisEventPassesTrackletVsCluster() )
-    SETBIT (run2collinfo.fEventCuts, kINELgtZERO);
+    SETBIT (run2bcinfo.fEventCuts, kTrackletsVsClusters);
   
   if( fESD->GetPrimaryVertex()->GetNContributors()>0 )
-    SETBIT (run2collinfo.fEventCuts, kNonZeroNContribs);
+    SETBIT (run2bcinfo.fEventCuts, kNonZeroNContribs);
   
   if( multSelection->GetThisEventIsNotIncompleteDAQ() )
-    SETBIT (run2collinfo.fEventCuts, kIncompleteDAQ);
+    SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
   
-  run2collinfo.fCL0 = fESD->GetNumberOfITSClusters(0);
-  run2collinfo.fCL1 = fESD->GetNumberOfITSClusters(1);
+  // TODO add AliEventCuts information bits
   
-  FillTree(kRun2CollInfo);
+  FillTree(kRun2BCInfo);
   
   //---------------------------------------------------------------------------
   // MC kinematic tree
@@ -1182,7 +1181,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       AliVParticle *vpt = MCEvt->GetTrack(i);
       particle = vpt->Particle();
 
-      mcparticle.fIndexMcCollisions = eventID;
+      mcparticle.fIndexMcCollisions = fBCCount;
 
       //Get the kinematic values of the particles
       mcparticle.fPdgCode = particle->GetPdgCode();
@@ -1222,296 +1221,298 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // Track data
-
-  Int_t ntrk = fESD->GetNumberOfTracks();
-
   Int_t ntrk_filled = 0;    // total number of tracks filled per event
-  Int_t ntofcls_filled = 0; // total number of TOF clusters filled per event
-
-  for (Int_t itrk = 0; itrk < ntrk; itrk++)
+  Int_t ntracklet_filled = 0; // total number of tracklets filled per event
+  if (fillCollision)
   {
-    AliESDtrack *track = fESD->GetTrack(itrk);
-    //    if (!fTrackFilter.IsSelected(track))
-    //      continue;
+    Int_t ntrk = fESD->GetNumberOfTracks();
+    Int_t ntofcls_filled = 0; // total number of TOF clusters filled per event
 
-    tracks.fIndexCollisions = eventID;
-    tracks.fTrackType = TrackTypeEnum::Run2GlobalTrack;
-
-    tracks.fX = AliMathBase::TruncateFloatFraction(track->GetX(), mTrackX);
-    tracks.fAlpha = AliMathBase::TruncateFloatFraction(track->GetAlpha(), mTrackAlpha);
-
-    tracks.fY = track->GetY(); // no lossy compression
-    tracks.fZ = track->GetZ();
-    tracks.fSnp = AliMathBase::TruncateFloatFraction(track->GetSnp(), mtrackSnp);
-    tracks.fTgl = AliMathBase::TruncateFloatFraction(track->GetTgl(), mTrackTgl);
-    tracks.fSigned1Pt = AliMathBase::TruncateFloatFraction(track->GetSigned1Pt(), mTrack1Pt);
-
-    // Modified covariance matrix
-    // First sigmas on the diagonal
-    tracks.fSigmaY = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaY2()), mTrackCovDiag);
-    tracks.fSigmaZ = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaZ2()), mTrackCovDiag);
-    tracks.fSigmaSnp = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaSnp2()), mTrackCovDiag);
-    tracks.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaTgl2()), mTrackCovDiag);
-    tracks.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigma1Pt2()), mTrackCovDiag);
-    //
-    tracks.fRhoZY = (Char_t)(128. * track->GetSigmaZY() / tracks.fSigmaZ / tracks.fSigmaY);
-    tracks.fRhoSnpY = (Char_t)(128. * track->GetSigmaSnpY() / tracks.fSigmaSnp / tracks.fSigmaY);
-    tracks.fRhoSnpZ = (Char_t)(128. * track->GetSigmaSnpZ() / tracks.fSigmaSnp / tracks.fSigmaZ);
-    tracks.fRhoTglY = (Char_t)(128. * track->GetSigmaTglY() / tracks.fSigmaTgl / tracks.fSigmaY);
-    tracks.fRhoTglZ = (Char_t)(128. * track->GetSigmaTglZ() / tracks.fSigmaTgl / tracks.fSigmaZ);
-    tracks.fRhoTglSnp = (Char_t)(128. * track->GetSigmaTglSnp() / tracks.fSigmaTgl / tracks.fSigmaSnp);
-    tracks.fRho1PtY = (Char_t)(128. * track->GetSigma1PtY() / tracks.fSigma1Pt / tracks.fSigmaY);
-    tracks.fRho1PtZ = (Char_t)(128. * track->GetSigma1PtZ() / tracks.fSigma1Pt / tracks.fSigmaZ);
-    tracks.fRho1PtSnp = (Char_t)(128. * track->GetSigma1PtSnp() / tracks.fSigma1Pt / tracks.fSigmaSnp);
-    tracks.fRho1PtTgl = (Char_t)(128. * track->GetSigma1PtTgl() / tracks.fSigma1Pt / tracks.fSigmaTgl);
-
-    const AliExternalTrackParam *intp = track->GetInnerParam();
-    tracks.fTPCinnerP = AliMathBase::TruncateFloatFraction((intp ? intp->GetP() : 0), mTrack1Pt); // Set the momentum to 0 if the track did not reach TPC
-
-    // Compressing and reassigned flags. Keeping only the ones we need.
-    tracks.fFlags = 0x0;
-    if (track->GetStatus() & AliVTrack::kITSrefit)
-      tracks.fFlags |= TrackFlagsRun2Enum::ITSrefit;
-    if (track->GetStatus() & AliVTrack::kTPCrefit)
-      tracks.fFlags |= TrackFlagsRun2Enum::TPCrefit;
-
-    // add status bit if golden chi2 cut was passed
-    const AliESDVertex *vertex = (fESD->GetPrimaryVertex()) ? fESD->GetPrimaryVertex() : fESD->GetPrimaryVertexSPD();
-    bool goldenChi2Status = (vertex) ? (track->GetChi2TPCConstrainedVsGlobal(vertex) > 0. && track->GetChi2TPCConstrainedVsGlobal(vertex) < 36.) : false;
-    if (goldenChi2Status)
-      tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;
-
-    // Uppermost 4 bits contain PID hypothesis used during tracking
-    if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15)
-      tracks.fFlags |= track->GetPIDForTracking() << 28;
-
-    tracks.fITSClusterMap = track->GetITSClusterMap();
-    tracks.fTPCNClsFindable = track->GetTPCNclsF();
-
-    if ((int)tracks.fTPCNClsFindable - track->GetTPCNcls() >= -128)
-      tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
-    else
-      tracks.fTPCNClsFindableMinusFound = -128;
-
-    if ((int)tracks.fTPCNClsFindable - track->GetTPCCrossedRows() >= -128)
-      tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
-    else
-      tracks.fTPCNClsFindableMinusCrossedRows = -128;
-
-    tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
-
-    tracks.fTRDPattern = 0;
-    for (int i = 0; i < 6; i++)
-      if (track->GetTRDslice(i) > 0)
-        tracks.fTRDPattern |= 0x1 << i; // flag tracklet on this layer
-
-    tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
-    tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
-    tracks.fTRDChi2 = AliMathBase::TruncateFloatFraction(track->GetTRDchi2(), mTrackCovOffDiag);
-    tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(track->GetTOFchi2(), mTrackCovOffDiag);
-
-    tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
-    tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
-    tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
-    tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
-
-    // Speed of ligth in TOF units
-    const Float_t cspeed = 0.029979246f;
-    // PID hypothesis for the momentum extraction
-    const AliPID::EParticleType tof_pid = AliPID::kPion;
-    // Expected beta for such hypothesis
-    const Float_t exp_beta =
-        (track->GetIntegratedLength() /
-         TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed);
-
-    tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
-        AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
-            TMath::Sqrt(1. - (exp_beta * exp_beta)),
-        mTrack1Pt);
-
-    tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
-    tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
-
-    if (fTaskMode == kMC)
+    for (Int_t itrk = 0; itrk < ntrk; itrk++)
     {
-      // Separate tables (trees) for the MC labels
-      Int_t alabel = track->GetLabel();
-      // Find the modified label
-      Int_t klabel = kineIndex[TMath::Abs(alabel)];
-      mctracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
-      mctracklabel.fMcMask = 0;
-      // Use the ITS shared clusters to set the corresponding bits 0-6
-      UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
-      mctracklabel.fMcMask |= itsMask;
-      // Use the number of TPC shared clusters as number of TPC mismatches
-      // encode in bits 7-9 the values in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
-      const TBits *tpcShared = track->GetTPCSharedMapPtr();
-      UInt_t tpcCount = tpcShared->CountBits();
-      UShort_t tpcMask = 0;
-      while (tpcCount > 0)
-      {
-        tpcCount = tpcCount >> 1;
-        tpcMask++;
-      }
-      if (tpcMask > 7)
-        tpcMask = 7;
-      mctracklabel.fMcMask |= (tpcMask << 7);
-      // TRD (bit 10)
-      // We can also use labels per tracklet in the future
-      Int_t trdLabel = track->GetTRDLabel();
-      if (TMath::Abs(alabel) != TMath::Abs(trdLabel))
-        mctracklabel.fMcMask |= (0x1 << 10);
-      // TOF (bit 11)
-      Int_t tofLabel[3] = {-1};
-      track->GetTOFLabel(tofLabel);
-      // Check if at least one of the TOF hits matches the track label
-      if (!(TMath::Abs(alabel) == TMath::Abs(tofLabel[0]) || TMath::Abs(alabel) == TMath::Abs(tofLabel[1]) || TMath::Abs(alabel) == TMath::Abs(tofLabel[2])))
-        mctracklabel.fMcMask |= (0x1 << 11);
+      AliESDtrack *track = fESD->GetTrack(itrk);
+      //    if (!fTrackFilter.IsSelected(track))
+      //      continue;
 
-      if (alabel < 0 || klabel < 0)
-        mctracklabel.fMcMask |= (0x1 << 15);
+      tracks.fIndexCollisions = fCollisionCount;
+      tracks.fTrackType = TrackTypeEnum::Run2GlobalTrack;
 
-      FillTree(kMcTrackLabel);
-    }
+      tracks.fX = AliMathBase::TruncateFloatFraction(track->GetX(), mTrackX);
+      tracks.fAlpha = AliMathBase::TruncateFloatFraction(track->GetAlpha(), mTrackAlpha);
 
-#ifdef USE_TOF_CLUST
-    tofClusters.fTOFncls = track->GetNTOFclusters();
+      tracks.fY = track->GetY(); // no lossy compression
+      tracks.fZ = track->GetZ();
+      tracks.fSnp = AliMathBase::TruncateFloatFraction(track->GetSnp(), mtrackSnp);
+      tracks.fTgl = AliMathBase::TruncateFloatFraction(track->GetTgl(), mTrackTgl);
+      tracks.fSigned1Pt = AliMathBase::TruncateFloatFraction(track->GetSigned1Pt(), mTrack1Pt);
 
-    if (fTreeStatus[kTOF] && tofClusters.fTOFncls > 0)
-    {
-      Int_t *TOFclsIndex = track->GetTOFclusterArray(); //Index of the matchable cluster (there are fNTOFClusters of them)
-      for (Int_t icls = 0; icls < tofClusters.fTOFncls; icls++)
-      {
-        AliESDTOFCluster *TOFcls = (AliESDTOFCluster *)fESD->GetESDTOFClusters()->At(TOFclsIndex[icls]);
-        tofClusters.fToT = TOFcls->GetTOFsignalToT(0);
-        tofClusters.fTOFChannel = TOFcls->GetTOFchannel();
-        for (Int_t mtchbl = 0; mtchbl < TOFcls->GetNMatchableTracks(); mtchbl++)
-        {
-          if (TOFcls->GetTrackIndex(mtchbl) != track->GetID())
-            continue;
-          tofClusters.fDx = TOFcls->GetDx(mtchbl);
-          tofClusters.fDz = TOFcls->GetDz(mtchbl);
-          tofClusters.fLengthRatio = tracks.fLength > 0 ? TOFcls->GetLength(mtchbl) / tracks.fLength : -1;
-          break;
-        }
-        FillTree(kTOF);
-        if (fTreeStatus[kTOF])
-          ntofcls_filled++;
-      }
-    }
-#endif
+      // Modified covariance matrix
+      // First sigmas on the diagonal
+      tracks.fSigmaY = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaY2()), mTrackCovDiag);
+      tracks.fSigmaZ = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaZ2()), mTrackCovDiag);
+      tracks.fSigmaSnp = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaSnp2()), mTrackCovDiag);
+      tracks.fSigmaTgl = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigmaTgl2()), mTrackCovDiag);
+      tracks.fSigma1Pt = AliMathBase::TruncateFloatFraction(TMath::Sqrt(track->GetSigma1Pt2()), mTrackCovDiag);
+      //
+      tracks.fRhoZY = (Char_t)(128. * track->GetSigmaZY() / tracks.fSigmaZ / tracks.fSigmaY);
+      tracks.fRhoSnpY = (Char_t)(128. * track->GetSigmaSnpY() / tracks.fSigmaSnp / tracks.fSigmaY);
+      tracks.fRhoSnpZ = (Char_t)(128. * track->GetSigmaSnpZ() / tracks.fSigmaSnp / tracks.fSigmaZ);
+      tracks.fRhoTglY = (Char_t)(128. * track->GetSigmaTglY() / tracks.fSigmaTgl / tracks.fSigmaY);
+      tracks.fRhoTglZ = (Char_t)(128. * track->GetSigmaTglZ() / tracks.fSigmaTgl / tracks.fSigmaZ);
+      tracks.fRhoTglSnp = (Char_t)(128. * track->GetSigmaTglSnp() / tracks.fSigmaTgl / tracks.fSigmaSnp);
+      tracks.fRho1PtY = (Char_t)(128. * track->GetSigma1PtY() / tracks.fSigma1Pt / tracks.fSigmaY);
+      tracks.fRho1PtZ = (Char_t)(128. * track->GetSigma1PtZ() / tracks.fSigma1Pt / tracks.fSigmaZ);
+      tracks.fRho1PtSnp = (Char_t)(128. * track->GetSigma1PtSnp() / tracks.fSigma1Pt / tracks.fSigmaSnp);
+      tracks.fRho1PtTgl = (Char_t)(128. * track->GetSigma1PtTgl() / tracks.fSigma1Pt / tracks.fSigmaTgl);
 
-    // In case we need connection to clusters, activate next lines
-    // tracks.fTOFclsIndex += tracks.fNTOFcls;
-    // tracks.fNTOFcls = ntofcls_filled;
-    FillTree(kTracks);
-    FillTree(kTracksCov);
-    FillTree(kTracksExtra);
-    if (fTreeStatus[kTracks])
-      ntrk_filled++;
-  } // end loop on tracks
+      const AliExternalTrackParam *intp = track->GetInnerParam();
+      tracks.fTPCinnerP = AliMathBase::TruncateFloatFraction((intp ? intp->GetP() : 0), mTrack1Pt); // Set the momentum to 0 if the track did not reach TPC
 
-  eventextra.fNentries[kTOF] = ntofcls_filled;
+      // Compressing and reassigned flags. Keeping only the ones we need.
+      tracks.fFlags = 0x0;
+      if (track->GetStatus() & AliVTrack::kITSrefit)
+        tracks.fFlags |= TrackFlagsRun2Enum::ITSrefit;
+      if (track->GetStatus() & AliVTrack::kTPCrefit)
+        tracks.fFlags |= TrackFlagsRun2Enum::TPCrefit;
 
-  AliMultiplicity *mlt = fESD->GetMultiplicity();
-  Int_t Ntracklets = mlt->GetNumberOfTracklets();
+      // add status bit if golden chi2 cut was passed
+      const AliESDVertex *vertex = (fESD->GetPrimaryVertex()) ? fESD->GetPrimaryVertex() : fESD->GetPrimaryVertexSPD();
+      bool goldenChi2Status = (vertex) ? (track->GetChi2TPCConstrainedVsGlobal(vertex) > 0. && track->GetChi2TPCConstrainedVsGlobal(vertex) < 36.) : false;
+      if (goldenChi2Status)
+        tracks.fFlags |= TrackFlagsRun2Enum::GoldenChi2;
 
-  Int_t ntracklet_filled = 0;
-  Float_t theta, phi, dphi, dphiS, dist, x, tgl, alpha;
+      // Uppermost 4 bits contain PID hypothesis used during tracking
+      if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15)
+        tracks.fFlags |= track->GetPIDForTracking() << 28;
 
-  for (Int_t itr = Ntracklets; itr--;)
-  {
-    dphi = mlt->GetDeltaPhi(itr);
-    dist = mlt->CalcDist(itr);
+      tracks.fITSClusterMap = track->GetITSClusterMap();
+      tracks.fTPCNClsFindable = track->GetTPCNclsF();
 
-    // on-the-fly filtering based on parameters tuned in Run2
-    dphiS = TMath::Abs(dphi) - 0.0045;
-    if (dphi < 0)
-      dphiS = -dphiS;
-    if (dist < 1. && dphiS < 0.06)
-    {
-      theta = mlt->GetTheta(itr);
-      phi = mlt->GetPhi(itr);
-      tracks.fIndexCollisions = eventID;
-      tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
-
-      // inversion formulas for snp and alpha
-      tracks.fSnp = 0.;
-      alpha = phi;
-      tracks.fAlpha = AliMathBase::TruncateFloatFraction(alpha, mTracklets);
-
-      // inversion formulas for tgl
-      x = (TMath::Tan(theta / 2.) - 1.) / (TMath::Tan(theta / 2.) + 1.);
-      if (TMath::Log(TMath::Tan(theta / 2)) >= 0)
-        tgl = TMath::Sqrt((TMath::Power((1. + TMath::Power(x, 2)) / (1. - TMath::Power(x, 2)), 2)) - 1.);
+      if ((int)tracks.fTPCNClsFindable - track->GetTPCNcls() >= -128)
+        tracks.fTPCNClsFindableMinusFound = tracks.fTPCNClsFindable - track->GetTPCNcls();
       else
-        tgl = -TMath::Sqrt((TMath::Power((1. + TMath::Power(x, 2)) / (1. - TMath::Power(x, 2)), 2)) - 1.);
-      tracks.fTgl = AliMathBase::TruncateFloatFraction(tgl, mTracklets);
+        tracks.fTPCNClsFindableMinusFound = -128;
 
-      // set global track parameters to NAN
-      tracks.fX = NAN;
-      tracks.fY = NAN;
-      tracks.fZ = NAN;
-      tracks.fSigned1Pt = NAN;
-      tracks.fSigmaY = NAN;
-      tracks.fSigmaZ = NAN;
-      tracks.fSigmaSnp = NAN;
-      tracks.fSigmaTgl = NAN;
-      tracks.fSigma1Pt = NAN;
-      tracks.fRhoZY = 0;
-      tracks.fRhoSnpY = 0;
-      tracks.fRhoSnpZ = 0;
-      tracks.fRhoTglY = 0;
-      tracks.fRhoTglZ = 0;
-      tracks.fRhoTglSnp = 0;
-      tracks.fRho1PtY = 0;
-      tracks.fRho1PtZ = 0;
-      tracks.fRho1PtSnp = 0;
-      tracks.fRho1PtTgl = 0;
-      tracks.fTPCinnerP = NAN;
-      tracks.fFlags = 0;
-      tracks.fITSClusterMap = 0;
-      tracks.fTPCNClsFindable = 0;
-      tracks.fTPCNClsFindableMinusFound = 0;
-      tracks.fTPCNClsFindableMinusCrossedRows = 0;
-      tracks.fTPCNClsShared = 0;
+      if ((int)tracks.fTPCNClsFindable - track->GetTPCCrossedRows() >= -128)
+        tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
+      else
+        tracks.fTPCNClsFindableMinusCrossedRows = -128;
+
+      tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
+
       tracks.fTRDPattern = 0;
-      tracks.fITSChi2NCl = NAN;
-      tracks.fTPCChi2NCl = NAN;
-      tracks.fTRDChi2 = NAN;
-      tracks.fTOFChi2 = NAN;
-      tracks.fTPCSignal = NAN;
-      tracks.fTRDSignal = NAN;
-      tracks.fTOFSignal = NAN;
-      tracks.fLength = NAN;
-      tracks.fTOFExpMom = NAN;
+      for (int i = 0; i < 6; i++)
+        if (track->GetTRDslice(i) > 0)
+          tracks.fTRDPattern |= 0x1 << i; // flag tracklet on this layer
+
+      tracks.fITSChi2NCl = AliMathBase::TruncateFloatFraction((track->GetITSNcls() ? track->GetITSchi2() / track->GetITSNcls() : 0), mTrackCovOffDiag);
+      tracks.fTPCChi2NCl = AliMathBase::TruncateFloatFraction((track->GetTPCNcls() ? track->GetTPCchi2() / track->GetTPCNcls() : 0), mTrackCovOffDiag);
+      tracks.fTRDChi2 = AliMathBase::TruncateFloatFraction(track->GetTRDchi2(), mTrackCovOffDiag);
+      tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(track->GetTOFchi2(), mTrackCovOffDiag);
+
+      tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
+      tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
+      tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(track->GetTOFsignal(), mTrackSignal);
+      tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
+
+      // Speed of ligth in TOF units
+      const Float_t cspeed = 0.029979246f;
+      // PID hypothesis for the momentum extraction
+      const AliPID::EParticleType tof_pid = AliPID::kPion;
+      // Expected beta for such hypothesis
+      const Float_t exp_beta =
+          (track->GetIntegratedLength() /
+          TOFResponse.GetExpectedSignal(track, tof_pid) / cspeed);
+
+      tracks.fTOFExpMom = AliMathBase::TruncateFloatFraction(
+          AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
+              TMath::Sqrt(1. - (exp_beta * exp_beta)),
+          mTrack1Pt);
+
+      tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+      tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
 
       if (fTaskMode == kMC)
       {
-        // Separate tables (trees) for the MC labels: tracklets
-        Int_t alabel = mlt->GetLabel(itr, 0); // Take the label of the first layer
+        // Separate tables (trees) for the MC labels
+        Int_t alabel = track->GetLabel();
         // Find the modified label
         Int_t klabel = kineIndex[TMath::Abs(alabel)];
         mctracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
         mctracklabel.fMcMask = 0;
-        // Mask fake tracklets
+        // Use the ITS shared clusters to set the corresponding bits 0-6
+        UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
+        mctracklabel.fMcMask |= itsMask;
+        // Use the number of TPC shared clusters as number of TPC mismatches
+        // encode in bits 7-9 the values in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
+        const TBits *tpcShared = track->GetTPCSharedMapPtr();
+        UInt_t tpcCount = tpcShared->CountBits();
+        UShort_t tpcMask = 0;
+        while (tpcCount > 0)
+        {
+          tpcCount = tpcCount >> 1;
+          tpcMask++;
+        }
+        if (tpcMask > 7)
+          tpcMask = 7;
+        mctracklabel.fMcMask |= (tpcMask << 7);
+        // TRD (bit 10)
+        // We can also use labels per tracklet in the future
+        Int_t trdLabel = track->GetTRDLabel();
+        if (TMath::Abs(alabel) != TMath::Abs(trdLabel))
+          mctracklabel.fMcMask |= (0x1 << 10);
+        // TOF (bit 11)
+        Int_t tofLabel[3] = {-1};
+        track->GetTOFLabel(tofLabel);
+        // Check if at least one of the TOF hits matches the track label
+        if (!(TMath::Abs(alabel) == TMath::Abs(tofLabel[0]) || TMath::Abs(alabel) == TMath::Abs(tofLabel[1]) || TMath::Abs(alabel) == TMath::Abs(tofLabel[2])))
+          mctracklabel.fMcMask |= (0x1 << 11);
+
         if (alabel < 0 || klabel < 0)
-          mctracklabel.fMcMask |= (0x1 << 15);
-        if (mlt->GetLabel(itr, 0) != mlt->GetLabel(itr, 1))
           mctracklabel.fMcMask |= (0x1 << 15);
 
         FillTree(kMcTrackLabel);
       }
 
+  #ifdef USE_TOF_CLUST
+      tofClusters.fTOFncls = track->GetNTOFclusters();
+
+      if (fTreeStatus[kTOF] && tofClusters.fTOFncls > 0)
+      {
+        Int_t *TOFclsIndex = track->GetTOFclusterArray(); //Index of the matchable cluster (there are fNTOFClusters of them)
+        for (Int_t icls = 0; icls < tofClusters.fTOFncls; icls++)
+        {
+          AliESDTOFCluster *TOFcls = (AliESDTOFCluster *)fESD->GetESDTOFClusters()->At(TOFclsIndex[icls]);
+          tofClusters.fToT = TOFcls->GetTOFsignalToT(0);
+          tofClusters.fTOFChannel = TOFcls->GetTOFchannel();
+          for (Int_t mtchbl = 0; mtchbl < TOFcls->GetNMatchableTracks(); mtchbl++)
+          {
+            if (TOFcls->GetTrackIndex(mtchbl) != track->GetID())
+              continue;
+            tofClusters.fDx = TOFcls->GetDx(mtchbl);
+            tofClusters.fDz = TOFcls->GetDz(mtchbl);
+            tofClusters.fLengthRatio = tracks.fLength > 0 ? TOFcls->GetLength(mtchbl) / tracks.fLength : -1;
+            break;
+          }
+          FillTree(kTOF);
+          if (fTreeStatus[kTOF])
+            ntofcls_filled++;
+        }
+      }
+  #endif
+
+      // In case we need connection to clusters, activate next lines
+      // tracks.fTOFclsIndex += tracks.fNTOFcls;
+      // tracks.fNTOFcls = ntofcls_filled;
       FillTree(kTracks);
       FillTree(kTracksCov);
       FillTree(kTracksExtra);
-      if (fTreeStatus[kTracks]) ntracklet_filled++;
-    }
-  } // end loop on tracklets
-  eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
-  eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
-  eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
+      if (fTreeStatus[kTracks])
+        ntrk_filled++;
+
+    } // end loop on tracks
+
+    eventextra.fNentries[kTOF] = ntofcls_filled;
+
+    AliMultiplicity *mlt = fESD->GetMultiplicity();
+    Int_t Ntracklets = mlt->GetNumberOfTracklets();
+
+    Float_t theta, phi, dphi, dphiS, dist, x, tgl, alpha;
+
+    for (Int_t itr = Ntracklets; itr--;)
+    {
+      dphi = mlt->GetDeltaPhi(itr);
+      dist = mlt->CalcDist(itr);
+
+      // on-the-fly filtering based on parameters tuned in Run2
+      dphiS = TMath::Abs(dphi) - 0.0045;
+      if (dphi < 0)
+        dphiS = -dphiS;
+      if (dist < 1. && dphiS < 0.06)
+      {
+        theta = mlt->GetTheta(itr);
+        phi = mlt->GetPhi(itr);
+        tracks.fIndexCollisions = fCollisionCount;
+        tracks.fTrackType = TrackTypeEnum::Run2Tracklet;
+
+        // inversion formulas for snp and alpha
+        tracks.fSnp = 0.;
+        alpha = phi;
+        tracks.fAlpha = AliMathBase::TruncateFloatFraction(alpha, mTracklets);
+
+        // inversion formulas for tgl
+        x = (TMath::Tan(theta / 2.) - 1.) / (TMath::Tan(theta / 2.) + 1.);
+        if (TMath::Log(TMath::Tan(theta / 2)) >= 0)
+          tgl = TMath::Sqrt((TMath::Power((1. + TMath::Power(x, 2)) / (1. - TMath::Power(x, 2)), 2)) - 1.);
+        else
+          tgl = -TMath::Sqrt((TMath::Power((1. + TMath::Power(x, 2)) / (1. - TMath::Power(x, 2)), 2)) - 1.);
+        tracks.fTgl = AliMathBase::TruncateFloatFraction(tgl, mTracklets);
+
+        // set global track parameters to NAN
+        tracks.fX = NAN;
+        tracks.fY = NAN;
+        tracks.fZ = NAN;
+        tracks.fSigned1Pt = NAN;
+        tracks.fSigmaY = NAN;
+        tracks.fSigmaZ = NAN;
+        tracks.fSigmaSnp = NAN;
+        tracks.fSigmaTgl = NAN;
+        tracks.fSigma1Pt = NAN;
+        tracks.fRhoZY = 0;
+        tracks.fRhoSnpY = 0;
+        tracks.fRhoSnpZ = 0;
+        tracks.fRhoTglY = 0;
+        tracks.fRhoTglZ = 0;
+        tracks.fRhoTglSnp = 0;
+        tracks.fRho1PtY = 0;
+        tracks.fRho1PtZ = 0;
+        tracks.fRho1PtSnp = 0;
+        tracks.fRho1PtTgl = 0;
+        tracks.fTPCinnerP = NAN;
+        tracks.fFlags = 0;
+        tracks.fITSClusterMap = 0;
+        tracks.fTPCNClsFindable = 0;
+        tracks.fTPCNClsFindableMinusFound = 0;
+        tracks.fTPCNClsFindableMinusCrossedRows = 0;
+        tracks.fTPCNClsShared = 0;
+        tracks.fTRDPattern = 0;
+        tracks.fITSChi2NCl = NAN;
+        tracks.fTPCChi2NCl = NAN;
+        tracks.fTRDChi2 = NAN;
+        tracks.fTOFChi2 = NAN;
+        tracks.fTPCSignal = NAN;
+        tracks.fTRDSignal = NAN;
+        tracks.fTOFSignal = NAN;
+        tracks.fLength = NAN;
+        tracks.fTOFExpMom = NAN;
+
+        if (fTaskMode == kMC)
+        {
+          // Separate tables (trees) for the MC labels: tracklets
+          Int_t alabel = mlt->GetLabel(itr, 0); // Take the label of the first layer
+          // Find the modified label
+          Int_t klabel = kineIndex[TMath::Abs(alabel)];
+          mctracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+          mctracklabel.fMcMask = 0;
+          // Mask fake tracklets
+          if (alabel < 0 || klabel < 0)
+            mctracklabel.fMcMask |= (0x1 << 15);
+          if (mlt->GetLabel(itr, 0) != mlt->GetLabel(itr, 1))
+            mctracklabel.fMcMask |= (0x1 << 15);
+
+          FillTree(kMcTrackLabel);
+        }
+
+        FillTree(kTracks);
+        FillTree(kTracksCov);
+        FillTree(kTracksExtra);
+        if (fTreeStatus[kTracks]) ntracklet_filled++;
+      }
+    } // end loop on tracklets
+    eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled; 
+    eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
+    eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
+  }
   
   //---------------------------------------------------------------------------
   // Calorimeter data
@@ -1528,7 +1529,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Int_t mclabel;
     Double_t efrac;
 
-    calo.fIndexBCs = eventID;
+    calo.fIndexBCs = fBCCount;
 
     cells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
     calo.fCellNumber = cellNumber;
@@ -1562,7 +1563,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   Int_t ncalotriggers_filled = 0; // total number of EMCAL triggers filled per event
   while (calotriggers->Next())
   {
-    calotrigger.fIndexBCs = eventID;
+    calotrigger.fIndexBCs = fBCCount;
     int col, row, fastorID;
     calotriggers->GetPosition(col, row);
     // filter null entries: they usually have negative entries and no trigger bits
@@ -1603,7 +1604,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     Int_t mclabel;
     Double_t efrac;
 
-    calo.fIndexBCs = eventID;
+    calo.fIndexBCs = fBCCount;
 
     cells->GetCell(icp, cellNumber, amplitude, time, mclabel, efrac);
     calo.fCellNumber = cellNumber;
@@ -1631,7 +1632,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // Muon tracks
-  muons.fIndexBCs = eventID;
+  muons.fIndexBCs = fBCCount;
 
   Int_t nmu = fESD->GetNumberOfMuonTracks();
   Int_t nmu_filled = 0;   // total number of muons filled per event
@@ -1689,7 +1690,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // ZDC
   AliESDZDC *esdzdc = fESD->GetESDZDC();
-  zdc.fIndexBCs = eventID;
+  zdc.fIndexBCs = fBCCount;
   // ZEM
   zdc.fEnergyZEM1 = esdzdc->GetZEM1Energy();
   zdc.fEnergyZEM2 = esdzdc->GetZEM2Energy();
@@ -1752,8 +1753,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // V0A and V0C
   AliESDVZERO *vz = fESD->GetVZEROData();
-  fv0a.fIndexBCs = eventID;
-  fv0c.fIndexBCs = eventID;
+  fv0a.fIndexBCs = fBCCount;
+  fv0c.fIndexBCs = fBCCount;
   for (Int_t ich = 0; ich < 32; ++ich)
     fv0a.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich), mV0Amplitude);
   for (Int_t ich = 0; ich < 32; ++ich)
@@ -1770,7 +1771,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // FT0
-  ft0.fIndexBCs = eventID;
+  ft0.fIndexBCs = fBCCount;
   for (Int_t ich = 0; ich < 12; ++ich)
     ft0.fAmplitudeA[ich] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich + 12], mT0Amplitude);
   for (Int_t ich = 0; ich < 12; ++ich)
@@ -1785,7 +1786,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // AD (FDD)
   AliESDAD *esdad = fESD->GetADData();
-  fdd.fIndexBCs = eventID;
+  fdd.fIndexBCs = fBCCount;
   for (Int_t ich = 0; ich < 4; ++ich)
     fdd.fAmplitudeA[ich] = 0; // not filled for the moment
   for (Int_t ich = 0; ich < 4; ++ich)
@@ -1797,82 +1798,85 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if (fTreeStatus[kFDD])
     eventextra.fNentries[kFDD] = 1;
 
-  //---------------------------------------------------------------------------
-  // V0s (Lambda and KS)
-  Int_t nv0 = fESD->GetNumberOfV0s();
   Int_t nv0_filled = 0; // total number of v0's filled per event
-  for (Int_t iv0 = 0; iv0 < nv0; ++iv0)
+  if (fillCollision)
   {
-    AliESDv0 *v0 = fESD->GetV0(iv0);
-    // select only "offline" V0s, skip the "on-the-fly" ones
-    if (v0 && !v0->GetOnFlyStatus())
-    {
-      Int_t pidx = v0->GetPindex();
-      Int_t nidx = v0->GetNindex();
-      v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-      v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
-      FillTree(kV0s);
-      if (fTreeStatus[kV0s])
-        nv0_filled++;
-    }
-  } // End loop on V0s
-  eventextra.fNentries[kV0s] = nv0_filled;
-
-  //---------------------------------------------------------------------------
-  // Cascades
-  // If we do not have V0s, we do not have cascades
-  Int_t ncascades_filled = 0; // total number of cascades filled per event
-  if (nv0 > 0)
-  {
-    // Combine the track indexes of V0 daughters in unique identifier
-    ULong64_t *packedPosNeg = new ULong64_t[nv0];
-    ULong64_t *sortedPosNeg = new ULong64_t[nv0];
-    Int_t *sortIdx = new Int_t[nv0];
-
-    //Don't forget that OTF V0s might exist
-    Int_t nv0offline = 0;
+    //---------------------------------------------------------------------------
+    // V0s (Lambda and KS)
+    Int_t nv0 = fESD->GetNumberOfV0s();
     for (Int_t iv0 = 0; iv0 < nv0; ++iv0)
     {
       AliESDv0 *v0 = fESD->GetV0(iv0);
+      // select only "offline" V0s, skip the "on-the-fly" ones
       if (v0 && !v0->GetOnFlyStatus())
       {
-        packedPosNeg[nv0offline++] = (((ULong64_t)(v0->GetPindex())) << 31) | ((ULong64_t)(v0->GetNindex()));
+        Int_t pidx = v0->GetPindex();
+        Int_t nidx = v0->GetNindex();
+        v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
+        FillTree(kV0s);
+        if (fTreeStatus[kV0s])
+          nv0_filled++;
       }
-    }
-    TMath::Sort(nv0offline, packedPosNeg, sortIdx, kFALSE);
-    for (Int_t iv0 = 0; iv0 < nv0offline; ++iv0)
-    {
-      sortedPosNeg[iv0] = packedPosNeg[sortIdx[iv0]];
-    }
+    } // End loop on V0s
+    eventextra.fNentries[kV0s] = nv0_filled;
 
-    Int_t ncas = fESD->GetNumberOfCascades();
-    for (Int_t icas = 0; icas < ncas; ++icas)
+    //---------------------------------------------------------------------------
+    // Cascades
+    // If we do not have V0s, we do not have cascades
+    Int_t ncascades_filled = 0; // total number of cascades filled per event
+    if (nv0 > 0)
     {
-      AliESDcascade *cas = fESD->GetCascade(icas);
-      // Select only cascades containing "offline" V0s
-      if (cas && !cas->GetOnFlyStatus())
+      // Combine the track indexes of V0 daughters in unique identifier
+      ULong64_t *packedPosNeg = new ULong64_t[nv0];
+      ULong64_t *sortedPosNeg = new ULong64_t[nv0];
+      Int_t *sortIdx = new Int_t[nv0];
+
+      //Don't forget that OTF V0s might exist
+      Int_t nv0offline = 0;
+      for (Int_t iv0 = 0; iv0 < nv0; ++iv0)
       {
-        // Find the identifier of the V0 using the indexes of its daughters
-        ULong64_t currV0 = (((ULong64_t)(cas->GetPindex())) << 31) | ((ULong64_t)(cas->GetNindex()));
-        // Use binary search in the sorted array
-        Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
-        // Check if the match is exact
-        if (sortedPosNeg[v0idx] == currV0)
+        AliESDv0 *v0 = fESD->GetV0(iv0);
+        if (v0 && !v0->GetOnFlyStatus())
         {
-          cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
-          cascs.fIndexTracks = cas->GetBindex() + fOffsetTrack;
-          FillTree(kCascades);
-          if (fTreeStatus[kCascades])
-            ncascades_filled++;
+          packedPosNeg[nv0offline++] = (((ULong64_t)(v0->GetPindex())) << 31) | ((ULong64_t)(v0->GetNindex()));
         }
       }
-    } // End loop on cascades
+      TMath::Sort(nv0offline, packedPosNeg, sortIdx, kFALSE);
+      for (Int_t iv0 = 0; iv0 < nv0offline; ++iv0)
+      {
+        sortedPosNeg[iv0] = packedPosNeg[sortIdx[iv0]];
+      }
 
-    delete[] packedPosNeg;
-    delete[] sortedPosNeg;
-    delete[] sortIdx;
-  } // End if V0s
-  eventextra.fNentries[kCascades] = ncascades_filled;
+      Int_t ncas = fESD->GetNumberOfCascades();
+      for (Int_t icas = 0; icas < ncas; ++icas)
+      {
+        AliESDcascade *cas = fESD->GetCascade(icas);
+        // Select only cascades containing "offline" V0s
+        if (cas && !cas->GetOnFlyStatus())
+        {
+          // Find the identifier of the V0 using the indexes of its daughters
+          ULong64_t currV0 = (((ULong64_t)(cas->GetPindex())) << 31) | ((ULong64_t)(cas->GetNindex()));
+          // Use binary search in the sorted array
+          Int_t v0idx = TMath::BinarySearch(nv0offline, sortedPosNeg, currV0);
+          // Check if the match is exact
+          if (sortedPosNeg[v0idx] == currV0)
+          {
+            cascs.fIndexV0s = sortIdx[v0idx] + fOffsetV0;
+            cascs.fIndexTracks = cas->GetBindex() + fOffsetTrack;
+            FillTree(kCascades);
+            if (fTreeStatus[kCascades])
+              ncascades_filled++;
+          }
+        }
+      } // End loop on cascades
+
+      delete[] packedPosNeg;
+      delete[] sortedPosNeg;
+      delete[] sortIdx;
+    } // End if V0s
+    eventextra.fNentries[kCascades] = ncascades_filled;
+  }
 
   //---------------------------------------------------------------------------
   // MC data (to be modified)
@@ -1884,7 +1888,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (!MCvtx) //Check on the MC vertex
       AliFatal("Could not retrieve MC vertex");
 
-    mccollision.fIndexBCs = eventID;
+    mccollision.fIndexBCs = fBCCount;
 
     mccollision.fPosX = AliMathBase::TruncateFloatFraction(MCvtx->GetX(), mCollisionPosition);
     mccollision.fPosY = AliMathBase::TruncateFloatFraction(MCvtx->GetY(), mCollisionPosition);
@@ -1938,12 +1942,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   FillTree(kMcCollision);
 
   // MC collision label
-  mccollisionlabel.fIndexMcCollisions = eventID;
+  mccollisionlabel.fIndexMcCollisions = fBCCount;
   mccollisionlabel.fMcMask = 0;
   FillTree(kMcCollisionLabel);
 
-  // We can fill now the vertex + indexing data
-  FillTree(kEvents);
 
   //---------------------------------------------------------------------------
   // Update the offsets at the end of each collision
@@ -1951,6 +1953,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   fOffsetTrack += ntrk_filled + ntracklet_filled;
   fOffsetMuTrackID += nmu_filled;
   fOffsetV0 += nv0_filled;
+
+  // Update event counters
+  if (fillCollision)
+    fCollisionCount++;
+  fBCCount++;
 } // void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
 void AliAnalysisTaskAO2Dconverter::FinishTF()

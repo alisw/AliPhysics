@@ -7,6 +7,7 @@ AliFemtoWRzTrackCut::AliFemtoWRzTrackCut():
      fdEdxcut = true ;
      fNsigmaRejection = 3.0;
      fNSigmaMass = -1;
+     fmaxmom = 4;
   }
 
 AliFemtoWRzTrackCut::AliFemtoWRzTrackCut(const AliFemtoWRzTrackCut &aCut) : AliFemtoESDTrackCut(aCut)
@@ -226,8 +227,12 @@ bool AliFemtoWRzTrackCut::Pass( const AliFemtoTrack* track)
       else if (fMostProbable == 14) { //cut on Nsigma, EXCLUSIVE PID -- deuteron 
         if ( IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE()) )
           imost = 14;
-        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), 4) )
+        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
           imost = 0;
+      }
+      else if (fMostProbable == 15) { //setting for a purity calculation (when we have the selection with the rejection method)
+        if ( IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) && (IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) || IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) || IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) || IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())) )
+          imost = 15;
       }
     }
 
@@ -280,13 +285,6 @@ bool AliFemtoWRzTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom)
 
   if (mom > maxmom) return false;
   
-  //if (fNsigmaTPConly && fNsigmaMass<0) {
-    // for selection with only the TPC detector
-    // cutting out the final part of the signal (~1.5 GeV) 
-    // that is dominated by missidentified particles 
-    // this setting will be probably removed  
-    //if (dEdx < a5*mom+b5) return false;
-  //}
 
   return true;
 
@@ -308,13 +306,14 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   }
   else if (fNsigmaTPConly){
      if (TMath::Abs(nsigmaTPCD) < fNsigma){
-         if(sigmaMass==-1)
+         if(fBasicSelection){
+           //this setting is for a simple selection without 
+           //addittional constraints on nsigma distribution  
            return true;
+         }  
          else{
-           //test
-           if(mom<1.3 && TMath::Abs(nsigmaTPCD) < fNsigma)
-             return true;
-           else if(mom>=1.3 && TMath::Abs(nsigmaTPCD-0.5) < 1.5)
+           //fmaxmom by default is set on 4.0 GeV/c
+           if( (nsigmaTPCD > (6*mom-9.3)) && (mom < fmaxmom) )
              return true;
          }
      }

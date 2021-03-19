@@ -515,10 +515,13 @@ public:
   void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
   
   // Other event rejections criteria
-  
-  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
-  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
-  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
+  /// \param opt = 0, no rejection, 1 SPD rejection pp/pPb, 2 TPC-ITS correl PbPb
+  /// \param correl = level of TPC-ITS correlation correction, 1 rejects ~38% to 4 that rejects ~6%
+  void             SwitchOnPileUpEventRejection(Int_t opt = 1, Int_t correl = 1) {
+    fDoPileUpEventRejection = opt ;
+    if ( opt == 2 ) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,correl); }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= 0 ; }
+  Int_t            IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -538,7 +541,9 @@ public:
 
   void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
   AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
-  
+  void             SwithOnEvenCutsClassQA()                { fUseEventCutsClassQA = kTRUE  ; }
+  void             SwithOffEvenCutsClassQA()               { fUseEventCutsClassQA = kTRUE  ; }
+
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -605,6 +610,28 @@ public:
   void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
+  // Spherocity
+  Float_t          CalculateEventSpherocity( Float_t minPt );
+  Float_t          GetEventSpherocity()              const { return fSpherocity            ; }
+  Float_t          GetEventSpherocityPerMinPtCut(Int_t icut)   const
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityPtCut[icut] ; else return -10. ; }
+
+  Float_t          GetSpherocityMinPt()              const { return fSpherocityMinPt       ; }
+  void             SetSpherocityMinPt(Float_t min)         { fSpherocityMinPt = min        ; }
+
+  Float_t          GetSpherocityMinPtCuts(Int_t icut)
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityMinPtCuts[icut] ; else return 0. ; }
+  void             SetSpherocityMinPtCuts(Int_t icut, Float_t min)
+  { if ( icut >= 0 && icut < 4 ) fSpherocityMinPtCuts[icut] = min ; }
+
+  void             SwitchOnEventSpherocityCalculation()    { fCalculateSpherocity = kTRUE  ; }
+  void             SwitchOffEventSpherocityCalculation()   { fCalculateSpherocity = kFALSE ; }
+  Bool_t           IsEventSpherocityCalculated()     const { return fCalculateSpherocity   ; }
+
+  void             SwitchOnEventSpherocityMinPtStudy()    { fStudySpherocityMinPt = kTRUE  ; }
+  void             SwitchOffEventSpherocityMinPtStudy()   { fStudySpherocityMinPt = kFALSE ; }
+  Bool_t           IsEventSpherocityMinPtStudied()  const { return fStudySpherocityMinPt   ; }
+
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -1070,6 +1097,7 @@ public:
   
   AliEventCuts     fEventCuts;                     ///< Event selection utility
   Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
+  Bool_t           fUseEventCutsClassQA;           ///< Recover AliEventCuts class QA histograms
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
@@ -1130,7 +1158,7 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;       ///<  Analyze events where trigger patch and cluster where found or not.
   
   
-  Bool_t           fDoPileUpEventRejection;        ///<  Select pile-up events by SPD.
+  Int_t            fDoPileUpEventRejection;        ///<  Select pile-up events by SPD if 1, by TPC-ITS correl if 2.
   Bool_t           fDoV0ANDEventSelection;         ///<  Select events depending on V0AND.
   Bool_t           fDoVertexBCEventSelection;      ///<  Select events with vertex on BC=0 or -100.
   Bool_t           fDoRejectNoTrackEvents;         ///<  Reject events with no selected tracks in event.
@@ -1170,6 +1198,18 @@ public:
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
+
+  // Event spherocity
+  Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
+  Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
+  Float_t          fSpherocityMinPt ;              ///<  Event spherocity min track pT
+  Float_t          fSpherocityMinPtCuts[4] ;       ///<  Event spherocity list of min track pT in case  fStudySpherocityMinPt = 1
+  Bool_t           fCalculateSpherocity ;          ///<  Activate or not event spherocity calculation
+  Bool_t           fStudySpherocityMinPt ;         ///<  Calculate spherocity for different min pT
+  TH1F *           fhSpherocity;                   ///< Spherocity vs track pT  control histogram
+  TH2F *           fhSpherocityCen;                ///< Spherocity vs centrality vs track pT control histogram
+  TH1F *           fhSpherocityMinPtCut[4];        ///< Spherocity control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+  TH2F *           fhSpherocityCenMinPtCut[4];     ///< Spherocity vs centrality control histogram for different MinPtCut, fStudySpherocityMinPt = 1
 
   // Jets
   Bool_t           fFillInputNonStandardJetBranch; ///<  Flag to use data from non standard jets.
@@ -1251,7 +1291,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,95) ;
+  ClassDef(AliCaloTrackReader,96) ;
   /// \endcond
 
 } ;

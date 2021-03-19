@@ -1609,7 +1609,7 @@ void AliV0ReaderV1::CalculateSphericity(){
     fNumberOfRecTracks = 0;
     for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      //if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
       if(TMath::Abs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.5) continue;

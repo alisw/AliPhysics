@@ -32,6 +32,7 @@
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliRhoParameter.h"
 
 // --- CaloTrackCorr classes ---
 #include "AliAnaParticleIsolation.h"
@@ -89,8 +90,11 @@ fhPtTrackInConeBC0PileUpSPD(0),
 fhPerpConeSumPtTOFBC0(0),         fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInPerpConeTOFBC0(0),
 fhPtM02SumPtCone(0),             fhPtM02SumPtConeCharged(0),
+fhSpherocityM02SumPtCone(0),     fhSpherocityM02SumPtConeCharged(0),
 fhPtM02SumPtConeCent(0x0),       fhPtM02SumPtConeChargedCent(0x0),          
-fhPtM02SumPtConeCentMC(0x0),     fhPtM02SumPtConeChargedCentMC(0x0),          
+fhPtM02SumPtConeCentMC(0x0),     fhPtM02SumPtConeChargedCentMC(0x0),
+fhSpherocityM02SumPtConeCent(0x0), fhSpherocityM02SumPtConeChargedCent(0x0),
+fhSpherocityMinPtM02SumPtConeCent(0x0), fhSpherocityMinPtM02SumPtConeChargedCent(0x0),
 fhConeSumPtExoTrigger(0),        fhConeSumPtClusterExoTrigger(0),            fhConeSumPtTrackExoTrigger(0),                      
 
 fhPtPrimMCPi0DecayPairOutOfCone(0),
@@ -426,6 +430,12 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fConeNPhiBandClusterPerMinCut       [icut] = 0;
     fConeptsumClusterSubPhiBandPerMinCut[icut] = 0;
     fConeNClusterSubPhiBandPerMinCut    [icut] = 0;
+  }
+
+  for(Int_t icut = 0; icut < 4; icut++)
+  {
+    fhSpherocityMinPtM02SumPtCone       [icut] = 0;
+    fhSpherocityMinPtM02SumPtConeCharged[icut] = 0;
   }
 }
 
@@ -1004,6 +1014,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD minPtBinsArray;
   minPtBinning.CreateBinEdges(minPtBinsArray);
   
+  // Spherocity binning
+  TCustomBinning soBinning;
+  soBinning.SetMinimum(0.0);
+  soBinning.AddStep(1, 0.05);
+  TArrayD soBinsArray;
+  soBinning.CreateBinEdges(soBinsArray);
+
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
@@ -1264,30 +1281,99 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     {
       fhPtM02SumPtCone = new TH3F
       ("hPtM02SumPtCone",Form("%s",parTitleR.Data()),
-       ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-       ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
-       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+        ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+        ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+       sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
       fhPtM02SumPtCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
       fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
       outputContainer->Add(fhPtM02SumPtCone) ;
+
+      if ( GetReader()->IsEventSpherocityCalculated()  )
+      {
+        fhSpherocityM02SumPtCone = new TH3F
+        (Form("hSpherocityM02SumPtCone_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
+         Form("%s",parTitleR.Data()),
+          soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+        fhSpherocityM02SumPtCone->SetXTitle("Spherocity");
+        fhSpherocityM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
+        fhSpherocityM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhSpherocityM02SumPtCone) ;
+
+        if ( GetReader()->IsEventSpherocityMinPtStudied() )
+        {
+          for(Int_t i = 0; i < 4; i++)
+          {
+            fhSpherocityMinPtM02SumPtCone[i] = new TH3F
+            (Form("hSpherocityM02SumPtCone_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
+             Form("%s",parTitleR.Data()),
+              soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhSpherocityMinPtM02SumPtCone[i]->SetXTitle("Spherocity");
+            fhSpherocityMinPtM02SumPtCone[i]->SetYTitle("#sigma_{long}^{2}");
+            fhSpherocityMinPtM02SumPtCone[i]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhSpherocityMinPtM02SumPtCone[i]) ;
+          }
+        }
+      }
     }
     else 
     {
       //printf("*** N centrality bins %d\n",GetNCentrBin());
       fhPtM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
+      if ( GetReader()->IsEventSpherocityCalculated()  )
+      {
+        fhSpherocityM02SumPtConeCent = new TH3F*[GetNCentrBin()] ;
+        if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          fhSpherocityMinPtM02SumPtConeCent = new TH3F*[GetNCentrBin()*4] ;
+      }
       for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
       {
         fhPtM02SumPtConeCent[icent] = new TH3F
         (Form("hPtM02SumPtCone_Cent%d",icent),
          Form("%s, centrality bin %d",parTitleR.Data(), icent),
-         ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),      
-         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray()); 
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+          ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
         fhPtM02SumPtConeCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhPtM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
         fhPtM02SumPtConeCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         outputContainer->Add(fhPtM02SumPtConeCent[icent]) ;
+
+        if ( GetReader()->IsEventSpherocityCalculated()  )
+        {
+          fhSpherocityM02SumPtConeCent[icent] = new TH3F
+          (Form("hSpherocityM02SumPtCone_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPt()),
+           Form("%s, centrality bin %d",parTitleR.Data(), icent),
+            soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhSpherocityM02SumPtConeCent[icent]->SetXTitle("Spherocity");
+          fhSpherocityM02SumPtConeCent[icent]->SetYTitle("#sigma_{long}^{2}");
+          fhSpherocityM02SumPtConeCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhSpherocityM02SumPtConeCent[icent]) ;
+
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              Int_t index = icent*4+i;
+              fhSpherocityMinPtM02SumPtConeCent[index] = new TH3F
+              (Form("hSpherocityM02SumPtCone_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPtCuts(i)),
+               Form("%s, centrality bin %d",parTitleR.Data(), icent),
+                soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetXTitle("Spherocity");
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetYTitle("#sigma_{long}^{2}");
+              fhSpherocityMinPtM02SumPtConeCent[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+              outputContainer->Add(fhSpherocityMinPtM02SumPtConeCent[index]) ;
+            }
+          }
+        }
       }
     }
     
@@ -1304,11 +1390,48 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtM02SumPtConeCharged->SetYTitle("#sigma_{long}^{2}");
         fhPtM02SumPtConeCharged->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         outputContainer->Add(fhPtM02SumPtConeCharged) ;
+
+        if ( GetReader()->IsEventSpherocityCalculated()  )
+        {
+          fhSpherocityM02SumPtConeCharged = new TH3F
+          (Form("hSpherocityM02SumPtConeCharged_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
+           Form("%s",parTitleRCh.Data()),
+            soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhSpherocityM02SumPtConeCharged->SetXTitle("Spherocity");
+          fhSpherocityM02SumPtConeCharged->SetYTitle("#sigma_{long}^{2}");
+          fhSpherocityM02SumPtConeCharged->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhSpherocityM02SumPtConeCharged) ;
+
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              fhSpherocityMinPtM02SumPtConeCharged[i] = new TH3F
+              (Form("hSpherocityM02SumPtConeCharged_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
+               Form("%s",parTitleRCh.Data()),
+                soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+               sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetXTitle("Spherocity");
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetYTitle("#sigma_{long}^{2}");
+              fhSpherocityMinPtM02SumPtConeCharged[i]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+              outputContainer->Add(fhSpherocityMinPtM02SumPtConeCharged[i]) ;
+            }
+          }
+        }
       }
       else
       {
         //printf("*** N centrality bins %d\n",GetNCentrBin());
         fhPtM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()] ;
+        if ( GetReader()->IsEventSpherocityCalculated()  )
+        {
+          fhSpherocityM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()] ;
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            fhSpherocityMinPtM02SumPtConeChargedCent = new TH3F*[GetNCentrBin()*4] ;
+        }
         for(Int_t icent = 0; icent < GetNCentrBin(); icent++)
         {
           fhPtM02SumPtConeChargedCent[icent] = new TH3F
@@ -1321,6 +1444,38 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhPtM02SumPtConeChargedCent[icent]->SetYTitle("#sigma_{long}^{2}");
           fhPtM02SumPtConeChargedCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
           outputContainer->Add(fhPtM02SumPtConeChargedCent[icent]) ;
+
+          if ( GetReader()->IsEventSpherocityCalculated()  )
+          {
+            fhSpherocityM02SumPtConeChargedCent[icent] = new TH3F
+            (Form("hSpherocityM02SumPtConeCharged_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPt()),
+             Form("%s, centrality bin %d",parTitleRCh.Data(), icent),
+              soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhSpherocityM02SumPtConeChargedCent[icent]->SetXTitle("Spherocity");
+            fhSpherocityM02SumPtConeChargedCent[icent]->SetYTitle("#sigma_{long}^{2}");
+            fhSpherocityM02SumPtConeChargedCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhSpherocityM02SumPtConeChargedCent[icent]) ;
+
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                Int_t index = icent*4+i;
+                fhSpherocityMinPtM02SumPtConeChargedCent[index] = new TH3F
+                (Form("hSpherocityM02SumPtConeCharged_Cent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPtCuts(i)),
+                 Form("%s, centrality bin %d",parTitleRCh.Data(), icent),
+                  soBinsArray.GetSize() - 1,  soBinsArray.GetArray(),
+                  ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+                 sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetXTitle("Spherocity");
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetYTitle("#sigma_{long}^{2}");
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+                outputContainer->Add(fhSpherocityMinPtM02SumPtConeChargedCent[index]) ;
+              }
+            }
+          }
         } // cen loop
       } // high mult
     }
@@ -4636,16 +4791,72 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
          method >= AliIsolationCut::kSumBkgSubIC )
     {
       if ( !IsHighMultiplicityAnalysisOn() )
-        fhPtM02SumPtCone           ->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+      {
+        fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+
+        if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+        {
+          fhSpherocityM02SumPtCone->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              fhSpherocityMinPtM02SumPtCone[i]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsum, GetEventWeight()*weightTrig);
+            }
+          }
+        }
+      }
       else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+      {
         fhPtM02SumPtConeCent[icent]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+        if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+        {
+          fhSpherocityM02SumPtConeCent[icent]->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityMinPtStudied() )
+          {
+            for(Int_t i = 0; i < 4; i++)
+            {
+              Int_t index = icent*4+i;
+              fhSpherocityMinPtM02SumPtConeCent[index]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsum, GetEventWeight()*weightTrig);
+            }
+          }
+        }
+      }
       
       if ( partInCone == AliIsolationCut::kNeutralAndCharged )
       {
         if ( !IsHighMultiplicityAnalysisOn() )
-          fhPtM02SumPtConeCharged           ->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+        {
+          fhPtM02SumPtConeCharged->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+          {
+            fhSpherocityM02SumPtConeCharged->Fill(GetReader()->GetEventSpherocity(), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                fhSpherocityMinPtM02SumPtConeCharged[i]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+              }
+            }
+          }
+        }
         else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        {
           fhPtM02SumPtConeChargedCent[icent]->Fill(pt, m02, coneptsumTrack, GetEventWeight()*weightTrig);
+          if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
+          {
+            fhSpherocityM02SumPtConeChargedCent[icent]->Fill(GetReader()->GetEventSpherocity(), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+
+            if ( GetReader()->IsEventSpherocityMinPtStudied() )
+            {
+              for(Int_t i = 0; i < 4; i++)
+              {
+                Int_t index = icent*4+i;
+                fhSpherocityMinPtM02SumPtConeChargedCent[index]->Fill(GetReader()->GetEventSpherocityPerMinPtCut(i), m02, coneptsumTrack, GetEventWeight()*weightTrig);
+              }
+            }
+          }
+        }
       }
 
       if ( inM02Windows && !fFillOnlyTH3Histo )
@@ -5012,6 +5223,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t isoMethod      = GetIsolationCut()->GetICMethod();
   Float_t coneSize     = GetIsolationCut()->GetConeSize();
   Float_t coneSizeGap  = GetIsolationCut()->GetConeSizeBandGap();
+  Float_t coneMinDist  = GetIsolationCut()->GetMinDistToTrigger();
 
   Float_t centrality   = GetEventCentrality();
   
@@ -5195,6 +5407,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     Float_t etaBandPtSumCh  = 0. ;
     Float_t phiBandPtSumCh  = 0. ;
+    Float_t perpBandPtSumCh = 0. ;
+    Float_t perpBandPtSumNe = 0. ;
     Float_t perpConePtSumCh = 0. ;
     Float_t perpConePtSumNe = 0. ;
 
@@ -5344,6 +5558,18 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       {
         if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
         {
+          // Within perpendicular eta cone size
+          Double_t dPhiPlu = dPhi + TMath::PiOver2();
+          Double_t dPhiMin = dPhi - TMath::PiOver2();
+          if ( TMath::Abs(dPhiPlu) < coneSize ||
+               TMath::Abs(dPhiMin) < coneSize    ) 
+          {
+            if ( partInConeCharge > 0 )
+              perpBandPtSumCh += partInConePt;
+            else 
+              perpBandPtSumNe += partInConePt;
+          } // perp eta band
+
           // Phi band
           //
           Bool_t takeIt = kTRUE;
@@ -5379,10 +5605,10 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       // In cone
       //
-      if ( dR < GetIsolationCut()->GetMinDistToTrigger() )
+      if ( dR < coneMinDist )
         continue;
       
-      if ( dR > GetIsolationCut()->GetConeSize() )
+      if ( dR > coneSize )
         continue;
       
       if ( fFillTrackOriginHistograms && 
@@ -5432,6 +5658,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     Float_t etaBandPtSumChEmb  = 0. ;
     Float_t phiBandPtSumChEmb  = 0. ;
+    Float_t perpBandPtSumChEmb = 0. ;
     Float_t perpConePtSumChEmb = 0. ;
 
     Float_t etaBandPtSumNeEmb  = 0. ;
@@ -5592,8 +5819,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
           if ( isoMethod >= AliIsolationCut::kSumBkgSubIC )
           {
-            // Phi band
-            //
+            // Within perpendicular eta cone size
+            Double_t dPhiPlu = dPhi + TMath::PiOver2();
+            Double_t dPhiMin = dPhi - TMath::PiOver2();
+            if ( TMath::Abs(dPhiPlu) < coneSize ||
+                 TMath::Abs(dPhiMin) < coneSize    ) 
+            {
+              perpBandPtSumChEmb += partInConePt;
+            } // perp eta band
+
             Bool_t takeIt = kTRUE;
 
             // Look only half TPC with respect candidate, avoid opposite side jet
@@ -5648,6 +5882,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       etaBandPtSumNeEmb+=etaBandPtSumNe;
       phiBandPtSumNeEmb+=phiBandPtSumNe;
 
+      perpBandPtSumChEmb+=perpBandPtSumCh;
       perpConePtSumChEmb+=perpConePtSumCh;
     }
     ///////END ISO EMBED DATA/////////////////////////
@@ -5667,10 +5902,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Float_t excessNePhi     = 0;
     if ( GetIsolationCut()->IsConeExcessCorrected() )
     {
-      GetIsolationCut()->CalculateExcessAreaFractionForChargedAndNeutral(photonEta  , photonPhi,
-                                                                         excessChEta, excessAreaChEta,
-                                                                         excessNeEta, excessAreaNeEta,
-                                                                         excessNePhi, excessAreaNePhi);
+      GetIsolationCut()->CalculateExcessAreaFractionForChargedAndNeutral
+      (photonEta  , photonPhi, GetCalorimeter(),
+       excessChEta, excessAreaChEta,
+       excessNeEta, excessAreaNeEta,
+       excessNePhi, excessAreaNePhi);
       sumPtInConeCh *= excessAreaChEta ;
       sumPtInConeNe *= (excessAreaNeEta*excessAreaNePhi) ;
 
@@ -5714,21 +5950,50 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
     if ( isoMethod == AliIsolationCut::kSumBkgSubIC )
     {
-      coneptsumBkgCh = perpConePtSumCh/2.;
-      coneptsumBkgNe = perpConePtSumNe/2.;
+      // 2 cones, scale energy to 1 cone
+      Float_t scaleDown = 0.5;
 
-      coneptsumBkgChEmb = perpConePtSumChEmb/2.;
+      // If there is a central hole in the trigger particle cone, scaledown the perp cone energy
+      if ( coneMinDist > 0 )
+      {
+        scaleDown *= (coneSize*coneSize - coneMinDist*coneMinDist) / (coneSize*coneSize);
+      }
+
+      coneptsumBkgCh = perpConePtSumCh*scaleDown;
+      coneptsumBkgNe = perpConePtSumNe*scaleDown;
+      coneptsumBkgChEmb = perpConePtSumChEmb*scaleDown;
+
       //printf("centrality %f, neutral/charged %f\n",centrality,GetNeutralOverChargedRatio(centrality));
+    }
+    else if  ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+    {
+      TString nameContainer = Form("%sMC",(GetIsolationCut()->GetJetRhoTaskContainerName()).Data());
+      AliRhoParameter * outrho= (AliRhoParameter*) GetReader()->GetInputEvent()->FindListObject(nameContainer.Data());
+
+      if ( !outrho )
+        AliInfo(Form("Could not find rho MC container <%s>!",nameContainer.Data()));
+      else
+      {
+        Float_t coneSize2 = coneSize * coneSize;
+        // If there is a central hole in the trigger particle cone, recalculate background cone area
+        if ( coneMinDist > 0 )
+          coneSize2 -= coneMinDist*coneMinDist;
+
+        coneptsumBkgCh = outrho->GetVal() * TMath::Pi() * coneSize2;
+        coneptsumBkgNe = 0;
+      }
     }
     else if ( isoMethod >= AliIsolationCut::kSumBkgSubEtaBandIC ) // eta or phi band
     {
       //printf("UE band\n");
       Float_t  etaBandPtSumChNorm = 0;
       Float_t  phiBandPtSumChNorm = 0;
+      Float_t  perpBandPtSumChNorm = 0;
       Float_t  etaBandPtSumNeNorm = 0;
       Float_t  phiBandPtSumNeNorm = 0;
       Float_t  etaBandPtSumChNormEmb = 0;
       Float_t  phiBandPtSumChNormEmb = 0;
+      Float_t  perpBandPtSumChNormEmb = 0;
       Float_t  etaBandPtSumNeNormEmb = 0;
       Float_t  phiBandPtSumNeNormEmb = 0;
       //Float_t  coneptsumChSub     = 0 ;
@@ -5744,7 +6009,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       if ( partInConeType == AliIsolationCut::kNeutralAndCharged )
       {
-        if      ( GetCalorimeterString() != "EMCAL" )
+        if      ( GetCalorimeter() != kEMCAL )
           checkClustersBand = kFALSE;
         // if declared as emcal because analyze all calo together
         // but within phos/dcal phi acceptance
@@ -5805,16 +6070,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         GetIsolationCut()->CalculateUEBandTrackNormalization
         (photonEta         ,
          excessChEta       , excessAreaChEta,
-         etaBandPtSumCh    , phiBandPtSumCh,
-         etaBandPtSumChNorm, phiBandPtSumChNorm);
+         etaBandPtSumCh    , phiBandPtSumCh    , perpBandPtSumCh,
+         etaBandPtSumChNorm, phiBandPtSumChNorm, perpBandPtSumChNorm);
 
         if ( IsEmbedingAnalysisOn() )
         {
           GetIsolationCut()->CalculateUEBandTrackNormalization
           (photonEta         ,
            excessChEta       , excessAreaChEta,
-           etaBandPtSumChEmb    , phiBandPtSumChEmb,
-           etaBandPtSumChNormEmb, phiBandPtSumChNormEmb);
+           etaBandPtSumChEmb    , phiBandPtSumChEmb    , perpBandPtSumChEmb,
+           etaBandPtSumChNormEmb, phiBandPtSumChNormEmb, perpBandPtSumChNormEmb);
         }
 
         if      ( isoMethod == AliIsolationCut::kSumBkgSubEtaBandIC )
@@ -5828,6 +6093,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           //coneptsumBkgChRaw = phiBandPtSumCh;
           coneptsumBkgCh    = phiBandPtSumChNorm;
           coneptsumBkgChEmb = phiBandPtSumChNormEmb;
+        }
+        else  if( isoMethod == AliIsolationCut::kSumBkgSubPerpBandIC )
+        {
+          //coneptsumBkgChRaw = perpBandPtSumCh;
+          coneptsumBkgCh    = perpBandPtSumChNorm;
+          coneptsumBkgChEmb = perpBandPtSumChNormEmb;
         }
 
         //coneptsumChSub  = sumPtInConeCh - coneptsumBkgCh;
@@ -5895,6 +6166,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
         coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi*excessAreaNeEta;
     }
+
+//    printf("MC method %d, Cen %2.0f; cone sum %2.2f, sub %2.2f; UE %2.2f Rho %2.2f\n",
+//           isoMethod, centrality, sumPtInConeCh * excessAreaChEta,
+//           coneptsumUESubChEmb,
+//           coneptsumBkgCh, coneptsumBkgCh / ( TMath::Pi() * coneSize * coneSize));
 
     // Fill the histograms
 
@@ -6108,8 +6384,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if(mcIndex == kmcPrimPi0Decay)
         {
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6124,8 +6400,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6139,8 +6415,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         else // eta decay
         {
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCEtaDecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6155,8 +6431,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() && 
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
             fhPtPrimMCEtaDecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6212,8 +6488,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6225,8 +6501,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
@@ -6243,8 +6519,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(!overlap) fhPtPrimMCEtaDecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
-          if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
-               dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
+          if ( dRdaugh2 > coneSize   ||
+               dRdaugh2 < coneMinDist )
             fhPtPrimMCEtaDecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
@@ -6256,8 +6532,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
-               dRdaugh2 < GetIsolationCut()->GetConeSize() &&
-               dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
+               dRdaugh2 < coneSize    &&
+               dRdaugh2 > coneMinDist &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
             fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);

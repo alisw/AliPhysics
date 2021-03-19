@@ -9,6 +9,8 @@
 #include "AliMCEvent.h"
 #include "AliGFWCuts.h"
 #include "TString.h"
+#include "AliProfileBS.h"
+#include "TRandom.h"
 
 class TList;
 class TH1D;
@@ -77,7 +79,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetV2dPtMultiBins(Int_t nBins, Double_t *multibins);
   void SetEta(Double_t newval) { fEta = newval; };
   void SetEtaNch(Double_t newval) { fEtaNch = newval; };
-  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = TMath::Abs(newval); };
+  void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
@@ -85,6 +87,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetConsistencyFlag(UInt_t newval) { fConsistencyFlag = newval; };
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
+  void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -96,6 +99,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
+  TRandom *fRndm; //For random number generation
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   TAxis *fV0MMultiAxis;
@@ -116,10 +120,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
-  TProfile **fptvar; //!
+  AliProfileBS **fptvar; //!
   TList *fCovList;
   TList *fV2dPtList;
-  TProfile **fCovariance; //!
+  AliProfileBS **fCovariance; //!
   Bool_t fmptSet;
   UInt_t fTriggerType;
   TList *fWeightList; //!
@@ -139,9 +143,9 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1D *fV0MMulti;
   TH1D *fV2dPtMulti;
-  Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn);
+  Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
-  Bool_t FillCovariance(TProfile* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt);
+  Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t fDisablePID;

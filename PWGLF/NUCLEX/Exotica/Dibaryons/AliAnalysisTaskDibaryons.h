@@ -16,13 +16,16 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     virtual void Terminate(Option_t *option);
 
     AliEventCuts fAliEventCuts;
-    void SetAnalysisType          ( const char *analysisType ) { fAnalysisType    = analysisType;    }
-    void SetCollidingSystem       ( Int_t  collidingSystem   ) { fCollidingSystem = collidingSystem; }
-    void SetSelectedTriggerClass  ( UInt_t triggerType       ) { fkTriggerClass   = triggerType;     }
-    void SetFilterBit             ( UInt_t filterBit         ) { fFilterBit       = filterBit;       }
-    void SetPileupCut             ( Bool_t pileupCut         ) { fPileupCut       = pileupCut;       }
-    void SetPairCleaning          ( Bool_t pairCleaning      ) { fPairCleaning    = pairCleaning;    }
-    void SetEventMixing           ( Bool_t eventMixing       ) { fEventMixing     = eventMixing;     }
+    void SetAnalysisType          ( const char *analysisType  ) { fAnalysisType      = analysisType;      }
+    void SetCollidingSystem       ( Int_t  collidingSystem    ) { fCollidingSystem   = collidingSystem;   }
+    void SetSelectedTriggerClass  ( UInt_t triggerType        ) { fkTriggerClass     = triggerType;       }
+    void SetFilterBit             ( UInt_t filterBit          ) { fFilterBit         = filterBit;         }
+    void SetPileupCut             ( Bool_t pileupCut          ) { fPileupCut         = pileupCut;         }
+    void SetPairCleaning          ( Bool_t pairCleaning       ) { fPairCleaning      = pairCleaning;      }
+    void SetEventMixing           ( Bool_t eventMixing        ) { fEventMixing       = eventMixing;       }
+    void SetNsigmaProton          ( Double_t nsigProton       ) { fNsigProton        = nsigProton;        }
+    void SetNsigmaV0Daughter      ( Double_t nsigV0Daughter   ) { fNsigV0Daughter    = nsigV0Daughter;    }
+    void SetNsigmaCascDaughter    ( Double_t nsigCascDaughter ) { fNsigCascDaughter  = nsigCascDaughter;  }
 
     void PairCleaner();
     Double_t relKcalc(TLorentzVector track1, TLorentzVector track2);
@@ -40,6 +43,9 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     Bool_t                  fPileupCut;               //  apply out-of-bunch pile-up cuts for daughters of V0s and Cascades
     Bool_t                  fPairCleaning;            //  perform Pair Cleaning
     Bool_t                  fEventMixing;             //  perform Event Mixing
+    Double_t                fNsigProton;              //  proton PID nsigma
+    Double_t                fNsigV0Daughter;          //  V0 daughter PID nsigma
+    Double_t                fNsigCascDaughter;        //  Cascade daughter PID nsigma
 
     THashList              *fOutput;                  //! User output
     AliAODTrack           **fTrackArray;              //! global track info
@@ -59,7 +65,7 @@ class AliAnalysisTaskDibaryons : public AliAnalysisTaskSE {
     AliAnalysisTaskDibaryons(const AliAnalysisTaskDibaryons&);            // not implemented
     AliAnalysisTaskDibaryons& operator=(const AliAnalysisTaskDibaryons&); // not implemented
 
-    ClassDef(AliAnalysisTaskDibaryons, 8);
+    ClassDef(AliAnalysisTaskDibaryons, 9);
 };
 
 #endif

@@ -28,7 +28,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
   public:
 
     AliAnalysisTaskLeuteronAOD();									// class constructor without parameters
-    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool DeuteronSideband, bool UpperSideband, bool LowerSideband, bool Signal);	// class constructor with parameters
+    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband);	// class constructor with parameters
     AliAnalysisTaskLeuteronAOD& operator = (const AliAnalysisTaskLeuteronAOD &task);			// copy assignment operator
     AliAnalysisTaskLeuteronAOD(const AliAnalysisTaskLeuteronAOD &task);					// copy constructor
     virtual ~AliAnalysisTaskLeuteronAOD();								// class destructor
@@ -37,7 +37,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);	      // is called in every event -> define what to search for in the events 
     Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);      // calculate the mass^2 of the particle using TOF
     Double_t GetDeuteronMass2Mean_pp(float pT);
-    Double_t GetLimit(float pT, double mean, double sign,double offset);
+    Double_t GetLimit(float pT, double mean, double sign,double offset,double lastpar);
     Double_t GetAntideuteronMass2Mean_pp(float pT);
     virtual void Terminate(Option_t *option){};	      // is called only once -> terminates the analysis
 
@@ -73,10 +73,9 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     bool fIsMC;							// run over data "fIsMC(false)" or over Monte Carlo data "fIsMC(true)"
     bool fIsHighMultV0;
     bool fBruteForceDebugging;
-    bool fDeuteronSideband;
-    bool fUpperSideband;
-    bool fLowerSideband;
-    bool fSignal;
+    bool fisSidebandSignal;
+    bool fisUpperSideband;
+    bool fisLowerSideband;
     int fTrackBufferSize;						
 
     TList			    *fEventList;		// list for the event cuts

@@ -81,6 +81,7 @@ class AliAnalysisTaskUpc4Pi : public AliAnalysisTaskSE {
 	Float_t PIDTPCElectron_T[8];
 	Int_t TPCsignal_T[8];
 	Float_t TrackP_T[8];
+	Int_t TrackC_T[8];
 	Float_t Vertex_T[3];
 	Int_t VtxContrib_T;
 	Float_t VtxChi2_T,VtxNDF_T;

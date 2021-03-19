@@ -29,6 +29,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
     void SetResFileName(TString name){ fResolDataSetName = name; }
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
+    void SetEffFileName(TString name){ fFileNameEff = name; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -149,8 +150,11 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFile;        //! Pointer to input file
     TString     fFileNameDCA;    // Name of the input file (DCA)
     TFile*      fFileDCA;        //! Pointer to input file
-    TString     fFileNameEff;    // Name of the input file (Eff weight)
+    TString     fFileNameEff;    // Name of the input file (Eff)
+    TString     fFileNameEffLocal;    // Name of the input file (Eff)
     TFile*      fFileEff;        //! Pointer to input file
+    TString     fFileNameWM;    // Name of the input file (weight multiplicity)
+    TFile*      fFileWM;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
     TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data

@@ -127,41 +127,39 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   // ******************** pp 13 TeV cuts             *****************************************************
   // *****************************************************************************************************
   if (trainConfig == 1){   // PHOS Standard
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311011"); 
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","21120003211311011"); // Filterbit 1<<4
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","22120003211311011"); // Filterbit 1<<8
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311021"); 
   } else if (trainConfig == 2){   // PHOS PID
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20220003211311011"); // NCluster TPC 50
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20320003211311011"); // NCluster TPC 65
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20110003211311011"); // Nchi2 TPC 4
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20220003211311021"); // NCluster TPC 50
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20320003211311021"); // NCluster TPC 65
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20110003211311021"); // Nchi2 TPC 4
   } else if (trainConfig == 3){   // PHOS
-    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20120003211311011");
-    cuts.AddCutHeavyMesonSigma("00010113","244661904a09cc00000","0163103100000010","20120003211311011");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra01cc00000","0163103100000010","20120003211311011");
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra07cc00000","0163103100000010","20120003211311011");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","244661904a09cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra01cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra07cc00000","0163103100000010","20120003211311021");
   } else if (trainConfig == 4){   // PHOS DCA-Variation
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120002211311011"); // DCAXY 0.02
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120004211311011"); // DCAXY 0.015
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120002211311021"); // DCAXY 0.02
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120004211311021"); // DCAXY 0.015
   } else if (trainConfig == 5){   // PHOS Pion mass-Variation
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211322011"); // tighter mass cut
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211342011"); // on left side tighter
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211333011"); // looser mass cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211322021"); // tighter mass cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211342021"); // on left side tighter
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211333021"); // looser mass cut
   } else if (trainConfig == 6){   // PHOS Opening angle-Variation
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311021"); // wider cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311011"); // tight cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311031"); // tighter cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311041"); // tightest cut
   } else if (trainConfig == 7){   // Background describtion
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311010"); // changed to pion rotation  
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311020"); // changed to pion rotation  
   } else if (trainConfig == 10){    // PHI 7
-    cuts.AddCutHeavyMesonSigma("00062113","24466190sa09cc00000","0163103100000010","20120003211311011");
+    cuts.AddCutHeavyMesonSigma("00062113","24466190sa09cc00000","0163103100000010","20120003211311021");
 
 
 
   } else if (trainConfig == 100){    // EDC
-    cuts.AddCutHeavyMesonSigma("00010113","4117912067032230000","0163103100000050","20120003211311011");
+    cuts.AddCutHeavyMesonSigma("00010113","4117912067032230000","0163103100000050","20120003211311021");
   } else if (trainConfig == 101){    // PHI7
-    cuts.AddCutHeavyMesonSigma("0008e113","4117912067032230000","0163103100000010","20120003211311011");
-    cuts.AddCutHeavyMesonSigma("0008d113","4117912067032230000","0163103100000010","20120003211311011");
+    cuts.AddCutHeavyMesonSigma("0008e113","4117912067032230000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("0008d113","4117912067032230000","0163103100000010","20120003211311021");
   }
 
   if(!cuts.AreValid()){

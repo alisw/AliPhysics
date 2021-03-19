@@ -20,6 +20,7 @@ void AddTask_GammaIsoTree(
   TString   fileNameExternalInputs        = "",
   Double_t  genPtCut                      = 0, // only save particles from stack with gen pt > genPtCut
   Double_t  recPtCut                      = 0, // only save clusters with rec pt > recPtCut
+  TString   additionalFileEnding          = "",
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
 
@@ -80,56 +81,62 @@ void AddTask_GammaIsoTree(
   Double_t                    fYMCCut = 9999;  
 
   Double_t                    fAntiIsolation[2] = {5.,10};
-  if(trainConfig == 1){ 
+  if(trainConfig == 1){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "1111132060032230000";
-      TaskClusterCutnumberIsolationEMC = "1111100060022700000";
-      TaskClusterCutnumberTaggingEMC = "1111100060022700000";
-      TaskClusterCutnumberPHOS          = "2444411044013300000";
-      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-  } else if(trainConfig == 2){ 
-      TaskEventCutnumber                = "00052113";
-      TaskClusterCutnumberEMC           = "1111132060032230000";
-      TaskClusterCutnumberIsolationEMC = "1111100060022700000";
-      TaskClusterCutnumberTaggingEMC = "1111100060022700000";
-      TaskClusterCutnumberPHOS          = "2444411044013300000";
-      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-  } else if(trainConfig == 3){ 
-      TaskEventCutnumber                = "00081113";
-      TaskClusterCutnumberEMC           = "1111132010032230000";
-      TaskClusterCutnumberIsolationEMC = "1111100060022700000";
-      TaskClusterCutnumberTaggingEMC = "1111100060022700000";
-      TaskClusterCutnumberPHOS          = "2444411044013300000";
-      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-
-  } else if(trainConfig == 4){  // min bias loose cluster cuts
-      TaskEventCutnumber                = "00010113";
-      TaskClusterCutnumberEMC           = "111113200f000000000";
-      TaskClusterCutnumberIsolationEMC  = "111113206f022700000";
+      TaskClusterCutnumberEMC           = "1111132060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
       backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
+      doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
-  } else if(trainConfig == 5){  // min bias loose cluster cuts
-      TaskEventCutnumber                = "00052103";
-      TaskClusterCutnumberEMC           = "111113200f000000000";
-      TaskClusterCutnumberIsolationEMC = "111113206f022700000";
-      TaskClusterCutnumberTaggingEMC = "111113206f022700000";
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 2){  // trigger
+      TaskEventCutnumber                = "00052113";
+      TaskClusterCutnumberEMC           = "1111132060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
-      backgroundTrackMatching = kFALSE; // obsolete
-      doNeutralIso = kTRUE;
-      doChargedIso = kTRUE;
-      doTagging = kTRUE;
-      doCellIso = kTRUE;
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
 
-  // cut based study
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 3){  // trigger
+      TaskEventCutnumber                = "00081113";
+      TaskClusterCutnumberEMC           = "1111132060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+
+  // DEFAULT
   } else if(trainConfig == 6){  // min bias (cuts from PCMEMC 84 + loose iso)
       TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
@@ -168,6 +175,27 @@ void AddTask_GammaIsoTree(
       doCellIso = kFALSE;
   } else if(trainConfig == 8){  // trigger
       TaskEventCutnumber                = "00081103";
+      TaskClusterCutnumberEMC           = "1111132060032000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"5");
+      TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
+      TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doTagging = kFALSE;
+      doCellIso = kFALSE;
+
+  // END OF DEFAULT
+    // TEST TO CHECK INFLUENCE ON ORDERING
+  } else if(trainConfig == 9){  // min bias (cuts from PCMEMC 84 + loose iso)
+      TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
       TaskTMCut.Replace(9,1,"5");
@@ -757,24 +785,28 @@ void AddTask_GammaIsoTree(
   AliAnalysisDataContainer *coutput = NULL;
   AliAnalysisDataContainer *histos = NULL;
 
+  if(additionalFileEnding.CompareTo("")!=0){
+     additionalFileEnding = Form("_%s",additionalFileEnding.Data());
+  }
+
   if(corrTaskSetting.CompareTo("")){
     coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s",trainConfig,corrTaskSetting.Data()),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
-                                                              Form("GammaIsoTree_%d.root",trainConfig));
+                                                              Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
     histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s",trainConfig,corrTaskSetting.Data()),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
-                                                              Form("GammaIsoTree_histos_%d.root",trainConfig));
+                                                              Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));
   } else{
     coutput =mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
-                                                              Form("GammaIsoTree_%d.root",trainConfig));
+                                                              Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
     histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
-                                                              Form("GammaIsoTree_histos_%d.root",trainConfig));
+                                                              Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));
    
   }
   

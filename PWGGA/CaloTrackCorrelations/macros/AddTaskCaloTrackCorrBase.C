@@ -45,7 +45,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// Configure the EMCal/DCal cluster filtering cuts done in AliCaloTrackReader
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
-/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param clutsString : string indicating cuts to activate: "PileUp", "EventCuts","PtHardCut"+"JetJet" or "GamJet" or "GamJetGen", "RemoveLEDEvents"+"1" or "2"+"Strip"
 /// \param col: A string with the colliding system
 /// \param year: The year the data was taken, used to configure time cut
 /// \param simulation : A bool identifying the data as simulation
@@ -72,15 +72,38 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   //reader->RejectFastClusterEvents() ;
 
+  // Use predefined event cuts in AliEventCuts class
+  if ( cutsString.Contains("EventCuts") )
+  {
+    reader->UseEventCutsClass(kTRUE);
+    printf("AddTaskCaloTrackCorrBase::ConfigureEventSelection() - Switch on AliEventCuts event rejection\n");
+  }
+
   //
   // Pile-up
   //
-  if ( cutsString.Contains("SPDPileUp") )
+  // Check https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsPileup#Removing_events_with_pileup_usin
+  //
+  if ( cutsString.Contains("PileUp") )
   {
-    printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Switch on Pile-up event rejection by SPD\n");
-    reader->SwitchOnPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
-    if ( year > 2013 ) reader->SetPileUpParamForSPD(0,5);
-  }
+    // pp - pPb
+    // for low mult pp number of contributors is recommended 3, for high mult pp and p-Pb 5,
+    // Apply ncontributors = 5 as default for Run2, and 3 for Run1
+    if ( col != "PbPb" )
+    {
+      printf("AddTaskCaloTrackCorrBase::ConfigureEventSelection() - Switch on pp/pPb pileup event rejection by SPD\n");
+      reader->SwitchOnPileUpEventRejection(1);  // remove pileup by default off, not for trigger in pp 7 TeV?
+      if ( year > 2013 ) reader->SetPileUpParamForSPD(0,5);
+    }
+    // PbPb
+    // Check correlation between number of TPC clusters and sum of SDD+SSD clusters, using AliEventCuts::SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE)
+    else if ( col == "PbPb" )
+    {
+      printf("AddTaskCaloTrackCorrBase::ConfigureEventSelection() - Switch on Pb-Pb pileup event rejection via correlation between number of TPC clusters and sum of SDD+SSD clusters\n");
+      reader->SwitchOnPileUpEventRejection(2,1);
+      // Second argument sets the level of rejection, more strict 1 (32%?) to less strict 4 (6%?)
+    }
+  } // PileUp
   
   //
   // Centrality
@@ -423,7 +446,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
 /// \param simulation : A bool identifying the data as simulation
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp, NoTracks)
+/// \param cutsString : A string with additional cuts (Smearing, PileUp, NoTracks)
 /// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 /// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
@@ -652,7 +675,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param period: A string with the data period
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
-/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
+/// \param cutsString : A string with additional cuts (Smearing, PileUp)
 /// \param nonLinOn : An int to set the use of the non linearity correction and version
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
@@ -665,7 +688,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///
 /// Options of cutsString:
 ///    * Smearing: Smear shower shape long axis in cluster, just this parameter. Not to be used
-///    * SPDPileUp: Remove events tagged as pile-up by SPD
+///    * PileUp: Remove events tagged as pile-up by SPD for pp and pPb and via TPC-ITS correlation in Pb-Pb
+///    * EventCuts: Rely on AliEventCuts for event removal
 ///    * MCWeight: Apply weight on histograms and calculate sumw2
 ///    * MCEvtHeadW: Get the cross section from the event header
 ///    * MCEnScale: Scale the cluster energy by a factor, depending SM number  and period
@@ -973,6 +997,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     {
       task ->SelectCollisionCandidates( mask );
     }
+
+    // In case of using AliEventCuts, set the trigger mask do not use the default one
+    (maker->GetReader()->GetEventCutsClass()).OverrideAutomaticTriggerSelection(mask);
   }
   
   printf("AddTaskCaloTrackCorrBase::Main() << End Base Task Configuration for %s >>\n",

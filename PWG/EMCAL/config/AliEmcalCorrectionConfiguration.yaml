@@ -239,6 +239,15 @@ ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterLowEnergyEfficiency:                         # Cluster number of cell efficiency, artificially widens the cluster in MC if it only has 1 cell
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    nCellFunct: kGammaAndElec                       # Sets the probabiliyt function for the ncell efficiency
+    setRejectNextToClus: true                       # Set if 1 cell clusters which are directly next to another cluster should be considered for the ncell efficiency (Should be enabled)
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -329,6 +338,7 @@ executionOrder:
     - ClusterExotics
     - ClusterNonLinearity
     - ClusterNonLinearityMCAfterburner
+    - ClusterLowEnergyEfficiency
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
     - ClusterEnergyVariation

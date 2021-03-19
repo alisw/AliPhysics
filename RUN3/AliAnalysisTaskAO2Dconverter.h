@@ -71,7 +71,7 @@ public:
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
-    kRun2CollInfo,
+    kRun2BCInfo,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -93,18 +93,27 @@ public:
     kAliGenToyEventHeader,
     kGenerators
   };
+  enum CollisionFlagsRun2 : uint16_t {
+    Run2VertexerTracks = 0x1,
+    Run2VertexerZ = 0x2,
+    Run2Vertexer3D = 0x4,
+    // upper 8 bits for flags
+    Run2VertexerTracksWithConstraint = 0x10,
+    Run2VertexerTracksOnlyFitter = 0x20,
+    Run2VertexerTracksMultiVertex = 0x40
+  }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
     GlobalTrack = 0,
     ITSStandalone,
-    MFTStandalone,
     Run2GlobalTrack = 254,
     Run2Tracklet = 255
-  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+  }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackFlagsRun2Enum {
     ITSrefit = 0x1,
     TPCrefit = 0x2,
     GoldenChi2 = 0x4
-  }; // corresponds to O2/Core/Framework/include/Framework/DataTypes.h
+    // NOTE Highest 4 bits reservd for PID hypothesis
+  }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
   };
@@ -140,7 +149,8 @@ private:
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
   
-  Int_t fEventCount = 0; //! event count
+  Int_t fCollisionCount = 0; //! collision count
+  Int_t fBCCount = 0;        //! BC count
   Bool_t fTfInitialized = false; //!
   Int_t fTFCount = 0; //! count TF written
 
@@ -178,8 +188,9 @@ private:
     Float_t  fCovYZ = 0.f;      /// cov[4]
     Float_t  fCovZZ = 999.f;    /// cov[5]
     // Quality parameters
-    Float_t  fChi2 = 999.f;             /// Chi2 of the vertex
-    UInt_t   fN = 0u;                /// Number of contributors
+    UShort_t  fFlags = 0;       /// Vertex type
+    Float_t  fChi2 = 999.f;     /// Chi2 of the vertex
+    UShort_t fN = 0u;           /// Number of contributors
 
     // The calculation of event time certainly will be modified in Run3
     // The prototype below can be switched on request
@@ -203,11 +214,12 @@ private:
   } bc; //! structure to keep trigger-related info
   
   struct {
-    Int_t fEventCuts = 0;         /// integer to store event selections from AliMultSelection
-    Int_t fCL0 = 0;    /// CL0
-    Int_t fCL1 = 0;    /// CL1
-  } run2collinfo; //! structure to keep run 2 related info 
-  
+    UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
+    ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
+    UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
+    UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
+  } run2bcinfo; //! structure to keep run 2 only related info 
+
   struct {
     // Track data
 
@@ -523,7 +535,7 @@ private:
   TFile * fOutputFile = 0x0; ///! Pointer to the output file
   TDirectory * fOutputDir = 0x0; ///! Pointer to the output Root subdirectory
   
-  ClassDef(AliAnalysisTaskAO2Dconverter, 14);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 15);
 };
 
 #endif

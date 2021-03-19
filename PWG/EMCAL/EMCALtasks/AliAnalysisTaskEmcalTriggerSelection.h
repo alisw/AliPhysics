@@ -904,6 +904,9 @@ private:
    */
   void PrintStream(std::ostream &stream) const;
 
+  AliAnalysisTaskEmcalTriggerSelection(const AliAnalysisTaskEmcalTriggerSelection &);
+  AliAnalysisTaskEmcalTriggerSelection &operator=(const AliAnalysisTaskEmcalTriggerSelection &);
+
   ClassDef(AliAnalysisTaskEmcalTriggerSelection, 1);    // Task running different EMCAL trigger selections
 };
 

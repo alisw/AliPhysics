@@ -297,7 +297,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 	Double_t vec_hAllESD[14];    	// vector used to fill hAllESD
   Double_t vec_hDeltaPhi[9];		// vector used to fill hDeltaPhi
-  Double_t vec_hResponse[13]; 	// vector used to fill hResponse
+  Double_t vec_hResponse[14]; 	// vector used to fill hResponse
   // Double_t vec_hFakes[10]; 	// vector used to fill hResponse
 
 
@@ -308,7 +308,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_delta_y, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
 
-  enum axis_hResponse {l_comb08_resp, l_directivity_resp, l_pT_resp, l_charge_resp, l_pidTOF_resp, l_rapidity_resp, l_delta_phi_resp, l_delta_y_resp, l_MC_comb08_resp, l_MC_directivity_resp, l_MC_pT_resp, l_MCprimary_resp, l_MCPID_resp};
+  enum axis_hResponse {l_comb08_resp, l_directivity_resp, l_pT_resp, l_charge_resp, l_pidTOF_resp, l_rapidity_resp, l_delta_phi_resp, l_delta_y_resp, l_MC_comb08_resp, l_MC_directivity_resp, l_MC_pT_resp, l_MCprimary_resp, l_MCPID_resp, l_MC_delta_phi_resp};
 
   enum axis_hFakes {l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTPC_fake, l_pidTOF_fake, l_rapidity_fake, l_TOFmatching_fake, l_delta_phi_fake, l_delta_y_fake};
 
@@ -465,6 +465,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 			else vec_hAllESD[l_MCprimary] = 0.;
 
       vec_hResponse[l_MCprimary_resp] = vec_hAllESD[l_MCprimary];
+      vec_hResponse[l_MC_delta_phi_resp] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);
 
       vec_hDeltaPhi[5] = tMC->Pt();
 		}
@@ -787,12 +788,15 @@ Bool_t AliMESpidTask::BuildQAHistos()
   fHistosQA->AddAt(hMultEst, slot_MultEst);
 
   // test response
-  const Int_t ndimResponse(13);
-  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 80, 20, 7, 5, 87, 2, 5};
+  const Int_t ndimResponse(14);
+  const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 4, 20, 7, 5, 87, 2, 5, 4};
+  // const Int_t cldNbinsResponse[ndimResponse]   = {7, 5, 87, 2, 5, 20, 80, 20, 7, 5, 87, 2, 5};
   // const Int_t cldNbinsResponse[ndimResponse]   = {20, 10, 42, 2, 5, 20, 80, 20, 20, 10, 42, 2, 5};
-  const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0., 0., 0., -0.5, -0.5},
-  cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 100., 1., 20., 1.5, 4.5};
-  THnSparseD *hResponse = new THnSparseD("Response","Response;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;generated 0.8;generated directivity;generated p_{T};generated_primary;generated_PID", ndimResponse, cldNbinsResponse, cldMinResponse, cldMaxResponse);
+  const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., 0., -2., 0., 0., 0., -0.5, -0.5, 0.},
+  cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., 4., 2., 100., 1., 20., 1.5, 4.5, 4.};
+  // const Double_t cldMinResponse[ndimResponse]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0., 0., 0., -0.5, -0.5},
+  // cldMaxResponse[ndimResponse]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 100., 1., 20., 1.5, 4.5};
+  THnSparseD *hResponse = new THnSparseD("Response","Response;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;generated 0.8;generated directivity;generated p_{T};generated_primary;generated_PID;generated_delta_phi;", ndimResponse, cldNbinsResponse, cldMinResponse, cldMaxResponse);
   hResponse->GetAxis(0)->Set(7, binLimits_mult);
   // hResponse->GetAxis(2)->Set(42, binLimits_reduced);
   hResponse->GetAxis(2)->Set(87, binLimits);
@@ -812,10 +816,13 @@ Bool_t AliMESpidTask::BuildQAHistos()
 */
   // test miss
   const Int_t ndimMiss(8);
-  const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 87, 2, 5, 20, 80, 20};
+  const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 87, 2, 5, 20, 4, 20};
+  // const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 87, 2, 5, 20, 80, 20};
   // const Int_t cldNbinsMiss[ndimMiss]   = {20, 10, 42, 2, 5, 20, 80, 20};
-  const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2.},
-  cldMaxMiss[ndimMiss]  = {100., 1.0, 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2.};
+  const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., 0, -2.},
+  cldMaxMiss[ndimMiss]  = {100., 1.0, 20., 2., 4.5, 1., 4., 2.};
+  // const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2.},
+  // cldMaxMiss[ndimMiss]  = {100., 1.0, 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2.};
   THnSparseD *hMiss = new THnSparseD("Miss","Miss;combined08;directivity;p_{T};charge;PID_MC;y;delta_phi;delta_y;", ndimMiss, cldNbinsMiss, cldMinMiss, cldMaxMiss);
   hMiss->GetAxis(0)->Set(7, binLimits_mult);
   // hMiss->GetAxis(2)->Set(42, binLimits_reduced);
@@ -824,10 +831,13 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // used for raw spectra and a lot of corrections
   const Int_t ndimAllESD(14);
-  const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 87, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 87, 2, 5, 5, 20, 2, 4, 20, 5, 20, 2};
+  // const Int_t cldNbinsAllESD[ndimAllESD]   = {7, 102, 5, 87, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
   // const Int_t cldNbinsAllESD[ndimAllESD]   = {20, 102, 10, 42, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
-  const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
-  cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 20., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
+  const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, 0., -2., -0.5, -1., -0.5},
+  cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 20., 2., 4.5, 4.5, 1., 1.5, 4., 2., 4.5, 1.,1.5};
+  // const Double_t cldMinAllESD[ndimAllESD]  = {0., 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
+  // cldMaxAllESD[ndimAllESD]  = {100., 100., 1., 20., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
   THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(0)->Set(7, binLimits_mult);
   hAllESD->GetAxis(1)->Set(102, binLimitsV0M);
@@ -837,10 +847,13 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // used for tracking efficiency
   const Int_t ndimGen(10);
-  const Int_t cldNbinsGen[ndimGen]   = {7, 5, 87, 2, 5, 20, 80, 20, 150, 20};
+  const Int_t cldNbinsGen[ndimGen]   = {7, 5, 87, 2, 5, 20, 4, 20, 150, 20};
+  // const Int_t cldNbinsGen[ndimGen]   = {7, 5, 87, 2, 5, 20, 80, 20, 150, 20};
   // const Int_t cldNbinsGen[ndimGen]   = {20, 10, 42, 2, 5, 20, 80, 20, 150, 20};
-  const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0.5, 0.},
-  cldMaxGen[ndimGen]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 150.5, 1.};
+  const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., 0., -2., 0.5, 0.},
+  cldMaxGen[ndimGen]  = {100., 1., 20., 2., 4.5, 1., 4., 2., 150.5, 1.};
+  // const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0.5, 0.},
+  // cldMaxGen[ndimGen]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 150.5, 1.};
   THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCdirectivity;MCp_{T};MCcharge;MCPID;MCy;MCdelta_phi;MCdelta_y;ESDmultiplicity;ESDdirectivity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
   hGen->GetAxis(0)->Set(7, binLimits_mult);
   // hGen->GetAxis(2)->Set(42, binLimits_reduced);
@@ -922,6 +935,25 @@ Double_t AliMESpidTask::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
         }
     }
 
-    return result;
+    // printf("\n\ndelta_phi = %g\n", result);
+
+    if(result == -9999){
+        return 0.5;
+    }
+    else if(-1.<=result && result<=1.){  // near peak
+        // printf("returning 0.5\n");
+        return 1.5;
+    }
+    else if (1.8<=result && result<=4.4){ // away peak
+        // printf("returning 1.5\n");
+        return 2.5;
+    }
+    else{
+        // printf("returning 2.5\n");
+        return 3.5;
+    }
+
+
+    // return result;
 
 }
