@@ -210,6 +210,12 @@ class AliIsolationCut : public TObject {
   void       SetJetRhoTaskContainerName(TString name)          { fJetRhoTaskName = name ; }
   TString    GetJetRhoTaskContainerName()                const { return fJetRhoTaskName ; }
 
+  void       SetCentralityLimitForJetRhoSparse(Float_t cen)    { fJetRhoSparseCentralityLimit = cen  ; }
+  Float_t    GetCentralityLimitForJetRhoSparse()         const { return fJetRhoSparseCentralityLimit ; }
+
+  void       SwitchOnJetRhoCentralityChange ()                 { fJetRhoCheckCentrality = kTRUE  ; }
+  void       SwitchOffJetRhoCentralityChange()                 { fJetRhoCheckCentrality = kFALSE ; }
+
  private:
 
   Bool_t     fFillHistograms;                          ///< Fill histograms if GetCreateOuputObjects() was called. 
@@ -255,6 +261,8 @@ class AliIsolationCut : public TObject {
   Float_t    fNeutralOverChargedRatio[4];              ///< Ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction. Might depend on centrality. Parameters of third order polynomial.
   
   TString    fJetRhoTaskName;                          ///< Name of the container of the jet rho task calculation
+  Float_t    fJetRhoSparseCentralityLimit;             ///< Use Sparse Rho calculation for peripheral events avobe this centrality
+  Bool_t     fJetRhoCheckCentrality;                   ///< Activate Rho method calculation switch depending centrality
 
   Int_t      fDebug;                                   ///< Debug level.
 
@@ -456,7 +464,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,22) ;
+  ClassDef(AliIsolationCut,23) ;
   /// \endcond
 
 } ;
