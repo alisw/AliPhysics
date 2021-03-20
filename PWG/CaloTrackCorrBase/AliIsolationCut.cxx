@@ -54,7 +54,7 @@ fPtThreshold(0.),    fPtThresholdMax(10000.),
 fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fSumPtThresholdGap(0.),
 fPtFraction(0.),     fICMethod(0),                  fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
-fJetRhoTaskName(""),
+fJetRhoTaskName(""), fJetRhoSparseCentralityLimit(100), fJetRhoCheckCentrality(0),
 fDebug(0),           fMomentum(),                   fTrackVector(),
 fEMCEtaSize(-1),     fEMCPhiMin(-1),                fEMCPhiMax(-1),
 fTPCEtaSize(-1),     fTPCPhiSize(-1),
@@ -628,7 +628,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
   {
     AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ;
     
-    if(track)
+    if ( track )
     {
       // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
       // do not count the candidate or the daughters of the candidate
@@ -3052,7 +3052,8 @@ TString AliIsolationCut::GetICParametersList()
   parList+=onePar ;
   if ( fICMethod == kSumBkgSubJetRhoIC )
   {
-    snprintf(onePar,buffersize,"fJetRhoTaskName=%s",fJetRhoTaskName.Data());
+    snprintf(onePar,buffersize,"fJetRhoTaskName=%s,fJetRhoCheckCentrality=%d,fJetRhoSparseCentralityLimit=%2.1f",
+             fJetRhoTaskName.Data(),fJetRhoCheckCentrality,fJetRhoSparseCentralityLimit);
   }
   snprintf(onePar,buffersize,"fPartInCone=%d;",fPartInCone) ;
   parList+=onePar ;
@@ -3098,6 +3099,7 @@ void AliIsolationCut::InitParameters()
   fDistMinToTrigger     = -1.; // no effect
   
   fJetRhoTaskName       = "Rho";
+  fJetRhoSparseCentralityLimit = 50;
 
   // Ratio charged to neutral
   // Based on pPb analysis, Erwann Masson Thesis 
@@ -3394,10 +3396,16 @@ void  AliIsolationCut::MakeIsolationCut
     } // UE subtraction by perpendicular cones
     else if ( fICMethod == kSumBkgSubJetRhoIC )
     {
-      AliRhoParameter * outrho = (AliRhoParameter*) reader->GetInputEvent()->FindListObject(fJetRhoTaskName);
+      // Rely on Jet group methods to get the UE density.
+      // 2 methods available, if 0-50% PbPb use AliAnalysisTaskRho else use AliAnalysisTaskRhoSparse
+      TString name = fJetRhoTaskName;
+      if ( fJetRhoCheckCentrality && centrality > fJetRhoSparseCentralityLimit )
+        name += "Sparse";
+
+      AliRhoParameter * outrho = (AliRhoParameter*) reader->GetInputEvent()->FindListObject(name);
 
       if ( !outrho )
-        AliInfo(Form("Could not find rho container <%s>!",fJetRhoTaskName.Data()));
+        AliInfo(Form("Could not find rho container <%s>!",name.Data()));
       else
       {
         Float_t coneSize2 = fConeSize * fConeSize;
@@ -3781,7 +3789,8 @@ void AliIsolationCut::Print(const Option_t * opt) const
 
   printf("IC method          =     %d\n",    fICMethod   ) ;
   if ( fICMethod == kSumBkgSubJetRhoIC )
-    printf("jet rho task name = %s\n",fJetRhoTaskName.Data());
+    printf("Jet rho task name = %s, add string Sparse above cen %2.0f? %d\n",
+           fJetRhoTaskName.Data(), fJetRhoSparseCentralityLimit, fJetRhoCheckCentrality);
   printf("Cone Size          =     %1.2f\n", fConeSize   ) ;
   printf("Cone Size UE Gap   =     %1.2f\n", fConeSizeBandGap ) ;
   printf("pT threshold       =     >%2.1f;<%2.1f\n", fPtThreshold, fPtThresholdMax) ;
