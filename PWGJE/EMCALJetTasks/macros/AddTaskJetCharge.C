@@ -72,7 +72,7 @@ AliAnalysisTaskJetCharge* AddTaskJetCharge(
 
 	//Connect output
 	TString contName1(wagonName1);
-	TString contName2(wagonName1);
+	TString contName2(wagonName2);
 
 
 
