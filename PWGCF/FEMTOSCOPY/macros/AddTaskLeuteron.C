@@ -536,6 +536,18 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetCutTPCCrossedRows(true,70,0.85);
       TrackCuts2->SetCutTPCCrossedRows(true,70,0.85);
 
+    }else if(suffix == "29"){
+
+      // Protons and Antiprotons
+      TrackCuts1->SetPtRange(0.3,4.0);
+      TrackCuts2->SetPtRange(0.3,4.0);
+
+    }else if(suffix == "30"){
+
+      // Protons and Antiprotons
+      TrackCuts1->SetPtRange(0.5,4.0);
+      TrackCuts2->SetPtRange(0.5,4.0);
+
     }
 
   } // end of systematics if statement
