@@ -926,7 +926,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
 
     if(!fDoLightOutput){
       if(fDoMesonQA & 0b00000001) {
-        fHistoPhotonPairYPt[iCut]              = new TH2F("ESD_PhotonPair_Y_Pt","ESD_PhotonPair_Y_Pt",300,0.03,30.,150,-1.5,1.5);
+        fHistoPhotonPairYPt[iCut]              = new TH2F("ESD_PhotonPair_Y_Pt","ESD_PhotonPair_Y_Pt",200,0.03,20.,150,-1.5,1.5);
         fHistoPhotonPairYPt[iCut]->SetXTitle("p_{T, #pi^{0}cand}(GeV/c)");
         fHistoPhotonPairYPt[iCut]->SetYTitle("y_{#pi^{0}cand}");
         SetLogBinningXTH2(fHistoPhotonPairYPt[iCut]);
@@ -938,7 +938,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherYPt[iCut]);
       }
       if(fDoMesonQA & 0b00000010) {
-        fHistoPhotonPairAlphaPt[iCut]          = new TH2F("ESD_PhotonPair_Alpha_Pt","ESD_PhotonPair_Alpha_Pt",300,0.03,30.,200,-1,1);
+        fHistoPhotonPairAlphaPt[iCut]          = new TH2F("ESD_PhotonPair_Alpha_Pt","ESD_PhotonPair_Alpha_Pt",200,0.03,20.,200,-1,1);
         fHistoPhotonPairAlphaPt[iCut]->SetXTitle("p_{T, #pi^{0}cand}(GeV/c)");
         fHistoPhotonPairAlphaPt[iCut]->SetYTitle("#alpha_{#pi^{0}cand}");
         SetLogBinningXTH2(fHistoPhotonPairAlphaPt[iCut]);
@@ -950,7 +950,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherAlphaPt[iCut]);
       }
       if(fDoMesonQA & 0b00000100) {
-        fHistoPhotonPairOpenAnglePt[iCut]      = new TH2F("ESD_PhotonPair_OpenAngle_Pt","ESD_PhotonPair_OpenAngle_Pt",300,0.03,30.,100,0,1);
+        fHistoPhotonPairOpenAnglePt[iCut]      = new TH2F("ESD_PhotonPair_OpenAngle_Pt","ESD_PhotonPair_OpenAngle_Pt",200,0.03,20.,100,0,1);
         fHistoPhotonPairOpenAnglePt[iCut]->SetXTitle("p_{T, #pi^{0}cand}(GeV/c)");
         fHistoPhotonPairOpenAnglePt[iCut]->SetYTitle("#theta_{#pi^{0}cand}");
         SetLogBinningXTH2(fHistoPhotonPairOpenAnglePt[iCut]);
@@ -1493,7 +1493,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fHistoTrueOmegaYPt[iCut]->SetYTitle("Y_{#omega}");
           fTrueList[iCut]->Add(fHistoTrueOmegaYPt[iCut]);
 
-          fHistoTruePi0FromOmegaYPt[iCut] = new TH2F("True_Pi0FromOmega_Y_Pt","True_Pi0FromOmega_Y_Pt",nBinsPt, arrPtBinning,150,-1.5,1.5);
+          fHistoTruePi0FromOmegaYPt[iCut] = new TH2F("True_Pi0FromOmega_Y_Pt","True_Pi0FromOmega_Y_Pt",200,0.,20.,150,-1.5,1.5);
           fHistoTruePi0FromOmegaYPt[iCut]->SetXTitle("p_{T,pi^{0}}(GeV/c)");
           fHistoTruePi0FromOmegaYPt[iCut]->SetYTitle("Y_{#pi^{0}}");
           fTrueList[iCut]->Add(fHistoTruePi0FromOmegaYPt[iCut]);
@@ -1504,7 +1504,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fHistoTrueOmegaAlphaPt[iCut]->SetYTitle("#alpha_{#omega}");
           fTrueList[iCut]->Add(fHistoTrueOmegaAlphaPt[iCut]);
 
-          fHistoTruePi0FromOmegaAlphaPt[iCut] = new TH2F("True_Pi0FromOmega_Alpha_Pt","MC_Pi0FromOmega_Alpha_Pt",nBinsPt, arrPtBinning,200,-1,1);
+          fHistoTruePi0FromOmegaAlphaPt[iCut] = new TH2F("True_Pi0FromOmega_Alpha_Pt","MC_Pi0FromOmega_Alpha_Pt",200,0.,20.,200,-1,1);
           fHistoTruePi0FromOmegaAlphaPt[iCut]->SetXTitle("p_{T,pi^{0}}(GeV/c)");
           fHistoTruePi0FromOmegaAlphaPt[iCut]->SetYTitle("#alpha_{#pi^{0}}");
           fTrueList[iCut]->Add(fHistoTruePi0FromOmegaAlphaPt[iCut]);
@@ -1567,7 +1567,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
           fTrueList[iCut]->Add(fHistoTrueDalitzPlot[iCut]);
         }
         if(fDoMesonQA & 0b100000000) {
-          fHistoTrueOmegaPtPi0Pt[iCut] = new TH2F("True_OmegaPt_Pi0Pt","True_OmegaPt_Pi0Pt",200,0,20,nBinsPt, arrPtBinning);
+          fHistoTrueOmegaPtPi0Pt[iCut] = new TH2F("True_OmegaPt_Pi0Pt","True_OmegaPt_Pi0Pt",nBinsPt, arrPtBinning,200,0,20);
           fHistoTrueOmegaPtPi0Pt[iCut]->SetXTitle("#omega p_{T}(GeV/c)");
           fHistoTrueOmegaPtPi0Pt[iCut]->SetYTitle("#pi^{0} p_{T}(GeV/c)");
           fTrueList[iCut]->Add(fHistoTrueOmegaPtPi0Pt[iCut]);
@@ -5711,7 +5711,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
     if(rotatedGammaIndex[0] != -1)                                              // chech if the altered cluster is accepted
     {
       AliAODConversionMother pi0cand3 = AliAODConversionMother(rotatedPhoton3, gamma1);
-      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand3 ,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand3 ,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
           && pi0cand3.Pt() > fMinPi0Pt)
         {
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand3, 0) ) {
@@ -5733,7 +5733,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
     if(rotatedGammaIndex[1] != -1)                                              // chech if the altered cluster is accepted
     {
       AliAODConversionMother pi0cand2 = AliAODConversionMother(rotatedPhoton2, gamma1);
-      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand2,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand2,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
           && pi0cand2.Pt() > fMinPi0Pt)
         {
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand2, 0) ) {
@@ -5755,7 +5755,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
     if(rotatedGammaIndex[2] != -1)                                              // chech if the altered cluster is accepted
     {
       AliAODConversionMother pi0cand1 = AliAODConversionMother(rotatedPhoton1, gamma1);
-      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand1,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand1,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
           && pi0cand1.Pt() > fMinPi0Pt)
         {
         if( ((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand1, 0) ) {
@@ -5779,7 +5779,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::PhotonSelectionCaloBack(Int_t rotatedGam
       AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
       if (gamma0==NULL || !(gamma0->GetIsCaloPhoton())) continue;
       AliAODConversionMother pi0cand = AliAODConversionMother(gamma0, gamma1);
-      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
+      if((((AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelected(&pi0cand,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
           && pi0cand.Pt() > fMinPi0Pt)
         {
         if( ( (AliConversionMesonCuts*)fNeutralPionCutArray->At(fiCut))->MesonIsSelectedByMassCut(&pi0cand, 0) ) {
