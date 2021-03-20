@@ -184,9 +184,6 @@ namespace {
                                  particle_pseudorapidity_azimuth);
 
         particle_area.clear();
-        particle_incident = std::vector<std::set<size_t> >(
-            particle_pseudorapidity_azimuth.size(),
-            std::set<size_t>());
 
         // Initialize the (event-by-event) EMCAL and DCAL boundary
         // polygons
@@ -229,8 +226,6 @@ namespace {
                         polygon.push_back(point_2d_epeck_t(
                             circulator->target()->point().x(),
                             circulator->target()->point().y()));
-                        particle_incident[face_index[*face]].insert(
-                            face_index[circulator->twin()->face()]);
                     }
                     else {
                         unbounded = true;
