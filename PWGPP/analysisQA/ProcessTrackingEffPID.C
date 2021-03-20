@@ -50,13 +50,13 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   TString multVar="N_{tracklets}";
   
   // different projection variables
-  TString varname[5]={"Eta","Phi","Pt","Mult","Zvert"};
-  const Int_t nProjections=9;
-  Double_t theVar[nProjections]={2,1,1,0,0,3,3,4,4};
+  TString varname[6]={"Eta","Phi","Pt","Mult","Zvert","DCAxy"};
+  const Int_t maxProjections=11;
+  Double_t theVar[maxProjections]={2,1,1,0,0,3,3,4,4,5,5};
   const Int_t nPtBins=3; // full pt, low pt, high pt
   Double_t ptLow[nPtBins]={-1.,0.3,3.};
   Double_t ptHigh[nPtBins]={999999.,0.5,10.};
-  Int_t thePtBin[nProjections]={0,1,2,1,2,1,2,1,2};
+  Int_t thePtBin[maxProjections]={0,1,2,1,2,1,2,1,2,1,2};
   Double_t maxMult=10000.;
 
   Int_t nToShow=0;
@@ -83,10 +83,10 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
 
       
-  TH1D* hEff[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hGen[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hRec[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hEffRatio[AliPID::kSPECIESC][nProjections];
+  TH1D* hEff[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hGen[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hRec[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hEffRatio[AliPID::kSPECIESC][maxProjections];
 
   TH1D* hPtStep[AliPID::kSPECIESC][nSteps];
   TH1D* hPtRatio[AliPID::kSPECIESC][nRatios];
@@ -116,6 +116,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
 
   TString charge[2] = {"pos","neg"};
+  Int_t nProjections=maxProjections;
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       TString nameSpGen=Form("hGenEvSel_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data());
@@ -123,6 +124,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
       THnSparseF* hSpGen=(THnSparseF*)l->FindObject(nameSpGen.Data());
       THnSparseF* hSpRec=(THnSparseF*)l->FindObject(nameSpRec.Data());
       printf("%s %s \n",nameSpRec.Data(),nameSpGen.Data());
+      if(hSpGen->GetNdimensions()==5) nProjections=9;
       maxMult=hSpRec->GetAxis(3)->GetXmax();
       TString tit3=hSpRec->GetAxis(3)->GetTitle();
       if(tit3.Contains("b (fm")) multVar="b (fm)";
@@ -204,6 +206,11 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   hFrameMult->GetXaxis()->SetTitle(multVar.Data());
   hFrameMult->GetYaxis()->SetTitle("Efficiency");
   hFrameMult->GetYaxis()->SetTitleOffset(1.2);
+
+  TH2F* hFrameDCA=new TH2F("hFrameDCA","",10000,0.,5.,100.,0.,1.2);
+  hFrameDCA->GetXaxis()->SetTitle("DCAxy (cm)");
+  hFrameDCA->GetYaxis()->SetTitle("Efficiency");
+  hFrameDCA->GetYaxis()->SetTitleOffset(1.2);
 
   TLatex* tcuts=new TLatex(0.7,0.2,"#splitline{|#eta|<0.8}{|z_{vert}|<10 cm}");
   tcuts->SetNDC();
@@ -335,14 +342,15 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
   cept->SaveAs("EfficVsPt.png");
 
-  TCanvas** cevar=new TCanvas*[4];
+  TCanvas** cevar=new TCanvas*[5];
   cevar[0]=new TCanvas("cephi","EffVsPhi",1600,800);
   cevar[1]=new TCanvas("ceeta","EffVsEta",1600,800);
   cevar[2]=new TCanvas("cezv","EffVsZvert",1600,800);
   cevar[3]=new TCanvas("cemult","EffVsMult",1600,800);
+  cevar[4]=new TCanvas("cedca","EffVsDCA",1600,800);
 
-  TLegend** legvar=new TLegend*[8];
-  for(Int_t iv=0; iv<4; iv++){
+  TLegend** legvar=new TLegend*[10];
+  for(Int_t iv=0; iv<5; iv++){
     cevar[iv]->Divide(2,1);
     for(Int_t ip=1; ip<=2; ip++){
       cevar[iv]->cd(ip);
@@ -354,6 +362,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
       else if(iv==1) hFrameEta->Draw();
       else if(iv==2) hFrameZvert->Draw();
       else if(iv==3) hFrameMult->Draw();
+      else if(iv==4) hFrameDCA->Draw();
       legvar[iv*2+(ip-1)]=new TLegend(0.16,0.73,0.87,0.89);
       legvar[iv*2+(ip-1)]->SetNColumns(2);
       legvar[iv*2+(ip-1)]->SetColumnSeparation(0.15);
@@ -371,6 +380,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
     else if(theVar[iP]==0) iCanv=1;
     else if(theVar[iP]==4) iCanv=2;
     else if(theVar[iP]==3) iCanv=3;
+    else if(theVar[iP]==5) iCanv=4;
     if(thePtBin[iP]==1) iPad=1;
     else if(thePtBin[iP]==2) iPad=2;
     if(iCanv<0 || iPad<0) continue;
