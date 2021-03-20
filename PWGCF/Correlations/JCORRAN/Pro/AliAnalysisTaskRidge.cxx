@@ -375,7 +375,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
 	if( fOption.Contains("GRID") ){
 		TGrid::Connect("alien://");
-		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
+		if( !fOption.Contains("pPb") ) fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
+		if( fOption.Contains("pPb") ) fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
 		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
 	}
 
@@ -457,6 +458,8 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		else if( runnumber >= 289201 && runnumber <= 289165 ) { Period = "LHC18k"; V0M_mean=127.642; }
 		else if( runnumber >= 293475 && runnumber <= 293898 ) { Period = "LHC18o"; V0M_mean=124.973; }
 		else if( runnumber >= 294009 && runnumber <= 294925 ) Period = "LHC18p";
+
+		if( fOption.Contains("pPb") ) Period = "LHC16q";
 
 
 		TH2D* hEfficiencyHist;
@@ -574,6 +577,11 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		fCent = sel->GetMultiplicityPercentile("V0M");
 		AliVVZERO* lVV0 = fEvt->GetVZEROData();
         	for(int i=0;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+		if( fOption.Contains("pPb") ){
+			fCent = sel->GetMultiplicityPercentile("V0A");
+			v0amplitude = 0.0;
+			for(int i=32;i<64;i++){ v0amplitude += lVV0->GetMultiplicity(i); }
+		}
 	}
 
 	int Charged_anti_kt_index = 1;
@@ -1360,10 +1368,10 @@ void AliAnalysisTaskRidge::FillTracks(){
                 	}
 			double deltaeta = track1->Eta() - track2->Eta();
 			double deltaphi = track1->Phi() - track2->Phi();
-			if( track1-> Pt() < track2-> Pt()){
-				deltaeta *= -1.0;
-				deltaphi *= -1.0;
-			}
+//			if( track1-> Pt() < track2-> Pt()){
+//				deltaeta *= -1.0;
+//				deltaphi *= -1.0;
+//			}
 			deltaphi = TVector2::Phi_0_2pi(deltaphi);
 
 			if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi; 
