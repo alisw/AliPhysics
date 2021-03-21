@@ -433,6 +433,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhLambda0DispEta[7] ;                      //!<! shower shape correlation l0 vs disp eta
   TH2F * fhLambda0DispPhi[7] ;                      //!<! shower shape correlation l0 vs disp phi
   
+  TH3F * fhPtM02Spherocity;                         //!<! Cluster pT vs M02 vs spherocity
+  TH3F * fhPtM02SpherocityMinPt[4];                 //!<! Cluster pT vs M02 vs spherocity, different track min pT cut in spherocity
+
+  /// Cluster pT vs M02 vs spherocity per centrality
+  TH3F **fhPtM02SpherocityCent;                     //![GetNCentrBin()]
+
+  /// Cluster pT vs M02 vs spherocity per centrality per min track pT cut
+  TH3F **fhPtM02SpherocityMinPtCent;                //![GetNCentrBin()*4]
+
   // Fill MC dependent histograms, Origin of this cluster is ...
 
   TH2F * fhMCParticle[4];                           //!<! Trace origin of matched particle: raw, selected before TM, after TM, final
@@ -801,7 +810,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,58) ;
+  ClassDef(AliAnaPhoton,59) ;
   /// \endcond
 
 } ;

@@ -66,7 +66,8 @@ fHistoOpAngleBins(200),       fHistoOpAngleMax(0.7),       fHistoOpAngleMin(0.),
 fHistoCenBins(100),           fHistoCenMax(100),           fHistoCenMin(0),          fHistoCenArr(0),
 fHistoNLMBins(20),            fHistoNLMMax(20),            fHistoNLMMin(0),          fHistoNLMArr(0),
 fHistoNoverlapBins(20),       fHistoNoverlapMax(20),       fHistoNoverlapMin(0),     fHistoNoverlapArr(0),
-fHistoExoticityBins(200),     fHistoExoticityMax(1),       fHistoExoticityMin(-1),   fHistoExoticityArr(0)
+fHistoExoticityBins(200),     fHistoExoticityMax(1),       fHistoExoticityMin(-1),   fHistoExoticityArr(0),
+fHistoSpherocityBins(100),    fHistoSpherocityMax(1),      fHistoSpherocityMin(0),   fHistoSpherocityArr(0)
 {
   InitParameters();
 }
@@ -113,6 +114,7 @@ void AliHistogramRanges::InitParameters()
   fHistoNLMBins          = 20  ;  fHistoNLMMax          = 20    ; fHistoNLMMin          = 0.  ;
   fHistoNoverlapBins     = 10  ;  fHistoNoverlapMax     = 10    ; fHistoNoverlapMin     = 0.  ;
   fHistoExoticityBins    = 200 ;  fHistoExoticityMax    = 1.    ; fHistoExoticityMin    = -1. ;
+  fHistoSpherocityBins   = 100 ;  fHistoSpherocityMax   = 1.    ; fHistoSpherocityMin   = 0.  ;
 
   fHistoTrackResidualEtaBins = 100 ; fHistoTrackResidualEtaMax = 0.15 ; fHistoTrackResidualEtaMin = -0.15;
   fHistoTrackResidualPhiBins = 100 ; fHistoTrackResidualPhiMax = 0.15 ; fHistoTrackResidualPhiMin = -0.15;
@@ -161,7 +163,8 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %2.2f < Centrality < %2.2f, Nbin = %d\n"       , fHistoCenMin,         fHistoCenMax,         fHistoCenBins);
   printf("Histograms: %d < NLM < %d, Nbin = %d\n"                    , fHistoNLMMin,         fHistoNLMMax,         fHistoNLMBins);
   printf("Histograms: %d < Noverlaps < %d, Nbin = %d\n"              , fHistoNoverlapMin,    fHistoNoverlapMax,    fHistoNoverlapBins);
-  printf("Histograms: %2.2f < Exoticity < %2.2f, Nbin = %d\n"        , fHistoExoticityMin,   fHistoExoticityMax, fHistoExoticityBins);
+  printf("Histograms: %2.2f < Exoticity < %2.2f, Nbin = %d\n"        , fHistoExoticityMin,   fHistoExoticityMax,   fHistoExoticityBins);
+  printf("Histograms: %2.2f < Spherocity < %2.2f, Nbin = %d\n"       , fHistoSpherocityMin,  fHistoSpherocityMax,  fHistoSpherocityBins);
 
   printf("    \n") ;
 } 

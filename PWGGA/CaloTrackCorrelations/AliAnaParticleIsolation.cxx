@@ -1002,6 +1002,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD sum0BinsArray   = GetHistogramRanges()->GetHistoPtSumArr();
   TArrayD sueBinsArray    = GetHistogramRanges()->GetHistoPtSumSubArr();
   TArrayD ratBinsArray    = GetHistogramRanges()->GetHistoRatioArr();
+  TArrayD soBinsArray = GetHistogramRanges()->GetHistoSpherocityArr();;
+
   TArrayD sumBinsArray;
   if ( method >= AliIsolationCut::kSumBkgSubIC ) 
     sumBinsArray = GetHistogramRanges()->GetHistoPtSumSubArr();
@@ -1013,13 +1015,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   minPtBinning.AddStep(fNPtCutsInCone, 1); 
   TArrayD minPtBinsArray;
   minPtBinning.CreateBinEdges(minPtBinsArray);
-  
-  // Spherocity binning
-  TCustomBinning soBinning;
-  soBinning.SetMinimum(0.0);
-  soBinning.AddStep(1, 0.05);
-  TArrayD soBinsArray;
-  soBinning.CreateBinEdges(soBinsArray);
 
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
