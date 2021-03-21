@@ -252,17 +252,15 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   Float_t cenmin   = GetHistogramRanges()->GetHistoCentralityMin()   ;
   Float_t cenmax   = GetHistogramRanges()->GetHistoCentralityMax()   ;
 
+  Int_t   nsobin = GetHistogramRanges()->GetHistoSpherocityBins();
+  Int_t   somax  = GetHistogramRanges()->GetHistoSpherocityMax ();
+  Int_t   somin  = GetHistogramRanges()->GetHistoSpherocityMin ();
+
   InitHistoRangeArrays();
   TArrayD multBinsArray = GetHistogramRanges()->GetHistoTrackMultiplicityArr();
   TArrayD  cenBinsArray = GetHistogramRanges()->GetHistoCentralityArr();
   TArrayD   ptBinsArray = GetHistogramRanges()->GetHistoPtArr();
-
-  // Spherocity binning
-  TCustomBinning soBinning;
-  soBinning.SetMinimum(0.0);
-  soBinning.AddStep(1, 0.05);
-  TArrayD soBinsArray;
-  soBinning.CreateBinEdges(soBinsArray);
+  TArrayD   soBinsArray = GetHistogramRanges()->GetHistoSpherocityArr();;
 
   Int_t nptcuts =  GetReader()->GetTrackMultiplicityNPtCut();
 
@@ -283,7 +281,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
       fhPtSpherocity = new TH2F
       (Form("hPtSpherocity_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
        Form("#it{p}_{T} vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPt()),
-       nptbins,ptmin,ptmax,100,0,1);
+       nptbins,ptmin,ptmax, nsobin,somin,somax);
       fhPtSpherocity->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPtSpherocity->SetYTitle("Spherocity");
       outputContainer->Add(fhPtSpherocity);
@@ -295,7 +293,7 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
           fhPtSpherocityMinPt[i] = new TH2F
           (Form("hPtSpherocity_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
            Form("#it{p}_{T} vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPtCuts(i)),
-           nptbins,ptmin,ptmax,100,0,1);
+           nptbins,ptmin,ptmax, nsobin,somin,somax);
           fhPtSpherocityMinPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhPtSpherocityMinPt[i]->SetYTitle("Spherocity");
           outputContainer->Add(fhPtSpherocityMinPt[i]);
