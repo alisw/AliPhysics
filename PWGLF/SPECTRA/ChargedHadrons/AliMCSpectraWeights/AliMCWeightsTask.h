@@ -21,6 +21,7 @@
 //#define __AliMCWeightsTask_DebugTiming__
 
 enum MCGeneratorType {
+    NONE=-1,
     PP_PYTHIA=0,
     PPB_EPOS,
     PBPB_HIJING,
@@ -39,8 +40,8 @@ public:
     virtual void Terminate(Option_t* option) {}
 
     void SetMCSpectraWeightObject (AliMCSpectraWeights* weights) {fMCSpectraWeights=weights;}
-    
-    static AliMCWeightsTask* AddTaskAliMCWeightsTask ();
+
+    static AliMCWeightsTask* AddTaskAliMCWeightsTask (MCGeneratorType gen=MCGeneratorType::NONE, const char* collisionType = 0);
 
 private:
     TList* fOutputList;      //!<! Output list
