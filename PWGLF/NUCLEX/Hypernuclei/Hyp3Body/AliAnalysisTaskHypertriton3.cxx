@@ -877,7 +877,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
                 {
                   lVector ldeuR{ldeu.pt(), ldeu.eta(), ldeu.phi() + iR * step, kDeuMass};
                   lVector lhyper{ldeuR + lpro + lpi};
-                  if (lhyper.mass >= fMassWindow[0] && lhyper.mass <= fMassWindow[1])
+                  if (lhyper.mass() >= fMassWindow[0] && lhyper.mass() <= fMassWindow[1])
                   {
                     fRecHyp->m = -lhyper.mass();
                     fTreeHyp3->Fill();
