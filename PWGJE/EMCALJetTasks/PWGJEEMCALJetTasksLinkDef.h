@@ -60,6 +60,7 @@
 #pragma link C++ class AliPWGJETrainHelpers+;
 
 // user task
+#pragma link C++ class AliAnalysisTaskEmcalJetEnergyFlow+;
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
