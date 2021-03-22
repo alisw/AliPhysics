@@ -282,7 +282,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,3)
+  ClassDef(AliDalitzElectronCuts,86)
 };
 
 

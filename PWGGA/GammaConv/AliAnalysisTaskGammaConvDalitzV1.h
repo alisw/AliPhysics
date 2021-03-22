@@ -351,7 +351,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
     AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 8 );
+  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 56 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H
