@@ -679,7 +679,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
         if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
           continue;
-        
+
         doubleV0sRecHyp.cosPA_Lambda = prPiV0.GetV0CosineOfPointingAngle();
         doubleV0sRecHyp.chi2 = prPiV0.GetChi2V0() + deuPiV0.GetChi2V0();
 
@@ -867,15 +867,21 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
                 mcMap[momId] = 1;
               }
             }
-            if (record) {
+            if (record)
+            {
               fTreeHyp3->Fill();
-              if (fTrackRotations) {
+              if (fTrackRotations)
+              {
                 double step{TMath::TwoPi() / (fTrackRotations + 1)};
-                for (int iR{1}; iR <= fTrackRotations; ++iR) {
+                for (int iR{1}; iR <= fTrackRotations; ++iR)
+                {
                   lVector ldeuR{ldeu.pt(), ldeu.eta(), ldeu.phi() + iR * step, kDeuMass};
                   lVector lhyper{ldeuR + lpro + lpi};
-                  fRecHyp->m = -lhyper.mass();
-                  fTreeHyp3->Fill();
+                  if (lhyper.mass() >= fMassWindow[0] && lhyper.mass() <= fMassWindow[1])
+                  {
+                    fRecHyp->m = -lhyper.mass();
+                    fTreeHyp3->Fill();
+                  }
                 }
               }
             }
