@@ -44,7 +44,7 @@ ClassImp(AliAnalysisTaskEmcalJetEnergyFlow);
  */
 AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
 	AliAnalysisTaskEmcalJet(),
-	fHistManager()// ,fOutput{0}
+	fHistManager()
 {
 }
 /**
@@ -53,7 +53,7 @@ AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
  */
 AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
 AliAnalysisTaskEmcalJet(name, kTRUE),
-fHistManager(name) // ,fOutput{0}
+fHistManager(name) 
 {
 	SetMakeGeneralHistograms(kFALSE);
 //	DefineInput(0, TChain::Class());
@@ -264,7 +264,7 @@ AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
  //-------------------------------------------------------
    mgr->AddTask(EFTask);
  //Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
   TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
@@ -335,7 +335,6 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateJetHistograms(){
       }
     }
   }
-
 }
 
 /**
@@ -601,7 +600,7 @@ for (Int_t j=0; j<iHighRIndex.GetSize()-1;j++)
 
 /*
  *This is a local implementation of the AliAnalysisHelperJetTasks helper task for the jet matching of the closest jets. There are two reasons for the locality of the implementation
- * a)Better control over the debugging procedure b)Adjust the type of the input lists from AliAODjet to AliEmcalJet.  
+ * a)Better control over the debugging procedure b) Adjust the type of the input lists from AliAODjet to AliEmcalJet.  
  */
 
 void AliAnalysisTaskEmcalJetEnergyFlow::JetMatcher(const TList *genJetsList,const Int_t &kGenJets,
