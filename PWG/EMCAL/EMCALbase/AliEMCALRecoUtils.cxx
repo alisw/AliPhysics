@@ -1361,6 +1361,21 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 
       break;
     }
+    case kTestBeamShaperWoScale:
+    {
+      // THIS PARAMETRIZATION HAS TO BE USED TOGETHER WITH THE SHAPER NONLINEARITY:
+      // Final parametrization of testbeam data points,
+      // includes also points for E>100 GeV and determined on shaper corrected data.
+
+    //  fNonLinearityParams[0] = 1.91897;
+    //  fNonLinearityParams[1] = 0.0264988;
+    //  fNonLinearityParams[2] = 0.965663;
+    //  fNonLinearityParams[3] = -187.501;
+    //  fNonLinearityParams[4] = 2762.51;
+      energy /= ( 1.0 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+
+      break;
+    }
     case kTestBeamFinalMC:
     {
       // Final parametrization of testbeam MC points,
@@ -1607,7 +1622,7 @@ if (fNonLinearityFunction == kPCMv1) {
    fNonLinearityParams[6] =  0.0;
  }
 
- if (fNonLinearityFunction == kTestBeamShaper) {
+ if (fNonLinearityFunction == kTestBeamShaper || fNonLinearityFunction == kTestBeamShaperWoScale) {
    fNonLinearityParams[0] =  1.91897;
    fNonLinearityParams[1] =  0.0264988;
    fNonLinearityParams[2] =  0.965663;
