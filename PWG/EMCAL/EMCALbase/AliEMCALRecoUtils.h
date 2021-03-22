@@ -92,7 +92,8 @@ public:
     kBeamTestNS = 18,          // Custom fit of all avail. TB points and E>100 GeV data
     kPi0MCNS = 19,             // Custom fit of all avail. TB points and E>100 GeV MC
     kTestBeamShaper = 20,      // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL
-    kTestBeamFinalMC = 21      // Final/official fit of all avail. TB points and E>100 GeV MC
+    kTestBeamFinalMC = 21,      // Final/official fit of all avail. TB points and E>100 GeV MC
+    kTestBeamShaperWoScale = 22       // Final/official fit of all avail. TB points and E>100 GeV data corrected for shaper NL wo scale shift
   };
 
   /// NCell efficiency enum list of possible parametrizations.
