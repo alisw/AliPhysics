@@ -179,6 +179,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
 
+                // const unsigned int usev2345flag = 1 << 0;
+	        // const unsigned int usev678flag = 1 << 1;
+
 		AliAnalysisTaskNonlinearFlow();
 		AliAnalysisTaskNonlinearFlow(const char *name);
 
@@ -401,7 +404,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		int NtrksAfter3subR = 0;
 
 		PhysicsProfile multProfile;
-		PhysicsProfile multProfile_bin[10];
+		PhysicsProfile multProfile_bin[30];
 
 		TRandom3 rand;
 		Int_t bootstrap_value;

@@ -180,6 +180,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	fAOD(0),
 	fitssatrackcuts(0),
 	fFilterbit(96),
+	fFilterbitDefault(96),
 	fEtaCut(0.8),
 	fVtxCut(10.0),
 	fMinPt(0.2),
@@ -389,7 +390,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
-	bootstrap_value = rand.Integer(10);
+	bootstrap_value = rand.Integer(30);
 
 	//..apply physics selection
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -605,8 +606,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	//..LOOP OVER TRACKS........
 	//........................................
-	for(Int_t nt = 0; nt < nAODTracks; nt++)
-	{
+	for(Int_t nt = 0; nt < nAODTracks; nt++) {
 
 		AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
 
@@ -656,7 +656,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
-                        // if (fCurrSystFlag == 0) {
 			if ( !fPeriod.EqualTo("LHC15o") ) {
 				weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
 			} else {
@@ -677,8 +676,8 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 				Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
 			}
 		}
-
 		//..Gap > 0.0
+		/*
 		if(aodTrk->Eta() < 0)
 		{
 			NtrksAfterGap0M++;
@@ -807,6 +806,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 				}
 			}
 		}
+		*/
 
 		//..Gap > 1.0
 		if(aodTrk->Eta() < -0.5)
@@ -897,7 +897,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 			}
 		}
 
-
 	} // end loop of all track
 
 	//............................
@@ -906,6 +905,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
 	//..calculate Q-vector for each harmonics n and power p
         correlator.FillQVector(correlator.Qvector, Qcos, Qsin); 
+	/*
         correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M); 
         correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P); 
         correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M); 
@@ -916,6 +916,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
         correlator.FillQVector(correlator.Qvector6P, QcosGap6P, QsinGap6P); 
         correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M); 
         correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P); 
+	*/
         correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M); 
         correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P); 
         correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M); 
@@ -1333,6 +1334,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 		multProfile.fChcn4[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4[h]);
 
+                /*
 		multProfile.fChcn4_Gap0[h] = new TProfile(Form("fChc%d{4}_Gap0%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn4_Gap0[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_Gap0[h]);
@@ -1352,6 +1354,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 		multProfile.fChcn4_Gap8[h] = new TProfile(Form("fChc%d{4}_Gap8%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn4_Gap8[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_Gap8[h]);
+                */
 
 		multProfile.fChcn4_Gap10[h] = new TProfile(Form("fChc%d{4}_Gap10%s", h+2, label.Data()), "<<4>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn4_Gap10[h]->Sumw2();
@@ -1384,6 +1387,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChc532->Sumw2();
 	fListOfObjects->Add(multProfile.fChc532);
 
+        /*
 	multProfile.fChc422_Gap0A = new TProfile(Form("fChc422_Gap0A%s", label.Data()), "", nn, xbins);
 	multProfile.fChc422_Gap0A->Sumw2();
 	fListOfObjects->Add(multProfile.fChc422_Gap0A);
@@ -1463,6 +1467,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChc532_Gap8B = new TProfile(Form("fChc532_Gap8B%s", label.Data()), "", nn, xbins);
 	multProfile.fChc532_Gap8B->Sumw2();
 	fListOfObjects->Add(multProfile.fChc532_Gap8B);
+        */
 
 	multProfile.fChc422_Gap10A = new TProfile(Form("fChc422_Gap10A%s", label.Data()), "", nn, xbins);
 	multProfile.fChc422_Gap10A->Sumw2();
@@ -1521,6 +1526,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChsc3232->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc3232);
 
+        /*
 	multProfile.fChsc3232_Gap0 = new TProfile(Form("fChsc3232_Gap0%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232_Gap0->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc3232_Gap0);
@@ -1540,6 +1546,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChsc3232_Gap8 = new TProfile(Form("fChsc3232_Gap8%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232_Gap8->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc3232_Gap8);
+        */
 
 	multProfile.fChsc3232_Gap10 = new TProfile(Form("fChsc3232_Gap10%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc3232_Gap10->Sumw2();
@@ -1574,6 +1581,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChsc4242->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242);
 
+        /*
 	multProfile.fChsc4242_Gap0 = new TProfile(Form("fChsc4242_Gap0%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc4242_Gap0->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242_Gap0);
@@ -1593,6 +1601,7 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 	multProfile.fChsc4242_Gap8 = new TProfile(Form("fChsc4242_Gap8%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc4242_Gap8->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242_Gap8);
+        */
 
 	multProfile.fChsc4242_Gap10 = new TProfile(Form("fChsc4242_Gap10%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc4242_Gap10->Sumw2();
