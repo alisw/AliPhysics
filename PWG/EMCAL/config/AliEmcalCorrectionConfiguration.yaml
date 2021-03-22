@@ -276,6 +276,12 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     phiMatch: 0.030                                 # Phi match value
     etaMatch: 0.015                                 # Eta match value
     doMomDepMatching: false                         # This enables a momentum dependent eta/phi window for track matching
+    momDepMatchingParamEta0: 0.04                   # Param 0 in eta for pt-dependent matching
+    momDepMatchingParamEta1: 0.010                  # Param 1 in eta for pt-dependent matching
+    momDepMatchingParamEta2: 2.5                    # Param 2 in eta for pt-dependent matching
+    momDepMatchingParamPhi0: 0.09                   # Param 0 in phi for pt-dependent matching
+    momDepMatchingParamPhi1: 0.015                  # Param 1 in phi for pt-dependent matching
+    momDepMatchingParamPhi2: 2.                     # Param 2 in phi for pt-dependent matching
     hadCorr: 2.                                     # Sets the fraction f of track p to subtract from matched cluster. To subtract all tracks within the eta-phi cut set hadCorr = 1+f. To subtract only one track set 0<hadCorr<1 where hadCorr=f.
     Eexcl: 0                                        # Cell energy that cannot be subtracted
     doTrackClus: true                               # Loop over tracks first
