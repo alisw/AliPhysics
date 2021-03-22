@@ -15,13 +15,13 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isUpperSideband = false,
   bool isLowerSideband = false,
   bool isSystematics = false,
+  bool DoITSPID = false,
   const char *CutVariation = "0"){
 
   // isHighMultV0:
   // (false)  kINT7:	    minimum bias trigger
   // (true)   kHighMultV0:  high multiplicity trigger
 
-  bool DoITSPID = false;
   bool BruteForceDebugging = false;
   bool isNanoAOD = false;
 
@@ -153,10 +153,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
 
-  if(DoITSPID){
-    TrackCuts3->SetCutITSPID(1.4,-2.0,1e30);
-  }
-
+  TrackCuts3->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts3->SetITSnSigmaCut(DoITSPID);
 
 
   if(BruteForceDebugging){
@@ -190,9 +188,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
 
-  if(DoITSPID){
-    TrackCuts4->SetCutITSPID(1.4,-2.0,1e30);
-  }
+  TrackCuts4->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts4->SetITSnSigmaCut(DoITSPID);
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antideuteron (TrackCuts4) set\n");
@@ -470,11 +467,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetDCAVtxZ(0.25);
       TrackCuts2->SetDCAVtxZ(0.25);
 
-      // Lambdas and Antilambdas daughters
-      TrackCuts5a->SetEtaRange(-0.7,0.7);
-      TrackCuts5b->SetEtaRange(-0.7,0.7);
-      TrackCuts6a->SetEtaRange(-0.7,0.7);
-      TrackCuts6b->SetEtaRange(-0.7,0.7);
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetCutDCADaugTov0Vtx(1.3);
+      LambdaCuts6->SetCutDCADaugTov0Vtx(1.3);
 
     }else if(suffix == "22"){
 
@@ -482,11 +477,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetDCAVtxZ(0.35);
       TrackCuts2->SetDCAVtxZ(0.35);
 
-      // Lambdas and Antilambdas daughters
-      TrackCuts5a->SetEtaRange(-0.9,0.9);
-      TrackCuts5b->SetEtaRange(-0.9,0.9);
-      TrackCuts6a->SetEtaRange(-0.9,0.9);
-      TrackCuts6b->SetEtaRange(-0.9,0.9);
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetCutDCADaugTov0Vtx(1.7);
+      LambdaCuts6->SetCutDCADaugTov0Vtx(1.7);
 
     }else if(suffix == "23"){
 
@@ -494,11 +487,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetDCAVtxXY(0.05);
       TrackCuts2->SetDCAVtxXY(0.05);
 
-      // Lambdas and Antilambdas daughters
-      TrackCuts5a->SetNClsTPC(60);
-      TrackCuts5b->SetNClsTPC(60);
-      TrackCuts6a->SetNClsTPC(60);
-      TrackCuts6b->SetNClsTPC(60);
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetCutDCADaugToPrimVtx(0.04);
+      LambdaCuts6->SetCutDCADaugToPrimVtx(0.04);
 
     }else if(suffix == "24"){
 
@@ -506,11 +497,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetDCAVtxXY(0.15);
       TrackCuts2->SetDCAVtxXY(0.15);
 
-      // Lambdas and Antilambdas daughters
-      TrackCuts5a->SetNClsTPC(80);
-      TrackCuts5b->SetNClsTPC(80);
-      TrackCuts6a->SetNClsTPC(80);
-      TrackCuts6b->SetNClsTPC(80);
+      // Lambdas and Antilambdas
+      LambdaCuts5->SetCutDCADaugToPrimVtx(0.06);
+      LambdaCuts6->SetCutDCADaugToPrimVtx(0.06);
 
     }else if(suffix == "25"){
 
@@ -518,11 +507,23 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetCutTPCCrossedRows(true,60,0.83);
       TrackCuts2->SetCutTPCCrossedRows(true,60,0.83);
 
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetPID(AliPID::kProton,999.0,4.0);
+      TrackCuts5b->SetPID(AliPID::kPion,999.0,4.0);
+      TrackCuts6a->SetPID(AliPID::kProton,999.0,4.0);
+      TrackCuts6b->SetPID(AliPID::kPion,999.0,4.0);
+
     }else if(suffix == "26"){
 
       // Protons and Antiprotons
       TrackCuts1->SetCutTPCCrossedRows(true,80,0.83);
       TrackCuts2->SetCutTPCCrossedRows(true,80,0.83);
+
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetPID(AliPID::kProton,999.0,6.0);
+      TrackCuts5b->SetPID(AliPID::kPion,999.0,6.0);
+      TrackCuts6a->SetPID(AliPID::kProton,999.0,6.0);
+      TrackCuts6b->SetPID(AliPID::kPion,999.0,6.0);
 
     }else if(suffix == "27"){
 
@@ -530,11 +531,23 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetCutTPCCrossedRows(true,70,0.81);
       TrackCuts2->SetCutTPCCrossedRows(true,70,0.81);
 
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetNClsTPC(80);
+      TrackCuts5b->SetNClsTPC(80);
+      TrackCuts6a->SetNClsTPC(80);
+      TrackCuts6b->SetNClsTPC(80);
+
     }else if(suffix == "28"){
 
       // Protons and Antiprotons
       TrackCuts1->SetCutTPCCrossedRows(true,70,0.85);
       TrackCuts2->SetCutTPCCrossedRows(true,70,0.85);
+
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetNClsTPC(60);
+      TrackCuts5b->SetNClsTPC(60);
+      TrackCuts6a->SetNClsTPC(60);
+      TrackCuts6b->SetNClsTPC(60);
 
     }else if(suffix == "29"){
 
@@ -542,11 +555,29 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       TrackCuts1->SetPtRange(0.3,4.0);
       TrackCuts2->SetPtRange(0.3,4.0);
 
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetEtaRange(-0.9,0.9);
+      TrackCuts5b->SetEtaRange(-0.9,0.9);
+      TrackCuts6a->SetEtaRange(-0.9,0.9);
+      TrackCuts6b->SetEtaRange(-0.9,0.9);
+
     }else if(suffix == "30"){
 
       // Protons and Antiprotons
       TrackCuts1->SetPtRange(0.5,4.0);
       TrackCuts2->SetPtRange(0.5,4.0);
+
+      // Lambdas and Antilambdas daughters
+      TrackCuts5a->SetEtaRange(-0.7,0.7);
+      TrackCuts5b->SetEtaRange(-0.7,0.7);
+      TrackCuts6a->SetEtaRange(-0.7,0.7);
+      TrackCuts6b->SetEtaRange(-0.7,0.7);
+
+    }else if(suffix == "31"){
+
+      // Protons and Antiprotons
+      TrackCuts1->SetFilterBit(256);
+      TrackCuts2->SetFilterBit(256);
 
     }
 
