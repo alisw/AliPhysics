@@ -1,8 +1,8 @@
 ///*******************************************************
 /// Config Description
-/// March 06, 2021 - Cristiane Jahnke
+/// March 23, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
-/// More cut variations ( trigger energy and mass range)
+/// New clusters cuts added
 ///*******************************************************
 
 //isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration
@@ -21,7 +21,8 @@ Bool_t is_EventsEG1,
 Bool_t is_EventsEG2,
 Bool_t isMultiAnalysis,
 Bool_t is_MSparse,
-Bool_t is_TPCcalibration
+Bool_t is_TPCcalibration,
+Bool_t is_Trigger_sim
                                             
 )
 
@@ -37,7 +38,11 @@ Bool_t is_TPCcalibration
 
     task->SetSysHistos();
     
-    if(isMC)task->DoTriggerSimulation();
+    task->SetNewClustersCut();
+    
+    task->SetNewEventSelection();//stop removing event with less than two tracks
+    
+    if(isMC && is_Trigger_sim)task->DoTriggerSimulation();
     
     if(isTender) task->SetUseTender();
     if(isMultiAnalysis) task->SetMultiAnalysis();
