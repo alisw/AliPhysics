@@ -508,11 +508,11 @@ void AliAnalysisTaskSigmaPlToProtonPiZeroAOD::UserCreateOutputObjects()
 		fAODList[iCut]->Add(fHistTrackDCAXYwCuts[iCut]);
 		fHistTrackDCAZwCuts[iCut] = new TH2F("fHistTrackDCAZwCuts", "fHistTrackDCAZwCuts;#it{N}_{Protons per Event};", 400, 0., 0.5,100, 0, 10);
 		fAODList[iCut]->Add(fHistTrackDCAZwCuts[iCut]);
-		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 200,0.,10.,200,1.,201.);
+		fHistDEDx[iCut] = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 500,0.,10.,200,1.,201.);
 		fAODList[iCut]->Add(fHistDEDx[iCut]);
-		fHistTOFBeta[iCut] = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 200,0.,10.,130,0.1,1.3);
+		fHistTOFBeta[iCut] = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 500,0.,10.,130,0.1,1.3);
 		fAODList[iCut]->Add(fHistTOFBeta[iCut]);
-		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 200, 0., 10., 60, -3., 3.);
+		fHistTPCSignal[iCut] = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 500, 0., 10., 60, -3., 3.);
 		fAODList[iCut]->Add(fHistTPCSignal[iCut]);
 		fHistTPCCluster[iCut] = new TH1F("fHistTPCCluster", "fHistTPCCluster;#it{N}_{Cluster TPC};", 120, 50., 170.);
 		fAODList[iCut]->Add(fHistTPCCluster[iCut]);

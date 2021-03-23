@@ -191,11 +191,11 @@ void AliCaloSigmaCuts::InitCutHistograms(TString name){
     else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
   }
 
-  fHistDEDx = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 200,0.,10.,200,1.,201.);
+  fHistDEDx = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 500,0.,10.,200,1.,201.);
   fHistograms->Add(fHistDEDx);
-  fHistTOFBeta = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 200,0.,10.,130,0.1,1.3);
+  fHistTOFBeta = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 500,0.,10.,130,0.1,1.3);
   fHistograms->Add(fHistTOFBeta);
-  fHistTPCSignal = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 200, 0., 10., 60, -3., 3.);
+  fHistTPCSignal = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 500, 0., 10., 60, -3., 3.);
   fHistograms->Add(fHistTPCSignal);
   fHistTPCCluster = new TH1F("fHistTPCCluster", "fHistTPCCluster;#it{N}_{Cluster TPC};", 120, 50., 170.);
   fHistograms->Add(fHistTPCCluster);
