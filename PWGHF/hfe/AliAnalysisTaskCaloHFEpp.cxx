@@ -696,6 +696,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_eff_M20); 
 	fOutputList->Add(fHist_eff_Iso); 
 	fOutputList->Add(fHistWeOrg); 
+	fOutputList->Add(fHistWeOrgPos); 
+	fOutputList->Add(fHistWeOrgNeg); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
