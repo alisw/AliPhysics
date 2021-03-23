@@ -34,6 +34,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   void SetEtaV0Assoc(Float_t EtaV0Assoc){fEtaV0Assoc = EtaV0Assoc;}
   void SetFilterBit(Int_t FilterBitValue){fFilterBitValue = FilterBitValue;}
   void SetYear (Int_t year = 2010) { fYear = year;}
+  void SetHM (Bool_t isHM) { fisHM = isHM;}
   void SetAssocParticle (TString AssocParticle = "Xi") { fV0 = AssocParticle;}
 
   Float_t GetLengthInActiveZone( AliAODTrack *gt, Float_t deltaY, Float_t deltaZ, Float_t b );
@@ -84,6 +85,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   Float_t                  fEtaV0Assoc;
   Int_t                    fFilterBitValue;
   Int_t                    fYear;
+  Bool_t                   fisHM;
 
   TH1F*                   fHistPt;                   //! 
   TH1F*                   fHistDCAxym1;              //! 
@@ -113,6 +115,7 @@ class AliAnalysisTaskCorrelationhCasc : public AliAnalysisTaskSE
   TH3F*                   fHistNumberChargedTrigger; //!
   TH2F*                   fHist_eta_phi;                //!
   TH2F*                   fHist_eta_phi_PtMax;   	//!
+  TH1F*                   fHist_multiplicityAllSelEvents; 		//!
   TH1F*                   fHist_multiplicity; 		//!
   TH1F*                   fHist_multiplicity_EvwTrigger;//!
   TH1F*                   fHistEventMult;   		//!
