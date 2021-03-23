@@ -1977,9 +1977,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
     cout << "-----------------------" << endl;
     cout << "GetEntries     : " << fMCarray->GetEntries()     << endl;
     cout << "GetEntriesFast : " << fMCarray->GetEntriesFast() << endl;
+    cout << "NpureMC        : " << NpureMC << endl;
+    cout << "NpureMCproc    : " << NpureMCproc << endl;
 
     //for(int imc=0; imc < fMCarray->GetEntries(); imc++)	// PYTHIA & GEANT ?
-    for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles
+    //for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles?
+    for(int imc=0; imc < NpureMC; imc++)			// PYTHIA only?
     {
         Bool_t iEnhance = kFALSE;
         if(imc >= NpureMC) iEnhance = kTRUE;
