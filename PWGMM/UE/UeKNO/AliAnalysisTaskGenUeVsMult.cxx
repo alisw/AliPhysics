@@ -436,14 +436,16 @@ void AliAnalysisTaskGenUeVsMult::UserExec(Option_t *)
 	
 			if(isGoodVtxPosMC){
 				// UE analysis
-				if(fGenLeadPt>=fPtMin){
+				//if(fGenLeadPt>=fPtMin){
 				GetMultiVsUEObservables(mult_estimators,region_multi);
-			}
+			//}
 
 		}
 	
 	ue_gen.clear();
-	
+	mult_estimators.clear();
+    region_multi.clear();
+    
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
 
 }
@@ -554,7 +556,7 @@ void AliAnalysisTaskGenUeVsMult::GetMultLeadingObject() {
             qPart = particle->GetPDG()->Charge()/3.;
             if(TMath::Abs(qPart)<0.001) continue;
 			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-			if( particle->Pt() < fPtMin)continue;
+			//if( particle->Pt() < fPtMin)continue;
 
             hGenEta->Fill(particle->Eta());
             

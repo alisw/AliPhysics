@@ -54,6 +54,10 @@ public:
     void       SetParametrizationEfficiency(Bool_t ispy = kFALSE)  {fIsPythia = ispy;}
 	void       SetParametrizationEfficiencyppdata(Bool_t ispp = kFALSE)  {fIsppData = ispp;}
     void       SetParametrizationEfficiencypPbdata(Bool_t ispPb = kFALSE)  {fIspPbData = ispPb;}
+    
+    void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
+    void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
+    
 	bool       HasRecVertex();
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
 
@@ -88,7 +92,10 @@ private:
 	Int_t    fRecLeadIn;
 
 	Float_t fDCAxy;
-	Float_t fDCAz;	
+	Float_t fDCAz;
+    Double_t fRefmult08std;
+    Double_t fpercentileV0M;
+    AliMultSelection *fMultSelection;
     
     
 //     // Corrections
@@ -176,6 +183,9 @@ private:
 	TH1D * hPtLeadingGenGood;
 	TH1D * hPtLeadingRecAll;
 	TH1D * hPtLeadingGenAll;
+    TH1D * hRefMult08std;
+    TH1D * hMultV0M;
+    TH2D * hRefMultvsMultV0M;
 
 	AliAnalysisTaskMcKnoUe(const AliAnalysisTaskMcKnoUe&);                  // not implemented
 	AliAnalysisTaskMcKnoUe& operator=(const AliAnalysisTaskMcKnoUe&);       // not implemented
