@@ -356,26 +356,26 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     }else if(suffix == "7"){
 
       // Deuterons and Antideuterons
-      TrackCuts3->SetDCAVtxZ(0.25);
-      TrackCuts4->SetDCAVtxZ(0.25);
+      TrackCuts3->SetDCAVtxZ(0.15);
+      TrackCuts4->SetDCAVtxZ(0.15);
 
     }else if(suffix == "8"){
 
       // Deuterons and Antideuterons
-      TrackCuts3->SetDCAVtxZ(0.35);
-      TrackCuts4->SetDCAVtxZ(0.35);
+      TrackCuts3->SetDCAVtxZ(0.25);
+      TrackCuts4->SetDCAVtxZ(0.25);
 
     }else if(suffix == "9"){
 
       // Deuterons and Antideuterons
-      TrackCuts3->SetDCAVtxXY(0.05);
-      TrackCuts4->SetDCAVtxXY(0.05);
+      TrackCuts3->SetDCAVtxXY(0.08);
+      TrackCuts4->SetDCAVtxXY(0.08);
 
     }else if(suffix == "10"){
 
       // Deuterons and Antideuterons
-      TrackCuts3->SetDCAVtxXY(0.15);
-      TrackCuts4->SetDCAVtxXY(0.15);
+      TrackCuts3->SetDCAVtxXY(0.12);
+      TrackCuts4->SetDCAVtxXY(0.12);
 
     }else if(suffix == "11"){
 
@@ -464,8 +464,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     }else if(suffix == "21"){
 
       // Protons and Antiprotons
-      TrackCuts1->SetDCAVtxZ(0.25);
-      TrackCuts2->SetDCAVtxZ(0.25);
+      TrackCuts1->SetDCAVtxZ(0.15);
+      TrackCuts2->SetDCAVtxZ(0.15);
 
       // Lambdas and Antilambdas
       LambdaCuts5->SetCutDCADaugTov0Vtx(1.3);
@@ -474,8 +474,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     }else if(suffix == "22"){
 
       // Protons and Antiprotons
-      TrackCuts1->SetDCAVtxZ(0.35);
-      TrackCuts2->SetDCAVtxZ(0.35);
+      TrackCuts1->SetDCAVtxZ(0.25);
+      TrackCuts2->SetDCAVtxZ(0.25);
 
       // Lambdas and Antilambdas
       LambdaCuts5->SetCutDCADaugTov0Vtx(1.7);
@@ -484,8 +484,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     }else if(suffix == "23"){
 
       // Protons and Antiprotons
-      TrackCuts1->SetDCAVtxXY(0.05);
-      TrackCuts2->SetDCAVtxXY(0.05);
+      TrackCuts1->SetDCAVtxXY(0.08);
+      TrackCuts2->SetDCAVtxXY(0.08);
 
       // Lambdas and Antilambdas
       LambdaCuts5->SetCutDCADaugToPrimVtx(0.04);
@@ -494,8 +494,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     }else if(suffix == "24"){
 
       // Protons and Antiprotons
-      TrackCuts1->SetDCAVtxXY(0.15);
-      TrackCuts2->SetDCAVtxXY(0.15);
+      TrackCuts1->SetDCAVtxXY(0.12);
+      TrackCuts2->SetDCAVtxXY(0.12);
 
       // Lambdas and Antilambdas
       LambdaCuts5->SetCutDCADaugToPrimVtx(0.06);
