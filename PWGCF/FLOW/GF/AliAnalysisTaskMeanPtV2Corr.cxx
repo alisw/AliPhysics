@@ -1169,7 +1169,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::LoadMyWeights(const Int_t &lRunNo) {
   if(lRunNo && lRunNo == fRunNo) return kTRUE;
   // if(!fWeights) { fWeights = new AliGFWWeights*[1]; };
   // if(fWeights[0]) delete fWeights[0];
-  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",lRunNo,fGFWSelection->GetSystPF()));
+  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",lRunNo,fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():""));
   if(!fWeights[0]) AliFatal(Form("Weights w%i not not found in the list provided!\n",lRunNo));
   fWeights[0]->CreateNUA();
   return kTRUE;
