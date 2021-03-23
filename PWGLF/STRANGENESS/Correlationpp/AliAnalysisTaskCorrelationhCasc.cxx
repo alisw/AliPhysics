@@ -85,6 +85,8 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc() :AliAnalysisT
   fHistPtTMaxBefAllCfrDataMC(0),
   fHistPtTMinBefAll(0),
   fHistPtTMinBefAllMC(0),
+  fHistPtMaxvsMultBefRSelection(0),
+  fHistPtMaxvsMultAfterRSelection(0),
   fHistPtvsMult(0), 
   fHistPtvsMultBefAll(0), 
   fHistPtMaxvsMult(0), 
@@ -293,6 +295,8 @@ AliAnalysisTaskCorrelationhCasc::AliAnalysisTaskCorrelationhCasc(const char* nam
   fHistPtTMaxBefAllCfrDataMC(0), 
   fHistPtTMinBefAll(0),
   fHistPtTMinBefAllMC(0),
+  fHistPtMaxvsMultBefRSelection(0),
+  fHistPtMaxvsMultAfterRSelection(0),
   fHistPtvsMult(0), 
   fHistPtvsMultBefAll(0), 
   fHistPtMaxvsMult(0), 
@@ -639,6 +643,25 @@ void AliAnalysisTaskCorrelationhCasc::ProcessMCParticles(Bool_t Generated, AliAO
 	}
 
 	if (!(particle->IsPhysicalPrimary()))continue;
+
+	//********************************************************************************                      
+	//To be applied in order not to take as generated Xi the mothers of the trigger itself: *******
+	/* maybe not necessary****** to be checked (and part below to be implemented in the proper way)
+	Int_t labelPos = particle->GetDaughterLabel(0);
+	Int_t labelNeg = particle->GetDaughterLabel(1);
+	AliAODMCParticle *particlePos = static_cast<AliAODMCParticle*>(AODMCTrackArraybis->At(TMath::Abs(labelPos)));
+	AliAODMCParticle *particleNeg = static_cast<AliAODMCParticle*>(AODMCTrackArraybis->At(TMath::Abs(labelNeg)));
+	AliAODMCParticle *particleTrigger = static_cast<AliAODMCParticle*>(AODMCTrackArraybis->At(TMath::Abs(track->GetLabel())));
+
+	Bool_t Condition1Gen = ( particleTrigger->GetLabel() == particlePos->GetLabel() && TMath::Abs(particleTrigger->Pt() - particlePos->Pt()) < 0.00001 ) || ( particleTrigger->GetLabel() == particleNeg->GetLabel() && TMath::Abs(particleTrigger->Pt() - particleNeg->Pt()) <0.00001 );
+
+	if (Condition1Gen)  {
+	continue;
+	}
+
+	//************************************************************************************************
+	*/
+
 	if (TMath::Abs(particle->GetPdgCode())==PDGCodeAssoc[ParticleType]){ //Xi
 	  if (particle->Charge()<0)	  lChargeXi = -1;
 	  else if (particle->Charge()>0)  lChargeXi = 1;
@@ -925,6 +948,14 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fHistPtvsMult= new TH2F("fHistPtvsMult", "p_{T} and centrality distribution of charged tracks in events used for AC", 300, 0, 30, NumBinsMult, 0, UpperLimitMult); 
   fHistPtvsMult->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   fHistPtvsMult->GetYaxis()->SetTitle("Centrality");
+
+  fHistPtMaxvsMultBefRSelection = new TH2F("fHistPtMaxvsMultBefRSelection", "p_{T} distribution of selected reco triggers (possibly also K0s daughters)", 300, 0, 30,   NumBinsMult, 0, UpperLimitMult);
+  fHistPtMaxvsMultBefRSelection->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultBefRSelection->GetYaxis()->SetTitle("Centrality");
+
+  fHistPtMaxvsMultAfterRSelection = new TH2F("fHistPtMaxvsMultAfterRSelection", "p_{T} distribution of selected reco triggers (no K0s daughters)", 300, 0, 30,  NumBinsMult, 0, UpperLimitMult);
+  fHistPtMaxvsMultAfterRSelection->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  fHistPtMaxvsMultAfterRSelection->GetYaxis()->SetTitle("Centrality");
 
   fHistPtMaxvsMultBefAll= new TH2F("fHistPtMaxvsMultBefAll", "p_{T} and centrality distribution of charged tracks with maxiumum pt in events w T>0", 600, 0, 30, NumBinsMult, 0, UpperLimitMult); 
   fHistPtMaxvsMultBefAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1627,6 +1658,8 @@ void AliAnalysisTaskCorrelationhCasc::UserCreateOutputObjects()
   fOutputList->Add(fHistPtTMaxBefAllCfrDataMC);
   fOutputList->Add(fHistPtTMinBefAll);     
   fOutputList->Add(fHistPtTMinBefAllMC);     
+  fOutputList->Add(fHistPtMaxvsMultBefRSelection);
+  fOutputList->Add(fHistPtMaxvsMultAfterRSelection);
   fOutputList->Add(fHistPtvsMult);       
   fOutputList->Add(fHistPtvsMultBefAll);       
   fOutputList->Add(fHistPtMaxvsMult);       
@@ -2334,6 +2367,39 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
       }
 
     }//end loop for trigger particles
+
+    if(fReadMCTruth && isHybridMCTruth){
+      if (fMCEvent){
+	TClonesArray* AODMCTrackArrayTrigger =0x0;
+	AODMCTrackArrayTrigger = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+	AliAODMCParticle* particleTrigger = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigger->At(TMath::Abs(labelPtTMax)));
+	Int_t labelTriggerMother = particleTrigger->GetMother();
+	AliAODMCParticle* particleTriggerMother = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigger->At(TMath::Abs(labelTriggerMother)));
+	Int_t labelTriggerGMother = particleTriggerMother->GetMother();
+	AliAODMCParticle* particleTriggerGMother = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigger->At(TMath::Abs(labelTriggerGMother)));
+
+	Bool_t isBachelor=TMath::Abs(particleTriggerMother->GetPdgCode()) == 3312;
+	Bool_t isDaughterLambda= TMath::Abs(particleTriggerGMother->GetPdgCode()) == 3312  && TMath::Abs(particleTriggerMother->GetPdgCode()) == 3122; 
+	Bool_t Condition2OnTrigger = (!(particleTrigger->IsPhysicalPrimary()) && (isBachelor || isDaughterLambda));
+
+	//	cout << "pdg mother " << particleTriggerMother->GetPdgCode() << " pdg gmother " << particleTriggerGMother->GetPdgCode() << endl;
+	//remove trigger particles (and therefore events) where the trigger is the daugther of a K0s              
+	fHistPtMaxvsMultBefRSelection->Fill(ptTriggerMassimoDati, lPercentiles);
+	if (Condition2OnTrigger){
+	  PostData(1, fOutputList);
+	  PostData(2, fSignalTree );
+	  PostData(3, fBkgTree);
+	  PostData(4, fOutputList2);
+	  PostData(5, fOutputList3);
+	  PostData(6, fOutputList4);
+	  // cout  << "event does not have Trigger particles " << endl;                                         
+	  return;
+	}
+	fHistPtMaxvsMultAfterRSelection->Fill(ptTriggerMassimoDati, lPercentiles);
+      }
+    }
+
+
   }
 
   TClonesArray* AODMCTrackArray =0x0;  
