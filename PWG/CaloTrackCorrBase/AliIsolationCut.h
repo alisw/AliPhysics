@@ -395,11 +395,8 @@ class AliIsolationCut : public TObject {
   /// Track Sum Pt in the perp band for tracks, per eta-phi bin of trigger, before normalization.
   TH3F **  fhConeSumPtPerpBandUETrackTrigEtaPhiCent;    //!<! [fNCentBins]
 
-  TH2F *   fhConeSumPtVSUETracksEtaBand;               //!<! Tracks, eta band: sum pT in cone vs bkg to subtract.
-  TH2F *   fhConeSumPtVSUETracksPhiBand;               //!<! Tracks, phi band:  sum pT in cone vs bkg to subtract.
-  TH2F *   fhConeSumPtVSUETracksPerpBand;              //!<! Tracks, perp band:  sum pT in cone vs bkg to subtract.
-  TH2F *   fhConeSumPtVSUEClusterEtaBand;              //!<! Clusters, eta band: sum pT in cone vs bkg to subtract.
-  TH2F *   fhConeSumPtVSUEClusterPhiBand;              //!<! Clusters, phi band:  sum pT in cone vs bkg to subtract.
+  TH2F *   fhConeSumPtVSUETrackBand;                   //!<! Tracks, UE band: sum pT in cone vs bkg to subtract.
+  TH2F *   fhConeSumPtVSUEClusterBand;                 //!<! Clusters, UE band:  sum pT in cone vs bkg to subtract.
     
   TH2F *   fhConeSumPtUEBandNormCluster;               //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger.
   TH2F *   fhConeSumPtUEBandNormTrack;                 //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger.
@@ -492,6 +489,9 @@ class AliIsolationCut : public TObject {
 
   TH3F *   fhConeSumPtTrackSubVsNoSubCent;             //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   TH3F *   fhConeSumPtClusterSubVsNoSubCent;           //!<! Clusters, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+
+  TH3F *   fhConeSumPtVSUETrackBandCent;               //!<! Tracks, UE band: sum pT in cone vs bkg to subtract.
+  TH3F *   fhConeSumPtVSUEClusterBandCent;             //!<! Clusteres, UE band:  sum pT in cone vs bkg to subtract.
 
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
