@@ -316,7 +316,11 @@ class AliIsolationCut : public TObject {
   TH2F *   fhEtaPhiCluster ;                           //!<! Eta vs. phi of all clusters.
   TH2F *   fhEtaPhiTrack ;                             //!<! Eta vs. phi of all tracks.
   TH2F *   fhEtaPhiInConeCluster ;                     //!<! Eta vs. phi of clusters in cone.
+  TH2F *   fhDeltaEtaPhiInConeCluster ;                //!<! Trigger-Cluster Eta vs. phi of tracks in cone.
+  TH3F *   fhTriggerEtaPhiInConeClusterPt ;            //!<! Trigger-Cluster Eta vs. phi of tracks in cone.
   TH2F *   fhEtaPhiInConeTrack ;                       //!<! Eta vs. phi of tracks in cone.
+  TH2F *   fhDeltaEtaPhiInConeTrack ;                  //!<! Trigger-Track Eta vs. phi of tracks in cone.
+  TH3F *   fhTriggerEtaPhiInConeTrackPt ;              //!<! Trigger-Track Eta vs. phi of tracks in cone.
 
   // Perpendicular cones
   
@@ -325,7 +329,9 @@ class AliIsolationCut : public TObject {
   TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
   TH2F *   fhConeSumPtVSPerpCone;                      //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.
   TH3F *   fhPerpConeSumPtTrigEtaPhi;                  //!<! Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger.
-  
+  TH2F *   fhDeltaEtaPhiInPerpCone ;                   //!<! Trigger-Track Eta vs. phi of tracks in perpendicular cone.
+  TH3F *   fhTriggerEtaPhiInPerpConeTrackPt ;          //!<! Trigger-Track Eta vs. phi of tracks in perpendicular cone.
+
   // Jet Rho
 
   TH2F *   fhJetRhoSumPt ;                             //!<! Charged sum Pt in cone using Jet tools Rho calculation
@@ -350,7 +356,19 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPhiBandClusterEtaPhi ;                    //!<! Eta vs Phi in Phi band to estimate UE in cone, only clusters.
   TH2F *   fhEtaBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Eta band to estimate UE in cone, only tracks.
   TH2F *   fhPhiBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Phi band to estimate UE in cone, only tracks. 
-  TH2F *   fhPerpBandTrackEtaPhi   ;                   //!<! Eta vs Phi in Perp band to estimate UE in cone, only tracks.
+  TH2F *   fhPerpBandTrackEtaPhi  ;                    //!<! Eta vs Phi in Perp band to estimate UE in cone, only tracks.
+
+  TH2F *   fhEtaBandClusterDeltaEtaPhi ;               //!<! Trigger-Cluster Eta vs Phi in Eta band to estimate UE in cone.
+  TH2F *   fhPhiBandClusterDeltaEtaPhi ;               //!<! Trigger-Cluster Eta vs Phi in Phi band to estimate UE in cone.
+  TH2F *   fhEtaBandTrackDeltaEtaPhi   ;               //!<! Trigger-Track Eta vs Phi in Eta band to estimate UE in cone.
+  TH2F *   fhPhiBandTrackDeltaEtaPhi   ;               //!<! Trigger-Track Eta vs Phi in Phi band to estimate UE in cone.
+  TH2F *   fhPerpBandTrackDeltaEtaPhi  ;               //!<! Trigger-Track Eta vs Phi in Perp band to estimate UE in cone.
+
+  TH3F *   fhEtaBandClusterPtTriggerEtaPhi ;           //!<! Trigger Eta vs Phi vs cluster pT in Eta band to estimate UE in cone.
+  TH3F *   fhPhiBandClusterPtTriggerEtaPhi ;           //!<! Trigger Eta vs Phi vs cluster pT in Phi band to estimate UE in cone.
+  TH3F *   fhEtaBandTrackPtTriggerEtaPhi   ;           //!<! Trigger Eta vs Phi vs track pT in Eta band to estimate UE in cone.
+  TH3F *   fhPhiBandTrackPtTriggerEtaPhi   ;           //!<! Trigger Eta vs Phi vs track pT in Phi band to estimate UE in cone.
+  TH3F *   fhPerpBandTrackPtTriggerEtaPhi  ;           //!<! Trigger Eta vs Phi vs track pT in Perp band to estimate UE in cone.
   
   TH3F *   fhConeSumPtEtaBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
   TH3F *   fhConeSumPtPhiBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
@@ -464,7 +482,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,23) ;
+  ClassDef(AliIsolationCut,24) ;
   /// \endcond
 
 } ;

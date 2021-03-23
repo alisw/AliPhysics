@@ -78,10 +78,12 @@ fhConePtLead(0),
 fhConePtLeadCluster(0),                     fhConePtLeadTrack(0),
 fhConePtLeadClustervsTrack(0),              fhConePtLeadClusterTrackFrac(0),
 fhEtaPhiCluster(0),                         fhEtaPhiTrack(0),
-fhEtaPhiInConeCluster(0),                   fhEtaPhiInConeTrack(0),   
+fhEtaPhiInConeCluster(0),                   fhDeltaEtaPhiInConeCluster(0),   fhTriggerEtaPhiInConeClusterPt(0),
+fhEtaPhiInConeTrack(0),                     fhDeltaEtaPhiInConeTrack(0),     fhTriggerEtaPhiInConeTrackPt(0),
 fhPtInPerpCone(0),                          fhPerpConeSumPt(0),
 fhEtaPhiInPerpCone(0),                      fhConeSumPtVSPerpCone(0), 
 fhPerpConeSumPtTrigEtaPhi(0),
+fhDeltaEtaPhiInPerpCone(0),                 fhTriggerEtaPhiInPerpConeTrackPt(0),
 fhJetRhoSumPt(0),                           fhConeSumPtVSJetRho(0),
 fhJetRhoSumPtTrigEtaPhi(0),
 fhEtaBandClusterPt(0),                      fhPhiBandClusterPt(0),
@@ -90,6 +92,10 @@ fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
 fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0)  , fhConeSumPtPerpBandUETrack(0),
 fhEtaBandClusterEtaPhi(0),                  fhPhiBandClusterEtaPhi(0),
 fhEtaBandTrackEtaPhi(0),                    fhPhiBandTrackEtaPhi(0)       , fhPerpBandTrackEtaPhi(0),
+fhEtaBandClusterDeltaEtaPhi(0),             fhPhiBandClusterDeltaEtaPhi(0),
+fhEtaBandTrackDeltaEtaPhi(0),               fhPhiBandTrackDeltaEtaPhi(0)  , fhPerpBandTrackDeltaEtaPhi(0),
+fhEtaBandClusterPtTriggerEtaPhi(0),         fhPhiBandClusterPtTriggerEtaPhi(0),
+fhEtaBandTrackPtTriggerEtaPhi(0),           fhPhiBandTrackPtTriggerEtaPhi(0),fhPerpBandTrackPtTriggerEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhi(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhi(0),
 fhConeSumPtEtaBandUETrackTrigEtaPhi(0),     fhConeSumPtPhiBandUETrackTrigEtaPhi(0), fhConeSumPtPerpBandUETrackTrigEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhiCent(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhiCent(0),
@@ -317,7 +323,11 @@ void AliIsolationCut::CalculateCaloSignalInCone
             fhPhiBandClusterPt->Fill(ptC, pt, histoWeight);
 
           if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+          {
             fhPhiBandClusterEtaPhi->Fill(eta, phi, histoWeight);
+            fhPhiBandClusterDeltaEtaPhi->Fill(etaC-eta, phiC-phi, histoWeight);
+            fhPhiBandClusterPtTriggerEtaPhi->Fill(etaC, phiC, pt, histoWeight);
+          }
         }
       } // phi band
       
@@ -338,7 +348,11 @@ void AliIsolationCut::CalculateCaloSignalInCone
             fhEtaBandClusterPt->Fill(ptC, pt, histoWeight);
 
           if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+          {
             fhEtaBandClusterEtaPhi->Fill(eta, phi, histoWeight);
+            fhEtaBandClusterDeltaEtaPhi->Fill(etaC-eta, phiC-phi, histoWeight);
+            fhEtaBandClusterPtTriggerEtaPhi->Fill(etaC, phiC, pt, histoWeight);
+          }
         }
       } // eta band
     } // out of cone
@@ -427,7 +441,11 @@ void AliIsolationCut::CalculateCaloSignalInCone
       }
       
       if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
+      {
         fhEtaPhiInConeCluster->Fill(eta, phi, histoWeight);
+        fhDeltaEtaPhiInConeCluster->Fill(etaC-eta, phiC-phi, histoWeight);
+        fhTriggerEtaPhiInConeClusterPt->Fill(etaC, phiC, pt, histoWeight);
+      }
     }
     
     // *Before*, count particles in cone
@@ -710,7 +728,11 @@ void AliIsolationCut::CalculateTrackSignalInCone
             fhPhiBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
 
           if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+          {
             fhPhiBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
+            fhPhiBandTrackDeltaEtaPhi->Fill(etaTrig-etaTrack, phiTrig-phiTrack, histoWeight);
+            fhPhiBandTrackPtTriggerEtaPhi->Fill(etaTrig, phiTrig, ptTrack, histoWeight);
+          }
         }
       } // phi band
       
@@ -731,7 +753,11 @@ void AliIsolationCut::CalculateTrackSignalInCone
             fhEtaBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
 
           if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+          {
             fhEtaBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
+            fhEtaBandTrackDeltaEtaPhi->Fill(etaTrig-etaTrack, phiTrig-phiTrack, histoWeight);
+            fhEtaBandTrackPtTriggerEtaPhi->Fill(etaTrig, phiTrig, ptTrack, histoWeight);
+          }
         }
       } // eta band
       
@@ -765,7 +791,11 @@ void AliIsolationCut::CalculateTrackSignalInCone
             fhPtInPerpConeCent->Fill(ptTrig, ptTrack, centrality, histoWeight);
           
           if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+          {
             fhEtaPhiInPerpCone->Fill(etaTrack,phiTrack, histoWeight);
+            fhDeltaEtaPhiInPerpCone->Fill(etaTrig-etaTrack, phiTrig-phiTrack, histoWeight);
+            fhTriggerEtaPhiInPerpConeTrackPt->Fill(etaTrig, phiTrig, ptTrack, histoWeight);
+          }
         }
       }
     }
@@ -788,7 +818,11 @@ void AliIsolationCut::CalculateTrackSignalInCone
             fhPerpBandTrackPt->Fill(ptTrig , ptTrack, histoWeight);
 
           if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+          {
             fhPerpBandTrackEtaPhi->Fill(etaTrack, phiTrack, histoWeight);
+            fhPerpBandTrackDeltaEtaPhi->Fill(etaTrig-etaTrack, phiTrig-phiTrack, histoWeight);
+            fhPerpBandTrackPtTriggerEtaPhi->Fill(etaTrig, phiTrig, ptTrack, histoWeight);
+          }
         }
       } // perp eta band
     }
@@ -869,7 +903,11 @@ void AliIsolationCut::CalculateTrackSignalInCone
       }
 
       if ( fFillEtaPhiHistograms && ptTrig > fEtaPhiHistogramsMinPt )
+      {
         fhEtaPhiInConeTrack->Fill(etaTrack, phiTrack, histoWeight);
+        fhDeltaEtaPhiInConeTrack->Fill(etaTrig-etaTrack, phiTrig-phiTrack, histoWeight);
+        fhTriggerEtaPhiInConeTrackPt->Fill(etaTrig, phiTrig, ptTrack, histoWeight);
+      }
     } // histograms
     
     // *Before*, count particles in cone
@@ -1826,6 +1864,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaPhiInConeCluster->SetXTitle("#eta");
     fhEtaPhiInConeCluster->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhiInConeCluster) ;
+
+    fhDeltaEtaPhiInConeCluster = new TH2F
+    ("hDeltaEtaPhiInConeCluster",
+     Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-cluster} of Clusters in cone for #it{R} =  %2.2f",fConeSize),
+     50,-fConeSize*1.2,fConeSize*1.2,60,-fConeSize*1.05,fConeSize*1.05);
+    fhDeltaEtaPhiInConeCluster->SetXTitle("#Delta #eta_{trig-cluster}");
+    fhDeltaEtaPhiInConeCluster->SetYTitle("#Delta #varphi_{trig-cluster}");
+    outputContainer->Add(fhDeltaEtaPhiInConeCluster) ;
+
+    fhTriggerEtaPhiInConeClusterPt = new TH3F
+    ("hEtaPhiInConeCluster",
+     Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in cone for #it{R} = %2.2f",fConeSize),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+     phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+     ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+    fhTriggerEtaPhiInConeClusterPt->SetXTitle("#eta");
+    fhTriggerEtaPhiInConeClusterPt->SetYTitle("#varphi");
+    fhTriggerEtaPhiInConeClusterPt->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhTriggerEtaPhiInConeClusterPt) ;
   }
   
   // UE bands
@@ -1867,6 +1924,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhEtaBandClusterEtaPhi->SetXTitle("#eta");
         fhEtaBandClusterEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaBandClusterEtaPhi) ;
+
+        fhEtaBandClusterDeltaEtaPhi = new TH2F
+        ("hEtaBandClusterDeltaEtaPhi",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-cluster} of clusters in #varphi band for #it{R} =  %2.2f",fConeSize),
+         70,-0.7,0.7, 60,-fConeSize*1.05,fConeSize*1.05);
+        fhEtaBandClusterDeltaEtaPhi->SetXTitle("#Delta #eta_{trig-cluster}");
+        fhEtaBandClusterDeltaEtaPhi->SetYTitle("#Delta #varphi_{trig-cluster}");
+        outputContainer->Add(fhEtaBandClusterDeltaEtaPhi) ;
+
+        fhEtaBandClusterPtTriggerEtaPhi = new TH3F
+        ("hEtaBandClusterPtTriggerEtaPhi",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} clusters in #varphi band for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhEtaBandClusterPtTriggerEtaPhi->SetXTitle("#eta");
+        fhEtaBandClusterPtTriggerEtaPhi->SetYTitle("#varphi");
+        fhEtaBandClusterPtTriggerEtaPhi->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaBandClusterPtTriggerEtaPhi) ;
       }
 
       if ( fICMethod == kSumBkgSubPhiBandIC )
@@ -1878,6 +1954,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandClusterEtaPhi->SetXTitle("#eta");
         fhPhiBandClusterEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhPhiBandClusterEtaPhi) ;
+
+        fhPhiBandClusterDeltaEtaPhi = new TH2F
+        ("hPhiBandClusterDeltaEtaPhi",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-cluster} of clusters in #varphi band for #it{R} =  %2.2f",fConeSize),
+         60,-fConeSize*1.05,fConeSize*1.05, 120,-TMath::Pi()*1.1,TMath::Pi()*1.1);
+        fhPhiBandClusterDeltaEtaPhi->SetXTitle("#Delta #eta_{trig-track}");
+        fhPhiBandClusterDeltaEtaPhi->SetYTitle("#Delta #varphi_{trig-track}");
+        outputContainer->Add(fhPhiBandClusterDeltaEtaPhi) ;
+
+        fhPhiBandClusterPtTriggerEtaPhi = new TH3F
+        ("hPhiBandClusterPtTriggerEtaPhi",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} clusters in #varphi band for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhPhiBandClusterPtTriggerEtaPhi->SetXTitle("#eta");
+        fhPhiBandClusterPtTriggerEtaPhi->SetYTitle("#varphi");
+        fhPhiBandClusterPtTriggerEtaPhi->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiBandClusterPtTriggerEtaPhi) ;
       }
     }
     
@@ -1992,6 +2087,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhEtaPhiInConeTrack->SetXTitle("#eta");
     fhEtaPhiInConeTrack->SetYTitle("#varphi");
     outputContainer->Add(fhEtaPhiInConeTrack) ;
+
+    fhDeltaEtaPhiInConeTrack = new TH2F
+    ("hDeltaEtaPhiInConeTrack",
+     Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-track} of Tracks in cone for #it{R} =  %2.2f",fConeSize),
+     50,-fConeSize*1.2,fConeSize*1.2,60,-fConeSize*1.05,fConeSize*1.05);
+    fhDeltaEtaPhiInConeTrack->SetXTitle("#Delta #eta_{trig-track}");
+    fhDeltaEtaPhiInConeTrack->SetYTitle("#Delta #varphi_{trig-track}");
+    outputContainer->Add(fhDeltaEtaPhiInConeTrack) ;
+
+    fhTriggerEtaPhiInConeTrackPt = new TH3F
+    ("hEtaPhiInConeTrack",
+     Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in cone for #it{R} = %2.2f",fConeSize),
+     etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+     phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+     ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+    fhTriggerEtaPhiInConeTrackPt->SetXTitle("#eta");
+    fhTriggerEtaPhiInConeTrackPt->SetYTitle("#varphi");
+    fhTriggerEtaPhiInConeTrackPt->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhTriggerEtaPhiInConeTrackPt) ;
   }
   
   // UE subtraction
@@ -2051,6 +2165,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhEtaPhiInPerpCone->SetXTitle("#eta");
         fhEtaPhiInPerpCone->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiInPerpCone) ;
+
+        fhDeltaEtaPhiInPerpCone = new TH2F
+        ("fhDeltaEtaPhiInPerpConeTrack",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-track} of Tracks in #perp cones for #it{R} =  %2.2f",fConeSize),
+         50,-fConeSize*1.2,fConeSize*1.2,120,-TMath::Pi()-fConeSize*1.1,TMath::Pi()+fConeSize*1.1);
+        fhDeltaEtaPhiInPerpCone->SetXTitle("#Delta #eta_{trig-track}");
+        fhDeltaEtaPhiInPerpCone->SetYTitle("#Delta #varphi_{trig-track}");
+        outputContainer->Add(fhDeltaEtaPhiInPerpCone) ;
+
+        fhTriggerEtaPhiInPerpConeTrackPt = new TH3F
+        ("hTriggerEtaPhiInPerpConeTrackPt",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in #perp cones for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhTriggerEtaPhiInPerpConeTrackPt->SetXTitle("#eta");
+        fhTriggerEtaPhiInPerpConeTrackPt->SetYTitle("#varphi");
+        fhTriggerEtaPhiInPerpConeTrackPt->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhTriggerEtaPhiInPerpConeTrackPt) ;
       }
     } // perpendicular
     
@@ -2135,6 +2268,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhEtaBandTrackEtaPhi->SetXTitle("#eta");
         fhEtaBandTrackEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaBandTrackEtaPhi) ;
+
+        fhEtaBandTrackDeltaEtaPhi = new TH2F
+        ("hEtaBandTrackDeltaEtaPhi",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-track} of tracks in #eta band for #it{R} =  %2.2f",fConeSize),
+         100,-1,1, 60,-fConeSize*1.05,fConeSize*1.05);
+        fhEtaBandTrackDeltaEtaPhi->SetXTitle("#Delta #eta_{trig-track}");
+        fhEtaBandTrackDeltaEtaPhi->SetYTitle("#Delta #varphi_{trig-track}");
+        outputContainer->Add(fhEtaBandTrackDeltaEtaPhi) ;
+
+        fhEtaBandTrackPtTriggerEtaPhi = new TH3F
+        ("hEtaBandTrackPtTriggerEtaPhi",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in #eta band for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhEtaBandTrackPtTriggerEtaPhi->SetXTitle("#eta");
+        fhEtaBandTrackPtTriggerEtaPhi->SetYTitle("#varphi");
+        fhEtaBandTrackPtTriggerEtaPhi->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhEtaBandTrackPtTriggerEtaPhi) ;
       }
 
       if ( fICMethod == kSumBkgSubPhiBandIC )
@@ -2146,6 +2298,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPhiBandTrackEtaPhi->SetXTitle("#eta");
         fhPhiBandTrackEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhPhiBandTrackEtaPhi) ;
+
+        fhPhiBandTrackDeltaEtaPhi = new TH2F
+        ("hPhiBandTrackDeltaEtaPhi",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-track} of tracks in #varphi band for #it{R} =  %2.2f",fConeSize),
+         60,-fConeSize*1.05,fConeSize*1.05, 120,-TMath::Pi()*1.1,TMath::Pi()*1.1);
+        fhPhiBandTrackDeltaEtaPhi->SetXTitle("#Delta #eta_{trig-track}");
+        fhPhiBandTrackDeltaEtaPhi->SetYTitle("#Delta #varphi_{trig-track}");
+        outputContainer->Add(fhPhiBandTrackDeltaEtaPhi) ;
+
+        fhPhiBandTrackPtTriggerEtaPhi = new TH3F
+        ("hPhiBandTrackPtTriggerEtaPhi",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in #varphi band for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhPhiBandTrackPtTriggerEtaPhi->SetXTitle("#eta");
+        fhPhiBandTrackPtTriggerEtaPhi->SetYTitle("#varphi");
+        fhPhiBandTrackPtTriggerEtaPhi->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPhiBandTrackPtTriggerEtaPhi) ;
       }
 
       if ( fICMethod == kSumBkgSubPerpBandIC )
@@ -2157,6 +2328,25 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpBandTrackEtaPhi->SetXTitle("#eta");
         fhPerpBandTrackEtaPhi->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhPerpBandTrackEtaPhi) ;
+
+        fhPerpBandTrackDeltaEtaPhi = new TH2F
+        ("hPerpBandTrackDeltaEtaPhi",
+         Form("#Delta #eta_{trig-track} vs #Delta #varphi_{trig-track} of Tracks in #perp bands for #it{R} =  %2.2f",fConeSize),
+         50,-1,1, 120,-TMath::Pi()-fConeSize*1.1,TMath::Pi()+fConeSize*1.1);
+        fhPerpBandTrackDeltaEtaPhi->SetXTitle("#Delta #eta_{trig-track}");
+        fhPerpBandTrackDeltaEtaPhi->SetYTitle("#Delta #varphi_{trig-track}");
+        outputContainer->Add(fhPerpBandTrackDeltaEtaPhi) ;
+
+        fhPerpBandTrackPtTriggerEtaPhi = new TH3F
+        ("hPerpBandTrackPtTriggerEtaPhi",
+         Form("#eta vs #varphi of trigger vs #it{p}_{T} tracks in #perp bands for #it{R} = %2.2f",fConeSize),
+         etaBinsArray.GetSize() - 1, etaBinsArray.GetArray(),
+         phiBinsArray.GetSize() - 1, phiBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray());
+        fhPerpBandTrackPtTriggerEtaPhi->SetXTitle("#eta");
+        fhPerpBandTrackPtTriggerEtaPhi->SetYTitle("#varphi");
+        fhPerpBandTrackPtTriggerEtaPhi->SetZTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPerpBandTrackPtTriggerEtaPhi) ;
       }
     }
     
