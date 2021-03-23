@@ -66,6 +66,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
+    void SetNewClustersCut() {fIs_NewClustersCut = kTRUE;};
     void DoTriggerSimulation() {fIsTriggerSimulation = kTRUE;};
 	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
@@ -82,6 +83,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetUseTender() { fUseTender=kTRUE;};
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     void SetSysHistos() {fIs_sys=kTRUE;};
+    
+    void SetNewEventSelection(){fnew_event_selection=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
@@ -163,10 +166,12 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 
     Bool_t				fIsMC;
+    Bool_t              fIs_NewClustersCut;
     Bool_t              fIsTriggerSimulation;
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fIs_sys;
+    Bool_t              fnew_event_selection;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;

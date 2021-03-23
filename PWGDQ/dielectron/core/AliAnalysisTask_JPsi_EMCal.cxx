@@ -113,10 +113,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
   : AliAnalysisTaskSE(name)
 
 ,fIsMC(0)
+,fIs_NewClustersCut(kFALSE)
 ,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fIs_sys(kTRUE)
+,fnew_event_selection(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
@@ -494,10 +496,12 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTask_JPsi_EMCal")
 
 ,fIsMC(0)
+,fIs_NewClustersCut(kFALSE)
 ,fIsTriggerSimulation(kFALSE)
 ,fUseTender(kFALSE)
 ,fMultiAnalysis(kFALSE)
 ,fIs_sys(kTRUE)
+,fnew_event_selection(kFALSE)
 ,fFill_ESparse(kFALSE)
 ,fFill_ESparseTPC(kFALSE)
 ,fFill_MSparse(kFALSE)
@@ -948,7 +952,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 //Store the number of events
 	//Define the histo
-	fNevent = new TH1F("fNevent","Number of Events",35,-0.5,34.5);
+	fNevent = new TH1F("fNevent","Number of Events",40,-0.5,39.5);
     //fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
     
    
@@ -1545,6 +1549,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     
     if(fIsMC && fIsTriggerSimulation){
         //printf("Inside trigger decision - beginning \n");
+        //auto triggerdecision = fAOD->FindListObject("EmcalTriggerDecision");
         auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
         bool eg1 = triggerdecision->IsEventSelected("EG1"),
         dg1 = triggerdecision->IsEventSelected("DG1"),
@@ -1552,8 +1557,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         dg2 = triggerdecision->IsEventSelected("DG2");
         
         //printf("Inside trigger decision - end \n");
-        if(eg1 || dg1 )fNevent->Fill(34);
-        if(eg2 || dg2 )fNevent->Fill(33);
+        if(eg1 || dg1 )fNevent->Fill(38);
+        if(eg2 || dg2 )fNevent->Fill(37);
     }
     
     
@@ -1584,33 +1589,61 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 //Vertex Selection
 	
-	fNevent->Fill(30);
+	fNevent->Fill(36);
     if(fIsAOD)
     {
         
            const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
         
-            Float_t zvtx = trkVtx->GetZ();
+            //Float_t zvtx = trkVtx->GetZ();
+            //fZvtx = zvtx;
+        
+            Float_t zvtx = -100;
+            zvtx=trkVtx->GetZ();
             fZvtx = zvtx;
+            //x
+            Float_t xvtx = -100;
+            xvtx=trkVtx->GetX();
+        
+            //y
+            Float_t yvtx = -100;
+            yvtx=trkVtx->GetY();
+        
+            //events without vertex
+            if(zvtx==0 && xvtx==0 && yvtx==0) fNevent->Fill(35);
+        
             //printf("vertex =%f, vertex global =%f \n", zvtx, fZvtx);
             //all events with reconstructed vertex:
             if(!fIs_sys)fVtxZ[0]->Fill(fZvtx);
-        
-        
+
         
             //to cross check also SPD vertex//
             const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
             if(!spdVtx || spdVtx->GetNContributors()<=0)
             {
-                fNevent->Fill(29);
+                fNevent->Fill(34);
             }
             if(spdVtx)
             {
-                fNevent->Fill(28);
+                fNevent->Fill(33);
                 if((!trkVtx || trkVtx->GetNContributors()<=0) && (spdVtx->GetNContributors()<=0))
                 {
-                    fNevent->Fill(27);
+                    fNevent->Fill(32);
                 }
+                //checking SPD vertex stuff
+                TString vtxTyp = spdVtx->GetTitle();
+                Double_t cov[6]={0};
+                spdVtx->GetCovarianceMatrix(cov);
+                Double_t zRes = TMath::Sqrt(cov[5]);
+                
+                if(spdVtx->IsFromVertexerZ() && (zRes>0.25)) fNevent->Fill(31);
+                
+                //check discrepancy when both exists
+                if(trkVtx && trkVtx->GetNContributors()>=1 && spdVtx->GetNContributors()>=1){
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) fNevent->Fill(30);
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())<=0.5) fNevent->Fill(29);//requirement of both vertex, just a cross check, for now, only vertex from track is used
+                }
+                
             }
             //end of SPD cross check
         
@@ -1619,12 +1652,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         
            if(!trkVtx || trkVtx->GetNContributors()<=0)
            {//no vertex from tracks
-              fNevent->Fill(26);
+              fNevent->Fill(28);
               return;
            }
            
-           
-           fNevent->Fill(25);
+           //all events with vertex
+           fNevent->Fill(27);
            //any vertex
            if(!fIs_sys)fVtxZ[1]->Fill(fZvtx);
            
@@ -1798,7 +1831,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	Int_t fNOtrks =  fVevent->GetNumberOfTracks();
     if(fNOtrks<2){
         fNevent->Fill(19);
-        return;
+        if(!fnew_event_selection)return;
     }
 	fNevent->Fill(18);
 	
@@ -2252,8 +2285,27 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				{
                     
                    
+                    Double_t Cls_time = clust->GetTOF();
+                    Double_t Cls_time_ns = Cls_time*1e9;
                     
-					fECluster_pure->Fill(clust->E());
+                    //remove exotic and cut on cluster time (only for data!)
+                    if(!fIsMC && fIs_NewClustersCut){
+                        if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                            continue;
+                        }
+                        if((clust->GetIsExotic())){
+                            continue;
+                        }
+                    }
+                    
+                    
+                    fECluster_pure->Fill(clust->E());
+                    
+                    if(Cls_time_ns >=-20 && Cls_time_ns <= 15){
+                        if(!(clust->GetIsExotic())){
+                            
+                        }
+                    }
                     
                     if((clust->E())>=5.0) hasCls_aboveEG2=kTRUE;
                        
@@ -2344,7 +2396,22 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			}
 			if(clust && clust->IsEMCAL())
 			{
-				fECluster_pure->Fill(clust->E());
+                
+                Double_t Cls_time = clust->GetTOF();
+                Double_t Cls_time_ns = Cls_time*1e9;
+                
+                //remove exotic and cut on cluster time (only for data!)
+                if(!fIsMC && fIs_NewClustersCut){
+                    if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                        continue;
+                    }
+                    if((clust->GetIsExotic())){
+                        continue;
+                    }
+                }
+                fECluster_pure->Fill(clust->E());
+                
+                
                 
                 ClsNo_emcal++;
                 
@@ -2758,10 +2825,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 
 		if(track->GetEMCALcluster()>0)
 		{
-				
-            
-            
-			
+
 			if(!fUseTender) fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2784,6 +2848,22 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 			
 			if(fClus->IsEMCAL())
 			{
+                
+                Double_t Cls_time = fClus->GetTOF();
+                Double_t Cls_time_ns = Cls_time*1e9;
+                
+                //remove exotic and cut on cluster time (only for data!)
+                if(!fIsMC && fIs_NewClustersCut){
+                    if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                        continue;
+                    }
+                    if((fClus->GetIsExotic())){
+                        continue;
+                    }
+                }
+                
+                
+                
 				if(!fIs_sys)fdEta_dPhi[1]->Fill(fClus->GetTrackDx(), fClus->GetTrackDz());
 				//if(TMath::Abs(fClus->GetTrackDx())<=0.05 && TMath::Abs(fClus->GetTrackDz())<=0.05)
 			  //{
@@ -3229,6 +3309,20 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                        
 						if(fClus2->IsEMCAL())
 						{
+                            
+                            Double_t Cls_time = fClus2->GetTOF();
+                            Double_t Cls_time_ns = Cls_time*1e9;
+                            //remove exotic and cut on cluster time (only for data!)
+                            if(!fIsMC && fIs_NewClustersCut){
+                                if(Cls_time_ns <-20 || Cls_time_ns > 15){
+                                    continue;
+                                }
+                                if((fClus2->GetIsExotic())){
+                                    continue;
+                                }
+                            }
+                            
+                            
 							if(!fIs_sys)fTracksPt[7]->Fill(fPt2);
 							fClus2->GetPosition(pos2);
 							TVector3 vpos2(pos2[0],pos2[1],pos2[2]);
