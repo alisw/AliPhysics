@@ -131,6 +131,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCovMatPrimVXX3Prong{nullptr},
   fHistCovMatSecVXX3Prong{nullptr},
   fHistInvMassDs{nullptr},
+  fHistInvMassDsSignal{nullptr},
   fHistPtDs{nullptr},
   fHistYPtDs{nullptr},
   fHistDecLenDs{nullptr},
@@ -300,6 +301,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistCovMatPrimVXX3Prong;
     delete fHistCovMatSecVXX3Prong;
     delete fHistInvMassDs;
+    delete fHistInvMassDsSignal;
     delete fHistPtDs;
     delete fHistYPtDs;
     delete fHistDecLenDs;
@@ -888,11 +890,13 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
 
   // Ds->KKpi candidate histos
   fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
+  fHistInvMassDsSignal = new TH1F("hInvMassDsSignal", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
   fHistPtDs = new TH1F("hPtDs"," ; D_{s} p_{T} (GeV/c)",100, 0, 10.);
   fHistYPtDs  = new TH2F("hYPtDs", " ; D_{s} p_{T} (GeV/c) ; y", 100, 0, 10.,120,-1.2,1.2);
   fHistDecLenDs = new TH1F("hDecLenDs"," ; Decay Length (cm)", 200, 0., 2.0);
   fHistCosPointDs = new TH1F("hCosPointDs", " ; cos(#theta_{P})", 110, -1.1, 1.1);
   fOutput->Add(fHistInvMassDs);
+  fOutput->Add(fHistInvMassDsSignal);
   fOutput->Add(fHistPtDs);
   fOutput->Add(fHistYPtDs);
   fOutput->Add(fHistDecLenDs);
@@ -1388,6 +1392,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
   
   Int_t pdgDplusdau[3]={321,211,211};
+  Int_t pdgDsdau[3]={321,321,211};
 
   Int_t massSel = SelectInvMassAndPt3prong(threeTrackArray, rd4massCalc3);
   if (massSel == 0) {
@@ -1492,6 +1497,31 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHist3ProngVertX->Fill(trkv3->GetX());
       fHist3ProngVertY->Fill(trkv3->GetY());
       fHist3ProngVertZ->Fill(trkv3->GetZ());
+      if(fReadMC && mcEvent){
+        Int_t labD=MatchToMC(the3Prong,431,mcEvent,3,threeTrackArray,pdgDsdau);
+        if(labD>=0){
+          AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
+          if(dmes){
+	    AliESDtrack* trDau0=(AliESDtrack*)threeTrackArray->UncheckedAt(0);
+	    Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+	    AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+	    if(partDau0){
+	      Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+	      if(pdgCode==211) fHistInvMassDsSignal->Fill(mpiKK);
+	      else if(pdgCode==321) fHistInvMassDsSignal->Fill(mKKpi);
+	    }
+            Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
+            Double_t ptgen=dmes->Pt();
+            if(orig==4){
+              fHistPtRecoGenPtPrompt[2]->Fill(ptgen);
+              fHistPtRecoPrompt[2]->Fill(ptcand_3prong);
+            }else if(orig==5){
+              fHistPtRecoGenPtFeeddw[2]->Fill(ptgen);
+              fHistPtRecoFeeddw[2]->Fill(ptcand_3prong);
+            }
+	  }
+	}
+      }
     }
   }
   if (massSel & (1 << kbitLc)) {

@@ -169,6 +169,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistCovMatSecVXX3Prong;     //!<!  histo with cov mat sec vert for the 3-prong candidate
 
   TH1F *fHistInvMassDs;              //!<!  histo with Ds->KKpi inv mass
+  TH1F *fHistInvMassDsSignal;        //!<!  histo with Ds->KKpi inv mass (signal)
   TH1F *fHistPtDs;                   //!<!  histo with Ds pt
   TH2F *fHistYPtDs;                  //!<!  histo with Ds y vs pt
   TH1F *fHistDecLenDs;               //!<!  histo with Ds decay length
