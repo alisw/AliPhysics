@@ -29,8 +29,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data()));
   gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
 
-  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
-	TString configBasePath("./");
+  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+	//TString configBasePath("./");
 	if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",libFile.Data())))
@@ -133,33 +133,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetULSandLS(kTRUE);
   task->SetDeactivateLS(kFALSE);
 
-  //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;";
-  //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia CC_0;Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia CC_0;";
-  //TString generators = "Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia BB_0;";
-  //TString generators = "Pythia B_0";
 
   cout<<"Efficiency based on MC generators: " << generators <<endl;
   TString generatorsPair=generators;
   task->SetGeneratorMCSignalName(generatorsPair);
   task->SetGeneratorULSSignalName(generators);
-  //task->SetLHC19f2MC(isLHC19f2);
 
-	//if(resolutionFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//if(cocktailFilename   != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//if(centralityFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
 
-  // Resolution File, If resoFilename = "" no correction is applied
-  task->SetResolutionFile(resolutionFilename);
-  task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
-  task->SetCocktailWeighting(cocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
-  task->SetCentralityFile(centralityFilename);
+  task->SetResolutionFile(resolutionFilename , "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
+  task->SetCentralityFile(centralityFilename , "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/" + centralityFilename);
+
+  if(cocktailFilename != "") task->SetDoCocktailWeighting(kTRUE);
+  task->SetCocktailWeighting(cocktailFilename, "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/"   + cocktailFilename);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
