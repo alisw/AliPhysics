@@ -103,7 +103,15 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const char *name,const char *title) :
   fBackgroundestimation(0),
   fHistDEDx(0),
   fHistTOFBeta(0),
-  fHistTPCSignal(0)
+  fHistTPCSignal(0),
+  fHistTPCCluster(0),
+  fHistTPCchi2(0),
+  fHistITSCluster(0),
+  fHistITSchi2(0),
+  fHistTPCClusterwCut(0),
+  fHistTPCchi2wCut(0),
+  fHistITSClusterwCut(0),
+  fHistITSchi2wCut(0)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -137,7 +145,15 @@ AliCaloSigmaCuts::AliCaloSigmaCuts(const AliCaloSigmaCuts &ref) :
   fBackgroundestimation(ref.fBackgroundestimation),
   fHistDEDx(ref.fHistDEDx),
   fHistTOFBeta(ref.fHistTOFBeta),
-  fHistTPCSignal(ref.fHistTPCSignal)
+  fHistTPCSignal(ref.fHistTPCSignal),
+  fHistTPCCluster(ref.fHistTPCCluster),
+  fHistTPCchi2(ref.fHistTPCchi2),
+  fHistITSCluster(ref.fHistITSCluster),
+  fHistITSchi2(ref.fHistITSchi2),
+  fHistTPCClusterwCut(ref.fHistTPCClusterwCut),
+  fHistTPCchi2wCut(ref.fHistTPCchi2wCut),
+  fHistITSClusterwCut(ref.fHistITSClusterwCut),
+  fHistITSchi2wCut(ref.fHistITSchi2wCut)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -175,12 +191,28 @@ void AliCaloSigmaCuts::InitCutHistograms(TString name){
     else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
   }
 
-  fHistDEDx = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 200,0.,10.,200,1.,201.);
+  fHistDEDx = new TH2F("fHistDEDx", "fHistDEDx;#it{p};d#it{E}/d#it{x}", 500,0.,10.,200,1.,201.);
   fHistograms->Add(fHistDEDx);
-  fHistTOFBeta = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 200,0.,10.,130,0.1,1.3);
+  fHistTOFBeta = new TH2F("fHistTOFBeta", "fHistTOFBeta;#it{p};#beta", 500,0.,10.,130,0.1,1.3);
   fHistograms->Add(fHistTOFBeta);
-  fHistTPCSignal = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 200, 0., 10., 60, -3., 3.);
+  fHistTPCSignal = new TH2F("fHistTPCSignal", "fHistTPCSignal;#it{p};#sigma_{TPC}", 500, 0., 10., 60, -3., 3.);
   fHistograms->Add(fHistTPCSignal);
+  fHistTPCCluster = new TH1F("fHistTPCCluster", "fHistTPCCluster;#it{N}_{Cluster TPC};", 120, 50., 170.);
+  fHistograms->Add(fHistTPCCluster);
+  fHistTPCchi2 = new TH1F("fHistTPCchi2", "fHistTPCchi2;#chi^{2};", 100, 0., 10.);
+  fHistograms->Add(fHistTPCchi2);
+  fHistITSCluster = new TH1F("fHistITSCluster", "fHistITSCluster;#it{N}_{Cluster TPC};", 10, 0., 10.);
+  fHistograms->Add(fHistITSCluster);
+  fHistITSchi2 = new TH1F("fHistITSchi2", "fHistITSchi2;#chi^{2};", 100, 0., 100.);
+  fHistograms->Add(fHistITSchi2);
+  fHistTPCClusterwCut = new TH1F("fHistTPCClusterwCut", "fHistTPCClusterwCut;#it{N}_{Cluster TPC};", 120, 50., 170.);
+  fHistograms->Add(fHistTPCClusterwCut);
+  fHistTPCchi2wCut = new TH1F("fHistTPCchi2wCut", "fHistTPCchi2wCut;#chi^{2};", 100, 0., 10.);
+  fHistograms->Add(fHistTPCchi2wCut);
+  fHistITSClusterwCut = new TH1F("fHistITSClusterwCut", "fHistITSClusterwCut;#it{N}_{Cluster TPC};", 10, 0., 10.);
+  fHistograms->Add(fHistITSClusterwCut);
+  fHistITSchi2wCut = new TH1F("fHistITSchi2wCut", "fHistITSchi2wCut;#chi^{2};", 100, 0., 100.);
+  fHistograms->Add(fHistITSchi2wCut);
   TH1::AddDirectory(kTRUE);
   return;
 }
@@ -447,14 +479,20 @@ Bool_t AliCaloSigmaCuts::SetChi2ITSCut(Int_t Chi2ITSCut){
   // Set Cut
   switch(Chi2ITSCut){
   case 0:
-    fChi2ITS = 10.;
+    fChi2ITS = 100.;
     break;
   case 1:
     fChi2ITS = 3.;
     break;
   case 2:
     fChi2ITS = 1.5;
+    break;
+   case 3:
+    fChi2ITS = 10.;
     break;    
+   case 4:
+    fChi2ITS = 36.;
+    break;            
   default:
     cout<<"Warning: Chi2ITSCut not defined"<<Chi2ITSCut<<endl;
     return kFALSE;
@@ -637,9 +675,9 @@ Bool_t AliCaloSigmaCuts::SetAmenterosCut(Int_t AmenterosCut){
   // Set Cut
   switch(AmenterosCut){
   case 0:
-    fMaxAlpha = 10.;
+    fMaxAlpha = 100.;
     fMinAlpha = 0.;
-    fQt = 10.;
+    fQt = 100.;
     break;
   case 1:
     fMaxAlpha = 1.02;
@@ -770,16 +808,30 @@ Bool_t AliCaloSigmaCuts::TrackIsSelected(AliAODTrack* track, AliPIDResponse* fPI
   if(!(track->TestFilterBit(fFilterBit))) return kFALSE;
   if(!(track->GetTPCNcls())) return kFALSE;
   if(!(track->GetTPCchi2perCluster())) return kFALSE;
-  if((track->GetTPCNcls()) < fNClusterTPC || (track->GetTPCchi2perCluster()) > fChi2TPC) return kFALSE;
 
+  if(fHistTPCCluster) fHistTPCCluster->Fill(track->GetTPCNcls());
+  if(fHistTPCchi2) fHistTPCchi2->Fill(track->GetTPCchi2perCluster());
+  
+  if((track->GetTPCNcls()) < fNClusterTPC || (track->GetTPCchi2perCluster()) > fChi2TPC) return kFALSE;
+  
+  if(fHistTPCClusterwCut) fHistTPCClusterwCut->Fill(track->GetTPCNcls());
+  if(fHistTPCchi2wCut) fHistTPCchi2wCut->Fill(track->GetTPCchi2perCluster());
+  
   if(!(track->GetITSNcls())) return kFALSE;
   if(!(track->GetITSchi2())) return kFALSE;
+
+  if(fHistITSCluster) fHistITSCluster->Fill(track->GetITSNcls());
+  if(fHistITSchi2) fHistITSchi2->Fill(track->GetITSchi2());
+
   if(fInvertChi2ITS == 0){
     if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) > fChi2ITS) return kFALSE;
   }
   if(fInvertChi2ITS == 1){
     if((track->GetITSNcls()) < fNClusterITS || (track->GetITSchi2()) < fChi2ITS || (track->GetITSchi2()) > 10.) return kFALSE;
   }
+
+  if(fHistITSClusterwCut) fHistITSClusterwCut->Fill(track->GetITSNcls());
+  if(fHistITSchi2wCut) fHistITSchi2wCut->Fill(track->GetITSchi2());
 
   //dE/dx and TOF Beta Plot
   Double_t tpcSignal = track->GetTPCsignal();

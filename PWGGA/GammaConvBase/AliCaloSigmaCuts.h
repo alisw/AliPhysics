@@ -174,12 +174,20 @@ class AliCaloSigmaCuts : public AliAnalysisCuts {
     //Histogramme
     TH2F*       fHistDEDx;                     
     TH2F*       fHistTOFBeta;                   
-    TH2F*       fHistTPCSignal;                 
+    TH2F*       fHistTPCSignal;  
+    TH1F*       fHistTPCCluster; 
+    TH1F*       fHistTPCchi2; 
+    TH1F*       fHistITSCluster; 
+    TH1F*       fHistITSchi2; 
+    TH1F*       fHistTPCClusterwCut; 
+    TH1F*       fHistTPCchi2wCut; 
+    TH1F*       fHistITSClusterwCut; 
+    TH1F*       fHistITSchi2wCut; 
     
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliCaloSigmaCuts,5)
+    ClassDef(AliCaloSigmaCuts,6)
     /// \endcond
 };
 
