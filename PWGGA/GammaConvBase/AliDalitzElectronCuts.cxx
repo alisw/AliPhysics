@@ -1073,12 +1073,11 @@ Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t 
     }
     else if (fDoDifferentCut==1){
         for(Int_t ii=0;ii<5;ii++){
-            if (deltaPhi >= fDeltaPhiCutArray[ii] && deltaPhi < fDeltaPhiCutArray[ii+1] ){
-                if(psiPair<fPsiPairCutArray[ii]){
-                return kTRUE;
-                }
+            if ( (deltaPhi >= fDeltaPhiCutArray[ii] && deltaPhi < fDeltaPhiCutArray[ii+1]) && (psiPair<fPsiPairCutArray[ii]) ){
+             return kTRUE;
             }
         }
+        return kFALSE;
     }
     else if (fDoDifferentCut==2){//pT Dependace, triangular
         for(Int_t ii=0;ii<3;ii++){
@@ -1087,10 +1086,7 @@ Bool_t AliDalitzElectronCuts::IsFromGammaConversion( Double_t psiPair, Double_t 
             }
         }
     }
-//     else {
-//         return kFALSE;
-//     }
-    return kTRUE;
+    return kTRUE;//Warning correction.
 }
 
 ///________________________________________________________________________
