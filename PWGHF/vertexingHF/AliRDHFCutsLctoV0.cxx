@@ -754,14 +754,14 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     }
 
     // cut on min V0 Radius
-    if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius
+    if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] * fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius; AliAODv0::RadiusV0() is x*x + y*y
       AliDebug(4, Form("V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(20, ptbin)]));
       if (cleanvtx) CleanOwnPrimaryVtx(d, aod, origownvtx);
       return kFALSE;
     }
     
     // cut on max V0 Radius
-    if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius
+    if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] * fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius; AliAODv0::RadiusV0() is x*x + y*y
       AliDebug(4,Form("V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
       if (cleanvtx) CleanOwnPrimaryVtx(d, aod, origownvtx);
       return kFALSE;
@@ -1728,7 +1728,7 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
     prodcutsval[18][ipt2]=-9999.;// Re-signed d0 [cm]
     prodcutsval[19][ipt2]=-9999.;// V0 armenteros qT/|alpha|
     prodcutsval[20][ipt2] = 0.;       // min V0 radius
-    prodcutsval[21][ipt2] = 10000.;   // max V0 radius
+    prodcutsval[21][ipt2] = 1000.;   // max V0 radius
     prodcutsval[22][ipt2]=0.;   // V0 type cut
   }
   SetCuts(nvars,nptbins,prodcutsval);
@@ -2498,13 +2498,13 @@ Bool_t AliRDHFCutsLctoV0::ApplyCandidateCuts(AliAODRecoDecayHF *obj, AliAODEvent
   }
 
   // cut on min V0 Radius
-  if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius
+  if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] * fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius; AliAODv0::RadiusV0() is x*x + y*y
     AliDebug(4, Form("V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(20, ptbin)]));
     return kFALSE;
   }
 
   // cut on max V0 Radius
-  if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius
+  if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] * fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius; AliAODv0::RadiusV0() is x*x + y*y
     AliDebug(4,Form("V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
     return kFALSE;
   }
