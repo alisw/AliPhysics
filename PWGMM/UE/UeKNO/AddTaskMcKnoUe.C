@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskMcKnoUe* AddTaskMcKnoUe(const Char_t* taskname="McKnoUe", Bool_t  useMC  = kFALSE, Bool_t performMCclosuretest = kFALSE, Bool_t isPythia=kFALSE,Bool_t IsppData=kFALSE,Bool_t IspPbData=kTRUE, Double_t minpT=0.5)
+AliAnalysisTaskMcKnoUe* AddTaskMcKnoUe(const Char_t* taskname="McKnoUe", Bool_t  useMC  = kFALSE, Bool_t performMCclosuretest = kFALSE, Bool_t isPythia=kFALSE,Bool_t IsppData=kFALSE,Bool_t IspPbData=kTRUE, Double_t minpT=0.5,Double_t PtLmin = 5.0, Double_t PtLmax = 40.0)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -31,6 +31,8 @@ AliAnalysisTaskMcKnoUe* AddTaskMcKnoUe(const Char_t* taskname="McKnoUe", Bool_t 
     taskUE->SetParametrizationEfficiencypPbdata(IspPbData);
     // add your task to the manager
     taskUE->SetPtMin(minpT);
+    taskUE->SetLeadingPtMin(PtLmin);
+    taskUE->SetLeadingPtMax(PtLmax);
     mgr->AddTask(taskUE);
 
 
