@@ -65,6 +65,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMPTList(0),
   fmPT(0),
   fMultiDist(0),
+  fMultiVsV0MCorr(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -121,6 +122,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fMPTList(0),
   fmPT(0),
   fMultiDist(0),
+  fMultiVsV0MCorr(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -257,6 +259,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fMPTList->Add(fMultiDist);
     fMPTList->Add(fV0MMulti);
+    fMultiVsV0MCorr = new TH2D*[2];
+    fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+    fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+    fMPTList->Add(fMultiVsV0MCorr[0]);
+    fMPTList->Add(fMultiVsV0MCorr[1]);
     PostData(1,fMPTList);
   };
   if(fStageSwitch==3) {
@@ -296,6 +303,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fptVarList->Add(fMultiDist);
     fptVarList->Add(fV0MMulti);
+    fMultiVsV0MCorr = new TH2D*[2];
+    fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+    fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+    fptVarList->Add(fMultiVsV0MCorr[0]);
+    fptVarList->Add(fMultiVsV0MCorr[1]);
     PostData(1,fptVarList);
     //Setting up the FlowContainer
     TObjArray *oba = new TObjArray();
@@ -718,9 +730,11 @@ void AliAnalysisTaskMeanPtV2Corr::FillMeanPt(AliAODEvent *fAOD, const Double_t &
     if(PIDIndex) FillMeanPtCounter(lpt,l_ptsum[PIDIndex],l_ptCount[PIDIndex],fWeights[PIDIndex]);
   };
   if(l_ptCount[0]==0) return;
+  fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
   if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
+  fMultiVsV0MCorr[1]->Fill(l_Cent,nTotNoTracks);
   Double_t lMulti  = fUseNch?(1.0*nTotNoTracks):l_Cent; //Whatever the multiplicity is
   for(Int_t i=0;i<4;i++) {
     if(!l_ptCount[i]) continue;
@@ -827,6 +841,8 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       if (TMath::Abs(leta) > 0.8) continue;
       Double_t pt = lPart->Pt();
       if (pt<0.2 || pt>3.) continue;
+      if(leta<-fEtaV2Sep) lNegCount++;
+      if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaNch) nTotNoTracks++; //Nch calculated in EtaNch region
       Double_t lpt = lPart->Pt();
       if(TMath::Abs(leta)<fEta)  { //for mean pt, only consider -0.4-0.4 region
@@ -858,13 +874,15 @@ void AliAnalysisTaskMeanPtV2Corr::FillCK(AliAODEvent *fAOD, const Double_t &vz, 
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mas 2)
     };
   };
+  if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
+  fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   //here in principle one could use the GFW output to check if the values are calculated, but this is more efficient
   if(fConsistencyFlag&1) if(!lPosCount || !lNegCount) return; // only events where v2{2, gap} could be calculated
   if(fConsistencyFlag&2) if(nTotNoTracks<4) return; //only events where v2{4} can be calculated (assuming same region as nch)
   if(fConsistencyFlag&4) if(lPosCount<2 || lNegCount<2) return; //Only events where v2{4, gap} can be calculated
   if(fConsistencyFlag&8) if(lMidCount<2) return; //If less than 2 particles in mid, reject. Relevant, if calculating v24{3-sub}
+  fMultiVsV0MCorr[1]->Fill(l_Cent,nTotNoTracks);
 
-  if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   //Filling pT variance
   Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
   //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
