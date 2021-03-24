@@ -118,13 +118,18 @@ public:
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
   };
   //Aliases for multiplicity selection criteria
-  enum MultSelectionCut {
+  enum EventSelectionCut {
       kINELgtZERO = 0,
       kPileupInMultBins,
       kConsistencySPDandTrackVertices,
       kTrackletsVsClusters,
       kNonZeroNContribs,
-      kIncompleteDAQ
+      kIncompleteDAQ,
+      kPileUpMV,
+      kTPCPileUp,
+      kTimeRangeCut,
+      kEMCALEDCut,
+      kGoodEvent
   };
   static const TClass* Generator[kGenerators]; // Generators
 
