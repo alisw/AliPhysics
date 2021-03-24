@@ -1038,7 +1038,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
 
   if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
-    SETBIT(run2bcinfo.fEventCuts, kGoodEvent);
+    SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
   
   FillTree(kRun2BCInfo);
   
