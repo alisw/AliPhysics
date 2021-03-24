@@ -1351,32 +1351,21 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
     fhEventCounter->Fill("2018 OK",1);
   }
 
-  AliMultSelection* multSelection = nullptr;
   if(fIsHMpp){
-    if(fColSystem != kPP) {AliWarning("\n\n\n Watch out! Using manual HM pp data for different collision system! \n\n\n"); }
+    if(fColSystem != kPP) {AliWarning("\n\n\n Overwriting AliEventCuts trigger (HM pp data) for different collision system! \n\n\n"); }
 
-    if(fEventAOD->IsPileupFromSPDInMultBins() ) { return kFALSE; }
-    fhEventCounter->Fill("Is not pile up",1);
-
-    multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
-    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return kFALSE; }
-    fhEventCounter->Fill("Multiplicity OK",1);
-
-    if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return kFALSE; }
-    fhEventCounter->Fill("Multiplicity cuts OK",1);
-
-    Int_t nTracksPrim = fEventAOD->GetPrimaryVertex()->GetNContributors();
-    if(nTracksPrim < 0.5) { return kFALSE; }
-    fhEventCounter->Fill("Contributors OK",1);
-
-    if(TMath::Abs(fPVz) >= fPVtxCutZ) { return kFALSE; }
-    fhEventCounter->Fill("PVz OK",1);
+    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+    if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
   }
   else{
     // events passing AliEventCuts selection
     if(!fEventCuts.AcceptEvent(fEventAOD))  { return kFALSE; }
   }
   fhEventCounter->Fill("EventCuts OK",1);
+
+  //for systematics (manual PVz cut)
+  if(TMath::Abs(fPVz) >= fPVtxCutZ) { return kFALSE; }
+  fhEventCounter->Fill("PVz OK",1);
 
   // estimate centrality & assign indexes (only if AliMultEstimator is requested)
   if(fCentEstimator != kRFP) {
@@ -1408,6 +1397,9 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
   }
 
   if(fIsHMpp && fFillQA){
+    AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
+    if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return kFALSE; }
+
     AliMultEstimator* lEst = multSelection->GetEstimator("V0M");
     fhV0Mamplitude->Fill(lEst->GetValue());
     fhV0MamplitudeRatio->Fill(lEst->GetValue()/lEst->GetMean());
@@ -4494,7 +4486,13 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
 
   Double_t dEtaLimit = dEtaGap / 2.0;
   Bool_t bHasGap = kFALSE; if(dEtaGap > -1.0) { bHasGap = kTRUE; }
-  Bool_t bHas3sub = kFALSE; if(task->fiNumGaps > 1) { bHas3sub = kTRUE; }
+  Bool_t bHas3sub = kFALSE;
+  Double_t dEtaLim3sub = dEtaLimit;
+  if(dEtaGap > -1.0) { bHasGap = kTRUE; }
+  if(task->fiNumGaps > 1) {
+    bHas3sub = kTRUE;
+    if(task->fdGaps[0] != task->fdGaps[1]) dEtaLim3sub = task->fdGaps[1]/2;
+  }
 
   Int_t maxHarm = task->fMaxHarm;
   Int_t maxWeightPower = task->fMaxWeightPower;
@@ -4600,8 +4598,26 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
              }
            }
        }
+       if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+       {
+         for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+           for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+           {
+             Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+             Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+             fFlowVecPmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+             if(bIsWithinRefs)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+             }
+           }
+         }
+       }
+
      } // endif {dEtaGap}
-   } // endfor {tracks}
+   } // endfor {pions}
 
   //loop over Kaons
   for(Int_t index(indexStart[1]); index < (Int_t) kaons->size(); ++index) {
@@ -4687,6 +4703,23 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
                 fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
               }
             }
+        }
+        if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+        {
+          for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+            for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+            {
+              Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+              Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+              fFlowVecPmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+              if(bIsWithinRefs)
+              {
+                Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+              }
+            }
+          }
         }
       } // endif {dEtaGap}
   } // endfor {tracks}
@@ -4776,6 +4809,23 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
                }
              }
          }
+         if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+         {
+           for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+             for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecPmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               if(bIsWithinRefs)
+               {
+                 Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                 fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               }
+             }
+           }
+         }
        } // endif {dEtaGap}
   } // endfor {tracks}
 
@@ -4863,6 +4913,23 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
                  fFlowVecSneg[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
                }
              }
+         }
+         if(bHas3sub && (TMath::Abs(dEta) < dEtaLim3sub) )
+         {
+           for(Int_t iHarm(0); iHarm <= maxHarm; iHarm++){
+             for(Int_t iPower(0); iPower <= maxWeightPower; iPower++)
+             {
+               Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+               Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+               fFlowVecPmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               if(bIsWithinRefs)
+               {
+                 Double_t dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * dPhi);
+                 Double_t dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * dPhi);
+                 fFlowVecSmid[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
+               }
+             }
+           }
          }
        } // endif {dEtaGap}
   } // endfor {tracks}
