@@ -1993,9 +1993,107 @@ void AliAnalysisTaskNTGJ::getVoronoiAreaTpc(
                        iterator->phi_std()));
     }
 
+#if 0
     voronoi_area_incident(particle_reco_area_tpc,
                           particle_reco_incident_tpc,
                           particle_reco_area_estimation_tpc);
+#else
+    {
+        const std::vector<point_2d_t> cell_emcal_dcal =
+            std::vector<point_2d_t>();
+        voronoi_diagram_t diagram;
+        std::map<voronoi_diagram_t::Face_handle, size_t> face_index;
+
+        // For the moment, insert EMCAL/DCAL clusters like TPC tracks,
+        // to avoid open polygons with rays (the polygons will be cut
+        // on the exact cell boundary later)
+        voronoi_insert_alice_tpc(diagram, face_index,
+                                 particle_reco_area_estimation_tpc);
+
+        particle_reco_area_tpc.clear();
+
+        // Initialize the (event-by-event) EMCAL and DCAL boundary
+        // polygons
+        polygon_t boundary_emcal;
+        polygon_t boundary_emcal_neg;
+        polygon_t boundary_dcal;
+
+        create_boundary(boundary_emcal, boundary_emcal_neg,
+                        boundary_dcal, cell_emcal_dcal);
+
+        // Extract the Voronoi cells as polygon and calculate the
+        // area associated with individual particles
+
+        for (std::vector<point_2d_t>::const_iterator iterator =
+                 particle_reco_area_estimation_tpc.begin();
+             iterator != particle_reco_area_estimation_tpc.end();
+             iterator++) {
+            const point_2d_t
+                p(iterator->x(),
+                  iterator->y() - emcal_voronoi_azimuth_0);
+            const voronoi_diagram_t::Locate_result result =
+                diagram.locate(p);
+            const voronoi_diagram_t::Face_handle *face =
+                boost::get<voronoi_diagram_t::Face_handle>(&result);
+            double polygon_area;
+
+            if (face != NULL) {
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator_start = (*face)->outer_ccb();
+                bool unbounded = false;
+                polygon_t polygon;
+
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator = circulator_start;
+
+                // Circle around the edges and extract the polygon
+                // vertices
+                do {
+                    if (circulator->has_target()) {
+                        polygon.push_back(point_2d_epeck_t(
+                            circulator->target()->point().x(),
+                            circulator->target()->point().y()));
+                    }
+                    else {
+                        unbounded = true;
+                        break;
+                    }
+                }
+                while (++circulator != circulator_start);
+                if (!cell_emcal_dcal.empty()) {
+                    const bool is_emcal =
+                        angular_range_reduce(
+                            CGAL::to_double(iterator->y()) -
+                            emcal_voronoi_azimuth_0) >= 0;
+                    std::list<polygon_hole_t> polygon_boundary;
+
+                    // Cut to the detector boundary. Decide by the
+                    // sign of the particle phi ("y()") if the
+                    // boundary is that of the EMCAL or DCAL.
+                    CGAL::intersection(
+                        polygon,
+                        is_emcal ? boundary_emcal : boundary_dcal,
+                        std::back_inserter(polygon_boundary));
+                    if (is_emcal) {
+                        CGAL::intersection(
+                            polygon, boundary_emcal_neg,
+                            std::back_inserter(polygon_boundary));
+                    }
+                    polygon_area =
+                        eval_polygon_area(polygon_boundary);
+                }
+                else {
+                    polygon_area = unbounded ?
+                        INFINITY : CGAL::to_double(polygon.area());
+                }
+            }
+            else {
+                polygon_area = NAN;
+            }
+            particle_reco_area_tpc.push_back(fabs(polygon_area));
+        }
+    }
+#endif
 
     for (size_t i = 0; i < particle_reco_area_tpc.size(); i++) {
         if (i < reco_stored_track_index_tpc.size() &&
@@ -2049,9 +2147,107 @@ void AliAnalysisTaskNTGJ::getVoronoiAreaIts(
                        iterator->phi_std()));
     }
 
+#if 0
     voronoi_area_incident(particle_reco_area_its,
                           particle_reco_incident_its,
                           particle_reco_area_estimation_its);
+#else
+    {
+        const std::vector<point_2d_t> cell_emcal_dcal =
+            std::vector<point_2d_t>();
+        voronoi_diagram_t diagram;
+        std::map<voronoi_diagram_t::Face_handle, size_t> face_index;
+
+        // For the moment, insert EMCAL/DCAL clusters like TPC tracks,
+        // to avoid open polygons with rays (the polygons will be cut
+        // on the exact cell boundary later)
+        voronoi_insert_alice_tpc(diagram, face_index,
+                                 particle_reco_area_estimation_its);
+
+        particle_reco_area_its.clear();
+
+        // Initialize the (event-by-event) EMCAL and DCAL boundary
+        // polygons
+        polygon_t boundary_emcal;
+        polygon_t boundary_emcal_neg;
+        polygon_t boundary_dcal;
+
+        create_boundary(boundary_emcal, boundary_emcal_neg,
+                        boundary_dcal, cell_emcal_dcal);
+
+        // Extract the Voronoi cells as polygon and calculate the
+        // area associated with individual particles
+
+        for (std::vector<point_2d_t>::const_iterator iterator =
+                 particle_reco_area_estimation_its.begin();
+             iterator != particle_reco_area_estimation_its.end();
+             iterator++) {
+            const point_2d_t
+                p(iterator->x(),
+                  iterator->y() - emcal_voronoi_azimuth_0);
+            const voronoi_diagram_t::Locate_result result =
+                diagram.locate(p);
+            const voronoi_diagram_t::Face_handle *face =
+                boost::get<voronoi_diagram_t::Face_handle>(&result);
+            double polygon_area;
+
+            if (face != NULL) {
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator_start = (*face)->outer_ccb();
+                bool unbounded = false;
+                polygon_t polygon;
+
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator = circulator_start;
+
+                // Circle around the edges and extract the polygon
+                // vertices
+                do {
+                    if (circulator->has_target()) {
+                        polygon.push_back(point_2d_epeck_t(
+                            circulator->target()->point().x(),
+                            circulator->target()->point().y()));
+                    }
+                    else {
+                        unbounded = true;
+                        break;
+                    }
+                }
+                while (++circulator != circulator_start);
+                if (!cell_emcal_dcal.empty()) {
+                    const bool is_emcal =
+                        angular_range_reduce(
+                            CGAL::to_double(iterator->y()) -
+                            emcal_voronoi_azimuth_0) >= 0;
+                    std::list<polygon_hole_t> polygon_boundary;
+
+                    // Cut to the detector boundary. Decide by the
+                    // sign of the particle phi ("y()") if the
+                    // boundary is that of the EMCAL or DCAL.
+                    CGAL::intersection(
+                        polygon,
+                        is_emcal ? boundary_emcal : boundary_dcal,
+                        std::back_inserter(polygon_boundary));
+                    if (is_emcal) {
+                        CGAL::intersection(
+                            polygon, boundary_emcal_neg,
+                            std::back_inserter(polygon_boundary));
+                    }
+                    polygon_area =
+                        eval_polygon_area(polygon_boundary);
+                }
+                else {
+                    polygon_area = unbounded ?
+                        INFINITY : CGAL::to_double(polygon.area());
+                }
+            }
+            else {
+                polygon_area = NAN;
+            }
+            particle_reco_area_its.push_back(fabs(polygon_area));
+        }
+    }
+#endif
 
     for (size_t i = 0; i < particle_reco_area_its.size(); i++) {
         if (i < reco_stored_track_index_its.size() &&
@@ -2113,11 +2309,110 @@ void AliAnalysisTaskNTGJ::getVoronoiAreaCluster(
                        iterator->phi_std()));
     }
 
+#if 0
     voronoi_area_incident(particle_reco_area_cluster,
                           particle_reco_incident_cluster,
                           particle_reco_area_estimation_cluster,
                           *reinterpret_cast<std::vector<point_2d_t> *>
                           (_emcal_cell_position));
+#else
+    {
+        const std::vector<point_2d_t> cell_emcal_dcal =
+            *reinterpret_cast<std::vector<point_2d_t> *>
+            (_emcal_cell_position);
+        voronoi_diagram_t diagram;
+        std::map<voronoi_diagram_t::Face_handle, size_t> face_index;
+
+        // For the moment, insert EMCAL/DCAL clusters like TPC tracks,
+        // to avoid open polygons with rays (the polygons will be cut
+        // on the exact cell boundary later)
+        voronoi_insert_alice_tpc(diagram, face_index,
+                                 particle_reco_area_estimation_cluster);
+
+        particle_reco_area_cluster.clear();
+
+        // Initialize the (event-by-event) EMCAL and DCAL boundary
+        // polygons
+        polygon_t boundary_emcal;
+        polygon_t boundary_emcal_neg;
+        polygon_t boundary_dcal;
+
+        create_boundary(boundary_emcal, boundary_emcal_neg,
+                        boundary_dcal, cell_emcal_dcal);
+
+        // Extract the Voronoi cells as polygon and calculate the
+        // area associated with individual particles
+
+        for (std::vector<point_2d_t>::const_iterator iterator =
+                 particle_reco_area_estimation_cluster.begin();
+             iterator != particle_reco_area_estimation_cluster.end();
+             iterator++) {
+            const point_2d_t
+                p(iterator->x(),
+                  iterator->y() - emcal_voronoi_azimuth_0);
+            const voronoi_diagram_t::Locate_result result =
+                diagram.locate(p);
+            const voronoi_diagram_t::Face_handle *face =
+                boost::get<voronoi_diagram_t::Face_handle>(&result);
+            double polygon_area;
+
+            if (face != NULL) {
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator_start = (*face)->outer_ccb();
+                bool unbounded = false;
+                polygon_t polygon;
+
+                voronoi_diagram_t::Ccb_halfedge_circulator
+                    circulator = circulator_start;
+
+                // Circle around the edges and extract the polygon
+                // vertices
+                do {
+                    if (circulator->has_target()) {
+                        polygon.push_back(point_2d_epeck_t(
+                            circulator->target()->point().x(),
+                            circulator->target()->point().y()));
+                    }
+                    else {
+                        unbounded = true;
+                        break;
+                    }
+                }
+                while (++circulator != circulator_start);
+                if (!cell_emcal_dcal.empty()) {
+                    const bool is_emcal =
+                        angular_range_reduce(
+                            CGAL::to_double(iterator->y()) -
+                            emcal_voronoi_azimuth_0) >= 0;
+                    std::list<polygon_hole_t> polygon_boundary;
+
+                    // Cut to the detector boundary. Decide by the
+                    // sign of the particle phi ("y()") if the
+                    // boundary is that of the EMCAL or DCAL.
+                    CGAL::intersection(
+                        polygon,
+                        is_emcal ? boundary_emcal : boundary_dcal,
+                        std::back_inserter(polygon_boundary));
+                    if (is_emcal) {
+                        CGAL::intersection(
+                            polygon, boundary_emcal_neg,
+                            std::back_inserter(polygon_boundary));
+                    }
+                    polygon_area =
+                        eval_polygon_area(polygon_boundary);
+                }
+                else {
+                    polygon_area = unbounded ?
+                        INFINITY : CGAL::to_double(polygon.area());
+                }
+            }
+            else {
+                polygon_area = NAN;
+            }
+            particle_reco_area_cluster.push_back(fabs(polygon_area));
+        }
+    }
+#endif
 
     for (size_t i = 0; i < particle_reco_cluster.size(); i++) {
         particle_reco_cluster[i].set_user_index(static_cast<int>(i));
