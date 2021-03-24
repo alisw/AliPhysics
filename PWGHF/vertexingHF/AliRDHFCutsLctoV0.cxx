@@ -90,9 +90,9 @@ fNTPCSigmaCutForPreselection(999.)
 			   "Min Proton emission angle in Lc CMS",            // 17
 			   "Resigned d0",                                    // 18
 			   "V0 qT/|alpha|",                                  // 19
-			   "V0 type",                                        // 20
-			   "V0 R min",                                       // 21
-			   "V0 R max",                                       // 22			   
+			   "V0 R min",                                       // 20
+			   "V0 R max",                                       // 21			   
+			   "V0 type"                                         // 22
   };
 
   Bool_t isUpperCut[nvars]={kTRUE,  //  0
@@ -116,8 +116,8 @@ fNTPCSigmaCutForPreselection(999.)
 			    kFALSE, // 18
 			    kFALSE, // 19
 			    kFALSE, // 20
-			    kFALSE, // 21
-			    kTRUE   // 22
+			    kTRUE,  // 21
+			    kFALSE  // 22
   };
   SetVarNames(nvars,varNames,isUpperCut);
   Bool_t forOpt[nvars]={kFALSE, //  0
@@ -140,9 +140,9 @@ fNTPCSigmaCutForPreselection(999.)
 			kTRUE,  // 17
 			kTRUE,  // 18
 			kTRUE,  // 19
-			kFALSE, // 20
+			kTRUE,  // 20
 			kTRUE,  // 21
-			kTRUE   // 22
+			kFALSE  // 22
   };
   SetVarsForOpt(nvars,forOpt);
 
@@ -449,13 +449,13 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   }
 
   // cut on min V0 radius
-  if (fVarsForOpt[21]) {
+  if (fVarsForOpt[20]) {
     iter++;
     vars[iter]= v0->RadiusV0();
   }
 
   // cut on max V0 radius
-  if (fVarsForOpt[22]) {
+  if (fVarsForOpt[21]) {
     iter++;
     vars[iter]= v0->RadiusV0();
   }
@@ -754,15 +754,15 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEve
     }
 
     // cut on min V0 Radius
-    if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 min radius
-      AliDebug(4, Form(" V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
+    if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius
+      AliDebug(4, Form("V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(20, ptbin)]));
       if (cleanvtx) CleanOwnPrimaryVtx(d, aod, origownvtx);
       return kFALSE;
     }
     
     // cut on max V0 Radius
-    if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(22, ptbin)] && fExcludedCut != 22) { // V0 max radius
-      AliDebug(4,Form(" V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(22, ptbin)]));
+    if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius
+      AliDebug(4,Form("V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
       if (cleanvtx) CleanOwnPrimaryVtx(d, aod, origownvtx);
       return kFALSE;
     }
@@ -1602,15 +1602,15 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
-    case 21:
+    case 20:
       // cut on min Radius V0
-      okLck0sp   = v0->RadiusV0() >= fCutsRD[GetGlobalIndex(21, ptbin)];
+      okLck0sp   = v0->RadiusV0() >= fCutsRD[GetGlobalIndex(20, ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
-    case 22:
+    case 21:
       // cut on max Radius V0
-      okLck0sp   = v0->RadiusV0() <= fCutsRD[GetGlobalIndex(22, ptbin)];
+      okLck0sp   = v0->RadiusV0() <= fCutsRD[GetGlobalIndex(21, ptbin)];
       okLcLpi    = okLck0sp;
       okLcLBarpi = okLck0sp;
       break;
@@ -1727,9 +1727,9 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
     prodcutsval[17][ipt2]=-9999.;// min cos (Proton emission angle) cut 
     prodcutsval[18][ipt2]=-9999.;// Re-signed d0 [cm]
     prodcutsval[19][ipt2]=-9999.;// V0 armenteros qT/|alpha|
-    prodcutsval[20][ipt2]=0.;   // V0 type cut
-    prodcutsval[21][ipt2] = 0.;       // min V0 radius
-    prodcutsval[22][ipt2] = 10000.;   // max V0 radius
+    prodcutsval[20][ipt2] = 0.;       // min V0 radius
+    prodcutsval[21][ipt2] = 10000.;   // max V0 radius
+    prodcutsval[22][ipt2]=0.;   // V0 type cut
   }
   SetCuts(nvars,nptbins,prodcutsval);
 
@@ -1801,7 +1801,6 @@ Int_t AliRDHFCutsLctoV0::GetV0Type(){
   fV0Type = (this->GetCuts())[nvars-1];
   //this->GetCuts(vArray);
   TString *sVarNames=GetVarNames();
-
   if(sVarNames[nvars-1].Contains("V0 type")) return (Int_t)fV0Type;
   else {AliInfo("AliRDHFCutsLctoV0 Last variable is not the V0 type!!!"); return -999;}
 }
@@ -2499,14 +2498,14 @@ Bool_t AliRDHFCutsLctoV0::ApplyCandidateCuts(AliAODRecoDecayHF *obj, AliAODEvent
   }
 
   // cut on min V0 Radius
-  if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 min radius
-    AliDebug(4, Form(" V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
+  if (v0->RadiusV0() < fCutsRD[GetGlobalIndex(20, ptbin)] && fExcludedCut != 20) { // V0 min radius
+    AliDebug(4, Form("V0 Radius = %2.2e, lower cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(20, ptbin)]));
     return kFALSE;
   }
 
   // cut on max V0 Radius
-  if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(22, ptbin)] && fExcludedCut != 22) { // V0 max radius
-    AliDebug(4,Form(" V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(22, ptbin)]));
+  if (v0->RadiusV0() > fCutsRD[GetGlobalIndex(21, ptbin)] && fExcludedCut != 21) { // V0 max radius
+    AliDebug(4,Form("V0 Radius = %2.2e, upper cut at %2.2e, rejected", v0->RadiusV0(), fCutsRD[GetGlobalIndex(21, ptbin)]));
     return kFALSE;
   }
 

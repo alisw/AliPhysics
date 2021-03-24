@@ -120,8 +120,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Int_t GetNBachelorPBins() const {return fNBachelorPBins;}
   void SetNBachelorPBins(Int_t nPbins) {fNBachelorPBins=nPbins;}
 
-  Float_t GetV0RminCut(Int_t iPtBin = 0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(21, iPtBin)] : 0);}
-  Float_t GetV0RmaxCut(Int_t iPtBin = 0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(22, iPtBin)] : 10000);}
+  Float_t GetV0RminCut(Int_t iPtBin = 0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(20, iPtBin)] : 0);}
+  Float_t GetV0RmaxCut(Int_t iPtBin = 0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(21, iPtBin)] : 10000);}
 
  protected:
 
