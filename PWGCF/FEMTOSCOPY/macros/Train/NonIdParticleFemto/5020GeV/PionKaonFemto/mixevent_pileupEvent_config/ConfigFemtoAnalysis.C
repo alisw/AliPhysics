@@ -60,7 +60,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event, int ispileup, int trackpileup) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -95,8 +95,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
   Reader->SetDCAglobalTrack(1);  
-  Reader->SetTrackPileUpRemoval(kTRUE); 
-  Reader->SetIsPileUpEvent(kTRUE);
+
+  if(trackpileup == 1){
+    Reader->SetTrackPileUpRemoval(kTRUE);} 
+  if(ispileup == 1){
+  Reader->SetIsPileUpEvent(kTRUE);}
   //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -223,17 +226,17 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Basic track cut for pions:
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc1etaphitpc[aniter]->SetNsigma(2.5);
+	  dtc1etaphitpc[aniter]->SetNsigma(2.0);
 	  
 	  //Basic track cut for kaons:
 	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPC450_500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF450_500(2.0);
 	  dtc2etaphitpc[aniter]->UseNsigmaTOF450_500(true);
-	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaTPCge500(3.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
 	  dtc2etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
