@@ -272,9 +272,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   bool skip_event = false;
+  bool alieventcut = fEventCuts.AcceptEvent(fESD);
   if (fUseEventCuts || fSkipPileup || fSkipTPCPileup)
   {
-    skip_event = !fEventCuts.AcceptEvent(fESD) && fUseEventCuts;
+    skip_event = !alieventcut && fUseEventCuts;
   }
 
   // Skip pileup events if requested
@@ -1024,7 +1025,20 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if( multSelection->GetThisEventIsNotIncompleteDAQ() )
     SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
   
-  // TODO add AliEventCuts information bits
+  if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
+    SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
+
+  if (fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
+    SETBIT(run2bcinfo.fEventCuts, kTPCPileUp);
+  
+  if (fEventCuts.PassedCut(AliEventCuts::kTimeRangeCut))
+    SETBIT(run2bcinfo.fEventCuts, kTimeRangeCut);
+  
+  if (fEventCuts.PassedCut(AliEventCuts::kEMCALEDCut))
+    SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
+
+  if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
+    SETBIT(run2bcinfo.fEventCuts, kGoodEvent);
   
   FillTree(kRun2BCInfo);
   
