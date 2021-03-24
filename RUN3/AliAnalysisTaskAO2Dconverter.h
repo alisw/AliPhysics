@@ -129,7 +129,7 @@ public:
       kTPCPileUp,
       kTimeRangeCut,
       kEMCALEDCut,
-      kGoodEvent
+      kAliEventCutsAccepted
   };
   static const TClass* Generator[kGenerators]; // Generators
 
