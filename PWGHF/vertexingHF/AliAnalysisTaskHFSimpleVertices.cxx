@@ -132,6 +132,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCovMatSecVXX3Prong{nullptr},
   fHistInvMassDs{nullptr},
   fHistInvMassDsSignal{nullptr},
+  fHistInvMassDsRefl{nullptr},
   fHistPtDs{nullptr},
   fHistYPtDs{nullptr},
   fHistDecLenDs{nullptr},
@@ -302,6 +303,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistCovMatSecVXX3Prong;
     delete fHistInvMassDs;
     delete fHistInvMassDsSignal;
+    delete fHistInvMassDsRefl;
     delete fHistPtDs;
     delete fHistYPtDs;
     delete fHistDecLenDs;
@@ -891,12 +893,14 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   // Ds->KKpi candidate histos
   fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
   fHistInvMassDsSignal = new TH1F("hInvMassDsSignal", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
+  fHistInvMassDsRefl = new TH1F("hInvMassDsRefl", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
   fHistPtDs = new TH1F("hPtDs"," ; D_{s} p_{T} (GeV/c)",100, 0, 10.);
   fHistYPtDs  = new TH2F("hYPtDs", " ; D_{s} p_{T} (GeV/c) ; y", 100, 0, 10.,120,-1.2,1.2);
   fHistDecLenDs = new TH1F("hDecLenDs"," ; Decay Length (cm)", 200, 0., 2.0);
   fHistCosPointDs = new TH1F("hCosPointDs", " ; cos(#theta_{P})", 110, -1.1, 1.1);
   fOutput->Add(fHistInvMassDs);
   fOutput->Add(fHistInvMassDsSignal);
+  fOutput->Add(fHistInvMassDsRefl);
   fOutput->Add(fHistPtDs);
   fOutput->Add(fHistYPtDs);
   fOutput->Add(fHistDecLenDs);
@@ -1507,8 +1511,13 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
 	    AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
 	    if(partDau0){
 	      Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
-	      if(pdgCode==211) fHistInvMassDsSignal->Fill(mpiKK);
-	      else if(pdgCode==321) fHistInvMassDsSignal->Fill(mKKpi);
+	      if(pdgCode==211){
+		fHistInvMassDsSignal->Fill(mpiKK);
+		fHistInvMassDsRefl->Fill(mKKpi);
+	      }else if(pdgCode==321){
+		fHistInvMassDsSignal->Fill(mKKpi);
+		fHistInvMassDsRefl->Fill(mpiKK);
+	      }
 	    }
             Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
             Double_t ptgen=dmes->Pt();
