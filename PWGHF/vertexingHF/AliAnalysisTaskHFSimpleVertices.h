@@ -37,6 +37,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetUseNoCandidateCuts(){fCandidateCutLevel=0;}
   void SetUsePtDependentFiducialAcceptance(){fMaxRapidityCand=-999.;}
   void SetMaxRapidityForFiducialAcceptance(Double_t ymax){fMaxRapidityCand=ymax;}
+  void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
+
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
@@ -194,6 +196,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
   
+  TH1F* fHistCPUTimeTrack;          //!<! histo with CPU time for track selection
+  TH1F* fHistCPUTimeCand;           //!<! histo with CPU time for candidate selection
+  TH1F* fHistWallTimeTrack;         //!<! histo with wall time for track selection
+  TH1F* fHistWallTimeCand;          //!<! histo with wall time for candidate selection
+
   Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
@@ -261,7 +268,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,17);
+  Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
+  Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
+
+  ClassDef(AliAnalysisTaskHFSimpleVertices,18);
 };
 
 
