@@ -381,7 +381,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 	// Physics profiles
 	//	NL response
 	InitProfile(multProfile, "");
-        for (int i = 0; i < 10; i++) InitProfile(multProfile_bin[i], Form("_%d", i));
+        for (int i = 0; i < 30; i++) InitProfile(multProfile_bin[i], Form("_%d", i));
 
 	// Post output data.
 	PostData(1, fListOfObjects);
@@ -437,6 +437,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
 	fVtxAfterCuts->Fill(fVtxZ);
 
+	hMult->Fill(NtrksCounter);
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
 
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
@@ -925,7 +926,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
         correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight); 
         correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle); 
 
-	hMult->Fill(NtrksCounter);
 
 	// CalculateProfile(centProfile, cent);
 	if (fNtrksName == "Mult") {
