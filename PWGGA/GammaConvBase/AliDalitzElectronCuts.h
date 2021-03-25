@@ -191,12 +191,13 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fDeltaPhiCutMin; //
   Double_t fDeltaPhiCutMax; //
   Int_t    fDoDifferentCut; //
-  Double_t* fPsiPairCutArray;
-  Double_t* fDeltaPhiCutArray;
-  Double_t* fpTDependanceCutArray;
-  Double_t* fPsiPairpTDependanceCut;
-  Double_t* fDeltaPhipTDependanceCutMin;
-  Double_t* fDeltaPhipTDependanceCutMax;
+  Int_t    fSizeArray;      //
+  Double_t* fPsiPairCutArray;       //[fSizeArray]
+  Double_t* fDeltaPhiCutArray;      //[fSizeArray]
+  Double_t* fpTDependanceCutArray;  //[fSizeArray]
+  Double_t* fPsiPairpTDependanceCut;    //[fSizeArray]
+  Double_t* fDeltaPhipTDependanceCutMin;    //[fSizeArray]
+  Double_t* fDeltaPhipTDependanceCutMax;    //[fSizeArray]
   Double_t fMaxDCAVertexz;  //
   Double_t fMaxDCAVertexxy; //
   TString fDCAVertexPt; //Conversion from coordenates to momentum.
@@ -249,8 +250,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
 
   // Histograms
-  TH2S**   fHistoEleMapRecalibPrimaryPair;  //[fnRBins]
-  TH2S**   fHistoPosMapRecalibPrimaryPair;  //[fnRBins]
+  TH2S**   fHistoEleMapRecalibPrimaryPair;  //[fnRBinsPrimaryPair]
+  TH2S**   fHistoPosMapRecalibPrimaryPair;  //[fnRBinsPrimaryPair]
   TObjString *fCutString; // cut number used for analysis
   TString fCutStringRead;
   TH1F *hCutIndex; // bookkeeping for cuts
@@ -282,7 +283,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,4)
+  ClassDef(AliDalitzElectronCuts,5)
 };
 
 

@@ -282,10 +282,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
   fVectorDoubleCountTrueConvGammas(0),
   fRandom(0),
   fEventPlaneAngle(-100),
+  fSizeUnmeared(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
   fUnsmearedPz(NULL),
   fUnsmearedE(NULL),
+  fSizeUnmearedVirtual(0),
   fUnsmearedVPx(NULL),
   fUnsmearedVPy(NULL),
   fUnsmearedVPz(NULL),
@@ -524,10 +526,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
   fVectorDoubleCountTrueConvGammas(0),
   fRandom(0),
   fEventPlaneAngle(-100),
+  fSizeUnmeared(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
   fUnsmearedPz(NULL),
   fUnsmearedE(NULL),
+  fSizeUnmearedVirtual(0),
   fUnsmearedVPx(NULL),
   fUnsmearedVPy(NULL),
   fUnsmearedVPz(NULL),
@@ -1899,11 +1903,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
     ProcessElectronCandidates(); // Process electron and positron for Dalitz
 
     if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
-
-      fUnsmearedPx = new Double_t[fGoodGammas->GetEntries()]; // Store unsmeared Momenta
-      fUnsmearedPy = new Double_t[fGoodGammas->GetEntries()];
-      fUnsmearedPz = new Double_t[fGoodGammas->GetEntries()];
-      fUnsmearedE =  new Double_t[fGoodGammas->GetEntries()];
+      fSizeUnmeared=fGoodGammas->GetEntries();
+      fUnsmearedPx = new Double_t[fSizeUnmeared]; // Store unsmeared Momenta
+      fUnsmearedPy = new Double_t[fSizeUnmeared];
+      fUnsmearedPz = new Double_t[fSizeUnmeared];
+      fUnsmearedE =  new Double_t[fSizeUnmeared];
 
       for(Int_t gamma=0;gamma<fGoodGammas->GetEntries();gamma++){ // Smear the AODPhotons in MC
         fUnsmearedPx[gamma] = ((AliAODConversionPhoton*)fGoodGammas->At(gamma))->Px();
@@ -1916,10 +1920,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
 
     if( ((AliDalitzElectronCuts*)fCutElectronArray->At(iCut))->GetUseVPhotonMCPmearing() && ((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
       // cout<<"Entro virtual photon smearing"<<endl;
-      fUnsmearedVPx = new Double_t[fGoodVirtualGammas->GetEntries()]; // Store unsmeared Momenta
-      fUnsmearedVPy = new Double_t[fGoodVirtualGammas->GetEntries()];
-      fUnsmearedVPz = new Double_t[fGoodVirtualGammas->GetEntries()];
-      fUnsmearedVE =  new Double_t[fGoodVirtualGammas->GetEntries()];
+      fSizeUnmearedVirtual=fGoodVirtualGammas->GetEntries();
+      fUnsmearedVPx = new Double_t[fSizeUnmearedVirtual]; // Store unsmeared Momenta
+      fUnsmearedVPy = new Double_t[fSizeUnmearedVirtual];
+      fUnsmearedVPz = new Double_t[fSizeUnmearedVirtual];
+      fUnsmearedVE =  new Double_t[fSizeUnmearedVirtual];
 
       for(Int_t Vgamma=0;Vgamma<fGoodVirtualGammas->GetEntries();Vgamma++){ // Smear the AODPhotons in MC
         fUnsmearedVPx[Vgamma] = ((AliAODConversionPhoton*)fGoodVirtualGammas->At(Vgamma))->Px();
