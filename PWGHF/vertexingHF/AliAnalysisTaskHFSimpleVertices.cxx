@@ -994,10 +994,10 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
     TString units = "s";
     if(fCountTimeInMilliseconds)
       units = "ms";
-    fHistCPUTimeCand = new TH1F("hCPUTimeCandPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 1000, 0., 1000.);
-    fHistWallTimeCand = new TH1F("hWallTimeCandPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 1000, 0., 1000.);
-    fHistCPUTimeTrack = new TH1F("hCPUTimeTrackPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 1000, 0., 1000.);
-    fHistWallTimeTrack = new TH1F("hWallTimeTrackPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 1000, 0., 1000.);
+    fHistCPUTimeCand = new TH1F("hCPUTimeCandPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 10000, 0., 100.);
+    fHistWallTimeCand = new TH1F("hWallTimeCandPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 10000, 0., 100.);
+    fHistCPUTimeTrack = new TH1F("hCPUTimeTrackPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 10000, 0., 100.);
+    fHistWallTimeTrack = new TH1F("hWallTimeTrackPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 10000, 0., 100.);
     fOutput->Add(fHistCPUTimeCand);
     fOutput->Add(fHistCPUTimeTrack);
     fOutput->Add(fHistWallTimeCand);
