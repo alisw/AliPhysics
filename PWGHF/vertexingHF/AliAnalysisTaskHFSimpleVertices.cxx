@@ -1,3 +1,7 @@
+#include <chrono>
+#include <ctime>
+#include <ratio>
+
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -13,6 +17,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
+#include "AliLog.h"
 #include "DCAFitterN.h"
 #include "AliAnalysisTaskHFSimpleVertices.h"
 #include <TH1F.h>
@@ -144,6 +149,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistCPUTimeTrack{nullptr},
+  fHistCPUTimeCand{nullptr},
+  fHistWallTimeTrack{nullptr},
+  fHistWallTimeCand{nullptr},
   fReadMC(kFALSE),
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
@@ -190,7 +199,9 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fNPtBinsLc(10),
   fSelectDplus(1),
   fSelectJpsi(1),
-  fSelectLcpKpi(1)
+  fSelectLcpKpi(1),
+  fEnableCPUTimeCheck(kFALSE),
+  fCountTimeInMilliseconds(kFALSE)
 {
   //
   InitDefault();
@@ -329,6 +340,10 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
   delete fTrackCuts2pr;
   delete fTrackCuts3pr;
   delete fVertexerTracks;
+  if(fHistCPUTimeTrack) delete fHistCPUTimeTrack;
+  if(fHistCPUTimeCand) delete fHistCPUTimeCand;
+  if(fHistWallTimeTrack) delete fHistWallTimeTrack;
+  if(fHistWallTimeCand) delete fHistWallTimeCand;
 }
 
 //___________________________________________________________________________
@@ -976,6 +991,20 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
     fOutput->Add(fHistPtRecoFeeddw[i]);
   }
 
+  if(fEnableCPUTimeCheck) {
+    TString units = "s";
+    if(fCountTimeInMilliseconds)
+      units = "ms";
+    fHistCPUTimeCand = new TH1F("hCPUTimeCandPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 1000, 0., 1000.);
+    fHistWallTimeCand = new TH1F("hWallTimeCandPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 1000, 0., 1000.);
+    fHistCPUTimeTrack = new TH1F("hCPUTimeTrackPerEvent", Form(";CPU time / event (%s);entries", units.Data()), 1000, 0., 1000.);
+    fHistWallTimeTrack = new TH1F("hWallTimeTrackPerEvent", Form(";Wall time / event (%s);entries", units.Data()), 1000, 0., 1000.);
+    fOutput->Add(fHistCPUTimeCand);
+    fOutput->Add(fHistCPUTimeTrack);
+    fOutput->Add(fHistWallTimeCand);
+    fOutput->Add(fHistWallTimeTrack);
+  }
+
   PostData(1,fOutput);
 
 }
@@ -1148,7 +1177,15 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   fO2Vertexer3Prong.setMinParamChange(fVertexerMinParamChange);
   fO2Vertexer3Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
   fO2Vertexer3Prong.setUseAbsDCA(fVertexerUseAbsDCA);
-   
+
+
+  std::clock_t clockStartTrack;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeTrack;
+  if(fEnableCPUTimeCheck) {
+    clockStartTrack = std::clock();
+    startTimeTrack = std::chrono::high_resolution_clock::now();
+  }
+ 
   // Apply single track cuts and flag them
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
@@ -1161,6 +1198,24 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistImpParAllTracks->Fill(d0track[0]);
     fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
     status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG);
+  }
+
+  std::clock_t clockStartCand;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeCand;
+  if(fEnableCPUTimeCheck) {
+    // count time elapsed for track selection
+    auto endTimeTrack = std::chrono::high_resolution_clock::now();
+    auto clockEndTrack = std::clock();
+    std::chrono::duration<double> wallTimeTrack = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeTrack - startTimeTrack);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeTrack->Fill(double(clockEndTrack-clockStartTrack) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeTrack->Fill(wallTimeTrack.count() * multFact);
+
+    // start time for candidate selection
+    clockStartCand = std::clock();
+    startTimeCand = std::chrono::high_resolution_clock::now();
   }
 
   Double_t d02[2]={0.,0.};
@@ -1382,6 +1437,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   delete threeTrackArray;
   delete rd4massCalc3;
   delete vertexAODp;
+
+  if(fEnableCPUTimeCheck) {
+    auto endTimeCand = std::chrono::high_resolution_clock::now();
+    auto clockEndCand = std::clock();
+    std::chrono::duration<double> wallTimeCand = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeCand - startTimeCand);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeCand->Fill(double(clockEndCand-clockStartCand) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeCand->Fill(wallTimeCand.count() * multFact);
+  }
 
   PostData(1,fOutput);
 
