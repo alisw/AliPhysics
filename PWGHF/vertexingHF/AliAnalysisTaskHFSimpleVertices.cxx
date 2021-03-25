@@ -17,7 +17,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
-#include "AliLog.h"
 #include "DCAFitterN.h"
 #include "AliAnalysisTaskHFSimpleVertices.h"
 #include <TH1F.h>
