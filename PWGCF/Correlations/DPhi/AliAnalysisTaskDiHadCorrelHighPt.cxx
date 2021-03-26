@@ -1129,6 +1129,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             else if (mcTrack->Charge()<0) cha= -1.;
             else cha =0;
             Int_t originalPartonType = -30; // 0 - quark, 1 - gluon
+            Int_t pdg_parton = 0;
 
 			if (TrIsPrim && TrPtMin && TrCharge && TrEtaMax) {
                 
@@ -1143,20 +1144,13 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                     fmcGenTracksMixing->Add(genTrackMix);
                     lPercentile = 19;
                 }
+
+                pdg_parton = GetOriginalPartonPDG(mcTrack);
+
+                if(TMath::Abs(pdg_parton)<7)originalPartonType=0;
+                if(TMath::Abs(pdg_parton)==21)originalPartonType=1;
                 
                 if (mcTrackPt>fPtTrigMin) {
-                    AliMCParticle* mcTrackMother = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mcTrack->GetMother()));
-                    if(TMath::Abs(mcTrackMother->PdgCode())<22){
-                        if(TMath::Abs(mcTrackMother->PdgCode())<7)originalPartonType=0;
-                        if(TMath::Abs(mcTrackMother->PdgCode())==21)originalPartonType=1;
-                    }
-                    else {
-                        AliMCParticle* mcTrackMotherOfMother = static_cast<AliMCParticle*>(fmcEvent->GetTrack(mcTrackMother->GetMother()));
-                        if(TMath::Abs(mcTrackMotherOfMother->PdgCode())<22){
-                            if(TMath::Abs(mcTrackMotherOfMother->PdgCode())<7)originalPartonType=0;
-                            if(TMath::Abs(mcTrackMotherOfMother->PdgCode())==21)originalPartonType=1;
-                        }
-                    } 
                     if(fMixingGen||fCorrelationsGen) fmcTracksTrigSel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),4,mcTrack->GetLabel(),mcTrack->GetLabel(),originalPartonType));
                 }
             }
@@ -1218,26 +1212,11 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
                 	etaDau0 = daughter0->Eta();
                 	etaDau1 = daughter1->Eta();
                 }
-                if(isPhysPrim&&TMath::Abs(mcMotherParticle->PdgCode())<22) {
-                    if(TMath::Abs(mcMotherParticle->PdgCode())<7)originalPartonType=0;
-                    if(TMath::Abs(mcMotherParticle->PdgCode())==21)originalPartonType=1;
-                }
-                else if(isPhysPrim){
-                    Int_t motherOfMother = mcMotherParticle->GetMother();
-                    AliMCParticle * mcMotherofMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(motherOfMother));
-                    if(TMath::Abs(mcMotherofMotherParticle->PdgCode())<22) {
-                        if(TMath::Abs(mcMotherofMotherParticle->PdgCode())<7)originalPartonType=0;
-                        if(TMath::Abs(mcMotherofMotherParticle->PdgCode())==21)originalPartonType=1;
-                    }
-                    else {
-                        Int_t motherOfMotherOfMother = mcMotherofMotherParticle->GetMother();
-                        AliMCParticle * mcMotherofMotherOfMotherParticle = static_cast<AliMCParticle*>(fmcEvent->GetTrack(motherOfMotherOfMother));
-                        if(TMath::Abs(mcMotherofMotherOfMotherParticle->PdgCode())<22) {
-                            if(TMath::Abs(mcMotherofMotherOfMotherParticle->PdgCode())<7)originalPartonType=0;
-                            if(TMath::Abs(mcMotherofMotherOfMotherParticle->PdgCode())==21)originalPartonType=1;
-                        }
-                    }
-                }
+                pdg_parton = GetOriginalPartonPDG(mcTrack);
+
+                if(TMath::Abs(pdg_parton)<7)originalPartonType=0;
+                if(TMath::Abs(pdg_parton)==21)originalPartonType=1;
+                
                 
                 IsK0 = mcPartPdg==310&& (isPhysPrim);
                 IsLambda = mcPartPdg==3122&& (isPhysPrim||IsFromCascade);
@@ -3448,4 +3427,19 @@ Int_t AliAnalysisTaskDiHadCorrelHighPt::IsGoodMCCascade(AliMCParticle *v0, AliMC
     if (MotherOfV0Label!=MotherOfBachelorLabel) return -200;
 
     return MotherOfBachelorLabel;
+}
+//________________________________________________________//
+Int_t AliAnalysisTaskDiHadCorrelHighPt::GetOriginalPartonPDG(const AliMCParticle* mcTrack){
+    
+    Int_t label_mother = mcTrack->GetMother();
+    Int_t pdg = mcTrack->PdgCode();
+
+    while(label_mother>4){
+        AliMCParticle * mother = static_cast<AliMCParticle*>(fmcEvent->GetTrack(label_mother));
+        pdg=mother->PdgCode();
+
+        label_mother=mother->GetMother();
+    }
+    return pdg;
+
 }
