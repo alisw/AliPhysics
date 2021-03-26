@@ -319,14 +319,16 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
 
     TRandom3                          fRandom;                                      //
     Double_t                          fEventPlaneAngle;                             //
-    Double_t                          *fUnsmearedPx;
-    Double_t                          *fUnsmearedPy;
-    Double_t                          *fUnsmearedPz;
-    Double_t                          *fUnsmearedE;
-    Double_t                          *fUnsmearedVPx;
-    Double_t                          *fUnsmearedVPy;
-    Double_t                          *fUnsmearedVPz;
-    Double_t                          *fUnsmearedVE;
+    Int_t                             fSizeUnmeared;                                //
+    Double_t                          *fUnsmearedPx;                                //[fSizeUnmeared]
+    Double_t                          *fUnsmearedPy;                                //[fSizeUnmeared]
+    Double_t                          *fUnsmearedPz;                                //[fSizeUnmeared]
+    Double_t                          *fUnsmearedE;                                 //[fSizeUnmeared]
+    Int_t                             fSizeUnmearedVirtual;                         //
+    Double_t                          *fUnsmearedVPx;                               //[fSizeUnmearedVirtual]
+    Double_t                          *fUnsmearedVPy;                               //[fSizeUnmearedVirtual]
+    Double_t                          *fUnsmearedVPz;                               //[fSizeUnmearedVirtual]
+    Double_t                          *fUnsmearedVE;                                //[fSizeUnmearedVirtual]
 
     Int_t                             fnCuts;                                       //
     Int_t                             fiCut;                                        //
@@ -351,7 +353,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
     AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 9 );
+  ClassDef( AliAnalysisTaskGammaConvDalitzV1, 10 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H
