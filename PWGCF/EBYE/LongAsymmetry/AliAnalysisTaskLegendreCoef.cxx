@@ -45,7 +45,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
-  DefineOutput(0, TList::Class());
+  DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::~AliAnalysisTaskLegendreCoef()
