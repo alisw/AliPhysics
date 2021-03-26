@@ -196,10 +196,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
   
-  TH1F* fHistCPUTimeTrack;          //!<! histo with CPU time for track selection
-  TH1F* fHistCPUTimeCand;           //!<! histo with CPU time for candidate selection
-  TH1F* fHistWallTimeTrack;         //!<! histo with wall time for track selection
-  TH1F* fHistWallTimeCand;          //!<! histo with wall time for candidate selection
+  TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
+  TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
+  TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
+  TH2F* fHistWallTimeCandVsNTracks;  //!<! histo with wall time for candidate selection vs number of selected tracks for candidates
 
   Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
@@ -271,7 +271,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,18);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,19);
 };
 
 
