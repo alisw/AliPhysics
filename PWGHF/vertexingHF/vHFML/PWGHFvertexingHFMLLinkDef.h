@@ -23,4 +23,5 @@
 #pragma link C++ class AliHFTreeHandlerApply+;
 #pragma link C++ class AliHFTreeHandlerApplyDstoKKpi+;
 #pragma link C++ class AliHFTreeHandlerApplyLc2V0bachelor+;
+#pragma link C++ class AliAnalysisTaskSECheckCharmHadronBkg+;
 #endif
