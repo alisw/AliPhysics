@@ -271,12 +271,6 @@ void AliAnalysisTaskSEHFTreeCreatorApply::Init()
 
   if(fDebug > 1) printf("AliAnalysisTaskSEHFTreeCreatorApply::Init() \n");
 
-  AliInfo(Form(" Resetting NsigmaDataDrivenCorrection of cutobjects to %d for system %d \n", fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr));
-  if(fFiltCutsDstoKKpi) fFiltCutsDstoKKpi->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fFiltCutsLc2V0bachelor) fFiltCutsLc2V0bachelor->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fCutsDstoKKpi) fCutsDstoKKpi->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  if(fCutsLc2V0bachelor) fCutsLc2V0bachelor->EnableNsigmaDataDrivenCorrection(fEnableNsigmaTPCDataCorr,fSystemForNsigmaTPCDataCorr);
-  
   PostData(3,fListCuts);
 
   return;
