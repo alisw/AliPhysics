@@ -150,6 +150,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetDCAbachelorPV(Double_t dca) { fDCAbachelorPV = dca; }
         void                    SetDCAbaryonDaughterPV(Double_t dca) { fDCAbaryonDaughterPV = dca; }
         void                    SetDCAmesonDaughterPV(Double_t dca) { fDCAmesonDaughterPV = dca; }
+        Int_t                   GetOriginalPartonPDG(const AliMCParticle* mcTrack);
         AliEventCuts *           fAliEventCuts; //!
     
     private:
@@ -323,7 +324,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 36);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 37);
 };
 
 class AliV0ChParticle : public AliVParticle
