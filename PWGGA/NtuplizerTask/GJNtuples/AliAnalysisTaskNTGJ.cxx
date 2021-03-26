@@ -2318,8 +2318,9 @@ void AliAnalysisTaskNTGJ::getVoronoiAreaCluster(
 #else
     {
         const std::vector<point_2d_t> cell_emcal_dcal =
-            *reinterpret_cast<std::vector<point_2d_t> *>
-            (_emcal_cell_position);
+                    _emcal_cell_position == NULL ? std::vector<point_2d_t>() :
+                    *reinterpret_cast<std::vector<point_2d_t> *>
+                    (_emcal_cell_position);
         voronoi_diagram_t diagram;
         std::map<voronoi_diagram_t::Face_handle, size_t> face_index;
 
