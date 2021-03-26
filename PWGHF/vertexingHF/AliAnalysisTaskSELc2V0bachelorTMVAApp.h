@@ -533,6 +533,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D* fHistoArmenterosPodolanskiV0AOD;     //!<! KF: AOD Armeteros-Podolanski plot for all V0 from KF
   TH2D* fHistoArmenterosPodolanskiV0AODSgn;  //!<! KF: AOD Armeteros-Podolanski plot for V0 from signal Lc from KF
 
+  TH2D* fHistoV0Radius;  //!<! V0 radius
+
   TList *fOutputKF;                   //!<! User output1: list of histograms from KF
 
   Int_t fmcLabelLc;                   /// label of candidate
