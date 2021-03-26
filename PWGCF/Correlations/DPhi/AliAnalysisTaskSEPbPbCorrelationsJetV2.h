@@ -47,7 +47,6 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetUseRes(Bool_t flag) { fUseRes = flag; }
   void SetAverageRes(Bool_t flag) {fAverageRes = flag; }
   void SetSubDivide(Int_t n1, Int_t n2) { fN1 = n1; fN2 = n2; }
-  void SetMinHardPt(Double_t pt) { fMinHardPt = pt; };
   
   // ------------- Analysis -------------
 
@@ -63,6 +62,8 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetCentMethod(TString method) { fCentMethod = method; }
   void SetListContQ(TList *list) { flist_contQ = list; }
   void SetListRes(TList *list)   { flist_Res = list; }
+  void SetFilterBit(Int_t iBit) {fFilterBit = iBit; }
+  void SetNTPCcls(Int_t nTPC) {fTPCNcls = nTPC; }
   
   void FillHistogramsV2(Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
 			Double_t resA2, Double_t resC2, Double_t resT2,
@@ -136,7 +137,6 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   Bool_t fRemovePileup3; 
   Bool_t fUseRes; 
   Bool_t fAverageRes; 
-  Double_t fMinHardPt; 
   
   Int_t fN1; 
   Int_t fN2; 
@@ -231,6 +231,9 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   
   Double_t Qytr2Cor; 
   Double_t Qxtr2Cor; 
+
+  Int_t fFilterBit;
+  Int_t fTPCNcls;
   
   TF1*         fResACv2; //!
   TF1*         fResATv2; //!
