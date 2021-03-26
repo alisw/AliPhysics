@@ -66,10 +66,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
   fUseRes(kTRUE),
-  fAverageRes(kTRUE),
   fN1(0),
   fN2(-1),
-  fMinHardPt(0.),
 
   fHistACv2(0x0),
   fHistATv2(0x0),
@@ -138,7 +136,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fLowCenCut(0x0),
   fHighCenCut(0x0),
   fV0MultOfOnCut(0x0),
-  
+  fFilterBit(32),
+  fTPCNcls(70),
   fMultV0(0x0)
   
 {
@@ -155,34 +154,14 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
 	  fHistSP2AdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-//          fHistdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP3AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaMixed[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaSSMixed[iCent][iZvtx][ipt][jpt] = NULL;
 	}
       }
     }
   }
-
-/*
-  for(Int_t iCent=0; iCent<fNMaxBinsCentrality; iCent++)
-  {
-   for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt) 
-   {
-    for(Int_t jpt = 0; jpt < fNMaxBinsAssocPt; ++jpt) 
-    {
-     fHistdPhidEta[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaSS[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaMixed[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaSSMixed[iCent][ipt][jpt] = NULL;
-    }
-   }
-  }
-*/
 
   for(Int_t i = 0; i < 14; ++i) {
     fQx2mV0A[i] = fQy2mV0A[i] = fQx2sV0A[i] = fQy2sV0A[i] = NULL;
@@ -217,10 +196,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
   fUseRes(kTRUE),
-  fAverageRes(kTRUE),
   fN1(0),
   fN2(-1),
-  fMinHardPt(0.),
 
   fHistACv2(0x0),
   fHistATv2(0x0),
@@ -289,6 +266,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fLowCenCut(0x0),
   fHighCenCut(0x0),
   fV0MultOfOnCut(0x0),
+  fFilterBit(32),
+  fTPCNcls(70),
   
   fMultV0(0x0)
 
@@ -305,34 +284,14 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
 	  fHistSP2AdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP3AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaMixed[iCent][iZvtx][ipt][jpt] = NULL;
-//	  fHistdPhidEtaSSMixed[iCent][iZvtx][ipt][jpt] = NULL;
 	}
       }
     }
   }
-/*
-  for(Int_t iCent=0; iCent<fNMaxBinsCentrality; iCent++)
-  {
-   for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt)
-   {
-    for(Int_t jpt = 0; jpt < fNMaxBinsAssocPt; ++jpt)
-    {
-     fHistdPhidEta[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaSS[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaMixed[iCent][ipt][jpt] = NULL;
-     fHistdPhidEtaSSMixed[iCent][ipt][jpt] = NULL;
-    }
-   }
-  }
-*/
-
 
   for(Int_t i = 0; i < 14; ++i) {
     fQx2mV0A[i] = fQy2mV0A[i] = fQx2sV0A[i] = fQy2sV0A[i] = NULL;
@@ -896,7 +855,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   for (Int_t iTr=0; iTr<nTracks; iTr++) {
     AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
     if (!track) continue;
-    if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
+    //if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
+    if (track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= fTPCNcls) {
       FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
 		       resA2, resC2, resT2, 0);
     }
@@ -975,6 +935,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
    if (trigger->Charge()*associate->Charge()>0) {
      fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
      fHistdPhidEtaPt_SS->Fill(binscont,0);
+     //(static_cast<TH1D*>(fOutputList->FindObject("test")))->Fill(triggerPt);
    }
   }
  }
@@ -1582,7 +1543,8 @@ TObjArray *AliAnalysisTaskSEPbPbCorrelationsJetV2::GetAcceptedTracks(AliAODEvent
   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(i));
   if (!aodTrack)      continue;  
   if (aodTrack->Charge() == 0)      continue;
-  if (aodTrack->TestFilterBit(768) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= 70) {
+  //if (aodTrack->TestFilterBit(768) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= 70) {
+  if (aodTrack->TestFilterBit(fFilterBit) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= fTPCNcls) {
    tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, 0, 1));
   }
  }
