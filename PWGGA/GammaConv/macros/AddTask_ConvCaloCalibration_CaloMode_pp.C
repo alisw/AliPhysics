@@ -303,6 +303,10 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","411790106f030120002","01631031000000d0"); // No NCell cut, 2NLM
   } else if (trainConfig == 45){ // pp 13 TeV EMCal + DCal
     cuts.AddCutCalo("00010113","411790106f030220003","01631031000000d0"); // No NCell cut, 1-2 NLM, M02var
+  } else if (trainConfig == 46){ // pp 13 TeV EMCal + DCal
+    cuts.AddCutCalo("00010113","411790106f030000000","01631031000000d0"); // No NCell cut, TBNL + FT
+    cuts.AddCutCalo("00010113","411793706f030000000","01631031000000d0"); // No NCell cut, TBNL
+    cuts.AddCutCalo("00010113","411790406f030000000","01631031000000d0"); // No NCell cut, TBNL no scale
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
