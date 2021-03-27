@@ -88,13 +88,6 @@ void AliAnalysisTaskSECheckCharmHadronBkg::Init()
     fListCuts->SetOwner();
     fListCuts->Add(analysis);
 
-    //Loading of ML models
-    if (fApplyML)
-    {
-        fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
-        fMLResponse->MLResponseInit();
-    }
-
     PostData(2, fListCuts);
 
     return;
@@ -132,6 +125,13 @@ void AliAnalysisTaskSECheckCharmHadronBkg::UserCreateOutputObjects()
         fOutput->Add(fHistCentrality[iHisto]);
     }
     CreateSparse();
+
+    //Loading of ML models
+    if (fApplyML)
+    {
+        fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
+        fMLResponse->MLResponseInit();
+    }
 
     PostData(1, fOutput);
 
