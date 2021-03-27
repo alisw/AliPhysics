@@ -192,6 +192,8 @@ protected:
   TH2F**                  fHistoMotherInvMassECalib;                          //! array of histos with signal + background with alpha < 0.1 for NonLin
   TH2F**                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
 
+  TH2F**                  fHistoEVsNCellsInPiMass;                            //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters
+
   TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
   TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
 
@@ -264,7 +266,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 4);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 5);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
