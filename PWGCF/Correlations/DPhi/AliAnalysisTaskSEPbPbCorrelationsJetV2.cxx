@@ -23,11 +23,10 @@
 
 #include "AliEventPoolManager.h"
 #include "AliTHn.h"
-#include "AliAnalysisTaskSEpPbCorrelationsYS.h"
 
 
 ClassImp(AliAnalysisTaskSEPbPbCorrelationsJetV2)
-ClassImp(AliAssociatedTrackYS)
+ClassImp(AliBasicParticleST)
 
 
  AliOADBContainer *AliAnalysisTaskSEPbPbCorrelationsJetV2::cont = NULL;
@@ -109,6 +108,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fv0cpercentile(-1.),
   fcl0percentile(-1.),
   fcl1percentile(-1.),
+  fSPDpercentile(-1.),
   fzvtx(0.),
   multtrkcut(-1),
   Qx2trkcut(0.),
@@ -239,6 +239,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fv0cpercentile(-1.),
   fcl0percentile(-1.),
   fcl1percentile(-1.),
+  fSPDpercentile(-1.),
   fzvtx(0.),
   multtrkcut(-1),
   Qx2trkcut(0.),
@@ -675,7 +676,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fV0MultOfOnCut = new TF1("fV0MultOfOnCut", "[0]+[1]*x - 5.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
   fV0MultOfOnCut->SetParameters(parV0);
 
-  ftrk = new TClonesArray("AliAssociatedTrackYS",500);
+  ftrk = new TClonesArray("AliBasicParticleST",500);
   
   const Int_t nzvtx = 10;
   Double_t zvtxbins[nzvtx+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
@@ -699,19 +700,22 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   if (!fAOD) return;  
 
   fRunN = fAOD->GetRunNumber();
+
   //Exclude some runs which are not in calibrated list
-  if(fRunN == 246928 || fRunN == 246810) return;
-  if(fRunN == 246766 || fRunN == 246271) return;
-  if(fRunN == 246185 || fRunN == 246180) return;
-  if(fRunN == 246052 || fRunN == 245923) return;
-  if(fRunN == 245702) return;
+  //if(fRunN == 246928 || fRunN == 246810) return;
+  //if(fRunN == 246766 || fRunN == 246271) return;
+  //if(fRunN == 246185 || fRunN == 246180) return;
+  //if(fRunN == 246052 || fRunN == 245923) return;
+  //if(fRunN == 245702) return;
 
   fHistEvStat->Fill(cutIndex++);
 
   // Trigger selection
   TString trigStr(fAOD->GetFiredTriggerClasses());
+
   if (trigStr.Contains("CINT7-B-NOPF")) fHistEvStat->Fill(cutIndex);
   cutIndex++;
+
   AliAODVZERO* aodV0 = fAOD->GetVZEROData();
   if (trigStr.Contains("CINT7-B-NOPF") &&
       aodV0->GetV0ADecision()==1 &&
@@ -730,7 +734,13 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   Double_t percentile;
   AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
   if(!multSelection) return;
-  if(fCentMethod == "") fCentMethod = "V0M";
+
+  ++cutIndex;
+  if(fCentMethod == "") { 
+   fCentMethod = "V0M";
+   fHistEvStat->Fill(cutIndex);
+  }
+
   //percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
   percentile = multSelection->GetMultiplicityPercentile(fCentMethod);
   fHistCentrality->Fill(percentile);
@@ -741,6 +751,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   fv0cpercentile = multSelection->GetMultiplicityPercentile("V0C");
   fcl0percentile = multSelection->GetMultiplicityPercentile("CL0");
   fcl1percentile = multSelection->GetMultiplicityPercentile("CL1");
+  fSPDpercentile = multSelection->GetMultiplicityPercentile("SPDTracklets");
 
   Int_t centBin = GetCentBin(percentile);
   if (centBin<0) return;
@@ -855,7 +866,6 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   for (Int_t iTr=0; iTr<nTracks; iTr++) {
     AliAODTrack *track = (AliAODTrack*) fAOD->GetTrack(iTr);
     if (!track) continue;
-    //if (track->TestFilterBit(768) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= 70) {
     if (track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= fTPCNcls) {
       FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
 		       resA2, resC2, resT2, 0);
@@ -863,12 +873,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   }
 
   Double_t Qv0aQv0c2  = Qxa2Cor*Qxc2Cor  + Qya2Cor*Qyc2Cor;
-  Double_t Qv0aQtrkl2 = Qxa2Cor*Qxtr2Cor + Qya2Cor*Qytr2Cor;
-  Double_t Qv0cQtrkl2 = Qxc2Cor*Qxtr2Cor + Qyc2Cor*Qytr2Cor;
 
   fHistACv2->Fill(percentile, Qv0aQv0c2);
-  fHistATv2->Fill(percentile, Qv0aQtrkl2);
-  fHistCTv2->Fill(percentile, Qv0cQtrkl2);
 
   selectedTrackArray->Clear();
   delete selectedTrackArray;
@@ -894,7 +900,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
  Double_t binscont[6];
 
  for(Int_t i = 0; i < selectedArray->GetEntriesFast(); i++) {
-  AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(i);  
+  AliBasicParticleST *trigger = (AliBasicParticleST*)selectedArray->At(i);  
   if (!trigger)    continue;
   Int_t trigID = trigger->GetID();
   Double_t triggerPt = trigger->Pt();
@@ -914,9 +920,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
   Double_t u2y = TMath::Sin(2.*triggerPhi);
 
   for (Int_t j = 0; j < selectedArray->GetEntriesFast(); j++) {
-   AliAssociatedTrackYS *associate = (AliAssociatedTrackYS*)selectedArray->At(j); 
+   AliBasicParticleST *associate = (AliBasicParticleST*)selectedArray->At(j); 
    if (!associate) continue;
-   //if (associate->Pt()<0.5) continue;
    if (trigID == associate->GetID())  continue;   
    Int_t assocPtBin = fPtAssocAxis->FindBin(associate->Pt());
    if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;  
@@ -935,7 +940,6 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
    if (trigger->Charge()*associate->Charge()>0) {
      fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
      fHistdPhidEtaPt_SS->Fill(binscont,0);
-     //(static_cast<TH1D*>(fOutputList->FindObject("test")))->Fill(triggerPt);
    }
   }
  }
@@ -957,7 +961,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(TObjArr
   {
    fHistCentVsZMixed->Fill(fzvtx,percentile,pool->GetCurrentNEvents());
    for(Int_t j = 0; j < selectedArray->GetEntriesFast(); ++j) {
-    AliAssociatedTrackYS *trigger = (AliAssociatedTrackYS*)selectedArray->At(j);
+    AliBasicParticleST *trigger = (AliBasicParticleST*)selectedArray->At(j);
     Double_t triggerPt = trigger->Pt();
     Double_t triggerEta = trigger->Eta();
     Double_t triggerPhi = trigger->Phi();
@@ -968,7 +972,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(TObjArr
     for(Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) {
      TObjArray *mixEvents = pool->GetEvent(jMix);
      for (Int_t jTrk=0; jTrk<mixEvents->GetEntriesFast(); jTrk++) {       
-      AliAssociatedTrackYS* associate = (AliAssociatedTrackYS*)mixEvents->At(jTrk);
+      AliBasicParticleST* associate = (AliBasicParticleST*)mixEvents->At(jTrk);
 
       Int_t assocPtBin = fPtAssocAxis->FindBin(associate->Pt());
       if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;
@@ -1247,7 +1251,9 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
     Short_t zvt = GetVertexZ(Zvtx);
     if (zvt < 0)
       return kFALSE;
-    
+   
+    zvt = 0;   
+ 
     //Tracklets
     Qx2trkcut = Qy2trkcut = 0;
     multtrkcut = 0;
@@ -1331,12 +1337,10 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
     
     //might need to check the sigma values != 0
     if (fQy2sV0A[zvt]->GetBinContent(iCentSPD+1)<1e-8 ||
-	fQy2sV0C[zvt]->GetBinContent(iCentSPD+1)<1e-8 ||
-	fQy2sTrk[zvt]->GetBinContent(iCentV0+1)<1e-8)
+	fQy2sV0C[zvt]->GetBinContent(iCentSPD+1)<1e-8)
       return kFALSE;
     if (fQx2sV0A[zvt]->GetBinContent(iCentSPD+1)<1e-8 ||
-	fQx2sV0C[zvt]->GetBinContent(iCentSPD+1)<1e-8 ||
-	fQx2sTrk[zvt]->GetBinContent(iCentV0+1)<1e-8)
+	fQx2sV0C[zvt]->GetBinContent(iCentSPD+1)<1e-8)
       return kFALSE;
     
     Qya2Cor = (Qya2 - fQy2mV0A[zvt]->GetBinContent(iCentSPD+1))/fQy2sV0A[zvt]->GetBinContent(iCentSPD+1);
@@ -1344,10 +1348,6 @@ Bool_t AliAnalysisTaskSEPbPbCorrelationsJetV2::ComputeQ(AliAODEvent* aod, Double
     
     Qyc2Cor = (Qyc2 - fQy2mV0C[zvt]->GetBinContent(iCentSPD+1))/fQy2sV0C[zvt]->GetBinContent(iCentSPD+1);
     Qxc2Cor = (Qxc2 - fQx2mV0C[zvt]->GetBinContent(iCentSPD+1))/fQx2sV0C[zvt]->GetBinContent(iCentSPD+1);
-    
-    Qytr2Cor = (Qy2trkcut - fQy2mTrk[zvt]->GetBinContent(iCentV0+1))/fQy2sTrk[zvt]->GetBinContent(iCentV0+1);
-    Qxtr2Cor = (Qx2trkcut - fQx2mTrk[zvt]->GetBinContent(iCentV0+1))/fQx2sTrk[zvt]->GetBinContent(iCentV0+1);
-    
 
     return kTRUE;
 }
@@ -1373,9 +1373,9 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
   }
   fMultV0 = ((TH1D*) cont->GetObject(run));
        
-  for (Int_t k = 0; k < 14; k++){
+  for (Int_t k = 0; k < 1; k++){
         
-        if (!contQx2am[k]) contQx2am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa2m_%d", k));
+        if (!contQx2am[k]) contQx2am[k] = (AliOADBContainer*) flist_contQ->FindObject("fqxa2m");
         if(!contQx2am[k]){
             printf("OADB object fqxa2m is not available in the file\n");
             return;
@@ -1386,7 +1386,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         }
         fQx2mV0A[k]= ((TH1D*) contQx2am[k]->GetObject(run));
         
-        if (!contQy2am[k]) contQy2am[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya2m_%d", k));
+        if (!contQy2am[k]) contQy2am[k] = (AliOADBContainer*) flist_contQ->FindObject("fqya2m");
         if(!contQy2am[k]){
             printf("OADB object fqya2m is not available in the file\n");
             return;
@@ -1397,7 +1397,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         }
         fQy2mV0A[k]= ((TH1D*) contQy2am[k]->GetObject(run));
         
-        if (!contQx2as[k]) contQx2as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxa2s_%d", k));
+        if (!contQx2as[k]) contQx2as[k] = (AliOADBContainer*) flist_contQ->FindObject("fqxa2s");
         if(!contQx2as[k]){
             printf("OADB object fqxa2s is not available in the file\n");
             return;
@@ -1409,7 +1409,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2sV0A[k]= ((TH1D*) contQx2as[k]->GetObject(run));
         
         
-        if (!contQy2as[k]) contQy2as[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqya2s_%d", k));
+        if (!contQy2as[k]) contQy2as[k] = (AliOADBContainer*) flist_contQ->FindObject("fqya2s");
         if(!contQy2as[k]){
             printf("OADB object fqya2s is not available in the file\n");
             return;
@@ -1421,7 +1421,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy2sV0A[k]= ((TH1D*) contQy2as[k]->GetObject(run));
         
         
-        if (!contQx2cm[k]) contQx2cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc2m_%d", k));
+        if (!contQx2cm[k]) contQx2cm[k] = (AliOADBContainer*) flist_contQ->FindObject("fqxc2m");
         if(!contQx2cm[k]){
             printf("OADB object fqxc2m is not available in the file\n");
             return;
@@ -1433,7 +1433,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2mV0C[k]= ((TH1D*) contQx2cm[k]->GetObject(run));
         
         
-        if (!contQy2cm[k]) contQy2cm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc2m_%d", k));
+        if (!contQy2cm[k]) contQy2cm[k] = (AliOADBContainer*) flist_contQ->FindObject("fqyc2m");
         if(!contQy2cm[k]){
             printf("OADB object fqyc2m is not available in the file\n");
             return;
@@ -1445,7 +1445,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQy2mV0C[k]= ((TH1D*) contQy2cm[k]->GetObject(run));
         
         
-        if (!contQx2cs[k]) contQx2cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxc2s_%d", k));
+        if (!contQx2cs[k]) contQx2cs[k] = (AliOADBContainer*) flist_contQ->FindObject("fqxc2s");
         if(!contQx2cs[k]){
             printf("OADB object fqxc2s is not available in the file\n");
             return;
@@ -1457,7 +1457,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
         fQx2sV0C[k]= ((TH1D*) contQx2cs[k]->GetObject(run));
         
         
-        if (!contQy2cs[k]) contQy2cs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqyc2s_%d", k));
+        if (!contQy2cs[k]) contQy2cs[k] = (AliOADBContainer*) flist_contQ->FindObject("fqyc2s");
         if(!contQy2cs[k]){
             printf("OADB object fqyc2s is not available in the file\n");
             return;
@@ -1467,52 +1467,6 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::OpenInfoCalbration(Int_t run)
             return;
         }
         fQy2sV0C[k]= ((TH1D*) contQy2cs[k]->GetObject(run));
-        
-        if (!contQx2trm[k]) contQx2trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr2m_%d", k));
-        if(!contQx2trm[k]){
-            printf("OADB object fqxtr2m is not available in the file\n");
-            return;
-        }
-        if(!(contQx2trm[k]->GetObject(run))){
-            printf("OADB object fqxtr2m is not available for run %i\n", run);
-            return;
-        }
-        fQx2mTrk[k]= ((TH1D*) contQx2trm[k]->GetObject(run));
-        
-        
-        if (!contQy2trm[k]) contQy2trm[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr2m_%d", k));
-        if(!contQy2trm[k]){
-            printf("OADB object fqytr2m is not available in the file\n");
-            return;
-        }
-        if(!(contQy2trm[k]->GetObject(run))){
-            printf("OADB object fqytr2m is not available for run %i\n", run);
-            return;
-        }
-        fQy2mTrk[k]= ((TH1D*) contQy2trm[k]->GetObject(run));
-        
-        
-        if (!contQx2trs[k]) contQx2trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqxtr2s_%d", k));
-        if(!contQx2trs[k]){
-            printf("OADB object fqxtr2s is not available in the file\n");
-            return;
-        }
-        if(!(contQx2trs[k]->GetObject(run))){
-            printf("OADB object fqxtr2s is not available for run %i\n", run);
-            return;
-        }
-        fQx2sTrk[k]= ((TH1D*) contQx2trs[k]->GetObject(run));
-        
-        if (!contQy2trs[k]) contQy2trs[k] = (AliOADBContainer*) flist_contQ->FindObject(Form("fqytr2s_%d", k));
-        if(!contQy2trs[k]){
-            printf("OADB object fqytr2s is not available in the file\n");
-            return;
-        }
-        if(!(contQy2trs[k]->GetObject(run))){
-            printf("OADB object fqytr2s is not available for run %i\n", run);
-            return;
-        }
-        fQy2sTrk[k]= ((TH1D*) contQy2trs[k]->GetObject(run));
     }
 
     
@@ -1545,7 +1499,7 @@ TObjArray *AliAnalysisTaskSEPbPbCorrelationsJetV2::GetAcceptedTracks(AliAODEvent
   if (aodTrack->Charge() == 0)      continue;
   //if (aodTrack->TestFilterBit(768) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= 70) {
   if (aodTrack->TestFilterBit(fFilterBit) && TMath::Abs(aodTrack->Eta()) < 0.8 && aodTrack->GetTPCNcls() >= fTPCNcls) {
-   tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, 0, 1));
+   tracks->Add(new AliBasicParticleST(aodTrack->Charge(), aodTrack->Eta(), aodTrack->Phi(), aodTrack->Pt(), aodTrack->GetID(), -999, -999, 0, 1));
   }
  }
  return tracks;
@@ -1556,8 +1510,8 @@ TObjArray* AliAnalysisTaskSEPbPbCorrelationsJetV2::CloneTrack(TObjArray*selected
   tracksClone->SetOwner(kTRUE);
 
   for (Int_t i = 0; i < selectedTrackArray->GetEntriesFast(); i++) {
-    AliAssociatedTrackYS *particle =  (AliAssociatedTrackYS *)selectedTrackArray->At(i);
-    tracksClone->Add(new AliAssociatedTrackYS(particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
+    AliBasicParticleST *particle =  (AliBasicParticleST *)selectedTrackArray->At(i);
+    tracksClone->Add(new AliBasicParticleST(particle->Charge(), particle->Eta(), particle->Phi(), particle->Pt(),
                                               particle->GetID(), particle->GetIDFirstDaughter(),
                                               particle->GetIDSecondDaughter(), particle->WhichCandidate(),
                                               particle->Multiplicity()));

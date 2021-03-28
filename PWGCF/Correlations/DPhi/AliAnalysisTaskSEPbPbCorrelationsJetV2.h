@@ -211,6 +211,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   Double_t fv0cpercentile; //!
   Double_t fcl0percentile; //!
   Double_t fcl1percentile; //!
+  Double_t fSPDpercentile; //!
   Double_t fzvtx; //!
 
   Int_t multtrkcut; //!
@@ -268,55 +269,105 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
 };
 
 //====================================================================================================================================================
-
-class AliBasicParticleST : public AliVParticle
-{
+class AliBasicParticleST : public AliVParticle {
 public:
- AliBasicParticleST() : fEta(0), fPhi(0), fpT(0), fCharge(0) {}
- AliBasicParticleST(Float_t eta, Float_t phi, Float_t pt, Short_t charge) : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge) {}
-  ~AliBasicParticleST() {}
-
-  // kinematics
-  virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+  AliBasicParticleST(Short_t charge, Float_t eta, Float_t phi, Float_t pt,
+                       Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate,
+                       Double_t multiplicity)
+      : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fID(ID), fID1(ID1),
+        fID2(ID2), fCandidate(candidate), fMultiplicity(multiplicity) {}
+  virtual ~AliBasicParticleST() {}
+  
+  virtual Double_t Px() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Py() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Pz() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
   virtual Double_t Pt() const { return fpT; }
-  virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
-  virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+  virtual Double_t P() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Bool_t PxPyPz(Double_t[3]) const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Xv() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Yv() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Zv() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Bool_t XvYvZv(Double_t[3]) const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t OneOverPt() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t Phi() const { return fPhi; }
+  virtual Double_t Theta() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Double_t E() const {
+    AliFatal("Not implemented"); 
+    return 0;
+  } 
+  virtual Double_t M() const {
+    AliFatal("Not implemented");
+    return 0;
+  } 
+  virtual Double_t Eta() const { return fEta; }
+  virtual Double_t Y() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Short_t Charge() const { return fCharge; }
+  virtual Int_t GetLabel() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Int_t PdgCode() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual const Double_t *PID() const {
+    AliFatal("Not implemented");
+    return 0;
+  }
+  virtual Short_t WhichCandidate() const { return fCandidate; }
+  virtual Int_t GetID() const { return fID; }
+  virtual Int_t GetIDFirstDaughter() const { return fID1; }
+  virtual Int_t GetIDSecondDaughter() const { return fID2; }
+  virtual Double_t Multiplicity() const { return fMultiplicity; }
 
-  virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
-  virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
-  virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Phi()        const { return fPhi; }
-  virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-
-
-  virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
-
-  virtual Double_t Eta()        const { return fEta; }
-  virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-
-  virtual Short_t Charge()      const { return fCharge; }
-  virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
-  // PID
-  virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
-  virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-
-  virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
-
-  virtual void SetPhi(Double_t phi) { fPhi = phi; }
-
-private:
-  Float_t fEta;      //! eta
-  Float_t fPhi;      //! phi
-  Float_t fpT;       //! pT
-  Short_t fCharge;   //! charge
-
-  ClassDef(AliBasicParticleST,1) // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  private:
+  //
+  Short_t fCharge;    // Charge
+  Float_t fEta;       // Eta
+  Float_t fPhi;       // Phi
+  Float_t fpT;        // pT
+  Int_t fID;          // ID
+  Short_t fCandidate; // 1-pi,2-K,3-p
+  Double_t fMultiplicity;
+  Int_t fID1;
+  Int_t fID2;
+  ClassDef(AliBasicParticleST, 1);
 };
 
 #endif

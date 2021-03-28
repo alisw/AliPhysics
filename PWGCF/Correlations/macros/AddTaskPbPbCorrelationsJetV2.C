@@ -1,4 +1,4 @@
-AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M", Int_t FilterBit = 32, Int_t nTPCcls = 60, Double_t Vz_max = 2) 
+AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M", Int_t FilterBit = 768, Int_t nTPCcls = 70, Double_t Vz_max = 10, TString sNameList = "default") 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -34,7 +34,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   const Int_t nBinPt = sizeof(ptLimits) / sizeof(Double_t) - 1;
   task->SetPtBinning(nBinPt, ptLimits);
 
-  Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 14.0, 20.0, 50.0};
+  Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0, 20.0, 50.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
@@ -51,11 +51,11 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
 // Input File
 
-//  TGrid::Connect("alien://");
-  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0TrklNoEtaCutRun2.root");
+  TGrid::Connect("alien://");
+  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0HIR.root");
   TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
 
-//  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0TrklNoEtaCutRun2.root");
+//  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0HIR.root");
 //  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
 
   if(!foadb || !fFileRes)
@@ -90,11 +90,11 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
  
   // create output container
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("FlowIncHistos_%s",centMethod.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
+  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("FlowIncHistos_%s_%s", centMethod.Data(),sNameList.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
 							  //Form("%s:FlowInc_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
 							  outputFileName);
 
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("FlowJetHistos_%s",centMethod.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
+  AliAnalysisDataContainer *output1 = mgr->CreateContainer(Form("FlowJetHistos_%s_%s",centMethod.Data(),sNameList.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
 							  //Form("%s:FlowJet_%s", AliAnalysisManager::GetCommonFileName(), centMethod));
 							  outputFileName);
 
