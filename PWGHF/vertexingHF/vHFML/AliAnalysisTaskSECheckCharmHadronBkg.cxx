@@ -33,6 +33,12 @@ ClassImp(AliAnalysisTaskSECheckCharmHadronBkg);
 /// \endcond
 
 //________________________________________________________________________
+AliAnalysisTaskSECheckCharmHadronBkg::AliAnalysisTaskSECheckCharmHadronBkg() : AliAnalysisTaskSE()
+{
+    /// Standrd constructor
+}
+
+//________________________________________________________________________
 AliAnalysisTaskSECheckCharmHadronBkg::AliAnalysisTaskSECheckCharmHadronBkg(const char *name, AliRDHFCutsDplustoKpipi *dpluscutsana) : 
 AliAnalysisTaskSE(name),
 fRDCutsAnalysis(dpluscutsana)

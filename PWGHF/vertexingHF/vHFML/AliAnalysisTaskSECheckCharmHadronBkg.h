@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskSECheckCharmHadronBkg_H
-#define AliAnalysisTaskSECheckCharmHadronBkg_H
+#ifndef ALIANALYSISTASKSECHECKCHARMHADRONBKG_H
+#define ALIANALYSISTASKSECHECKCHARMHADRONBKG_H
 
 /* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
