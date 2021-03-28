@@ -77,6 +77,7 @@ fStudyRCutInCone(0),              fNRCutsInCone(0),                         fRCu
 fStudyNCellsCut(0),               fNNCellsInCandidate(0),                   fNCellsInCandidate(),      
 fNCellsWithWeight(0),             fTrigSupMod(-1),
 fStudyExoticTrigger(0),           fNExoCutInCandidate(0),                   fExoCutInCandidate(),
+fStudySumPtVsInConePt(0),
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
@@ -202,7 +203,9 @@ fhEtaPhiTrackInConeITSRefitOnSPDOn(0),fhEtaPhiTrackInConeITSRefitOnSPDOff(0), fh
 fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn(0), fhPtTrackInConeTOFBC0ITSRefitOnSPDOn(0), 
 fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn(0), fhEtaTrackInConeTOFBC0ITSRefitOnSPDOn(0),fhEtaPhiTrackInConeTOFBC0ITSRefitOnSPDOn(0),
 fhPerpConeSumPtITSRefitOnSPDOn (0),       fhPtInPerpConeITSRefitOnSPDOn(0),        fhEtaPhiInPerpConeITSRefitOnSPDOn(0),
-fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0), fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn(0)
+fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0), fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn(0),
+fhTrigPtVsSumPtVsTrackInConePt(0)       , fhTrigPtVsSumPtVsClusterInConePt(0),
+fhTrigPtVsSumPtVsTrackInConePtCent(0)   , fhTrigPtVsSumPtVsClusterInConePtCent(0)
 {
   InitParameters();
   
@@ -1002,7 +1005,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD sum0BinsArray   = GetHistogramRanges()->GetHistoPtSumArr();
   TArrayD sueBinsArray    = GetHistogramRanges()->GetHistoPtSumSubArr();
   TArrayD ratBinsArray    = GetHistogramRanges()->GetHistoRatioArr();
-  TArrayD soBinsArray = GetHistogramRanges()->GetHistoSpherocityArr();;
+  TArrayD soBinsArray     = GetHistogramRanges()->GetHistoSpherocityArr();
+  TArrayD ptCBinsArray    = GetHistogramRanges()->GetHistoPtInConeArr();
 
   TArrayD sumBinsArray;
   if ( method >= AliIsolationCut::kSumBkgSubIC ) 
@@ -1267,7 +1271,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       } // bit loop
     }// decay
   } // iso / no iso
-  
   
   if ( method == AliIsolationCut::kSumPtIC || 
        method >= AliIsolationCut::kSumBkgSubIC )
@@ -2122,6 +2125,38 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtClusterInConeExoTrigger->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtClusterInConeExoTrigger->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtClusterInConeExoTrigger) ;
+    }
+
+    if ( fStudySumPtVsInConePt )
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhTrigPtVsSumPtVsClusterInConePt = new TH3F
+        ("hTrigPtVsSumPtVsClusterInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+        fhTrigPtVsSumPtVsClusterInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtVsClusterInConePt->SetYTitle("#it{p}^{in cone} (GeV/#it{c})");
+        fhTrigPtVsSumPtVsClusterInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtVsClusterInConePt) ;
+      }
+      else
+      {
+        fhTrigPtVsSumPtVsClusterInConePtCent = new TH3F*[GetNCentrBin()] ;
+        for (Int_t icent = 0; icent < GetNCentrBin(); icent++)
+        {
+          fhTrigPtVsSumPtVsClusterInConePtCent[icent] = new TH3F
+          (Form("hTrigPtVsSumPtVsClusterInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhTrigPtVsSumPtVsClusterInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhTrigPtVsSumPtVsClusterInConePtCent[icent]->SetYTitle("#it{p}^{in cone} (GeV/#it{c})");
+          fhTrigPtVsSumPtVsClusterInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhTrigPtVsSumPtVsClusterInConePtCent[icent]) ;
+        }
+      }
     }
   }
   
@@ -3093,8 +3128,39 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       outputContainer->Add(fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn) ;
       
     }
+
+    if ( fStudySumPtVsInConePt )
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+      {
+        fhTrigPtVsSumPtVsTrackInConePt = new TH3F
+        ("hTrigPtVsSumPtVsTrackInConePt",Form("%s",parTitleR.Data()),
+          ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+         ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+        fhTrigPtVsSumPtVsTrackInConePt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhTrigPtVsSumPtVsTrackInConePt->SetYTitle("#it{p}^{in cone} (GeV/#it{c})");
+        fhTrigPtVsSumPtVsTrackInConePt->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+        outputContainer->Add(fhTrigPtVsSumPtVsTrackInConePt) ;
+      }
+      else
+      {
+        fhTrigPtVsSumPtVsTrackInConePtCent = new TH3F*[GetNCentrBin()] ;
+        for (Int_t icent = 0; icent < GetNCentrBin(); icent++)
+        {
+          fhTrigPtVsSumPtVsTrackInConePtCent[icent] = new TH3F
+          (Form("hTrigPtVsSumPtVsTrackInConePt_Cent%d",icent),Form("%s, cent %d",parTitleR.Data(),icent),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+           ptCBinsArray.GetSize() - 1, ptCBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhTrigPtVsSumPtVsTrackInConePtCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhTrigPtVsSumPtVsTrackInConePtCent[icent]->SetYTitle("#it{p}^{in cone} (GeV/#it{c})");
+          fhTrigPtVsSumPtVsTrackInConePtCent[icent]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhTrigPtVsSumPtVsTrackInConePtCent[icent]) ;
+        }
+      }
+    }
   }
-  
   
   if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged &&
       fStudyPtCutInCone )
@@ -5034,10 +5100,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
     if ( fStudyExoticTrigger || fFillPerSMHistograms || fFillPerTCardIndexHistograms  || 
          fStudyPtCutInCone   || fStudyRCutInCone     || fStudyNCellsCut               ||  
-         fStudyTracksInCone  || IsPileUpAnalysisOn() || IsHighMultiplicityAnalysisOn()   )    
+         fStudyTracksInCone  || fStudySumPtVsInConePt||
+        IsPileUpAnalysisOn() || IsHighMultiplicityAnalysisOn() )
     {
-      StudyTracksInCone   (aod);
-      StudyClustersInCone (aod);
+      StudyTracksInCone   (aod, coneptsum, icent);
+      StudyClustersInCone (aod, coneptsum, icent);
       
       if ( fStudyExoticTrigger && fIsExoticTrigger )
         fhConeSumPtExoTrigger  ->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
@@ -6761,7 +6828,8 @@ void AliAnaParticleIsolation::StudyMCConversionRadius
 //______________________________________________________________________________________________________________
 /// Get the cluster pT or sum of pT in isolation cone.
 //______________________________________________________________________________________________________________
-void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelation * aodParticle)
+void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelation * aodParticle,
+                                                  Float_t conesumpt, Int_t icent)
 {  
   if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
   
@@ -6931,6 +6999,14 @@ void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelatio
           fhPtClusterInConePerExoCut->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
         }
       }
+    }
+
+    if ( fStudySumPtVsInConePt )
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhTrigPtVsSumPtVsClusterInConePt->Fill(ptTrig , ptcone, conesumpt,GetEventWeight()*weightTrig);
+      else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        fhTrigPtVsSumPtVsClusterInConePtCent[icent]->Fill(ptTrig , ptcone, conesumpt,GetEventWeight()*weightTrig);
     }
   }
   
@@ -7270,7 +7346,8 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
 //___________________________________________________________________________________________________________
 /// Get the track pT or sum of pT in isolation cone.
 //___________________________________________________________________________________________________________
-void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation * aodParticle)
+void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation * aodParticle,
+                                                Float_t conesumpt, Int_t icent)
 {  
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
   
@@ -7632,6 +7709,14 @@ void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation 
       if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
       if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
       if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+    }
+
+    if ( fStudySumPtVsInConePt )
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhTrigPtVsSumPtVsTrackInConePt->Fill(ptTrig , pTtrack, conesumpt,GetEventWeight()*weightTrig);
+      else if ( icent >= 0 && GetNCentrBin() > 0 && icent < GetNCentrBin() )
+        fhTrigPtVsSumPtVsTrackInConePtCent[icent]->Fill(ptTrig , pTtrack, conesumpt,GetEventWeight()*weightTrig);
     }
   }
   
