@@ -82,9 +82,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
                                        Float_t m02, Int_t     mcTag, Int_t label) ;
   
-  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyClustersInCone  (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
-  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
+  void         StudyTracksInCone    (AliCaloTrackParticleCorrelation * aodParticle,
+                                     Float_t coneptsum, Int_t centbin) ;
   
   void         StudyClustersUEInCone(AliCaloTrackParticleCorrelation * aodParticle) ;
   
@@ -156,6 +158,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnStudyExoticTrigger()          { fStudyExoticTrigger = kTRUE  ; }
   void         SwitchOffStudyExoticTrigger()         { fStudyExoticTrigger = kFALSE ; }
+
+  void         SwitchOnSumPtVsInConePt()             { fStudySumPtVsInConePt = kTRUE  ; }
+  void         SwitchOffSumPtVsInConePt()            { fStudySumPtVsInConePt = kFALSE ; }
 
   void         SwitchOnStudyNCellsCut()              { fStudyNCellsCut     = kTRUE  ; }
   void         SwitchOffStudyNCellsCut()             { fStudyNCellsCut     = kFALSE ; }
@@ -299,6 +304,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNExoCutInCandidate;                       ///<  Number of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   Float_t  fExoCutInCandidate[20];                    ///<  List of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   
+  Bool_t   fStudySumPtVsInConePt;                     ///<  Fill histograms with track and cluster pT  in cone vs sum pT in cone
+
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomDaugh1;                          //!<! Temporary vector, avoid creation per event.
@@ -703,6 +710,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
   TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
    
+  TH3F *   fhTrigPtVsSumPtVsTrackInConePt;               //!<! Trigger pT vs iso cone energy vs track in cone pT
+  TH3F *   fhTrigPtVsSumPtVsClusterInConePt;             //!<! Trigger pT vs iso cone energy vs cluster in cone pT
+
+  ///Trigger pT vs iso cone energy vs track in cone pT per centrality bin
+  TH3F **  fhTrigPtVsSumPtVsTrackInConePtCent;           //![GetNCentrBin()]
+
+  /// Trigger pT vs iso cone energy vs cluster in cone pT per centrality bin
+  TH3F **  fhTrigPtVsSumPtVsClusterInConePtCent;         //![GetNCentrBin()]
+
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     
@@ -710,7 +726,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,51) ;
+  ClassDef(AliAnaParticleIsolation,52) ;
   /// \endcond
 
 } ;
