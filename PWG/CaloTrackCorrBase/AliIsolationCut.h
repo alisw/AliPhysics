@@ -101,6 +101,7 @@ class AliIsolationCut : public TObject {
                                         Float_t & coneptsum   , Float_t & coneptLead,  
                                         Float_t & etaBandPtSum, Float_t & phiBandPtSum, 
                                         Float_t & perpConePtSum,Float_t & perpBandPtSum,
+                                        Float_t & perpCone1PtSum,
                                         Double_t  histoWeight=1,
                                         Float_t centrality = -1, Int_t cenBin = -1) ;
   
@@ -334,6 +335,9 @@ class AliIsolationCut : public TObject {
   TH2F *   fhDeltaEtaPhiInPerpCone ;                   //!<! Trigger-Track Eta vs. phi of tracks in perpendicular cone.
   TH3F *   fhTriggerEtaPhiInPerpConeTrackPt ;          //!<! Trigger-Track Eta vs. phi of tracks in perpendicular cone.
 
+  TH2F *   fhPerpCone1SumPt;                            //!<! Sum Pt in cone at 1  perpendicular cone.
+  TH2F *   fhPerpCone1SumPtUESub;                       //!<! Sum Pt in cone minus 1 perpendicular cone.
+
   // Jet Rho
 
   TH2F *   fhJetRhoSumPt ;                             //!<! Charged sum Pt in cone using Jet tools Rho calculation
@@ -454,6 +458,9 @@ class AliIsolationCut : public TObject {
   TH3F *   fhPtInPerpConeCent ;                        //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   /// Track Sum Pt in the perpendicular cones for tracks, per eta-phi bin of trigger vs centrality.
   TH3F **  fhPerpConeSumPtTrigEtaPhiCent;              //![fNCentBins]
+
+  TH3F *   fhPerpCone1SumPtCent;                       //!<! Sum Pt in cone at 1  perpendicular cone vs centrality.
+  TH3F *   fhPerpCone1SumPtUESubCent;                  //!<! Sum Pt in cone minus 1 perpendicular cone vs centrality.
 
   // Jet Rho
   TH3F *   fhJetRhoSumPtCent ;                       //!<! Charged Sum Pt in cone with Jet Rho calculations.
