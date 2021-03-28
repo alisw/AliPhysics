@@ -493,6 +493,15 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtVSUETrackBandCent;               //!<! Tracks, UE band: sum pT in cone vs bkg to subtract.
   TH3F *   fhConeSumPtVSUEClusterBandCent;             //!<! Clusteres, UE band:  sum pT in cone vs bkg to subtract.
 
+  TH3F *   fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePt;         //!<! Trigger pT vs iso cone energy UE subtracted vs leading track in cone pT
+  TH3F *   fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePt;       //!<! Trigger pT vs iso cone energy UE subtracted vs leading cluster in cone pT
+
+  ///Trigger pT vs iso cone energy  UE subtracted vs leading track in cone pT per centrality bin
+  TH3F **  fhTrigPtVsSumPtUEBandSubVsLeadTrackInConePtCent;     //![GetNCentrBin()]
+
+  /// Trigger pT vs iso cone energy UE subtracted vs leading cluster in cone pT per centrality bin
+  TH3F **  fhTrigPtVsSumPtUEBandSubVsLeadClusterInConePtCent;   //![GetNCentrBin()]
+
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
 
@@ -500,7 +509,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,25) ;
+  ClassDef(AliIsolationCut,26) ;
   /// \endcond
 
 } ;
