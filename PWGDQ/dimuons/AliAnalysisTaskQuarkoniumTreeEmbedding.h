@@ -28,7 +28,6 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   void SetResonance(TString resonance) {fResonance=resonance;}
   void SetAnalysisType(const char* type) {fkAnalysisType=type;}
   void SetPeriod(TString period) {fPeriod=period;}
-  AliMuonTrackCuts* fMuonTrackCuts;
 
  private:
   AliAnalysisTaskQuarkoniumTreeEmbedding(const AliAnalysisTaskQuarkoniumTreeEmbedding&);
@@ -36,10 +35,12 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
 
  //protected:
 
-  TTree         *fOutputTree	;      //! tree output
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)
   const char* fkAnalysisType; //ESD or AOD based analysis
   TString fPeriod; //period
+  AliAODEvent* fAODEvent;      //! AOD event  //tolgo !
+  TTree         *fOutputTree	;      //! tree output
+  AliMuonTrackCuts* fMuonTrackCuts;
   TString fResonance; //resonance
 
   Int_t		fNMuons_gen;		// muon tracks in the event
@@ -80,7 +81,6 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Int_t	        fDimuCharge_rec[1000];		// dimuon charge
   Int_t	        fDimuMatch_rec[1000];		// dimuon match
 
-  AliAODEvent* fAODEvent;      //! AOD event  //tolgo !
 
  ClassDef(AliAnalysisTaskQuarkoniumTreeEmbedding,1);
 };
