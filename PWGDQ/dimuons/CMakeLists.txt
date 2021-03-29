@@ -29,9 +29,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskQuarkoniumTreeEmbedding.cxx
   AliAnalysisTaskQuarkoniumTreeMC.cxx
   AliAnalysisTaskPbPbTree_MCut.cxx
-  AliAnalysisTaskTree_MCut.cxx
+  AliAnalysisTaskTree_MCut.cxx  
   )
 
 # Headers from sources
