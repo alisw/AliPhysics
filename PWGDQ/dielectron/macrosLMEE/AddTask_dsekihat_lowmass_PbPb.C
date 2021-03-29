@@ -7,7 +7,6 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 		const Int_t CenMin =  0,
 		const Int_t CenMax = 10,
 		const Int_t Nmix   = 10,
-		const Bool_t applyPairCut = kTRUE,
 		const TString outname = "LMEE.root",
 		const Bool_t isMC = kFALSE,
 		const TString suffix=""
