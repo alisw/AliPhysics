@@ -72,6 +72,7 @@ public:
     kMcCollisionLabel,
     kBC,
     kRun2BCInfo,
+    kOrigin,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -224,6 +225,10 @@ private:
     UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
     UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
   } run2bcinfo; //! structure to keep run 2 only related info 
+
+  struct {
+    ULong64_t fDataframeID = 0; /// ID of this data frame (important for merging DFs)
+  } origin;
 
   struct {
     // Track data
