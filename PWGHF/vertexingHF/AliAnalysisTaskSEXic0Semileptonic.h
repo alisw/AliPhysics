@@ -17,12 +17,12 @@
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliRDHFCuts.h"
+#include "AliAODMCParticle.h" //kimc, Mar. 18
 #include "AliAODRecoDecayHF.h"
 #include "AliNormalizationCounter.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
 #include <vector>
 
-//kimc
 #include <iostream>
 using namespace std;
 
@@ -37,7 +37,6 @@ class AliAnalysisTaskSEXic0RunTable
 		AliAnalysisTaskSEXic0RunTable();
 		AliAnalysisTaskSEXic0RunTable(Int_t runnumber);
 		~AliAnalysisTaskSEXic0RunTable();
-
 		//Bool_t IsPP() { return fCollisionType==kPP; };
 		//Bool_t IsPA() { return fCollisionType==kPA; };
 		//Bool_t IsAA() { return fCollisionType==kAA; };
@@ -77,7 +76,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 
 		Bool_t FilterTrack(AliAODTrack *trk, Int_t NoFillHistos);
 		Bool_t FilterElectron(AliAODTrack *trk, Double_t &mass, Double_t &samesign_mass,
-				              Bool_t IsSameSign, Bool_t IsLoose, Int_t NoFillHistos);
+				Bool_t IsSameSign, Bool_t IsLoose, Int_t NoFillHistos);
 		Bool_t FilterCascade(AliAODcascade *casc);
 		Bool_t FillMCXib(AliAODMCParticle *mcpart);
 
@@ -94,9 +93,10 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 
 		//Type: 1=loose, 2=standard, 3=tight
 		Bool_t StandardCutFlag(AliAODTrack *track, AliAODcascade *casc,
-				               Bool_t e_reco, Bool_t e_pid, Bool_t Xi_reco, Bool_t Xi_pid);
+				Bool_t e_reco, Bool_t e_pid, Bool_t Xi_reco, Bool_t Xi_pid);
 
-    void CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart, Bool_t searchUpToQuark, Bool_t &c_flag, Bool_t &b_flag);
+		void CheckOrigin(AliMCEvent* mcEvent, AliAODMCParticle *mcPart,
+				Bool_t searchUpToQuark, Bool_t &c_flag, Bool_t &b_flag);
 
 		//kimc
 		//*************************************************
@@ -115,6 +115,13 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		AliPIDResponse                     *fPIDResponse = nullptr; //!
 		AliRDHFCutsXictoeleXifromAODtracks *fEvtCuts = nullptr;
 		AliVEvent                          *fEvt = nullptr; //!
+
+		//Additional normalization counter, for multiplicity dependent analysis: kimc, Mar. 8, 2021
+		AliRDHFCutsXictoeleXifromAODtracks *fEvtCuts_HMV0 = nullptr;
+		AliNormalizationCounter *fCounter_MB_0to100  = nullptr;
+		AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
+		AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
+		AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
 
 		TString fOption; //!
 		Bool_t  IsMC = kTRUE;
@@ -136,26 +143,27 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		//Cut Values
 		//---------------------------------------------
 
-		Int_t   fRunNumber = 0; //!
+		Int_t   fRunNumber     = 0; //!
 		Int_t   fNSPDTracklets = 0; //kimc
 		Int_t   fNeXiPair      = 0; //kimc
-		Float_t fBzkG = 0; //! Magnetic filed for of event
+
+		Float_t fBzkG       = 0;    //! Magnetic filed for of event
 		Float_t fCentrality = 9999; //!
-		Float_t fEtaCut = 0.8; //for daugther particle
-		Float_t fPtCut = 0.5; //lower limit of electron
-		Float_t fRunOffset = 0; //!
+		Float_t fEtaCut     = 0.8;  //for daugther particle
+		Float_t fPtCut      = 0.5;  //lower limit of electron
+		Float_t fRunOffset  = 0;    //!
 		Float_t fCentralSPD = 9999; //kimc
 		Float_t fVtxZ       = 9999; //kimc
 
 		Double_t MassTolLambda = 0.008;
-		Double_t MassTolXi = 0.01;
+		Double_t MassTolXi     = 0.01;
 		Double_t DCAV0PrToPrimVertexMin = 0.05;
 		Double_t DCAV0PiToPrimVertexMin = 0.05;
 		Double_t DCABachToPrimVertexMin = 0.01;
-		Double_t DCAV0ToPrimVertexMin = 0.01;
+		Double_t DCAV0ToPrimVertexMin   = 0.01;
 		Double_t V0CosineOfPoiningAngleXiMin = 0.98;
 		Double_t CascDecayLengthMin = 0.2;
-		Double_t DecayLengthV0 = 0.2;
+		Double_t DecayLengthV0      = 0.2;
 
 		Double_t fSetProdTrackTPCNclsPID = 50;
 		Double_t fNClustersITSMin = 2;
@@ -167,12 +175,13 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		//kimc
 		//*************************************************
 
-		UInt_t fEventTreeVarTrig = 0; //Dummy index for saving triggerbit to tree
+		UInt_t fEventTreeVarTrig = 0;   //Dummy index for saving triggerbit to tree
+		Bool_t fIsINELLgtZERO = kFALSE; //Dummy index for INEL>0 check, for both data and MC
 
-        vector<UInt_t> fTargetTriggers; //Container for triggerbits
-        Bool_t fUsekINT7 = kFALSE;
-        Bool_t fUsekHMV0 = kFALSE;
-        Bool_t fUsekHMSPD = kFALSE;
+		vector<UInt_t> fTargetTriggers; //Container for triggerbits
+		Bool_t fUsekINT7  = kFALSE;
+		Bool_t fUsekHMV0  = kFALSE;
+		Bool_t fUsekHMSPD = kFALSE;
 
 		ClassDef(AliAnalysisTaskSEXic0Semileptonic, 1);
 };
