@@ -21,8 +21,8 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	}
 
 	//Base Directory for GRID / LEGO Train
-	//TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	TString configBasePath= "./";
+	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+	//TString configBasePath= "./";
 	if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",lFileName.Data())))
@@ -53,9 +53,9 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	gROOT->LoadMacro(configFilePath.Data());
 
 	//const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
-	const Int_t nTC  = Int_t(gROOT->ProcessLine("GetNTC()") );
-	const Int_t nPID = Int_t(gROOT->ProcessLine("GetNPID()"));
-	const Int_t nPF  = Int_t(gROOT->ProcessLine("GetNPF()") );
+	const Int_t nEC = Int_t(gROOT->ProcessLine("GetNEC()") );//event cuts
+	const Int_t nTC = Int_t(gROOT->ProcessLine("GetNTC()") );//track cuts
+	const Int_t nPC = Int_t(gROOT->ProcessLine("GetNPID()"));//pid cuts
 
   printf("isMC : %d\n",isMC);
   TFile *rootfile = 0x0;
@@ -105,12 +105,12 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
       h3width_TOF = (TH3D*)rootfile->Get("h3width_TOF");
     }
   }
-	for (Int_t itc=0; itc<nTC; ++itc){
-		for (Int_t ipid=0; ipid<nPID; ++ipid){
-			for (Int_t ipf=0; ipf<nPF; ++ipf){
-				AliDielectron *die = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%d,%d)",itc,ipid,ipf,applyPairCut,isMC)));
-				if(!die) continue;
-				TString name = die->GetName();
+  for (Int_t iec=0; iec<nEC; ++iec){
+    for (Int_t itc=0; itc<nTC; ++itc){
+      for (Int_t ipc=0; ipc<nPC; ++ipc){
+        AliDielectron *die = reinterpret_cast<AliDielectron*>(gROOT->ProcessLine(Form("Config_dsekihat_lowmass_PbPb(%d,%d,%d,%d)",iec,itc,ipc,isMC)));
+        if(!die) continue;
+        TString name = die->GetName();
 
         if(rootfile && rootfile->IsOpen()){
           if(!isMC){//for data
@@ -146,23 +146,23 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
           }
         }
 
-				if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
-					printf("No event mixing handler for post PID calibration/noPID\n");
-				}
-				else{
-					printf("Add event mixing handler\n");
-					AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
-					mix->SetMixType(AliDielectronMixingHandler::kAll);
-					mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
-					mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
-					mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
-					mix->SetDepth(Nmix);
-					if(!isMC) die->SetMixingHandler(mix);
-				}
-				task->AddDielectron(die);
-			}//pre-filter loop
-			}//PID loop
-		}//track cut loop
+        if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
+          printf("No event mixing handler for post PID calibration/noPID\n");
+        }
+        else{
+          printf("Add event mixing handler\n");
+          AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+          mix->SetMixType(AliDielectronMixingHandler::kAll);
+          mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+          mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+          mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
+          mix->SetDepth(Nmix);
+          if(!isMC) die->SetMixingHandler(mix);
+        }
+        task->AddDielectron(die);
+      }//pid loop
+    }//track loop
+  }//event loop
 
 		//if(rootfile && rootfile->IsOpen()) rootfile->Close();
 
