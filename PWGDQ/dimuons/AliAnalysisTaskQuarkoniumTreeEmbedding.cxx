@@ -421,12 +421,6 @@ for(int i=0;i<numtracks;i++) {
       nmu++;
     }
 
-  // reassign labels [labels need to be reassigned since only selected tracks are saved and not all of them]
-   // for(Int_t i = 0;i<ndimu;i++){
-   //   fDimuMu_rec[i][0]=Label0[i];
-   //   fDimuMu_rec[i][1]=Label1[i];
-   //  }
-   //
      fNMuons_rec = nmu;
      fNDimu_rec = ndimu;
 
