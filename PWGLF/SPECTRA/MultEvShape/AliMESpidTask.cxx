@@ -370,14 +370,19 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 	// ---------------------------
 	// compute y after PID
-	Double_t  mass[AliPID::kSPECIES] = {0.00051, 0.10565, 0.13957, 0.49368, 0.93827};
-	Double_t e = TMath::Sqrt(t->P()*t->P() + mass[maxIndex]*mass[maxIndex]);
-	if( TMath::Abs(t->Pz()) != e ) vec_hAllESD[l_rapidity] = 0.5*TMath::Log((e + t->Pz())/(e - t->Pz()));
-	else vec_hAllESD[l_rapidity] = -9999;
-	if(TMath::Abs(vec_hAllESD[l_rapidity]) > 1.0) continue;
+	// Double_t  mass[AliPID::kSPECIES] = {0.00051, 0.10565, 0.13957, 0.49368, 0.93827};
+	// Double_t e = TMath::Sqrt(t->P()*t->P() + mass[maxIndex]*mass[maxIndex]);
+	// if( TMath::Abs(t->Pz()) != e ) vec_hAllESD[l_rapidity] = 0.5*TMath::Log((e + t->Pz())/(e - t->Pz()));
+	// else vec_hAllESD[l_rapidity] = -9999;
 // 	AliInfo(Form("Pz = %g \te = %g \t e+Pz = %g \t e-Pz = %g\n", t->Pz(), e, (e + t->Pz()), (e - t->Pz())));
+	// ---------------------------
+	vec_hAllESD[l_rapidity] = t->Eta();
+	if(TMath::Abs(vec_hAllESD[l_rapidity]) > 1.0) continue;
+	
 
-  // set the y for the LP (NOTE: the LP is always the first one in the list)
+	// ---------------------------
+  
+	// set the y for the LP (NOTE: the LP is always the first one in the list)
   if(it == 0){
     pT_LP_ESD = vec_hAllESD[l_pT];
     y_LP_ESD = vec_hAllESD[l_rapidity];
@@ -476,13 +481,15 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		// 	Double_t pz = t->P() * TMath::Cos(t->Theta());
 		if( TMath::Abs(t->Pz()) != eMC ) vec_hAllESD[l_yMCPID] = 0.5*TMath::Log((eMC + t->Pz())/(eMC - t->Pz()));
 		else vec_hAllESD[l_yMCPID] = -9999;
-		if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
+		// if(TMath::Abs(vec_hAllESD[l_yMCPID]) > 1.0) continue;
 
     // delta_y MC
-    y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Y();
+		// y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Y();
+    y_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Eta();
     pT_LP_MC = ((AliMEStrackInfo*)fMCtracks->At(0))->Pt();
     if(tMC){
-      vec_hDeltaPhi[6] = y_LP_MC - tMC->Y();
+			// vec_hDeltaPhi[6] = y_LP_MC - tMC->Y();
+      vec_hDeltaPhi[6] = y_LP_MC - tMC->Eta();
       vec_hDeltaPhi[7] = ComputeDeltaPhi(tMC->Phi(), phi_LP_MC);  // gen info
     }
     vec_hDeltaPhi[8] = ComputeDeltaPhi(t->Phi(), phi_LP_MC);    // rec tracks vs gen LP
@@ -691,7 +698,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   		// ---------------------------
   		// get y
-  		vec_hGen[l_MC_rapidity] = tMC->Y();
+			// vec_hGen[l_MC_rapidity] = tMC->Y();
+  		vec_hGen[l_MC_rapidity] = tMC->Eta();
 
       // ---------------------------
       // get the delta phi angle
