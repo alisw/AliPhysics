@@ -55,12 +55,12 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Double_t	fPz_rec[100];		// single mu pz
   Double_t	fY_rec[100];		// single mu y
   Double_t	fEta_rec[100];		// single mu eta
-  Int_t		  fMatchTrig_rec[100];		// single mu match trigger
+  Int_t		fMatchTrig_rec[100];		// single mu match trigger
   Double_t	fTrackChi2_rec[100];		// single mu chi2 track
   Double_t	fMatchTrigChi2_rec[100];	// single mu chi2 of match trigger
-  Int_t	    fCharge_rec[100];		// single mu charge
+  Int_t	        fCharge_rec[100];		// single mu charge
   Double_t	fRAtAbsEnd_rec[100];		// single mu distance from beam center at end abs
-  Int_t	    fpDCA_rec[100];		// single mu charge
+  Int_t	        fpDCA_rec[100];		// single mu charge
 
   Double_t	fDimuPt_gen[1000];			    // dimuon pT
   Double_t	fDimuPx_gen[1000]; 		    // dimuon px
@@ -68,9 +68,9 @@ class AliAnalysisTaskQuarkoniumTreeEmbedding : public AliAnalysisTaskSE {
   Double_t	fDimuPz_gen[1000]; 		    // dimuon pz
   Double_t	fDimuY_gen[1000];			// dimuon y
   Double_t	fDimuMass_gen[1000];		// dimuon invariant mass
-  Int_t	    fDimuCharge_gen[1000];		// dimuon charge
+  Int_t	        fDimuCharge_gen[1000];		// dimuon charge
 
-  Int_t		  fDimuMu_rec[1000][2];	// reference to single mus
+  Int_t		fDimuMu_rec[1000][2];	// reference to single mus
   Double_t	fDimuPt_rec[1000];			    // dimuon pT
   Double_t	fDimuPx_rec[1000]; 		    // dimuon px
   Double_t	fDimuPy_rec[1000]; 		    // dimuon py
