@@ -19,6 +19,7 @@ public:
   void FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w, const Double_t &rn);
   void FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w);
   Long64_t Merge(TCollection *collist);
+  TH1 *getHist(Int_t ind=-1);
   ClassDef(AliProfileBS,1);
 protected:
   Bool_t fProfInitialized;
