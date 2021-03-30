@@ -77,7 +77,7 @@ void AliAnalysisTaskSECheckCharmHadronBkg::Init()
     {
         analysis->SetName("AnalysisCuts");
         float *PtLims = (float *)analysis->GetPtBinLimits();
-        int lastpt = analysis->GetNPtBins() - 1;
+        int lastpt = analysis->GetNPtBins();
         fPtMin = PtLims[0];
         fPtMax = PtLims[lastpt];
     }
