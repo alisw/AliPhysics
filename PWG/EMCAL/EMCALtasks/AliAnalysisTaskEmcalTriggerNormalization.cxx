@@ -47,7 +47,7 @@ ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization)
 using namespace PWG::EMCAL;
 
 const std::vector<std::string> AliAnalysisTaskEmcalTriggerNormalization::fgkTriggerClusterLabels = {
-  "ANY", "CENT", "CENTNOTRD", "CALO", "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", "OnlyCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD",
+  "ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST", "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", "OnlyCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD",
   "ALLBOTH", "OnlyALL", "OnlyALLNOTRD"
 };
 
