@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
 	else if(period == lhc18q || period == lhc18r)  selEvt = AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral;
 	// --- track related common configurations -----
 	for(int i=0;i<Nsets;i++) {
-		myTask[i] = new AliJFFlucTask(Form("jkl_nlsc_s_%s",configNames[i].Data()));
+		myTask[i] = new AliJFFlucTask(Form("%s_s_%s",taskName.Data(), configNames[i].Data()));
 		if(i!=6) {
 			myTask[i]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING|AliJFFlucTask::FLUC_CUT_OUTLIERS);
 			if(period == lhc18q || period == lhc18r) myTask[i]->AddFlags(AliJFFlucTask::FLUC_CENT_FLATTENING);
