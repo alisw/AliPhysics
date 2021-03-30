@@ -56,6 +56,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	void SetNtrkletMax(Double_t maxNtrklet) { MaxNtrklet = maxNtrklet; };
 	void SetWeightNtrklet(TH1D* hWeight){ fweightNtrkl = new TH1D(*hWeight); };
 
+	void SetMCtype(Bool_t iMCtype){ iGPMC = iMCtype; };
+
 
 
         //---- MC analysis ----//
@@ -199,6 +201,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Int_t               NpureMCproc;
         Int_t               NpureMC;
         Int_t               Nch;
+	Int_t		    Nmc;
+	Bool_t		    iGPMC;
 	Bool_t		    iBevt;
 	TH1F*		    fNoB;
 	TH1F*		    fNoD;
