@@ -206,24 +206,24 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
 
 
   ///v2 vs Ach (Results)
-  TProfile     *fHistv2AchChrgPos[2][10];
-  TProfile     *fHistv2AchPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[2][10]; //!
-  TProfile     *fHistv2AchProtPos[2][10]; //!
-  TProfile     *fHistv2AchChrgNeg[2][10];
-  TProfile     *fHistv2AchPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[2][10]; //!
-  TProfile     *fHistv2AchProtNeg[2][10]; //!
+  TProfile     *fHistv2AchChrgPos[2][9];
+  TProfile     *fHistv2AchPionPos[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPos[2][9]; //!
+  TProfile     *fHistv2AchProtPos[2][9]; //!
+  TProfile     *fHistv2AchChrgNeg[2][9];
+  TProfile     *fHistv2AchPionNeg[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNeg[2][9]; //!
+  TProfile     *fHistv2AchProtNeg[2][9]; //!
 
-  TProfile     *fHistv2AchChrgPosChrgNeg[2][10];
-  TProfile     *fHistv2AchPionPosPionNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPosKaonNeg[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchProtPosProtNeg[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgPosChrgNeg[2][9];
+  TProfile     *fHistv2AchPionPosPionNeg[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[2][9]; //! [1st] = method, [2nd] = centrality.
     
-  TProfile     *fHistv2AchChrgNegChrgPos[2][10];
-  TProfile     *fHistv2AchPionNegPionPos[2][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNegKaonPos[2][10];
-  TProfile     *fHistv2AchProtNegProtPos[2][10]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgNegChrgPos[2][9];
+  TProfile     *fHistv2AchPionNegPionPos[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[2][9];
+  TProfile     *fHistv2AchProtNegProtPos[2][9]; //! [1st] = method, [2nd] = centrality.
     
 
 
@@ -245,10 +245,10 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
  
   
   TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
-  TH1D          *fHistNumChrgPos[10];       //! No. of positive charges
-  TH1D          *fHistNumChrgNeg[10];       //! No. of negative charges
-  TProfile      *fHistEPResolutionAch[10];   //! EP resolution vs Ach 
-  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
+  TH1D          *fHistNumChrgPos[9];       //! No. of positive charges
+  TH1D          *fHistNumChrgNeg[9];       //! No. of negative charges
+  TProfile      *fHistEPResolutionAch[9];   //! EP resolution vs Ach 
+  TProfile      *fHistv2cumAchChrgAll[9];  //! Charge inclusive
 
 
   
