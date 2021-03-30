@@ -4530,7 +4530,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
         break;
     }
 
-    if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+    if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
     iTracksFilled++;
 
@@ -4636,7 +4636,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
          break;
      }
 
-     if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+     if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
      iTracksFilled++;
 
@@ -4741,7 +4741,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
           break;
       }
 
-      if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+      if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
       iTracksFilled++;
 
@@ -4846,7 +4846,7 @@ Int_t AliAnalysisTaskUniFlow::FillPOIsVectorsCharged(const AliUniFlowCorrTask* t
           break;
       }
 
-      if(bHasGap && TMath::Abs(dEta) < dEtaLimit) { continue; }
+      if(bHasGap && TMath::Abs(dEta) < dEtaLimit && !bHas3sub) { continue; }
 
       iTracksFilled++;
 
