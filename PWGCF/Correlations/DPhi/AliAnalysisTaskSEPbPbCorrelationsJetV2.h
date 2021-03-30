@@ -44,6 +44,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetRemovePileup(Bool_t flag) { fRemovePileup = flag; }
   void SetRemovePileup2(Bool_t flag) { fRemovePileup2 = flag; }
   void SetRemovePileup3(Bool_t flag) { fRemovePileup3 = flag; }
+  void SetPtOrder(Bool_t flag) {fPtOrder = flag; }
   void SetUseRes(Bool_t flag) { fUseRes = flag; }
   void SetAverageRes(Bool_t flag) {fAverageRes = flag; }
   void SetSubDivide(Int_t n1, Int_t n2) { fN1 = n1; fN2 = n2; }
@@ -135,6 +136,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   Bool_t fRemovePileup; 
   Bool_t fRemovePileup2; 
   Bool_t fRemovePileup3; 
+  Bool_t fPtOrder;
   Bool_t fUseRes; 
   Bool_t fAverageRes; 
   

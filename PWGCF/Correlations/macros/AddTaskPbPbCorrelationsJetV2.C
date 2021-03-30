@@ -16,8 +16,9 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetRemovePileup3(kTRUE);
   task->SetUseRes(kTRUE);
   task->SetAverageRes(kFALSE); // this is really needed
-  
-  Double_t centLimits[] = {20.,30.,60.};
+  task->SetPtOrder(kTRUE); 
+ 
+  Double_t centLimits[] = {20.,30.,60.,90.};
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;
   task->SetCentBinning(nBinCent, centLimits);
 
@@ -34,11 +35,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   const Int_t nBinPt = sizeof(ptLimits) / sizeof(Double_t) - 1;
   task->SetPtBinning(nBinPt, ptLimits);
 
+  //Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 14.0, 20.0, 50.0};
   Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0, 20.0, 50.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
-  Double_t assocPtLimits[] = {0.5,1.,2.,3.,5.,7.,100.};
+  Double_t assocPtLimits[] = {0.5, 1., 1.5, 2., 3., 5.,200.};
   const Int_t nBinAssocPt = sizeof(assocPtLimits) / sizeof(Double_t) - 1;
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
@@ -63,8 +65,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
    printf("ERROR: Required files are not found!\n");
   }
 
-  TList *list_contQ   = (TList*)foadb->Get("list_contQ");  
-  TList *list_Res     = (TList*)fFileRes->Get("list_Res");
+  TList *list_contQ   = (TList*)foadb->Get("list_contQ");  list_contQ->SetName(Form("list_contQ_%s",sNameList.Data()));  
+  TList *list_Res     = (TList*)fFileRes->Get("list_Res"); list_Res->SetName(Form("list_Res_%s",sNameList.Data()));
 
   if(!list_contQ || !list_Res)
   {
@@ -77,12 +79,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   mgr->AddTask(task);
 
  // create input container
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("contQ",
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer(Form("contQ_%s",sNameList.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
   cinput1->SetData(list_contQ);
   
-  AliAnalysisDataContainer *cinput2 = mgr->CreateContainer("Res",
+  AliAnalysisDataContainer *cinput2 = mgr->CreateContainer(Form("Res_%s",sNameList.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
   cinput2->SetData(list_Res);
