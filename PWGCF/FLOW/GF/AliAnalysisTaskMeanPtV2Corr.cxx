@@ -344,6 +344,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     oba->Add(new TNamed("LMMR24","LMMR24")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("LMRR24","LMRR24")); //for gap (|eta|>0.4) case
 
+    oba->Add(new TNamed("ChSC234","ChSC234")); //for SC{2,3}
 
     //Following is for PID. Let's remove it for now to save some memory
 /*    oba->Add(new TNamed("ChPos22","ChPos22"));
@@ -377,8 +378,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     Int_t powsFull[] = {5,0,4,0,3};*/
     // Int_t powsPOI[] = {3,0,2,0,3};
     //for v2{4} and v3{4}:
-    Int_t pows[] = {3,0,2,2,3,0,3};
-    Int_t powsFull[] = {5,0,4,4,3,0,3};
+    Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
+    Int_t powsFull[] = {5,0,4,4,3,3,3};
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
@@ -409,7 +410,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     //Covariance
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new AliProfileBS*[8];
+    fCovariance = new AliProfileBS*[9];
     for(Int_t i=0;i<4;i++) {
       fCovList->Add(new AliProfileBS(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[i] = (AliProfileBS*)fCovList->At(i);
@@ -420,6 +421,10 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
       fCovariance[4+i] = (AliProfileBS*)fCovList->At(i+4);
       fCovariance[4+i]->InitializeSubsamples(10);
     };
+    fCovList->Add(new AliProfileBS(Form("cov_v23_%s",spNames[0].Data()),Form("cov_v23_%s",spNames[0].Data()),fNMultiBins,fMultiBins));
+    fCovariance[8] = (AliProfileBS*)fCovList->At(8);
+    fCovariance[8]->InitializeSubsamples(10);
+
     PostData(3,fCovList);
     fV2dPtList = new TList();
     // fV2dPtList->SetName(Form("MPtV2_%i",fSystFlag));
@@ -950,6 +955,7 @@ for(Int_t i=0;i<1;i++) { //No PID = index is only 1
   for(Int_t i=0;i<1;i++) {
     FillCovariance(fCovariance[i],corrconfigs.at(i*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     FillCovariance(fCovariance[i+4],corrconfigs.at((i+1)*4),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(14),l_Multi,outVals[i][3]-outVals[i][0],wp[i][0],l_Random);
     //following is not necessary since we don't have any POIs
   };
   PostData(3,fCovList);
@@ -1155,6 +1161,8 @@ void AliAnalysisTaskMeanPtV2Corr::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("LLMR24","refP {2 2} subMid {-2} refN {-2}", kFALSE));
   corrconfigs.push_back(GetConf("LMMR24","refP {2} subMid {-2 -2} refN {2}", kFALSE));
   corrconfigs.push_back(GetConf("LMRR24","refP {2} subMid {2} refN {-2 -2}", kFALSE));
+
+  corrconfigs.push_back(GetConf("ChSC234","refP {2 3} refN {-2 -3}", kFALSE));
 
   return;
 
