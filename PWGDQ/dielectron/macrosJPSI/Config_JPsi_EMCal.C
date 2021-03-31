@@ -1,8 +1,8 @@
 ///*******************************************************
 /// Config Description
-/// March 23, 2021 - Cristiane Jahnke
+/// March 30, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
-/// New clusters cuts added
+/// Few checks on event selection
 ///*******************************************************
 
 //isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration
@@ -40,9 +40,9 @@ Bool_t is_Trigger_sim
     
     task->SetNewClustersCut();
     
-    task->SetNewEventSelection();//stop removing event with less than two tracks
+    if(!isMC)task->SetNewEventSelection();//use also vertex from SPD
     
-    if(isMC && is_Trigger_sim)task->DoTriggerSimulation();
+    if(is_Trigger_sim)task->DoTriggerSimulation();
     
     if(isTender) task->SetUseTender();
     if(isMultiAnalysis) task->SetMultiAnalysis();

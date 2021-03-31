@@ -204,6 +204,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,feg1(0)
+,fdg1(0)
+,feg2(0)
+,fdg2(0)
 //global variable for multiplicity analysis
 ,fV0Mult(0)
 ,fSPDMult(0)
@@ -238,6 +242,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
+,fECluster_eg1(0)
+,fECluster_eg2(0)
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fTracksPt(0)
@@ -430,6 +436,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fPtMCparticleAll_trueJPsi_pT_weight(0)
 ,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+,fPtMCparticleReco_e_from_JPsi_eg1(0)
+,fPtMCparticleReco_e_from_JPsi_eg2(0)
 
 //tracking efficiency
 ,fPtMCparticleReco_electrons(0)
@@ -589,6 +597,10 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fMassCutMax(3.16)
 
 ,fZvtx(0)
+,feg1(0)
+,fdg1(0)
+,feg2(0)
+,fdg2(0)
 //global variable for multiplicity analysis
 ,fV0Mult(0)
 ,fSPDMult(0)
@@ -623,6 +635,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fTOFnsigma_p(0)
 ,fTPCnsigma_EoverP(0)
 ,fECluster(0)
+,fECluster_eg1(0)
+,fECluster_eg2(0)
 ,fECluster_emcal(0)
 ,fECluster_dcal(0)
 ,fECluster_pure(0)
@@ -804,6 +818,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticleAll_trueJPsi_pT_weight(0)
 ,fPtMCparticleAll_trueJPsi_pT_weight_prompt(0)
 ,fPtMCparticleReco_e_from_JPsi(0)
+,fPtMCparticleReco_e_from_JPsi_eg1(0)
+,fPtMCparticleReco_e_from_JPsi_eg2(0)
 
 ,fPtMCparticleReco_electrons(0)
 ,fPtMCparticleReco_electrons_no_gamma(0)
@@ -952,7 +968,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
 
 //Store the number of events
 	//Define the histo
-	fNevent = new TH1F("fNevent","Number of Events",40,-0.5,39.5);
+	fNevent = new TH1F("fNevent","Number of Events",42,-0.5,41.5);
     //fNevent2 = new TH1F("fNevent2","Number of Events",20,-0.5,19.5);
     
    
@@ -1046,6 +1062,12 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //pileup check
     if(!fIs_sys) fTPC_vs_ITScls= new TH2F *[4];
     fECluster= new TH1F *[4];
+    
+    fECluster_eg1 = new TH1F("ECluster_eg1", ";ECluster;Counts",50, 0, 50);
+    fECluster_eg2 = new TH1F("ECluster_eg2", ";ECluster;Counts",50, 0, 50);
+    fOutputList->Add(fECluster_eg1);
+    fOutputList->Add(fECluster_eg2);
+    
     
     for(Int_t i = 0; i < 4; i++)
     {
@@ -1380,6 +1402,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         
         fPtMCparticleReco_e_from_JPsi = new TH1F("fPtMCparticleReco_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
         
+        fPtMCparticleReco_e_from_JPsi_eg1 = new TH1F("fPtMCparticleReco_e_from_JPsi_eg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticleReco_e_from_JPsi_eg2 = new TH1F("fPtMCparticleReco_e_from_JPsi_eg2",";p_{T} (GeV/c);Count",40,0,40);
+        
         fPtMCparticleReco_electrons = new TH1F("fPtMCparticleReco_electrons",";p_{T} (GeV/c);Count",40,0,40);
         fPtMCparticleReco_electrons_no_gamma = new TH1F("fPtMCparticleReco_electrons_no_gamma",";p_{T} (GeV/c);Count",40,0,40);
         fPtMCparticleReco_particles = new TH1F("fPtMCparticleReco_particles",";p_{T} (GeV/c);Count",40,0,40);
@@ -1447,6 +1472,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticleAll_trueJPsi_pT_weight_prompt);
         
         fOutputList->Add(fPtMCparticleReco_e_from_JPsi);
+        fOutputList->Add(fPtMCparticleReco_e_from_JPsi_eg1);
+        fOutputList->Add(fPtMCparticleReco_e_from_JPsi_eg2);
         
         fOutputList->Add(fPtMCparticleReco_electrons);
         fOutputList->Add(fPtMCparticleReco_electrons_no_gamma);
@@ -1551,36 +1578,33 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
         //printf("Inside trigger decision - beginning \n");
         //auto triggerdecision = fAOD->FindListObject("EmcalTriggerDecision");
         auto triggerdecision = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
-        bool eg1 = triggerdecision->IsEventSelected("EG1"),
-        dg1 = triggerdecision->IsEventSelected("DG1"),
-        eg2 = triggerdecision->IsEventSelected("EG2"),
-        dg2 = triggerdecision->IsEventSelected("DG2");
+        feg1 = triggerdecision->IsEventSelected("EG1");
+        fdg1 = triggerdecision->IsEventSelected("DG1");
+        feg2 = triggerdecision->IsEventSelected("EG2");
+        fdg2 = triggerdecision->IsEventSelected("DG2");
         
         //printf("Inside trigger decision - end \n");
-        if(eg1 || dg1 )fNevent->Fill(38);
-        if(eg2 || dg2 )fNevent->Fill(37);
+        if(feg1 || fdg1 )fNevent->Fill(38);
+        if(feg2 || fdg2 )fNevent->Fill(37);
+        
+        fNevent->Fill(39);
     }
     
-    
-	
 	if(!fVevent) 
 	{
 		printf("ERROR: fVEvent not available\n");
 		return;
 	}
   
-	
 //PID response
 	fPidResponse = fInputHandler->GetPIDResponse();
 		
-
 //Check PID response
 	if(!fPidResponse)
 	{
 		AliDebug(1, "Using default PID Response");
 		fPidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
 	}
-  
 
 	Double_t *fListOfmotherkink = 0;
 	Int_t fNumberOfVertices = 0; 
@@ -1636,12 +1660,21 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 spdVtx->GetCovarianceMatrix(cov);
                 Double_t zRes = TMath::Sqrt(cov[5]);
                 
-                if(spdVtx->IsFromVertexerZ() && (zRes>0.25)) fNevent->Fill(31);
+                if(spdVtx->IsFromVertexerZ() && (zRes>0.25)){
+                    fNevent->Fill(31);
+                    if(fnew_event_selection)return;
+                }
                 
                 //check discrepancy when both exists
                 if(trkVtx && trkVtx->GetNContributors()>=1 && spdVtx->GetNContributors()>=1){
-                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) fNevent->Fill(30);
-                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())<=0.5) fNevent->Fill(29);//requirement of both vertex, just a cross check, for now, only vertex from track is used
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())<=0.5){
+                        fNevent->Fill(29);//requirement of both vertex
+  
+                    }
+                    if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5){
+                        fNevent->Fill(30);
+                        if(fnew_event_selection)return;
+                    }
                 }
                 
             }
@@ -1831,7 +1864,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 	Int_t fNOtrks =  fVevent->GetNumberOfTracks();
     if(fNOtrks<2){
         fNevent->Fill(19);
-        if(!fnew_event_selection)return;
+      //if(!fnew_event_selection)return;
     }
 	fNevent->Fill(18);
 	
@@ -2798,6 +2831,10 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 		 
                    if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
 			    	 fPtMCparticleReco_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                       
+                     //to check trigger efficiency
+                      if(feg1 || fdg1)fPtMCparticleReco_e_from_JPsi_eg1->Fill(track->Pt()); //reconstructed pT
+                      if(feg2 || fdg2)fPtMCparticleReco_e_from_JPsi_eg2->Fill(track->Pt()); //reconstructed pT
                    }
                    
                    //numerator tracking efficiency using all electrons
@@ -2928,6 +2965,11 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 				  }
                }
                 fIsTrack1Emcal=kTRUE;
+                
+                
+                //to check trigger efficiency using Energy
+                if(feg1 || fdg1)fECluster_eg1->Fill(fClus->E()); //reconstructed pT
+                if(feg2 || fdg2)fECluster_eg2->Fill(fClus->E()); //reconstructed pT
 			  
 			    //}
                 //EID THnsparse
