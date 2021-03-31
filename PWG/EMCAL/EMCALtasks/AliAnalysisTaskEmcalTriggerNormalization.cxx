@@ -177,7 +177,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
       // Fill histogram for the trigger clusters firing the event
       auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hClusterCounterINT7"));
       for(auto triggercluster : triggerclusters) {
-        triggerclusterhist->Fill(triggercluster + 1);
+        triggerclusterhist->Fill(triggercluster);
       }
 
       if(fCacheTriggerClasses.size()) {
@@ -251,7 +251,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
         // Fill histogram for the trigger clusters firing the event
         auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggerclass.data())));
         for(auto triggercluster : triggerclusters) {
-          triggerclusterhist->Fill(triggercluster + 1);
+          triggerclusterhist->Fill(triggercluster);
         }
       }
     } else {
@@ -264,7 +264,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
         // Fill histogram for the trigger clusters firing the event
         auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggerclass.data())));
         for(auto triggercluster : triggerclusters) {
-          triggerclusterhist->Fill(triggercluster + 1);
+          triggerclusterhist->Fill(triggercluster);
         }
       } 
     }
