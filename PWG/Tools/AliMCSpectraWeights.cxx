@@ -259,7 +259,7 @@ void AliMCSpectraWeights::Init() {
                 fstSavedListName = fInput->GetListOfKeys()->At(0)->GetName();
             // printf("AliMCSpectraWeights:: Loading %s from list %s\n",
             // fstSavedObjName.Data(), fstSavedListName.Data());
-            auto dir = (TDirectory*)fInput->Get(dirNames.c_str());
+            auto dir = (TDirectory*)fInput->Get(fstSavedListName.c_str());
             TList* listMC = (TList*)dir->Get(fstSavedListName.c_str());
             if (!listMC) {
                 std::cerr << "AliMCSpectraWeights::ERROR: could not load list "
