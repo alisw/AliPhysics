@@ -2586,7 +2586,7 @@ void AliAnalysisTaskCorrelationhCasc::UserExec(Option_t *)
   isV0=kTRUE;
   Generated=kTRUE;
 
-  if(fReadMCTruth){
+  if(fReadMCTruth && isEfficiency){
     if (fMCEvent){
       ProcessMCParticles(Generated, trackPtTMax, labelPrimOrSec, lPercentiles, isV0, 0, ptTriggerMassimoAll, VPdgTrig, VParticleTrigLabel);
     }
