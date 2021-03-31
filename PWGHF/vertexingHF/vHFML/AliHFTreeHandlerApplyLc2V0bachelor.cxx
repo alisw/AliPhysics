@@ -46,6 +46,7 @@ fV0PointingAngle(-9999.),
 fCosThetaStar(-9999.),
 fsignd0(-9999.),
 fArmqTOverAlpha(-9999.),
+fV0radius(-9999.),
 fCalcSecoVtx(0),
 fReducePbPbBranches(false)
 {
@@ -92,6 +93,7 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
   fTreeVar->Branch("armenteros_K0s", &fArmqTOverAlpha);
   fTreeVar->Branch("ctau_K0s", &fcTauK0s);
   fTreeVar->Branch("cos_p_K0s", &fV0PointingAngle);
+  fTreeVar->Branch("radius_K0s", &fV0radius);
   fTreeVar->Branch("pt_K0s", &fPtK0s);
   if(!fReducePbPbBranches){
     fTreeVar->Branch("eta_K0s", &fEtaK0s);
@@ -162,6 +164,7 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   fDecayLengthK0s=((AliAODRecoCascadeHF*)cand)->DecayLengthV0();
   fInvMassK0s=v0part->MassK0Short();
   fDCAK0s=v0part->GetDCA();
+  fV0radius = v0part->RadiusV0();
   fPtK0s=v0part->Pt();
   fEtaK0s=v0part->Eta();
   fPhiK0s=v0part->Phi();
