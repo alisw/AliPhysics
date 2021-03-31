@@ -35,6 +35,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
+      fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -110,6 +111,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
+      fCheckProtonSPDHit(false),
       fTrackBufferSize(2500),
       fDmesonPDGs{},
       fGTI(nullptr),
@@ -325,6 +327,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
+
+    if (fCheckProtonSPDHit) {
+      if (!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) {
+        continue;
+      }
+    }
+
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(0.938);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
@@ -758,7 +767,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDminusChildPhi[iChild]);
     }
   }
-  
+
 
   if (fPartColl && fPartColl->GetHistList()) {
     fResultList = fPartColl->GetHistList();
@@ -909,7 +918,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
       fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
     }
   }
-  
+
   return isSelected;
 }
 
