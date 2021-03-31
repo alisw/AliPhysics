@@ -94,21 +94,21 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
   } else if (suffix == "7") {
     TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
     AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
-    TrackCuts->SetNClsTPC(ProtonNClsLow);
-    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
   } else if (suffix == "8") {
     TrackCuts->SetPtRange(ProtonPtup, 4.05);
     AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
   } else if (suffix == "9") {
     TrackCuts->SetPtRange(ProtonPtup, 4.05);
     AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
     TrackCuts->SetNClsTPC(ProtonNClsUp);
     AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
   } else if (suffix == "10") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
     TrackCuts->SetNClsTPC(ProtonNClsLow);
     AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
   } else if (suffix == "11") {
@@ -152,15 +152,15 @@ AliAnalysisTaskSE *AddTaskCharmingFemto(
     TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
   } else if (suffix == "19") {
-    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
   } else if (suffix == "20") {
-    TrackCuts->SetPtRange(ProtonPtup, 4.05);
-    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
-    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
   }
 
   // =====================================================================
