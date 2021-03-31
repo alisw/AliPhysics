@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISTASKNONLINEARFLOW_H
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -229,6 +230,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
+                Bool_t                  AcceptAOD(AliAODEvent *inEv);
+                Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		Short_t			GetCentrCode(AliVEvent* ev);
 		bool 			CheckPrimary(AliVEvent *aod, double label);
 		bool			IsGoodPSEvent(AliVEvent *aod);
@@ -251,7 +254,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts
-		AliAODEvent* fAOD;                                              //! AOD object
+                AliGFWCuts*     fGFWSelection;                                  //!
+		AliAODEvent*    fAOD;                                           //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
 		// Cuts and options
