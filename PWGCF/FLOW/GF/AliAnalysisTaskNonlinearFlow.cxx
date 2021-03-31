@@ -62,9 +62,9 @@
 #include <iostream>
 using std::cout;
 using std::endl;
-ClassImp(AliAnalysisTaskTestFlow)
+ClassImp(AliAnalysisTaskNonlinearFlow)
 //___________________________________________________________________________
-AliAnalysisTaskTestFlow::AliAnalysisTaskTestFlow():
+AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
 AliAnalysisTaskSE(),
 fAOD(0),
 fitssatrackcuts(0),
@@ -176,7 +176,7 @@ rand(32213)
 
 }
 //______________________________________________________________________________
-AliAnalysisTaskTestFlow::AliAnalysisTaskTestFlow(const char *name):
+AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 	AliAnalysisTaskSE(name),
 	fAOD(0),
 	fitssatrackcuts(0),
@@ -294,7 +294,7 @@ AliAnalysisTaskTestFlow::AliAnalysisTaskTestFlow(const char *name):
 	}
 
 //_____________________________________________________________________________
-AliAnalysisTaskTestFlow::~AliAnalysisTaskTestFlow()
+AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
 {
 	// Destructor
 	// histograms are in the output list and deleted when the output
@@ -305,7 +305,7 @@ AliAnalysisTaskTestFlow::~AliAnalysisTaskTestFlow()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskTestFlow::UserCreateOutputObjects()
+void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 {
 
 	//OpenFile(1);
@@ -387,7 +387,7 @@ void AliAnalysisTaskTestFlow::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskTestFlow::UserExec(Option_t *)
+void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
 	bootstrap_value = rand.Integer(30);
 
@@ -467,7 +467,7 @@ void AliAnalysisTaskTestFlow::UserExec(Option_t *)
 	PostData(1, fListOfObjects);
 }
 
-void AliAnalysisTaskTestFlow::NTracksCalculation(AliVEvent* aod) {
+void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
 	const int nAODTracks = aod->GetNumberOfTracks();
 	NtrksCounter = 0;
 
@@ -497,7 +497,7 @@ void AliAnalysisTaskTestFlow::NTracksCalculation(AliVEvent* aod) {
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTestFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus)
+void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus)
 {
 
 	const int nAODTracks = aod->GetNumberOfTracks();
@@ -876,7 +876,7 @@ void AliAnalysisTaskTestFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
 //____________________________________________________________________
 //	END OF MAIN PROGRAM
 //____________________________________________________________________
-Bool_t AliAnalysisTaskTestFlow::IsGoodPSEvent(AliVEvent* event)
+Bool_t AliAnalysisTaskNonlinearFlow::IsGoodPSEvent(AliVEvent* event)
 {
 
 	IsSPDClusterVsTrackletBG(event, true);
@@ -898,7 +898,7 @@ Bool_t AliAnalysisTaskTestFlow::IsGoodPSEvent(AliVEvent* event)
 
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist){
+Bool_t AliAnalysisTaskNonlinearFlow::IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist){
 	// rejects BG based on SPD tracklets vs. clusters correlation
 	// returns true if the event is BG
 	const AliVMultiplicity* mult = event->GetMultiplicity();
@@ -911,7 +911,7 @@ Bool_t AliAnalysisTaskTestFlow::IsSPDClusterVsTrackletBG(const AliVEvent* event,
 	return nCls > 65 + nTkl*4;
 }
 //-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsV0C012vsTklBG(const AliVEvent* event, bool fillHist){
+Bool_t AliAnalysisTaskNonlinearFlow::IsV0C012vsTklBG(const AliVEvent* event, bool fillHist){
 	// rejects BG based on V0C012 vs tracklet correlation
 	// returns true if the event is BG
 	const AliVMultiplicity* mult = event->GetMultiplicity();
@@ -925,7 +925,7 @@ Bool_t AliAnalysisTaskTestFlow::IsV0C012vsTklBG(const AliVEvent* event, bool fil
 	return nTkl < 6 && multV0C012 > 150 + nTkl*20;
 }
 //-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsV0Casym(const AliVEvent* event, bool fillHist){
+Bool_t AliAnalysisTaskNonlinearFlow::IsV0Casym(const AliVEvent* event, bool fillHist){
 	// rehect BG based on V0C012 vs. V0C3 mult. correlation
 	// returns true if the event is BG
 	AliVVZERO* vzero = event->GetVZEROData();
@@ -938,7 +938,7 @@ Bool_t AliAnalysisTaskTestFlow::IsV0Casym(const AliVEvent* event, bool fillHist)
 	return (multV0C3 < -25 + 0.15*multV0C012);
 }
 //-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsV0MOnVsOfPileup(const AliVEvent* event, bool fillHist){
+Bool_t AliAnalysisTaskNonlinearFlow::IsV0MOnVsOfPileup(const AliVEvent* event, bool fillHist){
 	// rejects pileup based on V0M online vs offline correlation
 	// return true if the event is pileup
 	AliVVZERO* vzero = event->GetVZEROData();
@@ -952,7 +952,7 @@ Bool_t AliAnalysisTaskTestFlow::IsV0MOnVsOfPileup(const AliVEvent* event, bool f
 	return (on < -145 + 7.2*of);
 }
 //-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsSPDOnVsOfPileup(const AliVEvent* event, bool fillHist){
+Bool_t AliAnalysisTaskNonlinearFlow::IsSPDOnVsOfPileup(const AliVEvent* event, bool fillHist){
 	// rejects pileup based on SPD online vs. offline correlation
 	// returns true if the event is pileup
 	AliVMultiplicity* mult = event->GetMultiplicity();
@@ -967,7 +967,7 @@ Bool_t AliAnalysisTaskTestFlow::IsSPDOnVsOfPileup(const AliVEvent* event, bool f
 	return (on < -4.16 + 0.84*of);
 }
 //-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskTestFlow::IsV0PFPileup(const AliVEvent* event){
+Bool_t AliAnalysisTaskNonlinearFlow::IsV0PFPileup(const AliVEvent* event){
 	// return true if the event is pileup
 
 	int fVIRBBAflags = 10;
@@ -1008,7 +1008,7 @@ Bool_t AliAnalysisTaskTestFlow::IsV0PFPileup(const AliVEvent* event){
 	return kFALSE;
 }
 //____________________________________________________________________
-int AliAnalysisTaskTestFlow::GetRunPart(int run)
+int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
 {
 
 	int fRun = 0;
@@ -1082,7 +1082,7 @@ int AliAnalysisTaskTestFlow::GetRunPart(int run)
 
 }
 //____________________________________________________________________
-double AliAnalysisTaskTestFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
+double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
         return 1;
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
@@ -1107,7 +1107,7 @@ double AliAnalysisTaskTestFlow::GetPtWeight(double pt, double eta, float vz, dou
 
 }
 //____________________________________________________________________
-double AliAnalysisTaskTestFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
+double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
 	TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
         // cout << "weights_list" << weights_list << endl;
         // weights_list->ls();
@@ -1123,7 +1123,7 @@ double AliAnalysisTaskTestFlow::GetWeight(double phi, double eta, double pt, int
 	return weight;
 }
 
-const char* AliAnalysisTaskTestFlow::GetSpeciesName(const PartSpecies species) const {
+const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies species) const {
   const char* name;
 
   switch(species) {
@@ -1142,7 +1142,7 @@ const char* AliAnalysisTaskTestFlow::GetSpeciesName(const PartSpecies species) c
   return name;
 }
 
-Bool_t AliAnalysisTaskTestFlow::LoadWeightsSystematics() {
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 	if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
         else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
         if(!fWeightsSystematics)
@@ -1154,7 +1154,7 @@ Bool_t AliAnalysisTaskTestFlow::LoadWeightsSystematics() {
         return kTRUE;
 }
 
-Double_t AliAnalysisTaskTestFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
 
     double dPhi = track->Phi();
     double dEta = track->Eta();
@@ -1164,7 +1164,7 @@ Double_t AliAnalysisTaskTestFlow::GetFlowWeightSystematics(const AliVParticle* t
     return dWeight;
 }
 
-Bool_t AliAnalysisTaskTestFlow::LoadWeights() {
+Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights() {
   // (Re-) Loading of flow vector weights
   // ***************************************************************************
   if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
@@ -1213,7 +1213,7 @@ Bool_t AliAnalysisTaskTestFlow::LoadWeights() {
   return kTRUE;
 }
 
-Double_t AliAnalysisTaskTestFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
+Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
   // if not applying for reconstructed
   // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
 
@@ -1230,7 +1230,7 @@ Double_t AliAnalysisTaskTestFlow::GetFlowWeight(const AliVParticle* track, doubl
   return dWeight;
 }
 
-void AliAnalysisTaskTestFlow::InitProfile(PhysicsProfile& multProfile, TString label) {
+void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label) {
 
 	for(int h=0; h<6; h++)
 	{
@@ -1561,7 +1561,7 @@ void AliAnalysisTaskTestFlow::InitProfile(PhysicsProfile& multProfile, TString l
 
 }
 
-Bool_t AliAnalysisTaskTestFlow::AcceptAOD(AliAODEvent *inEv) {
+Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 
   if(!fEventCuts.AcceptEvent(inEv)) return false;
 
@@ -1600,7 +1600,7 @@ Bool_t AliAnalysisTaskTestFlow::AcceptAOD(AliAODEvent *inEv) {
   return kTRUE;
 }
 
-Bool_t AliAnalysisTaskTestFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
+Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
   // Pt cut
   if(mtr->Pt() < fMinPt) return kFALSE;
   if(mtr->Pt() > fMaxPt) return kFALSE;
@@ -1615,7 +1615,7 @@ Bool_t AliAnalysisTaskTestFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrac
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 }
 
-void AliAnalysisTaskTestFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
+void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
 	//..calculate 2-particle correlations
 	//..................................
 	double Dn2 = correlator.Two(0, 0).Re();
@@ -2252,7 +2252,7 @@ void AliAnalysisTaskTestFlow::CalculateProfile(PhysicsProfile& profile, double N
 
 }
 
-const char* AliAnalysisTaskTestFlow::ReturnPPperiod(const Int_t runNumber) const
+const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const
 {
   Bool_t isHM = kFALSE;
   if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
@@ -2331,7 +2331,7 @@ const char* AliAnalysisTaskTestFlow::ReturnPPperiod(const Int_t runNumber) const
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskTestFlow::Terminate(Option_t *)
+void AliAnalysisTaskNonlinearFlow::Terminate(Option_t *)
 {
 	// Terminate loop
 	Printf("Terminate()");

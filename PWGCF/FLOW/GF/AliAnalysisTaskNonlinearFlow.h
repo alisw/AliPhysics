@@ -175,7 +175,7 @@ class PhysicsProfile : public TObject {
 		ClassDef(PhysicsProfile, 1);    //Analysis task
 };
 
-class AliAnalysisTaskTestFlow : public AliAnalysisTaskSE {
+class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 	public:
 
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
@@ -183,10 +183,10 @@ class AliAnalysisTaskTestFlow : public AliAnalysisTaskSE {
                 // const unsigned int usev2345flag = 1 << 0;
 	        // const unsigned int usev678flag = 1 << 1;
 
-		AliAnalysisTaskTestFlow();
-		AliAnalysisTaskTestFlow(const char *name);
+		AliAnalysisTaskNonlinearFlow();
+		AliAnalysisTaskNonlinearFlow(const char *name);
 
-		virtual ~AliAnalysisTaskTestFlow();
+		virtual ~AliAnalysisTaskNonlinearFlow();
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t* option);
@@ -225,8 +225,8 @@ class AliAnalysisTaskTestFlow : public AliAnalysisTaskSE {
                 virtual int    GetSystFlag() { return fCurrSystFlag; }
 
 	private:
-		AliAnalysisTaskTestFlow(const AliAnalysisTaskTestFlow&);
-		AliAnalysisTaskTestFlow& operator=(const AliAnalysisTaskTestFlow&);
+		AliAnalysisTaskNonlinearFlow(const AliAnalysisTaskNonlinearFlow&);
+		AliAnalysisTaskNonlinearFlow& operator=(const AliAnalysisTaskNonlinearFlow&);
 
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
@@ -420,7 +420,7 @@ class AliAnalysisTaskTestFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString);
 
-		ClassDef(AliAnalysisTaskTestFlow, 1);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 1);    //Analysis task
 };
 
 #endif
