@@ -196,7 +196,12 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
     switch (gen) { // TODO: fill path here
         case MCGeneratorType::PP_PYTHIA:
             stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
-                                "pp_PCC_LHC17l3b_CENT_wSDD.root";
+                                "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
+            collisionSystem = "pp";
+            break;
+        case MCGeneratorType::PP_PYTHIA_OLD:
+            stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
+                                "pp_5TeV_FirstTrain_LHC16k5_ab_210329.root";
             collisionSystem = "pp";
             break;
         case MCGeneratorType::PPB_EPOS:

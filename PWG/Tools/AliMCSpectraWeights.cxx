@@ -15,6 +15,7 @@
 #include "TObjArray.h"
 #include "TParticle.h"
 #include "TParticlePDG.h"
+#include "TDirectory.h"
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -52,7 +53,7 @@ void FillTH3WithValue(TH3F* h, std::array<float, 3> _xyzValue, float _value) {
 AliMCSpectraWeights::AliMCSpectraWeights()
 : TNamed(), fstCollisionSystem("pp"), fstFileMCSpectra(""),
 fstFilePublished(""), fstSavedObjName("fMCSpectraWeights"),
-fstSavedListName("dNdPt_ParCor"), fstPartTypes(0),
+fstSavedListName("AliMCWeightsTask"), fstPartTypes(0),
 fstCentralities(0), fBinsMultCent{0}, fBinsPt{0},
 fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
 fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
@@ -74,7 +75,7 @@ AliMCSpectraWeights::AliMCSpectraWeights(std::string const& collisionSystem,
                                          AliMCSpectraWeights::SysFlag flag)
 : TNamed(stName.c_str(), stName.c_str()), fstCollisionSystem("pp"),
 fstFileMCSpectra(""), fstFilePublished(""),
-fstSavedObjName("fMCSpectraWeights"), fstSavedListName("dNdPt_ParCor"),
+fstSavedObjName("fMCSpectraWeights"), fstSavedListName("AliMCWeightsTask"),
 fstPartTypes(), fstCentralities(), fBinsMultCent{0}, fBinsPt{0},
 fHistMCGenPrimTrackParticle(nullptr), fHistDataFractions(nullptr),
 fHistMCFractions(nullptr), fHistMCWeights(nullptr), fMCEvent(nullptr),
@@ -250,7 +251,7 @@ void AliMCSpectraWeights::Init() {
         TFile* fInput = TFile::Open(fstFileMCSpectra.c_str());
         if (fInput) {
             if (fInput->GetNkeys() != 1) {
-                if (!fInput->Get("dNdPt_ParCor"))
+                if (!fInput->Get("AliMCWeightsTask"))
                     std::cerr << "AliMCSpectraWeights::WARNING: more than 1 "
                     "list in the streamed file; please specify; "
                     "using 1st list;\n\n";
@@ -258,7 +259,8 @@ void AliMCSpectraWeights::Init() {
                 fstSavedListName = fInput->GetListOfKeys()->At(0)->GetName();
             // printf("AliMCSpectraWeights:: Loading %s from list %s\n",
             // fstSavedObjName.Data(), fstSavedListName.Data());
-            TList* listMC = (TList*)fInput->Get(fstSavedListName.c_str());
+            auto dir = (TDirectory*)fInput->Get(fstSavedListName.c_str());
+            TList* listMC = (TList*)dir->Get(fstSavedListName.c_str());
             if (!listMC) {
                 std::cerr << "AliMCSpectraWeights::ERROR: could not load list "
                 "in streamed "

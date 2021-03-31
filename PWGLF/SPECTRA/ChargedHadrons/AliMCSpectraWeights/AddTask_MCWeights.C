@@ -4,6 +4,7 @@
 enum MCGeneratorType {
     NONE=-1,
     PP_PYTHIA=0,
+    PP_PYTHIA_OLD,
     PPB_EPOS,
     PBPB_HIJING,
 };
