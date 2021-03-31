@@ -64,6 +64,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fRemovePileup(kFALSE),
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
+  fPtOrder(kTRUE),
   fUseRes(kTRUE),
   fN1(0),
   fN2(-1),
@@ -195,6 +196,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fRemovePileup(kFALSE),
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
+  fPtOrder(kTRUE),
   fUseRes(kTRUE),
   fN1(0),
   fN2(-1),
@@ -560,18 +562,18 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fHistCentrality -> Sumw2();
 
 
-  fPileup1_Before = new TH2D("fPileup1_Before", "Pile_up_before (Online vs cut)",
+  fPileup1_Before = new TH2D("fPileup1_Before", "Pile_up_before (Online vs Offline)",
                                  500, 0, 50000,
                                  500, 0, 50000);
-  fPileup1_Before -> SetXTitle("Multiplicity Online Cut");
-  fPileup1_Before -> SetYTitle("Multiplicity Online");
+  fPileup1_Before -> SetXTitle("Multiplicity Online");
+  fPileup1_Before -> SetYTitle("Multiplicity Offline");
   fPileup1_Before -> Sumw2();
 
-  fPileup1_After = new TH2D("fPileup1_After", "Pile_up_After (Online vs cut)",
+  fPileup1_After = new TH2D("fPileup1_After", "Pile_up_After (Online vs Offline)",
                                  500, 0, 50000,
                                  500, 0, 50000);
-  fPileup1_After -> SetXTitle("Multiplicity Online Cut");
-  fPileup1_After -> SetYTitle("Multiplicity Online");
+  fPileup1_After -> SetXTitle("Multiplicity Online");
+  fPileup1_After -> SetYTitle("Multiplicity Offline");
   fPileup1_After -> Sumw2();
 
   fPileup2_Before = new TH2D("fPileup2_Before", "ITS Multiplicity vs Num Tracklets", 5000, 0, 25000, 2000, 0 , 10000);
@@ -584,24 +586,24 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
   fPileup2_After -> SetYTitle("N_{Tracklets}");
   fPileup2_After -> Sumw2();
 
-  fPileup3_Before_Low = new TH2D("fPileup3_Before_Low", "CL0 vs Low Event Cut", 100, 0, 100, 100, 0 , 100);
-  fPileup3_Before_Low -> SetXTitle("Centrality  [%]");
-  fPileup3_Before_Low -> SetYTitle("Centrality  [%]");
+  fPileup3_Before_Low = new TH2D("fPileup3_Before_Low", "CL0 vs V0M", 100, 0, 100, 100, 0 , 100);
+  fPileup3_Before_Low -> SetXTitle("Centrality CL0 [%]");
+  fPileup3_Before_Low -> SetYTitle("Centrality V0M [%]");
   fPileup3_Before_Low -> Sumw2();
 
-  fPileup3_After_Low = new TH2D("fPileup3_After_Low", "CL0 vs Low Event Cut", 100, 0, 100, 100, 0 , 100);
-  fPileup3_After_Low -> SetXTitle("Centrality  [%]");
-  fPileup3_After_Low -> SetYTitle("Centrality  [%]");
+  fPileup3_After_Low = new TH2D("fPileup3_After_Low", "CL0 vs V0M", 100, 0, 100, 100, 0 , 100);
+  fPileup3_After_Low -> SetXTitle("Centrality CL0 [%]");
+  fPileup3_After_Low -> SetYTitle("Centrality V0M [%]");
   fPileup3_After_Low -> Sumw2();
 
-  fPileup3_Before_High = new TH2D("fPileup3_Before_High", "CL0 vs High Event Cut", 100, 0, 100, 100, 0 , 100);
-  fPileup3_Before_High -> SetXTitle("Centrality  [%]");
-  fPileup3_Before_High -> SetYTitle("Centrality  [%]");
+  fPileup3_Before_High = new TH2D("fPileup3_Before_High", "CL0 vs V0M", 100, 0, 100, 100, 0 , 100);
+  fPileup3_Before_High -> SetXTitle("Centrality CL0 [%]");
+  fPileup3_Before_High -> SetYTitle("Centrality V0M [%]");
   fPileup3_Before_High -> Sumw2();
 
-  fPileup3_After_High = new TH2D("fPileup3_After_High", "CL0 vs High Event Cut", 100, 0, 100, 100, 0 , 100);
-  fPileup3_After_High -> SetXTitle("Centrality  [%]");
-  fPileup3_After_High -> SetYTitle("Centrality  [%]");
+  fPileup3_After_High = new TH2D("fPileup3_After_High", "CL0 vs V0M", 100, 0, 100, 100, 0 , 100);
+  fPileup3_After_High -> SetXTitle("Centrality CL0 [%]");
+  fPileup3_After_High -> SetYTitle("Centrality V0M [%]");
   fPileup3_After_High -> Sumw2();
 
 
@@ -736,11 +738,10 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   if(!multSelection) return;
 
   ++cutIndex;
-  if(fCentMethod == "") { 
+  if(fCentMethod == "") {
    fCentMethod = "V0M";
    fHistEvStat->Fill(cutIndex);
   }
-
   //percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
   percentile = multSelection->GetMultiplicityPercentile(fCentMethod);
   fHistCentrality->Fill(percentile);
@@ -790,11 +791,13 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
     return; // bad vertexing
   fHistEvStat->Fill(cutIndex++);
   
-  fPileup1_Before->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
+  //fPileup1_Before->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
+  fPileup1_Before->Fill(fv0multonline,fv0mult);
+
   if (fRemovePileup) {
     if (fv0multonline < fV0MultOfOnCut->Eval(fv0mult))
       return;
-    fPileup1_After->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
+    fPileup1_After->Fill(fv0multonline,fv0mult);
   }
   fHistEvStat->Fill(cutIndex++);
 
@@ -809,15 +812,15 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   }
   fHistEvStat->Fill(cutIndex++);
 
-  fPileup3_Before_Low->Fill(fcl0percentile, fLowCenCut->Eval(fv0mpercentile));
-  fPileup3_Before_High->Fill(fcl0percentile,fHighCenCut->Eval(fv0mpercentile));
+  fPileup3_Before_Low->Fill(fcl0percentile, fv0mpercentile);
+  fPileup3_Before_High->Fill(fcl0percentile,fv0mpercentile);
   if (fRemovePileup3) {
     if (fcl0percentile < fLowCenCut->Eval(fv0mpercentile))
       return;
-    fPileup3_After_Low->Fill(fcl0percentile, fLowCenCut->Eval(fv0mpercentile));
+    fPileup3_After_Low->Fill(fcl0percentile, fv0mpercentile);
     if (fcl0percentile > fHighCenCut->Eval(fv0mpercentile))
       return;
-    fPileup3_After_High->Fill(fcl0percentile,fHighCenCut->Eval(fv0mpercentile));
+    fPileup3_After_High->Fill(fcl0percentile,fv0mpercentile);
   }
 
   fHistEvStat->Fill(cutIndex++);
@@ -924,6 +927,9 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
    if (!associate) continue;
    if (trigID == associate->GetID())  continue;   
    Int_t assocPtBin = fPtAssocAxis->FindBin(associate->Pt());
+
+   if(fPtOrder && triggerPt < associate->Pt()) continue; 
+
    if (assocPtBin<1 || assocPtBin>fNbinsAssocPt) continue;  
    Double_t dphi = triggerPhi - associate->Phi();
    if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
