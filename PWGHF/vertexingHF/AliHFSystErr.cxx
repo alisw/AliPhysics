@@ -10618,6 +10618,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   // D0->Kpi syst errors. Responsible: S. Trogolo
   //   2018 PbPb sample, 010 CC
   // On 17/04/2019: the syst. unc. values are still those from 2015 analysis [TO BE UPDATED].
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb010");
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",100,0,50);
@@ -10745,7 +10746,7 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050() {
   //   2018 PbPb sample, 30-50 CC
   // On 17/04/2019: the syst. unc. values are still those from 2015 analysis [TO BE UPDATED].
 
-  SetNameTitle("AliHFSystErr","SystErrD0toKpi2015PbPb3050");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2018PbPb3050");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",72,0,36);
   for(Int_t i=1;i<=72;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
