@@ -218,16 +218,21 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t               fEMCEG2DG2;
 	
 //DCal threshold separation
-	Bool_t				fEMCDG1;
-	Bool_t				fEMCDG2;
+	Bool_t				  fEMCDG1;
+	Bool_t				  fEMCDG2;
     
     Bool_t                fIsTrack1Emcal;
     Bool_t                fIsTrack1Dcal;
     Bool_t                fIsTrack2Emcal;
     Bool_t                fIsTrack2Dcal;
     
-    Bool_t              fIsEMCalCls;
-    Bool_t              fIsDCalCls;
+    Bool_t                fIsEMCalCls;
+    Bool_t                fIsDCalCls;
+    
+    Bool_t                    feg1;
+    Bool_t                    fdg1;
+    Bool_t                    feg2;
+    Bool_t                    fdg2;
     
     //SPD corrections
     TProfile2D*        fMultEstimatorAvg[1];
@@ -285,7 +290,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 
 //Vertex selection
-	Float_t					fZvtx;
+	Float_t					   fZvtx;
+    
     
 //global multiplicity values
     Double_t                    fV0Mult;
@@ -324,6 +330,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;
+    
+    TH1F                *fECluster_eg1;
+    TH1F                *fECluster_eg2;
+    
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
 	
@@ -546,6 +556,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleAll_trueJPsi_pT_weight_prompt;
     
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg1;
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg2;
     
  
     
