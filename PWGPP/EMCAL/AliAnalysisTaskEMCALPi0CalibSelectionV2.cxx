@@ -17,6 +17,7 @@
 #include <TH1F.h>
 #include <TGeoManager.h>
 #include <TFile.h>
+#include "TChain.h"
 
 // AliRoot
 #include "AliAnalysisTaskEMCALPi0CalibSelectionV2.h"
@@ -49,11 +50,11 @@ fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
 fEMCALInitialized(kFALSE),
-isMC(kFALSE),
+fIsMC(0),                 fSaveCells(kFALSE),     
+fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
-fCaloClustersArr(0x0),    fEMCALCells(0x0),
-//fCuts(0x0),               
+fCaloClustersArr(0x0),    fEMCALCells(0x0),   
 fOutputContainer(0x0),
 fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
 fCentMin(-1),             fCentMax(10000000), 
@@ -67,6 +68,7 @@ fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
 fSameSM(kFALSE),          
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
+fOfflineTriggerMask(0), isEMC(kFALSE), isDMC(kFALSE),
 // Histograms binning
 fNbins(300),              fMinBin(0.),              fMaxBin(300.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
@@ -80,7 +82,18 @@ fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
 fhCentrality(0x0),        fhCentralitySelected(0x0),
-fhClusterTime(0x0) {
+fhClusterTime(0x0),
+//Trees
+fCellTree(NULL),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0),
+fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
+fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
+fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
+fVBuffer_Cell_MCParticleFracE(0),
+fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_t(0),
+fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
+fVBuffer_TrueCluster_MCId(0) {
   
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
     for(Int_t iX=0; iX<24; iX++) {
@@ -106,19 +119,36 @@ fhClusterTime(0x0) {
 
   
   for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) {
-    fHmggSM[iSM]                     = 0;
-    fHmggSMMaskFrame[iSM]            = 0;
-    fHOpeningAngleSM[iSM]            = 0;
-    fHOpeningAnglePairSM[iSM]        = 0;
-    fHAsymmetrySM[iSM]               = 0;
-    fHAsymmetryPairSM[iSM]           = 0;
-    fhTowerDecayPhotonHit[iSM]       = 0;
-    fhTowerDecayPhotonEnergy[iSM]    = 0;
-    fhTowerDecayPhotonAsymmetry[iSM] = 0;
-    fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
-    fMatrix[iSM]                     = 0x0;
-    fhClusterTimeSM[iSM]             = 0;
+    fHmggSM[iSM]                          = 0;
+    fHmggSMMaskFrame[iSM]                 = 0;
+    fHOpeningAngleSM[iSM]                 = 0;
+    fHOpeningAnglePairSM[iSM]             = 0;
+    fHAsymmetrySM[iSM]                    = 0;
+    fHAsymmetryPairSM[iSM]                = 0;
+    fhTowerDecayPhotonHit[iSM]            = 0;
+    fhTowerDecayPhotonEnergy[iSM]         = 0;
+    fhTowerDecayPhotonAsymmetry[iSM]      = 0;
+    fhTowerDecayPhotonHitMaskFrame[iSM]   = 0;
+    fMatrix[iSM]                          = 0x0;
+    fhClusterTimeSM[iSM]                  = 0;
   }
+
+  fVBuffer_Cell_ID                = new Int_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_E                 = new Float_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_t                 = new Float_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_MCParticleID      = new Int_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_MCParticleFracE   = new Float_t[kMaxActiveCells_calib]; 
+
+  fVBuffer_Cluster_E              = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_Eta            = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_Phi            = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_t              = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_NCells         = new Int_t[kMaxActiveCluster];
+  fVBuffer_Cluster_M02            = new Int_t[kMaxActiveCluster];
+  fVBuffer_Cluster_LeadCellId     = new Int_t[kMaxActiveCluster];
+  fVBuffer_TrueCluster_MCId       = new Int_t[kMaxActiveCluster];
+
 }
 
 
@@ -134,7 +164,8 @@ fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
 fRecoUtils(NULL),
 fEMCALInitialized(kFALSE),
-isMC(kFALSE),
+fIsMC(0),                 fSaveCells(kFALSE),     
+fSaveClusters(kFALSE),    fIsHeavyIon(kFALSE),
 fOADBFilePath(""),        
 fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
@@ -152,6 +183,7 @@ fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
 fSameSM(kFALSE),          
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
+fOfflineTriggerMask(0), isEMC(kFALSE), isDMC(kFALSE),
 // Histograms binning
 fNbins(300),              fMinBin(0.),              fMaxBin(300.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
@@ -165,7 +197,19 @@ fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
 fhCentrality(0x0),        fhCentralitySelected(0x0),
-fhClusterTime(0x0) {
+fhClusterTime(0x0),
+//Trees
+fCellTree(NULL),
+fVBuffer_NCells(0),         fBuffer_EventWeight(0),
+fBuffer_Event_VertexZ(0),   fBuffer_Event_Multiplicity(0),  fBuffer_Event_V0Centrality(0),
+fVBuffer_Cell_ID(0),        fVBuffer_Cell_E(0),         fVBuffer_Cell_t(0),
+fVBuffer_Cell_gain(0),      fVBuffer_Cell_MCParticleID(0), 
+fVBuffer_Cell_MCParticleFracE(0),
+fVBuffer_Cluster_E(0),      fVBuffer_Cluster_Eta(0),    fVBuffer_Cluster_Phi(0),
+fVBuffer_Cluster_t(0),
+fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
+fVBuffer_TrueCluster_MCId(0)
+{
   
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
     for(Int_t iX=0; iX<24; iX++) {
@@ -204,8 +248,25 @@ fhClusterTime(0x0) {
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
   }
+
+  fVBuffer_Cell_ID                = new Int_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_E                 = new Float_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_t                 = new Float_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_gain              = new Bool_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_MCParticleID      = new Int_t[kMaxActiveCells_calib];
+  fVBuffer_Cell_MCParticleFracE   = new Float_t[kMaxActiveCells_calib]; 
+
+  fVBuffer_Cluster_E              = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_Eta            = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_Phi            = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_t              = new Float_t[kMaxActiveCluster];
+  fVBuffer_Cluster_NCells         = new Int_t[kMaxActiveCluster];
+  fVBuffer_Cluster_M02            = new Int_t[kMaxActiveCluster];
+  fVBuffer_Cluster_LeadCellId     = new Int_t[kMaxActiveCluster];
+  fVBuffer_TrueCluster_MCId       = new Int_t[kMaxActiveCluster];
     
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 //DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
@@ -222,245 +283,6 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2::~AliAnalysisTaskEMCALPi0CalibSelectionV
   if(fEMCALGeo)         delete fEMCALGeo  ;
   if(fNMaskCellColumns) delete [] fMaskCellColumns;
 }
-
-///
-/// Accept cluster routine
-//__________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::AcceptCluster( AliVCluster* c1){
-  // Exclude bad channels
-  
-  Float_t e1i = c1->E();   // cluster energy before correction   
-  
-  if (!c1->IsEMCAL()) 
-    return kFALSE;
-  if (c1->GetNCells() < fMinNCells) 
-    return kFALSE;
-  if (e1i > fEmax) 
-    return kFALSE;
-  if (e1i < fEmin) 
-    return kFALSE;
-  if (c1->GetIsExotic())
-    return kFALSE;
-  if ( !isMC && ( c1->GetTOF()*1.e9 > fTimeMax || c1->GetTOF()*1.e9 < fTimeMin))
-    return kFALSE;
-  if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)
-    return kFALSE;
-  
-  return kTRUE;
-
-}
-
-///
-/// Initialize EMCAL
-//__________________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL( AliVEvent *event ){
-    AliEmcalCorrectionTask* emcalCorrTask=0x0;
-
-    emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask");
-
-    if( emcalCorrTask ){
-      AliEmcalCorrectionComponent * emcalCorrComponent = 0x0;
-      emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionClusterNonLinearity");
-      if( emcalCorrComponent ){
-        fRecoUtils        = emcalCorrComponent->GetRecoUtils();
-      } else {
-        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel");
-        if( emcalCorrComponent ){
-          fRecoUtils        = emcalCorrComponent->GetRecoUtils();
-        }
-      }
-    }
-    
-    if (fRecoUtils) {
-      fEMCALInitialized = kTRUE;
-      fRecoUtils->SetNumberOfCellsFromEMCALBorder(0);
-      return;
-    }
-}
-
-///
-/// Fill the invariant mass analysis per channel with the
-/// corrected clusters, and other general histograms.
-//__________________________________________________________
-void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
-
-  Int_t absId1   = -1;
-  Int_t iSupMod1 = -1;
-  Int_t iphi1    = -1;
-  Int_t ieta1    = -1;
-  Int_t absId2   = -1;
-  Int_t iSupMod2 = -1;
-  Int_t iphi2    = -1;
-  Int_t ieta2    = -1;
-  Bool_t shared  = kFALSE;
-  
-  Int_t bc  = InputEvent()->GetBunchCrossNumber();
-  
-  for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++) {
-    
-    AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
-    
-    if (!AcceptCluster(c1)) continue;
-    
-    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c1,absId1,iSupMod1,ieta1,iphi1,shared); //RECOUTILS
-
-    if( isEMC && !(isDMC) &&  iSupMod1 > 11 ) continue;
-    if( isDMC && !(isEMC) &&  iSupMod1 < 12 ) continue;
-    
-    c1->GetMomentum(fMomentum1,fVertex);
-    
-    // Check if cluster is in fidutial region, not too close to borders
-    if(fEMCALGeo == NULL || fEMCALCells == NULL) continue;
-    Bool_t in1 = kTRUE;
-    // fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c1, fEMCALCells); //RECOUTILS
-    
-    // Clusters not facing frame structures
-    Bool_t mask1 = MaskFrameCluster(iSupMod1, ieta1);
-    
-    Double_t time1 = c1->GetTOF()*1.e9;
-    
-    fhClusterTime            ->Fill(c1->E(),time1);
-    fhClusterTimeSM[iSupMod1]->Fill(c1->E(),time1);
-    
-    // Combine cluster with other clusters and get the invariant mass
-    for (Int_t jClu=iClu+1; jClu < fCaloClustersArr->GetEntriesFast(); jClu++) {
-      AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
-    
-      if (!AcceptCluster(c2)) continue;
-      
-      fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c2,absId2,iSupMod2,ieta2,iphi2,shared); //RECOUTILS
-
-      if( isEMC && !(isDMC) &&  iSupMod2 > 11 ) continue;
-      if( isDMC && !(isEMC) &&  iSupMod2 < 12 ) continue;
-      
-      c2->GetMomentum(fMomentum2,fVertex);
-      
-      fMomentum12 = fMomentum1+fMomentum2;
-      Float_t invmass = fMomentum12.M()*1000; 
-      
-      //Asimetry cut      
-      Float_t asym = TMath::Abs(fMomentum1.E()-fMomentum2.E())/(fMomentum1.E()+fMomentum2.E());
-      if(asym > fAsyCut) continue;
-      
-      //Time cut
-      Double_t time2 = c2->GetTOF()*1.e9;
-      
-      // fhClusterPairDiffTime->Fill(fMomentum12.E(),time1-time2);
-      if(TMath::Abs(time1-time2) > fDTimeCut) continue;
-
-      //Opening angle cut to reject too close clusters
-      if( ((fMomentum1.Angle(fMomentum2.Vect()) < fOpAnglemin) || (fMomentum1.Angle(fMomentum2.Vect()) > fOpAnglemax)))  continue;
-      
-      if(invmass < fMaxBin && invmass > fMinBin ) {
-        //Check if cluster is in fidutial region, not too close to borders
-        Bool_t in2 = kTRUE;
-        // fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c2, fEMCALCells); //RECOUTILS
-        
-        // Clusters not facing frame structures
-        Bool_t mask2 = MaskFrameCluster(iSupMod2, ieta2);         
-        
-        if(in1 && in2) { //acceptance cuts
-          fHmgg->Fill(invmass,fMomentum12.Pt()); 
-          
-          if(iSupMod1==iSupMod2) {
-            fHmggSM[iSupMod1]->Fill(invmass,fMomentum12.Pt()); 
-            // fhClusterPairDiffTimeSameSM[iSupMod1]->Fill(fMomentum12.E(),time1-time2);
-          } else {           
-            fHmggDifferentSM ->Fill(invmass,fMomentum12.Pt());
-          }        
-          
-          if(!mask1 && !mask2) {  // Pair not facing frame
-            fHmggMaskFrame->Fill(invmass,fMomentum12.Pt()); 
-            
-            if(iSupMod1==iSupMod2) fHmggSMMaskFrame[iSupMod1]->Fill(invmass,fMomentum12.Pt()); 
-            else                   fHmggDifferentSMMaskFrame ->Fill(invmass,fMomentum12.Pt());
-          }
-          
-          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak (pair in 100 < mass < 160)
-
-            // Check time of cells in both clusters, and fill time histogram
-            for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
-              Int_t absID = c1->GetCellAbsId(icell);   
-              fHTpi0[bc%4]->Fill(absID, fEMCALCells->GetCellTime(absID)*1.e9);  
-            }
-            
-            for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
-              Int_t absID = c2->GetCellAbsId(icell);   
-              fHTpi0[bc%4]->Fill(absID, fEMCALCells->GetCellTime(absID)*1.e9);  
-            }
-            
-            //Opening angle of 2 photons
-            Float_t opangle = fMomentum1.Angle(fMomentum2.Vect())*TMath::RadToDeg();
-            
-            fHOpeningAngle ->Fill(opangle,fMomentum12.Pt()); 
-            fHAsymmetry    ->Fill(asym,fMomentum12.Pt()); 
-            
-            if(iSupMod1==iSupMod2) {
-              fHOpeningAngleSM[iSupMod1] ->Fill(opangle,fMomentum12.Pt());
-              fHAsymmetrySM[iSupMod1]    ->Fill(asym,fMomentum12.Pt());
-            } else {      
-              fHOpeningAngleDifferentSM  ->Fill(opangle,fMomentum12.Pt());
-              fHAsymmetryDifferentSM     ->Fill(asym,fMomentum12.Pt());
-            }
-            
-          }
-          
-        }
-        
-        //In case of filling only channels with second cluster in same SM
-        if(fSameSM && iSupMod1!=iSupMod2) continue;
-        
-        if (fGroupNCells == 0) {
-          fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
-          fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
-          
-          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak
-            fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
-            fhTowerDecayPhotonEnergy   [iSupMod1]->Fill(ieta1,iphi1,fMomentum1.E());
-            fhTowerDecayPhotonAsymmetry[iSupMod1]->Fill(ieta1,iphi1,asym);
-            
-            fhTowerDecayPhotonHit      [iSupMod2]->Fill(ieta2,iphi2);
-            fhTowerDecayPhotonEnergy   [iSupMod2]->Fill(ieta2,iphi2,fMomentum2.E());
-            fhTowerDecayPhotonAsymmetry[iSupMod2]->Fill(ieta2,iphi2,asym);
-            
-            if(!mask1)fhTowerDecayPhotonHitMaskFrame[iSupMod1]->Fill(ieta1,iphi1);
-            if(!mask2)fhTowerDecayPhotonHitMaskFrame[iSupMod2]->Fill(ieta2,iphi2);
-          }
-        }	else { //group cells
-          //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
-          for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
-            for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {              
-              Int_t absId11 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod1, iphi1+j, ieta1+i); 
-              Int_t absId22 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod2, iphi2+j, ieta2+i); 
-              
-              Bool_t ok1 = kFALSE;
-              Bool_t ok2 = kFALSE;
-              
-              for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
-                if(c1->GetCellsAbsId()[icell] == absId11) ok1=kTRUE;
-              }
-              
-              for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
-                if(c2->GetCellsAbsId()[icell] == absId22) ok2=kTRUE;
-              }
-              
-              if(ok1 && (ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24)) {
-                fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
-              }
-                
-              if(ok2 && (ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24)) {
-                fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
-              }
-            }
-          }
-        }
-        
-      }
-    }
-  } // end of loop over EMCAL clusters
-  
-}
-
 
 ///
 /// Init geometry and set the geometry matrix, for the first event, skip the rest.
@@ -539,6 +361,33 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitGeometryMatrices() {
 
 }
 
+///
+/// Initialize EMCAL
+//__________________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::InitializeEMCAL( AliVEvent *event ){
+    AliEmcalCorrectionTask* emcalCorrTask=0x0;
+
+    emcalCorrTask  = (AliEmcalCorrectionTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalCorrectionTask");
+
+    if( emcalCorrTask ){
+      AliEmcalCorrectionComponent * emcalCorrComponent = 0x0;
+      emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionClusterNonLinearity");
+      if( emcalCorrComponent ){
+        fRecoUtils        = emcalCorrComponent->GetRecoUtils();
+      } else {
+        emcalCorrComponent = emcalCorrTask->GetCorrectionComponent("AliEmcalCorrectionCellBadChannel");
+        if( emcalCorrComponent ){
+          fRecoUtils        = emcalCorrComponent->GetRecoUtils();
+        }
+      }
+    }
+    
+    if (fRecoUtils) {
+      fEMCALInitialized = kTRUE;
+      fRecoUtils->SetNumberOfCellsFromEMCALBorder(0);
+      return;
+    }
+}
 
 ///
 /// Create output container, init geometry.
@@ -717,81 +566,299 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
   
   fOutputContainer->SetOwner(kTRUE);
     
-  PostData(1,fOutputContainer);
-}
 
-///
-/// Check if cell is in one of the regions where we have significant amount of material in front of EMCAL.
-/// \return True if this cell is in one problematic region
-/// \param iSM: supermodule number of the cell.
-/// \param ieta: column index of the cell.
-//______________________________________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::MaskFrameCluster(Int_t iSM, Int_t ieta) const
-{
-  Int_t icol = ieta;
-  if(iSM%2) icol+=48; // Impair SM, shift index [0-47] to [48-96]
-  
-  if (fNMaskCellColumns && fMaskCellColumns) {
-    for (Int_t imask = 0; imask < fNMaskCellColumns; imask++) {
-      if(icol==fMaskCellColumns[imask]) return kTRUE;
+  fCellTree = new TTree("EMCAL_Cells","EMCAL_Cells");
+
+  if( fIsMC > 1) {
+    fCellTree->Branch("EventWeight",         &fBuffer_EventWeight, "EventWeight/F");
+  }
+
+  fCellTree->Branch("VertexZ",                &fBuffer_Event_VertexZ,       "VertexZ/F");
+  fCellTree->Branch("Multiplicity",           &fBuffer_Event_Multiplicity,  "Multiplicity/F");
+
+  if( fIsHeavyIon ){
+    fCellTree->Branch("V0Centrality",         &fBuffer_Event_V0Centrality,  "V0Centrality/F");
+  }
+
+  if( fSaveCells ){
+    fCellTree->Branch("NCells",                 &fVBuffer_NCells,             "NCells/I");
+    fCellTree->Branch("Cell_ID",                fVBuffer_Cell_ID,    "Cell_ID[NCells]/I");
+    fCellTree->Branch("Cell_E",                 fVBuffer_Cell_E,     "Cell_E[NCells]/F");
+    fCellTree->Branch("Cell_time",              fVBuffer_Cell_t,     "Cell_t[NCells]/F");
+    fCellTree->Branch("Cell_highGain",          fVBuffer_Cell_gain,  "Cell_gain[NCells]/O");
+
+    if( fIsMC ){
+      fCellTree->Branch("Cell_MCParticleID",    fVBuffer_Cell_MCParticleID,      "Cell_MCParticleID[NCells]/I");
+      fCellTree->Branch("Cell_MCFracEnergy",    fVBuffer_Cell_MCParticleFracE,   "Cell_MCFracE[NCells]/F");
+    }
+
+  }
+
+  if( fSaveClusters ){
+    fCellTree->Branch("NClusters",            &fBuffer_NClusters,               "NClusters/I");
+    fCellTree->Branch("Cluster_E",            fVBuffer_Cluster_E,               "Cluster_E[NClusters]/F");
+    fCellTree->Branch("Cluster_Eta",          fVBuffer_Cluster_Eta,             "Cluster_Eta[NClusters]/F");
+    fCellTree->Branch("Cluster_Phi",          fVBuffer_Cluster_Phi,             "Cluster_Phi[NClusters]/F");
+    fCellTree->Branch("Cluster_t",            fVBuffer_Cluster_t,               "Cluster_t[NClusters]/F");
+    fCellTree->Branch("Cluster_NCells",       fVBuffer_Cluster_NCells,          "Cluster_NCells[NClusters]/I");
+    fCellTree->Branch("Cluster_M02",          fVBuffer_Cluster_M02,             "Cluster_M02[NClusters]/I");
+    fCellTree->Branch("Cluster_LeadCellId",   fVBuffer_Cluster_LeadCellId,      "Cluster_LeadCellId[NClusters]/I");
+    
+    if( fIsMC ){
+      fCellTree->Branch("TrueCluster_MCId",   fVBuffer_TrueCluster_MCId,        "TrueCluster_MCId[NClusters]/I");
     }
   }
-  
-  return kFALSE;
+
+  PostData(1,fOutputContainer);
+  OpenFile(2);
+  PostData(2, fCellTree);
 }
 
-
 ///
-/// Check if trigger selected
-///
-//____________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *event){
+/// Fill the invariant mass analysis per channel with the
+/// corrected clusters, and other general histograms.
+//__________________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
 
-  if(fTriggerName!="" && !isMC ) {
-      AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
-      if (fInputHandler==NULL) return kFALSE;
+  Int_t absId1   = -1;
+  Int_t iSupMod1 = -1;
+  Int_t iphi1    = -1;
+  Int_t ieta1    = -1;
+  Int_t absId2   = -1;
+  Int_t iSupMod2 = -1;
+  Int_t iphi2    = -1;
+  Int_t ieta2    = -1;
+  Bool_t shared  = kFALSE;
+  
+  Int_t bc  = InputEvent()->GetBunchCrossNumber();
+  
+  for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++) {
+    
+    AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
+    
+    if (!AcceptCluster(c1)) continue;
+    
+    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c1,absId1,iSupMod1,ieta1,iphi1,shared); //RECOUTILS
 
-      if( fInputHandler->GetEventSelection() ) {
-        if( fTriggerName == "INT7" ){
-          fOfflineTriggerMask = AliVEvent::kINT7;
-          if( !(fOfflineTriggerMask) ) return kFALSE;
-          isEMC = kTRUE; 
-          isDMC = kTRUE;
-        } else if ( fTriggerName == "EMC7" ) {
-          fOfflineTriggerMask = AliVEvent::kEMC7;
-          if( !(fOfflineTriggerMask ) ) return kFALSE;
+    if( isEMC && !(isDMC) &&  iSupMod1 > 11 ) continue;
+    if( isDMC && !(isEMC) &&  iSupMod1 < 12 ) continue;
+    
+    c1->GetMomentum(fMomentum1,fVertex);
+    
+    // Check if cluster is in fidutial region, not too close to borders
+    if(fEMCALGeo == NULL || fEMCALCells == NULL) continue;
+    Bool_t in1 = kTRUE;
+    fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c1, fEMCALCells); //RECOUTILS
+    
+    // Clusters not facing frame structures
+    Bool_t mask1 = MaskFrameCluster(iSupMod1, ieta1);
+    
+    Double_t time1 = c1->GetTOF()*1.e9;
+    
+    fhClusterTime            ->Fill(c1->E(),time1);
+    fhClusterTimeSM[iSupMod1]->Fill(c1->E(),time1);
+    
+    // Combine cluster with other clusters and get the invariant mass
+    for (Int_t jClu=iClu+1; jClu < fCaloClustersArr->GetEntriesFast(); jClu++) {
+      AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
+    
+      if (!AcceptCluster(c2)) continue;
+      
+      fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c2,absId2,iSupMod2,ieta2,iphi2,shared); //RECOUTILS
 
-          TString firedTrigClass = event->GetFiredTriggerClasses();
-          std::cout << "Trigger: " << firedTrigClass << std::endl;
+      if( isEMC && !(isDMC) &&  iSupMod2 > 11 ) continue;
+      if( isDMC && !(isEMC) &&  iSupMod2 < 12 ) continue;
+      
+      c2->GetMomentum(fMomentum2,fVertex);
+      
+      fMomentum12 = fMomentum1+fMomentum2;
+      Float_t invmass = fMomentum12.M()*1000; 
+      
+      //Asimetry cut      
+      Float_t asym = TMath::Abs(fMomentum1.E()-fMomentum2.E())/(fMomentum1.E()+fMomentum2.E());
+      if(asym > fAsyCut) continue;
+      
+      //Time cut
+      Double_t time2 = c2->GetTOF()*1.e9;
+      
+      // fhClusterPairDiffTime->Fill(fMomentum12.E(),time1-time2);
+      if(TMath::Abs(time1-time2) > fDTimeCut) continue;
 
-          if( firedTrigClass.Contains("CEMC7") ) {
-            isEMC = kTRUE;
-            if( firedTrigClass.Contains("CDMC7") ){
-              isDMC = kTRUE;
+      //Opening angle cut to reject too close clusters
+      if( ((fMomentum1.Angle(fMomentum2.Vect()) < fOpAnglemin) || (fMomentum1.Angle(fMomentum2.Vect()) > fOpAnglemax)))  continue;
+      
+      if(invmass < fMaxBin && invmass > fMinBin ) {
+        //Check if cluster is in fidutial region, not too close to borders
+        Bool_t in2 = kTRUE;
+        fRecoUtils->CheckCellFiducialRegion(fEMCALGeo, c2, fEMCALCells); //RECOUTILS
+        
+        // Clusters not facing frame structures
+        Bool_t mask2 = MaskFrameCluster(iSupMod2, ieta2);         
+        
+        if(in1 && in2) { //acceptance cuts
+          fHmgg->Fill(invmass,fMomentum12.Pt()); 
+          
+          if(iSupMod1==iSupMod2) {
+            fHmggSM[iSupMod1]->Fill(invmass,fMomentum12.Pt()); 
+            // fhClusterPairDiffTimeSameSM[iSupMod1]->Fill(fMomentum12.E(),time1-time2);
+          } else {           
+            fHmggDifferentSM ->Fill(invmass,fMomentum12.Pt());
+          }        
+          
+          if(!mask1 && !mask2) {  // Pair not facing frame
+            fHmggMaskFrame->Fill(invmass,fMomentum12.Pt()); 
+            
+            if(iSupMod1==iSupMod2) fHmggSMMaskFrame[iSupMod1]->Fill(invmass,fMomentum12.Pt()); 
+            else                   fHmggDifferentSMMaskFrame ->Fill(invmass,fMomentum12.Pt());
+          }
+          
+          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak (pair in 100 < mass < 160)
+
+            // Check time of cells in both clusters, and fill time histogram
+            for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
+              Int_t absID = c1->GetCellAbsId(icell);   
+              fHTpi0[bc%4]->Fill(absID, fEMCALCells->GetCellTime(absID)*1.e9);  
             }
-          } else if( firedTrigClass.Contains("CDMC7") ){
-            isDMC = kTRUE;
+            
+            for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
+              Int_t absID = c2->GetCellAbsId(icell);   
+              fHTpi0[bc%4]->Fill(absID, fEMCALCells->GetCellTime(absID)*1.e9);  
+            }
+            
+            //Opening angle of 2 photons
+            Float_t opangle = fMomentum1.Angle(fMomentum2.Vect())*TMath::RadToDeg();
+            
+            fHOpeningAngle ->Fill(opangle,fMomentum12.Pt()); 
+            fHAsymmetry    ->Fill(asym,fMomentum12.Pt()); 
+            
+            if(iSupMod1==iSupMod2) {
+              fHOpeningAngleSM[iSupMod1] ->Fill(opangle,fMomentum12.Pt());
+              fHAsymmetrySM[iSupMod1]    ->Fill(asym,fMomentum12.Pt());
+            } else {      
+              fHOpeningAngleDifferentSM  ->Fill(opangle,fMomentum12.Pt());
+              fHAsymmetryDifferentSM     ->Fill(asym,fMomentum12.Pt());
+            }
+            
+          }
+          
+        }
+        
+        //In case of filling only channels with second cluster in same SM
+        if(fSameSM && iSupMod1!=iSupMod2) continue;
+        
+        if (fGroupNCells == 0) {
+          fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
+          fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
+          
+          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak
+            fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
+            fhTowerDecayPhotonEnergy   [iSupMod1]->Fill(ieta1,iphi1,fMomentum1.E());
+            fhTowerDecayPhotonAsymmetry[iSupMod1]->Fill(ieta1,iphi1,asym);
+            
+            fhTowerDecayPhotonHit      [iSupMod2]->Fill(ieta2,iphi2);
+            fhTowerDecayPhotonEnergy   [iSupMod2]->Fill(ieta2,iphi2,fMomentum2.E());
+            fhTowerDecayPhotonAsymmetry[iSupMod2]->Fill(ieta2,iphi2,asym);
+            
+            if(!mask1)fhTowerDecayPhotonHitMaskFrame[iSupMod1]->Fill(ieta1,iphi1);
+            if(!mask2)fhTowerDecayPhotonHitMaskFrame[iSupMod2]->Fill(ieta2,iphi2);
+          }
+        }	else { //group cells
+          //printf("Regroup N %d, eta1 %d, phi1 %d, eta2 %d, phi2 %d \n",fGroupNCells, ieta1, iphi1, ieta2, iphi2);
+          for (Int_t i = -fGroupNCells; i < fGroupNCells+1; i++) {
+            for (Int_t j = -fGroupNCells; j < fGroupNCells+1; j++) {              
+              Int_t absId11 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod1, iphi1+j, ieta1+i); 
+              Int_t absId22 = fEMCALGeo->GetAbsCellIdFromCellIndexes(iSupMod2, iphi2+j, ieta2+i); 
+              
+              Bool_t ok1 = kFALSE;
+              Bool_t ok2 = kFALSE;
+              
+              for(Int_t icell = 0; icell < c1->GetNCells(); icell++) {
+                if(c1->GetCellsAbsId()[icell] == absId11) ok1=kTRUE;
+              }
+              
+              for(Int_t icell = 0; icell < c2->GetNCells(); icell++) {
+                if(c2->GetCellsAbsId()[icell] == absId22) ok2=kTRUE;
+              }
+              
+              if(ok1 && (ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24)) {
+                fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
+              }
+                
+              if(ok2 && (ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24)) {
+                fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
+              }
+            }
           }
         }
-        return kTRUE;
+        
       }
+    }
+  } // end of loop over EMCAL clusters
+  
+}
 
-  } else if (isMC){
-    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
-      if (fInputHandler==NULL) return kFALSE;
-      if( fInputHandler->GetEventSelection() ) {
-        fOfflineTriggerMask = AliVEvent::kAny;
-        if( !(fOfflineTriggerMask) ) return kFALSE;
-        isEMC = kTRUE;
-        isDMC = kTRUE;
-      }
-      return kTRUE;
-  } else {
-    std::cout << "No trigger selected" << std::endl;
-    return kFALSE;
+
+///_____________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessCells() {
+  Int_t   nCells          = 0;
+  nCells    =   fEMCALCells->GetNumberOfCells();
+  if( nCells == 0 ) return;
+
+  fVBuffer_NCells = fEMCALCells->GetNumberOfCells();
+
+  for(Long_t i=0; i<nCells; i++){
+    fVBuffer_Cell_ID[i]     =  fEMCALCells->GetCellNumber(i);
+    fVBuffer_Cell_E[i]      =  fEMCALCells->GetCellAmplitude(i);
+    fVBuffer_Cell_t[i]      =  fEMCALCells->GetCellTime(i);
+    fVBuffer_Cell_gain[i]   =  fEMCALCells->GetCellHighGain(i);
+
+    if( fIsMC ){
+      fVBuffer_Cell_MCParticleID[i]       =    fEMCALCells->GetCellMCLabel(i);
+      fVBuffer_Cell_MCParticleFracE[i]    =    fEMCALCells->GetCellEFraction(i);
+    }
   }
 
+  return;
+
 }
+
+
+///_____________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::ProcessClusters() {
+  Int_t absId     = -1;
+  Int_t iSupMod   = -1;
+  Int_t iPhi      = -1;
+  Int_t iEta      = -1;
+  Bool_t shared   = kFALSE;
+
+  fBuffer_NClusters = fCaloClustersArr->GetEntriesFast();
+
+  for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++){
+    AliVCluster *c1 = (AliVCluster* ) fCaloClustersArr->At(iClu);
+
+    if( !AcceptCluster(c1) ) continue;
+
+    fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c1,absId,iSupMod,iEta,iPhi,shared); //RECOUTILS
+
+    if( isEMC && !(isDMC) &&  iSupMod > 11 ) continue;
+    if( isDMC && !(isEMC) &&  iSupMod < 12 ) continue;
+
+    fVBuffer_Cluster_E[iClu]          = c1->E();
+    fVBuffer_Cluster_Eta[iClu]        = iEta;
+    fVBuffer_Cluster_Phi[iClu]        = iPhi;
+    fVBuffer_Cluster_t[iClu]          = c1->GetTOF()*1.e9;
+    fVBuffer_Cluster_NCells[iClu]     = c1->GetNCells();
+    fVBuffer_Cluster_M02[iClu]        = c1->GetM02()*100;
+    fVBuffer_Cluster_LeadCellId[iClu] = absId;
+
+    if ( fIsMC ){
+      fVBuffer_TrueCluster_MCId[iClu]             = c1->GetLabel();
+    }
+
+    return;
+  }
+}
+
 
 ///
 /// Main method, do the analysis per event:
@@ -805,6 +872,10 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   AliVEvent* event = 0;
   event = InputEvent();
+  AliMCEvent* fMCEvent = 0;
+  if( fIsMC>0 ){
+    fMCEvent = MCEvent();
+  }
   
   if(!event) {
     AliWarning("Input event not available!");
@@ -851,6 +922,7 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   // Get the primary vertex
     
   event->GetPrimaryVertex()->GetXYZ(fVertex) ;
+  fBuffer_Event_VertexZ = event->GetPrimaryVertex()->GetZ();
   
   AliDebug(1,Form("Vertex: (%.3f,%.3f,%.3f)",fVertex[0],fVertex[1],fVertex[2]));
   
@@ -866,9 +938,24 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
 
   FillHistograms();  
 
+  // Float_t fWeighJetJetMC = 1;
+  // if( fIsMC > 1 ){
+  //   Float_t pthard = -1;
+  //   Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC,pthard, event );
+  //   if (!isMCJet ) return;
+  //   fBuffer_EventWeight = fWeightJetJetMC;
+  // }
+
+  if( fSaveCells )   ProcessCells();
+  if( fSaveClusters) ProcessClusters();
+  fCellTree->Fill();
+
+  ResetBuffer();
+
   delete fCaloClustersArr;
   
   PostData(1,fOutputContainer);
+  // PostData(2,fCellTree);
 }
 
 ///
@@ -897,6 +984,86 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::PrintInfo()
 }
 
 ///
+/// Accept cluster routine
+//__________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::AcceptCluster( AliVCluster* c1){
+  // Exclude bad channels
+  
+  Float_t e1i = c1->E();   // cluster energy before correction   
+  
+  if (!c1->IsEMCAL()) 
+    return kFALSE;
+  if (c1->GetNCells() < fMinNCells) 
+    return kFALSE;
+  if (e1i > fEmax) 
+    return kFALSE;
+  if (e1i < fEmin) 
+    return kFALSE;
+  if (c1->GetIsExotic())
+    return kFALSE;
+  if ( fIsMC==0 && ( c1->GetTOF()*1.e9 > fTimeMax || c1->GetTOF()*1.e9 < fTimeMin))
+    return kFALSE;
+  if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)
+    return kFALSE;
+  
+  return kTRUE;
+
+}
+
+///
+/// Check if trigger selected
+///
+//____________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *event){
+
+  if(fTriggerName!="" && fIsMC==0 ) {
+      AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
+      if (fInputHandler==NULL) return kFALSE;
+
+      if( fInputHandler->GetEventSelection() ) {
+        if( fTriggerName == "INT7" ){
+          fOfflineTriggerMask = AliVEvent::kINT7;
+          if( !(fOfflineTriggerMask) ) return kFALSE;
+          isEMC = kTRUE; 
+          isDMC = kTRUE;
+        } else if ( fTriggerName == "EMC7" ) {
+          fOfflineTriggerMask = AliVEvent::kEMC7;
+          if( !(fOfflineTriggerMask ) ) return kFALSE;
+
+          TString firedTrigClass = event->GetFiredTriggerClasses();
+          std::cout << "Trigger: " << firedTrigClass << std::endl;
+
+          if( firedTrigClass.Contains("CEMC7") ) {
+            isEMC = kTRUE;
+            if( firedTrigClass.Contains("CDMC7") ){
+              isDMC = kTRUE;
+            }
+          } else if( firedTrigClass.Contains("CDMC7") ){
+            isDMC = kTRUE;
+          }
+        }
+        return kTRUE;
+      }
+
+  } else if (fIsMC){
+    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()); 
+      if (fInputHandler==NULL) return kFALSE;
+      if( fInputHandler->GetEventSelection() ) {
+        fOfflineTriggerMask = AliVEvent::kAny;
+        if( !(fOfflineTriggerMask) ) return kFALSE;
+        isEMC = kTRUE;
+        isDMC = kTRUE;
+      }
+      return kTRUE;
+  }
+
+  std::cout << "No trigger selected" << std::endl;
+  return kFALSE;
+
+}
+
+
+///
 /// Set the total number of columns to be masked in the analysis
 /// \param n: number of columns
 //_____________________________________________________________________
@@ -921,6 +1088,55 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::SetMaskCellColumn(Int_t ipos, Int_
     else AliWarning("Mask column not set, position larger than allocated set size first") ;
 }
 
+///
+/// Check if cell is in one of the regions where we have significant amount of material in front of EMCAL.
+/// \return True if this cell is in one problematic region
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::MaskFrameCluster(Int_t iSM, Int_t ieta) const
+{
+  Int_t icol = ieta;
+  if(iSM%2) icol+=48; // Impair SM, shift index [0-47] to [48-96]
+  
+  if (fNMaskCellColumns && fMaskCellColumns) {
+    for (Int_t imask = 0; imask < fNMaskCellColumns; imask++) {
+      if(icol==fMaskCellColumns[imask]) return kTRUE;
+    }
+  }
+  
+  return kFALSE;
+}
+
+///_____________________________________________________
+void AliAnalysisTaskEMCALPi0CalibSelectionV2::ResetBuffer() {
+
+  fVBuffer_NCells               = 0;
+  fBuffer_Event_VertexZ         = 0;
+  fBuffer_Event_Multiplicity    = 0;
+  fBuffer_Event_V0Centrality    = 0;
+  fBuffer_NClusters             = 0;
+
+  for(Int_t ncell = 0; ncell < kMaxActiveCells_calib; ncell++){
+    fVBuffer_Cell_ID[ncell]               = 0;
+    fVBuffer_Cell_E[ncell]                = 0;
+    fVBuffer_Cell_t[ncell]                = 0;
+    fVBuffer_Cell_gain[ncell]             = 0;
+    fVBuffer_Cell_MCParticleID[ncell]     = 0;
+    fVBuffer_Cell_MCParticleFracE[ncell]  = 0;
+  }
+
+  for(Int_t ncluster=0; ncluster < kMaxActiveCluster; ncluster++){
+    fVBuffer_Cluster_E[ncluster]                      = 0;
+    fVBuffer_Cluster_Eta[ncluster]                    = 0;
+    fVBuffer_Cluster_Phi[ncluster]                    = 0;
+    fVBuffer_Cluster_t[ncluster]                      = 0;
+    fVBuffer_Cluster_NCells[ncluster]                 = 0;
+    fVBuffer_Cluster_M02[ncluster]                    = 0;
+    fVBuffer_Cluster_LeadCellId[ncluster]             = 0;
+    fVBuffer_TrueCluster_MCId[ncluster]               = 0;
+  }
+}
 
 ///
 /// Create cuts/param objects and publish to slot. Comment out for the moment.

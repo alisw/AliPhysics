@@ -30,7 +30,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
 /// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
 /// \param recalE    : Bool, recalibrate EMCal energy all other settings for clusterization & EMCal calibration are handled by correction frame work and correspodning yaml file
-/// \param simu      : Bool, simulation or data.
+/// \param simu      : Int, 0: data, 1: MC, 2: JJ MC
 /// \param minClusterEnergy : Double, minimum cluster energy used for pairing (GeV)
 /// \param maxClusterEnergy : Double, maximum cluster energy used for pairing (GeV)
 /// \param minNCells : Int, minimum number of cells for clusters
@@ -45,7 +45,10 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
   TString trigger                = "",
   Bool_t  recalE                 = kFALSE, 
-  Bool_t  simu                   = kFALSE,
+  Inr_t  simu                    = 0,
+  Bool_t  fSaveCells             = kFALSE,
+  Bool_t  fSaveClusters          = kFALSE,
+  Bool_t  isHeavyIon             = kFALSE,
   Double_t minClusterEnergy      = 0.7,
   Double_t maxClusterEnergy      = 10,
   Int_t minNCells                = 2,
@@ -76,7 +79,6 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   if ( wagon.Length() > 0 ) trigger = wagon;
   
   AliAnalysisTaskEMCALPi0CalibSelectionV2 * pi0calib = new AliAnalysisTaskEMCALPi0CalibSelectionV2(Form("EMCALPi0Calibration_%s",trigger.Data()));
-  //pi0calib->SetDebugLevel(10); 
   pi0calib->SetClusterMinEnergy(minClusterEnergy);
   pi0calib->SetClusterMaxEnergy(maxClusterEnergy);
   pi0calib->SetClusterLambda0Cuts(0.1,0.5);
@@ -101,8 +103,22 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
 
-  if( simu ) {
+  if( simu == 1 ) {
     pi0calib->SetIsMC();
+  } else if (sime == 2){
+    pi0calib->SetJJMC();
+  }
+
+  if( isHeavyIon ) {
+    pi0calib->SetHeavyIon();
+  }
+
+  if( fSaveCells ){
+    pi0calib->SetSaveCells();
+  }
+
+  if( fSaveClusters ){
+    pi0calib->SetSaveCluster();
   }
   
   //---------------------
@@ -118,20 +134,27 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
                                                                                                 
                                                                                                 
-  AliAnalysisDataContainer *coutput = 0; 
+  AliAnalysisDataContainer *coutput1 = 0;
+  AliAnalysisDataContainer *coutput2 = 0;
   if( wagon.Length()==0 ){
-    coutput = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
+    coutput1 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s",trigger.Data()), TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,outputFile.Data());
+    coutput2 = mgr->CreateContainer(Form("Pi0Calibration_Trig%s_tree",trigger.Data()), TTree::Class(), 
+                                   AliAnalysisManager::kOutputContainer,Form("%s_tree",outputFile.Data()));
   } else {
     TString containerName = "Pi0Calibration";
-    coutput = mgr->CreateContainer(wagon, TList::Class(), 
+    coutput1 = mgr->CreateContainer(wagon, TList::Class(), 
                                    AliAnalysisManager::kOutputContainer,Form("%s:%s",outputFile.Data(),containerName.Data()));
+  
+    coutput2 = mgr->CreateContainer(Form("%s_tree",trigger.Data()), TTree::Class(), 
+                                   AliAnalysisManager::kOutputContainer,Form("%s:%s_tree",outputFile.Data(),containerName.Data()));
   }  
   
   mgr->AddTask(pi0calib);
                                                              
   mgr->ConnectInput  (pi0calib, 0, cinput1);
-  mgr->ConnectOutput (pi0calib, 1, coutput);
+  mgr->ConnectOutput (pi0calib, 1, coutput1);
+  mgr->ConnectOutput( pi0calib, 2, coutput2);
 
   return pi0calib;
 }
