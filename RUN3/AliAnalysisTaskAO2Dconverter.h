@@ -72,6 +72,7 @@ public:
     kMcCollisionLabel,
     kBC,
     kRun2BCInfo,
+    kOrigin,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -118,13 +119,18 @@ public:
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
   };
   //Aliases for multiplicity selection criteria
-  enum MultSelectionCut {
+  enum EventSelectionCut {
       kINELgtZERO = 0,
       kPileupInMultBins,
       kConsistencySPDandTrackVertices,
       kTrackletsVsClusters,
       kNonZeroNContribs,
-      kIncompleteDAQ
+      kIncompleteDAQ,
+      kPileUpMV,
+      kTPCPileUp,
+      kTimeRangeCut,
+      kEMCALEDCut,
+      kAliEventCutsAccepted
   };
   static const TClass* Generator[kGenerators]; // Generators
 
@@ -219,6 +225,10 @@ private:
     UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
     UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
   } run2bcinfo; //! structure to keep run 2 only related info 
+
+  struct {
+    ULong64_t fDataframeID = 0; /// ID of this data frame (important for merging DFs)
+  } origin;
 
   struct {
     // Track data

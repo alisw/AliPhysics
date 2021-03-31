@@ -88,6 +88,8 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); if(!fContSubfix->IsNull()) fContSubfix->Prepend("_"); };
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
+  Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+  void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -99,6 +101,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   AliMCEvent *fMCEvent; //! MC event
+  Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; //For random number generation
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
@@ -116,7 +119,10 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliPIDCombined *fBayesPID; //!
   TList *fMPTList; //!
   TProfile **fmPT; //!
+  TProfile *fMptClosure; //!
   TH1D *fMultiDist;
+  TH2D **fMultiVsV0MCorr; //!
+  TH2D *fNchTrueVsReco; //!
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;

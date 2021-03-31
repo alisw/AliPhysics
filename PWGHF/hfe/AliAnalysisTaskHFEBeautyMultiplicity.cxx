@@ -190,6 +190,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     NpureMCproc(0),
     NpureMC(0),
     Nch(0),		    // No. of Charged particle
+    Nmc(0),
+    iGPMC(kFALSE),
     iBevt(kFALSE),	    // produceed from beauty
     fNoB(0),		    // No. of B-mason
     fNoD(0),		    // NO. of D-meson
@@ -382,6 +384,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     NpureMCproc(0),
     NpureMC(0),
     Nch(0),		    // No. of Charged particle
+    Nmc(0),
+    iGPMC(kFALSE),
     iBevt(kFALSE),	    // Produced from beauty
     fNoB(0),		    // No. of B-meson
     fNoD(0),		    // No. of D-meson
@@ -1168,6 +1172,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     if(fMCarray) CheckMCgen(fMCheader, CutTrackEta[1]);   // True production of HFe
 
 
+    if(iGPMC && Nmc>1) return;
+
+
 
 //______________________________ SPD tracklets ______________________________
     Int_t nTracklets = 0;
@@ -1179,6 +1186,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
     for(Int_t nn=0; nn<nTracklets; nn++) {
 	Double_t theta = tracklets->GetTheta(nn);
+	//Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
 	Double_t eta = tracklets->GetEta(nn);
 	if(TMath::Abs(eta) < etaRange) nAcc++;	// No. of tracklet in |eta|<1.0 (TPC coverage)
     }
@@ -1950,6 +1958,8 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
     TString embbeauty("bele");
     TString embcharm("cele");
 
+    Nmc = lh->GetEntries();
+
 
     if(lh)
     {
@@ -1977,9 +1987,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
     cout << "-----------------------" << endl;
     cout << "GetEntries     : " << fMCarray->GetEntries()     << endl;
     cout << "GetEntriesFast : " << fMCarray->GetEntriesFast() << endl;
+    cout << "NpureMC        : " << NpureMC << endl;
+    cout << "NpureMCproc    : " << NpureMCproc << endl;
 
     //for(int imc=0; imc < fMCarray->GetEntries(); imc++)	// PYTHIA & GEANT ?
-    for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles
+    //for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles?
+    for(int imc=0; imc < NpureMC; imc++)			// PYTHIA only?
     {
         Bool_t iEnhance = kFALSE;
         if(imc >= NpureMC) iEnhance = kTRUE;

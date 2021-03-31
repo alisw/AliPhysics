@@ -1,3 +1,7 @@
+#include <chrono>
+#include <ctime>
+#include <ratio>
+
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
@@ -131,6 +135,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistCovMatPrimVXX3Prong{nullptr},
   fHistCovMatSecVXX3Prong{nullptr},
   fHistInvMassDs{nullptr},
+  fHistInvMassDsSignal{nullptr},
+  fHistInvMassDsRefl{nullptr},
   fHistPtDs{nullptr},
   fHistYPtDs{nullptr},
   fHistDecLenDs{nullptr},
@@ -143,6 +149,10 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistCPUTimeTrackVsNTracks{nullptr},
+  fHistCPUTimeCandVsNTracks{nullptr},
+  fHistWallTimeTrackVsNTracks{nullptr},
+  fHistWallTimeCandVsNTracks{nullptr},
   fReadMC(kFALSE),
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAny),
@@ -189,7 +199,9 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fNPtBinsLc(10),
   fSelectDplus(1),
   fSelectJpsi(1),
-  fSelectLcpKpi(1)
+  fSelectLcpKpi(1),
+  fEnableCPUTimeCheck(kFALSE),
+  fCountTimeInMilliseconds(kFALSE)
 {
   //
   InitDefault();
@@ -300,6 +312,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistCovMatPrimVXX3Prong;
     delete fHistCovMatSecVXX3Prong;
     delete fHistInvMassDs;
+    delete fHistInvMassDsSignal;
+    delete fHistInvMassDsRefl;
     delete fHistPtDs;
     delete fHistYPtDs;
     delete fHistDecLenDs;
@@ -327,6 +341,10 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
   delete fTrackCuts2pr;
   delete fTrackCuts3pr;
   delete fVertexerTracks;
+  if(fHistCPUTimeTrackVsNTracks) delete fHistCPUTimeTrackVsNTracks;
+  if(fHistCPUTimeCandVsNTracks) delete fHistCPUTimeCandVsNTracks;
+  if(fHistWallTimeTrackVsNTracks) delete fHistWallTimeTrackVsNTracks;
+  if(fHistWallTimeCandVsNTracks) delete fHistWallTimeCandVsNTracks;
 }
 
 //___________________________________________________________________________
@@ -888,11 +906,15 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
 
   // Ds->KKpi candidate histos
   fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
+  fHistInvMassDsSignal = new TH1F("hInvMassDsSignal", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
+  fHistInvMassDsRefl = new TH1F("hInvMassDsRefl", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
   fHistPtDs = new TH1F("hPtDs"," ; D_{s} p_{T} (GeV/c)",100, 0, 10.);
   fHistYPtDs  = new TH2F("hYPtDs", " ; D_{s} p_{T} (GeV/c) ; y", 100, 0, 10.,120,-1.2,1.2);
   fHistDecLenDs = new TH1F("hDecLenDs"," ; Decay Length (cm)", 200, 0., 2.0);
   fHistCosPointDs = new TH1F("hCosPointDs", " ; cos(#theta_{P})", 110, -1.1, 1.1);
   fOutput->Add(fHistInvMassDs);
+  fOutput->Add(fHistInvMassDsSignal);
+  fOutput->Add(fHistInvMassDsRefl);
   fOutput->Add(fHistPtDs);
   fOutput->Add(fHistYPtDs);
   fOutput->Add(fHistDecLenDs);
@@ -970,6 +992,20 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
     fOutput->Add(fHistPtRecoGenPtFeeddw[i]);
     fOutput->Add(fHistPtRecoPrompt[i]);
     fOutput->Add(fHistPtRecoFeeddw[i]);
+  }
+
+  if(fEnableCPUTimeCheck) {
+    TString units = "s";
+    if(fCountTimeInMilliseconds)
+      units = "ms";
+    fHistCPUTimeCandVsNTracks = new TH2F("hCPUTimeCandPerEventVsNTracks", Form("CPU time per event elapsed for candidate selection;# of selected tracks;CPU time / event (%s);entries", units.Data()), 2500, 0., 25000, 5000, 0., 100.);
+    fHistWallTimeCandVsNTracks = new TH2F("hWallTimeCandPerEventVsNTracks", Form("Wall time per event elapsed for candidate selection;# of selected tracks;Wall time / event (%s);entries", units.Data()), 2500, 0., 25000, 5000, 0., 100.);
+    fHistCPUTimeTrackVsNTracks = new TH2F("hCPUTimeTrackPerEventVsNTracks", Form("CPU time per event elapsed for track selection;# of selected tracks;CPU time / event (%s);entries", units.Data()), 2500, 0., 25000, 5000, 0., 1.);
+    fHistWallTimeTrackVsNTracks = new TH2F("hWallTimeTrackPerEventVsNTracks", Form("Wall time per event elapsed for track selection;# of selected tracks;Wall time / event (%s);entries", units.Data()), 2500, 0., 25000, 5000, 0., 1.);
+    fOutput->Add(fHistCPUTimeCandVsNTracks);
+    fOutput->Add(fHistCPUTimeTrackVsNTracks);
+    fOutput->Add(fHistWallTimeCandVsNTracks);
+    fOutput->Add(fHistWallTimeTrackVsNTracks);
   }
 
   PostData(1,fOutput);
@@ -1144,8 +1180,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   fO2Vertexer3Prong.setMinParamChange(fVertexerMinParamChange);
   fO2Vertexer3Prong.setMinRelChi2Change(fVertexerMinRelChi2Change);
   fO2Vertexer3Prong.setUseAbsDCA(fVertexerUseAbsDCA);
-   
+
+
+  std::clock_t clockStartTrack;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeTrack;
+  if(fEnableCPUTimeCheck) {
+    clockStartTrack = std::clock();
+    startTimeTrack = std::chrono::high_resolution_clock::now();
+  }
+ 
   // Apply single track cuts and flag them
+  int nTracksSel = 0;
   UChar_t* status = new UChar_t[totTracks];
   for (Int_t iTrack = 0; iTrack < totTracks; iTrack++) {
     status[iTrack] = 0;
@@ -1157,6 +1202,26 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistImpParAllTracks->Fill(d0track[0]);
     fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
     status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG);
+    if(status[iTrack] > 0)
+      nTracksSel++;
+  }
+
+  std::clock_t clockStartCand;
+  std::chrono::time_point<std::chrono::high_resolution_clock> startTimeCand;
+  if(fEnableCPUTimeCheck) {
+    // count time elapsed for track selection
+    auto endTimeTrack = std::chrono::high_resolution_clock::now();
+    auto clockEndTrack = std::clock();
+    std::chrono::duration<double> wallTimeTrack = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeTrack - startTimeTrack);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeTrackVsNTracks->Fill(nTracksSel, double(clockEndTrack-clockStartTrack) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeTrackVsNTracks->Fill(nTracksSel, wallTimeTrack.count() * multFact);
+
+    // start time for candidate selection
+    clockStartCand = std::clock();
+    startTimeCand = std::chrono::high_resolution_clock::now();
   }
 
   Double_t d02[2]={0.,0.};
@@ -1379,6 +1444,17 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   delete rd4massCalc3;
   delete vertexAODp;
 
+  if(fEnableCPUTimeCheck) {
+    auto endTimeCand = std::chrono::high_resolution_clock::now();
+    auto clockEndCand = std::clock();
+    std::chrono::duration<double> wallTimeCand = std::chrono::duration_cast<std::chrono::duration<double> >(endTimeCand - startTimeCand);
+    double multFact = 1.;
+    if(fCountTimeInMilliseconds)
+        multFact = 1000.;
+    fHistCPUTimeCandVsNTracks->Fill(nTracksSel, double(clockEndCand-clockStartCand) / CLOCKS_PER_SEC * multFact);
+    fHistWallTimeCandVsNTracks->Fill(nTracksSel, wallTimeCand.count() * multFact);
+  }
+
   PostData(1,fOutput);
 
 }
@@ -1388,6 +1464,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
 void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent){
   
   Int_t pdgDplusdau[3]={321,211,211};
+  Int_t pdgDsdau[3]={321,321,211};
 
   Int_t massSel = SelectInvMassAndPt3prong(threeTrackArray, rd4massCalc3);
   if (massSel == 0) {
@@ -1492,6 +1569,36 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
       fHist3ProngVertX->Fill(trkv3->GetX());
       fHist3ProngVertY->Fill(trkv3->GetY());
       fHist3ProngVertZ->Fill(trkv3->GetZ());
+      if(fReadMC && mcEvent){
+        Int_t labD=MatchToMC(the3Prong,431,mcEvent,3,threeTrackArray,pdgDsdau);
+        if(labD>=0){
+          AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
+          if(dmes){
+	    AliESDtrack* trDau0=(AliESDtrack*)threeTrackArray->UncheckedAt(0);
+	    Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+	    AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+	    if(partDau0){
+	      Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+	      if(pdgCode==211){
+		fHistInvMassDsSignal->Fill(mpiKK);
+		fHistInvMassDsRefl->Fill(mKKpi);
+	      }else if(pdgCode==321){
+		fHistInvMassDsSignal->Fill(mKKpi);
+		fHistInvMassDsRefl->Fill(mpiKK);
+	      }
+	    }
+            Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
+            Double_t ptgen=dmes->Pt();
+            if(orig==4){
+              fHistPtRecoGenPtPrompt[2]->Fill(ptgen);
+              fHistPtRecoPrompt[2]->Fill(ptcand_3prong);
+            }else if(orig==5){
+              fHistPtRecoGenPtFeeddw[2]->Fill(ptgen);
+              fHistPtRecoFeeddw[2]->Fill(ptcand_3prong);
+            }
+	  }
+	}
+      }
     }
   }
   if (massSel & (1 << kbitLc)) {

@@ -247,9 +247,11 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 
 	fHistNchTSVsV0M=0;
         fHistNchTSVsV0M=new TH2D("fHistNchTSVsV0M", "Generated NchTS distribution vs V0M",nTSBins, TSBins,nTSBins, TSBins);
+	fListOfObjects->Add(fHistNchTSVsV0M);
 
 	fHistNchTSVsV0A=0;
         fHistNchTSVsV0A=new TH2D("fHistNchTSVsV0A", "Generated NchTS distribution vs V0A",nTSBins, TSBins,nTSBins, TSBins);
+	fListOfObjects->Add(fHistNchTSVsV0A);
 	
 	for(Int_t i=0; i<5; ++i){
 

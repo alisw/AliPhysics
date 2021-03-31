@@ -66,6 +66,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	//void SetHFECuts(AliHFEcuts * const cuts) {fCuts = cuts;};
 	
 	void SetMCanalysis() {fIsMC = kTRUE;};
+    void SetNewClustersCut() {fIs_NewClustersCut = kTRUE;};
     void DoTriggerSimulation() {fIsTriggerSimulation = kTRUE;};
 	
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
@@ -82,6 +83,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetUseTender() { fUseTender=kTRUE;};
     void SetMultiAnalysis() {fMultiAnalysis=kTRUE;};
     void SetSysHistos() {fIs_sys=kTRUE;};
+    
+    void SetNewEventSelection(){fnew_event_selection=kTRUE;};
     
     void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
     void Set_Fill_ESparseTPC() {fFill_ESparseTPC=kTRUE;};
@@ -163,10 +166,12 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
 
     Bool_t				fIsMC;
+    Bool_t              fIs_NewClustersCut;
     Bool_t              fIsTriggerSimulation;
 	Bool_t				fUseTender;
     Bool_t              fMultiAnalysis;
     Bool_t              fIs_sys;
+    Bool_t              fnew_event_selection;
     Bool_t              fFill_ESparse;
     Bool_t              fFill_ESparseTPC;
     Bool_t              fFill_MSparse;
@@ -213,16 +218,21 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t               fEMCEG2DG2;
 	
 //DCal threshold separation
-	Bool_t				fEMCDG1;
-	Bool_t				fEMCDG2;
+	Bool_t				  fEMCDG1;
+	Bool_t				  fEMCDG2;
     
     Bool_t                fIsTrack1Emcal;
     Bool_t                fIsTrack1Dcal;
     Bool_t                fIsTrack2Emcal;
     Bool_t                fIsTrack2Dcal;
     
-    Bool_t              fIsEMCalCls;
-    Bool_t              fIsDCalCls;
+    Bool_t                fIsEMCalCls;
+    Bool_t                fIsDCalCls;
+    
+    Bool_t                    feg1;
+    Bool_t                    fdg1;
+    Bool_t                    feg2;
+    Bool_t                    fdg2;
     
     //SPD corrections
     TProfile2D*        fMultEstimatorAvg[1];
@@ -280,7 +290,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 
 //Vertex selection
-	Float_t					fZvtx;
+	Float_t					   fZvtx;
+    
     
 //global multiplicity values
     Double_t                    fV0Mult;
@@ -319,6 +330,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH2F				**fTPCnsigma_EoverP;
 	TH1F				**fECluster;
+    
+    TH1F                *fECluster_eg1;
+    TH1F                *fECluster_eg2;
+    
 	TH1F				**fECluster_emcal;
 	TH1F				**fECluster_dcal;
 	
@@ -541,6 +556,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleAll_trueJPsi_pT_weight_prompt;
     
 	TH1F				*fPtMCparticleReco_e_from_JPsi;
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg1;
+    TH1F                *fPtMCparticleReco_e_from_JPsi_eg2;
     
  
     

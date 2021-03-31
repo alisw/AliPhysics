@@ -208,6 +208,11 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
   } else if (trainConfig == 6){ // EMCAL + DCal clusters 13 TeV - iteration 2
     cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","0163103100000010"); // EG1  No NL
     cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","0163103100000010"); // EG1  NL11
+  } else if (trainConfig == 7){ // EMCAL + DCal clusters 13 TeV - NCell study
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411790106fe30220000","0163103100000010"); // INT7 NoNL + FT
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411790106f030000000","0163103100000010"); // INT7 No Clus cuts TBNL + FT
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411793706f030000000","0163103100000010"); // INT7 No Clus cuts TBNL
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","411790406f030000000","0163103100000010"); // INT7 No Clus cuts TBNL no Scale
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

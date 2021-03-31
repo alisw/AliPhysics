@@ -68,9 +68,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo", "O2origin" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info", "DF ids" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -132,7 +132,7 @@ namespace
 } // namespace
 
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2bcinfo(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2bcinfo(), origin(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
 #ifdef USE_TOF_CLUST
       ,
       tofClusters()
@@ -272,9 +272,10 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // We can use event cuts to avoid cases where we have zero reconstructed tracks
   bool skip_event = false;
+  bool alieventcut = fEventCuts.AcceptEvent(fESD);
   if (fUseEventCuts || fSkipPileup || fSkipTPCPileup)
   {
-    skip_event = !fEventCuts.AcceptEvent(fESD) && fUseEventCuts;
+    skip_event = !alieventcut && fUseEventCuts;
   }
 
   // Skip pileup events if requested
@@ -502,6 +503,14 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 
   // Create the output directory for the current time frame
   fOutputDir = fOutputFile->mkdir(Form("DF_%llu", tfId));
+
+  // Associate branches for Run 2 BC info
+  TTree* tOrigin = CreateTree(kOrigin);
+  if (fTreeStatus[kOrigin]) {
+    tOrigin->Branch("fDataframeID", &origin.fDataframeID, "fDataframeID/l");
+    origin.fDataframeID = tfId;
+    FillTree(kOrigin);
+  }
 
   // Associate branches for fEventTree
   TTree *tEvents = CreateTree(kEvents);
@@ -1024,7 +1033,20 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   if( multSelection->GetThisEventIsNotIncompleteDAQ() )
     SETBIT (run2bcinfo.fEventCuts, kIncompleteDAQ);
   
-  // TODO add AliEventCuts information bits
+  if (fEventCuts.PassedCut(AliEventCuts::kPileUp))
+    SETBIT(run2bcinfo.fEventCuts, kPileUpMV);
+
+  if (fEventCuts.PassedCut(AliEventCuts::kTPCPileUp))
+    SETBIT(run2bcinfo.fEventCuts, kTPCPileUp);
+  
+  if (fEventCuts.PassedCut(AliEventCuts::kTimeRangeCut))
+    SETBIT(run2bcinfo.fEventCuts, kTimeRangeCut);
+  
+  if (fEventCuts.PassedCut(AliEventCuts::kEMCALEDCut))
+    SETBIT(run2bcinfo.fEventCuts, kEMCALEDCut);
+
+  if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
+    SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
   
   FillTree(kRun2BCInfo);
   
