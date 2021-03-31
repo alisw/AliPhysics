@@ -22,7 +22,7 @@ class AliHFSystErr : public TNamed
 {
  public:
 
-  AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
+  AliHFSystErr(const Char_t* name="AliHFSystErr", const Char_t* title="");
 
   virtual ~AliHFSystErr();
 
