@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISTASKNONLINEARFLOW_H
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -174,7 +175,7 @@ class PhysicsProfile : public TObject {
 		ClassDef(PhysicsProfile, 1);    //Analysis task
 };
 
-class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
+class AliAnalysisTaskTestFlow : public AliAnalysisTaskSE {
 	public:
 
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
@@ -182,10 +183,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 // const unsigned int usev2345flag = 1 << 0;
 	        // const unsigned int usev678flag = 1 << 1;
 
-		AliAnalysisTaskNonlinearFlow();
-		AliAnalysisTaskNonlinearFlow(const char *name);
+		AliAnalysisTaskTestFlow();
+		AliAnalysisTaskTestFlow(const char *name);
 
-		virtual ~AliAnalysisTaskNonlinearFlow();
+		virtual ~AliAnalysisTaskTestFlow();
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t* option);
@@ -224,11 +225,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 virtual int    GetSystFlag() { return fCurrSystFlag; }
 
 	private:
-		AliAnalysisTaskNonlinearFlow(const AliAnalysisTaskNonlinearFlow&);
-		AliAnalysisTaskNonlinearFlow& operator=(const AliAnalysisTaskNonlinearFlow&);
+		AliAnalysisTaskTestFlow(const AliAnalysisTaskTestFlow&);
+		AliAnalysisTaskTestFlow& operator=(const AliAnalysisTaskTestFlow&);
 
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
+                Bool_t                  AcceptAOD(AliAODEvent *inEv);
+                Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		Short_t			GetCentrCode(AliVEvent* ev);
 		bool 			CheckPrimary(AliVEvent *aod, double label);
 		bool			IsGoodPSEvent(AliVEvent *aod);
@@ -251,7 +254,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts
-		AliAODEvent* fAOD;                                              //! AOD object
+                AliGFWCuts*     fGFWSelection;                                  //!
+		AliAODEvent*    fAOD;                                           //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
 		// Cuts and options
@@ -416,7 +420,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 1);    //Analysis task
+		ClassDef(AliAnalysisTaskTestFlow, 1);    //Analysis task
 };
 
 #endif
