@@ -90,6 +90,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
   Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
+  void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -103,6 +104,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; //For random number generation
+  Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   TAxis *fPtAxis;
   TAxis *fMultiAxis;
   TAxis *fV0MMultiAxis;

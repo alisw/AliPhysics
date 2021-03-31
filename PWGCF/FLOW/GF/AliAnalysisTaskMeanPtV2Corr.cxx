@@ -49,6 +49,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr():
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
   fRndm(0),
+  fNBootstrapProfiles(10),
   fPtAxis(0),
   fMultiAxis(0),
   fV0MMultiAxis(0),
@@ -107,6 +108,7 @@ AliAnalysisTaskMeanPtV2Corr::AliAnalysisTaskMeanPtV2Corr(const char *name, Bool_
   fIsMC(IsMC),
   fMCEvent(0),
   fUseRecoNchForMC(kTRUE),
+  fNBootstrapProfiles(10),
   fRndm(0),
   fPtAxis(0),
   fMultiAxis(0),
@@ -305,7 +307,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     for(Int_t i=0;i<4;i++) {
       fptVarList->Add(new AliProfileBS(Form("varpt_%s",spNames[i].Data()),Form("varpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fptvar[i] = (AliProfileBS*)fptVarList->At(i);
-      fptvar[i]->InitializeSubsamples(10);
+      if(fNBootstrapProfiles) fptvar[i]->InitializeSubsamples(fNBootstrapProfiles);
     }
     fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
     fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
@@ -368,7 +370,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     if(!fContSubfix->IsNull()) fcname.Append(fContSubfix->Data());
     // fcname.Append(fGFWSelection->GetSystPF());
     fFC->SetName(fcname.Data());
-    fFC->Initialize(oba,fNMultiBins,fMultiBins,10);
+    fFC->Initialize(oba,fNMultiBins,fMultiBins,fNBootstrapProfiles);
     delete oba;
     PostData(2,fFC);
     //Initializing GFW
@@ -414,16 +416,16 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     for(Int_t i=0;i<4;i++) {
       fCovList->Add(new AliProfileBS(Form("cov_%s",spNames[i].Data()),Form("cov_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[i] = (AliProfileBS*)fCovList->At(i);
-      fCovariance[i]->InitializeSubsamples(10);
+      if(fNBootstrapProfiles) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     };
     for(Int_t i=0;i<4;i++) {
       fCovList->Add(new AliProfileBS(Form("cov_v3_%s",spNames[i].Data()),Form("cov_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins));
       fCovariance[4+i] = (AliProfileBS*)fCovList->At(i+4);
-      fCovariance[4+i]->InitializeSubsamples(10);
+      if(fNBootstrapProfiles) fCovariance[4+i]->InitializeSubsamples(fNBootstrapProfiles);
     };
     fCovList->Add(new AliProfileBS(Form("cov_v23_%s",spNames[0].Data()),Form("cov_v23_%s",spNames[0].Data()),fNMultiBins,fMultiBins));
     fCovariance[8] = (AliProfileBS*)fCovList->At(8);
-    fCovariance[8]->InitializeSubsamples(10);
+    if(fNBootstrapProfiles) fCovariance[8]->InitializeSubsamples(fNBootstrapProfiles);
 
     PostData(3,fCovList);
     fV2dPtList = new TList();
