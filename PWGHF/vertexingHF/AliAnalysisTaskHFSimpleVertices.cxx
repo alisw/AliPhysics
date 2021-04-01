@@ -672,6 +672,23 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     fLcSkimCuts[4]=minDecLenLcToPKPi;
 
     printf("---------------------------------------------\n");
+
+    printf("---- TEST READOUT OF ARRAYS ----\n");
+    int nptbinlims;
+    float* ptbins = GetJsonArray(filename.Data(),"ptBins",nptbinlims);
+    printf("%d ptbins. Limits: ",nptbinlims-1);
+    for(int j=0; j<nptbinlims; j++) printf("%.1f ",ptbins[j]);
+    printf("\n");
+    int npt,nc;
+    float** cuts = GetJsonMatrix(filename.Data(),"D0_to_pi_K_cuts",npt,nc);
+    printf("D0 2D cuts: %d pt bins, %d cut variables:\n",npt,nc);
+    for(int j=0; j<npt; j++){
+      for(int k=0; k<nc; k++){
+        printf("%.2f ",cuts[j][k]);
+      }
+      printf("\n");
+    }
+    printf("\n");
   }else{
     AliError(Form("Json configuration file %s not found\n",filename.Data()));
   }
@@ -1574,19 +1591,19 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
         if(labD>=0){
           AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
           if(dmes){
-	    AliESDtrack* trDau0=(AliESDtrack*)threeTrackArray->UncheckedAt(0);
-	    Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
-	    AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
-	    if(partDau0){
-	      Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
-	      if(pdgCode==211){
-		fHistInvMassDsSignal->Fill(mpiKK);
-		fHistInvMassDsRefl->Fill(mKKpi);
-	      }else if(pdgCode==321){
-		fHistInvMassDsSignal->Fill(mKKpi);
-		fHistInvMassDsRefl->Fill(mpiKK);
-	      }
-	    }
+            AliESDtrack* trDau0=(AliESDtrack*)threeTrackArray->UncheckedAt(0);
+            Int_t labelDau0=TMath::Abs(trDau0->GetLabel());
+            AliMCParticle* partDau0 = (AliMCParticle*)mcEvent->GetTrack(labelDau0);
+            if(partDau0){
+              Int_t pdgCode = TMath::Abs(partDau0->PdgCode());
+              if(pdgCode==211){
+                fHistInvMassDsSignal->Fill(mpiKK);
+                fHistInvMassDsRefl->Fill(mKKpi);
+              }else if(pdgCode==321){
+                fHistInvMassDsSignal->Fill(mKKpi);
+                fHistInvMassDsRefl->Fill(mpiKK);
+              }
+            }
             Int_t orig=AliVertexingHFUtils::CheckOrigin(mcEvent,dmes,kTRUE);
             Double_t ptgen=dmes->Pt();
             if(orig==4){
@@ -1596,8 +1613,8 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
               fHistPtRecoGenPtFeeddw[2]->Fill(ptgen);
               fHistPtRecoFeeddw[2]->Fill(ptcand_3prong);
             }
-	  }
-	}
+          }
+        }
       }
     }
   }
@@ -2361,6 +2378,86 @@ float AliAnalysisTaskHFSimpleVertices::GetJsonFloat(const char* jsonFileName, co
   }
   fclose(fj);
   return value;
+}
+
+//______________________________________________________________________________
+float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, const char* key, int &size){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float* arrVals=0x0;
+  while(!feof(fj)){
+    fgets(line,500,fj);
+    if(strstr(line,key)){
+      TString full="";
+      while(!feof(fj)){
+        fgets(line,500,fj);
+        int len = strlen(line);
+        if(line[len-1]=='\n') line[len-1]=0;
+        full.Append(line);
+        if(strstr(line,"}")) break;
+      }
+      full.ReplaceAll("\"values\":","");
+      full.ReplaceAll(" ","");
+      full.ReplaceAll("}","");
+      TObjArray* arrStr=full.Tokenize(",");
+      size=arrStr->GetEntriesFast();
+      arrVals=new float[size];
+      for(int j=0; j<size; j++){
+        TObjString* sss=(TObjString*)arrStr->At(j);
+        TString strval=sss->GetString();
+        strval.ReplaceAll("[","");
+        strval.ReplaceAll("]","");
+        strval.ReplaceAll("\"","");
+        arrVals[j]=strval.Atof();
+      }
+      arrStr->Delete();
+      delete arrStr;
+    }
+  }
+  return arrVals;
+}
+
+//______________________________________________________________________________
+float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName, const char* key, int &size1, int &size2){
+  FILE* fj=fopen(jsonFileName,"r");
+  char line[500];
+  float** arrVals=0x0;
+  while(!feof(fj)){
+    fgets(line,500,fj);
+    if(strstr(line,key)){
+      TString full="";
+      while(!feof(fj)){
+        fgets(line,500,fj);
+        int len = strlen(line);
+        if(line[len-1]=='\n') line[len-1]=0;
+        full.Append(line);
+        if(strstr(line,"}")) break;
+      }
+      full.ReplaceAll("\"values\":","");
+      full.ReplaceAll(" ","");
+      full.ReplaceAll("}","");
+      TObjArray* rowArrStr=full.Tokenize("]");
+      size1=rowArrStr->GetEntriesFast();
+      arrVals=new float*[size1];
+      for(int j=0; j<size1; j++){
+        TObjString* rowStr=(TObjString*)rowArrStr->At(j);
+        TString rowStrVal=rowStr->GetString();
+        TObjArray* arrStr=rowStrVal.Tokenize(",");
+        size2=arrStr->GetEntriesFast();
+        arrVals[j]=new float[size2];
+        for(int k=0; k<size2; k++){
+          TObjString* sss=(TObjString*)arrStr->At(k);
+          TString strval=sss->GetString();
+          strval.ReplaceAll(",[","");
+          strval.ReplaceAll("[","");
+          strval.ReplaceAll("]","");
+          strval.ReplaceAll("\"","");
+          arrVals[j][k]=strval.Atof();
+        }
+      }
+    }
+  }
+  return arrVals;
 }
 
 //______________________________________________________________________________
