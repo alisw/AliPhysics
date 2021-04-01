@@ -4178,8 +4178,8 @@ void  AliIsolationCut::MakeIsolationCut
     Double_t coneptsumBkgClsCut = 0.;
     Double_t coneptsumBkgTrkCut2 = 0.;
 
-    Double_t coneptsumBkgTrkCutRaw = 0.;
-    Double_t coneptsumBkgClsCutRaw = 0.;
+    //Double_t coneptsumBkgTrkCutRaw = 0.;
+    //Double_t coneptsumBkgClsCutRaw = 0.;
 
     Float_t  coneptsumTrackSub   = 0 ;
     Float_t  coneptsumClusterSub = 0 ;
@@ -4382,14 +4382,14 @@ void  AliIsolationCut::MakeIsolationCut
         {
           coneptsumBkgClsRaw  = etaBandPtSumCluster; 
           coneptsumBkgCls     = etaBandPtSumClusterNorm; 
-          coneptsumBkgClsCutRaw= etaBandPtSumClusterCut;
+          //coneptsumBkgClsCutRaw= etaBandPtSumClusterCut;
           coneptsumBkgClsCut  = etaBandPtSumClusterCutNorm;
         }
         else  if( fICMethod == kSumBkgSubPhiBandIC )
         {
           coneptsumBkgClsRaw  = phiBandPtSumCluster; 
           coneptsumBkgCls     = phiBandPtSumClusterNorm;
-          coneptsumBkgClsCutRaw = phiBandPtSumClusterCut;
+          //coneptsumBkgClsCutRaw = phiBandPtSumClusterCut;
           coneptsumBkgClsCut  = phiBandPtSumClusterCutNorm;
         }
 
@@ -4473,7 +4473,7 @@ void  AliIsolationCut::MakeIsolationCut
           ueptLeadTrack      = etaBandptLeadTrack;
           coneptsumBkgTrkRaw = etaBandPtSumTrack; 
           coneptsumBkgTrk    = etaBandPtSumTrackNorm;
-          coneptsumBkgTrkCutRaw = etaBandPtSumTrackCut;
+          //coneptsumBkgTrkCutRaw = etaBandPtSumTrackCut;
           coneptsumBkgTrkCut = etaBandPtSumTrackCutNorm;
           coneptsumBkgTrkCut2 = etaBandPtSumTrackCut2Norm;
         }
@@ -4482,7 +4482,7 @@ void  AliIsolationCut::MakeIsolationCut
           ueptLeadTrack      = phiBandptLeadTrack;
           coneptsumBkgTrkRaw = phiBandPtSumTrack; 
           coneptsumBkgTrk    = phiBandPtSumTrackNorm;
-          coneptsumBkgTrkCutRaw = phiBandPtSumTrackCut;
+          //coneptsumBkgTrkCutRaw = phiBandPtSumTrackCut;
           coneptsumBkgTrkCut = phiBandPtSumTrackCutNorm;
           coneptsumBkgTrkCut2 = phiBandPtSumTrackCut2Norm;
         }
@@ -4491,7 +4491,7 @@ void  AliIsolationCut::MakeIsolationCut
           ueptLeadTrack      = perpBandptLeadTrack;
           coneptsumBkgTrkRaw = perpBandPtSumTrack;
           coneptsumBkgTrk    = perpBandPtSumTrackNorm;
-          coneptsumBkgTrkCutRaw = perpBandPtSumTrackCut;
+          //coneptsumBkgTrkCutRaw = perpBandPtSumTrackCut;
           coneptsumBkgTrkCut = perpBandPtSumTrackCutNorm;
           coneptsumBkgTrkCut2 = perpBandPtSumTrackCut2Norm;
         }
