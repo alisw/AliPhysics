@@ -1243,7 +1243,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       //      continue;
 
       tracks.fIndexCollisions = fCollisionCount;
-      tracks.fTrackType = TrackTypeEnum::Run2GlobalTrack;
+      tracks.fTrackType = TrackTypeEnum::Run2Track;
 
       tracks.fX = AliMathBase::TruncateFloatFraction(track->GetX(), mTrackX);
       tracks.fAlpha = AliMathBase::TruncateFloatFraction(track->GetAlpha(), mTrackAlpha);

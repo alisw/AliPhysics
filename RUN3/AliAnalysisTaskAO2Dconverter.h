@@ -104,9 +104,9 @@ public:
     Run2VertexerTracksMultiVertex = 0x40
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
-    GlobalTrack = 0,
+    Track = 0,
     ITSStandalone,
-    Run2GlobalTrack = 254,
+    Run2Track = 254,
     Run2Tracklet = 255
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackFlagsRun2Enum {
