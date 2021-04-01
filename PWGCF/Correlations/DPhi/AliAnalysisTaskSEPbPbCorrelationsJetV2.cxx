@@ -65,6 +65,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
   fPtOrder(kTRUE),
+  fSameSign(kTRUE),
   fUseRes(kTRUE),
   fN1(0),
   fN2(-1),
@@ -153,12 +154,9 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
       for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt) {
 	for(Int_t jpt = 0; jpt < fNMaxBinsAssocPt; ++jpt) {
 	  fHistSP2AdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP2CdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP2TdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP3AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	}
       }
     }
@@ -197,6 +195,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fRemovePileup2(kFALSE),
   fRemovePileup3(kFALSE),
   fPtOrder(kTRUE),
+  fSameSign(kTRUE),
   fUseRes(kTRUE),
   fN1(0),
   fN2(-1),
@@ -285,12 +284,9 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
       for(Int_t ipt = 0; ipt < fNMaxBinsPt; ++ipt) {
 	for(Int_t jpt = 0; jpt < fNMaxBinsAssocPt; ++jpt) {
 	  fHistSP2AdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP2CdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP2TdPhidEta[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2CdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	  fHistSP2TdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
-	  fHistSP3AdPhidEtaSS[iCent][iZvtx][ipt][jpt] = NULL;
 	}
       }
     }
@@ -368,29 +364,10 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 								     Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
 								     fZvtxAxis->GetBinLowEdge(iZvtx+1),
 								     fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
+								//24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
+								36,-0.5*TMath::Pi(),1.5*TMath::Pi(),32,-1.6,1.6);
 	  fOutputList1 -> Add(fHistSP2AdPhidEta[iCent][iZvtx][iPt][jPt]);
 	  
-	  if (0) { // for output file size reasons
-	  fHistSP2CdPhidEta[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP2CdPhidEta_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
-								Form("%d-%d %%, %.1f<z<%.1f",
-								     Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								     Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
-								     fZvtxAxis->GetBinLowEdge(iZvtx+1),
-								     fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
-//	  fOutputList -> Add(fHistSP2CdPhidEta[iCent][iZvtx][iPt][jPt]);
-	  
-	  fHistSP2TdPhidEta[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP2TdPhidEta_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
-								Form("%d-%d %%, %.1f<z<%.1f",
-								     Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								     Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
-								     fZvtxAxis->GetBinLowEdge(iZvtx+1),
-								     fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
-//	  fOutputList -> Add(fHistSP2TdPhidEta[iCent][iZvtx][iPt][jPt]);
-	  }
-	  	  
 	  // same-sign track pairs
 	  fHistSP2AdPhidEtaSS[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP2AdPhidEtaSS_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
 								  Form("%d-%d %%, %.1f<z<%.1f",
@@ -398,44 +375,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 								       Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
 								       fZvtxAxis->GetBinLowEdge(iZvtx+1),
 								       fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								  24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
+								  36,-0.5*TMath::Pi(),1.5*TMath::Pi(),32,-1.6,1.6);
 	  fOutputList1 -> Add(fHistSP2AdPhidEtaSS[iCent][iZvtx][iPt][jPt]);
-	  
-	  if (0) { // for output file size reasons
-	  fHistSP2CdPhidEtaSS[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP2CdPhidEtaSS_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
-								  Form("%d-%d %%, %.1f<z<%.1f",
-								       Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								       Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
-								       fZvtxAxis->GetBinLowEdge(iZvtx+1),
-								       fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								  24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
-//	  fOutputList -> Add(fHistSP2CdPhidEtaSS[iCent][iZvtx][iPt][jPt]);
-
-	  fHistSP2TdPhidEtaSS[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP2TdPhidEtaSS_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
-								  Form("%d-%d %%, %.1f<z<%.1f",
-								       Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								       Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
-								       fZvtxAxis->GetBinLowEdge(iZvtx+1),
-								       fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								  24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
-//	  fOutputList -> Add(fHistSP2TdPhidEtaSS[iCent][iZvtx][iPt][jPt]);
-	  }	
-	  
-
-	  fHistSP3AdPhidEtaSS[iCent][iZvtx][iPt][jPt] = new TProfile2D(Form("fHist%sSP3AdPhidEtaSS_Cent%02d_Z%02d_Pt%02d_%02d",fUseRes?"Res":"",iCent,iZvtx,iPt,jPt), 
-								  Form("%d-%d %%, %.1f<z<%.1f",
-								       Int_t(fCentAxis->GetBinLowEdge(iCent+1)),
-								       Int_t(fCentAxis->GetBinUpEdge(iCent+1)),
-								       fZvtxAxis->GetBinLowEdge(iZvtx+1),
-								       fZvtxAxis->GetBinUpEdge(iZvtx+1)),
-								  24,-0.5*TMath::Pi(),1.5*TMath::Pi(),24,-1.6,1.6);
-//	  fOutputList -> Add(fHistSP3AdPhidEtaSS[iCent][iZvtx][iPt][jPt]);
 	}
       }
      }
     }
 
- const Int_t nbins_dPhidEtaPt[] = {24, 24, 20, fNbinsPtTrig, fNbinsAssocPt, fNbinsCent};
+ const Int_t nbins_dPhidEtaPt[] = {72, 32, 20, fNbinsPtTrig, fNbinsAssocPt, fNbinsCent};
  const Int_t nVar = sizeof(nbins_dPhidEtaPt) / sizeof(Int_t); 
 
  const TArrayD *aBin_Trig(fPtTrigAxis->GetXbins());
@@ -935,14 +882,14 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
    if (dphi >  1.5*TMath::Pi()) dphi -= TMath::TwoPi();
    if (dphi < -0.5*TMath::Pi()) dphi += TMath::TwoPi();
    Double_t deta = triggerEta - associate->Eta();
-   fHistSP2AdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
+   if(!fSameSign) fHistSP2AdPhidEta[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
    binscont[0] = dphi;
    binscont[1] = deta;
    binscont[2] = fzvtx;
    binscont[3] = triggerPt;
    binscont[4] = associate->Pt();
    binscont[5] = percentile;
-   fHistdPhidEtaPt->Fill(binscont,0);
+   if(!fSameSign) fHistdPhidEtaPt->Fill(binscont,0);
    if (trigger->Charge()*associate->Charge()>0) {
      fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
      fHistdPhidEtaPt_SS->Fill(binscont,0);
@@ -993,7 +940,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEtaMixed(TObjArr
       binscont[3] = triggerPt;
       binscont[4] = associate->Pt();
       binscont[5] = percentile;
-      fHistdPhidEtaPt_Mixed->Fill(binscont,0);
+      if(!fSameSign) fHistdPhidEtaPt_Mixed->Fill(binscont,0);
    
       if (trigger->Charge()*associate->Charge()>0) {
        fHistdPhidEtaPt_Mixed_SS->Fill(binscont,0);
