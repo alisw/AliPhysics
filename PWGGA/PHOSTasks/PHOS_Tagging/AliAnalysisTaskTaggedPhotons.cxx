@@ -1908,12 +1908,13 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
            ((tag1 & (1<<ibit))!=0)){//Multiple tagging
            //Calculate combined probability to pass
            Float_t wtofOld = p1->GetTagWeight(ibit) ;
-           wtofOld=1.-(1.-wtofOld)*(1.-w2TOF);
+//            wtofOld=1.-(1.-wtofOld)*(1.-w2TOF);
+           wtofOld+=w2TOF;
            p1->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
                
-           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p1,wtofOld) ;
+           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p1,w1TOF*w2TOF) ;
            if(p1->GetIsolationTag()&kDefISolation){               
-             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p1,wtofOld) ;
+             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p1,w1TOF*w2TOF) ;
            }
 	}
 	else{ //single tag so far, just add weight
@@ -1944,11 +1945,12 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         if(((oldTag2 & (1<<ibit))!=0) && //Already tagged 
            ((tag2 & (1<<ibit))!=0)){//Multiple tagging
            Float_t wtofOld = p2->GetTagWeight(ibit) ;
-           wtofOld=1.-(1.-wtofOld)*(1.-w1TOF);
+//            wtofOld=1.-(1.-wtofOld)*(1.-w1TOF);
+           wtofOld+=w1TOF;
            p2->SetTagWeight(ibit,wtofOld) ;  //Add weight of TOF cut of the partner
-           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p2,wtofOld) ;
+           FillPIDHistogramsW(Form("hPhot_TaggedMult%d",ibit),p2,w1TOF*w2TOF) ;
            if(p2->GetIsolationTag()&kDefISolation){               
-             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p2,wtofOld) ;
+             FillPIDHistogramsW(Form("hPhot_TaggedMult%d_Isolation2",ibit),p2,w1TOF*w2TOF) ;
            }
 	}
 	else{
