@@ -159,9 +159,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyExoticTrigger()          { fStudyExoticTrigger = kTRUE  ; }
   void         SwitchOffStudyExoticTrigger()         { fStudyExoticTrigger = kFALSE ; }
 
-  void         SwitchOnSumPtVsInConePt()             { fStudySumPtVsInConePt = kTRUE  ; }
-  void         SwitchOffSumPtVsInConePt()            { fStudySumPtVsInConePt = kFALSE ; }
-
   void         SwitchOnStudyNCellsCut()              { fStudyNCellsCut     = kTRUE  ; }
   void         SwitchOffStudyNCellsCut()             { fStudyNCellsCut     = kFALSE ; }
   
@@ -303,8 +300,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fStudyExoticTrigger;                       ///<  Fill histograms with track and cluster pT when the trigger is exotic
   Int_t    fNExoCutInCandidate;                       ///<  Number of exoticity cuts in cluster selection to test in cone for sum pT calculation.
   Float_t  fExoCutInCandidate[20];                    ///<  List of exoticity cuts in cluster selection to test in cone for sum pT calculation.
-  
-  Bool_t   fStudySumPtVsInConePt;                     ///<  Fill histograms with track and cluster pT  in cone vs sum pT in cone
 
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
@@ -709,15 +704,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtTrackInConeDCA[3];                        //!<! track DCAxy,z,constrained vs track pT, in cone with trigger pT > 10 GeV
   TH2F *   fhPtTrackInPerpConeDCA[3];                    //!<! track DCAxy,z,constrained vs track pT, in perpendicular cone trigger pT > 10 GeV
-   
-  TH3F *   fhTrigPtVsSumPtVsTrackInConePt;               //!<! Trigger pT vs iso cone energy vs track in cone pT
-  TH3F *   fhTrigPtVsSumPtVsClusterInConePt;             //!<! Trigger pT vs iso cone energy vs cluster in cone pT
-
-  ///Trigger pT vs iso cone energy vs track in cone pT per centrality bin
-  TH3F **  fhTrigPtVsSumPtVsTrackInConePtCent;           //![GetNCentrBin()]
-
-  /// Trigger pT vs iso cone energy vs cluster in cone pT per centrality bin
-  TH3F **  fhTrigPtVsSumPtVsClusterInConePtCent;         //![GetNCentrBin()]
 
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
