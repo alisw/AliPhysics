@@ -45,7 +45,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
   TString trigger                = "",
   Bool_t  recalE                 = kFALSE, 
-  Inr_t  simu                    = 0,
+  Int_t  simu                    = 0,
   Bool_t  fSaveCells             = kFALSE,
   Bool_t  fSaveClusters          = kFALSE,
   Bool_t  isHeavyIon             = kFALSE,
@@ -105,7 +105,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
 
   if( simu == 1 ) {
     pi0calib->SetIsMC();
-  } else if (sime == 2){
+  } else if (simu == 2){
     pi0calib->SetJJMC();
   }
 
@@ -118,7 +118,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   }
 
   if( fSaveClusters ){
-    pi0calib->SetSaveCluster();
+    pi0calib->SetSaveClusters();
   }
   
   //---------------------
