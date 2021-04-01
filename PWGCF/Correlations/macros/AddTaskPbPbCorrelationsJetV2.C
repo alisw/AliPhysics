@@ -17,8 +17,9 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetUseRes(kTRUE);
   task->SetAverageRes(kFALSE); // this is really needed
   task->SetPtOrder(kTRUE); 
- 
-  Double_t centLimits[] = {20.,30.,60.,90.};
+  task->SetOnlySameSign(kTRUE); 
+
+  Double_t centLimits[] = {0.,10.,20.,30.,60.,90.};
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;
   task->SetCentBinning(nBinCent, centLimits);
 
@@ -36,7 +37,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetPtBinning(nBinPt, ptLimits);
 
   //Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 14.0, 20.0, 50.0};
-  Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0, 20.0, 50.0};
+  Double_t trigPtLimits[] = {0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0, 20.0};
   const Int_t nBinTrigPt = sizeof(trigPtLimits) / sizeof(Double_t) - 1;
   task->SetTrigPtBinning(nBinTrigPt, trigPtLimits);
 
