@@ -10230,8 +10230,6 @@ Bool_t Config_K0Lambdastar(
         
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C");
         AddMonitorOutputV0(isMC,cutSetK0s->GetMonitorOutput(), "K0S");
-        AddMonitorOutputV0(isMC,cutSetLambda->GetMonitorOutput(), "lambda");
-        AddMonitorOutputV0(isMC,cutSetAntiLambda->GetMonitorOutput(), "antilambda");
     }
     
     // AliRsnMiniResonanceFinder
