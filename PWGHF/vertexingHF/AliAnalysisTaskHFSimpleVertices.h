@@ -49,7 +49,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   int GetJsonInteger(const char* jsonFileName, const char* key);
   int GetJsonBool(const char* jsonFileName, const char* key);
   float GetJsonFloat(const char* jsonFileName, const char* key);
-  
+  float* GetJsonArray(const char* jsonFileName, const char* key, int &size);
+  float** GetJsonMatrix(const char* jsonFileName, const char* key, int &size1, int &size2);
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
   void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
