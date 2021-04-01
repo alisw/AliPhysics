@@ -236,6 +236,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fVarsTMVASpectators(0),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
   fRefMult(9.26),
   fYearNumber(16),
   fHistoNtrUnCorr(0),
@@ -408,6 +409,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNamesTMVAVarSpectators(""),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
   fRefMult(9.26),
   fYearNumber(16),
   fHistoNtrUnCorr(0),
@@ -810,8 +812,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   // //fBDTReader = new ReadBDT_Default(inputNamesVec);
   
 
-  fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  if (fUseWeightsLibrary) fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
   fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 1000, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
   if (fDebugHistograms) {    
     fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
     fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
@@ -849,8 +852,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenAcc);
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
-  fOutput->Add(fBDTHisto);
+  if (fUseWeightsLibrary) fOutput->Add(fBDTHisto);
   fOutput->Add(fBDTHistoTMVA);
+  fOutput->Add(fBDTHistoTMVA3d);
   fOutput->Add(fHistoV0Radius);
   if (fDebugHistograms) {    
     fOutput->Add(fBDTHistoVsMassK0S);
@@ -2312,8 +2316,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
       //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
       //Printf("tmva = %f", tmva); 
-      fBDTHisto->Fill(BDTResponse, invmassLc);
+      if (fUseWeightsLibrary) fBDTHisto->Fill(BDTResponse, invmassLc);
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
+      fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0); 
       if (fDebugHistograms) {
 	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
