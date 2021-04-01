@@ -1,4 +1,4 @@
-AliAnalysisTask_JPsi_EMCal2 *AddTask_JPsi_EMCal(
+AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
 			Bool_t 	isMC 			= kTRUE,
 			Bool_t 	isAOD 			= kTRUE,
@@ -81,7 +81,7 @@ AliAnalysisTask_JPsi_EMCal2 *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal2 *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration, is_Trigger_sim);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration, is_Trigger_sim);
 	
 	//_______________________
 	//Trigger
