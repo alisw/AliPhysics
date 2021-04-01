@@ -558,7 +558,10 @@ Bool_t AliCaloSigmaCuts::SetDCAZCut(Int_t DCAZCut){
     break;  
   case 4:
     fDCAZ = 0.015;
-    break;            
+    break;
+  case 5:
+    fDCAZ = 0.025;
+    break;                 
   default:
     cout<<"Warning: DCAZCut not defined"<<DCAZCut<<endl;
     return kFALSE;
@@ -713,7 +716,11 @@ Bool_t AliCaloSigmaCuts::SetOpeningAngleCut(Int_t OpeningAngleCut){
   case 4:
     fMaxOpeningAngle = 0.25;
     fMinOpeningAngle = 0.05;
-    break;     
+    break;
+  case 5:
+    fMaxOpeningAngle = 0.6;
+    fMinOpeningAngle = 0.05;
+    break;        
   default:
     cout<<"Warning: OpeningAngleCut not defined"<<OpeningAngleCut<<endl;
     return kFALSE;
