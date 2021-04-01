@@ -1153,6 +1153,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+        if(clu->GetIsExotic()) continue;
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
