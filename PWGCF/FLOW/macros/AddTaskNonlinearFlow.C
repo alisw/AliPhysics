@@ -10,7 +10,7 @@
 #include "AliAnalysisTaskNonlinearFlow.h"
 #endif
 
-AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
+AliAnalysisTaskNonlinearFlow* AddTaskTestFlow(
 		Int_t		fFilterbit 		= 96,
 		Double_t	fMinPt			= 0.2,
 		Double_t	fMaxPt			= 3.0,
@@ -44,7 +44,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//=========================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error("AddTaskNonlinearFlow.C", "No analysis manager to connect to.");
+		Error("AddTaskTestFlow.C", "No analysis manager to connect to.");
 		return NULL;
 	}
 
@@ -106,9 +106,18 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName+=suffixName;
 	AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(Form("QA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
 	mgr->ConnectInput (taskFlowEp, 0, cinput);
 	mgr->ConnectOutput(taskFlowEp, 1, cout_hist);
+	AliAnalysisDataContainer *physics_hist = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	mgr->ConnectOutput(taskFlowEp, 2, physics_hist);
+        int outSlotCounter=2;
+        for (int i = 0; i < 30; i++) {
+            outSlotCounter++;
+	    AliAnalysisDataContainer *physics_hist_i = mgr->CreateContainer(Form("output_%s_%d", uniqueID.Data(), i), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
+	    mgr->ConnectOutput(taskFlowEp, outSlotCounter, physics_hist_i);
+        }
+        
 	Int_t inSlotCounter=1;
 	if(fNUA || fNUE)
 		TGrid::Connect("alien:");
@@ -154,7 +163,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_periods.root");
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_allHM.root");
                     }
                 } 
 					

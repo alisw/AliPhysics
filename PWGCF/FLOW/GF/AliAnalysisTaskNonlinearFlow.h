@@ -290,6 +290,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
+		TList*			fListOfProfile;			//! Output list of objects
+		TList*			fListOfProfiles[30];		//! Output list of objects
 
 		// Cut functions for LHC15o
 		TF1*			fMultTOFLowCut;			// cut low for TOF multiplicity outliers
@@ -418,7 +420,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double xbins[3000+10]; //!
 		int nn;
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
-		void InitProfile(PhysicsProfile& profile, TString);
+		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
 		ClassDef(AliAnalysisTaskNonlinearFlow, 1);    //Analysis task
 };
