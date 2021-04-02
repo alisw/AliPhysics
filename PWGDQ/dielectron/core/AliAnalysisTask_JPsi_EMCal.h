@@ -536,6 +536,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticle_EMCalpid_leg2;
     
     TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi;
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi_eg1;
+    TH1F                *fPtMCparticle_EMCal_TM_e_from_JPsi_eg2;
     TH1F                *fPtMCparticle_EMCal_TM_electrons;
     TH1F                *fPtMCparticle_EMCalpid_leg1_e_from_JPsi;
     TH1F                *fPtMCparticle_EMCalpid_leg2_e_from_JPsi;
