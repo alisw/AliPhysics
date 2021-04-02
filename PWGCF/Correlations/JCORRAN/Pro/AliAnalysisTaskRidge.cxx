@@ -1318,7 +1318,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 //	double addPhi = 15.0 * pi / 180.0;	
 	double addPhi = 0;
 	if( ntracks > 0 )
-	for (UInt_t  it = 0; it < ntracks-1; it++) {
+	for (UInt_t  it = 0; it < ntracks; it++) {
 		track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[it]);
 		if (!track1) continue;
 		if( fOption.Contains("MyTrack") ){
@@ -1342,7 +1342,10 @@ void AliAnalysisTaskRidge::FillTracks(){
 				}
 			}
 		}
-		for (UInt_t jt = it+1; jt < ntracks; jt++) {
+//		for (UInt_t jt = it+1; jt < ntracks; jt++) {
+		for (UInt_t jt = 0; jt < ntracks; jt++) {
+			if( it != jt ) continue;
+
 			track2 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[jt]);
 			if (!track2) continue;
 			if( fOption.Contains("MyTrack") ){
