@@ -1344,7 +1344,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 		}
 //		for (UInt_t jt = it+1; jt < ntracks; jt++) {
 		for (UInt_t jt = 0; jt < ntracks; jt++) {
-			if( it != jt ) continue;
+			if( it == jt ) continue;
 
 			track2 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[jt]);
 			if (!track2) continue;
