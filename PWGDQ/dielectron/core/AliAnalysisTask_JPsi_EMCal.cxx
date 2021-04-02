@@ -454,6 +454,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 
 ,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg1(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg2(0)
 ,fPtMCparticle_EMCal_TM_electrons(0)
 ,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
 ,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
@@ -835,6 +837,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fPtMCparticle_EMCalpid_leg2(0)
 
 ,fPtMCparticle_EMCal_TM_e_from_JPsi(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg1(0)
+,fPtMCparticle_EMCal_TM_e_from_JPsi_eg2(0)
 ,fPtMCparticle_EMCal_TM_electrons(0)
 ,fPtMCparticle_EMCalpid_leg1_e_from_JPsi(0)
 ,fPtMCparticle_EMCalpid_leg2_e_from_JPsi(0)
@@ -1421,6 +1425,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         
         
         fPtMCparticle_EMCal_TM_e_from_JPsi = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCal_TM_e_from_JPsi_eg1 = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi_eg1",";p_{T} (GeV/c);Count",40,0,40);
+        fPtMCparticle_EMCal_TM_e_from_JPsi_eg2 = new TH1F("fPtMCparticle_EMCal_TM_e_from_JPsi_eg2",";p_{T} (GeV/c);Count",40,0,40);
         fPtMCparticle_EMCal_TM_electrons = new TH1F("fPtMCparticle_EMCal_TM_electrons",";p_{T} (GeV/c);Count",40,0,40);
         fPtMCparticle_EMCalpid_leg1_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg1_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
         fPtMCparticle_EMCalpid_leg2_e_from_JPsi = new TH1F("fPtMCparticle_EMCalpid_leg2_e_from_JPsi",";p_{T} (GeV/c);Count",40,0,40);
@@ -1489,6 +1495,8 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
         fOutputList->Add(fPtMCparticle_EMCalpid_leg2);
         
         fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi);
+        fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi_eg1);
+        fOutputList->Add(fPtMCparticle_EMCal_TM_e_from_JPsi_eg2);
         fOutputList->Add(fPtMCparticle_EMCal_TM_electrons);
         fOutputList->Add(fPtMCparticle_EMCalpid_leg1_e_from_JPsi);
         fOutputList->Add(fPtMCparticle_EMCalpid_leg2_e_from_JPsi);
@@ -3111,9 +3119,15 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                             {
                                 if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==443)){
                                     fPtMCparticle_EMCal_TM_e_from_JPsi->Fill(track->Pt()); //reconstructed pT
+                                    
+                                    //to check trigger efficiency in emcl acceptance
+                                    if(feg1 || fdg1)fPtMCparticle_EMCal_TM_e_from_JPsi_eg1->Fill(track->Pt()); //reconstructed pT
+                                    if(feg2 || fdg2)fPtMCparticle_EMCal_TM_e_from_JPsi_eg2->Fill(track->Pt()); //reconstructed pT
+                                    
+                                    
                                 }
                                 
-                                //denominator TPCpid efficiency using all electrons
+                                
                                 if(TMath::Abs(fMCparticle->GetPdgCode())==11  && (TMath::Abs(fMCparticleMother->GetPdgCode())!=22) ){
                                     fPtMCparticle_EMCal_TM_electrons->Fill(track->Pt()); //reconstructed pT
                                 }
