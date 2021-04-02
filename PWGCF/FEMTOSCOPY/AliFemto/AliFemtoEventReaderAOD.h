@@ -130,7 +130,13 @@ public:
   void SetUseAliEventCuts(Bool_t useAliEventCuts);
   void SetReadFullMCData(Bool_t should_read=true);
   bool GetReadFullMCData() const;
+  
+  //ml jets--
+  void SetCalcJets(Int_t jets); //0-no, 1-same, 2-diff
+  bool GetCalcJets() const;
+  void SetPtmaxJets(Double_t ptmax);
 
+  //---
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -206,6 +212,10 @@ protected:
   /// (i.e. tracks with negative labels)
   Bool_t           fReadFullMCData;
 
+//ML -- calculate ptmax,phimax,etamax of event
+  Int_t           fjets; //0-no calc., 1-same, 2-diff
+  Double_t         fPtmax; //max pT in event
+
 private:
 
   AliAODMCParticle *GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);
@@ -278,7 +288,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventReaderAOD, 13);
+  ClassDef(AliFemtoEventReaderAOD, 31);
   /// \endcond
 #endif
 
