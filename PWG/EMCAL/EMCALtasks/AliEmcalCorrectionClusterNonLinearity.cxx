@@ -36,7 +36,8 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kBeamTestNS", AliEMCALRecoUtils::kBeamTestNS },
     { "kPi0MCNS", AliEMCALRecoUtils::kPi0MCNS },
     { "kTestBeamShaper", AliEMCALRecoUtils::kTestBeamShaper },
-    { "kTestBeamFinalMC", AliEMCALRecoUtils::kTestBeamFinalMC }
+    { "kTestBeamFinalMC", AliEMCALRecoUtils::kTestBeamFinalMC },
+    { "kTestBeamShaperWoScale", AliEMCALRecoUtils::kTestBeamShaperWoScale }
 };
 
 /**
