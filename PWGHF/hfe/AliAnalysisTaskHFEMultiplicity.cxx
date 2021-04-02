@@ -1179,7 +1179,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
             
-            if(energy < 0.3) continue;
+            //if(energy < 0.1) continue;
             if(TMath::Abs(clut) > 50) continue;
             
             ncells= clu->GetNCells();
