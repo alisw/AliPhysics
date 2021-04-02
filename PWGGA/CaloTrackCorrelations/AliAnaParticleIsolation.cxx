@@ -5421,6 +5421,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       if ( ip==i ) continue;
       
+      if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+
       if( (pdg==111 || pdg==221) && ( ip == pi0d1Label || ip == pi0d2Label ) )
       {
         //printf("Do not count pi0 decays in cone when isolating pi0 \n");

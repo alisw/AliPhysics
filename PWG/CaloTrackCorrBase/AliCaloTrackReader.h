@@ -817,8 +817,16 @@ public:
   virtual void SwitchOffPythiaEventHeaderUse()            { fCheckPythiaEventHeader = kFALSE ; }
   virtual Bool_t IsPythiaEventHeaderUsed()          const { return fCheckPythiaEventHeader ; }
   
-  // See implementation in AOD and ESD readers
-  
+  // Methods to reject generated MC event or particles
+  // Implemented in ESD/AOD reader
+  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const { return kFALSE; }
+  virtual Bool_t IsPileupInGeneratedMCEvent(TString genname="")          const { return kFALSE; }
+  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString genname="") const { return kFALSE; }
+
+  virtual void   SwitchOnMCParticlePileUpRejection()       { fRejectPileUpMCParticle = kTRUE  ; }
+  virtual void   SwitchOffMCParticlePileUpRejection()      { fRejectPileUpMCParticle = kFALSE ; }
+  virtual Bool_t IsMCParticlePileUpRejected()        const { return fRejectPileUpMCParticle   ; }
+
   // Filtered kinematics in AOD
   
   virtual TClonesArray*     GetAODMCParticles()      const ;
@@ -1284,6 +1292,8 @@ public:
   Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
   Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
 
+  Bool_t           fRejectPileUpMCParticle ;       ///< Reject injected Pile-up MC particles
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1291,7 +1301,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,96) ;
+  ClassDef(AliCaloTrackReader,97) ;
   /// \endcond
 
 } ;
