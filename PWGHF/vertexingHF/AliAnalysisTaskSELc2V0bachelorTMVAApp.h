@@ -39,6 +39,7 @@
 #include <TMVA/Reader.h>
 #include <TMVA/MethodCuts.h>
 #include <TProfile.h>
+#include <TH3D.h>
 
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
@@ -611,6 +612,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
   TString fXmlWeightsFile;              // file with TMVA weights
   TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  TH3D *fBDTHistoTMVA3d;                  //!<! BDT histo file for the case in which the xml file is used; 3D to use also signd0 (for special studies)
   Bool_t fUseXmlFileFromCVMFS;          // Boolean to acces Xml from CVMFS path
   TString fXmlFileFromCVMFS;            // Path in CVMFS directory
   
