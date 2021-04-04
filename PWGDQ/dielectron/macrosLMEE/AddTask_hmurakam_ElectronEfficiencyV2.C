@@ -8,8 +8,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
                                                                            Bool_t usePhiV      = kTRUE,
                                                                            Double_t maxMee     = 0.14,
                                                                            Double_t minphiv    = 2.0,
-                                                                           Bool_t DeactivateLS = kFALSE)
-
+                                                                           Bool_t DeactivateLS = kFALSE,
+                                                                           TString outputFileName="LMEE.root",
+                                                                           TString suffix="")
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -17,7 +18,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  fileName = "LMEE.root"; // create a subfolder in the file
+  fileName = outputFileName; // create a subfolder in the file
 
   // Loading individual config file either local or from Alien
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
@@ -155,8 +156,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     task->AddTrackCuts(filter);
   }
 
+  TString outlistname = Form("efficiency%s",suffix.Data());
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }
