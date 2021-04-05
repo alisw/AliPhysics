@@ -690,7 +690,9 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
 	 fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
          fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,ptBins)) ;
        }    
-       fOutputContainer->Add(new TH2F(Form("hMCmass_cent%d",cen),"Mass with reconstructed decay partner",nM,0.,mMax,nPt,ptBins )) ;			
+       fOutputContainer->Add(new TH2F(Form("hMCmass0_cent%d",cen),"Mass with reconstructed decay partner Emin=0.1",nM,0.,mMax,nPt,ptBins )) ;			
+       fOutputContainer->Add(new TH2F(Form("hMCmass1_cent%d",cen),"Mass with reconstructed decay partner Emin=0.2",nM,0.,mMax,nPt,ptBins )) ;			
+       fOutputContainer->Add(new TH2F(Form("hMCmass2_cent%d",cen),"Mass with reconstructed decay partner Emin=0.3",nM,0.,mMax,nPt,ptBins )) ;			
     }    
   }
 
@@ -1481,7 +1483,11 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      //Partner reconstructed, but did not pass cuts
                 FillPIDHistogramsW("hMCDecWRecPartn",p,w1TOF) ;	
     	        Double_t invMass=(*p+ *pp).M() ;
-	        FillHistogram(Form("hMCmass_cent%d",fCentBin),invMass,p->Pt(),p->GetWeight()*w1TOF*TOFCutEff(pp->Pt())) ;
+                for(Int_t eminType=0; eminType<3; eminType++){
+                  if(pp->E()>fEminCut+0.1*eminType){
+	             FillHistogram(Form("hMCmass%d_cent%d",eminType,fCentBin),invMass,p->Pt(),p->GetWeight()*w1TOF*TOFCutEff(pp->Pt())) ;
+                  }
+                }
 		Double_t nSigma=InPi0Band(invMass,p->Pt()) ;
 		// analog to Tag
                 for(Int_t eminType=0; eminType<3; eminType++){
@@ -1489,7 +1495,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   	            for(Int_t isigma=0; isigma<3; isigma++){
   	              if(nSigma<1.+isigma){
 			 Int_t iType=3*eminType+isigma ;
-	                 FillPIDHistogramsW(Form("hMCDecWithFoundPartnType%d",iType),p,w1TOF) ;
+	                 FillPIDHistogramsW(Form("hMCDecWithFoundPartnType%d",iType),p,w1TOF*TOFCutEff(pp->Pt())) ;
 		      }
 		    }
 		  }
