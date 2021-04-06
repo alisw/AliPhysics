@@ -10,7 +10,7 @@
 #include "AliAnalysisTaskNonlinearFlow.h"
 #endif
 
-AliAnalysisTaskNonlinearFlow* AddTaskTestFlow(
+AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		Int_t		fFilterbit 		= 96,
 		Double_t	fMinPt			= 0.2,
 		Double_t	fMaxPt			= 3.0,
@@ -44,7 +44,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskTestFlow(
 	//=========================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error("AddTaskTestFlow.C", "No analysis manager to connect to.");
+		Error("AddTaskNonlinearFlow.C", "No analysis manager to connect to.");
 		return NULL;
 	}
 
