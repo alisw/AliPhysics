@@ -32,6 +32,7 @@ set(SRCS
   AliAnalysisTaskQuarkoniumTreeEmbedding.cxx
   AliAnalysisTaskQuarkoniumTreeMC.cxx
   AliAnalysisTaskPbPbTree_MCut.cxx
+  AliAnalysisTaskPbPbTree_SingleMuons.cxx
   AliAnalysisTaskTree_MCut.cxx  
   )
 
