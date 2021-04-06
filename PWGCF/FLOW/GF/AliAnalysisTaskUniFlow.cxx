@@ -1564,8 +1564,8 @@ Bool_t AliAnalysisTaskUniFlow::LoadWeights()
       } else if(fFlowPeriodWeights){
         // loading period-specific weights
         if(fFlowWeightsTag.IsNull()) listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fEventAOD->GetRunNumber()));
-        else listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%s_%s",ReturnPPperiod(fEventAOD->GetRunNumber()),fFlowWeightsTag.Data()));
-        if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
+        else listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%s_%s",ReturnPPperiod(fEventAOD->GetRunNumber()).Data(),fFlowWeightsTag.Data()));
+        if(!listFlowWeights) { AliError(Form("Loading period weights failed! Trying to reach %s_%s",ReturnPPperiod(fEventAOD->GetRunNumber()).Data(),fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
       }
       else {
           // loading run-specific weights
@@ -8121,7 +8121,7 @@ Double_t AliAnalysisTaskUniFlow::PIDCorrection(const AliAODTrack *track, const P
     return SigmaValue;
 }
 // ============================================================================
-const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
+TString AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
 {
   Bool_t isHM = kFALSE;
   if(fTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
@@ -8142,11 +8142,17 @@ const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
   if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
     if(!isHM && runNumber >= 270581 && runNumber <= 270667) return "LHC17ce";
     if(runNumber >= 270822 && runNumber <= 270830){
-      if(isHM) return "averaged";
+      if(isHM){
+        if(fFlowWeightsTag.IsNull()) return "averaged";
+        else return fFlowWeightsTag;
+      }
       else return "LHC17ce";
     }
     if(runNumber >= 270854 && runNumber <= 270865){
-      if(isHM) return "averaged";
+      if(isHM) {
+        if(fFlowWeightsTag.IsNull()) return "averaged";
+        else return fFlowWeightsTag;
+      }
       else return "LHC17f";
     }
     if(runNumber >= 271870 && runNumber <= 273103) return "LHC17h";
@@ -8195,7 +8201,10 @@ const char* AliAnalysisTaskUniFlow::ReturnPPperiod(const Int_t runNumber) const
   }
 
   AliWarning("Unknown period! Returning averaged weights");
-  return "averaged";
+  if(fFlowWeightsTag.IsNull())
+    return "averaged";
+  else
+    return fFlowWeightsTag;
 }
 
 #endif
