@@ -183,7 +183,8 @@ fhPtHardEnClusterRatio(0),   fhPtHardEnClusterCenRatio(0),
 fEnergyHistogramNbins(0),    fHistoCentDependent(0),          fHistoPtDependent(0),
 fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
-fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0)
+fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
+fRejectPileUpMCParticle(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECen[i]= 0x0 ;
@@ -341,7 +342,19 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit(UInt_t trigFired)
 //_____________________________________________________
 Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
 {
-  if( !fMC || fNMCGenerToAccept <= 0 ) return kTRUE;
+  if ( !fMC ) return kTRUE ;
+
+  if ( fRejectPileUpMCParticle )
+  {
+    Bool_t pileup = IsMCParticleFromOutOfBunchPileupCollision(mcLabel);
+    if ( pileup )
+    {
+      AliDebug(2, Form("skip label %d, due to embedded pileup MC",mcLabel) );
+      return kFALSE;
+    }
+  }
+
+  if ( fNMCGenerToAccept <= 0 ) return kTRUE;
   
   TString genName;
   Int_t genIndex;
@@ -356,7 +369,8 @@ Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
     if ( generOK && fMCGenerIndexToAccept[ig] >= 0 && fMCGenerToAccept[ig] != genIndex) generOK = kFALSE;
   }
   
-  if ( !generOK ) AliDebug(1, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
+  if ( !generOK )
+    AliDebug(2, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
 
   return generOK;
 }

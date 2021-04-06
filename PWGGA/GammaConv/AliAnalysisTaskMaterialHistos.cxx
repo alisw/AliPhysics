@@ -72,6 +72,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fiEventCut(NULL),
+  fiPhotonCut(NULL),
   fDoDeDxMaps(0),
   fDoMultWeights(0),
   fWeightMultMC(1),
@@ -90,6 +92,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hNGoodESDTracksEta08_14(NULL),
   fHistoNV0Tracks(NULL),
   fHistoNV0TracksWeighted(NULL),
+  fHistoESDPrimaryParticlePt(NULL), 
+  fHistoESDPrimaryParticleDCAPt(NULL), 
   hESDConversionRPhi(NULL),
   hESDConversionRPhiFromConv(NULL),
   hESDConversionRZ(NULL),
@@ -107,6 +111,9 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hElectronRNSigmadEdx(NULL),
   hPositronRdEdx(NULL),
   hPositronRNSigmadEdx(NULL),
+  fHistoMCPrimaryPtvsSource(NULL), 
+  fHistoMCPhysicalPrimaryPt(NULL), 
+  fHistoMCPhysicalPrimaryAPt(NULL), 
   hMCConversionRPhi(NULL),
   hMCConversionRPhiFromConv(NULL),
   hMCConversionRPt(NULL),
@@ -118,6 +125,12 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCAllGammaWOWeightPt(NULL),
   hMCAllSecondaryGammaPt(NULL),
   hMCSecondaryConvGammaPtR(NULL),
+  fHistoMCTruePhysicalPrimaryPt(NULL), 
+  fHistoMCTruePhysicalPrimaryAPt(NULL), 
+  fHistoMCTruePhysicalPrimaryMCPt(NULL), 
+  fHistoMCTruePhysicalPrimaryDCAPt(NULL),
+  fHistoMCTrueDecayDCAPt(NULL),
+  fHistoMCTrueMaterialDCAPt(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRPhiFromConv(NULL),
   hMCTrueConversionRZ(NULL),
@@ -199,6 +212,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fiEventCut(NULL),
+  fiPhotonCut(NULL),
   fDoDeDxMaps(0),
   fDoMultWeights(0),
   fWeightMultMC(1),
@@ -217,6 +232,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hNGoodESDTracksEta08_14(NULL),
   fHistoNV0Tracks(NULL),
   fHistoNV0TracksWeighted(NULL),
+  fHistoESDPrimaryParticlePt(NULL), 
+  fHistoESDPrimaryParticleDCAPt(NULL), 
   hESDConversionRPhi(NULL),
   hESDConversionRPhiFromConv(NULL),
   hESDConversionRZ(NULL),
@@ -234,6 +251,9 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hElectronRNSigmadEdx(NULL),
   hPositronRdEdx(NULL),
   hPositronRNSigmadEdx(NULL),
+  fHistoMCPrimaryPtvsSource(NULL), 
+  fHistoMCPhysicalPrimaryPt(NULL), 
+  fHistoMCPhysicalPrimaryAPt(NULL), 
   hMCConversionRPhi(NULL),
   hMCConversionRPhiFromConv(NULL),
   hMCConversionRPt(NULL),
@@ -245,6 +265,12 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCAllGammaWOWeightPt(NULL),
   hMCAllSecondaryGammaPt(NULL),
   hMCSecondaryConvGammaPtR(NULL),
+  fHistoMCTruePhysicalPrimaryPt(NULL), 
+  fHistoMCTruePhysicalPrimaryAPt(NULL), 
+  fHistoMCTruePhysicalPrimaryMCPt(NULL), 
+  fHistoMCTruePhysicalPrimaryDCAPt(NULL),
+  fHistoMCTrueDecayDCAPt(NULL),
+  fHistoMCTrueMaterialDCAPt(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRPhiFromConv(NULL),
   hMCTrueConversionRZ(NULL),
@@ -349,6 +375,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hNGoodESDTracksEta08_14   = new TH1F*[fnCuts];
   fHistoNV0Tracks           = new TH1F*[fnCuts];
   fHistoNV0TracksWeighted   = new TH1F*[fnCuts];
+  fHistoESDPrimaryParticlePt = new TH1F*[fnCuts];
+  fHistoESDPrimaryParticleDCAPt = new TH2F*[fnCuts];
   hESDConversionRPhi        = new TH2F*[fnCuts];
   hESDConversionRPhiFromConv= new TH2F*[fnCuts];
   hESDConversionRZ          = new TH2F*[fnCuts];
@@ -382,6 +410,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hPositrondEdxMapsR3  =   new TH3F*[fnCuts];
   }
 
+  fHistoMCPrimaryPtvsSource = new TH2F*[fnCuts];
+  fHistoMCPhysicalPrimaryPt = new TH1F*[fnCuts];
+  fHistoMCPhysicalPrimaryAPt = new TH1F*[fnCuts];
   hMCConversionRPhi         = new TH2F*[fnCuts];
   hMCConversionRPhiFromConv = new TH2F*[fnCuts];
   hMCConversionRPt          = new TH2F*[fnCuts];
@@ -393,6 +424,13 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCAllGammaWOWeightPt     = new TH1F*[fnCuts];
   hMCAllSecondaryGammaPt    = new TH2F*[fnCuts];
   hMCSecondaryConvGammaPtR  = new TH3F*[fnCuts];
+
+  fHistoMCTruePhysicalPrimaryPt = new TH1F*[fnCuts];
+  fHistoMCTruePhysicalPrimaryAPt = new TH1F*[fnCuts];
+  fHistoMCTruePhysicalPrimaryMCPt = new TH1F*[fnCuts];
+  fHistoMCTruePhysicalPrimaryDCAPt = new TH2F*[fnCuts];
+  fHistoMCTrueDecayDCAPt     = new TH2F*[fnCuts];
+  fHistoMCTrueMaterialDCAPt  = new TH2F*[fnCuts];
 
   hMCTrueConversionRPhi        = new TH2F*[fnCuts];
   hMCTrueConversionRPhiFromConv= new TH2F*[fnCuts];
@@ -535,6 +573,12 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
       fESDList[iCut]->Add(fHistoNV0TracksWeighted[iCut]);
     }
 
+    fHistoESDPrimaryParticlePt[iCut]  = new TH1F("ESD_PrimaryParticle_Pt", "ESD_PrimaryParticle_Pt", nBinsPt, 0., 20.);
+    fESDList[iCut]->Add(fHistoESDPrimaryParticlePt[iCut]);
+
+    fHistoESDPrimaryParticleDCAPt[iCut]  = new TH2F("ESD_PrimaryParticle_DCAPt", "ESD_PrimaryParticle_DCAPt", 5000, -1., 1., nBinsPt, 0., 20.);
+    fESDList[iCut]->Add(fHistoESDPrimaryParticleDCAPt[iCut]);
+
     hESDConversionRPhi[iCut]        = new TH2F("ESD_Conversion_RPhi","ESD_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
     fESDList[iCut]->Add(hESDConversionRPhi[iCut]);
 
@@ -632,6 +676,27 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         hMCSecondaryConvGammaPtR[iCut]->GetZaxis()->SetBinLabel(4,"rest");
         fMCList[iCut]->Add(hMCSecondaryConvGammaPtR[iCut]);
 
+        fHistoMCPrimaryPtvsSource[iCut]  = new TH2F("MC_Primary_Pt_Source", "MC_Primary_Pt_Source", nBinsPt, 0.,20., 12, -0.5, 9.5);
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(1,"Pi+");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(2,"Pi-");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(3,"K+");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(4,"K-");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(5,"K0s");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(6,"K0l");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(7,"Lambda");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(8,"Omega");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(9,"Phi");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(10,"Rho0");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(11,"Proton+");
+        fHistoMCPrimaryPtvsSource[iCut]->GetYaxis()->SetBinLabel(12,"Proton-");
+        fMCList[iCut]->Add(fHistoMCPrimaryPtvsSource[iCut]);
+
+	fHistoMCPhysicalPrimaryPt[iCut]  = new TH1F("MC_PhysicalPrimary_Pt", "MC_PhysicalPrimary_Pt", nBinsPt, 0., 20.);
+	fMCList[iCut]->Add(fHistoMCPhysicalPrimaryPt[iCut]);
+
+	fHistoMCPhysicalPrimaryAPt[iCut]  = new TH1F("MC_PhysicalPrimaryA_Pt", "MC_PhysicalPrimaryA_Pt", nBinsPt, 0., 20.);
+	fMCList[iCut]->Add(fHistoMCPhysicalPrimaryAPt[iCut]);
+
 
         hMCConversionRPhi[iCut]     = new TH2F("MC_Conversion_RPhi","MC_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
         fMCList[iCut]->Add(hMCConversionRPhi[iCut]);
@@ -652,7 +717,30 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
         if (fDoMultWeights>0 && fIsMC>0 ) {
           hMCConversionRPt[iCut] ->Sumw2();
+	  fHistoMCPrimaryPtvsSource[iCut]->Sumw2();
+	  fHistoMCPhysicalPrimaryPt[iCut]->Sumw2();
         }
+
+
+	fHistoMCTruePhysicalPrimaryPt[iCut]  = new TH1F("ESD_TruePhysicalPrimary_Pt", "ESD_TruePhysicalPrimary_Pt", nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTruePhysicalPrimaryPt[iCut]);
+
+	fHistoMCTruePhysicalPrimaryAPt[iCut]  = new TH1F("ESD_TruePhysicalPrimaryA_Pt", "ESD_TruePhysicalPrimaryA_Pt", nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTruePhysicalPrimaryAPt[iCut]);
+
+	fHistoMCTruePhysicalPrimaryMCPt[iCut]  = new TH1F("ESD_TruePhysicalPrimary_MCPt", "ESD_TruePhysicalPrimary_MCPt", nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTruePhysicalPrimaryMCPt[iCut]);
+
+
+	fHistoMCTruePhysicalPrimaryDCAPt[iCut]  = new TH2F("ESD_TruePhysicalPrimary_DCAPt", "ESD_TruePhysicalPrimary_DCAPt", 5000, -1., 1., nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTruePhysicalPrimaryDCAPt[iCut]);
+
+	fHistoMCTrueDecayDCAPt[iCut]  = new TH2F("ESD_TrueDecay_DCAPt", "ESD_TrueDecay_DCAPt", 5000, -1., 1., nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTrueDecayDCAPt[iCut]);
+
+	fHistoMCTrueMaterialDCAPt[iCut]  = new TH2F("ESD_TrueMaterial_DCAPt", "ESD_TrueMaterial_DCAPt", 5000, -1., 1., nBinsPt, 0., 20.);
+	fTrueList[iCut]->Add(fHistoMCTrueMaterialDCAPt[iCut]);
+
 
         hMCTrueConversionRPhi[iCut] = new TH2F("ESD_TrueConversion_RPhi","ESD_TrueConversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueConversionRPhi[iCut]);
@@ -881,6 +969,9 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   for(Int_t iCut = 0; iCut<fnCuts; iCut++){
     if(fDoSelectBCNumber) hBCNumberSelected[iCut]->Fill(fBCNumber);
     fiCut = iCut;
+    fiEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
+    fiPhotonCut = dynamic_cast<AliConversionPhotonCuts*>(fConversionCutArray->At(fiCut));
+
     Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if(eventNotAccepted){
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
@@ -965,6 +1056,8 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
         fNContrVtx = 0;
       }
     }
+    ProcessPrimaryCandidatesNoDCA();
+    ProcessPrimaryCandidates();
     ProcessPhotons();
     fGammaCandidates->Clear(); // delete this cuts good gammas
   }
@@ -984,6 +1077,7 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
+  //  fMCEvent->Stack();
 
   // Loop over all primary MC particle
 
@@ -1000,6 +1094,53 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
         Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
+      }
+
+
+      Double_t mesonY = 1.e30;
+      Double_t ratio  = 0;
+      if (particle->Energy() != TMath::Abs(particle->Pz())){
+	ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
+      }
+      if( !(ratio <= 0) ){
+	mesonY = particle->Y()-fiEventCut->GetEtaShift();
+      }
+      
+      if ((mesonY > -fiPhotonCut->GetEtaCut() ) && (mesonY < fiPhotonCut->GetEtaCut())){   // including proton/antiproton
+	if ( particle->GetPdgCode() == 211 ){  // positve pions
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),0.,fWeightMultMC);
+	} else if ( particle->GetPdgCode() == -211 ){  // negative pions
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),1.,fWeightMultMC);
+	} else if ( particle->GetPdgCode() == 321 ){  // positve kaons
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),2.,fWeightMultMC);
+	} else if ( particle->GetPdgCode() == -321 ){  // negative kaons
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),3.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 310 ){  // K0s
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),4.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 130 ){  // K0l
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),5.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 3122 ){  // Lambda/ AntiLambda
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),6.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 223 ){  // Omega
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),7.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 333 ){  // Phi
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),8.,fWeightMultMC);
+	} else if ( TMath::Abs(particle->GetPdgCode()) == 113 ){  // Rho0
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),9.,fWeightMultMC);
+	} else if ( particle->GetPdgCode() == 2212 ){  // Proton
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),10.,fWeightMultMC);
+	} else if ( particle->GetPdgCode() == -2212 ){  // antiproton
+	  fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(),11.,fWeightMultMC);
+	}
+
+	if ( particle->GetPdgCode() == 211 || particle->GetPdgCode() == -211 ||
+	     particle->GetPdgCode() == 321 || particle->GetPdgCode() == -321 ||
+	     particle->GetPdgCode() == 2212 || particle->GetPdgCode() == -2212 ){
+	  fHistoMCPhysicalPrimaryPt[fiCut]->Fill(particle->Pt(),fWeightMultMC);
+	}
+	if(fMCEvent->IsPhysicalPrimary(i)){
+	  fHistoMCPhysicalPrimaryAPt[fiCut]->Fill(particle->Pt(),fWeightMultMC);
+	}
       }
 
       Float_t weighted= 1;
@@ -1236,6 +1377,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
 
     fKind = 9;
+
     Int_t pdgCodePos = 0.;
     Int_t pdgCodeNeg = 0.;
 
@@ -1269,7 +1411,6 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         fKind = 1; //Not Same Mother == Combinatorial Bck
         pdgCodePos = posDaughter->GetPdgCode();
         pdgCodeNeg = negDaughter->GetPdgCode();
-
         if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11)
             fKind = 10; //Electron Combinatorial
         if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11 && (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1))
@@ -1284,6 +1425,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
             fKind = 13; //Pion, Electron Combinatorics
         if (TMath::Abs(pdgCodePos)==321 || TMath::Abs(pdgCodeNeg)==321)
             fKind = 14; //Kaon combinatorics
+
         hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
       } else {
         //cout << "same mother" << endl;
@@ -1363,7 +1505,6 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
       }
 
 
-
       if(fKind==0 || fKind==5){
         hMCTrueConversionRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());
         hMCTrueConversionRPhiFromConv[fiCut]->Fill(phiFromConv,gamma->GetConversionRadius());
@@ -1436,6 +1577,217 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskMaterialHistos::ProcessPrimaryCandidatesNoDCA(){
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    // Using standard function for setting Cuts
+
+    //     Bool_t selectPrimaries = kTRUE;
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    Float_t   xDCA[2];            
+    Float_t   xDCACov[3];     
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    //     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+	
+      } else if (runNumber>=209122){ // else if run2 data use 2015 PbPb cuts
+	//EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+	EsdTrackCuts = new AliESDtrackCuts();
+	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+	EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+	EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+
+	// ITS; selPrimaries = 1
+	EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+								AliESDtrackCuts::kAny);
+	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+	//	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+
+	
+      } else { // else use 2011 version of track cuts
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      
+    }
+    
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ){
+	//	fHistoESDPrimaryParticlePt[fiCut]->Fill(curTrack->Pt());
+	curTrack->GetImpactParameters(xDCA, xDCACov);
+	fHistoESDPrimaryParticleDCAPt[fiCut]->Fill(xDCA[0] ,curTrack->Pt());
+	
+        if (fMCEvent){
+	  const AliVVertex* primVtxMC       = fMCEvent->GetPrimaryVertex();
+	  Double_t mcProdVtxX       = primVtxMC->GetX();
+	  Double_t mcProdVtxY       = primVtxMC->GetY();
+	  Double_t mcProdVtxZ       = primVtxMC->GetZ();
+	  
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+	    Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
+            if( (isFromMBHeader < 1) ) continue;
+          }
+	  //	  curTrack->GetLabel();
+	  
+	  Int_t labelCurTrack = TMath::Abs( curTrack->GetLabel() );
+	  Bool_t curTrackIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelCurTrack, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+	  // if( labelCurTrack>-1 && labelCurTrack < fMCEvent->GetNumberOfTracks() ){
+	  //   TParticle* curTrackMC = fMCEvent->Particle(labelCurTrack);
+	  //   if( curTrackMC->GetPdgCode() ==   -211 || curTrackMC->GetPdgCode() ==  211 ||    
+	  // 	curTrackMC->GetPdgCode() ==  -2212 || curTrackMC->GetPdgCode() == 2212 ||
+	  // 	curTrackMC->GetPdgCode() ==   -321 || curTrackMC->GetPdgCode() ==  321  ){
+	  //     if(curTrackIsPrimary){
+	  // 	fHistoMCTruePhysicalPrimaryPt[fiCut]->Fill(curTrack->Pt());
+	  // 	fHistoMCTruePhysicalPrimaryMCPt[fiCut]->Fill(curTrackMC->Pt());
+	  //     }
+	  //   }
+	  // }
+	  if(fMCEvent->Stack()->IsPhysicalPrimary(labelCurTrack)){
+	    //	    fHistoMCTruePhysicalPrimaryAPt[fiCut]->Fill(curTrack->Pt());
+	    fHistoMCTruePhysicalPrimaryDCAPt[fiCut]->Fill(xDCA[0] ,curTrack->Pt());
+	  }
+	  if(fMCEvent->Stack()->IsSecondaryFromWeakDecay(labelCurTrack)){
+	    fHistoMCTrueDecayDCAPt[fiCut]->Fill(xDCA[0] ,curTrack->Pt());
+	  }
+	  if(fMCEvent->Stack()->IsSecondaryFromMaterial(labelCurTrack)){
+	    fHistoMCTrueMaterialDCAPt[fiCut]->Fill(xDCA[0] ,curTrack->Pt());
+	  }
+	}
+      }
+    }
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+
+  }
+
+
+
+}
+
+
+
+//________________________________________________________________________
+void AliAnalysisTaskMaterialHistos::ProcessPrimaryCandidates(){
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    // Using standard function for setting Cuts
+
+    //     Bool_t selectPrimaries = kTRUE;
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    //     AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+	
+      } else if (runNumber>=209122){ // else if run2 data use 2015 PbPb cuts
+	//EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+	EsdTrackCuts = new AliESDtrackCuts();
+	// TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+	EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+	EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+	//EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+	EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+	// ITS; selPrimaries = 1
+	EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+	EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+								AliESDtrackCuts::kAny);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/TMath::Power(pt,1.1)");
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+	EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+	EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+	
+      } else { // else use 2011 version of track cuts
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      
+    }
+    
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ){
+	fHistoESDPrimaryParticlePt[fiCut]->Fill(curTrack->Pt());	
+	
+        if (fMCEvent){
+	  const AliVVertex* primVtxMC       = fMCEvent->GetPrimaryVertex();
+	  Double_t mcProdVtxX       = primVtxMC->GetX();
+	  Double_t mcProdVtxY       = primVtxMC->GetY();
+	  Double_t mcProdVtxZ       = primVtxMC->GetZ();
+	  
+          if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+	    Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCEvent, fInputEvent);
+            if( (isFromMBHeader < 1) ) continue;
+          }
+	  //	  curTrack->GetLabel();
+	  
+	  Int_t labelCurTrack = TMath::Abs( curTrack->GetLabel() );
+	  Bool_t curTrackIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelCurTrack, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+	  if( labelCurTrack>-1 && labelCurTrack < fMCEvent->GetNumberOfTracks() ){
+	    TParticle* curTrackMC = fMCEvent->Particle(labelCurTrack);
+	    if( curTrackMC->GetPdgCode() ==   -211 || curTrackMC->GetPdgCode() ==  211 ||    
+		curTrackMC->GetPdgCode() ==  -2212 || curTrackMC->GetPdgCode() == 2212 ||
+		curTrackMC->GetPdgCode() ==   -321 || curTrackMC->GetPdgCode() ==  321  ){
+	      if(curTrackIsPrimary){
+		fHistoMCTruePhysicalPrimaryPt[fiCut]->Fill(curTrack->Pt());
+		fHistoMCTruePhysicalPrimaryMCPt[fiCut]->Fill(curTrackMC->Pt());
+	      }
+	      if(fMCEvent->Stack()->IsPhysicalPrimary(labelCurTrack)){
+		fHistoMCTruePhysicalPrimaryAPt[fiCut]->Fill(curTrack->Pt());
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+
+  }
+
+
+
+}
 //________________________________________________________________________
 Int_t AliAnalysisTaskMaterialHistos::CountTracks08(){
 

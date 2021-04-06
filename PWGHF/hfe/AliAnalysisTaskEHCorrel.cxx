@@ -1292,6 +1292,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+        
+      if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
 
       Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
 
@@ -2018,6 +2020,7 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
     Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;  
     if(clust && clust->IsEMCAL())
     {
+      if(clust->GetIsExotic()) continue;
       clustE = clust->E();
       if(clustE < 0.3) continue;
 

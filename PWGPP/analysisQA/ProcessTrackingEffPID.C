@@ -50,13 +50,13 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   TString multVar="N_{tracklets}";
   
   // different projection variables
-  TString varname[5]={"Eta","Phi","Pt","Mult","Zvert"};
-  const Int_t nProjections=9;
-  Double_t theVar[nProjections]={2,1,1,0,0,3,3,4,4};
-  const Int_t nPtBins=3; // full pt, low pt, high pt
-  Double_t ptLow[nPtBins]={-1.,0.3,3.};
-  Double_t ptHigh[nPtBins]={999999.,0.5,10.};
-  Int_t thePtBin[nProjections]={0,1,2,1,2,1,2,1,2};
+  TString varname[6]={"Eta","Phi","Pt","Mult","Zvert","DCAxy"};
+  const Int_t maxProjections=16;
+  Double_t theVar[maxProjections]={2,1,1,1,0,0,0,3,3,3,4,4,4,5,5,5};
+  const Int_t nPtBins=4; // full pt, low pt, mid pt, high pt
+  Double_t ptLow[nPtBins]={-1.,0.3,1.,3.};
+  Double_t ptHigh[nPtBins]={999999.,0.5,2.,10.};
+  Int_t thePtBin[maxProjections]={0,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3};
   Double_t maxMult=10000.;
 
   Int_t nToShow=0;
@@ -83,10 +83,10 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
 
       
-  TH1D* hEff[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hGen[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hRec[AliPID::kSPECIESC][3][nProjections];
-  TH1D* hEffRatio[AliPID::kSPECIESC][nProjections];
+  TH1D* hEff[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hGen[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hRec[AliPID::kSPECIESC][3][maxProjections];
+  TH1D* hEffRatio[AliPID::kSPECIESC][maxProjections];
 
   TH1D* hPtStep[AliPID::kSPECIESC][nSteps];
   TH1D* hPtRatio[AliPID::kSPECIESC][nRatios];
@@ -116,6 +116,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
 
   TString charge[2] = {"pos","neg"};
+  Int_t nProjections=maxProjections;
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       TString nameSpGen=Form("hGenEvSel_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data());
@@ -123,6 +124,7 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
       THnSparseF* hSpGen=(THnSparseF*)l->FindObject(nameSpGen.Data());
       THnSparseF* hSpRec=(THnSparseF*)l->FindObject(nameSpRec.Data());
       printf("%s %s \n",nameSpRec.Data(),nameSpGen.Data());
+      if(hSpGen->GetNdimensions()==5) nProjections=13;
       maxMult=hSpRec->GetAxis(3)->GetXmax();
       TString tit3=hSpRec->GetAxis(3)->GetTitle();
       if(tit3.Contains("b (fm")) multVar="b (fm)";
@@ -133,13 +135,17 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 	Int_t iPt=thePtBin[iP];
 	Double_t ptmin=ptLow[iPt];
 	Double_t ptmax=ptHigh[iPt];
+	printf("Projection %d  var %d pt %f - %f\n",iP,iVar,ptmin,ptmax);
 	TString ptrange="";
 	if(iPt==1) ptrange="_LowPt";
-	if(iPt==2) ptrange="_HighPt";
+	else if(iPt==2) ptrange="_MidPt";
+	else if(iPt==3) ptrange="_HighPt";
 	hGen[iSpecies][iCharge][iP]=Project(hSpGen,iVar,ptmin,ptmax);
 	hGen[iSpecies][iCharge][iP]->SetName(Form("hGen%s_%s_%s%s",varname[iVar].Data(),AliPID::ParticleShortName(iSpecies),charge[iCharge].Data(),ptrange.Data()));
+	hGen[iSpecies][iCharge][iP]->SetTitle(Form("%.2f<p_{T}<%.2f",ptmin,ptmax));
 	hRec[iSpecies][iCharge][iP]=Project(hSpRec,iVar,ptmin,ptmax);
  	hRec[iSpecies][iCharge][iP]->SetName(Form("hRec%s_%s_%s%s",varname[iVar].Data(),AliPID::ParticleShortName(iSpecies),charge[iCharge].Data(),ptrange.Data()));
+	hRec[iSpecies][iCharge][iP]->SetTitle(Form("%.2f<p_{T}<%.2f",ptmin,ptmax));
      }
     }
     for(Int_t iP=0; iP<nProjections; iP++){
@@ -205,7 +211,12 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
   hFrameMult->GetYaxis()->SetTitle("Efficiency");
   hFrameMult->GetYaxis()->SetTitleOffset(1.2);
 
-  TLatex* tcuts=new TLatex(0.7,0.2,"#splitline{|#eta|<0.8}{|z_{vert}|<10 cm}");
+  TH2F* hFrameDCA=new TH2F("hFrameDCA","",10000,0.,5.,100.,0.,1.2);
+  hFrameDCA->GetXaxis()->SetTitle("DCAxy (cm)");
+  hFrameDCA->GetYaxis()->SetTitle("Efficiency");
+  hFrameDCA->GetYaxis()->SetTitleOffset(1.2);
+
+  TLatex* tcuts=new TLatex(0.65,0.2,"#splitline{|#eta|<0.8}{|z_{vert}|<10 cm}");
   tcuts->SetNDC();
   tcuts->SetTextFont(43);
   tcuts->SetTextSize(26);
@@ -335,29 +346,33 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
 
   cept->SaveAs("EfficVsPt.png");
 
-  TCanvas** cevar=new TCanvas*[4];
-  cevar[0]=new TCanvas("cephi","EffVsPhi",1600,800);
-  cevar[1]=new TCanvas("ceeta","EffVsEta",1600,800);
-  cevar[2]=new TCanvas("cezv","EffVsZvert",1600,800);
-  cevar[3]=new TCanvas("cemult","EffVsMult",1600,800);
+  TCanvas** cevar=new TCanvas*[5];
+  cevar[0]=new TCanvas("cephi","EffVsPhi",1600,600);
+  cevar[1]=new TCanvas("ceeta","EffVsEta",1600,600);
+  cevar[2]=new TCanvas("cezv","EffVsZvert",1600,600);
+  cevar[3]=new TCanvas("cemult","EffVsMult",1600,600);
+  cevar[4]=new TCanvas("cedca","EffVsDCA",1600,600);
 
-  TLegend** legvar=new TLegend*[8];
-  for(Int_t iv=0; iv<4; iv++){
-    cevar[iv]->Divide(2,1);
-    for(Int_t ip=1; ip<=2; ip++){
+  const Int_t maxPads=3;
+  TLegend** legvar=new TLegend*[maxPads*5];
+  for(Int_t iv=0; iv<5; iv++){
+    Int_t npads=3;
+    cevar[iv]->Divide(npads,1);
+    for(Int_t ip=1; ip<=npads; ip++){
       cevar[iv]->cd(ip);
       gPad->SetLeftMargin(0.12);
-      gPad->SetRightMargin(0.08);
+      gPad->SetRightMargin(0.04);
       gPad->SetTickx();
       gPad->SetTicky();
       if(iv==0) hFramePhi->Draw();
       else if(iv==1) hFrameEta->Draw();
       else if(iv==2) hFrameZvert->Draw();
       else if(iv==3) hFrameMult->Draw();
-      legvar[iv*2+(ip-1)]=new TLegend(0.16,0.73,0.87,0.89);
-      legvar[iv*2+(ip-1)]->SetNColumns(2);
-      legvar[iv*2+(ip-1)]->SetColumnSeparation(0.15);
-      legvar[iv*2+(ip-1)]->SetMargin(0.15);
+      else if(iv==4) hFrameDCA->Draw();
+      legvar[iv*maxPads+(ip-1)]=new TLegend(0.16,0.73,0.87,0.89);
+      legvar[iv*maxPads+(ip-1)]->SetNColumns(2);
+      legvar[iv*maxPads+(ip-1)]->SetColumnSeparation(0.15);
+      legvar[iv*maxPads+(ip-1)]->SetMargin(0.15);
     }
   }
 
@@ -371,34 +386,41 @@ void ProcessTrackingEffPID(TString filname="AnalysisResults.root",TString suffix
     else if(theVar[iP]==0) iCanv=1;
     else if(theVar[iP]==4) iCanv=2;
     else if(theVar[iP]==3) iCanv=3;
+    else if(theVar[iP]==5) iCanv=4;
     if(thePtBin[iP]==1) iPad=1;
     else if(thePtBin[iP]==2) iPad=2;
+    else if(thePtBin[iP]==3) iPad=3;
     if(iCanv<0 || iPad<0) continue;
     cevar[iCanv]->cd(iPad);
     for(Int_t iSp=0; iSp<AliPID::kSPECIESC; iSp++){
       if(!show[iSp]) continue;
       hEff[iSp][2][iP]->Draw("same");
-      legvar[2*iCanv+iPad-1]->AddEntry(hEff[iSp][2][iP],Form("%s, %.1f<p_{T}<%.1f GeV/c",partname[iSp].Data(),ptmin,ptmax),"P");	
+      legvar[maxPads*iCanv+iPad-1]->AddEntry(hEff[iSp][2][iP],Form("%s, %.1f<p_{T}<%.1f GeV/c",partname[iSp].Data(),ptmin,ptmax),"P");	
     }
   }
-  for(Int_t iv=0; iv<4; iv++){
+  for(Int_t iv=0; iv<5; iv++){
     cevar[iv]->cd(1);
-    legvar[iv*2]->Draw();
+    legvar[iv*maxPads]->Draw();
     tcuts->Draw();
     cevar[iv]->cd(2);
-    legvar[iv*2+1]->Draw();
+    legvar[iv*maxPads+1]->Draw();
+    tcuts->Draw();
+    cevar[iv]->cd(3);
+    legvar[iv*maxPads+2]->Draw();
     tcuts->Draw();
   }
+  
   cevar[0]->SaveAs("EfficVsPhi.png");
   cevar[1]->SaveAs("EfficVsEta.png");
   cevar[2]->SaveAs("EfficVsZvert.png");
   cevar[3]->SaveAs("EfficVsMult.png");
+  cevar[4]->SaveAs("EfficVsProdRad.png");
 
   TFile* filout=new TFile("TrackingEffPID.root","recreate");
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 3; ++iCharge) {
       for(Int_t iP=0; iP<nProjections; iP++){
-	hEff[iSpecies][iCharge][iP]->Write();
+  	hEff[iSpecies][iCharge][iP]->Write();
       }
     }
   }

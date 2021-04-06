@@ -1672,38 +1672,42 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTrueElecEtaPhiAfterTM_30_00->GetYaxis()->SetTitle("#eta");
     fHistograms->Add(fHistClusterTrueElecEtaPhiAfterTM_30_00);
 
-    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 31, -0.5, 30.5);
+    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterE, arrClusEBinning, 35, -0.5, 34.5);
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(4,"Ne cl sub ch");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(5,"Ga cl");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(6,"Ga cl sub ch");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(7,"conv cl");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"Ch cl prim");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"El cl");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"All cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ch cl match w lead");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ne cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl sub ch match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ga cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl sub ch match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"conv cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match w lead");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"Ch cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"Ch cl match w lead");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"El cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"El cl match w lead");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"All cl w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(24,"Ch cl w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(25,"Ne cl w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(26,"Ne cl sub ch w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(27,"Ga cl w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(28,"Ga cl sub ch w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(29,"conv cl w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(30,"Ch cl prim w valid track");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(31,"El cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(7,"conv cl R < 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"conv cl R > 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"Ch cl prim");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"El cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"All cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ch cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ne cl sub ch match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"Ga cl sub ch match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match R < 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"conv cl match R > 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"conv cl match w lead R < 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"conv cl match w lead R > 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"Ch cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(24,"El cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(25,"El cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(26,"All cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(27,"Ch cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(28,"Ne cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(29,"Ne cl sub ch w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(30,"Ga cl w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(31,"Ga cl sub ch w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(32,"conv cl w valid track R < 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(33,"conv cl w valid track R > 180cm");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(34,"Ch cl prim w valid track");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(35,"El cl w valid track");
     fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
     fHistograms->Add(fHistClusterTMEffiInput);
 
@@ -2726,10 +2730,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // 1: Neutral cluster sub charged
   // 2: Gamma cluster
   // 3: Gamma cluster sub charged
-  // 4: Gamma conv cluster
-  // 5: Charged cluster
-  // 6: Electron
-  // 7: prim charged cluster
+  // 4: Gamma conv cluster R < 180cm
+  // 5: Gamma conv cluster R > 180cm
+  // 6: Charged cluster (R > 5cm)
+  // 7: electron
+  // 8: primary charged (R < 5cm)
   Int_t classification  = -1;
   Long_t leadMCLabel    = -1;
   if (isESD)
@@ -2744,26 +2749,30 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if(IsClusterPi0(event, mcEvent, cluster))
       if(fHistClusETruePi0_BeforeTM) fHistClusETruePi0_BeforeTM->Fill(cluster->E(), weight);
     fHistClusterTMEffiInput->Fill(cluster->E(), 0., weight); //All cl
-    if (classification == 5 )
+    if (classification == 6 )
       fHistClusterTMEffiInput->Fill(cluster->E(), 1., weight); //Ch cl
-    if (classification == 7 )
-      fHistClusterTMEffiInput->Fill(cluster->E(), 7., weight); //Ch cl
-    if (classification == 4)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 6., weight); //conv electron cl
-    if (classification == 6){
-      fHistClusterTMEffiInput->Fill(cluster->E(), 8., weight); // electron cl
+    else if (classification == 8 )
+      fHistClusterTMEffiInput->Fill(cluster->E(), 8., weight); //Ch cl
+    else if (classification == 4)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 6., weight); //conv electron cl R < 180cm
+    else if (classification == 5)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 7., weight); //conv electron cl R > 180cm
+    else if (classification == 7){
+      fHistClusterTMEffiInput->Fill(cluster->E(), 9., weight); // electron cl
       if (cluster->E() > 30.)
         fHistClusterTrueElecEtaPhiBeforeTM_30_00->Fill(phiCluster, etaCluster, weight);
     }
 
-  if (classification == 0 || classification == 1)
+    if (classification == 0 || classification == 1){
       fHistClusterTMEffiInput->Fill(cluster->E(), 2., weight); // Ne cl match
-    if (classification == 1)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
-    if (classification == 2 || classification == 3)
+      if (classification == 1)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
+    }
+    else if (classification == 2 || classification == 3){
       fHistClusterTMEffiInput->Fill(cluster->E(), 4., weight); // Ga cl match
-    if ( classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
+      if ( classification == 3)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
+    }
 
     // check if cluster has an associated track
     Bool_t isValidatedTrack = kFALSE;
@@ -2777,25 +2786,40 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
       }
     }
+    // if no valid track was found, check secondary tracks!
+    if(!isValidatedTrack){
+      std::vector<Int_t> vecMatchedSecTracks = GetVectorMatchedSecTracksToCluster(event, cluster);
+      for(UInt_t itrack = 0; itrack < vecMatchedSecTracks.size(); ++itrack ){
+        AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(vecMatchedSecTracks.at(itrack)));
+        if(currTrack){
+          isValidatedTrack = kTRUE;
+          break;
+        }
+      }
+    }
 
-    if(isValidatedTrack){ // Fill if the cluster constains a varified track
-      fHistClusterTMEffiInput->Fill(cluster->E(), 22, weight); //All cl
-      if (classification == 5 )
-        fHistClusterTMEffiInput->Fill(cluster->E(), 23., weight); //Ch cl
-      if (classification == 7 )
-        fHistClusterTMEffiInput->Fill(cluster->E(), 29., weight); //Ch cl
-      if (classification == 4)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 28., weight); //conv electron cl
-      if (classification == 6)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 30., weight); // electron cl
-      if (classification == 0 || classification == 1)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 24., weight); // Ne cl match
-      if (classification == 1)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 25., weight); // Ne cl sub ch match
-      if (classification == 2 || classification == 3)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 26., weight); // Ga cl match
-      if ( classification == 3)
-        fHistClusterTMEffiInput->Fill(cluster->E(), 27., weight); // Ga cl sub ch match
+    if(isValidatedTrack){ // Fill if the cluster contains a varified track
+      fHistClusterTMEffiInput->Fill(cluster->E(), 25, weight); //All cl
+      if (classification == 6 )
+        fHistClusterTMEffiInput->Fill(cluster->E(), 26., weight); //Ch cl
+      else if (classification == 8 )
+        fHistClusterTMEffiInput->Fill(cluster->E(), 33., weight); //Ch cl
+      else if (classification == 4)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 31., weight); //conv electron cl R < 180cm
+      else if (classification == 5)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 32., weight); //conv electron cl R > 180cm
+      else if (classification == 7)
+        fHistClusterTMEffiInput->Fill(cluster->E(), 34., weight); // electron cl
+      else if (classification == 0 || classification == 1){
+        fHistClusterTMEffiInput->Fill(cluster->E(), 27., weight); // Ne cl match
+        if (classification == 1)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 28., weight); // Ne cl sub ch match
+      }
+      else if (classification == 2 || classification == 3){
+        fHistClusterTMEffiInput->Fill(cluster->E(), 29., weight); // Ga cl match
+        if ( classification == 3)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 30., weight); // Ga cl sub ch match
+      }
     }
 
     Int_t nlabelsMatchedTracks      = 0;
@@ -2811,7 +2835,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
 
     // plot electrons that survived the track matching
-    if (!CheckClusterForTrackMatch(cluster) && classification == 6){ // electrons that survived the matching
+    if (!CheckClusterForTrackMatch(cluster) && classification == 7){ // electrons that survived the matching
       if (cluster->E() > 30.)
         fHistClusterTrueElecEtaPhiAfterTM_30_00->Fill(phiCluster, etaCluster, weight);
     }
@@ -2824,23 +2848,27 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)  && !(fIsPureCalo > 0 && cluster->E() < 10.)){ // ignore low energies for merged analysis
         if(IsClusterPi0(event, mcEvent, cluster))
           if(fHistClusETruePi0_Matched) fHistClusETruePi0_Matched->Fill(cluster->E(), weight);
-        fHistClusterTMEffiInput->Fill(cluster->E(), 9., weight);
-        if (classification == 5 )
-          fHistClusterTMEffiInput->Fill(cluster->E(), 10., weight); //Ch cl match
-        if (classification == 4)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 16., weight); //conv cl match
-        if (classification == 0 || classification == 1)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 12., weight); // Ne cl match
-        if ( classification == 1)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 13., weight); // Ne cl sub ch match
-        if (classification == 2 || classification == 3)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 14., weight); // Ga cl match
-        if ( classification == 3)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 15., weight); // Ga cl sub ch match
-        if ( classification == 7)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 18., weight); // Ch prim cl match
-        if ( classification == 6)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 20., weight); // El cl match
+        fHistClusterTMEffiInput->Fill(cluster->E(), 10., weight);
+        if (classification == 6 )
+          fHistClusterTMEffiInput->Fill(cluster->E(), 11., weight); //Ch cl match
+        else if (classification == 4)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 17., weight); //conv cl match R < 180cm
+        else if (classification == 5)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 18., weight); //conv cl match R > 180cm
+        else if (classification == 0 || classification == 1){
+          fHistClusterTMEffiInput->Fill(cluster->E(), 13., weight); // Ne cl match
+          if ( classification == 1)
+            fHistClusterTMEffiInput->Fill(cluster->E(), 14., weight); // Ne cl sub ch match
+        }
+        else if (classification == 2 || classification == 3){
+          fHistClusterTMEffiInput->Fill(cluster->E(), 15., weight); // Ga cl match
+          if ( classification == 3)
+            fHistClusterTMEffiInput->Fill(cluster->E(), 16., weight); // Ga cl sub ch match
+        }
+        else if ( classification == 8)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 21., weight); // Ch prim cl match
+        else if ( classification == 7)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 23., weight); // El cl match
 
         vector<Int_t> labelsMatchedTracks;
         if (fUsePtDepTrackToCluster == 0)
@@ -2864,7 +2892,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             eMax                = currTrack->E();
             //idHighestPt         = labelsMatchedTracks.at(i);
           }
-          if (classification == 4 || classification == 5 || classification == 6 || classification == 7){
+          if (classification == 4 || classification == 5 || classification == 6 || classification == 7|| classification == 8){
             Long_t mcLabelTrack = -1;
             if (isESD)
               mcLabelTrack      = TMath::Abs(((AliESDtrack*)currTrack)->GetLabel());
@@ -2877,36 +2905,42 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             }
           }
         }
-        if (classification == 5 || classification == 7 || classification == 6){
+        if (classification == 7 || classification == 6 || classification == 8){
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax, weight);
-          if (classification == 5 || classification == 7){
+          if (classification == 6 || classification == 8){
             fHistClusterEvsTrackEPrimaryButNoElec->Fill(cluster->E(), eMax, weight);
             fHistClusterEvsTrackSumEPrimaryButNoElec->Fill(cluster->E(), eSum, weight);
           }
 
           if (foundLead ){
-            if (classification == 5)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 11., weight); //Ch cl match w lead
-            if (classification == 7)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 19., weight); //Ch prim cl match w lead
             if (classification == 6)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 21., weight); //El cl match w lead
+              fHistClusterTMEffiInput->Fill(cluster->E(), 12., weight); //Ch cl match w lead
+            else if (classification == 8)
+              fHistClusterTMEffiInput->Fill(cluster->E(), 22., weight); //Ch prim cl match w lead
+            else if (classification == 7)
+              fHistClusterTMEffiInput->Fill(cluster->E(), 24., weight); //El cl match w lead
             fHistClusterEvsTrackEChargedLead->Fill(cluster->E(), eLead, weight);
           }
         }
-        if (classification == 4){
-          fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax, weight);
-          if (foundLead)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 17., weight); //conv cl match w lead
-        }
+
         if (classification == 0 )
           fHistClusterEvsTrackENeutral->Fill(cluster->E(), eMax, weight);
-        if (classification == 1)
+        else if (classification == 1)
           fHistClusterEvsTrackENeutralSubCharged->Fill(cluster->E(), eMax, weight);
-        if (classification == 2)
+        else if (classification == 2)
           fHistClusterEvsTrackEGamma->Fill(cluster->E(), eMax, weight);
-        if (classification == 3)
+        else if (classification == 3)
           fHistClusterEvsTrackEGammaSubCharged->Fill(cluster->E(), eMax, weight);
+        else if (classification == 4){
+          fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax, weight);
+          if (foundLead)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 19., weight); //conv cl match w lead
+        }
+        else if (classification == 5){
+          fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax, weight);
+          if (foundLead)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 20., weight); //conv cl match w lead
+        }
 
         labelsMatchedTracks.clear();
       }
@@ -9490,10 +9524,11 @@ Bool_t  AliCaloPhotonCuts::IsAbsIDsFromTCard(Int_t absId1, Int_t absId2) const {
 // 1: Neutral cluster sub charged
 // 2: Gamma cluster
 // 3: Gamma cluster sub charged
-// 4: Gamma conv cluster
-// 5: Charged cluster
-// 6: electron
-// 7: primary charged
+// 4: Gamma conv cluster R < 180cm
+// 5: Gamma conv cluster R > 180cm
+// 6: Charged cluster
+// 7: electron
+// 8: primary charged
 //_______________________________________________________________________________
 Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD){
   Int_t* mclabelsCluster  = cluster->GetLabels();
@@ -9513,12 +9548,21 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
         if (particleLead->GetPdgCode() == 22)
           classification      = 2;
       } else {
-        classification        = 5;
+        classification        = 6;
         if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11){
-          classification      = 6;
-          if (particleLead->GetMother(0) > -1)
-            if (((TParticle*)mcEvent->Particle(particleLead->GetMother(0)))->GetPdgCode() == 22)
-              classification  = 4;
+          classification      = 7;
+          if (particleLead->GetMother(0) > -1){
+            if (((TParticle*)mcEvent->Particle(particleLead->GetMother(0)))->GetPdgCode() == 22){
+              Double_t deltaX = particleLead->Vx() - mcProdVtxX;
+              Double_t deltaY = particleLead->Vy() - mcProdVtxY;
+              Double_t radius2d = TMath::Sqrt(deltaX*deltaX + deltaY*deltaY);
+              if(radius2d < 180){
+                classification  = 4;
+              } else {
+                classification  = 5;
+              }
+            }
+          }
         } else {
             Double_t deltaX = particleLead->Vx() - mcProdVtxX;
             Double_t deltaY = particleLead->Vy() - mcProdVtxY;
@@ -9526,7 +9570,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
 
             Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
             if (realRadius3D < 5.0)
-              classification  = 7;
+              classification  = 8;
         }
       }
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
@@ -9556,13 +9600,21 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
         if (particleLead->GetPdgCode() == 22)
           classification      = 2;
       } else {
-        classification        = 5;
+        classification        = 6;
         if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11) {
-          classification      = 6;
+          classification      = 7;
           if (particleLead->GetMother() > -1){
             AliAODMCParticle* mother    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(particleLead->GetMother()));
-            if (mother->GetPdgCode() == 22)
-              classification  = 4;
+            if (mother->GetPdgCode() == 22){
+              Double_t deltaX = particleLead->Xv() - mcProdVtxX;
+              Double_t deltaY = particleLead->Yv() - mcProdVtxY;
+              Double_t radius2d = TMath::Sqrt(deltaX*deltaX + deltaY*deltaY);
+              if(radius2d < 180){
+                classification  = 4;
+              } else {
+                classification  = 5;
+              }
+            }
           }
         } else {
           Double_t deltaX = particleLead->Xv() - mcProdVtxX;
@@ -9571,7 +9623,7 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
 
           Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
           if (realRadius3D < 5.0)
-            classification    = 7;
+            classification    = 8;
         }
       }
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
@@ -9600,6 +9652,20 @@ std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedTracksToCluster(AliVEvent*
                                                                     fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
   else if (fUsePtDepTrackToCluster == 1)
     labelsMatched = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+
+  return labelsMatched;
+}
+
+//_______________________________________________________________________________
+std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedSecTracksToCluster(AliVEvent* event, AliVCluster* cluster){
+  vector<Int_t> labelsMatched(0);
+  if(!fUseDistTrackToCluster || fUseElectronClusterCalibration) return labelsMatched;
+
+  if (fUsePtDepTrackToCluster == 0)
+    labelsMatched = fCaloTrackMatcher->GetMatchedSecTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
+                                                                    fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+  else if (fUsePtDepTrackToCluster == 1)
+    labelsMatched = fCaloTrackMatcher->GetMatchedSecTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
   return labelsMatched;
 }

@@ -43,6 +43,22 @@ void AliProfileBS::FillProfile(const Double_t &xv, const Double_t& yv, const Dou
 void AliProfileBS::FillProfile(const Double_t &xv, const Double_t &yv, const Double_t &w) {
   TProfile::Fill(xv,yv,w);
 }
+void AliProfileBS::RebinMulti(Int_t nbins) {
+  this->RebinX(nbins);
+  for(Int_t i=0;i<fListOfEntries->GetEntries();i++)
+    ((TProfile*)fListOfEntries->At(i))->RebinX(nbins);
+}
+TH1 *AliProfileBS::getHist(Int_t ind) {
+  if(ind<0) {
+    if((TProfile*)this) return ((TProfile*)this)->ProjectionX(Form("%s_hist",this->GetName()));
+    else { printf("Empty AliProfileBS addressed, cannot get a histogram\n"); return 0; };
+  } else {
+    if(!fListOfEntries) { printf("No subprofiles exist!\n"); return 0; };
+    if(ind<fNSubs) return ((TProfile*)fListOfEntries->At(ind))->ProjectionX(Form("%s_sub%i",((TProfile*)fListOfEntries->At(ind))->GetName(),ind));
+    else { printf("Trying to fetch subprofile no %i out of %i, not possible\n",ind,fNSubs); return 0;};
+  }
+  return 0;
+}
 Long64_t AliProfileBS::Merge(TCollection *collist) {
   Long64_t nmergedpf = TProfile::Merge(collist);
   Long64_t nmerged=0;

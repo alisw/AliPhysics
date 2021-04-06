@@ -42,7 +42,8 @@ class AliHFMLVarHandler : public TObject
             kNsigmaDetAndCombPID,
             kRawAndNsigmaPID,
             kBayesPID,
-            kBayesAndNsigmaCombPID
+            kBayesAndNsigmaCombPID,
+            kBayesAndNsigmaDetAndNsigmaCombPID
         };
 
         enum piddet {

@@ -1153,6 +1153,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+        if(clu->GetIsExotic()) continue; //remove exotic clusters
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
@@ -1175,8 +1176,12 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            clut = clu->GetTOF()*1e9 ;
+            clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
+            
+            //if(energy < 0.1) continue;
+            if(TMath::Abs(clut) > 50) continue;
+            
             ncells= clu->GetNCells();
             fClusPhi->Fill(cluphi);
             fClusEtaPhi->Fill(clueta,cluphi);
@@ -1279,6 +1284,11 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+            
+            if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
             
             fTrkMatchTrkPt->Fill(TrkPt);
             fTrkMatchTrketa->Fill(TrkEta);

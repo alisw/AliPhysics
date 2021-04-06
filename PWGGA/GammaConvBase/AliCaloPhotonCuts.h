@@ -384,6 +384,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliMCEvent* mcEvent, Bool_t isESD);
 
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
+    std::vector<Int_t> GetVectorMatchedSecTracksToCluster(AliVEvent* event, AliVCluster* cluster);
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
@@ -729,7 +730,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,119)
+    ClassDef(AliCaloPhotonCuts,120)
 };
 
 #endif

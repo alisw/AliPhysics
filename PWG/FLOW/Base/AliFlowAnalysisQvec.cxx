@@ -444,7 +444,21 @@ void AliFlowAnalysisQvec::Make(AliFlowEventSimple* anEvent)
   } // end of if(fUseVZERO)
 
   // ZDC *********************************************************************************************************
-
+  
+  anEvent->GetTowZNCraw(fTowZNCraw);
+  anEvent->GetTowZNAraw(fTowZNAraw);
+  fpQvecEvent->setTowZNCraw0(fTowZNCraw[0]);
+  fpQvecEvent->setTowZNCraw1(fTowZNCraw[1]);
+  fpQvecEvent->setTowZNCraw2(fTowZNCraw[2]);
+  fpQvecEvent->setTowZNCraw3(fTowZNCraw[3]);
+  fpQvecEvent->setTowZNCraw4(fTowZNCraw[4]);
+  
+  fpQvecEvent->setTowZNAraw0(fTowZNAraw[0]);
+  fpQvecEvent->setTowZNAraw1(fTowZNAraw[1]);
+  fpQvecEvent->setTowZNAraw2(fTowZNAraw[2]);
+  fpQvecEvent->setTowZNAraw3(fTowZNAraw[3]);
+  fpQvecEvent->setTowZNAraw4(fTowZNAraw[4]);
+  
   if(fUseZDC) {
     // Get Q vectors for the subevents
     AliFlowVector vQarray[2];
@@ -504,6 +518,14 @@ void AliFlowAnalysisQvec::Make(AliFlowEventSimple* anEvent)
   if( ZCM<=0. || ZAM<=0. || sqrt(ZCRe*ZCRe+ZCIm*ZCIm)<1.E-6 || sqrt(ZARe*ZARe+ZAIm*ZAIm)<1.E-6 ) bPassZDCcuts=kFALSE;
   if( !std::isfinite(fZDCFlowVect[0].Mod()) || !std::isfinite(fZDCFlowVect[1].Mod())) bPassZDCcuts=kFALSE;
   if(fQAZDCCuts && !fQAZDCCutsFlag) bPassZDCcuts=kFALSE;
+  
+  //cout<<"===> after fQAZDCCuts == "<<fQAZDCCuts<<endl;
+  //cout<<"===> after fQAZDCCutsFlag == "<<fQAZDCCutsFlag<<endl;
+  //cout<<"===> after bPassZDCcuts == "<<bPassZDCcuts<<endl;
+  
+  if(bPassZDCcuts) fQApassZDCcutsCounter->Fill(0.5);
+  else fQApassZDCcutsCounter->Fill(1.5);
+  
   if(bPassZDCcuts) fEventCounter->Fill(1.5);
 
   // EbE flow *********************************************************************************************************
@@ -1410,13 +1432,14 @@ void AliFlowAnalysisQvec::InitializeArraysForQVec()
       fCRCZDC2DCutZDCA[i][z] = NULL;
     }
   }
-}
+} // end of InitializeArraysForQVec
 
 //=======================================================================================================================
 
 void AliFlowAnalysisQvec::InitializeArraysForVarious()
 {
   fEventCounter = NULL;
+  fQApassZDCcutsCounter = NULL;
   for (Int_t c=0; c<fZDCESEnCl+1; c++) {
     fhCenvsMul[c] = NULL;
   }
@@ -1645,6 +1668,12 @@ void AliFlowAnalysisQvec::BookEverythingForVarious()
   fEventCounter->GetXaxis()->SetBinLabel(2,"vn{SPZDC} & SC");
   fEventCounter->GetXaxis()->SetBinLabel(3,"vn{QC}");
   fVariousList->Add(fEventCounter);
+  
+  fQApassZDCcutsCounter = new TH1D("fQApassZDCcutsCounter","fQApassZDCcutsCounter",10,0.,10.);
+  fQApassZDCcutsCounter->GetXaxis()->SetBinLabel(1,"pass ZDC");
+  fQApassZDCcutsCounter->GetXaxis()->SetBinLabel(2,"not pass ZDC");
+  fVariousList->Add(fQApassZDCcutsCounter);
+  
   for (Int_t c=0; c<fZDCESEnCl+1; c++) {
     if(c<2) fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 150, 0., 3000.);
     else    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 150, 0., 3000., 150, 0., 3000.);
@@ -2071,7 +2100,7 @@ void AliFlowAnalysisQvec::BookEverythingForQVec()
       }
     }
   }
-}
+} // end of BookEverythingForQVec()
 
 //=======================================================================================================================
 

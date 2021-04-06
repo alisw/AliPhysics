@@ -11,6 +11,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	Double_t nref = 30.1,
 	Double_t minNtrklet = 0,
 	Double_t maxNtrklet = 9999,
+	Bool_t   iGPMC = kFALSE,
 	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root"
 
 	)
@@ -42,6 +43,7 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     task->SetNref(nref);
     task->SetNtrkletMin(minNtrklet);
     task->SetNtrkletMax(maxNtrklet);
+    task->SetMCtype(iGPMC);
 
 
 

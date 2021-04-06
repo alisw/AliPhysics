@@ -175,6 +175,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoArmenterosPodolanskiV0KFSgn(0),
   fHistoArmenterosPodolanskiV0AOD(0),
   fHistoArmenterosPodolanskiV0AODSgn(0),
+  fHistoV0Radius(0),
   fOutputKF(0),
   fmcLabelLc(-1),
   ftopoConstraint(kTRUE),
@@ -235,6 +236,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fVarsTMVASpectators(0),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
   fRefMult(9.26),
   fYearNumber(16),
   fHistoNtrUnCorr(0),
@@ -345,6 +347,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoArmenterosPodolanskiV0KFSgn(0),
   fHistoArmenterosPodolanskiV0AOD(0),
   fHistoArmenterosPodolanskiV0AODSgn(0),
+  fHistoV0Radius(0),
   fOutputKF(0),
   fmcLabelLc(-1),
   ftopoConstraint(kTRUE),
@@ -406,6 +409,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fNamesTMVAVarSpectators(""),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
+  fBDTHistoTMVA3d(0),  
   fRefMult(9.26),
   fYearNumber(16),
   fHistoNtrUnCorr(0),
@@ -615,8 +619,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
   Int_t nVar; 
-  if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 35; //"reduced" tree if data
+  if (fUseMCInfo)  nVar = 53; //"full" tree if MC
+  else nVar = 36; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -676,6 +680,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[50] = "nSigmaTPCka";
     //fCandidateVariableNames[51] = "bachTPCmom";  // AA 15/01/2021
     fCandidateVariableNames[51] = "nSigmaTOFka";
+    fCandidateVariableNames[52] = "RadiusV0";
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -715,6 +720,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[32] = "NtrkAll";
     fCandidateVariableNames[33] = "origin";
     fCandidateVariableNames[34] = "ptArm";
+    fCandidateVariableNames[35] = "RadiusV0";
   }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -790,6 +796,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fHistoMCLcK0SpGenAcc = new TH1F("fHistoMCLcK0SpGenAcc", "fHistoMCLcK0SpGenAcc", 14, ptbins);
   fHistoMCLcK0SpGenLimAcc = new TH1F("fHistoMCLcK0SpGenLimAcc", "fHistoMCLcK0SpGenLimAcc", 14, ptbins);
 
+  fHistoV0Radius = new TH2D("fHistoV0Radius", "V0 Radius; radius; bkg/signal", 900, 0., 300., 2, -0.5, 1.5);
   
   // //code to run the BDT Application on-the-fly
   // TString inputVariablesBDT = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
@@ -805,8 +812,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   // //fBDTReader = new ReadBDT_Default(inputNamesVec);
   
 
-  fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  if (fUseWeightsLibrary) fBDTHisto = new TH2D("fBDTHisto", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
   fBDTHistoTMVA = new TH2D("fBDTHistoTMVA", "Lc inv mass vs bdt output; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 10000, -1, 1, 1000, 2.05, 2.55);
+  fBDTHistoTMVA3d = new TH3D("fBDTHistoTMVA3d", "Lc inv mass vs bdt output vs signd0; bdt; m_{inv}(pK^{0}_{S})[GeV/#it{c}^{2}]", 1000, -1, 1, 500, 2.05, 2.55, 200, -1, 1);
   if (fDebugHistograms) {    
     fBDTHistoVsMassK0S = new TH2D("fBDTHistoVsMassK0S", "K0S inv mass vs bdt output; bdt; m_{inv}(#pi^{+}#pi^{#minus})[GeV/#it{c}^{2}]", 1000, -1, 1, 1000, 0.485, 0.51);
     fBDTHistoVstImpParBach = new TH2D("fBDTHistoVstImpParBach", "d0 bachelor vs bdt output; bdt; d_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
@@ -844,8 +852,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fOutput->Add(fHistoMCLcK0SpGenAcc);
   fOutput->Add(fHistoMCLcK0SpGenLimAcc);
   fOutput->Add(fHistoCentrality);
-  fOutput->Add(fBDTHisto);
+  if (fUseWeightsLibrary) fOutput->Add(fBDTHisto);
   fOutput->Add(fBDTHistoTMVA);
+  fOutput->Add(fBDTHistoTMVA3d);
+  fOutput->Add(fHistoV0Radius);
   if (fDebugHistograms) {    
     fOutput->Add(fBDTHistoVsMassK0S);
     fOutput->Add(fBDTHistoVstImpParBach);
@@ -1737,6 +1747,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
   Double_t invmassLc = part->InvMassLctoK0sP();
 
   AliAODv0 * v0part = part->Getv0();
+  Double_t radiusV0 = v0part->RadiusV0();
+  fHistoV0Radius->Fill(radiusV0, isLc);
   Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
   if (onFlyV0){ // on-the-fly V0
     if (isLc) { // Lc
@@ -2162,6 +2174,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[50] = nSigmaTPCka;
       //fCandidateVariables[51] = bachelor->GetTPCmomentum();
       fCandidateVariables[51] = nSigmaTOFka;
+      fCandidateVariables[52] = radiusV0;
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
@@ -2201,6 +2214,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[32] = fNTracklets_All;
       fCandidateVariables[33] = -1;
       fCandidateVariables[34] = v0part->PtArmV0();
+      fCandidateVariables[35] = radiusV0;
     }
     
     // fill multiplicity histograms for events with a candidate   
@@ -2302,8 +2316,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if (fUseWeightsLibrary) BDTResponse = fBDTReader->GetMvaValue(inputVars);
       //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc);
       //Printf("tmva = %f", tmva); 
-      fBDTHisto->Fill(BDTResponse, invmassLc);
+      if (fUseWeightsLibrary) fBDTHisto->Fill(BDTResponse, invmassLc);
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
+      fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0); 
       if (fDebugHistograms) {
 	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);

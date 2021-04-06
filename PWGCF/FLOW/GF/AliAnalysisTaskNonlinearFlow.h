@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISTASKNONLINEARFLOW_H
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -179,6 +180,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
 
+                // const unsigned int usev2345flag = 1 << 0;
+	        // const unsigned int usev678flag = 1 << 1;
+
 		AliAnalysisTaskNonlinearFlow();
 		AliAnalysisTaskNonlinearFlow(const char *name);
 
@@ -226,6 +230,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
+                Bool_t                  AcceptAOD(AliAODEvent *inEv);
+                Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		Short_t			GetCentrCode(AliVEvent* ev);
 		bool 			CheckPrimary(AliVEvent *aod, double label);
 		bool			IsGoodPSEvent(AliVEvent *aod);
@@ -248,7 +254,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts
-		AliAODEvent* fAOD;                                              //! AOD object
+                AliGFWCuts*     fGFWSelection;                                  //!
+		AliAODEvent*    fAOD;                                           //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
 		// Cuts and options
@@ -283,6 +290,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
+		TList*			fListOfProfile;			//! Output list of objects
+		TList*			fListOfProfiles[30];		//! Output list of objects
 
 		// Cut functions for LHC15o
 		TF1*			fMultTOFLowCut;			// cut low for TOF multiplicity outliers
@@ -401,7 +410,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		int NtrksAfter3subR = 0;
 
 		PhysicsProfile multProfile;
-		PhysicsProfile multProfile_bin[10];
+		PhysicsProfile multProfile_bin[30];
 
 		TRandom3 rand;
 		Int_t bootstrap_value;
@@ -411,7 +420,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		double xbins[3000+10]; //!
 		int nn;
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
-		void InitProfile(PhysicsProfile& profile, TString);
+		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
 		ClassDef(AliAnalysisTaskNonlinearFlow, 1);    //Analysis task
 };

@@ -229,7 +229,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 {
 	// default constructor, don't allocate memory here!
 	// this is used by root for IO purposes, it needs to remain empty
-	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalysisTaskSE(name),
@@ -407,7 +407,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	// you can add more output objects by calling DefineOutput(2, classname::Class())
 	// if you add more output objects, make sure to call PostData for all of them, and to
 	// make changes to your AddTask macro!
-	for(Int_t i=0; i<13; i++) fMultEstimatorAvg[i]=0;
+	for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
@@ -416,7 +416,7 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 	if(fOutputList) {
 		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
 	}
-	for(Int_t i=0; i<13; i++) {
+	for(Int_t i=0; i<14; i++) {
 		if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 	}
 	if(fweightNtrkl) delete fweightNtrkl;
@@ -696,6 +696,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_eff_M20); 
 	fOutputList->Add(fHist_eff_Iso); 
 	fOutputList->Add(fHistWeOrg); 
+	fOutputList->Add(fHistWeOrgPos); 
+	fOutputList->Add(fHistWeOrgNeg); 
 
 
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -1299,8 +1301,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                         //cout << "icaliso = " << icaliso << endl;
 
 			//if(icaliso)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
-			if(icaliso && TrkPt>15.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
-			if(icaliso && TrkPt>15.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
+			if(icaliso && TrkPt>10.0)IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy, NcontCone);
+			if(icaliso && TrkPt>10.0)IsolationTrackBase(iTracks, track, clE, IsoEnergyTrack, NtrackCone);
 			//IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD, IsoEnergy);
                         //cout << "IsoEnergy = " << IsoEnergy << endl;
                         //cout << "IsoEnergyTrack = " << IsoEnergyTrack << endl;
@@ -2093,7 +2095,8 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
    
 	if (runNo>=256504 && runNo<=258537) period = 11;  //LHC16k
   if (runNo>=258919 && runNo<=259888) period = 12; //LHC16l
-  if (period < 11 || period > 12) return 0;
+  if (runNo>=259888) period = 13; //LHC17
+  if (period < 11 || period > 13) return 0;
     
     
   return fMultEstimatorAvg[period];

@@ -78,6 +78,12 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
       fGeneratedYPhiPt[iSpecies][iCharge] = new TH3D(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
         ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
       fOutputList->Add(fGeneratedYPhiPt[iSpecies][iCharge]);
+      fGeneratedYPhiPtMaterial[iSpecies][iCharge] = new TH3D(Form("GenMaterial_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
+        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+      fOutputList->Add(fGeneratedYPhiPtMaterial[iSpecies][iCharge]);
+      fGeneratedYPhiPtWD[iSpecies][iCharge] = new TH3D(Form("GenWD_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
+        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+      fOutputList->Add(fGeneratedYPhiPtWD[iSpecies][iCharge]);
       fGeneratedEtaPhiPt[iSpecies][iCharge] = new TH3D(Form("GenEta_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
         ";#eta;#varphi;#it{p}_{T} (GeV/#it{c})",10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
       fOutputList->Add(fGeneratedEtaPhiPt[iSpecies][iCharge]);
@@ -150,7 +156,6 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
 
   for (int iMC = 0; iMC < arrayMC->GetEntriesFast(); ++iMC) {
     AliAODMCParticle* part = (AliAODMCParticle *)(arrayMC->At(iMC));
-    if (!part->IsPhysicalPrimary()) continue;
     if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)){
       nRejectedParticles++;
       continue;
@@ -159,8 +164,14 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
       if (pdg == AliPID::ParticleCode(iSpecies)) {
-        fGeneratedYPhiPt[iSpecies][iCharge]->Fill(part->Y(), part->Phi(), part->Pt());
-        fGeneratedEtaPhiPt[iSpecies][iCharge]->Fill(part->Eta(), part->Phi(), part->Pt());
+        if (part->IsPhysicalPrimary()) {
+          fGeneratedYPhiPt[iSpecies][iCharge]->Fill(part->Y(), part->Phi(), part->Pt());
+          fGeneratedEtaPhiPt[iSpecies][iCharge]->Fill(part->Eta(), part->Phi(), part->Pt());
+        } else if (part->IsSecondaryFromWeakDecay()) {
+          fGeneratedYPhiPtWD[iSpecies][iCharge]->Fill(part->Y(), part->Phi(), part->Pt());
+        } else if (part->IsSecondaryFromMaterial()) {
+          fGeneratedYPhiPtMaterial[iSpecies][iCharge]->Fill(part->Y(), part->Phi(), part->Pt());
+        }
         break;
       }
     }

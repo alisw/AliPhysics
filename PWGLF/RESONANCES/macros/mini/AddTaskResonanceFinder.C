@@ -9901,8 +9901,8 @@ Bool_t Config_KxLambdastar(
     cutMassSB->SetRangeD(1.480,1.496);
     AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
     cutsSB->AddCut(cutMassSB);
-    cutsSB->AddCut(cutYS);
-    cutsSB->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassSB->GetName(),cutYS->GetName()).Data());
+    cutsSB->AddCut(cutYL);
+    cutsSB->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassSB->GetName(),cutYL->GetName()).Data());
     
     i=4; // Lambda(1520) sideband
     finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStar",task->GetName()));
@@ -10228,19 +10228,8 @@ Bool_t Config_K0Lambdastar(
         AddMonitorOutput(isMC,cutSetP->GetMonitorOutput());
         
         
-        AddMonitorOutput_P(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_Pt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0NPt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0PPt(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Mass(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DCA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Radius(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0Lifetime(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DaughterDCA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0CPA(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0DCA2TPV(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0TPCpim(pname,cutSetK0s->GetMonitorOutput());
-        AddMonitorOutput_V0TPCpip(pname,cutSetK0s->GetMonitorOutput());
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C");
+        AddMonitorOutputV0(isMC,cutSetK0s->GetMonitorOutput(), "K0S");
     }
     
     // AliRsnMiniResonanceFinder

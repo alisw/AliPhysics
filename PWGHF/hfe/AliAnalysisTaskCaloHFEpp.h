@@ -135,6 +135,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 						if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
 						fMultEstimatorAvg[12]=new TProfile(*hprof);
 		}
+		void 			SetMultiProfileMCLHC17(TProfile * hprof){
+						if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+						fMultEstimatorAvg[13]=new TProfile(*hprof);
+		}
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -305,7 +309,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
-		TProfile*		fMultEstimatorAvg[13];
+		TProfile*		fMultEstimatorAvg[14];
 		TH1D*       fweightNtrkl;
 
 

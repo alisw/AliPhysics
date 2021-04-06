@@ -1002,6 +1002,9 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TArrayD sum0BinsArray   = GetHistogramRanges()->GetHistoPtSumArr();
   TArrayD sueBinsArray    = GetHistogramRanges()->GetHistoPtSumSubArr();
   TArrayD ratBinsArray    = GetHistogramRanges()->GetHistoRatioArr();
+  TArrayD soBinsArray     = GetHistogramRanges()->GetHistoSpherocityArr();
+  TArrayD ptCBinsArray    = GetHistogramRanges()->GetHistoPtInConeArr();
+
   TArrayD sumBinsArray;
   if ( method >= AliIsolationCut::kSumBkgSubIC ) 
     sumBinsArray = GetHistogramRanges()->GetHistoPtSumSubArr();
@@ -1013,13 +1016,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   minPtBinning.AddStep(fNPtCutsInCone, 1); 
   TArrayD minPtBinsArray;
   minPtBinning.CreateBinEdges(minPtBinsArray);
-  
-  // Spherocity binning
-  TCustomBinning soBinning;
-  soBinning.SetMinimum(0.0);
-  soBinning.AddStep(1, 0.05);
-  TArrayD soBinsArray;
-  soBinning.CreateBinEdges(soBinsArray);
 
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
@@ -1272,7 +1268,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       } // bit loop
     }// decay
   } // iso / no iso
-  
   
   if ( method == AliIsolationCut::kSumPtIC || 
        method >= AliIsolationCut::kSumBkgSubIC )
@@ -3099,7 +3094,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
     }
   }
-  
   
   if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged &&
       fStudyPtCutInCone )
@@ -5039,10 +5033,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
     if ( fStudyExoticTrigger || fFillPerSMHistograms || fFillPerTCardIndexHistograms  || 
          fStudyPtCutInCone   || fStudyRCutInCone     || fStudyNCellsCut               ||  
-         fStudyTracksInCone  || IsPileUpAnalysisOn() || IsHighMultiplicityAnalysisOn()   )    
+         fStudyTracksInCone  ||
+        IsPileUpAnalysisOn() || IsHighMultiplicityAnalysisOn() )
     {
-      StudyTracksInCone   (aod);
-      StudyClustersInCone (aod);
+      StudyTracksInCone   (aod, coneptsum, icent);
+      StudyClustersInCone (aod, coneptsum, icent);
       
       if ( fStudyExoticTrigger && fIsExoticTrigger )
         fhConeSumPtExoTrigger  ->Fill(pt, coneptsum, GetEventWeight()*weightTrig);
@@ -5426,6 +5421,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       if ( ip==i ) continue;
       
+      if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+
       if( (pdg==111 || pdg==221) && ( ip == pi0d1Label || ip == pi0d2Label ) )
       {
         //printf("Do not count pi0 decays in cone when isolating pi0 \n");
@@ -6766,7 +6763,8 @@ void AliAnaParticleIsolation::StudyMCConversionRadius
 //______________________________________________________________________________________________________________
 /// Get the cluster pT or sum of pT in isolation cone.
 //______________________________________________________________________________________________________________
-void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelation * aodParticle)
+void AliAnaParticleIsolation::StudyClustersInCone(AliCaloTrackParticleCorrelation * aodParticle,
+                                                  Float_t conesumpt, Int_t icent)
 {  
   if ( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
   
@@ -7275,7 +7273,8 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
 //___________________________________________________________________________________________________________
 /// Get the track pT or sum of pT in isolation cone.
 //___________________________________________________________________________________________________________
-void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation * aodParticle)
+void AliAnaParticleIsolation::StudyTracksInCone(AliCaloTrackParticleCorrelation * aodParticle,
+                                                Float_t conesumpt, Int_t icent)
 {  
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
   

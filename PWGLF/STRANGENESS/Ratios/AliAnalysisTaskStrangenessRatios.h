@@ -73,7 +73,7 @@ public:
   void SetDCAV0piToPVCut(float cut = 0.2) {fCutDCAV0piToPV=cut;}
   void SetDCAV0prToPVCut(float cut = 0.2) {fCutDCAV0prToPV=cut;}
   void SetDCAV0tracksCut(float cut = 1.0) {fCutDCAV0tracks=cut;}
-  void SetCutDCABachToV0XiCut(float xi = 1.0, float omega = 0.6) {fCutDCABachToV0[0]=xi; fCutDCABachToV0[0]=omega;}
+  void SetCutDCABachToV0XiCut(float xi = 1.0, float omega = 0.6) {fCutDCABachToV0[0]=xi; fCutDCABachToV0[1]=omega;}
   void SetCosPACut(float cut = 0.95) {fCutCosPA=cut;}
   void SetCosPAV0Cut(float cut = 0.95) {fCutCosPAV0=cut;}
   void SetV0MassWindowCut(float cut = 0.005) {fCutV0MassWindow=cut;}
@@ -82,7 +82,7 @@ public:
   void SetNsigmaTPCCut(float cut = 4.0) {fCutNsigmaTPC=cut;}
   void SetCtCut(float cut = 4 /*cm*/) {fCutCt=cut;}
   void SetCtV0Cut(float cut = 30 /*cm*/) {fCutCtV0=cut;}
-  void SetCompetingMassCut(float cut = 0.008 /*GeV/c^2*/) {fCutCompetingMass=cut;}
+  void SetCompetingMassCut(float omega = 0.008 /*GeV/c^2*/, float xi = 0. /*GeV/c^2*/) {fCutCompetingMass[0]=xi; fCutCompetingMass[1]=omega;}
   void SetTPCcluCut(int cut = 70) {fCutTPCclu=cut;}
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
 
@@ -116,7 +116,7 @@ private:
   float fCutNsigmaTPC = 4.0;
   float fCutCt = 4;
   float fCutCtV0 = 30;
-  float fCutCompetingMass = 0.;
+  float fCutCompetingMass[2]{0.,0.};
   int fCutTPCclu = 70;
 
   bool IsTopolSelected(bool isXi = true);
