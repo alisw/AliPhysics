@@ -328,8 +328,6 @@ void AliAnalysisTaskGenMcKno::UserExec(Option_t *){
 	if(fIsInel0){
 		for(Int_t i=0;i<5;++i)
 			fMult[i]->Fill(mult_estimators[i]);
-		fHistNchTSVsV0M->Fill(mult_estimators[0],mult_estimators[2]);
-		fHistNchTSVsV0A->Fill(mult_estimators[0],mult_estimators[3]);
 	}
 
 	// RT analysis, here a cut on pTleading is applied
@@ -504,6 +502,8 @@ void AliAnalysisTaskGenMcKno::MakeRTAnalysis(vector<Int_t> &mult){
 	Int_t pPDG = -10;
 
 	fMultTS->Fill(mult[0]);
+	fHistNchTSVsV0M->Fill(mult[0],mult[2]);
+	fHistNchTSVsV0A->Fill(mult[0],mult[3]);
 
 
 	// ### particle loop
