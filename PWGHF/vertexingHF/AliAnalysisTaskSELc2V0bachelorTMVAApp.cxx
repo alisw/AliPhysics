@@ -1748,7 +1748,6 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 
   AliAODv0 * v0part = part->Getv0();
   Double_t radiusV0 = v0part->RadiusV0();
-  fHistoV0Radius->Fill(radiusV0, isLc);
   Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
   if (onFlyV0){ // on-the-fly V0
     if (isLc) { // Lc
@@ -2319,6 +2318,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if (fUseWeightsLibrary) fBDTHisto->Fill(BDTResponse, invmassLc);
       fBDTHistoTMVA->Fill(tmva, invmassLc); 
       fBDTHistoTMVA3d->Fill(tmva, invmassLc, signd0); 
+      fHistoV0Radius->Fill(radiusV0, isLc);
       if (fDebugHistograms) {
 	if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) BDTResponse = tmva; // we fill the debug histogram with the output from the xml file
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
