@@ -439,8 +439,14 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
       AliNDLocalRegression* pileupCorrection = AliTPCPIDResponse::GetPileupCorrectionFromFile(pileupDefinition);
       arrTPCPIDResponse->Add(pileupCorrection);
     }
+  } else {
+    if (contFromFile) {
+      TObject* obj = GetObjectFromContainer(contFromFile, "PileupCorrection");
+      if (obj) {
+        arrTPCPIDResponse->Add(obj);
+      }
+    }
   }
-  fContainer.AppendObject(arrTPCPIDResponse, firstRun, lastRun, pass);
 
   // ---| multiplicity estimator |---
   if (multEstimator != AliTPCPIDResponse::kNumberOfESDTracks) {
@@ -501,6 +507,9 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
       }
     }
   }
+
+  // ---| Add everything to the container |-------------------------------------
+  fContainer.AppendObject(arrTPCPIDResponse, firstRun, lastRun, pass);
 
   return kTRUE;
 }
