@@ -190,8 +190,8 @@ void AliIsolationCut::CalculateCaloSignalInCone
  Int_t     calorimeter        , AliCaloPID * pid,
  Int_t   & nPart              , Int_t   & nfrac,
  Float_t & coneptsumCluster   , Float_t & coneptLeadCluster   ,
- Float_t & etaBandPtSumCluster, Float_t & etaBandPtLeadCluster, Float_t & etaBandPtSumClusterCut, Float_t & etaBandPtSumClusterCutLeadFactor,
- Float_t & phiBandPtSumCluster, Float_t & phiBandPtLeadCluster, Float_t & phiBandPtSumClusterCut, Float_t & phiBandPtSumClusterCutLeadFactor,
+ Float_t & etaBandPtSumCluster, Float_t & etaBandPtLeadCluster, Float_t & etaBandPtSumClusterCutMax, Float_t & etaBandPtSumClusterCutLeadFactor,
+ Float_t & phiBandPtSumCluster, Float_t & phiBandPtLeadCluster, Float_t & phiBandPtSumClusterCutMax, Float_t & phiBandPtSumClusterCutLeadFactor,
  Double_t  histoWeight        , 
  Float_t   centrality         , Int_t     cenBin
 ) 
@@ -518,7 +518,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
       {
         phiBandPtSumCluster += pt;
         if ( pt < fMaxPtUE )
-          phiBandPtSumClusterCut += pt;
+          phiBandPtSumClusterCutMax += pt;
         if ( pt < coneptLeadCluster*fLeadingPtUEFactor )
           phiBandPtSumClusterCutLeadFactor += pt;
 
@@ -547,7 +547,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
       {
         etaBandPtSumCluster += pt;
         if ( pt < fMaxPtUE )
-          etaBandPtSumClusterCut += pt;
+          etaBandPtSumClusterCutMax += pt;
         if ( pt < coneptLeadCluster*fLeadingPtUEFactor )
           etaBandPtSumClusterCutLeadFactor += pt;
 
@@ -690,10 +690,10 @@ void AliIsolationCut::CalculateTrackSignalInCone
  TString   aodArrayRefName  , TObjArray * bgTrk,
  Int_t   & nPart            , Int_t   & nfrac,
  Float_t & coneptsumTrack   , Float_t & coneptLeadTrack,
- Float_t & etaBandPtSumTrack, Float_t & etaBandPtLeadTrack , Float_t & etaBandPtSumTrackCut , Float_t & etaBandPtSumTrackCutLeadFactor ,
- Float_t & phiBandPtSumTrack, Float_t & phiBandPtLeadTrack , Float_t & phiBandPtSumTrackCut , Float_t & phiBandPtSumTrackCutLeadFactor ,
- Float_t & perpConePtSumTrack,Float_t & perpConePtLeadTrack, Float_t & perpConePtSumTrackCut, Float_t & perpConePtSumTrackCutLeadFactor,
- Float_t & perpBandPtSumTrack,Float_t & perpBandPtLeadTrack, Float_t & perpBandPtSumTrackCut, Float_t & perpBandPtSumTrackCutLeadFactor,
+ Float_t & etaBandPtSumTrack, Float_t &  etaBandPtLeadTrack, Float_t &  etaBandPtSumTrackCutMax, Float_t &  etaBandPtSumTrackCutLeadFactor,
+ Float_t & phiBandPtSumTrack, Float_t &  phiBandPtLeadTrack, Float_t &  phiBandPtSumTrackCutMax, Float_t &  phiBandPtSumTrackCutLeadFactor,
+ Float_t & perpConePtSumTrack,Float_t & perpConePtLeadTrack, Float_t & perpConePtSumTrackCutMax, Float_t & perpConePtSumTrackCutLeadFactor,
+ Float_t & perpBandPtSumTrack,Float_t & perpBandPtLeadTrack, Float_t & perpBandPtSumTrackCutMax, Float_t & perpBandPtSumTrackCutLeadFactor,
  Float_t & perpCone1PtSumTrack,
  Double_t  histoWeight      ,
  Float_t   centrality       , Int_t    cenBin
@@ -985,7 +985,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
       {
         phiBandPtSumTrack += ptTrack;
         if ( ptTrack < fMaxPtUE )
-          phiBandPtSumTrackCut += ptTrack;
+          phiBandPtSumTrackCutMax += ptTrack;
         if ( ptTrack < coneptLeadTrack*fLeadingPtUEFactor )
           phiBandPtSumTrackCutLeadFactor += ptTrack;
         if ( ptTrack > phiBandPtLeadTrack )
@@ -1016,7 +1016,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
       {
         etaBandPtSumTrack += ptTrack;
         if ( ptTrack < fMaxPtUE )
-          etaBandPtSumTrackCut += ptTrack;
+          etaBandPtSumTrackCutMax += ptTrack;
         if ( ptTrack < coneptLeadTrack*fLeadingPtUEFactor )
           etaBandPtSumTrackCutLeadFactor += ptTrack;
         if ( ptTrack > etaBandPtLeadTrack )
@@ -1060,7 +1060,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
       {
         perpConePtSumTrack+=ptTrack;
         if ( ptTrack < fMaxPtUE )
-          perpConePtSumTrackCut += ptTrack;
+          perpConePtSumTrackCutMax += ptTrack;
         if ( ptTrack < coneptLeadTrack*fLeadingPtUEFactor )
           perpConePtSumTrackCutLeadFactor += ptTrack;
         if ( ptTrack > perpConePtLeadTrack )
@@ -1093,7 +1093,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
       {
         perpBandPtSumTrack += ptTrack;
         if ( ptTrack < fMaxPtUE )
-          perpBandPtSumTrackCut += ptTrack;
+          perpBandPtSumTrackCutMax += ptTrack;
         if ( ptTrack < coneptLeadTrack*fLeadingPtUEFactor )
           perpBandPtSumTrackCutLeadFactor += ptTrack;
         if ( ptTrack > perpBandPtLeadTrack )
@@ -1119,7 +1119,7 @@ void AliIsolationCut::CalculateTrackSignalInCone
 
   // 2 perpendicular cones added, divide by 2 total amount of energy.
   perpConePtSumTrack /= 2;
-  perpConePtSumTrackCut /= 2;
+  perpConePtSumTrackCutMax /= 2;
   perpConePtSumTrackCutLeadFactor /= 2;
 
   if ( fFillHistograms )
@@ -4385,9 +4385,9 @@ void  AliIsolationCut::MakeIsolationCut
       Float_t  phiBandPtSumClusterCutMaxNorm = 0;
       Float_t  etaBandPtSumClusterCutLeadFactorNorm = 0;
       Float_t  phiBandPtSumClusterCutLeadFactorNorm = 0;
-      Float_t  etaBandPtSumTrackCutLeadFactorNorm  = 0;
-      Float_t  phiBandPtSumTrackCutLeadFactorNorm  = 0;
-      Float_t  perpBandPtSumTrackCutLeadFactorNorm = 0;
+      Float_t  etaBandPtSumTrackCutLeadFactorNorm   = 0;
+      Float_t  phiBandPtSumTrackCutLeadFactorNorm   = 0;
+      Float_t  perpBandPtSumTrackCutLeadFactorNorm  = 0;
 
       // Normalize background to cone area
       
