@@ -1072,6 +1072,10 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 456){ // PCM HighPtHadron analysis
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "5152103500000000");
 
+  } else if (trainConfig == 457){ // study for difference in V0 finders
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); // on the fly V0 finder
+    cuts.AddCutPCM("00010113", "10200009f9730000dge0400000", "0152103500000000"); // offline V0 finder
+
   //---------configs for V0AND 8TeV --------------------------//
   } else if (trainConfig == 460) {
     cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
