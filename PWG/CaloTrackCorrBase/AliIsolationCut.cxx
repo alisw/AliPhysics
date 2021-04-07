@@ -84,7 +84,8 @@ fhConePtLeadClustervsTrack(0),              fhConePtLeadClusterTrackFrac(0),
 fhEtaPhiCluster(0),                         fhEtaPhiTrack(0),
 fhEtaPhiInConeCluster(0),                   fhDeltaEtaPhiInConeCluster(0),   fhTriggerEtaPhiInConeClusterPt(0),
 fhEtaPhiInConeTrack(0),                     fhDeltaEtaPhiInConeTrack(0),     fhTriggerEtaPhiInConeTrackPt(0),
-fhPtInPerpCone(0),                          fhPerpConeSumPt(0),              fhPerpConeRho(0),
+fhPtInPerpCone(0),                          fhPerpConeSumPt(0),
+fhPerpConeRho(0),                           fhPerpConeRhoCutMax(0),          fhPerpConeRhoCutLeadFactor(0),
 fhEtaPhiInPerpCone(0),                      fhConeSumPtVSPerpCone(0),        fhPerpConeSumPtTrackSubVsNoSub(0),
 fhPerpConeSumPtTrigEtaPhi(0),
 fhDeltaEtaPhiInPerpCone(0),                 fhTriggerEtaPhiInPerpConeTrackPt(0),
@@ -109,6 +110,8 @@ fhConeSumPtEtaBandUETrackTrigEtaPhiCent(0),     fhConeSumPtPhiBandUETrackTrigEta
 fhConeSumPtVSUETrackBand(0),                fhConeSumPtVSUEClusterBand(0),
 fhConeSumPtUEBandNormCluster(0),            fhConeSumPtUEBandNormTrack(0), 
 fhConeRhoUEBandCluster(0),                  fhConeRhoUEBandTrack(0),
+fhConeRhoUEBandClusterCutMax(0),            fhConeRhoUEBandTrackCutMax(0),
+fhConeRhoUEBandClusterCutLeadFactor(0),     fhConeRhoUEBandTrackCutLeadFactor(0),
 fhFractionTrackOutConeEta(0),               fhFractionTrackOutConeEtaTrigEtaPhi(0),
 fhFractionClusterOutConeEta(0),             fhFractionClusterOutConeEtaTrigEtaPhi(0),
 fhFractionClusterOutConePhi(0),             fhFractionClusterOutConePhiTrigEtaPhi(0),
@@ -128,7 +131,8 @@ fhConeSumPtUESubClusterCutLeadFactorCent(0),fhConeSumPtUESubTrackCutLeadFactorCe
 fhConeSumPtUESubClustervsTrackCent(0),      fhConeSumPtUESubClusterTrackFracCent(0),
 fhConeSumPtUESubTrigEtaPhiCent(0),
 fhConeSumPtUESubTrackTrigEtaPhiCent(0),     fhConeSumPtUESubClusterTrigEtaPhiCent(0),
-fhPerpConeSumPtCent (0),                    fhPerpConeRhoCent (0),
+fhPerpConeSumPtCent (0),
+fhPerpConeRhoCent (0),                      fhPerpConeRhoCutMaxCent(0),        fhPerpConeRhoCutLeadFactorCent(0),
 fhConeSumPtVSPerpConeCent(0),               fhPerpConeSumPtTrackSubVsNoSubCent(0),
 fhPtInPerpConeCent(0),                      fhPerpConeSumPtTrigEtaPhiCent(0),
 fhPerpCone1SumPtCent(0),                    fhPerpCone1SumPtUESubCent(0),
@@ -136,6 +140,8 @@ fhJetRhoSumPtCent(0),                       fhJetRhoCent(0),
 fhConeSumPtVSJetRhoCent(0),                 fhJetRhoSumPtTrigEtaPhiCent(0),
 fhConeSumPtUEBandNormClusterCent(0),        fhConeSumPtUEBandNormTrackCent(0),
 fhConeRhoUEBandClusterCent(0),              fhConeRhoUEBandTrackCent(0),
+fhConeRhoUEBandClusterCutMaxCent(0),        fhConeRhoUEBandTrackCutMaxCent(0),
+fhConeRhoUEBandClusterCutLeadFactorCent(0), fhConeRhoUEBandTrackCutLeadFactorCent(0),
 fhConeSumPtEtaBandUEClusterCent(0),         fhConeSumPtPhiBandUEClusterCent(0), 
 fhConeSumPtEtaBandUETrackCent(0),           fhConeSumPtPhiBandUETrackCent(0),  fhConeSumPtPerpBandUETrackCent(0),
 fhEtaBandClusterPtCent(0),                  fhPhiBandClusterPtCent(0),
@@ -2301,6 +2307,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandCluster) ;
 
+        fhConeRhoUEBandClusterCutMax  = new TH2F
+        ("hConeRhoUEBandClusterCutMax",
+         Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhConeRhoUEBandClusterCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhConeRhoUEBandClusterCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeRhoUEBandClusterCutMax) ;
+
+        fhConeRhoUEBandClusterCutLeadFactor  = new TH2F
+        ("hConeRhoUEBandClusterCutLeadFactor",
+         Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhConeRhoUEBandClusterCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhConeRhoUEBandClusterCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeRhoUEBandClusterCutLeadFactor) ;
+
         fhConeSumPtClusterSubVsNoSub = new TH2F
         ("hConeSumPtClusterSubVsNoSub",
          Form("Cluster #Sigma #it{p}_{T} in cone before vs after UE bkg sub, R=%2.2f",fConeSize),
@@ -2406,6 +2428,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeRho->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhPerpConeRho->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPerpConeRho) ;
+
+        fhPerpConeRhoCutMax  = new TH2F
+        ("hPerpConeRhoCutMax",
+         Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhPerpConeRhoCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhPerpConeRhoCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPerpConeRhoCutMax) ;
+
+        fhPerpConeRhoCutLeadFactor  = new TH2F
+        ("hPerpConeRhoCutLeadFactor",
+         Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhPerpConeRhoCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhPerpConeRhoCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPerpConeRhoCutLeadFactor) ;
 
         fhConeSumPtVSPerpCone = new TH2F
         ("hConeSumPtVSPerpCone",
@@ -2802,6 +2840,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandTrack->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandTrack) ;
+
+        fhConeRhoUEBandTrackCutMax  = new TH2F
+        ("hConeRhoUEBandTrackCutMax",
+         Form("Tracks #Sigma #it{p}_{T} in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhConeRhoUEBandTrackCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhConeRhoUEBandTrackCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeRhoUEBandTrackCutMax) ;
+
+        fhConeRhoUEBandTrackCutLeadFactor  = new TH2F
+        ("hConeRhoUEBandTrackCutLeadFactor",
+         Form("Tracks #Sigma #it{p}_{T} in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+        fhConeRhoUEBandTrackCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhConeRhoUEBandTrackCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeRhoUEBandTrackCutLeadFactor) ;
 
         fhConeSumPtTrackSubVsNoSub = new TH2F
         ("hConeSumPtTrackSubVsNoSub",
@@ -3218,6 +3272,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeRhoCent->SetYTitle("Centrality (%)");
         outputContainer->Add(fhPerpConeRhoCent) ;
 
+        fhPerpConeRhoCutMaxCent  = new TH2F
+        ("hPerpConeRhoCutMaxCent",
+         Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
+         nrhobins,rhomin,rhomax, 100,0,100);
+        fhPerpConeRhoCutMaxCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhPerpConeRhoCutMaxCent->SetYTitle("Centrality (%)");
+        outputContainer->Add(fhPerpConeRhoCutMaxCent) ;
+
+        fhPerpConeRhoCutLeadFactorCent  = new TH2F
+        ("hPerpConeRhoCutLeadFactorCent",
+         Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
+         nrhobins,rhomin,rhomax, 100,0,100);
+        fhPerpConeRhoCutLeadFactorCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+        fhPerpConeRhoCutLeadFactorCent->SetYTitle("Centrality (%)");
+        outputContainer->Add(fhPerpConeRhoCutLeadFactorCent) ;
+
         fhConeSumPtVSPerpConeCent = new TH3F
         ("hConeSumPtVSPerpConeCent",
          Form("#perp cone #Sigma #it{p}_{T}, R=%2.2f",fConeSize),
@@ -3344,6 +3414,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhConeRhoUEBandClusterCent->SetYTitle("Centrality (%)");
           outputContainer->Add(fhConeRhoUEBandClusterCent) ;
 
+          fhConeRhoUEBandClusterCutMaxCent  = new TH2F
+          ("hConeRhoUEBandClusterCutMaxCent",
+           Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+           nrhobins,rhomin,rhomax,100,0,100);
+          fhConeRhoUEBandClusterCutMaxCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+          fhConeRhoUEBandClusterCutMaxCent->SetYTitle("Centrality (%)");
+          outputContainer->Add(fhConeRhoUEBandClusterCutMaxCent) ;
+
+          fhConeRhoUEBandClusterCutLeadFactorCent  = new TH2F
+          ("hConeRhoUEBandClusterCutLeadFactorCent",
+           Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+           nrhobins,rhomin,rhomax,100,0,100);
+          fhConeRhoUEBandClusterCutLeadFactorCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+          fhConeRhoUEBandClusterCutLeadFactorCent->SetYTitle("Centrality (%)");
+          outputContainer->Add(fhConeRhoUEBandClusterCutLeadFactorCent) ;
+
           fhConeSumPtClusterSubVsNoSubCent = new TH3F
           ("hConeSumPtClusterSubVsNoSubCent",
            Form("Cluster #Sigma #it{p}_{T} in cone before vs after UE bkg sub, R=%2.2f",fConeSize),
@@ -3387,6 +3473,22 @@ TList * AliIsolationCut::GetCreateOutputObjects()
           fhConeRhoUEBandTrackCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
           fhConeRhoUEBandTrackCent->SetYTitle("Centrality (%)");
           outputContainer->Add(fhConeRhoUEBandTrackCent) ;
+
+          fhConeRhoUEBandTrackCutMaxCent  = new TH2F
+          ("hConeRhoUEBandTrackCutMaxCent",
+           Form("Tracks #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+           nrhobins,rhomin,rhomax,100,0,100);
+          fhConeRhoUEBandTrackCutMaxCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+          fhConeRhoUEBandTrackCutMaxCent->SetYTitle("Centrality (%)");
+          outputContainer->Add(fhConeRhoUEBandTrackCutMaxCent) ;
+
+          fhConeRhoUEBandTrackCutLeadFactorCent  = new TH2F
+          ("hConeRhoUEBandTrackCutLeadFactorCent",
+           Form("Tracks #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
+           nrhobins,rhomin,rhomax,100,0,100);
+          fhConeRhoUEBandTrackCutLeadFactorCent->SetXTitle("#rho (GeV/#it{c} rad^{-2})");
+          fhConeRhoUEBandTrackCutLeadFactorCent->SetYTitle("Centrality (%)");
+          outputContainer->Add(fhConeRhoUEBandTrackCutLeadFactorCent) ;
 
           fhConeSumPtTrackSubVsNoSubCent = new TH3F
           ("hConeSumPtTrackSubVsNoSubCent",
@@ -4256,11 +4358,11 @@ void  AliIsolationCut::MakeIsolationCut
       
       if ( fFillHistograms )
       {
-        Float_t rho =  perpPtSumTrack / coneArea;
+        Float_t rho           =  perpPtSumTrack / coneArea;
+        Float_t rhoMax        =  perpPtSumTrackCutMax / coneArea;
+        Float_t rhoLeadFactor =  perpPtSumTrackCutLeadFactor / coneArea;
         if ( fFillHighMultHistograms )
         {
-          if ( fEtaPhiHistogramsMinPt )
-            fhPerpConeRhoCent  ->Fill(rho * excessAreaTrkEta, centrality, histoWeight);
           fhPerpConeSumPtCent->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, centrality, histoWeight);
 
           fhPerpCone1SumPtCent->Fill(ptC, perp1PtSumTrack * excessAreaTrkEta, centrality, histoWeight);
@@ -4268,6 +4370,10 @@ void  AliIsolationCut::MakeIsolationCut
 
           if ( ptC > fEtaPhiHistogramsMinPt )
           {
+            fhPerpConeRhoCent             ->Fill(rho           * excessAreaTrkEta, centrality, histoWeight);
+            fhPerpConeRhoCutMaxCent       ->Fill(rhoMax        * excessAreaTrkEta, centrality, histoWeight);
+            fhPerpConeRhoCutLeadFactorCent->Fill(rhoLeadFactor * excessAreaTrkEta, centrality, histoWeight);
+
             fhConeSumPtVSPerpConeCent->Fill(coneptsumTrack * excessAreaTrkEta,
                                             perpPtSumTrack * excessAreaTrkEta,
                                             centrality, histoWeight);
@@ -4281,7 +4387,10 @@ void  AliIsolationCut::MakeIsolationCut
         }
         else
         {
-          fhPerpConeRho  ->Fill(ptC, rho * excessAreaTrkEta, histoWeight);
+          fhPerpConeRho             ->Fill(ptC, rho           * excessAreaTrkEta, histoWeight);
+          fhPerpConeRhoCutMax       ->Fill(ptC, rhoMax        * excessAreaTrkEta, histoWeight);
+          fhPerpConeRhoCutLeadFactor->Fill(ptC, rhoLeadFactor * excessAreaTrkEta, histoWeight);
+
           fhPerpConeSumPt->Fill(ptC, perpPtSumTrack * excessAreaTrkEta, histoWeight);
 
           fhPerpCone1SumPt->Fill(ptC, perp1PtSumTrack * excessAreaTrkEta, histoWeight);
@@ -4476,13 +4585,18 @@ void  AliIsolationCut::MakeIsolationCut
         
         if ( fFillHistograms )
         {
-          Float_t rho = coneptsumBkgCls / coneArea;
+          Float_t rho           = coneptsumBkgCls / coneArea;
+          Float_t rhoMax        = coneptsumBkgClsCutMax / coneArea;
+          Float_t rhoLeadFactor = coneptsumBkgClsCutLeadFactor / coneArea;
           if ( fFillHighMultHistograms ) 
           {
             fhConeSumPtUEBandNormClusterCent->Fill(ptC, coneptsumBkgCls*excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
             if ( ptC > fEtaPhiHistogramsMinPt )
             {
-              fhConeRhoUEBandClusterCent->Fill(rho*excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
+              fhConeRhoUEBandClusterCent             ->Fill(rho          *excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
+              fhConeRhoUEBandClusterCutMaxCent       ->Fill(rhoMax       *excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
+              fhConeRhoUEBandClusterCutLeadFactorCent->Fill(rhoLeadFactor*excessAreaClsEta*excessAreaClsPhi, centrality, histoWeight);
+
               fhConeSumPtVSUEClusterBandCent->Fill(coneptsumCluster*excessAreaClsEta*excessAreaClsPhi,
                                                    coneptsumBkgCls *excessAreaClsEta*excessAreaClsPhi,
                                                    centrality, histoWeight);
@@ -4493,7 +4607,10 @@ void  AliIsolationCut::MakeIsolationCut
           }
           else
           {
-            fhConeRhoUEBandCluster->Fill(ptC, rho*excessAreaClsEta*excessAreaClsPhi, histoWeight);
+            fhConeRhoUEBandCluster             ->Fill(ptC, rho          *excessAreaClsEta*excessAreaClsPhi, histoWeight);
+            fhConeRhoUEBandClusterCutMax       ->Fill(ptC, rhoMax       *excessAreaClsEta*excessAreaClsPhi, histoWeight);
+            fhConeRhoUEBandClusterCutLeadFactor->Fill(ptC, rhoLeadFactor*excessAreaClsEta*excessAreaClsPhi, histoWeight);
+
             fhConeSumPtUEBandNormCluster->Fill(ptC, coneptsumBkgCls*excessAreaClsEta*excessAreaClsPhi, histoWeight);
             if ( ptC > fEtaPhiHistogramsMinPt )
             {
@@ -4592,13 +4709,18 @@ void  AliIsolationCut::MakeIsolationCut
         
         if ( fFillHistograms )
         {          
-          Float_t rho = coneptsumBkgTrk / coneArea;
+          Float_t rho           = coneptsumBkgTrk / coneArea;
+          Float_t rhoMax        = coneptsumBkgTrkCutMax / coneArea;
+          Float_t rhoLeadFactor = coneptsumBkgTrkCutLeadFactor / coneArea;
           if ( fFillHighMultHistograms )
           {
             fhConeSumPtUEBandNormTrackCent->Fill(ptC, coneptsumBkgTrk*excessAreaTrkEta, centrality, histoWeight);
             if ( ptC > fEtaPhiHistogramsMinPt )
             {
-              fhConeRhoUEBandTrackCent->Fill(rho*excessAreaTrkEta, centrality, histoWeight);
+              fhConeRhoUEBandTrackCent             ->Fill(rho          *excessAreaTrkEta, centrality, histoWeight);
+              fhConeRhoUEBandTrackCutMaxCent       ->Fill(rhoMax       *excessAreaTrkEta, centrality, histoWeight);
+              fhConeRhoUEBandTrackCutLeadFactorCent->Fill(rhoLeadFactor*excessAreaTrkEta, centrality, histoWeight);
+
               fhConeSumPtVSUETrackBandCent->Fill(coneptsumTrack *excessAreaClsEta,
                                                  coneptsumBkgTrk*excessAreaClsEta,
                                                  centrality, histoWeight);
@@ -4609,7 +4731,10 @@ void  AliIsolationCut::MakeIsolationCut
           }
           else
           {
-            fhConeRhoUEBandTrack->Fill(ptC, rho*excessAreaTrkEta, histoWeight);
+            fhConeRhoUEBandTrack             ->Fill(ptC, rho          *excessAreaTrkEta, histoWeight);
+            fhConeRhoUEBandTrackCutMax       ->Fill(ptC, rhoMax       *excessAreaTrkEta, histoWeight);
+            fhConeRhoUEBandTrackCutLeadFactor->Fill(ptC, rhoLeadFactor*excessAreaTrkEta, histoWeight);
+
             fhConeSumPtUEBandNormTrack->Fill(ptC, coneptsumBkgTrk*excessAreaTrkEta, histoWeight);
             if ( ptC > fEtaPhiHistogramsMinPt )
             {

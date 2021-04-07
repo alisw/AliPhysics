@@ -352,6 +352,8 @@ class AliIsolationCut : public TObject {
   TH2F *   fhPtInPerpCone ;                            //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90).
   TH2F *   fhPerpConeSumPt;                            //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90).
   TH2F *   fhPerpConeRho  ;                            //!<! Rho using cones perpendicular phi region to trigger axis  (phi +90).
+  TH2F *   fhPerpConeRhoCutMax  ;                      //!<! Rho using cones perpendicular phi region to trigger axis  (phi +90). Max pT cut.
+  TH2F *   fhPerpConeRhoCutLeadFactor  ;               //!<! Rho using cones perpendicular phi region to trigger axis  (phi +90). Track pT dependent on leading pt.
   TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
   TH2F *   fhConeSumPtVSPerpCone;                      //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.
   TH2F *   fhPerpConeSumPtTrackSubVsNoSub;             //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
@@ -430,6 +432,10 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPtUEBandNormTrack;                 //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger.
   TH2F *   fhConeRhoUEBandCluster;                     //!<! Cluster rhoUE cone vs pT trigger.
   TH2F *   fhConeRhoUEBandTrack;                       //!<! Track rho UE cone vs pT trigger.
+  TH2F *   fhConeRhoUEBandClusterCutMax;               //!<! Cluster rhoUE cone vs pT trigger. Max pT cut.
+  TH2F *   fhConeRhoUEBandTrackCutMax;                 //!<! Track rho UE cone vs pT trigger. Max pT cut.
+  TH2F *   fhConeRhoUEBandClusterCutLeadFactor;        //!<! Cluster rhoUE cone vs pT trigger.  Track pT dependent on leading pt.
+  TH2F *   fhConeRhoUEBandTrackCutLeadFactor;          //!<! Track rho UE cone vs pT trigger.  Track pT dependent on leading pt.
 
   TH2F *   fhFractionTrackOutConeEta;                  //!<! Fraction of cone out of tracks acceptance in eta.
   TH3F *   fhFractionTrackOutConeEtaTrigEtaPhi;        //!<! Fraction of cone out of tracks acceptance in eta, vs trigger eta-phi.
@@ -481,6 +487,8 @@ class AliIsolationCut : public TObject {
   // Perpendicular cones
   TH3F *   fhPerpConeSumPtCent ;                       //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
   TH2F *   fhPerpConeRhoCent ;                         //!<! Rho using cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
+  TH2F *   fhPerpConeRhoCutMaxCent ;                   //!<! Rho using cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.  Max pT cut.
+  TH2F *   fhPerpConeRhoCutLeadFactorCent ;            //!<! Rho using cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality. Track pT dependent on leading pt.
   TH3F *   fhConeSumPtVSPerpConeCent;                  //!<! Perpendicular cones tracks:  sum pT in cone vs bkg to subtract.
   TH3F *   fhPerpConeSumPtTrackSubVsNoSubCent;         //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   TH3F *   fhPtInPerpConeCent ;                        //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90) vs centrality.
@@ -491,20 +499,24 @@ class AliIsolationCut : public TObject {
   TH3F *   fhPerpCone1SumPtUESubCent;                  //!<! Sum Pt in cone minus 1 perpendicular cone vs centrality.
 
   // Jet Rho
-  TH3F *   fhJetRhoSumPtCent ;                       //!<! Charged Sum Pt in cone with Jet Rho calculations.
-  TH2F *   fhJetRhoCent ;                            //!<! Charged Rho in cone with Jet Rho calculations.
-  TH3F *   fhConeSumPtVSJetRhoCent;                  //!<! Charged sum pT in cone vs bkg to subtract from Jet Rho
-  TH3F *   fhJetRhoSumPtTrackSubVsNoSubCent;         //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH3F *   fhJetRhoSumPtCent ;                         //!<! Charged Sum Pt in cone with Jet Rho calculations.
+  TH2F *   fhJetRhoCent ;                              //!<! Charged Rho in cone with Jet Rho calculations.
+  TH3F *   fhConeSumPtVSJetRhoCent;                    //!<! Charged sum pT in cone vs bkg to subtract from Jet Rho
+  TH3F *   fhJetRhoSumPtTrackSubVsNoSubCent;           //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
 
   /// Charged jet Rho sum pT per eta-phi bin of trigger vs centrality.
-  TH3F **  fhJetRhoSumPtTrigEtaPhiCent;              //![fNCentBins]
+  TH3F **  fhJetRhoSumPtTrigEtaPhiCent;                //![fNCentBins]
 
   // UE bands
   TH3F *   fhConeSumPtUEBandNormClusterCent;           //!<! Cluster Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
   TH3F *   fhConeSumPtUEBandNormTrackCent;             //!<! Track Sum Pt in the normalized eta or phi UE cone vs pT trigger vs centrality.
   TH2F *   fhConeRhoUEBandClusterCent;                 //!<! Cluster rho UE cone  vs centrality.
   TH2F *   fhConeRhoUEBandTrackCent;                   //!<! Track rho UE cone  vs centrality.
-  
+  TH2F *   fhConeRhoUEBandClusterCutMaxCent;           //!<! Cluster rho UE cone  vs centrality. Max pT cut.
+  TH2F *   fhConeRhoUEBandTrackCutMaxCent;             //!<! Track rho UE cone  vs centrality. Max pT cut.
+  TH2F *   fhConeRhoUEBandClusterCutLeadFactorCent;    //!<! Cluster rho UE cone  vs centrality. Track pT dependent on leading pt.
+  TH2F *   fhConeRhoUEBandTrackCutLeadFactorCent;      //!<! Track rho UE cone  vs centrality. Track pT dependent on leading pt.
+
   TH3F *   fhConeSumPtEtaBandUEClusterCent;            //!<! Cluster Sum Pt in the eta band  vs centralityfor clusters, before normalization.
   TH3F *   fhConeSumPtPhiBandUEClusterCent;            //!<! Cluster Sum Pt in the phi band vs centrality for clusters, before normalization.
   TH3F *   fhConeSumPtEtaBandUETrackCent;              //!<! Track Sum Pt in the eta band vs centrality for tracks, before normalization.
