@@ -1230,8 +1230,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMot
   TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
 
   // Opening Angle Cut
-  if( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) &&
-    (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
+  if( ( fEnableMinOpeningAngleCut ) &&
+  ( (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) || (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) ) )
   {
     return kFALSE;
   }
