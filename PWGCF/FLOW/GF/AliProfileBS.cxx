@@ -45,6 +45,7 @@ void AliProfileBS::FillProfile(const Double_t &xv, const Double_t &yv, const Dou
 }
 void AliProfileBS::RebinMulti(Int_t nbins) {
   this->RebinX(nbins);
+  if(!fListOfEntries) return;
   for(Int_t i=0;i<fListOfEntries->GetEntries();i++)
     ((TProfile*)fListOfEntries->At(i))->RebinX(nbins);
 }

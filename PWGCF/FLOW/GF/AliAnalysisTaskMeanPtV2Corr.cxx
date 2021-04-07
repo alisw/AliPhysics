@@ -1238,10 +1238,29 @@ Int_t AliAnalysisTaskMeanPtV2Corr::GetBayesPIDIndex(AliAODTrack *l_track) {
 Bool_t AliAnalysisTaskMeanPtV2Corr::LoadMyWeights(const Int_t &lRunNo) {
   if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
   if(lRunNo && lRunNo == fRunNo) return kTRUE;
+  TString lBase(""); //base
+  TString lSubfix(""); //subfix
+  if(fWeightSubfix.IsNull()) { //If none specified, then follow the usual procedure
+    lBase = Form("w%i",lRunNo);
+    lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
+  } else {
+    Int_t delind = fWeightSubfix.Index(";");
+    if(delind<0) {//Only base
+      lBase = fWeightSubfix;
+      lSubfix = fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():"";
+    } else if(!delind) {//Standard base, override subfix
+      lBase = Form("w%i",lRunNo);
+      lSubfix = fWeightSubfix(1,fWeightSubfix.Length());
+    } else {
+      lBase = fWeightSubfix(0,delind);
+      lSubfix = fWeightSubfix(delind+1,fWeightSubfix.Length());
+    }
+  }
+  lBase+=lSubfix;
   // if(!fWeights) { fWeights = new AliGFWWeights*[1]; };
   // if(fWeights[0]) delete fWeights[0];
-  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",lRunNo,fGFWSelection->NeedsExtraWeight()?fGFWSelection->GetSystPF():""));
-  if(!fWeights[0]) AliFatal(Form("Weights w%i not not found in the list provided!\n",lRunNo));
+  fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(lBase.Data());
+  if(!fWeights[0]) AliFatal(Form("Weights %s not not found in the list provided!\n",lBase.Data()));
   fWeights[0]->CreateNUA();
   return kTRUE;
 }

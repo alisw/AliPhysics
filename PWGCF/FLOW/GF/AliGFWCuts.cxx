@@ -183,10 +183,10 @@ TString *AliGFWCuts::GetTrackFlagDescriptor(Int_t sysflag) {
     retstr->Append("Filter bit 768");
     break;
   case 2:
-    retstr->Append("DCA_{xy} < 10 (old:8) sigma");
+    retstr->Append("DCA_{xy} < 10 sigma");
     break;
   case 3:
-    retstr->Append("DCA_{xy} < 4 (old:6) sigma");
+    retstr->Append("DCA_{xy} < 4 sigma");
     break;
   case 4:
     retstr->Append("DCA_{z} < 1 cm");
