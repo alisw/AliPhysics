@@ -1107,6 +1107,12 @@ void AliAnalysisTaskSEHFTreeCreatorApply::ProcessCasc(TClonesArray *arrayCasc, A
       AliAODv0 * v0part;
       if(d->GetIsFilled() == 0) v0part = (AliAODv0*)(aod->GetV0(d->GetProngID(1)));
       else                      v0part = d->Getv0();
+
+      //Safety check. In recent MC, crashes occur due to v0part null pointer.
+      if(!v0part){
+        AliDebug(2,"No V0 for current cascade");
+        continue;
+      }
       Bool_t isOnFlyV0 = v0part->GetOnFlyStatus();
       
       if(fV0typeForLc2V0bachelor==1 && isOnFlyV0 == kTRUE) continue;
