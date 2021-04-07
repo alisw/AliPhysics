@@ -215,7 +215,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fCaloPt(NULL),
   fTrackPt(NULL),
   fTrackEta(NULL),
-  fTrackPhi(NULL),
+  fTrackPhiPt(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -653,7 +653,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fCaloPt(NULL),
   fTrackPt(NULL),
   fTrackEta(NULL),
-  fTrackPhi(NULL),
+  fTrackPhiPt(NULL),
   fTrackPtHybridOnlyPosID(NULL),
   fTrackEtaHybridOnlyPosID(NULL),
   fTrackPhiHybridOnlyPosID(NULL),
@@ -1607,7 +1607,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloPt = new TH1F("fCaloPt","calo photons in EMC acc;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackPt = new TH1F("fTrackPt","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEta = new TH1F("fTrackEta","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
-  fTrackPhi = new TH1F("fTrackPhi","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi());
+  fTrackPhiPt = new TH2F("fTrackPhiPt","#phi distribution of hybrid tracks;#phi; counts",200,0,2*TMath::Pi(),nPtBins,minPt,maxPt);
   
   fTrackPtHybridOnlyPosID = new TH1F("fTrackPtHybridOnlyPosID","pt distribution of hybrid tracks;p_{T} (GeV/c); counts",nPtBins,minPt,maxPt);
   fTrackEtaHybridOnlyPosID = new TH1F("fTrackEtaHybridOnlyPosID","#eta distribution of hybrid tracks;#eta; counts",200,-0.9,0.9);
@@ -1616,14 +1616,14 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fCaloPt->Sumw2();
   fTrackPt->Sumw2();
   fTrackEta->Sumw2();
-  fTrackPhi->Sumw2();
+  fTrackPhiPt->Sumw2();
   fTrackPtHybridOnlyPosID->Sumw2();
   fTrackEtaHybridOnlyPosID->Sumw2();
   fTrackPhiHybridOnlyPosID->Sumw2();
   fCaloFolderRec->Add(fCaloPt);
   fCaloFolderRec->Add(fTrackPt);
   fCaloFolderRec->Add(fTrackEta);
-  fCaloFolderRec->Add(fTrackPhi);
+  fCaloFolderRec->Add(fTrackPhiPt);
 
   fCaloFolderRec->Add(fTrackPtHybridOnlyPosID);
   fCaloFolderRec->Add(fTrackEtaHybridOnlyPosID);
@@ -3806,7 +3806,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
       // for QA to check for dead TPC sectors
       fTrackPt->Fill(fCurrentTrack->Pt(),fWeightJetJetMC);
       fTrackEta->Fill(eta,fWeightJetJetMC);
-      fTrackPhi->Fill(phi,fWeightJetJetMC);
+      fTrackPhiPt->Fill(phi,fCurrentTrack->Pt(),fWeightJetJetMC);
       prim++;
   }
   fBuffer_EventNPrimaryTracks = prim;

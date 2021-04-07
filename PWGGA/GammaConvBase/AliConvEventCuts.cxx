@@ -620,7 +620,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hTriggerClassSelected);
 
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
-      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",17,-0.5,16.5);
+      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",19,-0.5,18.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
@@ -638,6 +638,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 15,"kDMCDGA");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 16,"kDMCDG1");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 17,"kDMCDG2");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 18,"partition CENT");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 19,"partition woTRD");
       fHistograms->Add(hTriggerClassesCorrelated);
     }
 
@@ -5929,6 +5931,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                 if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                 if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+                if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
+                if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
               }
             } else if ( fSpecialTrigger == 10 ){
               if (hTriggerClassesCorrelated){
@@ -5950,6 +5954,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                   if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
                   if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
                   if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+                  if (firedTrigClass.Contains("CENT")) hTriggerClassesCorrelated->Fill(17);
+                  if (firedTrigClass.Contains("NOTRD")) hTriggerClassesCorrelated->Fill(18);
                 }
               }
             }

@@ -473,7 +473,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     TH1F*                       fCaloPt;//!
     TH1F*                       fTrackPt;//!
     TH1F*                       fTrackEta;//!
-    TH1F*                       fTrackPhi;//!
+    TH2F*                       fTrackPhiPt;//!
     TH1F*                       fTrackPtHybridOnlyPosID;//!
     TH1F*                       fTrackEtaHybridOnlyPosID;//!
     TH1F*                       fTrackPhiHybridOnlyPosID;//!
@@ -811,7 +811,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 38);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 39);
 
 };
 
