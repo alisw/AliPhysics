@@ -62,7 +62,8 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenToyEventHeader.h"
-
+#include "AliTriggerAnalysis.h"
+#include "AliOADBContainer.h"
 #include "AliMathBase.h"
 #include "AliLog.h"
 
@@ -132,7 +133,7 @@ namespace
 } // namespace
 
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, collision(), eventextra(), bc(), run2bcinfo(), origin(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, fTriggerAnalysis(), collision(), eventextra(), bc(), run2bcinfo(), origin(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
 #ifdef USE_TOF_CLUST
       ,
       tofClusters()
@@ -140,6 +141,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
       ,
       calo(), calotrigger(), muons(), mucls(), zdc(), fv0a(), fv0c(), ft0(), fdd(), v0s(), cascs()
 {
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   for (Int_t i = 0; i < kTrees; i++)
@@ -148,11 +150,24 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
   }
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
+  
+  
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
   fOutputList->Delete();
   delete fOutputList;
 } // AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
+
+void AliAnalysisTaskAO2Dconverter::NotifyRun(){
+  const char* oadbfilename = Form("%s/COMMON/PHYSICSSELECTION/data/physicsSelection.root", AliAnalysisManager::GetOADBPath());
+  TFile* oadb = TFile::Open(oadbfilename);
+  if(!oadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename));
+  AliOADBContainer* triggerContainer = (AliOADBContainer*) oadb->Get("trigAnalysis");
+  if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
+  AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
+  fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
+}
+
 
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
@@ -561,8 +576,15 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kRun2BCInfo]) {
     tRun2BCInfo->Branch("fEventCuts", &run2bcinfo.fEventCuts, "fEventCuts/i");
     tRun2BCInfo->Branch("fTriggerMaskNext50", &run2bcinfo.fTriggerMaskNext50, "fTriggerMaskNext50/l");
+    tRun2BCInfo->Branch("fL0TriggerInputMask", &run2bcinfo.fL0TriggerInputMask, "fL0TriggerInputMask/i");
     tRun2BCInfo->Branch("fSPDClustersL0", &run2bcinfo.fSPDClustersL0, "fSPDClustersL0/s");
     tRun2BCInfo->Branch("fSPDClustersL1", &run2bcinfo.fSPDClustersL1, "fSPDClustersL1/s");
+    tRun2BCInfo->Branch("fSPDFiredChipsL0", &run2bcinfo.fSPDFiredChipsL0, "fSPDFiredChipsL0/s");
+    tRun2BCInfo->Branch("fSPDFiredChipsL1", &run2bcinfo.fSPDFiredChipsL1, "fSPDFiredChipsL1/s");
+    tRun2BCInfo->Branch("fSPDFiredFastOrL0", &run2bcinfo.fSPDFiredFastOrL0, "fSPDFiredFastOrL0/s");
+    tRun2BCInfo->Branch("fSPDFiredFastOrL1", &run2bcinfo.fSPDFiredFastOrL1, "fSPDFiredFastOrL1/s");
+    tRun2BCInfo->Branch("fV0TriggerChargeA", &run2bcinfo.fV0TriggerChargeA, "fV0TriggerChargeA/s");
+    tRun2BCInfo->Branch("fV0TriggerChargeC", &run2bcinfo.fV0TriggerChargeC, "fV0TriggerChargeC/s");
     tRun2BCInfo->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -1006,8 +1028,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // Run 2 BC information
   run2bcinfo.fTriggerMaskNext50 = fESD->GetTriggerMaskNext50();
+  run2bcinfo.fL0TriggerInputMask = fESD->GetHeader()->GetL0TriggerInputs();
   run2bcinfo.fSPDClustersL0 = (fESD->GetNumberOfITSClusters(0) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(0);
   run2bcinfo.fSPDClustersL1 = (fESD->GetNumberOfITSClusters(1) > USHRT_MAX) ? USHRT_MAX : fESD->GetNumberOfITSClusters(1);
+  const TBits& onMap = fInputEvent->GetMultiplicity()->GetFastOrFiredChips();
+  const TBits& ofMap = fInputEvent->GetMultiplicity()->GetFiredChipMap();
+  run2bcinfo.fSPDFiredFastOrL1 = onMap.CountBits(400);
+  run2bcinfo.fSPDFiredChipsL1 = ofMap.CountBits(400);
+  run2bcinfo.fSPDFiredFastOrL0 = onMap.CountBits(0)-run2bcinfo.fSPDFiredFastOrL1;
+  run2bcinfo.fSPDFiredChipsL0 = ofMap.CountBits(0)-run2bcinfo.fSPDFiredChipsL1;
+  AliVVZERO* vzero = fInputEvent->GetVZEROData();
+  run2bcinfo.fV0TriggerChargeA = vzero->GetTriggerChargeA();
+  run2bcinfo.fV0TriggerChargeC = vzero->GetTriggerChargeC();
+
   run2bcinfo.fEventCuts = 0;
   
   // Get multiplicity selection
@@ -1047,6 +1080,33 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
     SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
+  
+  if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+    SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+  
+  if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+    SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+
+  if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+    SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+
+  if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+    SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+  
+  if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+      SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+
+  if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+      SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+
+  if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+      SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+
+  if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+      SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+
+  if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+      SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
   
   FillTree(kRun2BCInfo);
   
