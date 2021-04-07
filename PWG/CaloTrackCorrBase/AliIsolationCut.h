@@ -90,8 +90,8 @@ class AliIsolationCut : public TObject {
                                         Int_t     calorimeter , AliCaloPID * pid,
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,
-                                        Float_t & etaBandPtSum, Float_t & etaBandptLead , Float_t & etaBandPtSumCut,
-                                        Float_t & phiBandPtSum, Float_t & phiBandptLead , Float_t & phiBandPtSumCut,
+                                        Float_t & etaBandPtSum, Float_t & etaBandptLead , Float_t & etaBandPtSumCutMax, Float_t & etaBandPtSumCutLeadFactor,
+                                        Float_t & phiBandPtSum, Float_t & phiBandptLead , Float_t & phiBandPtSumCutMax, Float_t & phiBandPtSumCutLeadFactor,
                                         Double_t histoWeight=1, 
                                         Float_t centrality = -1, Int_t cenBin = -1) ;
   
@@ -100,10 +100,10 @@ class AliIsolationCut : public TObject {
                                         TString   refArrayName , TObjArray *bgCls,
                                         Int_t   & nPart        , Int_t   & nfrac,
                                         Float_t & coneptsum    , Float_t & coneptLead,
-                                        Float_t & etaBandPtSum , Float_t & etaBandptLead , Float_t & etaBandPtSumCut , Float_t & etaBandPtSumCut2 ,
-                                        Float_t & phiBandPtSum , Float_t & phiBandptLead , Float_t & phiBandPtSumCut , Float_t & phiBandPtSumCut2 ,
-                                        Float_t & perpConePtSum, Float_t & perpConeptLead, Float_t & perpConePtSumCut, Float_t & perpConePtSumCut2,
-                                        Float_t & perpBandPtSum, Float_t & perpBandptLead, Float_t & perpBandPtSumCut, Float_t & perpBandPtSumCut2,
+                                        Float_t & etaBandPtSum , Float_t & etaBandptLead , Float_t &  etaBandPtSumCutMax, Float_t &  etaBandPtSumCutLeadFactor,
+                                        Float_t & phiBandPtSum , Float_t & phiBandptLead , Float_t &  phiBandPtSumCutMax, Float_t &  phiBandPtSumCutLeadFactor,
+                                        Float_t & perpConePtSum, Float_t & perpConeptLead, Float_t & perpConePtSumCutMax, Float_t & perpConePtSumCutLeadFactor,
+                                        Float_t & perpBandPtSum, Float_t & perpBandptLead, Float_t & perpBandPtSumCutMax, Float_t & perpBandPtSumCutLeadFactor,
                                         Float_t & perpCone1PtSum,
                                         Double_t  histoWeight=1,
                                         Float_t centrality = -1, Int_t cenBin = -1) ;
@@ -166,7 +166,10 @@ class AliIsolationCut : public TObject {
            fNeutralOverChargedRatio[2]*cen*cen + fNeutralOverChargedRatio[3]*cen*cen*cen; }
   
   Int_t      GetNCentrBins()          const { return fNCentBins      ; }
-  Float_t    GetFracLeadingFactor()   const { return fFracLeadFactor ; }
+
+  Float_t    GetLeadingPtUEFactor()   const { return fLeadingPtUEFactor ; }
+  Float_t    GetMaxPtUE()             const { return fMaxPtUE        ; }
+
   Float_t    GetTPCEtaSize()          const { return fTPCEtaSize     ; }
   Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
   Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
@@ -193,7 +196,8 @@ class AliIsolationCut : public TObject {
   { fNeutralOverChargedRatio[0] = r0 ; fNeutralOverChargedRatio[1] = r1 ; 
     fNeutralOverChargedRatio[2] = r2 ; fNeutralOverChargedRatio[3] = r3 ; }
   void       SetNCentrBins(Int_t nbins)                        { fNCentBins         = nbins; }
-  void       SetFracLeadingFactor(Float_t fac)                 { fFracLeadFactor    = fac  ; }
+  void       SetLeadingPtUEFactor(Float_t fac)                 { fLeadingPtUEFactor = fac  ; }
+  void       SetMaxPtUE(Float_t max)                           { fMaxPtUE           = max  ; }
 
   void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
   void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ; }
@@ -220,6 +224,12 @@ class AliIsolationCut : public TObject {
 
   void       SwitchOnJetRhoCentralityChange ()                 { fJetRhoCheckCentrality = kTRUE  ; }
   void       SwitchOffJetRhoCentralityChange()                 { fJetRhoCheckCentrality = kFALSE ; }
+
+  void       SwitchOnUseMaxPtUECut ()                          { fUseMaxPtUE = kTRUE  ; }
+  void       SwitchOffUseMaxPtUECut()                          { fUseMaxPtUE = kFALSE ; }
+
+  void       SwitchOnUseLeadingPtUEFactorCut ()                { fUseLeadingPtUEFactor = kTRUE  ; }
+  void       SwitchOffUseLeadingPtUEFactorCut()                { fUseLeadingPtUEFactor = kFALSE ; }
 
  private:
 
@@ -265,7 +275,11 @@ class AliIsolationCut : public TObject {
   
   Float_t    fNeutralOverChargedRatio[4];              ///< Ratio of sum pT of neutrals over charged. For perpendicular cones UE subtraction. Might depend on centrality. Parameters of third order polynomial.
   
-  Float_t    fFracLeadFactor;                          ///< Factor to select UE pT cut based on leading pT in cone
+  Bool_t     fUseLeadingPtUEFactor;                    ///< Use leading in cone pT cut in UE region in UE region
+  Float_t    fLeadingPtUEFactor;                       ///< Factor to select UE pT cut based on leading pT in cone
+
+  Bool_t     fUseMaxPtUE;                              ///< Use maximum pT cut in UE region
+  Float_t    fMaxPtUE;                                 ///< Maximum pt for UE estimation
 
   TString    fJetRhoTaskName;                          ///< Name of the container of the jet rho task calculation
   Float_t    fJetRhoSparseCentralityLimit;             ///< Use Sparse Rho calculation for peripheral events avobe this centrality
@@ -308,9 +322,10 @@ class AliIsolationCut : public TObject {
   TH2F *   fhConeSumPtUESub ;                          //!<! Cluster and tracks Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubCluster ;                   //!<! Clusters Sum Pt in the cone minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubTrack ;                     //!<! Tracks Sum Pt in the cone minus UE and excess corrected.
-  TH2F *   fhConeSumPtUESubClusterCut ;                //!<! Clusters Sum Pt in the cone minus UE with Lead pT cut and excess corrected.
-  TH2F *   fhConeSumPtUESubTrackCut ;                  //!<! Clusters Sum Pt in the cone minus UE with Lead pT cut and excess corrected.
-  TH2F *   fhConeSumPtUESubTrackCut2 ;                 //!<! Clusters Sum Pt in the cone minus UE with Lead pT cut and excess corrected.
+  TH2F *   fhConeSumPtUESubClusterCutMax ;             //!<! Clusters Sum Pt in the cone minus UE with UE pT max cut and excess corrected.
+  TH2F *   fhConeSumPtUESubTrackCutMax ;               //!<! Tracks Sum Pt in the cone minus UE with UE pT max cut and excess corrected.
+  TH2F *   fhConeSumPtUESubClusterCutLeadFactor ;      //!<! Clusters Sum Pt in the cone minus UE with Lead pT cut and excess corrected.
+  TH2F *   fhConeSumPtUESubTrackCutLeadFactor ;        //!<! Tracks Sum Pt in the cone minus UE with Lead pT cut and excess corrected.
   TH2F *   fhConeSumPtUESubClustervsTrack ;            //!<! Cluster vs tracks Sum Pt in the cone  minus UE and excess corrected.
   TH2F *   fhConeSumPtUESubClusterTrackFrac ;          //!<! Cluster / tracks Sum Pt in the cone  minus UE and excess corrected.
   TH3F *   fhConeSumPtUESubTrigEtaPhi ;                //!<! Cluster and tracks Sum Pt in the cone, per eta-phi bin of trigger minus UE and excess corrected.
@@ -450,9 +465,10 @@ class AliIsolationCut : public TObject {
   TH3F *   fhConeSumPtUESubCent ;                      //!<! Cluster and tracks Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubClusterCent ;               //!<! Clusters Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubTrackCent ;                 //!<! Tracks Sum Pt in the cone minus UE  vs centrality.
-  TH3F *   fhConeSumPtUESubClusterCutCent ;            //!<! Clusters Sum Pt in the cone minus UE vs centrality. Cut on leading track UE.
-  TH3F *   fhConeSumPtUESubTrackCutCent ;              //!<! Tracks Sum Pt in the cone minus UE  vs centrality. Cut on leading track UE.
-  TH3F *   fhConeSumPtUESubTrackCut2Cent ;              //!<! Tracks Sum Pt in the cone minus UE  vs centrality. Cut on leading track UE.
+  TH3F *   fhConeSumPtUESubClusterCutMaxCent ;         //!<! Clusters Sum Pt in the cone minus UE vs centrality. Cut on cluster max pt UE.
+  TH3F *   fhConeSumPtUESubTrackCutMaxCent ;           //!<! Tracks Sum Pt in the cone minus UE  vs centrality. Cut on track max pt UE.
+  TH3F *   fhConeSumPtUESubClusterCutLeadFactorCent ;  //!<! Clusters Sum Pt in the cone minus UE  vs centrality. Cut on leading cluster UE.
+  TH3F *   fhConeSumPtUESubTrackCutLeadFactorCent ;    //!<! Tracks Sum Pt in the cone minus UE  vs centrality. Cut on leading track UE.
   TH3F *   fhConeSumPtUESubClustervsTrackCent ;        //!<! Cluster vs tracks Sum Pt in the cone minus UE vs centrality.
   TH3F *   fhConeSumPtUESubClusterTrackFracCent;       //!<! Cluster / tracks Sum Pt in the cone  minus UE vs centrality.
   /// Tracks  and clusters Sum Pt in the cone vs centrality, vs trigger Eta-phi
@@ -552,7 +568,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,27) ;
+  ClassDef(AliIsolationCut,28) ;
   /// \endcond
 
 } ;
