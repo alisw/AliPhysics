@@ -91,6 +91,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
+  void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -136,6 +137,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
+  TString fWeightSubfix;
   TList *fNUAList; //!
   TH2D **fNUAHist; //!
   Int_t fRunNo; //!
