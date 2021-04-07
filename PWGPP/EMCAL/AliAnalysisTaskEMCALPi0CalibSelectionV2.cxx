@@ -555,7 +555,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
   for(Int_t iMod=0; iMod < nSM; iMod++) {
     for(Int_t iRow=0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
       for(Int_t iCol=0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
-        snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
+        Int_t cellId  = fEMCALGeo->GetAbsCellIdFromCellIndexes(iMod,iRow,iCol);
+        snprintf(hname,buffersize, "%d",cellId);
         snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
         fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
         fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
