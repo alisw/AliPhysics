@@ -987,6 +987,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
+                if(clust->GetIsExotic())continue;
+
 		if(clust && clust->IsEMCAL())
 		{
 			Double_t clustE = clust->E();
@@ -1210,6 +1212,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		if(!fFlagEMCalCorrection)clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex); // address cluster matched to track
 		if(fFlagEMCalCorrection) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+
+                if(clustMatch->GetIsExotic())continue;
+
 		if(clustMatch && clustMatch->IsEMCAL())
 		{
 			fHistMatchPt->Fill(TrkPt);
@@ -1824,7 +1829,10 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 		if(fFlagEMCalCorrection)Assoclust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(jcl)); 
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
-		ConeR = 0.;
+		
+                if(Assoclust->GetIsExotic())continue;
+
+                ConeR = 0.;
 
 		if(Assoclust && Assoclust->IsEMCAL())
 		{
