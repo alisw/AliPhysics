@@ -137,10 +137,10 @@ public:
       kIsTPCHVdip,
       kIsTPCLaserWarmUp,
       kTRDHCO,              // Offline TRD cosmic trigger decision
-      kTRDHJT,              // Offline TRD cosmic trigger decision
-      kTRDHSE,              // Offline TRD cosmic trigger decision
-      kTRDHQU,              // Offline TRD cosmic trigger decision
-      kTRDHEE               // Offline TRD cosmic trigger decision
+      kTRDHJT,              // Offline TRD jet trigger decision
+      kTRDHSE,              // Offline TRD single electron trigger decision
+      kTRDHQU,              // Offline TRD quarkonium trigger decision
+      kTRDHEE               // Offline TRD single-electron-in-EMCAL-acceptance trigger decision
   };
   static const TClass* Generator[kGenerators]; // Generators
 
