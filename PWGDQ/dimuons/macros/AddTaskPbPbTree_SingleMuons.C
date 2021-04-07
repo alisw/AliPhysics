@@ -24,7 +24,6 @@ AliAnalysisTaskPbPbTree_SingleMuons *AddTaskPbPbTree_SingleMuons(){
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(histName,TH1D::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
 
    AliAnalysisTaskPbPbTree_SingleMuons *TreeTask = new AliAnalysisTaskPbPbTree_SingleMuons("AliAnalysisTaskPbPbTree_SingleMuons");
-   TreeTask->SetBeamEnergy(5.02);  // define by hand the beam energy
    mgr->AddTask(TreeTask);
 
    mgr->ConnectInput(TreeTask,0,mgr->GetCommonInputContainer());
