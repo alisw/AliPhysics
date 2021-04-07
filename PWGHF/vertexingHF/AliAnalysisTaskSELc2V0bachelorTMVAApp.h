@@ -157,6 +157,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
   Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
+  void SetMake3DHisto(Bool_t flag) {fMake3DHisto = flag;}
+  Bool_t GetMake3DHisto() const {return fMake3DHisto;}
+
   void SetAODMismatchProtection(Int_t opt = 0) {fAODProtection = opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
 
@@ -592,7 +595,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fHistoNsigmaTOF;               //!<! 
 
   Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
-
+  Bool_t fMake3DHisto;                 /// flag to decide if to use a 3D histo for BDT (bdt, mass, signd0)
   Int_t fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
@@ -634,7 +637,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 12); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 13); /// class for Lc->p K0
   /// \endcond    
 };
 
