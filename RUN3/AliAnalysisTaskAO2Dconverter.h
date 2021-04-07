@@ -136,11 +136,11 @@ public:
       kIsV0PFPileup,
       kIsTPCHVdip,
       kIsTPCLaserWarmUp,
-      kTRDHCO,
-      kTRDHJT,
-      kTRDHSE,
-      kTRDHQU,
-      kTRDHEE
+      kTRDHCO,              // Offline TRD cosmic trigger decision
+      kTRDHJT,              // Offline TRD cosmic trigger decision
+      kTRDHSE,              // Offline TRD cosmic trigger decision
+      kTRDHQU,              // Offline TRD cosmic trigger decision
+      kTRDHEE               // Offline TRD cosmic trigger decision
   };
   static const TClass* Generator[kGenerators]; // Generators
 
