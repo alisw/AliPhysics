@@ -1221,13 +1221,17 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionM
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2){
 
+  /* Since we have an OAC for the Pi0 Mesons seperate theres only need to check
+  /* gamma2 with gamma0 and gamma1. gamma0 and gamma1 OAC should be applied
+  /* through Pi0 Cuts via MesonIsSelected!
+  /*/
   TVector3 vecPi0Gamma0  = TVector3(gamma0->Px(), gamma0->Py(), gamma0->Pz());
   TVector3 vecPi0Gamma1  = TVector3(gamma1->Px(), gamma1->Py(), gamma1->Pz());
   TVector3 vecOmegaGamma = TVector3(gamma2->Px(), gamma2->Py(), gamma2->Pz());
 
   // Opening Angle Cut
-  if( ( fEnableMinOpeningAngleCut ) && (vecPi0Gamma0.Angle(vecPi0Gamma1) < fOpeningAngle) &&
-    (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) )
+  if( ( fEnableMinOpeningAngleCut ) &&
+  ( (vecPi0Gamma0.Angle(vecOmegaGamma) < fOpeningAngle) || (vecPi0Gamma1.Angle(vecOmegaGamma) < fOpeningAngle) ) )
   {
     return kFALSE;
   }
@@ -1235,8 +1239,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMot
   // Min Opening Angle
   if (fMinOpanPtDepCut == kTRUE) fMinOpanCutMeson = fFMinOpanCut->Eval(omega->Pt());
 
-  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) < fMinOpanCutMeson) &&
-    (vecPi0Gamma0.Angle(vecOmegaGamma) < fMinOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) < fMinOpanCutMeson) )
+  if( (vecPi0Gamma0.Angle(vecOmegaGamma) < fMinOpanCutMeson) || (vecPi0Gamma1.Angle(vecOmegaGamma) < fMinOpanCutMeson) )
   {
     return kFALSE;
   }
@@ -1244,8 +1247,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaOAC(AliAODConversionMot
   // Max Opening Angle
   if (fMaxOpanPtDepCut == kTRUE) fMaxOpanCutMeson = fFMaxOpanCut->Eval(omega->Pt());
 
-  if( (vecPi0Gamma0.Angle(vecPi0Gamma1) > fMaxOpanCutMeson) &&
-    (vecPi0Gamma0.Angle(vecOmegaGamma) > fMaxOpanCutMeson) && (vecPi0Gamma1.Angle(vecOmegaGamma) > fMaxOpanCutMeson) )
+  if( (vecPi0Gamma0.Angle(vecOmegaGamma) > fMaxOpanCutMeson) || (vecPi0Gamma1.Angle(vecOmegaGamma) > fMaxOpanCutMeson) )
   {
     return kFALSE;
   }
@@ -3750,7 +3752,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     case 25:     //p
       fUseMCPSmearing   = 2;
       fPSigSmearing     = 0.;
-      fPSigSmearingCte  = 1.15737e-05; 
+      fPSigSmearingCte  = 1.15737e-05;
       break;
     case 26:     //q
       fUseMCPSmearing   = 2;
@@ -3915,7 +3917,7 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     case 25:     //p
       fUseMCPSmearing   = 2;
       fPSigSmearing     = 0.;
-      fPSigSmearingCte  = 1.15737e-05; 
+      fPSigSmearingCte  = 1.15737e-05;
       break;
     case 26:     //q
       fUseMCPSmearing   = 2;
@@ -4358,16 +4360,16 @@ void AliConversionMesonCuts::SmearParticle(AliAODConversionPhoton* photon)
     photon->SetPy(facPBrem* (1+facPSig)* P*sin(theta)*sin(phi)) ;
     photon->SetPz(facPBrem* (1+facPSig)* P*cos(theta)) ;
     photon->SetE(photon->P());
-  } else if (fUseMCPSmearing == 2) { 
+  } else if (fUseMCPSmearing == 2) {
     facPSig = fRandom.Gaus(P,TMath::Sqrt(fPSigSmearingCte+fPSigSmearing*P));
-    
+
     photon->SetPx(facPSig*sin(theta)*cos(phi)) ;
     photon->SetPy(facPSig*sin(theta)*sin(phi)) ;
     photon->SetPz(facPSig*cos(theta));
 
     photon->SetE(photon->P());
   }
-  
+
 
 }
 //________________________________________________________________________
