@@ -8,7 +8,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-
+#include "AliTriggerAnalysis.h"
 #include <TString.h>
 
 #include "TClass.h"
@@ -34,6 +34,7 @@ public:
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
   virtual void Init() {}
+  virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void FinishTaskOutput();
@@ -130,7 +131,16 @@ public:
       kTPCPileUp,
       kTimeRangeCut,
       kEMCALEDCut,
-      kAliEventCutsAccepted
+      kAliEventCutsAccepted,
+      kIsPileupFromSPD,
+      kIsV0PFPileup,
+      kIsTPCHVdip,
+      kIsTPCLaserWarmUp,
+      kTRDHCO,
+      kTRDHJT,
+      kTRDHSE,
+      kTRDHQU,
+      kTRDHEE
   };
   static const TClass* Generator[kGenerators]; // Generators
 
@@ -152,6 +162,7 @@ public:
 private:
   Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
   AliEventCuts fEventCuts;      //! Standard event cuts
+  AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
   
@@ -222,8 +233,15 @@ private:
   struct {
     UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
     ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
-    UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
-    UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
+    UInt_t fL0TriggerInputMask = 0u;   /// L0 trigger input mask
+    UShort_t fSPDClustersL0 = 0u;      /// number of clusters in SPD L0
+    UShort_t fSPDClustersL1 = 0u;      /// number of clusters in SPD L1
+    UShort_t fSPDFiredChipsL0 = 0u;    /// number of fired chips in SPD L0 (offline)
+    UShort_t fSPDFiredChipsL1 = 0u;    /// number of fired chips in SPD L1 (offline)
+    UShort_t fSPDFiredFastOrL0 = 0u;   /// number of fired FO chips in SPD L0 (online)
+    UShort_t fSPDFiredFastOrL1 = 0u;   /// number of fired FO chips in SPD L1 (online)
+    UShort_t fV0TriggerChargeA = 0u;   /// V0A trigger charge
+    UShort_t fV0TriggerChargeC = 0u;   /// V0C trigger charge
   } run2bcinfo; //! structure to keep run 2 only related info 
 
   struct {
