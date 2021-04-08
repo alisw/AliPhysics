@@ -1,4 +1,4 @@
-AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M", Int_t FilterBit = 768, Int_t nTPCcls = 70, Double_t Vz_max = 10, TString sNameList = "default") 
+AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M", Int_t FilterBit = 32, Int_t nTPCcls = 70, Double_t Vz_max = 10, TString sNameList = "default") 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,6 +18,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetAverageRes(kFALSE); // this is really needed
   task->SetPtOrder(kTRUE); 
   task->SetOnlySameSign(kTRUE); 
+  task->SetRefMode("ref_V0A");
+ 
 
   Double_t centLimits[] = {0.,10.,20.,30.,60.,90.};
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;

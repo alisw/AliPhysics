@@ -53,6 +53,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   ftrk(0x0),
   fNbinsCent(1), 
   fNbinsPt(1),
+  fNbinsPtTrig(1),
   fNbinsAssocPt(1),
   fNbinsZvtx(1),
   fCentAxis(0x0), 
@@ -95,6 +96,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fHistCentVsZMixed(0x0),
   
   fCentMethod("V0M"),
+  fMode("ref_V0A"),
   flist_Res(0x0),
   flist_contQ(0x0),
   fOutputList(0x0),
@@ -183,6 +185,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   ftrk(0x0),
   fNbinsCent(1), 
   fNbinsPt(1),
+  fNbinsPtTrig(1),
   fNbinsAssocPt(1),
   fNbinsZvtx(1),
   fCentAxis(0x0), 
@@ -225,6 +228,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fHistCentVsZMixed(0x0),
   
   fCentMethod("V0M"),
+  fMode("ref_V0A"),
   flist_Res(0x0),
   flist_contQ(0x0),
   fOutputList(0x0),
@@ -343,6 +347,19 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserCreateOutputObjects() {
 
   fOutputList1 = new TList();
   fOutputList1->SetOwner(kTRUE);
+
+  fOutputList->Add(new TH2D("fHist_Qx2_V0A","Q_{x2}(V0A) vs CL1",100,0.,100.,3000,-1500,1500));
+  fOutputList->Add(new TH2D("Corr_fHist_Qx2_V0A","Corr Q_{x2}(V0A) vs CL1",100,0.,100.,100,-50,50));
+ 
+  fOutputList->Add(new TH2D("fHist_Qy2_V0A","Q_{y2}(V0A) vs CL1",100,0.,100.,3000,-1500,1500));
+  fOutputList->Add(new TH2D("Corr_fHist_Qy2_V0A","Corr Q_{y2}(V0A) vs CL1",100,0.,100.,100,-50,50));
+ 
+  fOutputList->Add(new TH2D("fHist_Qx2_V0C","Q_{x2}(V0C) vs CL1",100,0.,100.,3000,-1500,1500));
+  fOutputList->Add(new TH2D("Corr_fHist_Qx2_V0C","Corr Q_{x2}(V0C) vs CL1",100,0.,100.,100,-50,50));
+
+  fOutputList->Add(new TH2D("fHist_Qy2_V0C","Q_{y2}(V0C) vs CL1",100,0.,100.,3000,-1500,1500));
+  fOutputList->Add(new TH2D("Corr_fHist_Qy2_V0C","Corr Q_{y2}(V0C) vs CL1",100,0.,100.,100,-50,50));
+
 
     for (Int_t iCent=0; iCent<fNbinsCent; iCent++) {
       for(Int_t iZvtx = 0; iZvtx < fNbinsZvtx; ++iZvtx) {
@@ -819,12 +836,26 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
     if (track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta()) < 0.8 && track->GetTPCNcls() >= fTPCNcls) {
       FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
 		       resA2, resC2, resT2, 0);
+      FillHistogramsV2(track->Pt(),track->Eta(),track->Phi(),centBin,percentile,zvtxBin,
+		       resA2, resC2, resT2, 1);
     }
   }
 
   Double_t Qv0aQv0c2  = Qxa2Cor*Qxc2Cor  + Qya2Cor*Qyc2Cor;
 
   fHistACv2->Fill(percentile, Qv0aQv0c2);
+
+  ((TH2D*)(fOutputList->FindObject("fHist_Qx2_V0A")))->Fill(percentile,Qxa2);
+  ((TH2D*)(fOutputList->FindObject("Corr_fHist_Qx2_V0A")))->Fill(percentile,Qxa2Cor);
+
+  ((TH2D*)(fOutputList->FindObject("fHist_Qy2_V0A")))->Fill(percentile,Qya2);
+  ((TH2D*)(fOutputList->FindObject("Corr_fHist_Qy2_V0A")))->Fill(percentile,Qya2Cor);
+
+  ((TH2D*)(fOutputList->FindObject("fHist_Qx2_V0C")))->Fill(percentile,Qxc2);
+  ((TH2D*)(fOutputList->FindObject("Corr_fHist_Qx2_V0C")))->Fill(percentile,Qxc2Cor);
+
+  ((TH2D*)(fOutputList->FindObject("fHist_Qy2_V0C")))->Fill(percentile,Qyc2);
+  ((TH2D*)(fOutputList->FindObject("Corr_fHist_Qy2_V0C")))->Fill(percentile,Qyc2Cor);
 
   selectedTrackArray->Clear();
   delete selectedTrackArray;
@@ -839,7 +870,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsV2(Double_t pt,Double
 {
  Double_t u2x = TMath::Cos(2.*phi);
  Double_t u2y = TMath::Sin(2.*phi);
- fHistSP2A[centrality][zvtxBin][index]->Fill(pt,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
+ if(index == 0) fHistSP2A[centrality][zvtxBin][index]->Fill(pt,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2); 
+ if(index == 1) fHistSP2A[centrality][zvtxBin][index]->Fill(pt,(u2x*Qxc2Cor+u2y*Qyc2Cor)/resC2); 
 }
 
 void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *selectedArray, Int_t centrality,Double_t percentile,Int_t zvtxBin,
@@ -891,7 +923,8 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::FillHistogramsdPhidEta(TObjArray *s
    binscont[5] = percentile;
    if(!fSameSign) fHistdPhidEtaPt->Fill(binscont,0);
    if (trigger->Charge()*associate->Charge()>0) {
-     fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
+     if(fMode == "ref_V0A") fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxa2Cor+u2y*Qya2Cor)/resA2);
+     if(fMode == "ref_V0C") fHistSP2AdPhidEtaSS[centrality][zvtxBin][ptBin-1][assocPtBin-1]->Fill(dphi,deta,(u2x*Qxc2Cor+u2y*Qyc2Cor)/resC2);
      fHistdPhidEtaPt_SS->Fill(binscont,0);
    }
   }
