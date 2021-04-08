@@ -25,7 +25,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name = "name", Bool_t IsMC=kFALSE, 
   if (!mgr->GetInputEventHandler())	return 0x0;
   // if(IsMC) {
   //   if(!mgr->GetMCtruthEventHandler()) {
-  //     Error("AddTaskDeform","Could not get MC truth handler");
+  //     Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
   //     return NULL;
   //   };
   //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
@@ -40,7 +40,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name = "name", Bool_t IsMC=kFALSE, 
   mgr->ConnectInput(task,0,cInput0);
   //Producing weights
   if(StageSwitch==1) {
-    AliAnalysisDataContainer *weightCont = mgr->CreateContainer("WeightList",TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    TString l_ContName=subfix.IsNull()?"":("_" + subfix);
+    AliAnalysisDataContainer *weightCont = mgr->CreateContainer(Form("WeightList%s",l_ContName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     mgr->ConnectOutput(task,1,weightCont);
     return task;
   }
