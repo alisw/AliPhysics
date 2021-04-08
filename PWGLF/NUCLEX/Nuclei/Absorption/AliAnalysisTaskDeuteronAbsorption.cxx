@@ -237,6 +237,12 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
       fTreeTrack->Branch("tmass2array", tmass2array, "tmass2array[tTOFclsN]/F");
       fTreeTrack->Branch("tdxTOFarray", tdxTOFarray, "tdxTOFarray[tTOFclsN]/F");
       fTreeTrack->Branch("tdzTOFarray", tdzTOFarray, "tdzTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tTOFarray", tTOFarray, "tTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tLengtharray", tLengtharray, "tLengtharray[tTOFclsN]/F");
+      fTreeTrack->Branch("texpTOFarray", texpTOFarray, "texpTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tsigmaTOFarray", tsigmaTOFarray, "tsigmaTOFarray[tTOFclsN]/F");
+      fTreeTrack->Branch("tTOFchannelarray", tTOFchannelarray, "tTOFchannelarray[tTOFclsN]/I");
+      fTreeTrack->Branch("tMCtofMismatcharray", tMCtofMismatcharray, "tMCtofMismatcharray[tTOFclsN]/O");
       fTreeTrack->Branch("tNmatchableTracks", tNmatchableTracks, "tNmatchableTracks[tTOFclsN]/b");
     }
   }
@@ -414,7 +420,6 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     if (fTreemode && track->GetTPCsignal() > fMindEdx && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) < fMaxNSigma && fPIDResponse->NumberOfSigmasTPC(track, ParticleType) > fMinNSigma)
     {
 
-      //FillTOFallMatchableHitsInfo(track);
       //tP = track->GetInnerParam()->GetP();
       tPt = track->GetInnerParam()->GetSignedPt();
       tEta = track->GetInnerParam()->Eta();
@@ -502,11 +507,27 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 } // end the UserExec
 //___________________________________________________________________________________________________________-
 void AliAnalysisTaskDeuteronAbsorption::FillTOFallMatchableHitsInfo(AliESDtrack *track) {
-  
+
   const Int_t fNtofClusters = track->GetTOFclusterN();
   Int_t *fTOFcluster = track->GetTOFclusterArray();// [fNtofClusters]
   
-  Float_t NsigmaTOFarray[fNtofClusters], mass2array[fNtofClusters], dxTOFarray[fNtofClusters], dzTOFarray[fNtofClusters], NmatchableTracks[fNtofClusters];
+  Float_t NsigmaTOFarray[fNtofClusters], mass2array[fNtofClusters], dxTOFarray[fNtofClusters], dzTOFarray[fNtofClusters], TOFarray[fNtofClusters], Lengtharray[fNtofClusters], expTOFarray[fNtofClusters], sigmaTOFarray[fNtofClusters];
+  Int_t NmatchableTracks[fNtofClusters], TOFchannelarray[fNtofClusters];
+  Bool_t MCtofMismatcharray[fNtofClusters];
+
+  for(Int_t i=0;i<fNtofClusters;i++) {
+    NsigmaTOFarray[i] = -9e3;
+    mass2array[i] = -9e3;
+    dxTOFarray[i] = -9e3;
+    dzTOFarray[i] = -9e3;
+    TOFarray[i] = -9e3;
+    Lengtharray[i] = -9e3;
+    expTOFarray[i] = -9e12;
+    sigmaTOFarray[i] = -9e1;
+    TOFchannelarray[i] = -9;
+    //MCtofMismatcharray[i] = true;
+    NmatchableTracks[i] = -9;
+  }  
   
   TClonesArray *tofclArray = track->GetESDEvent()->GetESDTOFClusters();
   
@@ -539,7 +560,15 @@ void AliAnalysisTaskDeuteronAbsorption::FillTOFallMatchableHitsInfo(AliESDtrack 
 	  mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
 	
 	mass2array[i] = mass2;
-	
+
+	TOFchannelarray[i] = tofcl->GetTOFchannel();
+	TOFarray[i] = tof;
+	Lengtharray[i] = length;
+	expTOFarray[i] = exptime;
+	sigmaTOFarray[i] = sigmaTOF;
+
+	MCtofMismatcharray[i] = ( TMath::Abs(track->GetLabel()) != tofcl->GetLabel() );
+
       }
     }
   }
@@ -550,6 +579,12 @@ void AliAnalysisTaskDeuteronAbsorption::FillTOFallMatchableHitsInfo(AliESDtrack 
     tmass2array[i] = mass2array[i];
     tdxTOFarray[i] = dxTOFarray[i];
     tdzTOFarray[i] = dzTOFarray[i];
+    tTOFarray[i] = TOFarray[i];
+    tLengtharray[i] = Lengtharray[i];
+    texpTOFarray[i] = expTOFarray[i];
+    tsigmaTOFarray[i] = sigmaTOFarray[i];
+    tTOFchannelarray[i] = TOFchannelarray[i];
+    tMCtofMismatcharray[i] = MCtofMismatcharray[i];
     tNmatchableTracks[i] = NmatchableTracks[i];
   }  
   
