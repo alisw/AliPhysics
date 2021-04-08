@@ -9661,8 +9661,8 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
           classification      = 7;
           if (particleLead->GetMother() > -1){
             if (((AliMCParticle*)mcEvent->GetTrack(particleLead->GetMother()))->PdgCode() == 22){
-              Double_t deltaX = particleLead->Vx() - mcProdVtxX;
-              Double_t deltaY = particleLead->Vy() - mcProdVtxY;
+              Double_t deltaX = particleLead->Xv() - mcProdVtxX;
+              Double_t deltaY = particleLead->Yv() - mcProdVtxY;
               Double_t radius2d = TMath::Sqrt(deltaX*deltaX + deltaY*deltaY);
               if(radius2d < 180){
                 classification  = 4;
