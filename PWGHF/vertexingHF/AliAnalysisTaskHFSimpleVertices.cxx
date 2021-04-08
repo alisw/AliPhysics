@@ -23,6 +23,7 @@
 #include <TSystem.h>
 #include <TChain.h>
 #include <TDatabasePDG.h>
+#include <TObjString.h>
 
 
 /**************************************************************************
