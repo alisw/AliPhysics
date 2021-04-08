@@ -66,7 +66,9 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetListRes(TList *list)   { flist_Res = list; }
   void SetFilterBit(Int_t iBit) {fFilterBit = iBit; }
   void SetNTPCcls(Int_t nTPC) {fTPCNcls = nTPC; }
-  
+  void SetRefMode(TString s) {fMode = s;} 
+
+ 
   void FillHistogramsV2(Double_t pt,Double_t eta,Double_t phi,Int_t centrality,Double_t percentile,Int_t zvtxBin,
 			Double_t resA2, Double_t resC2, Double_t resT2,
 			Int_t index);
@@ -198,6 +200,7 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   TH2D *fHistCentVsZMixed; //!
   
   TString fCentMethod; //!
+  TString fMode;       //!
 
   TList *fOutputList;  //!
   TList *fOutputList1; //!
