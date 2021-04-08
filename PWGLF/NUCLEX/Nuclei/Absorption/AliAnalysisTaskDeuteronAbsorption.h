@@ -114,7 +114,9 @@ private:
   UChar_t  tPIDforTracking;  //
 
   UChar_t  tTOFclsN;         // number of cluster candidates in TOF
-  Float_t  tNsigmaTOFarray[64], tmass2array[64], tdxTOFarray[64], tdzTOFarray[64]; 
+  Float_t  tNsigmaTOFarray[64], tmass2array[64], tdxTOFarray[64], tdzTOFarray[64], tTOFarray[64], tLengtharray[64], texpTOFarray[64], tsigmaTOFarray[64];
+  Int_t    tTOFchannelarray[64];
+  Bool_t   tMCtofMismatcharray[64];
   UChar_t  tNmatchableTracks[64];
   //
   TH1F *fHistZv;      //! Primary vertex z distribution
@@ -132,7 +134,7 @@ private:
   AliAnalysisTaskDeuteronAbsorption(const AliAnalysisTaskDeuteronAbsorption &);            // not implemented
   AliAnalysisTaskDeuteronAbsorption &operator=(const AliAnalysisTaskDeuteronAbsorption &); // not implemented
   
-  ClassDef(AliAnalysisTaskDeuteronAbsorption, 5);
+  ClassDef(AliAnalysisTaskDeuteronAbsorption, 4);
 };
 
 #endif
