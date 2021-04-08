@@ -74,6 +74,7 @@ public:
     kBC,
     kRun2BCInfo,
     kOrigin,
+    kHMPID,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -323,6 +324,17 @@ private:
     Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
     Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
   } tracks;                      //! structure to keep track information
+
+  struct {
+    // HMPID data
+
+    Int_t fIndexTracks = -1; /// Track ID
+
+    Float_t fHMPIDSignal = -999.f;   /// HMPID signal
+    Float_t fHMPIDDistance = -999.f; /// Distance between the extrapolated track and the cluster
+    Short_t fHMPIDNPhotons = -999;   /// Photons detected
+    Short_t fHMPIDQMip = -999;       /// Charge of the mip
+  } hmpids; //! structure to keep HMPID info
 
   struct {
     // MC collision

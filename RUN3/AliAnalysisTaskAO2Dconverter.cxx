@@ -69,9 +69,9 @@
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo", "O2origin" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2collision", "DbgEventExtra", "O2track", "O2trackcov", "O2trackextra", "O2calo",  "O2calotrigger", "O2muon", "O2muoncluster", "O2zdc", "O2fv0a", "O2fv0c", "O2ft0", "O2fdd", "O2v0", "O2cascade", "O2tof", "O2mcparticle", "O2mccollision", "O2mctracklabel", "O2mccalolabel", "O2mccollisionlabel", "O2bc", "O2run2bcinfo", "O2origin", "O2hmpid" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info", "DF ids" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Collision tree", "Collision extra", "Barrel tracks Parameters", "Barrel tracks Covariance", "Barrel tracks Extra", "Calorimeter cells", "Calorimeter triggers", "MUON tracks", "MUON clusters", "ZDC", "FV0A", "FV0C", "FT0", "FDD", "V0s", "Cascades", "TOF hits", "Kinematics", "MC collisions", "MC track labels", "MC calo labels", "MC collision labels", "BC info", "Run 2 BC Info", "DF ids", "HMPID info" };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -132,16 +132,38 @@ namespace
 
 } // namespace
 
-AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name)
-    : AliAnalysisTaskSE(name), fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)), fEventCuts{}, fTriggerAnalysis(), collision(), eventextra(), bc(), run2bcinfo(), origin(), tracks(), mccollision(), mctracklabel(), mccalolabel(), mccollisionlabel(), mcparticle()
+AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
+  : AliAnalysisTaskSE(name),
+    fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)),
+    fEventCuts{},
+    fTriggerAnalysis(),
+    collision(),
+    eventextra(),
+    bc(),
+    run2bcinfo(),
+    origin(),
+    tracks(),
+    hmpids(),
+    mccollision(),
+    mctracklabel(),
+    mccalolabel(),
+    mccollisionlabel(),
+    mcparticle(),
 #ifdef USE_TOF_CLUST
-      ,
-      tofClusters()
+    tofClusters(),
 #endif
-      ,
-      calo(), calotrigger(), muons(), mucls(), zdc(), fv0a(), fv0c(), ft0(), fdd(), v0s(), cascs()
+    calo(),
+    calotrigger(),
+    muons(),
+    mucls(),
+    zdc(),
+    fv0a(),
+    fv0c(),
+    ft0(),
+    fdd(),
+    v0s(),
+    cascs()
 {
-
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   for (Int_t i = 0; i < kTrees; i++)
@@ -814,6 +836,17 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   DisableTree(kTOF);
 #endif
 
+  // HMPID information
+  TTree* tHMPID = CreateTree(kHMPID);
+  if (fTreeStatus[kHMPID]) {
+    tHMPID->Branch("fIndexTracks", &hmpids.fIndexTracks, "fIndexTracks/I");
+    tHMPID->Branch("fHMPIDSignal", &hmpids.fHMPIDSignal, "fHMPIDSignal/F");
+    tHMPID->Branch("fHMPIDDistance", &hmpids.fHMPIDDistance, "fHMPIDDistance/F");
+    tHMPID->Branch("fHMPIDNPhotons", &hmpids.fHMPIDNPhotons, "fHMPIDNPhotons/S");
+    tHMPID->Branch("fHMPIDQMip", &hmpids.fHMPIDQMip, "fHMPIDQMip/S");
+    tHMPID->SetBasketSize("*", fBasketSizeTracks);
+  }
+
   if (fTaskMode == kMC)
   {
     TTree *tMCvtx = CreateTree(kMcCollision);
@@ -1482,6 +1515,29 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         }
       }
   #endif
+
+      // Fill information of the HMPID
+      if (track->GetHMPIDsignal() > 0.) {
+        if (track->GetHMPIDcluIdx() >= 0) {
+          hmpids.fIndexTracks = ntrk_filled + fOffsetTrack;
+
+          Float_t xPc = 0., yPc = 0.;
+          Float_t xMip = 0., yMip = 0.;
+          Float_t thetaTrk = 0., phiTrk = 0.;
+          Int_t nPhot = 0, qMip = 0;
+
+          track->GetHMPIDtrk(xPc, yPc, thetaTrk, phiTrk);
+          track->GetHMPIDmip(xMip, yMip, qMip, nPhot);
+
+          hmpids.fHMPIDSignal = AliMathBase::TruncateFloatFraction(track->GetHMPIDsignal(), mTrackSignal);
+          hmpids.fHMPIDDistance = AliMathBase::TruncateFloatFraction(TMath::Sqrt((xPc - xMip) * (xPc - xMip) + (yPc - yMip) * (yPc - yMip)), mTrackSignal);
+          hmpids.fHMPIDNPhotons = static_cast<Short_t>(nPhot);
+          hmpids.fHMPIDQMip = static_cast<Short_t>(qMip);
+          FillTree(kHMPID);
+          if (fTreeStatus[kHMPID])
+            eventextra.fNentries[kHMPID]++;
+        }
+      }
 
       // In case we need connection to clusters, activate next lines
       // tracks.fTOFclsIndex += tracks.fNTOFcls;
