@@ -8,6 +8,7 @@
 #include "TTreeStream.h"
 
 class TObjArray;
+class TLorentzVector;
 class AliVParticle;
 class AliAODEvent;
 class AliMuonTrackCuts;
@@ -50,7 +51,7 @@ class AliAnalysisTaskPbPbTree_SingleMuons: public AliAnalysisTaskSE {
   AliMuonTrackCuts* fMuonTrackCuts;
   Float_t   fPercentV0M;             //! percentile V0
 
-  AliAODTrack* fMuonTracks[500];      //muon tracks
+  TLorentzVector* fMuonTracks[500];      //! muon tracks
 
   ClassDef(AliAnalysisTaskPbPbTree_SingleMuons,1);
 };

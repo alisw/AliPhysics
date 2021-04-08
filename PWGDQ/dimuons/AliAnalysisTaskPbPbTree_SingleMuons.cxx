@@ -31,6 +31,8 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TGrid.h"
+#include "TProcessID.h"
+#include "TLorentzVector.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAODHeader.h"
@@ -58,7 +60,6 @@ AliAnalysisTaskPbPbTree_SingleMuons::AliAnalysisTaskPbPbTree_SingleMuons() :
   fNMuons(0x0),
   fPercentV0M(0x0),
   fAODEvent(0x0)
-
 {
    //
   //Default ctor
@@ -170,7 +171,6 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserCreateOutputObjects(){
 //_________________________________________________
 void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
 {
-
   fNMuons=0;
   fPercentV0M=-1.;
   for(Int_t i=0; i<500;i++) fMuonTracks[i]=0x0;
@@ -238,15 +238,18 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
 
         for (Int_t i=0;i<ntracks;i++){
           AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
+          TLorentzVector *lvmuon = new TLorentzVector();
           if(!mu0->IsMuonTrack()) continue;
           if(mu0->Eta() <-4 || mu0->Eta() >-2.5) continue;
           if(mu0->GetRAtAbsorberEnd()<17.6 || mu0->GetRAtAbsorberEnd()>89.5) continue;
           if(mu0->GetMatchTrigger()<=1) continue;
           if(!fMuonTrackCuts->IsSelected(mu0)) continue;
-          fMuonTracks[nummu] = mu0;
+          lvmuon->SetPxPyPzE((Double_t)mu0->Px(),(Double_t)mu0->Py(),(Double_t)mu0->Pz(),(Double_t)mu0->E());
+          fMuonTracks[nummu] = lvmuon;
           nummu++;
         }
         fNMuons = nummu;
+
       }
     }
   }
