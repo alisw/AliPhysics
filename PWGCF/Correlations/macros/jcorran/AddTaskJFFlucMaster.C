@@ -23,10 +23,15 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	TString MAPfilenames[Nsets]; 
 	TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
 	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
-	cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",speriod[period].Data()));//centrality flattening
-	cmaptask->EnableEffCorrection("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",speriod[period].Data());//efficiency cirrection
+	if(period == lhc18q || period == lhc18r) {
+		cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",speriod[period].Data()));//centrality flattening
+		cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",speriod[period].Data()));//efficiency cirrection
+	}
+	if(period == lhc15o) {
+		cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",speriod[period].Data()));//efficiency cirrection
+	}
 	for(int i=0;i<Nsets;i++) {
-		MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(), ptmin*10, configNames[i].Data()); //azimuthal correction
+		MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
 		cmaptask->EnablePhiCorrection(i,MAPfilenames[i]); // i is index for set file correction ->SetPhiCorrectionIndex(i);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
