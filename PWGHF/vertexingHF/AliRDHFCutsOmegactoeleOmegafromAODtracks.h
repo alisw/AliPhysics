@@ -200,7 +200,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
     
   Bool_t fExcludePionTPC; /// Flag wheter to exlude pion band
   Bool_t fExcludeProtonTPC; /// Flag wheter to exlude proton band
-  Bool_t fExcludeKaonTPC; /// Flag wheter to exlude proton band
+  Bool_t fExcludeKaonTPC; /// Flag wheter to exlude kaon band
   Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
   Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
   Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
