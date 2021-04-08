@@ -92,6 +92,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
   void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
+  void SetPseudoEfficiency(Double_t newval) {fPseudoEfficiency = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -151,6 +152,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   TList *fEfficiencyList;
   TH2D **fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
+  Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH1D *fV0MMulti;
   TH1D *fV2dPtMulti;
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
