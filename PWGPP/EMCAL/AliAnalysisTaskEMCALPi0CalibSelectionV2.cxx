@@ -95,12 +95,9 @@ fVBuffer_Cluster_t(0),
 fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCellId(0),
 fVBuffer_TrueCluster_MCId(0) {
   
-  for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
-    for(Int_t iX=0; iX<24; iX++) {
-      for(Int_t iZ=0; iZ<48; iZ++) {
-        fHmpi0[iMod][iZ][iX]   = 0 ;
-      }
-    } 
+
+  for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
+    fHmpi0[iCell] = 0;
   }
   
   fVertex[0]=fVertex[1]=fVertex[2]=-1000;
@@ -211,12 +208,8 @@ fVBuffer_Cluster_NCells(0), fVBuffer_Cluster_M02(0),    fVBuffer_Cluster_LeadCel
 fVBuffer_TrueCluster_MCId(0)
 {
   
-  for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
-    for(Int_t iX=0; iX<24; iX++) {
-      for(Int_t iZ=0; iZ<48; iZ++) {
-        fHmpi0[iMod][iZ][iX]   = 0 ;
-      }
-    } 
+  for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
+    fHmpi0[iCell] = 0;
   }
   
   fVertex[0]=fVertex[1]=fVertex[2]=-1000;
@@ -551,18 +544,11 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserCreateOutputObjects() {
   fhClusterTime->SetXTitle("E (GeV)");
   fhClusterTime->SetYTitle("t (ns)");
   fOutputContainer->Add(fhClusterTime);
-  
-  for(Int_t iMod=0; iMod < nSM; iMod++) {
-    for(Int_t iRow=0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-      for(Int_t iCol=0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
-        Int_t cellId  = fEMCALGeo->GetAbsCellIdFromCellIndexes(iMod,iRow,iCol);
-        snprintf(hname,buffersize, "%d",cellId);
-        snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
-        fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
-        fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
-        fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
-      }
-    }
+
+  for(Int_t iCell=0; iCell < kMaxActiveCells_calib; iCell++){
+    fHmpi0[iCell]    = new TH1F( Form("%d",iCell), Form("Two-gamma inv. mass for cell %d",iCell), fNbins,fMinBin,fMaxBin);
+    fHmpi0[iCell]->SetXTitle("mass (MeV/c^{2}");
+    fOutputContainer->Add(fHmpi0[iCell]);
   }
   
   fOutputContainer->SetOwner(kTRUE);
@@ -748,8 +734,8 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
         if(fSameSM && iSupMod1!=iSupMod2) continue;
         
         if (fGroupNCells == 0) {
-          fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
-          fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
+          fHmpi0[absId1]->Fill(invmass);
+          fHmpi0[absId2]->Fill(invmass);
           
           if(invmass > fInvMassCutMin && invmass < fInvMassCutMax) { //restrict to clusters really close to pi0 peak
             fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
@@ -781,12 +767,12 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::FillHistograms() {
                 if(c2->GetCellsAbsId()[icell] == absId22) ok2=kTRUE;
               }
               
-              if(ok1 && (ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24)) {
-                fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
+              if(ok1) {
+                fHmpi0[absId1]->Fill(invmass);
               }
                 
-              if(ok2 && (ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24)) {
-                fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
+              if(ok2 ) {
+                fHmpi0[absId2]->Fill(invmass);
               }
             }
           }
@@ -948,7 +934,7 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   // }
 
   if( fSaveCells )   ProcessCells();
-  if( fSaveClusters) ProcessClusters();
+  if( fSaveClusters ) ProcessClusters();
   fCellTree->Fill();
 
   ResetBuffer();
@@ -956,7 +942,7 @@ void AliAnalysisTaskEMCALPi0CalibSelectionV2::UserExec(Option_t* /* option */) {
   delete fCaloClustersArr;
   
   PostData(1,fOutputContainer);
-  // PostData(2,fCellTree);
+  PostData(2,fCellTree);
 }
 
 ///

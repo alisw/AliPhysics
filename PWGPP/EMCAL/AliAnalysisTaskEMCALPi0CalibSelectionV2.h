@@ -41,6 +41,9 @@ class AliEMCALGeometry;
 #include "AliEMCALGeoParams.h"
 class AliEMCALRecoUtils;
 
+const Int_t         kMaxActiveCells_calib    = 17664;
+const Int_t         kMaxActiveCluster        = 200;
+
 class AliAnalysisTaskEMCALPi0CalibSelectionV2 : public AliAnalysisTaskSE
 {
     
@@ -277,7 +280,7 @@ private:
   // Histograms
   
   ///< Two-cluster invariant mass assigned to each cell.
-  TH1F*     fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; //!
+  TH1F*     fHmpi0[kMaxActiveCells_calib]; //!
 
   TH2F*     fHmgg;                                                                 //!<! Two-cluster invariant mass vs pt of pair.
   TH2F*     fHmggDifferentSM;                                                      //!<! Two-cluster invariant mass vs pt of pair, each cluster in different SM.
@@ -352,8 +355,5 @@ protected:
   /// \endcond
 
 };
-
-const Int_t         kMaxActiveCells_calib    = 18000;
-const Int_t         kMaxActiveCluster        = 200;
 
 #endif //ALIANALYSISTASKEMCALPI0CALIBSELECTIONV2_H
