@@ -1079,23 +1079,23 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",1000,0.0,2.,100,0.,10.);//TODO
       fQAFolder[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
 
-      hESDInvMassElectronPositronPi0[iCut]  =  new TH1F("ESD_InvMassElectronPositron_Pi0", "ESD_InvMassElectronPositron_Pi0",120,0.05,0.17);
+      hESDInvMassElectronPositronPi0[iCut]  =  new TH1F("ESD_InvMassElectronPositron_Pi0", "ESD_InvMassElectronPositron_Pi0",100,0.0,0.5);
       fQAFolder[iCut]->Add(hESDInvMassElectronPositronPi0[iCut]);
 
-      hESDInvMassElectronPositronPi0Background[iCut]    =  new TH1F("ESD_InvMassElectronPositron_Pi0Background", "ESD_InvMassElectronPositron_Pi0Background",120,0.05,0.17);
+      hESDInvMassElectronPositronPi0Background[iCut]    =  new TH1F("ESD_InvMassElectronPositron_Pi0Background", "ESD_InvMassElectronPositron_Pi0Background",100,0.0,0.5);
       fQAFolder[iCut]->Add(hESDInvMassElectronPositronPi0Background[iCut]);
 
-      hESDInvMassElectronPositronEta[iCut]  = new TH1F("ESD_InvMassElectronPositron_Eta", "ESD_InvMassElectronPositron_Eta",100,0.500,0.580);
+      hESDInvMassElectronPositronEta[iCut]  = new TH1F("ESD_InvMassElectronPositron_Eta", "ESD_InvMassElectronPositron_Eta",100,0.0,0.5);
       fQAFolder[iCut]->Add(hESDInvMassElectronPositronEta[iCut]);
 
-      hESDInvMassElectronPositronEtaBackground[iCut]    =  new TH1F("ESD_InvMassElectronPositron_EtaBackground", "ESD_InvMassElectronPositron_EtaBackground",100,0.500,0.580);
+      hESDInvMassElectronPositronEtaBackground[iCut]    =  new TH1F("ESD_InvMassElectronPositron_EtaBackground", "ESD_InvMassElectronPositron_EtaBackground",100,0.0,0.5);
       fQAFolder[iCut]->Add(hESDInvMassElectronPositronEtaBackground[iCut]);
 
       if (fIsMC>0){
-        hESDInvMassElectronPositronPi0MC[iCut]    = new TH1F("ESD_InvMassElectronPositron_Pi0MC", "ESD_InvMassElectronPositron_Pi0MC",120,0.05,0.17);
+        hESDInvMassElectronPositronPi0MC[iCut]    = new TH1F("ESD_InvMassElectronPositron_Pi0MC", "ESD_InvMassElectronPositron_Pi0MC",100,0.0,0.5);
         fQAFolder[iCut]->Add(hESDInvMassElectronPositronPi0MC[iCut]);
 
-        hESDInvMassElectronPositronEtaMC[iCut]    = new TH1F("ESD_InvMassElectronPositron_EtaMC", "ESD_InvMassElectronPositron_EtaMC",80,0.500,0.580);
+        hESDInvMassElectronPositronEtaMC[iCut]    = new TH1F("ESD_InvMassElectronPositron_EtaMC", "ESD_InvMassElectronPositron_EtaMC",100,0.0,0.5);
         fQAFolder[iCut]->Add(hESDInvMassElectronPositronEtaMC[iCut]);
       }
 
@@ -2636,6 +2636,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
               }
             }
           }
+
           if ( fDoMesonQA > 0 ) {
             if( fMCEvent ) {
                 std::unique_ptr<AliDalitzAODESDMC>  negativeMC;
@@ -2651,17 +2652,20 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
               //Int_t virtualGammaMCLabel = Vgamma->GetMCParticleLabel(fMCEvent);
               if( virtualGammaMCLabel > -1 ) {
 
-                //TParticle * negativeMC = (TParticle*)Vgamma->GetNegativeMCDaughter(fMCEvent);
-                //TParticle * positiveMC = (TParticle*)Vgamma->GetPositiveMCDaughter(fMCEvent);
-                // TParticle * virtualGammaMotherMC = (TParticle*)fMCEvent->Particle(virtualGammaMCLabel);
-                  //NOTE this even is used!!!!!!!!!!!!!!!
-
                 if( negativeMC->GetPdgCodeG() == 11 && positiveMC->GetPdgCodeG() == -11) {  // Electrons ...
                   if( IsPi0DalitzDaughter( Vgamma->GetMCLabelPositive() ) ){
                     hESDTruePi0EposEnegInvMassPi0Pt[fiCut]->Fill( Vgamma->M(), pi0cand->Pt(),fWeightJetJetMC );
                   }
                 }
               }
+            }
+          }
+          if ( fDoMesonQA > 0 ) {//Moving before DoMassCut.
+            if ( pi0cand->M() > 0.500 && pi0cand->M() < 0.570){
+                hESDInvMassElectronPositronEta[fiCut]->Fill(Vgamma->M());
+            }
+            if ( pi0cand->M() > 0.1 && pi0cand->M() < 0.15){
+                hESDInvMassElectronPositronPi0[fiCut]->Fill(Vgamma->M());
             }
           }
 
@@ -2694,12 +2698,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
                 hESDMotherInvMassOpeningAngleGammaElectron[fiCut]->Fill(vGamma.Angle(vPositron),fWeightJetJetMC);
                 hESDMotherInvMassOpeningAngleGammaElectron[fiCut]->Fill(vGamma.Angle(vElectron),fWeightJetJetMC);
 
-
-                if ( pi0cand->M() > 0.500 && pi0cand->M() < 0.580){
-                    hESDInvMassElectronPositronEta[fiCut]->Fill(Vgamma->M());
-                }
                 if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
-                hESDInvMassElectronPositronPi0[fiCut]->Fill(Vgamma->M());
                   if( fDoMesonQA > 1 ){
                     TLorentzVector electronCandidateTLV(vElectron,TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass());
                     TLorentzVector positronCandidateTLV(vPositron,TDatabasePDG::Instance()->GetParticle(  ::kPositron   )->Mass());
@@ -2786,7 +2785,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
   }
 
   AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertex = NULL;
-
+  //Background with Multiplicity of inputs.
   if(((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->UseTrackMultiplicity()){
     for(Int_t nEventsInBG=0;nEventsInBG<fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
 
@@ -2813,17 +2812,19 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
           if( ( ((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE, ((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift()))){
+             if ( fDoMesonQA > 0 ) {//Moving before DoMassCut.
+                if ((backgroundCandidate->M()>0.1) && (backgroundCandidate->M()<0.15)){
+                    hESDInvMassElectronPositronPi0Background[fiCut]->Fill(currentEventGoodV0.M());
+                }
+                if ((backgroundCandidate->M()>0.5) && (backgroundCandidate->M()<0.57)){
+                    hESDInvMassElectronPositronEtaBackground[fiCut]->Fill(currentEventGoodV0.M());
+                }
+             }
             if(  ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoMassCut() == kTRUE ) {
 
               if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->MassCut( backgroundCandidate->Pt() , currentEventGoodV0.M() ) == kTRUE ){
 
                 hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
-                if ((backgroundCandidate->M()>0.05) && (backgroundCandidate->M()<0.17)){
-                        hESDInvMassElectronPositronPi0Background[fiCut]->Fill(currentEventGoodV0.M());
-                }
-                if ((backgroundCandidate->M()>0.500) && (backgroundCandidate->M()<0.580)){
-                        hESDInvMassElectronPositronEtaBackground[fiCut]->Fill(currentEventGoodV0.M());
-                }
                 if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                 sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -2831,6 +2832,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
               }
             } else {
               hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+              cout<<currentEventGoodV0.M()<<", Electron Cut 4"<<endl;
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
                 sESDMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
@@ -2842,7 +2844,7 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
         }
       }
     }
-  } else {
+  } else {//Background with Numbers of inputs.
     for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       if(previousEventV0s){
@@ -2865,6 +2867,14 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculateBackground(){
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
             if((((AliConversionMesonCuts*)fCutMesonArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift()))){
+              if ( fDoMesonQA > 0 ) {//Moving before DoMassCut.
+                if ((backgroundCandidate->M()>0.1) && (backgroundCandidate->M()<0.15)){
+                    hESDInvMassElectronPositronPi0Background[fiCut]->Fill(currentEventGoodV0.M());
+                }
+                if ((backgroundCandidate->M()>0.5) && (backgroundCandidate->M()<0.57)){
+                    hESDInvMassElectronPositronEtaBackground[fiCut]->Fill(currentEventGoodV0.M());
+                }
+              }
               if(  ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoMassCut() == kTRUE ) {
                 if( ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->MassCut( backgroundCandidate->Pt() , currentEventGoodV0.M() ) == kTRUE ){
                   hESDMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
@@ -3012,7 +3022,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
             hESDTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fCutEventArray->At(fiCut))->GetEtaShift());
             hESDTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()));
             hESDTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
-            hESDInvMassElectronPositronPi0MC[fiCut]->Fill(TrueVirtualGammaCandidate->M());
+            if ( Pi0Candidate->M() > 0.1 && Pi0Candidate->M() < 0.15){
+                hESDInvMassElectronPositronPi0MC[fiCut]->Fill(TrueVirtualGammaCandidate->M());
+            }
             if( fDoMesonQA > 1 ) {
               std::unique_ptr<AliDalitzAODESD> positronVgamma = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(TrueVirtualGammaCandidate->GetTrackLabelPositive()));
              // AliESDtrack* positronVgamma = fESDEvent->GetTrack( TrueVirtualGammaCandidate->GetTrackLabelPositive() );
@@ -3040,7 +3052,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
           }
         }
         if (isTrueEta && fDoMesonQA > 0) {
-            if ( Pi0Candidate->M() > 0.500 && Pi0Candidate->M() < 0.580){
+            if ( Pi0Candidate->M() > 0.5 && Pi0Candidate->M() < 0.57){
                 hESDInvMassElectronPositronEtaMC[fiCut]->Fill(TrueVirtualGammaCandidate->M());
             }
         }
