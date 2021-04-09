@@ -55,7 +55,9 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk,AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillElectronROOTObjects(AliAODTrack *trk, AliAODEvent *event, TClonesArray *mcArray);
+  void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, AliAODEvent *event, TClonesArray *mcArray);
+  void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype,TClonesArray *mcArray);
   Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
@@ -78,6 +80,8 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   AliAODVertex* ReconstructSecondaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod);
   Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgarray_ele, Int_t *pdgarray_casc, Int_t *labelarray_ele, Int_t *labelarray_casc,  Int_t &ngen_ele, Int_t &ngen_casc);
   Int_t MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const;
+    
+    
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -106,10 +110,12 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   void DefineEleTreeVariables();
   void DefineCascTreeVariables();
   void DefineMCTreeVariables();
+  void DefineMCEleTreeVariables(); 
+  void DefineMCCascTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
   void DefineCorrelationTreeVariables();
-    
+  
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
    
@@ -131,6 +137,9 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   TTree    *fCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree* fCorrelationVariablesTree;         //!<! Correlation variable tree under histo object list
+  TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 10
+  TTree    *fMCCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 11
+    
   Bool_t fReconstructPrimVert;       // /Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -142,6 +151,8 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateCascVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
   Float_t *fCorrelationVariables;   //!<! Correlation variables to be written to the tree
+  Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCCascVariables;   //!<! variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -190,7 +201,25 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsd0WS;         //!<! e pt-d0 spectra (wrong-sign)
   THnSparse* fHistoElePtvsd0RSMix;         //!<! e pt-d0 spectra (right-sign, mix)
   THnSparse* fHistoElePtvsd0WSMix;         //!<! e pt-d0 spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsd0MCS;         //!<! e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0MCS;         //!<! e pt-d0 spectra (right-sign)
+  THnSparse* fHistoOmegaMCGen;              //!<!  Omega in mcArray
+  THnSparse* fHistoOmegaMCS;                //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCGen;          //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCGen1;         //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCGen2;         //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCS;            //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCS1;           //!<!  Omega in mcArray
+  THnSparse* fHistoCascOmegaMCS2;           //!<!  Omega in mcArray
+    
+  THnSparse* fHistoElectronMCGen;                //!<! electron in mcArray
+  THnSparse* fHistoElectronMCS;                  //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCGen;          //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCGen1;         //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCGen2;         //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCS;            //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCS1;           //!<! electron in mcArray
+  THnSparse* fHistoOmegacElectronMCS2;           //!<! electron in mcArray
+    
 
   TH1F* fHistoBachPt;      //!<! Bachelor pT histogram
   TH1F* fHistoBachPtMCS;      //!<! Bachelor pT histogram (efficiency numerator)
@@ -238,7 +267,7 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,6); /// class for Omegac->e Omega
+  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,7); /// class for Omegac->e Omega
   /// \endcond
 };
 #endif
