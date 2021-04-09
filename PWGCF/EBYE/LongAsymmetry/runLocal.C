@@ -1,5 +1,3 @@
-#include "AliAnalysisTaskLegendreCoef.h"
-
 void runLocal() {
   // header location
   gInterpreter->ProcessLine(".include $ROOTSYS/include");
