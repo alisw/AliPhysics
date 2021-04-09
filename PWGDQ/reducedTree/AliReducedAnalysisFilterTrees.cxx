@@ -32,6 +32,7 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees() :
   fWriteFilteredTracks(kTRUE),
   fPairCuts(),
   fWriteFilteredPairs(kTRUE),
+  fRejectEmptyEvents(kFALSE),
   fBuildCandidatePairs(kFALSE),
   fBuildCandidateLikePairs(kFALSE),
   fCandidateType(AliReducedPairInfo::kJpsiToEE),
@@ -67,6 +68,7 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees(const Char_t* name,
   fEventCuts(),
   fTrackCuts(),
   fWriteFilteredTracks(kTRUE),
+  fRejectEmptyEvents(kFALSE),
   fPairCuts(),
   fWriteFilteredPairs(kTRUE),
   fBuildCandidatePairs(kFALSE),
@@ -189,7 +191,9 @@ void AliReducedAnalysisFilterTrees::Process() {
      fHistosManager->FillHistClass("EventTriggers_AfterCuts", fValues);
   }
   
-  CreateFilteredEvent();  
+  CreateFilteredEvent();
+  if(fRejectEmptyEvents && (fFilteredEvent->NPairs()+fFilteredEvent->NTracks1()+fFilteredEvent->NTracks2())==0)
+      return;
   fFilteredTree->Fill();
 }
 

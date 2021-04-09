@@ -33,6 +33,7 @@ public:
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void SetWriteFilteredTracks(Bool_t option=kTRUE) {fWriteFilteredTracks=option;}
   void SetWriteFilteredPairs(Bool_t option=kTRUE) {fWriteFilteredPairs=option;}
+  void SetRejectEmptyEvents(Bool_t option=kTRUE) {fRejectEmptyEvents=option;}
   void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   
   void SetBuildCandidatePairs(AliReducedPairInfo::CandidateType type) {fBuildCandidatePairs=kTRUE; fCandidateType=type;}
@@ -54,6 +55,7 @@ public:
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
   Bool_t GetWriteFilteredPairs() const {return fWriteFilteredPairs;}
+  Bool_t GetRejectEmptyEvents() const {return fRejectEmptyEvents;}
   Int_t GetNPairCuts() const {return fPairCuts.GetEntries();}
   const Char_t* GetPairCutName(Int_t i) const {return (i<fPairCuts.GetEntries() ? fPairCuts.At(i)->GetName() : "");} 
   Bool_t GetBuildCandidatePairs() const {return fBuildCandidatePairs;}
@@ -96,6 +98,7 @@ protected:
    Bool_t fWriteFilteredTracks;   // filter the track list
    TList fPairCuts;                  // array of pair cuts used for filtering
    Bool_t fWriteFilteredPairs;   // filter the pair list
+   Bool_t fRejectEmptyEvents;     // if true, do not write events without tracks or pairs
    
    Bool_t fBuildCandidatePairs;   // if true, build additional candidate pairs from selected tracks 
    Bool_t fBuildCandidateLikePairs;  // if true, build also like pairs (e.g. like-sign for symmetric decay channels)
@@ -164,7 +167,7 @@ protected:
    void FillCandidateLegHistograms(TString histClass, AliReducedBaseTrack* track, Float_t* values, Int_t leg, Bool_t isAsymmetricDecayChannel);
    void FillCandidatePairHistograms(TString histClass, AliReducedPairInfo* pair, Float_t* values, Bool_t isAsymmetricDecayChannel);
    
-  ClassDef(AliReducedAnalysisFilterTrees,1);
+  ClassDef(AliReducedAnalysisFilterTrees,2);
 };
 
 #endif
