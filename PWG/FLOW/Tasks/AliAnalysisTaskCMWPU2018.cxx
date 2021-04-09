@@ -1956,8 +1956,8 @@ Bool_t AliAnalysisTaskCMWPU2018::CheckEventIsPileUp2018(AliAODEvent *faod) {
   if (faod->IsIncompleteDAQ())
     BisPileup=kTRUE;
         
-  if (nclsDif > 200000)//can be increased to 200000
-    BisPileup=kTRUE;
+  //if (nclsDif > 200000)//can be increased to 200000
+  // BisPileup=kTRUE;
 
 
 
