@@ -613,7 +613,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     
     
     
-    Int_t bins[9]        =          {250,200,100,400,400, 1000, 350,500,300};
+    Int_t bins[9]        =          {250,200,200,400,400, 1000, 350,500,300};
     Double_t xmin[9]    =    {  0, -10,0, 0,0,0, 0,0,-15};
     Double_t xmax[9]    =    {  50,10, 2,2,2, 2000, 350,50,15};
     
