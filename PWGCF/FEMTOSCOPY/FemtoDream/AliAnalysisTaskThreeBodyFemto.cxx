@@ -7,6 +7,7 @@
 #include "AliAnalysisTaskThreeBodyFemto.h"
 #include "AliFemtoDreamHigherPairMath.h"
 #include "AliNanoAODTrack.h"
+#include "Riostream.h"
 
 ClassImp(AliAnalysisTaskThreeBodyFemto)
 AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
@@ -53,7 +54,8 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
-      fClosePairRejectionForAll(true),
+      fClosePairRejectionForAll(false),
+      fturnoffClosePairRejectionCompletely(false),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -131,7 +133,8 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
-      fClosePairRejectionForAll(true),
+      fClosePairRejectionForAll(false),
+      fturnoffClosePairRejectionCompletely(false),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -481,10 +484,9 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
 
 
 
-    if(fRunPlotPhiTheta){
-      fResultsThreeBody->Add(fSameEventPhiTheta);
-      fResultsThreeBody->Add(fMixedEventPhiTheta);
-    }
+    fResultsThreeBody->Add(fSameEventPhiTheta);
+    fResultsThreeBody->Add(fMixedEventPhiTheta);
+
 
     // Q3 vs q12 plot for theory
     if(fRunPlotQ3Vsq){
@@ -779,6 +781,7 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
 
+
   
   if(fRunThreeBody){
     static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
@@ -1070,29 +1073,37 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
       if (firstSpecies==thirdSpecies) iPart3 = iPart1+1;
       if (secondSpecies==thirdSpecies) iPart3 = iPart2+1;
       for ( ; iPart3 != Particle3Vector->end(); ++iPart3) {
+
         bool Pair12 = true;
         bool Pair23 = true;
         bool Pair31 = true;
+        
 
-        if(fClosePairRejectionForAll){
-          Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-          Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-          Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-        }
-        if(!fClosePairRejectionForAll){
-          if(DoThisPair12==11){ 
+        if(!fturnoffClosePairRejectionCompletely){
+
+          if(fClosePairRejectionForAll){
             Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-          }
-          if(DoThisPair23==11){ 
             Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-          }
-          if(DoThisPair31==11){ 
             Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
           }
+          if(!fClosePairRejectionForAll){
+            if(DoThisPair12==11){ 
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+            if(DoThisPair23==11){ 
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+            if(DoThisPair31==11){ 
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+          }
+
         }
+        
 
 
         if(!Pair12||!Pair23||!Pair31) {continue;}
+
         // Now we have the three particles, lets create their Lorentz vectors  
         TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
         part1_LorVec.SetPxPyPzE(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(), 
@@ -1380,23 +1391,31 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
             bool Pair12 = true;
             bool Pair23 = true;
             bool Pair31 = true;
-            if(fClosePairRejectionForAll){
-              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                    
+
+            if(!fturnoffClosePairRejectionCompletely){
+
+              if(fClosePairRejectionForAll){
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+              }
+              if(!fClosePairRejectionForAll){
+                if(DoThisPair12==11){ 
+                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                }
+                if(DoThisPair23==11){ 
+                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                }
+                if(DoThisPair31==11){ 
+                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
+                }
+              }
+
             }
-            if(!fClosePairRejectionForAll){
-              if(DoThisPair12==11){ 
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-              }
-              if(DoThisPair23==11){ 
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-              }
-              if(DoThisPair31==11){ 
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[20+phiEtaHistNo],Config);
-              }
-            }
+        
             if(!Pair12||!Pair23||!Pair31) {continue;}
+           
 
             // Now we have the three particles, lets create their Lorentz vectors  
             TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
@@ -1724,23 +1743,26 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<st
           bool Pair12 = true;
           bool Pair23 = true;
           bool Pair31 = true;
-          if(fClosePairRejectionForAll){
-            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-            Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-            Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-          }
-          if(!fClosePairRejectionForAll){
-            if(DoThisPair12==11){
-              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-            }
-            if(DoThisPair23==11){
-              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,false,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-            }
-            if(DoThisPair31==11){
-              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,false,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
-            }
-          }
+          if(!fturnoffClosePairRejectionCompletely){
 
+            if(fClosePairRejectionForAll){
+              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+            }
+            if(!fClosePairRejectionForAll){
+              if(DoThisPair12==11){ 
+                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+              }
+              if(DoThisPair23==11){ 
+                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+              }
+              if(DoThisPair31==11){ 
+                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[21+phiEtaHistNo],Config);
+              }
+            }
+
+          }
 
           if(!Pair12||!Pair23||!Pair31) {continue;}
 
