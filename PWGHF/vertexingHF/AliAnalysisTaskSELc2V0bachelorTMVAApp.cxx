@@ -2282,15 +2282,15 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       }
       else if (fNVars == 11) {
 	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = signd0;
-	inputVars[7] = nSigmaTOFpr;
-	inputVars[8] = nSigmaTPCpr;
-	inputVars[9] = nSigmaTPCpi;
+	inputVars[1] = part->CosV0PointingAngle();
+	inputVars[2] = part->Getd0Prong(0);
+	inputVars[3] = part->Getd0Prong(1);
+	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[5] = nSigmaTOFpr;
+	inputVars[6] = nSigmaTOFpi;
+	inputVars[7] = nSigmaTOFka;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCpr;
 	inputVars[10] = nSigmaTPCka;
       }
       else if (fNVars == 10) {
