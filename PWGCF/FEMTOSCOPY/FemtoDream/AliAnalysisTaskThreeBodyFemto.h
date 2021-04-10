@@ -100,6 +100,9 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void SetClosePairRejectionForAll(bool ClosePairRejectionForAll) {
     fClosePairRejectionForAll=ClosePairRejectionForAll;
   }
+  void SetturnoffClosePairRejectionCompletely(bool turnoffClosePairRejectionCompletely) {
+    fturnoffClosePairRejectionCompletely=turnoffClosePairRejectionCompletely;
+  }
 
   
 
@@ -153,6 +156,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   bool fRunPlotMult;
 
   bool fClosePairRejectionForAll;
+  bool fturnoffClosePairRejectionCompletely;
 
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;

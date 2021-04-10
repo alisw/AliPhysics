@@ -12,7 +12,8 @@
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *triggerVariation = "0", bool ClosePairRejectionForAll = "false",  const char *cutVariation = "0") {
+                                     const char *triggerVariation = "0", bool turnoffClosePairRejectionCompletely = false, 
+                                     bool ClosePairRejectionForAll = false,  const char *cutVariation = "0") {
 
 
 
@@ -1488,6 +1489,21 @@ if(suffixTrigger=="5"){
         Form("%s:%s", file.Data(), Antiv0CutsTriggerName.Data()));
   }
 
+ if(suffix=="60"){
+    ClosePairRejectionForAll = false;
+    turnoffClosePairRejectionCompletely = true;
+  }
+
+  if(suffix=="61"){
+    ClosePairRejectionForAll = false;
+    turnoffClosePairRejectionCompletely = false;
+  }
+
+  if(suffix=="62"){
+    ClosePairRejectionForAll = true;
+    turnoffClosePairRejectionCompletely = false;
+  }
+
 
   AliAnalysisTaskThreeBodyFemto* taskNano;
   AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
@@ -1511,6 +1527,7 @@ if(suffixTrigger=="5"){
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
