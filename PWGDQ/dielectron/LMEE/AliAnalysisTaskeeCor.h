@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskeeCor_cxx
-#define AliAnalysisTaskeeCor_cxx
+#ifndef AliAnalysisTasteeCor_cxx
+#define AliAnalysisTasteeCor_cxx
 
 class TH1F;
 class TH1I;
@@ -12,11 +12,11 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskeeCor : public AliAnalysisTaskSE {
+class AliAnalysisTasteeCor : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskeeCor();
-    AliAnalysisTaskeeCor(const char *name);
-    virtual ~AliAnalysisTaskeeCor();
+    AliAnalysisTasteeCor();
+    AliAnalysisTasteeCor(const char *name);
+    virtual ~AliAnalysisTasteeCor();
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -305,6 +305,9 @@ private:
     TH2F        *fHistPairsCCrec2;   //! rec dielectrons from cc
     TH2F        *fHistPairsBBrec2;   //! rec dielectrons from bb
     TH2F        *fHistPairsBBrecLS2;   //! rec dielectrons from bb
+    
+    TH3F		*fPrimariesCC; //! IsPrimary Tests in CC
+    TH3F		*fPrimariesBB; //! IsPrimary Tests in BB
 
     // Smearing maps
     TH2F        *fPRec_Gen;  //!
@@ -361,10 +364,10 @@ private:
 
     enum {kPythiaCC=0, kPythiaBB, kPythiaB, kOther, kNbinsEvent};
 
-    AliAnalysisTaskeeCor(const AliAnalysisTaskeeCor&); // not implemented
-    AliAnalysisTaskeeCor& operator=(const AliAnalysisTaskeeCor&); // not implemented
+    AliAnalysisTasteeCor(const AliAnalysisTasteeCor&); // not implemented
+    AliAnalysisTasteeCor& operator=(const AliAnalysisTasteeCor&); // not implemented
 
-    ClassDef(AliAnalysisTaskeeCor, 1);
+    ClassDef(AliAnalysisTasteeCor, 1);
 };
 
 #endif
