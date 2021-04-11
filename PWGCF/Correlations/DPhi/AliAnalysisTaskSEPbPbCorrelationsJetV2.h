@@ -49,7 +49,8 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   void SetUseRes(Bool_t flag) { fUseRes = flag; }
   void SetAverageRes(Bool_t flag) {fAverageRes = flag; }
   void SetSubDivide(Int_t n1, Int_t n2) { fN1 = n1; fN2 = n2; }
-  
+  void SetForceCL1(Bool_t flag) {fForceCL1 = flag;} 
+ 
   // ------------- Analysis -------------
 
   Float_t GetV0Multiplicity();
@@ -143,7 +144,8 @@ class  AliAnalysisTaskSEPbPbCorrelationsJetV2 : public AliAnalysisTaskSE {
   Bool_t fUseRes; 
   Bool_t fAverageRes; 
   Bool_t fSameSign;
-  
+  Bool_t fForceCL1; 
+ 
   Int_t fN1; 
   Int_t fN2; 
 

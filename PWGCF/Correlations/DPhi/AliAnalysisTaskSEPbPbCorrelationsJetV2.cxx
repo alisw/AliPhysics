@@ -68,6 +68,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2()
   fPtOrder(kTRUE),
   fSameSign(kTRUE),
   fUseRes(kTRUE),
+  fForceCL1(kFALSE),
   fN1(0),
   fN2(-1),
 
@@ -200,6 +201,7 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2::AliAnalysisTaskSEPbPbCorrelationsJetV2(c
   fPtOrder(kTRUE),
   fSameSign(kTRUE),
   fUseRes(kTRUE),
+  fForceCL1(kFALSE),
   fN1(0),
   fN2(-1),
 
@@ -674,22 +676,22 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   //if(fRunN == 246052 || fRunN == 245923) return;
   //if(fRunN == 245702) return;
 
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 0
 
   // Trigger selection
   TString trigStr(fAOD->GetFiredTriggerClasses());
 
-  if (trigStr.Contains("CINT7-B-NOPF")) fHistEvStat->Fill(cutIndex);
+  if (trigStr.Contains("CINT7-B-NOPF")) fHistEvStat->Fill(cutIndex); //Index = 1
   cutIndex++;
 
   AliAODVZERO* aodV0 = fAOD->GetVZEROData();
   if (trigStr.Contains("CINT7-B-NOPF") &&
       aodV0->GetV0ADecision()==1 &&
-      aodV0->GetV0CDecision()==1) fHistEvStat->Fill(cutIndex);
+      aodV0->GetV0CDecision()==1) fHistEvStat->Fill(cutIndex); // Index = 2
   cutIndex++;
   
   if (!(IsTriggerFired())) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++);     // Index = 3
   
   fv0mult = GetV0Multiplicity();
   fv0multonline = aodV0->GetTriggerChargeA()+aodV0->GetTriggerChargeC();
@@ -701,10 +703,10 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   AliMultSelection *multSelection = (AliMultSelection *)fAOD->FindListObject("MultSelection");
   if(!multSelection) return;
 
-  ++cutIndex;
   if(fCentMethod == "") {
-   fCentMethod = "V0M";
-   fHistEvStat->Fill(cutIndex);
+   if(fForceCL1) fCentMethod = "CL1";
+   else fCentMethod = "V0M";
+   fHistEvStat->Fill(cutIndex);   // Index = 4
   }
   //percentile = multSelection->GetMultiplicityPercentile(fCentMethod.Data());
   percentile = multSelection->GetMultiplicityPercentile(fCentMethod);
@@ -718,17 +720,19 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   fcl1percentile = multSelection->GetMultiplicityPercentile("CL1");
   fSPDpercentile = multSelection->GetMultiplicityPercentile("SPDTracklets");
 
+  ++cutIndex;             
+
   Int_t centBin = GetCentBin(percentile);
   if (centBin<0) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 5
 
   if (fAOD->IsIncompleteDAQ()) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 6
 
   // Vertex selection
   const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
   if (trkVtx->GetNContributors() < 2) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 7
   Double_t covTrk[6] = {0};
   trkVtx->GetCovarianceMatrix(covTrk);
   Double_t zvtxTrk = trkVtx->GetZ();
@@ -739,12 +743,12 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
   if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 8
 
   fzvtx = spdVtx->GetZ();
   if (fzvtx >= fZvtxAxis->GetXmax()) return;
   if (fzvtx <= fZvtxAxis->GetXmin()) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 9
 
   Double_t dz = zvtxTrk - fzvtx;
   Double_t errTot = TMath::Sqrt(covTrk[5]+cov[5]);
@@ -753,7 +757,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   Double_t nsigTrk = dz/errTrk;
   if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrk)>20)
     return; // bad vertexing
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 10
   
   //fPileup1_Before->Fill(fv0multonline,fV0MultOfOnCut->Eval(fv0mult));
   fPileup1_Before->Fill(fv0multonline,fv0mult);
@@ -763,7 +767,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
       return;
     fPileup1_After->Fill(fv0multonline,fv0mult);
   }
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 11
 
   AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
   nITSTrkls = aodTrkl->GetNumberOfTracklets();
@@ -774,7 +778,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
       return;
     fPileup2_After->Fill(fitsmult,nITSTrkls);
   }
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 12
 
   fPileup3_Before_Low->Fill(fcl0percentile, fv0mpercentile);
   fPileup3_Before_High->Fill(fcl0percentile,fv0mpercentile);
@@ -787,7 +791,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
     fPileup3_After_High->Fill(fcl0percentile,fv0mpercentile);
   }
 
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 13
 
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
@@ -800,11 +804,11 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   fHistESDvsTPC->Fill(multTpc,multEsd);
   Double_t multESDTPCDif = Double_t(multEsd) - Double_t(multTpc)*3.38;
   if (multESDTPCDif > 1000.) return;
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 14
   
   if (!ComputeQ(fAOD,fzvtx)) return;
   
-  fHistEvStat->Fill(cutIndex++);
+  fHistEvStat->Fill(cutIndex++); // Index = 15
 
   Int_t zvtxBin = GetZvtxBin(fzvtx);
 
