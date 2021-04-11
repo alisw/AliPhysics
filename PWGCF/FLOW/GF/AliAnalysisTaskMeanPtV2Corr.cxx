@@ -509,17 +509,19 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     TString lNames[] = {"ch","pi","ka","pr"};
     for(Int_t i=0;i<4;i++) {
       lNames[i].Prepend("Spectra_");
-      fEfficiency[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      fEfficiency[i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,l_NV0MBinsDefault,l_V0MBinsDefault);
       lNames[i].Append("_Gen");
-      fEfficiency[4+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      fEfficiency[4+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,l_NV0MBinsDefault,l_V0MBinsDefault);
       lNames[i].Append("_Sec");
-      fEfficiency[8+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,fNMultiBins,fMultiBins);
+      fEfficiency[8+i] = new TH2D(lNames[i].Data(),lNames[i].Data(),fNPtBins,fPtBins,l_NV0MBinsDefault,l_V0MBinsDefault);
       fEfficiencyList->Add(fEfficiency[i]);
       fEfficiencyList->Add(fEfficiency[i+4]);
       fEfficiencyList->Add(fEfficiency[i+8]);
     }
-    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNMultiBins,fMultiBins);
+    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
     fEfficiencyList->Add(fV0MMulti);
+    fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
+    fEfficiencyList->Add(fNchTrueVsReco);
     PostData(1,fEfficiencyList);
   }
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -1074,6 +1076,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
   Int_t nPrim = tca->GetEntries();
   AliAODMCParticle *lPart;
   Int_t partNotFetched=0;
+  Int_t lNchGen=0;
+  Int_t lNchRec=0;
   for (Int_t ipart = 0; ipart < nPrim; ipart++) {
     lPart = (AliAODMCParticle*)tca->At(ipart);
     if (!lPart) { partNotFetched++; continue; };
@@ -1081,9 +1085,11 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
     Int_t pdgcode = TMath::Abs(lPart->GetPdgCode());
     if (!lPart->IsPhysicalPrimary()) continue;
     if (lPart->Charge()==0.) continue;
-    if (TMath::Abs(lPart->Eta()) > fEta) continue;
     Double_t pt = lPart->Pt();
+    Double_t lEta = TMath::Abs(lPart->Eta());
     if (pt<0.15 || pt>50.) continue;
+    if(pt>0.2 && pt<3 && lEta<fEtaNch) lNchGen++;
+    if (lEta > fEta) continue;
     fEfficiency[4]->Fill(pt,l_Cent);
     Int_t pidind = GetPIDIndex(pdgcode);
     if(pidind) fEfficiency[4+pidind]->Fill(pt,l_Cent);
@@ -1092,6 +1098,8 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!lTrack) continue;
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
+    Double_t lpt = lTrack->Pt();
+    if(lpt>0.2 && lpt<3 && TMath::Abs(lTrack->Eta())<fEtaNch) lNchRec++;
     Int_t fLabel = lTrack->GetLabel();
     Int_t index = TMath::Abs(fLabel);
     if (index < 0) continue;
@@ -1100,7 +1108,6 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
     if (TMath::Abs(lPart->Eta()) > fEta) continue;
     Int_t pdgcode = lPart->GetPdgCode();
     Int_t pidind = GetPIDIndex(pdgcode);
-    Double_t lpt = lTrack->Pt();
     if(lPart->IsPhysicalPrimary()) {
         fEfficiency[0]->Fill(lPart->Pt(),l_Cent);
         if(pidind)
@@ -1112,6 +1119,7 @@ void AliAnalysisTaskMeanPtV2Corr::ProduceEfficiencies(AliAODEvent *fAOD, const D
           fEfficiency[pidind+8]->Fill(lPart->Pt(),l_Cent);
     };
   };
+  fNchTrueVsReco->Fill(lNchGen,lNchRec);
   PostData(1,fEfficiencyList);
 }
 
