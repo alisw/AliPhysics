@@ -13,7 +13,7 @@
 AliAnalysisTaskSE *AddTaskThreeBodyFemtoCutVariation(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
                                      const char *triggerVariation = "0", bool turnoffClosePairRejectionCompletely = false, 
-                                     bool ClosePairRejectionForAll = false,  const char *cutVariation = "0") {
+                                     bool ClosePairRejectionForAll = false,  bool plotAdditionalPlots=true, const char *cutVariation = "0") {
 
 
 
@@ -1505,6 +1505,8 @@ if(suffixTrigger=="5"){
   }
 
 
+
+
   AliAnalysisTaskThreeBodyFemto* taskNano;
   AliAnalysisTaskThreeBodyFemtoAOD* taskAOD;
   if(isNano){
@@ -1528,6 +1530,21 @@ if(suffixTrigger=="5"){
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
+    if(plotAdditionalPlots == false){
+      taskNano->SetRunPlotInvMassTriplet(false);
+      taskNano->SetRunPlotQ3Vsq(false);
+      taskNano->SetRunPlotPhiTheta(false);
+      taskNano->SetRunPlotOtherHistos(false);
+      taskNano->SetRunPlotMult(false);
+    }
+    if(plotAdditionalPlots == true){
+      taskNano->SetRunPlotInvMassTriplet(true);
+      taskNano->SetRunPlotQ3Vsq(true);
+      taskNano->SetRunPlotPhiTheta(true);
+      taskNano->SetRunPlotOtherHistos(true);
+      taskNano->SetRunPlotMult(true);
+    }
+
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
