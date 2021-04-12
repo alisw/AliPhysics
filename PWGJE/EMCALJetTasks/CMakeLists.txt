@@ -292,6 +292,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
+        UserTasks/AliAnalysisTaskJetExtractorPP.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx

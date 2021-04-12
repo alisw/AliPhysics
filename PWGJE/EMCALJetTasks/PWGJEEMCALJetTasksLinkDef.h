@@ -301,7 +301,9 @@
 #pragma link C++ class AliAnalysisTaskSDKLResponse+;
 #pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetExtractor+;
+#pragma link C++ class AliAnalysisTaskJetExtractorPP+;
 #pragma link C++ class std::vector<AliAnalysisTaskJetExtractor::SimpleSecondaryVertex>+;
+#pragma link C++ class std::vector<AliAnalysisTaskJetExtractorPP::SimpleSecondaryVertex>+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
