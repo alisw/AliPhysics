@@ -106,7 +106,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
   fVariablesTreeBkg(0),
-  fCandidateVariables(),
+  fCandidateVariables(0),
+  fCandidateVariableNames(0),
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
@@ -229,31 +230,34 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
+  ffraction(-1),
+  fPtLimForDownscaling(0),
   fTimestampCut(0),
   fUseXmlWeightsFile(kTRUE),
   fReader(0),
   fVarsTMVA(0),
   fNVarsSpectators(0),
   fVarsTMVASpectators(0),
+  fNamesTMVAVarSpectators(""),
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
   fBDTHistoTMVA3d(0),  
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS(""),
+  fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
-  fHistoNtrUnCorr(0),
-  fHistoNtrCorr(0),
-  fHistoVzVsNtrUnCorr(0),
-  fHistoVzVsNtrCorr(0),
-  fUseMultCorrection(kFALSE),
   fMultiplicityEstimator(kNtrk10),
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
-  ffraction(-1),
-  fPtLimForDownscaling(0)
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fInputNamesVec(0),
+  fNTreeVars(36)
 {
   /// Default ctor
   //
@@ -279,7 +283,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fIsEventSelected(kFALSE),
   fVariablesTreeSgn(0),
   fVariablesTreeBkg(0),
-  fCandidateVariables(),
+  fCandidateVariables(0),
+  fCandidateVariableNames(0),
   fHistoCentrality(0),
   fHistoEvents(0),
   fHistoTracklets_1(0),
@@ -402,6 +407,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fAODProtection(0),
   fUsePIDresponseForNsigma(kFALSE),
   fNVars(14),
+  ffraction(-1),
+  fPtLimForDownscaling(0),
   fTimestampCut(0),
   fUseXmlWeightsFile(kTRUE),
   fReader(0),
@@ -412,22 +419,22 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fXmlWeightsFile(""),
   fBDTHistoTMVA(0),  
   fBDTHistoTMVA3d(0),  
+  fUseXmlFileFromCVMFS(kFALSE),
+  fXmlFileFromCVMFS(""),
+  fUseMultCorrection(kFALSE),
   fRefMult(9.26),
   fYearNumber(16),
-  fHistoNtrUnCorr(0),
-  fHistoNtrCorr(0),
-  fHistoVzVsNtrUnCorr(0),
-  fHistoVzVsNtrCorr(0),
-  fUseMultCorrection(kFALSE),
   fMultiplicityEstimator(kNtrk10),
   fDoVZER0ParamVertexCorr(1),
   fUseMultiplicityCut(kFALSE),
   fMultiplicityCutMin(0.),
   fMultiplicityCutMax(99999.),
-  fUseXmlFileFromCVMFS(kFALSE),
-  fXmlFileFromCVMFS(""),
-  ffraction(-1),
-  fPtLimForDownscaling(0)
+  fHistoNtrUnCorr(0),
+  fHistoNtrCorr(0),
+  fHistoVzVsNtrUnCorr(0),
+  fHistoVzVsNtrCorr(0),
+  fInputNamesVec(0),
+  fNTreeVars(36)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -620,12 +627,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
 
-  Int_t nVar; 
-  if (fUseMCInfo)  nVar = 53; //"full" tree if MC
-  else nVar = 36; //"reduced" tree if data
+  if (fUseMCInfo) fNTreeVars = 53; //"full" tree if MC
   
-  fCandidateVariables = new Float_t [nVar];
-  TString * fCandidateVariableNames = new TString[nVar];
+  fCandidateVariables = new Float_t[fNTreeVars];
+  fCandidateVariableNames = new TString[fNTreeVars];
   
   if (fUseMCInfo) { // "full tree" for MC
     fCandidateVariableNames[0] = "massLc2K0Sp";
@@ -725,7 +730,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[35] = "RadiusV0";
   }
   
-  for(Int_t ivar=0; ivar < nVar; ivar++){
+  for(Int_t ivar=0; ivar < fNTreeVars; ivar++){
     fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
     fVariablesTreeBkg->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }
@@ -1122,15 +1127,17 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fVarsTMVA = new Float_t[fNVars];
     fVarsTMVASpectators = new Float_t[fNVarsSpectators];
     fReader = new TMVA::Reader( "!Color:!Silent" );
-    std::vector<std::string> inputNamesVec;
     TObjArray *tokens = fNamesTMVAVar.Tokenize(",");
     for(Int_t i = 0; i < tokens->GetEntries(); i++){
       TString variable = ((TObjString*)(tokens->At(i)))->String();
       std::string tmpvar = variable.Data();
-      inputNamesVec.push_back(tmpvar);
+      fInputNamesVec.push_back(tmpvar);
       if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) fReader->AddVariable(variable.Data(), &fVarsTMVA[i]);
     }      
     delete tokens;
+    if ((int)fInputNamesVec.size() != fNVars) {
+      AliFatal(Form("The vector of input variables does not have the correct size: %ld, should be %d", fInputNamesVec.size(), fNVars));
+    }
     TObjArray *tokensSpectators = fNamesTMVAVarSpectators.Tokenize(",");
     for(Int_t i = 0; i < tokensSpectators->GetEntries(); i++){
       TString variable = ((TObjString*)(tokensSpectators->At(i)))->String();
@@ -1141,7 +1148,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
       void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
       void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
       IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
-      fBDTReader = maker1(inputNamesVec);
+      fBDTReader = maker1(fInputNamesVec);
     }
     
     if (fUseXmlWeightsFile) fReader->BookMVA("BDT method", fXmlWeightsFile);
@@ -2247,78 +2254,30 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       if(fFillTree) fVariablesTreeSgn->Fill();
     }
     
-    
-    if(!fFillTree){
+    if(!fFillTree) {   
       std::vector<Double_t> inputVars(fNVars);
-      if (fNVars == 14) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = bachelor->Pt();
-	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[5] = part->CosV0PointingAngle();
-	inputVars[6] = cts;
-	inputVars[7] = signd0;
-	inputVars[8] = bachelor->P();
-	inputVars[9] = nSigmaTOFpr;
-	inputVars[10] = nSigmaTPCpr;
-	inputVars[11] = nSigmaTPCpi;
-	inputVars[12] = nSigmaTPCka;
-	inputVars[13] = bachelor->GetTPCmomentum();
+      int foundVars = 0; 
+      for (int ivar = 0; ivar < (int)fInputNamesVec.size(); ++ivar) {
+	if (fInputNamesVec[ivar] == "DecayLengthK0S*0.497/v0P") {
+	  //	  std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
+	  inputVars[ivar] = (part->DecayLengthV0())*0.497/(v0part->P());
+	  fVarsTMVA[ivar] = inputVars[ivar];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	  ++foundVars;
+	  continue;
+	}	
+	for (int iname = 0; iname < fNTreeVars; ++iname) {
+	  if (fInputNamesVec[ivar] == fCandidateVariableNames[iname]) {
+	    //	    std::cout << "Adding " << fInputNamesVec[ivar] << std::endl;
+	    inputVars[ivar] = fCandidateVariables[iname];
+	    fVarsTMVA[ivar] = inputVars[ivar];    // note that fInputNamesVec.size() == fNVars!!! (check is done above, triggering an AliFatal if not)
+	    ++foundVars;
+	    break;
+	  }
+	}
       }
-      else if (fNVars == 12) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTOFpi;
-	inputVars[8] = nSigmaTOFka;
-	inputVars[9] = nSigmaTPCpr;
-	inputVars[10] = nSigmaTPCpi;
-	inputVars[11] = nSigmaTPCka;
+      if (foundVars != fNVars) {
+	AliFatal(Form("Not all variables for TMVA have been found!! %d, should be %d", foundVars, fNVars));
       }
-      else if (fNVars == 11) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->CosV0PointingAngle();
-	inputVars[2] = part->Getd0Prong(0);
-	inputVars[3] = part->Getd0Prong(1);
-	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[5] = nSigmaTOFpr;
-	inputVars[6] = nSigmaTOFpi;
-	inputVars[7] = nSigmaTOFka;
-	inputVars[8] = nSigmaTPCpi;
-	inputVars[9] = nSigmaTPCpr;
-	inputVars[10] = nSigmaTPCka;
-      }
-      else if (fNVars == 10) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = signd0;
-	inputVars[6] = nSigmaTOFpr;
-	inputVars[7] = nSigmaTPCpr;
-	inputVars[8] = nSigmaTPCpi;
-	inputVars[9] = nSigmaTPCka;
-      }
-      else if (fNVars == 7) {
-	inputVars[0] = invmassK0s;
-	inputVars[1] = part->Getd0Prong(0);
-	inputVars[2] = part->Getd0Prong(1);
-	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
-	inputVars[4] = part->CosV0PointingAngle();
-	inputVars[5] = cts;
-	inputVars[6] = signd0;
-      }
-
-      for (Int_t i = 0; i < fNVars; i++) {
-	fVarsTMVA[i] = inputVars[i];
-      }
-      
       Double_t BDTResponse = -1;
       Double_t tmva = -1;
       if (fUseXmlWeightsFile || fUseXmlFileFromCVMFS) tmva = fReader->EvaluateMVA("BDT method");
