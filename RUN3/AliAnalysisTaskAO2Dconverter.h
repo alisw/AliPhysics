@@ -15,7 +15,9 @@
 
 #include <Rtypes.h>
 
+class AliVEvent;
 class AliESDEvent;
+class AliAODEvent;
 class TFile;
 class TDirectory;
 class TParticle;
@@ -164,7 +166,9 @@ private:
   Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
-  AliESDEvent *fESD = nullptr;  //! input event
+  AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
+  AliESDEvent *fESD  = nullptr; //! input ESD event
+  AliAODEvent *fAOD  = nullptr; //! input AOD event
   TList *fOutputList = nullptr; //! output list
   
   Int_t fCollisionCount = 0; //! collision count
