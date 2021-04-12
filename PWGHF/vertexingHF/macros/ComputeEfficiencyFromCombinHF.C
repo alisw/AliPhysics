@@ -32,6 +32,9 @@ Double_t maxMult=-1;//200;
 
 TH1F* hAccToyFine=0x0;
 TH1F* hAccToy=0x0;
+TH2D* hPtVsYGenAccToy=0x0;
+TH2D* hPtVsYGenLimAccToy=0x0;
+
 TF1* funcPtWeight=0x0;
 TF1* funcPtBWeight=0x0;
 
@@ -132,6 +135,9 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
   // aceptance from toy MC
   TFile* fileAccToy=new TFile(fileNameToy.Data());
+  hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
+  hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
+
   TH1F* hPtGenAccToy=(TH1F*)fileAccToy->Get("hPtGenAcc");
   TH1F* hPtGenLimAccToy=(TH1F*)fileAccToy->Get("hPtGenLimAcc");
   hAccToyFine=(TH1F*)fileAccToy->Get("hAccVsPt");
@@ -1275,8 +1281,10 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   TH1F* hErrEff1=new TH1F("hErrEff1","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrEff1b=new TH1F("hErrEff1b","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrAcc1=new TH1F("hErrAcc1","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc1b=new TH1F("hErrAcc1b","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrAxe1=new TH1F("hErrAxe1","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrAxe1b=new TH1F("hErrAxe1b","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe1c=new TH1F("hErrAxe1c","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrEff2=new TH1F("hErrEff2","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrAcc2=new TH1F("hErrAcc2","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
   TH1F* hErrAxe2=new TH1F("hErrAxe2","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
@@ -1296,18 +1304,112 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hErrEff4->SetStats(0);
   hErrEff5->SetStats(0);
   hErrAcc1->SetStats(0);
+  hErrAcc1b->SetStats(0);
   hErrAcc2->SetStats(0);
   hErrAcc3->SetStats(0);
   hErrAcc4->SetStats(0);
   hErrAcc5->SetStats(0);
   hErrAxe1->SetStats(0);
   hErrAxe1b->SetStats(0);
+  hErrAxe1c->SetStats(0);
   hErrAxe2->SetStats(0);
   hErrAxe3->SetStats(0);
   hErrAxe4->SetStats(0);
   hErrAxe5->SetStats(0);
 
+  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
+  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
+  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
+  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
+  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
+  TH1D* hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
+  TH1D* hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
+  TH1D* hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
+  TH1D* hr1=(TH1D*)hptgay05R->Clone("hr1");
+  hr1->Divide(hptgay05R,hptgaR,1,1,"B");
+  TH1D* hr2=(TH1D*)hptgay05R->Clone("hr2");
+  hr2->Divide(hptgay05R,hptglaR,1,1,"B");
+  TH1D* hr3=(TH1D*)hr1->Clone("hr3");
+  hr3->Multiply(hr1,hr2);
+  TGraph* g1=new TGraph(0);
+  TGraph* g2=new TGraph(0);
+  TGraph* g3=new TGraph(0);
+  for(Int_t ip=0; ip<hptgay05R->GetNbinsX(); ip++){
+    double ptcent=hptgay05R->GetBinCenter(ip+1);
+    Double_t yfid=0.8;
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    g1->SetPoint(ip,ptcent,0.5/yfid);
+    double acc=hAccToy->GetBinContent(hAccToy->FindBin(ptcent));
+    g2->SetPoint(ip,ptcent,acc/1.6);
+    g3->SetPoint(ip,ptcent,0.5/yfid*acc/1.6);
+  }
+
+  hr1->SetStats(0);
+  hr2->SetStats(0);
+  hr3->SetStats(0);
+  hr1->SetMinimum(0.3);
+  hr1->SetMaximum(1.03);
+  hr2->SetMinimum(0.3);
+  hr2->SetMaximum(1.03);
+  hr3->SetMinimum(0.3);
+  hr3->SetMaximum(1.03);
+  hr1->SetLineWidth(2);
+  hr2->SetLineWidth(2);
+  hr3->SetLineWidth(2);
+  hr1->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(GenAcc)");
+  hr2->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(|y|<0.5)");
+  hr3->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5)^{2} /  (N(GenAcc) * N(|y|<0.5))");
+  hr1->GetYaxis()->SetTitleOffset(1.3);
+  hr2->GetYaxis()->SetTitleOffset(1.3);
+  hr3->GetYaxis()->SetTitleOffset(1.3);
+
+  if(dCase=="Prompt"){
+    TCanvas* crho=new TCanvas("crho","coveriance",1600,600);
+    crho->Divide(3,1);
+    crho->cd(1);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr1->Draw();
+    g1->SetLineColor(2);
+    g1->SetLineWidth(2);
+    g1->Draw("csame");
+    TLegend* l1=new TLegend(0.5,0.7,0.9,0.89);
+    l1->SetTextFont(43);
+    l1->SetTextSize(22);
+    l1->AddEntry(hr1,"Toy MC, Fonll y","L");
+    l1->AddEntry(g1,"0.5/y_{fid}","L")->SetTextColor(2);
+    l1->Draw();
+    crho->cd(2);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr2->Draw();
+    g2->SetLineColor(2);
+    g2->SetLineWidth(2);
+    g2->Draw("csame");
+    TLegend* l2=new TLegend(0.3,0.2,0.9,0.39);
+    l2->SetTextFont(43);
+    l2->SetTextSize(22);
+    l2->AddEntry(hr2,"Toy MC, Fonll y","L");
+    l2->AddEntry(g2,"(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+    l2->Draw();
+    crho->cd(3);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr3->Draw();
+    g3->SetLineColor(2);
+    g3->SetLineWidth(2);
+    g3->Draw("csame");
+    TLegend* l3=new TLegend(0.2,0.7,0.9,0.89);
+    l3->SetMargin(0.15);
+    l3->SetTextFont(43);
+    l3->SetTextSize(22);
+    l3->AddEntry(hr3,"Toy MC, Fonll y","L");
+    l3->AddEntry(g3,"0.5/y_{fid}*(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+    l3->Draw();
+  }
+  
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
+    printf("---- Pt range %.1f - %.1f ----\n",binLims[iPtBin],binLims[iPtBin+1]);
     Double_t eff1=countNumer[iPtBin]/countDenom[iPtBin];
     Double_t erreff1=TMath::Sqrt(eff1*(1-eff1)/countDenom[iPtBin]);
     // sqrt(n/d*(1-n/d)/d) = sqrt(n/d * (d-n)/d / d) = sqrt( n*(d-n)/d/d/d) = 1/d * sqrt(n*(d-n)/d) = eff * sqrt((d-n)/dn)
@@ -1319,13 +1421,16 @@ void ComputeAndWriteEff(TList* l, TString dCase){
     Double_t ptcent=0.5*(binLims[iPtBin]+binLims[iPtBin+1]);
     if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
     rho=TMath::Sqrt(0.5/yfid*acc1/1.6);
+    Double_t rhoToy=TMath::Sqrt(hr3->GetBinContent(hr3->FindBin(ptcent)));
     Double_t erracc1=acc1*TMath::Sqrt(1./countDenom[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rho*1/TMath::Sqrt(countDenom[iPtBin]*countDenomLimAcc[iPtBin]));
+    Double_t erracc1b=acc1*TMath::Sqrt(1./countDenom[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rhoToy*1/TMath::Sqrt(countDenom[iPtBin]*countDenomLimAcc[iPtBin]));
     Double_t axe1=countNumer[iPtBin]/countDenomLimAcc[iPtBin];
     Double_t erraxe1=TMath::Sqrt(axe1*(1-axe1)/countDenomLimAcc[iPtBin]);
     rho=TMath::Sqrt(0.5/yfid*acc1/1.6*eff1);
+    rhoToy=TMath::Sqrt(hr3->GetBinContent(hr3->FindBin(ptcent))*eff1);
     Double_t erraxe1b=axe1*TMath::Sqrt(1./countNumer[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rho*1/TMath::Sqrt(countNumer[iPtBin]*countDenomLimAcc[iPtBin]));
+    Double_t erraxe1c=axe1*TMath::Sqrt(1./countNumer[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rhoToy*1/TMath::Sqrt(countNumer[iPtBin]*countDenomLimAcc[iPtBin]));
     
-    printf("---- Pt range %.0f - %.0f ----\n",binLims[iPtBin],binLims[iPtBin+1]);
     printf("Eff from Projection = %f/%f = %f+-%f\n",hPtRecoR->GetBinContent(iPtBin+1),hPtGenAccR->GetBinContent(iPtBin+1),hEffVsPtR->GetBinContent(iPtBin+1),hEffVsPtR->GetBinError(iPtBin+1));
     printf("Eff No weights      = %f/%f = %f+-%f\n",countNumer[iPtBin],countDenom[iPtBin],eff1,erreff1);
     hpteffNoWeight->SetBinContent(iPtBin+1,eff1);
@@ -1337,8 +1442,10 @@ void ComputeAndWriteEff(TList* l, TString dCase){
     hErrEff1->SetBinContent(iPtBin+1,100*erreff1/eff1);
     hErrEff1b->SetBinContent(iPtBin+1,100*erreff1b/eff1);
     hErrAcc1->SetBinContent(iPtBin+1,100*erracc1/acc1);
+    hErrAcc1b->SetBinContent(iPtBin+1,100*erracc1b/acc1);
     hErrAxe1->SetBinContent(iPtBin+1,100*erraxe1/axe1);
     hErrAxe1b->SetBinContent(iPtBin+1,100*erraxe1b/axe1);
+    hErrAxe1c->SetBinContent(iPtBin+1,100*erraxe1c/axe1);
     if(dCase=="Feeddw"){
       Double_t eff4=countNumerPtBWei[iPtBin]/countDenomPtBWei[iPtBin];
       Double_t erreff4=TMath::Sqrt(eff4*(1-eff4)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
@@ -1422,7 +1529,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hErrEff1b->SetLineWidth(4);
   hErrEff1b->GetYaxis()->SetTitleOffset(1.8);
   hErrEff1b->Draw();
-  hErrEff1->SetLineColor(1);
+  hErrEff1->SetLineColor(4);
   hErrEff1->Draw("same");
   hErrEff2->SetLineColor(2);
   hErrEff2->SetLineStyle(2);
@@ -1438,7 +1545,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   legErr->AddEntry(hErrEff2,"Binomial, mult weight","L");
   legErr->AddEntry(hErrEff3,"Binomial, mult+pt weights","L");
   if(dCase=="Feeddw"){
-    hErrEff4->SetLineColor(4);
+    hErrEff4->SetLineColor(kOrange+1);
     hErrEff4->SetLineStyle(4);
     hErrEff4->SetLineWidth(2);
     hErrEff4->Draw("same");
@@ -1455,37 +1562,50 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   gPad->SetRightMargin(0.05);
   gPad->SetTickx();
   gPad->SetTicky();
-  hErrAcc1->SetLineColor(1);
+  hErrAcc1->SetLineColor(2);
+  hErrAcc1->SetLineWidth(2);
   hErrAcc1->GetYaxis()->SetTitleOffset(1.8);
+  hErrAcc1->SetMinimum(0.9*TMath::Min(hErrAcc1->GetMinimum(),hErrAcc1b->GetMinimum()));
   hErrAcc1->Draw();
-  hErrAcc2->SetLineColor(2);
-  hErrAcc2->SetLineStyle(2);
-  hErrAcc2->SetLineWidth(2);
-  hErrAcc2->Draw("same");
-  hErrAcc3->SetLineColor(kGreen+1);
-  hErrAcc3->SetLineStyle(3);
-  hErrAcc3->SetLineWidth(3);
-  hErrAcc3->Draw("same");
-  if(dCase=="Feeddw"){
-    hErrAcc4->SetLineColor(4);
-    hErrAcc4->SetLineStyle(4);
-    hErrAcc4->SetLineWidth(2);
-    hErrAcc4->Draw("same");
-    hErrAcc5->SetLineColor(6);
-    hErrAcc5->SetLineStyle(5);
-    hErrAcc5->SetLineWidth(2);
-    hErrAcc5->Draw("same");
-  }
+  hErrAcc1b->SetLineWidth(2);
+  hErrAcc1b->SetLineColor(1);
+  hErrAcc1b->Draw("same");
+  TLegend* legErrA=new TLegend(0.45,0.15,0.92,0.25);
+  legErrA->SetMargin(0.15);
+  legErrA->AddEntry(hErrAcc1,"Covariance, simple formula","L");
+  legErrA->AddEntry(hErrAcc1b,"Covariance, ToyMC","L");
+  legErrA->Draw();
+  // hErrAcc2->SetLineColor(2);
+  // hErrAcc2->SetLineStyle(2);
+  // hErrAcc2->SetLineWidth(2);
+  // hErrAcc2->Draw("same");
+  // hErrAcc3->SetLineColor(kGreen+1);
+  // hErrAcc3->SetLineStyle(3);
+  // hErrAcc3->SetLineWidth(3);
+  // hErrAcc3->Draw("same");
+  // if(dCase=="Feeddw"){
+  //   hErrAcc4->SetLineColor(4);
+  //   hErrAcc4->SetLineStyle(4);
+  //   hErrAcc4->SetLineWidth(2);
+  //   hErrAcc4->Draw("same");
+  //   hErrAcc5->SetLineColor(6);
+  //   hErrAcc5->SetLineStyle(5);
+  //   hErrAcc5->SetLineWidth(2);
+  //   hErrAcc5->Draw("same");
+  // }
   ceer->cd(3);
   gPad->SetLeftMargin(0.14);
   gPad->SetRightMargin(0.05);
   gPad->SetTickx();
   gPad->SetTicky();
-  hErrAxe1b->SetLineColor(kCyan);
+  hErrAxe1b->SetLineColor(2);
   hErrAxe1b->SetLineWidth(2);
   hErrAxe1b->GetYaxis()->SetTitleOffset(1.8);
   hErrAxe1b->Draw();
-  hErrAxe1->SetLineColor(1);
+  hErrAxe1c->SetLineColor(1);
+  hErrAxe1c->SetLineWidth(2);
+  hErrAxe1c->Draw("same");
+  hErrAxe1->SetLineColor(4);
   hErrAxe1->Draw("same");
   hErrAxe2->SetLineColor(2);
   hErrAxe2->SetLineStyle(2);
@@ -1496,7 +1616,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hErrAxe3->SetLineWidth(3);
   hErrAxe3->Draw("same");
   if(dCase=="Feeddw"){
-    hErrAxe4->SetLineColor(4);
+    hErrAxe4->SetLineColor(kOrange+1);
     hErrAxe4->SetLineStyle(4);
     hErrAxe4->SetLineWidth(2);
     hErrAxe4->Draw("same");
