@@ -1522,6 +1522,7 @@ void AliAnalysisTaskJetExtractorPP::ReconstructSecondaryVertices(const AliVVerte
 
   secVertexArr->Clear();
   delete secVertexArr;
+  delete esdVtx;
 }
 
 //________________________________________________________________________
