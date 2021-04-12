@@ -2569,6 +2569,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fg32220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma exotics with corr Framework
     cuts.AddCutCalo("00010113","411792109f032220000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma no exotics
 
+  } else if (trainConfig == 2078){  // EMCAL+DCAL
+    cuts.AddCutCalo("00010113","411792100fe30220000","0r631031000000d0"); // INT7 NL 21 + TB dir. gamma, No timing cut
+    cuts.AddCutCalo("00010113","411792100f030220000","0r631031000000d0"); // INT7 NL 21 + TB dir. gamma, No timing cut, no exotics
+  } else if (trainConfig == 2079){  // EMCAL+DCAL
+    cuts.AddCutCalo("0008e113","411792100fe30220000","0r631031000000d0"); // EG2 NL 21 + TB dir. gamma, No timing cut
+    cuts.AddCutCalo("0008e113","411792100f030220000","0r631031000000d0"); // EG2 NL 21 + TB dir. gamma, No timing cut, no exotics
+
 
 
   // rotation background studies
