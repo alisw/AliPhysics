@@ -138,8 +138,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
   }
  */
 //=============================== For TPC-TPC
- //const Int_t nbins_dPhidEtaPt[] = {fNbinsPtTrig, fNbinsAssocPt, 32, 72};
- const Int_t nbins_dPhidEtaPt[] = {fNbinsPtTrig, fNbinsAssocPt, 18, 24};
+ const Int_t nbins_dPhidEtaPt[] = {fNbinsPtTrig, fNbinsAssocPt, 32, 72};
+ //const Int_t nbins_dPhidEtaPt[] = {fNbinsPtTrig, fNbinsAssocPt, 18, 24};
  const Int_t nVar = sizeof(nbins_dPhidEtaPt) / sizeof(Int_t);
 
  const TArrayD *aBin_Trig(fPtTrigAxis->GetXbins());

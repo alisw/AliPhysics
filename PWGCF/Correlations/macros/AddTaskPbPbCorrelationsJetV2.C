@@ -1,4 +1,4 @@
-AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "V0M", Int_t FilterBit = 32, Int_t nTPCcls = 70, Double_t Vz_max = 10, TString sNameList = "default") 
+AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString centMethod = "CL1", Int_t FilterBit = 32, Int_t nTPCcls = 70, Double_t Vz_max = 10, TString sNameList = "default") 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -19,7 +19,8 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
   task->SetPtOrder(kTRUE); 
   task->SetOnlySameSign(kTRUE); 
   task->SetRefMode("ref_V0A");
- 
+
+  task->SetForceCL1(kFALSE); 
 
   Double_t centLimits[] = {0.,10.,20.,30.,60.,90.};
   const Int_t nBinCent = sizeof(centLimits) / sizeof(Double_t) - 1;
@@ -56,12 +57,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
 // Input File
 
-  TGrid::Connect("alien://");
-  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0HIR.root");
-  TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
+//  TGrid::Connect("alien://");
+//  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0HIR.root");
+//  TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
 
-//  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0HIR.root");
-//  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
+  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0HIR.root");
+  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
 
   if(!foadb || !fFileRes)
   {
