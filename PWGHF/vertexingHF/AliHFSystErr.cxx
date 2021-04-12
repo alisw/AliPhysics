@@ -9032,25 +9032,26 @@ void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
   fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
 
+  // NOT FINAL (preliminary values, usual track syst + 6% additional from GeoCut correction)
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.); //Preliminary (usual track syst + 6% additional from GeoCut correction)
-  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.00);
-  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.125);
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  fTrackingEff->SetBinContent(1,0.00);
+  for(Int_t i=2;i<=6;i++) fTrackingEff->SetBinContent(i,0.125);
   for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.14);
   for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.15);
   for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.145);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  for(Int_t i=1;i<=4;i++) fRawYield->SetBinContent(i,0.00);
-  for(Int_t i=5;i<=24;i++) fRawYield->SetBinContent(i,0.12);
+  fRawYield->SetBinContent(1,0.00);
+  fRawYield->SetBinContent(2,0.11);
+  for(Int_t i=3;i<=6;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.10);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
-  for(Int_t i=1;i<=4;i++) fCutsEff->SetBinContent(i,0.00);
-  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.06);
-  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.09);
-  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.09);
-  for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.09);
+  fCutsEff->SetBinContent(1,0.00);
+  for(Int_t i=2;i<=24;i++) fCutsEff->SetBinContent(i,0.08);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
@@ -9058,12 +9059,16 @@ void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=4;i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=5; i<=24;i++) fMCPtShape->SetBinContent(i,0.03);
+  fMCPtShape->SetBinContent(1,0.00);
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3; i<=4;i++) fMCPtShape->SetBinContent(i,0.08);
+  for(Int_t i=5; i<=6;i++) fMCPtShape->SetBinContent(i,0.015);
+  for(Int_t i=7; i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=9; i<=24;i++) fMCPtShape->SetBinContent(i,0.005);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050); //PDG 2018
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.055); //PDG 2020
 
 }
 
@@ -9079,10 +9084,11 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
   fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
 
+  // NOT FINAL (preliminary values, usual track syst + 4% additional from GeoCut correction)
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);  //Preliminary (usual track syst + 4% additional from GeoCut correction)
-  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.00);
-  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.10);
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  fTrackingEff->SetBinContent(1,0.00);
+  for(Int_t i=2;i<=4;i++) fTrackingEff->SetBinContent(i,0.10);
   for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.11);
   for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.11);
   for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.11);
@@ -9090,20 +9096,14 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  for(Int_t i=1;i<=2;i++) fRawYield->SetBinContent(i,0.00);
-  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.07);
-  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.11);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.11);
-  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.11);
+  fRawYield->SetBinContent(1,0.00);
+  fRawYield->SetBinContent(2,0.10);
+  for(Int_t i=3;i<=6;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=7;i<=24;i++) fRawYield->SetBinContent(i,0.11);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
-  for(Int_t i=1;i<=2;i++) fCutsEff->SetBinContent(i,0.00);
-  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.05);
-  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.05);
-  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.09);
-  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.09);
-  for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.09);
+  fCutsEff->SetBinContent(1,0.00);
+  for(Int_t i=2;i<=24;i++) fCutsEff->SetBinContent(i,0.07);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
@@ -9111,16 +9111,16 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1;i<=2;i++) fMCPtShape->SetBinContent(i,0.00);
-  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.05);
-  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=13;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
+  fMCPtShape->SetBinContent(1,0.00);
+  fMCPtShape->SetBinContent(2,0.015);
+  for(Int_t i=3; i<=4;i++) fMCPtShape->SetBinContent(i,0.035);
+  for(Int_t i=5; i<=6;i++) fMCPtShape->SetBinContent(i,0.015);
+  for(Int_t i=7; i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=9; i<=24;i++) fMCPtShape->SetBinContent(i,0.005);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050); //PDG 2018
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.055); //PDG 2020
 
 }
 //--------------------------------------------------------------------------
