@@ -129,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D* fDCAzVsPt;  //!
   TH2D* fDCAxyVsPt; //!
   TH1D* fDCAxy; //!
+  TH1D* fdPt; //!
   TProfile *fNchVsMulti;
   TProfile *fNchInBins;
   TList *fptVarList;
@@ -165,7 +166,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
   Double_t *GetBinsFromAxis(TAxis *inax);
-  ClassDef(AliAnalysisTaskDeform,1);
+  ClassDef(AliAnalysisTaskDeform,5);
 };
 
 #endif
