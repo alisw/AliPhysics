@@ -119,7 +119,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    IsMC(Bool_t isMC) {fIsMC = isMC;};
 
     void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
-    void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins};
+    void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins;};
 
     void    GetHadronTrackingEfficiency();
     void    SwitchHadTrackEffi(Bool_t fSwitch) {fCalcHadronTrackEffi = fSwitch;};
