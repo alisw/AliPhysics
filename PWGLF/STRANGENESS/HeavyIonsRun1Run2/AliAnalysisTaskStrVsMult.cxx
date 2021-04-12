@@ -417,14 +417,33 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     return; 
   }
 
-  //fill multiplicity/centrality percentile histogram
-  if (((lPercentile>0. && lPercentile<10.) && fTriggerMask&AliVEvent::kCentral) || 
-      ((lPercentile>30. && lPercentile<50.) && fTriggerMask&AliVEvent::kSemiCentral) || 
-      (((lPercentile>10. && lPercentile<30.) || (lPercentile>50. && lPercentile<90.)) && fTriggerMask&AliVEvent::kINT7)) {
-    fHistos_eve->FillTH1("hcent", lPercentile);
+  //get run number
+  int runNumber = (isESD) ? lESDevent->GetRunNumber() : lAODevent->GetRunNumber();
+
+  //fill multiplicity/centrality percentile histogram (depending on trigger and data taking period)
+  if (runNumber>290000) {
+    if (((lPercentile>0. && lPercentile<10.) && fTriggerMask&AliVEvent::kCentral) || 
+        ((lPercentile>30. && lPercentile<50.) && fTriggerMask&AliVEvent::kSemiCentral) || 
+        (((lPercentile>10. && lPercentile<30.) || (lPercentile>50. && lPercentile<90.)) && fTriggerMask&AliVEvent::kINT7)) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
+  } else if (runNumber>200000 && runNumber<=290000) {
+    if ((lPercentile>0. && lPercentile<90.) && fTriggerMask&AliVEvent::kINT7) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
   } else {
-    DataPosting(); 
-    return; 
+    if ((lPercentile>0. && lPercentile<90.) && fTriggerMask&AliVEvent::kMB) {
+      fHistos_eve->FillTH1("hcent", lPercentile);
+    } else {
+      DataPosting(); 
+      return; 
+    }
   }
 
   //get MC header and MC array
