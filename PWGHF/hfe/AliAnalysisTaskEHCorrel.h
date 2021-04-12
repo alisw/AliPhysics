@@ -116,8 +116,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
     void    Ispp(Bool_t ispp) {fIspp = ispp;};
     void    IspPb(Bool_t ispPb) {fIspPb = ispPb;};
+    void    IsMC(Bool_t isMC) {fIsMC = isMC;};
 
     void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
+    void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins};
 
     void    GetHadronTrackingEfficiency();
     void    SwitchHadTrackEffi(Bool_t fSwitch) {fCalcHadronTrackEffi = fSwitch;};
@@ -196,6 +198,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fEMCClsTimeCut;//
     TClonesArray        *fMCarray;//!
     AliAODMCHeader      *fMCHeader;//!
+    Bool_t              fIsMC;// Is MC
     Bool_t              fApplyElectronEffi;//
     Double_t            fEffi;//!
     Double_t            fWeight;//!
@@ -215,6 +218,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
 
+    Int_t               fNDelPhiBins; //number of bins to be used for deltaphi distribution
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
     TH1F                *fVtxZ;//!

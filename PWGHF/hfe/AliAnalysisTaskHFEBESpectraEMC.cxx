@@ -1651,10 +1651,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
-            
             Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
-            if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+            if(!fIsMC){
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+            }
             
             /////////////////////////////
             //Reconstruction efficiency//
@@ -2066,7 +2067,12 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
         
         if(clust && clust->IsEMCAL())
         {
-            if(clust->GetIsExotic()) continue;
+            //Removing exotic clusters using IsExotic function in data and using M02 min cut
+            if(!fIsMC)
+                if(clust->GetIsExotic()) continue;
+            Double_t m02 = clust->GetM02();
+            if(m02 < 0.02) continue;
+            
             Double_t clustE_NL = clust->GetNonLinCorrEnergy();
             Double_t clustE = clust->E();
             if(clustE < 0.3) continue;
@@ -2093,7 +2099,8 @@ void AliAnalysisTaskHFEBESpectraEMC::GetEMCalClusterInfo()
             
             Float_t tof = clust->GetTOF()*1e+9; // ns
             fHistoTimeEMC->Fill(clustE,tof);
-            if(TMath::Abs(tof) > 50) continue;
+            if(!fIsMC)
+                if(TMath::Abs(tof) > 50) continue;
             
             fHistClustE->Fill(clust->E());
             fHistNonLinClustE->Fill(clustE_NL);
