@@ -57,12 +57,12 @@ AliAnalysisTaskSEPbPbCorrelationsJetV2 *AddTaskPbPbCorrelationsJetV2(TString cen
 
 // Input File
 
-//  TGrid::Connect("alien://");
-//  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0HIR.root");
-//  TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
+  TGrid::Connect("alien://");
+  TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/calibV0HIR.root");
+  TFile *fFileRes = TFile::Open("alien:///alice/cern.ch/user/s/sitang/EP_Cali_run2/qVectResMuons_V0A.root");
 
-  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0HIR.root");
-  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
+//  TFile *foadb    = TFile::Open("./Convert_EP_Calibration/calibV0HIR.root");
+//  TFile *fFileRes = TFile::Open("./Convert_EP_Calibration/qVectResMuons_V0A.root");
 
   if(!foadb || !fFileRes)
   {
