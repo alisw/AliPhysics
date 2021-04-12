@@ -44,7 +44,7 @@ ClassImp(AliAnalysisTaskEmcalJetEnergyFlow);
  */
 AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
 	AliAnalysisTaskEmcalJet(),
-	fHistManager()
+	fHistManager()// ,fOutput{0}
 {
 }
 /**
@@ -53,7 +53,7 @@ AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
  */
 AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
 AliAnalysisTaskEmcalJet(name, kTRUE),
-fHistManager(name) 
+fHistManager(name) // ,fOutput{0}
 {
 	SetMakeGeneralHistograms(kFALSE);
 //	DefineInput(0, TChain::Class());
@@ -264,7 +264,7 @@ AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
  //-------------------------------------------------------
    mgr->AddTask(EFTask);
  //Create containers for input/output
-  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
@@ -335,6 +335,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateJetHistograms(){
       }
     }
   }
+
 }
 
 /**
@@ -350,6 +351,7 @@ TString histname;
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     groupname = jetCont->GetName();
     UInt_t count = 0;
+    jetCont->SetJetEtaLimits(-.5,.5);
     for(auto jet : jetCont->accepted()) {
       if (!jet) continue;
       count++;
@@ -435,7 +437,7 @@ void AliAnalysisTaskEmcalJetEnergyFlow::AllocateEnergyflowHistograms(){
 
 	histname = TString::Format("hDeltaPtvPtvMultiplicity_R%d",int(Rjet*(i+1)*100));
 	histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii vs P_{t} vs Multiplicity;#Delta P_{t};P_{t,jet(R=%f)}(GEV/v); Multiplicity",Rjet*(i+1),Rjet*(i+2),Rjet*(i+1));
-	fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,50,0,50);
+	fHistManager.CreateTH3(histname,histtitle,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNPtBins,fMinPtBin,fMaxPtBin,20,0,20);
 
 	histname = TString::Format("hMatchedJetPt_R%d",int(Rjet*(i+1)*100));
 	histtitle = TString::Format("Matched jet P_{t} spectrum of R=%.2f",Rjet*(i+1));
@@ -503,10 +505,12 @@ for (Int_t i=0;i<fJetCollArray.GetEntries()-1;i++)
 	HighRJetsList.Clear();	
 	// Casting the lower R half of the pair to a container and getting the accepted jets to a list
 	jetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
+	jetCont1->SetJetEtaLimits(-.5,.5);
 	for(auto jet:jetCont1->accepted()) LowRJetsList.Add(jet);
 	
 	// Casting the higher R half of the pair to a container and getting the accepted jets to a list
 	jetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
+	jetCont2->SetJetEtaLimits(-.5,.5);
 	for(auto jet:jetCont2->accepted()) HighRJetsList.Add(jet);
 //	Rjet = jetCont2->GetJetRadius()- jetCont1->GetJetRadius();
 
@@ -600,7 +604,7 @@ for (Int_t j=0; j<iHighRIndex.GetSize()-1;j++)
 
 /*
  *This is a local implementation of the AliAnalysisHelperJetTasks helper task for the jet matching of the closest jets. There are two reasons for the locality of the implementation
- * a)Better control over the debugging procedure b) Adjust the type of the input lists from AliAODjet to AliEmcalJet.  
+ * a)Better control over the debugging procedure b)Adjust the type of the input lists from AliAODjet to AliEmcalJet.  
  */
 
 void AliAnalysisTaskEmcalJetEnergyFlow::JetMatcher(const TList *genJetsList,const Int_t &kGenJets,
