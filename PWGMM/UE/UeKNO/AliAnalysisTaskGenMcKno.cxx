@@ -70,7 +70,7 @@
 #include <iostream>
 using namespace std;
 
-const Int_t nTSBins=700;
+const Int_t nTSBins=3000;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Char_t * estNames[5] = {"TS","Eta08","V0M","V0A","Eta10"};
 const Char_t * PidNames[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "Charged" };
@@ -256,14 +256,14 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 	for(Int_t i=0; i<5; ++i){
 
 		fMult[i] = 0;
-		fMult[i] = new TH1D(Form("fMult_%s",estNames[i]),Form("%s; Nch; #eta",estNames[i]),700,-0.5,699.5); 
+		fMult[i] = new TH1D(Form("fMult_%s",estNames[i]),Form("%s; Nch; #eta",estNames[i]),3000,-0.5,2999.5); 
 		fListOfObjects->Add(fMult[i]);
 
 	}
 	for(Int_t i=0; i<5; ++i){
 
 		fMult2[i] = 0;
-		fMult2[i] = new TH1D(Form("fMult2_%s",estNames[i]),Form("%s for leading pT sel; Nch; #eta",estNames[i]),700,-0.5,699.5); 
+		fMult2[i] = new TH1D(Form("fMult2_%s",estNames[i]),Form("%s for leading pT sel; Nch; #eta",estNames[i]),3000,-0.5,2999.5); 
 		fListOfObjects->Add(fMult2[i]);
 
 	}
