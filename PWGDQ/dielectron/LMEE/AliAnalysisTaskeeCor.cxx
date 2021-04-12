@@ -24,15 +24,15 @@
 #include "AliESDtrackCuts.h"
 #include "AliAODTrack.h"
 
-#include "AliAnalysisTasteeCor.h"
+#include "AliAnalysisTaskeeCor.h"
 
-class AliAnalysisTasteeCor;
+class AliAnalysisTaskeeCor;
 using namespace std;
 
-ClassImp(AliAnalysisTasteeCor)
+ClassImp(AliAnalysisTaskeeCor)
 
 //________________________________________________________________________
-AliAnalysisTasteeCor::AliAnalysisTasteeCor()
+AliAnalysisTaskeeCor::AliAnalysisTaskeeCor()
 : AliAnalysisTaskSE()
 ,mcEvent(0)
 ,aodEvent(0)
@@ -259,7 +259,7 @@ AliAnalysisTasteeCor::AliAnalysisTasteeCor()
 }
 
 //________________________________________________________________________
-AliAnalysisTasteeCor::AliAnalysisTasteeCor(const char* name)
+AliAnalysisTaskeeCor::AliAnalysisTaskeeCor(const char* name)
 : AliAnalysisTaskSE(name)
 ,mcEvent(0)
 ,aodEvent(0)
@@ -490,7 +490,7 @@ AliAnalysisTasteeCor::AliAnalysisTasteeCor(const char* name)
 }
 
 //________________________________________________________________________
-AliAnalysisTasteeCor::~AliAnalysisTasteeCor()
+AliAnalysisTaskeeCor::~AliAnalysisTaskeeCor()
 {
     // destructor
     if(fOutputList) {
@@ -499,7 +499,7 @@ AliAnalysisTasteeCor::~AliAnalysisTasteeCor()
 }
 
 //________________________________________________________________________
-void AliAnalysisTasteeCor::UserCreateOutputObjects()
+void AliAnalysisTaskeeCor::UserCreateOutputObjects()
 {
 
     // retrieve PID object from the input handler
@@ -1345,7 +1345,7 @@ void AliAnalysisTasteeCor::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTasteeCor::UserExec(Option_t *)
+void AliAnalysisTaskeeCor::UserExec(Option_t *)
 {
     // Main loop
     // Called for each event
@@ -2088,13 +2088,13 @@ void AliAnalysisTasteeCor::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTasteeCor::Terminate(Option_t *)
+void AliAnalysisTaskeeCor::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
 }
 
-Bool_t AliAnalysisTasteeCor::IsCharmedEle(Int_t label){
+Bool_t AliAnalysisTaskeeCor::IsCharmedEle(Int_t label){
 	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
 	if (!part) return kFALSE;
 	Int_t pdg = TMath::Abs(part->PdgCode());
@@ -2108,7 +2108,7 @@ Bool_t AliAnalysisTasteeCor::IsCharmedEle(Int_t label){
 	return kTRUE;
 }
 
-Bool_t AliAnalysisTasteeCor::IsBeautyEle(Int_t label){
+Bool_t AliAnalysisTaskeeCor::IsBeautyEle(Int_t label){
 	AliMCParticle *part = (AliMCParticle*)(mcEvent->GetTrack(label));
 	if (!part) return kFALSE;
 	Int_t pdg = TMath::Abs(part->PdgCode());
@@ -2143,7 +2143,7 @@ Bool_t AliAnalysisTasteeCor::IsBeautyEle(Int_t label){
 	return kFALSE;
 }
 
-void AliAnalysisTasteeCor::GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF){
+void AliAnalysisTaskeeCor::GetRecalibrationPID(Double_t mom, Double_t eta, Double_t *meanTPC, Double_t *widthTPC, Double_t *meanTOF, Double_t *widthTOF){
 	*meanTPC = 0.;
 	*widthTPC = 1.;
 	*meanTOF = 0.;
@@ -2171,7 +2171,7 @@ void AliAnalysisTasteeCor::GetRecalibrationPID(Double_t mom, Double_t eta, Doubl
 	}
 }
 
-Double_t AliAnalysisTasteeCor::GetPtSmr(Double_t pt){
+Double_t AliAnalysisTaskeeCor::GetPtSmr(Double_t pt){
 	Int_t binPt = fPtSmr->GetXaxis()->FindBin(pt);
 	if (binPt <= 0) return 1.;					//underflow protection
 	if (binPt > fPtSmr->GetNbinsX()) return 1.; //overflow protection
@@ -2180,7 +2180,7 @@ Double_t AliAnalysisTasteeCor::GetPtSmr(Double_t pt){
 	return projPt->GetRandom();
 }
 
-Double_t AliAnalysisTasteeCor::GetEtaSmr(Double_t pt){
+Double_t AliAnalysisTaskeeCor::GetEtaSmr(Double_t pt){
 	Int_t binPt = fEtaSmr->GetXaxis()->FindBin(pt);
 	if (binPt <= 0) return 0.;					//underflow protection
 	if (binPt > fEtaSmr->GetNbinsX()) return 0.;//overflow protection
@@ -2189,7 +2189,7 @@ Double_t AliAnalysisTasteeCor::GetEtaSmr(Double_t pt){
 	return projEta->GetRandom();
 }
 
-Double_t AliAnalysisTasteeCor::GetPhiSmr(Double_t pt, Double_t q){
+Double_t AliAnalysisTaskeeCor::GetPhiSmr(Double_t pt, Double_t q){
 	if (q > 0.){
 		Int_t binPt = fPhiPosSmr->GetXaxis()->FindBin(pt);
 		if (binPt <= 0) return 0.;						//underflow protection
@@ -2208,7 +2208,7 @@ Double_t AliAnalysisTasteeCor::GetPhiSmr(Double_t pt, Double_t q){
 	}
 }
 
-Double_t AliAnalysisTasteeCor::GetDCASmr(Double_t pt){
+Double_t AliAnalysisTaskeeCor::GetDCASmr(Double_t pt){
 	if (pt < 0.8){
 		Int_t binPt = fDCASmrMap0->GetXaxis()->FindBin(pt);
 		if (binPt <= 0) return -1.;						//underflow protection
@@ -2227,7 +2227,7 @@ Double_t AliAnalysisTasteeCor::GetDCASmr(Double_t pt){
 	}
 }
 
-Double_t AliAnalysisTasteeCor::GetDCASmrByPar(Double_t pt){
+Double_t AliAnalysisTaskeeCor::GetDCASmrByPar(Double_t pt){
 
     Int_t binPt = fDCASmrCen->GetXaxis()->FindBin(pt);
     if (binPt <= 0) return -1.;						//underflow protection
@@ -2252,7 +2252,7 @@ Double_t AliAnalysisTasteeCor::GetDCASmrByPar(Double_t pt){
 	}
 }
 
-Bool_t AliAnalysisTasteeCor::GetDCA(const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0){
+Bool_t AliAnalysisTaskeeCor::GetDCA(const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0){
 	if (track->TestBit(AliAODTrack::kIsDCA)){
 		d0z0[0] = track->DCA();
 		d0z0[1] = track->ZAtDCA();
