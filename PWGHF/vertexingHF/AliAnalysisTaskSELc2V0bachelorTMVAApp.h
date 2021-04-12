@@ -41,6 +41,8 @@
 #include <TProfile.h>
 #include <TH3D.h>
 
+#include <vector>
+
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
 class IClassifierReader;
@@ -448,6 +450,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TTree   *fVariablesTreeSgn;         //!<! tree of the candidate variables after track selection (Signal)
   TTree   *fVariablesTreeBkg;         //!<! tree of the candidate variables after track selection (Background)
   Float_t *fCandidateVariables;       //!<! variables to be written to the tree
+  TString * fCandidateVariableNames;  //!<! names of variables that will go to the tree
 
   TH1F* fHistoCentrality;             //!<! histogram with centrality from AliRDHFCuts
   TH1F* fHistoEvents;                 //!<! histogram with number of events analyzed
@@ -594,8 +597,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
-  Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
   Bool_t fMake3DHisto;                 /// flag to decide if to use a 3D histo for BDT (bdt, mass, signd0)
+  Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
   Int_t fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
@@ -636,8 +639,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2F* fHistoVzVsNtrUnCorr;         //!<! hist. Vz vs UNCORRECTED tracklets
   TH2F* fHistoVzVsNtrCorr;           //!<! hist. Vz vs corrected tracklets
   
+  std::vector<std::string> fInputNamesVec;        // vector with names of TMVA variables
+  int fNTreeVars;                    // number of variables to fill the tree
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 13); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 14); /// class for Lc->p K0
   /// \endcond    
 };
 
