@@ -69,6 +69,10 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fMptClosure(0),
   fMultiDist(0),
   fMultiVsV0MCorr(0),
+  fDCAxy(0),
+  fDCAxyVsPt(0),
+  fDCAzVsPt(0),
+  fdPt(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -129,6 +133,10 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fMptClosure(0),
   fMultiDist(0),
   fMultiVsV0MCorr(0),
+  fDCAxy(0),
+  fDCAxyVsPt(0),
+  fDCAzVsPt(0),
+  fdPt(0),
   fNchVsMulti(0),
   fNchInBins(0),
   fptVarList(0),
@@ -324,12 +332,15 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptVarList->Add(fNchTrueVsReco);
     }
-    fDCAxy = new TH1D("DCAxy","DCAxy",100,-4.0,4.0);
-    fDCAxyVsPt = new TH2D("DCAxy_vs_pt","DCAxy_vs_pt",fNPtBins,fPtBins,100,-4.0,4.0);
-    fDCAzVsPt = new TH2D("DCAz_vs_pt","DCAz_vs_pt",fNPtBins,fPtBins,100,-4.0,4.0);
+    fDCAxy = new TH1D("DCAxy","DCAxy;|DCA_{xy}|;Counts",100,0.0,4.0);
+    fDCAxyVsPt = new TH2D("DCAxy_vs_pt","DCAxy_vs_pt;p_{T};|DCA_{xy}|",fNPtBins,fPtBins,100,0.0,4.0);
+    fDCAzVsPt = new TH2D("DCAz_vs_pt","DCAz_vs_pt;p_{T};|DCA_{z}|",fNPtBins,fPtBins,100,0.0,4.0);
+    fdPt = new TH1D("dPt","dPt",100,0.1,0.1);
     fptVarList->Add(fDCAxy);
     fptVarList->Add(fDCAxyVsPt);
     fptVarList->Add(fDCAzVsPt);
+    fptVarList->Add(fdPt);
+
 
     PostData(1,fptVarList);
     //Setting up the FlowContainer
@@ -906,14 +917,14 @@ void AliAnalysisTaskDeform::FillCK(AliAODEvent *fAOD, const Double_t &vz, const 
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp,nTotNoTracks)) continue;
-      fDCAxy->Fill(TMath::Sqrt(trackXYZ[0]*trackXYZ[0] + trackXYZ[1]*trackXYZ[1]));
+      fDCAxy->Fill(TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]));
       // if(TMath::Abs(leta)<fEtaNch) nTotNoTracks+=1;
       if(leta<-fEtaV2Sep) lNegCount++;
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t p1 = lTrack->Pt();
-      fDCAxyVsPt->Fill(p1,TMath::Sqrt(trackXYZ[0]*trackXYZ[0] + trackXYZ[1]*trackXYZ[1]));
-      fDCAzVsPt->Fill(p1,trackXYZ[2]);
+      fDCAxyVsPt->Fill(p1,TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]));
+      fDCAzVsPt->Fill(p1,TMath::Abs(trackXYZ[2]));
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(p1));
       if(weff==0) continue;
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
@@ -975,6 +986,7 @@ for(Int_t i=0;i<1;i++) { //No PID = index is only 1
   if(indx<1 || indx>fV2dPtMulti->GetNbinsX()) return;
   fV2dPtMulti->Fill(l_Multi);
   // printf("Will use dpt v2 profile index %i (out of %i-1), multiplicity is %f\n",indx,fV2dPtList->GetEntries(),l_Multi);
+  if(indx==1) fdPt->Fill(outVals[0][3]/outVals[0][0]-1);
   Fillv2dPtFCs(corrconfigs.at(0),outVals[0][3]/outVals[0][0]-1,0,indx);
   Fillv2dPtFCs(corrconfigs.at(4),outVals[0][3]/outVals[0][0]-1,0,indx);
   PostData(4,fV2dPtList);
