@@ -1018,7 +1018,7 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelectionV2::IsTriggerSelected(AliVEvent *eve
           if( !(fOfflineTriggerMask ) ) return kFALSE;
 
           TString firedTrigClass = event->GetFiredTriggerClasses();
-          std::cout << "Trigger: " << firedTrigClass << std::endl;
+          // std::cout << "Trigger: " << firedTrigClass << std::endl;
 
           if( firedTrigClass.Contains("CEMC7") ) {
             isEMC = kTRUE;
