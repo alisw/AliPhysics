@@ -1205,7 +1205,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
                         // -- ele
                         Double_t cont_mcele[3];
                         cont_mcele[0] = mcele->Pt();
-                        cont_mcele[1] = mcele->Eta();
+                        cont_mcele[1] = mcele->Y();
                         cont_mcele[2] = fCentrality;
                         
                         fHistoOmegacElectronMCS->Fill(cont_mcele);
@@ -1215,7 +1215,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
                         // -- cascade: omega
                         Double_t cont_mcomega[3];
                         cont_mcomega[0] = mccasc->Pt();
-                        cont_mcomega[1] = mccasc->Eta();
+                        cont_mcomega[1] = mccasc->Y();
                         cont_mcomega[2] = fCentrality;
                         
                         fHistoCascOmegaMCS -> Fill(cont_mcomega);
@@ -1507,7 +1507,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODca
 	
         Double_t contmc[3];
         contmc[0] = mccasctrk->Pt();
-        contmc[1] = mccasctrk->Eta();
+        contmc[1] = mccasctrk->Y();
         contmc[2] = fCentrality;
         fHistoOmegaMCS->Fill(contmc);
     }
@@ -1643,12 +1643,12 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCPa
     
     Double_t contmcele[3];
     contmcele[0] = mcepart->Pt();
-    contmcele[1] = mcepart->Eta();
+    contmcele[1] = mcepart->Y();
     contmcele[2] = fCentrality;
     
     Double_t contmcomega[3];
     contmcomega[0] = mccascpart->Pt();
-    contmcomega[1] = mccascpart->Eta();
+    contmcomega[1] = mccascpart->Y();
     contmcomega[2] = fCentrality;
     
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
@@ -1800,7 +1800,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCCascROOTObjects(AliAOD
     
     Double_t contmc[3];
     contmc[0] = mccascpart->Pt();
-    contmc[1] = mccascpart->Eta();
+    contmc[1] = mccascpart->Y();
     contmc[2] = fCentrality;
     fHistoOmegaMCGen->Fill(contmc);
     
