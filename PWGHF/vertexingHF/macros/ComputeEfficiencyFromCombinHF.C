@@ -1450,9 +1450,9 @@ void ComputeAndWriteEff(TList* l, TString dCase){
       Double_t eff4=countNumerPtBWei[iPtBin]/countDenomPtBWei[iPtBin];
       Double_t erreff4=TMath::Sqrt(eff4*(1-eff4)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
       Double_t acc4=countDenomPtBWei[iPtBin]/countDenomLimAccPtBWei[iPtBin];
-      Double_t erracc4=erracc1*acc4/acc1;
+      Double_t erracc4=erracc1b*acc4/acc1;
       Double_t axe4=countNumerPtBWei[iPtBin]/countDenomLimAccPtBWei[iPtBin];
-      Double_t erraxe4=TMath::Sqrt(axe4*(1-axe4)/countDenomLimAcc[iPtBin]);// countDenomLimAcc is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t erraxe4=erraxe1c*axe4/axe1;
       printf("Eff With pt(B) weights = %f/%f = %f+-%f\n",countNumerPtBWei[iPtBin],countDenomPtBWei[iPtBin],eff4,erreff4);
       hpteffPtBWeight->SetBinContent(iPtBin+1,eff4);
       hpteffPtBWeight->SetBinError(iPtBin+1,erreff4);
@@ -1468,9 +1468,9 @@ void ComputeAndWriteEff(TList* l, TString dCase){
       Double_t eff2=countNumerMultWei[iPtBin]/countDenomMultWei[iPtBin];
       Double_t erreff2=TMath::Sqrt(eff2*(1-eff2)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
       Double_t acc2=countDenomMultWei[iPtBin]/countDenomLimAccMultWei[iPtBin];
-      Double_t erracc2=erracc1*acc2/acc1;
+      Double_t erracc2=erracc1b*acc2/acc1;
       Double_t axe2=countNumerMultWei[iPtBin]/countDenomLimAccMultWei[iPtBin];
-      Double_t erraxe2=TMath::Sqrt(axe2*(1-axe2)/countDenomLimAcc[iPtBin]);// countDenomLimAcc is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t erraxe2=erraxe1c*axe2/axe1;
       printf("Eff With mult weights  = %f/%f = %f+-%f\n",countNumerMultWei[iPtBin],countDenomMultWei[iPtBin],eff2,erreff2);
       hpteffMultWeight->SetBinContent(iPtBin+1,eff2);
       hpteffMultWeight->SetBinError(iPtBin+1,erreff2);
@@ -1484,9 +1484,9 @@ void ComputeAndWriteEff(TList* l, TString dCase){
       Double_t eff3=countNumerMultPtWei[iPtBin]/countDenomMultPtWei[iPtBin];
       Double_t erreff3=TMath::Sqrt(eff3*(1-eff3)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
       Double_t acc3=countDenomMultPtWei[iPtBin]/countDenomLimAccMultPtWei[iPtBin];
-      Double_t erracc3=erracc1*acc3/acc1;
+      Double_t erracc3=erracc1b*acc3/acc1;
       Double_t axe3=countNumerMultPtWei[iPtBin]/countDenomLimAccMultPtWei[iPtBin];
-      Double_t erraxe3=TMath::Sqrt(axe3*(1-axe3)/countDenomLimAcc[iPtBin]);// countDenomLimAcc is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t erraxe3=erraxe1c*axe3/axe1;
       printf("Eff With mult+pt weights   = %f/%f = %f+-%f\n",countNumerMultPtWei[iPtBin],countDenomMultPtWei[iPtBin],eff3,erreff3);
       hpteffMultPtWeight->SetBinContent(iPtBin+1,eff3);
       hpteffMultPtWeight->SetBinError(iPtBin+1,erreff3);
@@ -1501,10 +1501,10 @@ void ComputeAndWriteEff(TList* l, TString dCase){
 	Double_t eff5=countNumerMultPtBWei[iPtBin]/countDenomMultPtBWei[iPtBin];
 	Double_t erreff5=TMath::Sqrt(eff5*(1-eff5)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
 	Double_t acc5=countDenomMultPtBWei[iPtBin]/countDenomLimAccMultPtBWei[iPtBin];
-	Double_t erracc5=erracc1*acc5/acc1;
+	Double_t erracc5=erracc1b*acc5/acc1;
 	Double_t axe5=countNumerMultPtBWei[iPtBin]/countDenomLimAccMultPtBWei[iPtBin];
-	Double_t erraxe5=TMath::Sqrt(axe5*(1-axe5)/countDenomLimAcc[iPtBin]);// countDenomLimAcc is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
-	printf("Eff With mult+pt(B) weights   = %f/%f = %f+-%f\n",countNumerMultPtBWei[iPtBin],countDenomMultPtBWei[iPtBin],eff5,erreff5);
+	Double_t erraxe5=erraxe1c*axe5/axe1;
+ 	printf("Eff With mult+pt(B) weights   = %f/%f = %f+-%f\n",countNumerMultPtBWei[iPtBin],countDenomMultPtBWei[iPtBin],eff5,erreff5);
 	hpteffMultPtBWeight->SetBinContent(iPtBin+1,eff5);
 	hpteffMultPtBWeight->SetBinError(iPtBin+1,erreff5);
 	hptaccMultPtBWeight->SetBinContent(iPtBin+1,acc5);
@@ -1607,24 +1607,24 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hErrAxe1c->Draw("same");
   hErrAxe1->SetLineColor(4);
   hErrAxe1->Draw("same");
-  hErrAxe2->SetLineColor(2);
-  hErrAxe2->SetLineStyle(2);
-  hErrAxe2->SetLineWidth(2);
-  hErrAxe2->Draw("same");
-  hErrAxe3->SetLineColor(kGreen+1);
-  hErrAxe3->SetLineStyle(3);
-  hErrAxe3->SetLineWidth(3);
-  hErrAxe3->Draw("same");
-  if(dCase=="Feeddw"){
-    hErrAxe4->SetLineColor(kOrange+1);
-    hErrAxe4->SetLineStyle(4);
-    hErrAxe4->SetLineWidth(2);
-    hErrAxe4->Draw("same");
-    hErrAxe5->SetLineColor(6);
-    hErrAxe5->SetLineStyle(5);
-    hErrAxe5->SetLineWidth(2);
-    hErrAxe5->Draw("same");
-  }
+  // hErrAxe2->SetLineColor(2);
+  // hErrAxe2->SetLineStyle(2);
+  // hErrAxe2->SetLineWidth(2);
+  // hErrAxe2->Draw("same");
+  // hErrAxe3->SetLineColor(kGreen+1);
+  // hErrAxe3->SetLineStyle(3);
+  // hErrAxe3->SetLineWidth(3);
+  // hErrAxe3->Draw("same");
+  // if(dCase=="Feeddw"){
+  //   hErrAxe4->SetLineColor(kOrange+1);
+  //   hErrAxe4->SetLineStyle(4);
+  //   hErrAxe4->SetLineWidth(2);
+  //   hErrAxe4->Draw("same");
+  //   hErrAxe5->SetLineColor(6);
+  //   hErrAxe5->SetLineStyle(5);
+  //   hErrAxe5->SetLineWidth(2);
+  //   hErrAxe5->Draw("same");
+  // }
   
   hEffVsPtR->SetMarkerStyle(0);
   hEffVsPtR->SetMarkerColor(0);
