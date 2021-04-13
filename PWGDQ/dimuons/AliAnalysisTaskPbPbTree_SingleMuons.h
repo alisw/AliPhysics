@@ -51,7 +51,7 @@ class AliAnalysisTaskPbPbTree_SingleMuons: public AliAnalysisTaskSE {
   AliMuonTrackCuts* fMuonTrackCuts;
   Float_t   fPercentV0M;             //! percentile V0
 
-  TLorentzVector* fMuonTracks[500];      //! muon tracks
+  TObjArray *fMuonTracks;      //! array of muon tracks
 
   ClassDef(AliAnalysisTaskPbPbTree_SingleMuons,1);
 };
