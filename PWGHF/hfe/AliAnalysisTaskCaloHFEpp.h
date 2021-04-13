@@ -29,7 +29,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserCreateOutputObjects();
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
-		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
+		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign, Double_t Eiso);
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
 	
                 virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
@@ -225,6 +225,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fPhidiff;
 		TH2F*                   fInv_pT_LS;
 		TH2F*                   fInv_pT_ULS;
+		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
@@ -251,6 +252,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_Ds;
 		TH2F*                   fDCAxy_Pt_lambda;
 		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fDCAxy_Pt_We;
 		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
