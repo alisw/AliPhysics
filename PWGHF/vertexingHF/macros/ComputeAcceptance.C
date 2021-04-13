@@ -21,7 +21,7 @@
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kLcpiL,kDplusKKpi};
 enum EFidY{kFixedY,kPtDepY};
 enum EPtShape{kFlatPt,kPtFONLL8TeV,kPtFONLL8TeVfeeddown,kPtFONLL7TeV,kPtPythia7TeV,kPtFONLL5TeV,kPtFONLL13TeVprompt,kPtFONLL13TeVfeeddown,kPtPythia13TeVprompt,kPtPythia13TeVfeeddown};
-enum EYShape{kFlatY,kYFONLL5TeV,kYFONLLMax5TeV,kYFONLLMin5TeV};
+enum EYShape{kFlatY,kYFONLL5TeV,kYFONLLMax5TeV,kYFONLLMin5TeV,kYFONLL13TeV,kYFONLLMax13TeV,kYFONLLMin13TeV};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -259,6 +259,18 @@ void ComputeAcceptance(){
   }else if(fYShape==kYFONLLMin5TeV){
     funcY=new TF1("fsigyfonll5","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
     funcY->SetParameters(6.99901e-01,5.27825,1.54156e+01);
+    outFileName.Append("FONLLyMin.root");
+  }else if(fYShape==kYFONLL13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.076661,5.845579);
+    outFileName.Append("FONLLy.root");
+  }else if(fYShape==kYFONLLMax13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.031292,5.961879);
+    outFileName.Append("FONLLyMax.root");
+  }else if(fYShape==kYFONLLMin13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
+    funcY->SetParameters(1.100997,5.952721,49.171957);
     outFileName.Append("FONLLyMin.root");
   }else{
     outFileName.Append("flaty.root");
