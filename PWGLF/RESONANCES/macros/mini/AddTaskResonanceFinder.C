@@ -9845,7 +9845,7 @@ Bool_t Config_KxLambdastar(
     cutsL->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassL->GetName(),cutYL->GetName()).Data());
     
     i=0; // Lambda(1520)
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStarp",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9858,7 +9858,7 @@ Bool_t Config_KxLambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=1; // anti-Lambda1520
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_LambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9905,7 +9905,7 @@ Bool_t Config_KxLambdastar(
     cutsSB->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassSB->GetName(),cutYL->GetName()).Data());
     
     i=4; // Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStarp",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -9918,7 +9918,7 @@ Bool_t Config_KxLambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=5; // anti-Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBAntiLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'+');
@@ -10320,7 +10320,7 @@ Bool_t Config_K0Lambdastar(
     iCutLambdaStar[i]=task->AddResonanceFinder(finder[i]);
     
     i=5; // anti-Lambda(1520) sideband
-    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBAntiLambdaStar",task->GetName()));
+    finder[i]=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder_SBLambdaStara",task->GetName()));
     finder[i]->SetCutID(0,iCutP);
     finder[i]->SetDaughter(0,AliRsnDaughter::kProton);
     finder[i]->SetCharge(0,'-');
