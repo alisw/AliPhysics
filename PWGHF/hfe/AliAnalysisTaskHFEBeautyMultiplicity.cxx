@@ -1006,7 +1006,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNtrklet_Corr = new TH1F("fNtrklet_Corr","N_{tracklet} after correction; tracklet; counts", 301, -0.5, 300.5);
     fOutputList->Add(fNtrklet_Corr);
 
-  //Tracklet vs. N charged (corrected)
+  //Tracklet vs. N charged (correcte)
     fNtrkletNch_Corr = new TH2F("fNtrkletNch_Corr","N tracklet (after weight correction) vs. N charged particle;N_{tracklets}^{corr};N_{ch}",4001,-0.5,4000.5,4001,-0.5,4000.5);
     fOutputList->Add(fNtrkletNch_Corr);
 
@@ -1208,7 +1208,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
     estimatorAvg = GetEstimatorHistogram(fAOD,iData);	// Get estimatorAvg.root
 
     if(estimatorAvg){
-	    correctednAcc = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, nAcc, Zvertex,fRefMult));
+	    correctednAcc = static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg, nAcc, Zvertex, fRefMult));
     }
 
 
@@ -1984,15 +1984,15 @@ void AliAnalysisTaskHFEBeautyMultiplicity::CheckMCgen(AliAODMCHeader* fMCheader,
         }
     }
     
-    cout << "-----------------------" << endl;
-    cout << "GetEntries     : " << fMCarray->GetEntries()     << endl;
-    cout << "GetEntriesFast : " << fMCarray->GetEntriesFast() << endl;
-    cout << "NpureMC        : " << NpureMC << endl;
-    cout << "NpureMCproc    : " << NpureMCproc << endl;
+    //cout << "-----------------------" << endl;
+    //cout << "GetEntries     : " << fMCarray->GetEntries()     << endl;
+    //cout << "GetEntriesFast : " << fMCarray->GetEntriesFast() << endl;
+    //cout << "NpureMC        : " << NpureMC << endl;
+    //cout << "NpureMCproc    : " << NpureMCproc << endl;
 
     //for(int imc=0; imc < fMCarray->GetEntries(); imc++)	// PYTHIA & GEANT ?
-    //for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles?
-    for(int imc=0; imc < NpureMC; imc++)			// PYTHIA only?
+    for(int imc=0; imc < fMCarray->GetEntriesFast(); imc++)	// over all primary MC particles?
+    //for(int imc=0; imc < NpureMC; imc++)			// PYTHIA only?
     {
         Bool_t iEnhance = kFALSE;
         if(imc >= NpureMC) iEnhance = kTRUE;
