@@ -7,6 +7,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliNeutralTrackParam.h"
 #include "AliESDtrackCuts.h"
 #include "AliVertexerTracks.h"
 #include "AliAODVertex.h"
@@ -149,6 +150,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistPtLcDau2{nullptr},
   fHistDecLenLc{nullptr},
   fHistCosPointLc{nullptr},
+  fHistInvMassLcK0sp{nullptr},
+  fHistPtLcK0sp{nullptr},
   fHistCPUTimeTrackVsNTracks{nullptr},
   fHistCPUTimeCandVsNTracks{nullptr},
   fHistWallTimeTrackVsNTracks{nullptr},
@@ -200,6 +203,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fSelectDplus(1),
   fSelectJpsi(1),
   fSelectLcpKpi(1),
+  fMinPtV0(0.),
   fEnableCPUTimeCheck(kFALSE),
   fCountTimeInMilliseconds(kFALSE)
 {
@@ -326,6 +330,8 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices(){
     delete fHistPtLcDau2;
     delete fHistDecLenLc;
     delete fHistCosPointLc;
+    delete fHistInvMassLcK0sp;
+    delete fHistPtLcK0sp;
     for(Int_t i=0; i<5; i++){
       delete fHistPtGenPrompt[i];
       delete fHistPtGenFeeddw[i];
@@ -955,6 +961,11 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   fOutput->Add(fHistDecLenLc);
   fOutput->Add(fHistCosPointLc);
 
+  fHistInvMassLcK0sp = new TH1F("hInvMassLcK0sp", " ; M_{pK^{0}_{s}} (GeV/c^{2})", 500, 1.6, 3.1);
+  fHistPtLcK0sp = new TH1F("hPtLcK0sp", " ; #Lambda_{c} p_{T} (GeV/c)", 100, 0, 10.);
+  fOutput->Add(fHistInvMassLcK0sp);
+  fOutput->Add(fHistPtLcK0sp);
+
   // MC gen level histos (for effic)
   fHistPtGenPrompt[0] = new TH1F("hPtGenPromptD0Kpi"," ; p_{T} (GeV/c)",40,0.,20.);
   fHistPtGenPrompt[1] = new TH1F("hPtGenPromptDplusKpipi"," ; p_{T} (GeV/c)",40,0.,20.);
@@ -1246,8 +1257,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
   AliAODRecoDecay* rd4massCalc2 = new AliAODRecoDecay(0x0, 2, 0, d02);
   AliAODRecoDecay* rd4massCalc3 = new AliAODRecoDecay(0x0, 3, 1, d03);
   TObjArray* twoTrackArray = new TObjArray(2);
+  TObjArray *twoTrackArrayCasc = new TObjArray(2);
   TObjArray* threeTrackArray = new TObjArray(3);
   Double_t mom0[3], mom1[3], mom2[3];
+  Int_t nv0 = esd->GetNumberOfV0s();
   for (Int_t iPosTrack_0 = 0; iPosTrack_0 < totTracks; iPosTrack_0++) {
     AliESDtrack* track_p0 = esd->GetTrack(iPosTrack_0);
     track_p0->GetPxPyPz(mom0);
@@ -1262,6 +1275,52 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
       fHistEtaSelTracks3prong->Fill(track_p0->Eta());
     }
     fHistITSmapSelTracks->Fill(track_p0->GetITSClusterMap());
+    for(Int_t iv0=0; iv0<nv0; iv0++){
+      AliESDv0 *v0 = esd->GetV0(iv0);
+      if (!v0) continue;
+      Bool_t onFlyStatus=v0->GetOnFlyStatus();
+      if(onFlyStatus==kTRUE) continue;
+      if(v0->Pt()<fMinPtV0) continue;
+      UInt_t labPos = (UInt_t)TMath::Abs(v0->GetPindex());
+      UInt_t labNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+      AliESDtrack *posVV0track=esd->GetTrack(labPos);
+      AliESDtrack *negVV0track=esd->GetTrack(labNeg);
+      if( !posVV0track || !negVV0track ) continue;
+      // bachelor must not be a v0-track
+      if (posVV0track->GetID() == track_p0->GetID() ||
+          negVV0track->GetID() == track_p0->GetID()) continue;
+      // reject like-sign v0
+      if ( posVV0track->Charge() == negVV0track->Charge() ) continue;
+      // avoid ghost TPC tracks
+      if(!(posVV0track->GetStatus() & AliESDtrack::kTPCrefit) ||
+         !(negVV0track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      //  reject kinks (only necessary on AliESDtracks)
+      if (posVV0track->GetKinkIndex(0)>0  || negVV0track->GetKinkIndex(0)>0) continue;
+      Double_t xyz[3], pxpypz[3];
+      v0->XvYvZv(xyz);
+      v0->PxPyPz(pxpypz);
+      Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
+      AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
+      twoTrackArrayCasc->AddAt(track_p0,0);
+      twoTrackArrayCasc->AddAt(trackV0,1);
+      AliESDVertex* vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+      if (vertexCasc == 0x0) {
+        delete trackV0;
+        twoTrackArrayCasc->Clear();
+        continue;
+      }
+      AliAODVertex* vertexAOD = ConvertToAODVertex(vertexCasc);
+      AliAODRecoCascadeHF* theCascade=MakeCascade(twoTrackArrayCasc, vertexAOD, bzkG);
+      Double_t ptLcK0sp=theCascade->Pt();
+      Double_t invMassLcK0sp=theCascade->InvMassLctoK0sP();
+      fHistInvMassLcK0sp->Fill(invMassLcK0sp);
+      fHistPtLcK0sp->Fill(ptLcK0sp);
+      delete trackV0;
+      twoTrackArrayCasc->Clear();
+      delete theCascade;
+      delete vertexAOD;
+      delete vertexCasc;
+    }
     if (track_p0->Charge() < 0) continue;
     for (Int_t iNegTrack_0 = 0; iNegTrack_0 < totTracks; iNegTrack_0++) {
       AliESDtrack* track_n0 = esd->GetTrack(iNegTrack_0);
@@ -2152,6 +2211,15 @@ AliAODRecoDecayHF3Prong* AliAnalysisTaskHFSimpleVertices::Make3Prong(TObjArray* 
   AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
   the3Prong->SetOwnSecondaryVtx(ownsecv);
   return the3Prong;
+}
+//______________________________________________________________________________
+AliAODRecoCascadeHF* AliAnalysisTaskHFSimpleVertices::MakeCascade(TObjArray *twoTrackArray, AliAODVertex* secVert, Double_t bzkG){
+  AliAODRecoCascadeHF *theCascade = (AliAODRecoCascadeHF*)Make2Prong(twoTrackArray,secVert,bzkG);
+  if(!theCascade) return 0x0;
+  AliESDtrack *trackBachelor = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
+  theCascade->SetCharge(trackBachelor->Charge());
+  theCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
+  return theCascade;
 }
 //______________________________________________________________________________
 
