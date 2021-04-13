@@ -51,7 +51,7 @@ public:
 	void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
 	void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
 	void       SetIspPb(Bool_t pPb = kFALSE)    {fIspPb = pPb;}
-	void       SetNchTScut(Bool_t TPConly = kTRUE)    {fIsTPConly = TPConly;}
+	void       SetNchTScut(Bool_t TPConly = kTRUE)    {fSetTPConlyTrkCuts = TPConly;}
 	bool       HasRecVertex();
 	//Systematic ============================
 	void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
@@ -74,20 +74,24 @@ public:
         //Systematic ============================
 	virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 			Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+    virtual void  SetTrackCutsType(bool isTPCOnlyTrkCuts) { fSetTPConlyTrkCuts = isTPCOnlyTrkCuts; }
+    virtual void  SetHybridTracks(bool isSelectHybrid) { fSelectHybridTracks = isSelectHybrid; }
+    AliESDtrack*  SetHybridTrackCuts(AliESDtrack *track, const bool fill1, const bool fill2, const bool fill3);
 protected:
 
 
 
 private:
-	AliESDEvent*            fESD;                                        //! input ESD event
+    virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
+    AliESDEvent*            fESD;                                        //! input ESD event
 	AliEventCuts        fEventCuts;
 	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
 	Bool_t       fUseMC;                // analyze MC events
 	Bool_t       fIsMCclosure;
 	Bool_t       fIspPb;
-	Bool_t       fIsTPConly;
-	
+    Bool_t fSetTPConlyTrkCuts;
+    Bool_t fSelectHybridTracks;
 	// Systematic------------------------------------
 	Bool_t       fTPCclustersVar1;
 	Bool_t       fTPCclustersVar2;
@@ -107,13 +111,12 @@ private:
 	Bool_t       fDcazVar2;
 	Bool_t       fSPDreqVar1;
 	// Systematic------------------------------------
-	
-	AliAnalysisFilter*  fLeadingTrackFilter;
-	AliAnalysisFilter*  fTrackFilter;
-	AliAnalysisFilter*  fTrackFilterwoDCA;
+    AliPIDResponse* fPIDResponse;
+    AliESDtrackCuts* fGeometricalCut;
+    AliAnalysisFilter* fTrackFilter;
+    AliESDtrackCuts*   fHybridTrackCuts1;
+    AliESDtrackCuts*   fHybridTrackCuts2;
 	TList*                  fOutputList;                                      //! output list in the root file
-	
-
 	Double_t fEtaCut;
 	Double_t fPtMin;	
 	Double_t fLeadPtCutMin;
@@ -133,7 +136,6 @@ private:
 	Float_t fdcaz;	
 	AliMultSelection *fMultSelection;
 	AliMultSelection *fMultSelectionbefvtx;
-       
 	// KNO
 	TH1D * hNchTSGen;
 	TH1D * hNchTSGenTest;
@@ -141,8 +143,12 @@ private:
 	TH1D * hNchGenTest;
 	TH1D * hNchTSRec;
 	TH1D * hNchTSRecTest;	
-        TH1D * hNchData;
-        TH1D * hNchTSData;
+    TH1D * hNchData;
+    TH1D * hNchTSData;
+    TH1F* hPhiTotal;
+    TH1F* hPhiStandard;
+    TH1F* hPhiHybrid1;
+    TH1F* hPhiHybrid2;
 	TH2D * hNchResponse;
 	TH1D * hNchRec;
 	TH1D * hNchRecTest;
@@ -170,43 +176,32 @@ private:
 	TH1D * hRefMult08;
 	TH1D * hV0Mmult;
 	TH1D * hV0Mmultbefvtx;
-
 	TH2D * hRefMultvsV0Mmult;
 	TH2D * hV0MmultvsUE;
 	TH2D * hRefmultvsUE;
 	TH2D * hITSclustersvsUE;
 	TH2D * hITSclustersvsNch;
-	
 	TH2D * hPtVsUEGenTest[3];//UE->NchTS
 	TH2D * hPtVsUERecTest[3];//UE->NchTS
 	TH2D * hPtVsUEData[3];//UE->NchTS
-
 	TH2D * hPtVsNchGenTest[3];
 	TH2D * hPtVsNchRecTest[3];
 	TH2D * hPtVsNchData[3];
 	TH1D * hPhiGen[3];
 	TH1D * hPhiRec[3];
-
 	TH2D * hPtVsV0MData;//V0M
 	TH2D * hDphiVsUEGenTest; //UE->NchTS
 	TH2D * hDphiVsUERecTest;//UE->NchTS
 	TH2D * hDphiVsUEData;//UE->NchTS
-
 	TH2D * hDphiVsNchGenTest;
 	TH2D * hDphiVsNchRecTest;
 	TH2D * hDphiVsNchData;
-
 	//multiplicity percentile
-
 	TH3D * hPtVsUEvsNchData_V0M[3];//UE->NchTS
-
 	TH3D * hDphiVsUEvsNchData_V0M;//UE->NchTS
-
 	//TH3D * hV0MVsUEvsRef;//UE->NchTS
-
 	TH2D * hPTVsDCAData;
 	TH2D * hPTVsDCAcentData;
-
 	TH2F * hptvsdcaPrim;
 	TH2F * hptvsdcaDecs;
 	TH2F * hptvsdcaMatl;
@@ -215,7 +210,7 @@ private:
 	TH2F * hptvsdcacentralMatl;
 	TH2F * hptvsdcaAll;
 	TH2F * hptvsdcacentralAll;
-
+    
 	AliAnalysisTaskMcKno(const AliAnalysisTaskMcKno&);                  // not implemented
 	AliAnalysisTaskMcKno& operator=(const AliAnalysisTaskMcKno&);       // not implemented
 
