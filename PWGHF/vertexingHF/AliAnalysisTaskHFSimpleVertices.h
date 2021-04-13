@@ -62,7 +62,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
-
+  AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
   Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand);
@@ -188,6 +188,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  TH1F *fHistInvMassLcK0sp;         //!<!  histo with LcpKpi+ inv mass
+  TH1F *fHistPtLcK0sp;              //!<!  histo with LcpKpi+ pt
+
   TH1F* fHistPtGenPrompt[5];        //!<! histos for efficiency (prompt)
   TH1F* fHistPtGenFeeddw[5];        //!<! histos for efficiency (from B)
   TH1F* fHistPtGenLimAccPrompt[5];  //!<! histos for efficiency (prompt)
@@ -268,11 +271,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
-
+  Double_t fMinPtV0;                            // minimum V0 pt for Lc->pK0s
+  
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,19);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,20);
 };
 
 
