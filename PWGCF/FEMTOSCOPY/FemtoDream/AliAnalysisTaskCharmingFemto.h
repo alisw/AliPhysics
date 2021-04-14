@@ -73,6 +73,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetSystem(int system) {
     fSystem = system;
   }
+  void CheckProtonSPDHit() {
+    fCheckProtonSPDHit = true;
+  }
 
   // HF related setters
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
@@ -165,6 +168,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
   int fSystem;             //
+
+  bool fCheckProtonSPDHit; //
 
   int fTrackBufferSize;
   std::vector<unsigned int> fDmesonPDGs;

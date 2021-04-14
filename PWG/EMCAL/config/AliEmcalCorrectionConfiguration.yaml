@@ -107,7 +107,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
-    inducedTCardMinimum: 0.05                       # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMinimum: 0.1                        # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
     inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum
     # Note on using the following section:
     # Each setting can be enabled or disabled. If disabled, the settings will _not_ be applied
@@ -187,8 +187,8 @@ Clusterizer:                                        # Clusterizer component
     unfoldMinCellEFrac: 0.0001                      #  apply a fraction of energy cut on cells after unfolding
     nxmRowDiff: 1                                   # limit in rows size for nxm clusterizer, 1->3, 2->5, 3->7, ...
     nxmColDiff: 1                                   # limit in cols size for nxm clusterizer, 1->3, 2->5, 3->7, ...
-    cellE: 0.05                                     # Minimum cell energy (GeV)
-    seedE: 0.1                                      # Seed energy threshold (GeV)
+    cellE: 0.1                                      # Minimum cell energy (GeV)
+    seedE: 0.5                                      # Seed energy threshold (GeV)
     cellTimeMin: -1                                 # Min cell time (s)
     cellTimeMax: +1                                 # Max cell time (s)
     clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
@@ -212,6 +212,7 @@ ClusterExotics:                                     # Cluster exotics identifica
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     fExoticMinCellAmplitude: 4.                     # Min energy of leading cell in order for exotic cut to be attempted
+    fExoticMinCellInCrossAmplitude: 0.1             # Min energy of cells in cross, if lower not considered in cross, it should be same as clusterizer min E cell
     fMaxFcross: 0.97                                # Max value of Fcross = 1-Ecross/ecell allowed for clusters to pass exotic cut
     fCellCrossMaxTimeDiff: 1e6                      # Max time difference allowed between leading cell and cross cells (in ns)
     fHighEnergyNdiffCut: 300                        # Apply the cut on number of cells in different T-Card above this value (GeV). Recomended to set E>50 GeV
@@ -276,6 +277,12 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
     phiMatch: 0.030                                 # Phi match value
     etaMatch: 0.015                                 # Eta match value
     doMomDepMatching: false                         # This enables a momentum dependent eta/phi window for track matching
+    momDepMatchingParamEta0: 0.04                   # Param 0 in eta for pt-dependent matching
+    momDepMatchingParamEta1: 0.010                  # Param 1 in eta for pt-dependent matching
+    momDepMatchingParamEta2: 2.5                    # Param 2 in eta for pt-dependent matching
+    momDepMatchingParamPhi0: 0.09                   # Param 0 in phi for pt-dependent matching
+    momDepMatchingParamPhi1: 0.015                  # Param 1 in phi for pt-dependent matching
+    momDepMatchingParamPhi2: 2.                     # Param 2 in phi for pt-dependent matching
     hadCorr: 2.                                     # Sets the fraction f of track p to subtract from matched cluster. To subtract all tracks within the eta-phi cut set hadCorr = 1+f. To subtract only one track set 0<hadCorr<1 where hadCorr=f.
     Eexcl: 0                                        # Cell energy that cannot be subtracted
     doTrackClus: true                               # Loop over tracks first

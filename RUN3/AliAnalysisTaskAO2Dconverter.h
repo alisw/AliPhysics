@@ -8,7 +8,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-
+#include "AliTriggerAnalysis.h"
 #include <TString.h>
 
 #include "TClass.h"
@@ -34,6 +34,7 @@ public:
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
 
   virtual void Init() {}
+  virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void FinishTaskOutput();
@@ -72,6 +73,8 @@ public:
     kMcCollisionLabel,
     kBC,
     kRun2BCInfo,
+    kOrigin,
+    kHMPID,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -103,9 +106,9 @@ public:
     Run2VertexerTracksMultiVertex = 0x40
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackTypeEnum : uint8_t {
-    GlobalTrack = 0,
+    Track = 0,
     ITSStandalone,
-    Run2GlobalTrack = 254,
+    Run2Track = 254,
     Run2Tracklet = 255
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackFlagsRun2Enum {
@@ -118,13 +121,27 @@ public:
     ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
   };
   //Aliases for multiplicity selection criteria
-  enum MultSelectionCut {
+  enum EventSelectionCut {
       kINELgtZERO = 0,
       kPileupInMultBins,
       kConsistencySPDandTrackVertices,
       kTrackletsVsClusters,
       kNonZeroNContribs,
-      kIncompleteDAQ
+      kIncompleteDAQ,
+      kPileUpMV,
+      kTPCPileUp,
+      kTimeRangeCut,
+      kEMCALEDCut,
+      kAliEventCutsAccepted,
+      kIsPileupFromSPD,
+      kIsV0PFPileup,
+      kIsTPCHVdip,
+      kIsTPCLaserWarmUp,
+      kTRDHCO,              // Offline TRD cosmic trigger decision
+      kTRDHJT,              // Offline TRD jet trigger decision
+      kTRDHSE,              // Offline TRD single electron trigger decision
+      kTRDHQU,              // Offline TRD quarkonium trigger decision
+      kTRDHEE               // Offline TRD single-electron-in-EMCAL-acceptance trigger decision
   };
   static const TClass* Generator[kGenerators]; // Generators
 
@@ -146,6 +163,7 @@ public:
 private:
   Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
   AliEventCuts fEventCuts;      //! Standard event cuts
+  AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
   
@@ -216,9 +234,20 @@ private:
   struct {
     UInt_t fEventCuts = 0;             /// Event selections from AliMultSelection and AliEventCuts
     ULong64_t fTriggerMaskNext50 = 0u; /// Upper 50 trigger class
-    UShort_t fSPDClustersL0 = 0;       /// number of clusters in SPD L0
-    UShort_t fSPDClustersL1 = 0;       /// number of clusters in SPD L1
+    UInt_t fL0TriggerInputMask = 0u;   /// L0 trigger input mask
+    UShort_t fSPDClustersL0 = 0u;      /// number of clusters in SPD L0
+    UShort_t fSPDClustersL1 = 0u;      /// number of clusters in SPD L1
+    UShort_t fSPDFiredChipsL0 = 0u;    /// number of fired chips in SPD L0 (offline)
+    UShort_t fSPDFiredChipsL1 = 0u;    /// number of fired chips in SPD L1 (offline)
+    UShort_t fSPDFiredFastOrL0 = 0u;   /// number of fired FO chips in SPD L0 (online)
+    UShort_t fSPDFiredFastOrL1 = 0u;   /// number of fired FO chips in SPD L1 (online)
+    UShort_t fV0TriggerChargeA = 0u;   /// V0A trigger charge
+    UShort_t fV0TriggerChargeC = 0u;   /// V0C trigger charge
   } run2bcinfo; //! structure to keep run 2 only related info 
+
+  struct {
+    ULong64_t fDataframeID = 0; /// ID of this data frame (important for merging DFs)
+  } origin;
 
   struct {
     // Track data
@@ -295,6 +324,17 @@ private:
     Float_t fTrackEtaEMCAL = -999.f; /// Track eta at the EMCAL surface
     Float_t fTrackPhiEMCAL = -999.f; /// Track phi at the EMCAL surface
   } tracks;                      //! structure to keep track information
+
+  struct {
+    // HMPID data
+
+    Int_t fIndexTracks = -1; /// Track ID
+
+    Float_t fHMPIDSignal = -999.f;   /// HMPID signal
+    Float_t fHMPIDDistance = -999.f; /// Distance between the extrapolated track and the cluster
+    Short_t fHMPIDNPhotons = -999;   /// Photons detected
+    Short_t fHMPIDQMip = -999;       /// Charge of the mip
+  } hmpids; //! structure to keep HMPID info
 
   struct {
     // MC collision

@@ -121,7 +121,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t dEdxCuts(AliVTrack * track);
   Bool_t PIDProbabilityCut(AliConversionPhotonBase *photon, AliVEvent * event);
   Bool_t RejectSharedElecGamma(TList *photons, Int_t indexEle);
-  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi );
+  Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi , Double_t pT);
   Bool_t MassCut(Double_t pi0CandidatePt,Double_t vphotonCandidateMass);
 
   // Event Cuts
@@ -178,34 +178,42 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   protected:
 
-  TList *fHistograms;
-  AliPIDResponse *fPIDResponse;
-  AliESDtrackCuts *fesdTrackCuts;
+  TList *fHistograms;   //
+  AliPIDResponse *fPIDResponse; //
+  AliESDtrackCuts *fesdTrackCuts;   //
 
-  Double_t fEtaCut; //eta cutç
-  Bool_t   fDoEtaCut;
-  Double_t fPtMinCut;
-  Double_t fPtMaxCut;
-  Double_t fRadiusCut; // radius cut
-  Double_t fPsiPairCut;
-  Double_t fDeltaPhiCutMin;
-  Double_t fDeltaPhiCutMax;
-  Double_t fMaxDCAVertexz;
-  Double_t fMaxDCAVertexxy;
-  TString fDCAVertexPt;//Conversion from coordenates to momentum.
-  Double_t fMinClsTPC; // minimum clusters in the TPC
-  Double_t fMinClsTPCToF; // minimum clusters to findable clusters
-  Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
-  Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
-  Bool_t   fDoTOFsigmaCut; // flag to use TOF pid cut RRnewTOF
+  Double_t fEtaCut; //eta cut
+  Bool_t   fDoEtaCut;   // flag for eta cut
+  Double_t fPtMinCut;   //  min pt cut
+  Double_t fPtMaxCut;   //  max pt cut
+  Double_t fRadiusCut;  // radius cut
+  Double_t fPsiPairCut; //
+  Double_t fDeltaPhiCutMin; //
+  Double_t fDeltaPhiCutMax; //
+  Int_t    fDoDifferentCut; //
+  Int_t    fSizeArray;      //
+  Double_t* fPsiPairCutArray;       //[fSizeArray]
+  Double_t* fDeltaPhiCutArray;      //[fSizeArray]
+  Double_t* fpTDependanceCutArray;  //[fSizeArray]
+  Double_t* fPsiPairpTDependanceCut;    //[fSizeArray]
+  Double_t* fDeltaPhipTDependanceCutMin;    //[fSizeArray]
+  Double_t* fDeltaPhipTDependanceCutMax;    //[fSizeArray]
+  Double_t fMaxDCAVertexz;  //
+  Double_t fMaxDCAVertexxy; //
+  TString fDCAVertexPt; //Conversion from coordenates to momentum.
+  Double_t fMinClsTPC;  // minimum clusters in the TPC
+  Double_t fMinClsTPCToF;   // minimum clusters to findable clusters
+  Bool_t   fDodEdxSigmaITSCut;  // flag to use the dEdxCut ITS based on sigmas
+  Bool_t   fDodEdxSigmaTPCCut;  // flag to use the dEdxCut TPC based on sigmas
+  Bool_t   fDoTOFsigmaCut;  // flag to use TOF pid cut RRnewTOF
   Bool_t   fDoRejectSharedElecGamma; //Reject electrons from the gammas with Radius < RadiusCut
   Bool_t   fDoPsiPairCut; // PsiPair Cut
   Double_t fPIDnSigmaAboveElectronLineITS; // sigma cut
   Double_t fPIDnSigmaBelowElectronLineITS; // sigma cut
-  Double_t fPIDnSigmaAboveElectronLineTPC; // sigma cut
-  Double_t fPIDnSigmaBelowElectronLineTPC; // sigma cut
-  Double_t fPIDnSigmaAbovePionLineTPC;
-  Double_t fPIDnSigmaAbovePionLineTPCHighPt;
+  Double_t fPIDnSigmaAboveElectronLineTPC; // sigma electron TPC cut
+  Double_t fPIDnSigmaBelowElectronLineTPC; // sigma electron TPC cut
+  Double_t fPIDnSigmaAbovePionLineTPC;  // sigma pion TPC cut
+  Double_t fPIDnSigmaAbovePionLineTPCHighPt;    // sigma pt pion cut
   Double_t fTofPIDnSigmaAboveElectronLine; // sigma cut RRnewTOF
   Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF
   Double_t fPIDMinPnSigmaAbovePionLineTPC; // sigma cut
@@ -222,18 +230,18 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
   Bool_t   fUseCrossedRows;  //UseCrossedRows 2011
-  Int_t    fITSCut;
+  Int_t    fITSCut; // flag to ITS
   Bool_t   fUseTOFpid; // flag to use tof pid
   Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
-  Bool_t   fDoMassCut;
-  Bool_t   fDoMassMinCut;
-  Double_t fMassCutLowPt;
-  Double_t fMassCutHighPt;
-  Double_t fMassCutPtMin;
-  Double_t fMassMinCut;
-  Bool_t   fDoWeights;
-  Bool_t   fUseVPhotonMCPSmearing;
-  Bool_t   fUseElectronMCPSmearing;
+  Bool_t   fDoMassCut;  //
+  Bool_t   fDoMassMinCut;   //
+  Double_t fMassCutLowPt;   //
+  Double_t fMassCutHighPt;  //
+  Double_t fMassCutPtMin;   //
+  Double_t fMassMinCut; //
+  Bool_t   fDoWeights;  //
+  Bool_t   fUseVPhotonMCPSmearing;  //
+  Bool_t   fUseElectronMCPSmearing; //
   Bool_t   fDoElecDeDxPostCalibrationPrimaryPair; //flg to use Post Calibration on primary Pair.
   Bool_t   fIsRecalibDepTPCClPrimaryPair;  //flg that always is kTRUE
   Int_t    fRecalibCurrentRunPrimaryPair;                   ///< runnumber for correct loading of recalib from OADB
@@ -242,8 +250,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
 
   // Histograms
-  TH2S**   fHistoEleMapRecalibPrimaryPair;  //[fnRBins]
-  TH2S**   fHistoPosMapRecalibPrimaryPair;  //[fnRBins]
+  TH2S**   fHistoEleMapRecalibPrimaryPair;  //[fnRBinsPrimaryPair]
+  TH2S**   fHistoPosMapRecalibPrimaryPair;  //[fnRBinsPrimaryPair]
   TObjString *fCutString; // cut number used for analysis
   TString fCutStringRead;
   TH1F *hCutIndex; // bookkeeping for cuts
@@ -256,16 +264,16 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH2F *hTPCdEdxSignalafter; //TPC dEdx signal  after
   TH2F *hTOFbefore; // TOF after cuts
   TH2F *hTOFafter; // TOF after cuts
-  TH2F *hTrackDCAxyPtbefore;
-  TH2F *hTrackDCAxyPtafter;
-  TH2F *hTrackDCAzPtbefore;
-  TH2F *hTrackDCAzPtafter;
-  TH2F *hTrackNFindClsPtTPCbefore;
-  TH2F *hTrackNFindClsPtTPCafter;
-  TH1F *hTrackPosEtabeforeDedx;
-  TH1F *hTrackNegEtabeforeDedx;
-  TH1F *hTrackPosEtaafterDedx;
-  TH1F *hTrackNegEtaafterDedx;
+  TH2F *hTrackDCAxyPtbefore;    //
+  TH2F *hTrackDCAxyPtafter; //
+  TH2F *hTrackDCAzPtbefore; //
+  TH2F *hTrackDCAzPtafter;  //
+  TH2F *hTrackNFindClsPtTPCbefore;  //
+  TH2F *hTrackNFindClsPtTPCafter;   //
+  TH1F *hTrackPosEtabeforeDedx; //
+  TH1F *hTrackNegEtabeforeDedx; //
+  TH1F *hTrackPosEtaafterDedx;  //
+  TH1F *hTrackNegEtaafterDedx;  //
 
 
 
@@ -275,7 +283,7 @@ private:
   AliDalitzElectronCuts& operator=(const AliDalitzElectronCuts&); // not implemented
 
 
-  ClassDef(AliDalitzElectronCuts,3)
+  ClassDef(AliDalitzElectronCuts,5)
 };
 
 

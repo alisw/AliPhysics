@@ -4774,8 +4774,8 @@ Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t i
   Int_t iIPBin=-99;
 
   //expand upper and lower values to bin boundaries. if value=bin boundary: expand to higher for upper limit and to lower for lower limit
-  GetLowUpperBinNo(iStartIPBin, iZeroIPBin, -25,0,"x",iN);
-  GetLowUpperBinNo(iStartIPBin, iIPBin, -25, -IP,"x",iN);
+  GetLowUpperBinNo(iStartIPBin, iZeroIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP],0,"x",iN);
+  GetLowUpperBinNo(iStartIPBin, iIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP], -IP,"x",iN);
   //if jetpt=binboundary->take higher bin
   iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(jetpt);
 

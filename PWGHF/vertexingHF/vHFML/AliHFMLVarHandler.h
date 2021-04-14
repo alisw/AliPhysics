@@ -42,7 +42,8 @@ class AliHFMLVarHandler : public TObject
             kNsigmaDetAndCombPID,
             kRawAndNsigmaPID,
             kBayesPID,
-            kBayesAndNsigmaCombPID
+            kBayesAndNsigmaCombPID,
+            kBayesAndNsigmaDetAndNsigmaCombPID
         };
 
         enum piddet {
@@ -113,7 +114,7 @@ class AliHFMLVarHandler : public TObject
         float fCosP = -999.;                                           /// candidate cosine of pointing angle
         float fCosPXY = -999.;                                         /// candidate cosine of pointing angle in the transcverse plane
         float fImpParXY = -999.;                                       /// candidate impact parameter in the transverse plane
-        float fDCA = -999.;                                            /// DCA of candidates prongs
+        float fDCA = -999.;                                            /// DCA of candidates
         float fPtProng[knMaxProngs] = {-999., -999., -999., -999.};    /// prong pt
         float fTPCPProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong TPC momentum
         int fNTPCclsPidProng[knMaxProngs] = {-999, -999, -999, -999};  /// prong track number of clusters in TPC used for PID

@@ -980,7 +980,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);
          jetContRec->SetMinPt(0.150);
-         jetContRec->SetMaxTrackPt(100.);
+         jetContRec->SetMaxTrackPt(100.0);
          jetContRec->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
 
@@ -993,7 +993,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContRecKT->ConnectParticleContainer(trackCont);
          //jetContRecKT->SetPercAreaCut(acut);
          jetContRecKT->SetMinPt(0.);
-         jetContRecKT->SetMaxTrackPt(100.);
+         jetContRecKT->SetMaxTrackPt(100.0);
          jetContRecKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContRecKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
 
@@ -1010,6 +1010,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContTrue->SetMinPt(0.15);
          jetContTrue->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
+         jetContTrue->SetMaxTrackPt(1000.0); // added by K.A.
       }
 
       //KT JETS PARTICLE LEVEL
@@ -1020,6 +1021,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
          jetContTrueKT->SetMinPt(0.);
          jetContTrueKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContTrueKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
+         jetContTrueKT->SetMaxTrackPt(1000.0); // added by K.A.
       }
    }
 
@@ -1030,7 +1032,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDet) {
          jetContDet->SetPercAreaCut(acut);
          jetContDet->SetMinPt(0.150);
-         jetContDet->SetMaxTrackPt(100.);
+         jetContDet->SetMaxTrackPt(100.0);
          jetContDet->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDet->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
@@ -1041,7 +1043,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       if(jetContDetKT) {
          //jetContDetKT->SetPercAreaCut(acut);
          jetContDetKT->SetMinPt(0.0);
-         jetContDetKT->SetMaxTrackPt(100.);
+         jetContDetKT->SetMaxTrackPt(100.0);
          jetContDetKT->SetJetAcceptanceType(AliEmcalJet::kUser);
          jetContDetKT->SetJetEtaLimits(-jetEtaRangekt,jetEtaRangekt);
       }

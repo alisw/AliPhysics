@@ -949,7 +949,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fHistEventMult->GetXaxis()->SetBinLabel(5,"centrality <= 199"); 
   fHistEventMult->GetXaxis()->SetBinLabel(6,"NO PILE UP"); 
   fHistEventMult->GetXaxis()->SetBinLabel(7,"INT7"); 
-  fHistEventMult->GetXaxis()->SetBinLabel(8,"ANY"); 
+  fHistEventMult->GetXaxis()->SetBinLabel(8,"HM"); 
   fHistEventMult->GetXaxis()->SetBinLabel(9,"isSelected"); 
   fHistEventMult->GetXaxis()->SetBinLabel(10,"Ntrigger>0"); 
   fHistEventMult->GetXaxis()->SetBinLabel(11,"Ntrigger>0 (MC)"); 
@@ -1768,8 +1768,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   }
   fHistEventMult->Fill(4);
 
-  Float_t lPercentiles = 0;
- 
+  Float_t lPercentiles = 0; 
   
   //This will work for both ESDs and AODs
   AliMultSelection *MultSelection = (AliMultSelection*) fAOD -> FindListObject("MultSelection");
@@ -1792,7 +1791,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;  
   }
-
   if (fisHM && lPercentiles > 0.1){
     PostData(1,fOutputList );
     PostData(2, fSignalTree );
@@ -1802,7 +1800,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     PostData(6, fOutputList4);     
     return;  
   }
-
   fHistEventMult->Fill(5);
 
   //event must not be tagged as pileup
@@ -1830,11 +1827,12 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
     isSelectedAny         = (mask & AliVEvent::kAnyINT);
     isSelectedMB          = (mask & AliVEvent::kMB);
     isSelectedHM          = (mask & AliVEvent::kHighMultV0);
-    
-    if(isSelectedInt7 ) isSelected = kTRUE;
+
+    if(isSelectedInt7) isSelected = kTRUE;
     if(fYear == 2010 && isSelectedMB) isSelected = kTRUE;
     if (fisHM){
       if(isSelectedHM) isSelected=kTRUE;
+      //      else if (isSelectedInt7 && lPercentiles < 0.1)  isSelected=kTRUE; //this line changes nothing
       else isSelected=kFALSE;
     }
 
@@ -1849,9 +1847,8 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   
   if(isSelectedInt7)
     fHistEventMult->Fill(7);
-  else if(isSelectedAny)
-    fHistEventMult->Fill(8);
-  
+  if(isSelectedHM)
+    fHistEventMult->Fill(8);  
   if (isSelected)
     fHistEventMult->Fill(9) ; 
       
@@ -3302,7 +3299,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
       } //end loop for K0s particles as associated
     } // done only if not MC truth  
 
-    cout << " beginning loop for associated particles (MCtruth) " << endl;
+    //    cout << " beginning loop for associated particles (MCtruth) " << endl;
     //begin MC truth loop for K0s particles as associated 
     if(fReadMCTruth){
       if (fMCEvent){

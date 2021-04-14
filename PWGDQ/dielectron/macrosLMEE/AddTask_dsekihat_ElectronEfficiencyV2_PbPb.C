@@ -5,7 +5,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     UInt_t trigger = AliVEvent::kINT7,
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
-    const Bool_t applyPairCut = kTRUE,
     const TString pileupcut = "_woPU",//can be "_woPU", "_onlyPU",""
     const TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;EvtGenDecay;Pythia CC_0;Pythia BB_0;Pythia B_0;",
     const TString calibFileName = "",
@@ -29,8 +28,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data()));
   gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
 
-  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
-	TString configBasePath("./");
+  TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+	//TString configBasePath("./");
 	if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",libFile.Data())))
@@ -47,14 +46,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   gROOT->LoadMacro(libFilePath.Data());//library first
   gROOT->LoadMacro(configFilePath.Data());
 
-  const Int_t nTC  = Int_t(gROOT->ProcessLine("GetNTC()") );
-  const Int_t nPID = Int_t(gROOT->ProcessLine("GetNPID()"));
-  const Int_t nPF  = Int_t(gROOT->ProcessLine("GetNPF()") );
+	const Int_t nEC = Int_t(gROOT->ProcessLine("GetNEC()") );//event cuts
+	const Int_t nTC = Int_t(gROOT->ProcessLine("GetNTC()") );//track cuts
+	const Int_t nPC = Int_t(gROOT->ProcessLine("GetNPID()"));//pid cuts
 
-	for (Int_t itc=0; itc<nTC; ++itc){
-		for (Int_t ipid=0; ipid<nPID; ++ipid){
-			for (Int_t ipf=0; ipf<nPF; ++ipf){
-				AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%d,%d,%d)",itc,ipid,ipf,applyPairCut)));
+  for (Int_t iec=0; iec<nEC; ++iec){
+    for (Int_t itc=0; itc<nTC; ++itc){
+      for (Int_t ipc=0; ipc<nPC; ++ipc){
+				AliAnalysisFilter *filter = reinterpret_cast<AliAnalysisFilter*>(gROOT->ProcessLine(Form("Config_dsekihat_ElectronEfficiencyV2_PbPb(%d,%d,%d)",iec,itc,ipc)));
 				task->AddTrackCuts(filter);
 			}
 		}
@@ -66,23 +65,26 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
   task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
-  if(pileupcut == ""){
-    printf("analyze all events in M.C.\n");
-  }
-  else if(pileupcut.Contains("woPU")){
-    printf("analyze only in clean events in M.C.\n");
-    TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
-    dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMinCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
-  }
-  else if(pileupcut.Contains("onlyPU")){
-    printf("analyze only in pileup events in M.C.\n");
-    TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
-    dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMaxCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
-  }
-  else{
-    printf("Nothing with pileup cut in M.C.\n");
-    printf("analyze all events in M.C.\n");
-  }
+
+  //if(pileupcut == ""){
+  //  printf("analyze all events in M.C.\n");
+  //}
+  //else if(pileupcut.Contains("woPU")){
+  //  printf("analyze only in clean events in M.C.\n");
+  //  TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
+  //  dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMinCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+  //}
+  //else if(pileupcut.Contains("onlyPU")){
+  //  printf("analyze only in pileup events in M.C.\n");
+  //  TF1 *f1pu = reinterpret_cast<TF1*>(gROOT->ProcessLine("LMEECutLib::SetupPileupCuts()"));
+  //  dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->SetMaxCorrCutFunction(f1pu, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+  //}
+  //else{
+  //  printf("Nothing with pileup cut in M.C.\n");
+  //  printf("analyze all events in M.C.\n");
+  //}
+
+  printf("analyze all events in M.C.\n");
   dynamic_cast<AliDielectronEventCuts*>(task->GetEventFilter())->Print();
 
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
@@ -133,33 +135,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetULSandLS(kTRUE);
   task->SetDeactivateLS(kFALSE);
 
-  //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;";
-  //TString generators = "pizero_0;eta_1;etaprime_2;rho_3;omega_4;phi_5;jpsi_6;Pythia CC_0;Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia CC_0;Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia CC_0;";
-  //TString generators = "Pythia BB_0;Pythia B_0;";
-  //TString generators = "Pythia BB_0;";
-  //TString generators = "Pythia B_0";
-
   cout<<"Efficiency based on MC generators: " << generators <<endl;
   TString generatorsPair=generators;
   task->SetGeneratorMCSignalName(generatorsPair);
   task->SetGeneratorULSSignalName(generators);
-  //task->SetLHC19f2MC(isLHC19f2);
 
-	//if(resolutionFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//if(cocktailFilename   != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//if(centralityFilename != "") gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/%s .",resolutionFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/%s ."    ,cocktailFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
-	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/%s .",centralityFilename.c_str()));//this is to avoid unnecessary call of alien_cp in task.
+  task->SetResolutionFile(resolutionFilename , "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
+  task->SetCentralityFile(centralityFilename , "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/centrality/" + centralityFilename);
 
-  // Resolution File, If resoFilename = "" no correction is applied
-  task->SetResolutionFile(resolutionFilename);
-  task->SetResolutionFileFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/resolution/" + resolutionFilename);
-  task->SetCocktailWeighting(cocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/" + cocktailFilename);
-  task->SetCentralityFile(centralityFilename);
+  if(cocktailFilename != "") task->SetDoCocktailWeighting(kTRUE);
+  task->SetCocktailWeighting(cocktailFilename, "/alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/cocktail/"   + cocktailFilename);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances

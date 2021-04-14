@@ -305,6 +305,9 @@ private:
     TH2F        *fHistPairsCCrec2;   //! rec dielectrons from cc
     TH2F        *fHistPairsBBrec2;   //! rec dielectrons from bb
     TH2F        *fHistPairsBBrecLS2;   //! rec dielectrons from bb
+    
+    TH3F		*fPrimariesCC; //! IsPrimary Tests in CC
+    TH3F		*fPrimariesBB; //! IsPrimary Tests in BB
 
     // Smearing maps
     TH2F        *fPRec_Gen;  //!

@@ -673,6 +673,7 @@ private:
   TProfile2D* fAvEZDCCRbRPro; //! run-by-run average EZDC-C
   TProfile2D* fAvEZDCARbRPro; //! run-by-run average EZDC-A
   TH1D *fEventCounter; //! Event counter for different methods
+  TH1D *fQApassZDCcutsCounter; //! Event counter for ZDC cuts
   TH1D* fPtWeightsHist[10]; //! Pt weights
   TH1F* fMultCutMin; //!
   TH1F* fMultCutMax; //!
@@ -704,6 +705,9 @@ private:
   
   TGraph *fCenMetric; //!
   
+    
+  Double_t fTowZNCraw[5]; // each tower raw energy from ZNC-C
+  Double_t fTowZNAraw[5]; // each tower raw energy from ZNC-C
   Double_t fZNCQ0; // common tower energy from ZNC-C
   Double_t fZNAQ0; // common tower energy from ZNC-A
   Double_t fZNCen; // total energy from ZNC-C

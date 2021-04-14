@@ -110,6 +110,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoMotherBackInvMassECalibSM(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoEVsNCellsInPiMass(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   // fHistoMCHeaders(NULL),
@@ -223,6 +224,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoMotherBackInvMassECalibSM(NULL),
   fHistoMotherInvMassECalib(NULL),
   fHistoMotherBackInvMassECalib(NULL),
+  fHistoEVsNCellsInPiMass(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   // fHistoMCHeaders(NULL),
@@ -494,6 +496,11 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if(!fDoLightOutput && fMesonRecoMode == 1){
       fHistoMotherMatchedInvMassPt      = new TH2F*[fnCuts];
     }
+
+    if(!fDoLightOutput && fMesonRecoMode > 0){
+      fHistoEVsNCellsInPiMass     = new TH2F*[fnCuts];
+    }
+
     if (fDoMesonQA > 0){
       fHistoMotherMesonPtY              = new TH2F*[fnCuts];
       fHistoMotherMesonPtAlpha          = new TH2F*[fnCuts];
@@ -851,6 +858,12 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
                                                          fMesonInvMassNBins, fMesonInvMassMin, fMesonInvMassMax, nBinsPt, arrPtBinning);
         fESDList[iCut]->Add(fHistoMotherMatchedInvMassPt[iCut]);
       }
+
+      if(fMesonRecoMode > 0){
+        fHistoEVsNCellsInPiMass[iCut]       = new TH2F("ESD_EVsNcell_Pi0Tagged", "ESD_EVsNcell_Pi0Tagged; #it{E}_{clus} (GeV); #it{N}_{cells}",
+                                                         nBinsPt, arrPtBinning, 25, 0, 25);
+       fESDList[iCut]->Add(fHistoEVsNCellsInPiMass[iCut]);
+      }
     }
 
     fHistoMotherBackInvMassPt[iCut]         = new TH2F("ESD_Background_InvMass_Pt", "ESD_Background_InvMass_Pt; M_{inv, mxed}(GeV/c^{2}); p_{T,BG pair} (GeV/c)",
@@ -862,6 +875,9 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fHistoMotherBackInvMassPt[iCut]->Sumw2();
       if (fMesonRecoMode == 1){
         if (fHistoMotherMatchedInvMassPt[iCut]) fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
+      }
+      if (fMesonRecoMode > 0){
+        if (fHistoEVsNCellsInPiMass[iCut]) fHistoEVsNCellsInPiMass[iCut]->Sumw2();
       }
     }
 
@@ -1146,7 +1162,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   vector<Int_t>                           vectorRejectCluster;
   vector<Int_t>                           vectorClusterSM;
   vector<Double_t>                        vectorPhotonWeight;
-    
+
   if(nclus == 0)  return;
 
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
@@ -1206,10 +1222,10 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     fIsFromDesiredHeader            = kTRUE;
     fIsOverlappingWithOtherHeader   = kFALSE;
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
-      
+
       vectorCurrentClusters.push_back(PhotonCandidate);
       vectorPhotonWeight.push_back(fWeightJetJetMC);
-      
+
       if(PhotonCandidate->GetIsCaloPhoton() == 1 || PhotonCandidate->GetIsCaloPhoton() == 3 ){
         fGeomEMCAL = AliEMCALGeometry::GetInstance();
         vectorClusterSM.push_back(fGeomEMCAL->GetSuperModuleNumber(PhotonCandidate->GetLeadingCellID()));
@@ -1219,7 +1235,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     }else{
       delete PhotonCandidate;
     }
-    
+
     delete clus;
     delete tmpvec;
   }
@@ -1228,22 +1244,22 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery()){
     /*rejected = */((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckForReconstructedConversionPairs(vectorCurrentClusters,vectorRejectCluster);
   }
-  
+
   for (Int_t iter = 0; iter < (Int_t)vectorCurrentClusters.size();iter++){
-    
+
     if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckVectorForIndexAndAdd(vectorRejectCluster, iter,kFALSE)){
       fHistoClusGammaPt[fiCut]->Fill(vectorCurrentClusters.at(iter)->Pt(), vectorPhotonWeight.at(iter));
       fHistoClusGammaE[fiCut]->Fill(vectorCurrentClusters.at(iter)->E(), vectorPhotonWeight.at(iter));
-      
+
       if(vectorClusterSM.at(iter) >= 0 && vectorClusterSM.at(iter) < 20){
         fHistoClusGammaPtSM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
         fHistoClusGammaESM[fiCut][vectorClusterSM.at(iter)]->Fill(vectorCurrentClusters.at(iter)->Pt(),vectorPhotonWeight.at(iter));
       }
-      
+
       fClusterCandidates->Add(vectorCurrentClusters.at(iter));
     }
-  }  
-  vectorRejectCluster.clear();    
+  }
+  vectorRejectCluster.clear();
   vectorClusterSM.clear();
   vectorPhotonWeight.clear();
 }
@@ -1510,6 +1526,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
                 cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
             }
           }
+
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
           // if(arrClustersMesonCand) delete cluster;
 
@@ -1547,6 +1564,11 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
                   if (fHistoMotherMesonConvPhotonEtaPhi[fiCut]) fHistoMotherMesonConvPhotonEtaPhi[fiCut]->Fill(gamma0->GetPhotonPhi(), gamma0->GetPhotonEta(),fWeightJetJetMC);
                 }
               }
+
+              if(!fDoLightOutput && (mesonCand->M() > 0.09 && mesonCand->M() < 0.17)) {
+                fHistoEVsNCellsInPiMass[fiCut]->Fill(gamma1->E(), cluster->GetNCells(), fWeightJetJetMC);
+              }
+
               if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
                 Int_t zbin = 0;
                 Int_t mbin = 0;
@@ -1629,6 +1651,10 @@ void AliAnalysisTaskConvCaloCalibration::CalculateMesonCandidates(){
               }
             }
 
+            if(!fDoLightOutput && (mesonCand->M() > 0.09 && mesonCand->M() < 0.17)) {
+              fHistoEVsNCellsInPiMass[fiCut]->Fill(gamma0->E(), Cluster0->GetNCells(), fWeightJetJetMC);
+              fHistoEVsNCellsInPiMass[fiCut]->Fill(gamma1->E(), Cluster1->GetNCells(), fWeightJetJetMC);
+            }
 
             if (fDoMesonQA > 0 && fDoMesonQA < 3){
               if ( mesonCand->M() > fMesonInvMassWindow[0] && mesonCand->M() < fMesonInvMassWindow[1]){

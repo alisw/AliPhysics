@@ -393,7 +393,9 @@ void AliHFInvMassFitter::DrawHere(TVirtualPad* c, Double_t nsigma,Int_t writeFit
     if(fTotFunc){
       pinfom->SetTextColor(kBlue);
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+        TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       if(writeFitInfo>=1) pinfom->Draw();
 
@@ -449,7 +451,9 @@ void AliHFInvMassFitter::DrawHistoMinusFit(TVirtualPad* c, Int_t writeFitInfo){
     pinfom->SetFillStyle(0);
     if(fTotFunc){
       for(Int_t ipar=1; ipar<fNParsSig; ipar++){
-	pinfom->AddText(Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg)));
+	TString str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg),fTotFunc->GetParError(ipar+fNParsBkg));  
+        if (fTotFunc->GetParameter(fNParsBkg+fNParsSig-2)<0.2) str=Form("%s = %.3f #pm %.3f",fTotFunc->GetParName(ipar+fNParsBkg),fTotFunc->GetParameter(ipar+fNParsBkg)*1000,fTotFunc->GetParError(ipar+fNParsBkg)*1000);    
+	pinfom->AddText(str);
       }
       pinfom->AddText(Form("S = %.0f #pm %.0f ",fRawYield,fRawYieldErr));
       if(fRflFunc)  pinfom->AddText(Form("Refl/Sig =  %.3f #pm %.3f ",fRflFunc->GetParameter(0),fRflFunc->GetParError(0)));

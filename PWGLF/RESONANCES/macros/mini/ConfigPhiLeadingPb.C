@@ -1,4 +1,4 @@
-Bool_t ConfigPhiLeading(
+Bool_t ConfigPhiLeadingPb(
  AliRsnMiniAnalysisTask *task,
  Bool_t isMC = kFALSE, 
  Bool_t isPP = kFALSE, 

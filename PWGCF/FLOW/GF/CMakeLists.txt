@@ -50,6 +50,7 @@ set(SRCS
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
   AliProfileSubset.cxx
+  AliProfileBS.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx

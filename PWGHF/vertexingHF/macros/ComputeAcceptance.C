@@ -20,16 +20,18 @@
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp,kLcpiL,kDplusKKpi};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV,kFONLL13TeVprompt,kFONLL13TeVfeeddown,kPythia13TeVprompt,kPythia13TeVfeeddown};
+enum EPtShape{kFlatPt,kPtFONLL8TeV,kPtFONLL8TeVfeeddown,kPtFONLL7TeV,kPtPythia7TeV,kPtFONLL5TeV,kPtFONLL13TeVprompt,kPtFONLL13TeVfeeddown,kPtPythia13TeVprompt,kPtPythia13TeVfeeddown};
+enum EYShape{kFlatY,kYFONLL5TeV,kYFONLLMax5TeV,kYFONLLMin5TeV,kYFONLL13TeV,kYFONLLMax13TeV,kYFONLLMin13TeV};
 
 // Configuration
-Int_t fDDecay=kLcpiL;
+Int_t fDDecay=kD0Kpi;
 Double_t fPtMinDau=0.1;
 Double_t fPtMinDauSoftPi=0.06; // only for D*
 Double_t fEtaMaxDau=0.9;
 Int_t fOptionYFiducial=kPtDepY;
 Double_t fYMaxFidAccCut=0.8;
-Int_t fPtShape=kFONLL5TeV;
+Int_t fPtShape=kPtFONLL5TeV;
+Int_t fYShape=kYFONLL5TeV;
 TString fDecayTableFileName="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/decaytable_acc.dat"; 
 Int_t fDebugLevel=0;
 Int_t totTrials=10000000;
@@ -141,13 +143,13 @@ void ComputeAcceptance(){
   Float_t massD=db->GetParticle(pdgCode)->Mass();
   TClonesArray *array = new TClonesArray("TParticle",100);
 
-  TH2D* hPtVsYGen=new TH2D("hPtVsYGen","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGen=new TH2D("hPtVsYGen","",500,0.,50.,20.,-1.,1.);
   hPtVsYGen->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGen->GetYaxis()->SetTitle("y");
-  TH2D* hPtVsYGenLimAcc=new TH2D("hPtVsYGenLimAcc","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGenLimAcc=new TH2D("hPtVsYGenLimAcc","",500,0.,50.,20.,-1.,1.);
   hPtVsYGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGenLimAcc->GetYaxis()->SetTitle("y");
-  TH2D* hPtVsYGenAcc=new TH2D("hPtVsYGenAcc","",400,0.,40.,20.,-1.,1.);
+  TH2D* hPtVsYGenAcc=new TH2D("hPtVsYGenAcc","",500,0.,50.,20.,-1.,1.);
   hPtVsYGenAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtVsYGenAcc->GetYaxis()->SetTitle("y");
 
@@ -156,10 +158,10 @@ void ComputeAcceptance(){
   TH2D* hPtVsYGenAccLcpKpi[4];
   TString lcChan[4]={"NonRes","L1520","Kstar","Delta"};
   for(Int_t ich=0; ich<4; ich++){
-    hPtVsYGenLimAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenLimAcc%s",lcChan[ich].Data()),"",400,0.,40.,20.,-1.,1.);
+    hPtVsYGenLimAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenLimAcc%s",lcChan[ich].Data()),"",500,0.,50.,20.,-1.,1.);
     hPtVsYGenLimAccLcpKpi[ich]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtVsYGenLimAccLcpKpi[ich]->GetYaxis()->SetTitle("y");
-    hPtVsYGenAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenAcc%s",lcChan[ich].Data()),"",400,0.,40.,20.,-1.,1.);
+    hPtVsYGenAccLcpKpi[ich]=new TH2D(Form("hPtVsYGenAcc%s",lcChan[ich].Data()),"",500,0.,50.,20.,-1.,1.);
     hPtVsYGenAccLcpKpi[ich]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtVsYGenAccLcpKpi[ich]->GetYaxis()->SetTitle("y");
   }
@@ -167,27 +169,27 @@ void ComputeAcceptance(){
 
   TF1*  funcPt=0x0;
   TH1D* histPt=0x0;
-  if(fPtShape==kFONLL8TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+  if(fPtShape==kPtFONLL8TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.518046,3.01138,3.38914,1.75899); // Prompt
-    outFileName.Append("FONLL8ptshape.root");
-  }else if(fPtShape==kFONLL8TeVfeeddown){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL8ptshape_");
+  }else if(fPtShape==kPtFONLL8TeVfeeddown){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.398252, 3.9603, 3.915, 1.51853); // FeedDown
-    outFileName.Append("FONLL8ptshapeFeedDown.root");
-  }else if(fPtShape==kFONLL7TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL8ptshapeFeedDown_");
+  }else if(fPtShape==kPtFONLL7TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.322643,2.96275,2.30301,2.5);
-    outFileName.Append("FONLL7ptshape.root");
-  }else if(fPtShape==kFONLL5TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL7ptshape_");
+  }else if(fPtShape==kPtFONLL5TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.302879,2.9750,3.68139,1.68855);
-    outFileName.Append("FONLL5ptshape.root");
-  }else if(fPtShape==kPythia7TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    outFileName.Append("FONLL5ptshape_");
+  }else if(fPtShape==kPtPythia7TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,50.);
     funcPt->SetParameters(0.322643,1.94635,1.40463,2.5);
-    outFileName.Append("PYTHIA7ptshape.root");  
-  }else if(fPtShape==kFONLL13TeVprompt){
+    outFileName.Append("PYTHIA7ptshape_");  
+  }else if(fPtShape==kPtFONLL13TeVprompt){
     if(fDDecay==kDplusKpipi){
       histPt = LoadFONLL13TeV_promptDplus();
       outFileName.Append("promptDplus");
@@ -198,9 +200,8 @@ void ComputeAcceptance(){
       histPt = LoadFONLL13TeV_promptD0();
       outFileName.Append("promptD0");
     }
-    outFileName.Append("FONLL13ptshape.root");
-
-  }else if (fPtShape==kFONLL13TeVfeeddown){
+    outFileName.Append("FONLL13ptshape_");
+  }else if (fPtShape==kPtFONLL13TeVfeeddown){
     if (fDDecay==kDstarD0pi){
       histPt = LoadFONLL13TeV_feeddownDstar();
       outFileName.Append("feeddownDstar");
@@ -208,8 +209,8 @@ void ComputeAcceptance(){
       histPt = LoadFONLL13TeV_feeddownD();
       outFileName.Append("feeddownD");
     }
-    outFileName.Append("FONLL13ptshape.root");
-  }else if(fPtShape==kPythia13TeVprompt){
+    outFileName.Append("FONLL13ptshape_");
+  }else if(fPtShape==kPtPythia13TeVprompt){
     if(fDDecay==kDplusKpipi){
       histPt = LoadPYTHIA13TeV_promptDplus();
       outFileName.Append("promptDplus");
@@ -223,8 +224,8 @@ void ComputeAcceptance(){
       histPt = LoadPYTHIA13TeV_promptD0();
       outFileName.Append("promptD0");
     }
-    outFileName.Append("PYTHIA13ptshape.root");
-  }else if (fPtShape==kPythia13TeVfeeddown){
+    outFileName.Append("PYTHIA13ptshape_");
+  }else if (fPtShape==kPtPythia13TeVfeeddown){
     if(fDDecay==kDplusKpipi){
       histPt = LoadPYTHIA13TeV_feeddownDplus();
       outFileName.Append("feeddownDplus");
@@ -238,24 +239,60 @@ void ComputeAcceptance(){
       histPt = LoadPYTHIA13TeV_feeddownD0();
       outFileName.Append("feeddownD0");
     }
-    outFileName.Append("PYTHIA13ptshape.root");
+    outFileName.Append("PYTHIA13ptshape_");
   }else{
-    funcPt=new TF1("fFlat","pol0",0.,40.);
+    funcPt=new TF1("fFlat","pol0",0.,50.);
     funcPt->SetParameter(0,1.);
-    outFileName.Append("flatpt.root");
+    outFileName.Append("flatpt_");
   }
-
   if (funcPt) funcPt->SetNpx(10000);
 
+  TF1*  funcY=0x0;
+  if(fYShape==kYFONLL5TeV){
+    funcY=new TF1("fsigyfonll5","[0]+((x>0.5)*[1]/sqrt(x))+((x<0.5)*([1]*sqrt(2)))",0.,50);
+    funcY->SetParameters(7.22252e-01,5.06914);
+    outFileName.Append("FONLLy.root");
+  }else if(fYShape==kYFONLLMax5TeV){
+    funcY=new TF1("fsigyfonll5","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(7.05870e-01,5.11006);
+    outFileName.Append("FONLLyMax.root");
+  }else if(fYShape==kYFONLLMin5TeV){
+    funcY=new TF1("fsigyfonll5","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
+    funcY->SetParameters(6.99901e-01,5.27825,1.54156e+01);
+    outFileName.Append("FONLLyMin.root");
+  }else if(fYShape==kYFONLL13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.076661,5.845579);
+    outFileName.Append("FONLLy.root");
+  }else if(fYShape==kYFONLLMax13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x))",0.,50);
+    funcY->SetParameters(1.031292,5.961879);
+    outFileName.Append("FONLLyMax.root");
+  }else if(fYShape==kYFONLLMin13TeV){
+    funcY=new TF1("fsigyfonll13","TMath::Min(8.,[0]+[1]/sqrt(x)+[2]/(x*x*x))",0.,50);
+    funcY->SetParameters(1.100997,5.952721,49.171957);
+    outFileName.Append("FONLLyMin.root");
+  }else{
+    outFileName.Append("flaty.root");
+  }
+  if (funcY) funcY->SetNpx(10000);
+  
   TRandom3* gener=new TRandom3(0);
   TLorentzVector* vec=new TLorentzVector();
-
 
   for(Int_t itry=0; itry<totTrials; itry++){
     if(itry%100000==0) printf("Event %d\n",itry);
     Float_t ptD = funcPt ? funcPt->GetRandom() : histPt->GetRandom();
     Float_t phiD=gener->Rndm()*2*TMath::Pi();
-    Float_t yD=gener->Rndm()*2.-1.; // flat in -1<y<1
+    Float_t yD=-9999;
+    if(fYShape==kFlatY || !funcY) yD=gener->Rndm()*2.-1.; // flat in -1<y<1
+    else{
+      Float_t sgaus=funcY->Eval(ptD);
+      while(1){
+	yD=gener->Gaus(0,sgaus);
+	if(TMath::Abs(yD)<1) break;
+      }
+    }
     Float_t px=ptD*TMath::Cos(phiD);
     Float_t py=ptD*TMath::Sin(phiD);
     Float_t mt=TMath::Sqrt(massD*massD+ptD*ptD);

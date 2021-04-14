@@ -32,6 +32,9 @@ Double_t maxMult=-1;//200;
 
 TH1F* hAccToyFine=0x0;
 TH1F* hAccToy=0x0;
+TH2D* hPtVsYGenAccToy=0x0;
+TH2D* hPtVsYGenLimAccToy=0x0;
+
 TF1* funcPtWeight=0x0;
 TF1* funcPtBWeight=0x0;
 
@@ -39,6 +42,7 @@ TString fileWeightName="";
 TString histoWeightName="";
 TH1F* hMultWeight=0x0;
 
+Bool_t useToyMC=kFALSE;
 
 void ComputeAndWriteEff(TList* l, TString dCase);
 void ComputeAndWriteEffOld(TList* l, TString dCase, TString var3="Mult");
@@ -131,6 +135,9 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
 
   // aceptance from toy MC
   TFile* fileAccToy=new TFile(fileNameToy.Data());
+  hPtVsYGenAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenAcc");
+  hPtVsYGenLimAccToy=(TH2D*)fileAccToy->Get("hPtVsYGenLimAcc");
+
   TH1F* hPtGenAccToy=(TH1F*)fileAccToy->Get("hPtGenAcc");
   TH1F* hPtGenLimAccToy=(TH1F*)fileAccToy->Get("hPtGenLimAcc");
   hAccToyFine=(TH1F*)fileAccToy->Get("hAccVsPt");
@@ -142,7 +149,8 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   hAccToy->Divide(hPtGenAccToyR,hPtGenLimAccToyR,1,1,"B");
   hAccToy->SetLineColor(kGreen+2);
   hAccToy->SetLineWidth(3);
-  hAccToy->SetMarkerStyle(25);
+  hAccToy->SetMarkerStyle(27);
+  hAccToy->SetMarkerSize(1.8);
   hAccToy->SetMarkerColor(kGreen+2);
   hAccToy->SetStats(0);
   hAccToyFine->SetLineColor(kGreen+2);
@@ -266,113 +274,213 @@ void ComputeEfficiencyFromCombinHF(TString configInput=""){
   ComputeAndWriteEff(l,"Feeddw");
 
   TFile* outup=new TFile(Form("outputEff%s.root",suffix.Data()),"update");
-  outup->ls();
   TH1D* hEffPr=(TH1D*)outup->Get("hEffPromptVsPtMultAndPtWeight");
   TH1D* hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtMultWeight");
   if(ptBWeight!="") hEffFd=(TH1D*)outup->Get("hEffFeeddwVsPtMultAndPtBWeight");
-  hEffFd->SetLineColor(kGray+1);
-  hEffFd->SetMarkerColor(kGray+1);
-  hEffFd->SetMarkerStyle(24);
+  TH1D* hAccPr=(TH1D*)outup->Get("hAccPromptVsPtMultAndPtWeight");
+  TH1D* hAccFd=(TH1D*)outup->Get("hAccFeeddwVsPtMultWeight");
+  if(ptBWeight!="") hAccFd=(TH1D*)outup->Get("hAccFeeddwVsPtMultAndPtBWeight");
+  TH1D* hAxePr=(TH1D*)outup->Get("hAxePromptVsPtMultAndPtWeight");
+  TH1D* hAxeFd=(TH1D*)outup->Get("hAxeFeeddwVsPtMultWeight");
+  if(ptBWeight!="") hAxeFd=(TH1D*)outup->Get("hAxeFeeddwVsPtMultAndPtBWeight");
 
-  TCanvas* cpf=new TCanvas("cpf","Prompt vs Feeddown",1200,600);
-  cpf->Divide(2,1);
-  cpf->cd(1);
+  hEffPr->SetLineColor(kRed+1);
+  hEffFd->SetLineColor(kBlue+1);
+  hEffPr->SetMarkerColor(kRed+1);
+  hEffFd->SetMarkerColor(kBlue+1);
+  hEffPr->SetMarkerStyle(20);
+  hEffFd->SetMarkerStyle(25);
+  hAccPr->SetLineColor(kRed+1);
+  hAccFd->SetLineColor(kBlue+1);
+  hAccPr->SetMarkerColor(kRed+1);
+  hAccFd->SetMarkerColor(kBlue+1);
+  hAccPr->SetMarkerStyle(20);
+  hAccFd->SetMarkerStyle(25);
+  
+  TCanvas* capf=new TCanvas("capf","Acc Prompt vs Feeddown Toy vs MC",1200,600);
+  capf->Divide(2,1);
+  capf->cd(1);
   gPad->SetTickx();
   gPad->SetTicky();
-  hAccToy->GetYaxis()->SetTitle("Efficiency, acceptance");
-  hAccToy->GetYaxis()->SetTitleOffset(1.3);
-  hAccToy->Draw();
-  hAccToy->SetMinimum(0);
-  hEffPr->DrawCopy("same");
+  hAccPr->GetYaxis()->SetTitle("GenAcc / GenLimAcc");
+  hAccPr->GetYaxis()->SetTitleOffset(1.3);
+  hAccPr->SetStats(0);
+  hAccFd->SetStats(0);
+  hAccPr->DrawCopy();
+  hAccFd->DrawCopy("same");
+  hAccToy->DrawCopy("same");
+  TLegend* legapf=new TLegend(0.5,0.16,0.89,0.36);
+  legapf->AddEntry(Form("%s_copy",hAccPr->GetName()),"Prompt (full MC)","P");
+  legapf->AddEntry(Form("%s_copy",hAccFd->GetName()),"Feeddown (full MC)","P");
+  legapf->AddEntry(hAccToy,"Toy MC","P");
+  legapf->Draw();  
+  capf->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  TH1D* hRatioPrToy=(TH1D*)hAccPr->Clone("hRatioPrToy");
+  hRatioPrToy->Divide(hAccToy);
+  TH1D* hRatioFdToy=(TH1D*)hAccFd->Clone("hRatioFdToy");
+  hRatioFdToy->Divide(hAccToy);
+  hRatioPrToy->SetStats(0);
+  hRatioFdToy->SetStats(0);
+  hRatioPrToy->SetMinimum(0.98);
+  hRatioPrToy->SetMaximum(1.02);
+  hRatioPrToy->GetYaxis()->SetTitle("Ratio to Toy MC");
+  hRatioPrToy->GetYaxis()->SetTitleOffset(1.2);
+  hRatioPrToy->DrawCopy();
+  hRatioFdToy->DrawCopy("same");
+
+  
+  TCanvas* cepf=new TCanvas("cepf","Eff, Prompt vs Feeddown",1200,600);
+  cepf->Divide(2,1);
+  cepf->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hEffPr->GetYaxis()->SetTitle("Reco / GenAcc");
+  hEffPr->GetYaxis()->SetTitleOffset(1.3);
+  hEffPr->SetStats(0);
+  hEffFd->SetStats(0);
+  hEffPr->SetMinimum(0.2);
+  hEffPr->SetMaximum(0.6);
+  hEffPr->DrawCopy();
   hEffFd->DrawCopy("same");
-  TH1D* hEffD=(TH1D*)hEffPr->Clone("hEffD");
-  hEffD->Reset("imen");
-  TH1D* hEffB=(TH1D*)hEffFd->Clone("hEffB");
-  hEffB->Reset("imen");
-  TH1D* hRatioEff=(TH1D*)hEffFd->Clone("hRatioEff");
-  hRatioEff->Reset("imen");
-
-  for(Int_t iBin=1; iBin<=hEffPr->GetNbinsX(); iBin++){
-    Double_t lowPt=hEffPr->GetXaxis()->GetBinLowEdge(iBin);
-    Double_t highPt=hEffPr->GetXaxis()->GetBinUpEdge(iBin);
-    Double_t pt=hEffPr->GetBinCenter(iBin);
-
-    Int_t theBinB=hEffFd->FindBin(pt);
-    Double_t lowPtB=hEffFd->GetXaxis()->GetBinLowEdge(theBinB);
-    Double_t highPtB=hEffFd->GetXaxis()->GetBinUpEdge(theBinB);
-
-    Int_t theBinA=hAccToy->FindBin(pt);
-    Double_t lowPtA=hAccToy->GetXaxis()->GetBinLowEdge(theBinA);
-    Double_t highPtA=hAccToy->GetXaxis()->GetBinUpEdge(theBinA);
-
-    if(TMath::Abs(lowPtA-lowPt)>0.001 ||
-       TMath::Abs(lowPtB-lowPt)>0.001 ||
-       TMath::Abs(highPtA-highPt)>0.001 ||
-       TMath::Abs(highPtB-highPt)>0.001){
-      printf("ERROR IN BINNING: %f %f    %f %f   %f %f\n",lowPt,highPt,lowPtA,highPtA,lowPtB,highPtB);
-      return;
-    }
-
-    Double_t effD=hEffPr->GetBinContent(iBin);
-    Double_t acc=hAccToy->GetBinContent(theBinA);
-    Double_t effB=hEffFd->GetBinContent(theBinB);
-
-    Double_t effDerr=hEffPr->GetBinError(iBin);
-    Double_t accerr=hAccToy->GetBinError(theBinA);
-    Double_t effBerr=hEffFd->GetBinError(theBinB);
-
-    Double_t acceffD=effD*acc;
-    Double_t acceffB=effB*acc;
-    Double_t acceffDerr=TMath::Sqrt(acc*acc*effDerr*effDerr+effD*effD*accerr*accerr);
-    Double_t acceffBerr=TMath::Sqrt(acc*acc*effBerr*effBerr+effB*effB*accerr*accerr);
-
-    Double_t r=-999.;
-    Double_t er=0.;
-    if(effD>0 && effB>0){
-      r=effB/effD;
-      er=r*TMath::Sqrt(effDerr/effD*effDerr/effD+effBerr/effB*effBerr/effB);
-    }
-    printf("Bin %d   acc=%f+-%f\n",iBin,acc,accerr);
-    printf("         effD=%f+-%f   acc*effD=%f+-%f\n",effD,effDerr,acceffD,acceffDerr);
-    printf("         effB=%f+-%f   acc*effB=%f+-%f\n",effB,effBerr,acceffB,acceffBerr);
-    printf("         r=%f+-%f\n",r,er);
-    hEffD->SetBinContent(iBin,acceffD);
-    hEffD->SetBinError(iBin,acceffDerr);
-    hEffB->SetBinContent(iBin,acceffB);
-    hEffB->SetBinError(iBin,acceffBerr);
-    hRatioEff->SetBinContent(iBin,r);
-    hRatioEff->SetBinError(iBin,er);
-    
-  }
-
-  hEffD->SetMarkerStyle(21);
-  hEffD->SetMarkerColor(2);
-  hEffD->SetLineColor(2);
-  hEffD->DrawCopy("same");
-  hEffB->SetMarkerStyle(25);
-  hEffB->SetMarkerColor(kRed+1);
-  hEffB->SetLineColor(kRed+1);
-  hEffB->DrawCopy("same");
-
-  TLegend* legpf=new TLegend(0.6,0.16,0.89,0.36);
-  legpf->AddEntry(Form("%s_copy",hEffPr->GetName()),"Effic. prompt","P");
-  legpf->AddEntry(Form("%s_copy",hEffFd->GetName()),"Effic. feeddown","P");
-  legpf->AddEntry(hAccToy,"Acceptance","P");
-  legpf->AddEntry(Form("%s_copy",hEffD->GetName()),"Acc x eff prompt","P");
-  legpf->AddEntry(Form("%s_copy",hEffB->GetName()),"Acc x eff feeddown","P");
-  legpf->Draw();
-  cpf->cd(2);
+  TLegend* legepf=new TLegend(0.5,0.16,0.89,0.36);
+  legepf->AddEntry(Form("%s_copy",hEffPr->GetName()),"Prompt","P");
+  legepf->AddEntry(Form("%s_copy",hEffFd->GetName()),"Feeddown","P");
+  legepf->Draw(); 
+  cepf->cd(2);
   gPad->SetTickx();
   gPad->SetTicky();
+  TH1D* hRatioEff=(TH1D*)hEffFd->Clone("hRatioEff");
+  hRatioEff->Divide(hEffPr);
   hRatioEff->SetStats(0);
-  hRatioEff->SetMarkerColor(kBlue+1);
-  hRatioEff->SetLineColor(kBlue+1);
+  hRatioEff->SetMarkerColor(kGray+2);
+  hRatioEff->SetLineColor(kGray+2);
   hRatioEff->SetMarkerStyle(20);
   hRatioEff->SetMinimum(0.9);
   hRatioEff->SetMaximum(1.04);
   hRatioEff->GetYaxis()->SetTitle("Ratio efficiency feeddown/prompt");
   hRatioEff->GetYaxis()->SetTitleOffset(1.3);
   hRatioEff->DrawCopy();
+  
+  TH1D* hEffD=0x0;
+  TH1D* hEffB=0x0;
+  TH1D* hRatioAxe=0x0;
+  if(useToyMC){
+    hEffD=(TH1D*)hEffPr->Clone("hEffD");
+    hEffD->Reset("imen");
+    hEffB=(TH1D*)hEffFd->Clone("hEffB");
+    hEffB->Reset("imen");
+    hRatioAxe=(TH1D*)hEffFd->Clone("hRatioAxe");
+    hRatioAxe->Reset("imen");
+    
+    for(Int_t iBin=1; iBin<=hEffPr->GetNbinsX(); iBin++){
+      Double_t lowPt=hEffPr->GetXaxis()->GetBinLowEdge(iBin);
+      Double_t highPt=hEffPr->GetXaxis()->GetBinUpEdge(iBin);
+      Double_t pt=hEffPr->GetBinCenter(iBin);
+      
+      Int_t theBinB=hEffFd->FindBin(pt);
+      Double_t lowPtB=hEffFd->GetXaxis()->GetBinLowEdge(theBinB);
+      Double_t highPtB=hEffFd->GetXaxis()->GetBinUpEdge(theBinB);
+      
+      Int_t theBinA=hAccToy->FindBin(pt);
+      Double_t lowPtA=hAccToy->GetXaxis()->GetBinLowEdge(theBinA);
+      Double_t highPtA=hAccToy->GetXaxis()->GetBinUpEdge(theBinA);
+      
+      if(TMath::Abs(lowPtA-lowPt)>0.001 ||
+	 TMath::Abs(lowPtB-lowPt)>0.001 ||
+	 TMath::Abs(highPtA-highPt)>0.001 ||
+	 TMath::Abs(highPtB-highPt)>0.001){
+	printf("ERROR IN BINNING: %f %f    %f %f   %f %f\n",lowPt,highPt,lowPtA,highPtA,lowPtB,highPtB);
+	return;
+      }
+      
+      Double_t effD=hEffPr->GetBinContent(iBin);
+      Double_t acc=hAccToy->GetBinContent(theBinA);
+      Double_t effB=hEffFd->GetBinContent(theBinB);
+      
+      Double_t effDerr=hEffPr->GetBinError(iBin);
+      Double_t accerr=hAccToy->GetBinError(theBinA);
+      Double_t effBerr=hEffFd->GetBinError(theBinB);
+      
+      Double_t acceffD=effD*acc;
+      Double_t acceffB=effB*acc;
+      Double_t acceffDerr=TMath::Sqrt(acc*acc*effDerr*effDerr+effD*effD*accerr*accerr);
+      Double_t acceffBerr=TMath::Sqrt(acc*acc*effBerr*effBerr+effB*effB*accerr*accerr);
+      
+      Double_t r=-999.;
+      Double_t er=0.;
+      if(effD>0 && effB>0){
+	r=effB/effD;
+	er=r*TMath::Sqrt(effDerr/effD*effDerr/effD+effBerr/effB*effBerr/effB);
+      }
+      printf("Bin %d   acc=%f+-%f\n",iBin,acc,accerr);
+      printf("         effD=%f+-%f   acc*effD=%f+-%f\n",effD,effDerr,acceffD,acceffDerr);
+      printf("         effB=%f+-%f   acc*effB=%f+-%f\n",effB,effBerr,acceffB,acceffBerr);
+      printf("         r=%f+-%f\n",r,er);
+      hEffD->SetBinContent(iBin,acceffD);
+      hEffD->SetBinError(iBin,acceffDerr);
+      hEffB->SetBinContent(iBin,acceffB);
+      hEffB->SetBinError(iBin,acceffBerr);
+      hRatioAxe->SetBinContent(iBin,r);
+      hRatioAxe->SetBinError(iBin,er);
+    }
+  }else{
+    hEffD=(TH1D*)hAxePr->Clone("hEffD");
+    hEffB=(TH1D*)hAxeFd->Clone("hEffB");
+    hRatioAxe=(TH1D*)hAxeFd->Clone("hRatioAxe");
+    hRatioAxe->Divide(hAxePr);
+    for(Int_t iBin=1; iBin<=hAxePr->GetNbinsX(); iBin++){
+      Double_t acceffD=hAxePr->GetBinContent(iBin);
+      Double_t acceffB=hAxeFd->GetBinContent(iBin);
+      Double_t acceffDerr=hAxePr->GetBinError(iBin);
+      Double_t acceffBerr=hAxeFd->GetBinError(iBin);
+      Double_t r=-999.;
+      Double_t er=0.;
+      if(acceffD>0 && acceffB>0){
+	r=acceffB/acceffD;
+	er=r*TMath::Sqrt(acceffDerr/acceffD*acceffDerr/acceffD+acceffBerr/acceffB*acceffBerr/acceffB);
+      }
+      printf("Bin %d   \n",iBin);
+      printf("         acc*effD=%f+-%f\n",acceffD,acceffDerr);
+      printf("         acc*effB=%f+-%f\n",acceffB,acceffBerr);
+      printf("         r=%f+-%f\n",r,er);      
+    }
+  }
+  hEffD->SetStats(0);
+  hEffB->SetStats(0);
+
+  TCanvas* cpf=new TCanvas("cpf","Axe Prompt vs Feeddown",1200,600);
+  cpf->Divide(2,1);
+  cpf->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hEffD->GetYaxis()->SetTitle("Acceptance x Efficiency");
+  hEffD->GetYaxis()->SetTitleOffset(1.3);
+  hEffD->SetMarkerStyle(20);
+  hEffD->SetMarkerColor(kRed+1);
+  hEffD->SetLineColor(kRed+1);
+  hEffD->DrawCopy();
+  hEffB->SetMarkerStyle(25);
+  hEffB->SetMarkerColor(kBlue+1);
+  hEffB->SetLineColor(kBlue+1);
+  hEffB->DrawCopy("same");
+  TLegend* legpf=new TLegend(0.6,0.16,0.89,0.36);
+  legpf->AddEntry(Form("%s_copy",hEffD->GetName()),"Prompt","P");
+  legpf->AddEntry(Form("%s_copy",hEffB->GetName()),"Feeddown","P");
+  legpf->Draw();
+  cpf->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hRatioAxe->SetStats(0);
+  hRatioAxe->SetMarkerColor(kGray+2);
+  hRatioAxe->SetLineColor(kGray+2);
+  hRatioAxe->SetMarkerStyle(20);
+  hRatioAxe->SetMinimum(0.9);
+  hRatioAxe->SetMaximum(1.04);
+  hRatioAxe->GetYaxis()->SetTitle("Ratio efficiency feeddown/prompt");
+  hRatioAxe->GetYaxis()->SetTitleOffset(1.3);
+  hRatioAxe->DrawCopy();
   cpf->SaveAs(Form("figures/EfficVsPt_PromptFd_%s.eps",suffix.Data()));
 
   outup->cd();  
@@ -485,6 +593,28 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hAccVsPtR->Divide(hPtGenAccR,hPtGenLimAccR,1,1,"B");
   hAccVsPt->SetStats(0);
   hAccVsPtR->SetStats(0);
+  TH1D* hRatioAccToyMC=(TH1D*)hAccVsPt->Clone("hRatioAccToyMC");
+  hRatioAccToyMC->Reset("IMEN");
+  for(Int_t j=1; j<hRatioAccToyMC->GetNbinsX(); j++){
+    Double_t pt=hAccVsPt->GetBinCenter(j);
+    Double_t pt1=hAccVsPt->GetBinLowEdge(j);
+    Double_t pt2=hAccVsPt->GetBinLowEdge(j+1);
+    Int_t jbinF=hAccToyFine->FindBin(pt);    
+    Double_t ptToy1=hAccToyFine->GetBinLowEdge(jbinF);
+    Double_t ptToy2=hAccToyFine->GetBinLowEdge(jbinF+1);
+    if(TMath::Abs(ptToy1-pt1)<0.001 &&
+       TMath::Abs(ptToy2-pt2)<0.001){
+      Double_t r=hAccVsPt->GetBinContent(j)/hAccToyFine->GetBinContent(jbinF);
+      Double_t er=r*TMath::Sqrt(hAccVsPt->GetBinError(j)/hAccVsPt->GetBinContent(j)*hAccVsPt->GetBinError(j)/hAccVsPt->GetBinContent(j)+hAccToyFine->GetBinError(jbinF)/hAccToyFine->GetBinContent(jbinF)*hAccToyFine->GetBinError(jbinF)/hAccToyFine->GetBinContent(jbinF));
+      hRatioAccToyMC->SetBinContent(j,r);
+      hRatioAccToyMC->SetBinError(j,er);     
+    }
+ }
+
+  
+  TH1D* hRatioAccToyMCR=(TH1D*)hAccVsPtR->Clone("hRatioAccToyMCR");
+  hRatioAccToyMCR->Divide(hAccToy);
+  
   TH1D* hEvSelEffVsPt=0x0;
   if(hPtGenAccEvSel){
     hEvSelEffVsPt=(TH1D*)hPtGenAccEvSel->Clone(Form("hEvSelEff%s",dCase.Data()));
@@ -493,8 +623,8 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   }
 
 
-  TCanvas* c1a=new TCanvas(Form("c1a%s",dCase.Data()),Form("%s - AccVsPt",dCase.Data()),1500,600);
-  c1a->Divide(3,1);
+  TCanvas* c1a=new TCanvas(Form("c1a%s",dCase.Data()),Form("%s - AccVsPt",dCase.Data()),1200,800);
+  c1a->Divide(2,2);
   c1a->cd(1);
   gPad->SetLogy();
   hPtGenLimAcc->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -538,6 +668,10 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hEffVsPt->Draw();
   hAccVsPt->SetLineColor(2);
   hAccVsPt->Draw("same");
+  hAccVsPtR->SetMarkerStyle(20);
+  hAccVsPtR->SetMarkerColor(kRed+1);
+  hAccVsPtR->SetLineColor(kRed+1);
+  hAccVsPtR->Draw("same");
   hAccToyFine->Draw("same");
   hAccToy->Draw("same");
   TLatex* tacc=new TLatex(0.16,0.83,"Acceptance (CombinHF)");
@@ -568,8 +702,17 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   TLatex* t3=new TLatex(6.,0.15,"Reco / GenAcc");
   t3->SetTextColor(4);
   t3->Draw();
+  c1a->cd(4);
+  hRatioAccToyMC->SetLineColor(kGray+1);
+  hRatioAccToyMCR->SetLineColor(1);
+  hRatioAccToyMCR->SetMarkerColor(1);
+  hRatioAccToyMCR->SetMarkerStyle(21);
+  hRatioAccToyMC->SetMinimum(0.95);
+  hRatioAccToyMC->SetMaximum(1.05);
+  hRatioAccToyMC->GetYaxis()->SetTitle("Acceptance(CombinHF) / Acceptance(ToyMC)");
+  hRatioAccToyMC->Draw();
+  hRatioAccToyMCR->Draw("same");
   c1a->SaveAs(Form("figures/EfficVsPt_%s_%s.eps",suffix.Data(),dCase.Data()));
-
 
   TH1D* hVar2RecoAllPt=h3dReco->ProjectionY(Form("hVar2Reco%s",dCase.Data()));
   TH1D* hVar2GenAccAllPt=h3dGenAcc->ProjectionY(Form("hVar2GenAcc%s",dCase.Data()));
@@ -769,9 +912,9 @@ void ComputeAndWriteEff(TList* l, TString dCase){
     Int_t colMult[20]={kMagenta+1,kMagenta,kBlue+1,kBlue,kBlue-9,
 		       kGreen+2,kGreen+1,kGreen,kYellow+1,kYellow,
 		       kOrange+2,kOrange+1,kRed-9,kRed,kRed+1};
-    TH1D* hAccVsPtMultBin[100];
-    TH1D* hPtGenLimAccMultBin[100];
-    TH1D* hPtGenAccMultBin[100];
+    TH1D* hAccVsPtMultBin[300];
+    TH1D* hPtGenLimAccMultBin[300];
+    TH1D* hPtGenAccMultBin[300];
     TGraphErrors* gMeanPtGenLimAccVsMult=new TGraphErrors(0);
     TGraphErrors* gMeanPtGenAccVsMult=new TGraphErrors(0);
     TCanvas* c2dch=new TCanvas(Form("c2dch%s",dCase.Data()),Form("%s - AccVsPt and %s",dCase.Data(),var3.Data()),1400,800);
@@ -802,7 +945,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
     
       hPtGenAccMultBin[iBinm]->SetStats(0);
       hPtGenLimAccMultBin[iBinm]->SetStats(0);
-      hAccVsPtMultBin[iBinm]->SetStats(0);      
+      hAccVsPtMultBin[iBinm]->SetStats(0);
       if(hPtGenLimAccMultBin[iBinm]->GetEntries()>1000 && nhp<20){
 	gMeanPtGenLimAccVsMult->SetPoint(nhp,centmul,meanptlimacc);
 	gMeanPtGenLimAccVsMult->SetPointError(nhp,centmul-minmul,emeanptlimacc);
@@ -1023,6 +1166,16 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   TH1D *hpteffMultPtWeight =new TH1D(Form("hEff%sVsPtMultAndPtWeight",dCase.Data()),"",nPtBins,binLims);
   TH1D *hpteffMultPtBWeight =new TH1D(Form("hEff%sVsPtMultAndPtBWeight",dCase.Data()),"",nPtBins,binLims);
   TH1D *hpteffPtBWeight =new TH1D(Form("hEff%sVsPtPtBWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaccNoWeight =new TH1D(Form("hAcc%sVsPtNoWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaccMultWeight = new TH1D(Form("hAcc%sVsPtMultWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaccMultPtWeight =new TH1D(Form("hAcc%sVsPtMultAndPtWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaccMultPtBWeight =new TH1D(Form("hAcc%sVsPtMultAndPtBWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaccPtBWeight =new TH1D(Form("hAcc%sVsPtPtBWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaxeNoWeight =new TH1D(Form("hAxe%sVsPtNoWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaxeMultWeight = new TH1D(Form("hAxe%sVsPtMultWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaxeMultPtWeight =new TH1D(Form("hAxe%sVsPtMultAndPtWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaxeMultPtBWeight =new TH1D(Form("hAxe%sVsPtMultAndPtBWeight",dCase.Data()),"",nPtBins,binLims);
+  TH1D *hptaxePtBWeight =new TH1D(Form("hAxe%sVsPtPtBWeight",dCase.Data()),"",nPtBins,binLims);
 
   TH1D* hMultRecoAllPtW=h3dReco->ProjectionZ(Form("hMultRecoW%s",dCase.Data()));
   TH1D* hMultGenAccAllPtW=h3dGenAcc->ProjectionZ(Form("hMultGenAccW%s",dCase.Data()));
@@ -1033,27 +1186,37 @@ void ComputeAndWriteEff(TList* l, TString dCase){
 
   Double_t countNumer[nPtBins];
   Double_t countDenom[nPtBins];
+  Double_t countDenomLimAcc[nPtBins];
   Double_t countNumerPtBWei[nPtBins];
   Double_t countDenomPtBWei[nPtBins];
+  Double_t countDenomLimAccPtBWei[nPtBins];
 
   Double_t countNumerMultWei[nPtBins];
   Double_t countDenomMultWei[nPtBins];
+  Double_t countDenomLimAccMultWei[nPtBins];
   Double_t countNumerMultPtWei[nPtBins];
   Double_t countDenomMultPtWei[nPtBins];
+  Double_t countDenomLimAccMultPtWei[nPtBins];
   Double_t countNumerMultPtBWei[nPtBins];
   Double_t countDenomMultPtBWei[nPtBins];
+  Double_t countDenomLimAccMultPtBWei[nPtBins];
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
     countNumer[iPtBin]=0.0;
     countDenom[iPtBin]=0.0;
+    countDenomLimAcc[iPtBin]=0.0;
     countNumerPtBWei[iPtBin]=0.0;
     countDenomPtBWei[iPtBin]=0.0;
+    countDenomLimAccPtBWei[iPtBin]=0.0;
     countNumerMultWei[iPtBin]=0.0;
     countDenomMultWei[iPtBin]=0.0;
+    countDenomLimAccMultWei[iPtBin]=0.0;
     countNumerMultPtWei[iPtBin]=0.0;
     countDenomMultPtWei[iPtBin]=0.0;
+    countDenomLimAccMultPtWei[iPtBin]=0.0;
     countNumerMultPtBWei[iPtBin]=0.0;
     countDenomMultPtBWei[iPtBin]=0.0;
+    countDenomLimAccMultPtBWei[iPtBin]=0.0;
   }
 
   for(Int_t ibx=0; ibx<=h3dGenAcc->GetNbinsX()+1; ibx++){
@@ -1072,6 +1235,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
 	for(Int_t ibz=0; ibz<=h3dGenAcc->GetNbinsZ()+1; ibz++){
 	  Double_t crec=h3dReco->GetBinContent(ibx,iby,ibz);
 	  Double_t cgen=h3dGenAcc->GetBinContent(ibx,iby,ibz);
+	  Double_t cgenla=h3dGenLimAcc->GetBinContent(ibx,iby,ibz);
 	  Double_t wmult=1.;
 	  if(var3=="PtB"){
 	    ptB=h3dGenAcc->GetZaxis()->GetBinCenter(ibz);
@@ -1096,55 +1260,372 @@ void ComputeAndWriteEff(TList* l, TString dCase){
 	  }
 	  countNumer[jPtBin]+=crec;
 	  countDenom[jPtBin]+=cgen;
+	  countDenomLimAcc[jPtBin]+=cgenla;
 	  countNumerPtBWei[jPtBin]+=crec*wptB;
 	  countDenomPtBWei[jPtBin]+=cgen*wptB;
+	  countDenomLimAccPtBWei[jPtBin]+=cgenla*wptB;
 	  countNumerMultWei[jPtBin]+=crec*wmult;
 	  countDenomMultWei[jPtBin]+=cgen*wmult;
+	  countDenomLimAccMultWei[jPtBin]+=cgenla*wmult;
 	  countNumerMultPtWei[jPtBin]+=crec*wmult*wpt;
 	  countDenomMultPtWei[jPtBin]+=cgen*wmult*wpt;
+	  countDenomLimAccMultPtWei[jPtBin]+=cgenla*wmult*wpt;
 	  countNumerMultPtBWei[jPtBin]+=crec*wmult*wptB;
 	  countDenomMultPtBWei[jPtBin]+=cgen*wmult*wptB;
+	  countDenomLimAccMultPtBWei[jPtBin]+=cgenla*wmult*wptB;
 	}
       }
     }
   }
 
+  TH1F* hErrEff1=new TH1F("hErrEff1","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrEff1b=new TH1F("hErrEff1b","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc1=new TH1F("hErrAcc1","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc1b=new TH1F("hErrAcc1b","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe1=new TH1F("hErrAxe1","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe1b=new TH1F("hErrAxe1b","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe1c=new TH1F("hErrAxe1c","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrEff2=new TH1F("hErrEff2","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc2=new TH1F("hErrAcc2","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe2=new TH1F("hErrAxe2","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrEff3=new TH1F("hErrEff3","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc3=new TH1F("hErrAcc3","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe3=new TH1F("hErrAxe3","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrEff4=new TH1F("hErrEff4","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc4=new TH1F("hErrAcc4","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe4=new TH1F("hErrAxe4","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrEff5=new TH1F("hErrEff5","Reco/GenAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAcc5=new TH1F("hErrAcc5","GenAcc/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  TH1F* hErrAxe5=new TH1F("hErrAxe5","Reco/GenLimAcc ; p_{T} (GeV/c) ; Relative Uncertainty (%)",nPtBins,binLims);
+  hErrEff1->SetStats(0);
+  hErrEff1b->SetStats(0);
+  hErrEff2->SetStats(0);
+  hErrEff3->SetStats(0);
+  hErrEff4->SetStats(0);
+  hErrEff5->SetStats(0);
+  hErrAcc1->SetStats(0);
+  hErrAcc1b->SetStats(0);
+  hErrAcc2->SetStats(0);
+  hErrAcc3->SetStats(0);
+  hErrAcc4->SetStats(0);
+  hErrAcc5->SetStats(0);
+  hErrAxe1->SetStats(0);
+  hErrAxe1b->SetStats(0);
+  hErrAxe1c->SetStats(0);
+  hErrAxe2->SetStats(0);
+  hErrAxe3->SetStats(0);
+  hErrAxe4->SetStats(0);
+  hErrAxe5->SetStats(0);
+
+  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
+  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
+  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
+  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
+  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
+  TH1D* hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
+  TH1D* hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
+  TH1D* hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
+  TH1D* hr1=(TH1D*)hptgay05R->Clone("hr1");
+  hr1->Divide(hptgay05R,hptgaR,1,1,"B");
+  TH1D* hr2=(TH1D*)hptgay05R->Clone("hr2");
+  hr2->Divide(hptgay05R,hptglaR,1,1,"B");
+  TH1D* hr3=(TH1D*)hr1->Clone("hr3");
+  hr3->Multiply(hr1,hr2);
+  TGraph* g1=new TGraph(0);
+  TGraph* g2=new TGraph(0);
+  TGraph* g3=new TGraph(0);
+  for(Int_t ip=0; ip<hptgay05R->GetNbinsX(); ip++){
+    double ptcent=hptgay05R->GetBinCenter(ip+1);
+    Double_t yfid=0.8;
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    g1->SetPoint(ip,ptcent,0.5/yfid);
+    double acc=hAccToy->GetBinContent(hAccToy->FindBin(ptcent));
+    g2->SetPoint(ip,ptcent,acc/1.6);
+    g3->SetPoint(ip,ptcent,0.5/yfid*acc/1.6);
+  }
+
+  hr1->SetStats(0);
+  hr2->SetStats(0);
+  hr3->SetStats(0);
+  hr1->SetMinimum(0.3);
+  hr1->SetMaximum(1.03);
+  hr2->SetMinimum(0.3);
+  hr2->SetMaximum(1.03);
+  hr3->SetMinimum(0.3);
+  hr3->SetMaximum(1.03);
+  hr1->SetLineWidth(2);
+  hr2->SetLineWidth(2);
+  hr3->SetLineWidth(2);
+  hr1->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(GenAcc)");
+  hr2->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5) / N(|y|<0.5)");
+  hr3->GetYaxis()->SetTitle("N(GenAcc && |y|<0.5)^{2} /  (N(GenAcc) * N(|y|<0.5))");
+  hr1->GetYaxis()->SetTitleOffset(1.3);
+  hr2->GetYaxis()->SetTitleOffset(1.3);
+  hr3->GetYaxis()->SetTitleOffset(1.3);
+
+  if(dCase=="Prompt"){
+    TCanvas* crho=new TCanvas("crho","coveriance",1600,600);
+    crho->Divide(3,1);
+    crho->cd(1);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr1->Draw();
+    g1->SetLineColor(2);
+    g1->SetLineWidth(2);
+    g1->Draw("csame");
+    TLegend* l1=new TLegend(0.5,0.7,0.9,0.89);
+    l1->SetTextFont(43);
+    l1->SetTextSize(22);
+    l1->AddEntry(hr1,"Toy MC, Fonll y","L");
+    l1->AddEntry(g1,"0.5/y_{fid}","L")->SetTextColor(2);
+    l1->Draw();
+    crho->cd(2);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr2->Draw();
+    g2->SetLineColor(2);
+    g2->SetLineWidth(2);
+    g2->Draw("csame");
+    TLegend* l2=new TLegend(0.3,0.2,0.9,0.39);
+    l2->SetTextFont(43);
+    l2->SetTextSize(22);
+    l2->AddEntry(hr2,"Toy MC, Fonll y","L");
+    l2->AddEntry(g2,"(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+    l2->Draw();
+    crho->cd(3);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.05);
+    hr3->Draw();
+    g3->SetLineColor(2);
+    g3->SetLineWidth(2);
+    g3->Draw("csame");
+    TLegend* l3=new TLegend(0.2,0.7,0.9,0.89);
+    l3->SetMargin(0.15);
+    l3->SetTextFont(43);
+    l3->SetTextSize(22);
+    l3->AddEntry(hr3,"Toy MC, Fonll y","L");
+    l3->AddEntry(g3,"0.5/y_{fid}*(GenAcc/GenLimAcc)/1.6","L")->SetTextColor(2);
+    l3->Draw();
+  }
+  
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
+    printf("---- Pt range %.1f - %.1f ----\n",binLims[iPtBin],binLims[iPtBin+1]);
     Double_t eff1=countNumer[iPtBin]/countDenom[iPtBin];
     Double_t erreff1=TMath::Sqrt(eff1*(1-eff1)/countDenom[iPtBin]);
-    printf("---- Pt range %.0f - %.0f ----\n",binLims[iPtBin],binLims[iPtBin+1]);
+    // sqrt(n/d*(1-n/d)/d) = sqrt(n/d * (d-n)/d / d) = sqrt( n*(d-n)/d/d/d) = 1/d * sqrt(n*(d-n)/d) = eff * sqrt((d-n)/dn)
+    Double_t rho=TMath::Sqrt(eff1);
+    Double_t erreff1b=eff1*TMath::Sqrt(1./countNumer[iPtBin]+1./countDenom[iPtBin]-2.*rho*1./TMath::Sqrt(countNumer[iPtBin]*countDenom[iPtBin]));
+    // eff * sqrt(1/n + 1/d -2 sqrt(eff)/sqrt(nd)) = eff * sqrt( (n+d)/nd -2sqrt(1/d^2)) = eff*sqrt( (n+d)/nd -2/d) = eff*sqrt( (n-d)/2d 
+    Double_t acc1=countDenom[iPtBin]/countDenomLimAcc[iPtBin];
+    Double_t yfid=0.8;
+    Double_t ptcent=0.5*(binLims[iPtBin]+binLims[iPtBin+1]);
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    rho=TMath::Sqrt(0.5/yfid*acc1/1.6);
+    Double_t rhoToy=TMath::Sqrt(hr3->GetBinContent(hr3->FindBin(ptcent)));
+    Double_t erracc1=acc1*TMath::Sqrt(1./countDenom[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rho*1/TMath::Sqrt(countDenom[iPtBin]*countDenomLimAcc[iPtBin]));
+    Double_t erracc1b=acc1*TMath::Sqrt(1./countDenom[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rhoToy*1/TMath::Sqrt(countDenom[iPtBin]*countDenomLimAcc[iPtBin]));
+    Double_t axe1=countNumer[iPtBin]/countDenomLimAcc[iPtBin];
+    Double_t erraxe1=TMath::Sqrt(axe1*(1-axe1)/countDenomLimAcc[iPtBin]);
+    rho=TMath::Sqrt(0.5/yfid*acc1/1.6*eff1);
+    rhoToy=TMath::Sqrt(hr3->GetBinContent(hr3->FindBin(ptcent))*eff1);
+    Double_t erraxe1b=axe1*TMath::Sqrt(1./countNumer[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rho*1/TMath::Sqrt(countNumer[iPtBin]*countDenomLimAcc[iPtBin]));
+    Double_t erraxe1c=axe1*TMath::Sqrt(1./countNumer[iPtBin]+1./countDenomLimAcc[iPtBin]-2*rhoToy*1/TMath::Sqrt(countNumer[iPtBin]*countDenomLimAcc[iPtBin]));
+    
     printf("Eff from Projection = %f/%f = %f+-%f\n",hPtRecoR->GetBinContent(iPtBin+1),hPtGenAccR->GetBinContent(iPtBin+1),hEffVsPtR->GetBinContent(iPtBin+1),hEffVsPtR->GetBinError(iPtBin+1));
     printf("Eff No weights      = %f/%f = %f+-%f\n",countNumer[iPtBin],countDenom[iPtBin],eff1,erreff1);
     hpteffNoWeight->SetBinContent(iPtBin+1,eff1);
     hpteffNoWeight->SetBinError(iPtBin+1,erreff1);
+    hptaccNoWeight->SetBinContent(iPtBin+1,acc1);
+    hptaccNoWeight->SetBinError(iPtBin+1,erracc1);
+    hptaxeNoWeight->SetBinContent(iPtBin+1,axe1);
+    hptaxeNoWeight->SetBinError(iPtBin+1,erraxe1);
+    hErrEff1->SetBinContent(iPtBin+1,100*erreff1/eff1);
+    hErrEff1b->SetBinContent(iPtBin+1,100*erreff1b/eff1);
+    hErrAcc1->SetBinContent(iPtBin+1,100*erracc1/acc1);
+    hErrAcc1b->SetBinContent(iPtBin+1,100*erracc1b/acc1);
+    hErrAxe1->SetBinContent(iPtBin+1,100*erraxe1/axe1);
+    hErrAxe1b->SetBinContent(iPtBin+1,100*erraxe1b/axe1);
+    hErrAxe1c->SetBinContent(iPtBin+1,100*erraxe1c/axe1);
     if(dCase=="Feeddw"){
       Double_t eff4=countNumerPtBWei[iPtBin]/countDenomPtBWei[iPtBin];
       Double_t erreff4=TMath::Sqrt(eff4*(1-eff4)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t acc4=countDenomPtBWei[iPtBin]/countDenomLimAccPtBWei[iPtBin];
+      Double_t erracc4=erracc1b*acc4/acc1;
+      Double_t axe4=countNumerPtBWei[iPtBin]/countDenomLimAccPtBWei[iPtBin];
+      Double_t erraxe4=erraxe1c*axe4/axe1;
       printf("Eff With pt(B) weights = %f/%f = %f+-%f\n",countNumerPtBWei[iPtBin],countDenomPtBWei[iPtBin],eff4,erreff4);
       hpteffPtBWeight->SetBinContent(iPtBin+1,eff4);
       hpteffPtBWeight->SetBinError(iPtBin+1,erreff4);
+      hptaccPtBWeight->SetBinContent(iPtBin+1,acc4);
+      hptaccPtBWeight->SetBinError(iPtBin+1,erracc4);
+      hptaxePtBWeight->SetBinContent(iPtBin+1,axe4);
+      hptaxePtBWeight->SetBinError(iPtBin+1,erraxe4);
+      hErrEff4->SetBinContent(iPtBin+1,100*erreff4/eff4);
+      hErrAcc4->SetBinContent(iPtBin+1,100*erracc4/acc4);
+      hErrAxe4->SetBinContent(iPtBin+1,100*erraxe4/axe4);
     }
     if(var3=="Mult"){
       Double_t eff2=countNumerMultWei[iPtBin]/countDenomMultWei[iPtBin];
       Double_t erreff2=TMath::Sqrt(eff2*(1-eff2)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t acc2=countDenomMultWei[iPtBin]/countDenomLimAccMultWei[iPtBin];
+      Double_t erracc2=erracc1b*acc2/acc1;
+      Double_t axe2=countNumerMultWei[iPtBin]/countDenomLimAccMultWei[iPtBin];
+      Double_t erraxe2=erraxe1c*axe2/axe1;
       printf("Eff With mult weights  = %f/%f = %f+-%f\n",countNumerMultWei[iPtBin],countDenomMultWei[iPtBin],eff2,erreff2);
       hpteffMultWeight->SetBinContent(iPtBin+1,eff2);
       hpteffMultWeight->SetBinError(iPtBin+1,erreff2);
+      hptaccMultWeight->SetBinContent(iPtBin+1,acc2);
+      hptaccMultWeight->SetBinError(iPtBin+1,erracc2);
+      hptaxeMultWeight->SetBinContent(iPtBin+1,axe2);
+      hptaxeMultWeight->SetBinError(iPtBin+1,erraxe2);
+      hErrEff2->SetBinContent(iPtBin+1,100*erreff2/eff2);
+      hErrAcc2->SetBinContent(iPtBin+1,100*erracc2/acc2);
+      hErrAxe2->SetBinContent(iPtBin+1,100*erraxe2/axe2);
       Double_t eff3=countNumerMultPtWei[iPtBin]/countDenomMultPtWei[iPtBin];
       Double_t erreff3=TMath::Sqrt(eff3*(1-eff3)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
+      Double_t acc3=countDenomMultPtWei[iPtBin]/countDenomLimAccMultPtWei[iPtBin];
+      Double_t erracc3=erracc1b*acc3/acc1;
+      Double_t axe3=countNumerMultPtWei[iPtBin]/countDenomLimAccMultPtWei[iPtBin];
+      Double_t erraxe3=erraxe1c*axe3/axe1;
       printf("Eff With mult+pt weights   = %f/%f = %f+-%f\n",countNumerMultPtWei[iPtBin],countDenomMultPtWei[iPtBin],eff3,erreff3);
       hpteffMultPtWeight->SetBinContent(iPtBin+1,eff3);
       hpteffMultPtWeight->SetBinError(iPtBin+1,erreff3);
+      hptaccMultPtWeight->SetBinContent(iPtBin+1,acc3);
+      hptaccMultPtWeight->SetBinError(iPtBin+1,erracc3);
+      hptaxeMultPtWeight->SetBinContent(iPtBin+1,axe3);
+      hptaxeMultPtWeight->SetBinError(iPtBin+1,erraxe3);
+      hErrEff3->SetBinContent(iPtBin+1,100*erreff3/eff3);
+      hErrAcc3->SetBinContent(iPtBin+1,100*erracc3/acc3);
+      hErrAxe3->SetBinContent(iPtBin+1,100*erraxe3/axe3);
       if(dCase=="Feeddw"){
 	Double_t eff5=countNumerMultPtBWei[iPtBin]/countDenomMultPtBWei[iPtBin];
 	Double_t erreff5=TMath::Sqrt(eff5*(1-eff5)/countDenom[iPtBin]);// countDenom is NOT a typo, it has to be like this to get proper statistical errors from the no-weight case
-	printf("Eff With mult+pt(B) weights   = %f/%f = %f+-%f\n",countNumerMultPtBWei[iPtBin],countDenomMultPtBWei[iPtBin],eff5,erreff5);
+	Double_t acc5=countDenomMultPtBWei[iPtBin]/countDenomLimAccMultPtBWei[iPtBin];
+	Double_t erracc5=erracc1b*acc5/acc1;
+	Double_t axe5=countNumerMultPtBWei[iPtBin]/countDenomLimAccMultPtBWei[iPtBin];
+	Double_t erraxe5=erraxe1c*axe5/axe1;
+ 	printf("Eff With mult+pt(B) weights   = %f/%f = %f+-%f\n",countNumerMultPtBWei[iPtBin],countDenomMultPtBWei[iPtBin],eff5,erreff5);
 	hpteffMultPtBWeight->SetBinContent(iPtBin+1,eff5);
 	hpteffMultPtBWeight->SetBinError(iPtBin+1,erreff5);
+	hptaccMultPtBWeight->SetBinContent(iPtBin+1,acc5);
+	hptaccMultPtBWeight->SetBinError(iPtBin+1,erracc5);
+	hptaxeMultPtBWeight->SetBinContent(iPtBin+1,axe5);
+	hptaxeMultPtBWeight->SetBinError(iPtBin+1,erraxe5);
+	hErrEff5->SetBinContent(iPtBin+1,100*erreff5/eff5);
+	hErrAcc5->SetBinContent(iPtBin+1,100*erracc5/acc5);
+	hErrAxe5->SetBinContent(iPtBin+1,100*erraxe5/axe5);
       }
     }
   }
 
+  TCanvas* ceer=new TCanvas(Form("ceer%s",dCase.Data()),Form("%s - Unc on Eff",dCase.Data()),1600,600);
+  ceer->Divide(3,1);
+  ceer->cd(1);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetRightMargin(0.05);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hErrEff1b->SetLineColor(kCyan);
+  hErrEff1b->SetLineWidth(4);
+  hErrEff1b->GetYaxis()->SetTitleOffset(1.8);
+  hErrEff1b->Draw();
+  hErrEff1->SetLineColor(4);
+  hErrEff1->Draw("same");
+  hErrEff2->SetLineColor(2);
+  hErrEff2->SetLineStyle(2);
+  hErrEff2->SetLineWidth(2);
+  hErrEff2->Draw("same");
+  hErrEff3->SetLineColor(kGreen+1);
+  hErrEff3->SetLineStyle(3);
+  hErrEff3->SetLineWidth(3);
+  hErrEff3->Draw("same");
+  TLegend* legErr=new TLegend(0.4,0.15,0.92,0.4);
+  legErr->AddEntry(hErrEff1b,"Covariance, no weights","L");
+  legErr->AddEntry(hErrEff1,"Binomial, no weights","L");
+  legErr->AddEntry(hErrEff2,"Binomial, mult weight","L");
+  legErr->AddEntry(hErrEff3,"Binomial, mult+pt weights","L");
+  if(dCase=="Feeddw"){
+    hErrEff4->SetLineColor(kOrange+1);
+    hErrEff4->SetLineStyle(4);
+    hErrEff4->SetLineWidth(2);
+    hErrEff4->Draw("same");
+    hErrEff5->SetLineColor(6);
+    hErrEff5->SetLineStyle(5);
+    hErrEff5->SetLineWidth(2);
+    hErrEff5->Draw("same");
+    legErr->AddEntry(hErrEff4,"Binomial, pt(B) weights","L");
+    legErr->AddEntry(hErrEff5,"Binomial, mult+pt(B) weights","L");
+  }
+  legErr->Draw();
+  ceer->cd(2);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetRightMargin(0.05);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hErrAcc1->SetLineColor(2);
+  hErrAcc1->SetLineWidth(2);
+  hErrAcc1->GetYaxis()->SetTitleOffset(1.8);
+  hErrAcc1->SetMinimum(0.9*TMath::Min(hErrAcc1->GetMinimum(),hErrAcc1b->GetMinimum()));
+  hErrAcc1->Draw();
+  hErrAcc1b->SetLineWidth(2);
+  hErrAcc1b->SetLineColor(1);
+  hErrAcc1b->Draw("same");
+  TLegend* legErrA=new TLegend(0.45,0.15,0.92,0.25);
+  legErrA->SetMargin(0.15);
+  legErrA->AddEntry(hErrAcc1,"Covariance, simple formula","L");
+  legErrA->AddEntry(hErrAcc1b,"Covariance, ToyMC","L");
+  legErrA->Draw();
+  // hErrAcc2->SetLineColor(2);
+  // hErrAcc2->SetLineStyle(2);
+  // hErrAcc2->SetLineWidth(2);
+  // hErrAcc2->Draw("same");
+  // hErrAcc3->SetLineColor(kGreen+1);
+  // hErrAcc3->SetLineStyle(3);
+  // hErrAcc3->SetLineWidth(3);
+  // hErrAcc3->Draw("same");
+  // if(dCase=="Feeddw"){
+  //   hErrAcc4->SetLineColor(4);
+  //   hErrAcc4->SetLineStyle(4);
+  //   hErrAcc4->SetLineWidth(2);
+  //   hErrAcc4->Draw("same");
+  //   hErrAcc5->SetLineColor(6);
+  //   hErrAcc5->SetLineStyle(5);
+  //   hErrAcc5->SetLineWidth(2);
+  //   hErrAcc5->Draw("same");
+  // }
+  ceer->cd(3);
+  gPad->SetLeftMargin(0.14);
+  gPad->SetRightMargin(0.05);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hErrAxe1b->SetLineColor(2);
+  hErrAxe1b->SetLineWidth(2);
+  hErrAxe1b->GetYaxis()->SetTitleOffset(1.8);
+  hErrAxe1b->Draw();
+  hErrAxe1c->SetLineColor(1);
+  hErrAxe1c->SetLineWidth(2);
+  hErrAxe1c->Draw("same");
+  hErrAxe1->SetLineColor(4);
+  hErrAxe1->Draw("same");
+  // hErrAxe2->SetLineColor(2);
+  // hErrAxe2->SetLineStyle(2);
+  // hErrAxe2->SetLineWidth(2);
+  // hErrAxe2->Draw("same");
+  // hErrAxe3->SetLineColor(kGreen+1);
+  // hErrAxe3->SetLineStyle(3);
+  // hErrAxe3->SetLineWidth(3);
+  // hErrAxe3->Draw("same");
+  // if(dCase=="Feeddw"){
+  //   hErrAxe4->SetLineColor(kOrange+1);
+  //   hErrAxe4->SetLineStyle(4);
+  //   hErrAxe4->SetLineWidth(2);
+  //   hErrAxe4->Draw("same");
+  //   hErrAxe5->SetLineColor(6);
+  //   hErrAxe5->SetLineStyle(5);
+  //   hErrAxe5->SetLineWidth(2);
+  //   hErrAxe5->Draw("same");
+  // }
+  
   hEffVsPtR->SetMarkerStyle(0);
   hEffVsPtR->SetMarkerColor(0);
   hEffVsPtR->SetMarkerSize(1.2);
@@ -1152,6 +1633,7 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hEffVsPtR->SetLineWidth(4);
   hEffVsPtR->SetStats(0);
   hpteffNoWeight->SetMarkerStyle(20);
+  hptaccNoWeight->SetMarkerStyle(20);
   
   if(var3=="Mult"){
     TH1D* hEffVsMultAllPtW=(TH1D*)hMultRecoAllPtW->Clone(Form("hEff%s",dCase.Data()));
@@ -1359,9 +1841,19 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hpteffNoWeight->Write();
   hpteffMultWeight->Write();
   hpteffMultPtWeight->Write();
+  hptaccNoWeight->Write();
+  hptaccMultWeight->Write();
+  hptaccMultPtWeight->Write();
+  hptaxeNoWeight->Write();
+  hptaxeMultWeight->Write();
+  hptaxeMultPtWeight->Write();
   if(dCase=="Feeddw"){
     hpteffPtBWeight->Write();
     hpteffMultPtBWeight->Write();
+    hptaccPtBWeight->Write();
+    hptaccMultPtBWeight->Write();
+    hptaxePtBWeight->Write();
+    hptaxeMultPtBWeight->Write();
   }
   hEvSelEffVsPt->Write();
   out->Close();
@@ -1405,6 +1897,11 @@ Bool_t ReadConfig(TString configName){
     else if(strstr(line,"PtBWei")){
       readok=fscanf(confFil,"%s",name);
       ptBWeight=name;
+    }
+    else if(strstr(line,"UseAccFromToyMC")){
+      readok=fscanf(confFil,"%d",&n);
+      if(n>0) useToyMC=kTRUE;
+      else useToyMC=kFALSE;
     }
     else if(strstr(line,"NumOfPtBins")){
       readok=fscanf(confFil,"%d",&n);

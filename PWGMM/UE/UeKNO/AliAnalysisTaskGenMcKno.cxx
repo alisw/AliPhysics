@@ -70,7 +70,7 @@
 #include <iostream>
 using namespace std;
 
-const Int_t nTSBins=700;
+const Int_t nTSBins=3000;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Char_t * estNames[5] = {"TS","Eta08","V0M","V0A","Eta10"};
 const Char_t * PidNames[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "Charged" };
@@ -101,6 +101,8 @@ ClassImp( AliAnalysisTaskGenMcKno )
 		fDphiTS(0x0),
 		fMultTS(0x0),
 		fptL(0x0),
+                fHistNchTSVsV0M(0x0),
+                fHistNchTSVsV0A(0x0),
 		fListOfObjects(0)
 {
 
@@ -145,6 +147,8 @@ AliAnalysisTaskGenMcKno::AliAnalysisTaskGenMcKno(const char *name):
 	fDphiAS(0x0),
 	fDphiTS(0x0),
 	fMultTS(0x0),
+	fHistNchTSVsV0M(0x0),
+        fHistNchTSVsV0A(0x0),
 	fptL(0x0),
 	fListOfObjects(0)
 {
@@ -240,20 +244,31 @@ void AliAnalysisTaskGenMcKno::UserCreateOutputObjects(){
 
 		}
 	}
+
+	fHistNchTSVsV0M=0;
+        fHistNchTSVsV0M=new TH2D("fHistNchTSVsV0M", "Generated NchTS distribution vs V0M",nTSBins, TSBins,nTSBins, TSBins);
+	fListOfObjects->Add(fHistNchTSVsV0M);
+
+	fHistNchTSVsV0A=0;
+        fHistNchTSVsV0A=new TH2D("fHistNchTSVsV0A", "Generated NchTS distribution vs V0A",nTSBins, TSBins,nTSBins, TSBins);
+	fListOfObjects->Add(fHistNchTSVsV0A);
+	
 	for(Int_t i=0; i<5; ++i){
 
 		fMult[i] = 0;
-		fMult[i] = new TH1D(Form("fMult_%s",estNames[i]),Form("%s; Nch; #eta",estNames[i]),700,-0.5,699.5); 
+		fMult[i] = new TH1D(Form("fMult_%s",estNames[i]),Form("%s; Nch; #eta",estNames[i]),3000,-0.5,2999.5); 
 		fListOfObjects->Add(fMult[i]);
 
 	}
 	for(Int_t i=0; i<5; ++i){
 
 		fMult2[i] = 0;
-		fMult2[i] = new TH1D(Form("fMult2_%s",estNames[i]),Form("%s for leading pT sel; Nch; #eta",estNames[i]),700,-0.5,699.5); 
+		fMult2[i] = new TH1D(Form("fMult2_%s",estNames[i]),Form("%s for leading pT sel; Nch; #eta",estNames[i]),3000,-0.5,2999.5); 
 		fListOfObjects->Add(fMult2[i]);
 
 	}
+
+	
 
 
 	// ### List of outputs
@@ -487,6 +502,8 @@ void AliAnalysisTaskGenMcKno::MakeRTAnalysis(vector<Int_t> &mult){
 	Int_t pPDG = -10;
 
 	fMultTS->Fill(mult[0]);
+	fHistNchTSVsV0M->Fill(mult[0],mult[2]);
+	fHistNchTSVsV0A->Fill(mult[0],mult[3]);
 
 
 	// ### particle loop

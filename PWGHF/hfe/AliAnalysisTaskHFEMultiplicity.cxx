@@ -613,7 +613,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     
     
     
-    Int_t bins[9]        =          {250,200,100,400,400, 1000, 350,500,300};
+    Int_t bins[9]        =          {250,200,200,400,400, 1000, 350,500,300};
     Double_t xmin[9]    =    {  0, -10,0, 0,0,0, 0,0,-15};
     Double_t xmax[9]    =    {  50,10, 2,2,2, 2000, 350,50,15};
     
@@ -1153,6 +1153,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+       
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
@@ -1175,8 +1176,14 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            clut = clu->GetTOF()*1e9 ;
+            clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
+              
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+            if(TMath::Abs(clut) > 50) continue;
+            if(clu->GetIsExotic()) continue; //remove exotic clusters
+            }
+            
             ncells= clu->GetNCells();
             fClusPhi->Fill(cluphi);
             fClusEtaPhi->Fill(clueta,cluphi);
@@ -1280,6 +1287,11 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            }
             fTrkMatchTrkPt->Fill(TrkPt);
             fTrkMatchTrketa->Fill(TrkEta);
             fTrkMatchTrkphi->Fill(TrkPhi);

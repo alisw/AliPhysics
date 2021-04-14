@@ -324,11 +324,6 @@ protected:
   std::string MatchTrigger(EMCAL_STRINGVIEW triggerstring, const std::vector<std::string> &triggers) const;
 
   /**
-   * @brief Reset downscale factor cache for all EMCAL triggers
-   */
-  void ResetDownscaleFactors();
-
-  /**
    * @brief Check whether run number is from a p-Pb run from 2013
    * @param runnumber Run number to check
    * @return true in case runs from p-Pb 2013 are processed, false otherwise 

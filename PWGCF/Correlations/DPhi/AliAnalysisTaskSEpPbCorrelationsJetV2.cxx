@@ -667,7 +667,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 14.0, 20.0};
    Int_t nbins_pt_lead  = sizeof(binning_pt_lead) / sizeof(Double_t) - 1;
 
-   Double_t binning_pt_leadTPC[] = {0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0, 20.0};
+   //Double_t binning_pt_leadTPC[] = {0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 16.0, 20.0};
+   Double_t binning_pt_leadTPC[] = {0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 4.0, 5.0, 6.0, 7.0, 10.0};
    Int_t nbins_pt_leadTPC  = sizeof(binning_pt_leadTPC) / sizeof(Double_t) - 1;
 
 

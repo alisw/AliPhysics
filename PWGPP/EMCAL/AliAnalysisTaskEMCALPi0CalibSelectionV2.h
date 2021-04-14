@@ -27,6 +27,8 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS
 //---------------------------------------------------------------------------
 
+#include <vector>
+
 // Root includes
 class TH1F;
 #include "TH2I.h"
@@ -39,6 +41,9 @@ class AliEMCALGeometry;
 #include "AliEMCALGeoParams.h"
 class AliEMCALRecoUtils;
 
+const Int_t         kMaxActiveCells_calib    = 17664;
+const Int_t         kMaxActiveCluster        = 200;
+
 class AliAnalysisTaskEMCALPi0CalibSelectionV2 : public AliAnalysisTaskSE
 {
     
@@ -49,22 +54,34 @@ public:
   AliAnalysisTaskEMCALPi0CalibSelectionV2(const char* name);
     
   virtual ~AliAnalysisTaskEMCALPi0CalibSelectionV2();
-    
-  void    FillHistograms();
 
   void    InitGeometryMatrices();
 
   void    InitializeEMCAL( AliVEvent *event );
-
-  Bool_t  AcceptCluster( AliVCluster* c1);
-
-  Bool_t  IsTriggerSelected(AliVEvent *event);
     
   void    UserCreateOutputObjects();
+    
+  void    FillHistograms();
+
+  void    ProcessCells();
+
+  void    ProcessClusters();
   
   void    UserExec(Option_t * opt);
     
   void    PrintInfo();
+
+  Bool_t  AcceptCluster( AliVCluster* c1);
+
+  Bool_t  IsTriggerSelected(AliVEvent *event);
+  
+  void    SetNMaskCellColumns(Int_t n) ;
+  
+  void    SetMaskCellColumn(Int_t ipos, Int_t icol) ;
+  
+  Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
+
+  void    ResetBuffer();
 
   void    Terminate(Option_t* opt);
     
@@ -122,7 +139,15 @@ public:
 
   void    SetOADBFilePath(TString path)                  { fOADBFilePath = path      ; }
 
-  void    SetIsMC()                                      { isMC = kTRUE; }
+  void    SetIsMC()                                      { fIsMC = 1; }
+
+  void    SetJJMC()                                      { fIsMC = 2; }
+
+  void    SetSaveCells()                                 { fSaveCells = kTRUE; }
+
+  void    SetSaveClusters()                              { fSaveClusters = kTRUE; }
+
+  void    SetHeavyIon()                                  { fIsHeavyIon = kTRUE; }
   
   // Cluster recalculation
 
@@ -146,14 +171,6 @@ public:
                                                            fImportGeometryFromFile = import ;
                                                            fImportGeometryFilePath = path   ; } 
 
-  // Mask clusters
-  
-  void    SetNMaskCellColumns(Int_t n) ;
-  
-  void    SetMaskCellColumn(Int_t ipos, Int_t icol) ;
-  
-  Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
-  
   
 private:
 
@@ -164,8 +181,6 @@ private:
     
   Bool_t              fLoadMatrices;     ///<  Matrices set from configuration, not get from geometry.root or from ESDs/AODs.
 
-  Bool_t              isMC;              ///< 
-    
   
   TString             fEMCALGeoName;     ///<  Name of geometry to use.
     
@@ -174,6 +189,14 @@ private:
   AliEMCALRecoUtils * fRecoUtils;        ///<  Access to reconstruction utilities.
 
   Bool_t              fEMCALInitialized; ///< Check if fRecoUtils were initialized.
+  
+  Int_t               fIsMC;              ///< 
+
+  Bool_t              fSaveCells;
+
+  Bool_t              fSaveClusters;     ///<
+
+  Bool_t              fIsHeavyIon;        ///<
     
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
 
@@ -182,8 +205,6 @@ private:
   TRefArray         * fCaloClustersArr;  //!<! List of clusters.
     
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
-  
-//TList             * fCuts ;            //!<! List with analysis cuts.
     
   TList             * fOutputContainer;  //!<! Histogram container.
     
@@ -210,15 +231,15 @@ private:
   Float_t             fL0min;            ///<  Minimum cluster L0.
   Float_t             fL0max;            ///<  Maximum cluster L0.
 
+  Float_t             fOpAnglemin;
+  Float_t             fOpAnglemax;
+
   Float_t             fDTimeCut;         ///<  Maximum difference between time of cluster pairs (ns).
   Float_t             fTimeMax;          ///<  Maximum cluster time (ns).
   Float_t             fTimeMin;          ///<  Minimum cluster time (ns).
 
   Float_t             fAsyCut;           ///<  Asymmetry cut.
 
-  Float_t             fOpAnglemin;
-  Float_t             fOpAnglemax;
-    
   Int_t               fMinNCells;        ///<  Minimum ncells in cluster.
   Int_t               fGroupNCells;      ///<  Group n cells.
   
@@ -228,9 +249,7 @@ private:
 
   ///< List the masked columns.
   Int_t*              fMaskCellColumns;  //[fNMaskCellColumns]
-  
-  // Bool_t              fSelectOnlyCellSignalOutOfCollision; ///< Select cells / clusters that are due to noise, i.e. signal in EMCal that happens not during collisions
- 
+   
   Float_t             fInvMassCutMin;    ///<  Minimum mass cut for clusters to fill time or other histograms.
   Float_t             fInvMassCutMax;    ///< Maximum mass cut for clusters to fill time or other histograms.
 
@@ -261,7 +280,7 @@ private:
   // Histograms
   
   ///< Two-cluster invariant mass assigned to each cell.
-  TH1F*     fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; //!
+  TH1F*     fHmpi0[kMaxActiveCells_calib]; //!
 
   TH2F*     fHmgg;                                                                 //!<! Two-cluster invariant mass vs pt of pair.
   TH2F*     fHmggDifferentSM;                                                      //!<! Two-cluster invariant mass vs pt of pair, each cluster in different SM.
@@ -296,16 +315,40 @@ private:
   TH2F*     fHTpi0[4];                                                             //!<! Time of cell under pi0 mass, for 4 bunch crossings.
   TH2F*     fhClusterTime ;                                                        //!<! Timing of clusters vs energy.
   TH2F*     fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;                  //!<! Timing of clusters vs energy per SM.
-  // TH2F*     fhClusterPairDiffTime;                                                 //!<! Diference in time of clusters.
-  // TH2F*     fhClusterPairDiffTimeSameSM[AliEMCALGeoParams::fgkEMCALModules];       //!<! Diference in time of clusters same SM.
-  // TH2F*     fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; //!<! Diference in time of clusters same sector.
-  // TH2F*     fhClusterPairDiffTimeSameSide[AliEMCALGeoParams::fgkEMCALModules-2];   //!<! Diference in time of clusters same side.
+
+protected:
+  // tree
+  TTree*    fCellTree;                                                             //!<! 
+
+  Int_t         fVBuffer_NCells;
+
+  Float_t       fBuffer_EventWeight;
+  Float_t       fBuffer_Event_VertexZ;
+  Float_t       fBuffer_Event_Multiplicity;
+  Float_t       fBuffer_Event_V0Centrality;
+
+  Int_t*        fVBuffer_Cell_ID;
+  Float_t*      fVBuffer_Cell_E;
+  Float_t*      fVBuffer_Cell_t;
+  Bool_t*       fVBuffer_Cell_gain;
+  Int_t*        fVBuffer_Cell_MCParticleID;
+  Float_t*      fVBuffer_Cell_MCParticleFracE;
+
+  Int_t         fBuffer_NClusters;
+  Float_t*      fVBuffer_Cluster_E;
+  Float_t*      fVBuffer_Cluster_Eta;
+  Float_t*      fVBuffer_Cluster_Phi;
+  Float_t*      fVBuffer_Cluster_t;
+  Int_t*        fVBuffer_Cluster_NCells;
+  Int_t*        fVBuffer_Cluster_M02;
+  Int_t*        fVBuffer_Cluster_LeadCellId;
+  Int_t*        fVBuffer_TrueCluster_MCId;
 
   /// Copy constructor not implemented.
-  AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
+  // AliAnalysisTaskEMCALPi0CalibSelectionV2(           const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
     
   /// Assignment operator not implemented.
-  AliAnalysisTaskEMCALPi0CalibSelectionV2& operator=(const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
+  // AliAnalysisTaskEMCALPi0CalibSelectionV2& operator=(const AliAnalysisTaskEMCALPi0CalibSelectionV2&) ;
   
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEMCALPi0CalibSelectionV2,2) ;

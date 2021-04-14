@@ -140,6 +140,8 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   } else if (trainConfig == 4){   // PHOS DCA-Variation
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120002211311021"); // DCAXY 0.02
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120004211311021"); // DCAXY 0.015
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003411311021"); // DCAZ 0.015
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003511311021"); // DCAZ 0.025
   } else if (trainConfig == 5){   // PHOS Pion mass-Variation
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211322021"); // tighter mass cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211342021"); // on left side tighter
@@ -147,7 +149,7 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   } else if (trainConfig == 6){   // PHOS Opening angle-Variation
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311011"); // tight cut
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311031"); // tighter cut
-    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311041"); // tightest cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311051"); // wider cut
   } else if (trainConfig == 7){   // Background describtion
     cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311020"); // changed to pion rotation  
   } else if (trainConfig == 10){    // PHI 7

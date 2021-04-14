@@ -47,7 +47,7 @@ ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization)
 using namespace PWG::EMCAL;
 
 const std::vector<std::string> AliAnalysisTaskEmcalTriggerNormalization::fgkTriggerClusterLabels = {
-  "ANY", "CENT", "CENTNOTRD", "CALO", "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", "OnlyCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD",
+  "ANY", "CENT", "CENTNOTRD", "CALO", "CALOFAST", "CENTBOTH", "OnlyCENT", "OnlyCENTNOTRD", "CALOBOTH", "OnlyCALO", "OnlyCALOFAST", "CENTNOPMD", "ALL", "ALLNOTRD",
   "ALLBOTH", "OnlyALL", "OnlyALLNOTRD"
 };
 
@@ -177,7 +177,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
       // Fill histogram for the trigger clusters firing the event
       auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hClusterCounterINT7"));
       for(auto triggercluster : triggerclusters) {
-        triggerclusterhist->Fill(triggercluster + 1);
+        triggerclusterhist->Fill(triggercluster);
       }
 
       if(fCacheTriggerClasses.size()) {
@@ -225,7 +225,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
                EGABIT = AliVEvent::kEMCEGA,
                EJEBIT = AliVEvent::kEMCEJE;
   const Int_t NEMCAL_TRIGGERS = 15;
-  const std::array<std::string, NEMCAL_TRIGGERS> EMCAL_TRIGGERS = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7" "DG1", "DG2", "DJ1", "DJ2", "EDMC7", "EDG1", "EDG2", "EDJ1", "EDJ2"}};
+  const std::array<std::string, NEMCAL_TRIGGERS> EMCAL_TRIGGERS = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2", "EDMC7", "EDG1", "EDG2", "EDJ1", "EDJ2"}};
   const std::array<UInt_t, NEMCAL_TRIGGERS> EMCAL_TRIGGERBITS = {{EL0BIT, EGABIT, EGABIT, EJEBIT, EJEBIT, EL0BIT, EGABIT, EGABIT, EJEBIT, EJEBIT, EL0BIT, EGABIT, EGABIT, EJEBIT, EJEBIT}};
   bool hasEMCALtrigger = std::find_if(EMCAL_TRIGGERS.begin(), EMCAL_TRIGGERS.end(), [&triggerstring](const std::string &t) { return triggerstring.find(t) != std::string::npos; } ) != EMCAL_TRIGGERS.end();
   if(hasEMCALtrigger) {
@@ -234,7 +234,10 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   for(Int_t i = 0; i < NEMCAL_TRIGGERS; i++) {      
     auto &triggerclass = EMCAL_TRIGGERS[i];
     auto emctriggerfound = fCacheTriggerClasses.find(triggerclass);
-    if(emctriggerfound == fCacheTriggerClasses.end()) continue;     // trigger class was not enabled in the run
+    if(emctriggerfound == fCacheTriggerClasses.end()) {
+      AliDebugStream(2) << "Trigger " << triggerclass << " not found in the list of supported triggers" << std::endl;
+      continue;     // trigger class was not enabled in the run
+    } 
     if(!(fInputHandler->IsEventSelected() & EMCAL_TRIGGERBITS[i])) continue;
     // check if it is a mixed trigger
     if(triggerclass.find("ED") != std::string::npos){
@@ -251,7 +254,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
         // Fill histogram for the trigger clusters firing the event
         auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggerclass.data())));
         for(auto triggercluster : triggerclusters) {
-          triggerclusterhist->Fill(triggercluster + 1);
+          triggerclusterhist->Fill(triggercluster);
         }
       }
     } else {
@@ -264,7 +267,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
         // Fill histogram for the trigger clusters firing the event
         auto triggerclusterhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggerclass.data())));
         for(auto triggercluster : triggerclusters) {
-          triggerclusterhist->Fill(triggercluster + 1);
+          triggerclusterhist->Fill(triggercluster);
         }
       } 
     }
@@ -349,18 +352,14 @@ std::vector<AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> AliAnaly
   return result;
 }
 
-void AliAnalysisTaskEmcalTriggerNormalization::ResetDownscaleFactors(){
-  std::vector<std::string> emcaltriggers = {"EMC7", "EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"};
-  for(auto trg : emcaltriggers) fCacheDownscaleFactors[trg] = 1.;
-}
-
 void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
   PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
 
   fCacheTriggerClasses.clear();
-  ResetDownscaleFactors();
+  fCacheDownscaleFactors.clear();
   std::vector<std::string> emcalL1triggers = {"EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"};
   std::vector<std::string> emcalL0triggers = {"EMC7", "DMC7"};
+  std::vector<std::string> mixedtriggers = {"EDMC7", "EDG1", "EDG2", "EDJ1", "EDJ2"};
   // Load trigger classes used in run
   auto triggerconfiguration = static_cast<AliTriggerConfiguration *>(AliCDBManager::Instance()->Get("GRP/CTP/Config")->GetObject());
   for(auto triggerclassObject : triggerconfiguration->GetClasses()) {
@@ -395,6 +394,30 @@ void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
       fCacheTriggerClasses[emcalTriggerType] = triggerclass->GetName();
       AliInfoStream() << "Found EMCAL trigger: " << emcalTriggerType << ", downscale factor " << downscalefactorTrigger << "(based on " << triggerclass->GetName() << ")\n";
     }
+  }
+  // add nmixed triggers
+  for(const auto &trg : mixedtriggers) {
+    std::string nameemcal = "E" + trg.substr(2),
+                namedcal = "D" + trg.substr(2);
+    AliDebugStream(1) << "Adding mixed trigger " << trg << "(consisting of EMCAL " << nameemcal << " and DCAL " << namedcal << ")\n";
+    auto foundEmcal = fCacheDownscaleFactors.find(nameemcal),
+         foundDcal = fCacheDownscaleFactors.find(namedcal);
+    if((foundEmcal != fCacheDownscaleFactors.end()) || (foundDcal != fCacheDownscaleFactors.end())) {
+      AliDebugStream(1) << "Found either EMCAL or DCAL trigger for " << trg << ", so adding mixed trigger ..." << std::endl;
+      if(foundEmcal != fCacheDownscaleFactors.end()) {
+        fCacheDownscaleFactors[trg] = foundEmcal->second;
+        fCacheTriggerClasses[trg] = fCacheTriggerClasses[nameemcal];
+        AliInfoStream() << "Adding Downscale factor for mixed trigger (based on EMCAL) " << trg << ": " << foundEmcal->second << "\n";
+      } else {
+        fCacheDownscaleFactors[trg] = foundDcal->second;
+        fCacheTriggerClasses[trg] = fCacheTriggerClasses[nameemcal];
+        AliInfoStream() << "Adding Downscale factor for mixed trigger (based on DCAL) " << trg << ": " << foundDcal->second << "\n";
+      }
+    }
+  }
+  AliInfoStream() << "List of triggers: " << std::endl;
+  for(auto en : fCacheTriggerClasses) {
+    AliInfoStream() << en.first << ": " << en.second << std::endl;
   }
 }
 

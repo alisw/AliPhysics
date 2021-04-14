@@ -66,7 +66,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(nullptr),                  fUse1Dmap(kFALSE),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
   fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE),
-  fExoticCellFraction(0),                 fExoticCellDiffTime(0),                 fExoticCellMinAmplitude(0),
+  fExoticCellFraction(0),                 fExoticCellDiffTime(0),
+  fExoticCellMinAmplitude(0),             fExoticCellInCrossMinAmplitude(0),
   fPIDUtils(),
   fLocMaxCutE(0),                         fLocMaxCutEDiff(0),
   fAODFilterMask(0),
@@ -131,7 +132,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
   fRejectExoticCluster(reco.fRejectExoticCluster),           fRejectExoticCells(reco.fRejectExoticCells),
   fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),
-  fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
+  fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),     fExoticCellInCrossMinAmplitude(reco.fExoticCellInCrossMinAmplitude),
   fPIDUtils(reco.fPIDUtils),
   fLocMaxCutE(reco.fLocMaxCutE),                             fLocMaxCutEDiff(reco.fLocMaxCutEDiff),
   fAODFilterMask(reco.fAODFilterMask),
@@ -253,6 +254,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fExoticCellFraction        = reco.fExoticCellFraction;
   fExoticCellDiffTime        = reco.fExoticCellDiffTime;
   fExoticCellMinAmplitude    = reco.fExoticCellMinAmplitude;
+  fExoticCellInCrossMinAmplitude = reco.fExoticCellInCrossMinAmplitude;
 
   fPIDUtils                  = reco.fPIDUtils;
 
@@ -629,7 +631,7 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
 //___________________________________________________________________________
 Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
                                      AliVCaloCells* cells, Int_t bc,
-                                     Float_t cellMinEn, Bool_t useWeight, Float_t energy )
+                                     Bool_t useWeight, Float_t energy )
 {
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
 
@@ -698,10 +700,10 @@ Float_t AliEMCALRecoUtils::GetECross(Int_t absID, Double_t tcell,
     w4 = GetCellWeight(ecell4,energy);
   }
 
-  if ( ecell1 < cellMinEn || w1 <= 0 ) ecell1 = 0 ;
-  if ( ecell2 < cellMinEn || w2 <= 0 ) ecell2 = 0 ;
-  if ( ecell3 < cellMinEn || w3 <= 0 ) ecell3 = 0 ;
-  if ( ecell4 < cellMinEn || w4 <= 0 ) ecell4 = 0 ;
+  if ( ecell1 < fExoticCellInCrossMinAmplitude || w1 <= 0 ) ecell1 = 0 ;
+  if ( ecell2 < fExoticCellInCrossMinAmplitude || w2 <= 0 ) ecell2 = 0 ;
+  if ( ecell3 < fExoticCellInCrossMinAmplitude || w3 <= 0 ) ecell3 = 0 ;
+  if ( ecell4 < fExoticCellInCrossMinAmplitude || w4 <= 0 ) ecell4 = 0 ;
 
   return ecell1+ecell2+ecell3+ecell4;
 }
@@ -936,7 +938,7 @@ Bool_t AliEMCALRecoUtils::IsExoticCell(Int_t absID, AliVCaloCells* cells, Int_t 
 
   if (1-eCross/ecell > fExoticCellFraction)
   {
-    AliDebug(2,Form("AliEMCALRecoUtils::IsExoticCell() - EXOTIC CELL id %d, eCell %f, eCross %f, 1-eCross/eCell %f\n",
+    AliDebug(2,Form("EXOTIC CELL id %d, eCell %f, eCross %f, 1-eCross/eCell %f",
                     absID,ecell,eCross,1-eCross/ecell));
     return kTRUE;
   }
@@ -1361,6 +1363,21 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 
       break;
     }
+    case kTestBeamShaperWoScale:
+    {
+      // THIS PARAMETRIZATION HAS TO BE USED TOGETHER WITH THE SHAPER NONLINEARITY:
+      // Final parametrization of testbeam data points,
+      // includes also points for E>100 GeV and determined on shaper corrected data.
+
+    //  fNonLinearityParams[0] = 1.91897;
+    //  fNonLinearityParams[1] = 0.0264988;
+    //  fNonLinearityParams[2] = 0.965663;
+    //  fNonLinearityParams[3] = -187.501;
+    //  fNonLinearityParams[4] = 2762.51;
+      energy /= ( 1.0 * (fNonLinearityParams[0] + fNonLinearityParams[1] * TMath::Log(energy) ) / ( 1 + ( fNonLinearityParams[2] * TMath::Exp( ( energy - fNonLinearityParams[3] ) / fNonLinearityParams[4] ) ) ) );
+
+      break;
+    }
     case kTestBeamFinalMC:
     {
       // Final parametrization of testbeam MC points,
@@ -1607,7 +1624,7 @@ if (fNonLinearityFunction == kPCMv1) {
    fNonLinearityParams[6] =  0.0;
  }
 
- if (fNonLinearityFunction == kTestBeamShaper) {
+ if (fNonLinearityFunction == kTestBeamShaper || fNonLinearityFunction == kTestBeamShaperWoScale) {
    fNonLinearityParams[0] =  1.91897;
    fNonLinearityParams[1] =  0.0264988;
    fNonLinearityParams[2] =  0.965663;
@@ -2177,6 +2194,7 @@ void AliEMCALRecoUtils::InitParameters()
   fExoticCellFraction     = 0.97;
   fExoticCellDiffTime     = 1e6;
   fExoticCellMinAmplitude = 4.0;
+  fExoticCellInCrossMinAmplitude = 0.1;
 
   fAODFilterMask    = 128;
   fAODHybridTracks  = kFALSE;

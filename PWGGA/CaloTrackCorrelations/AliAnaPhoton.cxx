@@ -123,6 +123,10 @@ fhDispEtaE(0),                fhDispPhiE(0),
 fhSumEtaE(0),                 fhSumPhiE(0),                 fhSumEtaPhiE(0),
 fhDispEtaPhiDiffE(0),         fhSphericityE(0),
 fhDispSumEtaDiffE(0),         fhDispSumPhiDiffE(0),
+
+fhPtM02Spherocity(0),
+fhPtM02SpherocityCent(0),     fhPtM02SpherocityMinPtCent(0),
+
 // MC histograms
 fhMCParticleNLM(0),           fhMCParticleM02(0),
 fhMCPrimParticle(0),          fhMCPrimParticleAcc(0),
@@ -478,6 +482,11 @@ fhDistance2Hijing(0)
     fhLam0NxNEta[isector] = 0;
   }
   
+  for(Int_t i = 0; i < 4; i++)
+  {
+    fhPtM02SpherocityMinPt[i] = 0;
+  }
+
   // Initialize parameters
   InitParameters();
 }
@@ -3038,6 +3047,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Float_t nlmmax   = GetHistogramRanges()->GetHistoNLMMax()   ;
   TArrayD nlmBinsArray = GetHistogramRanges()->GetHistoNLMArr();
   
+  TArrayD  soBinsArray = GetHistogramRanges()->GetHistoSpherocityArr();
+
   // Init the number of modules, set in the class AliCalorimeterUtils
   //
   InitCaloParameters(); // See AliCaloTrackCorrBaseClass
@@ -5768,6 +5779,77 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
   } // regions in EMCal
 
+  if ( GetReader()->IsEventSpherocityCalculated() )
+  {
+    if ( !IsHighMultiplicityAnalysisOn() )
+    {
+      fhPtM02Spherocity = new TH3F
+      (Form("hPtM02Spherocity_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPt()),
+       Form("#it{p}_{T} vs M02 vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPt()),
+       ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+       ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(),
+       soBinsArray.GetSize() - 1, soBinsArray.GetArray());
+      fhPtM02Spherocity->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtM02Spherocity->SetYTitle("#sigma^{2}_{long}");
+      fhPtM02Spherocity->SetZTitle("Spherocity");
+      outputContainer->Add(fhPtM02Spherocity);
+
+      if ( GetReader()->IsEventSpherocityMinPtStudied() )
+      {
+        for(Int_t i = 0; i < 4; i++)
+        {
+          fhPtM02SpherocityMinPt[i] = new TH3F
+          (Form("hPtM02Spherocity_MinPt%1.2fGeV",GetReader()->GetSpherocityMinPtCuts(i)),
+           Form("#it{p}_{T} vs M02 vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPtCuts(i)),
+           ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+           ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(),
+           soBinsArray.GetSize() - 1, soBinsArray.GetArray());
+          fhPtM02SpherocityMinPt[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtM02SpherocityMinPt[i]->SetYTitle("#sigma^{2}_{long}");
+          fhPtM02SpherocityMinPt[i]->SetZTitle("Spherocity");
+          outputContainer->Add(fhPtM02SpherocityMinPt[i]);
+        }
+      }
+    }
+    else
+    {
+      fhPtM02SpherocityCent = new TH3F*[GetNCentrBin()] ;
+      if ( GetReader()->IsEventSpherocityMinPtStudied() )
+        fhPtM02SpherocityMinPtCent = new TH3F*[GetNCentrBin()*4] ;
+      for (Int_t icent = 0; icent < GetNCentrBin(); icent++)
+      {
+        fhPtM02SpherocityCent[icent] = new TH3F
+        (Form("hPtM02SpherocityCent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPt()),
+         Form("#it{p}_{T} vs M02 vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPt()),
+         ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+         ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(),
+         soBinsArray.GetSize() - 1, soBinsArray.GetArray());
+        fhPtM02SpherocityCent[icent]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPtM02SpherocityCent[icent]->SetYTitle("#sigma^{2}_{long}");
+        fhPtM02SpherocityCent[icent]->SetZTitle("Spherocity");
+        outputContainer->Add(fhPtM02SpherocityCent[icent]);
+
+        if ( GetReader()->IsEventSpherocityMinPtStudied() )
+        {
+          for(Int_t i = 0; i < 4; i++)
+          {
+            Int_t index = icent*4+i;
+            fhPtM02SpherocityMinPtCent[index] = new TH3F
+            (Form("hPtM02SpherocityCent%d_MinPt%1.2fGeV",icent,GetReader()->GetSpherocityMinPtCuts(i)),
+             Form("#it{p}_{T} vs M02 vs spherocity, #it{p}_{T} > %1.2f (GeV/#it{c})",GetReader()->GetSpherocityMinPtCuts(i)),
+             ptBinsArray.GetSize() - 1, ptBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1, ssBinsArray.GetArray(),
+             soBinsArray.GetSize() - 1, soBinsArray.GetArray());
+            fhPtM02SpherocityMinPtCent[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhPtM02SpherocityMinPtCent[index]->SetYTitle("#sigma^{2}_{long}");
+            fhPtM02SpherocityMinPtCent[index]->SetZTitle("Spherocity");
+            outputContainer->Add(fhPtM02SpherocityMinPtCent[index]);
+          }
+        }
+      }
+    }
+  }
+
   // Generated level histograms
   //
   if ( IsDataMC() || GetReader()->AreMCPromptPhotonsSelected() )
@@ -7650,7 +7732,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 //______________________________________________
 void  AliAnaPhoton::MakeAnalysisFillHistograms()
 {
-  Int_t cen = GetEventCentrality();
+  Int_t cen   = GetEventCentrality();
+  Int_t icent = GetEventCentralityBin();
 
   // In case of simulated data, fill acceptance histograms
   if ( (IsDataMC() || GetReader()->AreMCPromptPhotonsSelected()) &&
@@ -7692,7 +7775,9 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     Float_t etacluster = ph->Eta();
     Float_t ecluster   = ph->E();
     Float_t weightPt   = ph->GetWeight();
-    
+    Float_t m02        = ph->GetM02();
+    Float_t m20        = ph->GetM20();
+
     if ( IsHighMultiplicityAnalysisOn() )
     {
       fhPtCentralityPhoton ->Fill(ptcluster,cen, GetEventWeight()*weightPt) ;
@@ -7720,7 +7805,32 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight()*weightPt);
       fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight()*weightPt);
          
-      if     (ecluster   > 0.7) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+      if (ecluster   > 0.7)
+        fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight()*weightPt);
+    }
+
+    // Spherocity
+    if ( GetReader()->IsEventSpherocityCalculated() )
+    {
+      if ( !IsHighMultiplicityAnalysisOn() )
+        fhPtM02Spherocity           ->Fill(ptcluster, m02, GetReader()->GetEventSpherocity(), GetEventWeight());
+      else
+        fhPtM02SpherocityCent[icent]->Fill(ptcluster, m02, GetReader()->GetEventSpherocity(), GetEventWeight());
+
+      if ( GetReader()-> IsEventSpherocityMinPtStudied() )
+      {
+        for (Int_t i = 0; i < 4; i++)
+        {
+          if ( !IsHighMultiplicityAnalysisOn() )
+            fhPtM02SpherocityMinPt[i]    ->Fill(ptcluster, m02, GetReader()->GetEventSpherocityPerMinPtCut(i), GetEventWeight());
+          else
+          {
+            Int_t index = icent*4+i;
+
+            fhPtM02SpherocityMinPtCent[index]->Fill(ptcluster, m02, GetReader()->GetEventSpherocityPerMinPtCut(i), GetEventWeight());
+          }
+        }
+      }
     }
 
 //    Comment this part, not needed but in case to know how to do it in the future
@@ -7834,9 +7944,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
               
               if ( fFillSSHistograms )
               {
-                Float_t m02 = ph->GetM02();
-                Float_t m20 = ph->GetM20();
-                
                 // conversion vertex vs shower shape
                 
                 Int_t convR = -1;

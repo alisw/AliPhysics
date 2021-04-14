@@ -610,6 +610,28 @@ public:
   void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
+  // Spherocity
+  Float_t          CalculateEventSpherocity( Float_t minPt );
+  Float_t          GetEventSpherocity()              const { return fSpherocity            ; }
+  Float_t          GetEventSpherocityPerMinPtCut(Int_t icut)   const
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityPtCut[icut] ; else return -10. ; }
+
+  Float_t          GetSpherocityMinPt()              const { return fSpherocityMinPt       ; }
+  void             SetSpherocityMinPt(Float_t min)         { fSpherocityMinPt = min        ; }
+
+  Float_t          GetSpherocityMinPtCuts(Int_t icut)
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityMinPtCuts[icut] ; else return 0. ; }
+  void             SetSpherocityMinPtCuts(Int_t icut, Float_t min)
+  { if ( icut >= 0 && icut < 4 ) fSpherocityMinPtCuts[icut] = min ; }
+
+  void             SwitchOnEventSpherocityCalculation()    { fCalculateSpherocity = kTRUE  ; }
+  void             SwitchOffEventSpherocityCalculation()   { fCalculateSpherocity = kFALSE ; }
+  Bool_t           IsEventSpherocityCalculated()     const { return fCalculateSpherocity   ; }
+
+  void             SwitchOnEventSpherocityMinPtStudy()    { fStudySpherocityMinPt = kTRUE  ; }
+  void             SwitchOffEventSpherocityMinPtStudy()   { fStudySpherocityMinPt = kFALSE ; }
+  Bool_t           IsEventSpherocityMinPtStudied()  const { return fStudySpherocityMinPt   ; }
+
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -795,8 +817,16 @@ public:
   virtual void SwitchOffPythiaEventHeaderUse()            { fCheckPythiaEventHeader = kFALSE ; }
   virtual Bool_t IsPythiaEventHeaderUsed()          const { return fCheckPythiaEventHeader ; }
   
-  // See implementation in AOD and ESD readers
-  
+  // Methods to reject generated MC event or particles
+  // Implemented in ESD/AOD reader
+  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const { return kFALSE; }
+  virtual Bool_t IsPileupInGeneratedMCEvent(TString genname="")          const { return kFALSE; }
+  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString genname="") const { return kFALSE; }
+
+  virtual void   SwitchOnMCParticlePileUpRejection()       { fRejectPileUpMCParticle = kTRUE  ; }
+  virtual void   SwitchOffMCParticlePileUpRejection()      { fRejectPileUpMCParticle = kFALSE ; }
+  virtual Bool_t IsMCParticlePileUpRejected()        const { return fRejectPileUpMCParticle   ; }
+
   // Filtered kinematics in AOD
   
   virtual TClonesArray*     GetAODMCParticles()      const ;
@@ -1177,6 +1207,18 @@ public:
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
 
+  // Event spherocity
+  Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
+  Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
+  Float_t          fSpherocityMinPt ;              ///<  Event spherocity min track pT
+  Float_t          fSpherocityMinPtCuts[4] ;       ///<  Event spherocity list of min track pT in case  fStudySpherocityMinPt = 1
+  Bool_t           fCalculateSpherocity ;          ///<  Activate or not event spherocity calculation
+  Bool_t           fStudySpherocityMinPt ;         ///<  Calculate spherocity for different min pT
+  TH1F *           fhSpherocity;                   ///< Spherocity vs track pT  control histogram
+  TH2F *           fhSpherocityCen;                ///< Spherocity vs centrality vs track pT control histogram
+  TH1F *           fhSpherocityMinPtCut[4];        ///< Spherocity control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+  TH2F *           fhSpherocityCenMinPtCut[4];     ///< Spherocity vs centrality control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+
   // Jets
   Bool_t           fFillInputNonStandardJetBranch; ///<  Flag to use data from non standard jets.
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
@@ -1250,6 +1292,8 @@ public:
   Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
   Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
 
+  Bool_t           fRejectPileUpMCParticle ;       ///< Reject injected Pile-up MC particles
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1257,7 +1301,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,95) ;
+  ClassDef(AliCaloTrackReader,97) ;
   /// \endcond
 
 } ;

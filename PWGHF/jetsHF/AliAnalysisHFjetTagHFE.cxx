@@ -1346,7 +1346,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 				Double_t WeightNtrkl = -1.;
 				Double_t WeightZvtx = -1.;
 				TProfile* estimatorAvg;
-				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
+				estimatorAvg = GetEstimatorHistogram(fAOD);
 				if(estimatorAvg){
 						correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fNref));
 				}

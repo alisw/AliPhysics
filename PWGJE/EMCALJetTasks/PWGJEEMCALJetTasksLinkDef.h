@@ -60,6 +60,7 @@
 #pragma link C++ class AliPWGJETrainHelpers+;
 
 // user task
+#pragma link C++ class AliAnalysisTaskEmcalJetEnergyFlow+;
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
@@ -167,6 +168,8 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetTaggerTaskFast+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxPerformance+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHdEdxCorrelations+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOnlinePatchesRef+;

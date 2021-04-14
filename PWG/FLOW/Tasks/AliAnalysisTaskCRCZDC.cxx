@@ -2412,7 +2412,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     const Double_t * towZPCraw = aodZDC->GetZPCTowerEnergy(); //@Shi add ZPC
     const Double_t * towZPAraw = aodZDC->GetZPATowerEnergy(); //@Shi add ZPA
-
+	
+	Double_t towZNCrawEnergy[5]={0.}, towZNArawEnergy[5]={0.};
+	for(Int_t i=0; i<5; i++) {
+		towZNCrawEnergy[i] = towZNCraw[i];
+		towZNArawEnergy[i] = towZNAraw[i];
+	}
+	
+	fFlowEvent->SetTowZNCraw(towZNCrawEnergy);
+	fFlowEvent->SetTowZNAraw(towZNArawEnergy);
     // Get centroid from ZDCs *******************************************************
 
     Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);

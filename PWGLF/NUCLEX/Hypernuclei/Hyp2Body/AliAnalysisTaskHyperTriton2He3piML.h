@@ -209,6 +209,7 @@ public:
   bool fLambda;
   bool fUseTPCmomentum;
   int  fNHarm;
+  AliPID::EParticleType fNucleus;
 
   std::string fV0CalibrationFile;
 

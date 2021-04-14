@@ -1,13 +1,16 @@
-AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TString name = "test",
-									   Bool_t isAOD = kFALSE,
-									   Bool_t getFromAlien = kFALSE,
-									   TString configFile="./Config_hmurakam_ElectronEfficiencyV2.C",
-									   Bool_t tofcor = kFALSE,
-									   TString year = "16",
-									   Bool_t usePhiV=kTRUE,
-									   Double_t maxMee=0.14,
-									   Double_t minphiv=2.0)
-
+AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TString name        = "test",
+                                                                           Int_t whichGen      = 1, // 0=all sources, 1=HS, 2=Jpsi
+                                                                           Bool_t isAOD        = kFALSE,
+                                                                           Bool_t getFromAlien = kFALSE,
+                                                                           TString configFile  = "./Config_hmurakam_ElectronEfficiencyV2.C",
+                                                                           Bool_t tofcor       = kFALSE,
+                                                                           TString year        = "16",
+                                                                           Bool_t usePhiV      = kTRUE,
+                                                                           Double_t maxMee     = 0.14,
+                                                                           Double_t minphiv    = 2.0,
+                                                                           Bool_t DeactivateLS = kFALSE,
+                                                                           TString outputFileName="LMEE.root",
+                                                                           TString suffix="")
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -15,7 +18,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  fileName = "LMEE.root"; // create a subfolder in the file
+  fileName = outputFileName; // create a subfolder in the file
 
   // Loading individual config file either local or from Alien
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
@@ -38,11 +41,31 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
 
+  //  Possibility to set generator. If nothing set all generators are taken into account
+  if(whichGen == 0){
+    std::cout << "No generator specified. Looking at all sources" << std::endl;
+    task->SetGeneratorMCSignalName("");
+    task->SetGeneratorULSSignalName("");
+  } else if(whichGen == 1){
+    if(year == "16"){
+      std::cout << "2016 Sample Generator names specified -> Pythia CC_1, Pythia BB_1 and Pythia B_1" << std::endl;
+      task->SetGeneratorMCSignalName("Pythia CC_1;Pythia BB_1;Pythia B_1");
+      task->SetGeneratorULSSignalName("Pythia CC_1;Pythia BB_1;Pythia B_1");
+    }else{
+      std::cout << "2017 and 2018 Generator names specified -> Pythia CC_0, Pythia BB_0 and Pythia B_0" << std::endl;
+      task->SetGeneratorMCSignalName("Pythia CC_0;Pythia BB_0;Pythia B_0");
+      task->SetGeneratorULSSignalName("Pythia CC_0;Pythia BB_0;Pythia B_0");
+    }
+  } else if(whichGen == 2){
+    //not used so far
+    std::cout << "Generator names specified -> Jpsi2ee_1 and B2Jpsi2ee_1" << std::endl;
+    task->SetGeneratorMCSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
+    task->SetGeneratorULSSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
+  }
+
   // Set TOF correction
   if(tofcor){
     SetTOFSigmaEleCorrection(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, year.Data());
-    /* SetEtaCorrectionTOFRMS(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta); */
-    /* SetEtaCorrectionTOFMean(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta);  */
   }
 
   // Event selection. Is the same for all the different cutsettings
@@ -96,8 +119,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Resolution File, If resoFilename = "" no correction is applied
   SetResolutionFile(year);
   cout << resoFilename << endl;
-  task->SetResolutionFile(resoFilename);
-  task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  //  task->SetResolutionFile(resoFilename);
+  //  task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  task->SetResolutionFile(resoFilename,resoFilenameFromAlien);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -110,6 +134,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   task->SetPhiVBinsLinear(minPhiVBin, maxPhiVBin, stepsPhiVBin);
   task->SetFillPhiV(kFALSE);
@@ -131,8 +156,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
     task->AddTrackCuts(filter);
   }
 
+  TString outlistname = Form("efficiency%s",suffix.Data());
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("efficiency", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }

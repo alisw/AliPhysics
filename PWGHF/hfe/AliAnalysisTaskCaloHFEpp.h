@@ -29,7 +29,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserCreateOutputObjects();
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
-		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
+		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign, Double_t Eiso);
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
 	
                 virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
@@ -135,6 +135,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 						if(fMultEstimatorAvg[12]) delete fMultEstimatorAvg[12];
 						fMultEstimatorAvg[12]=new TProfile(*hprof);
 		}
+		void 			SetMultiProfileMCLHC17(TProfile * hprof){
+						if(fMultEstimatorAvg[13]) delete fMultEstimatorAvg[13];
+						fMultEstimatorAvg[13]=new TProfile(*hprof);
+		}
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -221,6 +225,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fPhidiff;
 		TH2F*                   fInv_pT_LS;
 		TH2F*                   fInv_pT_ULS;
+		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
@@ -247,6 +252,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_Ds;
 		TH2F*                   fDCAxy_Pt_lambda;
 		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fDCAxy_Pt_We;
 		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
@@ -305,7 +311,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
-		TProfile*		fMultEstimatorAvg[13];
+		TProfile*		fMultEstimatorAvg[14];
 		TH1D*       fweightNtrkl;
 
 

@@ -180,6 +180,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
+    UserTasks/AliAnalysisTaskEmcalJetEnergyFlow.cxx
     UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
     UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
@@ -188,6 +189,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
     UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
     UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx

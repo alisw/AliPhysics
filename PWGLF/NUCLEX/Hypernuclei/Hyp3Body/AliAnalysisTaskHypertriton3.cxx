@@ -625,7 +625,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.mdpi = (ldeu + lpi).mass2();
         ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
         auto d{boostHyper(ldeu).Vect()};
-        auto lambda{boostHyper(lpro + lpi).Vect()};
+        // auto lambda{boostHyper(lpro + lpi).Vect()};
         auto p{boostHyper(lpro).Vect()};
         auto pi{boostHyper(lpi).Vect()};
         doubleV0sRecHyp.momDstar = std::sqrt(d.Mag2());
@@ -679,7 +679,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
         doubleV0sRecHyp.dca_de_sv = Hypot(deuPos[0] - vert[0], deuPos[1] - vert[1], deuPos[2] - vert[2]);
         if (doubleV0sRecHyp.dca_de_sv > fMaxTrack2SVDCA[0])
           continue;
-        
+
         doubleV0sRecHyp.cosPA_Lambda = prPiV0.GetV0CosineOfPointingAngle();
         doubleV0sRecHyp.chi2 = prPiV0.GetChi2V0() + deuPiV0.GetChi2V0();
 
@@ -758,6 +758,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               continue;
 
             ROOT::Math::SVector<double, 3U> vert;
+            lVector ldeu, lpro, lpi;
             if (!fKF)
             {
               int nVert{0};
@@ -775,9 +776,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               auto &deuTrack = fVertexer.getTrack(0);
               auto &prTrack = fVertexer.getTrack(1);
               auto &piTrack = fVertexer.getTrack(2);
-              lVector ldeu{(float)deuTrack.Pt(), (float)deuTrack.Eta(), (float)deuTrack.Phi(), kDeuMass};
-              lVector lpro{(float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass};
-              lVector lpi{(float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass};
+              ldeu.SetCoordinates((float)deuTrack.Pt(), (float)deuTrack.Eta(), (float)deuTrack.Phi(), kDeuMass);
+              lpro.SetCoordinates((float)prTrack.Pt(), (float)prTrack.Eta(), (float)prTrack.Phi(), kPMass);
+              lpi.SetCoordinates((float)piTrack.Pt(), (float)piTrack.Eta(), (float)piTrack.Phi(), kPiMass);
 
               hypertriton = ldeu + lpro + lpi;
 
@@ -785,7 +786,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               o2RecHyp.mdpi = (ldeu + lpi).mass2();
               ROOT::Math::Boost boostHyper{hypertriton.BoostToCM()};
               auto d{boostHyper(ldeu).Vect()};
-              auto lambda{boostHyper(lpro + lpi).Vect()};
+              // auto lambda{boostHyper(lpro + lpi).Vect()};
               auto p{boostHyper(lpro).Vect()};
               auto pi{boostHyper(lpi).Vect()};
               o2RecHyp.momDstar = std::sqrt(d.Mag2());
@@ -867,7 +868,23 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *)
               }
             }
             if (record)
+            {
               fTreeHyp3->Fill();
+              if (fTrackRotations)
+              {
+                double step{TMath::TwoPi() / (fTrackRotations + 1)};
+                for (int iR{1}; iR <= fTrackRotations; ++iR)
+                {
+                  lVector ldeuR{ldeu.pt(), ldeu.eta(), ldeu.phi() + iR * step, kDeuMass};
+                  lVector lhyper{ldeuR + lpro + lpi};
+                  if (lhyper.mass() >= fMassWindow[0] && lhyper.mass() <= fMassWindow[1])
+                  {
+                    fRecHyp->m = -lhyper.mass();
+                    fTreeHyp3->Fill();
+                  }
+                }
+              }
+            }
           }
         }
       }

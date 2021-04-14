@@ -37,6 +37,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetUseNoCandidateCuts(){fCandidateCutLevel=0;}
   void SetUsePtDependentFiducialAcceptance(){fMaxRapidityCand=-999.;}
   void SetMaxRapidityForFiducialAcceptance(Double_t ymax){fMaxRapidityCand=ymax;}
+  void EnableCPUTimeCheck(Bool_t enable=kTRUE, Bool_t milliseconds=kFALSE) {fEnableCPUTimeCheck=enable; fCountTimeInMilliseconds=milliseconds;}
+
  private:
 
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices &source);
@@ -47,7 +49,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   int GetJsonInteger(const char* jsonFileName, const char* key);
   int GetJsonBool(const char* jsonFileName, const char* key);
   float GetJsonFloat(const char* jsonFileName, const char* key);
-  
+  float* GetJsonArray(const char* jsonFileName, const char* key, int &size);
+  float** GetJsonMatrix(const char* jsonFileName, const char* key, int &size1, int &size2);
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
   void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
@@ -59,7 +62,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t SelectInvMassAndPt3prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc3);
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray* twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray* threeTrackArray, AliAODVertex* secVert, Double_t bzkG);
-
+  AliAODRecoCascadeHF* MakeCascade(TObjArray *twoTrackArray, AliAODVertex* secVert, Double_t bzkG);
   Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
   Int_t DzeroSkimCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t JpsiSkimCuts(AliAODRecoDecayHF2Prong* cand);
@@ -169,6 +172,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistCovMatSecVXX3Prong;     //!<!  histo with cov mat sec vert for the 3-prong candidate
 
   TH1F *fHistInvMassDs;              //!<!  histo with Ds->KKpi inv mass
+  TH1F *fHistInvMassDsSignal;        //!<!  histo with Ds->KKpi inv mass (signal)
+  TH1F *fHistInvMassDsRefl;          //!<!  histo with Ds->KKpi inv mass (reflection)
   TH1F *fHistPtDs;                   //!<!  histo with Ds pt
   TH2F *fHistYPtDs;                  //!<!  histo with Ds y vs pt
   TH1F *fHistDecLenDs;               //!<!  histo with Ds decay length
@@ -183,6 +188,9 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  TH1F *fHistInvMassLcK0sp;         //!<!  histo with LcpKpi+ inv mass
+  TH1F *fHistPtLcK0sp;              //!<!  histo with LcpKpi+ pt
+
   TH1F* fHistPtGenPrompt[5];        //!<! histos for efficiency (prompt)
   TH1F* fHistPtGenFeeddw[5];        //!<! histos for efficiency (from B)
   TH1F* fHistPtGenLimAccPrompt[5];  //!<! histos for efficiency (prompt)
@@ -192,6 +200,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F* fHistPtRecoPrompt[5];       //!<! histos for efficiency (prompt)
   TH1F* fHistPtRecoFeeddw[5];       //!<! histos for efficiency (from B)
   
+  TH2F* fHistCPUTimeTrackVsNTracks;  //!<! histo with CPU time for track selection vs number of selected tracks for candidates
+  TH2F* fHistCPUTimeCandVsNTracks;   //!<! histo with CPU time for candidate selection vs number of selected tracks for candidates
+  TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
+  TH2F* fHistWallTimeCandVsNTracks;  //!<! histo with wall time for candidate selection vs number of selected tracks for candidates
+
   Bool_t  fReadMC;             // flag for access to MC
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
@@ -258,8 +271,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
+  Double_t fMinPtV0;                            // minimum V0 pt for Lc->pK0s
+  
+  Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
+  Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices,17);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,20);
 };
 
 

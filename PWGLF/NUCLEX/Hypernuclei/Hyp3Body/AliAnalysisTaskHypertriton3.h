@@ -102,6 +102,7 @@ public:
   float fMaxKFchi2[3] = {40000.,40000.,40000.};
   std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
   AliVertexerHyperTriton2Body fV0Vertexer;
+  int fTrackRotations = 0;
 
 
 private:
