@@ -53,9 +53,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   float** GetJsonMatrix(const char* jsonFileName, const char* key, int &size1, int &size2);
   void InitDefault();
   Int_t GetPtBin(Double_t ptCand);
+  Int_t GetPtBinSingleTrack(Double_t ptTrack);
   void ProcessTriplet(TObjArray* threeTrackArray, AliAODRecoDecay* rd4massCalc3, AliESDVertex* primVtxTrk, AliAODVertex *vertexAODp, float bzkG, double dist12, AliMCEvent* mcEvent);
   Bool_t GetTrackMomentumAtSecVert(AliESDtrack* tr, AliAODVertex* secVert, Double_t momentum[3], float bzkG);
-  Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG);
+  Int_t SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2]);
   AliESDVertex* ReconstructSecondaryVertex(TObjArray* trkArray, AliESDVertex* primvtx);
   AliAODVertex* ConvertToAODVertex(AliESDVertex* trkv);
   Int_t SelectInvMassAndPt2prong(TObjArray* trkArray, AliAODRecoDecay* rd4massCalc2);
@@ -81,6 +82,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   enum {kMaxNPtBinsJpsi = 9, kNCutVarsJpsi=4};
   enum {kMaxNPtBinsLc = 10, kNCutVarsLc = 8 };
   enum {kMaxNPtBinsDplus = 50, kNCutVarsDplus = 8};
+  enum {kMaxNPtBinsSingleTrack = 10, kNCutVarsSingleTrack = 5};
 
   TList*  fOutput;                   //!<!  list of output histos
   TH1F* fHistNEvents;                //!<!  histo with N of events
@@ -240,6 +242,11 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Int_t fMaxTracksToProcess;       // Max n. of tracks, to limit test duration
 
 
+  Int_t fNPtBinsSingleTrack;   // Number of pt bins for single track cuts
+  Double_t fPtBinLimsSingleTrack[kMaxNPtBins];   // [fNPtBinsSingleTrack+1] limits of pt bins for single track cuts
+  Double_t fSingleTrackCuts2Prong[kMaxNPtBinsSingleTrack][kNCutVarsSingleTrack]; // 2-prong single track cuts
+  Double_t fSingleTrackCuts3Prong[kMaxNPtBinsSingleTrack][kNCutVarsSingleTrack]; // 3-prong single track cuts
+
   Int_t fNPtBins;                     // Number of pt bins
   Double_t fPtBinLims[kMaxNPtBins];   // [fNPtBins+1] limits of pt bins
   Double_t fMinPtDzero;               // D0 min pt
@@ -275,7 +282,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
-
+  
   ClassDef(AliAnalysisTaskHFSimpleVertices,20);
 };
 
