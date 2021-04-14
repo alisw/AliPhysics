@@ -20,6 +20,8 @@
 #include "AliMultSelection.h"
 #include "DCAFitterN.h"
 #include "AliAnalysisTaskHFSimpleVertices.h"
+#include "AliLog.h"
+
 #include <TH1F.h>
 #include <TSystem.h>
 #include <TChain.h>
@@ -185,6 +187,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
   fMaxTracksToProcess(9999999),
+  fNPtBinsSingleTrack(6),
   fNPtBins(25),
   fMinPtDzero(0.),
   fMaxPtDzero(9999.),
@@ -375,6 +378,10 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   // fTrackCuts->SetMaxDCAToVertexXY(2.4);
   // fTrackCuts->SetDCAToVertex2D(kTRUE);
 
+  // no possibility to apply pT-dependent DCA cut in AliESDtrackCuts --> done by hand
+  fTrackCuts2pr->SetMaxDCAToVertexXY(1000.);
+  fTrackCuts2pr->SetMinDCAToVertexXY(0.);
+
   fTrackCuts3pr = new AliESDtrackCuts("AliESDtrackCuts", "default3p");
   fTrackCuts3pr->SetPtRange(0., 1.e10);
   // fTrackCuts->SetEtaRange(-0.8, +0.8);
@@ -382,6 +389,30 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault(){
   fTrackCuts3pr->SetRequireITSRefit(kTRUE);
   fTrackCuts3pr->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                           AliESDtrackCuts::kAny);
+
+  // no possibility to apply pT-dependent DCA cut in AliESDtrackCuts --> done by hand
+  fTrackCuts3pr->SetMaxDCAToVertexXY(1000.);
+  fTrackCuts3pr->SetMinDCAToVertexXY(0.);
+
+  fNPtBinsSingleTrack = 6;
+  Double_t defaultPtBinsSingleTrack[7] = {0., 0.5, 1., 1.5, 2., 3., 1000.};
+  for (Int_t ib = 0; ib < fNPtBinsSingleTrack + 1; ib++)
+      fPtBinLimsSingleTrack[ib] = defaultPtBinsSingleTrack[ib];
+
+  Double_t defaultSingleTrackCuts[7][kNCutVarsSingleTrack] =
+    {{0., 1000.}, /*  pt<0.5    */
+    {0., 1000.},  /* 0.5<pt<1   */
+    {0., 1000.},  /* 1<pt<1.5   */
+    {0., 1000.},  /* 1.5<pt<2   */
+    {0., 1000.},  /* 2<pt<3     */
+    {0., 1000.}}; /* pt>3       */
+
+  for (Int_t ib = 0; ib < fNPtBinsSingleTrack; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsSingleTrack; jc++) {
+      fSingleTrackCuts2Prong[ib][jc] = defaultSingleTrackCuts[ib][jc];
+      fSingleTrackCuts3Prong[ib][jc] = defaultSingleTrackCuts[ib][jc];
+    }
+  }
 
   fDzeroSkimCuts[0]=0.;      // pt
   fDzeroSkimCuts[1]=0.;      // min mass
@@ -547,24 +578,28 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     if(minncluTPC>0) printf("minncluTPC   = %d\n", minncluTPC);
     fTrackCuts2pr->SetMinNClustersTPC(minncluTPC);
     fTrackCuts3pr->SetMinNClustersTPC(minncluTPC);
-    Double_t dcatoprimxymin2 = GetJsonFloat(filename.Data(), "dcatoprimxymin_2prong");
-    printf("dcatoprimxymin  (2 prong) = %f\n", dcatoprimxymin2);
-    Double_t dcatoprimxymin2ptmax = GetJsonFloat(filename.Data(), "dcatoprimxy_2prong_maxpt");
-    printf("dcatoprimxymin_ptmax  (2 prong) = %f\n",dcatoprimxymin2ptmax);
-    if(dcatoprimxymin2>0 && dcatoprimxymin2ptmax<0) fTrackCuts2pr->SetMinDCAToVertexXY(dcatoprimxymin2);
-    else if(dcatoprimxymin2>0 && dcatoprimxymin2ptmax>0) fTrackCuts2pr->SetMinDCAToVertexXYPtDep(Form("%f*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/%f)))",dcatoprimxymin2,dcatoprimxymin2ptmax));
-    Double_t dcatoprimxymax2 = GetJsonFloat(filename.Data(), "dcatoprimxymax_2prong");
-    printf("dcatoprimxymax  (2 prong) = %f\n", dcatoprimxymax2);
-    if(dcatoprimxymax2>0) fTrackCuts2pr->SetMaxDCAToVertexXY(dcatoprimxymax2);
-    Double_t dcatoprimxymin3 = GetJsonFloat(filename.Data(), "dcatoprimxymin_3prong");
-    printf("dcatoprimxymin  (3 prong) = %f\n", dcatoprimxymin3);
-    Double_t dcatoprimxymin3ptmax = GetJsonFloat(filename.Data(), "dcatoprimxy_3prong_maxpt");
-    printf("dcatoprimxymin_ptmax  (3 prong) = %f\n",dcatoprimxymin3ptmax);
-    if(dcatoprimxymin3>0 && dcatoprimxymin3ptmax<0) fTrackCuts3pr->SetMinDCAToVertexXY(dcatoprimxymin3);
-    else if(dcatoprimxymin3>0 && dcatoprimxymin3ptmax>0) fTrackCuts3pr->SetMinDCAToVertexXYPtDep(Form("%f*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/%f)))",dcatoprimxymin3,dcatoprimxymin3ptmax));
-    Double_t dcatoprimxymax3 = GetJsonFloat(filename.Data(), "dcatoprimxymax_3prong");
-    printf("dcatoprimxymax  (3 prong) = %f\n", dcatoprimxymax3);
-    if(dcatoprimxymax3>0) fTrackCuts3pr->SetMaxDCAToVertexXY(dcatoprimxymax3);
+
+    int nptbinlimsSingleTrack = 0;
+    float* ptbinsSingleTrack = GetJsonArray(filename.Data(),"ptbins_singletrack",nptbinlimsSingleTrack);
+    int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
+    float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_2prong",npt2Prong,nc2Prong);
+    float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_3prong",npt3Prong,nc3Prong);
+    if((nptbinlimsSingleTrack-1 != npt3Prong) || (nptbinlimsSingleTrack-1 != npt2Prong))
+      AliFatal("Number of pT bins in JSON for single track cuts of 2-prong and 3-prongs not consistent, please check it");
+
+    for (Int_t ib = 0; ib < nptbinlimsSingleTrack; ib++) {
+      fPtBinLimsSingleTrack[ib] = ptbinsSingleTrack[ib];
+    }
+    for (Int_t ib = 0; ib < nptbinlimsSingleTrack-1; ib++) {
+      for (Int_t jc = 0; jc < nc2Prong; jc++) {
+        fSingleTrackCuts2Prong[ib][jc] = cutsSingleTrack2Prong[ib][jc];
+        AliWarning(Form("2prong %d, %d, %f", ib, jc, cutsSingleTrack2Prong[ib][jc]));
+      }
+      for (Int_t jc = 0; jc < nc3Prong; jc++) {
+        fSingleTrackCuts3Prong[ib][jc] = cutsSingleTrack3Prong[ib][jc];
+        AliWarning(Form("3prong %d %d, %d, %f", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
+      }
+    }
 
     Double_t etamax2 = GetJsonFloat(filename.Data(), "etamax_2prong");
     printf("Max eta  (2 prong) = %f\n", etamax2);
@@ -749,15 +784,13 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects() {
   }
   fHistEtaSelTracks3prong = new TH1F("hEtaSelTracks3prong", " Selected tracks ; #eta", nBinsETA,lowlimETA,higlimETA);
   fHistImpParAllTracks = new TH1F("hImpParAllTracks", " All tracks ; d_{0}^{xy} (cm)", 100, -1, 1.);
-  Double_t dca2maxcut=fTrackCuts2pr->GetMaxDCAToVertexXY();
-  Int_t nBinsDCA=static_cast<int>(1.2 * dca2maxcut * 100);
-  Double_t lowlimDCA=-1.2*dca2maxcut;
-  Double_t higlimDCA=1.2*dca2maxcut;
+  Int_t nBinsDCA=400;
+  Double_t lowlimDCA=-2.;
+  Double_t higlimDCA=2.;
   fHistImpParSelTracks2prong = new TH1F("hImpParSelTracks2prong", " Selected tracks ; d_{0}^{xy} (cm)", nBinsDCA,lowlimDCA,higlimDCA);
-  Double_t dca3maxcut=fTrackCuts3pr->GetMaxDCAToVertexXY();
-  nBinsDCA=static_cast<int>(1.2 * dca3maxcut * 100);
-  lowlimDCA=-1.2*dca3maxcut;
-  higlimDCA=1.2*dca3maxcut;
+  nBinsDCA=400;
+  lowlimDCA=-2.;
+  higlimDCA=2.;
   fHistImpParSelTracks3prong = new TH1F("hImpParSelTracks3prong", " Selected tracks ; d_{0}^{xy} (cm)", nBinsDCA,lowlimDCA,higlimDCA);
   fHistITSmapAllTracks = new TH1F("hITSmapAllTracks", " All tracks ; ITS cluster map", 64, -0.5, 63.5);
   fHistITSmapSelTracks = new TH1F("hITSmapSelTracks", " Selected tracks ; ITS cluster map", 64, -0.5, 63.5);
@@ -1229,7 +1262,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
     fHistEtaAllTracks->Fill(track->Eta());
     fHistImpParAllTracks->Fill(d0track[0]);
     fHistITSmapAllTracks->Fill(track->GetITSClusterMap());
-    status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG);
+    status[iTrack] = SingleTrkCuts(track,primVtxTrk,bzkG,d0track);
     if(status[iTrack] > 0)
       nTracksSel++;
   }
@@ -1747,13 +1780,25 @@ Bool_t AliAnalysisTaskHFSimpleVertices::GetTrackMomentumAtSecVert(AliESDtrack* t
   return retCode;
 }
 //______________________________________________________________________________
-Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG)
+Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVertex* primVert, Double_t bzkG, Double_t d0track[2])
 {
-  if (!trk->PropagateToDCA(primVert, bzkG, kVeryBig)) return kFALSE;
+  Double_t covd0track[3];
+  if (!trk->PropagateToDCA(primVert, bzkG, kVeryBig, d0track, covd0track)) return kFALSE;
   trk->RelateToVertex(primVert, bzkG, kVeryBig);
   Int_t retCode=0;
-  if(fTrackCuts2pr->AcceptTrack(trk)) retCode+=1;
-  if(fTrackCuts3pr->AcceptTrack(trk)) retCode+=2;
+
+  // test first impact parameter
+  Int_t iPtTrack = GetPtBinSingleTrack(trk->Pt());
+  if(d0track[0] >= fSingleTrackCuts2Prong[iPtTrack][0] && d0track[0] <= fSingleTrackCuts2Prong[iPtTrack][1])
+    retCode+=1;
+  if(d0track[0] >= fSingleTrackCuts3Prong[iPtTrack][0] && d0track[0] <= fSingleTrackCuts3Prong[iPtTrack][1])
+    retCode+=2;
+
+  // test other cuts if impact-parameter tested
+  Int_t retCodeCurrent=retCode;
+  if((retCodeCurrent == 1 || retCodeCurrent == 3) && fTrackCuts2pr->AcceptTrack(trk)) retCode-=1;
+  if(retCodeCurrent >= 2 && fTrackCuts3pr->AcceptTrack(trk)) retCode-=2;
+
   return retCode;
 }
 //______________________________________________________________________________
@@ -2030,11 +2075,23 @@ Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
   if(ispiKp) returnValue+=2;
   return returnValue;
 }
+
 //______________________________________________________________________________
 Int_t AliAnalysisTaskHFSimpleVertices::GetPtBin(Double_t ptCand)
 {
   for (Int_t i = 0; i < fNPtBins; i++) {
     if (ptCand>=fPtBinLims[i] && ptCand<fPtBinLims[i+1]){
+      return i;
+    }
+  }
+  return -1;
+}
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskHFSimpleVertices::GetPtBinSingleTrack(Double_t ptTrack)
+{
+  for (Int_t i = 0; i < fNPtBinsSingleTrack; i++) {
+    if (ptTrack>=fPtBinLimsSingleTrack[i] && ptTrack<fPtBinLimsSingleTrack[i+1]){
       return i;
     }
   }
@@ -2466,6 +2523,7 @@ float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, c
       }
       full.ReplaceAll("\"values\":","");
       full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
       full.ReplaceAll("}","");
       TObjArray* arrStr=full.Tokenize(",");
       size=arrStr->GetEntriesFast();
@@ -2503,6 +2561,7 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
       }
       full.ReplaceAll("\"values\":","");
       full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
       full.ReplaceAll("}","");
       TObjArray* rowArrStr=full.Tokenize("]");
       size1=rowArrStr->GetEntriesFast();
