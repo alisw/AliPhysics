@@ -108,7 +108,6 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     taskHFEehGA01->SetTriggerElePtCut(trigElePtcut);
     taskHFEehGA01->SetClusterTypeEMC(ClsTypeEMC);
     taskHFEehGA01->SetClusterTypeDCAL(ClsTypeDCAL);
-    taskHFEeh->SetNDeltaPhiBins(nBins);
 
     TString containerName01 = mgr->GetCommonFileName();
     TString SubcontainerName01 = ContNameExt;
