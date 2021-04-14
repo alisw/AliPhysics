@@ -33,6 +33,7 @@
 #include "TGrid.h"
 #include "TProcessID.h"
 #include "TLorentzVector.h"
+#include "TClonesArray.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAODHeader.h"
@@ -68,7 +69,6 @@ AliAnalysisTaskPbPbTree_SingleMuons::AliAnalysisTaskPbPbTree_SingleMuons() :
   fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
-  for(Int_t i=0; i<500;i++) fMuonTracks[i]=0x0;
 }
 
 //__________________________________________________________________________
@@ -92,8 +92,6 @@ AliAnalysisTaskPbPbTree_SingleMuons::AliAnalysisTaskPbPbTree_SingleMuons(const c
   fMuonTrackCuts = new AliMuonTrackCuts("StandardMuonTracksCuts", "TestStandardMuonTracksCuts");
   fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
-
-  for(Int_t i=0; i<500;i++) fMuonTracks[i]=0x0;
 
   DefineOutput(1,TTree::Class());
   DefineOutput(2,TH1D::Class());
@@ -137,6 +135,7 @@ AliAnalysisTaskPbPbTree_SingleMuons::~AliAnalysisTaskPbPbTree_SingleMuons() {
   //
   Info("~AliAnalysisTaskPbPbTree_SingleMuons","Calling Destructor");
   if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis) delete fOutputTree;
+  fMuonTracks->Delete();
 }
 
 //___________________________________________________________________________
@@ -154,7 +153,10 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserCreateOutputObjects(){
   OpenFile(1,"RECREATE");
   fOutputTree = new TTree("PbPbTree","Data Tree");
 
-  fOutputTree->Branch("MuonTracks",fMuonTracks);
+  fMuonTracks = new TObjArray();
+  fMuonTracks->SetOwner();
+
+  fOutputTree->Branch("MuonTracks","TObjArray",&fMuonTracks,256000);
   fOutputTree->Branch("NMuons",&fNMuons,"NMuons/I");
   fOutputTree->Branch("PercentV0M",&fPercentV0M,"PercentV0M/F");
   fOutputTree->ls();
@@ -173,7 +175,6 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
 {
   fNMuons=0;
   fPercentV0M=-1.;
-  for(Int_t i=0; i<500;i++) fMuonTracks[i]=0x0;
 //
 // Execute analysis for current event
 //
@@ -232,28 +233,26 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
   Int_t ntracks = fAODEvent->GetNumberOfTracks();
 
   // loop on muons - write only muons surviving cuts
+  fMuonTracks->Delete();
+
   if(IsPhysSelected){
     if(TriggerSelected_CMSL7){
       if(ntracks!=0) {
-
         for (Int_t i=0;i<ntracks;i++){
+
           AliAODTrack *mu0=(AliAODTrack*)fAODEvent->GetTrack(i);
-          TLorentzVector *lvmuon = new TLorentzVector();
           if(!mu0->IsMuonTrack()) continue;
           if(mu0->Eta() <-4 || mu0->Eta() >-2.5) continue;
           if(mu0->GetRAtAbsorberEnd()<17.6 || mu0->GetRAtAbsorberEnd()>89.5) continue;
           if(mu0->GetMatchTrigger()<=1) continue;
           if(!fMuonTrackCuts->IsSelected(mu0)) continue;
-          lvmuon->SetPxPyPzE((Double_t)mu0->Px(),(Double_t)mu0->Py(),(Double_t)mu0->Pz(),(Double_t)mu0->E());
-          fMuonTracks[nummu] = lvmuon;
+          fMuonTracks-> AddLast(new TLorentzVector((Double_t)mu0->Px(),(Double_t)mu0->Py(),(Double_t)mu0->Pz(),(Double_t)mu0->E()));
           nummu++;
         }
         fNMuons = nummu;
-
       }
     }
   }
-
    // save only events containing muons surviving all standard cuts
    if(fNMuons>0){
     fOutputTree->Fill();
