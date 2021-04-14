@@ -361,6 +361,24 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 	TH1F				**fTracksPt;
 	TH1F				**fTracksQAPt;
+    
+    TH1F                *fhTPCCrossedRows_before;
+    TH1F                *fhTPCCrossedRows_after;
+    TH1F                *fhITSNcls_before;
+    TH1F                *fhITSNcls_after;
+    TH1F                *fhDCAxy_before;
+    TH1F                *fhDCAxy_after;
+    TH1F                *fhDCAz_before;
+    TH1F                *fhDCAz_after;
+    TH1F                *fhTPCchi2overNcls_before;
+    TH1F                *fhTPCchi2overNcls_after;
+    TH1F                *fhITSchi2overNcls_before;
+    TH1F                *fhITSchi2overNcls_after;
+    TH1F                *fh_pt_before;
+    TH1F                *fh_pt_after;
+
+    
+    
     TH1F                **fTracksMCPt;
 	
 	TH1F				**fVtxZ;
@@ -561,14 +579,15 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH1F                *fPtMCparticleReco_e_from_JPsi_eg1;
     TH1F                *fPtMCparticleReco_e_from_JPsi_eg2;
     
- 
-    
 	TH1F				*fPtMCparticle_Total_e_from_JPsi;
     TH1F                *fPtMCparticle_Total_e_from_JPsi_sameMother;
 	TH1F				*fPtMCparticle_TotalplusMass_e_from_JPsi;
     TH1F                *fPtMCparticle_TotalplusMass_e_from_JPsi_sameMother;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg1;
+    TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_eg2;
+    
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight;
     TH1F                *fPtMCparticle_TotalplusMass_JPsi_pT_eSameMother_weight_prompt;
 	
