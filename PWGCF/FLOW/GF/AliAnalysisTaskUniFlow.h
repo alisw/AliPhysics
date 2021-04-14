@@ -333,7 +333,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       // array lenghts & constants
       AliAODEvent*            fEventAOD; //! AOD event countainer
-      // AliMCEvent*             fEventMC; //! MC event countainer
+      AliMCEvent*             fEventMC; //! MC event countainer
       AliVEvent*              fEvent; //! V event countainer
       Double_t                fPVz; // PV z-coordinate used for weights
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
