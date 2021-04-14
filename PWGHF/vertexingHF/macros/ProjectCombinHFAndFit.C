@@ -742,6 +742,11 @@ void ProjectCombinHFAndFit(TString configInput=""){
   TH1F* hGausSigmaME=new TH1F("hGausSigmaME","",nPtBins,binLims);
   TH1F* hGausSigmaSB=new TH1F("hGausSigmaSB","",nPtBins,binLims);
 
+  TH1F* hReflOverSigRot=new TH1F("hReflOverSigRot","",nPtBins,binLims);
+  TH1F* hReflOverSigLS=new TH1F("hReflOverSigLS","",nPtBins,binLims);
+  TH1F* hReflOverSigME=new TH1F("hReflOverSigME","",nPtBins,binLims);
+  TH1F* hReflOverSigSB=new TH1F("hReflOverSigSB","",nPtBins,binLims);
+
   TH1F* hChiSqRot=new TH1F("hChiSqRot","",nPtBins,binLims);
   TH1F* hChiSqLS=new TH1F("hChiSqLS","",nPtBins,binLims);
   TH1F* hChiSqME=new TH1F("hChiSqME","",nPtBins,binLims);
@@ -1017,6 +1022,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	  hGausSigmaSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
 	  hChiSqSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
 	  hChiSqSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	  hReflOverSigSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReflOverSig());
+	  hReflOverSigSB->SetBinError(iPtBin+1,0.);
 	  hNdfSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
 	  hNdfSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	}
@@ -1122,6 +1129,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetSigmaUncertainty());
 	hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
 	hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReflOverSig());
+	hReflOverSigRot->SetBinError(iPtBin+1,0.);
 	hNdfRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1188,6 +1197,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetSigmaUncertainty());
 	hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
 	hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReflOverSig());
+	hReflOverSigLS->SetBinError(iPtBin+1,0.);
 	hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1254,6 +1265,8 @@ void ProjectCombinHFAndFit(TString configInput=""){
 	hGausSigmaME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetSigmaUncertainty());
 	hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
 	hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hReflOverSigME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReflOverSig());
+	hReflOverSigME->SetBinError(iPtBin+1,0.);
 	hNdfME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMassFunc()->GetNDF());
 	hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       }
@@ -1651,6 +1664,10 @@ void ProjectCombinHFAndFit(TString configInput=""){
   hChiSqLS->Write();
   hChiSqME->Write();
   hChiSqSB->Write();
+  hReflOverSigRot->Write();
+  hReflOverSigLS->Write();
+  hReflOverSigME->Write();
+  hReflOverSigSB->Write();
   hNdfRot->Write();
   hNdfLS->Write();
   hNdfME->Write();
