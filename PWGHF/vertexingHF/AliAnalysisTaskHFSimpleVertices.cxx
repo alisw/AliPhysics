@@ -584,16 +584,20 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename){
     int npt2Prong = 0, npt3Prong = 0, nc2Prong = 0, nc3Prong = 0;
     float** cutsSingleTrack2Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_2prong",npt2Prong,nc2Prong);
     float** cutsSingleTrack3Prong = GetJsonMatrix(filename.Data(),"cuts_singletrack_3prong",npt3Prong,nc3Prong);
-    if((nptbinlimsSingleTrack != npt3Prong) || (nptbinlimsSingleTrack != npt2Prong))
+    if((nptbinlimsSingleTrack-1 != npt3Prong) || (nptbinlimsSingleTrack-1 != npt2Prong))
       AliFatal("Number of pT bins in JSON for single track cuts of 2-prong and 3-prongs not consistent, please check it");
 
     for (Int_t ib = 0; ib < nptbinlimsSingleTrack; ib++) {
       fPtBinLimsSingleTrack[ib] = ptbinsSingleTrack[ib];
+    }
+    for (Int_t ib = 0; ib < nptbinlimsSingleTrack-1; ib++) {
       for (Int_t jc = 0; jc < nc2Prong; jc++) {
         fSingleTrackCuts2Prong[ib][jc] = cutsSingleTrack2Prong[ib][jc];
+        AliWarning(Form("2prong %d, %d, %f", ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
       for (Int_t jc = 0; jc < nc3Prong; jc++) {
         fSingleTrackCuts3Prong[ib][jc] = cutsSingleTrack3Prong[ib][jc];
+        AliWarning(Form("3prong %d %d, %d, %f", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
     }
 
@@ -2519,6 +2523,7 @@ float* AliAnalysisTaskHFSimpleVertices::GetJsonArray(const char* jsonFileName, c
       }
       full.ReplaceAll("\"values\":","");
       full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
       full.ReplaceAll("}","");
       TObjArray* arrStr=full.Tokenize(",");
       size=arrStr->GetEntriesFast();
