@@ -2561,6 +2561,7 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
       }
       full.ReplaceAll("\"values\":","");
       full.ReplaceAll(" ","");
+      full.ReplaceAll("},","");
       full.ReplaceAll("}","");
       TObjArray* rowArrStr=full.Tokenize("]");
       size1=rowArrStr->GetEntriesFast();
