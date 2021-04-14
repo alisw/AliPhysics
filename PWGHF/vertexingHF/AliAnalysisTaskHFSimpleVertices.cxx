@@ -1789,15 +1789,15 @@ Int_t AliAnalysisTaskHFSimpleVertices::SingleTrkCuts(AliESDtrack* trk, AliESDVer
 
   // test first impact parameter
   Int_t iPtTrack = GetPtBinSingleTrack(trk->Pt());
-  if(d0track[0] >= fSingleTrackCuts2Prong[iPtTrack][0] && d0track[0] <= fSingleTrackCuts2Prong[iPtTrack][1])
+  if(TMath::Abs(d0track[0]) >= fSingleTrackCuts2Prong[iPtTrack][0] && TMath::Abs(d0track[0]) <= fSingleTrackCuts2Prong[iPtTrack][1])
     retCode+=1;
-  if(d0track[0] >= fSingleTrackCuts3Prong[iPtTrack][0] && d0track[0] <= fSingleTrackCuts3Prong[iPtTrack][1])
+  if(TMath::Abs(d0track[0]) >= fSingleTrackCuts3Prong[iPtTrack][0] && TMath::Abs(d0track[0]) <= fSingleTrackCuts3Prong[iPtTrack][1])
     retCode+=2;
 
   // test other cuts if impact-parameter tested
   Int_t retCodeCurrent=retCode;
-  if((retCodeCurrent == 1 || retCodeCurrent == 3) && fTrackCuts2pr->AcceptTrack(trk)) retCode-=1;
-  if(retCodeCurrent >= 2 && fTrackCuts3pr->AcceptTrack(trk)) retCode-=2;
+  if((retCodeCurrent == 1 || retCodeCurrent == 3) && !fTrackCuts2pr->AcceptTrack(trk)) retCode-=1;
+  if(retCodeCurrent >= 2 && !fTrackCuts3pr->AcceptTrack(trk)) retCode-=2;
 
   return retCode;
 }
