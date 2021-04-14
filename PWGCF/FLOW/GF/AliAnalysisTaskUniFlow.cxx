@@ -1144,8 +1144,6 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(fRunMode == kTest && fEventCounter >= fNumEventsAnalyse) { return; }
 
   // event selection
-  // fEventAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  // if(!fEventAOD) { return; }
 
   // loading AliPIDResponse
   AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
@@ -1154,10 +1152,10 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   if(!fPIDResponse && fAnalType != kMC) { AliFatal("AliPIDResponse not attached!"); return; }
 
   // loading array with MC particles
-  // if(fMC) {
-  //   fEventMC = inputHandler->MCEvent();
-  //   if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
-  // }
+  if(fMC) {
+    fEventMC = inputHandler->MCEvent();
+    if(!fEventMC) { AliFatal("fEventMC with MC particle not found!"); return; }
+  }
 
   //loading VEvent with generated event / data
   if(fAnalType == kMC){ fEvent = dynamic_cast<AliVEvent*>(MCEvent());}
@@ -1198,7 +1196,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   fVector[kRefs]->clear();
   fVector[kCharged]->clear();
 
-  if(!fMC) FilterCharged();
+  if(fAnalType != kMC) FilterCharged();
   else FilterChargedMC();
 
   if(fIsHMpp && fFillQA) {
@@ -1305,7 +1303,7 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
   // particles (Phi, V0s) because here new AliPicoTracks are created
   ClearVectors();
 
-  // if(fMC) { ProcessMC(); }
+  if(fMC) { ProcessMC(); }
 
   // extracting run number here to store run number from previous event (for current run number use info in AliAODEvent)
   if(fAnalType == kAOD) fRunNumber = fEventAOD->GetRunNumber();
@@ -1709,7 +1707,7 @@ void AliAnalysisTaskUniFlow::FillQAEvents(const QAindex iQAindex) const
 // ============================================================================
 void AliAnalysisTaskUniFlow::ProcessMC() const
 {
-    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+    AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEventMC);
     if(!ev) { AliFatal("MC event not found!"); return; }
 
     const Int_t iNumTracksMC = ev->GetNumberOfTracks();
@@ -2320,7 +2318,7 @@ Double_t AliAnalysisTaskUniFlow::GetRapidity(const Double_t mass, const Double_t
 // ============================================================================
 AliAODMCParticle* AliAnalysisTaskUniFlow::GetMCParticle(const Int_t label) const
 {
-  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEvent);
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(fEventMC);
   if(!ev) { AliFatal("MC event not found!"); return nullptr; }
 
   const Int_t labelAbs = TMath::Abs(label);
@@ -2904,7 +2902,7 @@ void AliAnalysisTaskUniFlow::FilterPID() const
       if(fAnalType != kMC && !FillFlowWeight(track, species)) { AliFatal("Flow weight filling failed!"); return; }
     }
 
-      if(fMC) {
+    if(fMC) {
       fh2MCPtEtaReco[species]->Fill(track->Pt(), track->Eta());
       if(fAnalType != kMC && CheckMCTruthReco(species,track)) { fh2MCPtEtaRecoTrue[species]->Fill(track->Pt(), track->Eta()); }
     }
