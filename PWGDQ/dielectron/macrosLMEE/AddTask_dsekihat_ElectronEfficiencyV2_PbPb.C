@@ -16,17 +16,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-
-	TString suffix = "";
-	if(generators.Contains("Pythia CC") && (generators.Contains("Pythia BB") || generators.Contains("Pythia B"))) suffix = "_CC_BB";
-	else if(generators.Contains("Pythia CC")) suffix = "_CC";
-	else if(generators.Contains("Pythia BB") || generators.Contains("Pythia B")) suffix = "_BB";
-	else if(generators.Contains("pizero")) suffix = "_LF";
-	else suffix = "";
-
-  // Creating an instance of the task
-  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data()));
-  gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
+	if (!mgr) {
+		Error("AddTask_dsekihat_ElectronEfficiencyV2_PbPb", "No analysis manager found.");
+		return 0;
+	}
 
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
 	//TString configBasePath("./");
@@ -45,6 +38,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 
   gROOT->LoadMacro(libFilePath.Data());//library first
   gROOT->LoadMacro(configFilePath.Data());
+
+	TString suffix = "";
+	if(generators.Contains("Pythia CC") && (generators.Contains("Pythia BB") || generators.Contains("Pythia B"))) suffix = "_CC_BB";
+	else if(generators.Contains("Pythia CC")) suffix = "_CC";
+	else if(generators.Contains("Pythia BB") || generators.Contains("Pythia B")) suffix = "_BB";
+	else if(generators.Contains("pizero")) suffix = "_LF";
+	else suffix = "";
+
+  // Creating an instance of the task
+  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("TaskElectronEfficiencyV2%s_Cen%d_%d_kINT7%s",suffix.Data(),CenMin,CenMax,pileupcut.Data()));
+  gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(AddMCSignal);
+
 
 	const Int_t nEC = Int_t(gROOT->ProcessLine("GetNEC()") );//event cuts
 	const Int_t nTC = Int_t(gROOT->ProcessLine("GetNTC()") );//track cuts
