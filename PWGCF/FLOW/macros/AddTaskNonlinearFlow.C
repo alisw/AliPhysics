@@ -61,7 +61,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//========================================================================
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp");
+	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE);
 	taskFlowEp->SetDebugLevel(3);
 	taskFlowEp->SetFilterbit(fFilterbit); // For systematics
 	taskFlowEp->SetFilterbitDefault(fFilterbit);
@@ -119,23 +119,22 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
         }
         
 	Int_t inSlotCounter=1;
-	if(fNUA || fNUE)
-		TGrid::Connect("alien:");
+	TGrid::Connect("alien:");
 	if(fNUA) {
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
                
                 TFile *inNUA;
 
                 if (fPeriod.EqualTo("LHC15o")) {
-			// inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/LHC15o/RBRweights.root");
-			inNUA = TFile::Open("alien:///alice/cern.ch/user/e/enielsen/WeightsPbPb15o.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC17")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
                     if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_HM_periods.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp17.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } else if (fPeriod.EqualTo("LHC15i")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
@@ -156,14 +155,16 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_periods.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp16.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } else if (fPeriod.EqualTo("LHC18")) {
 	            taskFlowEp->SetUsePeriodWeigths(true);
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_MB_periods.root");
                     } else {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_allHM.root");
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp18.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } 
 					
@@ -177,6 +178,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
 		inSlotCounter++;
 	}
+
 	if(fNUE) {
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
 		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");
@@ -187,7 +189,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		cin_NUE->SetData(inNUE);
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
-	}
+	} 
 
 	// Return task pointer at the end
 	return taskFlowEp;

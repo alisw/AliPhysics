@@ -185,6 +185,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskNonlinearFlow();
 		AliAnalysisTaskNonlinearFlow(const char *name);
+		AliAnalysisTaskNonlinearFlow(const char *name, int NUA, int NUE);
 
 		virtual ~AliAnalysisTaskNonlinearFlow();
 
@@ -422,7 +423,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 2);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 3);    //Analysis task
 };
 
 #endif
