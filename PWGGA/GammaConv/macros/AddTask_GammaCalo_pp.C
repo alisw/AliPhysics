@@ -3173,6 +3173,63 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("000a2113","1111132060032230000","0u631031000000d0");
 
 
+    //*************************************************************************************************
+    // 13 TeV EMCal Multiplicity differential cuts
+    //*************************************************************************************************
+  } else if (trainConfig == 2400){ //EMCal + DCal mult. diff. with INT7 trigger
+    cuts.AddCutCalo("m0110113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
+    cuts.AddCutCalo("m1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 1.0% - 2.0%
+    cuts.AddCutCalo("m2310113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 2.0% - 3.0%
+    cuts.AddCutCalo("m3410113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 3.0% - 4.0%
+    cuts.AddCutCalo("m4510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 4.0% - 5.0%
+    cuts.AddCutCalo("m5710113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 5.0% - 7.0%
+    cuts.AddCutCalo("m7a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 7.0% - 10.0%
+  } else if (trainConfig == 2401){
+    cuts.AddCutCalo("n1210113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 10.0% - 20.0%
+    cuts.AddCutCalo("n2510113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 20.0% - 50.0%
+    cuts.AddCutCalo("n5a10113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, mult. dep 50.0% - 100.0%
+
+  } else if (trainConfig == 2402){ //EMCal + DCal mult. diff. INT7 high mult trigger
+    cuts.AddCutCalo("q0101113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("q1201113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.1% - 0.2%
+    cuts.AddCutCalo("q2301113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.2% - 0.3%
+    cuts.AddCutCalo("q3401113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.3% - 0.4%
+    cuts.AddCutCalo("q4501113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.4% - 0.5%
+    cuts.AddCutCalo("q5701113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.5% - 0.7%
+    cuts.AddCutCalo("q7a01113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, INT7, mult. dep 0.7% - 1.0%
+  } else if (trainConfig == 2403){ //EMCal + DCal mult. diff. V0M high mult trigger
+    cuts.AddCutCalo("q0176113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("q1276113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.1% - 0.2%
+    cuts.AddCutCalo("q2376113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.2% - 0.3%
+    cuts.AddCutCalo("q3476113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.3% - 0.4%
+    cuts.AddCutCalo("q4576113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.4% - 0.5%
+    cuts.AddCutCalo("q5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.5% - 0.7%
+    cuts.AddCutCalo("q7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.7% - 1.0%
+  } else if (trainConfig == 2404){ //EMCal + DCal mult. diff. SPD high mult trigger
+    cuts.AddCutCalo("q0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.1%
+    cuts.AddCutCalo("q1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.1% - 0.2%
+    cuts.AddCutCalo("q2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.2% - 0.3%
+    cuts.AddCutCalo("q3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.3% - 0.4%
+    cuts.AddCutCalo("q4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.4% - 0.5%
+    cuts.AddCutCalo("q5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.5% - 0.7%
+    cuts.AddCutCalo("q7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.7% - 1.0%
+
+  } else if (trainConfig == 2405){ //EMCal + DCal mult. diff. V0M high mult trigger
+    cuts.AddCutCalo("r0176113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.01%
+    cuts.AddCutCalo("r1276113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.01% - 0.02%
+    cuts.AddCutCalo("r2376113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.02% - 0.03%
+    cuts.AddCutCalo("r3476113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.03% - 0.04%
+    cuts.AddCutCalo("r4576113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.04% - 0.05%
+    cuts.AddCutCalo("r5776113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.05% - 0.07%
+    cuts.AddCutCalo("r7a76113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.07% - 0.1%
+  } else if (trainConfig == 2406){ //EMCal + DCal mult. diff. SPD high mult trigger
+    cuts.AddCutCalo("r0175113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0% - 0.01%
+    cuts.AddCutCalo("r1275113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.01% - 0.02%
+    cuts.AddCutCalo("r2375113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.02% - 0.03%
+    cuts.AddCutCalo("r3475113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.03% - 0.04%
+    cuts.AddCutCalo("r4575113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.04% - 0.05%
+    cuts.AddCutCalo("r5775113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.05% - 0.07%
+    cuts.AddCutCalo("r7a75113","411792109fe32220000","0r631031000000d0"); // INT7, NL12, high mult V0M, mult. dep 0.07% - 0.1%
 
     //*************************************************************************************************
     // 13 TeV EMCal cut studies
