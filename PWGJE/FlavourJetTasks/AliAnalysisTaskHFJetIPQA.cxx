@@ -2059,7 +2059,7 @@ void AliAnalysisTaskHFJetIPQA::DefaultInitTreeVars(){
  * - Sort after storing track parameters as otherwise assignment wrt. IP and IPSig to different tracks!
  * */
 
-void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, Int_t &nGoodIPTracks)
+void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati>& sImpParXY, std::vector<AliAnalysisTaskHFJetIPQA::SJetIpPati> sImpParXYSig, vector<Float_t> &ipvalsig, vector<Float_t> &ipval, vector<Float_t>& chi2val, Int_t &nGoodIPTracks)
 {
     nGoodIPTracks=sImpParXY.size();
     if(nGoodIPTracks==0) return;
@@ -2072,9 +2072,11 @@ void AliAnalysisTaskHFJetIPQA::DetermineIPVars(std::vector<AliAnalysisTaskHFJetI
     for(int iTrack=0;iTrack<nGoodIPTracks;iTrack++){
       ipvalsig.push_back(sImpParXYSig.at(iTrack).first);
       ipval.push_back(sImpParXY.at(iTrack).first);
-      //printf("HasIP0, ipval[%i]=%f, ipvalsig[%i]=%f\n", iTrack, ipval[iTrack], iTrack, ipvalsig[iTrack]);
+      chi2val.push_back(sImpParXY.at(iTrack).trackchi2);
+      //printf("HasIP0, ipval[%i]=%f, ipvalsig[%i]=%f, chi2=%f\n", iTrack, ipval[iTrack], iTrack, ipvalsig[iTrack], chi2val.back());
     }
     if(((int)ipvalsig.size()!=nGoodIPTracks)||((int)ipval.size()!=nGoodIPTracks)) AliError("Size of IP vector not valid!\n");
+    if(ipvalsig.size()!=chi2val.size()) AliError("Size of chi2val vec not valid!\n");
     //if(hasIPs[0])printf("N=1: cursImParXY=%f, TrackWeight=%f,corridx=%i, pt=%f\n",sImpParXYSig.at(0).first, sImpParXYSig.at(0).second, sImpParXYSig.at(0).trackLabel, sImpParXYSig.at(0).trackpt);
     //if(hasIPs[1])printf("N=2: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(1).first, sImpParXYSig.at(1).second, sImpParXYSig.at(1).trackLabel, sImpParXYSig.at(1).trackpt);
     //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
@@ -2241,6 +2243,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     std::vector<SJetIpPati> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
     std::vector<Float_t> ipval;
     std::vector<Float_t> ipvalsig;
+    std::vector<Float_t> chi2val;
     std::vector <Int_t> fJetConstTrackID;
     std::vector <Int_t> iTrackLabels;
     std::vector <Double_t> fTrackRecPt;
@@ -2263,6 +2266,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       sImpParXYZSig.clear();
       ipval.clear();
       ipvalsig.clear();
+      chi2val.clear();
       fJetConstTrackID.clear();
       fTrackRecIPs.clear();
       iTrackLabels.clear();
@@ -2374,10 +2378,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           iTrackITSHits[NJetParticles]=(int) vtrack->HasPointOnITSLayer(0) + (int) vtrack->HasPointOnITSLayer(1)+(int) vtrack->HasPointOnITSLayer(2) + (int) vtrack->HasPointOnITSLayer(3) + (int) vtrack->HasPointOnITSLayer(4) + (int) vtrack->HasPointOnITSLayer(5);
 
           //printf("Generated:fTrackChi2OverNDF=%f,  bTrackIsV0=%i, iTrackITSHits=%i\n",  fTrackChi2OverNDF[NJetParticles],bTrackIsV0[NJetParticles], iTrackITSHits[NJetParticles]);
-          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXY.push_back(a);
-          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]); sImpParXYZ.push_back(b);
-          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYSig.push_back(c);
-          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles]);sImpParXYZSig.push_back(d);
+          SJetIpPati a(cursImParXY, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]); sImpParXY.push_back(a);
+          SJetIpPati b(cursImParXYZ, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]); sImpParXYZ.push_back(b);
+          SJetIpPati c(cursImParXYSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]);sImpParXYSig.push_back(c);
+          SJetIpPati d(cursImParXYZSig, TrackWeight,isV0,kFALSE,corridx,fTrackPt[NJetParticles], iV0MCID[NJetParticles],fTrackChi2OverNDF[NJetParticles]);sImpParXYZSig.push_back(d);
           //printf("curImParXY=%f, isV0=%i, pt=%f\n",sImpParXYSig.back().first,sImpParXYSig.back().is_V0, sImpParXYSig.back().trackpt);
 
 
@@ -2398,7 +2402,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
         //FillHist("fh1dParticlesPerJet",NJetParticles,1);
 
-        DetermineIPVars(sImpParXY, sImpParXYSig, ipvalsig, ipval, nGoodIPTracks);
+        DetermineIPVars(sImpParXY, sImpParXYSig, ipvalsig, ipval, chi2val, nGoodIPTracks);
 
         //_____________________________
         //V0 tag decisions
@@ -2425,7 +2429,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
        //**************
        //Probability Dists
-       fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig);
+       fJetProb=GetTrackProbability(fJetRecPt,nGoodIPTracks, ipvalsig, chi2val);
 
        Double_t fLNJP=-999;
        if(fJetProb>0)fLNJP=-TMath::Log(fJetProb);
@@ -4767,17 +4771,26 @@ void AliAnalysisTaskHFJetIPQA::GetLowUpperBinNo(int &iLowerBin, int &iUpperBin, 
     if(min!=fLowLowerBound) printf("WARNING: Extending lower limit from %f to bin boundary %f\n",min, fLowLowerBound);
 }
 
-Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN){
+Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t iN, Float_t Chi2){
   Int_t iZeroIPBin=-99;//=h2DProbLookup[iN]->GetXaxis()->FindBin(0.);
   Int_t iStartIPBin=-99;//=h2DProbLookup[iN]->GetXaxis()->FindBin(-25);
   Int_t iJetPtBin=-99;
   Int_t iIPBin=-99;
+  Float_t fChi2JetPt=-99;
+  Bool_t bChi2GT2=(Chi2>2.);
 
   //expand upper and lower values to bin boundaries. if value=bin boundary: expand to higher for upper limit and to lower for lower limit
   GetLowUpperBinNo(iStartIPBin, iZeroIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP],0,"x",iN);
   GetLowUpperBinNo(iStartIPBin, iIPBin, -fAnalysisCuts[bAnalysisCut_MaxIPLNJP], -IP,"x",iN);
+
   //if jetpt=binboundary->take higher bin
-  iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(jetpt);
+  fChi2JetPt=jetpt+100*bChi2GT2;
+  iJetPtBin=h2DProbLookup[iN]->GetYaxis()->FindBin(fChi2JetPt);
+  if(TMath::Abs(100-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin))<0.000001) AliError(Form("%s: Invalid lower boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin)));
+  if(TMath::Abs(105-h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1))<0.000001) AliError(Form("%s: Invalid upper boundary (%f) of h2DProbLookup bin!\n",__FUNCTION__, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1)));
+
+ // printf("%s: jetpt=%f, chi2=%f\n", __FUNCTION__, jetpt, Chi2);
+ // printf("%s: IP=%f, jetpt=%f, chi2=%f, fChi2JetPt=%f, iJetPtBin=%i, %f<jetptchi2<%f\n", __FUNCTION__, IP, jetpt, Chi2, fChi2JetPt, iJetPtBin, h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin), h2DProbLookup[iN]->GetYaxis()->GetBinLowEdge(iJetPtBin+1));
 
   Float_t probnomi=h2DProbLookup[iN]->Integral(iStartIPBin,iIPBin,iJetPtBin,iJetPtBin);
   Float_t probdenomi=h2DProbLookup[iN]->Integral(iStartIPBin,iZeroIPBin,iJetPtBin,iJetPtBin);
@@ -4795,7 +4808,7 @@ Float_t AliAnalysisTaskHFJetIPQA::IntegrateIP(Float_t jetpt, Float_t IP, Int_t i
  * - if number of tracks within jet larger than available amount of templates -> take template with largest tracknumber
  * */
 
-Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval){
+Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGoodIPTracks, const vector<Float_t>& ipval, const vector<Float_t>& chi2val){
   Float_t prob=1;
   Float_t probval=-999;
   Int_t nIPTracksAboveZero=0;
@@ -4806,8 +4819,8 @@ Float_t AliAnalysisTaskHFJetIPQA::GetTrackProbability(Float_t jetpt, Int_t nGood
       continue;
     }
     probval=-999;
-    if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
-    else{probval=IntegrateIP(jetpt,ipval[iN], iN);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
+    if((int)iN>=fNTrackTypes){ probval=IntegrateIP(jetpt,ipval[iN], fNTrackTypes-1, chi2val[iN]);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
+    else{probval=IntegrateIP(jetpt,ipval[iN], iN, chi2val[iN]);}    //probval[iN]=h2DProbLookup[iN]->GetBinContent(iIPBin[iN],iJetPtBin);}
     //printf("iN=%i: jetpt=%f, ipval[%i]=%f, prob=%f\n",iN, jetpt, iN, ipval[iN],probval);
     fTrackProb[iN]=probval;
     prob=prob*probval;
