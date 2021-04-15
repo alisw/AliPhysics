@@ -34,6 +34,8 @@
 #include "TProcessID.h"
 #include "TLorentzVector.h"
 #include "TClonesArray.h"
+#include "TVectorD.h"
+#include "TParticle.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAODHeader.h"
@@ -46,6 +48,7 @@
 
 #include "AliAnalysisTaskPbPbTree_SingleMuons.h"
 #include "AliTriggerAnalysis.h"
+using namespace std;
 
 
 ClassImp(AliAnalysisTaskPbPbTree_SingleMuons)
@@ -246,13 +249,35 @@ void AliAnalysisTaskPbPbTree_SingleMuons::UserExec(Option_t *)
           if(mu0->GetRAtAbsorberEnd()<17.6 || mu0->GetRAtAbsorberEnd()>89.5) continue;
           if(mu0->GetMatchTrigger()<=1) continue;
           if(!fMuonTrackCuts->IsSelected(mu0)) continue;
-          fMuonTracks-> AddLast(new TLorentzVector((Double_t)mu0->Px(),(Double_t)mu0->Py(),(Double_t)mu0->Pz(),(Double_t)mu0->E()));
+
+
+          Int_t pdg;
+          if(mu0->Charge()==1) pdg=13;
+          else if(mu0->Charge()==-1) pdg = -13;
+          Int_t status=0;
+          Int_t mother1=0;
+          Int_t mother2=0;
+          Int_t daughter1=0;
+          Int_t daughter2=0;
+          Double_t px = mu0->Px();
+          Double_t py = mu0->Py();
+          Double_t pz = mu0->Pz();
+          Double_t etot = mu0->E();
+          Double_t vx=0;
+          Double_t vy=0;
+          Double_t vz=0;
+          Double_t time=0;
+
+          TParticle *MuonTr = new TParticle(pdg,status,mother1,mother2,daughter1,daughter2,px,py,pz,etot,vx,vy,vz,time);
+
+          fMuonTracks-> AddLast(new TParticle (*MuonTr));
           nummu++;
         }
         fNMuons = nummu;
       }
     }
   }
+    //MuonTracks.Print();
    // save only events containing muons surviving all standard cuts
    if(fNMuons>0){
     fOutputTree->Fill();
