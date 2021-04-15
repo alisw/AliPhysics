@@ -22,7 +22,11 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	//Base Directory for GRID / LEGO Train
 	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 	//TString configBasePath= "./";
-	if(getFromAlien
+  if (!gSystem->AccessPathName(configFile) && !gSystem->AccessPathName(libFile)  ) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+	else if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",lFileName.Data())))
 	  ){
@@ -33,6 +37,9 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	TString libFilePath(configBasePath + lFileName);
 	std::cout << "Configpath:  " << configFilePath << std::endl;
 	std::cout << "Libpath:  "    << libFilePath << std::endl;
+	//add dielectron analysis with different cuts to the task
+	gROOT->LoadMacro(libFilePath.Data());//library first
+	gROOT->LoadMacro(configFilePath.Data());
 
 	TString triggername = "NULL";
 	if(trigger == (UInt_t)AliVEvent::kINT7)             triggername = "kINT7";
@@ -47,9 +54,6 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	task->UsePhysicsSelection(kTRUE);
 	task->SetTriggerMask(trigger);
 
-	//add dielectron analysis with different cuts to the task
-	gROOT->LoadMacro(libFilePath.Data());//library first
-	gROOT->LoadMacro(configFilePath.Data());
 
 	//const Int_t nDie = (Int_t)gROOT->ProcessLine("GetN()");
 	const Int_t nEC = Int_t(gROOT->ProcessLine("GetNEC()") );//event cuts
