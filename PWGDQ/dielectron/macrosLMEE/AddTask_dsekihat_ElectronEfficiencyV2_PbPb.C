@@ -23,15 +23,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
 
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
 	//TString configBasePath("./");
-	if(getFromAlien
+  if (!gSystem->AccessPathName(configFile) && !gSystem->AccessPathName(libFile) ) {
+    printf("Configfile already present\n");
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
+	else if(getFromAlien
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
 			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",libFile.Data())))
 		){
 		configBasePath=Form("%s/",gSystem->pwd());
 	}
-	TString configFilePath(configBasePath + configFile);
 
-  //load cut library first
+	TString configFilePath(configBasePath + configFile);
   TString libFilePath(configBasePath + libFile);
   std::cout << "Configpath:  " << configFilePath << std::endl;
   std::cout << "Libpath:  " << libFilePath << std::endl;
