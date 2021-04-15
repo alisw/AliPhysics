@@ -167,6 +167,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   void GeneralTrackProperties();
   void AnalyzeRawData();
 
+  void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
 
  private:
 
@@ -174,7 +175,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   // ######### CHECK FUNCTIONS
   Bool_t      IsTrackInAcceptance(AliVParticle* track, Bool_t isGen=0);
   Bool_t      IsEventInAcceptance(AliVEvent* event);
-
+  Bool_t      IsOutlier(); //FK// Tests if the event is pthard bin outlier
 
   // ######### STANDARD FUNCTIONS
   void        ExecOnceLocal();
@@ -548,11 +549,14 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    Bool_t fTrigflag[3];                            //! trigger flags
    Int_t  fRunnumber;                              //! run number
 
+   Float_t  fMaxFacPtHard;   // Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+
+
 
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 31); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 32); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
