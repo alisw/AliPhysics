@@ -493,13 +493,13 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 	
-        Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100, 20, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0,  0,   0,  0, -1.5};
-        Double_t xmax[11]={100,   5,   2, 0.5, 100,   1,   1, 20, 0.5, 20,  1.5};
-        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont;charge",11,bins,xmin,xmax);
+        Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
+        Double_t xmax[11]={100,   5,   2, 0.5, 100,   1,   1,  0.2, 0.5, 20,  1.5};
+        fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;DCA;isotrack;NtrCont;charge",11,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
 
-        fHFArray = new THnSparseD ("fHFArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;Ncont;isotrack;NtrCont;charge",11,bins,xmin,xmax);
+        fHFArray = new THnSparseD ("fHFArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;DCA;isotrack;NtrCont;charge",11,bins,xmin,xmax);
         fOutputList->Add(fHFArray);
 
         fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
@@ -1331,7 +1331,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[4] = pTpart;
                             isoarray[5] = m20;
                             isoarray[6] = m02;
-                            isoarray[7] = (Double_t)NcontCone;
+                            //isoarray[7] = (Double_t)NcontCone;
+                            isoarray[7] = DCA[0]*Bsign*track->Charge();
                             isoarray[8] = IsoEnergyTrack;
                             isoarray[9] = (Double_t)NtrackCone;
                             isoarray[10] = (Double_t)track->Charge();
@@ -1350,7 +1351,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             isoarray[4] = pTpart;
                             isoarray[5] = m20;
                             isoarray[6] = m02;
-                            isoarray[7] = (Double_t)NcontCone;
+                            //isoarray[7] = (Double_t)NcontCone;
+                            isoarray[7] = DCA[0]*Bsign*track->Charge();
                             isoarray[8] = IsoEnergyTrack;
                             isoarray[9] = (Double_t)NtrackCone;
                             isoarray[10] = (Double_t)track->Charge();
