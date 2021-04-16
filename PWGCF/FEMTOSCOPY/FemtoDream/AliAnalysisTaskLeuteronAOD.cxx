@@ -31,6 +31,7 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fPairCleanerList(nullptr),
   fResultsList(nullptr),
   fResultsQAList(nullptr),
+  fSimpleEventCounter(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -42,6 +43,8 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
   fv0CutsPart5(nullptr),
   fv0CutsPart6(nullptr),
   fConfig(nullptr),
+  fEnableEventQAPlots(false),
+  fEnableResultsQAPlots(false),
   fPairCleaner(nullptr),
   fPartColl(nullptr),
   fGTI(nullptr)
@@ -51,7 +54,7 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD():AliAnalysisTaskSE(),
 
 
 //  -----------------------------------------------------------------------------------------------------------------------------------------
-AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband):AliAnalysisTaskSE(name),
+AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool isMC, bool isHighMultV0, bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool doEventQAPlots,bool doResultsQAPlots):AliAnalysisTaskSE(name),
   fIsMC(isMC),
   fIsHighMultV0(isHighMultV0),
   fBruteForceDebugging(BruteForceDebugging),
@@ -71,6 +74,7 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   fPairCleanerList(nullptr),
   fResultsList(nullptr),
   fResultsQAList(nullptr),
+  fSimpleEventCounter(nullptr),
   fEvent(nullptr),
   fTrack(nullptr),
   fFemtov0(nullptr),
@@ -82,6 +86,8 @@ AliAnalysisTaskLeuteronAOD::AliAnalysisTaskLeuteronAOD(const char *name, bool is
   fv0CutsPart5(nullptr),
   fv0CutsPart6(nullptr),
   fConfig(nullptr),
+  fEnableEventQAPlots(doEventQAPlots),
+  fEnableResultsQAPlots(doResultsQAPlots),
   fPairCleaner(nullptr),
   fPartColl(nullptr),
   fGTI(nullptr)
@@ -305,13 +311,13 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
 
 
   if(fIsHighMultV0){
-    fEvent = new AliFemtoDreamEvent(false,true,AliVEvent::kHighMultV0);	
+    fEvent = new AliFemtoDreamEvent(false,fEnableEventQAPlots,AliVEvent::kHighMultV0);	
     // AliFemtoDreamEvent(1,2,3)
     // 1. argument (boolean) turns on the manual configuration of the pile up rejection (outdated)
     // 2. argument (boolean) provides the QA from the AliEventCuts
     // 3. argument (string) select a trigger
   } else{
-    fEvent = new AliFemtoDreamEvent(false,true,AliVEvent::kINT7);	
+    fEvent = new AliFemtoDreamEvent(false,fEnableEventQAPlots,AliVEvent::kINT7);	
   }
 
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
@@ -327,10 +333,10 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
     // 2. argument (integer) number of decay-decay-combinations to be cleaned (lambda-lambda and antilambda-antilambda)
     // 3. argument (boolean) turns on minimal booking, which means that no histograms are created and filled
 
-  fPartColl = new AliFemtoDreamPartCollection(fConfig,false);
+  fPartColl = new AliFemtoDreamPartCollection(fConfig,!fEnableResultsQAPlots);
     // AliFemtoDreamPartCollection(1,2)
     // 1. argument (object) is the configuration object which is needed for the calculation of the correlation function
-    // 2. argument (boolean) turns on minimal booking, which means the QA histograms are not created
+    // 2. argument (boolean) turns on minimal booking, which means the ResultsQA histograms are not created
 
   if(!fEventCuts->GetMinimalBooking()){
     fEventList = fEventCuts->GetHistList();
@@ -351,6 +357,10 @@ void AliAnalysisTaskLeuteronAOD::UserCreateOutputObjects(){
   fAntideuteronMassSqTOF->GetYaxis()->SetTitle("#it{m}^{2} (GeV^{2}/#it{c}^{4})");
   fAntideuteronList->Add(fAntideuteronMassSqTOF);
 
+  fSimpleEventCounter = new TH1F("fSimpleEventCounter","Number of events",1,0.0,1.0);
+  fSimpleEventCounter->GetYaxis()->SetTitle("number of events");
+
+  fEventList->Add(fSimpleEventCounter);
   fResultsList = fPartColl->GetHistList();
   fResultsQAList->Add(fPartColl->GetQAList());
   fEventList->Add(fEvent->GetEvtCutList());
@@ -395,6 +405,9 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  }
 	  StoreGlobalTrackReference(track);
 	}
+
+    // fill the simple event counter
+    fSimpleEventCounter->Fill(0.5);
 
 	double mass2 = 0.0;
 	double pT = 0.0;
