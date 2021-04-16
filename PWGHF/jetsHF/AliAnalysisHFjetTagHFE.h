@@ -62,10 +62,16 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetSS(Bool_t SSlong){iSSlong = SSlong;};
   void SetPtHardMax(Double_t PtHardMax){fPtHardMax = PtHardMax;};
  
-  //Correct Ntracklet 
+  //Correct Ntracklet
+	void SetWeightNtrkl(TH1D* hWeight){
+			if(fweightNtrkl) delete fweightNtrkl;
+			fweightNtrkl = new TH1D(*hWeight);
+	}
+
   void SetMultiProfileLHC16(TProfile *hprof) { fMultiEstimatorAvg = new TProfile(*hprof);}
   TProfile* GetEstimatorHistogram(const AliAODEvent *fAOD);
   void SetNref(Double_t nref){fNref = nref;};
+	void CountNch();
 
  protected:
   void                        ExecOnce();
@@ -99,6 +105,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fInvmassCut;  
     Double_t fptAssocut; 
     Double_t fNref;
+		Int_t Nch;
     Bool_t fmcData;
     Bool_t iMCcorr;
     Bool_t iDCApTweight;
@@ -260,6 +267,14 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TF1                         *fFONLL_B;
   TH2F                        *fzvtx_Ntrkl;
   TH2F                        *fzvtx_Ntrkl_Corr;
+	TH2F                        *fNchNtr;
+	TF1                         *fCorrZvtx;
+	TF1                         *fCorrNtrkl;
+	TH1F                        *fzvtx_Corr;
+	TH1F                        *fNtrkl_Corr;
+	TH2F                        *fzvtx_Nch;
+	TH2F                        *fNchNtr_Corr;
+  TH1D                        *fweightNtrkl; 
 
   TRandom                     *generator;
 
