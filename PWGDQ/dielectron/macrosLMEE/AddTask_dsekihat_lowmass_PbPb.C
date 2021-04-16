@@ -22,7 +22,7 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
 	//Base Directory for GRID / LEGO Train
 	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 	//TString configBasePath= "./";
-  if (!gSystem->AccessPathName(configFile) && !gSystem->AccessPathName(libFile)  ) {
+  if (!gSystem->AccessPathName(cFileName) && !gSystem->AccessPathName(lFileName)  ) {
     printf("Configfile already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
